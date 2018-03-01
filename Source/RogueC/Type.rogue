@@ -176,9 +176,18 @@ class Type
 
       return null
 
-    method find_property( p_name:String )->Property
+    method find_property( p_name:String, used_modules=null:UsedModule )->Property
       if (p_name[0] == '@') p_name = p_name.rightmost(-1)
-      return property_lookup[p_name]
+
+      if (used_modules and this is Program.type_Global)
+        local qualified_name = used_modules.find( p_name )
+        if (qualified_name) return find_property( qualified_name )
+      endIf
+
+      local result = property_lookup[p_name]
+      if (result) return result
+
+      return null
 
     method find_global( s_name:String )->Property
       if (s_name[0] == '@') s_name = s_name.rightmost(-1)

@@ -293,8 +293,9 @@ class Preprocessor
         endIf
 
         local t_type = t.type
-        if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum)
-
+        if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum or ...
+            t_type is TokenType.keyword_global)
+          # Register this class/enum/routine/global module::id
           if (reader.peek.type is TokenType.identifier)
             if (keep_tokens) tokens.add( t )
             t = reader.read
@@ -308,7 +309,11 @@ class Preprocessor
                 # x -> ModuleName::x
                 local prefix = cur_module + "::"
                 if (not unqualified_name.begins_with(prefix))
-                  Program.add_module_id( cur_module, unqualified_name )
+                  if (t_type is TokenType.keyword_global)
+                    Program.add_module_global( cur_module, unqualified_name )
+                  else
+                    Program.add_module_id( cur_module, unqualified_name )
+                  endIf
                   qualified_name = (prefix + unqualified_name)
                 endIf
               endIf

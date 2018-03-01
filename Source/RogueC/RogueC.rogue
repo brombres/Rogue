@@ -338,8 +338,10 @@ class RogueC [singleton]
 
     method parse_pending_files
       # One parser is created for every file and all parsers are prepped with tokens
-      # before any parser parses its elements.  This allows all tokens to be filtered
-      # a final time after tokenization to facilitate 'module' and 'using' directives.
+      # before any parser parses its elements.
+      # This allows included $defines to be collected before the including files are parsed.
+      # This is also where most identifier tokens are qualified with their module namespace
+      # for 'module' and 'using' directives.
       # 'includeSource' DEPENDENCIES can cause additional files to be parsed later
       # so we guard against that by working on a copy of parsers[] and clearing parsers[].
       while (parsers.count)

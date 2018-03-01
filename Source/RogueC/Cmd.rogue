@@ -1981,6 +1981,7 @@ class CmdAccess : Cmd
     name         : String
     args         : CmdArgs
     named_args   : CmdNamedArg[]
+    used_modules : UsedModule
     #debug : Logical
 
   METHODS
@@ -2029,6 +2030,9 @@ class CmdAccess : Cmd
       if (macro_args)
         return macro_args.inline_access( result )
       endIf
+
+      result.used_modules = used_modules
+
       return result
 
     method implicit_type( scope:Scope )->Type
@@ -2135,7 +2139,7 @@ class CmdAccess : Cmd
           return result
         endIf
 
-        local p = scope.this_type.find_property( name )
+        local p = scope.this_type.find_property( name, used_modules )
         if (p)
           block
             if (args) return CmdAccess( t, CmdAccess(t,context,name), "call", args ).resolve( scope )
@@ -2160,7 +2164,7 @@ class CmdAccess : Cmd
           if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
           if (def) return def.expression.cloned(&new_t=t).resolve( scope )
 
-          p = Program.type_Global.find_property( name )
+          p = Program.type_Global.find_property( name, used_modules )
           if (p)
             return CmdReadProperty( t, CmdReadSingleton(t,Program.type_Global), p ).resolve( scope )
           endIf
@@ -2214,7 +2218,7 @@ class CmdAccess : Cmd
 
       local arg_count = select{ args:args.count || 0 }
       if (arg_count != scope.this_method.parameters.count) return
-      if (not (this_type.find_property(name) or this_type.find_global(name))) return
+      if (not (this_type.find_property(name,used_modules) or this_type.find_global(name))) return
 
       throw t.error( "Recursive call to getter " + name + "() - write @" + name + " instead." )
 
@@ -2271,7 +2275,7 @@ class CmdAccess : Cmd
         if (setter) return setter
       endIf
 
-      local p = context_type.find_property( name )
+      local p = context_type.find_property( name, ?:{context_was_null:used_modules||null} )
       if (p)
         block
           if (context.is_global)
@@ -2294,7 +2298,7 @@ class CmdAccess : Cmd
       if (def) return def.expression.cloned(&new_t=t).resolve_assignment( scope, new_value )
 
       if (context_was_null and scope.this_type is not Program.type_Global)
-        p = Program.type_Global.find_property( name )
+        p = Program.type_Global.find_property( name, used_modules )
         if (p)
           return CmdWriteProperty( t, CmdReadSingleton(t,Program.type_Global), p, new_value ).resolve( scope )
         endIf
