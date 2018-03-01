@@ -179,9 +179,16 @@ class Type
     method find_property( p_name:String, used_modules=null:UsedModule )->Property
       if (p_name[0] == '@') p_name = p_name.rightmost(-1)
 
-      if (used_modules and this is Program.type_Global)
-        local qualified_name = used_modules.find( p_name )
-        if (qualified_name) return find_property( qualified_name )
+      if (this is Program.type_Global)
+        if (p_name[0] == ':')
+          # ::name -> name
+          return find_property( p_name.from(2) )
+        endIf
+
+        if (used_modules)
+          local qualified_name = used_modules.find( p_name )
+          if (qualified_name) return find_property( qualified_name )
+        endIf
       endIf
 
       local result = property_lookup[p_name]

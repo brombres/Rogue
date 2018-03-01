@@ -135,21 +135,27 @@ class Program [essential singleton]
       local module_globals = globals_by_module[ module_name ]
       if (module_globals)
         forEach (m_id in module_globals)
-          global_map[ m_id ] = "$::$" (module_name,m_id)
+          if (module_name.count)
+            global_map[ m_id ] = "$::$" (module_name,m_id)
+          else
+            global_map[ m_id ] = m_id
+          endIf
         endForEach
       endIf
 
       # Find modules that contain this module name as a subset and add
       # in relative mappings.  So for used module A, find A::B containing
       # x and y and create mappings B::y and B::y.
-      forEach (submodule_name in globals_by_module.keys)
-        if (submodule_name.begins_with(module_name) and submodule_name != module_name)
-          local relative_path = submodule_name.rightmost( -(module_name.count + 2) ) + "::"
-          forEach (m_id in globals_by_module[submodule_name])
-            global_map[ relative_path + m_id ] = "$::$" (submodule_name,m_id)
-          endForEach
-        endIf
-      endForEach
+      if (module_name.count)
+        forEach (submodule_name in globals_by_module.keys)
+          if (submodule_name.begins_with(module_name) and submodule_name != module_name)
+            local relative_path = submodule_name.rightmost( -(module_name.count + 2) ) + "::"
+            forEach (m_id in globals_by_module[submodule_name])
+              global_map[ relative_path + m_id ] = "$::$" (submodule_name,m_id)
+            endForEach
+          endIf
+        endForEach
+      endIf
 
       return global_map
 

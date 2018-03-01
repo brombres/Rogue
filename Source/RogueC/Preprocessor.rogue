@@ -76,7 +76,8 @@ class Preprocessor
     reader : PreprocessorTokenReader
     tokens : Token[]
 
-    cur_module : String
+    cur_module        : String
+    cur_module_prefix : String
     metablock_stack = Token[]
 
   METHODS
@@ -227,11 +228,12 @@ class Preprocessor
               if (keep_tokens)
                 tokens.add( reader.peek )
                 cur_module = reader.read_identifier
+                cur_module_prefix = cur_module + "::"
               else
                 reader.read
               endIf
             else
-              if (keep_tokens) cur_module = null
+              if (keep_tokens) cur_module = null; cur_module_prefix = null
             endIf
 
             if (next_is(TokenType.symbol_open_bracket))
@@ -305,17 +307,19 @@ class Preprocessor
               if (qualified_name.begins_with("::"))
                 # ::x -> x
                 qualified_name = unqualified_name.after_first("::")
+                if (t_type is TokenType.keyword_global) Program.add_module_global( "", qualified_name )
               elseIf (cur_module)
                 # x -> ModuleName::x
-                local prefix = cur_module + "::"
-                if (not unqualified_name.begins_with(prefix))
+                if (not unqualified_name.begins_with(cur_module_prefix))
                   if (t_type is TokenType.keyword_global)
                     Program.add_module_global( cur_module, unqualified_name )
                   else
                     Program.add_module_id( cur_module, unqualified_name )
                   endIf
-                  qualified_name = (prefix + unqualified_name)
+                  qualified_name = (cur_module_prefix + unqualified_name)
                 endIf
+              else
+                if (t_type is TokenType.keyword_global) Program.add_module_global( "", qualified_name )
               endIf
               if (qualified_name is not unqualified_name) t = t.type.create_token(t,qualified_name)
               tokens.add( t )

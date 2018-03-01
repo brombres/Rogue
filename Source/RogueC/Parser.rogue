@@ -108,8 +108,11 @@ class Parser
           else
             local name = t->String
             if (name[0] == ':')
-              # ::Name -> Name
-              reader.tokens[ reader.position - 1 ] = t.type.create_token( t, name.from(2) )
+              # ::Name -> Name unless Name is a known global in the default module
+              local base_name = name.from( 2 )
+              if (not Program.module_global_map("").contains(base_name))
+                reader.tokens[ reader.position - 1 ] = t.type.create_token( t, base_name )
+              endIf
             else
               local mapping = id_map[ name ]
               if (mapping)
