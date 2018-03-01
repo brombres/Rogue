@@ -1949,6 +1949,25 @@ augment RogueC
           endIf
         endIf
 
+        if (RogueC.pkg_config_pkgs.count)
+          forEach (pkg in RogueC.pkg_config_pkgs)
+            local result = Process.run("pkg-config --cflags --libs " + pkg)
+            if (result.success)
+              compiler_name += " " + result.output_string.trimmed
+            else
+              local msg = result.error_string.trimmed
+              if (msg.count == 0) msg = result.output_string.trimmed
+              local full_msg = "Couldn't configure pkg-config package '$'" (pkg)
+              if (msg.count)
+                full_msg += ":\n" + msg
+              else
+                full_msg += "."
+              endIf
+              throw Error(full_msg)
+            endIf
+          endForEach
+        endIf
+
         if (RogueC.compiler_options.count)
           compiler_name += " " + " ".join(RogueC.compiler_options)
         endIf
