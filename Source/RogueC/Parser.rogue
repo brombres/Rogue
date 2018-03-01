@@ -131,7 +131,7 @@ class Parser
             must_consume( TokenType.symbol_close_bracket )
           endIf
 
-        elseIf (t.type is TokenType.directive_using)
+        elseIf (t.type is TokenType.directive_uses)
           id_map.use_module( read_identifier )
 
         elseIf (t.type is TokenType.symbol_dot or t.type is TokenType.symbol_slash_slash)
@@ -233,7 +233,7 @@ class Parser
         must_consume_eols
         return true
 
-      elseIf (t.type is TokenType.directive_using)
+      elseIf (t.type is TokenType.directive_uses)
         read  # 'using'
         used_modules = UsedModule( read_identifier, used_modules )
         must_consume_eols

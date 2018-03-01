@@ -14,7 +14,7 @@ class TokenType
     directive_warning             : TokenType
     directive_module              : TokenType
     directive_essential           : TokenType
-    directive_using               : TokenType
+    directive_uses                : TokenType
 
     meta_block                    : TokenType
     meta_endBlock                 : TokenType

@@ -87,7 +87,7 @@ class Tokenizer
       TokenType.directive_warning    = define( DirectiveTokenType("$warning") )
       TokenType.directive_essential  = define( DirectiveTokenType("$essential") )
       TokenType.directive_module     = define( StructuralDirectiveTokenType("module") )
-      TokenType.directive_using      = define( StructuralDirectiveTokenType("using") )
+      TokenType.directive_uses       = define( StructuralDirectiveTokenType("uses") )
 
       TokenType.meta_block           = define( DirectiveTokenType("$block") )
       TokenType.meta_endBlock        = define( DirectiveTokenType("$endBlock") )

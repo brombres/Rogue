@@ -68,7 +68,7 @@ syn match   rogueDirective    "\$sourceFilepath\>"
 syn match   rogueDirective    "\$sourceLine\>"
 syn match   rogueDirective    "\$methodSignature\>"
 syn keyword rogueDirective    module
-syn keyword rogueDirective    using
+syn keyword rogueDirective    uses
 syn match   rogueNumber       "\<\(\d\|_\)\+\(\.\(\d\|_\)\+\)\=\>"
 syn match   rogueNumber       "\<0b[01_]\+\>"
 syn match   rogueNumber       "\<0x\(\x\|_\)\+\>"
