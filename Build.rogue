@@ -22,12 +22,7 @@ routine rogo_clean
 endRoutine
 
 routine rogo_test
-  local cmd : String
-  if (File.is_newer_than("Test.rogue","test"))
-    cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
-  else
-    cmd = @|./test
-  endIf
+  local cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
   println "> " + cmd
   System.run( cmd )
 endRoutine
