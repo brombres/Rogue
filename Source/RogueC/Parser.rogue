@@ -11,7 +11,7 @@ class Parser
     local_declarations = Local[]  # repeated temporary use
     property_list = Property[]    # temp use
 
-    string_buffer = StringBuilder()
+    string_builders = StringBuilderPool()
 
     cur_statement_list : CmdStatementList
 
@@ -2890,12 +2890,14 @@ class Parser
       return expr
 
     method parse_specialization_string->String
-      parse_specializer_list( string_buffer.clear )
-      return string_buffer->String
+      local buffer = string_builders.acquire
+      parse_specializer_list( buffer )
+      return string_builders.release_with_result( buffer )
 
     method parse_specialization_type( index:Int32 )->Type
       read   # '<<'
 
+      local string_buffer = string_builders.acquire
       local i = index
       local first = true
       while (first or consume(TokenType.symbol_comma))
@@ -2905,39 +2907,47 @@ class Parser
         local t = peek
         parse_specializer( string_buffer.clear )
 
-        if (i == 0) return Program.get_type_reference( t, string_buffer->String )
+        if (i == 0) return Program.get_type_reference( t, string_builders.release_with_result(string_buffer) )
         --i
       endWhile
+
+      string_builders.release( string_buffer )
 
       @trace
       throw peek.error( "[INTERNAL] Invalid specializer index: $." (index) )
 
     method parse_specialization_info->ValueTable
-      local count = parse_specializer_list( string_buffer.clear )
-      return @{string:string_buffer->String,count:count}
+      local string_buffer = string_builders.acquire
+      local count = parse_specializer_list( string_buffer )
+      return @{string:string_builders.release_with_result(string_buffer),count:count}
 
     method parse_specializer_count->Int32
       local num_specializers = 0
       read   # '<<'
 
+      local string_buffer = string_builders.acquire
       local first = true
       while (first or consume(TokenType.symbol_comma))
         if (first) first = false
         parse_specializer( string_buffer.clear )
         ++num_specializers
       endWhile
+      string_builders.release( string_buffer )
 
       must_consume( TokenType.symbol_close_specialize )
 
       return num_specializers
 
-    method parse_specializer_list( buffer=string_buffer:StringBuilder, tokens=null:Token[] )->Int32
+    method parse_specializer_list( buffer=null:StringBuilder, tokens=null:Token[] )->Int32
       # We know the next token is '<<'.
       # Returns: The count of how many specializers were parsed.
+      local should_release_buffer = (buffer is null)
+      if (buffer is null) buffer = string_builders.acquire
+
       local count = 0
       local t = read   # '<<'
       if (tokens) tokens.add( t )
-      string_buffer.print( "<<" )
+      buffer.print( "<<" )
 
       local first = true
       while (first or next_is(TokenType.symbol_comma))
@@ -2946,21 +2956,42 @@ class Parser
         else
           t = read  # ','
           if (tokens) tokens.add( t )
-          string_buffer.print(',')
+          buffer.print(',')
         endIf
         ++count
-        parse_specializer( string_buffer, tokens )
+        parse_specializer( buffer, tokens )
       endWhile
 
       t = peek
       if (tokens) tokens.add( t )
       must_consume( TokenType.symbol_close_specialize )
-      string_buffer.print( ">>" )
+      buffer.print( ">>" )
+
+      if (should_release_buffer) string_builders.release( buffer )
 
       return count
 
 
-    method parse_specializer( buffer=string_buffer:StringBuilder, tokens=null:Token[] )
+    method parse_specializer( buffer=null:StringBuilder, tokens=null:Token[] )
+      local should_release_buffer = (buffer is null)
+      if (buffer is null) buffer = string_builders.acquire
+
+      local start_position = reader.position
+      try
+        local type_name = parse_type_name
+        buffer.print( type_name )
+        if (tokens)
+          local end_position = reader.position
+          reader.position = start_position
+          while (reader.position < end_position) tokens.add( reader.read )
+        endIf
+        if (should_release_buffer) string_builders.release( buffer )
+        return
+      catch (not_a_type_name:RogueError)
+        reader.position = start_position
+      endTry
+
+
       while (reader.has_another)
         local t = peek
 
@@ -2980,6 +3011,7 @@ class Parser
           parse_specializer_list( buffer, tokens )
 
         elseIf (t.type is TokenType.symbol_comma or next_is(TokenType.symbol_close_specialize))
+          if (should_release_buffer) string_builders.release( buffer )
           return
 
         else
@@ -2994,6 +3026,8 @@ class Parser
 
         endIf
       endWhile
+
+      if (should_release_buffer) string_builders.release( buffer )
 
     method parse_term->Cmd
       local t = peek
@@ -3782,5 +3816,23 @@ class UsedModule( name:String, previous:UsedModule )
 
     method to->String
       return name
+endClass
+
+class StringBuilderPool
+  PROPERTIES
+    available = StringBuilder[]
+
+  METHODS
+    method acquire->StringBuilder
+      if (available.is_empty) return StringBuilder()
+      return available.remove_last
+
+    method release( builder:StringBuilder )
+      available.add( builder.clear )
+
+    method release_with_result( builder:StringBuilder )->String
+      local result = builder->String
+      release( builder )
+      return result
 endClass
 
