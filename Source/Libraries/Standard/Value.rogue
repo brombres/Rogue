@@ -135,6 +135,18 @@ class Value
       # will be returned but it won't be stored in a table.
       return @{}
 
+    method filtered( filter:Function(Value)->Value )->Value
+      # Rebuilds this Value, passing this Value and each contained Value through
+      # the given filter function.
+      #
+      # Example:
+      #   # Print out all strings in a Value hierarchy
+      #   local fn = function( value:Value )->Value
+      #     if (value.is_string) println value
+      #     return value
+      #   endFunction
+      return filter( this )
+
     method first->Value
       return this[ 0 ]
 
@@ -1046,6 +1058,13 @@ class ValueList : Value
 
     method init( data )
 
+    method cloned->ValueList
+      local result = ValueList( count )
+      forEach (value in this)
+        if (value) result.add( value.cloned )
+      endForEach
+      return result
+
     method decode_indexed( id_table:ValueIDLookupTable )->Value
       local result = ValueList( Value[](count) )
       result.add( (forEach in data).decode_indexed(id_table) )
@@ -1056,12 +1075,11 @@ class ValueList : Value
       result.add( (forEach in data).encode_indexed(id_table_builder) )
       return result
 
-    method cloned->ValueList
-      local result = ValueList( count )
-      forEach (value in this)
-        if (value) result.add( value.cloned )
+    method filtered( filter:Function(Value)->Value )->Value
+      forEach (i of data)
+        data[i] = data[i].filtered( filter )
       endForEach
-      return result
+      return filter( this )
 
     method add( value:Value )->this
       data.add( value )
@@ -1353,6 +1371,14 @@ class ValueTable : Value
       table = @{}
       this[ key ] = table
       return table
+
+    method filtered( filter:Function(Value)->Value )->Value
+      local cur = data.first_entry
+      while (cur)
+        cur.value = cur.value.filtered( filter )
+        cur = cur.next_entry
+      endWhile
+      return filter( this )
 
     method first( query:(Function(Value)->Logical) )->Value
       forEach (key in keys)
