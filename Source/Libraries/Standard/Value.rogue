@@ -85,6 +85,21 @@ class Value
     method cloned->Value
       return this
 
+    method apply( fn:Function(Value)->Value )->Value
+      # Applies the given function to this value and all contained values,
+      # rebuilding the value node hierarchy as it goes.
+      #
+      # Example:
+      #   # Print out all strings in a Value hierarchy
+      #   local fn = function( value:Value )->Value
+      #     if (value.is_string) println value
+      #     return value
+      #   endFunction
+      #   some_value.apply( fn )
+      local result = fn( this )
+      if (result is null) return NullValue
+      else                return result
+
     method contains( table_key_or_list_value:String )->Logical
       return false
 
@@ -134,18 +149,6 @@ class Value
       # When called on any other type of Value, a new ValueTable
       # will be returned but it won't be stored in a table.
       return @{}
-
-    method filtered( filter:Function(Value)->Value )->Value
-      # Rebuilds this Value, passing this Value and each contained Value through
-      # the given filter function.
-      #
-      # Example:
-      #   # Print out all strings in a Value hierarchy
-      #   local fn = function( value:Value )->Value
-      #     if (value.is_string) println value
-      #     return value
-      #   endFunction
-      return filter( this )
 
     method first->Value
       return this[ 0 ]
@@ -1065,6 +1068,15 @@ class ValueList : Value
       endForEach
       return result
 
+    method apply( fn:Function(Value)->Value )->Value
+      forEach (i of data)
+        data[i] = data[i].apply( fn )
+      endForEach
+
+      local result = fn( this )
+      if (result is null) return NullValue
+      else                return result
+
     method decode_indexed( id_table:ValueIDLookupTable )->Value
       local result = ValueList( Value[](count) )
       result.add( (forEach in data).decode_indexed(id_table) )
@@ -1074,12 +1086,6 @@ class ValueList : Value
       local result = ValueList( Value[](count) )
       result.add( (forEach in data).encode_indexed(id_table_builder) )
       return result
-
-    method filtered( filter:Function(Value)->Value )->Value
-      forEach (i of data)
-        data[i] = data[i].filtered( filter )
-      endForEach
-      return filter( this )
 
     method add( value:Value )->this
       data.add( value )
@@ -1296,10 +1302,6 @@ class ValueTable : Value
 
     method init( data )
 
-    method clear->this
-      data.clear
-      return this
-
     method cloned->ValueTable
       local result_data = data.cloned
 
@@ -1310,6 +1312,21 @@ class ValueTable : Value
       endWhile
 
       return ValueTable( result_data )
+
+    method apply( fn:Function(Value)->Value )->Value
+      local cur = data.first_entry
+      while (cur)
+        cur.value = cur.value.apply( fn )
+        cur = cur.next_entry
+      endWhile
+
+      local result = fn( this )
+      if (result is null) return NullValue
+      else                return result
+
+    method clear->this
+      data.clear
+      return this
 
     method contains( key:String )->Logical
       return data.contains( key )
@@ -1371,14 +1388,6 @@ class ValueTable : Value
       table = @{}
       this[ key ] = table
       return table
-
-    method filtered( filter:Function(Value)->Value )->Value
-      local cur = data.first_entry
-      while (cur)
-        cur.value = cur.value.filtered( filter )
-        cur = cur.next_entry
-      endWhile
-      return filter( this )
 
     method first( query:(Function(Value)->Logical) )->Value
       forEach (key in keys)
