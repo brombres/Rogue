@@ -1830,23 +1830,30 @@ class Parser
       # Transform
       #   use v = expr
       #      ...
+      #      return x
       #   endUse
       # ->
       #   block
       #     local err : Exception
       #     local v = expr.on_use
+      #     local result : typeOf(x)
       #     try
       #       ...
+      #       result = x
+      #       escapeTry
       #     catch (e:Exception)
       #       err = e
       #     endTry
       #     err = v.on_end_use( err )
       #     if (err) throw err
+      #     return result
       #   endBlock
       local t = read  # 'use'
       local expr = parse_expression
       local access = expr as CmdAccess
       local v_name : String
+      local has_return_name = Program.create_unique_id
+      local result_name : String
       if (consume(TokenType.symbol_equals))
         if (access is null or access.context or access.args)
           throw expr.t.error( "Variable name expected." )
@@ -1864,6 +1871,14 @@ class Parser
       parse_multi_line_statements( cmd_try.statements )
 
       local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
+      local has_return_v = Local( t, has_return_name, Program.type_Logical )
+      local result_v : Local
+      if (this_method.return_type)
+        result_name = Program.create_unique_id
+        result_v = Local( t, result_name, this_method.return_type )
+      endIf
+
+      cmd_try.statements.dispatch( ConvertReturnToEscapeVisitor(this_method,result_name,has_return_name,cmd_try) )
 
       local cmd_catch = cmd_try.add_catch( t )
       cmd_catch.error_var = Local( t, Program.create_unique_id, Program.type_Exception )
@@ -1871,6 +1886,8 @@ class Parser
 
       local cmd_block = CmdBlock( t )
       cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
+      cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
+      if (result_v) cmd_block.statements.add( CmdLocalDeclaration(t,result_v) )
       local v = Local( t, v_name, null, CmdAccess(expr.t,expr,"on_use") )
       cmd_block.statements.add( CmdLocalDeclaration(t,v) )
       cmd_block.statements.add( cmd_try )
@@ -1879,7 +1896,14 @@ class Parser
 
       local cmd_if = CmdIf( t, CmdLogicalize(t,CmdAccess(t,err_v)) )
       cmd_if.statements.add( CmdThrow(t,CmdAccess(t,err_v)) )
+      cmd_block.statements.add( cmd_if )
 
+      cmd_if = CmdIf( t, CmdAccess(t,has_return_v) )
+      if (this_method.return_type)
+        cmd_if.statements.add( CmdReturn(t,CmdAccess(t,result_name)) )
+      else
+        cmd_if.statements.add( CmdReturn(t) )
+      endIf
       cmd_block.statements.add( cmd_if )
 
       consume_eols
