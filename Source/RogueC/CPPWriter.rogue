@@ -2796,9 +2796,8 @@ endAugment
 augment CmdThrow
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "ROGUE_THROW(" ).print( expression.type.cpp_class_name ).print( "," )
+      writer.print( "throw " )
       expression.write_cpp( writer )
-      writer.print( ")" )
 endAugment
 
 augment CmdEscape

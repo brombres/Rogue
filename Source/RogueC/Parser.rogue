@@ -1835,10 +1835,13 @@ class Parser
       # ->
       #   block
       #     local err : Exception
-      #     local v = expr.on_use
+      #     local usage = expr
+      #     local v = usage.on_use
       #     local result : typeOf(x)
+      #     local has_return = false
       #     try
       #       ...
+      #       has_return = true
       #       result = x
       #       escapeTry
       #     catch (e:Exception)
@@ -1846,13 +1849,14 @@ class Parser
       #     endTry
       #     err = v.on_end_use( err )
       #     if (err) throw err
-      #     return result
+      #     if (has_return) return result
       #   endBlock
       local t = read  # 'use'
       local expr = parse_expression
       local access = expr as CmdAccess
       local v_name : String
       local has_return_name = Program.create_unique_id
+      local usage_name = Program.create_unique_id
       local result_name : String
       if (consume(TokenType.symbol_equals))
         if (access is null or access.context or access.args)
@@ -1872,6 +1876,7 @@ class Parser
 
       local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
       local has_return_v = Local( t, has_return_name, Program.type_Logical )
+      local usage_v = Local( t, usage_name, null, expr )
       local result_v : Local
       if (this_method.return_type)
         result_name = Program.create_unique_id
@@ -1887,12 +1892,14 @@ class Parser
       local cmd_block = CmdBlock( t )
       cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
       cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
+      cmd_block.statements.add( CmdLocalDeclaration(t,usage_v) )
       if (result_v) cmd_block.statements.add( CmdLocalDeclaration(t,result_v) )
-      local v = Local( t, v_name, null, CmdAccess(expr.t,expr,"on_use") )
+      local v = Local( t, v_name, null, CmdAccess(expr.t,usage_name,"on_use") )
       cmd_block.statements.add( CmdLocalDeclaration(t,v) )
+      cmd_block.statements.add( CmdInlineNative(t,"Rogue_ignore_unused($$);"('$',v_name)) )
       cmd_block.statements.add( cmd_try )
 
-      cmd_block.statements.add( CmdAssign(t,err_v,CmdAccess(t,CmdAccess(t,v),"on_end_use",CmdAccess(t,err_v))) )
+      cmd_block.statements.add( CmdOnEndUse(t,usage_v,v,err_v) )
 
       local cmd_if = CmdIf( t, CmdLogicalize(t,CmdAccess(t,err_v)) )
       cmd_if.statements.add( CmdThrow(t,CmdAccess(t,err_v)) )

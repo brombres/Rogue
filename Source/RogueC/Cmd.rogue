@@ -1286,23 +1286,31 @@ endClass
 
 class CmdThrow : Cmd
   PROPERTIES
-    expression : Cmd
+    expression  : Cmd
+    is_resolved : Logical
 
   METHODS
-    method init( t, expression )
+    method init( t, expression, &is_resolved )
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdThrow
       if (new_t) t = new_t
-      return CmdThrow( t, expression.cloned( clone_args, new_t ) )
+      return CmdThrow( t, expression.cloned( clone_args, new_t ), is_resolved )
 
     method resolve( scope:Scope )->Cmd
-      expression = expression.resolve( scope )
-      local expression_type = expression.require_type
-      expression_type.organize(scope)
-      if (not expression_type.instance_of(Program.type_Exception))
-        throw expression.t.error( "Thrown value must be instanceOf class Error." )
+      if (not is_resolved)
+        is_resolved = true
+        expression = expression.resolve( scope )
+        local expression_type = expression.require_type
+        expression_type.organize(scope)
+        if (not expression_type.instance_of(Program.type_Exception))
+          throw expression.t.error( "Thrown value must be instanceOf class Error." )
+        endIf
+        expression = CmdAccess( t, expression, "_throw" ).resolve( scope )
       endIf
       return this
+
+    method type->Type
+      return expression.type
 
 endClass
 
@@ -6116,3 +6124,49 @@ class CmdSourceComment( t, comment:String ) : Cmd
     method to->String
       return "CmdSourceComment:$" (comment)
 endClass
+
+class CmdOnEndUse : Cmd
+  PROPERTIES
+    usage_v     : Local
+    resource_v  : Local
+    exception_v : Local
+
+  METHODS
+    method init( t, usage_v, resource_v, exception_v )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdOnEndUse
+      if (new_t) t = new_t
+      return CmdOnEndUse( t, usage_v, resource_v, exception_v )
+
+    method resolve( scope:Scope )->Cmd
+      local candidates = usage_v.type.method_lookup_by_name[ "on_end_use" ]
+      if (candidates.count == 0) throw t.error( "'use' context object does not define on_end_use()." )
+      if (candidates.count >  1) throw t.error( "'use' context object can only have one method named on_end_use()." )
+      local m = candidates.first
+      m.resolve
+      local args = CmdArgs()
+      which (m.parameters.count)
+        case 1
+          if (m.parameters.first.type.instance_of(Program.type_Exception))
+            args.add( CmdAccess(t,exception_v) )
+          else
+            args.add( CmdAccess(t,resource_v) )
+          endIf
+        case 2
+          if (m.parameters.first.type.instance_of(Program.type_Exception))
+            args.add( CmdAccess(t,exception_v) )
+            args.add( CmdAccess(t,resource_v) )
+          else
+            args.add( CmdAccess(t,resource_v) )
+            args.add( CmdAccess(t,exception_v) )
+          endIf
+      endWhich
+      local cmd_call = CmdAccess( t, CmdAccess(t,usage_v), "on_end_use", args )
+
+      if (m.return_type)
+        return CmdAssign( t, CmdAccess(t,exception_v), cmd_call ).resolve( scope )
+      else
+        return cmd_call.resolve( scope )
+      endIf
+endClass
+

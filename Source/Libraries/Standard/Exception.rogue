@@ -30,6 +30,13 @@ class Exception [essential]
       st = st.trimmed
       if (st.count) st = "\n" + st
       return select{ this:this->String || "Unknown" } + st
+
+    method _throw->this [propagated]
+      # In C++, 'catch' operates on the type of the thrown _reference_, not
+      # the type of the thrown _object_. This dispatcher method works around
+      # that.
+      native( "throw $this;" )
+
 endClass
 
 class Error : Exception;
