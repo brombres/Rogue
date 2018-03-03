@@ -45,9 +45,9 @@ class TokenType
     keyword_endForEach            : TokenType
     keyword_endFunction           : TokenType
     keyword_endIf                 : TokenType
-    keyword_endInstance           : TokenType
     keyword_endLoop               : TokenType
     keyword_endRoutine            : TokenType
+    keyword_endSubclass           : TokenType
     keyword_endTry                : TokenType
     keyword_endUnitTest           : TokenType
     keyword_endUse                : TokenType
@@ -59,7 +59,6 @@ class TokenType
     keyword_includeNativeCode     : TokenType
     keyword_includeNativeHeader   : TokenType
     keyword_includeSource         : TokenType
-    keyword_instance              : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType
     keyword_nativeCode            : TokenType
@@ -68,6 +67,7 @@ class TokenType
     keyword_PROPERTIES            : TokenType
     keyword_routine               : TokenType
     keyword_satisfied             : TokenType
+    keyword_subclass              : TokenType
     keyword_unsatisfied           : TokenType
     keyword_with                  : TokenType
 
