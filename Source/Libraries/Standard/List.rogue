@@ -148,7 +148,7 @@ class List<<$DataType>> : GenericList
       this.keeping( keep_if )
 
     method get( index:Int32 )->$DataType [macro]
-      this.data[index]
+      this.data[ index ]
 
     method get( query:(Function($DataType)->Logical) )->$DataType[]
       local results = $DataType[]
@@ -158,6 +158,16 @@ class List<<$DataType>> : GenericList
       endForEach
 
       return results
+
+    method get_x( index:Int32 )->$DataType
+      # Expands this list to include 'index', if necessary, and then returns
+      # the value at 'index'.
+      if (native("(((unsigned int)$index) < (unsigned int)$count)")->Logical)
+        return this.data[index]
+      else
+        if (index < 0) throw OutOfBoundsError( index, count )
+        return expand_to_count( index+1 )[ index ]
+      endIf
 
     method heapsort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
       Heapsort<<$DataType>>.sort( this, compare_fn )
@@ -375,6 +385,8 @@ class List<<$DataType>> : GenericList
       return result
 
     method remove_at( index:Int32 )->$DataType
+      if (native("(((unsigned int)$index) >= (unsigned int)$count)")->Logical) throw OutOfBoundsError( index, count )
+
       local result = this[ index ]
       data.set( index, data, index+1 )
       local zero_value : $DataType
@@ -440,6 +452,18 @@ class List<<$DataType>> : GenericList
     method set_last( new_value:$DataType )->this
       data[ count - 1 ] = new_value
       return this
+
+    method set_x( index:Int32, new_value:$DataType )->this
+      # Expands this list to include 'index', if necessary, and then sets
+      # the value at 'index' to be 'new_value'.
+      if (native("(((unsigned int)$index) < (unsigned int)$count)")->Logical)
+        this.data[index] = new_value
+        return this
+      else
+        if (index < 0) throw OutOfBoundsError( index, count )
+        expand_to_count( index+1 )[ index ] = new_value
+        return this
+      endIf
 
     method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this
       if (delta == 0) return this

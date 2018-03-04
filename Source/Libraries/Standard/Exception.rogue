@@ -66,8 +66,14 @@ endClass
 
 class OutOfBoundsError : Error
   METHODS
+    method init( message )
+
     method init( index:Int32, limit:Int32 )
-      init( "Index $ is out of bounds ($..$)." (index,0,limit-1) )
+      which (limit)
+        case 0: init( "Index $ is out of bounds (data has zero elements)." (index) )
+        case 1: init( "Index $ is out of bounds (data has one element at index 0)." (index) )
+        others: init( "Index $ is out of bounds (data has $ indices $..$)." (index,"# element".pluralized(limit),0,limit-1) )
+      endWhich
 endClass
 
 class IOError : Error;
