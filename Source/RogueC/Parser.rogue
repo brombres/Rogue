@@ -2936,7 +2936,7 @@ class Parser
       return expr
 
     method parse_specialization_string->String
-      use buffer = StringBuilderPool
+      use buffer = StringBuilder.pool
         parse_specializer_list( buffer )
         return buffer->String
       endUse
@@ -2944,7 +2944,7 @@ class Parser
     method parse_specialization_type( index:Int32 )->Type
       read   # '<<'
 
-      use string_buffer = StringBuilderPool
+      use string_buffer = StringBuilder.pool
         local i = index
         local first = true
         while (first or consume(TokenType.symbol_comma))
@@ -2963,7 +2963,7 @@ class Parser
       throw peek.error( "[INTERNAL] Invalid specializer index: $." (index) )
 
     method parse_specialization_info->ValueTable
-      use string_buffer = StringBuilderPool
+      use string_buffer = StringBuilder.pool
         local count = parse_specializer_list( string_buffer )
         return @{string:string_buffer->String,count:count}
       endUse
@@ -2972,7 +2972,7 @@ class Parser
       local num_specializers = 0
       read   # '<<'
 
-      use string_buffer = StringBuilderPool
+      use string_buffer = StringBuilder.pool
         local first = true
         while (first or consume(TokenType.symbol_comma))
           if (first) first = false
@@ -2988,7 +2988,7 @@ class Parser
     method parse_specializer_list( buffer=null:StringBuilder, tokens=null:Token[] )->Int32
       # We know the next token is '<<'.
       # Returns: The count of how many specializers were parsed.
-      use pool_buffer = StringBuilderPool
+      use pool_buffer = StringBuilder.pool
         if (buffer is null) buffer = pool_buffer
 
         local count = 0
@@ -3019,8 +3019,8 @@ class Parser
 
 
     method parse_specializer( buffer=null:StringBuilder, tokens=null:Token[] )
-      if (buffer is null) buffer = StringBuilderPool.on_use
-      use pool_buffer = StringBuilderPool
+      if (buffer is null) buffer = StringBuilder.pool.on_use
+      use pool_buffer = StringBuilder.pool
         if (buffer is null) buffer = pool_buffer
 
         local start_position = reader.position
@@ -3861,18 +3861,5 @@ class UsedModule( name:String, previous:UsedModule )
 
     method to->String
       return name
-endClass
-
-class StringBuilderPool [singleton]
-  PROPERTIES
-    available = StringBuilder[]
-
-  METHODS
-    method on_use->StringBuilder
-      if (available.is_empty) return StringBuilder()
-      return available.remove_last
-
-    method on_end_use( builder:StringBuilder )
-      available.add( builder.clear )
 endClass
 

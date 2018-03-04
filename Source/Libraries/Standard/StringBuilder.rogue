@@ -6,6 +6,12 @@ class StringBuilder [essential]
       work_bytes = Byte[]
     $endIf
 
+    pool = StringBuilderPool
+    # To acquire a unique StringBuilder for a given scope:
+    #   use builder=StringBuilder.pool
+    #     ...
+    #   endUse
+
   PROPERTIES
     utf8          : Byte[]
     count         : Int32  # character count
@@ -414,5 +420,18 @@ class StringBuilder [essential]
       utf8.add( byte )
       if ((byte & 0xC0) != 0x80) ++count
       return this
+endClass
+
+class StringBuilderPool [singleton]
+  PROPERTIES
+    available = StringBuilder[]
+
+  METHODS
+    method on_use->StringBuilder
+      if (available.is_empty) return StringBuilder()
+      return available.remove_last
+
+    method on_end_use( builder:StringBuilder )
+      available.add( builder.clear )
 endClass
 
