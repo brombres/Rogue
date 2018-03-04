@@ -233,6 +233,7 @@ class Preprocessor
                 reader.read
               endIf
             else
+              consume( TokenType.symbol_colon_colon )
               if (keep_tokens) cur_module = null; cur_module_prefix = null
             endIf
 

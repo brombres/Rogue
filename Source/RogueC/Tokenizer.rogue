@@ -245,6 +245,7 @@ class Tokenizer
       TokenType.symbol_caret                 = define( TokenType("^") )
       TokenType.symbol_caret_equals          = define( ModifyAndAssignTokenType("^=") )
       TokenType.symbol_colon                 = define( TokenType(":") )
+      TokenType.symbol_colon_colon           = define( TokenType("::") )
       TokenType.symbol_compare               = define( TokenType("<>") )
       TokenType.symbol_dollar                = define( TokenType("$") )
       TokenType.symbol_dot                   = define( TokenType(".") )
@@ -429,8 +430,12 @@ class Tokenizer
 
       elseIf (ch == ':')
         if (consume(':'))
-          add_new_token( TokenType.identifier, "::" + read_identifier )
-          return null
+          if (reader.peek.is_letter or reader.peek == '_')
+            add_new_token( TokenType.identifier, "::" + read_identifier )
+            return null
+          else
+            return TokenType.symbol_colon_colon
+          endIf
         endIf
 
         if (consume("<<:"))  return TokenType.symbol_shift_left

@@ -123,6 +123,8 @@ class Parser
           id_map.clear
           if (next_is_identifier)
             id_map.use_module( read_identifier )
+          else
+            consume( TokenType.symbol_colon_colon )
           endIf
 
           if (consume(TokenType.symbol_open_bracket))
@@ -218,8 +220,12 @@ class Parser
 
       elseIf (t.type is TokenType.directive_module)
         read  # 'module'
-        if (next_is_identifier) used_modules = UsedModule( read_identifier, null )
-        else                    used_modules = null
+        if (next_is_identifier)
+          used_modules = UsedModule( read_identifier, null )
+        else
+          consume( TokenType.symbol_colon_colon )
+          used_modules = null
+        endIf
 
         is_api_module = false
         if (consume(TokenType.symbol_open_bracket))

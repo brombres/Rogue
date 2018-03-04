@@ -170,6 +170,7 @@ class TokenType
     symbol_caret                  : TokenType
     symbol_caret_equals           : TokenType
     symbol_colon                  : TokenType
+    symbol_colon_colon            : TokenType
     symbol_comma                  : TokenType
     symbol_compare                : TokenType
     symbol_dollar                 : TokenType
