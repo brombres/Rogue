@@ -96,10 +96,7 @@ class File
               |  char long_name[PATH_MAX+4];
               |  char full_name[PATH_MAX+4];
               |
-              |  if (GetInt64PathName((char*)$filepath->utf8, long_name, PATH_MAX+4) == 0)
-              |  {
-              |    strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->utf8 );
-              |  }
+              |  strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->utf8 );
               |
               |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
               |  {
