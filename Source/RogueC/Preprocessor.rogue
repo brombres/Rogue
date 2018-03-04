@@ -132,7 +132,7 @@ class Preprocessor
           elseIf (t.type is TokenType.directive_defined)
             local defined_word = t->String
             if (keep_tokens)
-              if (definitions.contains(defined_word))
+              if (get_definition(defined_word) is not null)
                 tokens.add( Token(TokenType.keyword_true).set_location(t) )
               else
                 tokens.add( Token(TokenType.keyword_false).set_location(t) )
@@ -407,6 +407,15 @@ class Preprocessor
       if (consume(TokenType.symbol_lt)) return parse_logical_compare( parse_logical_term >  lhs )
       return logicalize(lhs)
 
+    method get_definition( name: String )->Token[]
+      forEach (local_def in reader.local_definitions step -1)
+        local entry = local_def.find( name )
+        if (entry) return entry.value
+      endForEach
+      local entry = definitions.find( name )
+      if (entry) return entry.value
+      return null
+
     method parse_logical_term->Value
       loop
         local t = reader.peek
@@ -434,7 +443,7 @@ class Preprocessor
           must_consume(TokenType.symbol_open_paren)
           local def = reader.peek
           must_consume(TokenType.identifier)
-          local result = definitions.contains(def->String)
+          local result = get_definition(def->String) is not null
           must_consume(TokenType.symbol_close_paren)
           return result
         endIf
@@ -459,8 +468,9 @@ class Preprocessor
 
           local name = t->String
           local v = false : Value
-          local has_value = definitions.contains(name)
-          if (has_value) v = valueize(definitions[name])
+          local def = get_definition(name)
+          local has_value = def is not null
+          if (has_value) v = valueize(def)
           if (v is null) throw reader.peek.error( "Definition '$' does not have a legal value for preprocessor expressions." (name) )
 
           if (reader.peek->String == "?")
