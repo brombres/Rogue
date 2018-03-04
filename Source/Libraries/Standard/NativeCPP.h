@@ -35,7 +35,10 @@
 #endif
 
 #if defined(ROGUE_PLATFORM_WINDOWS)
+#  define NOGDI
+#  pragma warning(disable: 4297) /* unexpected throw warnings */
 #  include <windows.h>
+#  include <signal.h>
 #else
 #  include <cstdint>
 #endif
@@ -637,6 +640,8 @@ RogueString*   RogueString_validate( RogueString* THIS );
 #define ROGUE_EMPTY_ARRAY
 #elif defined(__GNUC__) || defined(__GNUG__)
 #define ROGUE_EMPTY_ARRAY 0
+#elif defined(ROGUE_PLATFORM_WINDOWS)
+#define ROGUE_EMPTY_ARRAY /* Okay for MSVC++ */
 #endif
 struct RogueArray : RogueObject
 {
