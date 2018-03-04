@@ -297,6 +297,32 @@ class File
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath) > File.timestamp(other_filepath))
 
+    method join( parts:String[] )->String
+      local buffer = StringBuilder()
+      local first = true
+      forEach part in parts
+        if (not part) nextIteration
+        if (not first) buffer.print(separator, &!formatted)
+        first = false
+        buffer.print(part)
+      endForEach
+      return buffer
+
+    method join( part1:String, part2:String )->String
+      return join(String[][part1, part2])
+
+    method join( part1:String, part2:String, part3:String )->String
+      return join(String[][part1, part2, part3])
+
+    method join( part1:String, part2:String, part3:String, part4:String )->String
+      return join(String[][part1, part2, part3, part4])
+
+    method join( part1:String, part2:String, part3:String, part4:String, part5:String )->String
+      return join(String[][part1, part2, part3, part4, part5])
+
+    method join( part1:String, part2:String, part3:String, part4:String, part5:String, part6:String )->String
+      return join(String[][part1, part2, part3, part4, part5, part6])
+
     method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
       local options = FileOptions()
       if (ignore_hidden) options = options.ignore_hidden
