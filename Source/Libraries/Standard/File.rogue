@@ -219,7 +219,11 @@ class File
       if (not create_folder(parent)) return false
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
-      native @|return (0 == mkdir((char*)$filepath->utf8, 0777));
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  return (0 == mkdir((char*)$filepath->utf8));
+              |#else
+              |  return (0 == mkdir((char*)$filepath->utf8, 0777));
+              |#endif
 
     method delete( filepath:String )->Logical
       if (not filepath) return false
