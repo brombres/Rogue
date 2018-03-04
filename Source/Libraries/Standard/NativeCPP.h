@@ -408,6 +408,15 @@ public:
 //-----------------------------------------------------------------------------
 //  Basics (Primitive types, macros, etc.)
 //-----------------------------------------------------------------------------
+#include <limits>
+#define ROGUE_R32_INFINITY       std::numeric_limits<RogueReal32>::infinity()
+#define ROGUE_R32_NEG_INFINITY (-std::numeric_limits<RogueReal32>::infinity())
+#define ROGUE_R32_NAN            std::numeric_limits<RogueReal32>::quiet_NaN()
+
+#define ROGUE_R64_INFINITY       std::numeric_limits<RogueReal64>::infinity()
+#define ROGUE_R64_NEG_INFINITY (-std::numeric_limits<RogueReal64>::infinity())
+#define ROGUE_R64_NAN            std::numeric_limits<RogueReal64>::quiet_NaN()
+
 #if defined(ROGUE_PLATFORM_WINDOWS)
   typedef double           RogueReal64;
   typedef float            RogueReal32;

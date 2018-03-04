@@ -1599,6 +1599,13 @@ class CmdLiteralReal64 : CmdLiteralNumber
   PROPERTIES
     value : Real64
 
+  GLOBAL METHODS
+    method create_infinity( t:Token )->this
+      return CmdLiteralReal64(t, native("ROGUE_R64_INFINITY")->Real64)
+
+    method create_NaN( t:Token )->this
+      return CmdLiteralReal64(t, native("ROGUE_R64_NAN")->Real64)
+
   METHODS
     method init( t, value )
 
