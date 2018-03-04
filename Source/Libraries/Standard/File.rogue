@@ -288,16 +288,7 @@ class File
     method join( part1:String, part2:String )->String
       return join(String[][part1, part2])
 
-    method join( part1:String, part2:String, part3:String )->String
-      return join(String[][part1, part2, part3])
-
-    method join( part1:String, part2:String, part3:String, part4:String )->String
-      return join(String[][part1, part2, part3, part4])
-
-    method join( part1:String, part2:String, part3:String, part4:String, part5:String )->String
-      return join(String[][part1, part2, part3, part4, part5])
-
-    method join( part1:String, part2:String, part3:String, part4:String, part5:String, part6:String )->String
+    method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
       return join(String[][part1, part2, part3, part4, part5, part6])
 
     method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
