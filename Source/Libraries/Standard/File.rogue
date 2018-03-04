@@ -258,32 +258,9 @@ class File
       native @|if ( !$filepath ) return false;
               |
               |#if defined(_WIN32)
-              |  char filepath_copy[PATH_MAX];
-              |  strcpy( filepath_copy, (char*)$filepath->utf8 );
-              |
-              |  int path_len = $filepath->byte_count;
-              |  int i = strlen(filepath_copy)-1;
-              |  while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
-              |
-              |  // Windows allows dir\* to count as a directory; guard against.
-              |  for (i=0; filepath_copy[i]; ++i)
-              |  {
-              |    if (filepath_copy[i] == '*' || filepath_copy[i] == '?') return 0;
-              |  }
-              |
-              |  WIN32_FIND_DATA entry;
-              |  HANDLE dir = FindFirstFile( filepath_copy, &entry );
-              |  if (dir != INVALID_HANDLE_VALUE)
-              |  {
-              |    if (entry.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-              |    {
-              |      FindClose( dir );
-              |      return 1;
-              |    }
-              |  }
-              |  FindClose( dir );
-              |  return 0;
-              |
+              |  struct stat s;
+              |  if (stat((char*)$filepath->utf8, &s) != 0) return false;
+              |  return (s.st_mode & S_IFMT) == S_IFDIR;
               |#else
               |  DIR* dir = opendir( (char*)$filepath->utf8 );
               |  if ( !dir ) return 0;
@@ -296,6 +273,32 @@ class File
       if (not File.exists(filepath))       return false
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath) > File.timestamp(other_filepath))
+
+    method join( parts:String[] )->String
+      local buffer = StringBuilder()
+      local first = true
+      forEach part in parts
+        if (not part) nextIteration
+        if (not first) buffer.print(separator, &!formatted)
+        first = false
+        buffer.print(part)
+      endForEach
+      return buffer
+
+    method join( part1:String, part2:String )->String
+      return join(String[][part1, part2])
+
+    method join( part1:String, part2:String, part3:String )->String
+      return join(String[][part1, part2, part3])
+
+    method join( part1:String, part2:String, part3:String, part4:String )->String
+      return join(String[][part1, part2, part3, part4])
+
+    method join( part1:String, part2:String, part3:String, part4:String, part5:String )->String
+      return join(String[][part1, part2, part3, part4, part5])
+
+    method join( part1:String, part2:String, part3:String, part4:String, part5:String, part6:String )->String
+      return join(String[][part1, part2, part3, part4, part5, part6])
 
     method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
       local options = FileOptions()

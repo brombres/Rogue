@@ -1980,11 +1980,21 @@ $endIf
         else
           exe = exe.to_lowercase
         endIf
+$if not target("WINDOWS")
         local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
         println
         if (System.run(cmd)) System.exit( 1 )
+$else # Windows
+        local cmd = "$ $.cpp /Fe$.exe" (compiler_name,output_filepath,exe)
+        println cmd
+        if (System.run(cmd)) System.exit( 1 )
+        if (execute_args) cmd = ".\\$ $" (exe,execute_args)
+        println cmd
+        println
+        if (System.run(cmd)) System.exit( 1 )
+$endIf
       endIf
 
 endAugment
