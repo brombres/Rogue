@@ -1692,6 +1692,11 @@ void Rogue_print_stack_trace ( bool leading_newline )
   printf("\n");
 }
 
+#if defined(ROGUE_PLATFORM_WINDOWS)
+void Rogue_segfault_handler( int signal )
+{
+  printf( "Access violation\n" );
+#else
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
   if (si->si_addr < (void*)4096)
@@ -1710,6 +1715,7 @@ void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
       printf( "Unknown segfault accessing " );
     printf("%p\n", si->si_addr);
   }
+#endif
 
   Rogue_print_stack_trace( true );
 
@@ -1741,6 +1747,10 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
   int i;
   const int* next_type_info = Rogue_type_info_table;
 
+#if defined(ROGUE_PLATFORM_WINDOWS)
+  // Use plain old signal() instead of sigaction()
+  signal( SIGSEGV, Rogue_segfault_handler );
+#else
   // Install seg fault handler
   struct sigaction sa;
 
@@ -1750,6 +1760,7 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
   sa.sa_flags     = SA_SIGINFO;
 
   sigaction( SIGSEGV, &sa, NULL );
+#endif
 
   // Initialize allocators
   memset( Rogue_allocators, 0, sizeof(RogueAllocator)*Rogue_allocator_count );

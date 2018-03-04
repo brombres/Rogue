@@ -1,3 +1,6 @@
+$if target("WINDOWS")
+  $warning "Process is currently unimplemented on Windows."
+$else
 class Process
   # Loosely based on:
   # https://stackoverflow.com/questions/13893085/posix-spawnp-and-piping-child-output-to-a-string/27328610
@@ -237,6 +240,8 @@ class ProcessReader : Reader<<Byte>>
       return fd_reader.read
 
 endClass
+$endIf
+
 
 class ProcessOutput
   PROPERTIES

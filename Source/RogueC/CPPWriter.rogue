@@ -1949,6 +1949,7 @@ augment RogueC
           endIf
         endIf
 
+$if not target("WINDOWS")
         if (RogueC.pkg_config_pkgs.count)
           forEach (pkg in RogueC.pkg_config_pkgs)
             local result = Process.run("pkg-config --cflags --libs " + pkg)
@@ -1967,6 +1968,7 @@ augment RogueC
             endIf
           endForEach
         endIf
+$endIf
 
         if (RogueC.compiler_options.count)
           compiler_name += " " + " ".join(RogueC.compiler_options)
@@ -2846,11 +2848,11 @@ augment CmdLiteralReal64
         if (value - value == 0)
           writer.print( value )
         else
-          if (value > 0) writer.print( "(1.0/0.0)" )   #  infinity
-          else           writer.print( "(-1.0/0.0)" )  # -infinity
+          if (value > 0) writer.print( "ROGUE_R64_INFINITY" )   #  infinity
+          else           writer.print( "ROGUE_R64_NEG_INFINITY" )  # -infinity
         endIf
       else
-        writer.print( "(0.0/0.0)" )  # NaN
+        writer.print( "ROGUE_R64_NAN" )  # NaN
       endIf
 endAugment
 
@@ -2862,11 +2864,11 @@ augment CmdLiteralReal32
         if (value - value == 0)
           writer.print( value ).print( 'f' )
         else
-          if (value > 0) writer.print( "(1.0f/0.0f)" )   #  infinity
-          else           writer.print( "(-1.0f/0.0f)" )  # -infinity
+          if (value > 0) writer.print( "ROGUE_R32_INFINITY" )   #  infinity
+          else           writer.print( "ROGUE_R32_NEG_INFINITY" )  # -infinity
         endIf
       else
-        writer.print( "(0.0f/0.0f)" )  # NaN
+        writer.print( "ROGUE_R32_NAN" )  # NaN
       endIf
 endAugment
 

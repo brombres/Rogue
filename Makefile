@@ -45,7 +45,7 @@ exhaustive: roguec
 	rogo version
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC --api=* $(ROGUEC_ROGUE_FLAGS) --define=NO_LIBFFI --threads
 	mkdir -p Programs
-	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
+	$(CXX) -pthread $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
 roguec: bootstrap_roguec $(BINDIR)/roguec libraries rogo Source/RogueC/Version.rogue Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
 

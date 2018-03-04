@@ -96,10 +96,7 @@ class File
               |  char long_name[PATH_MAX+4];
               |  char full_name[PATH_MAX+4];
               |
-              |  if (GetInt64PathName((char*)$filepath->utf8, long_name, PATH_MAX+4) == 0)
-              |  {
-              |    strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->utf8 );
-              |  }
+              |  strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->utf8 );
               |
               |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
               |  {
@@ -219,7 +216,11 @@ class File
       if (not create_folder(parent)) return false
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
-      native @|return (0 == mkdir((char*)$filepath->utf8, 0777));
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  return (0 == mkdir((char*)$filepath->utf8));
+              |#else
+              |  return (0 == mkdir((char*)$filepath->utf8, 0777));
+              |#endif
 
     method delete( filepath:String )->Logical
       if (not filepath) return false
@@ -230,16 +231,13 @@ class File
 
     method ensure_ends_with_separator( filepath:String )->String
       if (ends_with_separator(filepath)) return filepath
-      return filepath + '/'
+      return filepath + separator
 
     method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
               |
-              |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
-              |if ( !fp ) return false;
-              |
-              |fclose( fp );
-              |return true;
+              |struct stat s;
+              |return (stat((char*)$filepath->utf8, &s) == 0);
 
     method extension( filepath:String )->String
       return filepath.after_last( '.' )
@@ -591,7 +589,11 @@ class File
       return not outfile.error
 
     method separator->Character
-      return '/'
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  return '\\';
+              |#else
+              |  return '/';
+              |#endif
 
     method size( filepath:String )->Int64
       native @|if ( !$filepath ) return 0;
@@ -688,7 +690,7 @@ class File
       File.ends_with_separator( this.filepath )
 
     method ensure_ends_with_separator->this
-      if (not ends_with_separator) filepath += '/'
+      if (not ends_with_separator) filepath += separator
       return this
 
     method delete->Logical [macro]
