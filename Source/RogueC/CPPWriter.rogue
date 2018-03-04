@@ -1949,6 +1949,7 @@ augment RogueC
           endIf
         endIf
 
+$if not target("WINDOWS")
         if (RogueC.pkg_config_pkgs.count)
           forEach (pkg in RogueC.pkg_config_pkgs)
             local result = Process.run("pkg-config --cflags --libs " + pkg)
@@ -1967,6 +1968,7 @@ augment RogueC
             endIf
           endForEach
         endIf
+$endIf
 
         if (RogueC.compiler_options.count)
           compiler_name += " " + " ".join(RogueC.compiler_options)
