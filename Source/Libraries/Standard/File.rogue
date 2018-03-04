@@ -258,32 +258,9 @@ class File
       native @|if ( !$filepath ) return false;
               |
               |#if defined(_WIN32)
-              |  char filepath_copy[PATH_MAX];
-              |  strcpy( filepath_copy, (char*)$filepath->utf8 );
-              |
-              |  int path_len = $filepath->byte_count;
-              |  int i = strlen(filepath_copy)-1;
-              |  while (i > 0 && (filepath_copy[i] == '/' || filepath_copy[i] == '\\')) filepath_copy[i--] = 0;
-              |
-              |  // Windows allows dir\* to count as a directory; guard against.
-              |  for (i=0; filepath_copy[i]; ++i)
-              |  {
-              |    if (filepath_copy[i] == '*' || filepath_copy[i] == '?') return 0;
-              |  }
-              |
-              |  WIN32_FIND_DATA entry;
-              |  HANDLE dir = FindFirstFile( filepath_copy, &entry );
-              |  if (dir != INVALID_HANDLE_VALUE)
-              |  {
-              |    if (entry.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-              |    {
-              |      FindClose( dir );
-              |      return 1;
-              |    }
-              |  }
-              |  FindClose( dir );
-              |  return 0;
-              |
+              |  struct stat s;
+              |  if (stat((char*)$filepath->utf8, &s) != 0) return false;
+              |  return (s.st_mode & S_IFMT) == S_IFDIR;
               |#else
               |  DIR* dir = opendir( (char*)$filepath->utf8 );
               |  if ( !dir ) return 0;
