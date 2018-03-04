@@ -236,11 +236,8 @@ class File
     method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
               |
-              |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
-              |if ( !fp ) return false;
-              |
-              |fclose( fp );
-              |return true;
+              |struct stat s;
+              |return (stat((char*)$filepath->utf8, &s) == 0);
 
     method extension( filepath:String )->String
       return filepath.after_last( '.' )
