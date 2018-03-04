@@ -286,7 +286,11 @@ class RogueC [singleton]
           System.exit( 1 )
         endIf
 
+$if defined(DEFAULT_TARGETS)
+        if (target_list.count == 0) target_list = DEFAULT_TARGETS
+$else
         if (target_list.count == 0) target_list.add( "C++" )
+$endIf
         <validate_target_list>
 
         forEach (target in target_list)
