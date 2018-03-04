@@ -179,20 +179,22 @@ endClass
 
 class ConvertReturnToEscapeVisitor : Visitor
   PROPERTIES
-    this_method     : Method
-    return_type     : Type
-    result_name     : String
-    has_return_name : String
-    surrounding_use : CmdControlStructure
+    this_method      : Method
+    return_type      : Type
+    result_name      : String
+    return_flag_name : String
+    container        : CmdControlStructure
 
   METHODS
-    method init( this_method, result_name, has_return_name, surrounding_use )
+    method init( this_method, result_name, return_flag_name, container )
       return_type = this_method.return_type
 
     method visit( cmd_return:CmdReturn )->Cmd
       local t = cmd_return.t
       local cmd_block = CmdBlock( t )
-      cmd_block.statements.add( CmdAssign( t, CmdAccess(t,has_return_name), CmdLiteralLogical(t,true) ) )
+      if (return_flag_name)
+        cmd_block.statements.add( CmdAssign( t, CmdAccess(t,return_flag_name), CmdLiteralLogical(t,true) ) )
+      endIf
       if (return_type)
         if (cmd_return.value)
           cmd_block.statements.add( CmdAssign( t, CmdAccess(t,result_name), cmd_return.value ) )
@@ -204,7 +206,7 @@ class ConvertReturnToEscapeVisitor : Visitor
           throw t.error( "$ is not declared as returning a value." (this_method.signature) )
         endIf
       endIf
-      cmd_block.statements.add( CmdEscape( t, CmdControlStructure.type_use, surrounding_use ) )
+      cmd_block.statements.add( CmdEscape( t, container.control_type, container ) )
       return cmd_block
 endClass
 

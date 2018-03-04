@@ -11,8 +11,6 @@ class Parser
     local_declarations = Local[]  # repeated temporary use
     property_list = Property[]    # temp use
 
-    string_builders = StringBuilderPool()
-
     cur_statement_list : CmdStatementList
 
     parsing_augment : Logical
@@ -1855,7 +1853,6 @@ class Parser
       local expr = parse_expression
       local access = expr as CmdAccess
       local v_name : String
-      local has_return_name = Program.create_unique_id
       local usage_name = Program.create_unique_id
       local result_name : String
       if (consume(TokenType.symbol_equals))
@@ -1874,8 +1871,22 @@ class Parser
       cmd_try.control_type = CmdControlStructure.type_use
       parse_multi_line_statements( cmd_try.statements )
 
+      # TODO: replace with return path analysis eventually
+      local has_guaranteed_return = false
+      forEach (statement in cmd_try.statements)
+        if (statement instanceOf CmdReturn)
+          has_guaranteed_return = true
+          escapeForEach
+        endIf
+      endForEach
+
+      local has_return_name : String
+      local has_return_v : Local
+      if (not has_guaranteed_return)
+        has_return_name = Program.create_unique_id
+        has_return_v = Local( t, has_return_name, Program.type_Logical )
+      endIf
       local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
-      local has_return_v = Local( t, has_return_name, Program.type_Logical )
       local usage_v = Local( t, usage_name, null, expr )
       local result_v : Local
       if (this_method.return_type)
@@ -1891,7 +1902,7 @@ class Parser
 
       local cmd_block = CmdBlock( t )
       cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
-      cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
+      if (has_return_v) cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
       cmd_block.statements.add( CmdLocalDeclaration(t,usage_v) )
       if (result_v) cmd_block.statements.add( CmdLocalDeclaration(t,result_v) )
       local v = Local( t, v_name, null, CmdAccess(expr.t,usage_name,"on_use") )
@@ -1905,13 +1916,17 @@ class Parser
       cmd_if.statements.add( CmdThrow(t,CmdAccess(t,err_v)) )
       cmd_block.statements.add( cmd_if )
 
-      cmd_if = CmdIf( t, CmdAccess(t,has_return_v) )
-      if (this_method.return_type)
-        cmd_if.statements.add( CmdReturn(t,CmdAccess(t,result_name)) )
-      else
-        cmd_if.statements.add( CmdReturn(t) )
+      local statements_for_return = cmd_block.statements
+      if (not has_guaranteed_return)
+        cmd_if = CmdIf( t, CmdAccess(t,has_return_v) )
+        cmd_block.statements.add( cmd_if )
+        statements_for_return = cmd_if.statements
       endIf
-      cmd_block.statements.add( cmd_if )
+      if (this_method.return_type)
+        statements_for_return.add( CmdReturn(t,CmdAccess(t,result_name)) )
+      else
+        statements_for_return.add( CmdReturn(t) )
+      endIf
 
       consume_eols
       must_consume( TokenType.keyword_endUse )
@@ -2921,49 +2936,50 @@ class Parser
       return expr
 
     method parse_specialization_string->String
-      local buffer = string_builders.acquire
-      parse_specializer_list( buffer )
-      return string_builders.release_with_result( buffer )
+      use buffer = StringBuilderPool
+        parse_specializer_list( buffer )
+        return buffer->String
+      endUse
 
     method parse_specialization_type( index:Int32 )->Type
       read   # '<<'
 
-      local string_buffer = string_builders.acquire
-      local i = index
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        if (first) first = false
-        else       string_buffer.print(',')
+      use string_buffer = StringBuilderPool
+        local i = index
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          if (first) first = false
+          else       string_buffer.print(',')
 
-        local t = peek
-        parse_specializer( string_buffer.clear )
+          local t = peek
+          parse_specializer( string_buffer.clear )
 
-        if (i == 0) return Program.get_type_reference( t, string_builders.release_with_result(string_buffer) )
-        --i
-      endWhile
-
-      string_builders.release( string_buffer )
+          if (i == 0) return Program.get_type_reference( t, string_buffer->String )
+          --i
+        endWhile
+      endUse
 
       @trace
       throw peek.error( "[INTERNAL] Invalid specializer index: $." (index) )
 
     method parse_specialization_info->ValueTable
-      local string_buffer = string_builders.acquire
-      local count = parse_specializer_list( string_buffer )
-      return @{string:string_builders.release_with_result(string_buffer),count:count}
+      use string_buffer = StringBuilderPool
+        local count = parse_specializer_list( string_buffer )
+        return @{string:string_buffer->String,count:count}
+      endUse
 
     method parse_specializer_count->Int32
       local num_specializers = 0
       read   # '<<'
 
-      local string_buffer = string_builders.acquire
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        if (first) first = false
-        parse_specializer( string_buffer.clear )
-        ++num_specializers
-      endWhile
-      string_builders.release( string_buffer )
+      use string_buffer = StringBuilderPool
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          if (first) first = false
+          parse_specializer( string_buffer.clear )
+          ++num_specializers
+        endWhile
+      endUse
 
       must_consume( TokenType.symbol_close_specialize )
 
@@ -2972,93 +2988,91 @@ class Parser
     method parse_specializer_list( buffer=null:StringBuilder, tokens=null:Token[] )->Int32
       # We know the next token is '<<'.
       # Returns: The count of how many specializers were parsed.
-      local should_release_buffer = (buffer is null)
-      if (buffer is null) buffer = string_builders.acquire
+      use pool_buffer = StringBuilderPool
+        if (buffer is null) buffer = pool_buffer
 
-      local count = 0
-      local t = read   # '<<'
-      if (tokens) tokens.add( t )
-      buffer.print( "<<" )
+        local count = 0
+        local t = read   # '<<'
+        if (tokens) tokens.add( t )
+        buffer.print( "<<" )
 
-      local first = true
-      while (first or next_is(TokenType.symbol_comma))
-        if (first)
-          first = false
-        else
-          t = read  # ','
-          if (tokens) tokens.add( t )
-          buffer.print(',')
-        endIf
-        ++count
-        parse_specializer( buffer, tokens )
-      endWhile
+        local first = true
+        while (first or next_is(TokenType.symbol_comma))
+          if (first)
+            first = false
+          else
+            t = read  # ','
+            if (tokens) tokens.add( t )
+            buffer.print(',')
+          endIf
+          ++count
+          parse_specializer( buffer, tokens )
+        endWhile
 
-      t = peek
-      if (tokens) tokens.add( t )
-      must_consume( TokenType.symbol_close_specialize )
-      buffer.print( ">>" )
+        t = peek
+        if (tokens) tokens.add( t )
+        must_consume( TokenType.symbol_close_specialize )
+        buffer.print( ">>" )
 
-      if (should_release_buffer) string_builders.release( buffer )
-
-      return count
+        return count
+      endUse
 
 
     method parse_specializer( buffer=null:StringBuilder, tokens=null:Token[] )
-      local should_release_buffer = (buffer is null)
-      if (buffer is null) buffer = string_builders.acquire
+      if (buffer is null) buffer = StringBuilderPool.on_use
+      use pool_buffer = StringBuilderPool
+        if (buffer is null) buffer = pool_buffer
 
-      local start_position = reader.position
-      try
-        local type_name = parse_type_name
-        buffer.print( type_name )
-        if (tokens)
-          local end_position = reader.position
-          reader.position = start_position
-          while (reader.position < end_position) tokens.add( reader.read )
-        endIf
-        if (should_release_buffer) string_builders.release( buffer )
-        return
-      catch (not_a_type_name:RogueError)
-        reader.position = start_position
-      endTry
-
-
-      while (reader.has_another)
-        local t = peek
-
-        if (t.type is TokenType.eol)
-          throw peek.error( "Closing '>>' expected before end of line." )
-
-        elseIf (consume(TokenType.symbol_backslash))
-          buffer.print("\\")
-
-          if (not reader.has_another) throw t.error( "Unexpected end of input." )
-
-          t = read
-          buffer.print( t )
-          if (tokens) tokens.add( t )
-
-        elseIf (t.type is TokenType.symbol_open_specialize)
-          parse_specializer_list( buffer, tokens )
-
-        elseIf (t.type is TokenType.symbol_comma or next_is(TokenType.symbol_close_specialize))
-          if (should_release_buffer) string_builders.release( buffer )
-          return
-
-        else
-          if (tokens) tokens.add( t )
-
-          local st = read->String
-          if (t.type is TokenType.literal_string)
-            buffer.print( '"' ).print( st ).print( '"' )
-          else
-            buffer.print( st )
+        local start_position = reader.position
+        try
+          local type_name = parse_type_name
+          buffer.print( type_name )
+          if (tokens)
+            local end_position = reader.position
+            reader.position = start_position
+            while (reader.position < end_position) tokens.add( reader.read )
           endIf
+          return
+        catch (not_a_type_name:RogueError)
+          reader.position = start_position
+        endTry
 
-        endIf
-      endWhile
 
-      if (should_release_buffer) string_builders.release( buffer )
+        while (reader.has_another)
+          local t = peek
+
+          if (t.type is TokenType.eol)
+            throw peek.error( "Closing '>>' expected before end of line." )
+
+          elseIf (consume(TokenType.symbol_backslash))
+            buffer.print("\\")
+
+            if (not reader.has_another) throw t.error( "Unexpected end of input." )
+
+            t = read
+            buffer.print( t )
+            if (tokens) tokens.add( t )
+
+          elseIf (t.type is TokenType.symbol_open_specialize)
+            parse_specializer_list( buffer, tokens )
+
+          elseIf (t.type is TokenType.symbol_comma or next_is(TokenType.symbol_close_specialize))
+            return
+
+          else
+            if (tokens) tokens.add( t )
+
+            local st = read->String
+            if (t.type is TokenType.literal_string)
+              buffer.print( '"' ).print( st ).print( '"' )
+            else
+              buffer.print( st )
+            endIf
+
+          endIf
+        endWhile
+      endUse
+
 
     method parse_term->Cmd
       local t = peek
@@ -3849,21 +3863,16 @@ class UsedModule( name:String, previous:UsedModule )
       return name
 endClass
 
-class StringBuilderPool
+class StringBuilderPool [singleton]
   PROPERTIES
     available = StringBuilder[]
 
   METHODS
-    method acquire->StringBuilder
+    method on_use->StringBuilder
       if (available.is_empty) return StringBuilder()
       return available.remove_last
 
-    method release( builder:StringBuilder )
+    method on_end_use( builder:StringBuilder )
       available.add( builder.clear )
-
-    method release_with_result( builder:StringBuilder )->String
-      local result = builder->String
-      release( builder )
-      return result
 endClass
 
