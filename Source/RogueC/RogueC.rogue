@@ -122,7 +122,7 @@ class RogueC [singleton]
     method init
 
     method launch
-      local libs = File.path(System.executable_filepath) + "/Libraries/"
+      local libs = File.ensure_ends_with_separator(File.join(File.path(System.executable_filepath), "Libraries"))
       if (File.exists(libs))
         libraries_folder = libs
         prefix_path_list.add( libs )
@@ -377,7 +377,7 @@ $endIf
         endWhile
         if (include_path.count == 0)
           new_path.add( filename )
-          local new_filepath = new_path.join( '/' )
+          local new_filepath = File.join(new_path)
           if (File.exists(new_filepath)) filepath = new_filepath
         endIf
       endIf
@@ -391,7 +391,7 @@ $endIf
 
       if (not file.exists)
         forEach (prefix in prefix_path_list)
-          local prefixed_filepath = prefix + filepath
+          local prefixed_filepath = File.join(prefix, filepath)
           local prefixed_file = File( prefixed_filepath )
           if (File.exists(prefixed_filepath+".rogue"))
             filepath = prefixed_filepath + ".rogue"
@@ -410,14 +410,14 @@ $endIf
       endIf
 
       if (file.is_folder)
-        local path2 = "$/$.rogue" (filepath,file.filename)
+        local path2 = File.join(filepath, "$.rogue" (file.filename))
         local file2 = File( path2 )
         if (not file2.exists or file2.is_folder)
           return null
         else
-          if (not prefix_path_lookup.contains(file.filepath))
+          if (not prefix_path_lookup.contains(File.ensure_ends_with_separator(file.filepath)))
             prefix_path_lookup[file.filepath] = true
-            prefix_path_list.add( file.filepath )
+            prefix_path_list.add( File.ensure_ends_with_separator(file.filepath) )
           endIf
           filepath = path2
           file = file2
