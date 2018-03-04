@@ -234,7 +234,7 @@ class File
 
     method ensure_ends_with_separator( filepath:String )->String
       if (ends_with_separator(filepath)) return filepath
-      return filepath + '/'
+      return filepath + separator
 
     method exists( filepath:String )->Logical
       native @|if ( !$filepath ) return false;
@@ -595,7 +595,11 @@ class File
       return not outfile.error
 
     method separator->Character
-      return '/'
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  return '\\';
+              |#else
+              |  return '/';
+              |#endif
 
     method size( filepath:String )->Int64
       native @|if ( !$filepath ) return 0;
@@ -692,7 +696,7 @@ class File
       File.ends_with_separator( this.filepath )
 
     method ensure_ends_with_separator->this
-      if (not ends_with_separator) filepath += '/'
+      if (not ends_with_separator) filepath += separator
       return this
 
     method delete->Logical [macro]
