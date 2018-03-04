@@ -1,4 +1,4 @@
-$if (defined(CONSOLE_BAREBONES))
+$if (defined(CONSOLE_BAREBONES) or target("WINDOWS"))
 $localDefine CONSOLE_FULL false
 $else
 $localDefine CONSOLE_FULL true
