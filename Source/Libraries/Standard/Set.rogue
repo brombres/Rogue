@@ -31,11 +31,13 @@ class Set<<$T>>
 
     method at (index : Int32) -> $T
       # Just so that it can be iterated
-      return _t.keys[index]
+      local cur = _t.first_entry
+      loop index do cur = cur.next_entry
+      return cur.key
 
     method get (index : Int32) -> $T
       # So that array-style access works.
-      return _t.keys[index]
+      return at( index )
 
     method add (v : $T) -> this
       _t[v] = true
@@ -92,18 +94,19 @@ class Set<<$T>>
     method as_array -> $T[]
       return _t.keys
 
+    method to->$T[]
+      return as_array
+
     method to -> String
       return print_to( StringBuilder() )->String
 
     method print_to( buffer:StringBuilder ) -> StringBuilder
+      local keys = _t.keys
       buffer.print( '{' )
-      local i = 0
-      while (i < _t.keys.count)
+      forEach (key at i in keys)
         if (i > 0) buffer.print( ',' )
-        local key = _t.keys[i]
         buffer.print( key )
-        ++i
-      endWhile
+      endForEach
       buffer.print( '}' )
       return buffer
 endClass
