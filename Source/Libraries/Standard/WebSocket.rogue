@@ -39,7 +39,7 @@ class WebSocket : WebSocketBase
               |info.uid = -1;
 
       if (port.exists) native @|info.port = $port.value;
-      else                     |info.port = CONTEXT_PORT_NO_LISTEN;
+      else             native @|info.port = CONTEXT_PORT_NO_LISTEN;
 
       if (protocols)
         native @||protocols = new lws_protocols[ ($protocols->count+1) * sizeof(lws_protocols) ];
