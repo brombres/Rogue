@@ -98,9 +98,6 @@ class Runtime [essential]
     method set_gc_logging( setting:Logical )
       native "Rogue_gc_logging = $setting;"
 
-    method type_info ( name:String )->TypeInfo [deprecated]
-      return TypeInfo.get(name)
-
     method collect_garbage ( force=false:Logical )->Logical
       # Runs the garbage collector if possible
       #

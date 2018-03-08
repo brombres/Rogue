@@ -203,7 +203,7 @@ class Template
       Parser(augmented_tokens).parse_type_def( type )
 
     method is_essential->Logical
-      return (this.attributes.flags & (Attribute.is_essential | Attribute.is_api))
+      return (this.attributes.flags & (Attribute.is_essential))
 
     method is_task->Logical [macro]
       (this.attributes.flags & Attribute.is_task)

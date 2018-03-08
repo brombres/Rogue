@@ -238,7 +238,7 @@ class Preprocessor
             endIf
 
             if (next_is(TokenType.symbol_open_bracket))
-              # [api]
+              # [api essential]
               local next_token = reader.read
               if (keep_tokens) tokens.add( next_token )
               while (reader.has_another)

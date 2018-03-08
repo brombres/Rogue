@@ -27,6 +27,9 @@ class Parser
     is_api_module : Logical
     is_api_file   : Logical
 
+    is_essential_module : Logical
+    is_essential_file   : Logical
+
   METHODS
     method init( filepath )
       init( Preprocessor(this).process(Tokenizer().tokenize(filepath)), &skip_reprocess )
@@ -53,6 +56,9 @@ class Parser
         endIf
       endIf
       is_api_module = is_api_file
+
+      is_essential_file = RogueC.all_essential
+      is_essential_module = is_essential_file
 
     method consume( type:TokenType )->Logical
       if (not reader.next_is(type)) return false
@@ -228,14 +234,17 @@ class Parser
         endIf
 
         is_api_module = false
+        is_essential_module = false
         if (consume(TokenType.symbol_open_bracket))
           while (not next_is(TokenType.symbol_close_bracket))
             if (consume("api")) is_api_module = true
-            else throw read.error( "The only available module option is [api]." )
+            elseIf (consume("essential")) is_essential_module = true
+            else throw read.error( "Unrecognized module attributes. Only [api] and/or [essential] are allowed." )
           endWhile
           must_consume( TokenType.symbol_close_bracket )
         endIf
         if (is_api_file) is_api_module = true  # override the result if the whole file is [api]
+        if (is_essential_file) is_essential_module = true
 
         must_consume_eols
         return true
@@ -294,6 +303,8 @@ class Parser
       endIf
 
       if (is_api_class) (ensure template.attributes).add( Attribute.is_api )
+
+      if (is_essential_module) (ensure template.attributes).add( Attribute.is_essential )
 
       if (consume(TokenType.symbol_open_specialize))
         local first = true
@@ -467,6 +478,7 @@ class Parser
         endForEach
       endIf
       if (is_api_enum) template.attributes.add( Attribute.is_api )
+      if (is_essential_module) (ensure template.attributes).add( Attribute.is_essential )
 
       t = peek
       if (consume(TokenType.symbol_semicolon))

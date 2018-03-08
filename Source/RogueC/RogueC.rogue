@@ -153,11 +153,14 @@ class RogueC [singleton]
                    |
                    |OPTIONS
                    |  --api[=<class, filepath, or wildcard pattern>]
-                   |    Give one or more classes or the contents of one or more files the [api] attribute.
-                   |    An API class or routine is included in compiled code even if it is not directly
-                   |    used, for the purpose of either invocation by C++ or introspection. All methods
-                   |    of an [api] class are also compiled, even if unreferenced, except for methods
-                   |    with the [noAPI] attribute.
+                   |    Give one or more classes or the contents of one or more files the [api] attribute
+                   |    which gives all methods of that class the [essential] attribute and prevents the
+                   |    compiler from culling unused methods. This is useful for both invocation by
+                   |    external code and for introspection. If a class is never referenced
+                   |    then [api] will not cause it to be included in the generated code - use
+                   |    --essential/[essential] for that.
+                   |
+                   |    The [api] flag will ignore any methods marked with the [noAPI] attribute.
                    |
                    |    VARIATIONS
                    |      --api
@@ -204,6 +207,11 @@ class RogueC [singleton]
                    |
                    |  --essential=[ClassName|ClassName.method_name(ParamType1,ParamType2,...)],...
                    |    Makes the given class or method essential ("do not cull if unused").
+                   |    Certain wildcard patterns may be used:
+                   |      --essential=*       - All classes (but not methods)
+                   |      --essential=Type.*  - All methods of 'Type'
+                   |      --essential=Type.m  - All methods of 'Type' named 'm'
+                   |      --essential=**      - All classes and all methods ("exhaustive")
                    |    See also: --api
                    |
                    |  --execute[="args"]
@@ -619,7 +627,7 @@ $endIf
               if (value.count)
                 local is_pattern = value.contains('*') or value.contains('?')
                 if (is_pattern)
-                  if (value == "*") all_api = true
+                  if (value == "*" or value == "**") all_api = true
                   elseIf (value.ends_with(".rogue")) api_file_patterns.add( "**/" + value )
                   else                               api_class_patterns.add( value )
                 elseIf (value.ends_with(".rogue"))
