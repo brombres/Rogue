@@ -109,6 +109,9 @@ class TypeInfo
         endIf
       endIf
 
+      return call( context, m, args )
+
+    method call( context:Object, m:MethodInfo, args=NullValue:Value )->Value
       if (not args.is_list) args = @[]
 
       args.insert( context->Value )
@@ -139,7 +142,9 @@ class TypeInfo
       return create_object as $AsType
 
     method global_property( property_name:String )->Value
-      local property_info = global_property_info( property_name )
+      return find_global_property( property_name )
+
+    method global_property( property_info:PropertyInfo )->Value
       if (not property_info) return NullValue
 
       local i = property_info.index
@@ -184,7 +189,7 @@ class TypeInfo
       # Convenience method to provide symmetric interface with per-object `property_name` methods.
       return global_properties[ global_property_index ].name
 
-    method global_property_info( property_name:String )->PropertyInfo
+    method find_global_property( property_name:String )->PropertyInfo
       forEach (i in 0..<global_property_count)
         if (global_properties[i].name == property_name)
           return global_properties[ i ]
@@ -245,13 +250,27 @@ class TypeInfo
       if (base_class is null) return false
       return base_class.is_subclass(other)
 
-    method property_info( property_name:String )->PropertyInfo
+    method find_property( property_name:String )->PropertyInfo
       forEach (p in properties)
         if (p.name == property_name) return p
       endForEach
       return null
 
-    method find_method( name_or_sig:String, args=NullValue:Value )->MethodInfo
+    method find_method( name_or_sig:String, arg_count=0:Int32 )->MethodInfo
+      if (name_or_sig.contains('('))
+        forEach (m in methods)
+          if (m.signature == name_or_sig) return m
+        endForEach
+        return null
+      endIf
+
+      forEach (m in methods)
+        if (m.name == name_or_sig and m.parameter_count == arg_count) return m
+      endForEach
+
+      return null
+
+    method find_method( name_or_sig:String, args:Value )->MethodInfo
       if (name_or_sig.contains('('))
         forEach (m in methods)
           if (m.signature == name_or_sig) return m
@@ -350,7 +369,9 @@ class TypeInfo
       return r
 
     method set_global_property( property_name:String, value:Value )->this
-      local property_info = global_property_info( property_name )
+      return set_global_property( find_global_property(property_name), value )
+
+    method set_global_property( property_info:PropertyInfo, value:Value )->this
       if (not property_info) return this
 
       local i = property_info.index

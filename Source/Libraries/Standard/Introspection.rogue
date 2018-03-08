@@ -34,7 +34,9 @@ class Introspector
     method init( context, address, type )
 
     method get( name:String )->Value
-      local property_info = type.property_info( name )
+      return get( type.find_property(name) )
+
+    method get( property_info:PropertyInfo )->Value
       if (not property_info) return NullValue
 
       if (property_info.type.is_reference)
@@ -100,7 +102,9 @@ class Introspector
       return null
 
     method set( name:String, new_value:Value )->this
-      local property_info = type.property_info( name )
+      return set( type.find_property(name), new_value )
+
+    method set( property_info:PropertyInfo, new_value:Value )->this
       if (not property_info) return this
 
       if (property_info.type.is_reference)
@@ -237,11 +241,16 @@ class Introspector
       endWhich
 
     method call ( name:String, args:Value[] )->Value
+      # Note: can throw NoSuchMethodError
       return call(name, ValueList(args) )
 
     method call ( name:String, args=NullValue:Value )->Value
       # Note: can throw NoSuchMethodError
       return type.call( context, name, args )
+
+    method call ( m:MethodInfo, args=NullValue:Value )->Value
+      # Note: can throw NoSuchMethodError
+      return type.call( context, m, args )
 endClass
 
 
@@ -259,7 +268,13 @@ class BoxedIntrospector<<$ValueType>> : Introspector
       return null
 
     method set( name:String, new_value:Value )->this
+      # Overridden in order to update return type
       prior.set( name, new_value )
+      return this
+
+    method set( property_info:PropertyInfo, new_value:Value )->this
+      # Overridden in order to update return type
+      prior.set( property_info, new_value )
       return this
 
     method to->$ValueType
