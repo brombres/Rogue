@@ -1,0 +1,26 @@
+module ParseKit<<$Language>>
+uses $Language
+
+class ParseError( filepath:String, line:Int32, column:Int32, message ) : Error
+  METHODS
+    method init( message )
+
+    method init( t:Token, message )
+      filepath = t.filepath
+      line = t.line
+      column = t.column
+
+    method to->String
+      use builder = StringBuilder.pool
+        if (filepath)
+          builder.print( filepath )
+          if (line)
+            builder.print( ':' ).print( line ).print( ':' ).print( column )
+          endIf
+          builder.print( ' ' )
+        endIf
+        builder.print( "error: " ).print( message )
+        return builder->String
+      endUse
+endClass
+

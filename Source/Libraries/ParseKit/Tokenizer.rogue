@@ -1,0 +1,394 @@
+module ParseKit<<$Language>>
+uses $Language
+
+$localDefine TokenizerType $join($Language,Tokenizer)
+$localDefine ErrorType $join($Language,Error)
+
+class TokenLookup : StringTable<<TokenType>> [singleton]
+  METHODS
+    method init
+      prior.init
+      forEach (enum_value in TokenType.values)
+        local type = TokenType( enum_value )
+        this[ type.symbol ] = type
+      endForEach
+endClass
+
+class Keywords : StringTable<<TokenType>> [singleton]
+  METHODS
+    method init
+      prior.init
+      forEach (enum_value in TokenType.values)
+        local type = TokenType( enum_value )
+        if (type.is_keyword)
+          this[ type.symbol ] = type
+        endIf
+      endForEach
+endClass
+
+class ScanRules : Table<<Character,ScanRule>> [singleton]
+  METHODS
+    method init
+      prior.init
+      forEach (enum_value in TokenType.values)
+        local type = TokenType( enum_value )
+        if (type.is_symbol)
+          on( type.symbol, type )   # Default mapping rule
+        endIf
+      endForEach
+      configure
+
+    method configure
+      noAction
+
+    method on( symbol:String, type:TokenType )
+      on( symbol, ScanRule(symbol,type) )
+
+    method on( symbol:String, fn:Function(TokenizerType) )
+      on( symbol, ScanRule(symbol,fn) )
+
+    method on( symbol:String, rule:ScanRule )
+      local ch = symbol[0]
+      if (this.contains(ch))
+        this[ ch ] = this[ch].insert( rule )
+      else
+        this[ ch ] = rule
+      endIf
+
+    method on( type:TokenType )
+      on( type.symbol, ScanRule(type.symbol,type) )
+
+    method on( type:TokenType, fn:Function(TokenizerType) )
+      on( type, ScanRule(type.symbol,fn) )
+
+    method on( type:TokenType, rule:ScanRule )
+      on( type.symbol, rule )
+endClass
+
+class Tokenizer
+  PROPERTIES
+    filepath         : String
+    scanner          : Scanner
+    tokens           : Token[]
+    spaces_per_tab   = 2
+    buffer           = StringBuilder()
+    specialized_this = this as TokenizerType
+
+  METHODS
+    method init_object
+      require specialized_this
+
+    method add( token:Token )->this
+      tokens.add( token )
+      return this
+
+    method consume( ch:Character )->Logical [macro]
+      this.scanner.consume( ch )
+
+    method consume( text:String )->Logical [macro]
+      this.scanner.consume( text )
+
+    method consume_eols->Logical
+      local found_any = false
+      while (consume('\n')) found_any = true
+      return found_any
+
+    method consume_spaces->Logical
+      local found_any = false
+      while (consume(' ')) found_any = true
+      return found_any
+
+    method consume_whitespace->Logical
+      local found_any = false
+      while (consume_spaces or consume_eols) found_any = true
+      return true
+
+    method error( message:String )->ErrorType
+      return ErrorType( filepath, scanner.line, scanner.column, message )
+
+    method has_another->Logical [macro]
+      this.scanner.has_another
+
+    method is_id_start( ch:Character )->Logical
+      return (ch.is_letter or ch == '_')
+
+    method is_id_continuation( ch:Character )->Logical
+      return (ch.is_letter or ch == '_' or ch.is_number)
+
+    method on_comment( text:String )
+      noAction
+
+    method on_identifier( name:String )
+      # Must override
+      throw UnsupportedOperationError()
+
+    method on_integer( value:Int64 )
+      # Must override
+      throw UnsupportedOperationError()
+
+    method on_real( value:Real64 )
+      # Must override
+      throw UnsupportedOperationError()
+
+    method on_string( value:String )
+      # Must override
+      throw UnsupportedOperationError()
+
+    method must_consume( ch:Character )
+      if (consume(ch)) return
+      throw error( "Expected $, found $." (ch,peek) )
+
+    method must_consume( text:String )
+      if (consume(text)) return
+      throw error( "Expected $, found $." (text,peek) )
+
+    method next_is_hex_digit->Logical
+      local ch = peek
+      return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
+
+    method peek->Character [macro]
+      this.scanner.peek
+
+    method read->Character [macro]
+      this.scanner.read
+
+    method scan_character->Character
+      if (not has_another) throw error( "Character expected." )
+
+      local ch = peek
+      if (ch == '\n') throw error( "Character expected; found end of line." )
+
+      if (ch == '\\')
+        read
+        if (not has_another) throw error( "Escaped character expected; found end of input." )
+
+        local value : Int32
+        if     (consume('b')) value = 8
+        elseIf (consume('e')) value = 27
+        elseIf (consume('f')) value = 12
+        elseIf (consume('n')) value = '\n'
+        elseIf (consume('r')) value = '\r'
+        elseIf (consume('t')) value = '\t'
+        elseIf (consume('v')) value = 11
+        elseIf (consume('0')) value = '\0'
+        elseIf (consume('/')) value = '/'
+        elseIf (consume('?')) value = '?'
+        elseIf (consume('\''))value = '\''
+        elseIf (consume('\\'))value = '\\'
+        elseIf (consume('"')) value = '"'
+        elseIf (consume('x')) value = scan_hex_value(2)
+        elseIf (consume('u')) value = scan_hex_value(4)
+        elseIf (consume('[')) scan_hex_sequence; return
+        else throw error( "Invalid escape sequence.  Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\? \\/ \\' \\\\ \\\" \\" + "xHH \\" + "uHHHH \\" + "[H*]." )
+
+        buffer.print( value->Character )
+
+      else
+        local value = read->Int32
+        if ((value & 0x80) != 0)
+          # Handle UTF8 encoding
+          local ch2 = read->Int32
+
+          if ((value & 0x20) == 0)
+            # %110xxxxx 10xxxxxx
+            value = value & 0x1f
+            ch2 = value & 0x3f
+            buffer.print( ((value:<<:6) | ch2)->Character )
+          else
+            # %1110xxxx 10xxxxxx 10xxxxxx
+            local ch3 = read->Int32
+            value = value & 15
+            ch2 = ch2 & 0x3f
+            ch3 = ch3 & 0x3f
+            buffer.print( ((value:<<:2) | (ch2:<<:6) | ch3)->Character )
+          endIf
+
+        else
+          buffer.print( value->Character )
+        endIf
+
+      endIf
+
+    method scan_comment->String
+      if (not consume('#')) return null
+
+      buffer.clear
+      if (consume('{'))
+        # Multi-line comment
+        while (scanner.has_another and not consume("}" "#")) buffer.print( read )
+      else
+        # Single-line comment
+        while (scanner.has_another and not peek == '\n')
+          buffer.print( read )
+        endWhile
+      endIf
+      return buffer->String
+
+    method scan_hex_value( digits=6:Int32, &variable_length )->Int32
+      local value = 0
+      local i = 1
+      while (i <= digits)
+        if (not has_another) throw error( digits + "-digit hex value expected; found end of file." )
+        if (not next_is_hex_digit)
+          if (variable_length) return value
+          local ch = peek
+          local error_buffer = StringBuilder()
+          error_buffer.print( "Invalid hex digit " )
+          if (ch < ' ' or ch->Int32 == 127) error_buffer.print( ch->Int32 )
+          else error_buffer.print( "'" + ch + "'" )
+          error_buffer.print('.')
+          throw error( error_buffer->String )
+        endIf
+        local intval = read.to_number(16)
+        value = (value:<<:4) + intval
+        ++i
+      endWhile
+      return value
+
+    method scan_hex_sequence
+      local first = true
+      while (first or consume(','))
+        first = false
+        local ch = scan_hex_value( &variable_length )->Character
+        buffer.print( ch )
+      endWhile
+
+      if (consume(']')) return
+      throw error( "Closing ']' expected." )
+
+    method scan_identifier->String
+      local ch = peek
+      if (not is_id_start(ch)) return null
+
+      buffer.clear
+      buffer.print( read )
+      ch = peek
+      while (is_id_continuation(ch))
+        buffer.print( read )
+        ch = peek
+      endWhile
+      return buffer->String
+
+    method scan_int64( base:Int32 )->Int64
+      local result : Int64
+      while (peek.is_number(base))
+        result = result * base + read.to_number(base)
+      endWhile
+      return result
+
+    method scan_number_string->String
+      buffer.clear
+      while (peek.is_number) buffer.print( read )
+      if (consume('.'))
+        buffer.print( '.' )
+        while (peek.is_number) buffer.print( read )
+      endIf
+      if (consume('e') or consume('E'))
+        buffer.print( 'e' )
+        if (consume('-'))   buffer.print( '-' )
+        else consume( '+' ) buffer.print( '+' )
+        while (peek.is_number) buffer.print( read )
+      endIf
+      return buffer->String.to_lowercase
+
+    method scan_string( terminator:String )->String
+      buffer.clear
+      must_consume( terminator )
+      while (has_another)
+        if (consume(terminator)) return buffer->String
+        buffer.print( read )
+      endWhile
+      throw error( "Unexpected end of input looking for end of string ($)." (terminator) )
+
+    method tokenize( filepath )->Token[]
+      scanner = Scanner( File(filepath), &=spaces_per_tab )
+      return tokenize
+
+    method tokenize( filepath, source:String )->Token[]
+      scanner = Scanner( source, &=spaces_per_tab )
+      return tokenize
+
+    method tokenize( filepath, source:Character[] )->Token[]
+      scanner = Scanner( source, &=spaces_per_tab )
+      return tokenize
+
+    method tokenize->Token[]
+      tokens = Token[]
+      while (tokenize_another) noAction
+      tokens.add( Token(TokenType.EOL) )
+      return tokens
+
+    method tokenize_another->Logical
+      consume_whitespace
+
+      Token.next_filepath = filepath
+      Token.next_line = scanner.line
+      Token.next_column = scanner.column
+
+      if (not has_another) return false
+
+      local rules = ScanRules[ peek ]
+      if (rules)
+        if (rules(specialized_this)) return true
+      endIf
+
+      if (tokenize_comment)    return true
+      if (tokenize_number)     return true
+      if (tokenize_identifier) return true
+      if (tokenize_string)     return true
+
+      throw error( "Syntax error: unexpected '$'." (peek) )
+
+    method tokenize_comment->Logical
+      local text = scan_comment
+      if (not text) return false
+      on_comment( text )
+      return true
+
+    method tokenize_identifier->Logical
+      local text = scan_identifier
+      if (not text) return false
+
+      local entry = Keywords.find( text )
+      if (entry)
+        local type = entry.value
+        tokens.add( Token(type) )
+      else
+        on_identifier( text )
+      endIf
+
+      return true
+
+    method tokenize_number->Logical
+      local ch = peek
+      if (not ch.is_number) return false
+
+      local base = 10
+      if (ch == '0')
+        if (consume("0b"))     base = 2
+        if (consume("0c"))     base = 8
+        elseIf (consume("0x")) base = 16
+      endIf
+
+      if (base == 10)
+        local st = scan_number_string
+        if (st.contains('.') or st.contains('e') or st.contains('E'))
+          on_real( st->Real64 )
+        else
+          on_integer( st->Int32 )
+        endIf
+      else
+        local n = scan_int64( base )
+        on_integer( n )
+      endIf
+
+      return true
+
+    method tokenize_string->Logical
+      local ch = peek
+      if (ch != '"') return false
+      on_string( scan_string("\"") )
+      return true
+
+endClass
+

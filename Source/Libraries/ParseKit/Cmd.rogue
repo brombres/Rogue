@@ -1,0 +1,28 @@
+module ParseKit<<$Language>>
+uses $Language
+
+class Cmd( t:Token )
+endClass
+
+class CmdStatements : Cmd[]
+endClass
+
+class CmdArgs : Cmd[]
+endClass
+
+class CmdUnary( t, operand:Cmd ) : Cmd [abstract]
+  METHODS
+    method op->String [abstract]
+
+    method to->String
+      return "($$)" (op,operand)
+endClass
+
+class CmdBinary( t, left:Cmd, right:Cmd ) : Cmd [abstract]
+  METHODS
+    method op->String [abstract]
+
+    method to->String
+      return "($ $ $)" (left,op,right)
+endClass
+

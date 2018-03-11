@@ -1,0 +1,142 @@
+module ParseKit<<$Language>>
+uses $Language
+
+$localDefine ParserType $join($Language,Parser)
+$localDefine ErrorType $join($Language,Error)
+
+class ParseRule
+  PROPERTIES
+    name            : String
+    parser          : ParserType
+    nested          : ParseRule
+    handlers        : Table<<TokenType,(Function(ParserType)->Cmd)>>
+    default_handler : Function(ParserType)->Cmd
+    general_handler : Function(ParseRule)->Cmd
+
+  METHODS
+    method init( name )
+
+    method init( name, default_handler )
+
+    method init( name, general_handler )
+
+    method call->Cmd
+      return parse
+
+    method consume( token_type:TokenType )->Logical [macro]
+      this.parser.reader.consume( token_type )
+
+    method consume_eols->Logical [macro]
+      this.parser.reader.consume_eols
+
+    method has_another->Logical [macro]
+      this.parser.reader.has_another
+
+    method must_consume( token_type:TokenType ) [macro]
+      this.parser.reader.must_consume( token_type )
+
+    method next_is( token_type:TokenType )->Logical [macro]
+      this.parser.reader.next_is( token_type )
+
+    method parse->Cmd
+      if (general_handler)
+        return general_handler( this )
+      elseIf (handlers)
+        local handler = handlers[ peek.type ]
+        if (handler) return handler( parser )
+        if (default_handler) return default_handler( parser )
+      endIf
+      return parse_nested
+
+    method parse_nested->Cmd
+      if (nested) return nested()
+      throw ErrorType( ''[Internal] Parse rule $ attempting to call non-existent nested parse rule.'' (name) )
+
+    method peek->Token [macro]
+      this.parser.reader.peek
+
+    method peek( lookahead:Int32 )->Token [macro]
+      this.parser.reader.peek( lookahead )
+
+    method read->Token [macro]
+      this.parser.reader.read
+
+    method on( type:TokenType, fn:Function(ParserType)->Cmd )->this
+      ensure handlers
+      handlers[ type ] = fn
+      return this
+
+    method on( symbol:String, fn:Function(ParserType)->Cmd )->this
+      if (not TokenLookup.contains(symbol))
+        throw ErrorType( ''No token exists with symbol text "$".'' (symbol) )
+      endIf
+      return on( TokenLookup[symbol], fn )
+
+    method on( symbol:String, cmd_type:TypeInfo )->this
+      if (not TokenLookup.contains(symbol))
+        throw ErrorType( ''No token exists with symbol text "$".'' (symbol) )
+      endIf
+      return on( TokenLookup[symbol], cmd_type )
+
+    method on( type:TokenType, cmd_type:TypeInfo )->this
+      # t of type -> <<CmdType>>(t)
+      return on( type, (parser) with (cmd_type) => cmd_type.create_object<<Cmd>>.init(parser.read) )
+
+    method on_default( fn:Function(ParserType)->Cmd )->this
+      default_handler = fn
+      return this
+
+endClass
+
+
+class UnaryParseRule : ParseRule
+  PROPERTIES
+    lookup = Table<<TokenType,TypeInfo>>()
+
+  METHODS
+    method parse->Cmd
+      local t = peek
+      local entry = lookup.find( t.type )
+      if (entry)
+        read
+        return entry.value.create_object<<CmdUnary>>.init( t, this.parse )
+      else
+        return parse_nested
+      endIf
+
+    method on( type:TokenType, fn:Function(ParserType)->Cmd )->this
+      throw UnsupportedOperationError()
+
+    method on( type:TokenType, cmd_type:TypeInfo )->this
+      lookup[ type ] = cmd_type
+      return this
+endClass
+
+
+class BinaryParseRule : ParseRule
+  PROPERTIES
+    lookup = Table<<TokenType,TypeInfo>>()
+
+  METHODS
+    method parse->Cmd
+      return parse( parse_nested )
+
+    method parse( context:Cmd )->Cmd
+      local t = peek
+      local entry = lookup.find( t.type )
+      if (entry)
+        read
+        return parse( entry.value.create_object<<CmdBinary>>.init(t,context,parse_nested) )
+      else
+        return context
+      endIf
+
+    method on( type:TokenType, fn:Function(ParserType)->Cmd )->this
+      throw UnsupportedOperationError()
+
+    method on( type:TokenType, cmd_type:TypeInfo )->this
+      lookup[ type ] = cmd_type
+      return this
+
+endClass
+

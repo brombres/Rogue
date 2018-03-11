@@ -1,0 +1,68 @@
+module ParseKit<<$Language>>
+
+uses $Language
+
+$localDefine ErrorType $join($Language,Error)
+
+class Token
+  GLOBAL PROPERTIES
+    next_filepath : String
+    next_line     : Int32
+    next_column   : Int32
+
+  PROPERTIES
+    type     : TokenType
+    line     : Int32
+    column   : Int32
+    number   : Int64?
+    text     : String
+    filepath : String
+
+  METHODS
+    method init_object
+      filepath = next_filepath
+      line = next_line
+      column = next_column
+
+    method init( type )
+
+    method init( type, number )
+
+    method init( type, integer:Int64 )
+      number = integer
+
+    method init( type, real_number:Real64 )
+      init( type, real_number.integer_bits )
+
+    method init( type, text )
+
+    method description->String
+      if (text or number.exists) return "'$'" (this->String)
+      return type.description
+
+    method error( message:String )->ErrorType
+      return ErrorType( this, message )
+
+    method set_position( other:$ThisType )->this
+      filepath = other.filepath
+      line = other.line
+      column = other.column
+      return this
+
+    method to->Int32
+      if (not number.exists) return 0
+      return number.value->Int32
+
+    method to->Int64
+      if (not number.exists) return 0
+      return number.value
+
+    method to->Real64
+      if (not number.exists) return 0.0
+      return number.value.real_bits
+
+    method to->String
+      if (text) return text
+      return type.symbol
+endClass
+

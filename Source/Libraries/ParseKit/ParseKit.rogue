@@ -1,0 +1,10 @@
+$include "ParseKit/Cmd.rogue"
+$include "ParseKit/ParseError.rogue"
+$include "ParseKit/Parser.rogue"
+$include "ParseKit/ParseRule.rogue"
+$include "ParseKit/ScanRule.rogue"
+$include "ParseKit/Tokenizer.rogue"
+$include "ParseKit/Token.rogue"
+$include "ParseKit/TokenReader.rogue"
+$include "ParseKit/TokenType.rogue"
+
