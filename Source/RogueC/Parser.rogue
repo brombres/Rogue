@@ -766,25 +766,62 @@ class Parser
         first = false
         local t = peek
         local def = Definition( t, read_identifier )
+        local named_args : StringTable<<Cmd>>
         if (consume(TokenType.symbol_open_paren))
           consume_eols
           if (not consume(TokenType.symbol_close_paren))
             ensure def.args
-            if (next_is(TokenType.symbol_comma)) def.args.add( null )
-            else                                 def.args.add( parse_expression )
+            if (next_is(TokenType.symbol_comma))
+              def.args.add( null )
+            elseIf (consume(TokenType.symbol_ampersand))
+              ensure named_args
+              local t2 = peek
+              local name = read_identifier
+              consume_eols
+              if (consume(TokenType.symbol_equals)) consume_eols; named_args[ name ] = parse_expression
+              else                                  named_args[ name ] = CmdLiteralLogical( t2, true )
+            else
+              def.args.add( parse_expression )
+            endIf
             local expecting_arg = false
             while (consume(TokenType.symbol_comma))
               expecting_arg = true
               consume_eols
               if (next_is(TokenType.symbol_close_paren)) escapeWhile
               expecting_arg = false
-              if (next_is(TokenType.symbol_comma)) def.args.add( null )
-              else                                 def.args.add( parse_expression )
+              if (next_is(TokenType.symbol_comma))
+                def.args.add( null )
+              elseIf (consume(TokenType.symbol_ampersand))
+                ensure named_args
+                local t2 = peek
+                local name = read_identifier
+                consume_eols
+                if (consume(TokenType.symbol_equals)) consume_eols; named_args[ name ] = parse_expression
+                else                                  named_args[ name ] = CmdLiteralLogical( t2, true )
+              else
+                def.args.add( parse_expression )
+              endIf
               consume_eols
             endWhile
             if (expecting_arg) def.args.add( null )
             consume_eols
             must_consume( TokenType.symbol_close_paren )
+
+            # insert named args
+            if (named_args)
+              forEach (name in named_args.keys)
+                local i = this_type.property_list.locate( $.name == name )
+                if (i.exists)
+                  while (def.args.count <= i.value) def.args.add( null )
+                  if (def.args[i.value]) throw named_args[name].t.error( "Multiple values given for enum property '$'." (name) )
+                  def.args[i.value] = named_args[name]
+                else
+                  trace this_type.property_list
+                  throw named_args[name].t.error( "No such enum property '$'." (name) )
+                endIf
+              endForEach
+            endIf
+
           endIf
         endIf
         if (consume(TokenType.symbol_equals))
