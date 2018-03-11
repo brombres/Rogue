@@ -1,0 +1,284 @@
+class Tokenizer<<$TokenType>>
+  GLOBAL PROPERTIES
+    keywords  : StringTable<<TokenType>>
+    symbols   : Table<<Character,TokenType[]>>
+
+  PROPERTIES
+    filepath       : String
+    scanner        : Scanner
+    tokens         : Token[]
+    spaces_per_tab = 2
+    keep_eols      = true
+    keep_spaces    = false
+
+  METHODS
+    method init_object
+      if (not keywords)
+        configure_token_types( <<$TokenType>> )
+      endIf
+
+    method configure_token_types( type_info:TypeInfo )
+      ensure keywords
+      ensure symbols
+
+      local base_type_info = type_info.base_class
+      if (base_type_info) configure_token_types( base_type_info )
+
+      forEach (p in type_info.global_properties)
+        if (p.type.instance_of(<<TokenType>>))
+          configure_token_type( type_info.global_property( p )->Object as TokenType )
+        endIf
+      endForEach
+
+    method configure_token_type( type:TokenType )
+      if (type.is_keyword)
+        keywords[ type.name ] = type
+      elseIf (type.is_symbol)
+        local first_ch = type.name[ 0 ]
+        local list = symbols[ first_ch ]
+        if (not list) symbols[ first_ch ] = ensure list
+        if (list.add(type).count > 1) list.sort( (a,b)=>(a.name.count>=b.name.count) )
+      endIf
+
+    method consume( ch:Character )->Logical [macro]
+      this.scanner.consume( ch )
+
+    method consume( text:String )->Logical [macro]
+      this.scanner.consume( text )
+
+    method consume_eols->Logical
+      local found_any = false
+      while (consume('\n')) found_any = true
+      return found_any
+
+    method consume_spaces->Logical
+      local found_any = false
+      while (consume(' ')) found_any = true
+      return found_any
+
+    method consume_whitespace->Logical
+      local found_any = false
+      while ((not keep_spaces and consume_spaces) or (not keep_eols and consume_eols)) found_any = true
+      return true
+
+    method peek->Character [macro]
+      this.scanner.peek
+
+    method read->Character [macro]
+      this.scanner.read
+
+    method tokenize( filepath )->Token[]
+      scanner = Scanner( File(filepath), &=spaces_per_tab )
+      return tokenize
+
+    method tokenize( filepath, source:String )->Token[]
+      scanner = Scanner( source, &=spaces_per_tab )
+      return tokenize
+
+    method tokenize( filepath, source:Character[] )->Token[]
+      scanner = Scanner( source, &=spaces_per_tab )
+      return tokenize
+
+    method tokenize->Token[]
+      tokens = Token[]
+      while (tokenize_another) noAction
+      return tokens
+
+    method tokenize_another->Logical
+      Token.next_filepath = filepath
+      Token.next_line = scanner.line
+      Token.next_column = scanner.column
+
+      consume_whitespace
+      if (not scanner.has_another) return false
+
+      if (consume(' '))  tokens.add( Token(TokenType.SPACE) ); return true
+      if (consume('\n')) tokens.add( Token(TokenType.EOL) ); return true
+
+      if (tokenize_comment) return true
+      if (tokenize_number)  return true
+      if (tokenize_symbol)  return true
+
+      throw ParseError( filepath, scanner.line, "Syntax error: unexpected '$'." (peek) )
+
+    method tokenize_comment->Logical
+      local text = scan_comment
+      if (not text) return false
+
+      if (tokens.count and tokens.last.type is TokenType.EOL)
+        if (not tokens.last.text) tokens.last.text = text
+        else                      tokens.last.text += text
+      endIf
+      return true
+
+    method tokenize_number->Logical
+      if (not peek.is_number) return false
+
+      local base = 10
+      if (consume("0b"))     base = 2
+      if (consume("0c"))     base = 8
+      elseIf (consume("0x")) base = 16
+
+      local n = scan_int64( base )
+      if (base != 10)
+        if (n >= Int32.minimum and n <= Int32.maximum)
+          tokens.add( Token(TokenType.LITERAL_INT32,n) )
+        else
+          tokens.add( Token(TokenType.LITERAL_INT64,n.real_bits) )
+        endIf
+      endIf
+
+      return true
+
+    method tokenize_symbol->Logical
+      local candidates = symbols[ peek ]
+      if (not candidates) return false
+
+      # Candidates are ordered from most characters to least - the first one to fully match is the best choice
+      forEach (candidate in candidates)
+        if (scanner.consume(candidate.name))
+          tokens.add( Token(candidate) )
+          return true
+        endIf
+      endForEach
+
+      return false
+
+    method scan_comment->String
+      if (not consume('#')) return null
+
+      use buffer = StringBuilder.pool
+        if (consume('{'))
+          # Multi-line comment
+          while (scanner.has_another and not consume("}#")) buffer.print( read )
+        else
+          # Single-line comment
+          while (scanner.has_another and not peek == '\n')
+            buffer.print( read )
+          endWhile
+        endIf
+        return buffer->String
+      endUse
+
+    method scan_int64( base:Int32 )->Int64
+      local result : Int64
+      while (peek.is_number(base))
+        result = result * base + read.to_number
+      endWhile
+      return result
+
+
+endClass
+
+
+class ParseError( filename:String, line:Int32, message ) : Error
+  METHODS
+    method init( message )
+
+    method init( t:Token, message )
+      filename = t.filepath
+      line = t.line
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.println "=" * 79
+      buffer.print "ERROR "
+      if (filename)
+        buffer.print ''in "''
+        buffer.print filename
+        buffer.print ''"''
+        if (line)
+          buffer.print " line "
+          buffer.print line
+        endIf
+      endIf
+      buffer.println.println
+      buffer.println message
+      buffer.println "=" * 79
+      return buffer->String
+
+endClass
+
+
+class TokenType( name:String, &is_structural )
+  GLOBAL PROPERTIES
+    IDENTIFIER     = TokenType( "identifier" )
+    EOL            = TokenType( "[EOL]" )
+    SPACE          = TokenType( "[SPACE]" )
+    LITERAL_INT32  = TokenType( "Int32" )
+    LITERAL_INT64  = TokenType( "Int64" )
+    LITERAL_REAL64 = TokenType( "Real64" )
+
+    SYMBOL_PLUS    = SymbolTokenType( "+" )
+    SYMBOL_MINUS   = SymbolTokenType( "-" )
+    SYMBOL_STAR    = SymbolTokenType( "*" )
+    SYMBOL_SLASH   = SymbolTokenType( "/" )
+
+  METHODS
+    method error( message:String )->Exception [essential]
+      return Exception( message )
+
+    method is_keyword->Logical
+      return false
+
+    method is_symbol->Logical
+      return false
+
+    method to->String
+      return name
+endClass
+
+
+class KeywordTokenType : TokenType
+  METHODS
+    method is_keyword->Logical
+      return true
+endClass
+
+
+class SymbolTokenType : TokenType
+  METHODS
+    method is_symbol->Logical
+      return true
+endClass
+
+
+class Token
+  GLOBAL PROPERTIES
+    next_filepath : String
+    next_line     : Int32
+    next_column   : Int32
+
+  PROPERTIES
+    type     : TokenType
+    filepath : String
+    line     : Int32
+    column   : Int32
+    text     : String
+    number   : Real64?
+
+  METHODS
+    method init
+      filepath = next_filepath
+      line = next_line
+      column = next_column
+
+    method init( type )
+      init
+
+    method init( type, number )
+
+    method init( type, text )
+endClass
+
+
+class ExprTokenType : TokenType
+  GLOBAL PROPERTIES
+
+  METHODS
+    method error( message:String )->Error
+      return Error( message )
+endClass
+
+local tokenizer = Tokenizer<<ExprTokenType>>()
+trace tokenizer.tokenize( "Test", "3+4" )
