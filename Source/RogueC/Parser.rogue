@@ -3748,31 +3748,39 @@ class Parser
         first = false
         consume_eols
 
-        local key : Cmd
-        if (next_is_identifier)
-          t = peek
-          key = CmdLiteralString( t, read_identifier )
-        else
-          key = parse_expression
-        endIf
-        consume_eols
-
-        local value : Cmd
+        t = peek
         if (consume(TokenType.symbol_colon))
+          # :x -> "x":x
           consume_eols
-          t = peek
-          if (consume(TokenType.symbol_open_brace))
-            value = parse_value_table( t )
-          elseIf (consume(TokenType.symbol_open_bracket))
-            value = parse_value_list( t )
-          else
-            value = parse_expression
-          endIf
+          local name = read_identifier
+          table.add( CmdLiteralString(t,name), CmdAccess(t,name) )
         else
-          value = CmdLiteralLogical( t, true )
-        endIf
+          local key : Cmd
+          if (next_is_identifier)
+            t = peek
+            key = CmdLiteralString( t, read_identifier )
+          else
+            key = parse_expression
+          endIf
+          consume_eols
 
-        table.add( key, value )
+          local value : Cmd
+          if (consume(TokenType.symbol_colon))
+            consume_eols
+            t = peek
+            if (consume(TokenType.symbol_open_brace))
+              value = parse_value_table( t )
+            elseIf (consume(TokenType.symbol_open_bracket))
+              value = parse_value_list( t )
+            else
+              value = parse_expression
+            endIf
+          else
+            value = CmdLiteralLogical( t, true )
+          endIf
+
+          table.add( key, value )
+        endIf
 
         consume_eols
       endWhile
