@@ -1146,6 +1146,7 @@ class Visitor
       cmd.elements.dispatch( this )
 
     method dispatch( cmd:CmdTypedLiteralList )
+      cmd.access.dispatch( this )
       cmd.elements.dispatch( this )
 
     method dispatch( cmd:CmdTypedLiteralTable )
