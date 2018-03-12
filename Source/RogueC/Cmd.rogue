@@ -5815,7 +5815,7 @@ class CmdTypedLiteralTable : Cmd
 
         forEach (key at index in keys)
           local access_key = key as CmdAccess
-          if (access_key and access_key.context is null and access_key.args is null)
+          if (access_key and access_key.context is null and access_key.args is null and access_key.name.begins_with('@'))
             local item = CmdAssign( t, CmdAccess(t,CmdAccess(t,context_var),access_key.name), values[index] )
             init_block.statements.add( item )
           else
