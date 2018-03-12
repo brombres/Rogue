@@ -3220,8 +3220,9 @@ class Parser
       elseIf (next_is(TokenType.identifier) or next_is(TokenType.symbol_at) or next_is(TokenType.keyword_meta))
         local result = parse_access( t )
         local access = result as CmdAccess
-        if (access and access.name.ends_with(']') and not access.args)
-          if (next_is(TokenType.symbol_open_bracket)) return parse_typed_literal_list( access.t, access.name )
+        if (access and not access.args and access.name.ends_with("[]"))
+          if (next_is(TokenType.symbol_open_bracket)) return parse_typed_literal_list( access )
+          #elseIf (next_is(TokenType.symbol_open_brace)) return parse_typed_literal_table( access.t, access.name )
         endIf
         return result
 
@@ -3853,9 +3854,9 @@ class Parser
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
-      return CmdTypedLiteralList( t, "ValueList", elements )
+      return CmdTypedLiteralList( CmdAccess(t,"ValueList"), elements )
 
-    method parse_typed_literal_list( t:Token, list_type_name:String )->Cmd
+    method parse_typed_literal_list( access:CmdAccess )->Cmd
       must_consume( TokenType.symbol_open_bracket )
       consume_eols
 
@@ -3865,11 +3866,11 @@ class Parser
       while (first or consume(TokenType.symbol_comma))
         first = false
         consume_eols
-        t = peek
+        local t = peek
         if (next_is(TokenType.symbol_open_bracket))
           # Nested list - propagate the type
-          if (list_type_name.ends_with("[][]"))
-            local item = parse_typed_literal_list( t, list_type_name.leftmost(-2) )
+          if (access.name.ends_with("[][]"))
+            local item = parse_typed_literal_list( CmdAccess(t,access.name.leftmost(-2)) )
             elements.add( item )
           else
             throw t.error( "Literal list content contains more dimensions than literal list type." )
@@ -3881,7 +3882,62 @@ class Parser
       endWhile
       must_consume( TokenType.symbol_close_bracket )
 
-      return CmdTypedLiteralList( t, list_type_name, elements )
+      return CmdTypedLiteralList( access, elements )
+
+      #{
+    method parse_typed_literal_table( t:Token )->Cmd
+      must_consume( TokenType.symbol_open_brace )
+      consume_eols
+
+      local table = CmdTypedLiteralTable( t, "ValueTable" )
+      if (consume(TokenType.symbol_close_brace)) return table
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        t = peek
+        if (consume(TokenType.symbol_colon))
+          # :x -> "x":x
+          consume_eols
+          local name = read_identifier
+          table.add( CmdLiteralString(t,name), CmdAccess(t,name) )
+        else
+          local key : Cmd
+          if (next_is_identifier)
+            t = peek
+            key = CmdLiteralString( t, read_identifier )
+          else
+            key = parse_expression
+          endIf
+          consume_eols
+
+          local value : Cmd
+          if (consume(TokenType.symbol_colon))
+            consume_eols
+            t = peek
+            if (consume(TokenType.symbol_open_brace))
+              value = parse_typed_literal_table( t )
+            elseIf (consume(TokenType.symbol_open_bracket))
+              value = parse_value_list( t )
+            else
+              value = parse_expression
+            endIf
+          else
+            value = CmdLiteralLogical( t, true )
+          endIf
+
+          table.add( key, value )
+        endIf
+
+        consume_eols
+      endWhile
+
+      must_consume( TokenType.symbol_close_brace )
+      return table
+      }#
+
 endClass
 
 class FnParam( name:String )
