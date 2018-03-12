@@ -1,0 +1,80 @@
+module ParseKit
+
+class Parser<<$TokenType>>
+  PROPERTIES
+    reader : ParseReader
+
+  METHODS
+    method init( file:File )
+      reader = ParseReader( Tokenizer<<$TokenType>>().tokenize(file) )
+
+    method init( filename:String, source:String )
+      reader = ParseReader( Tokenizer<<$TokenType>>().tokenize(filename,source) )
+
+    method consume( token_type:TokenType )->Logical [macro]
+      this.reader.consume( token_type )
+
+    method parse_expression( parse_cmd:ParseCmd )->Cmd
+      return parse_cmd.parse_next
+
+    method parse_add_or_subtract( parse_cmd:ParseCmd )->Cmd
+      return parse_add_or_subtract( parse_cmd, parse_cmd.parse_next )
+
+    method parse_add_or_subtract( parse_cmd:ParseCmd, left:Cmd )->Cmd
+      local t = peek
+      if (consume(TokenType.SYMBOL_PLUS))
+        return parse_add_or_subtract( parse_cmd, CmdAdd(t,   TODO
+      else
+        return left
+      endIf
+
+    method parse_multiply_or_divide( parse_cmd:ParseCmd )->Cmd
+      return parse_cmd.parse_next
+
+    method parse_term( parse_cmd:ParseCmd )->Cmd
+      local t = reader.read
+      if (t.type is TokenType.LITERAL_INT32)
+        return CmdLiteralInt32( t, t->Int32 )
+      else
+        throw t.error( "Unexpected '$'." (t.name) )
+      endIf
+
+    method has_another->Logical [macro]
+      this.reader.has_another
+
+    method peek->Token [macro]
+      this.reader.peek
+
+    method peek( lookahead:Int32 )->Token [macro]
+      this.reader.peek( lookahead )
+
+    method read->Token [macro]
+      this.reader.read
+
+  #{
+  @|program         = elements
+   |elements        = element*
+   |element         = class_definition | statements
+   |statements      = statement*
+   |statement       = expression
+   |expression      = add_or_subtract
+   |add_or_subtract = CmdAdd | CmdSubtract | multiply_or_divide
+   |CmdAdd          = add_or_subtract '+' multiply_or_divide
+   |CmdSubtract     = add_or_subtract '-' multiply_or_divide
+   |multiply_or_div = CmdMultiply | CmdDivide | multiply_or_divide
+   |CmdAdd          = add_or_subtract '+' multiply_or_divide
+   |CmdSubtract     = add_or_subtract '-' multiply_or_divide
+
+
+  @{
+    program:    "elements",
+    elements:   ["element","elements"]
+    element:    ["class_definition","statements"]
+    statements: ["statement","statements"]
+    statement:  ["expression"]
+    expression: ["add_or_subtract"]
+    add_or_subtract: ["add_or_subtract"
+    ]
+    }#
+endClass
+

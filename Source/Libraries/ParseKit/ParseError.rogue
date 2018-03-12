@@ -1,0 +1,30 @@
+module ParseKit
+
+class ParseError( filename:String, line:Int32, message ) : Error
+  METHODS
+    method init( message )
+
+    method init( t:Token, message )
+      filename = t.filepath
+      line = t.line
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.println "=" * 79
+      buffer.print "ERROR "
+      if (filename)
+        buffer.print ''in "''
+        buffer.print filename
+        buffer.print ''"''
+        if (line)
+          buffer.print " line "
+          buffer.print line
+        endIf
+      endIf
+      buffer.println.println
+      buffer.println message
+      buffer.println "=" * 79
+      return buffer->String
+
+endClass
+

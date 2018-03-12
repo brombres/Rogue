@@ -1,0 +1,24 @@
+module ParseKit
+
+class Cmd( t:Token )
+endClass
+
+class CmdBinaryOp( t, left:Cmd, right:Cmd ) : Cmd [abstract]
+  METHODS
+    method op->String [abstract]
+
+    method to->String
+      return "($ $ $)" (left,op,right)
+endClass
+
+class CmdAdd : CmdBinaryOp
+  METHODS
+    method op->String
+      return "+"
+endClass
+
+class CmdLiteralInt32( t, value:Int32 ) : Cmd
+  METHODS
+    method to->String
+      return value->String
+endClass

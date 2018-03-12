@@ -1,0 +1,18 @@
+module ParseKit
+
+class ParseCmd
+  PROPERTIES
+    parse_fn : Function(ParseCmd)->Cmd
+    next_cmd : ParseCmd
+
+  METHODS
+    method init( parse_fn )
+
+    method execute->Cmd
+      return parse_fn( this )
+
+    method parse_next->Cmd
+      if (next_cmd) return next_cmd.execute
+      throw ParseError( ''No "next" syntax definition in $.'' (type_name) )
+endClass
+

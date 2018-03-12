@@ -1,3 +1,6 @@
+$include "ParseKit/Scanner.rogue"
+uses ParseKit
+
 class JSON
   GLOBAL METHODS
     method load( file:File )->Value

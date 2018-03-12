@@ -1,3 +1,5 @@
+module ParseKit
+
 class Scanner : Reader<<Character>>
   PROPERTIES
     data           : Character[]
