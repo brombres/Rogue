@@ -1506,7 +1506,11 @@ class Parser
 
       if (consume(TokenType.symbol_lt))
         if (parsing_augment)
-          throw t.error( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." )
+          if (this_method.is_macro)
+            throw t.error( "Macro methods cannot have augment section labels." )
+          else
+            throw t.error( "Augment section labels should be defined in the outer scope of the method and cannot be nested inside a control structure." )
+          endIf
         else
           cur_statement_list.add( this_method.begin_label(t,read_identifier,false) )
         endIf
