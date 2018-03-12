@@ -141,11 +141,6 @@ class Method
       label_lookup[ label_name ] = cur_label
       label_list.add( cur_label )
       return cur_label
-      #{
-    method find_label( label_name:String )->CmdLabel
-      if (not label_lookup) return null
-      return label_lookup[ label_name ]
-      }#
 
     method get_locals->Local[]
       return CollectLocalsVisitor().collect_locals( this )
@@ -395,10 +390,12 @@ class Method
 
         # Insert the label content.  Give the method its own <<insert>>
         # and <<append>> labels for any successive augments.
-        statements.add( begin_label(t,"insert",false) )
-        statements.add( insert_label.statements )
-        statements.add( append_label.statements )
-        statements.add( begin_label(t,"append",false) )
+        if (insert_label and append_label)
+          statements.add( begin_label(t,"insert",false) )
+          statements.add( insert_label.statements )
+          statements.add( append_label.statements )
+          statements.add( begin_label(t,"append",false) )
+        endIf
       endIf
 
     method convert_to_task
