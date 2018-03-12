@@ -1,7 +1,7 @@
 module ParseKit
 
 $include "ParseKit/Cmd.rogue"
-$include "ParseKit/ParseCmd.rogue"
+$include "ParseKit/ParseControl.rogue"
 $include "ParseKit/ParseError.rogue"
 $include "ParseKit/ParseReader.rogue"
 $include "ParseKit/Parser.rogue"

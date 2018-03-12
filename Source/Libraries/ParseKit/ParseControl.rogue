@@ -1,9 +1,9 @@
 module ParseKit
 
-class ParseCmd
+class ParseControl
   PROPERTIES
-    parse_fn : Function(ParseCmd)->Cmd
-    next_cmd : ParseCmd
+    parse_fn     : Function(ParseControl)->Cmd
+    next_control : ParseControl
 
   METHODS
     method init( parse_fn )
@@ -12,7 +12,7 @@ class ParseCmd
       return parse_fn( this )
 
     method parse_next->Cmd
-      if (next_cmd) return next_cmd.execute
+      if (next_control) return next_control.execute
       throw ParseError( ''No "next" syntax definition in $.'' (type_name) )
 endClass
 

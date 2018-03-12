@@ -14,24 +14,24 @@ class Parser<<$TokenType>>
     method consume( token_type:TokenType )->Logical [macro]
       this.reader.consume( token_type )
 
-    method parse_expression( parse_cmd:ParseCmd )->Cmd
-      return parse_cmd.parse_next
+    method parse_expression( control:ParseControl )->Cmd
+      return control.parse_next
 
-    method parse_add_or_subtract( parse_cmd:ParseCmd )->Cmd
-      return parse_add_or_subtract( parse_cmd, parse_cmd.parse_next )
+    method parse_add_or_subtract( control:ParseControl )->Cmd
+      return parse_add_or_subtract( control, control.parse_next )
 
-    method parse_add_or_subtract( parse_cmd:ParseCmd, left:Cmd )->Cmd
+    method parse_add_or_subtract( control:ParseControl, left:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.SYMBOL_PLUS))
-        return parse_add_or_subtract( parse_cmd, CmdAdd(t,   TODO
+        return parse_add_or_subtract( control, CmdAdd(t,left,control.parse_next) )
       else
         return left
       endIf
 
-    method parse_multiply_or_divide( parse_cmd:ParseCmd )->Cmd
-      return parse_cmd.parse_next
+    method parse_multiply_or_divide( control:ParseControl )->Cmd
+      return control.parse_next
 
-    method parse_term( parse_cmd:ParseCmd )->Cmd
+    method parse_term( control:ParseControl )->Cmd
       local t = reader.read
       if (t.type is TokenType.LITERAL_INT32)
         return CmdLiteralInt32( t, t->Int32 )
