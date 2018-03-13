@@ -1,5 +1,6 @@
 module ParseKit
 
+#{
 class Cmd( t:Token )
 endClass
 
@@ -22,3 +23,4 @@ class CmdLiteralInt32( t, value:Int32 ) : Cmd
     method to->String
       return value->String
 endClass
+}#

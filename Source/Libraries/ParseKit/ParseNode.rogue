@@ -1,0 +1,17 @@
+module ParseKit
+
+class ParseNode<<$ID>>
+  PROPERTIES
+    next_node : ParseNode<<$ID>>
+
+  METHODS
+    method parse( parser:Parser<<$ID>> )
+
+    method execute->Cmd<<$ID>>
+      return parse_fn( this )
+
+    method parse_next->Cmd<<$ID>>
+      if (next_node) return next_node.execute
+      throw ParseError( ''No "next" syntax definition in $.'' (type_name) )
+endClass
+

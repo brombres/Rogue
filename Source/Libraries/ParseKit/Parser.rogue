@@ -1,19 +1,20 @@
 module ParseKit
 
-class Parser<<$TokenType>>
+class Parser<<$ID>>
   PROPERTIES
     reader : ParseReader
 
   METHODS
     method init( file:File )
-      reader = ParseReader( Tokenizer<<$TokenType>>().tokenize(file) )
+      reader = ParseReader( Tokenizer<<$ID>>().tokenize(file) )
 
     method init( filename:String, source:String )
-      reader = ParseReader( Tokenizer<<$TokenType>>().tokenize(filename,source) )
+      reader = ParseReader( Tokenizer<<$ID>>().tokenize(filename,source) )
 
-    method consume( token_type:TokenType )->Logical [macro]
+    method consume( token_type:TokenType<<$ID>> )->Logical [macro]
       this.reader.consume( token_type )
 
+      #{
     method parse_expression( control:ParseControl )->Cmd
       return control.parse_next
 
@@ -22,7 +23,7 @@ class Parser<<$TokenType>>
 
     method parse_add_or_subtract( control:ParseControl, left:Cmd )->Cmd
       local t = peek
-      if (consume(TokenType.SYMBOL_PLUS))
+      if (consume(TokenType<<$ID>>.SYMBOL_PLUS))
         return parse_add_or_subtract( control, CmdAdd(t,left,control.parse_next) )
       else
         return left
@@ -33,7 +34,7 @@ class Parser<<$TokenType>>
 
     method parse_term( control:ParseControl )->Cmd
       local t = reader.read
-      if (t.type is TokenType.LITERAL_INT32)
+      if (t.type is TokenType<<$ID>>.LITERAL_INT32)
         return CmdLiteralInt32( t, t->Int32 )
       else
         throw t.error( "Unexpected '$'." (t.name) )
@@ -50,6 +51,7 @@ class Parser<<$TokenType>>
 
     method read->Token [macro]
       this.reader.read
+      }#
 
   #{
   @|program         = elements

@@ -1,9 +1,9 @@
 module ParseKit
 
-class Tokenizer<<$TokenType>>
+class Tokenizer<<$ID>>
   GLOBAL PROPERTIES
-    keywords  : StringTable<<TokenType>>
-    symbols   : Table<<Character,TokenType[]>>
+    keywords  : StringTable<<TokenType<<$ID>>>>
+    symbols   : Table<<Character,TokenType<<$ID>>[]>>
 
   PROPERTIES
     filepath       : String
@@ -16,7 +16,7 @@ class Tokenizer<<$TokenType>>
   METHODS
     method init_object
       if (not keywords)
-        configure_token_types( <<$TokenType>> )
+        configure_token_types( <<$ID>> )
       endIf
 
     method configure_token_types( type_info:TypeInfo )
@@ -27,12 +27,12 @@ class Tokenizer<<$TokenType>>
       if (base_type_info) configure_token_types( base_type_info )
 
       forEach (p in type_info.global_properties)
-        if (p.type.instance_of(<<TokenType>>))
-          configure_token_type( type_info.global_property( p )->Object as TokenType )
+        if (p.type.instance_of(<<TokenType<<$ID>>>>))
+          configure_token_type( type_info.global_property( p )->Object as TokenType<<$ID>> )
         endIf
       endForEach
 
-    method configure_token_type( type:TokenType )
+    method configure_token_type( type:TokenType<<$ID>> )
       if (type.is_keyword)
         keywords[ type.name ] = type
       elseIf (type.is_symbol)
@@ -84,7 +84,7 @@ class Tokenizer<<$TokenType>>
     method tokenize->Token[]
       tokens = Token[]
       while (tokenize_another) noAction
-      tokens.add( Token(TokenType.EOL) )
+      tokens.add( Token(TokenType<<$ID>>.EOL) )
       return tokens
 
     method tokenize_another->Logical
@@ -95,8 +95,8 @@ class Tokenizer<<$TokenType>>
       consume_whitespace
       if (not scanner.has_another) return false
 
-      if (consume(' '))  tokens.add( Token(TokenType.SPACE) ); return true
-      if (consume('\n')) tokens.add( Token(TokenType.EOL) ); return true
+      if (consume(' '))  tokens.add( Token(TokenType<<$ID>>.SPACE) ); return true
+      if (consume('\n')) tokens.add( Token(TokenType<<$ID>>.EOL) ); return true
 
       if (tokenize_comment) return true
       if (tokenize_number)  return true
@@ -108,7 +108,7 @@ class Tokenizer<<$TokenType>>
       local text = scan_comment
       if (not text) return false
 
-      if (tokens.count and tokens.last.type is TokenType.EOL)
+      if (tokens.count and tokens.last.type is TokenType<<$ID>>.EOL)
         if (not tokens.last.text) tokens.last.text = text
         else                      tokens.last.text += text
       endIf
@@ -125,9 +125,9 @@ class Tokenizer<<$TokenType>>
       local n = scan_int64( base )
       #if (base == 10)
       if (n >= Int32.minimum and n <= Int32.maximum)
-        tokens.add( Token(TokenType.LITERAL_INT32,n) )
+        tokens.add( Token(TokenType<<$ID>>.LITERAL_INT32,n) )
       else
-        tokens.add( Token(TokenType.LITERAL_INT64,n.real_bits) )
+        tokens.add( Token(TokenType<<$ID>>.LITERAL_INT64,n.real_bits) )
       endIf
 
       return true
