@@ -12,6 +12,7 @@ class TokenType
     directive_else                : TokenType
     directive_endIf               : TokenType
     directive_warning             : TokenType
+    directive_macro               : TokenType
     directive_module              : TokenType
     directive_essential           : TokenType
     directive_uses                : TokenType
@@ -19,6 +20,7 @@ class TokenType
     meta_block                    : TokenType
     meta_endBlock                 : TokenType
     meta_localDefine              : TokenType
+    meta_localMacro               : TokenType
     meta_methodSignature          : TokenType
     meta_moduleName               : TokenType
 
