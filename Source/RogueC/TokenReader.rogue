@@ -44,12 +44,12 @@ class PreprocessorTokenReader
   # Expands tokens based on Preprocessor.definitions
   PROPERTIES
     tokens   : Token[]
-    queue    = Token[]  # stored in reverse order
+    stack    = Token[]  # stored in reverse order
     position : Int32
     count    : Int32
     unfiltered : Int32
 
-    local_definitions = StringTable<<Token[]>>[]
+    local_definitions = Definitions[]
 
   METHODS
     method init( tokens )
@@ -61,54 +61,146 @@ class PreprocessorTokenReader
       return RogueError( message )
 
     method expand_definition( t:Token )
-      local entry : TableEntry<<String,Token[]>>
+      if (local_definitions.count and expand_definition(t,local_definitions.last))  return
+      if (expand_definition(t,Preprocessor.definitions)) return
+      stack.add( t ) # no expansion
 
-      contingent
-        forEach (local_def in local_definitions step -1)
-          entry = local_def.find( t->String )
-          sufficient (entry)
-        endForEach
+    method expand_definition( t:Token, definitions:Definitions )->Logical
+      local defs = definitions.defines_for_name[ t->String ]
+      if (not defs) return false
 
-        entry = Preprocessor.definitions.find( t->String )
-        necessary (entry)
+      local max_args = 0
+      local zero_param_define : Define
+      forEach (def in defs)
+        local n = def.parameter_count
+        max_args = max_args.or_larger( n )
+        if (n == 0) zero_param_define = def
+      endForEach
 
-      satisfied
-        if (entry.value)
-          local def_tokens = entry.value
-          entry.value = null   # temporarily null to prevent infinite recursion
-          forEach (def_t in def_tokens step -1)
-            if (t.type is TokenType.identifier) expand_definition( def_t )
-            else                                queue.add( t )
-          endForEach
-          entry.value = def_tokens
-          return
-        else
-          throw t.error( ''Recursive definition for "$".'' (t->String) )
+      if (max_args > 0)
+        # Collect arg tokens
+        if (peek.type is TokenType.symbol_open_paren)
+          local args = Token[][]
+          local all_tokens = Token[]
+          all_tokens.add( read )  # '('
+          if (peek.type is TokenType.symbol_close_paren)
+            all_tokens.add( read ) # ')'
+          else
+            local tokens = Token[]
+            args.add( tokens )
+            local depth = 1
+            while (has_another)
+              local macro_t = read
+              all_tokens.add( macro_t )
+
+              if (macro_t.type is TokenType.symbol_open_paren or macro_t.type is TokenType.symbol_open_bracket or...
+                macro_t.type is TokenType.symbol_open_brace or macro_t.type is TokenType.symbol_open_specialize)
+                if (depth) tokens.add( macro_t )
+                ++depth
+              elseIf (macro_t.type is TokenType.symbol_close_paren or macro_t.type is TokenType.symbol_close_bracket or...
+                macro_t.type is TokenType.symbol_close_brace or macro_t.type is TokenType.symbol_open_specialize)
+                --depth
+                if (depth == 0) escapeWhile
+                else            tokens.add( macro_t )
+              elseIf (macro_t.type is TokenType.symbol_comma and depth == 1)
+                tokens = Token[]
+                args.add( tokens )
+              else
+                tokens.add( macro_t )
+              endIf
+            endWhile
+
+            if (depth) throw peek.error( "Unexpected end of input." )
+          endIf
+
+          local def = defs.find( args.count )
+          if (def)
+            apply_macro( t, def, args )
+            return true
+          else
+            push( all_tokens )
+            if (not zero_param_define)
+              local builder = StringBuilder()
+              builder.println( "No '$' macro accepts $. Candidates:\n" (t->String,"# arg".pluralized(args.count)) )
+              forEach (candidate in defs)
+                builder.println "  $" (candidate)
+              endForEach
+              builder.println
+              throw t.error( builder->String )
+            endIf
+          endIf
         endIf
+      endIf
 
-      unsatisfied
-        queue.add( t )
+      if (zero_param_define)
+        apply_define( t, zero_param_define )
+        return true
+      else
+        return false
+      endIf
 
-      endContingent
+    method apply_define( t:Token, def:Define )
+      if (def.is_in_use) throw t.error( ''Recursive definition for "$".'' (t->String) )
+      def.is_in_use = true # prevent infinite recursion
+
+      forEach (def_t in def.tokens step -1)
+        if (def_t.type is TokenType.identifier)
+          expand_definition( def_t )
+        else
+          stack.add( def_t )
+        endIf
+      endForEach
+
+      def.is_in_use = false
+
+    method apply_macro( t:Token, def:Define, args:Token[][] )
+      if (def.is_in_use) throw t.error( ''Recursive definition for "$".'' (t->String) )
+      def.is_in_use = true
+
+      local lookup = StringTable<<Token[]>>()
+      forEach (param_name at index in def.parameter_names)
+        lookup[ param_name ] = args[ index ]
+      endForEach
+
+      forEach (def_t in def.tokens step -1)
+        if (def_t.type is TokenType.identifier)
+          local arg_tokens = lookup[ def_t->String ]
+          if (arg_tokens)
+            forEach (arg_t in arg_tokens step -1)
+              if (arg_t.type is TokenType.identifier)
+                expand_definition( arg_t )
+              else
+                stack.add( arg_t )
+              endIf
+            endForEach
+          else
+            expand_definition( def_t )
+          endIf
+        else
+          stack.add( def_t )
+        endIf
+      endForEach
+
+      def.is_in_use = false
 
     method has_another->Logical
       peek
-      return queue.count
+      return stack.count
 
     method next_is( type:TokenType )->Logical
-      if (position == count and queue.count == 0) return false
+      if (position == count and stack.count == 0) return false
       return (peek.type is type)
 
     method next_is_unfiltered( type:TokenType )->Logical
-      if (position == count and queue.count == 0) return false
+      if (position == count and stack.count == 0) return false
       return (peek_unfiltered.type is type)
 
     method peek->Token
-      if (queue.count) return queue.last
+      if (stack.count) return stack.last
       return peek(0)
 
     method peek_unfiltered->Token
-      if (queue.count) return queue.last
+      if (stack.count) return stack.last
       return peek_unfiltered(0)
 
     method push_unfiltered()
@@ -118,11 +210,11 @@ class PreprocessorTokenReader
       unfiltered--
 
     method peek( num_ahead:Int32, unfiltered:Logical )->Token
-      if (position + num_ahead >= count + queue.count)
+      if (position + num_ahead >= count + stack.count)
         return TokenType.eoi.create_token( tokens.last )
       endIf
 
-      while (queue.count <= num_ahead)
+      while (stack.count <= num_ahead)
         local t = tokens[position]
         ++position
 
@@ -130,11 +222,11 @@ class PreprocessorTokenReader
         if (t.type is TokenType.identifier and unfiltered == false and this.unfiltered == 0)
           expand_definition( t )
         else
-          queue.add( t )
+          stack.add( t )
         endIf
       endWhile
 
-      return queue[ (queue.count - num_ahead) - 1 ]
+      return stack[ (stack.count - num_ahead) - 1 ]
 
     method peek( num_ahead:Int32 )->Token
       return peek(num_ahead, false)
@@ -143,19 +235,19 @@ class PreprocessorTokenReader
       return peek(num_ahead, true)
 
     method push( t:Token )
-      queue.add( t )
+      stack.add( t )
 
     method push( _tokens:Token[] )
       local i = _tokens.count
       while (i > 0)
         --i
-        queue.add( _tokens[i] )
+        stack.add( _tokens[i] )
       endWhile
 
     method read->Token
       peek
-      if (queue.count == 0) throw error( "Unexpected end of input." )
-      return queue.remove_last
+      if (stack.count == 0) throw error( "Unexpected end of input." )
+      return stack.remove_last
 
     method read_identifier->String
       if (not next_is(TokenType.identifier))

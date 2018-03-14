@@ -79,19 +79,21 @@ class Tokenizer
       TokenType.directive_define     = define( DirectiveTokenType("$define") )
       TokenType.directive_defined    = define( DirectiveTokenType("defined") )
       TokenType.directive_error      = define( DirectiveTokenType("$error") )
+      TokenType.directive_essential  = define( DirectiveTokenType("$essential") )
       TokenType.directive_include    = define( DirectiveTokenType("$include") )
       TokenType.directive_if         = define( DirectiveTokenType("$if") )
       TokenType.directive_elseIf     = define( DirectiveTokenType("$elseIf") )
       TokenType.directive_else       = define( DirectiveTokenType("$else") )
       TokenType.directive_endIf      = define( DirectiveTokenType("$endIf") )
       TokenType.directive_warning    = define( DirectiveTokenType("$warning") )
-      TokenType.directive_essential  = define( DirectiveTokenType("$essential") )
+      TokenType.directive_macro      = define( DirectiveTokenType("$macro") )
       TokenType.directive_module     = define( StructuralDirectiveTokenType("module") )
       TokenType.directive_uses       = define( StructuralDirectiveTokenType("uses") )
 
       TokenType.meta_block           = define( DirectiveTokenType("$block") )
       TokenType.meta_endBlock        = define( DirectiveTokenType("$endBlock") )
       TokenType.meta_localDefine     = define( DirectiveTokenType("$localDefine") )
+      TokenType.meta_localMacro      = define( DirectiveTokenType("$localMacro") )
       TokenType.meta_methodSignature = define( DirectiveTokenType("$methodSignature") )
       TokenType.meta_moduleName      = define( DirectiveTokenType("$moduleName") )
 
@@ -350,6 +352,7 @@ class Tokenizer
           case "elseIf":              add_new_token( TokenType.directive_elseIf )
           case "else":                add_new_token( TokenType.directive_else )
           case "endIf":               add_new_token( TokenType.directive_endIf )
+          case "macro":               add_new_token( TokenType.directive_macro )
           case "warning":             add_new_token( TokenType.directive_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
@@ -357,6 +360,7 @@ class Tokenizer
           case "block":               add_new_token( TokenType.meta_block )
           case "endBlock":            add_new_token( TokenType.meta_endBlock )
           case "localDefine":         add_new_token( TokenType.meta_localDefine )
+          case "localMacro":          add_new_token( TokenType.meta_localMacro )
           case "methodSignature":     add_new_token( TokenType.meta_methodSignature )
           case "moduleName":          add_new_token( TokenType.meta_moduleName )
           others

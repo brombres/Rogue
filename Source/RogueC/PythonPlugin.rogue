@@ -795,7 +795,7 @@ augment Program
           # a superclass name, so we don't put it directly in the string above,
           # and have the preprocessor insert it instead, which works fine.
           local filepath = "(compiler-generated)"
-          Preprocessor.definitions["PYROGUEFUNCTYPE"] = Tokenizer().tokenize(filepath,t.name)
+          Preprocessor.define( "PYROGUEFUNCTYPE", Tokenizer().tokenize(filepath,t.name) )
           Parser( filepath, src ).parse_elements
         endForEach
 
