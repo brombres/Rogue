@@ -12,7 +12,7 @@ class Token
     method init( type )
 
     method cloned->Token
-      throw RogueError( "cloned() not implemented for type $." (type_name) )
+      return Token( type ).set_location( this )
 
     method error( message:String )->RogueError
       return RogueError( message, filepath, line, column )
@@ -96,6 +96,9 @@ class EOLToken : Token
       type = TokenType.eol
       set_location( existing )
 
+    method cloned->Token
+      return EOLToken( type, comment ).set_location( this )
+
     method to->String
       if (comment and comment.count) return "EOL  # $" (comment)
       return "EOL"
@@ -122,6 +125,9 @@ class TypeIdentifierToken : Token
   METHODS
     method init( type, nominal_type, target_type )
 
+    method cloned->Token
+      return TypeIdentifierToken( type, nominal_type, target_type ).set_location( this )
+
     method to->String
       return nominal_type.name
 
@@ -136,6 +142,9 @@ class LiteralCharacterToken : Token
   METHODS
     method init( type, value )
 
+    method cloned->Token
+      return LiteralCharacterToken( type, value ).set_location( this )
+
     method to->Character
       return value
 
@@ -149,6 +158,9 @@ class LiteralInt64Token : Token
 
   METHODS
     method init( type, value )
+
+    method cloned->Token
+      return LiteralInt64Token( type, value ).set_location( this )
 
     method to->Int32
       return value->Int32
@@ -170,6 +182,9 @@ class LiteralInt32Token : Token
   METHODS
     method init( type, value )
 
+    method cloned->Token
+      return LiteralInt32Token( type, value ).set_location( this )
+
     method to->Int32
       return value
 
@@ -186,6 +201,9 @@ class LiteralReal64Token : Token
 
   METHODS
     method init( type, value )
+
+    method cloned->Token
+      return LiteralReal64Token( type, value ).set_location( this )
 
     method to->Int32
       return value->Int32
@@ -204,6 +222,9 @@ class NativeCodeToken : Token
   METHODS
     method init( type, value )
 
+    method cloned->Token
+      return NativeCodeToken( type, value ).set_location( this )
+
     method quoted_name->String
       if (type is TokenType.keyword_nativeHeader) return "nativeHeader"
       return "nativeCode"
@@ -218,6 +239,9 @@ class StringDataToken : Token
 
   METHODS
     method init( type, value )
+
+    method cloned->Token
+      return StringDataToken( type, value ).set_location( this )
 
     method quoted_name->String
       if (type is TokenType.directive_essential) return "$essential"

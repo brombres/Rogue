@@ -144,6 +144,7 @@ class PreprocessorTokenReader
       def.is_in_use = true # prevent infinite recursion
 
       forEach (def_t in def.tokens step -1)
+        def_t = def_t.cloned.set_location( t )
         if (def_t.type is TokenType.identifier)
           expand_definition( def_t )
         else
@@ -163,10 +164,12 @@ class PreprocessorTokenReader
       endForEach
 
       forEach (def_t in def.tokens step -1)
+        def_t = def_t.cloned.set_location( t )
         if (def_t.type is TokenType.identifier)
           local arg_tokens = lookup[ def_t->String ]
           if (arg_tokens)
             forEach (arg_t in arg_tokens step -1)
+              arg_t = arg_t.cloned.set_location( t )
               if (arg_t.type is TokenType.identifier)
                 expand_definition( arg_t )
               else

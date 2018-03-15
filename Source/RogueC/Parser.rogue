@@ -1442,6 +1442,7 @@ class Parser
               needs_space = true
             endIf
           endIf
+
         endWhile
 
         if (not exclude_position and args.count)
@@ -3974,4 +3975,58 @@ class UsedModule( name:String, previous:UsedModule )
     method to->String
       return name
 endClass
+
+#{
+class SourceArgReader
+  PROPERTIES
+    t       : Token
+    scanner : Scanner
+    args    = CmdArgs()
+
+  METHODS
+    method init( t )
+      scanner = RogueC.scanners_by_filepath[ t.filepath ]
+      if (scanner)
+        scanner.seek_location( t.line, t.column )
+
+        # Skip past the keyword e.g. "trace"
+        loop t->String.count do scanner.read
+      endIf
+
+    method read_arg->String
+      if (not scanner) return ""
+
+      use builder=StringBuilder.pool
+        scanner.consume_spaces
+        local depth = 0
+        while (scanner.has_another)
+          local ch = scanner.read
+          if (ch == '\n')
+            return builder->String
+          elseIf (ch == '(' or ch == '[' or ch == '{')
+            ++depth
+          elseIf (ch == ')' or ch == ']' or ch == '}')
+            --depth
+          elseIf (ch == '\\')
+            builder.print( ch )
+            ch = scanner.read
+          elseIf (depth == 0)
+            if (ch == ',' or ch == ';')                  return builder->String
+            elseIf (ch == '@' and scanner.peek == '|')   ++depth
+            elseIf (ch == '<' and scanner.peek == '<')   ++depth
+            elseIf (ch == '>' and scanner.peek == '>')   --depth
+            elseIf (ch == '\'' and scanner.peek == '\'') ++depth
+            elseIf (ch == '\'' and scanner.peek == '\'') --depth
+          endIf
+
+          builder.print( ch )
+
+          if (ch == '$')
+            args.add( CmdLiteralCharacter(t,'$') )
+          endIf
+        endWhile
+        return builder->String
+      endUse
+endClass
+}#
 
