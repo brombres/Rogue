@@ -23,6 +23,7 @@ class TokenType
     meta_localMacro               : TokenType
     meta_methodSignature          : TokenType
     meta_moduleName               : TokenType
+    meta_string                   : TokenType
 
 
     placeholder_id                : TokenType

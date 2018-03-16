@@ -96,6 +96,7 @@ class Tokenizer
       TokenType.meta_localMacro      = define( DirectiveTokenType("$localMacro") )
       TokenType.meta_methodSignature = define( DirectiveTokenType("$methodSignature") )
       TokenType.meta_moduleName      = define( DirectiveTokenType("$moduleName") )
+      TokenType.meta_string          = define( DirectiveTokenType("$string") )
 
       # The following exist but are immediately converted by the tokenizer
       # $sourceFilepath
@@ -337,6 +338,16 @@ class Tokenizer
           case "define"
             add_new_token( TokenType.directive_define )
 
+            local old_pos = reader.position
+            consume_spaces
+            local defined_id = read_identifier
+            if (reader.peek != ' ')
+              local mesg = "A space is required between '$define $' and '$'." ('$',defined_id,reader.peek)
+              if (reader.peek == '(') mesg += "\nWrite '$macro $(arg1,arg2,...)' instead if you want to define a macro." ('$',defined_id)
+              throw error( mesg )
+            endIf
+            reader.seek( old_pos )
+
           case "defined"
             consume_spaces
             local has_parens = consume( '(' )
@@ -363,6 +374,7 @@ class Tokenizer
           case "localMacro":          add_new_token( TokenType.meta_localMacro )
           case "methodSignature":     add_new_token( TokenType.meta_methodSignature )
           case "moduleName":          add_new_token( TokenType.meta_moduleName )
+          case "string":              add_new_token( TokenType.meta_string )
           others
             add_new_token( TokenType.placeholder_id, "$" + id )
         endWhich

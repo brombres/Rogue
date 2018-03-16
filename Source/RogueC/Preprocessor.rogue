@@ -113,16 +113,17 @@ class Preprocessor
       while (reader.has_another)
         local t = reader.read
 
+        local t_type = t.type
         if (t.is_directive)
-          if (t.type is TokenType.directive_define)
+          if (t_type is TokenType.directive_define)
             read_define( keep_tokens, definitions )
             nextIteration
 
-          elseIf (t.type is TokenType.directive_macro)
+          elseIf (t_type is TokenType.directive_macro)
             read_macro( keep_tokens, definitions )
             nextIteration
 
-          elseIf (t.type is TokenType.directive_defined)
+          elseIf (t_type is TokenType.directive_defined)
             local defined_word = t->String
             if (keep_tokens)
               if (find_definition(defined_word)?)
@@ -133,7 +134,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_error)
+          elseIf (t_type is TokenType.directive_error)
             local message_t = reader.read
             if (message_t.type is not TokenType.literal_string)
               throw t.error( "Literal string error message expected." )
@@ -143,7 +144,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_include)
+          elseIf (t_type is TokenType.directive_include)
             local filepath_t = reader.read
             if (filepath_t.type is not TokenType.literal_string)
               throw reader.error( "Filepath expected." )
@@ -155,22 +156,22 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_elseIf)
+          elseIf (t_type is TokenType.directive_elseIf)
             if (depth == 1) throw t.error( "Syntax error - $elseIf does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t.type is TokenType.directive_else)
+          elseIf (t_type is TokenType.directive_else)
             if (depth == 1) throw t.error( "Syntax error - $else does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t.type is TokenType.directive_endIf)
+          elseIf (t_type is TokenType.directive_endIf)
             if (depth == 1) throw t.error( "Syntax error - $endIf does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t.type is TokenType.directive_if)
+          elseIf (t_type is TokenType.directive_if)
             local found_true = parse_logical_expression
             local single_line = not reader.next_is( TokenType.eol )
 
@@ -202,7 +203,7 @@ class Preprocessor
             if (not single_line) must_consume( TokenType.directive_endIf )
             nextIteration
 
-          elseIf (t.type is TokenType.directive_warning)
+          elseIf (t_type is TokenType.directive_warning)
             local message_t = reader.read
             if (message_t.type is not TokenType.literal_string)
               throw t.error( "Literal string warning message expected." )
@@ -212,7 +213,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_module)
+          elseIf (t_type is TokenType.directive_module)
             # The preprocessor tracks the current module just so it can insert the
             # $moduleName string if requested.
             if (keep_tokens) tokens.add( t )
@@ -243,7 +244,7 @@ class Preprocessor
 
             nextIteration
 
-          elseIf (t.type is TokenType.meta_block)
+          elseIf (t_type is TokenType.meta_block)
             if (keep_tokens)
               metablock_stack.add( t )
               if (reader.local_definitions.count)
@@ -254,7 +255,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_endBlock)
+          elseIf (t_type is TokenType.meta_endBlock)
             if (keep_tokens)
               if (metablock_stack.is_empty) throw t.error( "$endBlock without preceding $block" )
               metablock_stack.remove_last
@@ -262,7 +263,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_localDefine)
+          elseIf (t_type is TokenType.meta_localDefine)
             if (keep_tokens)
               if (reader.local_definitions.is_empty) reader.local_definitions.add( Definitions() )
               read_define( keep_tokens, reader.local_definitions.last )
@@ -271,7 +272,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_localMacro)
+          elseIf (t_type is TokenType.meta_localMacro)
             if (keep_tokens)
               if (reader.local_definitions.is_empty) reader.local_definitions.add( Definitions() )
               read_macro( keep_tokens, reader.local_definitions.last )
@@ -280,7 +281,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_moduleName)
+          elseIf (t_type is TokenType.meta_moduleName)
             if (keep_tokens)
               if (cur_module) tokens.add( TokenType.literal_string.create_token(t,cur_module) )
               else            tokens.add( TokenType.literal_string.create_token(t,"") )
@@ -291,7 +292,6 @@ class Preprocessor
           endIf
         endIf
 
-        local t_type = t.type
         if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum or ...
             t_type is TokenType.keyword_global)
           # Register this class/enum/routine/global module::id
