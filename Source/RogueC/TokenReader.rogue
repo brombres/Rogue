@@ -1,4 +1,4 @@
-class TokenReader
+class TokenReader : Reader<<Token>>
   PROPERTIES
     tokens   : Token[]
     position : Int32
@@ -8,6 +8,11 @@ class TokenReader
     method init( tokens )
       count = tokens.count
 
+    method consume( type:TokenType )->Logical
+      if (not next_is(type)) return false
+      read
+      return true
+
     method error( message:String )->Error
       if (has_another) return peek.error( message )
       if (count) return tokens.last.error( message )
@@ -15,6 +20,9 @@ class TokenReader
 
     method has_another->Logical
       return (position < count)
+
+    method must_consume( type:TokenType )
+      if (not consume(type)) throw peek.error( "Unexpected $." (peek.quoted_name) )
 
     method next_is( type:TokenType )->Logical
       if (position == count) return false
@@ -40,7 +48,7 @@ class TokenReader
 endClass
 
 
-class PreprocessorTokenReader
+class PreprocessorTokenReader : Reader<<Token>>
   # Expands tokens based on Preprocessor.definitions
   PROPERTIES
     tokens   : Token[]
@@ -264,19 +272,5 @@ class PreprocessorTokenReader
       endIf
       return read->String
 
-      #{
-    method source_string( i1:Int32, i2:Int32 )->String
-      local buffer = StringBuilder()
-      local i = i1
-      while (i <= i2)
-        local lhs_is_letter = (buffer.count and buffer.last.is_letter)
-        local token_as_string = tokens[i].to_source_string
-        local rhs_is_letter = token_as_string.count and token_as_string[0].is_letter
-        if (lhs_is_letter and rhs_is_letter) buffer.print(' ')
-        buffer.print( tokens[i].to_source_string )
-        ++i
-      endWhile
-      return buffer.to_String
-      }#
 endClass
 
