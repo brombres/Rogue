@@ -34,7 +34,7 @@ class Reader<<$DataType>> [aspect]
 
     method seek( pos:Int32 )->this
       local delta = pos - position
-      if (delta < 0) throw UnsupportedOperationError( "seek( {backwards position} )" )
+      if (delta < 0) throw UnsupportedOperationError( "seek( <backwards position> )" )
       return skip( delta )
 
     method skip( n:Int32 )->this

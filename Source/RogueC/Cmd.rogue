@@ -5089,7 +5089,7 @@ class CmdCreateList : Cmd
 
       if (not list_type) throw t.error( "TODO: [] -> Property[]" )
 
-      return CmdTypedLiteralList( t, list_type.name, elements ).resolve( scope )
+      return CmdTypedLiteralList( CmdAccess(t,list_type.name), elements ).resolve( scope )
 
 endClass
 
@@ -5708,15 +5708,16 @@ endClass
 
 class CmdTypedLiteralList : Cmd
   PROPERTIES
-    list_type_name : String
-    elements       : CmdArgs
+    context  : CmdAccess
+    elements : CmdArgs
 
   METHODS
-    method init( t, list_type_name, elements=CmdArgs() )
+    method init( context, elements=CmdArgs() )
+      t = context.t
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdTypedLiteralList
       if (new_t) t = new_t
-      return CmdTypedLiteralList( t, list_type_name, elements.cloned( clone_args, new_t ) )
+      return CmdTypedLiteralList( context.cloned(clone_args,new_t) as CmdAccess, elements.cloned( clone_args, new_t ) )
 
     method add( element:Cmd )->CmdTypedLiteralList
       elements.add( element )
@@ -5726,16 +5727,17 @@ class CmdTypedLiteralList : Cmd
       return type
 
     method resolve( scope:Scope )->Cmd
-      local list_type = Program.get_type_reference( t, list_type_name )
+      local list_type = Program.get_type_reference( t, context.name )
       local list_var = Local( t, Program.create_unique_id, list_type )
-      list_var.initial_value = CmdAccess( t, list_type_name, CmdArgs(CmdLiteralInt32(t,elements.count)) )
+      if (context.args is null) context.args = CmdArgs( CmdLiteralInt32(t,elements.count) )
+      list_var.initial_value = context
       local declaration = CmdLocalDeclaration( t, list_var )
       scope.this_body.add( declaration.resolve(scope) )
 
       local init_block = CmdBlock( t )
       scope.this_body.add( init_block )
 
-      if (list_type_name == "Byte[]")
+      if (context.name == "Byte[]")
         elements.resolve( scope )
         contingent
           necessary ((forEach in elements).is_literal_number)
@@ -5764,23 +5766,25 @@ class CmdTypedLiteralList : Cmd
       return result
 
     method type->Type
-      return Program.get_type_reference( t, list_type_name )
+      return Program.get_type_reference( t, context.name )
 endClass
 
 
 class CmdTypedLiteralTable : Cmd
   PROPERTIES
-    table_type_name : String
-    keys            : CmdArgs
-    values          : CmdArgs
-    table_var       : Local
+    context     : CmdAccess
+    keys        : CmdArgs
+    values      : CmdArgs
+    context_var : Local
 
   METHODS
-    method init( t, table_type_name, keys=CmdArgs(), values=CmdArgs() )
+    method init( context, keys=CmdArgs(), values=CmdArgs() )
+      t = context.t
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdTypedLiteralTable
       if (new_t) t = new_t
-      return CmdTypedLiteralTable( t, table_type_name, keys.cloned( clone_args, new_t ), values.cloned( clone_args, new_t ) )
+      return CmdTypedLiteralTable( context.cloned(clone_args,new_t) as CmdAccess,
+          keys.cloned( clone_args, new_t ), values.cloned( clone_args, new_t ) )
 
     method add( key:Cmd, value:Cmd )->CmdTypedLiteralTable
       keys.add( key )
@@ -5799,26 +5803,33 @@ class CmdTypedLiteralTable : Cmd
       return type
 
     method resolve( scope:Scope )->Cmd
-      if (not table_var)
-        table_var = Local( t, Program.create_unique_id, type )
-        table_var.initial_value = CmdAccess( t, table_type_name, CmdArgs() )
+      if (not context_var)
+        context_var = Local( t, Program.create_unique_id, type )
+        ensure context.args
+        context_var.initial_value = context
 
-        scope.this_body.add( CmdLocalDeclaration(t,table_var).resolve(scope) )
+        scope.this_body.add( CmdLocalDeclaration(t,context_var).resolve(scope) )
 
         local init_block = CmdBlock( t )
         scope.this_body.add( init_block )
 
         forEach (key at index in keys)
-          local item = CmdAccess( t,CmdAccess(t,table_var.name), "set", CmdArgs(key,values[index]) )
-          init_block.statements.add( item )
+          local access_key = key as CmdAccess
+          if (access_key and access_key.context is null and access_key.args is null and access_key.name.begins_with('@'))
+            local item = CmdAssign( t, CmdAccess(t,CmdAccess(t,context_var),access_key.name), values[index] )
+            init_block.statements.add( item )
+          else
+            local item = CmdAccess( t,CmdAccess(t,context_var.name), "set", CmdArgs(key,values[index]) )
+            init_block.statements.add( item )
+          endIf
         endForEach
         init_block = init_block.resolve( scope )
       endIf
 
-      return CmdAccess( t, table_var ).resolve( scope )
+      return CmdAccess( t, context_var ).resolve( scope )
 
     method type->Type
-      return Program.get_type_reference( t, table_type_name )
+      return Program.get_type_reference( t, context.name )
 endClass
 
 

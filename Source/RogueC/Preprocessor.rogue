@@ -1,18 +1,21 @@
 class Preprocessor
   GLOBAL PROPERTIES
-    definitions = StringTable<<Token[]>>()
+    definitions = Definitions()
 
   GLOBAL METHODS
     method define( name:String, definition:String )
       define( name, Tokenizer().tokenize("[Command Line]",definition) )
 
     method define( name:String, tokens:Token[] )
-      definitions[ name ] = tokens
+      define( Define(name,tokens) )
+
+    method define( def:Define )
+      definitions.add( def )
 
     method define( name:String, value:Logical )
       local t  = Token( ?:{ value: TokenType.keyword_true || TokenType.keyword_false } )
       t.filepath = "compiler-generated"
-      definitions[ name ] = [t]
+      define( name, [t] )
 
     method logicalize( term: Value, loose = false: Logical )->Logical
       if (not loose)
@@ -110,29 +113,20 @@ class Preprocessor
       while (reader.has_another)
         local t = reader.read
 
+        local t_type = t.type
         if (t.is_directive)
-          if (t.type is TokenType.directive_define)
-            if (keep_tokens)
-              local defined_word = reader.read_identifier_unfiltered
-              local defined_tokens = Token[]()
-              while (reader.has_another)
-                if (reader.peek.type is TokenType.eol) escapeWhile
-                defined_tokens.add( reader.read )
-              endWhile
-              define( defined_word, defined_tokens )
-            else
-              # Skip this directive due to conditional compilation - discard tokens to EOL
-              while (reader.has_another)
-                if (reader.peek.type is TokenType.eol) escapeWhile
-                reader.read
-              endWhile
-            endIf
+          if (t_type is TokenType.directive_define)
+            read_define( keep_tokens, definitions )
             nextIteration
 
-          elseIf (t.type is TokenType.directive_defined)
+          elseIf (t_type is TokenType.directive_macro)
+            read_macro( keep_tokens, definitions )
+            nextIteration
+
+          elseIf (t_type is TokenType.directive_defined)
             local defined_word = t->String
             if (keep_tokens)
-              if (get_definition(defined_word) is not null)
+              if (find_definition(defined_word)?)
                 tokens.add( Token(TokenType.keyword_true).set_location(t) )
               else
                 tokens.add( Token(TokenType.keyword_false).set_location(t) )
@@ -140,7 +134,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_error)
+          elseIf (t_type is TokenType.directive_error)
             local message_t = reader.read
             if (message_t.type is not TokenType.literal_string)
               throw t.error( "Literal string error message expected." )
@@ -150,7 +144,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_include)
+          elseIf (t_type is TokenType.directive_include)
             local filepath_t = reader.read
             if (filepath_t.type is not TokenType.literal_string)
               throw reader.error( "Filepath expected." )
@@ -162,22 +156,22 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_elseIf)
+          elseIf (t_type is TokenType.directive_elseIf)
             if (depth == 1) throw t.error( "Syntax error - $elseIf does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t.type is TokenType.directive_else)
+          elseIf (t_type is TokenType.directive_else)
             if (depth == 1) throw t.error( "Syntax error - $else does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t.type is TokenType.directive_endIf)
+          elseIf (t_type is TokenType.directive_endIf)
             if (depth == 1) throw t.error( "Syntax error - $endIf does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t.type is TokenType.directive_if)
+          elseIf (t_type is TokenType.directive_if)
             local found_true = parse_logical_expression
             local single_line = not reader.next_is( TokenType.eol )
 
@@ -209,7 +203,7 @@ class Preprocessor
             if (not single_line) must_consume( TokenType.directive_endIf )
             nextIteration
 
-          elseIf (t.type is TokenType.directive_warning)
+          elseIf (t_type is TokenType.directive_warning)
             local message_t = reader.read
             if (message_t.type is not TokenType.literal_string)
               throw t.error( "Literal string warning message expected." )
@@ -219,7 +213,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.directive_module)
+          elseIf (t_type is TokenType.directive_module)
             # The preprocessor tracks the current module just so it can insert the
             # $moduleName string if requested.
             if (keep_tokens) tokens.add( t )
@@ -250,14 +244,18 @@ class Preprocessor
 
             nextIteration
 
-          elseIf (t.type is TokenType.meta_block)
+          elseIf (t_type is TokenType.meta_block)
             if (keep_tokens)
               metablock_stack.add( t )
-              reader.local_definitions.add( StringTable<<Token[]>>() )
+              if (reader.local_definitions.count)
+                reader.local_definitions.add( reader.local_definitions.last.cloned )
+              else
+                reader.local_definitions.add( Definitions() )
+              endIf
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_endBlock)
+          elseIf (t_type is TokenType.meta_endBlock)
             if (keep_tokens)
               if (metablock_stack.is_empty) throw t.error( "$endBlock without preceding $block" )
               metablock_stack.remove_last
@@ -265,26 +263,25 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_localDefine)
+          elseIf (t_type is TokenType.meta_localDefine)
             if (keep_tokens)
-              local defined_word = reader.read_identifier_unfiltered
-              local defined_tokens = Token[]()
-              while (reader.has_another)
-                if (reader.peek.type is TokenType.eol) escapeWhile
-                defined_tokens.add( reader.read )
-              endWhile
-              if (reader.local_definitions.is_empty) reader.local_definitions.add( StringTable<<Token[]>>() )
-              reader.local_definitions.last[ defined_word ] = defined_tokens
+              if (reader.local_definitions.is_empty) reader.local_definitions.add( Definitions() )
+              read_define( keep_tokens, reader.local_definitions.last )
             else
-              # Skip this directive due to conditional compilation - discard tokens to EOL
-              while (reader.has_another)
-                if (reader.peek.type is TokenType.eol) escapeWhile
-                reader.read
-              endWhile
+              read_define( keep_tokens, null )
             endIf
             nextIteration
 
-          elseIf (t.type is TokenType.meta_moduleName)
+          elseIf (t_type is TokenType.meta_localMacro)
+            if (keep_tokens)
+              if (reader.local_definitions.is_empty) reader.local_definitions.add( Definitions() )
+              read_macro( keep_tokens, reader.local_definitions.last )
+            else
+              read_macro( keep_tokens, null )
+            endIf
+            nextIteration
+
+          elseIf (t_type is TokenType.meta_moduleName)
             if (keep_tokens)
               if (cur_module) tokens.add( TokenType.literal_string.create_token(t,cur_module) )
               else            tokens.add( TokenType.literal_string.create_token(t,"") )
@@ -295,7 +292,6 @@ class Preprocessor
           endIf
         endIf
 
-        local t_type = t.type
         if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum or ...
             t_type is TokenType.keyword_global)
           # Register this class/enum/routine/global module::id
@@ -355,6 +351,80 @@ class Preprocessor
         endForEach
       endIf
 
+    method read_define( keep_tokens:Logical, definitions:Definitions )
+      if (keep_tokens)
+        reader.push_unfiltered
+        local defined_word = reader.read_identifier
+        local defined_tokens = Token[]()
+        while (reader.has_another)
+          if (reader.peek.type is TokenType.eol) escapeWhile
+          defined_tokens.add( reader.read )
+        endWhile
+        definitions.add( Define(defined_word,defined_tokens) )
+        reader.pop_unfiltered
+      else
+        # Skip this directive due to conditional compilation - discard tokens to EOL
+        while (reader.has_another)
+          if (reader.peek.type is TokenType.eol) escapeWhile
+          reader.read
+        endWhile
+      endIf
+
+    method read_macro( keep_tokens:Logical, definitions:Definitions )
+      if (keep_tokens)
+        reader.push_unfiltered
+
+        local defined_word = reader.read_identifier
+        local defined_tokens : Token[]
+
+        contingent
+          necessary (consume(TokenType.symbol_open_paren))
+
+          if (reader.peek.type is TokenType.symbol_close_paren)
+            reader.read
+            necessary (false)
+          endIf
+
+          # $macro(a,b) <expression>
+          local macro_def = Define( defined_word )
+          local first = true
+          while (reader.has_another)
+            if (first)
+              first = false
+            else
+              if (reader.peek.type is TokenType.symbol_comma) reader.read
+              else escapeWhile
+            endIf
+            local pt = reader.peek
+            macro_def.add_parameter_name( pt, reader.read_identifier )
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+
+          definitions.add( macro_def )
+          defined_tokens = macro_def.tokens
+
+        unsatisfied
+          # Store this zero param macro as a regular $define
+          ensure defined_tokens
+          definitions.add( Define(defined_word,defined_tokens) )
+
+        endContingent
+
+        while (reader.has_another)
+          if (reader.peek.type is TokenType.eol) escapeWhile
+          defined_tokens.add( reader.read )
+        endWhile
+
+        reader.pop_unfiltered
+
+      else
+        # Skip this directive due to conditional compilation - discard tokens to EOL
+        while (reader.has_another)
+          if (reader.peek.type is TokenType.eol) escapeWhile
+          reader.read
+        endWhile
+      endIf
+
     method consume_optional->Logical
       if (not consume(TokenType.symbol_open_bracket)) return false
       local is_optional = false
@@ -408,13 +478,30 @@ class Preprocessor
       if (consume(TokenType.symbol_lt)) return parse_logical_compare( parse_logical_term >  lhs )
       return logicalize(lhs)
 
-    method get_definition( name: String )->Token[]
-      forEach (local_def in reader.local_definitions step -1)
-        local entry = local_def.find( name )
-        if (entry) return entry.value
-      endForEach
-      local entry = definitions.find( name )
-      if (entry) return entry.value
+    method find_definition( name: String )->Define
+      local result = find_definition( name, 0 )
+      if (result) return result
+
+      # No zero-parameter definitions exist; return tokens for any macro with the right name
+      if (reader.local_definitions.count)
+        local def = reader.local_definitions.last.find_first( name )
+        if (def) return def
+      endIf
+
+      local def = definitions.find_first( name )
+      if (def) return def
+      return null
+
+    method find_definition( name:String, arg_count:Int32 )->Define
+      if (arg_count == 0)
+        if (reader.local_definitions.count)
+          local def = reader.local_definitions.last.find( name, 0 )
+          if (def) return def
+        endIf
+      endIf
+
+      local def = definitions.find( name, 0 )
+      if (def) return def
       return null
 
     method parse_logical_term->Value
@@ -444,7 +531,7 @@ class Preprocessor
           must_consume(TokenType.symbol_open_paren)
           local def = reader.peek
           must_consume(TokenType.identifier)
-          local result = get_definition(def->String) is not null
+          local result = find_definition(def->String)?
           must_consume(TokenType.symbol_close_paren)
           return result
         endIf
@@ -469,9 +556,9 @@ class Preprocessor
 
           local name = t->String
           local v = false : Value
-          local def = get_definition(name)
-          local has_value = def is not null
-          if (has_value) v = valueize(def)
+          local def = find_definition(name)
+          local has_value = def?
+          if (has_value) v = valueize(def.tokens)
           if (v is null) throw reader.peek.error( "Definition '$' does not have a legal value for preprocessor expressions." (name) )
 
           if (reader.peek->String == "?")
@@ -512,5 +599,144 @@ class Preprocessor
       endWhile
 
       return tokens
+endClass
+
+
+class Definitions
+  PROPERTIES
+    defines_for_name = StringTable<<DefinesForName>>()
+
+  METHODS
+    method add( def:Define )
+      local defs = defines_for_name[ def.name ]
+      if (not defs)
+        defs = DefinesForName( def.name )
+        defines_for_name[ def.name ] = defs
+      endIf
+
+      block
+        forEach (existing_def at index in defs.defines)
+          if (existing_def.parameter_count == def.parameter_count)
+            def.previous = existing_def
+            defs.defines[ index ] = def
+            escapeBlock
+          endIf
+        endForEach
+        defs.add( def )
+      endBlock
+
+    method cloned->Definitions
+      local result = Definitions()
+      forEach (def in defines_for_name)
+        result.defines_for_name.set( def.name, def.cloned )
+      endForEach
+      return result
+
+    method contains( name:String )->Logical
+      return find_first(name)?
+
+    method find_first( name:String )->Define
+      local defs = defines_for_name[ name ]
+      if (not defs) return null
+      return defs.defines.first
+
+    method find( name:String, param_count:Int32 )->Define
+      local defs = defines_for_name[ name ]
+      if (not defs) return null
+
+      forEach (def in defs.defines)
+        if (def.parameter_count == param_count) return def
+      endForEach
+
+      return null
+
+endClass
+
+
+class DefinesForName
+  PROPERTIES
+    name    : String
+    defines : Define[]
+
+  METHODS
+    method init( name, defines=Define[](1) )
+
+    method cloned->DefinesForName
+      return DefinesForName( name, defines.cloned )
+
+    method add( def:Define )
+      local param_count = def.parameter_count
+      forEach (existing at index in defines)
+        if (existing.parameter_count == param_count)
+          defines.remove_at( index )
+          escapeForEach
+        endIf
+      endForEach
+      defines.add( def )
+
+    method count->Int32 [macro]
+      this.defines.count
+
+    method definition_for_arg_count( n:Int32 )->Define
+      forEach (def in defines)
+        if (def.parameter_count == n) return def
+      endForEach
+      return null
+
+    method find( param_count:Int32 )->Define
+      forEach (def in defines)
+        if (def.parameter_count == param_count) return def
+      endForEach
+      return null
+
+    method first->Define [macro]
+      this.defines[ 0 ]
+
+    method get( index:Int32 )->Define [macro]
+      this.defines[ index ]
+
+    method last->Define [macro]
+      this.defines.last
+
+    method tokens_for_arg_count( n:Int32 )->Token[]
+      forEach (def in defines)
+        if (def.parameter_count == n) return def.tokens
+      endForEach
+      return null
+endClass
+
+class Define
+  PROPERTIES
+    name            : String
+    parameter_count : Int32
+    parameter_names : String[]
+    tokens          : Token[]
+    is_in_use       : Logical   # to prevent recursive expansion
+    previous        : Define    # for stacking local definitions
+
+  METHODS
+    method init( name, tokens=Token[] )
+
+    method add_parameter_name( t:Token, param_name:String )
+      ensure parameter_names( 2 )
+      forEach (existing_name in parameter_names)
+        if (existing_name == param_name) throw t.error( "Duplicate macro parameter name '$'." (param_name) )
+      endForEach
+      parameter_names.add( param_name )
+      ++parameter_count
+
+    method to->String
+      if (parameter_count == 0) return name
+
+      use builder = StringBuilder.pool
+        builder.print( name )
+        builder.print( '(' )
+        forEach (param_name at index in parameter_names)
+          if (index > 0) builder.print(',')
+          builder.print( param_name )
+        endForEach
+        builder.print( ')' )
+        return builder->String
+      endUse
 endClass
 
