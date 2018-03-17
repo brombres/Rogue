@@ -53,6 +53,11 @@ class StringBuilder [essential]
     method contains( ch:Character )->Logical
       return locate(ch).exists
 
+    method discard_from( index:Int32 )
+      this[ index ]  # sets cursor position
+      utf8.discard_from( cursor_offset )
+      count = cursor_index
+
     method get( index:Int32 )->Character
       if (index == 0)
         cursor_offset = 0
@@ -355,6 +360,23 @@ class StringBuilder [essential]
 
     method println( value:String )->this
       return print( value ).print( '\n' )
+
+    method remove_at( index:Int32 )->Character
+      local ch = this[ index ]  # sets cursor position
+      --count
+      if (index == count)
+        utf8.discard_from( cursor_offset )
+      else
+        utf8.remove_at( cursor_offset )
+        while ((utf8[cursor_offset] & 0xC0) == 0x80) utf8.remove_at( cursor_offset )
+      endIf
+      return ch
+
+    method remove_first->Character [macro]
+      this.remove_at(0)
+
+    method remove_last->Character
+      return remove_at( count-1 )
 
     method reserve( additional_bytes:Int32 )->this [essential]
       utf8.reserve( additional_bytes )
