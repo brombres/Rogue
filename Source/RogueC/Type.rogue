@@ -431,6 +431,9 @@ class Type
 
       if (is_enum)
         add_global( t, "names" ).type = Program.get_type_reference( t, "String[]" )
+        local g_values = add_global( t, "values" )
+        g_values.type = Program.get_type_reference( t, "Int32[]" )
+        #g_values.initial_value = CmdAccess( t, "Int32[]" )
         add_property( t, "value", Program.type_Int32 )
       endIf
 
@@ -526,6 +529,10 @@ class Type
       local category_scope = Scope( this, m_create )
 
       # First turn categories into integer definitions
+      local g_values = global_lookup//values
+      local cmd_literal_list = CmdTypedLiteralList( CmdAccess(t,"Int32[]") )
+      g_values.initial_value = cmd_literal_list
+
       local cur_value = 0
       forEach (def in categories)
         if (def.expression)
@@ -542,6 +549,8 @@ class Type
 
         definition_lookup[ def.name ] = def
         definition_list.add( def )
+
+        cmd_literal_list.elements.add( CmdLiteralInt32(t,def.value) )
 
         ++cur_value
       endForEach
