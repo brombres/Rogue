@@ -53,6 +53,7 @@ class Type
 
     property_list   = Property[]
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
+    enum_properties : Property[]
 
     global_method_list                = Method[]                   : Method[]
     global_method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
@@ -132,6 +133,12 @@ class Type
     method add_property( p:Property )->Property
       property_list.add( p )
       property_lookup[p.name] = p
+      return p
+
+    method add_enum_property( p:Property )->Property
+      ensure enum_properties
+      if (enum_properties.find($.name==p.name)) throw p.t.error( ''An enum property named "$" already exists.'' (p.name) )
+      enum_properties.add( p )
       return p
 
     method compile_type->Type
@@ -453,6 +460,28 @@ class Type
             if (not base_type.is_enum)
               throw t.error( "Base type $ is not an enum - an enum can only extend other enums." (base_type.name) )
             endIf
+
+            if (base_type.enum_properties)
+              ensure enum_properties
+              if (enum_properties.count)
+                # If this extended enum defines properties, make sure they begin with the same
+                # properties as the base enum defines.
+                contingent
+                  necessary (enum_properties.count >= base_type.enum_properties.count)
+                  forEach (base_p at index in base_type.enum_properties)
+                    local this_p = enum_properties[ index ]
+                    necessary (this_p.name == base_p.name and this_p.type.instance_of(base_p.type))
+                  endForEach
+                unsatisfied
+                  throw t.error( "Extended enum $ must begin its property declarations with the same properties declared in base enum $." (name,base_type.name))
+                endContingent
+              else
+                forEach (base_p in base_type.enum_properties)
+                  enum_properties.add( base_p.cloned(this) )
+                endForEach
+              endIf
+            endIf
+
             if (base_type.categories)
               ensure inherited_categories( base_type.categories.count )
               inherited_categories.reserve( base_type.categories.count )
@@ -565,7 +594,7 @@ class Type
         endIf
 
         if (definition_lookup.contains(def.name))
-          throw def.t.error( "A category named $ already exists." (def.name) )
+          throw def.t.error( ''A category named "$" already exists.'' (def.name) )
         endIf
 
         definition_lookup[ def.name ] = def
@@ -876,42 +905,33 @@ class Type
       #           case BETA:  2
       #   ...
       #
-      local subproperties : Property[]
-      if (property_list.count > 1)
-        # Remove all subproperties except 'value' from main properties list
-        local p_value = property_lookup//value
-        property_lookup.clear
-        property_lookup//value = p_value
-        subproperties = property_list.cloned
-        subproperties.remove( p_value )
-        property_list.clear.add( p_value )
-
+      if (enum_properties)
         forEach (def in categories)
-          ensure def.args( subproperties.count )
+          ensure def.args( enum_properties.count )
           forEach (arg at index in def.args)
             if (arg is null)
               # Null values passed in when dev skips expression and writes comma
-              local sub = subproperties[ index ]
+              local sub = enum_properties[ index ]
               if (sub.initial_value is null)
                 throw def.t.error( "Missing $ property argument; no default specified for '$'." ((index+1).th,sub.name) )
               endIf
             endIf
           endForEach
-          while (def.args.count < subproperties.count)
+          while (def.args.count < enum_properties.count)
             local i = def.args.count
-            local sub = subproperties[ def.args.count ]
+            local sub = enum_properties[ def.args.count ]
             if (sub.initial_value is null)
               throw def.t.error( "Missing $ property argument; no default specified for '$'." ((i+1).th,sub.name) )
             endIf
             def.args.add( sub.initial_value.cloned )
           endWhile
-          if (def.args.count > subproperties.count)
-            throw def.args[ subproperties.count ].t.error(
-                "More property arguments ($) than enum properties ($)." (def.args.count,subproperties.count) )
+          if (def.args.count > enum_properties.count)
+            throw def.args[ enum_properties.count ].t.error(
+              "More property arguments ($) than enum properties ($)." (def.args.count,enum_properties.count) )
           endIf
         endForEach
 
-        forEach (sub at index in subproperties)
+        forEach (sub at index in enum_properties)
           local m = find_method( sub.name + "()" )
           if (not m)
             local w = CmdWhich( t, CmdAccess(t,"value") )

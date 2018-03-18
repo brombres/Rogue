@@ -651,7 +651,7 @@ class Parser
               consume_eols
               local p_type = parse_type
 
-              this_type.add_property( t, p_name, p_type, initial_value )
+              this_type.add_enum_property( Property(t,this_type,p_name,p_type,initial_value) )
 
               consume_eols
             endWhile
