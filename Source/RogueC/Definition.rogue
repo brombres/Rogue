@@ -11,6 +11,13 @@ class Definition
   METHODS
     method init( t, name, expression=null )
 
+    method cloned->Definition
+      local result = Definition( t, name )
+      result.value = value
+      if (expression) result.expression = expression.cloned
+      if (args)       result.args = args.cloned
+      return result
+
     method to->String
       return "$=$" (name,expression)
 endClass

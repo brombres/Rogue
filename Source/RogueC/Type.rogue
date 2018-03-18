@@ -437,6 +437,7 @@ class Type
         add_property( t, "value", Program.type_Int32 )
       endIf
 
+      local inherited_categories : Definition[]
       forEach (base_type in rewriter=base_types.rewriter)
         base_type.configure( scope )
 
@@ -446,6 +447,16 @@ class Type
               throw t.error( "An aspect can only specify one base class ($ and $ are both specified)." (base_type,aspect_base_class))
             else
               aspect_base_class = base_type
+            endIf
+          elseIf (is_enum)
+            # Inherit category definitions while discarding the base type
+            if (not base_type.is_enum)
+              throw t.error( "Base type $ is not an enum - an enum can only extend other enums." (base_type.name) )
+            endIf
+            if (base_type.categories)
+              ensure inherited_categories( base_type.categories.count )
+              inherited_categories.reserve( base_type.categories.count )
+              forEach (c in base_type.categories) inherited_categories.add( c.cloned )
             endIf
           elseIf (is_compound)
             throw t.error( "Compounds can only extend aspects." )
@@ -465,6 +476,12 @@ class Type
               (this,base_type,base_type,this) )
         endIf
       endForEach
+
+      if (inherited_categories)
+        ensure categories
+        inherited_categories.add( categories )
+        categories = inherited_categories
+      endIf
 
       if (is_class)
         collect_aspect_base_classes
@@ -545,6 +562,10 @@ class Type
         else
           def.value = cur_value
           def.expression = CmdLiteralInt32( t, cur_value )
+        endIf
+
+        if (definition_lookup.contains(def.name))
+          throw def.t.error( "A category named $ already exists." (def.name) )
         endIf
 
         definition_lookup[ def.name ] = def

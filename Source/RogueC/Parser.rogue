@@ -432,8 +432,8 @@ class Parser
       local template = Template( t, name, Attribute.is_compound | Attribute.is_enum )
 
       # Skip past any args to get to the [attributes]
-      #   (autoinit) [attributes] \n
-      #   ^^leave^^^ ^parse^^^^^^ ^leave
+      #   (autoinit) : BaseType1, ... [attributes] \n
+      #   ^^leave^^^^^^^^^^^^^^^      ^parse^^^^^^ ^leave
       local starting_pos = reader.position
       allow_placeholder_ids = true
 
@@ -457,6 +457,11 @@ class Parser
           endWhile
           must_consume( TokenType.symbol_close_paren )
         endIf
+      endIf
+
+      if (consume(TokenType.symbol_colon))
+        parse_type_name
+        while (consume(TokenType.symbol_comma)) parse_type_name
       endIf
 
       local final_pos = reader.position
