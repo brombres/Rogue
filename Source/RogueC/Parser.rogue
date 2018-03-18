@@ -639,19 +639,31 @@ class Parser
               first = false
               consume_eols
 
-              # name[=default_value]:Type
+              # &name[=default_value]:Type
               t = peek
+              local is_flag_arg = consume( TokenType.symbol_ampersand )
               local p_name = read_identifier
               consume_eols
               local initial_value : Cmd
               if (consume(TokenType.symbol_equals)) initial_value = parse_expression
               consume_eols
 
-              must_consume( TokenType.symbol_colon )
-              consume_eols
-              local p_type = parse_type
+              local p_type : Type
+              if (is_flag_arg)
+                if (consume(TokenType.symbol_colon))
+                  consume_eols
+                  p_type = parse_type
+                else
+                  p_type = Program.type_Logical
+                endIf
+                if (not initial_value) initial_value = p_type.create_default_value(t)
+              else
+                must_consume( TokenType.symbol_colon )
+                consume_eols
+                p_type = parse_type
+              endIf
 
-              this_type.add_property( t, p_name, p_type, initial_value )
+              this_type.add_enum_property( Property(t,this_type,p_name,p_type,initial_value) )
 
               consume_eols
             endWhile
@@ -780,11 +792,12 @@ class Parser
               def.args.add( null )
             elseIf (consume(TokenType.symbol_ampersand))
               ensure named_args
+              local is_true = not consume(TokenType.symbol_exclamation_point)
               local t2 = peek
               local name = read_identifier
               consume_eols
               if (consume(TokenType.symbol_equals)) consume_eols; named_args[ name ] = parse_expression
-              else                                  named_args[ name ] = CmdLiteralLogical( t2, true )
+              else                                  named_args[ name ] = CmdLiteralLogical( t2, is_true )
             else
               def.args.add( parse_expression )
             endIf
@@ -814,17 +827,21 @@ class Parser
 
             # insert named args
             if (named_args)
-              forEach (name in named_args.keys)
-                local i = this_type.property_list.locate( $.name == name )
-                if (i.exists)
-                  while (def.args.count <= i.value) def.args.add( null )
-                  if (def.args[i.value]) throw named_args[name].t.error( "Multiple values given for enum property '$'." (name) )
-                  def.args[i.value] = named_args[name]
-                else
-                  trace this_type.property_list
-                  throw named_args[name].t.error( "No such enum property '$'." (name) )
-                endIf
-              endForEach
+              local p_list = select{ this_type.is_enum:this_type.enum_properties || this_type.property_list }
+              if (p_list)
+                forEach (name in named_args.keys)
+                  local i = p_list.locate( $.name == name )
+                  if (i.exists)
+                    while (def.args.count <= i.value) def.args.add( null )
+                    if (def.args[i.value]) throw named_args[name].t.error( "Multiple values given for enum property '$'." (name) )
+                    def.args[i.value] = named_args[name]
+                  else
+                    throw named_args[name].t.error( "No such enum property '$'." (name) )
+                  endIf
+                endForEach
+              elseIf (named_args.count)
+                throw named_args.first.t.error( "No such enum property '$'." (named_args.keys.first) )
+              endIf
             endIf
 
           endIf

@@ -19,6 +19,11 @@ class Property
       if (initial_value) result.initial_value = initial_value.cloned
       return result
 
+    method cloned( new_type_context:Type )->Property
+      local result = this.cloned
+      result.type_context = new_type_context
+      return result
+
     method is_global->Logical
       return (attributes & Attribute.is_global)?
 
