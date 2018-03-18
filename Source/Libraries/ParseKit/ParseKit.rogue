@@ -2,10 +2,10 @@ module ParseKit
 
 #$include "ParseKit/Cmd.rogue"
 $include "ParseKit/ParseError.rogue"
-$include "ParseKit/ParseNode.rogue"
-$include "ParseKit/ParseReader.rogue"
-$include "ParseKit/Parser.rogue"
-$include "ParseKit/Tokenizer.rogue"
-$include "ParseKit/Token.rogue"
+#$include "ParseKit/ParseCmd.rogue"
+#$include "ParseKit/ParseReader.rogue"
+#$include "ParseKit/Parser.rogue"
+#$include "ParseKit/Tokenizer.rogue"
+#$include "ParseKit/Token.rogue"
 $include "ParseKit/TokenType.rogue"
 

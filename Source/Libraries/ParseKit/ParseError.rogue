@@ -1,6 +1,6 @@
 module ParseKit
 
-class ParseError<<$ID>>( filename:String, line:Int32, message ) : Error
+class ParseError( filename:String, line:Int32, message ) : Error
   METHODS
     method init( message )
 

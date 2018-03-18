@@ -1,5 +1,8 @@
 module ParseKit
 
+#enum TokenType( name:String, &is_structural )
+
+#{
 class TokenType( name:String, &is_structural )
   GLOBAL PROPERTIES
     IDENTIFIER     = TextTokenType( "identifier" )
@@ -68,3 +71,4 @@ class SymbolTokenType : TokenType
     method is_symbol->Logical
       return true
 endClass
+}#
