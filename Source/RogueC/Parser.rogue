@@ -639,17 +639,29 @@ class Parser
               first = false
               consume_eols
 
-              # name[=default_value]:Type
+              # &name[=default_value]:Type
               t = peek
+              local is_flag_arg = consume( TokenType.symbol_ampersand )
               local p_name = read_identifier
               consume_eols
               local initial_value : Cmd
               if (consume(TokenType.symbol_equals)) initial_value = parse_expression
               consume_eols
 
-              must_consume( TokenType.symbol_colon )
-              consume_eols
-              local p_type = parse_type
+              local p_type : Type
+              if (is_flag_arg)
+                if (consume(TokenType.symbol_colon))
+                  consume_eols
+                  p_type = parse_type
+                else
+                  p_type = Program.type_Logical
+                endIf
+                if (not initial_value) initial_value = p_type.create_default_value(t)
+              else
+                must_consume( TokenType.symbol_colon )
+                consume_eols
+                p_type = parse_type
+              endIf
 
               this_type.add_enum_property( Property(t,this_type,p_name,p_type,initial_value) )
 
