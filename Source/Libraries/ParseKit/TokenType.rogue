@@ -1,9 +1,9 @@
 module ParseKit
 
-enum TokenType( text:String, &is_structural )
+enum TokenType<<$ID>>( text:String, &is_structural )
   EOI         ( "[End of Input]" )
   EOL         ( "[End of Line]" )
-  IDENTIFIER  ( "identifier", true )
+  IDENTIFIER  ( "identifier" )
 endEnum
 
 #{

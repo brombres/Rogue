@@ -6,6 +6,6 @@ module ParseKit
 #$include "ParseKit/ParseReader.rogue"
 #$include "ParseKit/Parser.rogue"
 #$include "ParseKit/Tokenizer.rogue"
-#$include "ParseKit/Token.rogue"
+$include "ParseKit/Token.rogue"
 $include "ParseKit/TokenType.rogue"
 
