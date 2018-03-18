@@ -1,6 +1,10 @@
 module ParseKit
 
-#enum TokenType( name:String, &is_structural )
+enum TokenType( text:String, &is_structural )
+  EOI         ( "[End of Input]" )
+  EOL         ( "[End of Line]" )
+  IDENTIFIER  ( "identifier", true )
+endEnum
 
 #{
 class TokenType( name:String, &is_structural )
