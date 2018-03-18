@@ -431,6 +431,16 @@ class Parser
       local name = read_identifier
       local template = Template( t, name, Attribute.is_compound | Attribute.is_enum )
 
+      if (consume(TokenType.symbol_open_specialize))
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          local t2 = must_read( TokenType.placeholder_id )
+          template.add_type_parameter( t2, t2->String )
+        endWhile
+        must_consume( TokenType.symbol_close_specialize )
+      endIf
+
       # Skip past any args to get to the [attributes]
       #   (autoinit) : BaseType1, ... [attributes] \n
       #   ^^leave^^^^^^^^^^^^^^^      ^parse^^^^^^ ^leave
