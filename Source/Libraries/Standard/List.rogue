@@ -147,6 +147,12 @@ class List<<$DataType>> : GenericList
     method filtered( keep_if:(Function($DataType)->Logical) )->$DataType[] [macro]
       this.keeping( keep_if )
 
+    method find( query:(Function($DataType)->Logical) )->$DataType?
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+      return null
+
     method get( index:Int32 )->$DataType [macro]
       this.data[ index ]
 
