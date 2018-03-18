@@ -80,8 +80,9 @@ class Template
       if (not augments) return augmented_tokens
 
       # +2 for an extra begin_augment_tokens at the beginning and an extra EOL at the end
+      # +2 per augment for additional CATEGORIES [EOL] at begining of each augment for enums
       local t_count = 2
-      forEach (aug in augments) t_count += aug.tokens.count
+      forEach (aug in augments) t_count += aug.tokens.count + 2
 
       if (augmented_tokens is tokens)
         # Use a working copy
@@ -95,6 +96,10 @@ class Template
         forEach (base_type in aug.base_types)
           type.base_types.add( base_type )
         endForEach
+        if (type.is_enum)
+          augmented_tokens.add( TokenType.keyword_CATEGORIES.create_token(aug.t) )
+          augmented_tokens.add( TokenType.eol.create_token(aug.t) )
+        endIf
         augmented_tokens.add( aug.tokens )
       endForEach
       augmented_tokens.add( tokens.last )  # add an EOL to the end
