@@ -23,11 +23,25 @@ class Parser<<$Language>>
       if (prev_rule) prev_rule.next = rule
       return add( rule )
 
+    method consume( token_type:TokenType<<$Language>> )->Logical [macro]
+      this.reader.consume( token_type )
+
     method create_rule( name:String )->ParseRule<<$Language>>
       return ParseRule<<$Language>>(name)
 
+    method create_rule( name:String, default_fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->ParseRule<<$Language>>
+      local result = ParseRule<<$Language>>(name)
+      result.on_default( default_fn )
+      return result
+
     method create_binary_rule( name:String )->ParseRule<<$Language>>
       return BinaryParseRule<<$Language>>(name)
+
+    method has_another->Logical [macro]
+      this.reader.has_another
+
+    method must_consume( token_type:TokenType<<$Language>> ) [macro]
+      this.reader.must_consume( token_type )
 
     method open( file:File )->this
       reader = TokenReader<<$Language>>( Tokenizer<<$Language>>().tokenize(file) )
@@ -52,6 +66,15 @@ class Parser<<$Language>>
       else
         throw ParseError<<$Language>>( "[INTERNAL] No such parse rule: $." (rule_name) )
       endIf
+
+    method peek->Token<<$Language>> [macro]
+      this.reader.peek
+
+    method peek( lookahead:Int32 )->Token<<$Language>> [macro]
+      this.reader.peek( lookahead )
+
+    method read->Token<<$Language>> [macro]
+      this.reader.read
 
 endClass
 

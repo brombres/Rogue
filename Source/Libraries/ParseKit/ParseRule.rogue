@@ -45,6 +45,20 @@ class ParseRule<<$Language>>( name:String )
       handlers[ type ] = fn
       return this
 
+    method on( symbol:String, fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
+      forEach (value in TokenType<<$Language>>.values)
+        local type = TokenType<<$Language>>( value )
+        if (type.text == symbol) return on( type, fn )
+      endForEach
+      throw ParseError<<$Language>>( ''No token exists with symbol text "$".'' (symbol) )
+
+    method on( symbol:String, type_info:TypeInfo )->this
+      forEach (value in TokenType<<$Language>>.values)
+        local type = TokenType<<$Language>>( value )
+        if (type.text == symbol) return on( type, type_info )
+      endForEach
+      throw ParseError<<$Language>>( ''No token exists with symbol text "$".'' (symbol) )
+
     method on( type:TokenType<<$Language>>, type_info:TypeInfo )->this
       throw UnsupportedOperationError()
 
