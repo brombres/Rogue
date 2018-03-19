@@ -8,11 +8,8 @@ class ParseCmd<<$Language>>( name:String ) [abstract]
   METHODS
     method parse->Cmd<<$Language>> [abstract]
 
-    method execute->Cmd<<$Language>>
-      return parse_fn( this )
-
     method parse_next->Cmd<<$Language>>
-      if (next_parse_cmd) return next_parse_cmd.execute
+      if (next_parse_cmd) return next_parse_cmd.parse
       throw ParseError( ''No higher precedence parse command than $.'' (name) )
 endClass
 
