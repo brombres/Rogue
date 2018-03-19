@@ -2966,7 +2966,19 @@ class Parser
         access.context = context
       elseIf (access.args and consume(TokenType.keyword_subclass))
         # In-line class definition
-        local type_name = "$_$" (access.name,Program.create_unique_id)
+        local type_name = access.name
+        local i1 = type_name.locate( "<<" )
+        local i2 = type_name.locate_last( ">>" )
+        while (i1.exists and i2.exists)
+          local left = type_name.leftmost( i1.value )
+          local right = type_name.from( i2.value+2 )
+          local mid = type_name.from( i1.value+2, i2.value-1 )
+          type_name = "$_of_$__$" (left,mid,right)
+          i1 = type_name.locate( "<<" )
+          i2 = type_name.locate_last( ">>" )
+        endWhile
+        type_name = type_name.replacing( '$', 'T' ) + "_" + Program.create_unique_id
+
         local inline_type = Program.get_type_reference( t, type_name )
         local template = Template( t, type_name, Attribute.is_class )
         parse_template_tokens( template, TokenType.keyword_endSubclass )
