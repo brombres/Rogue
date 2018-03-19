@@ -1,6 +1,7 @@
 module ParseKit
 
-#$macro ADD_RULE(parser,name,commands)
+$macro EXTEND_PARSE_RULE(LANGUAGE,RULE,TOKEN_TYPE,ACTION) RULE.extend( TokenType<<LANGUAGE>>.TOKEN_TYPE, ACTION )
+$macro PARSE_RULE_DEFAULT(LANGUAGE,RULE,ACTION) RULE.on_default( ACTION )
 
 class Parser<<$Language>>
   PROPERTIES
@@ -9,15 +10,21 @@ class Parser<<$Language>>
     prev_rule : ParseRule<<$Language>>
 
   METHODS
-    method add_rule( rule:ParseRule<<$Language>> )->this
+    method add( rule:ParseRule<<$Language>> )->ParseRule<<$Language>>
       rules[ rule.name ] = rule
       prev_rule = rule
       rule.parser = this
-      return this
+      return rule
 
-    method add_next_rule( rule:ParseRule<<$Language>> )->this
+    method chain( rule:ParseRule<<$Language>> )->ParseRule<<$Language>>
       if (prev_rule) prev_rule.next = rule
-      return add_rule( rule )
+      return add( rule )
+
+    method create_rule( name:String )->ParseRule<<$Language>>
+      return ParseRule<<$Language>>(name)
+
+    method create_binary_rule( name:String )->ParseRule<<$Language>>
+      return BinaryParseRule<<$Language>>(name)
 
     method open( file:File )->this
       reader = TokenReader<<$Language>>( Tokenizer<<$Language>>().tokenize(file) )

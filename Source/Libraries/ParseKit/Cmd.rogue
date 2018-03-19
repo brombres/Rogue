@@ -3,7 +3,7 @@ module ParseKit
 class Cmd<<$Language>>( t:Token<<$Language>> )
 endClass
 
-class CmdUnaryOp<<$Language>>( t, operand:Cmd ) : Cmd<<$Language>> [abstract]
+class CmdUnary<<$Language>>( t, operand:Cmd ) : Cmd<<$Language>> [abstract]
   METHODS
     method op->String [abstract]
 
@@ -11,7 +11,7 @@ class CmdUnaryOp<<$Language>>( t, operand:Cmd ) : Cmd<<$Language>> [abstract]
       return "($$)" (op,left)
 endClass
 
-class CmdBinaryOp<<$Language>>( t, left:Cmd<<$Language>>, right:Cmd<<$Language>> ) : Cmd<<$Language>> [abstract]
+class CmdBinary<<$Language>>( t, left:Cmd<<$Language>>, right:Cmd<<$Language>> ) : Cmd<<$Language>> [abstract]
   METHODS
     method op->String [abstract]
 
@@ -19,16 +19,3 @@ class CmdBinaryOp<<$Language>>( t, left:Cmd<<$Language>>, right:Cmd<<$Language>>
       return "($ $ $)" (left,op,right)
 endClass
 
-#{
-class CmdAdd : CmdBinaryOp
-  METHODS
-    method op->String
-      return "+"
-endClass
-
-class CmdLiteralInt32( t, value:Int32 ) : Cmd
-  METHODS
-    method to->String
-      return value->String
-endClass
-}#

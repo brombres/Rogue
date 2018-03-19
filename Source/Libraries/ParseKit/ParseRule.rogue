@@ -1,18 +1,28 @@
 module ParseKit
 
-class ParseRule<<$Language>>( name:String ) [abstract]
+class ParseRule<<$Language>>( name:String )
   PROPERTIES
-    parser : Parser<<$Language>>
-    next   : ParseRule<<$Language>>
+    parser          : Parser<<$Language>>
+    next            : ParseRule<<$Language>>
+    handlers        : Table<<TokenType<<$Language>>,(Function(ParseRule<<$Language>>)->Cmd<<$Language>>)>>
+    default_handler : Function(ParseRule<<$Language>>)->Cmd<<$Language>>
 
   METHODS
+    method init( name, default_handler )
+
     method consume( token_type:TokenType<<$Language>> )->Logical [macro]
       this.parser.reader.consume( token_type )
 
     method has_another->Logical [macro]
       this.parser.reader.has_another
 
-    method parse->Cmd<<$Language>> [abstract]
+    method parse->Cmd<<$Language>>
+      if (handlers)
+        local handler = handlers[ peek.type ]
+        if (handler) return handler( this )
+        if (default_handler) return default_handler( this )
+      endIf
+      return parse_next
 
     method parse_next->Cmd<<$Language>>
       if (next) return next.parse
@@ -27,18 +37,26 @@ class ParseRule<<$Language>>( name:String ) [abstract]
     method read->Token<<$Language>> [macro]
       this.parser.reader.read
 
+    method extend( type:TokenType<<$Language>>, fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
+      ensure handlers
+      handlers[ type ] = fn
+      return this
+
+    method extend( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+      throw UnsupportedOperationError()
+
+    method on_default( fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
+      default_handler = fn
+      return this
+
 endClass
 
 
-class ParseBinaryOp<<$Language>> : ParseRule<<$Language>>
+class BinaryParseRule<<$Language>> : ParseRule<<$Language>>
   PROPERTIES
     lookup = Table<<TokenType<<$Language>>,TypeInfo>>()
 
   METHODS
-    method add( type:TokenType<<$Language>>, type_info:TypeInfo )->this
-      lookup[ type ] = type_info
-      return this
-
     method parse->Cmd<<$Language>>
       return parse( parse_next )
 
@@ -47,9 +65,14 @@ class ParseBinaryOp<<$Language>> : ParseRule<<$Language>>
       local entry = lookup.find( t.type )
       if (entry)
         read
-        return parse( entry.value.create_object<<CmdBinaryOp<<$Language>>>>.init(t,context,parse_next) )
+        return parse( entry.value.create_object<<CmdBinary<<$Language>>>>.init(t,context,parse_next) )
       else
         return context
       endIf
 
+    method extend( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+      lookup[ type ] = type_info
+      return this
+
 endClass
+
