@@ -410,19 +410,36 @@ class Preprocessor
 
         endContingent
 
-        while (reader.has_another)
-          if (reader.peek.type is TokenType.eol) escapeWhile
-          defined_tokens.add( reader.read )
-        endWhile
+        if (consume(TokenType.eol))
+          # Multi-line macro
+          while (reader.has_another)
+            if (consume(TokenType.directive_endMacro)) escapeWhile
+            defined_tokens.add( reader.read )
+          endWhile
+        else
+          # Single line macro
+          while (reader.has_another)
+            if (reader.peek.type is TokenType.eol) escapeWhile
+            defined_tokens.add( reader.read )
+          endWhile
+        endIf
 
         reader.pop_unfiltered
 
       else
-        # Skip this directive due to conditional compilation - discard tokens to EOL
-        while (reader.has_another)
-          if (reader.peek.type is TokenType.eol) escapeWhile
-          reader.read
-        endWhile
+        # Skip this directive due to conditional compilation - discard tokens
+        if (consume(TokenType.eol))
+          # Multi-line macro
+          while (reader.has_another)
+            if (consume(TokenType.directive_endMacro)) escapeWhile
+            reader.read
+          endWhile
+        else
+          while (reader.has_another)
+            if (reader.peek.type is TokenType.eol) escapeWhile
+            reader.read
+          endWhile
+        endIf
       endIf
 
     method consume_optional->Logical

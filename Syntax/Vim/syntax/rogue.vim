@@ -50,7 +50,7 @@ syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
 syn keyword rogueScopeDecl    singleton
-syn keyword rogueStorageClass native macro essential abstract final compound propagated foreign preferred mutating
+syn keyword rogueStorageClass native macro endMacro essential abstract final compound propagated foreign preferred mutating
 syn keyword rogueStorageClass threadLocal synchronized synchronizable
 syn keyword rogueStorageClass api nonessential
 syn keyword rogueExceptions   throw try catch endTry use endUse
