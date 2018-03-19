@@ -495,7 +495,12 @@ class Tokenizer
         return TokenType.symbol_open_bracket
 
       elseIf (ch == '\\')
-        return TokenType.symbol_backslash
+        if (consume('n'))
+          add_new_token( TokenType.eol )
+          return null  # already handled
+        else
+          return TokenType.symbol_backslash
+        endIf
 
       elseIf (ch == ']')
         return TokenType.symbol_close_bracket
