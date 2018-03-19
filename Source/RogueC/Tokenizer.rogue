@@ -420,9 +420,11 @@ class Tokenizer
       elseIf (ch == '.' )
         if (consume('.'))
           if (consume('.'))
-            # ellipsis (line continuation) - just consume EOL and continue parsing without creating a token
+            # ellipsis (line continuation modifier)
+            # - If occurs at EOL, removes EOL - just consume EOL and continue parsing without creating a token
+            # - If occurs mid-line, adds extra EOL
             while (consume(' ')) noAction
-            if (not consume('\n')) throw error( "End of line expected after '...'." )
+            if (not consume('\n')) add_new_token( TokenType.eol )
             return null
           elseIf (consume('<'))
             return TokenType.symbol_upToLessThan
