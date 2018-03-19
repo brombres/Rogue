@@ -263,6 +263,8 @@ class MethodTemplates
     templates    = StringTable<<MethodTemplateOverloads>>()
     has_names    = StringTable<<Logical>>()
 
+    instantiated_groups = Set<<String>>()
+
   METHODS
     method init( type_context )
 
@@ -300,6 +302,9 @@ class MethodTemplates
 
     method instantiate( t:Token, specialized_name:String, methods:Method[] )
       # Called by CmdMakeRequisite
+      if (instantiated_groups.contains(specialized_name)) return
+      instantiated_groups.add( specialized_name )
+
       local base_name = specialized_name.before_first( "<<" )
       require has_template( base_name )
 
