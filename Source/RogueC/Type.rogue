@@ -418,6 +418,8 @@ class Type
       configured = true
       configure_chain.add( this )
 
+      if (reference_t is null) reference_t = t
+
       index = Program.type_list.count
       Program.type_list.add( this )
 
@@ -432,7 +434,7 @@ class Type
         if (template)
           template.instantiate( this, scope, reference_t )
         else
-          throw ?:{reference_t||t}.error( "Reference to undefined type '$'." (name) )
+          throw reference_t.error( "Reference to undefined type '$'." (name) )
         endIf
       endIf
 
@@ -446,7 +448,7 @@ class Type
 
       local inherited_categories : Definition[]
       forEach (base_type in rewriter=base_types.rewriter)
-        base_type.configure( scope )
+        base_type.configure( scope, reference_t )
 
         if (not base_type.is_aspect)
           if (is_aspect)
@@ -527,7 +529,7 @@ class Type
 
         if (not base_class and this is not Program.type_Object)
           # Use Object
-          Program.type_Object.configure
+          Program.type_Object.configure( &=reference_t )
           base_class = Program.type_Object
           base_types.insert( base_class )
         endIf
@@ -556,9 +558,9 @@ class Type
         base_type.extended_types.add( this )
       endForEach
 
-      if (element_type)            element_type.configure
-      forEach (p in global_list)   p.type.configure
-      forEach (p in property_list) p.type.configure
+      if (element_type)            element_type.configure( &=reference_t )
+      forEach (p in global_list)   p.type.configure( &=reference_t )
+      forEach (p in property_list) p.type.configure( &=reference_t )
 
       configure_chain.remove_last
       return this
@@ -960,6 +962,8 @@ class Type
       organize_chain.add( this )
       organized = true
       organizing = true
+
+      if (reference_t is null) reference_t = t
 
       configure( &=reference_t )
 
