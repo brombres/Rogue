@@ -16,6 +16,9 @@ class ParseRule<<$Language>>( name:String )
     method has_another->Logical [macro]
       this.parser.reader.has_another
 
+    method must_consume( token_type:TokenType<<$Language>> ) [macro]
+      this.parser.reader.must_consume( token_type )
+
     method parse->Cmd<<$Language>>
       if (handlers)
         local handler = handlers[ peek.type ]
@@ -37,12 +40,12 @@ class ParseRule<<$Language>>( name:String )
     method read->Token<<$Language>> [macro]
       this.parser.reader.read
 
-    method extend( type:TokenType<<$Language>>, fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
+    method on( type:TokenType<<$Language>>, fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
       ensure handlers
       handlers[ type ] = fn
       return this
 
-    method extend( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+    method on( type:TokenType<<$Language>>, type_info:TypeInfo )->this
       throw UnsupportedOperationError()
 
     method on_default( fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
@@ -70,7 +73,7 @@ class BinaryParseRule<<$Language>> : ParseRule<<$Language>>
         return context
       endIf
 
-    method extend( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+    method on( type:TokenType<<$Language>>, type_info:TypeInfo )->this
       lookup[ type ] = type_info
       return this
 

@@ -1,7 +1,10 @@
 module ParseKit
 
-$macro EXTEND_PARSE_RULE(LANGUAGE,RULE,TOKEN_TYPE,ACTION) RULE.extend( TokenType<<LANGUAGE>>.TOKEN_TYPE, ACTION )
-$macro PARSE_RULE_DEFAULT(LANGUAGE,RULE,ACTION) RULE.on_default( ACTION )
+$macro ParseRuleFn(LANGUAGE,BODY)
+  function( rule:ParseRule<<LANGUAGE>> )->Cmd<<LANGUAGE>>
+    BODY
+  endFunction
+$endMacro
 
 class Parser<<$Language>>
   PROPERTIES
