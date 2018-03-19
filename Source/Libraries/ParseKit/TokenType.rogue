@@ -1,78 +1,29 @@
 module ParseKit
 
-enum TokenType<<$ID>>( text:String, &is_structural )
-  EOI         ( "[End of Input]" )
-  EOL         ( "[End of Line]" )
-  IDENTIFIER  ( "identifier" )
+enum TokenType<<$Language>>( text:String, &is_structural, &is_special )
+  CATEGORIES
+    EOI            ( "[End of Input]" )
+    EOL            ( "[End of Line]" )
+    IDENTIFIER     ( "[identifier]" )
+    LITERAL_INT32  ( "Int32" )
+    LITERAL_INT64  ( "Int64" )
+    LITERAL_REAL64 ( "Real64" )
+
+  METHODS
+    method describe->String
+      if (text.begins_with('[')) return text
+      return "'$'" (text)
+
+    method to->String( t:Token<<Boss>> )
+      if (t.text)   return t.text
+
+      which (this)
+        case LITERAL_INT32:  return t->Int32
+        case LITERAL_INT64:  return t->Int64
+        case LITERAL_REAL64: return t->Real64
+      endWhich
+
+      if (t.number) return t.number.value->String
+      return text
 endEnum
 
-#{
-class TokenType( name:String, &is_structural )
-  GLOBAL PROPERTIES
-    IDENTIFIER     = TextTokenType( "identifier" )
-    EOL            = TokenType( "[EOL]" )
-    EOI            = TokenType( "[End of Input]" )
-    SPACE          = TokenType( "[SPACE]" )
-    LITERAL_INT32  = Int32TokenType( "Int32" )
-    LITERAL_INT64  = Int64TokenType( "Int64" )
-    LITERAL_REAL64 = Real64TokenType( "Real64" )
-
-    SYMBOL_PLUS    = SymbolTokenType( "+" )
-    SYMBOL_MINUS   = SymbolTokenType( "-" )
-    SYMBOL_STAR    = SymbolTokenType( "*" )
-    SYMBOL_SLASH   = SymbolTokenType( "/" )
-
-  METHODS
-    method error( message:String )->Exception [essential]
-      return Exception( message )
-
-    method is_keyword->Logical
-      return false
-
-    method is_symbol->Logical
-      return false
-
-    method to->String
-      return name
-
-    method to->String( t:Token )
-      return this->String
-endClass
-
-class TextTokenType : TokenType
-  METHODS
-    method to->String( t:Token )
-      return t->String
-endClass
-
-class Int32TokenType : TokenType
-  METHODS
-    method to->String( t:Token )
-      return t->Int32->String
-endClass
-
-class Int64TokenType : TokenType
-  METHODS
-    method to->String( t:Token )
-      return t->Int64->String
-endClass
-
-class Real64TokenType : TokenType
-  METHODS
-    method to->String( t:Token )
-      return t->Real64->String
-endClass
-
-class KeywordTokenType : TokenType
-  METHODS
-    method is_keyword->Logical
-      return true
-endClass
-
-
-class SymbolTokenType : TokenType
-  METHODS
-    method is_symbol->Logical
-      return true
-endClass
-}#

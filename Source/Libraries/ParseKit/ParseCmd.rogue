@@ -1,17 +1,18 @@
 module ParseKit
 
-class ParseNode<<$ID>>
+class ParseCmd<<$Language>>( name:String )
   PROPERTIES
-    next_node : ParseNode<<$ID>>
+    #parser         : Parser<<$Language>>
+    next_parse_cmd : ParseCmd<<$Language>>
 
   METHODS
-    method parse( parser:Parser<<$ID>> )
+    method parse->Cmd<<$Language>> [abstract]
 
-    method execute->Cmd<<$ID>>
+    method execute->Cmd<<$Language>>
       return parse_fn( this )
 
-    method parse_next->Cmd<<$ID>>
-      if (next_node) return next_node.execute
-      throw ParseError( ''No "next" syntax definition in $.'' (type_name) )
+    method parse_next->Cmd<<$Language>>
+      if (next_parse_cmd) return next_parse_cmd.execute
+      throw ParseError( ''No higher precedence parse command than $.'' (name) )
 endClass
 

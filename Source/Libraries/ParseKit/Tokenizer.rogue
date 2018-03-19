@@ -1,14 +1,14 @@
 module ParseKit
 
-class Tokenizer<<$ID>>
+class Tokenizer<<$Language>>
   GLOBAL PROPERTIES
-    keywords  : StringTable<<TokenType<<$ID>>>>
-    symbols   : Table<<Character,TokenType<<$ID>>[]>>
+    keywords  : StringTable<<TokenType<<$Language>>>>
+    symbols   : Table<<Character,TokenType<<$Language>>[]>>
 
   PROPERTIES
     filepath       : String
     scanner        : Scanner
-    tokens         : Token[]
+    tokens         : Token<<$Language>>[]
     spaces_per_tab = 2
     keep_eols      = true
     keep_spaces    = false
@@ -16,31 +16,27 @@ class Tokenizer<<$ID>>
   METHODS
     method init_object
       if (not keywords)
-        configure_token_types( <<$ID>> )
+        configure_token_types
       endIf
 
-    method configure_token_types( type_info:TypeInfo )
+    method init
+
+    method configure_token_types
       ensure keywords
       ensure symbols
 
-      local base_type_info = type_info.base_class
-      if (base_type_info) configure_token_types( base_type_info )
-
-      forEach (p in type_info.global_properties)
-        if (p.type.instance_of(<<TokenType<<$ID>>>>))
-          configure_token_type( type_info.global_property( p )->Object as TokenType<<$ID>> )
+      forEach (p in TokenType<<$Language>>.values)
+        local type = TokenType<<$Language>>( p )
+        local name = type.name.to_uppercase
+        if (name.begins_with("KEYWORD_"))
+          keywords[ type.text ] = type
+        elseIf (name.begins_with("SYMBOL_"))
+          local first_ch = type.text[ 0 ]
+          local list = symbols[ first_ch ]
+          if (not list) symbols[ first_ch ] = ensure list
+          if (list.add(type).count > 1) list.sort( (a,b)=>(a.text.count>=b.text.count) )
         endIf
       endForEach
-
-    method configure_token_type( type:TokenType<<$ID>> )
-      if (type.is_keyword)
-        keywords[ type.name ] = type
-      elseIf (type.is_symbol)
-        local first_ch = type.name[ 0 ]
-        local list = symbols[ first_ch ]
-        if (not list) symbols[ first_ch ] = ensure list
-        if (list.add(type).count > 1) list.sort( (a,b)=>(a.name.count>=b.name.count) )
-      endIf
 
     method consume( ch:Character )->Logical [macro]
       this.scanner.consume( ch )
@@ -63,55 +59,78 @@ class Tokenizer<<$ID>>
       while ((not keep_spaces and consume_spaces) or (not keep_eols and consume_eols)) found_any = true
       return true
 
+    method is_id_start( ch:Character )->Logical
+      return (ch.is_letter or ch == '_')
+
+    method is_id_continuation( ch:Character )->Logical
+      return (ch.is_letter or ch == '_' or ch.is_number)
+
     method peek->Character [macro]
       this.scanner.peek
 
     method read->Character [macro]
       this.scanner.read
 
-    method tokenize( filepath )->Token[]
+    method tokenize( filepath )->Token<<$Language>>[]
       scanner = Scanner( File(filepath), &=spaces_per_tab )
       return tokenize
 
-    method tokenize( filepath, source:String )->Token[]
+    method tokenize( filepath, source:String )->Token<<$Language>>[]
       scanner = Scanner( source, &=spaces_per_tab )
       return tokenize
 
-    method tokenize( filepath, source:Character[] )->Token[]
+    method tokenize( filepath, source:Character[] )->Token<<$Language>>[]
       scanner = Scanner( source, &=spaces_per_tab )
       return tokenize
 
-    method tokenize->Token[]
-      tokens = Token[]
+    method tokenize->Token<<$Language>>[]
+      tokens = Token<<$Language>>[]
       while (tokenize_another) noAction
-      tokens.add( Token(TokenType<<$ID>>.EOL) )
+      tokens.add( Token<<$Language>>(TokenType<<$Language>>.EOL) )
       return tokens
 
     method tokenize_another->Logical
-      Token.next_filepath = filepath
-      Token.next_line = scanner.line
-      Token.next_column = scanner.column
+      Token<<$Language>>.next_filepath = filepath
+      Token<<$Language>>.next_line = scanner.line
+      Token<<$Language>>.next_column = scanner.column
 
       consume_whitespace
       if (not scanner.has_another) return false
 
-      if (consume(' '))  tokens.add( Token(TokenType<<$ID>>.SPACE) ); return true
-      if (consume('\n')) tokens.add( Token(TokenType<<$ID>>.EOL) ); return true
+      if (consume('\n')) tokens.add( Token<<$Language>>(TokenType<<$Language>>.EOL) ); return true
 
-      if (tokenize_comment) return true
-      if (tokenize_number)  return true
-      if (tokenize_symbol)  return true
+      if (tokenize_comment)    return true
+      if (tokenize_number)     return true
+      if (tokenize_symbol)     return true
+      if (tokenize_identifier) return true
 
-      throw ParseError( filepath, scanner.line, "Syntax error: unexpected '$'." (peek) )
+      throw ParseError<<$Language>>( filepath, scanner.line, "Syntax error: unexpected '$'." (peek) )
 
     method tokenize_comment->Logical
       local text = scan_comment
       if (not text) return false
 
-      if (tokens.count and tokens.last.type is TokenType<<$ID>>.EOL)
+      if (tokens.count and tokens.last.type == TokenType<<$Language>>.EOL)
         if (not tokens.last.text) tokens.last.text = text
         else                      tokens.last.text += text
       endIf
+      return true
+
+    method tokenize_identifier->Logical
+      local text = scan_identifier
+      if (not text) return false
+
+      local entry = keywords.find( text )
+      if (entry)
+        if (entry.value.is_special)
+          tokenize_special_keyword( entry.value )
+        else
+          tokens.add( Token<<$Language>>(entry.value) )
+        endIf
+      else
+        tokens.add( Token<<$Language>>(TokenType<<$Language>>.IDENTIFIER, text) )
+      endIf
+
       return true
 
     method tokenize_number->Logical
@@ -125,12 +144,15 @@ class Tokenizer<<$ID>>
       local n = scan_int64( base )
       #if (base == 10)
       if (n >= Int32.minimum and n <= Int32.maximum)
-        tokens.add( Token(TokenType<<$ID>>.LITERAL_INT32,n) )
+        tokens.add( Token<<$Language>>(TokenType<<$Language>>.LITERAL_INT32,n) )
       else
-        tokens.add( Token(TokenType<<$ID>>.LITERAL_INT64,n.real_bits) )
+        tokens.add( Token<<$Language>>(TokenType<<$Language>>.LITERAL_INT64,n.real_bits) )
       endIf
 
       return true
+
+    method tokenize_special_keyword( type:TokenType<<$Language>> )
+      tokens.add( Token<<$Language>>(type) )
 
     method tokenize_symbol->Logical
       local candidates = symbols[ peek ]
@@ -138,8 +160,8 @@ class Tokenizer<<$ID>>
 
       # Candidates are ordered from most characters to least - the first one to fully match is the best choice
       forEach (candidate in candidates)
-        if (scanner.consume(candidate.name))
-          tokens.add( Token(candidate) )
+        if (scanner.consume(candidate.text))
+          tokens.add( Token<<$Language>>(candidate) )
           return true
         endIf
       endForEach
@@ -160,6 +182,20 @@ class Tokenizer<<$ID>>
           endWhile
         endIf
         return buffer->String
+      endUse
+
+    method scan_identifier->String
+      local ch = peek
+      if (not is_id_start(ch)) return null
+
+      use builder=StringBuilder.pool
+        builder.print( read )
+        ch = peek
+        while (is_id_continuation(ch))
+          builder.print( read )
+          ch = peek
+        endWhile
+        return builder->String
       endUse
 
     method scan_int64( base:Int32 )->Int64

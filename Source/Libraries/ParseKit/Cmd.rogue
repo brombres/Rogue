@@ -1,10 +1,10 @@
 module ParseKit
 
-#{
-class Cmd( t:Token )
+class Cmd<<$Language>>( t:Token<<$Language>> )
 endClass
 
-class CmdBinaryOp( t, left:Cmd, right:Cmd ) : Cmd [abstract]
+#{
+class CmdBinaryOp<<$Language>>( t, left:Cmd, right:Cmd ) : Cmd<<$Language>> [abstract]
   METHODS
     method op->String [abstract]
 
