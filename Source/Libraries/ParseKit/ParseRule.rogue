@@ -1,0 +1,55 @@
+module ParseKit
+
+class ParseRule<<$Language>>( name:String ) [abstract]
+  PROPERTIES
+    parser : Parser<<$Language>>
+    next   : ParseRule<<$Language>>
+
+  METHODS
+    method consume( token_type:TokenType<<$Language>> )->Logical [macro]
+      this.parser.reader.consume( token_type )
+
+    method has_another->Logical [macro]
+      this.parser.reader.has_another
+
+    method parse->Cmd<<$Language>> [abstract]
+
+    method parse_next->Cmd<<$Language>>
+      if (next) return next.parse
+      throw ParseError<<$Language>>( ''[Internal] Parse rule $ attempting to call non-existent next parse rule.'' (name) )
+
+    method peek->Token<<$Language>> [macro]
+      this.parser.reader.peek
+
+    method peek( lookahead:Int32 )->Token<<$Language>> [macro]
+      this.parser.reader.peek( lookahead )
+
+    method read->Token<<$Language>> [macro]
+      this.parser.reader.read
+
+endClass
+
+
+class ParseBinaryOp<<$Language>> : ParseRule<<$Language>>
+  PROPERTIES
+    lookup = Table<<TokenType<<$Language>>,TypeInfo>>()
+
+  METHODS
+    method add( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+      lookup[ type ] = type_info
+      return this
+
+    method parse->Cmd<<$Language>>
+      return parse( parse_next )
+
+    method parse( context:Cmd<<$Language>> )->Cmd<<$Language>>
+      local t = peek
+      local entry = lookup.find( t.type )
+      if (entry)
+        read
+        return parse( entry.value.create_object<<CmdBinaryOp<<$Language>>>>.init(t,context,parse_next) )
+      else
+        return context
+      endIf
+
+endClass

@@ -2,17 +2,14 @@ module ParseKit
 
 enum TokenType<<$Language>>( text:String, &is_structural, &is_special )
   CATEGORIES
-    EOI            ( "[End of Input]" )
-    EOL            ( "[End of Line]" )
-    IDENTIFIER     ( "[identifier]" )
-    LITERAL_INT32  ( "Int32" )
-    LITERAL_INT64  ( "Int64" )
-    LITERAL_REAL64 ( "Real64" )
 
   METHODS
     method describe->String
       if (text.begins_with('[')) return text
       return "'$'" (text)
+
+    method hash_code->Int32
+      return value
 
     method to->String( t:Token<<Boss>> )
       if (t.text)   return t.text

@@ -6,6 +6,9 @@ $include "Version.rogue" [optional]
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
 # - Warn on assignment of intermediate value compound
 
+# - Add hash code to enums
+# - Check create_object<<OfType>> when accidentally calling (args) instead of .init(args)
+
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CythonPlugin.rogue"

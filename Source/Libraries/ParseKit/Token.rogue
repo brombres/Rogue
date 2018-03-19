@@ -27,6 +27,9 @@ class Token<<$Language>>
 
     method init( type, text )
 
+    method describe->String
+      return type.describe
+
     method error( message:String )->ParseError<<$Language>>
       return ParseError<<$Language>>( message )
 

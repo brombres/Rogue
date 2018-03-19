@@ -1,82 +1,45 @@
 module ParseKit
 
-class Parser<<$ID>>
+class Parser<<$Language>>
   PROPERTIES
-    reader : ParseReader
+    reader    : TokenReader<<$Language>>
+    rules     = StringTable<<ParseRule<<$Language>>>>()
+    prev_rule : ParseRule<<$Language>>
 
   METHODS
-    method init( file:File )
-      reader = ParseReader( Tokenizer<<$ID>>().tokenize(file) )
+    method add_rule( rule:ParseRule<<$Language>> )->this
+      rules[ rule.name ] = rule
+      prev_rule = rule
+      rule.parser = this
+      return this
 
-    method init( filename:String, source:String )
-      reader = ParseReader( Tokenizer<<$ID>>().tokenize(filename,source) )
+    method add_next_rule( rule:ParseRule<<$Language>> )->this
+      if (prev_rule) prev_rule.next = rule
+      return add_rule( rule )
 
-    method consume( token_type:TokenType<<$ID>> )->Logical [macro]
-      this.reader.consume( token_type )
+    method open( file:File )->this
+      reader = TokenReader<<$Language>>( Tokenizer<<$Language>>().tokenize(file) )
+      return this
 
-      #{
-    method parse_expression( control:ParseControl )->Cmd
-      return control.parse_next
+    method open( filename:String, source:String )->this
+      reader = TokenReader<<$Language>>( Tokenizer<<$Language>>().tokenize(filename,source) )
+      return this
 
-    method parse_add_or_subtract( control:ParseControl )->Cmd
-      return parse_add_or_subtract( control, control.parse_next )
+    method parse( file:File )
+      open( file )
+      parse( "program" )
 
-    method parse_add_or_subtract( control:ParseControl, left:Cmd )->Cmd
-      local t = peek
-      if (consume(TokenType<<$ID>>.SYMBOL_PLUS))
-        return parse_add_or_subtract( control, CmdAdd(t,left,control.parse_next) )
+    method parse( filename:String, source:String )
+      open( filename, source )
+      parse( "program" )
+
+    method parse( rule_name:String )->Cmd<<$Language>>
+      local rule = rules[ rule_name ]
+      if (rule)
+        return rule.parse
       else
-        return left
+        throw ParseError<<$Language>>( "[INTERNAL] No such parse rule: $." (rule_name) )
       endIf
 
-    method parse_multiply_or_divide( control:ParseControl )->Cmd
-      return control.parse_next
-
-    method parse_term( control:ParseControl )->Cmd
-      local t = reader.read
-      if (t.type is TokenType<<$ID>>.LITERAL_INT32)
-        return CmdLiteralInt32( t, t->Int32 )
-      else
-        throw t.error( "Unexpected '$'." (t.name) )
-      endIf
-
-    method has_another->Logical [macro]
-      this.reader.has_another
-
-    method peek->Token [macro]
-      this.reader.peek
-
-    method peek( lookahead:Int32 )->Token [macro]
-      this.reader.peek( lookahead )
-
-    method read->Token [macro]
-      this.reader.read
-      }#
-
-  #{
-  @|program         = elements
-   |elements        = element*
-   |element         = class_definition | statements
-   |statements      = statement*
-   |statement       = expression
-   |expression      = add_or_subtract
-   |add_or_subtract = CmdAdd | CmdSubtract | multiply_or_divide
-   |CmdAdd          = add_or_subtract '+' multiply_or_divide
-   |CmdSubtract     = add_or_subtract '-' multiply_or_divide
-   |multiply_or_div = CmdMultiply | CmdDivide | multiply_or_divide
-   |CmdAdd          = add_or_subtract '+' multiply_or_divide
-   |CmdSubtract     = add_or_subtract '-' multiply_or_divide
-
-
-  @{
-    program:    "elements",
-    elements:   ["element","elements"]
-    element:    ["class_definition","statements"]
-    statements: ["statement","statements"]
-    statement:  ["expression"]
-    expression: ["add_or_subtract"]
-    add_or_subtract: ["add_or_subtract"
-    ]
-    }#
 endClass
 
