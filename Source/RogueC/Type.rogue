@@ -849,6 +849,15 @@ class Type
       endIf
 
       block
+        # hash_code()->Int32
+        local m_hash_code = add_method( t, "hash_code" )
+        m_hash_code.attributes.add( Attribute.is_generated )
+        m_hash_code.return_type = Program.type_Int32
+        m_hash_code.statements.add( CmdReturn(t,CmdAccess(t,"value")) )
+        m_hash_code.organize( scope )
+      endBlock
+
+      block
         # to->Int32
         local m_to_Int32 = add_method( t, "to_Int32" )
         m_to_Int32.attributes.add( Attribute.is_generated )
