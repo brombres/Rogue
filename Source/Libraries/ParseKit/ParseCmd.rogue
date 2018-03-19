@@ -1,6 +1,6 @@
 module ParseKit
 
-class ParseCmd<<$Language>>( name:String )
+class ParseCmd<<$Language>>( name:String ) [abstract]
   PROPERTIES
     #parser         : Parser<<$Language>>
     next_parse_cmd : ParseCmd<<$Language>>
