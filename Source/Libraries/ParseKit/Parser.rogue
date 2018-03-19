@@ -1,5 +1,7 @@
 module ParseKit
 
+#$macro ADD_RULE(parser,name,commands)
+
 class Parser<<$Language>>
   PROPERTIES
     reader    : TokenReader<<$Language>>

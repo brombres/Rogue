@@ -8,9 +8,6 @@ enum TokenType<<$Language>>( text:String, &is_structural, &is_special )
       if (text.begins_with('[')) return text
       return "'$'" (text)
 
-    method hash_code->Int32
-      return value
-
     method to->String( t:Token<<Boss>> )
       if (t.text)   return t.text
 
