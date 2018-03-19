@@ -413,7 +413,7 @@ class Type
       attributes.add( Attribute.is_synchronizable )
       return this
 
-    method configure( scope=null:Scope )->Type
+    method configure( scope=null:Scope, reference_t=null:Token )->Type
       if (configured) return this
       configured = true
       configure_chain.add( this )
@@ -430,9 +430,9 @@ class Type
         is_defined = true
         local template = Program.find_template( name )
         if (template)
-          template.instantiate( this, scope )
+          template.instantiate( this, scope, reference_t )
         else
-          throw t.error( "Reference to undefined type '$'." (name) )
+          throw ?:{reference_t||t}.error( "Reference to undefined type '$'." (name) )
         endIf
       endIf
 
@@ -955,16 +955,16 @@ class Type
       endIf
 
 
-    method organize( scope=null:Scope )->Type
+    method organize( scope=null:Scope, reference_t=null:Token )->Type
       if (organized) return this
       organize_chain.add( this )
       organized = true
       organizing = true
 
-      configure
+      configure( &=reference_t )
 
       forEach (base_type in base_types)
-        base_type.organize( scope )
+        base_type.organize( scope, reference_t )
       endForEach
 
       if (this is not Program.type_Object) Program.type_Object.organize
