@@ -106,7 +106,7 @@ class PreprocessorTokenReader : Reader<<Token>>
                 if (depth) tokens.add( macro_t )
                 ++depth
               elseIf (macro_t.type is TokenType.symbol_close_paren or macro_t.type is TokenType.symbol_close_bracket or...
-                macro_t.type is TokenType.symbol_close_brace or macro_t.type is TokenType.symbol_open_specialize)
+                macro_t.type is TokenType.symbol_close_brace or macro_t.type is TokenType.symbol_close_specialize)
                 --depth
                 if (depth == 0) escapeWhile
                 else            tokens.add( macro_t )
@@ -148,7 +148,7 @@ class PreprocessorTokenReader : Reader<<Token>>
       endIf
 
     method apply_define( t:Token, def:Define )
-      if (def.is_in_use) throw t.error( ''Recursive definition for "$".'' (t->String) )
+      if (def.is_in_use) throw t.error( ''Recursive definition of "$".'' (t->String) )
       def.is_in_use = true # prevent infinite recursion
 
       forEach (def_t in def.tokens step -1)
@@ -163,7 +163,7 @@ class PreprocessorTokenReader : Reader<<Token>>
       def.is_in_use = false
 
     method apply_macro( t:Token, def:Define, args:Token[][] )
-      if (def.is_in_use) throw t.error( ''Recursive definition for "$".'' (t->String) )
+      if (def.is_in_use) throw t.error( ''Recursive definition of "$".'' (t->String) )
       def.is_in_use = true
 
       local lookup = StringTable<<Token[]>>()
