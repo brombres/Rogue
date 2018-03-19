@@ -13,6 +13,7 @@ class TokenType
     directive_endIf               : TokenType
     directive_warning             : TokenType
     directive_macro               : TokenType
+    directive_endMacro            : TokenType
     directive_module              : TokenType
     directive_essential           : TokenType
     directive_uses                : TokenType

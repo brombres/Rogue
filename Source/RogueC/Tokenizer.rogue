@@ -89,6 +89,7 @@ class Tokenizer
       TokenType.directive_endIf      = define( DirectiveTokenType("$endIf") )
       TokenType.directive_warning    = define( DirectiveTokenType("$warning") )
       TokenType.directive_macro      = define( DirectiveTokenType("$macro") )
+      TokenType.directive_endMacro   = define( DirectiveTokenType("$endMacro") )
       TokenType.directive_module     = define( StructuralDirectiveTokenType("module") )
       TokenType.directive_uses       = define( StructuralDirectiveTokenType("uses") )
 
@@ -366,6 +367,7 @@ class Tokenizer
           case "else":                add_new_token( TokenType.directive_else )
           case "endIf":               add_new_token( TokenType.directive_endIf )
           case "macro":               add_new_token( TokenType.directive_macro )
+          case "endMacro":            add_new_token( TokenType.directive_endMacro )
           case "warning":             add_new_token( TokenType.directive_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
