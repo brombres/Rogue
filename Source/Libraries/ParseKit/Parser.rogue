@@ -17,6 +17,13 @@ class Parser<<$Language>>
       rules[ rule.name ] = rule
       prev_rule = rule
       rule.parser = this
+
+      # Assign rule "xyz" to parse property "parse_xyz" if it exits
+      local p = type_info.find_property( "parse_" + rule.name )
+      if (p)
+        introspector.set( p, Value(rule) )
+      endIf
+
       return rule
 
     method chain( rule:ParseRule<<$Language>> )->ParseRule<<$Language>>
@@ -37,6 +44,9 @@ class Parser<<$Language>>
     method create_binary_rule( name:String )->ParseRule<<$Language>>
       return BinaryParseRule<<$Language>>(name)
 
+    method create_tokenizer->Tokenizer<<$Language>>
+      return Tokenizer<<$Language>>()
+
     method has_another->Logical [macro]
       this.reader.has_another
 
@@ -44,11 +54,11 @@ class Parser<<$Language>>
       this.reader.must_consume( token_type )
 
     method open( file:File )->this
-      reader = TokenReader<<$Language>>( Tokenizer<<$Language>>().tokenize(file) )
+      reader = TokenReader<<$Language>>( create_tokenizer.tokenize(file) )
       return this
 
     method open( filename:String, source:String )->this
-      reader = TokenReader<<$Language>>( Tokenizer<<$Language>>().tokenize(filename,source) )
+      reader = TokenReader<<$Language>>( create_tokenizer.tokenize(filename,source) )
       return this
 
     method parse( file:File )
@@ -62,7 +72,7 @@ class Parser<<$Language>>
     method parse( rule_name:String )->Cmd<<$Language>>
       local rule = rules[ rule_name ]
       if (rule)
-        return rule.parse
+        return rule()
       else
         throw ParseError<<$Language>>( "[INTERNAL] No such parse rule: $." (rule_name) )
       endIf
@@ -75,6 +85,7 @@ class Parser<<$Language>>
 
     method read->Token<<$Language>> [macro]
       this.reader.read
+
 
 endClass
 

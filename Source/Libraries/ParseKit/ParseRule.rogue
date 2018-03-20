@@ -10,6 +10,14 @@ class ParseRule<<$Language>>( name:String )
   METHODS
     method init( name, default_handler )
 
+    method call->Cmd<<$Language>>
+      if (handlers)
+        local handler = handlers[ peek.type ]
+        if (handler) return handler( this )
+        if (default_handler) return default_handler( this )
+      endIf
+      return parse_next
+
     method consume( token_type:TokenType<<$Language>> )->Logical [macro]
       this.parser.reader.consume( token_type )
 
@@ -19,16 +27,8 @@ class ParseRule<<$Language>>( name:String )
     method must_consume( token_type:TokenType<<$Language>> ) [macro]
       this.parser.reader.must_consume( token_type )
 
-    method parse->Cmd<<$Language>>
-      if (handlers)
-        local handler = handlers[ peek.type ]
-        if (handler) return handler( this )
-        if (default_handler) return default_handler( this )
-      endIf
-      return parse_next
-
     method parse_next->Cmd<<$Language>>
-      if (next) return next.parse
+      if (next) return next()
       throw ParseError<<$Language>>( ''[Internal] Parse rule $ attempting to call non-existent next parse rule.'' (name) )
 
     method peek->Token<<$Language>> [macro]
@@ -74,7 +74,7 @@ class BinaryParseRule<<$Language>> : ParseRule<<$Language>>
     lookup = Table<<TokenType<<$Language>>,TypeInfo>>()
 
   METHODS
-    method parse->Cmd<<$Language>>
+    method call->Cmd<<$Language>>
       return parse( parse_next )
 
     method parse( context:Cmd<<$Language>> )->Cmd<<$Language>>
