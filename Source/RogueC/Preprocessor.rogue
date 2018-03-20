@@ -416,6 +416,8 @@ class Preprocessor
             if (consume(TokenType.directive_endMacro)) escapeWhile
             defined_tokens.add( reader.read )
           endWhile
+        elseIf (consume(TokenType.directive_endMacro))
+          # Empy macro
         else
           # Single line macro
           while (reader.has_another)
