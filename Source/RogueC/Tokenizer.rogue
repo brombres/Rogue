@@ -420,9 +420,11 @@ class Tokenizer
       elseIf (ch == '.' )
         if (consume('.'))
           if (consume('.'))
-            # ellipsis (line continuation) - just consume EOL and continue parsing without creating a token
+            # ellipsis (line continuation modifier)
+            # - If occurs at EOL, removes EOL - just consume EOL and continue parsing without creating a token
+            # - If occurs mid-line, adds extra EOL
             while (consume(' ')) noAction
-            if (not consume('\n')) throw error( "End of line expected after '...'." )
+            if (not consume('\n')) add_new_token( TokenType.eol )
             return null
           elseIf (consume('<'))
             return TokenType.symbol_upToLessThan
@@ -495,12 +497,7 @@ class Tokenizer
         return TokenType.symbol_open_bracket
 
       elseIf (ch == '\\')
-        if (consume('n'))
-          add_new_token( TokenType.eol )
-          return null  # already handled
-        else
-          return TokenType.symbol_backslash
-        endIf
+        return TokenType.symbol_backslash
 
       elseIf (ch == ']')
         return TokenType.symbol_close_bracket
