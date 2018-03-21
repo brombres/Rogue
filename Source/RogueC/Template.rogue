@@ -64,6 +64,8 @@ class Template
         augmented_tokens = add_augmented_tokens( type, type.name, augmented_tokens ) # ex: Table<<String,Int32>>
       endIf
 
+      augmented_tokens = replace_thistype( type, augmented_tokens )
+
       if (type.name.ends_with(']'))
         instantiate_list( type, augmented_tokens )
       elseIf (type.name.ends_with('?'))
@@ -105,6 +107,32 @@ class Template
       augmented_tokens.add( tokens.last )  # add an EOL to the end
 
       return augmented_tokens
+
+    method replace_thistype( type:Type, augmented_tokens:Token[] )->Token[]
+      # Replace $ThisType with this type name
+      contingent
+        forEach (t in augmented_tokens)
+          sufficient (t.type is TokenType.placeholder_id and t->String == "$ThisType")
+        endForEach
+
+        # No occurrences of $ThisType
+        return augmented_tokens
+      endContingent
+
+      local result_tokens = Token[]( augmented_tokens.count )
+      local type_name_tokens = Tokenizer().tokenize( type.name, type.name )
+
+      forEach (t in augmented_tokens)
+        if (t.type is TokenType.placeholder_id and t->String == "$ThisType")
+          forEach (t2 in type_name_tokens)
+            result_tokens.add( t2.cloned.set_location(t) )
+          endForEach
+        else
+          result_tokens.add( t )
+        endIf
+      endForEach
+
+      return result_tokens
 
     method instantiate_list( type:Type, augmented_tokens:Token[] )
       type.is_list = true
