@@ -1,16 +1,16 @@
 module ParseKit
 
-class ParseRule<<$Language>>( name:String )
+class ParseRule<<$ParserType>>( name:String )
   PROPERTIES
-    parser          : Parser<<$Language>>
-    next            : ParseRule<<$Language>>
-    handlers        : Table<<TokenType<<$Language>>,(Function(ParseRule<<$Language>>)->Cmd<<$Language>>)>>
-    default_handler : Function(ParseRule<<$Language>>)->Cmd<<$Language>>
+    parser          : $ParserType
+    next            : $ThisType
+    handlers        : Table<<TokenType<<$ParserType>>,(Function($ThisType)->Cmd<<$ParserType>>)>>
+    default_handler : Function($ThisType)->Cmd<<$ParserType>>
 
   METHODS
     method init( name, default_handler )
 
-    method call->Cmd<<$Language>>
+    method call->Cmd<<$ParserType>>
       if (handlers)
         local handler = handlers[ peek.type ]
         if (handler) return handler( this )
@@ -18,76 +18,76 @@ class ParseRule<<$Language>>( name:String )
       endIf
       return parse_next
 
-    method consume( token_type:TokenType<<$Language>> )->Logical [macro]
+    method consume( token_type:TokenType<<$ParserType>> )->Logical [macro]
       this.parser.reader.consume( token_type )
 
     method has_another->Logical [macro]
       this.parser.reader.has_another
 
-    method must_consume( token_type:TokenType<<$Language>> ) [macro]
+    method must_consume( token_type:TokenType<<$ParserType>> ) [macro]
       this.parser.reader.must_consume( token_type )
 
-    method parse_next->Cmd<<$Language>>
+    method parse_next->Cmd<<$ParserType>>
       if (next) return next()
-      throw ParseError<<$Language>>( ''[Internal] Parse rule $ attempting to call non-existent next parse rule.'' (name) )
+      throw ParseError<<$ParserType>>( ''[Internal] Parse rule $ attempting to call non-existent next parse rule.'' (name) )
 
-    method peek->Token<<$Language>> [macro]
+    method peek->Token<<$ParserType>> [macro]
       this.parser.reader.peek
 
-    method peek( lookahead:Int32 )->Token<<$Language>> [macro]
+    method peek( lookahead:Int32 )->Token<<$ParserType>> [macro]
       this.parser.reader.peek( lookahead )
 
-    method read->Token<<$Language>> [macro]
+    method read->Token<<$ParserType>> [macro]
       this.parser.reader.read
 
-    method on( type:TokenType<<$Language>>, fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
+    method on( type:TokenType<<$ParserType>>, fn:Function($ThisType)->Cmd<<$ParserType>> )->this
       ensure handlers
       handlers[ type ] = fn
       return this
 
-    method on( symbol:String, fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
-      forEach (value in TokenType<<$Language>>.values)
-        local type = TokenType<<$Language>>( value )
+    method on( symbol:String, fn:Function($ThisType)->Cmd<<$ParserType>> )->this
+      forEach (value in TokenType<<$ParserType>>.values)
+        local type = TokenType<<$ParserType>>( value )
         if (type.text == symbol) return on( type, fn )
       endForEach
-      throw ParseError<<$Language>>( ''No token exists with symbol text "$".'' (symbol) )
+      throw ParseError<<$ParserType>>( ''No token exists with symbol text "$".'' (symbol) )
 
     method on( symbol:String, type_info:TypeInfo )->this
-      forEach (value in TokenType<<$Language>>.values)
-        local type = TokenType<<$Language>>( value )
+      forEach (value in TokenType<<$ParserType>>.values)
+        local type = TokenType<<$ParserType>>( value )
         if (type.text == symbol) return on( type, type_info )
       endForEach
-      throw ParseError<<$Language>>( ''No token exists with symbol text "$".'' (symbol) )
+      throw ParseError<<$ParserType>>( ''No token exists with symbol text "$".'' (symbol) )
 
-    method on( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+    method on( type:TokenType<<$ParserType>>, type_info:TypeInfo )->this
       throw UnsupportedOperationError()
 
-    method on_default( fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->this
+    method on_default( fn:Function($ThisType)->Cmd<<$ParserType>> )->this
       default_handler = fn
       return this
 
 endClass
 
 
-class BinaryParseRule<<$Language>> : ParseRule<<$Language>>
+class BinaryParseRule<<$ParserType>> : ParseRule<<$ParserType>>
   PROPERTIES
-    lookup = Table<<TokenType<<$Language>>,TypeInfo>>()
+    lookup = Table<<TokenType<<$ParserType>>,TypeInfo>>()
 
   METHODS
-    method call->Cmd<<$Language>>
+    method call->Cmd<<$ParserType>>
       return parse( parse_next )
 
-    method parse( context:Cmd<<$Language>> )->Cmd<<$Language>>
+    method parse( context:Cmd<<$ParserType>> )->Cmd<<$ParserType>>
       local t = peek
       local entry = lookup.find( t.type )
       if (entry)
         read
-        return parse( entry.value.create_object<<CmdBinary<<$Language>>>>.init(t,context,parse_next) )
+        return parse( entry.value.create_object<<CmdBinary<<$ParserType>>>>.init(t,context,parse_next) )
       else
         return context
       endIf
 
-    method on( type:TokenType<<$Language>>, type_info:TypeInfo )->this
+    method on( type:TokenType<<$ParserType>>, type_info:TypeInfo )->this
       lookup[ type ] = type_info
       return this
 

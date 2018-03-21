@@ -1,22 +1,22 @@
 module ParseKit
 
-$macro ParseRuleFn(LANGUAGE,BODY)
-  function( rule:ParseRule<<LANGUAGE>> )->Cmd<<LANGUAGE>>
+$macro ParseRuleFn(PARSER_TYPE,BODY)
+  function( rule:ParseRule<<PARSER_TYPE>> )->Cmd<<PARSER_TYPE>>
     BODY
   endFunction
 $endMacro
 
-class Parser<<$Language>>
+class Parser<<$ParserType>>
   PROPERTIES
-    reader    : TokenReader<<$Language>>
-    rules     = StringTable<<ParseRule<<$Language>>>>()
-    prev_rule : ParseRule<<$Language>>
+    reader    : TokenReader<<$ParserType>>
+    rules     = StringTable<<ParseRule<<$ParserType>>>>()
+    prev_rule : ParseRule<<$ParserType>>
 
   METHODS
-    method add( rule:ParseRule<<$Language>> )->ParseRule<<$Language>>
+    method add( rule:ParseRule<<$ParserType>> )->ParseRule<<$ParserType>>
       rules[ rule.name ] = rule
       prev_rule = rule
-      rule.parser = this
+      rule.parser = this as $ParserType
 
       # Assign rule "xyz" to parse property "parse_xyz" if it exits
       local p = type_info.find_property( "parse_" + rule.name )
@@ -26,39 +26,39 @@ class Parser<<$Language>>
 
       return rule
 
-    method chain( rule:ParseRule<<$Language>> )->ParseRule<<$Language>>
+    method chain( rule:ParseRule<<$ParserType>> )->ParseRule<<$ParserType>>
       if (prev_rule) prev_rule.next = rule
       return add( rule )
 
-    method consume( token_type:TokenType<<$Language>> )->Logical [macro]
+    method consume( token_type:TokenType<<$ParserType>> )->Logical [macro]
       this.reader.consume( token_type )
 
-    method create_rule( name:String )->ParseRule<<$Language>>
-      return ParseRule<<$Language>>(name)
+    method create_rule( name:String )->ParseRule<<$ParserType>>
+      return ParseRule<<$ParserType>>(name)
 
-    method create_rule( name:String, default_fn:Function(ParseRule<<$Language>>)->Cmd<<$Language>> )->ParseRule<<$Language>>
-      local result = ParseRule<<$Language>>(name)
+    method create_rule( name:String, default_fn:Function(ParseRule<<$ParserType>>)->Cmd<<$ParserType>> )->ParseRule<<$ParserType>>
+      local result = ParseRule<<$ParserType>>(name)
       result.on_default( default_fn )
       return result
 
-    method create_binary_rule( name:String )->ParseRule<<$Language>>
-      return BinaryParseRule<<$Language>>(name)
+    method create_binary_rule( name:String )->ParseRule<<$ParserType>>
+      return BinaryParseRule<<$ParserType>>(name)
 
-    method create_tokenizer->Tokenizer<<$Language>>
-      return Tokenizer<<$Language>>()
+    method create_tokenizer->Tokenizer<<$ParserType>>
+      return Tokenizer<<$ParserType>>()
 
     method has_another->Logical [macro]
       this.reader.has_another
 
-    method must_consume( token_type:TokenType<<$Language>> ) [macro]
+    method must_consume( token_type:TokenType<<$ParserType>> ) [macro]
       this.reader.must_consume( token_type )
 
     method open( file:File )->this
-      reader = TokenReader<<$Language>>( create_tokenizer.tokenize(file) )
+      reader = TokenReader<<$ParserType>>( create_tokenizer.tokenize(file) )
       return this
 
     method open( filename:String, source:String )->this
-      reader = TokenReader<<$Language>>( create_tokenizer.tokenize(filename,source) )
+      reader = TokenReader<<$ParserType>>( create_tokenizer.tokenize(filename,source) )
       return this
 
     method parse( file:File )
@@ -69,21 +69,21 @@ class Parser<<$Language>>
       open( filename, source )
       parse( "program" )
 
-    method parse( rule_name:String )->Cmd<<$Language>>
+    method parse( rule_name:String )->Cmd<<$ParserType>>
       local rule = rules[ rule_name ]
       if (rule)
         return rule()
       else
-        throw ParseError<<$Language>>( "[INTERNAL] No such parse rule: $." (rule_name) )
+        throw ParseError<<$ParserType>>( "[INTERNAL] No such parse rule: $." (rule_name) )
       endIf
 
-    method peek->Token<<$Language>> [macro]
+    method peek->Token<<$ParserType>> [macro]
       this.reader.peek
 
-    method peek( lookahead:Int32 )->Token<<$Language>> [macro]
+    method peek( lookahead:Int32 )->Token<<$ParserType>> [macro]
       this.reader.peek( lookahead )
 
-    method read->Token<<$Language>> [macro]
+    method read->Token<<$ParserType>> [macro]
       this.reader.read
 
 

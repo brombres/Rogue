@@ -1,10 +1,10 @@
 module ParseKit
 
-class ParseError<<$Language>>( filename:String, line:Int32, message ) : Error
+class ParseError<<$ParserType>>( filename:String, line:Int32, message ) : Error
   METHODS
     method init( message )
 
-    method init( t:Token<<$Language>>, message )
+    method init( t:Token<<$ParserType>>, message )
       filename = t.filepath
       line = t.line
 

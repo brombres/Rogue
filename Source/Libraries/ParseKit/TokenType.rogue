@@ -1,6 +1,6 @@
 module ParseKit
 
-enum TokenType<<$Language>>( text:String, &is_structural, &is_special )
+enum TokenType<<$ParserType>>( text:String, &is_structural, &is_special )
   CATEGORIES
 
   METHODS
@@ -8,7 +8,7 @@ enum TokenType<<$Language>>( text:String, &is_structural, &is_special )
       if (text.begins_with('[')) return text
       return "'$'" (text)
 
-    method to->String( t:Token<<Boss>> )
+    method to->String( t:Token<<$ParserType>> )
       if (t.text)   return t.text
 
       which (this)

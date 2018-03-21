@@ -1,13 +1,13 @@
 module ParseKit
 
-class Token<<$Language>>
+class Token<<$ParserType>>
   GLOBAL PROPERTIES
     next_filepath : String
     next_line     : Int32
     next_column   : Int32
 
   PROPERTIES
-    type     : TokenType<<$Language>>
+    type     : TokenType<<$ParserType>>
     filepath : String
     line     : Int32
     column   : Int32
@@ -30,13 +30,13 @@ class Token<<$Language>>
     method describe->String
       return type.describe
 
-    method error( message:String )->ParseError<<$Language>>
-      return ParseError<<$Language>>( message )
+    method error( message:String )->ParseError<<$ParserType>>
+      return ParseError<<$ParserType>>( message )
 
     method name->String
       return type.name
 
-    method set_position( other:Token<<$Language>> )->this
+    method set_position( other:$ThisType )->this
       filepath = other.filepath
       line = other.line
       column = other.column
