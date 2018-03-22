@@ -208,11 +208,35 @@ class PreprocessorTokenReader : Reader<<Token>>
 
     method peek->Token
       if (stack.count) return stack.last
-      return peek(0)
+      if (this.unfiltered) return peek_unfiltered
+
+      if (position >= count + stack.count)
+        return TokenType.eoi.create_token( tokens.last )
+      endIf
+
+      local t = tokens[position]
+      ++position
+
+      # Possible definition expansion
+      if (t.type is TokenType.identifier)
+        expand_definition( t )
+      else
+        stack.add( t )
+      endIf
+
+      return stack.last
 
     method peek_unfiltered->Token
       if (stack.count) return stack.last
-      return peek_unfiltered(0)
+
+      if (position >= count + stack.count)
+        return TokenType.eoi.create_token( tokens.last )
+      endIf
+
+      stack.add( tokens[position] )
+      ++position
+
+      return stack.last
 
     method push_unfiltered()
       unfiltered++
@@ -220,30 +244,29 @@ class PreprocessorTokenReader : Reader<<Token>>
     method pop_unfiltered()
       unfiltered--
 
-    method peek( num_ahead:Int32, unfiltered:Logical )->Token
-      if (position + num_ahead >= count + stack.count)
-        return TokenType.eoi.create_token( tokens.last )
-      endIf
-
-      while (stack.count <= num_ahead)
-        local t = tokens[position]
-        ++position
-
-        # Possible definition expansion
-        if (t.type is TokenType.identifier and unfiltered == false and this.unfiltered == 0)
-          expand_definition( t )
-        else
-          stack.add( t )
-        endIf
-      endWhile
-
-      return stack[ (stack.count - num_ahead) - 1 ]
-
     method peek( num_ahead:Int32 )->Token
-      return peek(num_ahead, false)
-
-    method peek_unfiltered( num_ahead:Int32 )->Token
-      return peek(num_ahead, true)
+      which (num_ahead)
+        case 0
+          return peek
+        case 1
+          local t1 = read
+          local t2 = peek
+          push( t1 )
+          return t2
+        case 2
+          local t1 = read
+          local t2 = read
+          local t3 = peek
+          push( t2 )
+          push( t1 )
+          return t3
+        others
+          local tokens = Token[]
+          loop (num_ahead-1) tokens.add( read )
+          local result = peek
+          push( tokens )
+          return result
+      endWhich
 
     method push( t:Token )
       stack.add( t )
