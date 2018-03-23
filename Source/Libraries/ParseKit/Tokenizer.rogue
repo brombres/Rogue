@@ -2,8 +2,49 @@ module ParseKit
 
 class Tokenizer<<$ParserType>>
   GLOBAL PROPERTIES
-    keywords  : StringTable<<TokenType<<$ParserType>>>>
-    symbols   : Table<<Character,TokenType<<$ParserType>>[]>>
+    token_types  = TokenType<<$ParserType>>[]
+    token_lookup = StringTable<<Int32>>()
+    keywords     = StringTable<<Int32>>()
+    handlers     = Table<<Character,Tokenize<<$ParserType>>>>()
+
+  GLOBAL METHODS
+    #TODO
+    method define_token_type( name:String, description=null, &is_structural )->TokenType<<$ParserType>>
+      local token_type = TokenType( name, description, token_types.count, &=is_structural )
+      token_types.add( token_type )
+      token_lookup[ name ] = token_type
+
+      return token_type
+
+    method keyword( name:String, &is_structural )->Int32
+      local entry = token_lookup[ name ]
+      if (entry) return entry.value.value
+
+      local token_type = define_token_type( name, name, &=is_structural )
+      keywords[ name ] = token_type
+      return token_type.value
+
+    method on( name:String, handler:Function(Scanner<<$ParserType>>,Token<<$ParserType>>[])->Logical )
+      local entry = token_lookup[ name ]
+      if (entry) return entry.value.value
+
+    method symbol( name:String, description=null, &is_structural )
+      local entry = token_lookup[ name ]
+      if (entry) return entry.value.value
+
+      local token_type = define_token_type( name, name, &=is_structural )
+      local handler : Tokenize<<$ParserType>>
+      if (name.count > 1) ensure handler( name, token_type.value )
+      else                handler = TokenizeSingleCharacter<<$ParserType>>( name, token_type.value )
+
+      if (handlers.contains(name))
+        handlers[ name ] = handlers.insert( handler )
+      else
+        handlers[ name ] = handler
+      endIf
+
+      return token_type.value
+
 
   PROPERTIES
     filepath       : String

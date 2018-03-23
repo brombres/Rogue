@@ -273,3 +273,74 @@ class TypeSpecializer
     method init( name, index )
 endClass
 
+
+class ModuleTemplate
+  PROPERTIES
+    sections          = ModuleTemplateSection[]
+
+  METHODS
+    method init
+
+    method instantiate( name:String, args:Token[][], result_tokens:Token[] )
+      (forEach in sections).instantiate( name, args, result_tokens )
+endClass
+
+class ModuleTemplateSection
+  PROPERTIES
+    module_t     : Token
+    name_t       : Token
+    placeholders : Token[]
+    tokens       = Token[]
+
+  METHODS
+    method init( module_t, name_t, placeholders )
+
+    method instantiate( name:String, args:Token[][], result_tokens:Token[] )
+      local placeholder_lookup = StringTable<<Token[]>>()
+      forEach (placeholder at index in placeholders)
+        placeholder_lookup[ placeholder->String ] = args[ index ]
+      endForEach
+
+      result_tokens.add( module_t )
+      result_tokens.add( TokenType.identifier.create_token(name_t,name) )
+
+      forEach (t in tokens)
+        contingent
+          necessary (t.type is TokenType.placeholder_id)
+          local replacement = placeholder_lookup[ t->String ]
+          necessary (replacement)
+          result_tokens.add( replacement )
+        unsatisfied
+          result_tokens.add( t )
+        endContingent
+      endForEach
+endClass
+
+class ModuleInstance
+  PROPERTIES
+    t                 : Token
+    as_name           : String
+    template_name     : String
+    args              : Token[][]
+
+  METHODS
+    method init( t, template_name, args, as_name )
+
+    method instantiate->Parser
+      local template = Program.module_templates[ template_name ]
+      if (not template)
+        throw t.error( "Reference to undefined module template $." (template_name) )
+      endIf
+
+      ++Program.module_instance_count
+      resolve_name
+
+      local tokens = Token[]
+      template.instantiate( as_name, args, tokens )
+      return Parser( tokens, &preprocess )
+
+    method resolve_name->String
+      if (as_name is null) as_name = "$_$" (template_name.before_first('<'),Program.module_instance_count)
+      return as_name
+endClass
+

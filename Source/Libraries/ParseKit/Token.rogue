@@ -7,12 +7,12 @@ class Token<<$ParserType>>
     next_column   : Int32
 
   PROPERTIES
-    type     : TokenType<<$ParserType>>
-    filepath : String
+    type     : Int32
     line     : Int32
     column   : Int32
-    text     : String
     number   : Real64?
+    text     : String
+    filepath : String
 
   METHODS
     method init
@@ -28,13 +28,13 @@ class Token<<$ParserType>>
     method init( type, text )
 
     method describe->String
-      return type.describe
+      return Tokenizer<<$ParserType>>.token_types[type].describe
 
     method error( message:String )->ParseError<<$ParserType>>
       return ParseError<<$ParserType>>( message )
 
     method name->String
-      return type.name
+      return Tokenizer<<$ParserType>>.token_types[type].name
 
     method set_position( other:$ThisType )->this
       filepath = other.filepath
@@ -55,6 +55,6 @@ class Token<<$ParserType>>
       return number.value
 
     method to->String
-      return type->String( this )
+      return Tokenizer<<$ParserType>>.token_types[type]->String( this )
 endClass
 

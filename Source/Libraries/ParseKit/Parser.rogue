@@ -6,6 +6,12 @@ $macro ParseRuleFn(PARSER_TYPE,BODY)
   endFunction
 $endMacro
 
+$macro TokenizeFn(PARSER_TYPE,BODY)
+  function( tokenizer:Tokenizer<<PARSER_TYPE>> )->Logical
+    BODY
+  endFunction
+$endMacro
+
 class Parser<<$ParserType>>
   PROPERTIES
     reader    : TokenReader<<$ParserType>>

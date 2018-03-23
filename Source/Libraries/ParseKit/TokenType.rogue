@@ -1,23 +1,22 @@
 module ParseKit
 
-enum TokenType<<$ParserType>>( text:String, &is_structural, &is_special )
-  CATEGORIES
+class TokenType<<$ParserType>>( name:String, description:String, &is_structural, &is_special )
+  PROPERTIES
+    name          : String
+    value         : Int32
+    description   : String
+    is_structural : Logical
 
   METHODS
-    method describe->String
-      if (text.begins_with('[')) return text
-      return "'$'" (text)
+    method init( name, description=null, value=0, is_structural=false )
+      if (description is null) description = "'$'" (name)
+
+    method to->String
+      return description
 
     method to->String( t:Token<<$ParserType>> )
       if (t.text)   return t.text
-
-      which (this)
-        case LITERAL_INT32:  return t->Int32
-        case LITERAL_INT64:  return t->Int64
-        case LITERAL_REAL64: return t->Real64
-      endWhich
-
       if (t.number) return t.number.value->String
-      return text
+      return name
 endEnum
 
