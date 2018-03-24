@@ -1322,7 +1322,6 @@ class Parser
         cur_statement_list.add( CmdMakeRequisite(t,t->String) )
         return
       endIf
-
       if (allow_control_structures)
         if (next_is(TokenType.keyword_if))
           cur_statement_list.add( parse_if )
@@ -1782,7 +1781,22 @@ class Parser
 
       consume_eols
 
-      return parse_native_element
+      local t_type = peek.type
+
+      if ((t_type is TokenType.keyword_nativeHeader) or
+          (t_type is TokenType.keyword_nativeCode) or
+          (t_type is TokenType.keyword_includeNativeCode) or
+          (t_type is TokenType.keyword_includeNativeHeader) or
+          (t_type is TokenType.keyword_compileArg) or
+          (t_type is TokenType.keyword_includeNativeHeader) or
+          (t_type is TokenType.directive_essential))
+        ensure this_type.dependencies
+        parse_statement( this_type.dependencies, false )
+        return true
+
+      else
+        return false
+      endIf
 
     method parse_deprecated->String
       consume_eols
