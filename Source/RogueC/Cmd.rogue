@@ -3851,9 +3851,6 @@ class CmdCompareEQ : CmdComparison
         return this
       endIf
 
-    method requires_parens->Logical
-      return false
-
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd

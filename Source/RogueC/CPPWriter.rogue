@@ -2587,7 +2587,7 @@ endAugment
 augment CmdIf
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "if (" )
+      writer.print( "if (ROGUE_COND(" )
       if (condition instanceOf CmdLiteralLogical and not (condition as CmdLiteralLogical).value)
         # Surround with extra parens to prevent dead code warning
         writer.print( "(" )
@@ -2596,7 +2596,7 @@ augment CmdIf
       else
         condition.write_cpp( writer )
       endIf
-      writer.println( ")" )
+      writer.println( "))" )
       writer.println( "{" )
       writer.indent += 2
       statements.write_cpp( writer )
@@ -2730,7 +2730,11 @@ augment CmdGenericLoop
 
       if (upkeep or not condition)
         writer.print( "for (;" )
-        if (condition) condition.write_cpp( writer )
+        if (condition)
+          writer.print( "ROGUE_COND(" )
+          condition.write_cpp( writer )
+          writer.print( ")" )
+        endIf
         writer.print( ";" )
         local first = true
         if (upkeep)
@@ -2742,9 +2746,9 @@ augment CmdGenericLoop
         endIf
         writer.println( ")" )
       else
-        writer.print( "while (" )
+        writer.print( "while (ROGUE_COND(" )
         condition.write_cpp( writer )
-        writer.println( ")" )
+        writer.println( "))" )
       endIf
       writer.println( "{" )
       writer.indent += 2
@@ -2840,9 +2844,9 @@ endAugment
 augment CmdSufficient
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( "if (" )
+      writer.print( "if (ROGUE_COND(" )
       condition.write_cpp( writer )
-      writer.print( ") goto " ).print( target_cmd.satisfied_label )
+      writer.print( ")) goto " ).print( target_cmd.satisfied_label )
 endAugment
 
 augment CmdLiteralNull
