@@ -3787,9 +3787,6 @@ class CmdLogicalXor : CmdBinaryLogical
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a xor b)
 
-    method requires_parens->Logical
-      return true
-
     method symbol->String
       return "xor"
 endClass
@@ -3831,9 +3828,6 @@ class CmdComparison : CmdBinary
       if (left.is_literal and right.is_literal) return combine_literal_operands( common_type )
 
       return this
-
-    method requires_parens->Logical
-      return false
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       throw t.error( "[INTERNAL] $.resolve_for_reference() is undefined." )
@@ -4292,9 +4286,6 @@ class CmdBitwiseXor : CmdBitwiseOp
 
     method fn_name->String
       return "operator~"
-
-    method requires_parens->Logical
-      return true
 
     method symbol->String
       return "~"
