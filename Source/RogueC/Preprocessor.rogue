@@ -217,6 +217,7 @@ class Preprocessor
             if (reader.peek.type is TokenType.identifier and reader.peek(1).type is TokenType.symbol_open_specialize)
               # Module Template: module M<<Args>>
               # Read until EOI or next 'module', either discarding or storing in ModuleTemplate
+              reader.push_unfiltered
               if (keep_tokens)
                 local name_t = reader.peek
                 local base_name = reader.read_identifier
@@ -246,6 +247,7 @@ class Preprocessor
               else
                 while (reader.has_another and reader.peek is not TokenType.meta_module) reader.read
               endIf
+              reader.pop_unfiltered
               nextIteration
             endIf
 

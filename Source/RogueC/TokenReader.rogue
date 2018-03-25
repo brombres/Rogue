@@ -22,7 +22,7 @@ class TokenReader : Reader<<Token>>
       return (position < count)
 
     method must_consume( type:TokenType )
-      if (not consume(type)) throw peek.error( "Unexpected $." (peek.quoted_name) )
+      if (not consume(type)) throw peek.error( "Expected $, found $." (type.quoted_name,peek.quoted_name) )
 
     method next_is( type:TokenType )->Logical
       if (position == count) return false
@@ -63,6 +63,11 @@ class PreprocessorTokenReader : Reader<<Token>>
     method init( tokens )
       count = tokens.count
 
+    method consume( type:TokenType )->Logical
+      if (peek.type is not type) return false
+      read
+      return true
+
     method error( message:String )->Error
       if (has_another) return peek.error( message )
       if (count) return TokenType.eoi.create_token( tokens.last ).error( message )
@@ -72,6 +77,17 @@ class PreprocessorTokenReader : Reader<<Token>>
       if (t.type is TokenType.identifier)
         if (local_definitions.count and expand_definition(t,local_definitions.last))  return
         if (expand_definition(t,Preprocessor.definitions)) return
+      elseIf (t.type is TokenType.meta_join)
+        must_consume( TokenType.symbol_open_paren )
+        use builder=StringBuilder.pool
+          builder.print( read->String )
+          while (consume(TokenType.symbol_comma))
+            builder.print( read->String )
+          endWhile
+          must_consume( TokenType.symbol_close_paren )
+          expand_definition( TokenType.identifier.create_token(t,builder->String) )
+        endUse
+        return
       endIf
       stack.add( t ) # no expansion
 
@@ -189,6 +205,10 @@ class PreprocessorTokenReader : Reader<<Token>>
     method has_another->Logical
       peek
       return stack.count
+
+    method must_consume( type:TokenType )
+      if (consume(type)) return
+      throw peek.error( "Expected $, found $." (type.quoted_name,peek.quoted_name) )
 
     method next_is( type:TokenType )->Logical
       if (position == count and stack.count == 0) return false
