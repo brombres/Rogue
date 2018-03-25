@@ -69,8 +69,10 @@ class PreprocessorTokenReader : Reader<<Token>>
       return RogueError( message )
 
     method expand_definition( t:Token )
-      if (local_definitions.count and expand_definition(t,local_definitions.last))  return
-      if (expand_definition(t,Preprocessor.definitions)) return
+      if (t.type is TokenType.identifier)
+        if (local_definitions.count and expand_definition(t,local_definitions.last))  return
+        if (expand_definition(t,Preprocessor.definitions)) return
+      endIf
       stack.add( t ) # no expansion
 
     method expand_definition( t:Token, definitions:Definitions )->Logical
@@ -152,12 +154,7 @@ class PreprocessorTokenReader : Reader<<Token>>
       def.is_in_use = true # prevent infinite recursion
 
       forEach (def_t in def.tokens step -1)
-        def_t = def_t.cloned.set_location( t )
-        if (def_t.type is TokenType.identifier)
-          expand_definition( def_t )
-        else
-          stack.add( def_t )
-        endIf
+        expand_definition( def_t.cloned.set_location(t) )
       endForEach
 
       def.is_in_use = false
@@ -177,12 +174,7 @@ class PreprocessorTokenReader : Reader<<Token>>
           local arg_tokens = lookup[ def_t->String ]
           if (arg_tokens)
             forEach (arg_t in arg_tokens step -1)
-              arg_t = arg_t.cloned.set_location( t )
-              if (arg_t.type is TokenType.identifier)
-                expand_definition( arg_t )
-              else
-                stack.add( arg_t )
-              endIf
+              expand_definition( arg_t.cloned.set_location(t) )
             endForEach
           else
             expand_definition( def_t )
@@ -218,11 +210,7 @@ class PreprocessorTokenReader : Reader<<Token>>
       ++position
 
       # Possible definition expansion
-      if (t.type is TokenType.identifier)
-        expand_definition( t )
-      else
-        stack.add( t )
-      endIf
+      expand_definition( t )
 
       return stack.last
 
