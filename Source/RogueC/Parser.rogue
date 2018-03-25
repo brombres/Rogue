@@ -126,7 +126,7 @@ class Parser
             endIf
           endIf
 
-        elseIf (t.type is TokenType.directive_module)
+        elseIf (t.type is TokenType.meta_module)
           id_map.clear
           if (next_is_identifier)
             id_map.use_module( read_identifier )
@@ -141,7 +141,7 @@ class Parser
             must_consume( TokenType.symbol_close_bracket )
           endIf
 
-        elseIf (t.type is TokenType.directive_uses)
+        elseIf (t.type is TokenType.meta_uses)
           id_map.use_module( read_module_id )
 
         elseIf (t.type is TokenType.symbol_dot or t.type is TokenType.symbol_slash_slash)
@@ -235,7 +235,7 @@ class Parser
         parse_enum
         return true
 
-      elseIf (t.type is TokenType.directive_module)
+      elseIf (t.type is TokenType.meta_module)
         read  # 'module'
         if (next_is_identifier)
           used_modules = UsedModule( read_identifier, null )
@@ -260,7 +260,7 @@ class Parser
         must_consume_eols
         return true
 
-      elseIf (t.type is TokenType.directive_uses)
+      elseIf (t.type is TokenType.meta_uses)
         read  # 'uses'
         used_modules = UsedModule( read_module_id, used_modules )
         must_consume_eols
@@ -1316,7 +1316,7 @@ class Parser
         return
       endIf
 
-      if (consume(TokenType.directive_essential))
+      if (consume(TokenType.meta_essential))
         # Turn this $essential directive into a Cmd node so that it only takes effect
         # if the method is actually used in the program.
         cur_statement_list.add( CmdMakeRequisite(t,t->String) )
@@ -1789,7 +1789,7 @@ class Parser
           (t_type is TokenType.keyword_includeNativeHeader) or
           (t_type is TokenType.keyword_compileArg) or
           (t_type is TokenType.keyword_includeNativeHeader) or
-          (t_type is TokenType.directive_essential))
+          (t_type is TokenType.meta_essential))
         ensure this_type.dependencies
         parse_statement( this_type.dependencies, false )
         return true
@@ -1875,7 +1875,7 @@ class Parser
         RogueC.compiler_options.add( read->String )
         return true
 
-      elseIf (consume(TokenType.directive_essential))
+      elseIf (consume(TokenType.meta_essential))
         local pattern = t->String
         Program.get_on_launch_method( t ).statements.add( CmdMakeRequisite(t,pattern) )
         return true

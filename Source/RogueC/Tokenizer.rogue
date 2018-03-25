@@ -76,20 +76,20 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
-      TokenType.directive_define     = define( DirectiveTokenType("$define") )
-      TokenType.directive_defined    = define( DirectiveTokenType("defined") )
-      TokenType.directive_error      = define( DirectiveTokenType("$error") )
-      TokenType.directive_essential  = define( DirectiveTokenType("$essential") )
-      TokenType.directive_include    = define( DirectiveTokenType("$include") )
-      TokenType.directive_if         = define( DirectiveTokenType("$if") )
-      TokenType.directive_elseIf     = define( DirectiveTokenType("$elseIf") )
-      TokenType.directive_else       = define( DirectiveTokenType("$else") )
-      TokenType.directive_endIf      = define( DirectiveTokenType("$endIf") )
-      TokenType.directive_warning    = define( DirectiveTokenType("$warning") )
-      TokenType.directive_macro      = define( DirectiveTokenType("$macro") )
-      TokenType.directive_endMacro   = define( DirectiveTokenType("$endMacro") )
-      TokenType.directive_module     = define( StructuralDirectiveTokenType("module") )
-      TokenType.directive_uses       = define( StructuralDirectiveTokenType("uses") )
+      TokenType.meta_define     = define( DirectiveTokenType("$define") )
+      TokenType.meta_defined    = define( DirectiveTokenType("defined") )
+      TokenType.meta_error      = define( DirectiveTokenType("$error") )
+      TokenType.meta_essential  = define( DirectiveTokenType("$essential") )
+      TokenType.meta_include    = define( DirectiveTokenType("$include") )
+      TokenType.meta_if         = define( DirectiveTokenType("$if") )
+      TokenType.meta_elseIf     = define( DirectiveTokenType("$elseIf") )
+      TokenType.meta_else       = define( DirectiveTokenType("$else") )
+      TokenType.meta_endIf      = define( DirectiveTokenType("$endIf") )
+      TokenType.meta_warning    = define( DirectiveTokenType("$warning") )
+      TokenType.meta_macro      = define( DirectiveTokenType("$macro") )
+      TokenType.meta_endMacro   = define( DirectiveTokenType("$endMacro") )
+      TokenType.meta_module     = define( StructuralDirectiveTokenType("module") )
+      TokenType.meta_uses       = define( StructuralDirectiveTokenType("uses") )
 
       TokenType.meta_block           = define( DirectiveTokenType("$block") )
       TokenType.meta_endBlock        = define( DirectiveTokenType("$endBlock") )
@@ -337,7 +337,7 @@ class Tokenizer
         local id = read_identifier
         which (id)
           case "define"
-            add_new_token( TokenType.directive_define )
+            add_new_token( TokenType.meta_define )
 
             local old_pos = reader.position
             consume_spaces
@@ -353,20 +353,20 @@ class Tokenizer
             consume_spaces
             local has_parens = consume( '(' )
             consume_spaces
-            add_new_token( TokenType.directive_defined, read_identifier )
+            add_new_token( TokenType.meta_defined, read_identifier )
             consume_spaces
             if (has_parens and not consume(')')) throw error( "Closing ')' expected." )
             return null
 
-          case "error":               add_new_token( TokenType.directive_error )
-          case "include":             add_new_token( TokenType.directive_include )
-          case "if":                  add_new_token( TokenType.directive_if )
-          case "elseIf":              add_new_token( TokenType.directive_elseIf )
-          case "else":                add_new_token( TokenType.directive_else )
-          case "endIf":               add_new_token( TokenType.directive_endIf )
-          case "macro":               add_new_token( TokenType.directive_macro )
-          case "endMacro":            add_new_token( TokenType.directive_endMacro )
-          case "warning":             add_new_token( TokenType.directive_warning )
+          case "error":               add_new_token( TokenType.meta_error )
+          case "include":             add_new_token( TokenType.meta_include )
+          case "if":                  add_new_token( TokenType.meta_if )
+          case "elseIf":              add_new_token( TokenType.meta_elseIf )
+          case "else":                add_new_token( TokenType.meta_else )
+          case "endIf":               add_new_token( TokenType.meta_endIf )
+          case "macro":               add_new_token( TokenType.meta_macro )
+          case "endMacro":            add_new_token( TokenType.meta_endMacro )
+          case "warning":             add_new_token( TokenType.meta_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
           case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
@@ -683,7 +683,7 @@ class Tokenizer
             return scan_native_code
           elseIf (keyword_type is TokenType.keyword_nativeHeader)
             return scan_native_header
-          elseIf (keyword_type is TokenType.directive_essential)
+          elseIf (keyword_type is TokenType.meta_essential)
             return scan_essential_directive
           else
             return add_new_token( keyword_type )
@@ -1007,7 +1007,7 @@ class Tokenizer
         buffer.print( reader.read )
       endWhile
 
-      return add_new_token( TokenType.directive_essential, buffer->String.trimmed )
+      return add_new_token( TokenType.meta_essential, buffer->String.trimmed )
 
     method tokenize_string( terminator:Character )->Logical
       buffer.clear

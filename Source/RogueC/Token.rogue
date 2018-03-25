@@ -244,7 +244,7 @@ class StringDataToken : Token
       return StringDataToken( type, value ).set_location( this )
 
     method quoted_name->String
-      if (type is TokenType.directive_essential) return "$essential"
+      if (type is TokenType.meta_essential) return "$essential"
       return prior.quoted_name
 
     method to->String
