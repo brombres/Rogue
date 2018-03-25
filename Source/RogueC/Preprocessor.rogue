@@ -115,15 +115,15 @@ class Preprocessor
 
         local t_type = t.type
         if (t.is_directive)
-          if (t_type is TokenType.directive_define)
+          if (t_type is TokenType.meta_define)
             read_define( keep_tokens, definitions )
             nextIteration
 
-          elseIf (t_type is TokenType.directive_macro)
+          elseIf (t_type is TokenType.meta_macro)
             read_macro( keep_tokens, definitions )
             nextIteration
 
-          elseIf (t_type is TokenType.directive_defined)
+          elseIf (t_type is TokenType.meta_defined)
             local defined_word = t->String
             if (keep_tokens)
               if (find_definition(defined_word)?)
@@ -134,7 +134,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t_type is TokenType.directive_error)
+          elseIf (t_type is TokenType.meta_error)
             local message_t = reader.read
             if (message_t.type is not TokenType.literal_string)
               throw t.error( "Literal string error message expected." )
@@ -144,7 +144,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t_type is TokenType.directive_include)
+          elseIf (t_type is TokenType.meta_include)
             local filepath_t = reader.read
             if (filepath_t.type is not TokenType.literal_string)
               throw reader.error( "Filepath expected." )
@@ -156,22 +156,22 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t_type is TokenType.directive_elseIf)
+          elseIf (t_type is TokenType.meta_elseIf)
             if (depth == 1) throw t.error( "Syntax error - $elseIf does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t_type is TokenType.directive_else)
+          elseIf (t_type is TokenType.meta_else)
             if (depth == 1) throw t.error( "Syntax error - $else does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t_type is TokenType.directive_endIf)
+          elseIf (t_type is TokenType.meta_endIf)
             if (depth == 1) throw t.error( "Syntax error - $endIf does not match any previous $if." )
             reader.push( t )
             return
 
-          elseIf (t_type is TokenType.directive_if)
+          elseIf (t_type is TokenType.meta_if)
             local found_true = parse_logical_expression
             local single_line = not reader.next_is( TokenType.eol )
 
@@ -181,7 +181,7 @@ class Preprocessor
               process( false, depth, single_line )
             endIf
 
-            while (reader.peek.type is TokenType.directive_elseIf)
+            while (reader.peek.type is TokenType.meta_elseIf)
               reader.read
               local value = parse_logical_expression
 
@@ -194,16 +194,16 @@ class Preprocessor
               endIf
             endWhile
 
-            if (reader.peek.type is TokenType.directive_else)
+            if (reader.peek.type is TokenType.meta_else)
               reader.read
               if (found_true) process( false,       depth, single_line )
               else            process( keep_tokens, depth, single_line )
             endIf
 
-            if (not single_line) must_consume( TokenType.directive_endIf )
+            if (not single_line) must_consume( TokenType.meta_endIf )
             nextIteration
 
-          elseIf (t_type is TokenType.directive_warning)
+          elseIf (t_type is TokenType.meta_warning)
             local message_t = reader.read
             if (message_t.type is not TokenType.literal_string)
               throw t.error( "Literal string warning message expected." )
@@ -213,7 +213,7 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t_type is TokenType.directive_module)
+          elseIf (t_type is TokenType.meta_module)
             if (reader.peek.type is TokenType.identifier and reader.peek(1).type is TokenType.symbol_open_specialize)
               # Module Template: module M<<Args>>
               # Read until EOI or next 'module', either discarding or storing in ModuleTemplate
@@ -239,12 +239,12 @@ class Preprocessor
                 local section = ModuleTemplateSection( t, name_t, placeholders )
                 module_template.sections.add( section )
 
-                while (reader.has_another and reader.peek.type is not TokenType.directive_module)
+                while (reader.has_another and reader.peek.type is not TokenType.meta_module)
                   section.tokens.add( reader.read )
                 endWhile
 
               else
-                while (reader.has_another and reader.peek is not TokenType.directive_module) reader.read
+                while (reader.has_another and reader.peek is not TokenType.meta_module) reader.read
               endIf
               nextIteration
             endIf
@@ -277,7 +277,7 @@ class Preprocessor
 
             nextIteration
 
-          elseIf (t_type is TokenType.directive_uses)
+          elseIf (t_type is TokenType.meta_uses)
             # Only check for module templates here in order to instantiate them; 'uses' with standard modules can wait until later
             if (not keep_tokens)
               while (reader.has_another and not reader.next_is(TokenType.eol)) reader.read
@@ -525,10 +525,10 @@ class Preprocessor
         if (consume(TokenType.eol))
           # Multi-line macro
           while (reader.has_another)
-            if (consume(TokenType.directive_endMacro)) escapeWhile
+            if (consume(TokenType.meta_endMacro)) escapeWhile
             defined_tokens.add( reader.read )
           endWhile
-        elseIf (consume(TokenType.directive_endMacro))
+        elseIf (consume(TokenType.meta_endMacro))
           # Empy macro
         else
           # Single line macro
@@ -545,7 +545,7 @@ class Preprocessor
         if (consume(TokenType.eol))
           # Multi-line macro
           while (reader.has_another)
-            if (consume(TokenType.directive_endMacro)) escapeWhile
+            if (consume(TokenType.meta_endMacro)) escapeWhile
             reader.read
           endWhile
         else
@@ -658,7 +658,7 @@ class Preprocessor
           return v * -1
         endIf
 
-        if (consume(TokenType.directive_defined))
+        if (consume(TokenType.meta_defined))
           must_consume(TokenType.symbol_open_paren)
           local def = reader.peek
           must_consume(TokenType.identifier)
