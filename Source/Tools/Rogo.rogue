@@ -10,9 +10,6 @@
 #   $HEADER(library-name)  -> path/to/library-name/include
 #   $LIBRARY(library-name) -> path/to/library-name/lib
 
-$include "ParseKit/Scanner.rogue"
-uses ParseKit
-
 File.create_folder( ".rogo" )
 global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
 global cache  = JSON.load_table( File(".rogo/Cache.json") ) : Value

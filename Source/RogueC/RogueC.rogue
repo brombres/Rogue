@@ -14,7 +14,6 @@ $include "CloneArgs.rogue"
 $include "Cmd.rogue"
 $include "Local.rogue"
 $include "Method.rogue"
-$include "ParseKit/Scanner.rogue"
 $include "Parser.rogue"
 $include "Plugin.rogue"
 $include "Preprocessor.rogue"
@@ -30,8 +29,6 @@ $include "Tokenizer.rogue"
 $include "Type.rogue"
 $include "Visitor.rogue"
 $include "Visitors.rogue"
-
-uses ParseKit
 
 RogueC.launch
 

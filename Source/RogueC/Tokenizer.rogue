@@ -1,5 +1,3 @@
-uses ParseKit
-
 class Tokenizer
   PROPERTIES
     filepath    : String
