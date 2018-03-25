@@ -9,11 +9,12 @@ class TokenType
     meta_defined                  : TokenType
     meta_error                    : TokenType
     meta_essential                : TokenType
-    meta_include                  : TokenType
     meta_if                       : TokenType
     meta_elseIf                   : TokenType
     meta_else                     : TokenType
     meta_endIf                    : TokenType
+    meta_include                  : TokenType
+    meta_join                     : TokenType
     meta_localDefine              : TokenType
     meta_localMacro               : TokenType
     meta_macro                    : TokenType
