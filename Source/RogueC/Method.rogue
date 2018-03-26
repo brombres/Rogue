@@ -375,12 +375,15 @@ class Method
       attributes.flags &= !Attribute.is_augment
       if (not native_code)
         # Turn this augment method into a standalone method containing the
-        # <<insert>> and <<append>> label contents.  Throw an error if there are
-        # any other labels defined to avoid silently dropping that code.
+        # <insert> and <append> label contents.  Throw an error if there are
+        # any other labels defined besides <replace> to avoid silently dropping
+        # that code.
         if (label_list.count > 2)
-          # More than the default <<insert>> and <<append>> labels
-          local label = label_list[2]
-          throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+          if (label_list.count > 3 or label_list.last.name != "replace")
+            # More than the default <insert> and <append> labels and not a <replace> label
+            local label = label_list.last
+            throw label.t.error( "No corresponding label <$> in augmented code." (label.name) )
+          endIf
         endIf
 
         local insert_label = label_lookup[ "insert" ]
@@ -388,8 +391,8 @@ class Method
         label_lookup.clear
         label_list.clear
 
-        # Insert the label content.  Give the method its own <<insert>>
-        # and <<append>> labels for any successive augments.
+        # Insert the label content.  Give the method its own <insert>
+        # and <append> labels for any successive augments.
         if (insert_label and append_label)
           statements.add( begin_label(t,"insert",false) )
           statements.add( insert_label.statements )

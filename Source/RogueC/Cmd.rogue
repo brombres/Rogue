@@ -5495,8 +5495,8 @@ endClass
 
 class CmdLabel : Cmd
   PROPERTIES
-    name       : String
-    statements : CmdStatementList
+    name          : String
+    statements    : CmdStatementList
     is_referenced : Logical
 
   METHODS

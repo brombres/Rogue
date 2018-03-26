@@ -1958,7 +1958,19 @@ class Type
 
       forEach (label in aug_m.label_list)
         if (not label.is_referenced)
-          throw label.t.error( "No corresponding label <<$>> in augmented code." (label.name) )
+          if (label.name == "replace")
+            # Clear base statements and contents of all labels; add <replace> statements to base statements
+            existing_m.statements.clear
+            forEach (method_label at index in existing_m.label_list)
+              method_label.statements.clear
+              existing_m.statements.add( method_label )  # put CmdLabel statements back in statements list
+              if (index == 0)
+                existing_m.statements.add( label.statements )
+              endIf
+            endForEach
+          else
+            throw label.t.error( "No corresponding label <$> in augmented code." (label.name) )
+          endIf
         endIf
       endForEach
 
