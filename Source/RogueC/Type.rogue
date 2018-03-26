@@ -1948,6 +1948,21 @@ class Type
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )
       # Apply augment to existing method
+      local replace_label = aug_m.label_lookup[ "replace" ]
+      if (replace_label)
+        # Clear base statements and contents of all labels; add <replace> statements to base statements,
+        # then proceed normally so that the augment's <insert> will still go in the correct place etc.
+        replace_label.is_referenced = true
+        existing_m.statements.clear
+        forEach (method_label at index in existing_m.label_list)
+          method_label.statements.clear
+          existing_m.statements.add( method_label )  # put CmdLabel statements back in statements list
+          if (index == 0)
+            existing_m.statements.add( replace_label.statements )  # <insert>
+          endIf
+        endForEach
+      endIf
+
       forEach (method_label in existing_m.label_list)
         local aug_label = aug_m.label_lookup[ method_label.name ]
         if (aug_label)
@@ -1958,19 +1973,7 @@ class Type
 
       forEach (label in aug_m.label_list)
         if (not label.is_referenced)
-          if (label.name == "replace")
-            # Clear base statements and contents of all labels; add <replace> statements to base statements
-            existing_m.statements.clear
-            forEach (method_label at index in existing_m.label_list)
-              method_label.statements.clear
-              existing_m.statements.add( method_label )  # put CmdLabel statements back in statements list
-              if (index == 0)
-                existing_m.statements.add( label.statements )
-              endIf
-            endForEach
-          else
-            throw label.t.error( "No corresponding label <$> in augmented code." (label.name) )
-          endIf
+          throw label.t.error( "No corresponding label <$> in augmented code." (label.name) )
         endIf
       endForEach
 

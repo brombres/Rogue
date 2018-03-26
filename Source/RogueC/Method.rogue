@@ -386,8 +386,9 @@ class Method
           endIf
         endIf
 
-        local insert_label = label_lookup[ "insert" ]
-        local append_label = label_lookup[ "append" ]
+        local insert_label  = label_lookup[ "insert" ]
+        local append_label  = label_lookup[ "append" ]
+        local replace_label = label_lookup[ "replace" ]
         label_lookup.clear
         label_list.clear
 
@@ -396,6 +397,7 @@ class Method
         if (insert_label and append_label)
           statements.add( begin_label(t,"insert",false) )
           statements.add( insert_label.statements )
+          if (replace_label) statements.add( replace_label.statements )
           statements.add( append_label.statements )
           statements.add( begin_label(t,"append",false) )
         endIf
