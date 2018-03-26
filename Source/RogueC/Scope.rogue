@@ -319,6 +319,7 @@ class Scope
           endIf
         endForEach
         if (not candidates.update_matches) return null
+
       endIf
 
       if (suppress_inherited or calling_prior_init)

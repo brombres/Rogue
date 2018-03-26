@@ -1597,7 +1597,12 @@ class Type
       endForEach
 
     method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
-      local existing_m = lookup[ m.signature ]
+      local existing_m = global_method_lookup_by_signature[ m.signature ]
+      if (existing_m)
+        throw m.t.error( "A global method already exists with signature $." (m.signature) )
+      endIf
+
+      existing_m = lookup[ m.signature ]
       if (existing_m)
         if (m.return_type is not existing_m.return_type)
           contingent
