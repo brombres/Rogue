@@ -1,15 +1,17 @@
+NameGenerator()
+
 class NameGenerator
   PROPERTIES
-    word_lengths     = Integer[]
-    starting_letters = Integer[]
-    frequency        = Integer[][]
+    word_lengths     = Int32[]
+    starting_letters = Int32[]
+    frequency        = Int32[][]
 
   METHODS
     method init
       local file_list = String[]
 
       forEach (ch1 in 0..25)
-        frequency.add( Integer[](27,0) )
+        frequency.add( Int32[](27,0) )
       endForEach
 
       forEach (filepath in System.command_line_arguments)
@@ -74,14 +76,13 @@ class NameGenerator
       endForEach
 
     method print_name
-      local len        = word_lengths.random
       local cur_letter = starting_letters.random
       forEach (1..word_lengths.random)
         print ((cur_letter + 'a')->Character)
         local row = frequency[ cur_letter ]
         local row_count = row[26]
         if (row_count?)
-          local r = Random.next_integer( row_count )
+          local r = Random.int32( row_count )
           forEach (i in 0..25)
             r -= row[i]
             if (r < 0)

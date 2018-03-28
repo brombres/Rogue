@@ -1,3 +1,5 @@
+Listing()
+
 class Listing
   METHODS
     method init
