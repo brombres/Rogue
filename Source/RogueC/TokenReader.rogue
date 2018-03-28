@@ -222,15 +222,15 @@ class PreprocessorTokenReader : Reader<<Token>>
       if (stack.count) return stack.last
       if (this.unfiltered) return peek_unfiltered
 
-      if (position >= count + stack.count)
-        return TokenType.eoi.create_token( tokens.last )
-      endIf
+      while (stack.is_empty)
+        if (position >= count) return TokenType.eoi.create_token( tokens.last )
 
-      local t = tokens[position]
-      ++position
+        local t = tokens[position]
+        ++position
 
-      # Possible definition expansion
-      expand_definition( t )
+        # Possible definition expansion
+        expand_definition( t )
+      endWhile
 
       return stack.last
 
