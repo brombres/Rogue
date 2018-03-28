@@ -1588,13 +1588,13 @@ class CPPWriter
 
       return this
 
-    method print_literal_string( st:String )->this
+    method print_literal_string( st:String, &omit_quotes )->this
       if (st is null)
         print( "0" )
         return this
       endIf
 
-      print( "\"" )
+      if (not omit_quotes) print( "\"" )
 
       local stage = 0
       # 0: \ -> 1 ignore next
@@ -1616,7 +1616,7 @@ class CPPWriter
         endWhich
         print_literal_character( ch, true )
       endForEach
-      print( "\"" )
+      if (not omit_quotes) print( "\"" )
 
       return this
 
@@ -2412,7 +2412,8 @@ augment Method
         if (RogueC.debug_mode)
           writer.trace_token = t
           writer.print( ''RogueDebugTrace __trace( "'' )
-          writer.print( type_context.name ).print( "." ).print( signature ).print( ''", "'' )
+          writer.print_literal_string( type_context.name, &omit_quotes ).print( "." )
+          writer.print_literal_string( signature, &omit_quotes ).print( ''", "'' )
           writer.print( t.filename ).print( ''", '' ).print( t.line )
           writer.println( '' );'' )
         endIf
