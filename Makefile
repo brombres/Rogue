@@ -21,11 +21,11 @@ else
   endif
 endif
 
-all: roguec rogo
+all: roguec
 
 -include Local.mk
 
-remake: libraries touch_roguec roguec rogo
+remake: libraries touch_roguec roguec
 
 debug: libraries
 	@echo -------------------------------------------------------------------------------
@@ -47,13 +47,12 @@ exhaustive: roguec
 	mkdir -p Programs
 	$(CXX) -pthread $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
-roguec: bootstrap_roguec $(BINDIR)/roguec libraries rogo Source/RogueC/Version.rogue Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
+roguec: bootstrap_rogo $(BINDIR)/rogo bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Version.rogue Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
 
-rogo: Source/RogueC/Build/Rogo.cpp Programs/RogueC/$(PLATFORM)/rogo $(BINDIR)/rogo
-
-update_bootstrap:
+update_bootstrap: rogo
 	mkdir -p Source/RogueC/Bootstrap
 	cp Source/RogueC/Build/RogueC.h Source/RogueC/Build/RogueC.cpp Source/RogueC/Bootstrap
+	cp Source/RogueC/Build/Rogo.h Source/RogueC/Build/Rogo.cpp Source/RogueC/Bootstrap
 
 touch_roguec:
 	touch Source/RogueC/RogueC.rogue
@@ -65,18 +64,16 @@ bootstrap:
 	mkdir -p Programs/RogueC/$(PLATFORM);
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 	touch Source/RogueC/RogueC.rogue
+	@echo -------------------------------------------------------------------------------
+	@echo Recompiling Programs/RogueC/$(PLATFORM)/rogo from C++ bootstrap source...
+	@echo -------------------------------------------------------------------------------
+	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
+	touch Source/RogueC/Rogo.rogue
 
 
 bootstrap_roguec:
 	@if [ ! -f "Programs/RogueC/$(PLATFORM)/roguec" ]; \
 	then \
-	  if [ -f "Programs/RogueC/roguec" ]; \
-	  then \
-	    echo "\nRemoving executable from old location Programs/RogueC/roguec"; \
-	    rm -f Programs/RogueC/roguec; \
-	    echo "\nRemoving libraries from old location Programs/RogueC/Libraries"; \
-	    rm -r Programs/RogueC/Libraries; \
-	  fi; \
 	  if [ -f "$(BINDIR)/roguec" ]; \
 	  then \
 	    echo "\nUnlinking old program location by removing $(BINDIR)/roguec"; \
@@ -106,13 +103,6 @@ Source/RogueC/Build/RogueC.cpp: $(ROGUEC_SRC)
 	rogo version
 	cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $(ROGUEC_ROGUE_FLAGS)
 
-Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo.rogue
-	@echo -------------------------------------------------------------------------------
-	@echo "Recompiling Rogo.rogue -> Rogo.cpp..."
-	@echo -------------------------------------------------------------------------------
-	mkdir -p Source/RogueC/Build
-	roguec Source/Tools/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
-
 Programs/RogueC/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
 	@echo -------------------------------------------------------------------------------
 	@echo "Recompiling RogueC.cpp -> Programs/RogueC/$(PLATFORM)/roguec..."
@@ -120,12 +110,40 @@ Programs/RogueC/$(PLATFORM)/roguec: Source/RogueC/Build/RogueC.cpp
 	mkdir -p Programs
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
+bootstrap_rogo:
+	@if [ ! -f "Programs/RogueC/$(PLATFORM)/rogo" ]; \
+	then \
+	  if [ -f "$(BINDIR)/rogo" ]; \
+	  then \
+	    echo "\nUnlinking old program location by removing $(BINDIR)/rogo"; \
+	    $(SUDO_CMD) rm $(BINDIR)/rogo; \
+	  fi; \
+	  echo -------------------------------------------------------------------------------; \
+	  echo Compiling Programs/RogueC/$(PLATFORM)/rogo from C++ bootstrap source...; \
+	  echo -------------------------------------------------------------------------------; \
+	  echo $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo; \
+	  mkdir -p Programs/RogueC/$(PLATFORM); \
+	  $(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo; \
+	  echo touch Source/Tools/Rogo/Rogo.rogue; \
+	  touch Source/Tools/Rogo/Rogo.rogue; \
+	fi;
+
+rogo: Source/RogueC/Build/Rogo.cpp Programs/RogueC/$(PLATFORM)/rogo $(BINDIR)/rogo
+
+
 Programs/RogueC/$(PLATFORM)/rogo: Source/RogueC/Build/Rogo.cpp
 	@echo -------------------------------------------------------------------------------
 	@echo "Compiling Rogo.cpp -> Programs/RogueC/$(PLATFORM)/rogo..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p Programs
 	$(CXX) -pthread $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
+
+Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo/Rogo.rogue
+	@echo -------------------------------------------------------------------------------
+	@echo "Recompiling Rogo.rogue -> Rogo.cpp..."
+	@echo -------------------------------------------------------------------------------
+	mkdir -p Source/RogueC/Build
+	roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
 
 libraries:
 	@mkdir -p Programs/RogueC/$(PLATFORM)
