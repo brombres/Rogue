@@ -451,6 +451,9 @@ class Scope
                   local fn_param_count = 0
                   if (fn.parameters) fn_param_count = fn.parameters.count
                   necessary (fn_param_count == callback_param_count)
+                else
+                  local param_type = m.parameters[index].type
+                  necessary (arg.type.is_compatible_with(param_type))
                 endIf
               endForEach
             satisfied
