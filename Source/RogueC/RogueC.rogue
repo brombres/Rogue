@@ -64,6 +64,11 @@ class RogueC [singleton]
     first_filepath  : String
     output_filepath : String
 
+$if defined(DEFAULT_TARGETS)
+    default_targets = DEFAULT_TARGETS
+$else
+    default_targets = ["C++"]
+$endIf
     supported_targets      = String[]
     essential_declarations = String[]
 
@@ -270,23 +275,28 @@ class RogueC [singleton]
                     |    compilation ('$if target("C++") ...').  C++ is the only supported
                     |    language target.  "Python" and "Cython" are optional plug-in targets.
                     |    Arbitrary platforms may be added at will, e.g. "iOS", "macOS", etc.
-                    |
+                    |    Default:
+
+          usage += " " + ",".join(default_targets) + "\n"
+
+          usage += @|
                     |  --test
                     |    Compiled program includes any defined unit tests and runs them on launch.
                     |    Enables --debug automatically.
                     |
-                    |  --threads=[none|pthreads]
+                    |  --threads=[none|pthreads|cpp]
                     |    Set the threading mode.  Note that if you enable multithreading, you
                     |    likely want to adjust the --gc mode also (e.g., to auto-mt or boehm).
-                    |    The threading mode may be one of:
+                    |    Leaving this unspecified defauts to none.  --threads by itself implies
+                    |    pthreads.  Specifying it expicitly, the mode may be one of:
                     |      --threads=none     - No multithreading support. (Default)
                     |      --threads=pthreads - Multithreading based on pthreads.
                     |      --threads=cpp        Multithreading based on C++ std::thread.
                     |
                     |  --todo[="KEYWORD"]
                     |    During compilation the compiler will print out any lines containing a
-                    |    comment with the word TODO or other specified keyword. Lines containing a
-                    |    FIXME comment print print out by default.
+                    |    comment with the word TODO or other specified keyword.  May be specified
+                    |    more than once.  Lines containing a FIXME comment are always printed.
                     |
                     |  --version
                     |    Print the version number and release date.
@@ -294,11 +304,7 @@ class RogueC [singleton]
           System.exit( 1 )
         endIf
 
-$if defined(DEFAULT_TARGETS)
-        if (target_list.count == 0) target_list = DEFAULT_TARGETS
-$else
-        if (target_list.count == 0) target_list.add( "C++" )
-$endIf
+        if (target_list.count == 0) target_list = default_targets.cloned
         <validate_target_list>
 
         forEach (target in target_list)
