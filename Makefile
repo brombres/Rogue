@@ -68,7 +68,7 @@ bootstrap:
 	@echo Recompiling Programs/RogueC/$(PLATFORM)/rogo from C++ bootstrap source...
 	@echo -------------------------------------------------------------------------------
 	$(CXX) $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Bootstrap/Rogo.cpp -o Programs/RogueC/$(PLATFORM)/rogo
-	touch Source/RogueC/Rogo.rogue
+	touch Source/Tools/Rogo/Rogo.rogue
 
 
 bootstrap_roguec:
