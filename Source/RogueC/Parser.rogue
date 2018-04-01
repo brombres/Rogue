@@ -1138,7 +1138,7 @@ class Parser
       # Optional ->ReturnType
       if (not return_type)
         if (consume(TokenType.symbol_arrow))
-          if (consume(TokenType.keyword_this))
+          if (consume(TokenType.keyword_this) or consume("ThisType"))
             this_method.return_type = this_type
             this_method.attributes.add( Attribute.returns_this )
           else
