@@ -3654,16 +3654,19 @@ class Parser
         use builder=StringBuilder.pool
           must_consume( TokenType.symbol_open_paren )
 
-          local start_pos = reader.position
-          parse_expression  # discard; just to need to find the final position
-          local final_pos = reader.position
-
-          reader.position = start_pos
-          while (reader.position < final_pos)
-            builder.print( reader.read->String )
+          local depth = 1
+          while (reader.has_another)
+            local t2 = reader.read
+            if (t2.type is TokenType.symbol_open_paren)
+              ++depth
+            elseIf (t2.type is TokenType.symbol_close_paren)
+              --depth
+              if (depth == 0) escapeWhile
+            endIf
+            builder.print( t2->String )
           endWhile
 
-          must_consume( TokenType.symbol_close_paren )
+          if (depth > 0) must_consume( TokenType.symbol_close_paren )  # generate error
 
           return CmdLiteralString( t, builder->String )
         endUse
