@@ -1,0 +1,619 @@
+#==============================================================================
+# BitCalc.rogue
+# 2018.03.30 by Abe Pralle
+#==============================================================================
+$include "ParseKit"
+
+module BitCalc
+uses ParseKit<<BitCalc>>
+
+# The following augments and extended classes customize the base classes in ParseKit<<BitCalc>>.
+
+#==============================================================================
+# BitCalcError
+#==============================================================================
+class BitCalcError : ParseError
+  # If using ParseKit<<XYZ>>, must extend XYZError:ParseError. This is more for module visibility
+  # rather than specialization so that other modules can use the BitCalc module and catch
+  # errors without having to also use the ParseKit<<BitCalc>> module.
+  METHODS
+    method to->String
+      return "ERROR: " + message
+endClass
+
+#==============================================================================
+# TokenType
+#==============================================================================
+augment TokenType
+  # NAME( symbol:String, [description:String], &is_symbol, &is_keyword, &is_structural )
+  #   symbol        - Characters to tokenize if is_symbol or is_keyword, or arbitrary name otherwise.
+  #                   Token/TokenType->String returns symbol or token value as String.
+  #   description   - Token/TokenType.description gets this if defined or ->String if not.
+  #   is_symbol     - ScanRule automatically created that turns the 'symbol' character(s) into a token of this TokenType.
+  #   is_keyword    - Tokenizer automatically converts identifiers matching this 'symbol' into a token of this TokenType.
+  #   is_structural - Optional use by Parser to determine that a token is not a valid beginning of a statement or expression.
+  #
+  # EOI and EOL must be defined - see BitCalcTokenizer for handling of comments, identifiers, and literal numbers.
+  EOI( "eoi", "[end of input]" )
+  EOL( "\n",  "[end of line]" )
+  INTEGER( "integer" )
+  IDENTIFIER( "identifier" )
+
+  KEYWORD_CLEAR       ( "clear", &is_keyword )
+  KEYWORD_EXIT        ( "exit",  &is_keyword )
+  KEYWORD_LIST        ( "list",  &is_keyword )
+  KEYWORD_Q           ( "q",     &is_keyword )
+  KEYWORD_QUIT        ( "quit",  &is_keyword )
+  KEYWORD_TRUE        ( "true",  &is_keyword )
+  KEYWORD_FALSE       ( "false", &is_keyword )
+
+  SYMBOL_AMPERSAND    ( "&",   &is_symbol )
+  SYMBOL_ASTERISK     ( "*",   &is_symbol )
+  SYMBOL_BANG         ( "!",   &is_symbol )
+  SYMBOL_CARET        ( "^",   &is_symbol )
+  SYMBOL_CLOSE_PAREN  ( ")",   &is_symbol, &is_structural )
+  SYMBOL_DOLLAR       ( "$",   &is_symbol )
+  SYMBOL_EQUALS       ( "=",   &is_symbol )
+  SYMBOL_LEFT_SHIFT   ( "<<",  &is_symbol )
+  SYMBOL_MINUS        ( "-",   &is_symbol )
+  SYMBOL_OPEN_PAREN   ( "(",   &is_symbol )
+  SYMBOL_PERCENT      ( "%",   &is_symbol )
+  SYMBOL_PLUS         ( "+",   &is_symbol )
+  SYMBOL_RIGHT_SHIFT  ( ">>",  &is_symbol )
+  SYMBOL_RIGHT_SHIFT_X( ">>>", &is_symbol )
+  SYMBOL_SLASH        ( "/",   &is_symbol )
+  SYMBOL_TILDE        ( "~",   &is_symbol )
+  SYMBOL_VERTICAL_BAR ( "|",   &is_symbol )
+endAugment
+
+
+#==============================================================================
+# Token
+#==============================================================================
+augment Token
+  METHODS
+    method to->String
+      # The base to->String will automatically handle most cases, but any token where the
+      # Token.number:Int64 should be used as the string value must be specifically handled here.
+      # Token defined to->Int32, to->Int64, and to_Real64 for convenience.
+      <insert>
+      which (type)
+        case TokenType.INTEGER
+          return this->Int32->String
+      endWhich
+
+      # This will fall through to the original definition.
+endAugment
+
+
+#==============================================================================
+# ScanRules
+#==============================================================================
+augment ScanRules
+  METHODS
+    method configure
+      # Custom scan rules here. The symbol character(s) will have already been
+      # consumed when this function is called. Generally you will use the following
+      # methods of 'tokenizer':
+      #   consume(Character)->Logical
+      #   has_another()->Logical
+      #   must_consume(Character)
+      #   peek()->Character
+      #   read()->Character
+      # You can add zero or more tokens to the tokenizer output with
+      # tokenizer.add( Token(...) ). Tokens can be created in four ways:
+      #   Token(TokenType)
+      #   Token(TokenType,String)   # Use Token.text->String or Token->String to access value.
+      #   Token(TokenType,Int64)    # Use Token->Int32/Int64 to access value.
+      #   Token(TokenType,Real64)   # Use Token->Real64 to access value.
+      on( "$",
+        function(tokenizer:BitCalcTokenizer)
+          tokenizer.add( Token(TokenType.INTEGER,tokenizer.scan_int64(16)) )
+        endFunction
+      )
+      on( "%",
+        function(tokenizer:BitCalcTokenizer)
+          tokenizer.add( Token(TokenType.INTEGER,tokenizer.scan_int64(2)) )
+        endFunction
+      )
+endAugment
+
+
+#==============================================================================
+# BitCalcTokenizer
+#==============================================================================
+class BitCalcTokenizer : Tokenizer
+  # If using ParseKit<<XYZ>>, must extend XYZTokenizer:Tokenizer.
+  METHODS
+    method on_comment( text:String )
+      # Override tokenize_comment()->Logical and/or scan_comment()->String to customize comment handling.
+      # One option would be to have tokenize_comment() simply 'return false' and add a custom ScanRule
+      # as described in 'augment ScanRules' above.
+      noAction
+
+    method on_identifier( name:String )
+      # Keywords (TokenType(&is_keyword)) have already been intercepted and handled.
+      tokens.add( Token(TokenType.IDENTIFIER,name) )
+
+    method on_integer( value:Int64 )
+      tokens.add( Token(TokenType.INTEGER,value) )
+
+      # Note: can scan further characters to distinguish between Int32
+      # and Int64 (if (consume("L")) ...) or use something like this
+      # for automatic classification:
+      #
+      # if (value >= Int32.minimum and value <= Int32.maximum)
+      #   tokens.add( Token(TokenType.INT32,value) )
+      # else
+      #   tokens.add( Token(TokenType.INT64,value) )
+      # endIf
+
+    method on_real( value:Real64 )
+      # Create a Token just to get the right line & column for the error message.
+      throw Token(TokenType.EOI).error( "Real numbers are not supported." )
+
+    method on_string( text:String )
+      # Create a Token just to get the right line & column for the error message.
+      throw Token(TokenType.EOI).error( "Strings are not supported." )
+endClass
+
+
+#==============================================================================
+# Cmd Nodes (Parse Tree / AST)
+#==============================================================================
+
+# 'Cmd' is the base AST node. ParseKit provides the following node types:
+#   Cmd(t:Token)
+#   CmdStatements : Cmd[]
+#   CmdArgs       : Cmd[]
+#   CmdUnary(t:Token,operand:Cmd)         : Cmd
+#   CmdBinary(t:Token,left:Cmd,right:Cmd) : Cmd
+# Base Cmd nodes have no functionality defined - augment them to provide
+# resolve() and execute() functionality etc.
+augment Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      return null
+
+    method evaluate( vm:BitCalcVM )->Int32
+      local result = execute( vm )
+      if (result.exists) return result.value
+      throw t.error( "Value expected." )
+
+    method resolve->Cmd
+      return this
+
+    method resolve_assignment( new_value:Cmd )->Cmd
+      throw t.error( "Illegal assignment" )
+endAugment
+
+augment CmdUnary
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      return operate( operand.evaluate(vm) )
+
+    method operate( value:Int32 )->Int32 [abstract]
+
+    method resolve->Cmd
+      operand = operand.resolve
+      return this
+endAugment
+
+augment CmdBinary
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      return operate( left.evaluate(vm), right.evaluate(vm) )
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32 [abstract]
+
+    method resolve->Cmd
+      left = left.resolve
+      right = right.resolve
+      return this
+endAugment
+
+class CmdQuit( t ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      System.exit
+      return null
+endClass
+
+class CmdLiteralInteger( t, value:Int32 ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      return value
+
+    method to->String
+      return value
+
+endClass
+
+class CmdAdd : CmdBinary
+  METHODS
+    method op->String
+      return "+"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs + rhs
+endClass
+
+class CmdSubtract : CmdBinary
+  METHODS
+    method op->String
+      return "-"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs - rhs
+endClass
+
+class CmdMultiply : CmdBinary
+  METHODS
+    method op->String
+      return "*"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs * rhs
+endClass
+
+class CmdDivide : CmdBinary
+  METHODS
+    method op->String
+      return "/"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      if (rhs == 0) throw t.error( "Illegal division by zero." )
+      return lhs / rhs
+endClass
+
+class CmdMod : CmdBinary
+  METHODS
+    method op->String
+      return "%"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      if (rhs == 0) throw t.error( "Illegal modulo by zero." )
+      return lhs % rhs
+endClass
+
+class CmdPower : CmdBinary
+  METHODS
+    method op->String
+      return "^"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs ^ rhs
+endClass
+
+class CmdBitwiseXor : CmdBinary
+  METHODS
+    method op->String
+      return "~"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs ~ rhs
+endClass
+
+class CmdBitwiseOr : CmdBinary
+  METHODS
+    method op->String
+      return "|"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs | rhs
+endClass
+
+class CmdBitwiseAnd : CmdBinary
+  METHODS
+    method op->String
+      return "&"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs & rhs
+endClass
+
+class CmdLeftShift : CmdBinary
+  METHODS
+    method op->String
+      return "<<"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs :<<: rhs
+endClass
+
+class CmdRightShift : CmdBinary
+  METHODS
+    method op->String
+      return ">>"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs :>>: rhs
+endClass
+
+class CmdRightShiftX : CmdBinary
+  METHODS
+    method op->String
+      return ">>>"
+
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return lhs :>>>: rhs
+endClass
+
+class CmdNegate : CmdUnary
+  METHODS
+    method op->String
+      return "-"
+
+    method operate( value:Int32 )->Int32
+      return -value
+endClass
+
+class CmdBitwiseNot : CmdUnary
+  METHODS
+    method op->String
+      return "!"
+
+    method operate( value:Int32 )->Int32
+      return !value
+endClass
+
+class CmdAssign( t, left:Cmd, right:Cmd ) : Cmd
+  METHODS
+    method resolve->Cmd
+      return left.resolve_assignment( right.resolve )
+
+    method to->String
+      return "$ = $" (left,right)
+endClass
+
+class CmdAccess( t, name:String ) : Cmd
+  METHODS
+    method init( t )
+      name = t->String
+
+    method resolve->Cmd
+      return CmdReadVariable( t, name ).resolve
+
+    method resolve_assignment( new_value:Cmd )->Cmd
+      return CmdWriteVariable( t, name, new_value ).resolve
+endClass
+
+class CmdReadVariable( t, name:String ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      return vm.variables[ name ]
+endClass
+
+class CmdWriteVariable( t, name:String, new_value:Cmd ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      local value = new_value.evaluate( vm )
+      vm.variables[ name ] = value
+      return value
+endClass
+
+class CmdClear( t ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      println "All variables cleared"
+      vm.variables.clear
+      return null
+endClass
+
+class CmdList( t ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      local len = 0
+      len = len.or_larger( (forEach in vm.variables.keys).count )
+
+      forEach (key in vm.variables.keys)
+        print key.left_justified( len )
+        vm.display( vm.variables[key] )
+      endForEach
+
+      return null
+endClass
+
+#==============================================================================
+# BitCalcParser
+#==============================================================================
+class BitCalcParser : Parser
+  # If using ParseKit<<XYZ>>, must extend XYZParser:Parser.
+  PROPERTIES
+    # "parse_xyz" is automatically assigned the "xyz" rule when it is add()'d or add_nested()'d. etc.
+    parse_statement  : ParseRule
+    parse_expression : ParseRule
+
+  METHODS
+    method init
+      # A number of arbitrary Parse Rules must be created while setting up the parser.
+      #
+      # add() or add_nested() each rule - add() creates a new top-level rule while add_nested()
+      # implicitly makes the nested rule the higher-precedence recursive descent rule
+      # of the previous rule that was add()'d or add_nested()'d.
+      #
+      # ParseRule( "name" )
+      #   Creates a ParseRule that will handle one stage of parsing such as one precedence level
+      #   of expression parsing. The rule is set to handle various tokens using the ParseRule.on(...)
+      #   methods:
+      #
+      #     on(TokenType,Function(BitCalcParser)->Cmd) - The function should consume the token and produce a Cmd node.
+      #     on(String,Function(BitCalcParser)->Cmd)    - Finds the TokenType with the specified symbol and forwards to the above.
+      #     on_default(Function(BitCalcParser)->Cmd)   - Optional default if no other handler matches.
+      #     on(TokenType,TypeInfo) - Consumes t of TokenType and produces Cmd(t) of TypeInfo.
+      #     on(String,TypeInfo)    - Shorthand for the above.
+      #
+      # ParseRule( "name", on_default:Function(BitCalcParser)->Cmd )
+      #   An alternative to having to call on_default(...) separately.
+      #
+      # UnaryParseRule( "name", ... )
+      #   Specializes:
+      #
+      #     on(TokenType,TypeInfo)
+      #     on(String,TypeInfo)
+      #
+      #   When the token type is matched, a Cmd TypeInfo(t,expr) type is produced where
+      #   'expr' is the same parse rule applied again.
+      #
+      # BinaryParseRule( "name", ... )
+      #   Creates a BinaryParseRule specialized to handle what's referred to as left recursion in grammar,
+      #   or in other words proper parsing of binary operators, where "3+4*5" is parsed as "3+(4*5)" rather
+      #   than "(3+4)*5". Use these specialized overrides of the following two methods to set up handlers.
+      #
+      #     on(TokenType,TypeInfo)
+      #     on(String,TypeInfo)
+      #
+      # ParseRule( "name", Function(ParseRule)->Cmd )
+      #   In this variation the supplied function should handle everything for this stage of parsing.
+      #   It can call ParseRule.parse_nested()->Cmd to invoke the next stage of recursive descent.
+      #
+      #   The ParseRule context arg has the following methods that operate through the Parser:
+      #     .consume(TokenType)->Logical
+      #     .has_another()->Logical
+      #     .must_consume(TokenType)
+      #     .next_is(TokenType)->Logical
+      #     .peek()->Token
+      #     .read()->Token
+
+      # A call to parse(file:File)->Cmd or parse(filename:String,source:String)->Cmd calls
+      # parse("source") as the parsing entry point. We don't need that in this case - we
+      # call into this parser to parse an expression at a time.
+      #
+      # add( ParseRule( "source",
+      #   function( rule:ParseRule )->Cmd
+      #     while (rule.has_another)
+      #       rule.parser.parse_expression()
+      #       rule.consume_eols
+      #     endWhile
+      #     rule.must_consume( TokenType.EOI )
+      #     return null
+      #   endFunction
+      # ))
+      local rule = add( ParseRule("statement") )
+      rule.on( "clear",<<CmdClear>> )
+      rule.on( "list", <<CmdList>> )
+      rule.on( "q",    <<CmdQuit>> )
+      rule.on( "quit", <<CmdQuit>> )
+      rule.on( "exit", <<CmdQuit>> )
+      rule.on_default(
+        function (parser:BitCalcParser)->Cmd
+          local expr = parser.parse_expression()
+          local t = parser.peek
+          if (parser.consume(TokenType.SYMBOL_EQUALS))
+            return CmdAssign( t, expr, parser.parse_expression() )
+          else
+            return expr
+          endIf
+        endFunction
+      )
+
+      add_nested( ParseRule("expression" ) )
+      # Just calls parse_nested() by default.
+      # This ParseRule is automatically assigned to 'parse_expression:ParseRule' via introspection.
+
+      # <<, >>, >>>
+      rule = add_nested( BinaryParseRule("bit_shift") )
+      rule.on( "<<",  <<CmdLeftShift>> )
+      rule.on( ">>",  <<CmdRightShift>> )
+      rule.on( ">>>", <<CmdRightShiftX>> )
+
+      # ~
+      rule = add_nested( BinaryParseRule("bitwise_xor") )
+      rule.on( "~", <<CmdBitwiseXor>> )
+
+      # |
+      rule = add_nested( BinaryParseRule("bitwise_or") )
+      rule.on( "|", <<CmdBitwiseOr>> )
+
+      # &
+      rule = add_nested( BinaryParseRule("bitwise_and") )
+      rule.on( "&", <<CmdBitwiseAnd>> )
+
+      # +, -
+      rule = add_nested( BinaryParseRule("add_subtract") )
+      rule.on( "+", <<CmdAdd>> )
+      rule.on( "-", <<CmdSubtract>> )
+
+      # *, /, %
+      rule = add_nested( BinaryParseRule("multiply_divide_mod") )
+      rule.on( "*", <<CmdMultiply>> )
+      rule.on( "/", <<CmdDivide>> )
+      rule.on( "%", <<CmdMod>> )
+
+      # ^
+      rule = add_nested( BinaryParseRule("power") )
+      rule.on( "^", <<CmdPower>> )
+
+      # !
+      rule = add_nested( UnaryParseRule("negate") )
+      rule.on( "-", <<CmdNegate>> )
+      rule.on( "!", <<CmdBitwiseNot>> )
+
+      # term
+      rule = add_nested( ParseRule("term") )
+      rule.on( "integer",
+        function( parser:BitCalcParser )->Cmd
+          local t = parser.read
+          return CmdLiteralInteger(t,t->Int32)
+        endFunction
+      )
+      rule.on( "(",
+        function( parser:BitCalcParser )->Cmd
+          parser.must_consume( TokenType.SYMBOL_OPEN_PAREN )
+          local result = parser.parse_expression()
+          parser.must_consume( TokenType.SYMBOL_CLOSE_PAREN )
+          return result
+        endFunction
+      )
+      rule.on( "identifier", <<CmdAccess>> )
+      rule.on_default( (parser) => throw parser.peek.error( "Syntax error: unexpected $." (parser.peek.description) ) )
+endClass
+
+
+#==============================================================================
+# BitCalcVM
+#==============================================================================
+class BitCalcVM
+  PROPERTIES
+    parser    = BitCalcParser()
+    variables = StringTable<<Int32>>()
+
+  METHODS
+    method display( value:Int32 )
+      print( value.format(",16") )
+      print "  |  $"
+      local hex = value.format( "$08" )
+      print hex.leftmost(4)
+      print ' '
+      print hex.rightmost(4)
+      print "  |  %"
+      local binary = value.format("%32")
+      while (binary.count > 8)
+        print( binary.leftmost(8) ).print( ' ' )
+        binary = binary.rightmost(-8)
+      endWhile
+      print( binary )
+      println
+
+    method execute( source:String )
+      try
+        parser.open( "[Statement]", source )
+        parser.consume_eols
+        while (parser.has_another)
+          local statement = parser.parse_statement()
+          statement = statement.resolve
+          local result = statement.execute( this )
+          if (result.exists) display( result.value )
+          parser.consume_eols
+        endWhile
+      catch (err:BitCalcError)
+        Console.error.println( err )
+        Console.error.println
+        forEach (line at index in LineReader(source))
+          Console.error.println( line )
+          if (index+1 == err.line) escapeForEach
+        endForEach
+        Console.error.print( " " * (err.column-1) ).println( '^' )
+      endTry
+endClass
+

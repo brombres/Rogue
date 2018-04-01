@@ -1,0 +1,30 @@
+#==============================================================================
+# BitCalc.rogue
+# 2018.03.30 by Abe Pralle
+#==============================================================================
+$include "BitCalc.rogue"
+uses BitCalc
+
+BitCalcSession()
+
+class BitCalcSession
+  PROPERTIES
+    vm = BitCalcVM()
+
+  METHODS
+    method init
+      local args = System.command_line_arguments
+      if (args.count?)
+        vm.execute( System.command_line_arguments.join(" ") )
+      else
+        println "BITWISE CALCULATOR"
+        println "Dec, hex, and binary: 10, $10, %10"
+        println "Arithmetic operators: + - * / % ^"
+        println "Bitwise operators:    & | ~ ! << >> >>>"
+        println "Variables:            x, x=, list, clear "
+        println "Quit:                 q"
+        loop
+          vm.execute( Console.input( "> " ) )
+        endLoop
+      endIf
+endClass
