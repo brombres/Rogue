@@ -1185,7 +1185,6 @@ class Parser
       while (next_is_statement)
         parse_statement( statements, true )
 
-        while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) noAction
         consume_end_commands
       endWhile
 
@@ -1210,7 +1209,6 @@ class Parser
 
         parse_statement( cur_label.statements, true )
 
-        while (consume(TokenType.eol) or consume(TokenType.symbol_semicolon)) noAction
         consume_end_commands
       endWhile
 
