@@ -36,6 +36,8 @@ class Token
 
     method init( type, text )
 
+    method init( type, filepath, line, column )
+
     method description->String
       if (text or number.exists) return "'$'" (this->String)
       return type.description
