@@ -439,6 +439,10 @@ class Int64 [primitive]
         endIf
       endIf
 
+      if (result.begins_with("-,"))
+        result = '-' + result.rightmost(-2)
+      endIf
+
       if (not zero_fill) result = result.right_justified( digits, ' ' )
 
       return result
