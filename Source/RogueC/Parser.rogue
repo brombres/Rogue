@@ -40,8 +40,9 @@ class Parser
     method init( t:Token, filepath, data:String, column_delta=0:Int32 )
       init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data,column_delta)), &skip_reprocess )
 
-    method init( tokens:Token[], &skip_reprocess )
-      if (not skip_reprocess) tokens = Preprocessor( this ).reprocess( tokens )
+    method init( tokens:Token[], &skip_reprocess, &preprocess )
+      if (preprocess)             tokens = Preprocessor(this).process( tokens )
+      elseIf (not skip_reprocess) tokens = Preprocessor( this ).reprocess( tokens )
       reader = TokenReader( tokens )
       is_api_file = RogueC.all_api
       if (not is_api_file and filepath and filepath.ends_with(".rogue"))
@@ -141,7 +142,7 @@ class Parser
           endIf
 
         elseIf (t.type is TokenType.directive_uses)
-          id_map.use_module( read_identifier )
+          id_map.use_module( read_module_id )
 
         elseIf (t.type is TokenType.symbol_dot or t.type is TokenType.symbol_slash_slash)
           # The 'x' in 'obj.x' and 'obj//x' is not a candidate for module (namespace) qualification
@@ -154,6 +155,16 @@ class Parser
 
       endWhile
       reader.position = 0  # rewind
+
+    method read_module_id->String
+      local module_id = read_identifier
+      if (module_id.contains('<'))
+        local module_instance = Program.module_instance_lookup[ module_id ]
+        require module_instance
+        module_id = module_instance.resolve_name
+        require module_id
+      endIf
+      return module_id
 
     method must_consume( type:TokenType, error_message=null:String )
       if (consume(type)) return
@@ -250,8 +261,8 @@ class Parser
         return true
 
       elseIf (t.type is TokenType.directive_uses)
-        read  # 'using'
-        used_modules = UsedModule( read_identifier, used_modules )
+        read  # 'uses'
+        used_modules = UsedModule( read_module_id, used_modules )
         must_consume_eols
         return true
 

@@ -356,6 +356,16 @@ $endIf
       # for 'module' and 'using' directives.
       # 'includeSource' DEPENDENCIES can cause additional files to be parsed later
       # so we guard against that by working on a copy of parsers[] and clearing parsers[].
+
+      # Start out by creating a new parser for each newly instanced module template
+      while (Program.module_instance_list.count)
+        local modules = Program.module_instance_list
+        Program.module_instance_list = ModuleInstance[]
+        forEach (module_template in modules)
+          parsers.add( module_template.instantiate )
+        endForEach
+      endWhile
+
       while (parsers.count)
         local parsers = this.parsers.cloned
         this.parsers.clear

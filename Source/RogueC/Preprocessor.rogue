@@ -214,8 +214,41 @@ class Preprocessor
             nextIteration
 
           elseIf (t_type is TokenType.directive_module)
-            # The preprocessor tracks the current module just so it can insert the
-            # $moduleName string if requested.
+            if (reader.peek.type is TokenType.identifier and reader.peek(1).type is TokenType.symbol_open_specialize)
+              # Module Template: module M<<Args>>
+              # Read until EOI or next 'module', either discarding or storing in ModuleTemplate
+              if (keep_tokens)
+                local name_t = reader.peek
+                local base_name = reader.read_identifier
+                local placeholders = Token[]
+                reader.read  # <<
+                local first = true
+                while (first or consume(TokenType.symbol_comma))
+                  if (first) first = false
+                  if (not reader.peek.type is TokenType.placeholder_id) throw reader.peek.error( "$PlaceholderID expected." )
+                  placeholders.add( reader.read )
+                endWhile
+                must_consume( TokenType.symbol_close_specialize )
+                local template_name = "$<<$>>" (base_name,placeholders.count)
+                local module_template = Program.module_templates[ template_name ]
+                if (not module_template)
+                  ensure module_template
+                  Program.module_templates[ template_name ] = module_template
+                endIf
+
+                local section = ModuleTemplateSection( t, name_t, placeholders )
+                module_template.sections.add( section )
+
+                while (reader.has_another and reader.peek.type is not TokenType.directive_module)
+                  section.tokens.add( reader.read )
+                endWhile
+
+              else
+                while (reader.has_another and reader.peek is not TokenType.directive_module) reader.read
+              endIf
+              nextIteration
+            endIf
+
             if (keep_tokens) tokens.add( t )
 
             if (next_is(TokenType.identifier))
@@ -243,6 +276,85 @@ class Preprocessor
             endIf
 
             nextIteration
+
+          elseIf (t_type is TokenType.directive_uses)
+            # Only check for module templates here in order to instantiate them; 'uses' with standard modules can wait until later
+            if (not keep_tokens)
+              while (reader.has_another and not reader.next_is(TokenType.eol)) reader.read
+
+            elseIf (reader.peek.type is TokenType.identifier and reader.peek(1).type is TokenType.symbol_open_specialize)
+              local name_t = reader.peek
+              local base_name = reader.read_identifier
+              local args = Token[][]
+              reader.read  # <<
+              use builder=StringBuilder.pool
+                builder.print( base_name ).print( "<<" )
+                local first = true
+                while (first or consume(TokenType.symbol_comma))
+                  if (first) first = false
+                  else       builder.print( ',' )
+                  local tokens = Token[]
+                  args.add( tokens )
+                  local arg_depth = 0
+                  while (reader.has_another)
+                    local next_type = reader.peek.type
+                    if (arg_depth == 0)
+                      if (next_type is TokenType.symbol_comma or next_type is TokenType.symbol_close_specialize) escapeWhile
+                    endIf
+
+                    if (next_type is TokenType.symbol_open_paren or next_type is TokenType.symbol_open_bracket or...
+                      next_type is TokenType.symbol_open_brace or next_type is TokenType.symbol_open_specialize)
+                      ++arg_depth
+                    elseIf (next_type is TokenType.symbol_close_paren or next_type is TokenType.symbol_close_bracket or...
+                      next_type is TokenType.symbol_close_brace or next_type is TokenType.symbol_close_specialize)
+                      --arg_depth
+                    endIf
+
+                    local next_t = reader.read
+                    builder.print( next_t )
+                    tokens.add( next_t )
+                  endWhile
+
+                endWhile
+                must_consume( TokenType.symbol_close_specialize )
+                builder.print( ">>" )
+
+                local instance_name = builder->String
+                local template_name = "$<<$>>" (base_name,args.count)
+
+                local as_t = reader.peek
+                local as_name : String
+                if (consume(TokenType.keyword_as))
+                  as_name = reader.read_identifier
+                else
+                  # put 'uses' 'module-name<<...>>' back in the token stream for later
+                  tokens.add( t )
+                  tokens.add( TokenType.identifier.create_token(name_t,instance_name) )
+                endIf
+
+                local instance = Program.module_instance_lookup[ instance_name ]
+                if (instance)
+                  if (instance.as_name is null)
+                    instance.as_name = as_name
+                  elseIf (as_name)
+                    if (as_name != instance.as_name)
+                      throw as_t.error( "Inconsistent uses-as names ($ vs $)." (as_name,instance.as_name) )
+                    endIf
+                  endIf
+
+                else
+                  ensure instance( t, template_name, args, as_name )
+                  Program.module_instance_lookup[ instance_name ] = instance
+                  Program.module_instance_list.add( instance )
+                endIf
+
+                #local instance = ModuleInstance( t, "$<<$>>"(base_name,args.count), args )
+                #trace base_name, args
+              endUse
+              nextIteration
+
+            endIf
+
 
           elseIf (t_type is TokenType.meta_block)
             if (keep_tokens)
