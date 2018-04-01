@@ -332,7 +332,6 @@ class ModuleInstance
         throw t.error( "Reference to undefined module template $." (template_name) )
       endIf
 
-      ++Program.module_instance_count
       resolve_name
 
       local tokens = Token[]
@@ -340,7 +339,32 @@ class ModuleInstance
       return Parser( tokens, &preprocess )
 
     method resolve_name->String
-      if (as_name is null) as_name = "$_$" (template_name.before_first('<'),Program.module_instance_count)
+      if (as_name) return as_name
+
+      # For Name<<X,Y>>, try santized name XYName first and then tweak until
+      # the sanitized name is unique.
+      use raw=StringBuilder.pool
+        forEach (arg in args) raw.print( arg )
+        raw.print( template_name.before_first('<') )
+        use filtered=StringBuilder.pool
+          forEach (ch in raw)
+            if (ch.is_letter or ch.is_number or ch == '_') filtered.print( ch )
+          endForEach
+          local candidate = filtered->String
+          if (candidate[0].is_number) candidate = "Module" + candidate
+          if (Program.module_names.contains(candidate))
+            local index = 2
+            local next_candidate = candidate + index
+            while (Program.module_names.contains(next_candidate))
+              ++index
+              next_candidate = candidate + index
+            endWhile
+            candidate = next_candidate
+          endIf
+          as_name = candidate
+        endUse
+      endUse
+      Program.module_names.add( as_name )
       return as_name
 endClass
 

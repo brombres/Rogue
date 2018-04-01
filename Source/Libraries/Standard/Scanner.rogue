@@ -67,19 +67,12 @@ class Scanner : Reader<<Character>>
       return true
 
     method consume( text:String )->Logical
-      local limit = text.count
-      local i = 0
-      while (i < limit)
-        if (peek(i) != text[i]) return false
-        ++i
-      endWhile
+      forEach (ch at index in text)
+        if (ch != peek(index)) return false
+      endForEach
 
       # Found a match; discard the characters
-      i = 0
-      while (i < limit)
-        read
-        ++i
-      endWhile
+      loop (text.count) read
 
       return true
 

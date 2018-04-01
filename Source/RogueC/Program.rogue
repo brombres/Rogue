@@ -14,10 +14,11 @@ class Program [essential singleton]
     template_list   = Template[]
     template_lookup = Table<<String,Template>>()
 
+    module_names = Set<<String>>()
+
     module_templates       = StringTable<<ModuleTemplate>>()
     module_instance_list   = ModuleInstance[]
     module_instance_lookup = StringTable<<ModuleInstance>>()
-    module_instance_count  : Int32  # for auto-assigned names
 
     augment_lookup = Table<<String,Augment[]>>()
     #essential_list = essentialItem[]

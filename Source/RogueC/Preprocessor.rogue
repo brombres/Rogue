@@ -214,41 +214,48 @@ class Preprocessor
             nextIteration
 
           elseIf (t_type is TokenType.meta_module)
-            if (reader.peek.type is TokenType.identifier and reader.peek(1).type is TokenType.symbol_open_specialize)
-              # Module Template: module M<<Args>>
-              # Read until EOI or next 'module', either discarding or storing in ModuleTemplate
-              reader.push_unfiltered
-              if (keep_tokens)
-                local name_t = reader.peek
-                local base_name = reader.read_identifier
-                local placeholders = Token[]
-                reader.read  # <<
-                local first = true
-                while (first or consume(TokenType.symbol_comma))
-                  if (first) first = false
-                  if (not reader.peek.type is TokenType.placeholder_id) throw reader.peek.error( "$PlaceholderID expected." )
-                  placeholders.add( reader.read )
-                endWhile
-                must_consume( TokenType.symbol_close_specialize )
-                local template_name = "$<<$>>" (base_name,placeholders.count)
-                local module_template = Program.module_templates[ template_name ]
-                if (not module_template)
-                  ensure module_template
-                  Program.module_templates[ template_name ] = module_template
+            if (reader.peek.type is TokenType.identifier)
+              if (reader.peek(1).type is TokenType.symbol_open_specialize)
+                # Module Template: module M<<Args>>
+                # Read until EOI or next 'module', either discarding or storing in ModuleTemplate
+                reader.push_unfiltered
+                if (keep_tokens)
+                  local name_t = reader.peek
+                  local base_name = reader.read_identifier
+                  local placeholders = Token[]
+                  reader.read  # <<
+                  local first = true
+                  while (first or consume(TokenType.symbol_comma))
+                    if (first) first = false
+                    if (not reader.peek.type is TokenType.placeholder_id) throw reader.peek.error( "$PlaceholderID expected." )
+                    placeholders.add( reader.read )
+                  endWhile
+                  must_consume( TokenType.symbol_close_specialize )
+                  local template_name = "$<<$>>" (base_name,placeholders.count)
+                  local module_template = Program.module_templates[ template_name ]
+                  if (not module_template)
+                    ensure module_template
+                    Program.module_templates[ template_name ] = module_template
+                  endIf
+
+                  local section = ModuleTemplateSection( t, name_t, placeholders )
+                  module_template.sections.add( section )
+
+                  while (reader.has_another and reader.peek.type is not TokenType.meta_module)
+                    section.tokens.add( reader.read )
+                  endWhile
+
+                else
+                  while (reader.has_another and reader.peek is not TokenType.meta_module) reader.read
                 endIf
-
-                local section = ModuleTemplateSection( t, name_t, placeholders )
-                module_template.sections.add( section )
-
-                while (reader.has_another and reader.peek.type is not TokenType.meta_module)
-                  section.tokens.add( reader.read )
-                endWhile
+                reader.pop_unfiltered
+                nextIteration
 
               else
-                while (reader.has_another and reader.peek is not TokenType.meta_module) reader.read
+                # Build collection of non-template module names so that template instantiation can auto-generate
+                # names that don't conflict.
+                Program.module_names.add( reader.peek->String )
               endIf
-              reader.pop_unfiltered
-              nextIteration
             endIf
 
             if (keep_tokens) tokens.add( t )
