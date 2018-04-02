@@ -235,6 +235,7 @@ class Tokenizer
       TokenType.keyword_pi                   = define( TokenType("pi") )
       TokenType.keyword_prior                = define( TokenType("prior") )
       TokenType.keyword_this                 = define( TokenType("this") )
+      TokenType.keyword_ThisType             = define( TokenType("ThisType") )
       TokenType.keyword_true                 = define( TokenType("true") )
       TokenType.keyword_xor                  = define( TokenType("xor") )
 

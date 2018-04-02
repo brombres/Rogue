@@ -159,6 +159,7 @@ class TokenType
     keyword_pi                    : TokenType
     keyword_prior                 : TokenType
     keyword_this                  : TokenType
+    keyword_ThisType              : TokenType
     keyword_true                  : TokenType
     keyword_xor                   : TokenType
 

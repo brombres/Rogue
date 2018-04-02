@@ -3916,3 +3916,10 @@ augment CmdSourceComment
         writer.println
       endIf
 endAugment
+
+augment CmdThisType
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      require cmd_new
+      cmd_new.write_cpp( writer, &=is_statement )
+endAugment

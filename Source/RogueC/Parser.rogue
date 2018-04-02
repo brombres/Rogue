@@ -1138,7 +1138,7 @@ class Parser
       # Optional ->ReturnType
       if (not return_type)
         if (consume(TokenType.symbol_arrow))
-          if (consume(TokenType.keyword_this) or consume("ThisType"))
+          if (consume(TokenType.keyword_this) or consume(TokenType.keyword_ThisType))
             this_method.return_type = this_type
             this_method.attributes.add( Attribute.returns_this )
           else
@@ -3576,6 +3576,11 @@ class Parser
 
       elseIf (next_is(TokenType.keyword_ensure))
         return parse_ensure_expression
+
+      elseIf (next_is(TokenType.keyword_ThisType))
+        local result = CmdThisType( read, this_type )
+        parse_args( result.args )
+        return result
 
       elseIf (consume(TokenType.keyword_assert))
         consume_eols

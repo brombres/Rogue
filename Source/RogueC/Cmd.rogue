@@ -6176,3 +6176,31 @@ class CmdOnEndUse : Cmd
       endIf
 endClass
 
+
+class CmdThisType : Cmd
+  PROPERTIES
+    this_type : Type
+    args      : CmdArgs
+    cmd_new   : Cmd
+
+  METHODS
+    method init( t, this_type, args=CmdArgs() )
+
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdThisType( t, this_type, args.cloned(clone_args,new_t) )
+
+    method implicit_type( scope:Scope )->Type
+      return this_type
+
+    method resolve( scope:Scope )->Cmd
+      this_type.organize(scope,t)
+      if (cmd_new is null)
+        cmd_new = CmdAccess( t, this_type.name, args.cloned ).resolve( scope )
+      endIf
+      return this
+
+    method type->Type
+      return this_type
+endClass
+
