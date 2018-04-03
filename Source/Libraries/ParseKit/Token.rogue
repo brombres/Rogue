@@ -10,6 +10,12 @@ class Token
     next_line     : Int32
     next_column   : Int32
 
+  GLOBAL METHODS
+    method update_next_position( tokenizer:Tokenizer )
+      Token.next_filepath = tokenizer.filepath
+      Token.next_line = tokenizer.scanner.line
+      Token.next_column = tokenizer.scanner.column
+
   PROPERTIES
     type     : TokenType
     line     : Int32

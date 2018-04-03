@@ -321,9 +321,7 @@ class Tokenizer
     method tokenize_another->Logical
       consume_whitespace
 
-      Token.next_filepath = filepath
-      Token.next_line = scanner.line
-      Token.next_column = scanner.column
+      Token.update_next_position( this )
 
       if (not has_another) return false
 

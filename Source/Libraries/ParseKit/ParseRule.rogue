@@ -101,11 +101,8 @@ class UnaryParseRule : ParseRule
         read
         return entry.value.create_object<<CmdUnary>>.init( t, this.parse )
       else
-        return parse_nested
+        return prior.parse
       endIf
-
-    method on( type:TokenType, fn:Function(ParserType)->Cmd )->this
-      throw UnsupportedOperationError()
 
     method on( type:TokenType, cmd_type:TypeInfo )->this
       lookup[ type ] = cmd_type
