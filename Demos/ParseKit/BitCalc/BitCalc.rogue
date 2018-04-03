@@ -37,6 +37,7 @@ augment TokenType
   EOI( "eoi", "[end of input]" )
   EOL( "\n",  "[end of line]" )
   INTEGER( "integer" )
+  PERCENT_INTEGER( "binary number" )
   IDENTIFIER( "identifier" )
 
   KEYWORD_CLEAR       ( "clear", &is_keyword )
@@ -108,12 +109,36 @@ augment ScanRules
       #   Token(TokenType,Real64)   # Use Token->Real64 to access value.
       on( "$",
         function(tokenizer:BitCalcTokenizer)
-          tokenizer.add( Token(TokenType.INTEGER,tokenizer.scan_int64(16)) )
+          if (tokenizer.peek.is_number(16))
+            tokenizer.add( Token(TokenType.INTEGER,tokenizer.scan_int64(16)) )
+          else
+            tokenizer.add( Token(TokenType.SYMBOL_DOLLAR) )
+          endIf
         endFunction
       )
       on( "%",
         function(tokenizer:BitCalcTokenizer)
-          tokenizer.add( Token(TokenType.INTEGER,tokenizer.scan_int64(2)) )
+          tokenizer.add( Token(TokenType.SYMBOL_PERCENT) )
+          if (tokenizer.peek.is_number(2))
+            # This is an ambiguous situation because percent could be used
+            # in either of the following ways:
+            #
+            #   a%15    (a mod 15)
+            #   a+%101  (a + 2)
+            #
+            # We'll tokenize this as a SYMBOL_PERCENT followed by a special
+            # PERCENT_INTEGER with the raw characters and resolve it during
+            # parsing.
+            use builder=StringBuilder.pool
+              Token.update_next_position( tokenizer )
+              local ch = tokenizer.peek
+              while (ch.is_number(10))
+                builder.print( tokenizer.read )
+                ch = tokenizer.peek
+              endWhile
+              tokenizer.add( Token(TokenType.PERCENT_INTEGER,builder->String) )
+            endUse
+          endIf
         endFunction
       )
 endAugment
@@ -545,9 +570,10 @@ class BitCalcParser : Parser
       rule.on( "^", <<CmdPower>> )
 
       # !
-      rule = add_nested( UnaryParseRule("negate") )
+      rule = add_nested( UnaryParseRule("unary") )
       rule.on( "-", <<CmdNegate>> )
       rule.on( "!", <<CmdBitwiseNot>> )
+      rule.on( "%", this=>parse_percent_integer_as_binary )
 
       # term
       rule = add_nested( ParseRule("term") )
@@ -557,6 +583,7 @@ class BitCalcParser : Parser
           return CmdLiteralInteger(t,t->Int32)
         endFunction
       )
+      rule.on( "binary number", this=>parse_percent_integer_as_integer )
       rule.on( "(",
         function( parser:BitCalcParser )->Cmd
           parser.must_consume( TokenType.SYMBOL_OPEN_PAREN )
@@ -567,6 +594,29 @@ class BitCalcParser : Parser
       )
       rule.on( "identifier", <<CmdAccess>> )
       rule.on_default( (parser) => throw parser.peek.error( "Syntax error: unexpected $." (parser.peek.description) ) )
+
+    method parse_percent_integer_as_binary( parser:BitCalcParser )->Cmd
+      local t = read      # %
+      local int_t = peek  # binary number with digits stored as text
+      parser.must_consume( TokenType.PERCENT_INTEGER )  # ensure error message if necessary
+      local value : Int32
+      forEach (ch at index in int_t->String)
+        if (not ch.is_number(2))
+          int_t.column += index
+          throw int_t.error( "Illegal binary digit." )
+        endIf
+        value = (value :<<: 1) | (ch - '0')
+      endForEach
+      return CmdLiteralInteger( t, value )
+
+    method parse_percent_integer_as_integer( parser:BitCalcParser )->Cmd
+      local t = read  # binary number with digits stored as text
+      local value : Int32
+      forEach (ch in t->String)
+        value = value * 10 + (ch - '0')
+      endForEach
+      return CmdLiteralInteger( t, value )
+
 endClass
 
 
