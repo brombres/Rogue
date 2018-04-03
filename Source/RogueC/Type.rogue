@@ -2019,7 +2019,10 @@ class Type
       return root_type.name
 
     method root_type->Type
+      # This method is used to generate introspection call handlers. The mechanism
+      # treats Value and String differently.
       if (this.is_reference)
+        if (this is Program.type_String) return this
         if (this.instance_of(Program.type_Value)) return Program.type_Value
         return Program.type_Object
       endIf
