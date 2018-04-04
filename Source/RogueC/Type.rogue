@@ -506,6 +506,9 @@ class Type
           throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
               (this,base_type,base_type,this) )
         endIf
+
+        # Inherit [api]
+        if (base_type.is_api) attributes.add( Attribute.is_api )
       endForEach
 
       if (inherited_categories)
