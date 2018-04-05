@@ -6011,6 +6011,9 @@ endClass
 
 
 class CmdTypeSelector( t, of_type:Type ) : Cmd
+  PROPERTIES
+    generated_cmd : Cmd
+
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -6021,10 +6024,13 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
 
     method resolve( scope:Scope )->Cmd
       of_type.organize( scope, t )
-      return CmdAccess( t, CmdAccess(t,"TypeInfo"), "get", CmdArgs(CmdLiteralString(t,of_type)) ).resolve( scope )
+      if (not generated_cmd)
+        generated_cmd = CmdAccess( t, CmdAccess(t,"TypeInfo"), "get", CmdArgs(CmdLiteralString(t,of_type)) ).resolve( scope )
+      endIf
+      return this
 
     method type->Type
-      return of_type
+      return Program.type_TypeInfo
 endClass
 
 

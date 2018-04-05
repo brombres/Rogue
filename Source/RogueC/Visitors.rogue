@@ -140,6 +140,9 @@ class TraceUsedCodeVisitor : Visitor [singleton]
     method on_leave( cmd:CmdCallDynamicMethod )
       if (cmd.method_info.is_overridden) cmd.method_info.called_dynamically = true
 
+    method on_enter( cmd:CmdTypeSelector )
+      cmd.of_type.make_essential
+
 endClass
 
 

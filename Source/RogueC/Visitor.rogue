@@ -1149,6 +1149,7 @@ class Visitor
 
     method dispatch( cmd:CmdTypeSelector )
       cmd.of_type.dispatch( this )
+      if (cmd.generated_cmd) cmd.generated_cmd = cmd.generated_cmd.dispatch( this )
 
     method dispatch( cmd:CmdCreateList )
       cmd.elements.dispatch( this )

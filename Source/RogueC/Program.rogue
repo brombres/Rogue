@@ -294,7 +294,6 @@ class Program [essential singleton]
     method get_type_reference( t:Token, name:String )->Type
       local type = type_lookup[ name ]
       if (type) return type
-
       type = Type( t, name )
       type_lookup[name] = type
       local template = find_template( name )
@@ -648,7 +647,7 @@ class Program [essential singleton]
       # Returns true if culling complete or false if a new dependency injection means
       # we need to go back and resolve new types.
       forEach (type in type_list)
-        if (type.is_essential) type.trace_used_code
+        if (type.is_essential and not type.is_used) type.trace_used_code
       endForEach
 
       trace_overridden_methods

@@ -294,7 +294,7 @@ class Scope
       local suppress_inherited  = (flags & SUPPRESS_INHERITED)?
       local calling_prior_init  = (flags & CALLING_PRIOR_INIT)?
 
-      local candidates = CandidateMethods( type_context, access, error_on_fail, inferring_templates )
+      local candidates = CandidateMethods( this, type_context, access, error_on_fail, inferring_templates )
 
       local args = access.args
 
@@ -698,6 +698,7 @@ endClass
 
 class CandidateMethods
   PROPERTIES
+    scope               : Scope
     type_context        : Type
     access              : CmdAccess
     available=Method[]  : Method[]
@@ -706,7 +707,7 @@ class CandidateMethods
     inferring_templates : Logical
 
   METHODS
-    method init( type_context, access, error_on_fail, inferring_templates )
+    method init( scope, type_context, access, error_on_fail, inferring_templates )
 
     method has_match->Logical
       return (available.count == 1)

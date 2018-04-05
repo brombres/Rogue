@@ -1192,6 +1192,7 @@ class Type
         local m = find_global_method( "from_value(Value)" )
         if (not m)
           m = add_global_method( t, "from_value" )
+          m.attributes.add( Attribute.is_nonAPI )
           m.add_parameter( t, "value", Program.type_Value )
           m.return_type = this
 
@@ -1241,6 +1242,7 @@ class Type
           local prior_m = m
 
           m = add_global_method( t, "from_value" )
+          m.attributes.add( Attribute.is_nonAPI )
           m.add_parameter( t, "values", Program.type_Value )
           m.return_type = this
 
@@ -1514,6 +1516,7 @@ class Type
 
       if (this.is_compound or this.is_primitive)
         local m_type_info = add_method( t, "type_info" )
+        m_type_info.attributes.add( Attribute.is_nonAPI )
         m_type_info.return_type = Program.get_type_reference( t, "TypeInfo" )
         m_type_info.statements.add( CmdReturn( t, CmdAccess( t, CmdAccess(t,"TypeInfo"), "get",
           CmdArgs(CmdLiteralString(t,name)) ) ) )
@@ -2040,7 +2043,6 @@ class Type
     method trace_used_code
       if (is_used) return   # Already traced
       is_used = true
-
       if (is_singleton)
         local m = find_method( "init()" )
         if (m)

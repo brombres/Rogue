@@ -3917,6 +3917,12 @@ augment CmdSourceComment
       endIf
 endAugment
 
+augment CmdTypeSelector
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      generated_cmd.write_cpp( writer, &=is_statement )
+endAugment
+
 augment CmdThisType
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )

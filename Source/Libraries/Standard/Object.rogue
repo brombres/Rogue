@@ -35,7 +35,7 @@ class Object [native]
     method type_info->TypeInfo [nonAPI]
       native @|return RogueType_type_info( $this->type );
 
-    method unpack( values:Value )
+    method unpack( values:Value ) [nonAPI]
       local i = introspector
       forEach (p in i.type.properties)
         local name = p.name
