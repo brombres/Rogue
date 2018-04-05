@@ -3335,7 +3335,13 @@ class Parser
         return CmdLiteralCharacter( t, value->Character )
 
       elseIf (consume(TokenType.keyword_this))
-        return CmdLiteralThis( t, this_type )
+        local result = CmdLiteralThis( t, this_type ) : Cmd
+        if (consume(TokenType.symbol_open_paren))
+          local args = CmdArgs()
+          parse_args( args )
+          result = CmdAccess( t, result, "call", args )
+        endIf
+        return result
 
       elseIf (consume(TokenType.keyword_true))
         return CmdLiteralLogical( t, true )
