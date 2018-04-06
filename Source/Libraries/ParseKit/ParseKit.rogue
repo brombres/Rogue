@@ -7,4 +7,5 @@ $include "ParseKit/Tokenizer.rogue"
 $include "ParseKit/Token.rogue"
 $include "ParseKit/TokenReader.rogue"
 $include "ParseKit/TokenType.rogue"
+$include "ParseKit/Visitor.rogue"
 
