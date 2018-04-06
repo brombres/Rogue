@@ -230,6 +230,10 @@ augment Program
       if (Program.using_introspection)
         writer.println(  "#define ROGUE_INTROSPECTION 1" )
         writer.println
+        if (Program.using_introspection_value_calls)
+          writer.println(  "#define ROGUE_INTROSPECTION_VALUE_CALLS 1" )
+          writer.println
+        endIf
       endIf
 
       # Embed nativeHeader
@@ -315,10 +319,6 @@ augment Program
           type.determine_cpp_method_typedefs( native_method_signature_list, native_method_signature_lookup )
         endIf
       endForEach
-
-      #if (Program.using_introspection)
-      ##IntrospectionCallManager.index_handlers
-      #endIf
 
       # write dynamic dispatch method prototypes
       if (RogueC.all_methods_callable_dynamically)
@@ -751,9 +751,9 @@ augment Program
                       |{
                       |  RogueType* type = &Rogue_types[i];
 
-                      if (using_introspection)
-        writer.println @|  if (type->type_info) RogueTypeInfo_trace( type->type_info );
-      endIf
+                         if (using_introspection)
+      writer.println @|    if (type->type_info) RogueTypeInfo_trace( type->type_info );
+                         endIf
 
       writer.println @|  {
                       |    auto singleton = ROGUE_GET_SINGLETON(type);

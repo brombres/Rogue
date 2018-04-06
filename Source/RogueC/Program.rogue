@@ -35,24 +35,27 @@ class Program [essential singleton]
     type_list       = Type[]                 : Type[]
     type_lookup     = Table<<String,Type>>() : Table<<String,Type>>
 
-    type_null        : Type
+    type_null          : Type
     type_Real64        : Type
-    type_Real32       : Type
-    type_Int64        : Type
-    type_Int32     : Type
-    type_Character   : Type
-    type_Byte        : Type
-    type_Logical     : Type
+    type_Real32        : Type
+    type_Int64         : Type
+    type_Int32         : Type
+    type_Character     : Type
+    type_Byte          : Type
+    type_Logical       : Type
 
-    type_Object      : Type
-    type_String      : Type
-    type_Array       : Type
-    type_GenericList : Type
-    type_Global      : Type
-    type_Exception   : Type
+    type_Object        : Type
+    type_String        : Type
+    type_Array         : Type
+    type_GenericList   : Type
+    type_Global        : Type
+    type_Exception     : Type
     type_WeakReference : Type
-    type_Value       : Type
-    type_TypeInfo    : Type
+    type_Value         : Type
+    type_TypeInfo      : Type
+    type_MethodInfo    : Type
+    m_MethodInfo_call       : Method
+
 
     type_StringBuilder : Type
 
@@ -213,6 +216,7 @@ class Program [essential singleton]
       type_WeakReference = create_built_in_type( "WeakReference", Attribute.is_class )
       type_Value         = create_built_in_type( "Value", Attribute.is_class )
       type_TypeInfo      = create_built_in_type( "TypeInfo", Attribute.is_class )
+      type_MethodInfo    = create_built_in_type( "MethodInfo", Attribute.is_class )
 
       # `simplify_name` means e.g. `RogueObject` instead of `RogueClassObject`.
       type_Exception.simplify_name = true
@@ -678,7 +682,7 @@ class Program [essential singleton]
       endForEach
       if (injected_dependencies) return false
 
-      if (Program.using_introspection)
+      if (Program.using_introspection_value_calls)
         # Make sure the Boxed version of any used compound is made essential
         local added_new_boxed_types = false
         forEach (type in type_list)
@@ -690,7 +694,7 @@ class Program [essential singleton]
         if (added_new_boxed_types) return false
 
         if (IntrospectionCallManager.generate_call_handlers)
-          return false
+          return false  # not done yet, run another iteration
         endIf
       endIf
 
@@ -795,5 +799,13 @@ class Program [essential singleton]
 
     method using_introspection->Logical
       return type_TypeInfo.is_used
+
+    method using_introspection_value_calls->Logical
+      if (not type_MethodInfo.is_used) return false
+      if (m_MethodInfo_call is null)
+        m_MethodInfo_call = type_MethodInfo.find_global_method( "call($,Int32,Value)" (Program.intptr_name) )
+      endIf
+      if (not m_MethodInfo_call or not m_MethodInfo_call.is_used) return false
+      return true
 
 endClass
