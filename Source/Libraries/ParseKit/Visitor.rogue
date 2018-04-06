@@ -30,6 +30,7 @@ class Visitor [api]
   #     noAction
   PROPERTIES
     method_lookup = StringTable<<MethodInfo>>()
+    lookup_buffer = StringBuilder()
 
   METHODS
     method call( method_name:String, cmd:Cmd )->Cmd
@@ -91,16 +92,21 @@ class Visitor [api]
     method visit( statements:CmdStatements )
       handle( statements )
 
+    method _compose_signature( method_name:String, param_type_name:String )->StringBuilder
+      lookup_buffer.clear
+      lookup_buffer.print( method_name ).print( '(' ).print( param_type_name ).print( ')' )
+      return lookup_buffer
+
     method _find_method( method_name:String, param_type:TypeInfo )->MethodInfo
       local this_type = type_info
-      local sig = "$($)" (method_name,param_type.name)
-      local m = method_lookup[ sig ]
+      local m = method_lookup[ _compose_signature(method_name,param_type.name) ]
       if (m) return m
 
+      local original_param_type_name = param_type.name
       loop
-        m = this_type.find_method( "$($)" (method_name,param_type.name) )
+        m = this_type.find_method( _compose_signature(method_name,param_type.name) )
         if (m)
-          method_lookup[ sig ] = m  # cache using specialized signature
+          method_lookup[ _compose_signature(method_name,original_param_type_name) ] = m  # cache using most specialized signature
           escapeLoop
         endIf
         param_type = param_type.base_class
