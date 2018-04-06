@@ -45,8 +45,7 @@ augment TokenType
   KEYWORD_LIST        ( "list",  &is_keyword )
   KEYWORD_Q           ( "q",     &is_keyword )
   KEYWORD_QUIT        ( "quit",  &is_keyword )
-  KEYWORD_TRUE        ( "true",  &is_keyword )
-  KEYWORD_FALSE       ( "false", &is_keyword )
+  KEYWORD_LOG         ( "log",   &is_keyword )
 
   SYMBOL_AMPERSAND    ( "&",   &is_symbol )
   SYMBOL_ASTERISK     ( "*",   &is_symbol )
@@ -242,6 +241,9 @@ class CmdQuit( t ) : Cmd
     method execute( vm:BitCalcVM )->Int32?
       System.exit
       return null
+
+    method to->String
+      return "quit"
 endClass
 
 class CmdLiteralInteger( t, value:Int32 ) : Cmd
@@ -401,6 +403,9 @@ class CmdAccess( t, name:String ) : Cmd
 
     method resolve_assignment( new_value:Cmd )->Cmd
       return CmdWriteVariable( t, name, new_value ).resolve
+
+    method to->String
+      return name
 endClass
 
 class CmdReadVariable( t, name:String ) : Cmd
@@ -423,6 +428,9 @@ class CmdClear( t ) : Cmd
       println "All variables cleared"
       vm.variables.clear
       return null
+
+    method to->String
+      return "clear"
 endClass
 
 class CmdList( t ) : Cmd
@@ -437,6 +445,21 @@ class CmdList( t ) : Cmd
       endForEach
 
       return null
+
+    method to->String
+      return "list"
+endClass
+
+class CmdLog( t ) : Cmd
+  METHODS
+    method execute( vm:BitCalcVM )->Int32?
+      vm.should_log = not vm.should_log
+      if (vm.should_log) println "Logging ON"
+      else               println "Logging OFF"
+      return null
+
+    method to->String
+      return "log"
 endClass
 
 #==============================================================================
@@ -517,6 +540,7 @@ class BitCalcParser : Parser
       local rule = add( ParseRule("statement") )
       rule.on( "clear",<<CmdClear>> )
       rule.on( "list", <<CmdList>> )
+      rule.on( "log",  <<CmdLog>> )
       rule.on( "q",    <<CmdQuit>> )
       rule.on( "quit", <<CmdQuit>> )
       rule.on( "exit", <<CmdQuit>> )
@@ -621,12 +645,105 @@ endClass
 
 
 #==============================================================================
+# ConstantFoldingVisitor
+#==============================================================================
+class ConstantFoldingVisitor : Visitor
+  # This is one way use a Visitor. We could handle other node types besides
+  # CmdAdd & CmdSubtract and we could fold constants in the resolve() phase as well.
+  METHODS
+    method handle( cmd:CmdAdd )->Cmd
+      handle( cmd as Cmd )
+
+      # Now cmd.left and cmd.right are visited and resolved
+      local left = cmd.left as CmdLiteralInteger
+      if (left)
+        local right = cmd.right as CmdLiteralInteger
+        if (right)
+          return CmdLiteralInteger( cmd.t, left.value + right.value )
+        endIf
+      endIf
+      return cmd
+
+    method handle( cmd:CmdSubtract )->Cmd
+      handle( cmd as Cmd )
+
+      local left = cmd.left  as CmdLiteralInteger
+      if (left)
+        local right = cmd.right as CmdLiteralInteger
+        if (right)
+          return CmdLiteralInteger( cmd.t, left.value - right.value )
+        endIf
+      endIf
+
+      return cmd
+endClass
+
+#==============================================================================
+# ParseTreePrintVisitor
+#==============================================================================
+class ParseTreePrintVisitor : Visitor
+  PROPERTIES
+    depth : Int32
+    count : Int32
+
+  METHODS
+    method reset->this
+      depth = 0
+      count = 0
+      return this
+
+    method handle( cmd:CmdAccess )->Cmd
+      if (count > 0) print ','
+      print ''CmdAccess("$")'' (cmd.name)
+      ++count
+      return cmd
+
+    method handle( cmd:CmdReadVariable )->Cmd
+      if (count > 0) print ','
+      print ''CmdReadVariable("$")'' (cmd.name)
+      ++count
+      return cmd
+
+    method handle( cmd:CmdLiteralInteger )->Cmd
+      if (count > 0) print ','
+      print ''CmdLiteralInteger($)'' (cmd.value)
+      ++count
+      return cmd
+
+    method on_enter( cmd:Cmd )
+      if (count > 0) print ','
+      print( cmd.type_name.after_any("::") ).print( '(' )
+
+    method on_enter( cmd:CmdWriteVariable )->Cmd
+      if (count > 0) print ','
+      print ''CmdWriteVariable("$",'' (cmd.name)
+      return cmd
+
+    method dispatch( cmd:Cmd )
+      local save = (depth,count)
+      ++depth
+      count = 0
+
+      prior.dispatch( cmd )
+
+      (depth,count) = save
+      ++count
+
+    method on_leave( cmd:Cmd )
+      print ')'
+
+endClass
+
+#==============================================================================
 # BitCalcVM
 #==============================================================================
 class BitCalcVM
   PROPERTIES
-    parser    = BitCalcParser()
-    variables = StringTable<<Int32>>()
+    parser        = BitCalcParser()
+    variables     = StringTable<<Int32>>()
+    fold_visitor  = ConstantFoldingVisitor()
+    print_visitor = ParseTreePrintVisitor()
+    should_log    : Logical
 
   METHODS
     method display( value:Int32 )
@@ -651,7 +768,11 @@ class BitCalcVM
         parser.consume_eols
         while (parser.has_another)
           local statement = parser.parse_statement()
+          log_parsed( statement )
           statement = statement.resolve
+          log_resolved( statement )
+          statement = fold_visitor.visit( statement )
+          log_folded( statement )
           local result = statement.execute( this )
           if (result.exists) display( result.value )
           parser.consume_eols
@@ -665,5 +786,27 @@ class BitCalcVM
         endForEach
         Console.error.print( " " * (err.column-1) ).println( '^' )
       endTry
+
+    method log_parsed( statement:Cmd )
+      if (should_log)
+        println statement
+        print( "PARSED:   " )
+        print_visitor.reset.visit( statement )
+        println
+      endIf
+
+    method log_resolved( statement:Cmd )
+      if (should_log)
+        print( "RESOLVED: " )
+        print_visitor.reset.visit( statement )
+        println
+      endIf
+
+    method log_folded( statement:Cmd )
+      if (should_log)
+        print( "FOLDED:   " )
+        print_visitor.reset.visit( statement )
+        println
+      endIf
 endClass
 

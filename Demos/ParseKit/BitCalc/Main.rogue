@@ -5,9 +5,9 @@
 $include "BitCalc.rogue"
 uses BitCalc
 
-BitCalcSession()
+BitCalcShell()
 
-class BitCalcSession
+class BitCalcShell
   PROPERTIES
     vm = BitCalcVM()
 
@@ -21,7 +21,8 @@ class BitCalcSession
         println "Dec, hex, and binary: 10, $10, %10"
         println "Arithmetic operators: + - * / % ^"
         println "Bitwise operators:    & | ~ ! << >> >>>"
-        println "Variables:            x, x=, list, clear "
+        println "Variables:            x, x=, list, clear"
+        println "Logging on/off:       log"
         println "Quit:                 q"
         loop
           vm.execute( Console.input( "> " ) )
