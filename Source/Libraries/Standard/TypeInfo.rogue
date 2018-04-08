@@ -45,6 +45,15 @@ class TypeInfo
     method get ( name : String ) -> TypeInfo
       local result = RuntimeTypeInfoLookup[ name ]
       if (result) return result
+      return _create_type_info( name )
+
+    method get ( name : StringBuilder ) -> TypeInfo
+      local result = RuntimeTypeInfoLookup[ name ]
+      if (result) return result
+      return _create_type_info( name->String )
+
+    method _create_type_info( name:String )->TypeInfo
+      local result : TypeInfo
 
       native @|for (int i=Rogue_type_count; --i>=0; )
               |{
@@ -437,7 +446,7 @@ class TypeInfo
 endClass
 
 
-class RuntimeTypeInfoLookup : Table<<String,TypeInfo>> [singleton];
+class RuntimeTypeInfoLookup : StringTable<<TypeInfo>> [singleton];
 
 
 class PropertyInfo
@@ -553,6 +562,114 @@ class MethodInfo
       # <Compiler will insert generated code here>
 
       return UndefinedValue
+endClass
+
+class DynamicCallback [aspect]
+  METHODS
+    method update_function_pointer
+      local m = DynamicCallback.find_compatible_method( context.type_info, original_signature, specializing_signature )
+      if (m?)
+        local new_ptr = m.fn_ptr
+        native @|THIS->fn_ptr = (void*) $new_ptr;
+        return
+      endIf
+
+  GLOBAL METHODS
+    method find_compatible_method( context_type:TypeInfo, original_signature:String, specializing_signature:String )->MethodInfo
+      local m = context_type.find_method( specializing_signature )
+      if (m) return m
+
+      local original_i1 = find_opening_paren( specializing_signature )
+      if (not original_i1.exists) return null
+      local specialized_i1 = find_opening_paren( specializing_signature )
+      if (not specialized_i1.exists) return null
+
+      use builder=StringBuilder.pool
+        local original_param_types = TypeInfo[]
+        local specialized_param_types = TypeInfo[]
+
+        DynamicCallback.parse_param_types( original_signature, original_i1.value+1, original_param_types, builder )
+        DynamicCallback.parse_param_types( specializing_signature, specialized_i1.value+1, specialized_param_types, builder )
+
+        if (original_param_types.count != specialized_param_types.count) return null
+
+        local base_name = specializing_signature.leftmost( specialized_i1.value )
+
+        if ((forEach in original_param_types) is null) return null
+        if ((forEach in specialized_param_types) is null) return null
+
+        forEach (original_type at i in original_param_types)
+          local specialized_type = specialized_param_types[i]
+
+          # Step specialized param types down one by one until they match the original type,
+          # checking each new variation.
+          local base_class = specialized_type.base_class
+          while (base_class and base_class.instance_of(original_type))
+            specialized_param_types[i] = base_class
+            builder.clear.print( base_name ).print( '(' )
+            forEach (cur_type at j in specialized_param_types)
+              if (j > 0) builder.print(',')
+              builder.print( cur_type )
+            endForEach
+            builder.print( ')' )
+
+            m = context_type.find_method( builder->String )
+            if (m) return m
+
+            base_class = base_class.base_class
+          endWhile
+        endForEach
+      endUse
+
+      return null
+
+    method find_opening_paren( signature:String )->Int32?
+      # Find the first open paren. Need to skip past method template specializers if present.
+      local depth =  0
+      forEach (ch at i in signature)
+        which (ch)
+          case '('
+            ++depth
+            if (depth == 1) return i
+          case '{', '[', '<'
+            ++depth
+          case ')', '}', ']', '>'
+            --depth
+        endWhich
+      endForEach
+      return null
+
+    method parse_param_types( signature:String, i1:Int32, param_types:TypeInfo[], builder:StringBuilder )
+      builder.clear
+      local depth = 1
+      forEach (ch at i in signature from i1)
+        which (ch)
+          case '(', '{', '[', '<'
+            ++depth
+            builder.print( ch )
+          case '}', ']', '>'
+            --depth
+            builder.print( ch )
+          case ')'
+            --depth
+            if (depth == 0)
+              # end of param types
+              param_types.add( TypeInfo[builder] )
+              escapeForEach
+            else
+              builder.print( ')' )
+            endIf
+          case ','
+            if (depth == 1)
+              param_types.add( TypeInfo[builder] )
+              builder.clear
+            else
+              builder.print( ',' )
+            endIf
+          others
+            builder.print( ch )
+        endWhich
+      endForEach
 endClass
 
 class NoSuchMethodError : Error

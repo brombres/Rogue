@@ -1365,13 +1365,17 @@ class CmdEscape : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      if (target_cmd.task_escape_section)
-        local task_args = (clone_args as TaskArgs)
-        return task_args.create_escape( t, target_cmd.task_escape_section )
+      if (target_cmd)
+        if (target_cmd.task_escape_section)
+          local task_args = (clone_args as TaskArgs)
+          return task_args.create_escape( t, target_cmd.task_escape_section )
+        else
+          local new_target = target_cmd
+          while (new_target.cloned_command) new_target = new_target.cloned_command
+          return CmdEscape( t, control_type, new_target )
+        endIf
       else
-        local new_target = target_cmd
-        while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdEscape( t, control_type, new_target )
+        return ThisType( t, control_type )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -1404,13 +1408,17 @@ class CmdNextIteration : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      if (target_cmd.task_upkeep_section)
-        local task_args = (clone_args as TaskArgs)
-        return task_args.create_escape( t, target_cmd.task_upkeep_section )
+      if (target_cmd)
+        if (target_cmd.task_upkeep_section)
+          local task_args = (clone_args as TaskArgs)
+          return task_args.create_escape( t, target_cmd.task_upkeep_section )
+        else
+          local new_target = target_cmd
+          while (new_target.cloned_command) new_target = new_target.cloned_command
+          return CmdNextIteration( t, new_target )
+        endIf
       else
-        local new_target = target_cmd
-        while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdNextIteration( t, new_target )
+        return ThisType( t )
       endIf
 
     method resolve( scope:Scope )->Cmd
@@ -5208,11 +5216,13 @@ endClass
 #------------------------------------------------------------------------------
 # Callbacks
 #------------------------------------------------------------------------------
-class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_type:Type ) : Cmd
+class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_type:Type,
+    is_dynamically_specialized:Logical, specializing_signature:Cmd ) : Cmd
   METHODS
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdCreateCallback
       if (new_t) t = new_t
-      return CmdCreateCallback( t, context.cloned( clone_args, new_t ), name, signature, return_type )
+      return CmdCreateCallback( t, context.cloned( clone_args, new_t ), name, signature, return_type,
+        is_dynamically_specialized, clone(specializing_signature,clone_args) )
 
     method resolve( scope:Scope )->Cmd
       if (name == "to" and return_type) name = "to_" + return_type.name
@@ -5236,7 +5246,8 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
         forEach (p in m.parameters) parameter_types.add( p.type )
       endIf
 
-      local callback_type_name = context_type.name + "." + name + Program.get_callback_type_signature(parameter_types)
+      local separator = select{ is_dynamically_specialized:"->" || "." }
+      local callback_type_name = context_type.name + separator + name + Program.get_callback_type_signature(parameter_types)
       local callback_type = Program.get_type_reference( t, callback_type_name )
 
       if (not callback_type.is_defined)
@@ -5259,13 +5270,28 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
 
         local cmd : Cmd
         if (m.is_global)
+          if (is_dynamically_specialized)
+            throw t.error( "Global methods cannot be used to create indirect callbacks." )
+          endIf
           callback_type.attributes.add( Attribute.is_singleton )
           cmd = CmdAccess( t, CmdAccess(t,context_type.name), name, args )
         else
           callback_type.add_property( t, "context", context_type )
           local m_init = callback_type.add_method( t, "init" )
           m_init.add_parameter( t, "context" )
-          cmd = CmdAccess( t, CmdAccess(t,"context"), name, args )
+          if (is_dynamically_specialized)
+            callback_type.base_types.add( Program.get_type_reference(t,"DynamicCallback") )
+            callback_type.add_property( t, "void* fn_ptr;", Program.type_Int64 ).mark_native
+            callback_type.add_property( t, "original_signature", Program.type_String )
+            callback_type.add_property( t, "specializing_signature", Program.type_String )
+            m_init.add_parameter( t, "original_signature" )
+            m_init.add_parameter( t, "specializing_signature" )
+            m_init.statements.add( CmdAssignFnPtr(t,"THIS->fn_ptr",m) )
+            m_init.statements.add( CmdAccess(t,"update_function_pointer") )
+            cmd = CmdCallFnPtr( t, "THIS->fn_ptr", CmdAccess(t,"context"), m, args )
+          else
+            cmd = CmdAccess( t, CmdAccess(t,"context"), name, args )
+          endIf
         endIf
 
         if (m.return_type)
@@ -5279,7 +5305,12 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
       if (m.is_global)
         return CmdReadSingleton( t, callback_type ).resolve( scope )
       else
-        return CmdAccess( t, callback_type_name, CmdArgs(context) ).resolve( scope )
+        local args = CmdArgs( context )
+        if (is_dynamically_specialized)
+          args.add( CmdLiteralString(t,m.signature) )
+          args.add( specializing_signature )
+        endIf
+        return CmdAccess( t, callback_type_name, args ).resolve( scope )
       endIf
 
 endClass
@@ -6208,5 +6239,30 @@ class CmdThisType : Cmd
 
     method type->Type
       return this_type
+endClass
+
+class CmdAssignFnPtr( t, name:String, method_info:Method ) : Cmd
+  # A specialized Cmd used in creating Dynamic Callbacks (CmdCreateCallback)
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return ThisType( t, name, method_info )
+
+    method implicit_type( scope:Scope )->Type
+      return null
+
+    method resolve( scope:Scope )->Cmd
+      return this
+
+    method type->Type
+      return null
+endClass
+
+class CmdCallFnPtr( t, name:String, context:Cmd, method_info:Method, args:CmdArgs ) : CmdCallStaticMethod
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return ThisType( t, name, context.cloned(clone_args,new_t), method_info, args.cloned(clone_args,new_t) )
+
 endClass
 

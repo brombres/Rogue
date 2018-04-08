@@ -2943,7 +2943,17 @@ class Parser
         endIf
         local return_type : Type
         if (consume(TokenType.symbol_arrow)) return_type = parse_type
-        return CmdCreateCallback( t, context, name, Program.get_callback_type_signature(arg_types), return_type )
+        local is_dynamically_specialized : Logical
+        local specializing_signature : Cmd
+        if (consume(TokenType.symbol_open_bracket))
+          is_dynamically_specialized = true
+          if (not consume(TokenType.symbol_close_bracket))
+            specializing_signature = parse_expression
+            must_consume( TokenType.symbol_close_bracket )
+          endIf
+        endIf
+        return CmdCreateCallback( t, context, name, Program.get_callback_type_signature(arg_types), return_type,
+        is_dynamically_specialized, specializing_signature )
 
       elseIf (consume(TokenType.keyword_as))
         # Recast operation e.g. actor as Hero

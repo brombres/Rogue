@@ -3929,3 +3929,31 @@ augment CmdThisType
       require cmd_new
       cmd_new.write_cpp( writer, &=is_statement )
 endAugment
+
+augment CmdAssignFnPtr
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( name ).print( " = (void*)" ).print( method_info.cpp_name )
+endAugment
+
+augment CmdCallFnPtr
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+
+      writer.print( "((" )
+      writer.print( method_info.cpp_typedef )
+      writer.print( ")" ).print( name ).print( ")" )
+
+      writer.print( "( " )
+      writer.print_arg( context, &cast_to = method_info.type_context, &is_mutating=method_info.is_mutating )
+      local i = 0
+      forEach (arg in args)
+        writer.print( ", " )
+        writer.print_arg( arg, method_info.parameters[i] )
+        ++i
+      endForEach
+      writer.print( " )" )
+      if (not is_statement) writer.print( ")" )  # end of return type cast
+endAugment
+
