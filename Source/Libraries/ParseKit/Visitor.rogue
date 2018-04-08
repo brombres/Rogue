@@ -31,7 +31,8 @@ class Visitor [api]
   PROPERTIES
     handler_lookup = StringTable<<Function(Cmd)->Cmd>>()
     general_lookup = StringTable<<Function(Cmd)>>()
-    lookup_buffer = StringBuilder()
+    lookup_buffer  = StringBuilder()
+    type_Cmd       = <<Cmd>> : TypeInfo
 
   METHODS
     method call( method_name:String, cmd:Cmd )
@@ -45,17 +46,19 @@ class Visitor [api]
 
     method dispatch( cmd:Cmd )
       forEach (obj_info in cmd.type_info.properties)
-        if (obj_info.type.instance_of(<<Cmd>>))
+        if (obj_info.type.instance_of(type_Cmd))
           local i = cmd.introspector
           local obj = i.get( obj_info )->Object
-          if (obj instanceOf Cmd)
-            local result = visit( obj as Cmd )
-            local value = Value(result)
-            i.set( obj_info, value )
-          elseIf (obj instanceOf CmdStatements)
-            visit( obj as CmdStatements )
-          elseIf (obj instanceOf CmdArgs)
-            visit( obj as CmdArgs )
+          if (obj)
+            if (obj instanceOf Cmd)
+              local result = visit( obj as Cmd )
+              local value = Value(result)
+              i.set( obj_info, value )
+            elseIf (obj instanceOf CmdStatements)
+              visit( obj as CmdStatements )
+            elseIf (obj instanceOf CmdArgs)
+              visit( obj as CmdArgs )
+            endIf
           endIf
         endIf
       endForEach
@@ -117,7 +120,6 @@ class Visitor [api]
       handler_lookup[ _compose_signature("handle",param_type.name) ] = callback
 
       return callback
-
 
 endClass
 
