@@ -29,12 +29,13 @@ class Visitor [api]
   #   on_leave( cmd:Cmd* )
   #     noAction
   PROPERTIES
-    method_lookup = StringTable<<MethodInfo>>()
+    handler_lookup = StringTable<<Function(Cmd)->Cmd>>()
+    general_lookup = StringTable<<Function(Cmd)>>()
     lookup_buffer = StringBuilder()
 
   METHODS
-    method call( method_name:String, cmd:Cmd )->Cmd
-      return _find_method( method_name, cmd.type_info ).call( @[this,cmd] )->Object as Cmd
+    method call( method_name:String, cmd:Cmd )
+      _find_general_method( method_name, cmd.type_info ).call( cmd )
 
     method dispatch( args:CmdArgs )
       forEach (arg at index in args) args[ index ] = visit( arg )
@@ -84,7 +85,7 @@ class Visitor [api]
     method on_leave( cmd:Cmd )
 
     method visit( cmd:Cmd )->Cmd
-      return this( "handle", cmd )
+      return _find_handler( cmd.type_info ).call( cmd )
 
     method visit( args:CmdArgs )
       handle( args )
@@ -97,22 +98,25 @@ class Visitor [api]
       lookup_buffer.print( method_name ).print( '(' ).print( param_type_name ).print( ')' )
       return lookup_buffer
 
-    method _find_method( method_name:String, param_type:TypeInfo )->MethodInfo
+    method _find_general_method( method_name:String, param_type:TypeInfo )->Function(Cmd)
       local this_type = type_info
-      local m = method_lookup[ _compose_signature(method_name,param_type.name) ]
-      if (m) return m
+      local callback = general_lookup[ _compose_signature(method_name,param_type.name) ]
+      if (callback) return callback
 
-      local original_param_type_name = param_type.name
-      loop
-        m = this_type.find_method( _compose_signature(method_name,param_type.name) )
-        if (m)
-          method_lookup[ _compose_signature(method_name,original_param_type_name) ] = m  # cache using most specialized signature
-          escapeLoop
-        endIf
-        param_type = param_type.base_class
-      endLoop
+      callback = this=>dispatch(Cmd)[ _compose_signature(method_name,param_type.name) ]
+      general_lookup[ _compose_signature(method_name,param_type.name) ] = callback
 
-      return m
+      return callback
+
+    method _find_handler( param_type:TypeInfo )->Function(Cmd)->Cmd
+      local this_type = type_info
+      local callback = handler_lookup[ _compose_signature("handle",param_type.name) ]
+      if (callback) return callback
+
+      callback = this=>handle(Cmd)[ _compose_signature("handle",param_type.name) ]
+      handler_lookup[ _compose_signature("handle",param_type.name) ] = callback
+
+      return callback
 
 
 endClass
