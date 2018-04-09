@@ -377,6 +377,70 @@ class TypeInfo
       endForEach
       return r
 
+    method byte_property( context:Object, name:String )->Byte
+      return byte_property( context, find_property(name) )
+
+    method byte_property( context:Object, property_info:PropertyInfo )->Byte
+      local type = context.type_info
+      if (not property_info) return 0
+      return native( "*((RogueByte*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Byte
+
+    method character_property( context:Object, name:String )->Character
+      return character_property( context, find_property(name) )
+
+    method character_property( context:Object, property_info:PropertyInfo )->Character
+      local type = context.type_info
+      if (not property_info) return 0
+      return native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Character
+
+    method int32_property( context:Object, name:String )->Int32
+      return int32_property( context, find_property(name) )
+
+    method int32_property( context:Object, property_info:PropertyInfo )->Int32
+      local type = context.type_info
+      if (not property_info) return 0
+      return native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Int32
+
+    method int64_property( context:Object, name:String )->Int64
+      return int64_property( context, find_property(name) )
+
+    method int64_property( context:Object, property_info:PropertyInfo )->Int64
+      local type = context.type_info
+      if (not property_info) return 0
+      return native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Int64
+
+    method logical_property( context:Object, name:String )->Logical
+      return logical_property( context, find_property(name) )
+
+    method logical_property( context:Object, property_info:PropertyInfo )->Logical
+      local type = context.type_info
+      if (not property_info) return false
+      return native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Logical
+
+    method object_property( context:Object, name:String )->Object
+      return object_property( context, find_property(name) )
+
+    method object_property( context:Object, property_info:PropertyInfo )->Object
+      local type = context.type_info
+      if (not property_info) return null
+      return native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Object
+
+    method real32_property( context:Object, name:String )->Real32
+      return real32_property( context, find_property(name) )
+
+    method real32_property( context:Object, property_info:PropertyInfo )->Real32
+      local type = context.type_info
+      if (not property_info) return 0.0
+      return native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Real32
+
+    method real64_property( context:Object, name:String )->Real64
+      return real64_property( context, find_property(name) )
+
+    method real64_property( context:Object, property_info:PropertyInfo )->Real64
+      local type = context.type_info
+      if (not property_info) return 0.0
+      return native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Real64
+
     method set_global_property( property_name:String, value:Value )->this
       return set_global_property( find_global_property(property_name), value )
 
@@ -427,6 +491,78 @@ class TypeInfo
 
       endIf
 
+      return this
+
+    method set_byte_property( context:Object, name:String, new_value:Byte )->this
+      return set_byte_property( context, find_property(name), new_value )
+
+    method set_byte_property( context:Object, property_info:PropertyInfo, new_value:Byte )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueByte*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_character_property( context:Object, name:String, new_value:Character )->this
+      return set_character_property( context, find_property(name), new_value )
+
+    method set_character_property( context:Object, property_info:PropertyInfo, new_value:Character )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_int32_property( context:Object, name:String, new_value:Int32 )->this
+      return set_int32_property( context, find_property(name), new_value )
+
+    method set_int32_property( context:Object, property_info:PropertyInfo, new_value:Int32 )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_int64_property( context:Object, name:String, new_value:Int64 )->this
+      return set_int64_property( context, find_property(name), new_value )
+
+    method set_int64_property( context:Object, property_info:PropertyInfo, new_value:Int64 )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_logical_property( context:Object, name:String, new_value:Logical )->this
+      return set_logical_property( context, find_property(name), new_value )
+
+    method set_logical_property( context:Object, property_info:PropertyInfo, new_value:Logical )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_object_property( context:Object, name:String, new_value:Object )->this
+      return set_object_property( context, find_property(name), new_value )
+
+    method set_object_property( context:Object, property_info:PropertyInfo, new_value:Object )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_real32_property( context:Object, name:String, new_value:Real32 )->this
+      return set_real32_property( context, find_property(name), new_value )
+
+    method set_real32_property( context:Object, property_info:PropertyInfo, new_value:Real32 )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      return this
+
+    method set_real64_property( context:Object, name:String, new_value:Real64 )->this
+      return set_real64_property( context, find_property(name), new_value )
+
+    method set_real64_property( context:Object, property_info:PropertyInfo, new_value:Real64 )->this
+      local type = context.type_info
+      if (not property_info) return this
+      native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
       return this
 
     method set_singleton( new_singleton:Object )->this
