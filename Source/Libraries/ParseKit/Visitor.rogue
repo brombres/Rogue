@@ -45,15 +45,14 @@ class Visitor [api]
       forEach (statement at index in statements) statements[ index ] = visit( statement )
 
     method dispatch( cmd:Cmd )
-      forEach (obj_info in cmd.type_info.properties)
+      local type = cmd.type_info
+      forEach (obj_info in type.properties)
         if (obj_info.type.instance_of(type_Cmd))
-          local i = cmd.introspector
-          local obj = i.get( obj_info )->Object
+          local obj = type.object_property( cmd, obj_info )
           if (obj)
             if (obj instanceOf Cmd)
               local result = visit( obj as Cmd )
-              local value = Value(result)
-              i.set( obj_info, value )
+              if (result is not obj) type.set_object_property( cmd, obj_info, result )
             elseIf (obj instanceOf CmdStatements)
               visit( obj as CmdStatements )
             elseIf (obj instanceOf CmdArgs)
