@@ -151,7 +151,7 @@ class TypeInfo
       return create_object as $AsType
 
     method global_property( property_name:String )->Value
-      return find_global_property( property_name )
+      return global_property( find_global_property(property_name) )
 
     method global_property( property_info:PropertyInfo )->Value
       if (not property_info) return NullValue
@@ -189,6 +189,22 @@ class TypeInfo
           return Introspector( null, native("(RogueInt64)(intptr_t)(Rogue_types[$index].global_property_pointers[$i])")->Int64,
               property_info.type )->Value
       endWhich
+
+    method global_property<<$PropertyType>>( property_name:String )->$PropertyType
+      return global_property<<$PropertyType>>( find_global_property(property_name) )
+
+    method global_property<<$PropertyType>>( property_info:PropertyInfo )->$PropertyType
+      if (not property_info)
+        local default_value : $PropertyType
+        return default_value
+      endIf
+
+      local i = property_info.index
+      if ($PropertyType isReference)
+        return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object as $PropertyType
+      else
+        return native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i]))" )->$PropertyType
+      endIf
 
     method global_property_count->Int32
       # Convenience method to provide symmetric interface with per-object `property_count` methods.
@@ -377,69 +393,21 @@ class TypeInfo
       endForEach
       return r
 
-    method byte_property( context:Object, name:String )->Byte
-      return byte_property( context, find_property(name) )
+    method property<<$PropertyType>>( context:Object, property_name:String )->$PropertyType
+      return property<<$PropertyType>>( context, find_property(property_name) )
 
-    method byte_property( context:Object, property_info:PropertyInfo )->Byte
+    method property<<$PropertyType>>( context:Object, property_info:PropertyInfo )->$PropertyType
+      if (not property_info)
+        local default_value : $PropertyType
+        return default_value
+      endIf
+
       local type = context.type_info
-      if (not property_info) return 0
-      return native( "*((RogueByte*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Byte
-
-    method character_property( context:Object, name:String )->Character
-      return character_property( context, find_property(name) )
-
-    method character_property( context:Object, property_info:PropertyInfo )->Character
-      local type = context.type_info
-      if (not property_info) return 0
-      return native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Character
-
-    method int32_property( context:Object, name:String )->Int32
-      return int32_property( context, find_property(name) )
-
-    method int32_property( context:Object, property_info:PropertyInfo )->Int32
-      local type = context.type_info
-      if (not property_info) return 0
-      return native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Int32
-
-    method int64_property( context:Object, name:String )->Int64
-      return int64_property( context, find_property(name) )
-
-    method int64_property( context:Object, property_info:PropertyInfo )->Int64
-      local type = context.type_info
-      if (not property_info) return 0
-      return native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Int64
-
-    method logical_property( context:Object, name:String )->Logical
-      return logical_property( context, find_property(name) )
-
-    method logical_property( context:Object, property_info:PropertyInfo )->Logical
-      local type = context.type_info
-      if (not property_info) return false
-      return native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Logical
-
-    method object_property( context:Object, name:String )->Object
-      return object_property( context, find_property(name) )
-
-    method object_property( context:Object, property_info:PropertyInfo )->Object
-      local type = context.type_info
-      if (not property_info) return null
-      return native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Object
-
-    method real32_property( context:Object, name:String )->Real32
-      return real32_property( context, find_property(name) )
-
-    method real32_property( context:Object, property_info:PropertyInfo )->Real32
-      local type = context.type_info
-      if (not property_info) return 0.0
-      return native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Real32
-
-    method real64_property( context:Object, name:String )->Real64
-      return real64_property( context, find_property(name) )
-
-    method real64_property( context:Object, property_info:PropertyInfo )->Real64
-      local type = context.type_info
-      if (not property_info) return 0.0
-      return native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Real64
+      if ($PropertyType isReference)
+        return native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->$PropertyType
+      else
+        return native( "*(($($PropertyType)*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->$PropertyType
+      endIf
 
     method set_global_property( property_name:String, value:Value )->this
       return set_global_property( find_global_property(property_name), value )
@@ -493,76 +461,34 @@ class TypeInfo
 
       return this
 
-    method set_byte_property( context:Object, name:String, new_value:Byte )->this
-      return set_byte_property( context, find_property(name), new_value )
+    method set_global_property<<$PropertyType>>( property_name:String, new_value:$PropertyType )->this
+      return set_global_property<<$PropertyType>>( find_global_property(property_name), new_value )
 
-    method set_byte_property( context:Object, property_info:PropertyInfo, new_value:Byte )->this
-      local type = context.type_info
+    method set_global_property<<$PropertyType>>( property_info:PropertyInfo, new_value:$PropertyType )->this
       if (not property_info) return this
-      native( "*((RogueByte*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+
+      local i = property_info.index
+      if ($PropertyType isReference)
+        native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $new_value;" )
+      else
+        native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i])) = $new_value;" )
+      endIf
+
       return this
 
-    method set_character_property( context:Object, name:String, new_value:Character )->this
-      return set_character_property( context, find_property(name), new_value )
+    method set_property<<$PropertyType>>( context:Object, property_name:String, new_value:$PropertyType )->this
+      return set_property<<$PropertyType>>( context, find_property(property_name), new_value )
 
-    method set_character_property( context:Object, property_info:PropertyInfo, new_value:Character )->this
-      local type = context.type_info
+    method set_property<<$PropertyType>>( context:Object, property_info:PropertyInfo, new_value:$PropertyType )->this
       if (not property_info) return this
-      native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
-      return this
 
-    method set_int32_property( context:Object, name:String, new_value:Int32 )->this
-      return set_int32_property( context, find_property(name), new_value )
-
-    method set_int32_property( context:Object, property_info:PropertyInfo, new_value:Int32 )->this
       local type = context.type_info
-      if (not property_info) return this
-      native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
-      return this
+      if ($PropertyType isReference)
+        native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      else
+        native( "*(($($PropertyType)*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
+      endIf
 
-    method set_int64_property( context:Object, name:String, new_value:Int64 )->this
-      return set_int64_property( context, find_property(name), new_value )
-
-    method set_int64_property( context:Object, property_info:PropertyInfo, new_value:Int64 )->this
-      local type = context.type_info
-      if (not property_info) return this
-      native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
-      return this
-
-    method set_logical_property( context:Object, name:String, new_value:Logical )->this
-      return set_logical_property( context, find_property(name), new_value )
-
-    method set_logical_property( context:Object, property_info:PropertyInfo, new_value:Logical )->this
-      local type = context.type_info
-      if (not property_info) return this
-      native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
-      return this
-
-    method set_object_property( context:Object, name:String, new_value:Object )->this
-      return set_object_property( context, find_property(name), new_value )
-
-    method set_object_property( context:Object, property_info:PropertyInfo, new_value:Object )->this
-      local type = context.type_info
-      if (not property_info) return this
-      native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
-      return this
-
-    method set_real32_property( context:Object, name:String, new_value:Real32 )->this
-      return set_real32_property( context, find_property(name), new_value )
-
-    method set_real32_property( context:Object, property_info:PropertyInfo, new_value:Real32 )->this
-      local type = context.type_info
-      if (not property_info) return this
-      native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
-      return this
-
-    method set_real64_property( context:Object, name:String, new_value:Real64 )->this
-      return set_real64_property( context, find_property(name), new_value )
-
-    method set_real64_property( context:Object, property_info:PropertyInfo, new_value:Real64 )->this
-      local type = context.type_info
-      if (not property_info) return this
-      native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
       return this
 
     method set_singleton( new_singleton:Object )->this
@@ -673,7 +599,7 @@ class MethodInfo
       if (return_type) return signature + "->" + return_type.name
       return signature
 
-    method call( context:Object, args=null:Value )->Value
+    method call( context:Object, args:Value )->Value
       if (args is not null)
         args.insert( context->Value )
         local result = call( args )
@@ -685,6 +611,65 @@ class MethodInfo
 
     method call( args:Value )->Value
       return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+
+    method call (o:Object)
+      _check_noreturn()
+      _check_count(0)
+      native "((void (*)(RogueObject*))($this->fn_ptr))($o);"
+
+    method call<<$T1>> (o:Object,t1:$T1)
+      _check_noreturn()
+      _check_count(1)
+      native "((void (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2)
+      _check_noreturn()
+      _check_count(2)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3)
+      _check_noreturn()
+      _check_count(3)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4)
+      _check_noreturn()
+      _check_count(4)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
+      _check_noreturn()
+      _check_count(5)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+
+    method returns<<$RT>> () -> MethodCallerReturning<<$RT>>
+      _check_return<<$RT>>()
+      return MethodCallerReturning<<$RT>>(this)
+
+  METHODS  # helper methods
+    method _check_count (c : Int32)
+      if (c != parameter_count) throw Error("$ arguments passed to method taking $ arguments." (c, parameter_count))
+
+    method _check_return<<$RT>> ()
+      if (_return_type == -1)
+        throw Error("Method does not return a value; Do not specify one using '->' or 'returns<<...>>'.")
+      else
+        if ($RT isReference)
+          if (not return_type.is_subclass(<<$RT>>))
+            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
+          endIf
+        else
+          if (<<$RT>> is not return_type)
+            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
+          endIf
+        endIf
+      endIf
+
+    method _check_noreturn ()
+      if (_return_type != -1)
+        throw Error("Explicit return type required.  Use .call(...)->$." (return_type.name))
+      endIf
+
 
 
   GLOBAL METHODS
@@ -817,3 +802,48 @@ endClass
 class InstanceError : Error
 endClass
 
+class MethodCallerReturning <<$R>>
+  PROPERTIES
+    fn_ptr : IntPtr
+    parent : MethodInfo
+
+  METHODS
+    method init (parent)
+      fn_ptr = parent.fn_ptr
+
+    method call (o:Object) -> $R
+      parent._check_count(0)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*))($this->fn_ptr))($o);"
+      return r
+
+    method call<<$T1>> (o:Object,t1:$T1) -> $R
+      parent._check_count(1)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+      return r
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2) -> $R
+      parent._check_count(2)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+      return r
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3) -> $R
+      parent._check_count(3)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4) -> $R
+      parent._check_count(4)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5) -> $R
+      parent._check_count(5)
+      local r : $R
+      native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+      return r
+endClass

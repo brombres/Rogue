@@ -48,11 +48,11 @@ class Visitor [api]
       local type = cmd.type_info
       forEach (obj_info in type.properties)
         if (obj_info.type.instance_of(type_Cmd))
-          local obj = type.object_property( cmd, obj_info )
+          local obj = type.property<<Object>>( cmd, obj_info )
           if (obj)
             if (obj instanceOf Cmd)
               local result = visit( obj as Cmd )
-              if (result is not obj) type.set_object_property( cmd, obj_info, result )
+              if (result is not obj) type.set_property<<Object>>( cmd, obj_info, result )
             elseIf (obj instanceOf CmdStatements)
               visit( obj as CmdStatements )
             elseIf (obj instanceOf CmdArgs)
