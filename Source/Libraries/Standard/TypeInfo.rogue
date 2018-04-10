@@ -281,7 +281,7 @@ class TypeInfo
       endForEach
       return null
 
-    method find_method( name_or_sig:String, arg_count=0:Int32 )->MethodInfo
+    method find_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
       if (name_or_sig.contains('('))
         forEach (m in methods)
           if (m.signature == name_or_sig) return m
@@ -290,7 +290,9 @@ class TypeInfo
       endIf
 
       forEach (m in methods)
-        if (m.name == name_or_sig and m.parameter_count == arg_count) return m
+        if (m.name == name_or_sig and (not arg_count.exists or m.parameter_count == arg_count.value))
+          return m
+        endIf
       endForEach
 
       return null

@@ -1,7 +1,7 @@
 # To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
 
 #$ ROGUEC_ARGS = --api
-#$ LIBRARIES   = openssl( header:openssl/ssl.h )
+# #$ LIBRARIES   = openssl( header:openssl/ssl.h )
 
 # Optional comment directives - remove leading '#' (leaving '#$') to activate.
 # In most cases the same directive can be specified multiple times for a cumulative effect.
@@ -15,6 +15,7 @@
 
 routine rogo_default
   rogo_help
+  #println File.listing("Source/RogueC/*.rogue")
 endRoutine
 
 routine rogo_clean
@@ -60,6 +61,47 @@ routine rogo_version
 
 endRoutine
 
+routine rogo_execute( cmd:String )
+  print( "> " ).println( cmd )
+  local error_code = System.run( cmd )
+  if (error_code != 0)
+    throw Error( ''ERROR: "$" failed (error code $).'' (cmd,error_code) )
+  endIf
+endRoutine
+
+
+#------------------------------------------------------------------------------
+# Internal Framework
+#------------------------------------------------------------------------------
+global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+
+local args = @[]
+args.add( forEach in System.command_line_arguments )
+
+try
+  if (args.count)
+    run( args.remove_first, args )
+  else
+    rogo_default
+  endIf
+catch (err:Error)
+  Console.error.println err
+  System.exit 1
+endTry
+
+routine run( cmd:String, args:Value )
+  local m = <<Global>>.find_method( method_prefix + cmd )
+  if (m)
+    if (m.parameter_count == 1 and args.count > 1)
+      # Wrap all args in a ValueList.
+      args = @[ args ]
+    endIf
+    m.call( Global, args )
+  else
+    rogo_help
+  endIf
+endRoutine
+
 routine rogo_help
   println "USAGE"
   local lines = String[]
@@ -72,37 +114,5 @@ routine rogo_help
   endForEach
   lines.sort( (a,b)=>(a<b) )
   println (forEach in lines)
-endRoutine
-
-
-#------------------------------------------------------------------------------
-# Process command line arguments and invoke appropriate function
-#------------------------------------------------------------------------------
-global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
-
-local args = @[]
-args.add( forEach in System.command_line_arguments )
-
-if (args.count)
-  run( args.remove_first, args )
-else
-  rogo_default
-endIf
-
-routine run( cmd:String, args:Value )
-  try
-    local m = <<Global>>.find_method( method_prefix + cmd )
-    if (m)
-      if (m.parameter_count == 1 and args.count > 1)
-        # Wrap all args in a ValueList.
-        args = @[ args ]
-      endIf
-      m.call( Global, args )
-    else
-      rogo_help
-    endIf
-  catch (err:Error)
-    rogo_help
-  endTry
 endRoutine
 
