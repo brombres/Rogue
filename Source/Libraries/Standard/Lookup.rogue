@@ -1,0 +1,106 @@
+class Lookup<<$ValueType>> : Lookup<<$ValueType,Table<<$ValueType,Int32>>>>;
+class StringLookup         : Lookup<<String,StringTable<<Int32>>>>;
+
+class Lookup<<$ValueType,$TableType>>
+  # Add values like it's a List.
+  # Get values like it's a List or a Table, with equivalent speed.
+  # Each value has an integer 'id' that stays fixed as long as the value is in the table.
+  # id(value) gets the id; value(id) retrieves the value for an id.
+  PROPERTIES
+    values     : $ValueType[]
+    indices    : Int32[]
+    ids        = $TableType()
+    unused     = Int32[]
+
+  METHODS
+    method init
+      init( 10 )
+
+    method init( initial_capacity:Int32 )
+      ensure values( initial_capacity )
+      ensure indices( initial_capacity )
+      clear
+
+    method clear->this
+      values.clear
+      indices.clear.add( 0 )  # Dummy value to avoid using ID 0
+      ids.clear
+      unused.clear
+      return this
+
+    method add( value:$ValueType )->this
+      if (ids.contains(value)) return this
+
+      if (unused.count)
+        local id = unused.remove_first
+        ids[ value ] = id
+        indices[ id ] = values.count
+      else
+        local id = indices.count
+        ids[ value ] = id
+        indices.add( values.count )
+      endIf
+
+      values.add( value )
+      return this
+
+    method contains( value:$ValueType )->Logical
+      return ids.contains( value )
+
+    method count->Int32
+      return values.count
+
+    method id( value:$ValueType )->Int32
+      local entry = ids.find( value )
+      if (entry) return entry.value
+      local id = ?:{ unused.count:unused.last || indices.count }
+      add( value )
+      return id
+
+    method get( index:Int32 )->$ValueType
+      return values[ index ]
+
+    method locate( value:$ValueType )->Int32?
+      local entry = ids.find( value )
+      if (entry) return indices[ entry.value ]
+      else       return null
+
+    method remove( value:$ValueType )->$ValueType
+      local entry = ids.find( value )
+      if (entry is null) return value
+
+      local id = entry.value
+      local remove_index = indices[ entry.value ]
+
+      ids.remove( entry )
+      values.remove_at( remove_index )
+      unused.add( id )
+      indices[ id ] = 0
+
+      forEach (remaining_index at i in indices)
+        if (remaining_index > remove_index)
+          indices[ i ] = remaining_index - 1
+        endIf
+      endForEach
+
+      return value
+
+    method remove_at( index:Int32 )->$ValueType
+      return remove( values[index] )
+
+    method remove_first->$ValueType
+      return remove( values[0] )
+
+    method remove_id( id:Int32 )->$ValueType
+      return remove( values[indices[id]] )
+
+    method remove_last->$ValueType
+      return remove( values.last )
+
+    method to->String
+      return values->String
+
+    method value( id:Int32 )->$ValueType
+      return values[ indices[id] ]
+endClass
+
