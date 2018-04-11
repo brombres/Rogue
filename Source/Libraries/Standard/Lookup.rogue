@@ -2,10 +2,15 @@ class Lookup<<$ValueType>> : Lookup<<$ValueType,Table<<$ValueType,Int32>>>>;
 class StringLookup         : Lookup<<String,StringTable<<Int32>>>>;
 
 class Lookup<<$ValueType,$TableType>>
-  # Add values like it's a List.
-  # Get values like it's a List or a Table, with equivalent speed.
-  # Each value has an integer 'id' that stays fixed as long as the value is in the table.
-  # id(value) gets the id; value(id) retrieves the value for an id.
+  # - StringLookup() works for most applications.
+  # - Lookup<<$ValueType>>() for other applications.
+  # - Similar to an indexed Set.
+  # - add() and get() items with the speed of a list.
+  # - contains() and locate() with the speed of a table.
+  # - id(value)->Int32 gives an integer ID that is fixed as long as the value is in the lookup.
+  # - value(id)->ValueType returns the value associated with an integer ID.
+  # - remove(value), remove_index(index), remove_id(id), remove_first(), remove_last().
+
   PROPERTIES
     values     : $ValueType[]
     indices    : Int32[]
@@ -96,6 +101,15 @@ class Lookup<<$ValueType,$TableType>>
 
     method remove_last->$ValueType
       return remove( values.last )
+
+    method set( index:Int32, new_value:$ValueType )->this
+      local old_value = values[ index ]
+      if (old_value is new_value) return this
+
+      local id = ids.remove( old_value )
+      ids[ new_value ] = id
+      values[ index ] = new_value
+      return this
 
     method to->String
       return values->String
