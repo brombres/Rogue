@@ -176,30 +176,55 @@ class File
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter [macro]
       CharacterToUTF8ByteWriter( File.writer(filepath) )
 
-    method copy( from_filepath:String, to_filepath:String )
-      if (File.is_folder(to_filepath))
-        to_filepath += "/" + File.filename(from_filepath)
+    method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
+      # Copy always is the default or else only if newer and/or size different.
+      if (if_newer)
+        # The if_newer flag is a little convoluted to retain backwards compatibility
+        return copy_newer( from_filepath, to_filepath, &=if_size_different, &=dry_run )
       else
-        File.create_folder( File.folder(to_filepath) )
+        local modified = false
+
+        if (File.is_folder(to_filepath))
+          to_filepath += "/" + File.filename(from_filepath)
+        else
+          if (not is_folder(to_filepath))
+            if (not dry_run) File.create_folder( File.folder(to_filepath) )
+            modified = true
+          endIf
+        endIf
+
+        if (File.is_folder(from_filepath))
+          if (not exists(to_filepath))
+            if (not dry_run) File.create_folder( to_filepath )
+            modified = true
+          endIf
+        else
+          if (not if_size_different or size(from_filepath) != size(to_filepath))
+            modified = true
+            if (not dry_run)
+              local reader = File.reader( from_filepath )
+              local writer = File.writer( to_filepath )
+
+              while (reader.has_another) writer.write( reader.read )
+
+              writer.close
+            endIf
+          endIf
+        endIf
+
+        return modified
       endIf
 
-      if (File.is_folder(from_filepath))
-        File.create_folder( to_filepath )
-      else
-        local reader = File.reader( from_filepath )
-        local writer = File.writer( to_filepath )
-
-        while (reader.has_another) writer.write( reader.read )
-
-        writer.close
-      endIf
-
-    method copy_newer( from_filepath:String, to_filepath:String )
+    method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
       if (File.is_folder(to_filepath))
-        copy_newer( from_filepath, to_filepath + "/" + File.filename(from_filepath) )
+        if (filename(from_filepath) != filename(to_filepath))
+          return copy_newer( from_filepath, to_filepath + "/" + File.filename(from_filepath),
+            &=if_size_different, &=dry_run )
+        endIf
       elseIf (File.is_newer_than(from_filepath,to_filepath))
-        copy( from_filepath, to_filepath )
+        return copy( from_filepath, to_filepath, &=if_size_different, &=dry_run )
       endIf
+      return false
 
     method create_folder( filepath:String )->Logical
       # Creates the specified folder along with intermediate folders
@@ -224,6 +249,10 @@ class File
 
     method delete( filepath:String )->Logical
       if (not filepath) return false
+      if (is_folder(filepath))
+        delete( forEach in listing(filepath) )  # Recursively delete nested content
+        return (0 == native( "rmdir( (const char*) $filepath->utf8 )")->Int32)
+      endIf
       return (0 == native( "unlink( (const char*) $filepath->utf8 )")->Int32)
 
     method ends_with_separator( filepath:String )->Logical
@@ -335,7 +364,7 @@ class File
           local pattern = parts.remove_first
           local results = String[]
           forEach (name in File.listing(non_wild_path,options.limited.omit_path))
-            if (name.begins_with('.')) nextIteration
+            if (name.begins_with('.') and options.ignoring_hidden) nextIteration
             if (File.matches_wildcard_pattern(name,pattern))
               if (non_wild_path == ".")
                 if (File.is_folder(name))
@@ -601,6 +630,72 @@ class File
               |
               |return size;
 
+    method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+      return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run )
+
+    method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+      if (not exists(dest_folder))    create_folder( dest_folder )
+      if (not is_folder(dest_folder))
+        Console.error.println( "ERROR: File.sync_from() can not create destination folder $" (dest_folder) )
+        return 0
+      endIf
+
+      dest_folder = ensure_ends_with_separator( dest_folder )
+      local dest_path = dest_folder
+      if (dest_path.begins_with("./") or dest_path.begins_with(".\\")) dest_path = dest_path.from( 2 )
+
+      if (dest_path == source_files.base_folder)
+        Console.error.println( "ERROR: File.sync_from() has the same source and destination folders ($)."...
+          (dest_folder.leftmost(-1)) )
+        return 0
+      endIf
+
+      local width = 0
+      width = width.or_larger( (forEach in source_files).count )
+      width -= source_files.base_folder.count
+
+      local dest_files = Files( dest_folder )
+      if (not keep_unused) dest_files.add( "**" )
+
+      local printed_header = false
+      local modified = 0
+      forEach (src_filepath in source_files)
+        local relative_filepath = source_files.relative_filepath( src_filepath )
+        local dest_filepath = dest_path + relative_filepath
+        dest_files.remove( dest_filepath )
+
+        if (copy_newer(src_filepath,dest_filepath,&if_size_different,&=dry_run))
+          ++modified
+          if (verbose)
+            if (not printed_header)
+              printed_header = true
+              local src = source_files.base_folder
+              if (src.count) src = src.leftmost( -1 )
+              local dest = dest_folder.leftmost( -1 )
+              Console.println( "Copying $ -> $" (src,dest) )
+            endIf
+            Console.print( "  " ).println( relative_filepath )
+          endIf
+        endIf
+      endForEach
+
+      if (not keep_unused)
+        printed_header = false
+        forEach (filepath in dest_files)
+          if (verbose)
+            if (not printed_header)
+              printed_header = true
+              Console.println( "Deleting unused files" )
+            endIf
+            Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
+          endIf
+          if (not dry_run) delete( filepath )
+          ++modified
+        endForEach
+      endIf
+
+      return modified
+
     method timestamp( filepath:String )->Real64
       # Returns the last modified time since Jan 1, 1970
       native @|#if defined(_WIN32)
@@ -671,11 +766,11 @@ class File
     method character_writer->CharacterToUTF8ByteWriter [macro]
       CharacterToUTF8ByteWriter( this.writer )
 
-    method copy( to_filepath:String ) [macro]
-      File.copy( this.filepath, to_filepath )
+    method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical [macro]
+      File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
 
-    method copy_newer( to_filepath:String ) [macro]
-      File.copy_newer( this.filepath, to_filepath )
+    method copy_newer( to_filepath:String, &if_size_different, &dry_run )->Logical [macro]
+      File.copy_newer( this.filepath, to_filepath, if_size_different, dry_run )
 
     method create_folder->Logical [macro]
       File.create_folder( this.filepath )
@@ -743,6 +838,12 @@ class File
 
     method size->Int64 [macro]
       File.size( this.filepath )
+
+    method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run )->Int32 [macro]
+      File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run )
+
+    method sync_from( source_files:Files, &verbose, &keep_unused, &dry_run )->Int32 [macro]
+      File.sync_from( source_files, this.filepath, verbose, keep_unused, dry_run )
 
     method timestamp->Real64 [macro]
       File.timestamp( this.filepath )

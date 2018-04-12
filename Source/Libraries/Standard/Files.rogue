@@ -2,43 +2,25 @@ class Files
   # Manages a set of filepath strings.
   PROPERTIES
     base_folder : String
-    filepaths   = String[]
-    lookup      = Set<<String>>()
+    filepaths   = StringLookup()
 
   METHODS
-    method init( pattern:String, &ignore_hidden )
-      if (File.is_folder(pattern))
-        base_folder = File.ensure_ends_with_separator( pattern )
-        add( "**" )
-      else
-        base_folder = File.before_wildcard_pattern( pattern )
-        if (base_folder.contains('/'))  base_folder = base_folder.before_last( '/' )
-        if (base_folder.contains('\\')) base_folder = base_folder.before_last( '\\' )
-        base_folder += File.separator
-
-        if (base_folder.count < pattern.count)
-          pattern = pattern.from( base_folder.count )
-
-          if (File.is_folder(base_folder))
-            add( pattern, &ignore_hidden=ignore_hidden )
-          else
-            local filename = File.filename( base_folder )
-            base_folder = File.folder( base_folder )
-            if (base_folder == "") base_folder = "."
-            base_folder += File.separator
-            add( filename )
-          endIf
-        endIf
+    method init( base_folder:String )
+      if (base_folder == "") base_folder = "./"
+      this.base_folder = File.ensure_ends_with_separator( base_folder )
+      if (this.base_folder.begins_with("./") or this.base_folder.begins_with(".\\"))
+        this.base_folder = this.base_folder.rightmost( -2 )
       endIf
 
-    method init( base_folder, pattern:String, &ignore_hidden )
-      add( pattern, &ignore_hidden=ignore_hidden )
+    method init( base_folder:String, pattern:String, &ignore_hidden=true )
+      init( base_folder )
+      add( pattern, &=ignore_hidden )
 
     method add( pattern:String, &ignore_hidden )->this
-      forEach (listing_filepath in File.listing(base_folder+pattern,&recursive,&ignore_hidden=ignore_hidden))
-        if (not lookup.contains(listing_filepath))
+      forEach (listing_filepath in File.listing(base_folder+pattern,&=ignore_hidden))
+        if (not filepaths.contains(listing_filepath))
           filepaths.add( listing_filepath )
-          lookup.add( listing_filepath )
+          filepaths.add( listing_filepath )
         endIf
       endForEach
 
@@ -51,14 +33,13 @@ class Files
       return (timestamp.value > File.timestamp(filepath))
 
     method contains( filepath:String )->Logical
-      return lookup.contains( filepath )
+      return filepaths.contains( filepath )
 
     method copy( to_folder:String )
       File.create_folder( to_folder )
       to_folder += "/"
-      local base_count = base_folder.count
       forEach (filepath in filepaths)
-        local to_filepath = to_folder + filepath.rightmost(-base_count)
+        local to_filepath = to_folder + relative_filepath(filepath)
         File.copy( filepath, to_filepath )
       endForEach
 
@@ -67,7 +48,7 @@ class Files
       to_folder += "/"
       local base_count = base_folder.count
       forEach (filepath in filepaths)
-        local to_filepath = to_folder + filepath.rightmost(-base_count)
+        local to_filepath = to_folder + relative_filepath(filepath)
         File.copy_newer( filepath, to_filepath )
       endForEach
 
@@ -97,17 +78,25 @@ class Files
       endForEach
       return result
 
+    method relative_filepath( filepath:String )->String
+      return filepath.rightmost( -base_folder.count )
+
     method remove( pattern:String )->this
-      local write_pos = 0
-      forEach (filepath in filepaths)
-        if (File.matches_wildcard_pattern(filepath,pattern))
-          lookup.remove( filepath )
-        else
-          filepaths[ write_pos ] = filepath
-          ++write_pos
-        endIf
+      if (pattern.contains('*') or pattern.contains('?'))
+        forEach (filepath at index in filepaths step -1)
+          if (File.matches_wildcard_pattern(filepath,pattern))
+            filepaths.remove_at( index )
+          endIf
+        endForEach
+      else
+        filepaths.remove( pattern )
+      endIf
+      return this
+
+    method remove( files:Files )->this
+      forEach (filepath in files)
+        filepaths.remove( filepath )
       endForEach
-      filepaths.discard_from( write_pos )
       return this
 
     method to->String
