@@ -62,6 +62,13 @@ class Lookup<<$ValueType,$TableType>>
       add( value )
       return id
 
+    method index( value:$ValueType )->Int32
+      local entry = ids.find( value )
+      if (entry) return indices[ entry.value ]
+      local result = values.count
+      add( value )
+      return result
+
     method get( index:Int32 )->$ValueType
       return values[ index ]
 
