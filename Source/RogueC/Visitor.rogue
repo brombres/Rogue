@@ -389,25 +389,25 @@ class Visitor
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdAdjust )->Cmd
+    method visit( cmd:CmdStep )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdAdjustLocal )->Cmd
+    method visit( cmd:CmdStepLocal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdAdjustProperty )->Cmd
+    method visit( cmd:CmdStepProperty )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdAdjustGlobal )->Cmd
+    method visit( cmd:CmdStepGlobal )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -613,10 +613,10 @@ class Visitor
     method on_enter( statements:CmdStatementList )
     method on_enter( args:CmdArgs )
     method on_enter( cmd:CmdAccess )
-    method on_enter( cmd:CmdAdjustGlobal )
-    method on_enter( cmd:CmdAdjust )
-    method on_enter( cmd:CmdAdjustLocal )
-    method on_enter( cmd:CmdAdjustProperty )
+    method on_enter( cmd:CmdStepGlobal )
+    method on_enter( cmd:CmdStep )
+    method on_enter( cmd:CmdStepLocal )
+    method on_enter( cmd:CmdStepProperty )
     method on_enter( cmd:CmdAssert )
     method on_enter( cmd:CmdAssign )
     method on_enter( cmd:CmdBinary )
@@ -719,10 +719,10 @@ class Visitor
     method on_leave( args:CmdArgs )
 
     method on_leave( cmd:CmdAccess )
-    method on_leave( cmd:CmdAdjustGlobal )
-    method on_leave( cmd:CmdAdjust )
-    method on_leave( cmd:CmdAdjustLocal )
-    method on_leave( cmd:CmdAdjustProperty )
+    method on_leave( cmd:CmdStepGlobal )
+    method on_leave( cmd:CmdStep )
+    method on_leave( cmd:CmdStepLocal )
+    method on_leave( cmd:CmdStepProperty )
     method on_leave( cmd:CmdAssert )
     method on_leave( cmd:CmdAssign )
     method on_leave( cmd:CmdBinary )
@@ -857,7 +857,9 @@ class Visitor
       cmd.target = cmd.target.dispatch( this )
 
     method dispatch( cmd:CmdLocalDeclaration )
-      cmd.local_info.type.dispatch( this )
+      if (cmd.local_info.type)
+        cmd.local_info.type.dispatch( this )
+      endIf
       if (cmd.local_info.initial_value)
         cmd.local_info.initial_value = cmd.local_info.initial_value.dispatch( this )
       endIf
@@ -1114,18 +1116,18 @@ class Visitor
       cmd.left = cmd.left.dispatch( this )
       cmd.right = cmd.right.dispatch( this )
 
-    method dispatch( cmd:CmdAdjust )
+    method dispatch( cmd:CmdStep )
       cmd.operand.dispatch( this )
 
-    method dispatch( cmd:CmdAdjustLocal )
+    method dispatch( cmd:CmdStepLocal )
       cmd.local_info.type.dispatch( this )
 
-    method dispatch( cmd:CmdAdjustProperty )
+    method dispatch( cmd:CmdStepProperty )
       cmd.context = cmd.context.dispatch( this )
       cmd.property_info.type_context.dispatch( this )
       cmd.property_info.type.dispatch( this )
 
-    method dispatch( cmd:CmdAdjustGlobal )
+    method dispatch( cmd:CmdStepGlobal )
       cmd.global_info.type_context.dispatch( this )
       cmd.global_info.type.dispatch( this )
 

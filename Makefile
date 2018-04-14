@@ -47,7 +47,7 @@ exhaustive: roguec
 	mkdir -p Programs
 	$(CXX) -pthread $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="$(DEFAULT_CXX)" Source/RogueC/Build/RogueC.cpp -o Programs/RogueC/$(PLATFORM)/roguec
 
-roguec: bootstrap_rogo $(BINDIR)/rogo bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Version.rogue Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
+roguec: bootstrap_rogo bootstrap_roguec $(BINDIR)/roguec libraries Source/RogueC/Version.rogue Source/RogueC/Build/RogueC.cpp Programs/RogueC/$(PLATFORM)/roguec
 
 update_bootstrap: rogo
 	mkdir -p Source/RogueC/Bootstrap
@@ -127,8 +127,20 @@ bootstrap_rogo:
 	  echo touch Source/Tools/Rogo/Rogo.rogue; \
 	  touch Source/Tools/Rogo/Rogo.rogue; \
 	fi;
+	@if [ ! -f "$(BINDIR)/rogo" ]; \
+	then \
+	  echo -------------------------------------------------------------------------------; \
+	  echo Creating $(BINDIR)/rogo linked to Programs/RogueC/$(PLATFORM)/rogo; \
+	  echo -------------------------------------------------------------------------------; \
+	  printf "%s\nexec \"%s/Programs/RogueC/$(PLATFORM)/rogo\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > rogo.script; \
+	  echo Copying rogo.script to $(BINDIR)/rogo; \
+	  $(SUDO_CMD) cp rogo.script $(BINDIR)/rogo; \
+	  $(SUDO_CMD) chmod a+x $(BINDIR)/rogo; \
+	  echo rm rogo.script; \
+	  rm rogo.script; \
+        fi;
 
-rogo: Source/RogueC/Build/Rogo.cpp Programs/RogueC/$(PLATFORM)/rogo $(BINDIR)/rogo
+rogo: bootstrap_rogo Source/RogueC/Build/Rogo.cpp Programs/RogueC/$(PLATFORM)/rogo
 
 
 Programs/RogueC/$(PLATFORM)/rogo: Source/RogueC/Build/Rogo.cpp
@@ -145,7 +157,7 @@ Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo/Rogo.rogue
 	mkdir -p Source/RogueC/Build
 	roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
 
-libraries:
+libraries: bootstrap_rogo
 	@mkdir -p Programs/RogueC/$(PLATFORM)
 	@if [ -z "$(IGNORE_LIBS)" -a $$(rsync -rtvk --exclude=".*" --exclude=".*/" --delete --exclude=.*.sw? --dry-run Source/Libraries Programs/RogueC/$(PLATFORM) | wc -l) -gt 4 ]; \
 	then \
@@ -174,16 +186,6 @@ $(BINDIR)/roguec:
 	@echo '    roguec Hello.rogue --execute'
 	@echo
 
-$(BINDIR)/rogo:
-	@echo -------------------------------------------------------------------------------
-	@echo Creating $(BINDIR)/rogo linked to Programs/RogueC/$(PLATFORM)/rogo
-	@echo -------------------------------------------------------------------------------
-	printf "%s\nexec \"%s/Programs/RogueC/$(PLATFORM)/rogo\" \"%c@\"\n" '#!/bin/sh' `pwd` '$$' > rogo.script
-	@echo Copying rogo.script to $(BINDIR)/rogo
-	$(SUDO_CMD) cp rogo.script $(BINDIR)/rogo; \
-	$(SUDO_CMD) chmod a+x $(BINDIR)/rogo; \
-	rm rogo.script
-
 test:
 	rogo test
 
@@ -205,13 +207,8 @@ revert_cpp_source:
 	git checkout Source/RogueC/Bootstrap && rm -f Programs/RogueC/$(PLATFORM)/roguec
 
 .PHONY: clean
-clean:
-	rm -rf Programs/RogueC/$(PLATFORM)
-	rm -rf Source/RogueC/Build
-	rm -f Hello.cpp
-	rm -f Hello.h
-	rm -f ./a.out
-	rm -f ./hello
+clean: bootstrap_rogo
+	@rogo clean
 
 unlink:
 	@if [ -f "$$(which roguec)" ]; \

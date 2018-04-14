@@ -52,7 +52,7 @@ endEnum
 
 class RogueC [singleton]
   PROPERTIES
-    included_files              = String[]
+    included_files     = String[]
     prefix_path_list   = String[]
     prefix_path_lookup = Table<<String,Logical>>()
     compile_targets    = Table<<String,Logical>>()
@@ -125,6 +125,29 @@ $endIf
 
   METHODS
     method init
+      plugins.add(
+        Plugin( "Metacode" ) subclass
+          METHODS
+            # method collect_supported_targets
+            #   UNDEFINED - this happens too early before any metacode has had a chance to hook in
+            method generate_additional_types->Logical
+              local result = Program.invoke_metacode( "RogueC.generate_additional_types", Program )
+              if (result.is_list)
+                if ((forEach in result)->Logical) return true
+                return false
+              else
+                return result->Logical
+              endIf
+            method start_code_file( code_object:Object )
+              Program.invoke_metacode( "RogueC.start_code_file", code_object )
+            method finish_code_file( code_object:Object )
+              Program.invoke_metacode( "RogueC.finish_code_file", code_object )
+            method start_header_file( code_object:Object )
+              Program.invoke_metacode( "RogueC.start_header_file", code_object )
+            method finish_header_file( code_object:Object )
+              Program.invoke_metacode( "RogueC.finish_header_file", code_object )
+        endSubclass
+      )
 
     method launch
       local libs = File.ensure_ends_with_separator(File.join(File.path(System.executable_filepath), "Libraries"))
@@ -353,6 +376,10 @@ $endIf
         else           println err
         System.exit(1)
       endTry
+
+    method parse( filepath:String, source:String )
+      parsers.add( Parser(filepath,source) )
+      parse_pending_files
 
     method parse_pending_files
       # One parser is created for every file and all parsers are prepped with tokens
@@ -734,7 +761,7 @@ $endIf
                                    |endClass
                       println "Yes - compiling type Alpha:"
                       println src
-                      Parser( "(compiler-generated)", src ).parse_elements
+                      RogueC.parse( "(compiler-generated)", src )
                       return true
                     else
                       println "No"

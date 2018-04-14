@@ -23,7 +23,7 @@ class Array<<$DataType>> : Array [native]
       return result
 
     method get( index:Int32 )->$DataType
-      return this[ index ]
+      return this[ index ]  # intercepted by compiler
 
     method set( index:Int32, new_value:$DataType )
       this[ index ] = new_value

@@ -27,6 +27,8 @@ class Value
 
     method create( value:Object )->Value
       if (value is null) return NullValue
+      if (value instanceOf Value) return value as Value
+      if (value instanceOf String) return StringValue( value as String )
       return ObjectValue( value )
 
     method create( value:String )->Value
@@ -469,8 +471,6 @@ class Value
       return this->Int32->Byte
 
     method to->Character
-      local st = this->String
-      if (st.count) return st[0]
       return Character(0)
 
     method to->Int64
@@ -667,6 +667,9 @@ class Real64Value( value:Real64 ) : Value
     method operator*( other:String )->Value
       if (not other) return Value(0)
       return StringValue( Int32(value) * other )
+
+    method to->Character
+      return this->Int32->Character
 
     method to->Int64
       return value

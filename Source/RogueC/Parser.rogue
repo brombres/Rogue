@@ -1630,12 +1630,12 @@ class Parser
       endIf
 
       if (consume(TokenType.symbol_plus_plus))
-        cur_statement_list.add( CmdAdjust(t, parse_expression,1) )
+        cur_statement_list.add( CmdStep(t, parse_expression,1) )
         return
       endIf
 
       if (consume(TokenType.symbol_minus_minus))
-        cur_statement_list.add( CmdAdjust(t, parse_expression,-1) )
+        cur_statement_list.add( CmdStep(t, parse_expression,-1) )
         return
       endIf
 
@@ -1691,12 +1691,12 @@ class Parser
       }#
 
       if (consume(TokenType.symbol_plus_plus))
-        cur_statement_list.add( CmdAdjust(t, expression,1) )
+        cur_statement_list.add( CmdStep(t, expression,1) )
         return
       endIf
 
       if (consume(TokenType.symbol_minus_minus))
-        cur_statement_list.add( CmdAdjust(t, expression,-1) )
+        cur_statement_list.add( CmdStep(t, expression,-1) )
         return
       endIf
 
@@ -2057,7 +2057,7 @@ class Parser
       # type_Object here is a placeholder to prevent an error message
       local result_var = Local( t, Program.create_unique_id, Program.type_Object )
       cur_statement_list.add( CmdLocalDeclaration(t,result_var) )
-      cur_statement_list.add( CmdTryExpression( t, try_expression, else_expression, result_var ) )
+      cur_statement_list.add( CmdTryExpression(t, try_expression, else_expression, result_var) )
       return CmdReadLocal( t, result_var )
 
     method parse_local_or_global( &is_local )
@@ -2369,7 +2369,7 @@ class Parser
         local last_var = Local( t, Program.create_unique_id )
         last_var.initial_value = parse_expression
 
-        local step_cmd = CmdAdjustLocal( t, control_var, 1 )
+        local step_cmd = CmdStepLocal( t, control_var, 1 )
 
         cmd_loop.condition = CmdCompareLE(t,CmdReadLocal(t,control_var),CmdReadLocal(t,last_var))
 
@@ -2587,9 +2587,9 @@ class Parser
         step_cmd = CmdModifyAndAssignLocal( range.t, control_var, TokenType.symbol_plus_equals, range.step_size )
       else
         if (range instanceOf CmdRangeUpTo or range instanceOf CmdRangeUpToLessThan)
-          step_cmd = CmdAdjustLocal( range.t, control_var, 1 )
+          step_cmd = CmdStepLocal( range.t, control_var, 1 )
         else
-          step_cmd = CmdAdjustLocal( range.t, control_var, -1 )
+          step_cmd = CmdStepLocal( range.t, control_var, -1 )
         endIf
       endIf
 

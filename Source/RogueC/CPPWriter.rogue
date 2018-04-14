@@ -3539,7 +3539,7 @@ augment CmdBitwiseNot
       return "~"
 endAugment
 
-augment CmdAdjustLocal
+augment CmdStepLocal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )
@@ -3548,7 +3548,7 @@ augment CmdAdjustLocal
 endAugment
 
 
-augment CmdAdjustProperty
+augment CmdStepProperty
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )
@@ -3559,7 +3559,7 @@ augment CmdAdjustProperty
 endAugment
 
 
-augment CmdAdjustGlobal
+augment CmdStepGlobal
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (delta > 0) writer.print( "++" )

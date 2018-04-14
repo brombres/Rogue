@@ -54,7 +54,8 @@ class Program [essential singleton]
     type_Value         : Type
     type_TypeInfo      : Type
     type_MethodInfo    : Type
-    m_MethodInfo_call       : Method
+    m_MethodInfo_call  : Method
+    type_Metacode      : Type
 
 
     type_StringBuilder : Type
@@ -71,6 +72,9 @@ class Program [essential singleton]
     module_global_maps = StringTable<< StringTable<<String>> >>()
 
     types_resolved : Logical
+
+    vm = VM()
+    metacode_hooks = StringTable<<CmdStatementList[]>>()
 
   METHODS
     method add_literal_string( value:String )->Int32
@@ -194,6 +198,26 @@ class Program [essential singleton]
 
       endContingent
 
+    method invoke_metacode( hook:String, context:Object )->Value
+      # Passing a callback method name instead of a function to avoid frequent function object
+      # instantiation overhead when metacode infrequently injects source.
+      local list = metacode_hooks[ hook ]
+      local result = UndefinedValue : Value
+      if (list)
+        forEach (cmd in list)
+          local cur_result = vm.execute( context, cmd )
+          if (result.is_undefined) result = cur_result
+          else result = @[ result, cur_result ]
+
+          if (vm.inject.count)
+            local new_filepath = "$ - Meta:$" (vm.t.filepath,vm.t.line)
+            local source = vm.inject->String
+            vm.inject.clear
+            RogueC.parse( new_filepath, source )
+          endIf
+        endForEach
+      endIf
+      return result
 
     method configure
       type_null          = create_built_in_type( "null",      Attribute.is_class )
@@ -217,6 +241,7 @@ class Program [essential singleton]
       type_Value         = create_built_in_type( "Value", Attribute.is_class )
       type_TypeInfo      = create_built_in_type( "TypeInfo", Attribute.is_class )
       type_MethodInfo    = create_built_in_type( "MethodInfo", Attribute.is_class )
+      type_Metacode      = create_built_in_type( "Metacode", Attribute.is_class )
 
       # `simplify_name` means e.g. `RogueObject` instead of `RogueClassObject`.
       type_Exception.simplify_name = true
@@ -230,6 +255,9 @@ class Program [essential singleton]
       type_null.is_defined   = true
 
       type_NativeLock.is_defined = true
+
+      type_Metacode.organized  = true
+      type_Metacode.is_defined = true
 
       # Ensure that "" is the first literal string
       literal_string_list.add( "" )
@@ -418,6 +446,8 @@ class Program [essential singleton]
         endIf
       endForEach
 
+      invoke_metacode( "Program.resolve", this )
+
       type_Global.add_method( get_on_launch_method(type_Global.t) )
       m_on_launch.statements.add( m_on_launch.begin_label(m_on_launch.t,"append",false) )
       type_Global.add_method( get_run_tests_method(type_Global.t) )
@@ -504,6 +534,8 @@ class Program [essential singleton]
           if (plugin.generate_additional_types) types_resolved = false
         endForEach
 
+        invoke_metacode( "Program.resolved_types", this )
+
         if (types_resolved)
           if (not cull_unused_code) types_resolved = false
         endIf
@@ -512,6 +544,8 @@ class Program [essential singleton]
       reorder_compounds
 
       validate
+
+      invoke_metacode( "Program.resolved", this )
 
     method resolve_types->Logical
       local types_resolved = true

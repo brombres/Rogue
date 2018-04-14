@@ -1,3 +1,5 @@
+$include "VM.rogue"
+
 class Tokenizer
   PROPERTIES
     filepath    : String
@@ -13,8 +15,11 @@ class Tokenizer
     method tokenize( filepath )->Token[]
       return tokenize( Scanner(File(filepath),2) )
 
-    method tokenize( filepath, content:String )->Token[]
-      return tokenize( Scanner(content,2) )
+    method tokenize( filepath, content:String, line=null:Int32?, column=null:Int32? )->Token[]
+      local scanner = Scanner( content, 2 )
+      if (line.exists)   scanner.line = line.value
+      if (column.exists) scanner.column = column.value
+      return tokenize( scanner )
 
     method tokenize( reference_t:Token, filepath, data:String, column_delta=0:Int32 )->Token[]
       local characters = Character[]( data.count )
@@ -92,6 +97,7 @@ class Tokenizer
       TokenType.meta_localMacro      = define( DirectiveTokenType("$localMacro") )
       TokenType.meta_macro           = define( DirectiveTokenType("$macro") )
       TokenType.meta_endMacro        = define( DirectiveTokenType("$endMacro") )
+      TokenType.meta_endMetacode     = define( DirectiveTokenType("$endMetacode") )
       TokenType.meta_methodSignature = define( DirectiveTokenType("$methodSignature") )
       TokenType.meta_module          = define( StructuralDirectiveTokenType("module") )
       TokenType.meta_moduleName      = define( DirectiveTokenType("$moduleName") )
@@ -333,6 +339,10 @@ class Tokenizer
 
       elseIf (ch == '$' )
         ch = reader.peek
+        if (consume('{'))
+          handle_metacode( &uses_shorthand )
+          return null
+        endIf
         if (not (ch.is_letter or ch == '_')) return TokenType.symbol_dollar
 
         local id = read_identifier
@@ -366,7 +376,9 @@ class Tokenizer
           case "else":                add_new_token( TokenType.meta_else )
           case "endIf":               add_new_token( TokenType.meta_endIf )
           case "macro":               add_new_token( TokenType.meta_macro )
+          case "metacode":            handle_metacode; return null
           case "endMacro":            add_new_token( TokenType.meta_endMacro )
+          case "endMetacode":         add_new_token( TokenType.meta_endMetacode )
           case "warning":             add_new_token( TokenType.meta_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
@@ -519,6 +531,7 @@ class Tokenizer
 
       elseIf (ch == '}' )
         if     (consume('#')) return TokenType.symbol_close_comment # used for error reporting
+        elseIf (consume('$')) return TokenType.meta_endMetacode
         else                  return TokenType.symbol_close_brace
 
       elseIf (ch == '~')
@@ -1046,5 +1059,72 @@ class Tokenizer
       endWhile
 
       throw error( "End of File reached while looking for end of verbatim string." )
+
+    method handle_metacode( &uses_shorthand )
+      # Already scanned '$metacode' or '${'
+      local hook = "inline"
+      local is_multi_line = true
+      if (not uses_shorthand)
+        if (consume('<'))
+          use builder=StringBuilder.pool
+            while (reader.has_another and reader.peek != '>')
+              builder.print( reader.read )
+            endWhile
+            hook = builder->String
+            if (not consume('>')) throw error( "Closing '>' expected." )
+          endUse
+        endIf
+
+        while (consume(' ')) noAction
+        is_multi_line = consume('\n')
+      endIf
+
+
+      local start_index = tokens.count
+      if (is_multi_line)
+        # Multi-line
+        while (tokenize_another)
+          if (tokens.last.type is TokenType.meta_endMetacode) escapeWhile
+        endWhile
+
+        if (tokens.last.type is not TokenType.meta_endMetacode)
+          if (uses_shorthand)
+            throw tokens.last.error( "End of input while looking for '}$'." )
+          else
+            throw tokens.last.error( "End of input while looking for '$endMetacode'." )
+          endIf
+        endIf
+
+        tokens.remove_last
+
+      else
+        # Single line
+        while (tokenize_another)
+          if (tokens.last.type is TokenType.eol) escapeWhile
+        endWhile
+      endIf
+
+      local metatokens = tokens.subset( start_index )
+      tokens.discard_from( start_index )
+
+      local original_position = reader.position  # Because parsing any 'trace' messes up the read position
+      local parser = Parser( metatokens, &preprocess )
+      parser.this_type = Program.type_Metacode
+      local statements = CmdStatementList()
+      parser.parse_multi_line_statements( statements )
+      reader.seek( original_position )
+
+      if (hook == "inline")
+        local vm = VM()
+        vm.execute( this, statements )
+        if (vm.inject.count)
+          local new_filepath = "$ - Meta:$" (filepath,reader.line)
+          tokens.add( Tokenizer().tokenize(new_filepath, vm.inject->String) )
+          vm.inject.clear
+        endIf
+      else
+        (ensure Program.metacode_hooks[hook]).add( statements )
+      endIf
+
 endClass
 

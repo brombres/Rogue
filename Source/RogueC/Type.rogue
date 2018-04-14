@@ -428,6 +428,8 @@ class Type
         attributes.add( Attribute.is_essential )
       endIf
 
+      Program.invoke_metacode( "Type.configure", this )
+
       if (not is_defined)
         is_defined = true
         local template = Program.find_template( name )
@@ -564,6 +566,8 @@ class Type
       if (element_type)            element_type.configure( &=reference_t )
       forEach (p in global_list)   p.type.configure( &=reference_t )
       forEach (p in property_list) p.type.configure( &=reference_t )
+
+      Program.invoke_metacode( "Type.configured", this )
 
       configure_chain.remove_last
       return this
@@ -979,6 +983,8 @@ class Type
 
       configure( &=reference_t )
 
+      Program.invoke_metacode( "Type.organize", this )
+
       forEach (base_type in base_types)
         base_type.organize( scope, reference_t )
       endForEach
@@ -995,6 +1001,8 @@ class Type
       property_lookup.clear
       inherit_properties( full_property_list, property_lookup )
       property_list = full_property_list
+
+      Program.invoke_metacode( "Type.organize_properties", this )
 
       create_introspection_methods( scope )
 
@@ -1348,6 +1356,8 @@ class Type
       index_and_move_inline_to_end( global_method_list )
       index_and_move_inline_to_end( method_list )
 
+      Program.invoke_metacode( "Type.organized", this )
+
       organizing = false
 
       organize_chain.remove_last
@@ -1566,6 +1576,9 @@ class Type
         endIf
         list.add( m )
       endForEach
+
+      # Let metacode add or modify methods
+      Program.invoke_metacode( "Type.organize_methods", this )
 
       # Attempt to instantiate our own overrides of any method templates.
       if (method_templates)
@@ -1855,6 +1868,26 @@ class Type
 
       if (resolved) m.resolve
 
+    method injectGlobalMethod [api]
+      local t = Program.vm.t
+      local src = Program.vm.inject->String
+      Program.vm.inject.clear
+      local filepath = "$ - Meta:$" (t.filepath,t.line)
+      local parser = Parser( t, filepath, src )
+      parser.this_type = this
+      parser.parse_method( &skip_add_to_type )  # sets this_method
+      inject_global_method( parser.this_method )
+
+    method injectMethod [api]
+      local t = Program.vm.t
+      local src = Program.vm.inject->String
+      Program.vm.inject.clear
+      local filepath = "$ - Meta:$" (t.filepath,t.line)
+      local parser = Parser( t, filepath, src )
+      parser.this_type = this
+      parser.parse_method( &skip_add_to_type )  # sets this_method
+      inject_method( parser.this_method )
+
     method inject_method( m:Method, at_index=null:Int32? )
       if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
@@ -2010,6 +2043,8 @@ class Type
 
       organize
 
+      Program.invoke_metacode( "Type.resolve", this )
+
       forEach (r in global_method_list)
         r.resolve
       endForEach
@@ -2017,6 +2052,8 @@ class Type
       forEach (m in method_list)
         m.resolve
       endForEach
+
+      Program.invoke_metacode( "Type.resolved", this )
 
       resolve_chain.remove_last
       return this

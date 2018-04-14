@@ -19,6 +19,7 @@ class TokenType
     meta_localMacro               : TokenType
     meta_macro                    : TokenType
     meta_endMacro                 : TokenType
+    meta_endMetacode              : TokenType
     meta_methodSignature          : TokenType
     meta_module                   : TokenType
     meta_moduleName               : TokenType

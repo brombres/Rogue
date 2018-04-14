@@ -13,22 +13,57 @@
 # #$ LIBRARIES   = libbeta
 # #$ LINK        = -lalpha -lbeta
 
+#-------------------------------------------------------------------------------
 routine rogo_default
+#-------------------------------------------------------------------------------
   rogo_help
   #println File.listing("Source/RogueC/*.rogue")
 endRoutine
 
+#-------------------------------------------------------------------------------
 routine rogo_clean
-  System.run( "rm -rf .rogo" )
+#-------------------------------------------------------------------------------
+  rogo_execute( "rm -rf .rogo" )
+  rogo_execute( "rm -rf Programs/RogueC/$" (System.os) )
+  rogo_execute @|rm -rf Source/RogueC/Build
 endRoutine
 
-routine rogo_test
-  local cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
-  println "> " + cmd
-  System.run( cmd )
+#-------------------------------------------------------------------------------
+routine rogo_libraries
+#-------------------------------------------------------------------------------
+  local dest = "Programs/RogueC/$" (System.os)
+  File.create_folder( dest )
+  local files = Files( "." )
+  println files
 endRoutine
 
+routine rogo_libs
+  rogo_libraries
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_remake( remake_count:Int32 )
+#-------------------------------------------------------------------------------
+  remake
+  loop (remake_count-1)
+    rogo_execute @|sleep 1
+    remake
+  endLoop
+endRoutine
+
+routine remake
+  rogo_execute @|make remake
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_x( remake_count:Int32 )
+#-------------------------------------------------------------------------------
+  rogo_remake( remake_count )
+endRoutine
+
+#-------------------------------------------------------------------------------
 routine rogo_version
+#-------------------------------------------------------------------------------
   local build = 1
   local commit_id : String
 
@@ -61,12 +96,22 @@ routine rogo_version
 
 endRoutine
 
+#-------------------------------------------------------------------------------
 routine rogo_execute( cmd:String )
+#-------------------------------------------------------------------------------
   print( "> " ).println( cmd )
   local error_code = System.run( cmd )
   if (error_code != 0)
     throw Error( ''ERROR: "$" failed (error code $).'' (cmd,error_code) )
   endIf
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_test
+#-------------------------------------------------------------------------------
+  local cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
+  println "> " + cmd
+  System.run( cmd )
 endRoutine
 
 

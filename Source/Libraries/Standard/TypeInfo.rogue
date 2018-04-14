@@ -188,7 +188,7 @@ class TypeInfo
     method call( context:Object, m:MethodInfo, args=UndefinedValue:Value )->Value
       if (not args.is_list) args = @[]
 
-      args.insert( context->Value )
+      args.insert( Value(context) )
       local result = m.call( args )
       args.remove_first
       return result
@@ -608,10 +608,10 @@ class TypeInfo
 
       return this
 
-    method property( context:Object, name:String, new_value:Value )->this
+    method set_property( context:Object, name:String, new_value:Value )->this
       return set_property( context, context.type_info.find_property(name), new_value )
 
-    method property( context:Object, property_info:PropertyInfo, new_value:Value )->this
+    method set_property( context:Object, property_info:PropertyInfo, new_value:Value )->this
       local type = property_info.type
       if (type.is_reference)
         if (new_value.is_object or new_value.is_string)
@@ -770,13 +770,13 @@ class MethodInfo
       return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
 
     method call( context:Object, args:Value )->Value
-      if (args is not null)
-        args.insert( context->Value )
+      if (args is not null and not args.is_null)
+        args.insert( Value(context) )
         local result = call( args )
         args.remove_first
         return result
       else
-        return call( @[ context->Value ] )
+        return call( @[ Value(context) ] )
       endIf
 
     # Class methods

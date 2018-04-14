@@ -6,6 +6,10 @@ class Cmd
     method add_to( statements:CmdStatementList )
       statements.add( this )
 
+    method as_type_context->TypeInfo
+      # Used by CmdAccess.execute()/execute_assignment()
+      return null
+
     method is_safely_mutable->Logical
       return false
 
@@ -104,7 +108,14 @@ trace Type.resolve_chain
     method dispatch( v:Visitor )->Cmd [propagated]
       return v.visit( this )
 
+    method execute( vm:VM )->Value
+      throw t.error( 'Unsupported metacode ($).' (type_name) )
+
+    method execute_assignment( vm:VM, new_value:Value )
+      throw t.error( 'Unsupported metacode assignment ($).' (type_name) )
+
     method exit_scope( scope:Scope )
+      noAction
 
     method find_operation_result_type( left_type:Type, right_type:Type )->Type
       local result = find_common_type( left_type, right_type )
@@ -257,14 +268,6 @@ class CmdStatementList : Cmd[]
       if (statement1) add( statement1 )
       if (statement2) add( statement2 )
 
-      #{
-    method has_side_effects->Logical
-      forEach (cmd in this)
-        if (cmd.has_side_effects) return true
-      endForEach
-      return false
-      }#
-
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdStatementList
       local result = CmdStatementList( count )
       forEach (cmd in this)
@@ -275,6 +278,17 @@ class CmdStatementList : Cmd[]
 
     method dispatch( v:Visitor )      [propagated]
       v.visit( this )
+
+    method execute( vm:VM )->Value
+      forEach (cmd in this)
+        cmd.execute( vm )
+      endForEach
+      return UndefinedValue
+
+    method execute_with_scope( vm:VM )->Value
+      use vm.new_scope
+        return execute( vm )
+      endUse
 
     method resolve( scope:Scope, &use_separate_results_list )
       local result = CmdStatementList( count )
@@ -338,6 +352,11 @@ class CmdArgs : Cmd[]
     method dispatch( v:Visitor ) [propagated]
       v.visit( this )
 
+    method execute( vm:VM )->Value
+      local result = @[]
+      forEach (cmd in this) result.add( cmd.execute(vm) )
+      return result
+
     method resolve( scope:Scope )
       forEach (i of this)
         local arg = this[i].resolve( scope )
@@ -375,6 +394,14 @@ class CmdLocalDeclaration : CmdStatement
       else
         return CmdLocalDeclaration( t, local_info, skip_initialization )
       endIf
+
+    method execute( vm:VM )->Value
+      local value = UndefinedValue
+      if (not skip_initialization and local_info.initial_value)
+        value = local_info.initial_value.execute( vm )
+      endIf
+      vm.add_local( local_info.name, value )
+      return UndefinedValue
 
     method exit_scope( scope:Scope )
       scope.pop_local
@@ -424,6 +451,9 @@ class CmdReturn : CmdStatement
       else
         return CmdReturn( t, clone(value,clone_args,new_t) )
       endIf
+
+    method execute( vm:VM )->Value
+      throw VMReturnException( ?:{value:value.execute(vm) || UndefinedValue} )
 
     method resolve( scope:Scope )->Cmd
       if (value)
@@ -511,6 +541,9 @@ class CmdBlock : CmdControlStructure
       statements = CmdStatementList( cmd )
       control_type = CmdControlStructure.type_block
 
+    method execute( vm:VM )->Value
+      return statements.execute_with_scope( vm )
+
     method type->Type
       return expression_type
 
@@ -595,6 +628,11 @@ class CmdIf : CmdControlStructure
 
       endIf
 
+    method execute( vm:VM )->Value
+      if (condition.execute(vm)) return statements.execute_with_scope( vm )
+      if (else_statements)       return else_statements.execute_with_scope( vm )
+      return UndefinedValue
+
     method resolve( scope:Scope )->Cmd
       condition = condition.resolve( scope )
       condition = condition.require_logical( scope )
@@ -655,6 +693,16 @@ class CmdWhich : CmdControlStructure
       if (statement) result.statements.add( statement )
       case_others = result
       return result
+
+    method execute( vm:VM )->Value
+      local value = expression.execute( vm )
+      forEach (c in cases)
+        forEach (condition in c.conditions)
+          if (value == condition.execute(vm)) return c.statements.execute_with_scope( vm )
+        endForEach
+      endForEach
+      if (case_others) return case_others.statements.execute_with_scope( vm )
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
 
@@ -766,6 +814,16 @@ class CmdSwitch : CmdControlStructure
 
       if (case_others) result.case_others = case_others.cloned( clone_args, new_t )
       return result
+
+    method execute( vm:VM )->Value
+      local value = expression.execute( vm )
+      forEach (c in cases)
+        forEach (condition in c.conditions)
+          if (value == condition.execute(vm)) return c.statements.execute_with_scope( vm )
+        endForEach
+      endForEach
+      if (case_others) return case_others.statements.execute_with_scope( vm )
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
@@ -890,6 +948,30 @@ class CmdContingent : CmdControlStructure
         return result
       endIf
 
+    method execute( vm:VM )->Value
+      block
+        try
+          try
+            statements.execute_with_scope( vm )
+          catch ( ex:VMContingentSatisfiedException )
+            if (satisfied_statements) satisfied_statements.execute_with_scope( vm )
+            escapeBlock
+          catch ( ex:VMContingentUnsatisfiedException )
+            if (unsatisfied_statements) unsatisfied_statements.execute_with_scope( vm )
+            escapeBlock
+          endTry
+          if (satisfied_statements) satisfied_statements.execute_with_scope( vm )
+
+        catch ( esc:VMEscapeException )
+          if (esc.control_type == this.control_type)
+            escapeBlock
+          else
+            throw esc
+          endIf
+        endTry
+      endBlock
+      return UndefinedValue
+
     method resolve( scope:Scope )->CmdContingent
       scope.control_stack.add( this )
 
@@ -995,6 +1077,27 @@ class CmdGenericLoop : CmdControlStructure
       if (not upkeep) upkeep = CmdStatementList()
       upkeep.add( cmd )
 
+    method execute( vm:VM )->Value
+      try
+        use vm.new_scope
+          if (control_statements) control_statements.execute( vm )
+          while (not condition or condition.execute(vm)->Logical)
+            try
+              statements.execute( vm )
+            catch ( ex:VMNextIterationException )
+            endTry
+            if (upkeep) upkeep.execute( vm )
+          endWhile
+        endUse
+      catch ( esc:VMEscapeException )
+        if (esc.control_type == this.control_type)
+          escapeTry
+        else
+          throw esc
+        endIf
+      endTry
+      return UndefinedValue
+
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
       if (control_statements)
@@ -1054,6 +1157,90 @@ class CmdForEach : CmdControlStructure
       result.collection_var_name = collection_var_name
 
       return result
+
+    method execute( vm:VM )->Value
+      if (control_var_tuple) throw t.error( "TODO: MetaRogue forEach() with destructuring tuple assignment." )
+
+      use vm.new_scope
+
+        local v_control = vm.add_local( ?:{control_var_name||Program.create_unique_id}, UndefinedValue )
+        local v_index = vm.add_local( ?:{index_var_name||Program.create_unique_id}, UndefinedValue )
+        local v_collection = vm.add_local( ?:{collection_var_name||Program.create_unique_id},
+          collection.execute(vm) )
+        local obj = v_collection.value->Object
+        if (obj is null) throw t.error( "Collection evaluates to null in forEach." )
+
+        try
+          local collection_count = vm.object_count( v_collection.value )
+          local step_size = ?:{ step_cmd:step_cmd.execute(vm)->Int32 || 1 }
+
+          if (first_cmd)         v_index.value = first_cmd.execute( vm )
+          elseIf (step_size > 0) v_index.value = Value(0)
+          else                   v_index.value = collection_count - 1
+
+          local last_index : Int32
+          if (last_cmd)          last_index = last_cmd.execute( vm )->Int32
+          elseIf (step_size > 0) last_index = collection_count - 1
+          else                   last_index = 0
+
+          local type = obj.type_info
+          local m_at = type.find_method( "at(Int32)" )
+          if (not m_at) m_at = type.find_method( "get(Int32)" )
+          local p_count = type.find_property( "count" )
+          local m_count = type.find_method( "count()" )
+          local args = @[ v_collection.value ]
+          if (m_at and (m_count or p_count))
+            if (step_size > 0)
+              while (v_index.value <= last_index)
+                try
+                  args.add( v_index.value )
+                  v_control.value = m_at( args )
+                  args.remove_last
+                  statements.execute( vm )
+                catch ( ex:VMNextIterationException )
+                endTry
+                v_index.value += step_size
+              endWhile
+            else
+              while (v_index.value >= last_index)
+                try
+                  args.add( v_index.value )
+                  v_control.value = m_at( args )
+                  args.remove_last
+                  statements.execute( vm )
+                catch ( ex:VMNextIterationException )
+                endTry
+                v_index.value += step_size
+              endWhile
+            endIf
+          else
+            if (step_cmd) throw t.error( "Cannot specify a step size for a reader-based forEach." )
+            if (first_cmd) throw t.error( "'forEach' cannot specify a 'from' when iterating over a reader-type collection." )
+            local m_has_another0 = type.find_method( "has_another()" )
+            local m_read = type.find_method( "read()" )
+            if (not m_has_another0 or not m_read) throw collection.t.error( "Collection implements neither count()/get() nor has_another()/read()." )
+            local m_has_another = m_has_another0.returns<<Logical>>
+            local context = @[ Value(obj) ]
+            v_index.value = Value(0)
+            while (m_has_another(obj))
+              try
+                v_control.value = m_read( context )
+                statements.execute( vm )
+              catch ( ex:VMNextIterationException )
+              endTry
+              ++v_index.value
+            endWhile
+          endIf
+        catch ( esc:VMEscapeException )
+          if (esc.control_type == this.control_type)
+            escapeTry
+          else
+            throw esc
+          endIf
+        endTry
+      endUse
+
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
@@ -1122,7 +1309,7 @@ class CmdForEach : CmdControlStructure
 
         local modifier : Cmd
         if (step_size >= -1 and step_size <= 1)
-          modifier = CmdAdjustLocal(t,index_var,step_size)
+          modifier = CmdStepLocal(t,index_var,step_size)
         elseIf (step_size >= 0)
           modifier = CmdModifyAndAssign(t,CmdAccess(t,index_var.name),TokenType.symbol_plus_equals,CmdLiteralInt32(t,step_size))
         else
@@ -1190,7 +1377,7 @@ class CmdForEach : CmdControlStructure
         cmd_loop.add_control_var( reader_var )
         if (index_var)
           cmd_loop.add_control_var( index_var )
-          cmd_loop.add_upkeep( CmdAdjustLocal(t,index_var,1) )
+          cmd_loop.add_upkeep( CmdStepLocal(t,index_var,1) )
         endIf
 
         scope.control_stack.remove_last
@@ -1228,6 +1415,34 @@ class CmdTry : CmdControlStructure
       local c = CmdCatch( catch_t )
       catches.add( c )
       return c
+
+    method execute( vm:VM )->Value
+      try
+        statements.execute_with_scope( vm )
+        return UndefinedValue
+      catch ( ex:VMEscapeException )
+        if (ex.control_type == this.control_type) return UndefinedValue
+        throw ex
+      catch ( ex:Exception )
+        forEach (c in catches)
+          local catch_type : TypeInfo
+          if (c.error_var) catch_type = TypeInfo[ c.error_var.type.name ]
+          else             catch_type = <<Exception>>
+
+          if (catch_type and ex.type_info.instance_of(catch_type))
+            use vm.new_scope
+              local catch_name : String
+              if (c.error_var) catch_name = c.error_var.name
+              else             catch_name = Program.create_unique_id
+              vm.add_local( catch_name, Value(ex) )
+              c.statements.execute_with_scope( vm )
+            endUse
+
+            return UndefinedValue
+          endIf
+        endForEach
+        throw ex
+      endTry
 
     method resolve( scope:Scope )->Cmd
       scope.control_stack.add( this )
@@ -1296,6 +1511,13 @@ class CmdThrow : Cmd
       if (new_t) t = new_t
       return CmdThrow( t, expression.cloned( clone_args, new_t ), is_resolved )
 
+    method execute( vm:VM )->Value
+      local ex = expression.execute( vm )->Object as Exception
+      if (ex is null)
+        throw expression.t.error( "Thrown value must be instanceOf Exception." )
+      endIf
+      throw ex
+
     method resolve( scope:Scope )->Cmd
       if (not is_resolved)
         is_resolved = true
@@ -1326,6 +1548,13 @@ class CmdTryExpression : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdTryExpression( t, try_expression.cloned( clone_args, new_t ), else_expression.cloned( clone_args, new_t ), result_var )
+
+    method execute( vm:VM )->Value
+      try
+        return try_expression.execute( vm )
+      catch (Exception)
+        return else_expression.execute( vm )
+      endTry
 
     method implicit_type( scope:Scope )->Type
       return try_expression.implicit_type( scope )
@@ -1378,6 +1607,9 @@ class CmdEscape : Cmd
         return ThisType( t, control_type )
       endIf
 
+    method execute( vm:VM )->Value
+      throw VMEscapeException( t, control_type )
+
     method resolve( scope:Scope )->Cmd
       local i = scope.control_stack.count
       while (i > 0)
@@ -1421,6 +1653,9 @@ class CmdNextIteration : Cmd
         return ThisType( t )
       endIf
 
+    method execute( vm:VM )->Value
+      throw VMNextIterationException( t )
+
     method resolve( scope:Scope )->Cmd
       local i = scope.control_stack.count
       while (i > 0)
@@ -1463,6 +1698,9 @@ class CmdNecessary : Cmd
         return CmdNecessary( t, clone(condition,clone_args,new_t), new_target as CmdContingent )
       endIf
 
+    method execute( vm:VM )->Value
+      if (not condition.execute(vm)->Logical) throw VMContingentUnsatisfiedException(t)
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
       if (condition) condition = condition.resolve( scope )
@@ -1509,6 +1747,9 @@ class CmdSufficient : Cmd
         return CmdSufficient( t, clone(condition,clone_args,new_t), new_target as CmdContingent )
       endIf
 
+    method execute( vm:VM )->Value
+      if (condition.execute(vm)->Logical) throw VMContingentSatisfiedException(t)
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
       if (condition) condition = condition.resolve( scope )
@@ -1558,6 +1799,9 @@ class CmdLiteralNull : CmdLiteral
       if (new_t) t = new_t
       return CmdLiteralNull( t )
 
+    method execute( vm:VM )->Value
+      return NullValue
+
     method resolve( scope:Scope )->this
       return this
 
@@ -1578,6 +1822,11 @@ class CmdDefaultValue : CmdLiteral
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdDefaultValue( t, of_type )
+
+    method execute( vm:VM )->Value
+      if (of_type is Program.type_Logical) return Value(false)
+      if (of_type.is_primitive) return Value(0)
+      return Value(null)
 
     method is_literal_number->Logical
       if (not of_type.is_primitive) return false
@@ -1636,6 +1885,9 @@ class CmdLiteralReal64 : CmdLiteralNumber
         return prior.cast_to( target_type, scope )
       endIf
 
+    method execute( vm:VM )->Value
+      return Value( value )
+
     method resolve( scope:Scope )->Cmd
       return this
 
@@ -1678,6 +1930,9 @@ class CmdLiteralReal32 : CmdLiteralNumber
       else
         return prior.cast_to( target_type, scope )
       endIf
+
+    method execute( vm:VM )->Value
+      return Value( value )
 
     method resolve( scope:Scope )->Cmd
       return this
@@ -1722,6 +1977,9 @@ class CmdLiteralInt64 : CmdLiteralNumber
         return prior.cast_to( target_type, scope )
       endIf
 
+    method execute( vm:VM )->Value
+      return Value( value )
+
     method resolve( scope:Scope )->Cmd
       return this
 
@@ -1764,6 +2022,9 @@ class CmdLiteralInt32 : CmdLiteralNumber
       else
         return prior.cast_to( target_type, scope )
       endIf
+
+    method execute( vm:VM )->Value
+      return Value( value )
 
     method resolve( scope:Scope )->Cmd
       return this
@@ -1808,6 +2069,9 @@ class CmdLiteralCharacter : CmdLiteralNumber
         return prior.cast_to( target_type, scope )
       endIf
 
+    method execute( vm:VM )->Value
+      return Value( value )
+
     method resolve( scope:Scope )->Cmd
       return this
 
@@ -1850,6 +2114,9 @@ class CmdLiteralByte : CmdLiteralNumber
         return prior.cast_to( target_type, scope )
       endIf
 
+    method execute( vm:VM )->Value
+      return Value( value )
+
     method resolve( scope:Scope )->Cmd
       return this
 
@@ -1878,6 +2145,9 @@ class CmdLiteralLogical : CmdLiteral
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdLiteralLogical( t, value )
+
+    method execute( vm:VM )->Value
+      return Value( value )
 
     method resolve( scope:Scope )->Cmd
       return this
@@ -1908,6 +2178,9 @@ class CmdLiteralString : CmdLiteral
       if (new_t) t = new_t
       return CmdLiteralString( t, value, index )
 
+    method execute( vm:VM )->Value
+      return Value( value )
+
     method resolve( scope:Scope )->Cmd
       Program.type_String.resolve
       return this
@@ -1933,6 +2206,27 @@ class CmdFormattedString : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdFormattedString( t, format, args.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      use builder=StringBuilder.pool
+        local arg_i = 0
+        forEach (ch in format)
+          if (ch == '$')
+            if (arg_i < args.count)
+              builder.print( args[arg_i].execute(vm)->String )
+              ++arg_i
+            else
+              throw t.error( "More format markers ('$') than arguments in formatted string." )
+            endIf
+          else
+            builder.print( ch )
+          endIf
+        endForEach
+        if (arg_i < args.count)
+          throw t.error( "More arguments than format markers ('$') in formatted string." )
+        endIf
+        return Value( builder->String )
+      endUse
 
     method implicit_type( scope:Scope )->Type
       return Program.type_String
@@ -2057,6 +2351,221 @@ class CmdAccess : Cmd
       result.used_modules = used_modules
 
       return result
+
+    method as_type_context->TypeInfo
+      # Used by CmdAccess.execute()/execute_assignment()
+      if (context) return null
+      if (args)    return null
+      return TypeInfo[ name ]
+
+    method execute( vm:VM )->Value
+      # Explicit context
+      if (context)
+        local context : Value
+        local obj : Object
+        local type = this.context.as_type_context
+        if (type)
+          # TypeName.xyz - singleton or global reference
+          if (type.is_singleton) obj = type.singleton
+        else
+          context = this.context.execute( vm )
+          if (context.is_object or context.is_string)
+            obj = context->Object
+            type = obj.type_info
+          endIf
+        endIf
+
+        if (type)
+          local args = ?:{ args:args.execute(vm) || @[] }
+
+          local m : MethodInfo
+          if (obj)
+            m = type.find_method( name, args.count )
+            if (m is null) m = type.find_method( name )
+            if (m)
+              ensure context( obj )
+              args.insert( context )
+              local result = m( args )
+              args.remove_first
+              return result
+            endIf
+            local p = type.find_property( name )
+            if (p) return type.property( obj, p )
+          endIf
+
+          if (not m)
+            m = type.find_global_method( name, args.count )
+            if (m is null) m = type.find_global_method( name )
+            if (m) return m( args )
+            local p = type.find_global_property( name )
+            if (p) return type.global_property( p )
+            throw t.error( "Reference to undefined method or property $.$." (type.name,name) )
+          endIf
+        endIf
+
+      else
+        # No context given
+
+        # Check for built-in command
+        which (name)
+          case "MetaError"
+            if (args and args.count)
+              throw t.error( args.first.execute(vm)->String ).as_metacode_error
+            else
+              throw t.error( "Unspecified error." ).as_metacode_error
+            endIf
+
+          case "print"
+            if (args)
+              forEach (arg in args) print arg.execute( vm )
+            endIf
+            return UndefinedValue
+
+          case "println"
+            if (args)
+              forEach (arg in args) print arg.execute( vm )
+            endIf
+            println
+            return UndefinedValue
+
+          case "source"
+            if (args)
+              forEach (arg in args) vm.inject.print( arg.execute(vm)->String )
+            endIf
+            return UndefinedValue
+
+          case "sourceln"
+            if (args)
+              forEach (arg in args) vm.inject.print( arg.execute(vm)->String )
+            endIf
+            vm.inject.println
+            return UndefinedValue
+
+          case "compileSource"
+            if (vm.inject.count)
+              local new_filepath = "$ - Meta:$" (vm.t.filepath,vm.t.line)
+              local source = vm.inject->String
+              vm.inject.clear
+              RogueC.parse( new_filepath, source )
+            endIf
+            return UndefinedValue
+
+          case "t"
+            if (not args)
+              return Value(t)
+            endIf
+        endWhich
+
+        # Check locals
+        local v = vm.find_local( name )
+        if (v)
+          return v.value
+        endIf
+
+        # Access is type name - global access or singleton
+        local type = TypeInfo[ name ]
+        if (type)
+          if (args)
+            local obj = type.create_object
+            local m = type.find_method( "init", args.count )
+            if (m is null) m = type.find_method( name )  # omit arg requirements
+            if (m is null) throw t.error( "No such method or property $.$." (type.name,name) )
+            return m( obj, args.execute(vm) )
+          elseIf (name.ends_with("[]"))
+            return Value( type.create_object )
+          elseIf (type.is_singleton)
+            return Value( type.singleton )
+          else
+            local n = type.name
+            throw t.error( "$ is not a singleton type - use $(...) to create a new $ object." (n,n,n) )
+          endIf
+        endIf
+
+        # Check implicit context of VM execution context
+        type = vm.context.type_info
+        local m = type.find_method( name, ?:{args:args.count || 0} )
+        if (m is null) m = type.find_method( name )
+        if (m)
+          local args = ?:{ args:args.execute(vm) || @[] }
+          return m( vm.context, args )
+        endIf
+        local p = type.find_property( name )
+        if (p) return type.property( vm.context, p )
+
+        m = type.find_global_method( name, ?:{args:args.count || 0} )
+        if (m is null) m = type.find_global_method( name )
+        if (m)
+          local args = ?:{ args:args.execute(vm) || @[] }
+          return m( args )
+        endIf
+        p = type.find_global_property( name )
+        if (p) return type.global_property( p )
+
+      endIf
+      throw t.error( ''Can't resolve metacode reference to "$".'' (name) )
+
+    method execute_assignment( vm:VM, new_value:Value )
+      if (context)
+        if (args is null)
+          local context : Value
+          local obj : Object
+          local type = this.context.as_type_context
+          if (type)
+            # TypeName.xyz - singleton or global reference
+            if (type.is_singleton) obj = type.singleton
+          else
+            context = this.context.execute( vm )
+            if (context.is_object or context.is_string)
+              obj = context->Object
+              type = obj.type_info
+            endIf
+          endIf
+
+          local m : MethodInfo
+          local p : PropertyInfo
+          if (obj)
+            m = type.find_method( "set_" + name, 1 )
+            if (m is null)
+              p = type.find_property( name )
+              if (p)
+                type.set_property( obj, p, new_value )
+                return
+              endIf
+            endIf
+          endIf
+
+          if (not m)
+            m = type.find_global_method( "set_" + name, 1 )
+            if (m is null)
+              p = type.find_global_property( name )
+              if (p)
+                type.set_global_property( p, new_value )
+                return
+              endIf
+              throw t.error( "Reference to undefined property $.$." (type.name,name) )
+            endIf
+          endIf
+
+          local args = ?:{ args:args.execute(vm) || @[] }
+          ensure context( obj )
+          args.insert( context )
+          m( args )
+          return
+        endIf
+
+      else
+        local v = vm.find_local( name )
+        if (v)
+          v.value = new_value
+          return
+        endIf
+
+        local type = TypeInfo[ name ]
+        if (type and not args and type.is_singleton)
+          type.set_singleton( new_value->Object )
+        endIf
+      endIf
+      throw t.error( "Invalid assignment." )
 
     method implicit_type( scope:Scope )->Type
       if (context)
@@ -2447,6 +2956,22 @@ class CmdElementAccess : Cmd
       if (new_t) t = new_t
       return CmdElementAccess( t, context.cloned( clone_args, new_t ), index.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local obj = context.execute( vm )->Object
+      if (obj is null) throw t.error( "Cannot get element of null context." )
+      local type = obj.type_info
+      if (type.instance_of(vm.type_Array)) throw t.error( "Metacode cannot directly access array elements." )
+      local i = index.execute( vm )
+      return type.call( obj, "get", @[i] )
+
+    method execute_assignment( vm:VM, new_value:Value )
+      local obj = context.execute( vm )->Object
+      if (obj is null) throw t.error( "Cannot set element of null context." )
+      local type = obj.type_info
+      if (type.instance_of(vm.type_Array)) throw t.error( "Metacode cannot directly set array elements." )
+      local i = index.execute( vm )
+      type.call( obj, "set", @[i,new_value] )
+
     method is_scoped_read_access->Logical
       return true
 
@@ -2519,6 +3044,14 @@ class CmdCreateObject : Cmd
       if (new_t) t = new_t
       return CmdCreateObject( t, of_type )
 
+    method execute( vm:VM )->Value
+      local type = TypeInfo[ of_type.name ]
+      if (type)
+        return Value( type.create_object )
+      else
+        throw t.error( "No such type $." (of_type.name) )
+      endIf
+
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope,t)
       if (of_type.is_abstract)
@@ -2545,6 +3078,26 @@ class CmdCreateCompound : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdCreateCompound( t, of_type, args.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      local type = TypeInfo[ of_type.name ]
+      if (type)
+        local m = type.find_global_method( "from_value(Value)" )
+        if (not m)
+          throw t.error( "Compound type $ does not define from_value(Value)." )
+        endIf
+        ensure args
+        if (args.count > of_type.property_list.count)
+          throw t.error( "Too many arguments specified while creating compound $." (of_type.name) )
+        endIf
+        local info = @{}
+        forEach (arg at i in args)
+          info[ of_type.property_list[i].name ] = arg.execute( vm )
+        endForEach
+        return m.call<<Value>>( info )
+      else
+        throw t.error( "No such type $." (of_type.name) )
+      endIf
 
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope,t)
@@ -2594,6 +3147,10 @@ class CmdAssign : Cmd
       if (new_t) t = new_t
       return CmdAssign( t, target.cloned( clone_args, new_t ), new_value.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      target.execute_assignment( vm, new_value.execute(vm) )
+      return UndefinedValue
+
     method resolve( scope:Scope )->Cmd
       return target.resolve_assignment( scope, new_value )
 
@@ -2606,6 +3163,7 @@ endClass
 #------------------------------------------------------------------------------
 
 class CmdThisContext : Cmd
+  # Implicit or explicit 'this'
   PROPERTIES
     this_type : Type
 
@@ -2624,6 +3182,9 @@ class CmdThisContext : Cmd
         return CmdThisContext( t, this_type )
       endIf
 
+    method execute( vm:VM )->Value
+      return Value( vm.context )
+
     method implicit_type( scope:Scope )->Type
       return this_type
 
@@ -2632,7 +3193,6 @@ class CmdThisContext : Cmd
 
     method is_scoped_read_access->Logical
       return true
-
 
     method require_type_context
       noAction
@@ -2646,6 +3206,7 @@ class CmdThisContext : Cmd
 endClass
 
 class CmdLiteralThis : CmdThisContext
+  # Explicit 'this'
   PROPERTIES
     this_type : Type
 
@@ -2688,6 +3249,18 @@ class CmdReadSingleton : Cmd
       if (new_t) t = new_t
       return CmdReadSingleton( t, of_type )
 
+    method execute( vm:VM )->Value
+      local type = TypeInfo[ of_type.name ]
+      if (type)
+        if (type.is_singleton)
+          return Value( type.singleton )
+        else
+          throw t.error( "$ is not a singleton type - use $(...) to create a new object." (of_type.name,of_type.name) )
+        endIf
+      else
+        throw t.error( "No such type $." (of_type.name) )
+      endIf
+
     method is_global->Logical
       return (not of_type.is_singleton)
 
@@ -2718,6 +3291,19 @@ class CmdWriteSingleton : Cmd
       if (new_t) t = new_t
       return CmdWriteSingleton( t, of_type, new_value.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local type = TypeInfo[ of_type.name ]
+      local new_singleton = new_value.execute( vm )->Object
+      if (type)
+        if (type.is_singleton)
+          return type.set_singleton( new_singleton )
+        else
+          throw t.error( "Cannot assign an object to non-singleton type $." (of_type.name) )
+        endIf
+      else
+        throw t.error( "No such type $." (of_type.name) )
+      endIf
+
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope,t)
       new_value = new_value.resolve(scope).require_value
@@ -2747,6 +3333,9 @@ class CmdReadLocal : Cmd
 
       return CmdReadLocal( t, local_info )
 
+    method execute( vm:VM )->Value
+      return vm.get_local( local_info.name )
+
     method is_safely_mutable->Logical
       return true
 
@@ -2759,7 +3348,7 @@ class CmdReadLocal : Cmd
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
-      return CmdAdjustLocal( t, local_info, delta ).resolve( scope )
+      return CmdStepLocal( t, local_info, delta ).resolve( scope )
 
     method to->String
       if (local_info.type)
@@ -2795,6 +3384,10 @@ class CmdWriteLocal : Cmd
       endIf
       return CmdWriteLocal( t, local_info, clone(new_value,clone_args,new_t) )
 
+    method execute( vm:VM )->Value
+      vm.set_local( local_info.name, new_value.execute(vm) )
+      return UndefinedValue
+
     method resolve( scope:Scope )->Cmd
       local_info.type.organize(scope,t)
       local_info.is_modified = true
@@ -2816,12 +3409,21 @@ class CmdReadGlobal : Cmd
       if (new_t) t = new_t
       return CmdReadGlobal( t, global_info )
 
+    method execute( vm:VM )->Value
+      local p_context_name = global_info.type_context.name
+      local p_name         = global_info.name
+      local type = TypeInfo[ p_context_name ]
+      if (type is null) throw t.error( "No such type: $." (p_context_name) )
+      local p = type.find_global_property( p_name )
+      if (p is null) throw t.error( "No such global property: $.$." (p_context_name,p_name) )
+      return type.global_property( p )
+
     method resolve( scope:Scope )->Cmd
       global_info.type_context.resolve
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
-      return CmdAdjustGlobal( t, global_info, delta ).resolve( scope )
+      return CmdStepGlobal( t, global_info, delta ).resolve( scope )
 
     method type->Type
       return global_info.type
@@ -2840,6 +3442,16 @@ class CmdWriteGlobal : Cmd
       if (new_t) t = new_t
       return CmdWriteGlobal( t, global_info, new_value.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local p_context_name = global_info.type_context.name
+      local p_name         = global_info.name
+      local type = TypeInfo[ p_context_name ]
+      if (type is null) throw t.error( "No such type: $." (p_context_name) )
+      local p = type.find_global_property( p_name )
+      if (p is null) throw t.error( "No such global property: $.$." (p_context_name,p_name) )
+      type.set_global_property( p, new_value.execute(vm) )
+      return UndefinedValue
+
     method resolve( scope:Scope )->Cmd
       new_value = new_value.resolve(scope).cast_to( global_info.type, scope ).resolve( scope )
       return this
@@ -2857,6 +3469,16 @@ class CmdReadProperty : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdReadProperty( t, context.cloned( clone_args, new_t ), property_info )
+
+    method execute( vm:VM )->Value
+      local obj = context.execute( vm )->Object
+      local type = obj.type_info
+      local name = property_info.name
+      local p = type.find_property( name )
+      if (p) return type.property( obj, p )
+      p = type.find_global_property( name )
+      if (p) return type.global_property( p )
+      return UndefinedValue
 
     method is_safely_mutable->Logical
       return context.is_safely_mutable
@@ -2879,7 +3501,7 @@ class CmdReadProperty : Cmd
       if (context_type.has_method_named(setter_name) or context_type.has_method_named(getter_name))
         return CmdAssign( t, CmdAccess(t,context,property_info.name), CmdAdd(t,CmdAccess(t,context.cloned,property_info.name),CmdLiteralInt32(t,delta)) ).resolve( scope )
       endIf
-      return CmdAdjustProperty( t, context, property_info, delta ).resolve( scope )
+      return CmdStepProperty( t, context, property_info, delta ).resolve( scope )
 
     method to->String
       return "$.$" (context,property_info)
@@ -2901,6 +3523,19 @@ class CmdWriteProperty : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdWriteProperty( t, context.cloned( clone_args, new_t ), property_info, new_value.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      local obj = context.execute( vm )->Object
+      local type = obj.type_info
+      local name = property_info.name
+      local p = type.find_property( name )
+      if (p)
+        type.set_property( obj, p, new_value.execute(vm) )
+      else
+        p = type.find_global_property( name )
+        if (p) type.set_global_property( p, new_value.execute(vm) )
+      endIf
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
       context = context.resolve(scope).require_value
@@ -2932,6 +3567,9 @@ class CmdCall : Cmd
       if (context and context.is_global and not method_info.is_global)
         throw t.error( "Cannot call object method $.$ on a non-object." (method_info.type_context,method_info.signature) )
       endIf
+
+    method execute( vm:VM )->Value
+      return CmdAccess( t, context, method_info.name, args ).execute( vm )
 
     method is_scoped_read_access->Logical
       return true
@@ -3088,6 +3726,9 @@ class CmdCallPriorMethod : Cmd
 
   METHODS
     method init( t, name, args, named_args )
+
+    method execute( vm:VM )->Value
+      throw t.error( "[Internal] TODO: metacode prior method call." )
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -3396,6 +4037,9 @@ class CmdLogicalize : CmdUnary
       if (new_t) t = new_t
       return CmdLogicalize( t, operand.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      return operand.execute( vm )->Logical
+
     method fn_name->String
       return "operator?"
 
@@ -3440,6 +4084,9 @@ class CmdLogicalNot : CmdUnary
       if (new_t) t = new_t
       return CmdLogicalNot( t, operand.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      return Value( not operand.execute( vm )->Logical )
+
     method prefix_symbol->String
       return "not "
 
@@ -3475,6 +4122,9 @@ class CmdNegate : CmdUnary
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdNegate( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      return -operand.execute(vm)
 
     method fn_name->String
       return "operator-"
@@ -3590,6 +4240,9 @@ class CmdAdd : CmdBinary
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return left.execute(vm) + right.execute(vm)
+
     method fn_name->String
       return "operator+"
 
@@ -3626,6 +4279,9 @@ class CmdSubtract : CmdBinary
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return left.execute(vm) - right.execute(vm)
+
     method fn_name->String
       return "operator-"
 
@@ -3647,6 +4303,9 @@ class CmdMultiply : CmdBinary
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return left.execute(vm) * right.execute(vm)
 
     method fn_name->String
       return "operator*"
@@ -3671,6 +4330,9 @@ class CmdDivide : CmdBinary
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return left.execute(vm) / right.execute(vm)
+
     method fn_name->String
       return "operator/"
 
@@ -3693,6 +4355,9 @@ class CmdMod : CmdBinary
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return left.execute(vm) % right.execute(vm)
 
     method resolve( scope:Scope )->Cmd
       local result = prior.resolve( scope )
@@ -3725,6 +4390,9 @@ class CmdPower : CmdBinary
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return left.execute(vm) ^ right.execute(vm)
 
     method fn_name->String
       return "operator^"
@@ -3766,6 +4434,9 @@ class CmdLogicalAnd : CmdBinaryLogical
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a and b)
 
+    method execute( vm:VM )->Value
+      return left.execute(vm)->Logical and right.execute(vm)->Logical
+
     method symbol->String
       return "and"
 endClass
@@ -3779,6 +4450,9 @@ class CmdLogicalOr : CmdBinaryLogical
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a or b)
+
+    method execute( vm:VM )->Value
+      return left.execute(vm)->Logical or right.execute(vm)->Logical
 
     method symbol->String
       return "or"
@@ -3794,6 +4468,9 @@ class CmdLogicalXor : CmdBinaryLogical
 
     method combine_literal_operands( a:Logical, b:Logical )->Logical
       return (a xor b)
+
+    method execute( vm:VM )->Value
+      return left.execute(vm)->Logical xor right.execute(vm)->Logical
 
     method symbol->String
       return "xor"
@@ -3859,6 +4536,9 @@ class CmdCompareEQ : CmdComparison
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return left.execute(vm) == right.execute(vm)
+
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator==", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
@@ -3892,6 +4572,9 @@ class CmdCompareNE : CmdComparison
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return left.execute(vm) != right.execute(vm)
+
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator!=", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
@@ -3924,6 +4607,9 @@ class CmdCompareLT : CmdComparison
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return left.execute(vm) < right.execute(vm)
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional )
@@ -3960,6 +4646,9 @@ class CmdCompareLE : CmdComparison
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return left.execute(vm) <= right.execute(vm)
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator<=", scope, left, left_type, right, right_type, &is_optional )
@@ -4027,6 +4716,9 @@ class CmdCompareGT : CmdComparison
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return left.execute(vm) > right.execute(vm)
+
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator>", scope, left, left_type, right, right_type, &is_optional )
       if (cmd) return cmd
@@ -4063,6 +4755,9 @@ class CmdCompareGE : CmdComparison
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return left.execute(vm) >= right.execute(vm)
 
     method resolve_for_reference( scope:Scope, left_type:Type, right_type:Type, force_error=true:Logical )->Cmd
       local cmd = resolve_operator_method( "operator>=", scope, left, left_type, right, right_type, &is_optional )
@@ -4134,6 +4829,13 @@ class CmdCompare : CmdComparison
       }#
       return this
 
+    method execute( vm:VM )->Value
+      local lhs = left.execute( vm )
+      local rhs = left.execute( vm )
+      if (lhs < rhs) return -1
+      if (lhs > rhs) return  1
+      return 0
+
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       local result = prior.resolve_for_types( scope, left_type, right_type )
       if (result is this)
@@ -4159,6 +4861,17 @@ class CmdCompareIs : CmdComparison
       if (new_t) t = new_t
       return CmdCompareIs( t, left.cloned( clone_args, new_t ), right.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local lhs = left.execute( vm )
+      local rhs = left.execute( vm )
+      local left_obj  = lhs->Object
+      local right_obj = rhs->Object
+      if (left_obj or right_obj)
+        return left_obj is right_obj
+      else
+        return lhs == rhs
+      endIf
+
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       if (left_type.is_reference and right_type.is_reference)
         return this
@@ -4183,6 +4896,17 @@ class CmdCompareIsNot : CmdComparison
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdCompareIsNot( t, left.cloned( clone_args, new_t ), right.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      local lhs = left.execute( vm )
+      local rhs = left.execute( vm )
+      local left_obj  = lhs->Object
+      local right_obj = rhs->Object
+      if (left_obj or right_obj)
+        return left_obj is not right_obj
+      else
+        return lhs != rhs
+      endIf
 
     method resolve_for_types( scope:Scope, left_type:Type, right_type:Type )->Cmd
       if (left_type.is_reference and right_type.is_reference)
@@ -4245,6 +4969,9 @@ class CmdBitwiseAnd : CmdBitwiseOp
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return (left.execute(vm)->Int64 & right.execute(vm)->Int64)
+
     method fn_name->String
       return "operator&"
 
@@ -4266,6 +4993,9 @@ class CmdBitwiseOr : CmdBitwiseOp
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return (left.execute(vm)->Int64 | right.execute(vm)->Int64)
 
     method fn_name->String
       return "operator|"
@@ -4289,6 +5019,9 @@ class CmdBitwiseXor : CmdBitwiseOp
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return (left.execute(vm)->Int64 ~ right.execute(vm)->Int64)
+
     method fn_name->String
       return "operator~"
 
@@ -4309,6 +5042,9 @@ class CmdBitwiseShiftLeft : CmdBitwiseOp
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return (left.execute(vm)->Int64 :<<: right.execute(vm)->Int32)
+
     method fn_name->String
       return "operator:<<:"
 
@@ -4328,6 +5064,9 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
       else
         return this
       endIf
+
+    method execute( vm:VM )->Value
+      return (left.execute(vm)->Int64 :>>: right.execute(vm)->Int32)
 
     method fn_name->String
       return "operator:>>:"
@@ -4356,6 +5095,9 @@ class CmdBitwiseShiftRightX : CmdBitwiseOp
         return this
       endIf
 
+    method execute( vm:VM )->Value
+      return (left.execute(vm)->Int64 :>>>: right.execute(vm)->Int32)
+
     method fn_name->String
       return "operator:>>>:"
 
@@ -4369,6 +5111,9 @@ class CmdBitwiseNot : CmdUnary
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdBitwiseNot( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      return (!operand.execute(vm)->Int64)
 
     method fn_name->String
       return "operator!"
@@ -4390,7 +5135,7 @@ endClass
 #------------------------------------------------------------------------------
 # adjust
 #------------------------------------------------------------------------------
-class CmdAdjust : Cmd
+class CmdStep : Cmd
   PROPERTIES
     operand : Cmd
     delta   : Int32
@@ -4400,7 +5145,10 @@ class CmdAdjust : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdAdjust( t, operand.cloned( clone_args, new_t ), delta )
+      return CmdStep( t, operand.cloned( clone_args, new_t ), delta )
+
+    method execute( vm:VM )->Value
+      return CmdAssign( t, operand, CmdAdd(t,operand,CmdLiteralInt32(t,delta)) ).execute( vm )
 
     method is_scoped_read_access->Logical
       return true
@@ -4410,7 +5158,7 @@ class CmdAdjust : Cmd
       return operand.resolve_adjust( scope, delta )
 endClass
 
-class CmdAdjustLocal : Cmd
+class CmdStepLocal : Cmd
   PROPERTIES
     local_info : Local
     delta      : Int32
@@ -4422,10 +5170,15 @@ class CmdAdjustLocal : Cmd
       if (new_t) t = new_t
       local task_args = (clone_args as TaskArgs)
       if (task_args)
-        return CmdAdjust( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
+        return CmdStep( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
       else
-        return CmdAdjustLocal( t, local_info, delta )
+        return CmdStepLocal( t, local_info, delta )
       endIf
+
+    method execute( vm:VM )->Value
+      local v = require( vm.find_local(local_info.name) )
+      v.value += delta
+      return UndefinedValue
 
     method is_scoped_read_access->Logical
       return true
@@ -4442,7 +5195,7 @@ class CmdAdjustLocal : Cmd
       return this
 
     method to->String
-      return "CmdAdjustLocal($)" (local_info.name)
+      return "CmdStepLocal($)" (local_info.name)
 
     method type->Type
       return local_info.type
@@ -4450,7 +5203,7 @@ class CmdAdjustLocal : Cmd
 endClass
 
 
-class CmdAdjustProperty : Cmd
+class CmdStepProperty : Cmd
   PROPERTIES
     context       : Cmd
     property_info : Property
@@ -4461,7 +5214,18 @@ class CmdAdjustProperty : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdAdjustProperty( t, context.cloned( clone_args, new_t ), property_info, delta )
+      return CmdStepProperty( t, context.cloned( clone_args, new_t ), property_info, delta )
+
+    method execute( vm:VM )->Value
+      local obj = context.execute( vm )->Object
+      if (obj)
+        local type = obj.type_info
+        local p = type.find_property( property_info.name )
+        if (p)
+          type.set_property( obj, p, type.property(obj,p) + delta )
+        endIf
+      endIf
+      return UndefinedValue
 
     method is_scoped_read_access->Logical
       return true
@@ -4484,17 +5248,27 @@ class CmdAdjustProperty : Cmd
 endClass
 
 
-class CmdAdjustGlobal : Cmd
+class CmdStepGlobal : Cmd
   PROPERTIES
     global_info : Property
-    delta         : Int32
+    delta       : Int32
 
   METHODS
     method init( t, global_info, delta )
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdAdjustGlobal( t, global_info, delta )
+      return CmdStepGlobal( t, global_info, delta )
+
+    method execute( vm:VM )->Value
+      local type = TypeInfo[ global_info.type_context ]
+      if (type)
+        local p = type.find_global_property( global_info.name )
+        if (p)
+          type.set_global_property( p, type.global_property(p) + delta )
+        endIf
+      endIf
+      return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
       if (global_info.type.is_compound)
@@ -4529,6 +5303,25 @@ class CmdModifyAndAssign : Cmd
       if (new_t) t = new_t
       return CmdModifyAndAssign( t, target.cloned( clone_args, new_t ), op, new_value.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local op_cmd : Cmd
+      which (op)
+        case TokenType.symbol_ampersand_equals:    op_cmd = CmdBitwiseAnd( t, target, new_value )
+        case TokenType.symbol_caret_equals:        op_cmd = CmdPower( t, target, new_value )
+        #case TokenType.symbol_dot_equals:          op_cmd = CmdAccess( t, this, name, new_value )
+        case TokenType.symbol_minus_equals:        op_cmd = CmdSubtract( t, target, new_value )
+        case TokenType.symbol_percent_equals:      op_cmd = CmdMod( t, target, new_value )
+        case TokenType.symbol_plus_equals:         op_cmd = CmdAdd( t, target, new_value )
+        case TokenType.symbol_slash_equals:        op_cmd = CmdDivide( t, target, new_value )
+        case TokenType.symbol_tilde_equals:        op_cmd = CmdBitwiseXor( t, target, new_value )
+        case TokenType.symbol_times_equals:        op_cmd = CmdMultiply( t, target, new_value )
+        case TokenType.symbol_vertical_bar_equals: op_cmd = CmdBitwiseOr( t, target, new_value )
+        others
+          @trace
+          throw t.error( "[INTERNAL]" )
+      endWhich
+      return CmdAssign( t, target, op_cmd ).execute( vm )
+
     method is_scoped_read_access->Logical
       return true
 
@@ -4536,7 +5329,7 @@ class CmdModifyAndAssign : Cmd
       return target.resolve_modify_and_assign( scope, op, new_value )
 endClass
 
-class CmdResolvedModifyAndAssign : Cmd
+class CmdResolvedModifyAndAssign : Cmd [abstract]
   PROPERTIES
     op         : TokenType
     new_value  : Cmd
@@ -4544,6 +5337,28 @@ class CmdResolvedModifyAndAssign : Cmd
   METHODS
     method is_scoped_read_access->Logical
       return true
+
+    method execute( vm:VM )->Value
+      local op_target = execution_target
+      local op_cmd : Cmd
+      which (op)
+        case TokenType.symbol_ampersand_equals:    op_cmd = CmdBitwiseAnd( t, op_target, new_value )
+        case TokenType.symbol_caret_equals:        op_cmd = CmdPower( t, op_target, new_value )
+        #case TokenType.symbol_dot_equals:          op_cmd = CmdAccess( t, op_target, name, new_value )
+        case TokenType.symbol_minus_equals:        op_cmd = CmdSubtract( t, op_target, new_value )
+        case TokenType.symbol_percent_equals:      op_cmd = CmdMod( t, op_target, new_value )
+        case TokenType.symbol_plus_equals:         op_cmd = CmdAdd( t, op_target, new_value )
+        case TokenType.symbol_slash_equals:        op_cmd = CmdDivide( t, op_target, new_value )
+        case TokenType.symbol_tilde_equals:        op_cmd = CmdBitwiseXor( t, op_target, new_value )
+        case TokenType.symbol_times_equals:        op_cmd = CmdMultiply( t, op_target, new_value )
+        case TokenType.symbol_vertical_bar_equals: op_cmd = CmdBitwiseOr( t, op_target, new_value )
+        others
+          @trace
+          throw t.error( "[INTERNAL]" )
+      endWhich
+      return CmdAssign( t, op_target, op_cmd ).execute( vm )
+
+    method execution_target->Cmd [abstract]
 
     method symbol->String
       if (op is TokenType.symbol_tilde_equals) return "^="
@@ -4566,6 +5381,9 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
       else
         return CmdModifyAndAssignLocal( t, local_info, op, new_value.cloned( clone_args, new_t ) )
       endIf
+
+    method execution_target->Cmd
+      return CmdAccess( t, local_info.name )
 
     method is_scoped_read_access->Logical
       return true
@@ -4636,6 +5454,9 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
       if (new_t) t = new_t
       return CmdModifyAndAssignGlobal( t, global_info, op, new_value.cloned( clone_args, new_t ) )
 
+    method execution_target->Cmd
+      return CmdAccess( t, CmdAccess(t,global_info.type_context.name), global_info.name )
+
     method resolve( scope:Scope )->Cmd
       local m_name = "operator" + op->String
       if (global_info.type.is_reference)
@@ -4702,6 +5523,9 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdModifyAndAssignProperty( t, context.cloned( clone_args, new_t ), property_info, op, new_value.cloned( clone_args, new_t ) )
+
+    method execution_target->Cmd
+      return CmdAccess( t, context, property_info.name )
 
     method resolve( scope:Scope )->Cmd
       local m_name = "operator" + op->String
@@ -4868,6 +5692,9 @@ class CmdCastToType : CmdTypeOperator
       if (new_t) t = new_t
       return CmdCastToType( t, operand.cloned( clone_args, new_t ), target_type )
 
+    method execute( vm:VM )->Value
+      return operand.execute( vm )  # pass-through
+
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       target_type.organize(scope, t)
@@ -4880,6 +5707,34 @@ class CmdConvertToType : CmdTypeOperator
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdConvertToType( t, operand.cloned( clone_args, new_t ), target_type )
+
+    method execute( vm:VM )->Value
+      local to_type = TypeInfo[ target_type.name ]
+      if (not to_type) throw t.error( "No such metatype $." (target_type.name) )
+      local context = operand.execute( vm )
+      if (context.is_object or context.is_string)
+        local obj = context->Object
+        if (obj is null) throw t.error( "Null context for conversion." )
+        local m_convert = obj.type_info.find_method( "to_$()"(to_type.name) )
+        if (not m_convert) throw t.error( "$ does not define to->$()." (obj.type_name,to_type.name) )
+        return m_convert( @[context] )
+      elseIf (to_type is vm.type_Real64)
+        return context->Real64->Value
+      elseIf (to_type is vm.type_Real32)
+        return context->Real32->Value
+      elseIf (to_type is vm.type_Int64)
+        return context->Int64->Value
+      elseIf (to_type is vm.type_Int32)
+        return context->Int32->Value
+      elseIf (to_type is vm.type_Character)
+        return Value(context->Character)
+      elseIf (to_type is vm.type_Byte)
+        return context->Byte->Value
+      elseIf (to_type is vm.type_Logical)
+        return context->Logical->Value
+      else
+        throw t.error( "Cannot convert $ to $." (context,to_type) )
+      endIf
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
@@ -4903,6 +5758,20 @@ class CmdAs : CmdTypeOperator
       if (new_t) t = new_t
       return CmdAs( t, operand.cloned( clone_args, new_t ), target_type )
 
+    method execute( vm:VM )->Value
+      local obj_value = operand.execute( vm )
+      local obj = obj_value->Object
+      if (obj)
+        local type = obj.type_info
+        local as_type = TypeInfo[ target_type.name ]
+        if (as_type)
+          if (type.instance_of(as_type))
+            return obj_value
+          endIf
+        endIf
+      endIf
+      return NullValue
+
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
       local operand_type = operand.require_type
@@ -4923,6 +5792,20 @@ class CmdInstanceOf : CmdTypeOperator
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdInstanceOf( t, operand.cloned( clone_args, new_t ), target_type )
+
+    method execute( vm:VM )->Value
+      local obj_value = operand.execute( vm )
+      local obj = obj_value->Object
+      if (obj)
+        local type = obj.type_info
+        local as_type = TypeInfo[ target_type.name ]
+        if (as_type)
+          if (type.instance_of(as_type))
+            return true
+          endIf
+        endIf
+      endIf
+      return false
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
@@ -4945,6 +5828,10 @@ class CmdIsAspect( t, operand:Cmd ) : Cmd
       if (new_t) t = new_t
       return CmdIsAspect( t, operand.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local obj = operand.execute( vm )->Object
+      return (obj and obj.type_info.is_aspect)
+
     method implicit_type( scope:Scope )->Type
       return Program.type_Logical
 
@@ -4961,6 +5848,10 @@ class CmdIsClass( t, operand:Cmd ) : Cmd
       if (new_t) t = new_t
       return CmdIsClass( t, operand.cloned( clone_args, new_t ) )
 
+    method execute( vm:VM )->Value
+      local obj = operand.execute( vm )->Object
+      return (obj and obj.type_info.is_class)
+
     method implicit_type( scope:Scope )->Type
       return Program.type_Logical
 
@@ -4976,6 +5867,10 @@ class CmdIsCompound( t, operand:Cmd ) : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdIsCompound( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      local obj = operand.execute( vm )->Object
+      return (obj and obj.type_info.is_compound)
 
     method implicit_type( scope:Scope )->Type
       return Program.type_Logical
@@ -4996,6 +5891,10 @@ class CmdIsPrimitive( t, operand:Cmd ) : Cmd
     method implicit_type( scope:Scope )->Type
       return Program.type_Logical
 
+    method execute( vm:VM )->Value
+      local obj = operand.execute( vm )->Object
+      return (obj and obj.type_info.is_primitive)
+
     method resolve( scope:Scope )->Cmd
       return CmdLiteralLogical( t, operand.resolve(scope).require_type.is_primitive )
 
@@ -5008,6 +5907,10 @@ class CmdIsReference( t, operand:Cmd ) : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdIsReference( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      local obj = operand.execute( vm )->Object
+      return (obj and obj.type_info.is_reference)
 
     method implicit_type( scope:Scope )->Type
       return Program.type_Logical
@@ -5024,6 +5927,10 @@ class CmdIsString( t, operand:Cmd ) : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdIsString( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      local obj = operand.execute( vm )->Object
+      return (obj and obj.type_info is vm.type_String)
 
     method implicit_type( scope:Scope )->Type
       return Program.type_Logical
@@ -5049,6 +5956,9 @@ class CmdCreateList : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdCreateList( t, clone(elements,clone_args,new_t) )
+
+    method execute( vm:VM )->Value
+      return elements.execute( vm )  # returns a ValueList
 
     method implicit_type( scope:Scope )->Type
       if (elements.count == 0) return Program.get_type_reference( t, "ValueList" )
@@ -5519,6 +6429,10 @@ class CmdTrace : Cmd
       if (new_t) t = new_t
       return CmdTrace( t, clone(info,clone_args,new_t) )
 
+    method execute( vm:VM )->Value
+      println info.execute( vm )->String
+      return UndefinedValue
+
     method resolve( scope:Scope )->Cmd
       return CmdAccess( t, CmdAccess(t,"Global"), "println", CmdArgs(info) ).resolve( scope )
 
@@ -5742,6 +6656,30 @@ class CmdTypedLiteralList : Cmd
       elements.add( element )
       return this
 
+    method execute( vm:VM )->Value
+      local vm_obj : Value
+      if (context.args)
+        vm_obj = context.execute( vm )
+      else
+        context.args = CmdArgs()
+        vm_obj = context.execute( vm )
+        context.args = null
+      endIf
+      local obj = vm_obj->Object
+      if (obj)
+        local type = obj.type_info
+        local m = type.find_method( "add", 1 )
+        if (m)
+          local args = @[ vm_obj ]
+          forEach (element in elements)
+            m( args.add(element.execute(vm)) )
+            args.remove_last
+          endForEach
+          return vm_obj
+        endIf
+      endIf
+      return elements.execute( vm )   # ValueList
+
     method implicit_type( scope:Scope )->Type
       return type
 
@@ -5818,6 +6756,37 @@ class CmdTypedLiteralTable : Cmd
       values.add( value )
       return this
 
+    method execute( vm:VM )->Value
+      local vm_obj : Value
+      if (context.args)
+        vm_obj = context.execute( vm )
+      else
+        context.args = CmdArgs()
+        vm_obj = context.execute( vm )
+        context.args = null
+      endIf
+      local obj = vm_obj->Object
+      if (obj)
+        local type = obj.type_info
+        local m = type.find_method( "set", 2 )
+        if (m)
+          local args = @[ vm_obj ]
+          forEach (i of keys)
+            args.add( keys[i].execute(vm) ).add( values[i].execute(vm) )
+            m( args )
+            args.remove_last
+            args.remove_last
+          endForEach
+          return vm_obj
+        endIf
+      endIf
+
+      local result = @{}
+      forEach (i of keys)
+        result[ keys[i].execute(vm)->String ] = values[i].execute(vm)
+      endForEach
+      return result
+
     method implicit_type( scope:Scope )->Type
       return type
 
@@ -5867,6 +6836,39 @@ class CmdSelect : Cmd
       local result = CmdSelect( t, local_info, clone(expression,clone_args,new_t), CmdSelectCase[](cases.count) )
       forEach (c in cases) result.cases.add( c.cloned( clone_args, new_t ) )
       return result
+
+    method execute( vm:VM )->Value
+      if (expression)
+        local vm_expr = expression.execute( vm )
+        forEach (c in cases)
+          if (c.conditions.count)
+            forEach (condition in c.conditions)
+              local vm_condition = condition.execute( vm )
+              if (vm_expr == vm_condition)
+                if (c.condition_is_value) return vm_condition
+                else                      return c.value.execute( vm )
+              endIf
+            endForEach
+          else
+            return c.value.execute( vm )
+          endIf
+        endForEach
+      else
+        forEach (c in cases)
+          if (c.conditions.count)
+            forEach (condition in c.conditions)
+              local vm_condition = condition.execute( vm )
+              if (vm_condition->Logical)
+                if (c.condition_is_value) return vm_condition
+                else                      return c.value.execute( vm )
+              endIf
+            endForEach
+          else
+            return c.value.execute( vm )
+          endIf
+        endForEach
+      endIf
+      return UndefinedValue
 
     method implicit_type( scope:Scope )->Type
       local common_type : Type
@@ -6050,6 +7052,9 @@ class CmdTypeSelector( t, of_type:Type ) : Cmd
       if (new_t) t = new_t
       return CmdTypeSelector( t, of_type )
 
+    method execute( vm:VM )->Value
+      return Value( TypeInfo[of_type.name] )
+
     method implicit_type( scope:Scope )->Type
       return Program.get_type_reference( t, "TypeInfo" )
 
@@ -6070,6 +7075,9 @@ class CmdPrintln( t, standard=null:Cmd, no_parens=null:Cmd) : Cmd
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       return CmdPrintln( t, standard.cloned(clone_args,new_t), no_parens.cloned(clone_args,new_t) )
+
+    method execute( vm:VM )->Value
+      return standard.execute( vm )
 
     method resolve( scope:Scope )->Cmd
       try
