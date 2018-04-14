@@ -7,6 +7,7 @@ class Method
     type_context : Type
     name         : String
     signature    : String
+    full_name    : String
 
     attributes   = Attributes()
 
@@ -144,6 +145,10 @@ class Method
 
     method get_locals->Local[]
       return CollectLocalsVisitor().collect_locals( this )
+
+    method hash_code->Int32
+      if (not signature) throw t.error( "[Internal] Method.hash_code() used before signature established." )
+      return this->String.hash_code
 
     method is_abstract->Logical
       return (attributes.flags & Attribute.is_abstract)
@@ -486,7 +491,12 @@ class Method
       return this
 
     method to->String
-      return "$.$" (type_context.name,select{signature||name})
+      if (signature)
+        if (not full_name) full_name = "$.$" (type_context.name,signature)
+        return full_name
+      else
+        return "$.$" (type_context.name,name)
+      endIf
 
     method trace_used_code
       if (is_used) return   # Already traced

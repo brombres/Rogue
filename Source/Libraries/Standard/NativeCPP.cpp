@@ -1778,18 +1778,13 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
   int property_offset_cursor = 0;
 #endif
 
-#ifdef ROGUE_OLD_TYPE_INFO
-  const int* type_info = next_type_info;
-#endif
   // Initialize types
   for (i=0; i<Rogue_type_count; ++i)
   {
     int j;
     RogueType* type = &Rogue_types[i];
-#ifndef ROGUE_OLD_TYPE_INFO
     const int* type_info = next_type_info;
     next_type_info += *(type_info++) + 1;
-#endif
 
     memset( type, 0, sizeof(RogueType) );
 
@@ -1842,6 +1837,7 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
     }
 #endif
     type->method_count = *(type_info++);
+    type->global_method_count = *(type_info++);
 
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
@@ -1849,9 +1845,7 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
     type->on_cleanup_fn  = Rogue_on_cleanup_fn_table[i];
     type->to_string_fn   = Rogue_to_string_fn_table[i];
 
-#ifndef ROGUE_OLD_TYPE_INFO
     ROGUE_DEBUG_STATEMENT(assert(type_info <= next_type_info));
-#endif
   }
 
   Rogue_on_gc_trace_finished.add( Rogue_update_weak_references_during_gc );

@@ -540,6 +540,8 @@ struct RogueType
   const void** methods; // first function pointer in Rogue_dynamic_method_table
   int          method_count;
 
+  int          global_method_count;
+
   RogueAllocator*   allocator;
 
   RogueTraceFn      trace_fn;

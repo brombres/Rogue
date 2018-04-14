@@ -31,6 +31,12 @@ class TypeInfo
             RogueTypeInfo__add_method_info__Int32( (RogueTypeInfo*) THIS->type_info,
               (RogueInt32)(THIS->methods - Rogue_dynamic_method_table + i) );
           }
+
+          for (int i=0; i<THIS->global_method_count; ++i)
+          {
+            RogueTypeInfo__add_global_method_info__Int32( (RogueTypeInfo*) THIS->type_info,
+              (RogueInt32)(THIS->methods - Rogue_dynamic_method_table + THIS->method_count + i) );
+          }
         }
 
         return (RogueTypeInfo*) THIS->type_info;
@@ -76,6 +82,7 @@ class TypeInfo
     name              : String
     global_properties = PropertyInfo[]
     properties        = PropertyInfo[]
+    global_methods    = MethodInfo[]
     methods           = MethodInfo[]
 
   METHODS
@@ -88,26 +95,57 @@ class TypeInfo
       properties.add( PropertyInfo(properties.count,property_name_index, property_type_index) )
 
     method add_method_info( method_index:Int32 ) [essential]
+      local m = create_method( method_index )
+      if (m) methods.add( m )
+
+    method add_global_method_info( method_index:Int32 ) [essential]
+      local m = create_method( method_index );
+      if (m) global_methods.add( m )
+
+    method create_method( method_index:Int32 )->MethodInfo
+      local info_index = native("Rogue_method_info_index[$method_index]")->Int32
       local first_param_name  : Int32
       local first_param_type  : Int32
       local parameter_count  : Int32
       local return_type  : Int32
       local call_handler : Int32
       local success = false
-      native @|if (Rogue_method_info_table[$method_index][0] >= 0)
+      native @|auto info = Rogue_method_info_table[ $info_index ];
+              |if (info[0] >= 0)
               |{
               |  $success = 1;
-              |  $parameter_count  = Rogue_method_info_table[$method_index][1];
-              |  $first_param_name = Rogue_method_info_table[$method_index][2];
-              |  $first_param_type = Rogue_method_info_table[$method_index][3];
-              |  $return_type      = Rogue_method_info_table[$method_index][4];
-              |  $call_handler     = Rogue_method_info_table[$method_index][5];
+              |  $parameter_count  = info[1];
+              |  $first_param_name = info[2];
+              |  $first_param_type = info[3];
+              |  $return_type      = info[4];
+              |  $call_handler     = info[5];
               |}
       if (success)
-        methods.add( MethodInfo(method_index, parameter_count, first_param_name, first_param_type, return_type, call_handler) )
+        return MethodInfo( method_index, parameter_count, first_param_name, first_param_type,
+                           return_type, call_handler)
+      else
+        return null
       endIf
 
-    method call( context:Object, name_or_sig:String, args=NullValue:Value )->Value
+    method call( name_or_sig:String, args=UndefinedValue:Value )->Value
+      # - Global call syntax
+      # - Can throw NoSuchMethodError
+      local m = find_global_method( name_or_sig, args )
+      if (not m)
+        if (name_or_sig.contains('('))
+          throw NoSuchMethodError( "$.$" (name,name_or_sig) )
+        else
+          throw NoSuchMethodError( "$.$($)" (name,name_or_sig,args.count) )
+        endIf
+      endIf
+
+      return call( m, args )
+
+    method call( m:MethodInfo, args=UndefinedValue:Value )->Value
+      # - Global call syntax
+      return m.call( args )
+
+    method call( context:Object, name_or_sig:String, args=UndefinedValue:Value )->Value
       # Note: can throw NoSuchMethodError
       local m = find_method( name_or_sig, args )
       if (not m)
@@ -120,7 +158,7 @@ class TypeInfo
 
       return call( context, m, args )
 
-    method call( context:Object, m:MethodInfo, args=NullValue:Value )->Value
+    method call( context:Object, m:MethodInfo, args=UndefinedValue:Value )->Value
       if (not args.is_list) args = @[]
 
       args.insert( context->Value )
@@ -281,15 +319,21 @@ class TypeInfo
       endForEach
       return null
 
+    method find_global_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return find_method( global_methods, name_or_sig, arg_count )
+
     method find_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return find_method( methods, name_or_sig, arg_count )
+
+    method find_method( method_list:MethodInfo[], name_or_sig:String, arg_count=null:Int32? )->MethodInfo
       if (name_or_sig.contains('('))
-        forEach (m in methods)
+        forEach (m in method_list)
           if (m.signature == name_or_sig) return m
         endForEach
         return null
       endIf
 
-      forEach (m in methods)
+      forEach (m in method_list)
         if (m.name == name_or_sig and (not arg_count.exists or m.parameter_count == arg_count.value))
           return m
         endIf
@@ -297,9 +341,15 @@ class TypeInfo
 
       return null
 
+    method find_global_method( name_or_sig:String, args:Value )->MethodInfo
+      return find_method( global_methods, name_or_sig, args )
+
     method find_method( name_or_sig:String, args:Value )->MethodInfo
+      return find_method( methods, name_or_sig, args )
+
+    method find_method( method_list:MethodInfo[], name_or_sig:String, args:Value )->MethodInfo
       if (name_or_sig.contains('('))
-        forEach (m in methods)
+        forEach (m in method_list)
           if (m.signature == name_or_sig) return m
         endForEach
         return null
@@ -312,7 +362,7 @@ class TypeInfo
       local fallback_m_matching_param_count : MethodInfo
       local fallback_m_matching_name        : MethodInfo
 
-      forEach (m in methods)
+      forEach (m in method_list)
         contingent
           necessary (m.name == name_or_sig)
           fallback_m_matching_name = m
@@ -541,7 +591,7 @@ class MethodInfo
     method _get_method_name ( method_index : Int32 ) -> String
       local name = _method_name_strings[method_index]
       if (not name)
-        native @|int name_index = Rogue_method_info_table[$method_index][0];
+        native @|int name_index = Rogue_method_info_table[Rogue_method_info_index[$method_index]][0];
                 |if (name_index >= 0) $name = RogueString_create_from_utf8(Rogue_method_name_strings[name_index]);
         require(name)
         _method_name_strings[method_index] = name
@@ -601,6 +651,10 @@ class MethodInfo
       if (return_type) return signature + "->" + return_type.name
       return signature
 
+    method call( args:Value )->Value
+      if (args is null) args = UndefinedValue
+      return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+
     method call( context:Object, args:Value )->Value
       if (args is not null)
         args.insert( context->Value )
@@ -611,9 +665,38 @@ class MethodInfo
         return call( @[ context->Value ] )
       endIf
 
-    method call( args:Value )->Value
-      return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+    # Class methods
+    method call ()
+      _check_noreturn()
+      _check_count(0)
+      native "((void (*)())($this->fn_ptr))();"
 
+    method call<<$T1>> (t1:$T1)
+      _check_noreturn()
+      _check_count(1)
+      native "((void (*)($(t1.type)))($this->fn_ptr))($t1);"
+
+    method call<<$T1,$T2>> (t1:$T1,t2:$T2)
+      _check_noreturn()
+      _check_count(2)
+      native "((void (*)($(t1.type),$(t2.type)))($this->fn_ptr))($t1,$t2);"
+
+    method call<<$T1,$T2,$T3>> (t1:$T1,t2:$T2,t3:$T3)
+      _check_noreturn()
+      _check_count(3)
+      native "((void (*)($(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($t1,$t2,$t3);"
+
+    method call<<$T1,$T2,$T3,$T4>> (t1:$T1,t2:$T2,t3:$T3,t4:$T4)
+      _check_noreturn()
+      _check_count(4)
+      native "((void (*)($(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($t1,$t2,$t3,$t4);"
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
+      _check_noreturn()
+      _check_count(5)
+      native "((void (*)($(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($t1,$t2,$t3,$t4,$t5);"
+
+    # Object methods
     method call (o:Object)
       _check_noreturn()
       _check_count(0)
@@ -813,6 +896,44 @@ class MethodCallerReturning <<$R>>
     method init (parent)
       fn_ptr = parent.fn_ptr
 
+  METHODS  # Global Callers
+    method call () -> $R
+      parent._check_count(0)
+      local r : $R
+      native "$r = (($(r.type) (*)())($this->fn_ptr))();"
+      return r
+
+    method call<<$T1>> (t1:$T1) -> $R
+      parent._check_count(1)
+      local r : $R
+      native "$r = (($(r.type) (*)($(t1.type)))($this->fn_ptr))($t1);"
+      return r
+
+    method call<<$T1,$T2>> (t1:$T1,t2:$T2) -> $R
+      parent._check_count(2)
+      local r : $R
+      native "$r = (($(r.type) (*)($(t1.type),$(t2.type)))($this->fn_ptr))($t1,$t2);"
+      return r
+
+    method call<<$T1,$T2,$T3>> (t1:$T1,t2:$T2,t3:$T3) -> $R
+      parent._check_count(3)
+      local r : $R
+      native "$r = (($(r.type) (*)($(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($t1,$t2,$t3);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4>> (t1:$T1,t2:$T2,t3:$T3,t4:$T4) -> $R
+      parent._check_count(4)
+      local r : $R
+      native "$r = (($(r.type) (*)($(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($t1,$t2,$t3,$t4);"
+      return r
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5) -> $R
+      parent._check_count(5)
+      local r : $R
+      native "$r = (($(r.type) (*)($(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($t1,$t2,$t3,$t4,$t5);"
+      return r
+
+  METHODS  # Instance Callers
     method call (o:Object) -> $R
       parent._check_count(0)
       local r : $R
