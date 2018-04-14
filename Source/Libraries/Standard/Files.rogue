@@ -46,7 +46,6 @@ class Files
     method copy_newer( to_folder:String )
       File.create_folder( to_folder )
       to_folder += "/"
-      local base_count = base_folder.count
       forEach (filepath in filepaths)
         local to_filepath = to_folder + relative_filepath(filepath)
         File.copy_newer( filepath, to_filepath )
@@ -79,6 +78,7 @@ class Files
       return result
 
     method relative_filepath( filepath:String )->String
+      if (base_folder.count == 0) return filepath
       return filepath.rightmost( -base_folder.count )
 
     method remove( pattern:String )->this
