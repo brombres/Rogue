@@ -1061,12 +1061,12 @@ augment Program
       writer.println
 
       forEach (i of Program.literal_string_list)
-        writer.print(   "Rogue_literal_strings[" ).print(i)
-        writer.print("] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( ")
+        writer.print( "Rogue_define_literal_string( " ).print(i)
+        writer.print( ", " )
         local st = Program.literal_string_list[i]
         writer.print_literal_string( st )
         writer.print( ", " ).print( st.byte_count )
-        writer.println( " ) );" )
+        writer.print( " ); // ST" ).println( i )
       endForEach
       writer.println
 
@@ -3869,20 +3869,6 @@ augment CmdInsertionPoint
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (content) content.write_cpp( writer, is_statement )
 endAugment
-
-#{
-augment IntrospectionCallManager
-  PROPERTIES
-    roguem_to_handler = StringTable<<IntrospectionCallHandler>>()
-
-  METHODS
-    method index_handlers
-      forEach (handler in handlers)
-        local roguem = handler.methods.first.cpp_typedef
-        roguem_to_handler[ roguem ] = handler
-      endForEach
-endAugment
-}#
 
 augment CmdIntrospectionCall
   METHODS

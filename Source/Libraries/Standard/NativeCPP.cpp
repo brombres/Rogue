@@ -580,6 +580,14 @@ int Rogue_allocation_bytes_until_gc = Rogue_gc_threshold;
 #endif
 
 //-----------------------------------------------------------------------------
+//  Misc Utility
+//-----------------------------------------------------------------------------
+void Rogue_define_literal_string( int index, const char* st, int count )
+{
+  Rogue_literal_strings[index] = (RogueString*) RogueObject_retain( RogueString_create_from_utf8( st, count ) );
+}
+
+//-----------------------------------------------------------------------------
 //  RogueDebugTrace
 //-----------------------------------------------------------------------------
 RogueDebugTrace::RogueDebugTrace( const char* method_signature, const char* filename, int line )
