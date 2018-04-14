@@ -344,6 +344,9 @@ class Value
     method operator%( other:Value )->Value
       return Value( 0 )
 
+    method operator^( other:Value )->Value
+      return Value( 0 )
+
     method operator+( other:Real64 )->Value
       return Value( 0 )
 
@@ -357,6 +360,9 @@ class Value
       return Value( 0 )
 
     method operator%( other:Real64 )->Value
+      return Value( 0 )
+
+    method operator^( other:Real64 )->Value
       return Value( 0 )
 
     method operator+( other:String )->Value
@@ -625,6 +631,10 @@ class Real64Value( value:Real64 ) : Value
       if (not other) return Value(0)
       return Real64Value( value % other->Real64 )
 
+    method operator^( other:Value )->Value
+      if (not other) return Value(0)
+      return Real64Value( value ^ other->Real64 )
+
     method operator+( other:Real64 )->Value
       if (not other) return Value(0)
       return Real64Value( value + other )
@@ -644,6 +654,10 @@ class Real64Value( value:Real64 ) : Value
     method operator%( other:Real64 )->Value
       if (not other) return Value(0)
       return Real64Value( value % other )
+
+    method operator^( other:Real64 )->Value
+      if (not other) return Value(0)
+      return Real64Value( value ^ other )
 
     method operator+( other:String )->Value
       if (not other) return Value(0)
@@ -720,10 +734,17 @@ class Int32Value( value:Int32 ) : Value
       return Int32Value( value * other->Int32 )
 
     method operator/( other:Value )->Value
-      return Int32Value( value / other->Int32 )
+      local d = other->Int32
+      if (d == 0) return UndefinedValue
+      return Int32Value( value / d )
 
     method operator%( other:Value )->Value
-      return Int32Value( value % other->Int32 )
+      local d = other->Int32
+      if (d == 0) return UndefinedValue
+      return Int32Value( value % d )
+
+    method operator^( other:Value )->Value
+      return Int32Value( value ^ other->Int32 )
 
     method operator+( other:Int32 )->Value
       return Int32Value( value + other )
@@ -735,10 +756,15 @@ class Int32Value( value:Int32 ) : Value
       return Int32Value( value * other )
 
     method operator/( other:Int32 )->Value
+      if (other == 0) return UndefinedValue
       return Int32Value( value / other )
 
     method operator%( other:Int32 )->Value
+      if (other == 0) return UndefinedValue
       return Int32Value( value % other )
+
+    method operator^( other:Int32 )->Value
+      return Int32Value( value ^ other )
 
     method operator+( other:Int64 )->Value
       return Int64Value( value + other )
@@ -750,10 +776,15 @@ class Int32Value( value:Int32 ) : Value
       return Int64Value( value * other )
 
     method operator/( other:Int64 )->Value
+      if (other == 0) return UndefinedValue
       return Int64Value( value / other )
 
     method operator%( other:Int64 )->Value
+      if (other == 0) return UndefinedValue
       return Int64Value( value % other )
+
+    method operator^( other:Int64 )->Value
+      return Int64Value( value ^ other )
 
     method operator+( other:Real64 )->Value
       return Real64Value( value + other )
@@ -769,6 +800,9 @@ class Int32Value( value:Int32 ) : Value
 
     method operator%( other:Real64 )->Value
       return Real64Value( value % other )
+
+    method operator^( other:Real64 )->Value
+      return Real64Value( value ^ other )
 
     method operator+( other:String )->Value
       return StringValue( value + other )
@@ -843,10 +877,17 @@ class Int64Value( value:Int64 ) : Value
       return Int64Value( value * other->Int64 )
 
     method operator/( other:Value )->Value
-      return Int64Value( value / other->Int64 )
+      local d = other->Int64
+      if (d == 0) return UndefinedValue
+      return Int64Value( value / d )
 
     method operator%( other:Value )->Value
-      return Int64Value( value % other->Int64 )
+      local d = other->Int64
+      if (d == 0) return UndefinedValue
+      return Int64Value( value % d )
+
+    method operator^( other:Value )->Value
+      return Int64Value( value ^ other->Int64 )
 
     method operator+( other:Int64 )->Value
       return Int64Value( value + other )
@@ -858,10 +899,15 @@ class Int64Value( value:Int64 ) : Value
       return Int64Value( value * other )
 
     method operator/( other:Int64 )->Value
+      if (other == 0) return UndefinedValue
       return Int64Value( value / other )
 
     method operator%( other:Int64 )->Value
+      if (other == 0) return UndefinedValue
       return Int64Value( value % other )
+
+    method operator^( other:Int64 )->Value
+      return Int64Value( value ^ other )
 
     method operator+( other:Int32 )->Value
       return Int64Value( value + other )
@@ -873,10 +919,15 @@ class Int64Value( value:Int64 ) : Value
       return Int64Value( value * other )
 
     method operator/( other:Int32 )->Value
+      if (other == 0) return UndefinedValue
       return Int64Value( value / other )
 
     method operator%( other:Int32 )->Value
+      if (other == 0) return UndefinedValue
       return Int64Value( value % other )
+
+    method operator^( other:Int32 )->Value
+      return Int64Value( value ^ other )
 
     method operator+( other:Real64 )->Value
       return Real64Value( value + other )
@@ -892,6 +943,9 @@ class Int64Value( value:Int64 ) : Value
 
     method operator%( other:Real64 )->Value
       return Real64Value( value % other )
+
+    method operator^( other:Real64 )->Value
+      return Real64Value( value ^ other )
 
     method operator+( other:String )->Value
       return StringValue( value + other )
