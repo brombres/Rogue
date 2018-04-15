@@ -164,17 +164,24 @@ class Process
         if (output_reader)
           output_reader.fd_reader.close
           error_reader.fd_reader.close
-
-          native @|if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
-                  |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
-                  |if ($this->cin_pipe[0] != -1)  close( $this->cin_pipe[0] );
-                  |$this->cout_pipe[1] = -1;
-                  |$this->cerr_pipe[1] = -1;
-                  |$this->cin_pipe[0] = -1;
         endIf
 
         native @|posix_spawn_file_actions_destroy( &$this->actions );
       endIf
+
+      native @|if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
+              |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
+              |if ($this->cin_pipe[0] != -1)  close( $this->cin_pipe[0] );
+              |$this->cout_pipe[1] = -1;
+              |$this->cerr_pipe[1] = -1;
+              |$this->cin_pipe[0] = -1;
+              |if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
+              |if ($this->cerr_pipe[0] != -1) close( $this->cerr_pipe[0] );
+              |if ($this->cin_pipe[1] != -1)  close( $this->cin_pipe[1] );
+              |$this->cout_pipe[0] = -1;
+              |$this->cerr_pipe[0] = -1;
+              |$this->cin_pipe[1] = -1;
+
       return this
 
     method on_cleanup
