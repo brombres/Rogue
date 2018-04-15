@@ -173,8 +173,8 @@ class File
       endWhile
       return filepath
 
-    method character_writer( filepath:String )->CharacterToUTF8ByteWriter [macro]
-      CharacterToUTF8ByteWriter( File.writer(filepath) )
+    method character_writer( filepath:String )->CharacterToUTF8ByteWriter
+      return CharacterToUTF8ByteWriter( File.writer(filepath) )
 
     method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
       # Copy always is the default or else only if newer and/or size different.
@@ -579,8 +579,8 @@ class File
       endWhich
       return false
 
-    method options->FileOptions [macro]
-      FileOptions()
+    method options->FileOptions
+      return FileOptions()
 
     method parent( filepath:String, level=1:Int32 )->String
       if (level <= 0) return filepath
@@ -763,102 +763,102 @@ class File
   METHODS
     method init( filepath )
 
-    method absolute_filepath->String [macro]
-      File.absolute_filepath( this.filepath )
+    method absolute_filepath->String
+      return File.absolute_filepath( this.filepath )
 
-    method before_wildcard_pattern->String [macro]
-      File.before_wildcard_pattern( this.filepath )
+    method before_wildcard_pattern->String
+      return File.before_wildcard_pattern( this.filepath )
 
-    method character_writer->CharacterToUTF8ByteWriter [macro]
-      CharacterToUTF8ByteWriter( this.writer )
+    method character_writer->CharacterToUTF8ByteWriter
+      return CharacterToUTF8ByteWriter( this.writer )
 
-    method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical [macro]
-      File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
+    method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
+      return File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
 
-    method copy_newer( to_filepath:String, &if_size_different, &dry_run )->Logical [macro]
-      File.copy_newer( this.filepath, to_filepath, if_size_different, dry_run )
+    method copy_newer( to_filepath:String, &if_size_different, &dry_run )->Logical
+      return File.copy_newer( this.filepath, to_filepath, if_size_different, dry_run )
 
-    method create_folder->Logical [macro]
-      File.create_folder( this.filepath )
+    method create_folder->Logical
+      return File.create_folder( this.filepath )
 
-    method ends_with_separator->Logical [macro]
-      File.ends_with_separator( this.filepath )
+    method ends_with_separator->Logical
+      return File.ends_with_separator( this.filepath )
 
     method ensure_ends_with_separator->this
       if (not ends_with_separator) filepath += separator
       return this
 
-    method delete->Logical [macro]
-      File.delete( this.filepath )
+    method delete->Logical
+      return File.delete( this.filepath )
 
-    method exists->Logical [macro]
-      File.exists( this.filepath )
+    method exists->Logical
+      return File.exists( this.filepath )
 
-    method extension->String [macro]
-      File.extension( this.filepath )
+    method extension->String
+      return File.extension( this.filepath )
 
     method filename->String
       return filename( filepath )
 
-    method folder->String [macro]
-      File.folder( this.filepath )
+    method folder->String
+      return File.folder( this.filepath )
 
-    method is_folder->Logical [macro]
-      File.is_folder( this.filepath )
+    method is_folder->Logical
+      return File.is_folder( this.filepath )
 
-    method is_newer_than( other_filepath:String )->Logical [macro]
-      File.is_newer_than( this.filepath, other_filepath )
+    method is_newer_than( other_filepath:String )->Logical
+      return File.is_newer_than( this.filepath, other_filepath )
 
-    method listing( &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[] [macro]
-      File.listing( this.filepath, ignore_hidden, recursive, absolute, omit_path, files, folders )
+    method listing( &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
+      return File.listing( this.filepath, ignore_hidden, recursive, absolute, omit_path, files, folders )
 
-    method listing( options:FileOptions )->String[] [macro]
-      File.listing( this.filepath, options )
+    method listing( options:FileOptions )->String[]
+      return File.listing( this.filepath, options )
 
-    method load_as_bytes->Byte[] [macro]
-      File.load_as_bytes( this.filepath )
+    method load_as_bytes->Byte[]
+      return File.load_as_bytes( this.filepath )
 
-    method load_as_string->String [macro]
-      File.load_as_string( this.filepath )
+    method load_as_string->String
+      return File.load_as_string( this.filepath )
 
-    method matches_wildcard_pattern( pattern:String )->Logical [macro]
-      File.matches_wildcard_pattern( this.filepath, pattern )
+    method matches_wildcard_pattern( pattern:String )->Logical
+      return File.matches_wildcard_pattern( this.filepath, pattern )
 
-    method parent( level=1:Int32 )->String [macro]
-      File.parent( this.filepath, level )
+    method parent( level=1:Int32 )->String
+      return File.parent( this.filepath, level )
 
-    method path->String [macro]
-      File.folder( this.filepath )
+    method path->String
+      return File.folder( this.filepath )
 
-    method reader->FileReader [macro]
-      File.reader( this.filepath )
+    method reader->FileReader
+      return File.reader( this.filepath )
 
-    method save( data:Byte[] )->Logical [macro]
-      File.save( this.filepath, data )
+    method save( data:Byte[] )->Logical
+      return File.save( this.filepath, data )
 
-    method save( data:String )->Logical [macro]
-      File.save( this.filepath, data )
+    method save( data:String )->Logical
+      return File.save( this.filepath, data )
 
-    method save( data:StringBuilder )->Logical [macro]
-      File.save( this.filepath, data )
+    method save( data:StringBuilder )->Logical
+      return File.save( this.filepath, data )
 
-    method size->Int64 [macro]
-      File.size( this.filepath )
+    method size->Int64
+      return File.size( this.filepath )
 
-    method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run )->Int32 [macro]
-      File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run )
+    method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+      return File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run )
 
-    method sync_from( source_files:Files, &verbose, &keep_unused, &dry_run )->Int32 [macro]
-      File.sync_from( source_files, this.filepath, verbose, keep_unused, dry_run )
+    method sync_from( source_files:Files, &verbose, &keep_unused, &dry_run )->Int32
+      return File.sync_from( source_files, this.filepath, verbose, keep_unused, dry_run )
 
-    method timestamp->Real64 [macro]
-      File.timestamp( this.filepath )
+    method timestamp->Real64
+      return File.timestamp( this.filepath )
 
-    method writer->FileWriter [macro]
-      File.writer( this.filepath )
+    method writer->FileWriter
+      return File.writer( this.filepath )
 
-    method append_writer->FileWriter [macro]
-      File.append_writer( this.filepath )
+    method append_writer->FileWriter
+      return File.append_writer( this.filepath )
 
     method to->String
       return filepath
