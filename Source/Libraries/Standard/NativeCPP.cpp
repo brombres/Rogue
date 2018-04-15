@@ -1827,6 +1827,10 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
     type->property_type_indices = type_info;
     type_info += type->property_count;
 
+#if ROGUE_GC_MODE_BOEHM_TYPED
+    type->gc_alloc_type = *(type_info++);
+#endif
+
 #ifdef ROGUE_INTROSPECTION
     if (((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
       || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND))
