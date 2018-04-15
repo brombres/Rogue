@@ -1840,13 +1840,13 @@ _rogue_init_mutex(&Rogue_thread_singleton_lock);
       type->property_offsets = Rogue_property_offsets + property_offset_cursor;
       property_offset_cursor += type->property_count;
     }
+#endif
     if (((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_CLASS)
       || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_COMPOUND)
       || ((type->attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_ASPECT))
     {
       type->method_count = *(type_info++);
     }
-#endif
 
     type->trace_fn = Rogue_trace_fn_table[i];
     type->init_object_fn = Rogue_init_object_fn_table[i];
