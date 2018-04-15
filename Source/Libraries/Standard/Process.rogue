@@ -103,6 +103,8 @@ class Process
         native @|  posix_spawn_file_actions_addclose( &$this->actions, $this->cin_pipe[1] );
                 |  posix_spawn_file_actions_adddup2( &$this->actions, $this->cin_pipe[0], STDIN_FILENO );
                 |  posix_spawn_file_actions_addclose( &$this->actions, $this->cin_pipe[0] );
+      else
+        native @|  posix_spawn_file_actions_addclose( &$this->actions, STDIN_FILENO );
       endIf
 
       native @|int result = posix_spawnp( &$this->pid, args[0], &$this->actions, NULL, &args[0], NULL );
