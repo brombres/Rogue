@@ -202,29 +202,47 @@ class Process
     method run->Int32
       return finish.@exit_code
 
-    method update_readers->Logical
-      if (output_reader)
-        if (output_reader.fd_reader.fd == -1 or error_reader.fd_reader.fd == -1) return false
+    method update_readers( )->Logical
+      # Returns true if we should keep updating
 
-        native @|int status = poll( $this->poll_list, 2, 0 );
-                |if (status > 0)
-                |{
-                |  if ($this->poll_list[0].revents & POLLIN)
-                |  {
-                     output_reader.fd_reader.buffer_more
-                     return true
-        native @|  }
-                |  else if ($this->poll_list[1].revents & POLLIN)
-                |  {
-                     error_reader.fd_reader.buffer_more
-                     return true
-        native @|  }
-                |}
-                |else if ($this->pid)
-                |{
-                   is_finished
-        native @|}
+      # Get the FDs to poll.  We do this because they might have
+      # changed (specifically, might have gone to -1).
+      local fd0 = -1 : Int
+      local fd1 = -1 : Int
+      if (output_reader) fd0 = output_reader.fd_reader.fd
+      if (error_reader)  fd1 =  error_reader.fd_reader.fd
+
+      # Bail out if there's nobody to poll
+      if (fd0 == -1 and fd1 == -1) return false
+
+      # Set up poll_list and actually do the poll
+      #NOTE: We could probably make poll_list local
+      local status : Int32
+      native @|$this->poll_list[0].fd = $fd0;
+              |$this->poll_list[1].fd = $fd1;
+              |$status = poll( $this->poll_list, 2, -1 );
+
+      if (status > 0)
+        # One or more FDs had somehting to say
+        local keep_going = false
+        forEach (which_fd in 0..<2)
+          local has_input = native("$this->poll_list[$which_fd].revents & POLLIN")->Logical
+          local has_other = native("$this->poll_list[$which_fd].revents & ~POLLIN")->Logical
+          local reader = ?:{which_fd == 0: output_reader || error_reader}
+
+          if (has_input) reader.fd_reader.buffer_more
+
+          # Anything besides readable is "bad" (it's most likely the other end hanging up)
+          if (has_other) reader.fd_reader.close
+
+          if (reader.fd_reader.is_open) keep_going = true
+        endForEach
+        return keep_going # If anyone wants to keep going, we keep going
+      elseIf ((status == -1) and native("errno == EINTR")->Logical)
+        # poll got interrupted; try again later
+        return true
       endIf
+
       return false
 
 endClass
