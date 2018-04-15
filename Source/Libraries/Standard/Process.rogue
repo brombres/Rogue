@@ -37,7 +37,7 @@ class Process
 
   METHODS
     method init( cmd:String, &readable, &writable )
-      init( ["sh","-c",cmd], &readable, &writable )
+      init( ["sh","-c",cmd], &=readable, &=writable )
 
     method init( args, &readable, &writable )
       if (not launch(readable,writable))
