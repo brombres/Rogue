@@ -1098,7 +1098,7 @@ class FDReader : Reader<<Byte>>
     method buffer_more->Logical
       # Used by Process which needs to keep buffering from both the stdout and stderr of a process
       # to make sure the process doesn't get blocked.
-      if (not has_another) return false
+      if (fd < 0) return false
 
       buffer.reserve( 1024 )
       local cur_count = buffer.count
