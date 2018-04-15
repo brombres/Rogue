@@ -1121,6 +1121,9 @@ class FDReader : Reader<<Byte>>
       endIf
       return this
 
+    method is_open->Logical
+      return fd != -1
+
     method has_another->Logical
       return (fd >= 0 or buffer_position < buffer.count)
 
