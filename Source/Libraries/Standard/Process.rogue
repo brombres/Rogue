@@ -151,6 +151,8 @@ class Process
 
         if (input_writer) input_writer.close
 
+        while (update_readers) noAction
+
         native @|int status;
                 |if ($this->pid)
                 |{
@@ -158,8 +160,6 @@ class Process
                 |  $exit_code = WEXITSTATUS( status );
                 |  $this->pid = 0;
                 |}
-
-        while (update_readers) noAction
 
         if (output_reader)
           output_reader.fd_reader.close
