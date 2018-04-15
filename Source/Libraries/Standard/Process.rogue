@@ -109,6 +109,12 @@ class Process
 
       native @|int result = posix_spawnp( &$this->pid, args[0], &$this->actions, NULL, &args[0], NULL );
               |delete [] args;
+              |if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
+              |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
+              |if ($this->cin_pipe[0] != -1)  close( $this->cin_pipe[0] );
+              |$this->cout_pipe[1] = -1;
+              |$this->cerr_pipe[1] = -1;
+              |$this->cin_pipe[0] = -1;
               |if (0 != result) return false;
 
       if (readable)
