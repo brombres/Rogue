@@ -1,13 +1,13 @@
 class String
   GLOBAL METHODS
-    method create( utf8:Byte[] )->String [macro]
-      $if (target("C++")) native 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )'
+    method create( utf8:Byte[] )->String
+      return native( 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )' )->String
 
-    method create( utf8:Byte[], i1:Int32, count:Int32 )->String [macro]
-      $if (target("C++")) native 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )'
+    method create( utf8:Byte[], i1:Int32, count:Int32 )->String
+      return native( 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )' )->String
 
-    method create( characters:Character[] )->String [macro]
-      $if (target("C++")) native 'RogueString_create_from_characters( $characters )'
+    method create( characters:Character[] )->String
+      return native( 'RogueString_create_from_characters( $characters )' )->String
 
     method create( characters:StringBuilder )->String
       return create( characters.utf8 )
@@ -158,11 +158,11 @@ class String
       local other_count = other.count
       return (count >= other_count and contains_at(other,0))
 
-    method byte( byte_index:Int32 )->Byte [macro]
-      native( "$this->utf8[ $byte_index ]" )
+    method byte( byte_index:Int32 )->Byte
+      return native( "$this->utf8[ $byte_index ]" )->Byte
 
-    method byte_count->Int32 [macro]
-      native( "$this->byte_count" )
+    method byte_count->Int32
+      return native( "$this->byte_count" )->Int32
 
     method capitalized->String
       if (count == 0) return this
@@ -202,8 +202,8 @@ class String
       $endIf
 
 
-    method count->Int32 [macro]
-      $if (target("C++")) native '$this->character_count'
+    method count->Int32
+      return native( '$this->character_count' )->Int32
 
     method ends_with( ch:Character )->Logical
       return (count > 0 and this[count-1] == ch)
@@ -263,8 +263,8 @@ class String
       if (i.exists) return from( i.value )
       else          return ""
 
-    method get( index:Int32 )->Character [macro]
-      $if (target("C++")) native 'RogueString_character_at($this,$index)'
+    method get( index:Int32 )->Character
+      return native( 'RogueString_character_at($this,$index)' )->Character
 
     method hash_code->Int32
       $if (target("C++")) return native('$this->hash_code')->Int32
@@ -279,9 +279,9 @@ class String
       endForEach
       return builder->String
 
-    method is_ascii->Logical [macro]
+    method is_ascii->Logical
       # Returns 'true' if all character codes in this string are in the range 0..127.
-      native( "$this->is_ascii" )
+      return native( "$this->is_ascii" )->Logical
 
     method is_integer->Logical
       if (count == 0) return false
@@ -294,8 +294,8 @@ class String
       endForEach
       return true
 
-    method is_number->Logical [macro]
-      this.is_real
+    method is_number->Logical
+      return this.is_real
 
     method is_real->Logical
       if (count == 0) return false
@@ -400,8 +400,8 @@ class String
 
       return null
 
-    method operator+( value:Byte )->String [macro]
-      this + value->Int32
+    method operator+( value:Byte )->String
+      return (this + value->Int32)
 
     method operator+( value:Character )->String
       return StringBuilder().print( this ).print( value )->String
@@ -463,8 +463,8 @@ class String
     method operator+( value:Real64 )->String
       return StringBuilder().print( this ).print( value )->String
 
-    method operator+( value:Real32 )->String [macro]
-      this + value->Real64
+    method operator+( value:Real32 )->String
+      return (this + value->Real64)
 
     method operator+( value:String )->String
       if (value is null) return this + "null"
@@ -472,8 +472,8 @@ class String
       if (value.count == 0) return this
       return StringBuilder().print( this ).print( value )->String
 
-    method operator*( value:Int32 )->String [macro]
-      this.times( value )
+    method operator*( value:Int32 )->String
+      return this.times( value )
 
     method pluralized( quantity:Int32 )->String
       # Returns a pluralized form of this string.
@@ -705,17 +705,17 @@ class String
       forEach (ch in this) result.add( ch )
       return result
 
-    method to->Int32 [macro]
-      native( "(RogueInt32)strtol( (char*)$this->utf8, 0, 10 )" )
+    method to->Int32
+      return native( "(RogueInt32)strtol( (char*)$this->utf8, 0, 10 )" )->Int32
 
-    method to->Int64 [macro]
-      native( "(RogueInt64)strtoll( (char*)$this->utf8, 0, 10 )" )
+    method to->Int64
+      return native( "(RogueInt64)strtoll( (char*)$this->utf8, 0, 10 )" )->Int64
 
     method to->Object
       return this
 
-    method to->Real64 [macro]
-      native( "strtod( (char*)$this->utf8, 0 )" )
+    method to->Real64
+      return native( "strtod( (char*)$this->utf8, 0 )" )->Real64
 
     method to->String
       return this
@@ -753,8 +753,8 @@ class String
       endForEach
       return result->String
 
-    method to_utf8->Byte[] [macro]
-      this->Byte[]
+    method to_utf8->Byte[]
+      return this->Byte[]
 
     method trimmed->String
       # Trim white spaces on both ends

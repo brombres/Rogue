@@ -22,7 +22,10 @@ class Array<<$DataType>> : Array [native]
       forEach (value at index in this) result[ index ] = value
       return result
 
-    method get( index:Int32 )->$DataType [macro]
-      this[ index ]
+    method get( index:Int32 )->$DataType
+      return this[ index ]
+
+    method set( index:Int32, new_value:$DataType )
+      this[ index ] = new_value
 endClass
 

@@ -66,8 +66,8 @@ class List<<$DataType>> : GenericList
       discard_from( 0 )
       return this
 
-    method contains( value:$DataType )->Logical [macro]
-      this.locate( value )?
+    method contains( value:$DataType )->Logical
+      return this.locate( value )?
 
     method contains( query:(Function($DataType)->Logical) )->Logical
       return first( query ).exists
@@ -102,8 +102,8 @@ class List<<$DataType>> : GenericList
       # Expands the list if necessary to include the specified index.
       return expand_to_count( index + 1 )
 
-    method first->$DataType [macro]
-      this.data[0]
+    method first->$DataType
+      return this.data[0]
 
     method first( query:(Function($DataType)->Logical) )->$DataType?
       forEach (value in this)
@@ -141,11 +141,11 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method filter( keep_if:(Function($DataType)->Logical) )->this [macro]
-      this.keep( keep_if )
+    method filter( keep_if:(Function($DataType)->Logical) )->this
+      return this.keep( keep_if )
 
-    method filtered( keep_if:(Function($DataType)->Logical) )->$DataType[] [macro]
-      this.keeping( keep_if )
+    method filtered( keep_if:(Function($DataType)->Logical) )->$DataType[]
+      return this.keeping( keep_if )
 
     method find( query:(Function($DataType)->Logical) )->$DataType?
       forEach (value in this)
@@ -153,8 +153,8 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method get( index:Int32 )->$DataType [macro]
-      this.data[ index ]
+    method get( index:Int32 )->$DataType
+      return this.data[ index ]
 
     method get( query:(Function($DataType)->Logical) )->$DataType[]
       local results = $DataType[]
@@ -175,8 +175,8 @@ class List<<$DataType>> : GenericList
         return expand_to_count( index+1 )[ index ]
       endIf
 
-    method heapsort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
-      Heapsort<<$DataType>>.sort( this, compare_fn )
+    method heapsort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
+      return Heapsort<<$DataType>>.sort( this, compare_fn )
 
     method insert( value:$DataType, before_index=0:Int32 )->this
       if (before_index < 0) before_index = 0
@@ -215,8 +215,8 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method insertion_sort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
-      InsertionSort<<$DataType>>.sort( this, compare_fn )
+    method insertion_sort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
+      return InsertionSort<<$DataType>>.sort( this, compare_fn )
 
     method is_empty->Logical
       return count == 0
@@ -332,8 +332,8 @@ class List<<$DataType>> : GenericList
 
       return c
 
-    method quicksort( compare_fn:(Function($DataType,$DataType)->Logical) )->this [macro]
-      Quicksort<<$DataType>>.sort( this, compare_fn )
+    method quicksort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
+      return Quicksort<<$DataType>>.sort( this, compare_fn )
 
     method random( generator=Random:Random )->$DataType
       # Returns an element at random
@@ -400,8 +400,8 @@ class List<<$DataType>> : GenericList
       data[count] = zero_value
       return result
 
-    method remove_first->$DataType [macro]
-      this.remove_at(0)
+    method remove_first->$DataType
+      return this.remove_at(0)
 
     method remove_last->$DataType
       return remove_at( count - 1 )
@@ -448,7 +448,7 @@ class List<<$DataType>> : GenericList
     method rewriter->ListRewriter<<$DataType>>
       return ListRewriter<<$DataType>>( this )
 
-    method set( index:Int32, new_value:$DataType ) [macro]
+    method set( index:Int32, new_value:$DataType )
       this.data[ index ] = new_value
 
     method set_first( new_value:$DataType )->this
