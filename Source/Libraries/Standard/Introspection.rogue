@@ -43,26 +43,26 @@ class Introspector
         return Value( native( "*((RogueObject**)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Object )
       endIf
 
-      which (property_info.type.name)
-        case "Real64"
+      which (property_info.type.primitive_type)
+        case TypeInfo.TYPE_REAL64
           return Value( native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Real64 )
 
-        case "Real32"
+        case TypeInfo.TYPE_REAL32
           return Value( native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Real32 )
 
-        case "Int64"
+        case TypeInfo.TYPE_INT64
           return Value( native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Int64 )
 
-        case "Int32"
+        case TypeInfo.TYPE_INT32
           return Value( native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Int32 )
 
-        case "Character"
+        case TypeInfo.TYPE_CHARACTER
           return Value( native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Character + "" )
 
-        case "Byte"
+        case TypeInfo.TYPE_BYTE
           return Value( native( "*((RogueByte*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Byte )
 
-        case "Logical"
+        case TypeInfo.TYPE_LOGICAL
           return Value( native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->Logical )
 
         others
@@ -113,32 +113,32 @@ class Introspector
         return this
       endIf
 
-      which (property_info.type.name)
-        case "Real64"
+      which (property_info.type.primitive_type)
+        case TypeInfo.TYPE_REAL64
           local value = new_value->Real64
           native( "*((RogueReal64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
-        case "Real32"
+        case TypeInfo.TYPE_REAL32
           local value = new_value->Real32
           native( "*((RogueReal32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
-        case "Int64"
+        case TypeInfo.TYPE_INT64
           local value = new_value->Int64
           native( "*((RogueInt64*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
-        case "Int32"
+        case TypeInfo.TYPE_INT32
           local value = new_value->Int32
           native( "*((RogueInt32*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
-        case "Character"
+        case TypeInfo.TYPE_CHARACTER
           local value = new_value->Character
           native( "*((RogueCharacter*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
-        case "Byte"
+        case TypeInfo.TYPE_BYTE
           local value = new_value->Byte
           native( "*((RogueByte*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
-        case "Logical"
+        case TypeInfo.TYPE_LOGICAL
           local value = new_value->Logical
           native( "*((RogueLogical*)(((RogueByte*)(intptr_t)$address) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $value;" )
 
@@ -172,26 +172,26 @@ class Introspector
         return this
       endIf
 
-      which (type.name)
-        case "Real64"
+      which (type.primitive_type)
+        case TypeInfo.TYPE_REAL64
           native( "*(RogueReal64*)((RogueByte*)(intptr_t)$address)" )->Real64 = new_value->Real64
 
-        case "Real32"
+        case TypeInfo.TYPE_REAL32
           native( "*(RogueReal32*)((RogueByte*)(intptr_t)$address)" )->Real32 = new_value->Real32
 
-        case "Int64"
+        case TypeInfo.TYPE_INT64
           native( "*(RogueInt64*)((RogueByte*)(intptr_t)$address)" )->Int64 = new_value->Int64
 
-        case "Int32"
+        case TypeInfo.TYPE_INT32
           native( "*(RogueInt32*)((RogueByte*)(intptr_t)$address)" )->Int32 = new_value->Int32
 
-        case "Character"
+        case TypeInfo.TYPE_CHARACTER
           native( "*(RogueCharacter*)((RogueByte*)(intptr_t)$address)" )->Character = new_value->Character
 
-        case "Byte"
+        case TypeInfo.TYPE_BYTE
           native( "*(RogueByte*)((RogueByte*)(intptr_t)$address)" )->Byte = new_value->Byte
 
-        case "Logical"
+        case TypeInfo.TYPE_LOGICAL
           native( "*(RogueLogical*)((RogueByte*)(intptr_t)$address)" )->Logical = new_value->Logical
 
       endWhich
@@ -207,26 +207,26 @@ class Introspector
     method value->Value
       if (type.is_reference) return ObjectValue( context )
 
-      which (type.name)
-        case "Real64"
+      which (type.primitive_type)
+        case TypeInfo.TYPE_REAL64
           return Value( native("*((RogueReal64*)((RogueByte*)(intptr_t)$address))" )->Real64 )
 
-        case "Real32"
+        case TypeInfo.TYPE_REAL32
           return Value( native("*((RogueReal32*)((RogueByte*)(intptr_t)$address))" )->Real32 )
 
-        case "Int64"
+        case TypeInfo.TYPE_INT64
           return Value( native("*((RogueInt64*)((RogueByte*)(intptr_t)$address))" )->Int64 )
 
-        case "Int32"
+        case TypeInfo.TYPE_INT32
           return Value( native("*((RogueInt32*)((RogueByte*)(intptr_t)$address))" )->Int32 )
 
-        case "Character"
+        case TypeInfo.TYPE_CHARACTER
           return Value( native("*((RogueCharacter*)((RogueByte*)(intptr_t)$address))" )->Character )
 
-        case "Byte"
+        case TypeInfo.TYPE_BYTE
           return Value( native("*((RogueByte*)((RogueByte*)(intptr_t)$address))" )->Byte )
 
-        case "Logical"
+        case TypeInfo.TYPE_LOGICAL
           return Value( native("*((RogueLogical*)((RogueByte*)(intptr_t)$address))" )->Logical )
 
         others

@@ -1,4 +1,14 @@
 class TypeInfo
+  ENUMERATE
+    TYPE_NA
+    TYPE_REAL64
+    TYPE_REAL32
+    TYPE_INT64
+    TYPE_INT32
+    TYPE_CHARACTER
+    TYPE_BYTE
+    TYPE_LOGICAL
+
   DEPENDENCIES
     nativeHeader
       struct RogueType;
@@ -84,9 +94,26 @@ class TypeInfo
     properties        = PropertyInfo[]
     global_methods    = MethodInfo[]
     methods           = MethodInfo[]
+    primitive_type    = TYPE_NA : Int32
 
   METHODS
     method init( index, name ) [essential]
+      which (name)
+        case "Real64"
+          primitive_type = TYPE_REAL64
+        case "Real32"
+          primitive_type = TYPE_REAL32
+        case "Int64"
+          primitive_type = TYPE_INT64
+        case "Int32"
+          primitive_type = TYPE_INT32
+        case "Character"
+          primitive_type = TYPE_CHARACTER
+        case "Byte"
+          primitive_type = TYPE_BYTE
+        case "Logical"
+          primitive_type = TYPE_LOGICAL
+      endWhich
 
     method add_global_property_info( global_property_name_index:Int32, global_property_type_index:Int32 ) [essential]
       global_properties.add( PropertyInfo(global_properties.count,global_property_name_index, global_property_type_index) )
@@ -192,7 +219,7 @@ class TypeInfo
       return global_property( find_global_property(property_name) )
 
     method global_property( property_info:PropertyInfo )->Value
-      if (not property_info) return NullValue
+      if (not property_info) return UndefinedValue
 
       local i = property_info.index
 
@@ -200,26 +227,26 @@ class TypeInfo
         return Value( native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object )
       endIf
 
-      which (property_info.type.name)
-        case "Real64"
+      which (property_info.type.primitive_type)
+        case TYPE_REAL64
           return Value( native( "*((RogueReal64*)(Rogue_types[$index].global_property_pointers[$i]))" )->Real64 )
 
-        case "Real32"
+        case TYPE_REAL32
           return Value( native( "*((RogueReal32*)(Rogue_types[$index].global_property_pointers[$i]))" )->Real32 )
 
-        case "Int64"
+        case TYPE_INT64
           return Value( native( "*((RogueInt64*)(Rogue_types[$index].global_property_pointers[$i]))" )->Int64 )
 
-        case "Int32"
+        case TYPE_INT32
           return Value( native( "*((RogueInt32*)(Rogue_types[$index].global_property_pointers[$i]))" )->Int32 )
 
-        case "Character"
+        case TYPE_CHARACTER
           return Value( native( "*((RogueCharacter*)(Rogue_types[$index].global_property_pointers[$i]))" )->Character + "" )
 
-        case "Byte"
+        case TYPE_BYTE
           return Value( native( "*((RogueByte*)(Rogue_types[$index].global_property_pointers[$i]))" )->Byte )
 
-        case "Logical"
+        case TYPE_LOGICAL
           return Value( native( "*((RogueLogical*)(Rogue_types[$index].global_property_pointers[$i]))" )->Logical )
 
         others
@@ -278,8 +305,32 @@ class TypeInfo
     method is_primitive->Logical
       return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_TYPE_MASK) == ROGUE_ATTRIBUTE_IS_PRIMITIVE" )->Logical
 
+    method is_real64->Logical
+      return (primitive_type == TYPE_REAL64)
+
+    method is_real32->Logical
+      return (primitive_type == TYPE_REAL32)
+
+    method is_int64->Logical
+      return (primitive_type == TYPE_INT64)
+
+    method is_int32->Logical
+      return (primitive_type == TYPE_INT32)
+
+    method is_character->Logical
+      return (primitive_type == TYPE_CHARACTER)
+
+    method is_byte->Logical
+      return (primitive_type == TYPE_BYTE)
+
+    method is_logical->Logical
+      return (primitive_type == TYPE_LOGICAL)
+
     method is_reference->Logical
       return native( "!(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_DIRECT)" )->Logical
+
+    method is_singleton->Logical
+      return native( "(Rogue_types[$index].attributes & ROGUE_ATTRIBUTE_IS_SINGLETON)" )->Logical
 
     method base_class->TypeInfo
       local base_count : Int32
@@ -445,6 +496,35 @@ class TypeInfo
       endForEach
       return r
 
+    method property( context:Object, name:String )->Value
+      return property( context, context.type_info.find_property(name) )
+
+    method property( context:Object, property_info:PropertyInfo )->Value
+      local type = property_info.type
+      if (type.is_reference)
+        return Value( property<<Object>>(context,property_info) )
+      else
+        which (type.primitive_type)
+          case TYPE_REAL64
+            return Value( property<<Real64>>(context,property_info) )
+          case TYPE_REAL32
+            return Value( property<<Real32>>(context,property_info) )
+          case TYPE_INT64
+            return Value( property<<Int64>>(context,property_info) )
+          case TYPE_INT32
+            return Value( property<<Int32>>(context,property_info) )
+          case TYPE_CHARACTER
+            return Value( property<<Character>>(context,property_info) )
+          case TYPE_BYTE
+            return Value( property<<Byte>>(context,property_info) )
+          case TYPE_LOGICAL
+            return Value( property<<Logical>>(context,property_info) )
+          others
+            # Must be a compound
+            return context.introspector[ property_info ]
+        endWhich
+      endIf
+
     method property<<$PropertyType>>( context:Object, property_name:String )->$PropertyType
       return property<<$PropertyType>>( context, find_property(property_name) )
 
@@ -474,39 +554,39 @@ class TypeInfo
         native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
       else
-        which (property_info.type.name)
-          case "Real64"
+        which (property_info.type.primitive_type)
+          case TypeInfo.TYPE_REAL64
             local v = value->Real64
             native( "*((RogueReal64*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
-          case "Real32"
+          case TypeInfo.TYPE_REAL32
             local v = value->Real32
             native( "*((RogueReal32*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
-          case "Int64"
+          case TypeInfo.TYPE_INT64
             local v = value->Int64
             native( "*((RogueInt64*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
-          case "Int32"
+          case TypeInfo.TYPE_INT32
             local v = value->Int32
             native( "*((RogueInt32*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
-          case "Character"
+          case TypeInfo.TYPE_CHARACTER
             local v = value->Character
             native( "*((RogueCharacter*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
-          case "Byte"
+          case TypeInfo.TYPE_BYTE
             local v = value->Byte
             native( "*((RogueByte*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
-          case "Logical"
+          case TypeInfo.TYPE_LOGICAL
             local v = value->Logical
             native( "*((RogueLogical*)(Rogue_types[$index].global_property_pointers[$i])) = $v;" )
 
           others
             # Must be a compound
             Introspector( null, native("(RogueInt64)(intptr_t)(Rogue_types[$index].global_property_pointers[$i])")->Int64,
-              property_info.type ).set( value )
+            property_info.type ).set( value )
         endWhich
 
       endIf
@@ -527,6 +607,40 @@ class TypeInfo
       endIf
 
       return this
+
+    method property( context:Object, name:String, new_value:Value )->this
+      return set_property( context, context.type_info.find_property(name), new_value )
+
+    method property( context:Object, property_info:PropertyInfo, new_value:Value )->this
+      local type = property_info.type
+      if (type.is_reference)
+        if (new_value.is_object or new_value.is_string)
+          return set_property<<Object>>( context, property_info, new_value->Object )  # unpack value
+        else
+          return set_property<<Object>>( context, property_info, new_value )  # leave value wrapper
+        endIf
+      else
+        which (type.primitive_type)
+          case TYPE_REAL64
+            return set_property<<Real64>>( context, property_info, new_value->Real64 )
+          case TYPE_REAL32
+            return set_property<<Real32>>( context, property_info, new_value->Real32 )
+          case TYPE_INT64
+            return set_property<<Int64>>( context, property_info, new_value->Int64 )
+          case TYPE_INT32
+            return set_property<<Int32>>( context, property_info, new_value->Int32 )
+          case TYPE_CHARACTER
+            return set_property<<Character>>( context, property_info, new_value->Character )
+          case TYPE_BYTE
+            return set_property<<Byte>>( context, property_info, new_value->Byte )
+          case TYPE_LOGICAL
+            return set_property<<Logical>>( context, property_info, new_value->Logical )
+          others
+            # Must be a compound
+            context.introspector[ property_info ] = new_value
+            return this
+        endWhich
+      endIf
 
     method set_property<<$PropertyType>>( context:Object, property_name:String, new_value:$PropertyType )->this
       return set_property<<$PropertyType>>( context, find_property(property_name), new_value )
