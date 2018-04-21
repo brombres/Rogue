@@ -33,7 +33,7 @@ class Process
       local output_bytes = Byte[]
       while (process.output_reader.has_another) output_bytes.add( process.output_reader.read )
       local error_bytes = Byte[]
-      while (process.error_reader.has_another) output_bytes.add( process.error_reader.read )
+      while (process.error_reader.has_another) error_bytes.add( process.error_reader.read )
       return ProcessOutput( process.exit_code, output_bytes, error_bytes )
 
   METHODS
