@@ -158,12 +158,7 @@ Source/RogueC/Build/Rogo.cpp: $(ROGUEC_SRC) Source/Tools/Rogo/Rogo.rogue
 	roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $(ROGUEC_ROGUE_FLAGS)
 
 libraries: bootstrap_rogo
-	@mkdir -p Programs/RogueC/$(PLATFORM)
-	@if [ -z "$(IGNORE_LIBS)" -a $$(rsync -rtvk --exclude=".*" --exclude=".*/" --delete --exclude=.*.sw? --dry-run Source/Libraries Programs/RogueC/$(PLATFORM) | wc -l) -gt 4 ]; \
-	then \
-	  echo "==== Updating Libraries ===="; \
-		rsync -rtvk --delete --exclude=".*" --exclude=".*/" Source/Libraries Programs/RogueC/$(PLATFORM) | tail -n +2 | (tac 2> /dev/null || tail -r) | tail -n +4 | (tac 2> /dev/null || tail -r); \
-	fi
+	@rogo libraries
 
 libs: libraries
 

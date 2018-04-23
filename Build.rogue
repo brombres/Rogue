@@ -31,10 +31,16 @@ endRoutine
 #-------------------------------------------------------------------------------
 routine rogo_libraries
 #-------------------------------------------------------------------------------
-  local dest = "Programs/RogueC/$" (System.os)
-  File.create_folder( dest )
-  local files = Files( "." )
-  println files
+  local dest = "Programs/RogueC/$/" (System.os)
+  local files = Files( "Source/Libraries" )
+  files.add( "Standard" ).add( "ParseKit" )
+  local n_copied = File.sync_from( files, dest+"Libraries/", &dry_run )
+  if (n_copied >= 10)
+    println "Copying Source/Libraries -> $Libraries" (dest)
+    File.sync_from( files, dest+"Libraries/", &verbose )
+  else
+    File.sync_from( files, dest+"Libraries/", &verbose )
+  endIf
 endRoutine
 
 routine rogo_libs
