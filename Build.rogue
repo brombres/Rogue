@@ -1,46 +1,48 @@
-# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
-
-#$ ROGUEC_ARGS = --api
-# #$ LIBRARIES   = openssl( header:openssl/ssl.h )
-
-# Optional comment directives - remove leading '#' (leaving '#$') to activate.
-# In most cases the same directive can be specified multiple times for a cumulative effect.
-# #$ ROGUEC      = path/to/roguec
-# #$ ROGUEC_ARGS = --whatever
-# #$ CPP         = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
-# #$ CPP_ARGS    = -a -b -c
-# #$ LIBRARIES   = libalpha( header:"name.h" library:"libname.a" )
-# #$ LIBRARIES   = libbeta
-# #$ LINK        = -lalpha -lbeta
+# Main file for Rogo - entry point.
+# BuildCore.rogue contains class Build with implementation
+# Define BuildLocal.rogue for custom commands and augmentation.
 
 #-------------------------------------------------------------------------------
 routine rogo_default
 #-------------------------------------------------------------------------------
-  rogo_help
-  #println File.listing("Source/RogueC/*.rogue")
+  Build.rogue
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_roguec
+#-------------------------------------------------------------------------------
+  Build.roguec
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_rogo
+#-------------------------------------------------------------------------------
+  Build.rogo( &force )
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_link
+#-------------------------------------------------------------------------------
+  Build.build_roguec_launcher
+  Build.build_rogo_launcher
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_unlink
+#-------------------------------------------------------------------------------
+  Build.delete_launchers
 endRoutine
 
 #-------------------------------------------------------------------------------
 routine rogo_clean
 #-------------------------------------------------------------------------------
-  rogo_execute( "rm -rf .rogo" )
-  rogo_execute( "rm -rf Programs/RogueC/$" (System.os) )
-  rogo_execute @|rm -rf Source/RogueC/Build
+  Build.clean
 endRoutine
 
 #-------------------------------------------------------------------------------
 routine rogo_libraries
 #-------------------------------------------------------------------------------
-  local dest = "Programs/RogueC/$/" (System.os)
-  local files = Files( "Source/Libraries" )
-  files.add( "Standard" ).add( "ParseKit" )
-  local n_copied = File.sync_from( files, dest+"Libraries/", &dry_run )
-  if (n_copied >= 10)
-    println "Copying Source/Libraries -> $Libraries" (dest)
-    File.sync_from( files, dest+"Libraries/", &verbose )
-  else
-    File.sync_from( files, dest+"Libraries/", &verbose )
-  endIf
+  Build.sync_libraries
 endRoutine
 
 routine rogo_libs
@@ -58,7 +60,41 @@ routine rogo_remake( remake_count:Int32 )
 endRoutine
 
 routine remake
-  rogo_execute @|make remake
+  Build.roguec
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_debug
+#-------------------------------------------------------------------------------
+  Build.roguec( "in debug mode", "--debug" )
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_exhaustive
+#-------------------------------------------------------------------------------
+Build.roguec( "with --api=* and --threads", "--api=* --threads" )
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_bootstrap
+#-------------------------------------------------------------------------------
+  Build.bootstrap
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_update_bootstrap( roguec_or_build="":String )
+#-------------------------------------------------------------------------------
+  which (roguec_or_build)
+    case "roguec": Build.update_bootstrap( &roguec )
+    case "build":  Build.update_bootstrap( &build )
+    others:        Build.update_bootstrap( &roguec, &build )
+  endWhich
+endRoutine
+
+#-------------------------------------------------------------------------------
+routine rogo_revert
+#-------------------------------------------------------------------------------
+  Build.revert
 endRoutine
 
 #-------------------------------------------------------------------------------
@@ -67,39 +103,18 @@ routine rogo_x( remake_count:Int32 )
   rogo_remake( remake_count )
 endRoutine
 
+routine rogo_x2
+  rogo_remake( 2 )
+endRoutine
+
+routine rogo_x3
+  rogo_remake( 3 )
+endRoutine
+
 #-------------------------------------------------------------------------------
 routine rogo_version
 #-------------------------------------------------------------------------------
-  local build = 1
-  local commit_id : String
-
-  block
-    local output = Process.run( "git rev-list --count HEAD" )
-    if (output.success)
-      build = output->String.trimmed->Int32
-    endIf
-  endBlock
-
-  block
-    forEach (line in LineReader(Process.run("git status --porcelain")->String))
-      if (not line.begins_with("??"))
-        ++build
-        commit_id = "develop"
-        escapeBlock
-      endIf
-    endForEach
-  endBlock
-
-  if (not commit_id)
-    commit_id = Process.run( "git rev-parse --short HEAD" )->String.trimmed
-  endIf
-
-  local printer = PrintWriter( File("Source/RogueC/Version.rogue").writer )
-  printer.println( "$define ROGUE_RELEASE_BUILD " + build )
-  printer.println( "$define ROGUE_RELEASE_COMMIT_ID " + '"$"'(commit_id) )
-  printer.println( "$define ROGUE_RELEASE_TIMESTAMP " + Process.run("git show -s --format=%ct HEAD") )
-  printer.close
-
+  Build.create_version_file
 endRoutine
 
 #-------------------------------------------------------------------------------
@@ -113,57 +128,16 @@ routine rogo_execute( cmd:String )
 endRoutine
 
 #-------------------------------------------------------------------------------
+routine rogo_docs
+#-------------------------------------------------------------------------------
+  Build.run( "cd Source/DocGen && make" )
+endRoutine
+
+#-------------------------------------------------------------------------------
 routine rogo_test
 #-------------------------------------------------------------------------------
   local cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
   println "> " + cmd
   System.run( cmd )
-endRoutine
-
-
-#------------------------------------------------------------------------------
-# Internal Framework
-#------------------------------------------------------------------------------
-global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
-
-local args = @[]
-args.add( forEach in System.command_line_arguments )
-
-try
-  if (args.count)
-    run( args.remove_first, args )
-  else
-    rogo_default
-  endIf
-catch (err:Error)
-  Console.error.println err
-  System.exit 1
-endTry
-
-routine run( cmd:String, args:Value )
-  local m = <<Global>>.find_method( method_prefix + cmd )
-  if (m)
-    if (m.parameter_count == 1 and args.count > 1)
-      # Wrap all args in a ValueList.
-      args = @[ args ]
-    endIf
-    m.call( Global, args )
-  else
-    rogo_help
-  endIf
-endRoutine
-
-routine rogo_help
-  println "USAGE"
-  local lines = String[]
-  forEach (m in <<Global>>.methods)
-    if (m.name.begins_with(method_prefix))
-      local line = "  rogo $" (m.name.after_first(method_prefix))
-      line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
-      lines.add( line )
-    endIf
-  endForEach
-  lines.sort( (a,b)=>(a<b) )
-  println (forEach in lines)
 endRoutine
 

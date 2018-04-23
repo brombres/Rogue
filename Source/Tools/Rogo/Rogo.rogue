@@ -22,7 +22,8 @@ native @|#if defined(DEFAULT_CXX)
         |#endif
 config//cpp = compiler_invocation
 
-local has_build_core = File.exists( "BuildCore.rogue" )
+local has_build_core  = File.exists( "BuildCore.rogue" )
+local has_build_local = File.exists( "BuildLocal.rogue" )
 
 local buildfile : String
 forEach (arg in System.command_line_arguments)
@@ -49,30 +50,33 @@ if (buildfile is null and not File.exists("Build.rogue"))
   if (has_build_core)
     println "Creating skeleton Build.rogue..."
     File( "Build.rogue" ).save( "module Build\n" )
-    #elseIf (System.command_line_arguments.contains("--create"))
-    #println "Creating default Build.rogue..."
-    #create_default_build_file
   else
     Console.error.println "ERROR: Build.rogue does not exist and no alternate specified with --build=<filename>."
   endIf
   System.exit 1
 endIf
 
-local using_buildcore : Logical
 local exe : String
 if (buildfile is null)
   buildfile = "Build.rogue"
   exe = ".rogo/Build"
-  using_buildcore = has_build_core
 else
   exe = ".rogo/" + buildfile.before_first( '.' )
 endIf
+local base_name = exe   # e.g. Build
+exe += "-" + System.os  # e.g. Build-macOS
 
-if (File.is_newer_than(buildfile,exe) or (using_buildcore and File.is_newer_than("BuildCore.rogue",exe)))
+local is_source_newer = false
+if (File.is_newer_than(buildfile,exe))                                  is_source_newer = true
+elseIf (has_build_core and File.is_newer_than("BuildCore.rogue",exe))   is_source_newer = true
+elseIf (has_build_local and File.is_newer_than("BuildLocal.rogue",exe)) is_source_newer = true
+
+if (is_source_newer)
   println "Recompiling $..." (buildfile)
 
   # Scanning places copies in .rogo/
-  if (using_buildcore) scan_config( File("BuildCore.rogue") )
+  if (has_build_core)  scan_config( File("BuildCore.rogue") )
+  if (has_build_local) scan_config( File("BuildLocal.rogue") )
   scan_config( File(buildfile) )
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
@@ -83,19 +87,18 @@ if (File.is_newer_than(buildfile,exe) or (using_buildcore and File.is_newer_than
     endIf
   endForEach
 
-  #trace config.to_json(&formatted)
-
   local roguec_args = config//roguec_args->String
   local cmd =  "$ --target=C++,Console,$ .rogo/$" (config//roguec,System.os,buildfile)
-  if (has_build_core) cmd += " .rogo/BuildCore.rogue "
-  cmd += " --debug --main --output=$ $" (exe,roguec_args)
+  if (has_build_core)  cmd += " .rogo/BuildCore.rogue "
+  if (has_build_local) cmd += " .rogo/BuildLocal.rogue "
+  cmd += " --api --debug --main --output=$ $" (base_name,roguec_args)
   println cmd
   if (0 != System.run(cmd))
     Console.error.println "ERROR compiling $." (buildfile)
     System.exit 1
   endIf
 
-  cmd = "$ $ $.cpp" (config//cpp,config//cpp_args,exe)
+  cmd = "$ $ $.cpp" (config//cpp,config//cpp_args,base_name)
 
   local is_linux = (System.os == "Linux")
 
@@ -474,12 +477,4 @@ routine parse_filepath( parser:JSONParser )->String
   if (buffer.count == 0) buffer.print( parser.read )
 
   return buffer->String
-endRoutine
-
-routine create_default_build_file
-  #{
-  local content = @|module Build
-                   |
-                   |
-  }#
 endRoutine
