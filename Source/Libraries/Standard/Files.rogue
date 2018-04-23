@@ -16,10 +16,9 @@ class Files
       init( base_folder )
       add( pattern, &=ignore_hidden )
 
-    method add( pattern:String, &ignore_hidden )->this
+    method add( pattern:String, &ignore_hidden=true )->this
       forEach (listing_filepath in File.listing(base_folder+pattern,&=ignore_hidden))
         if (not filepaths.contains(listing_filepath))
-          filepaths.add( listing_filepath )
           filepaths.add( listing_filepath )
         endIf
       endForEach

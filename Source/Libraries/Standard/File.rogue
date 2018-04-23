@@ -187,8 +187,9 @@ class File
         if (File.is_folder(to_filepath))
           to_filepath += "/" + File.filename(from_filepath)
         else
-          if (not is_folder(to_filepath))
-            if (not dry_run) File.create_folder( File.folder(to_filepath) )
+          local containing_folder = File.folder( to_filepath )
+          if (not is_folder(containing_folder))
+            if (not dry_run) File.create_folder( containing_folder )
             modified = true
           endIf
         endIf
@@ -199,16 +200,14 @@ class File
             modified = true
           endIf
         else
-          if (not if_size_different or size(from_filepath) != size(to_filepath))
-            modified = true
-            if (not dry_run)
-              local reader = File.reader( from_filepath )
-              local writer = File.writer( to_filepath )
+          modified = true
+          if (not dry_run)
+            local reader = File.reader( from_filepath )
+            local writer = File.writer( to_filepath )
 
-              while (reader.has_another) writer.write( reader.read )
+            while (reader.has_another) writer.write( reader.read )
 
-              writer.close
-            endIf
+            writer.close
           endIf
         endIf
 
@@ -301,7 +300,7 @@ class File
     method is_newer_than( filepath:String, other_filepath:String )->Logical
       if (not File.exists(filepath))       return false
       if (not File.exists(other_filepath)) return true
-      return (File.timestamp(filepath) > File.timestamp(other_filepath))
+      return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
 
     method join( parts:String[] )->String
       local buffer = StringBuilder()
@@ -634,10 +633,12 @@ class File
       return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run )
 
     method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
-      if (not exists(dest_folder))    create_folder( dest_folder )
-      if (not is_folder(dest_folder))
-        Console.error.println( "ERROR: File.sync_from() can not create destination folder $" (dest_folder) )
-        return 0
+      if (not exists(dest_folder) and not dry_run)
+        create_folder( dest_folder )
+        if (not is_folder(dest_folder))
+          Console.error.println( "ERROR: File.sync_from() can not create destination folder $" (dest_folder) )
+          return 0
+        endIf
       endIf
 
       dest_folder = ensure_ends_with_separator( dest_folder )
