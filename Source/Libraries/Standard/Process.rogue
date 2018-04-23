@@ -8,6 +8,7 @@ class Process
     nativeHeader #include <spawn.h>
     nativeHeader #include <poll.h>
     nativeHeader #include <sys/wait.h>
+    nativeHeader extern char** environ;
 
   PROPERTIES
     args          : String[]
@@ -27,8 +28,11 @@ class Process
     native "pollfd poll_list[2];"
 
   GLOBAL METHODS
-    method run( cmd:String )->ProcessOutput
-      local process = Process( cmd, &readable, &is_blocking )
+    method run( cmd:String, &inherit_environment )->ProcessOutput
+      return run( ["sh","-c",cmd], &=inherit_environment )
+
+    method run( args:String[], &inherit_environment )->ProcessOutput
+      local process = Process( args, &readable, &is_blocking, &=inherit_environment )
       process.finish
       local output_bytes = Byte[]
       while (process.output_reader.has_another) output_bytes.add( process.output_reader.read )
@@ -37,11 +41,11 @@ class Process
       return ProcessOutput( process.exit_code, output_bytes, error_bytes )
 
   METHODS
-    method init( cmd:String, &readable, &writable, &is_blocking )
-      init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking )
+    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )
+      init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
 
-    method init( args, &readable, &writable, is_blocking=false )
-      if (not launch(readable,writable))
+    method init( args, &readable, &writable, is_blocking=false, &inherit_environment )
+      if (not launch(&=readable,&=writable,&=inherit_environment))
         native @|if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
                 |if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
                 |if ($this->cerr_pipe[0] != -1) close( $this->cerr_pipe[0] );
@@ -61,7 +65,7 @@ class Process
         exit_code = -1
       endIf
 
-    method launch( &readable, &writable )->Logical
+    method launch( &readable, &writable, &inherit_environment )->Logical
       native @|$this->cin_pipe[0]  = $this->cin_pipe[1]  = -1;
               |$this->cout_pipe[0] = $this->cout_pipe[1] = -1;
               |$this->cerr_pipe[0] = $this->cerr_pipe[1] = -1;
@@ -112,7 +116,8 @@ class Process
         native @|  posix_spawn_file_actions_addclose( &$this->actions, STDIN_FILENO );
       endIf
 
-      native @|int result = posix_spawnp( &$this->pid, args[0], &$this->actions, NULL, &args[0], NULL );
+      native @|int result = posix_spawnp( &$this->pid, args[0], &$this->actions, NULL, &args[0],
+              |    ($inherit_environment ? environ : NULL) );
               |delete [] args;
               |if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
               |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
