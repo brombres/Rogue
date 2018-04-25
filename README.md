@@ -30,7 +30,7 @@ Platforms | macOS, Linux (Ubuntu+), Cygwin
 Rogue is released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ## About
-Abe Pralle and Murphy McCauley are Rogue's principal developers.
+Abe Pralle and Murphy McCauley lead Rogue's design and development.
 
 Rogue was created by Abe Pralle in 2015 as an evolution of earlier language projects dating back to 2004.
 
