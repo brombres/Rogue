@@ -183,8 +183,10 @@ class Build [singleton]
       File.delete( ".rogo/launcher.script" )
 
     method run( cmd:String, &silent )
-      if (not silent) print( "> " ).println( cmd )
-      if (0 != System.run(cmd)) throw Error( "Build error." )
+      forEach (line in LineReader(cmd))
+        if (not silent) print( "> " ).println( line )
+        if (0 != System.run(line)) throw Error( "Build error." )
+      endForEach
 
     method locate_launcher( name:String )->String
       # Returns valid path or null
