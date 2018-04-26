@@ -22,8 +22,10 @@ native @|#if defined(DEFAULT_CXX)
         |#endif
 config//cpp = compiler_invocation
 
-local has_build_core  = File.exists( "BuildCore.rogue" )
-local has_build_local = File.exists( "BuildLocal.rogue" )
+local buildfiles = Files( "." )
+if (File.exists("Build.rogue")) buildfiles.add( "Build.rogue" )
+if (File.exists("BuildCore.rogue")) buildfiles.add( "BuildCore.rogue" )
+if (File.exists("BuildLocal.rogue")) buildfiles.add( "BuildLocal.rogue" )
 
 local buildfile : String
 forEach (arg in System.command_line_arguments)
@@ -46,19 +48,24 @@ forEach (arg in System.command_line_arguments)
   endIf
 endForEach
 
-if (buildfile is null and not File.exists("Build.rogue"))
-  if (has_build_core)
-    println "Creating skeleton Build.rogue..."
-    File( "Build.rogue" ).save( "module Build\n" )
-  else
-    Console.error.println "ERROR: Build.rogue does not exist and no alternate specified with --build=<filename>."
-  endIf
+if (buildfile) buildfiles.add( buildfile )
+
+if (not buildfiles.count)
+  local w = (Console.width - 1).or_smaller( 79 )
+  loop (w) do Console.error.print( '=' )
+  println
+  local mesg = "ROGO ERROR\n\n"
+  mesg += "No standard build file exists (Build.rogue, BuildCore.rogue, BuildLocal.rogue) "
+  mesg += "and no alternate specified with --build=<filename>."
+  Console.error.println( mesg.word_wrapped(w) )
+  loop (w) do Console.error.print( '=' )
+  println
   System.exit 1
 endIf
 
 local exe : String
 if (buildfile is null)
-  buildfile = "Build.rogue"
+  buildfile = buildfiles[0]
   exe = ".rogo/Build"
 else
   exe = ".rogo/" + buildfile.before_first( '.' )
@@ -66,18 +73,11 @@ endIf
 local base_name = exe   # e.g. Build
 exe += "-" + System.os  # e.g. Build-macOS
 
-local is_source_newer = false
-if (File.is_newer_than(buildfile,exe))                                  is_source_newer = true
-elseIf (has_build_core and File.is_newer_than("BuildCore.rogue",exe))   is_source_newer = true
-elseIf (has_build_local and File.is_newer_than("BuildLocal.rogue",exe)) is_source_newer = true
-
-if (is_source_newer)
+if (buildfiles.any_newer_than(exe))
   println "Recompiling $..." (buildfile)
 
   # Scanning places copies in .rogo/
-  if (has_build_core)  scan_config( File("BuildCore.rogue") )
-  if (has_build_local) scan_config( File("BuildLocal.rogue") )
-  scan_config( File(buildfile) )
+  scan_config( File(forEach in buildfiles) )
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
@@ -88,9 +88,8 @@ if (is_source_newer)
   endForEach
 
   local roguec_args = config//roguec_args->String
-  local cmd =  "$ --target=C++,Console,$ .rogo/$" (config//roguec,System.os,buildfile)
-  if (has_build_core)  cmd += " .rogo/BuildCore.rogue "
-  if (has_build_local) cmd += " .rogo/BuildLocal.rogue "
+  local cmd =  "$ --target=C++,Console,$" (config//roguec,System.os)
+  cmd += " .rogo/$" (forEach in buildfiles)
   cmd += " --api --debug --main --output=$ $" (base_name,roguec_args)
   println cmd
   if (0 != System.run(cmd))
