@@ -2010,7 +2010,7 @@ augment RogueC
           endIf
         endIf
 
-$if not target("WINDOWS")
+$if not target("Windows")
         if (RogueC.pkg_config_pkgs.count)
           forEach (pkg in RogueC.pkg_config_pkgs)
             local result = Process.run("pkg-config --cflags --libs " + pkg)
@@ -2041,7 +2041,7 @@ $endIf
         else
           exe = exe.to_lowercase
         endIf
-$if not target("WINDOWS")
+$if not target("Windows")
         local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
         if (execute_args) cmd += " && ./$ $" (exe,execute_args)
         println cmd
