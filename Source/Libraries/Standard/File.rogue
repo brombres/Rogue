@@ -297,6 +297,12 @@ class File
               |  return 1;
               |#endif
 
+    method is_hidden( filepath:String )->Logical
+      if (not filepath.begins_with('.'))       return false
+      if (filepath == "." or filepath == "..") return false
+      if (filepath.begins_with("./") or filepath.begins_with(".\\")) return false
+      return true
+
     method is_newer_than( filepath:String, other_filepath:String )->Logical
       if (not File.exists(filepath))       return false
       if (not File.exists(other_filepath)) return true
@@ -330,6 +336,7 @@ class File
       return listing( folder, options )
 
     method listing( folder:String, options:FileOptions )->String[]
+      if (folder == "./" or folder == ".\\") folder = "."
       if (folder.begins_with("./") or folder.begins_with(".\\")) folder = folder.from( 2 )
 
       if (folder.contains('*') or folder.contains('?'))
@@ -363,7 +370,7 @@ class File
           local pattern = parts.remove_first
           local results = String[]
           forEach (name in File.listing(non_wild_path,options.limited.omit_path))
-            if (name.begins_with('.') and options.ignoring_hidden) nextIteration
+            if (is_hidden(name) and options.ignoring_hidden) nextIteration
             if (File.matches_wildcard_pattern(name,pattern))
               if (non_wild_path == ".")
                 if (File.is_folder(name))
@@ -413,11 +420,9 @@ class File
       endIf
 
       local native_folder = folder + filepath
-
       if (not is_folder(native_folder))
         if (File.exists(native_folder))
-          local is_hidden = native_folder.begins_with('.')
-          if (not (is_hidden and options.ignoring_hidden))
+          if (not (is_hidden(native_folder) and options.ignoring_hidden))
             if (options.is_files)
               if (native_folder.count > 1 and native_folder.ends_with('/')) native_folder = native_folder.leftmost( -1 )
               result.add( native_folder )
@@ -457,9 +462,8 @@ class File
               |      if (keep)
               |      {
                        local entry = native("RogueString_create_from_utf8(entry->d_name,-1)")->String
-                       local is_hidden = entry.begins_with('.')
                        entry = filepath + entry
-                       if (not (is_hidden and options.ignoring_hidden))
+                       if (not (is_hidden(entry) and options.ignoring_hidden))
                          local _is_folder = is_folder( folder + entry )
                          if (options.is_files_and_folders or
                              (_is_folder and options.is_folders) or
@@ -806,6 +810,9 @@ class File
 
     method is_folder->Logical
       return File.is_folder( this.filepath )
+
+    method is_hidden->Logical
+      return File.is_hidden( this.filepath )
 
     method is_newer_than( other_filepath:String )->Logical
       return File.is_newer_than( this.filepath, other_filepath )
