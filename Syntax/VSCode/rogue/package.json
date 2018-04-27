@@ -1,0 +1,26 @@
+{
+    "name": "rogue",
+    "displayName": "Rogue",
+    "description": "Rogue Language",
+    "version": "0.0.1",
+    "publisher": "AbePralle",
+    "engines": {
+        "vscode": "^1.22.0"
+    },
+    "categories": [
+        "Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "rogue",
+            "aliases": ["Rogue", "rogue"],
+            "extensions": [".rogue"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "rogue",
+            "scopeName": "source.rogue",
+            "path": "./syntaxes/Rogue.tmLanguage"
+        }]
+    }
+}
