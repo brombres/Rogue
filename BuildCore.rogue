@@ -105,8 +105,18 @@ class Build [singleton]
       printer.println( "$define ROGUE_RELEASE_TIMESTAMP " + Process.run("git show -s --format=%ct HEAD") )
       printer.close
 
-    method bootstrap
+    method bootstrap( &skip_rogo )
+      if (not skip_rogo) build_rogo_bootstrap
       build_roguec_bootstrap
+      unlink
+      link
+
+    method link
+      build_rogo_launcher
+      build_roguec_launcher
+
+    method unlink
+      delete_launchers
 
     method update_bootstrap( &roguec, &build )
       run "mkdir -p Source/RogueC/Bootstrap"
@@ -126,9 +136,16 @@ class Build [singleton]
     method check_roguec_bootstrap
       if (not File.exists(ROGUEC_EXE)) build_roguec_bootstrap
 
+    method build_rogo_bootstrap
+      println "-------------------------------------------------------------------------------"
+      println "Bootstrapping Rogo Build executable from C++ source..."
+      println "-------------------------------------------------------------------------------"
+      File.create_folder( ".rogo" )
+      run "$ $ Source/RogueC/Bootstrap/Build.cpp -o $" (CXX,ROGUEC_CPP_FLAGS,ROGO_EXE)
+
     method build_roguec_bootstrap
       println "-------------------------------------------------------------------------------"
-      println "Compiling $ from C++ bootstrap source..." (ROGUEC_EXE)
+      println "Compiling RogueC from C++ bootstrap source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( File.folder(ROGUEC_EXE) )
       run ''$ $ -DDEFAULT_CXX="\\\"$ $\\\"" Source/RogueC/Bootstrap/RogueC.cpp -o $''...

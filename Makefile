@@ -1,7 +1,11 @@
 ROGUEC_CPP_FLAGS = -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
 ifeq ($(OS),Windows_NT)
-  PLATFORM = Windows
+  ifneq (,$(findstring /cygdrive/,$(PATH)))
+      PLATFORM = Cygwin
+  else
+      PLATFORM = Windows
+  endif
 else
   UNAME_S := $(shell uname -s)
   ifeq ($(UNAME_S),Darwin)
@@ -19,13 +23,20 @@ all: bootstrap_rogue
 bootstrap_rogue: $(BUILD_EXE)
 	@$(BUILD_EXE)
 
+bootstrap:
+	@echo -------------------------------------------------------------------------------
+	@echo "Bootstrapping Rogo Build executable from C++ source..."
+	@echo -------------------------------------------------------------------------------
+	mkdir -p .rogo
+	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Bootstrap/Build.cpp -o $(BUILD_EXE)
+	$(BUILD_EXE) bootstrap_skip_rogo
+
 $(BUILD_EXE):
 	@echo -------------------------------------------------------------------------------
 	@echo "Bootstrapping Rogo Build executable from C++ source..."
 	@echo -------------------------------------------------------------------------------
 	mkdir -p .rogo
 	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Bootstrap/Build.cpp -o $(BUILD_EXE)
-	$(BUILD_EXE)
 
 -include Local.mk
 
@@ -45,9 +56,6 @@ roguec: bootstrap_rogue
 update_bootstrap: bootstrap_rogue
 	rogo update_bootstrap
 
-bootstrap: bootstrap_rogue
-	rogo bootstrap
-
 rogo: bootstrap_rogue
 	rogo rogo
 
@@ -62,7 +70,7 @@ x2: bootstrap_rogue
 x3: bootstrap_rogue
 	rogo x 3
 
-revert: bootstrap_rogue
+revert: bootstrap
 	rogo revert
 
 .PHONY: clean

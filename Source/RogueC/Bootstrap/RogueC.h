@@ -56,6 +56,8 @@
 #  define ROGUE_PLATFORM_ANDROID 1
 #elif defined(__linux__)
 #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+#elif defined(__CYGWIN__)
+#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
 #else
 #  define ROGUE_PLATFORM_GENERIC 1
 #endif
@@ -8210,6 +8212,7 @@ ROGUE_EXPORT_C RogueString* RogueFile__extension__String( RogueString* filepath_
 ROGUE_EXPORT_C RogueString* RogueFile__filename__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueString* RogueFile__folder__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueLogical RogueFile__is_folder__String( RogueString* filepath_0 );
+ROGUE_EXPORT_C RogueLogical RogueFile__is_hidden__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueLogical RogueFile__is_newer_than__String_String( RogueString* filepath_0, RogueString* other_filepath_1 );
 ROGUE_EXPORT_C RogueString* RogueFile__join__String_List( RogueString_List* parts_0 );
 ROGUE_EXPORT_C RogueString* RogueFile__join__String_String( RogueString* part1_0, RogueString* part2_1 );
@@ -11986,6 +11989,7 @@ ROGUE_EXPORT_C RogueString* RogueFile__extension( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueString* RogueFile__filename( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueString* RogueFile__folder( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueLogical RogueFile__is_folder( RogueClassFile* THIS );
+ROGUE_EXPORT_C RogueLogical RogueFile__is_hidden( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueLogical RogueFile__is_newer_than__String( RogueClassFile* THIS, RogueString* other_filepath_0 );
 ROGUE_EXPORT_C RogueString_List* RogueFile__listing__Logical_Logical_Logical_Logical_Logical_Logical( RogueClassFile* THIS, RogueLogical ignore_hidden_0, RogueLogical recursive_1, RogueLogical absolute_2, RogueLogical omit_path_3, RogueLogical files_4, RogueLogical folders_5 );
 ROGUE_EXPORT   RogueString_List* RogueFile__listing__FileOptions( RogueClassFile* THIS, RogueClassFileOptions options_0 );
