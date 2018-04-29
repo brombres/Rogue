@@ -462,8 +462,8 @@ class File
               |      if (keep)
               |      {
                        local entry = native("RogueString_create_from_utf8(entry->d_name,-1)")->String
-                       entry = filepath + entry
                        if (not (is_hidden(entry) and options.ignoring_hidden))
+                         entry = filepath + entry
                          local _is_folder = is_folder( folder + entry )
                          if (options.is_files_and_folders or
                              (_is_folder and options.is_folders) or
@@ -474,7 +474,6 @@ class File
                          if (_is_folder and options.is_recursive and entry.count)
                            listing( folder, options, entry, result )
                          endIf
-
                        endIf
 
       native @|
