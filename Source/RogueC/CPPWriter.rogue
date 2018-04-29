@@ -2010,7 +2010,7 @@ augment RogueC
           endIf
         endIf
 
-$if not target("Windows")
+        native @|#ifndef ROGUE_PLATFORM_WINDOWS
         if (RogueC.pkg_config_pkgs.count)
           forEach (pkg in RogueC.pkg_config_pkgs)
             local result = Process.run("pkg-config --cflags --libs " + pkg)
@@ -2029,7 +2029,7 @@ $if not target("Windows")
             endIf
           endForEach
         endIf
-$endIf
+        native @|#endif
 
         if (RogueC.compiler_options.count)
           compiler_name += " " + " ".join(RogueC.compiler_options)
@@ -2041,21 +2041,32 @@ $endIf
         else
           exe = exe.to_lowercase
         endIf
-$if not target("Windows")
-        local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
-        if (execute_args) cmd += " && ./$ $" (exe,execute_args)
-        println cmd
-        println
-        if (System.run(cmd)) System.exit( 1 )
-$else # Windows
-        local cmd = "$ $.cpp /Fe$.exe" (compiler_name,output_filepath,exe)
-        println cmd
-        if (System.run(cmd)) System.exit( 1 )
-        if (execute_args) cmd = ".\\$ $" (exe,execute_args)
-        println cmd
-        println
-        if (System.run(cmd)) System.exit( 1 )
-$endIf
+
+        native @|#ifdef ROGUE_PLATFORM_WINDOWS
+
+        block
+          local cmd = "$ $.cpp /Fe$.exe" (compiler_name,output_filepath,exe)
+          println cmd
+          if (System.run(cmd)) System.exit( 1 )
+          if (execute_args) cmd = ".\\$ $" (exe,execute_args)
+          println cmd
+          println
+          if (System.run(cmd)) System.exit( 1 )
+        endBlock
+
+        native @|#else
+        # Not Windows (macOS/Linux)
+
+        block
+          local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
+          if (execute_args) cmd += " && ./$ $" (exe,execute_args)
+          println cmd
+          println
+          if (System.run(cmd)) System.exit( 1 )
+        endBlock
+
+        native @|#endif
+
       endIf
 
 endAugment

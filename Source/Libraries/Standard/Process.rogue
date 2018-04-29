@@ -1,33 +1,31 @@
-$if target("WINDOWS")
-  $warning "Process is currently unimplemented on Windows."
-$else
 class Process
-  # Loosely based on:
-  # https://stackoverflow.com/questions/13893085/posix-spawnp-and-piping-child-output-to-a-string/27328610
-  DEPENDENCIES
-    nativeHeader #include <spawn.h>
-    nativeHeader #include <poll.h>
-    nativeHeader #include <sys/wait.h>
-    nativeHeader extern char** environ;
-
   PROPERTIES
     args          : String[]
-    output_reader : ProcessReader
-    error_reader  : ProcessReader
-    input_writer  : FDWriter
+    output_reader : Reader<<Byte>>
+    error_reader  : Reader<<Byte>>
+    input_writer  : Writer<<Byte>>
     error         : Logical
     is_finished   : Logical
     exit_code     : Int32
     is_blocking   : Logical
 
-    native "pid_t pid;"
-    native "int cin_pipe[2];"
-    native "int cout_pipe[2];"
-    native "int cerr_pipe[2];"
-    native "posix_spawn_file_actions_t actions;"
-    native "pollfd poll_list[2];"
-
   GLOBAL METHODS
+    method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )->Process
+      which (System.os)
+        case "Windows"
+          return null
+        others
+          return Process( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
+      endWhich
+
+    method create( args:String[], &readable, &writable, &is_blocking, &inherit_environment )->Process
+      which (System.os)
+        case "Windows"
+          return null
+        others
+          return PosixProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
+      endWhich
+
     method run( cmd:String, &inherit_environment )->ProcessOutput
       return run( ["sh","-c",cmd], &=inherit_environment )
 
@@ -41,10 +39,69 @@ class Process
       return ProcessOutput( process.exit_code, output_bytes, error_bytes )
 
   METHODS
+    method launch( &readable, &writable, &inherit_environment )->Logical
+      return false
+
+    method close->this
+      return finish
+
+    method exit_code->Int32
+      return finish.@exit_code
+
+    method is_finished->Logical
+      return @is_finished
+
+    method is_running->Logical
+      return (not is_finished)
+
+    method finish->this
+      @is_finished = true
+      return this
+
+    method on_cleanup
+      finish
+
+    method run->Int32
+      return finish.@exit_code
+
+    method update_readers( &poll_blocks )->Logical
+      # Returns true if we should keep updating
+      return false
+
+endClass
+
+
+class PosixProcess : Process
+  # Mac/Linux version loosely based on:
+  # https://stackoverflow.com/questions/13893085/posix-spawnp-and-piping-child-output-to-a-string/27328610
+  DEPENDENCIES
+    nativeHeader
+      #ifdef ROGUE_PLATFORM_WINDOWS
+      #else
+        #include <spawn.h>
+        #include <poll.h>
+        #include <sys/wait.h>
+        extern char** environ;
+      #endif
+    endNativeHeader
+
+  PROPERTIES
+    native @|#ifndef ROGUE_PLATFORM_WINDOWS
+            |pid_t pid;
+            |int cin_pipe[2];
+            |int cout_pipe[2];
+            |int cerr_pipe[2];
+            |posix_spawn_file_actions_t actions;
+            |pollfd poll_list[2];
+            |#endif
+
+  METHODS
     method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )
       init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
 
     method init( args, &readable, &writable, is_blocking=false, &inherit_environment )
+      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+
       if (not launch(&=readable,&=writable,&=inherit_environment))
         native @|if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
                 |if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
@@ -65,8 +122,11 @@ class Process
         exit_code = -1
       endIf
 
+      native @|#endif
+
     method launch( &readable, &writable, &inherit_environment )->Logical
-      native @|$this->cin_pipe[0]  = $this->cin_pipe[1]  = -1;
+      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+              |$this->cin_pipe[0]  = $this->cin_pipe[1]  = -1;
               |$this->cout_pipe[0] = $this->cout_pipe[1] = -1;
               |$this->cerr_pipe[0] = $this->cerr_pipe[1] = -1;
               |
@@ -95,16 +155,16 @@ class Process
 
       if (readable)
         # These commands run in the forked process
-        native @|  posix_spawn_file_actions_addclose( &$this->actions, $this->cout_pipe[0] );
-                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cerr_pipe[0] );
-                |  posix_spawn_file_actions_adddup2( &$this->actions, $this->cout_pipe[1], STDOUT_FILENO );
-                |  posix_spawn_file_actions_adddup2( &$this->actions, $this->cerr_pipe[1], STDERR_FILENO );
-                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cout_pipe[1] );
-                |  posix_spawn_file_actions_addclose( &$this->actions, $this->cerr_pipe[1] );
-                |  $this->poll_list[0].fd = $this->cout_pipe[0];
-                |  $this->poll_list[1].fd = $this->cerr_pipe[0];
-                |  $this->poll_list[0].events = POLLIN;
-                |  $this->poll_list[1].events = POLLIN;
+        native @|posix_spawn_file_actions_addclose( &$this->actions, $this->cout_pipe[0] );
+                |posix_spawn_file_actions_addclose( &$this->actions, $this->cerr_pipe[0] );
+                |posix_spawn_file_actions_adddup2( &$this->actions, $this->cout_pipe[1], STDOUT_FILENO );
+                |posix_spawn_file_actions_adddup2( &$this->actions, $this->cerr_pipe[1], STDERR_FILENO );
+                |posix_spawn_file_actions_addclose( &$this->actions, $this->cout_pipe[1] );
+                |posix_spawn_file_actions_addclose( &$this->actions, $this->cerr_pipe[1] );
+                |$this->poll_list[0].fd = $this->cout_pipe[0];
+                |$this->poll_list[1].fd = $this->cerr_pipe[0];
+                |$this->poll_list[0].events = POLLIN;
+                |$this->poll_list[1].events = POLLIN;
       endIf
 
       if (writable)
@@ -136,17 +196,14 @@ class Process
         input_writer = FDWriter( native("$this->cin_pipe[1]")->Int32 )
       endIf
 
+      native @|#endif
+
       return true
-
-    method close->this
-      return finish
-
-    method exit_code->Int32
-      return finish.@exit_code
 
     method is_finished->Logical
       if (@is_finished) return true
-      native @|int status;
+      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+              |int status;
               |if ($this->pid)
               |{
               |  int wstatus;
@@ -156,14 +213,16 @@ class Process
               |    $this->pid = 0;
               |    $exit_code = WEXITSTATUS( status );
                    finish
+                   return true
       native @|  }
               |}
-      return false;
+              |#endif
+      return false
 
-    method is_running->Logical
-      return (not is_finished)
 
     method finish->this
+      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+
       if (not @is_finished)
         is_finished = true
 
@@ -180,8 +239,8 @@ class Process
                 |}
 
         if (output_reader)
-          output_reader.fd_reader.close
-          error_reader.fd_reader.close
+          (output_reader as ProcessReader).fd_reader.close
+          (error_reader as ProcessReader).fd_reader.close
         endIf
 
         native @|posix_spawn_file_actions_destroy( &$this->actions );
@@ -200,23 +259,22 @@ class Process
               |$this->cerr_pipe[0] = -1;
               |$this->cin_pipe[1] = -1;
 
+      native @|#endif // ROGUE_PLATFORM_WINDOWS
+
       return this
 
-    method on_cleanup
-      finish
-
-    method run->Int32
-      return finish.@exit_code
 
     method update_readers( &poll_blocks )->Logical
       # Returns true if we should keep updating
+
+      native @|#ifndef ROGUE_PLATFORM_WINDOWS
 
       # Get the FDs to poll.  We do this because they might have
       # changed (specifically, might have gone to -1).
       local fd0 = -1 : Int
       local fd1 = -1 : Int
-      if (output_reader) fd0 = output_reader.fd_reader.fd
-      if (error_reader)  fd1 =  error_reader.fd_reader.fd
+      if (output_reader) fd0 = (output_reader as ProcessReader).fd_reader.fd
+      if (error_reader)  fd1 =  (error_reader as ProcessReader).fd_reader.fd
 
       # Bail out if there's nobody to poll
       if (fd0 == -1 and fd1 == -1) return false
@@ -236,18 +294,20 @@ class Process
           local has_other = native("$this->poll_list[$which_fd].revents & ~POLLIN")->Logical
           local reader = ?:{which_fd == 0: output_reader || error_reader}
 
-          if (has_input) reader.fd_reader.buffer_more
+          if (has_input) (reader as ProcessReader).fd_reader.buffer_more
 
           # Anything besides readable is "bad" (it's most likely the other end hanging up)
-          if (has_other) reader.fd_reader.close
+          if (has_other) (reader as ProcessReader).fd_reader.close
 
-          if (reader.fd_reader.is_open) keep_going = true
+          if ((reader as ProcessReader).fd_reader.is_open) keep_going = true
         endForEach
         return keep_going # If anyone wants to keep going, we keep going
       elseIf ((status == -1) and native("errno == EINTR")->Logical)
         # poll got interrupted; try again later
         return true
       endIf
+
+      native @|#endif // ROGUE_PLATFORM_WINDOWS
 
       return false
 
@@ -283,8 +343,6 @@ class ProcessReader : Reader<<Byte>>
       return fd_reader.read
 
 endClass
-$endIf
-
 
 class ProcessOutput
   PROPERTIES

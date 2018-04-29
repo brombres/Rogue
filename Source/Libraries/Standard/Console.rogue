@@ -1,27 +1,26 @@
-$if (defined(CONSOLE_BAREBONES) or target("WINDOWS"))
-$localDefine CONSOLE_FULL false
-$else
-$localDefine CONSOLE_FULL true
-$endIf
-
 class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
-$if (CONSOLE_FULL)
-    nativeHeader #include <termios.h>
-    nativeHeader #include <unistd.h>
-$endIf
-  nativeHeader
-    #ifndef STDIN_FILENO     /* Probably Windows */
-      #define STDIN_FILENO 0 /* Probably correct */
-    #endif
-    #if defined(ROGUE_PLATFORM_WINDOWS)
-      #include <io.h>
-      #define ROGUE_READ_CALL _read
-    #else
-      #define ROGUE_READ_CALL read
-    #endif
-
-  endNativeHeader
+    nativeHeader
+      #ifdef ROGUE_PLATFORM_WINDOWS
+        #define ROGUE_CONSOLE_FULL 0
+      #else
+        #define ROGUE_CONSOLE_FULL 1
+      #endif
+      #if ROGUE_CONSOLE_FULL
+        #include <termios.h>
+        #include <unistd.h>
+        #include <sys/ioctl.h>
+      #endif
+      #ifndef STDIN_FILENO     /* Probably Windows */
+        #define STDIN_FILENO 0 /* Probably correct */
+      #endif
+      #if defined(ROGUE_PLATFORM_WINDOWS)
+        #include <io.h>
+        #define ROGUE_READ_CALL _read
+      #else
+        #define ROGUE_READ_CALL read
+      #endif
+    endNativeHeader
 
   ENUMERATE
     UP_ARROW    = 17
@@ -62,19 +61,19 @@ $endIf
     next_input_character : Int32?
     input_bytes          = Byte[]
 
-$if (CONSOLE_FULL)
-    native "termios original_terminal_settings;"
-    native "int     original_stdin_flags;"
-$endIf
+    native @|#if (ROGUE_CONSOLE_FULL)
+            |  termios original_terminal_settings;
+            |  int     original_stdin_flags;
+            |#endif
 
   METHODS
     method init
-$if (CONSOLE_FULL)
-      native @|tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
-              |$this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
+      native @|#if (ROGUE_CONSOLE_FULL)
+              |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+              |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
+              |#endif
 
       on_exit( function with (console=this) => console.reset_input_mode )
-$endIf
 
     method clear
       print( "\e[2J" ).flush
@@ -166,17 +165,14 @@ $endIf
       return next_input_character.exists
 
     method height->Int32
-$if (CONSOLE_FULL)
-      nativeHeader #include <sys/ioctl.h>
-      nativeHeader #include <unistd.h>
-
-      native @|struct winsize sz;
-              |ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+      native @|#if (ROGUE_CONSOLE_FULL)
+              |  struct winsize sz;
+              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
               |
-              |return sz.ws_row;
-$else
-      return 24
-$endIf
+              |  return sz.ws_row;
+              |#else
+              |  return 24;
+              |#endif
 
     method move_cursor( dx:Int32, dy:Int32 )
       if (dx)
@@ -216,16 +212,17 @@ $endIf
       return read_line
 
     method reset_input_mode
-$if (CONSOLE_FULL)
-      native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
-              |fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
-$endIf
+      native @|#if (ROGUE_CONSOLE_FULL)
+              |  tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+              |  fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+              |#endif
 
     method restore_cursor_position
       print( "\e[u" ).flush
 
     method set_is_blocking( setting:Logical )->this
-$if (CONSOLE_FULL)
+      native @|#if (ROGUE_CONSOLE_FULL)
+
       if (@is_blocking != setting)
         @is_blocking = setting
         if (@is_blocking)
@@ -234,8 +231,10 @@ $if (CONSOLE_FULL)
           native @|fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
         endIf
       endIf
+
+      native @|#endif
+
       return this
-$endIf
 
     method save_cursor_position
       print( "\e[s" ).flush
@@ -244,7 +243,8 @@ $endIf
       print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
 
     method set_immediate_mode( setting:Logical )->this
-$if (CONSOLE_FULL)
+      native @|#if (ROGUE_CONSOLE_FULL)
+
       if (@immediate_mode != setting)
         @immediate_mode = setting
         if (@immediate_mode)
@@ -261,21 +261,19 @@ $if (CONSOLE_FULL)
           native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
         endIf
       endIf
-$endIf
+
+      native @|#endif
       return this
 
     method width->Int32
-$if (CONSOLE_FULL)
-      nativeHeader #include <sys/ioctl.h>
-      nativeHeader #include <unistd.h>
-
-      native @|struct winsize sz;
-              |ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+      native @|#if (ROGUE_CONSOLE_FULL)
+              |  struct winsize sz;
+              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
               |
-              |return sz.ws_col;
-$else
-      return 80
-$endIf
+              |  return sz.ws_col;
+              |#else
+              |  return 80;
+              |#endif
 
     method write( value:String )->this
       native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
