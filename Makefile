@@ -21,7 +21,7 @@ all: bootstrap_rogue
 	rogo
 
 bootstrap_rogue: $(BUILD_EXE)
-	@$(BUILD_EXE)
+	@$(BUILD_EXE) check_bootstrap
 
 bootstrap:
 	@echo -------------------------------------------------------------------------------
@@ -86,6 +86,6 @@ docs: bootstrap_rogue
 	rogo docs
 
 .PHONY: test
-test: bootstrap_rogue
+test:
 	rogo test
 

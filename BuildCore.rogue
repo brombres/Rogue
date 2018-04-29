@@ -29,7 +29,6 @@ class Build [singleton]
 
     method rogue
       check_bootstrap
-      sync_libraries
 
       if (ROGUEC_SRC.any_newer_than(ROGUEC_EXE))
         roguec
@@ -39,7 +38,6 @@ class Build [singleton]
 
     method roguec( details="":String, extra_roguec_flags="":String )
       check_bootstrap
-      sync_libraries
 
       if (details.count) details = " $ " (details.trimmed)
       if (extra_roguec_flags.count) extra_roguec_flags = " " + extra_roguec_flags.trimmed
@@ -59,7 +57,6 @@ class Build [singleton]
 
     method rogo( &force )
       check_bootstrap
-      sync_libraries
 
       if (force or ROGO_SRC.any_newer_than(ROGO_EXE))
         println "-------------------------------------------------------------------------------"
@@ -131,10 +128,16 @@ class Build [singleton]
 
     method check_bootstrap
       check_roguec_bootstrap
+      check_rogo_bootstrap
       check_roguec_launcher
+      check_rogo_launcher
+      sync_libraries
 
     method check_roguec_bootstrap
       if (not File.exists(ROGUEC_EXE)) build_roguec_bootstrap
+
+    method check_rogo_bootstrap
+      if (not File.exists(ROGO_EXE)) build_rogo_bootstrap
 
     method build_rogo_bootstrap
       println "-------------------------------------------------------------------------------"
