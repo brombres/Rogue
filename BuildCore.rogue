@@ -5,27 +5,38 @@ class Build [singleton]
     ROGUEC_ROGUE_FLAGS = ""
     ROGUEC_CPP_FLAGS   = "-Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
     BINDIR             = "/usr/local/bin"
-    CXX                = "c++"
+    CXX                = "g++"
+    DEFAULT_CXX        = "$ $" (CXX,ROGUEC_CPP_FLAGS)
     SUDO_CMD           = ""
+    OUTFLAG            = "-o "
 
     ROGO_EXE           = "path/to/rogo"
     ROGUEC_EXE         = "path/to/roguec"
 
   METHODS
     method init
-      ROGO_EXE   = "Programs/RogueC/Rogo-$"   (System.os)
-      ROGUEC_EXE = "Programs/RogueC/RogueC-$" (System.os)
-
       which (System.os)
         case "macOS", "Linux"
+          ROGO_EXE   = "Programs/RogueC/Rogo-$"   (System.os)
+          ROGUEC_EXE = "Programs/RogueC/RogueC-$" (System.os)
           SUDO_CMD = "sudo "
+          OUTFLAG  = "-o "
           forEach (line in LineReader(Process.run("make -p -f/dev/null")))
             if (line.begins_with("CXX ="))
               CXX = line.split("=").last.trimmed
               escapeForEach
             endIf
           endForEach
+
+        case "Windows"
+          ROGO_EXE   = "Programs/RogueC/rogo.exe"
+          ROGUEC_EXE = "Programs/RogueC/roguec.exe"
+          CXX = "cl"
+          ROGUEC_CPP_FLAGS = "/EHsc"
+          OUTFLAG  = "/Fe"
+
       endWhich
+      DEFAULT_CXX = "$ $" (CXX,ROGUEC_CPP_FLAGS)
 
     method rogue
       check_bootstrap
@@ -49,8 +60,8 @@ class Build [singleton]
       create_version_file
       run "cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $$"...
           (ROGUEC_ROGUE_FLAGS,extra_roguec_flags)
-      run ''$ $ -DDEFAULT_CXX="\\\"$ $\\\"" Source/RogueC/Build/RogueC.cpp -o $''...
-          (CXX,ROGUEC_CPP_FLAGS,CXX,ROGUEC_CPP_FLAGS,ROGUEC_EXE)
+      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" Source/RogueC/Build/RogueC.cpp $$''...
+          (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,OUTFLAG,ROGUEC_EXE)
 
       rogo
 
@@ -65,13 +76,15 @@ class Build [singleton]
         File.create_folder( "Source/RogueC/Build" )
         run "roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $"...
             (ROGUEC_ROGUE_FLAGS)
-        run ''$ -pthread $ Source/RogueC/Build/Rogo.cpp -o $''...
-          (CXX,ROGUEC_CPP_FLAGS,ROGO_EXE)
+        run ''$ -pthread $ Source/RogueC/Build/Rogo.cpp $$''...
+          (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
       endIf
 
       check_rogo_launcher
 
     method create_version_file
+      if (System.os == "Windows") return
+
       local build = 1
       local commit_id : String
 
@@ -144,21 +157,27 @@ class Build [singleton]
       println "Bootstrapping Rogo Build executable from C++ source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( ".rogo" )
-      run "$ $ Source/RogueC/Bootstrap/Build.cpp -o $" (CXX,ROGUEC_CPP_FLAGS,ROGO_EXE)
+      run "$ $ Source/RogueC/Bootstrap/Build.cpp $$" (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
 
     method build_roguec_bootstrap
       println "-------------------------------------------------------------------------------"
       println "Compiling RogueC from C++ bootstrap source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( File.folder(ROGUEC_EXE) )
-      run ''$ $ -DDEFAULT_CXX="\\\"$ $\\\"" Source/RogueC/Bootstrap/RogueC.cpp -o $''...
-          (CXX,ROGUEC_CPP_FLAGS,CXX,ROGUEC_CPP_FLAGS,ROGUEC_EXE)
-      run "touch Source/RogueC/RogueC.rogue"
+      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" Source/RogueC/Bootstrap/RogueC.cpp $$''...
+        (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,OUTFLAG,ROGUEC_EXE)
+      if (System.os == "Windows")
+        run "type nul >> Source/RogueC/RogueC.rogue"
+      else
+        run "touch Source/RogueC/RogueC.rogue"
+      endIf
 
     method check_roguec_launcher
+      if (System.os == "Windows") return
       if (not locate_launcher("roguec")) build_roguec_launcher
 
     method build_roguec_launcher
+      if (System.os == "Windows") return
       println "-------------------------------------------------------------------------------"
       println "Creating $/roguec launcher linked to $" (BINDIR,ROGUEC_EXE)
       println "-------------------------------------------------------------------------------"
@@ -171,6 +190,7 @@ class Build [singleton]
       File.delete( ".rogo/launcher.script" )
 
     method delete_launchers
+      if (System.os == "Windows") return
       local roguec_launcher = locate_launcher( "roguec" )
       local rogo_launcher = locate_launcher( "rogo" )
       if (not roguec_launcher and not rogo_launcher) return
@@ -188,9 +208,11 @@ class Build [singleton]
       if (rogo_launcher)   run "$rm -f $" (SUDO_CMD,rogo_launcher)
 
     method check_rogo_launcher
+      if (System.os == "Windows") return
       if (not locate_launcher("rogo")) build_rogo_launcher
 
     method build_rogo_launcher
+      if (System.os == "Windows") return
       println "-------------------------------------------------------------------------------"
       println "Creating $/rogo launcher linked to $" (BINDIR,ROGO_EXE)
       println "-------------------------------------------------------------------------------"
@@ -215,16 +237,19 @@ class Build [singleton]
       else              return null
 
     method sync_libraries
-      local dest = "Programs/RogueC/"
+      local dest = fix( "Programs/RogueC/" )
       local files = Files( "Source/Libraries" )
       files.add( "Standard" ).add( "ParseKit" )
       local n_copied = File.sync_from( files, dest+"Libraries/", &dry_run )
       if (n_copied >= 10)
-        println "Copying Source/Libraries -> $Libraries" (dest)
+        println "Copying $ -> $" (fix("Source/Libraries"),fix(dest+"Libraries"))
         File.sync_from( files, dest+"Libraries/", &verbose )
       else
         File.sync_from( files, dest+"Libraries/", &verbose )
       endIf
+
+    method fix( filepath:String )->String
+      return File.fix_slashes( filepath )
 
     method revert
       run "git checkout Source/RogueC/Bootstrap && rm -f $" (ROGUEC_EXE)

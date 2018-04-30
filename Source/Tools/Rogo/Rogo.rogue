@@ -71,7 +71,8 @@ else
   exe = ".rogo/" + buildfile.before_first( '.' )
 endIf
 local base_name = exe   # e.g. Build
-exe += "-" + System.os  # e.g. Build-macOS
+if (System.os == "Windows") exe += ".exe"
+else                        exe += "-" + System.os  # e.g. Build-macOS
 
 if (buildfiles.any_newer_than(exe))
   println "Recompiling $..." (buildfile)
@@ -100,6 +101,7 @@ if (buildfiles.any_newer_than(exe))
   cmd = "$ $ $.cpp" (config//cpp,config//cpp_args,base_name)
 
   local is_linux = (System.os == "Linux")
+  local is_windows = (System.os == "Windows")
 
   install_library_manager
   forEach (library in config//libraries)
@@ -112,7 +114,7 @@ if (buildfiles.any_newer_than(exe))
     endIf
   endForEach
 
-  cmd += " -o $ $" (exe,config//link)
+  cmd += " $$ $" (?:{is_windows:"/Fe"||"-o "},exe,config//link)
 
   println cmd
   if (0 != System.run(cmd)) System.exit( 1 )

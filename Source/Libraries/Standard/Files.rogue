@@ -7,13 +7,13 @@ class Files
   METHODS
     method init( base_folder:String )
       if (base_folder == "") base_folder = "./"
-      this.base_folder = File.ensure_ends_with_separator( base_folder )
+      this.base_folder = File.fix_slashes( File.ensure_ends_with_separator( base_folder ) )
       if (this.base_folder.begins_with("./") or this.base_folder.begins_with(".\\"))
         this.base_folder = this.base_folder.rightmost( -2 )
       endIf
 
     method init( base_folder:String, pattern:String, &ignore_hidden=true )
-      init( base_folder )
+      init( File.fix_slashes(base_folder) )
       add( pattern, &=ignore_hidden )
 
     method add( pattern:String, &ignore_hidden=true )->this

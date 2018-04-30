@@ -60,6 +60,7 @@ rogo: bootstrap_rogue
 	rogo rogo
 
 libraries: bootstrap_rogue
+	@$(BUILD_EXE) check_bootstrap
 	rogo libraries
 
 libs: libraries

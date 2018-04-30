@@ -1,80 +1,3 @@
-class FileOptions( flags=0:Int32 ) [compound]
-  ENUMERATE
-    FLAG_RECURSIVE          = 1
-    FLAG_OMIT_PATH          = 2
-    FLAG_ABSOLUTE           = 4
-    FLAG_FILES              = 8
-    FLAG_FOLDERS            = 16
-    FLAG_BOTH               = 24
-    FLAG_IGNORE_HIDDEN      = 32
-
-  METHODS
-    method absolute->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
-
-    method ignore_hidden->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
-
-    method ignoring_hidden->Logical [macro]
-      (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
-
-    method is_files_and_folders->Logical
-      local f = (flags & FLAG_BOTH)
-      return (f == 0) or (f == FLAG_BOTH)
-
-    method is_files->Logical
-      return (flags & FLAG_FILES) or not (flags & FLAG_BOTH)
-
-    method is_folders->Logical
-      return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
-
-    method is_absolute->Logical [macro]
-      (this.flags & FileOptions.FLAG_ABSOLUTE)
-
-    method files->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_FILES )
-
-    method folders->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
-
-    method include_path->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
-
-    method includes_path->Logical [macro]
-      ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
-
-    method is_limited->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_RECURSIVE))
-
-    method is_recursive->Logical [macro]
-      (this.flags & FileOptions.FLAG_RECURSIVE)
-
-    method is_relative->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_ABSOLUTE))
-
-    method limited->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
-
-    method omit_path->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
-
-    method omitting_path->Logical [macro]
-      (this.flags & FileOptions.FLAG_OMIT_PATH)
-
-    method relative->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
-
-    method recursive->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
-
-    method showing_hidden->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
-
-    method shows_hidden->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
-
-endClass
-
 class File
   DEPENDENCIES
     nativeHeader #include <cstdio>
@@ -185,7 +108,7 @@ class File
         local modified = false
 
         if (File.is_folder(to_filepath))
-          to_filepath += "/" + File.filename(from_filepath)
+          to_filepath += separator + File.filename(from_filepath)
         else
           local containing_folder = File.folder( to_filepath )
           if (not is_folder(containing_folder))
@@ -276,16 +199,26 @@ class File
       if (not i?) return filepath
       return filepath.from( i.value+1 )
 
+    method fix_slashes( filepath:String )->String
+      if (System.os == "Windows") return filepath.replacing( '/', '\\' )
+      else                        return filepath.replacing( '\\', '/' )
+
     method folder( filepath:String )->String
-      local i = filepath.locate_last( '/' )
-      if (not i?) i = filepath.locate_last( '\\' )
-      if (not i?) return ""
-      return filepath.from( 0, i.value-1 )
+      local i1 = filepath.locate_last( '/' )
+      local i2 = filepath.locate_last( '\\' )
+      if (i1.exists)
+        if (i2.exists) i1 = i1.value.or_larger( i2.value )
+      else
+        i1 = i2
+      endIf
+
+      if (not i1?) return ""
+      return filepath.from( 0, i1.value-1 )
 
     method is_folder( filepath:String )->Logical [essential]
       native @|if ( !$filepath ) return false;
               |
-              |#if defined(_WIN32)
+              |#if defined(ROGUE_PLATFORM_WINDOWS)
               |  struct stat s;
               |  if (stat((char*)$filepath->utf8, &s) != 0) return false;
               |  return (s.st_mode & S_IFMT) == S_IFDIR;
@@ -433,10 +366,64 @@ class File
       endIf
 
       if (filepath.count and not (filepath.ends_with('/') or filepath.ends_with('\\')))
-        filepath += '/'
+        filepath += File.separator
       endIf
 
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+
+      local search_filepath = filepath + "*"
+
       native @|{
+              |  WIN32_FIND_DATA entry;
+              |  HANDLE dir;
+              |
+              |  dir = FindFirstFile( $search_filepath->utf8, &entry );
+              |
+              |  if (dir != INVALID_HANDLE_VALUE)
+              |  {
+              |    do
+              |    {
+              |      int keep = 1;
+              |      if (entry.cFileName[0] == '.')
+              |      {
+              |        switch (entry.cFileName[1])
+              |        {
+              |          case 0:   // '.' / this folder
+              |            keep = 0;
+              |            break;
+              |          case '.':
+              |            keep = entry.cFileName[2] != 0;  // ".." / Parent Folder
+              |            break;
+              |        }
+              |      }
+              |      if (keep)
+              |      {
+                       block
+                         local entry = native("RogueString_create_from_utf8(entry.cFileName,-1)")->String
+                         if (not (is_hidden(entry) and options.ignoring_hidden))
+                           entry = filepath + entry
+                           local _is_folder = is_folder( folder + entry )
+                           if (options.is_files_and_folders or
+                               (_is_folder and options.is_folders) or
+                               (not _is_folder and options.is_files))
+                             result.add( entry )
+                           endIf
+
+                           if (_is_folder and options.is_recursive and entry.count)
+                             listing( folder, options, entry, result )
+                           endIf
+                         endIf
+                       endBlock
+      native @|      }
+              |    }
+              |    while (FindNextFile(dir,&entry));
+              |
+              |    FindClose( dir );
+              |  }
+              |}
+              |#else
+              |// Mac/Linux
+              |{
               |  DIR* dir;
               |  struct dirent* entry;
               |
@@ -451,30 +438,32 @@ class File
               |      {
               |        switch (entry->d_name[1])
               |        {
-              |          case 0:
+              |          case 0:   // '.' / this folder
               |            keep = 0;
               |            break;
               |          case '.':
-              |            keep = entry->d_name[2] != 0;
+              |            keep = entry->d_name[2] != 0;  // ".." / Parent Folder
               |            break;
               |        }
               |      }
               |      if (keep)
               |      {
-                       local entry = native("RogueString_create_from_utf8(entry->d_name,-1)")->String
-                       if (not (is_hidden(entry) and options.ignoring_hidden))
-                         entry = filepath + entry
-                         local _is_folder = is_folder( folder + entry )
-                         if (options.is_files_and_folders or
-                             (_is_folder and options.is_folders) or
-                             (not _is_folder and options.is_files))
-                           result.add( entry )
-                         endIf
+                       block
+                         local entry = native("RogueString_create_from_utf8(entry->d_name,-1)")->String
+                         if (not (is_hidden(entry) and options.ignoring_hidden))
+                           entry = filepath + entry
+                           local _is_folder = is_folder( folder + entry )
+                           if (options.is_files_and_folders or
+                               (_is_folder and options.is_folders) or
+                               (not _is_folder and options.is_files))
+                             result.add( entry )
+                           endIf
 
-                         if (_is_folder and options.is_recursive and entry.count)
-                           listing( folder, options, entry, result )
+                           if (_is_folder and options.is_recursive and entry.count)
+                             listing( folder, options, entry, result )
+                           endIf
                          endIf
-                       endIf
+                       endBlock
 
       native @|
               |      }
@@ -483,6 +472,7 @@ class File
               |    closedir( dir );
               |  }
               |}
+              |#endif // Windows vs Mac/Linux
 
       return result
 
@@ -804,6 +794,9 @@ class File
     method filename->String
       return filename( filepath )
 
+    method fix_slashes->String
+      return fix_slashes( filepath )
+
     method folder->String
       return File.folder( this.filepath )
 
@@ -871,6 +864,83 @@ class File
       return filepath
 endClass
 
+class FileOptions( flags=0:Int32 ) [compound]
+  ENUMERATE
+    FLAG_RECURSIVE          = 1
+    FLAG_OMIT_PATH          = 2
+    FLAG_ABSOLUTE           = 4
+    FLAG_FILES              = 8
+    FLAG_FOLDERS            = 16
+    FLAG_BOTH               = 24
+    FLAG_IGNORE_HIDDEN      = 32
+
+  METHODS
+    method absolute->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
+
+    method ignore_hidden->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
+
+    method ignoring_hidden->Logical [macro]
+      (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
+
+    method is_files_and_folders->Logical
+      local f = (flags & FLAG_BOTH)
+      return (f == 0) or (f == FLAG_BOTH)
+
+    method is_files->Logical
+      return (flags & FLAG_FILES) or not (flags & FLAG_BOTH)
+
+    method is_folders->Logical
+      return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
+
+    method is_absolute->Logical [macro]
+      (this.flags & FileOptions.FLAG_ABSOLUTE)
+
+    method files->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_FILES )
+
+    method folders->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
+
+    method include_path->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
+
+    method includes_path->Logical [macro]
+      ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
+
+    method is_limited->Logical [macro]
+      (not (this.flags & FileOptions.FLAG_RECURSIVE))
+
+    method is_recursive->Logical [macro]
+      (this.flags & FileOptions.FLAG_RECURSIVE)
+
+    method is_relative->Logical [macro]
+      (not (this.flags & FileOptions.FLAG_ABSOLUTE))
+
+    method limited->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
+
+    method omit_path->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
+
+    method omitting_path->Logical [macro]
+      (this.flags & FileOptions.FLAG_OMIT_PATH)
+
+    method relative->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
+
+    method recursive->FileOptions [macro]
+      FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
+
+    method showing_hidden->FileOptions [macro]
+      FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
+
+    method shows_hidden->Logical [macro]
+      (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
+
+endClass
+
 class FileReader : Reader<<Byte>>
   PROPERTIES
     filepath        : String
@@ -883,7 +953,7 @@ class FileReader : Reader<<Byte>>
   METHODS
     method init( _filepath:String )
       if (not open(_filepath))
-        throw IOError( "Unable to open $ for reading." (_filepath) )
+        throw IOError( "Unable to open $ for reading." (filepath) )
       endIf
 
     method on_cleanup
@@ -907,6 +977,8 @@ class FileReader : Reader<<Byte>>
 
     method open( filepath )->Logical
       close
+
+      filepath = File.fix_slashes( filepath )
 
       native @|$this->fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !$this->fp ) return false;
@@ -975,7 +1047,7 @@ class FileWriter : Writer<<Byte>>
   METHODS
     method init( _filepath:String, append=false:Logical )
       if (not open(_filepath,append))
-        throw IOError( "Unable to open $ for writing." (_filepath) )
+        throw IOError( "Unable to open $ for writing." (filepath) )
       endIf
 
     method on_cleanup
@@ -1008,6 +1080,8 @@ class FileWriter : Writer<<Byte>>
     method open( filepath, append=false:Logical )->Logical
       close
       error = false
+
+      filepath = File.fix_slashes( filepath )
 
       if (append)
         native @|$this->fp = fopen( (char*)$filepath->utf8, "ab" );
