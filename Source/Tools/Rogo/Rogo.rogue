@@ -53,13 +53,13 @@ if (buildfile) buildfiles.add( buildfile )
 if (not buildfiles.count)
   local w = (Console.width - 1).or_smaller( 79 )
   loop (w) do Console.error.print( '=' )
-  println
+  Console.error.println
   local mesg = "ROGO ERROR\n\n"
   mesg += "No standard build file exists (Build.rogue, BuildCore.rogue, BuildLocal.rogue) "
   mesg += "and no alternate specified with --build=<filename>."
   Console.error.println( mesg.word_wrapped(w) )
   loop (w) do Console.error.print( '=' )
-  println
+  Console.error.println
   System.exit 1
 endIf
 
