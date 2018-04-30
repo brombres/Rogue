@@ -13,29 +13,38 @@ class Process
     method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )->Process
       which (System.os)
         case "Windows"
-          return null
+          return WindowsProcess( cmd, &readable, &writable, &=is_blocking, &inherit_environment )
         others
-          return Process( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
+          return PosixProcess( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
       endWhich
 
     method create( args:String[], &readable, &writable, &is_blocking, &inherit_environment )->Process
       which (System.os)
         case "Windows"
-          return null
+          return WindowsProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
         others
           return PosixProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
       endWhich
 
     method run( cmd:String, &inherit_environment )->ProcessOutput
-      return run( ["sh","-c",cmd], &=inherit_environment )
+      return run( Process(cmd,&readable,&is_blocking,&=inherit_environment) )
 
     method run( args:String[], &inherit_environment )->ProcessOutput
-      local process = Process( args, &readable, &is_blocking, &=inherit_environment )
+      return run( Process(args, &readable, &is_blocking, &=inherit_environment) )
+
+    method run( process:Process )->ProcessOutput
       process.finish
+
       local output_bytes = Byte[]
-      while (process.output_reader.has_another) output_bytes.add( process.output_reader.read )
+      if (process.output_reader)
+        while (process.output_reader.has_another) output_bytes.add( process.output_reader.read )
+      endIf
+
       local error_bytes = Byte[]
-      while (process.error_reader.has_another) error_bytes.add( process.error_reader.read )
+      if (process.error_reader)
+        while (process.error_reader.has_another) error_bytes.add( process.error_reader.read )
+      endIf
+
       return ProcessOutput( process.exit_code, output_bytes, error_bytes )
 
   METHODS
@@ -64,8 +73,7 @@ class Process
     method run->Int32
       return finish.@exit_code
 
-    method update_readers( &poll_blocks )->Logical
-      # Returns true if we should keep updating
+    method update_io( &poll_blocks )->Logical
       return false
 
 endClass
@@ -113,8 +121,8 @@ class PosixProcess : Process
                 |$this->cout_pipe[0] = $this->cout_pipe[1] = -1;
                 |$this->cerr_pipe[0] = $this->cerr_pipe[1] = -1;
         if (readable)
-          output_reader = ProcessReader( this, -1 )
-          error_reader = ProcessReader( this, -1 )
+          output_reader = PosixProcessReader( this, -1 )
+          error_reader = PosixProcessReader( this, -1 )
         endIf
         if (writable) input_writer = FDWriter( -1 )
         error = true
@@ -188,8 +196,8 @@ class PosixProcess : Process
               |if (0 != result) return false;
 
       if (readable)
-        output_reader = ProcessReader( this, native("$this->cout_pipe[0]")->Int32 )
-        error_reader = ProcessReader( this, native("$this->cerr_pipe[0]")->Int32 )
+        output_reader = PosixProcessReader( this, native("$this->cout_pipe[0]")->Int32 )
+        error_reader = PosixProcessReader( this, native("$this->cerr_pipe[0]")->Int32 )
       endIf
 
       if (writable)
@@ -228,7 +236,7 @@ class PosixProcess : Process
 
         if (input_writer) input_writer.close
 
-        while (update_readers(&poll_blocks)) noAction
+        while (update_io(&poll_blocks)) noAction
 
         native @|int status;
                 |if ($this->pid)
@@ -239,8 +247,8 @@ class PosixProcess : Process
                 |}
 
         if (output_reader)
-          (output_reader as ProcessReader).fd_reader.close
-          (error_reader as ProcessReader).fd_reader.close
+          (output_reader as PosixProcessReader).fd_reader.close
+          (error_reader as PosixProcessReader).fd_reader.close
         endIf
 
         native @|posix_spawn_file_actions_destroy( &$this->actions );
@@ -264,7 +272,7 @@ class PosixProcess : Process
       return this
 
 
-    method update_readers( &poll_blocks )->Logical
+    method update_io( &poll_blocks )->Logical
       # Returns true if we should keep updating
 
       native @|#ifndef ROGUE_PLATFORM_WINDOWS
@@ -273,8 +281,8 @@ class PosixProcess : Process
       # changed (specifically, might have gone to -1).
       local fd0 = -1 : Int
       local fd1 = -1 : Int
-      if (output_reader) fd0 = (output_reader as ProcessReader).fd_reader.fd
-      if (error_reader)  fd1 =  (error_reader as ProcessReader).fd_reader.fd
+      if (output_reader) fd0 = (output_reader as PosixProcessReader).fd_reader.fd
+      if (error_reader)  fd1 =  (error_reader as PosixProcessReader).fd_reader.fd
 
       # Bail out if there's nobody to poll
       if (fd0 == -1 and fd1 == -1) return false
@@ -287,19 +295,19 @@ class PosixProcess : Process
               |$status = poll( $this->poll_list, 2, ($poll_blocks?-1:0) );
 
       if (status > 0)
-        # One or more FDs had somehting to say
+        # One or more FDs had something to say
         local keep_going = false
         forEach (which_fd in 0..<2)
           local has_input = native("$this->poll_list[$which_fd].revents & POLLIN")->Logical
           local has_other = native("$this->poll_list[$which_fd].revents & ~POLLIN")->Logical
           local reader = ?:{which_fd == 0: output_reader || error_reader}
 
-          if (has_input) (reader as ProcessReader).fd_reader.buffer_more
+          if (has_input) (reader as PosixProcessReader).fd_reader.buffer_more
 
           # Anything besides readable is "bad" (it's most likely the other end hanging up)
-          if (has_other) (reader as ProcessReader).fd_reader.close
+          if (has_other) (reader as PosixProcessReader).fd_reader.close
 
-          if ((reader as ProcessReader).fd_reader.is_open) keep_going = true
+          if ((reader as PosixProcessReader).fd_reader.is_open) keep_going = true
         endForEach
         return keep_going # If anyone wants to keep going, we keep going
       elseIf ((status == -1) and native("errno == EINTR")->Logical)
@@ -313,8 +321,7 @@ class PosixProcess : Process
 
 endClass
 
-
-class ProcessReader : Reader<<Byte>>
+class PosixProcessReader : Reader<<Byte>>
   PROPERTIES
     process   : Process
     fd_reader : FDReader
@@ -329,7 +336,7 @@ class ProcessReader : Reader<<Byte>>
       return this
 
     method has_another->Logical
-      if (fd_reader.buffer_position >= fd_reader.buffer.count) process.update_readers( process.is_blocking )
+      if (fd_reader.buffer_position >= fd_reader.buffer.count) process.update_io( process.is_blocking )
       return (fd_reader.buffer_position < fd_reader.buffer.count)
 
     method peek->Byte
@@ -342,6 +349,297 @@ class ProcessReader : Reader<<Byte>>
       ++position
       return fd_reader.read
 
+endClass
+
+
+class WindowsProcess : Process
+  # Based on:
+  # https://msdn.microsoft.com/en-us/library/windows/desktop/ms682499(v=vs.85).aspx
+  PROPERTIES
+    process_created : Logical
+
+    native @|#ifdef ROGUE_PLATFORM_WINDOWS
+            |STARTUPINFO         startup_info;
+            |PROCESS_INFORMATION process_info;
+            |#endif
+
+  METHODS
+    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )
+      init( ["cmd.exe","/c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
+
+    method init( args, &readable, &writable, is_blocking=false, &inherit_environment )
+      if (not launch(&=readable,&=writable,&=inherit_environment))
+        error = true
+        @is_finished = true
+        exit_code = 1
+      endIf
+
+    method launch( &readable, &writable, &inherit_environment )->Logical
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+
+      output_reader = WindowsProcessReader()
+      error_reader  = WindowsProcessReader()
+      input_writer  = WindowsProcessWriter()
+
+      local arg_string = args.join(" ")
+
+      local output_reader = this.output_reader as WindowsProcessReader
+      local error_reader  = this.error_reader as WindowsProcessReader
+      local input_writer  = this.input_writer as WindowsProcessWriter
+
+      native @|$this->startup_info.cb = sizeof( STARTUPINFO );
+              |$this->startup_info.hStdOutput = $output_reader->output_writer;
+              |$this->startup_info.hStdError =  $error_reader->output_writer;
+              |$this->startup_info.hStdInput =  $input_writer->input_reader;
+              |$this->startup_info.dwFlags |= STARTF_USESTDHANDLES;
+              |
+              |if ( !CreateProcess(
+              |    NULL,                  // lpApplicationName
+              |    $arg_string->utf8,     // lpCommandLine
+              |    NULL,                  // lpProcessAttributes
+              |    NULL,                  // lpThreadAttributes
+              |    TRUE,                  // bInheritHandles
+              |    0,                     // dwCreationFlags  (CREATE_NO_WINDOW?)
+              |    NULL,                  // lpEnvironment
+              |    NULL,                  // lpCurrentDirectory
+              |    &$this->startup_info,  // lpStartupInfo
+              |    &$this->process_info   // lpProcessInformation
+              |)) return FALSE;
+
+              process_created = true
+
+      native @|return TRUE;
+              |
+              |#else
+              |return FALSE;
+              |
+              |#endif
+
+    method is_finished->Logical
+      if (@is_finished) return true
+      update_io
+
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |DWORD exit_code;
+              |if (GetExitCodeProcess( $this->process_info.hProcess, &exit_code ))
+              |{
+              |  if (exit_code != STILL_ACTIVE)
+              |  {
+              |    $exit_code = exit_code;
+              |    $is_finished = TRUE;
+              |  }
+              |}
+              |#endif
+
+      return @is_finished
+
+
+    method finish->this
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+
+      while (not is_finished)
+        while (update_io) noAction
+
+        (input_writer as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
+
+        native @|WaitForSingleObject( $this->process_info.hProcess, 1000 ); //INFINITE );
+      endWhile
+
+      on_cleanup
+
+      native @|#endif
+
+      return this
+
+    method on_cleanup
+      output_reader.close
+      error_reader.close
+      input_writer.close
+
+      if (process_created)
+        native @|#ifdef ROGUE_PLATFORM_WINDOWS
+                |CloseHandle( $this->process_info.hProcess );
+                |CloseHandle( $this->process_info.hThread );
+                |#endif
+      endIf
+
+
+    method update_io->Logical
+      # Returns true if we should keep updating
+      local any_updates = false
+      if ((output_reader as WindowsProcessReader).fill_buffer) any_updates = true
+      if ((error_reader as WindowsProcessReader).fill_buffer) any_updates = true
+      local before_count = (input_writer as WindowsProcessWriter).buffer.count
+      input_writer.flush
+      if ((input_writer as WindowsProcessWriter).buffer.count != before_count) any_updates = true
+
+      return any_updates
+
+endClass
+
+
+class WindowsProcessReader : Reader<<Byte>>
+  PROPERTIES
+    buffer = Byte[]( 1024 )
+
+    native @|#ifdef ROGUE_PLATFORM_WINDOWS
+            |HANDLE output_writer;
+            |HANDLE output_reader;
+            |#endif
+
+  METHODS
+    method init
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |SECURITY_ATTRIBUTES security_attributes;
+              |security_attributes.nLength = sizeof( SECURITY_ATTRIBUTES );
+              |security_attributes.bInheritHandle = TRUE;
+              |security_attributes.lpSecurityDescriptor = NULL;
+              |if ( !CreatePipe(&$this->output_reader,&$this->output_writer,&security_attributes,0) ) return FALSE;
+              |if ( !SetHandleInformation($this->output_reader,HANDLE_FLAG_INHERIT,0) ) return FALSE;
+              |#endif
+
+    method close->this
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |if ($this->output_reader)
+              |{
+              |  CloseHandle( $this->output_reader );
+              |  $this->output_reader = NULL;
+              |}
+              |if ($this->output_writer)
+              |{
+              |  CloseHandle( $this->output_writer );
+              |  $this->output_writer = NULL;
+              |}
+              |#endif
+      return this
+
+    method fill_buffer->Logical
+      buffer.reserve( 1024 );
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |int c = $buffer->count;
+              |if ($this->output_reader)
+              |{
+              |  DWORD available_count;
+              |  if (PeekNamedPipe( $this->output_reader, NULL, 0, NULL, &available_count, NULL ))
+              |  {
+              |    if (available_count)
+              |    {
+              |      DWORD read_count;
+              |      if (ReadFile($this->output_reader, $buffer->data->as_bytes+$buffer->count, 1024, &read_count, NULL))
+              |      {
+              |        if (read_count)
+              |        {
+              |          $buffer->count += read_count;
+              |          return TRUE;
+              |        }
+              |      }
+              |    }
+              |  }
+              |}
+              |#endif
+      return false
+
+    method has_another->Logical
+      if (buffer.count) return true
+      return fill_buffer
+
+    method peek->Byte
+      if (not has_another) return 0
+      return buffer.first
+
+    method read->Byte
+      if (not has_another) return 0
+      ++@position
+      return buffer.remove_first
+
+    method read( result:Byte[], limit:Int32 )
+      while (buffer.count < limit and fill_buffer) noAction
+      local n = buffer.count.or_smaller( limit )
+      if (n)
+        result.reserve( n )
+        native @|memcpy( $result->data->as_bytes+$result->count, $buffer->data->as_bytes, n );
+        buffer.discard( 0, n )
+        @position += n
+      endIf
+endClass
+
+class WindowsProcessWriter : Writer<<Byte>>
+  PROPERTIES
+    buffer = Byte[]( 1024 )
+
+    native @|#ifdef ROGUE_PLATFORM_WINDOWS
+            |HANDLE input_writer;
+            |HANDLE input_reader;
+            |#endif
+
+  METHODS
+    method init
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |SECURITY_ATTRIBUTES security_attributes;
+              |security_attributes.nLength = sizeof( SECURITY_ATTRIBUTES );
+              |security_attributes.bInheritHandle = TRUE;
+              |security_attributes.lpSecurityDescriptor = NULL;
+              |if ( !CreatePipe(&$this->input_reader,&$this->input_writer,&security_attributes,0) ) return FALSE;
+              |if ( !SetHandleInformation($this->input_writer,HANDLE_FLAG_INHERIT,0) ) return FALSE;
+              |#endif
+
+    method close->this
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |if ($this->input_reader)
+              |{
+              |  CloseHandle( $this->input_reader );
+              |  $this->input_reader = NULL;
+              |}
+              |#endif
+      return close_pipe
+
+    method close_pipe->this
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |if ($this->input_writer)
+              |{
+              |  CloseHandle( $this->input_writer );
+              |  $this->input_writer = NULL;
+              |}
+              |#endif
+      return this
+
+    method flush->this
+      if (not buffer.count) return this
+
+      local write_count = 0
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |if ($this->input_writer)
+              |{
+              |  DWORD write_count;
+              |  if (WriteFile($this->input_writer,$buffer->data->as_bytes,$buffer->count,&write_count,NULL))
+              |  {
+              |    $write_count = write_count;
+              |  }
+              |}
+              |#endif
+
+      if (write_count)
+        @position += write_count
+        buffer.discard( 0, write_count )
+      endIf
+
+      return this
+
+    method seek( pos:Int32 )->this
+      throw UnsupportedOperationError()
+
+    method seek_end()->this
+      throw UnsupportedOperationError()
+
+    method skip( n:Int32 )->this
+      return seek( position + n )
+
+    method write( value:Byte )->this
+      buffer.add( value )
+
+    method write( list:Byte[] )->this
+      buffer.add( list )
+      return this
 endClass
 
 class ProcessOutput
@@ -370,6 +668,8 @@ class ProcessOutput
       return exit_code
 
     method to->String
-      return output_string
+      if (not output_string.count) return error_string
+      if (not error_string.count)  return output_string
+      return output_string + error_string
 endClass
 
