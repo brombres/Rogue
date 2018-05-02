@@ -3,18 +3,46 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.3.0
-Date      | February 17, 2018
-Platforms | macOS, Linux (Ubuntu+), Cygwin
-
+Version   | v1.4.0
+Date      | May 2, 2018
+Platforms | macOS, Linux (Ubuntu+), Windows, Cygwin
 
 
 ## Installation
+
+### Mac & Linux
     git clone https://github.com/AbePralle/Rogue.git
     cd Rogue
     make  # bootstraps Rogue, creates 'roguec' and 'rogo' launchers
 
-**NOTES**
+### Windows
+1. Install Git and Visual Studio 2017 with C++ support.
+
+2. Use a VS "Developer Command Prompt" for the following and for working with Rogue in general.
+
+3. Clone the repo and bootstrap Rogue:
+
+    git clone https://github.com/AbePralle/Rogue.git
+    cd Rogue
+    rogo
+
+4. Add the absolute path of the subfolder `Programs\RogueC` to the system PATH.
+
+## Syntax Highlighting
+
+### Visual Studio Code
+
+Rogue comes with a work-in-progress VS Code extension. After installing Rogue, type the following from the base Rogue folder:
+```
+rogo vscode
+```
+
+### VIM
+
+Rogue comes with syntax and indent modules for Vim; they are located in the Syntax/Vim folder.
+
+
+#### Notes
 
 1. `roguec` by itself for options.
 
@@ -32,5 +60,5 @@ Rogue is released under the terms of the [MIT License](https://opensource.org/li
 ## About
 Abe Pralle and Murphy McCauley lead Rogue's design and development.
 
-Rogue was created by Abe Pralle in 2015 as an evolution of earlier language projects dating back to 2004.
+Rogue was created by Abe Pralle in 2015.
 

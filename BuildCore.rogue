@@ -50,6 +50,16 @@ class Build [singleton]
 
       rogo
 
+      if (System.os == "Windows")
+        if (not System.environment//PATH.contains("Programs\\RogueC"))
+          println "-------------------------------------------------------------------------------"
+          println "Add the following folder to your system PATH"
+          println
+          println "  $Programs\\RogueC" (System.executable_filepath.before_last( ".rogo" ))
+          println "-------------------------------------------------------------------------------"
+        endIf
+      endIf
+
     method roguec( details="":String, extra_roguec_flags="":String )
       check_bootstrap
 
