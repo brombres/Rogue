@@ -1469,6 +1469,7 @@ struct RogueClassBuild : RogueObject
   RogueString* OUTFLAG;
   RogueString* ROGO_EXE;
   RogueString* ROGUEC_EXE;
+  RogueString* BUILD_EXE;
 
 };
 
@@ -2193,6 +2194,7 @@ ROGUE_EXPORT_C RogueClassBuild* RogueBuild__from_value__Value( RogueClassValue* 
 ROGUE_EXPORT_C void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
 ROGUE_EXPORT_C RogueString* RogueSystem__os();
 ROGUE_EXPORT_C RogueInt32 RogueSystem__run__String( RogueString* command_0 );
+ROGUE_EXPORT_C void RogueSystem__sleep__Real64( RogueReal64 seconds_0 );
 ROGUE_EXPORT_C void RogueSystem__sync_storage();
 ROGUE_EXPORT_C void RogueSystem__init_class();
 ROGUE_EXPORT_C void RogueRuntime__init_class();
@@ -2295,7 +2297,7 @@ ROGUE_EXPORT_C void RogueGlobal__remake( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_debug( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_exhaustive( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_bootstrap( RogueClassGlobal* THIS );
-ROGUE_EXPORT_C void RogueGlobal__rogo_bootstrap_skip_rogo( RogueClassGlobal* THIS );
+ROGUE_EXPORT_C void RogueGlobal__rogo_bootstrap_skip_build_executable( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_update_bootstrap__String( RogueClassGlobal* THIS, RogueString* roguec_or_build_0 );
 ROGUE_EXPORT_C void RogueGlobal__rogo_revert( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_x__Int32( RogueClassGlobal* THIS, RogueInt32 remake_count_0 );
@@ -2510,9 +2512,11 @@ ROGUE_EXPORT_C RogueString* RogueString_List__join__String( RogueString_List* TH
 ROGUE_EXPORT_C RogueString* RogueArray_String___type_name( RogueArray* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueReal64__decimal_digit_count( RogueReal64 THIS );
 ROGUE_EXPORT   RogueString* RogueReal64__format__OptionalInt32( RogueReal64 THIS, RogueOptionalInt32 decimal_digits_0 );
+ROGUE_EXPORT_C RogueReal64 RogueReal64__fractional_part( RogueReal64 THIS );
 ROGUE_EXPORT_C RogueLogical RogueReal64__is_infinite( RogueReal64 THIS );
 ROGUE_EXPORT_C RogueLogical RogueReal64__is_not_a_number( RogueReal64 THIS );
 ROGUE_EXPORT_C RogueString* RogueReal64__to_String( RogueReal64 THIS );
+ROGUE_EXPORT_C RogueReal64 RogueReal64__whole_part( RogueReal64 THIS );
 ROGUE_EXPORT_C RogueStringBuilder* RogueInt64__print_in_power2_base__Int32_Int32_StringBuilder( RogueInt64 THIS, RogueInt32 base_0, RogueInt32 digits_1, RogueStringBuilder* buffer_2 );
 ROGUE_EXPORT_C RogueString* RogueInt64__to_String( RogueInt64 THIS );
 ROGUE_EXPORT_C RogueString* RogueInt64__to_hex_string__Int32( RogueInt64 THIS, RogueInt32 digits_0 );
@@ -2787,15 +2791,16 @@ ROGUE_EXPORT_C RogueString* RogueBuild__type_name( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__rogue( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__roguec__String_String( RogueClassBuild* THIS, RogueString* _auto_2103, RogueString* _auto_2104 );
 ROGUE_EXPORT_C void RogueBuild__rogo__Logical( RogueClassBuild* THIS, RogueLogical force_0 );
+ROGUE_EXPORT_C void RogueBuild__build_rogo( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__create_version_file( RogueClassBuild* THIS );
-ROGUE_EXPORT_C void RogueBuild__bootstrap__Logical( RogueClassBuild* THIS, RogueLogical skip_rogo_0 );
+ROGUE_EXPORT_C void RogueBuild__bootstrap__Logical( RogueClassBuild* THIS, RogueLogical skip_build_executable_0 );
 ROGUE_EXPORT_C void RogueBuild__link( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__unlink( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__update_bootstrap__Logical_Logical( RogueClassBuild* THIS, RogueLogical roguec_0, RogueLogical build_1 );
 ROGUE_EXPORT_C void RogueBuild__check_bootstrap( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__check_roguec_bootstrap( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__check_rogo_bootstrap( RogueClassBuild* THIS );
-ROGUE_EXPORT_C void RogueBuild__build_rogo_bootstrap( RogueClassBuild* THIS );
+ROGUE_EXPORT_C void RogueBuild__build_build_executable( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__build_roguec_bootstrap( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__check_roguec_launcher( RogueClassBuild* THIS );
 ROGUE_EXPORT_C void RogueBuild__build_roguec_launcher( RogueClassBuild* THIS );

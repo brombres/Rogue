@@ -355,8 +355,7 @@ augment Program
       println "Writing $.$..." (base_cpp_filepath,extension)
       writer = CPPWriter( "$.$" (base_cpp_filepath,extension) )
 
-      local base_filename = base_cpp_filepath
-      if (base_filename.contains('/')) base_filename = base_filename.after_last('/')
+      local base_filename = File.filename( base_cpp_filepath )
       writer.println "#include <stdio.h>"
       writer.println "namespace std {}"
       writer.println "using namespace std;"
@@ -1046,8 +1045,17 @@ augment Program
       writer.println
 
       # Copy command line args to System class
-      writer.println @|RogueSystem_executable_filepath = RogueString_create_from_utf8(
+      writer.println @|#ifdef ROGUE_PLATFORM_WINDOWS
+                      |char executable_filepath_buffer[ 2048 ];
+                      |if ( !GetModuleFileName( NULL, executable_filepath_buffer, 2048 ) )
+                      |{
+                      |  strcpy( executable_filepath_buffer, "rogue.exe" );
+                      |}
+                      |RogueSystem_executable_filepath = RogueString_create_from_utf8( executable_filepath_buffer, -1 );
+                      |#else
+                      |RogueSystem_executable_filepath = RogueString_create_from_utf8(
                       |    Rogue_argc ? Rogue_argv[0] : "Rogue", -1 );
+                      |#endif
                       |
                       |for (int i=1; i<Rogue_argc; ++i)
                       |{
@@ -2048,6 +2056,9 @@ augment RogueC
           local cmd = "$ $.cpp /Fe$.exe" (compiler_name,output_filepath,exe)
           println cmd
           if (System.run(cmd)) System.exit( 1 )
+          local obj_filename = File.filename( exe + ".obj" )
+          if (File.exists(obj_filename)) File.delete( obj_filename )
+
           if (execute_args) cmd = ".\\$ $" (exe,execute_args)
           println cmd
           println

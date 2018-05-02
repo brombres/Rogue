@@ -18,8 +18,14 @@ local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
         |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
         |#else
-        |  $compiler_invocation = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
-        |#endif
+           which (System.os)
+             case "Windows"
+               compiler_invocation = "cl /EHsc /nologo"
+             others
+               compiler_invocation = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
+           endWhich
+native @|#endif
+
 config//cpp = compiler_invocation
 
 local buildfiles = Files( "." )
@@ -66,9 +72,9 @@ endIf
 local exe : String
 if (buildfile is null)
   buildfile = buildfiles[0]
-  exe = ".rogo/Build"
+  exe = ".rogo$Build" (File.separator)
 else
-  exe = ".rogo/" + buildfile.before_first( '.' )
+  exe = ".rogo$$" (File.separator,buildfile.before_first('.'))
 endIf
 local base_name = exe   # e.g. Build
 if (System.os == "Windows") exe += ".exe"

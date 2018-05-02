@@ -12,6 +12,7 @@ class Build [singleton]
 
     ROGO_EXE           = "path/to/rogo"
     ROGUEC_EXE         = "path/to/roguec"
+    BUILD_EXE          = ".rogo/Build-Platform"
 
   METHODS
     method init
@@ -19,6 +20,7 @@ class Build [singleton]
         case "macOS", "Linux"
           ROGO_EXE   = "Programs/RogueC/Rogo-$"   (System.os)
           ROGUEC_EXE = "Programs/RogueC/RogueC-$" (System.os)
+          BUILD_EXE  = ".rogo/Build-$" (System.os)
           SUDO_CMD = "sudo "
           OUTFLAG  = "-o "
           forEach (line in LineReader(Process.run("make -p -f/dev/null")))
@@ -31,8 +33,9 @@ class Build [singleton]
         case "Windows"
           ROGO_EXE   = "Programs/RogueC/rogo.exe"
           ROGUEC_EXE = "Programs/RogueC/roguec.exe"
+          BUILD_EXE  = ".rogo/Build.exe"
           CXX = "cl"
-          ROGUEC_CPP_FLAGS = "/EHsc"
+          ROGUEC_CPP_FLAGS = "/EHsc /nologo"
           OUTFLAG  = "/Fe"
 
       endWhich
@@ -62,25 +65,27 @@ class Build [singleton]
           (ROGUEC_ROGUE_FLAGS,extra_roguec_flags)
       run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" Source/RogueC/Build/RogueC.cpp $$''...
           (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,OUTFLAG,ROGUEC_EXE)
-
-      rogo
+      if (File.exists("RogueC.obj")) File.delete( "RogueC.obj" )
 
 
     method rogo( &force )
       check_bootstrap
-
       if (force or ROGO_SRC.any_newer_than(ROGO_EXE))
-        println "-------------------------------------------------------------------------------"
-        println "Recompiling Rogo..."
-        println "-------------------------------------------------------------------------------"
-        File.create_folder( "Source/RogueC/Build" )
-        run "roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $"...
-            (ROGUEC_ROGUE_FLAGS)
-        run ''$ -pthread $ Source/RogueC/Build/Rogo.cpp $$''...
-          (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
+        build_rogo
       endIf
 
-      check_rogo_launcher
+    method build_rogo
+      println "-------------------------------------------------------------------------------"
+      println "Recompiling Rogo..."
+      println "-------------------------------------------------------------------------------"
+      File.create_folder( "Source/RogueC/Build" )
+      run "roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $"...
+          (ROGUEC_ROGUE_FLAGS)
+      run ''$ $ Source/RogueC/Build/Rogo.cpp $$''...
+        (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
+      if (File.exists("Rogo.obj")) File.delete( "Rogo.obj" )
+
+    check_rogo_launcher
 
     method create_version_file
       if (System.os == "Windows") return
@@ -115,8 +120,8 @@ class Build [singleton]
       printer.println( "$define ROGUE_RELEASE_TIMESTAMP " + Process.run("git show -s --format=%ct HEAD") )
       printer.close
 
-    method bootstrap( &skip_rogo )
-      if (not skip_rogo) build_rogo_bootstrap
+    method bootstrap( &skip_build_executable )
+      if (not skip_build_executable) build_build_executable
       build_roguec_bootstrap
       unlink
       link
@@ -141,23 +146,24 @@ class Build [singleton]
 
     method check_bootstrap
       check_roguec_bootstrap
-      check_rogo_bootstrap
-      check_roguec_launcher
-      check_rogo_launcher
       sync_libraries
+      check_roguec_launcher
+      check_rogo_bootstrap
+      check_rogo_launcher
 
     method check_roguec_bootstrap
       if (not File.exists(ROGUEC_EXE)) build_roguec_bootstrap
 
     method check_rogo_bootstrap
-      if (not File.exists(ROGO_EXE)) build_rogo_bootstrap
+      if (not File.exists(ROGO_EXE)) build_rogo
 
-    method build_rogo_bootstrap
+    method build_build_executable
       println "-------------------------------------------------------------------------------"
       println "Bootstrapping Rogo Build executable from C++ source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( ".rogo" )
-      run "$ $ Source/RogueC/Bootstrap/Build.cpp $$" (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
+      run "$ $ Source/RogueC/Bootstrap/Build.cpp $$" (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,BUILD_EXE)
+      if (File.exists("Build.obj")) File.delete( "Build.obj" )
 
     method build_roguec_bootstrap
       println "-------------------------------------------------------------------------------"
@@ -166,6 +172,7 @@ class Build [singleton]
       File.create_folder( File.folder(ROGUEC_EXE) )
       run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" Source/RogueC/Bootstrap/RogueC.cpp $$''...
         (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,OUTFLAG,ROGUEC_EXE)
+      if (File.exists("RogueC.obj")) File.delete( "RogueC.obj" )
       if (System.os == "Windows")
         run "type nul >> Source/RogueC/RogueC.rogue"
       else

@@ -342,7 +342,7 @@ $endIf
         stopwatch = Stopwatch()
 
         first_filepath = source_files.first
-        include_source( "Standard/NativeCode.rogue", &do_not_save_prefix )
+        include_source( "Standard$NativeCode.rogue" (File.separator), &do_not_save_prefix )
         forEach (filepath in source_files)
           include_source( filepath, &from_command_line )
         endForEach
@@ -500,7 +500,7 @@ $endIf
       endIf
 
       if (not do_not_save_prefix)
-        local prefix = filepath.before_last('/') + "/"
+        local prefix = File.folder(filepath) + File.separator
         if (not prefix_path_lookup.contains(prefix))
           prefix_path_lookup[prefix] = true
           prefix_path_list.add( prefix )
@@ -544,7 +544,7 @@ $endIf
 
       included_files.add( filepath )
 
-      local prefix = filepath.before_last('/') + "/"
+      local prefix = File.folder(filepath) + File.separator
       if (not prefix_path_lookup.contains(prefix))
         prefix_path_lookup[prefix] = true
         prefix_path_list.add( prefix )
@@ -646,7 +646,7 @@ $endIf
                   throw RogueError( ''--libraries option specifies non-existent folder "$".'' (path) )
                 endIf
                 if (File.is_folder(path))
-                  if (not path.ends_with('/')) path += '/'
+                  path = File.ensure_ends_with_separator( path )
                   if (not prefix_path_lookup.contains(path))
                     prefix_path_list.add( path )
                     prefix_path_lookup[ path ] = true

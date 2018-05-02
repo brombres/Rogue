@@ -60,7 +60,8 @@ routine rogo_remake( remake_count:Int32 )
 #-------------------------------------------------------------------------------
   remake
   loop (remake_count-1)
-    rogo_execute @|sleep 1
+    println "> Sleep 1 second"
+    System.sleep( 1 )
     remake
   endLoop
 endRoutine
@@ -88,9 +89,9 @@ routine rogo_bootstrap
 endRoutine
 
 #-------------------------------------------------------------------------------
-routine rogo_bootstrap_skip_rogo
+routine rogo_bootstrap_skip_build_executable
 #-------------------------------------------------------------------------------
-  Build.bootstrap( &skip_rogo )
+  Build.bootstrap( &skip_build_executable )
 endRoutine
 
 #-------------------------------------------------------------------------------
