@@ -124,6 +124,7 @@ if (buildfiles.any_newer_than(exe))
 
   println cmd
   if (0 != System.run(cmd)) System.exit( 1 )
+  File.delete( File.filename(exe).before_last(".exe") + ".obj" )
 endIf
 
 System.exit( System.run(''$ $'' (exe,System.command_line_arguments.mapped<<String>>( (arg)=>prep_arg(arg) ).join(" "))) )

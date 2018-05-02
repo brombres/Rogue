@@ -36,7 +36,7 @@ class Files
 
     method copy( to_folder:String )
       File.create_folder( to_folder )
-      to_folder += "/"
+      to_folder += File.separator
       forEach (filepath in filepaths)
         local to_filepath = to_folder + relative_filepath(filepath)
         File.copy( filepath, to_filepath )
@@ -44,7 +44,7 @@ class Files
 
     method copy_newer( to_folder:String )
       File.create_folder( to_folder )
-      to_folder += "/"
+      to_folder += File.separator
       forEach (filepath in filepaths)
         local to_filepath = to_folder + relative_filepath(filepath)
         File.copy_newer( filepath, to_filepath )

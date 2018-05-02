@@ -277,7 +277,14 @@ endClass
 global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
 
 local args = @[]
-args.add( forEach in System.command_line_arguments )
+forEach (arg in System.command_line_arguments)
+  which (arg)
+    case "true":  args.add( true )
+    case "false": args.add( false )
+    case "null":  args.add( NullValue )
+    others:       args.add( arg )
+  endWhich
+endForEach
 
 try
   if (args.count)

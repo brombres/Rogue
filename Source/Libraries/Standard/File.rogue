@@ -281,7 +281,7 @@ class File
           non_wild_parts.add( parts.remove_first )
         endWhile
 
-        local non_wild_path = select{ non_wild_parts.count:non_wild_parts.join('/') || "." }
+        local non_wild_path = select{ non_wild_parts.count:non_wild_parts.join(separator) || "." }
         if (parts.first.contains("**"))
           # Implied recursion
           local filtered = String[]
@@ -626,6 +626,9 @@ class File
       return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run )
 
     method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+      if (dry_run) verbose = true
+      dest_folder = File.fix_slashes( dest_folder )
+
       if (not exists(dest_folder) and not dry_run)
         create_folder( dest_folder )
         if (not is_folder(dest_folder))
@@ -650,7 +653,6 @@ class File
 
       local dest_files = Files( dest_folder )
       if (not keep_unused) dest_files.add( "**" )
-
       local printed_header = false
       local modified = 0
       forEach (src_filepath in source_files)

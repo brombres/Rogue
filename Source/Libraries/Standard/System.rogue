@@ -18,6 +18,12 @@ class System [essential]
                 |exit( $result_code );
       $endIf
 
+    method home_folder->String
+      which (System.os)
+        case "Windows": return System.environment//HOMEDRIVE + System.environment//HOMEPATH
+        others:         return System.environment//HOME
+      endWhich
+
     method os->String
       # Returns one of:
       #   macOS

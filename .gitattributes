@@ -1,2 +1,4 @@
-Source/RogueC/Build/RogueC.h -diff
-Source/RogueC/Build/RogueC.cpp -diff
+Source/RogueC/Bootstrap/RogueC.h -diff
+Source/RogueC/Bootstrap/RogueC.cpp -diff
+Source/RogueC/Bootstrap/Build.h -diff
+Source/RogueC/Bootstrap/Build.cpp -diff

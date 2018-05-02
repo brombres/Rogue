@@ -141,10 +141,28 @@ routine rogo_execute( cmd:String )
 endRoutine
 
 #-------------------------------------------------------------------------------
+routine rogo_vscode( install:String )
+#-------------------------------------------------------------------------------
+  local dest = System.home_folder + File.separator
+  dest += ".vscode" + File.separator + "extensions" + File.separator
+  dest += "rogue-0.1.1"
+  if (install == "uninstall" or install == "false")
+    # Uninstall VS Code extension
+    println "Deleting $..." (dest)
+    File.delete( dest )
+  else
+    # Install VS Code extension
+    File.sync_from( Files("Syntax/VSCode/rogue","**"), dest, &verbose )
+  endIf
+endRoutine
+
+
+#-------------------------------------------------------------------------------
 routine rogo_docs
 #-------------------------------------------------------------------------------
   Build.run( "cd Source/DocGen && make" )
 endRoutine
+
 
 #-------------------------------------------------------------------------------
 routine rogo_test
