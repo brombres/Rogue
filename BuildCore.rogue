@@ -71,10 +71,11 @@ class Build [singleton]
 
       rogo
 
+    method check_windows_path
       if (System.os == "Windows")
         if (not System.environment//PATH.contains("Programs\\RogueC"))
           println "-------------------------------------------------------------------------------"
-          println "Add the following folder to your system PATH"
+          println "Add the following folder to your system PATH and restart this command prompt:"
           println
           println "  $Programs\\RogueC" (System.executable_filepath.before_last( ".rogo" ))
           println "-------------------------------------------------------------------------------"
@@ -110,8 +111,10 @@ class Build [singleton]
       println "Recompiling Rogo..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( "Source/RogueC/Build" )
-      run "roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $"...
-          (ROGUEC_ROGUE_FLAGS)
+      local roguec_exe = "roguec"
+      if (System.os == "Windows") roguec_exe = "Programs\\RogueC\\roguec"
+      run "$ Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $"...
+        (roguec_exe,ROGUEC_ROGUE_FLAGS)
       run ''$ $ Source/RogueC/Build/Rogo.cpp $$''...
         (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
       if (File.exists("Rogo.obj")) File.delete( "Rogo.obj" )
@@ -181,6 +184,7 @@ class Build [singleton]
       check_roguec_launcher
       check_rogo_bootstrap
       check_rogo_launcher
+      check_windows_path
 
     method check_roguec_bootstrap
       if (not File.exists(ROGUEC_EXE)) build_roguec_bootstrap

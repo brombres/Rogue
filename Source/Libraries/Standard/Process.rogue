@@ -497,7 +497,7 @@ class WindowsProcessReader : Reader<<Byte>>
               |security_attributes.lpSecurityDescriptor = NULL;
               |if ( !CreatePipe(&$this->output_reader,&$this->output_writer,&security_attributes,0) ) goto ERROR_EXIT;
               |if ( !SetHandleInformation($this->output_reader,HANDLE_FLAG_INHERIT,0) ) goto ERROR_EXIT;
-              |$success = true
+              |$success = true;
               |ERROR_EXIT:
               |#endif
       if (not success)

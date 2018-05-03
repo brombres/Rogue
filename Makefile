@@ -29,7 +29,7 @@ bootstrap:
 	@echo -------------------------------------------------------------------------------
 	mkdir -p .rogo
 	$(CXX) $(ROGUEC_CPP_FLAGS) Source/RogueC/Bootstrap/Build.cpp -o $(BUILD_EXE)
-	$(BUILD_EXE) bootstrap_skip_rogo
+	$(BUILD_EXE) bootstrap_skip_build_executable
 
 $(BUILD_EXE):
 	@echo -------------------------------------------------------------------------------
