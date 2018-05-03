@@ -1,10 +1,25 @@
-$define ROGUE_RELEASE_VERSION "1.3.1"
+$define ROGUE_RELEASE_VERSION "1.4.0"
 
 $include "Version.rogue" [optional]
 
 # TODO:
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
 # - Warn on assignment of intermediate value compound
+
+# TODO: fix compile error with the following program:
+#ThreadTest()
+#
+#class ThreadTest
+#  PROPERTIES
+#
+#  METHODS
+#    method init
+#      Thread().init( this=>count, 1, 10 )
+#      Thread().init( this=>count, 21, 30 )
+#
+#    method count( first:Int32, last:Int32 )
+#      println (forEach in first..last)
+#endClass
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"

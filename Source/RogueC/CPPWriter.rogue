@@ -3258,6 +3258,19 @@ augment CmdCallDynamicMethod
         writer.print( " )" )
 
       else
+        #{
+if (method_info.cpp_name is null)
+  trace
+  trace method_info
+  trace method_info.type_context
+  trace method_info.type_context.method_list
+  local objm = method_info.type_context.method_list.last
+  trace objm
+  trace objm is method_info
+  trace method_info.type_context.method_lookup_by_signature.keys
+  trace method_info.type_context.find_method( "init<<Int32,Int32>>((Function(Int32,Int32)),Int32,Int32)" )
+endIf
+}#
         CmdCallStaticMethod( t, context, method_info, args ).write_cpp( writer, is_statement )
       endIf
       if (not is_statement) writer.print( ")" )  # end of return type cast
@@ -3268,7 +3281,7 @@ augment CmdCallStaticMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
-      writer.print( method_info.cpp_name )
+      writer.print( require method_info.cpp_name )
       writer.print( "( " )
       writer.print_arg( context, &cast_to = method_info.type_context, &is_mutating=method_info.is_mutating )
       local i = 0
