@@ -987,7 +987,7 @@ augment Program
                       |  def __init__ (self, *args, **kwargs):
                       |    base = self
                       |    if '__pyrogue_new_instance' in kwargs:
-                      |      base.thisptr = kwargs['__pyrogue_new_instance']
+                      |      base.thisptr = _RogueObjectPtr(kwargs['__pyrogue_new_instance'])
                       |      _lib.RogueObject_retain(base.thisptr)
                       |    else:
                       |      base.thisptr = _lib.RogueType_create_object(_lib.pyrogue_get_type(self._rogue_type_index_), 0)
@@ -1798,8 +1798,11 @@ augment Program
         forEach (fi in cyglobal.funcs.value_reader)
           local constructor = fi[0].is_initializer
           if (constructor) nextIteration
+          # If it's a global method, we call it directly.  Otherwise, call it on the
+          # Global singleton.
+          local single = ?:{fi[0].real_method.is_global : "" || "singleton."}
           writer.println "def $ (*args, **kwargs):" (fi[0].pyname)
-          writer.println "  return Global.$(*args, **kwargs)" (fi[0].pyname)
+          writer.println "  return Global.$$(*args, **kwargs)" (single, fi[0].pyname)
         endForEach
       endIf
 
