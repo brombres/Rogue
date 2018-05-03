@@ -404,14 +404,14 @@ class WindowsProcess : Process
               |    NULL,                  // lpCurrentDirectory
               |    &$this->startup_info,  // lpStartupInfo
               |    &$this->process_info   // lpProcessInformation
-              |)) return FALSE;
+              |)) return false;
 
               process_created = true
 
-      native @|return TRUE;
+      native @|return true;
               |
               |#else
-              |return FALSE;
+              |return false;
               |
               |#endif
 
@@ -426,7 +426,7 @@ class WindowsProcess : Process
               |  if (exit_code != STILL_ACTIVE)
               |  {
               |    $exit_code = exit_code;
-              |    $is_finished = TRUE;
+              |    $is_finished = true;
               |  }
               |}
               |#endif
@@ -489,14 +489,20 @@ class WindowsProcessReader : Reader<<Byte>>
 
   METHODS
     method init
+      local success = false
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |SECURITY_ATTRIBUTES security_attributes;
               |security_attributes.nLength = sizeof( SECURITY_ATTRIBUTES );
               |security_attributes.bInheritHandle = TRUE;
               |security_attributes.lpSecurityDescriptor = NULL;
-              |if ( !CreatePipe(&$this->output_reader,&$this->output_writer,&security_attributes,0) ) return FALSE;
-              |if ( !SetHandleInformation($this->output_reader,HANDLE_FLAG_INHERIT,0) ) return FALSE;
+              |if ( !CreatePipe(&$this->output_reader,&$this->output_writer,&security_attributes,0) ) goto ERROR_EXIT;
+              |if ( !SetHandleInformation($this->output_reader,HANDLE_FLAG_INHERIT,0) ) goto ERROR_EXIT;
+              |$success = true
+              |ERROR_EXIT:
               |#endif
+      if (not success)
+        throw Error("Process reader could not be initialized.")
+      endIf
 
     method close->this
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -530,7 +536,7 @@ class WindowsProcessReader : Reader<<Byte>>
               |        if (read_count)
               |        {
               |          $buffer->count += read_count;
-              |          return TRUE;
+              |          return true;
               |        }
               |      }
               |    }
@@ -574,14 +580,20 @@ class WindowsProcessWriter : Writer<<Byte>>
 
   METHODS
     method init
+      local success = false
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |SECURITY_ATTRIBUTES security_attributes;
               |security_attributes.nLength = sizeof( SECURITY_ATTRIBUTES );
               |security_attributes.bInheritHandle = TRUE;
               |security_attributes.lpSecurityDescriptor = NULL;
-              |if ( !CreatePipe(&$this->input_reader,&$this->input_writer,&security_attributes,0) ) return FALSE;
-              |if ( !SetHandleInformation($this->input_writer,HANDLE_FLAG_INHERIT,0) ) return FALSE;
+              |if ( !CreatePipe(&$this->input_reader,&$this->input_writer,&security_attributes,0) ) goto ERROR_EXIT;
+              |if ( !SetHandleInformation($this->input_writer,HANDLE_FLAG_INHERIT,0) ) goto ERROR_EXIT;
+              |$success = true;
+              |ERROR_EXIT:
               |#endif
+      if (not success)
+        throw Error("Process reader could not be initialized.")
+      endIf
 
     method close->this
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
