@@ -1798,8 +1798,11 @@ augment Program
         forEach (fi in cyglobal.funcs.value_reader)
           local constructor = fi[0].is_initializer
           if (constructor) nextIteration
+          # If it's a global method, we call it directly.  Otherwise, call it on the
+          # Global singleton.
+          local single = ?:{fi[0].real_method.is_global : "" || "singleton."}
           writer.println "def $ (*args, **kwargs):" (fi[0].pyname)
-          writer.println "  return Global.$(*args, **kwargs)" (fi[0].pyname)
+          writer.println "  return Global.$$(*args, **kwargs)" (single, fi[0].pyname)
         endForEach
       endIf
 
