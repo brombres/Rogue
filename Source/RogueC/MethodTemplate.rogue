@@ -175,6 +175,8 @@ class MethodTemplate
         if (not existing_m or existing_m.type_context is not type_context)
           #println "Instantiating $.$" (m.type_context,m.signature)
           type_context.inject_method( m )
+        else
+          return existing_m
         endIf
       endIf
 
