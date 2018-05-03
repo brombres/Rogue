@@ -6,7 +6,6 @@ class Build [singleton]
     ROGUEC_CPP_FLAGS   = "-Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
     BINDIR             = "/usr/local/bin"
     CXX                = "g++"
-    DEFAULT_CXX        = "$ $" (CXX,ROGUEC_CPP_FLAGS)
     SUDO_CMD           = ""
     OUTFLAG            = "-o "
 
@@ -39,7 +38,29 @@ class Build [singleton]
           OUTFLAG  = "/Fe"
 
       endWhich
-      DEFAULT_CXX = "$ $" (CXX,ROGUEC_CPP_FLAGS)
+
+      # Attempt to read override values from Local.mk
+      if (File.exists("Local.mk"))
+        local printed_header = false
+        forEach (line in LineReader(File("Local.mk")))
+          if (line.contains("="))
+            local name  = line.before_first('=').trimmed
+            local value = line.after_first('=').trimmed
+            local p = type_info.find_property( name )
+            if (p)
+              if (not printed_header)
+                printed_header = true
+                println "Local.mk overrides:"
+              endIf
+              println "$ = $" (name,value)
+              type_info.set_property( this, p, Value(value) )
+            endIf
+          endIf
+        endForEach
+      endIf
+
+    method DEFAULT_CXX->String
+      return "$ $" (CXX,ROGUEC_CPP_FLAGS)
 
     method rogue
       check_bootstrap
