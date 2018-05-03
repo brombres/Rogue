@@ -987,7 +987,7 @@ augment Program
                       |  def __init__ (self, *args, **kwargs):
                       |    base = self
                       |    if '__pyrogue_new_instance' in kwargs:
-                      |      base.thisptr = kwargs['__pyrogue_new_instance']
+                      |      base.thisptr = _RogueObjectPtr(kwargs['__pyrogue_new_instance'])
                       |      _lib.RogueObject_retain(base.thisptr)
                       |    else:
                       |      base.thisptr = _lib.RogueType_create_object(_lib.pyrogue_get_type(self._rogue_type_index_), 0)
