@@ -73,11 +73,12 @@ class Build [singleton]
 
     method check_windows_path
       if (System.os == "Windows")
-        if (not System.environment//PATH.contains("Programs\\RogueC"))
+        local path = "$Programs\\RogueC" (System.executable_filepath.before_last( ".rogo" ))
+        if (not System.environment//PATH.contains(path))
           println "-------------------------------------------------------------------------------"
           println "Add the following folder to your system PATH and restart this command prompt:"
           println
-          println "  $Programs\\RogueC" (System.executable_filepath.before_last( ".rogo" ))
+          println "  $" (path)
           println "-------------------------------------------------------------------------------"
         endIf
       endIf
