@@ -1,6 +1,6 @@
 class Token
   GLOBAL PROPERTIES
-    filepath_to_filename = Table<<String,String>>()
+    filepath_to_filename = StringTable<<String>>()
 
   PROPERTIES
     type     : TokenType
@@ -19,7 +19,7 @@ class Token
 
     method filename->String
       if (not filepath) return "(unknown)"
-      local f = filepath_to_filename[ filepath ]
+      local f = filepath_to_filename[ filepath ]  # avoid creating a new string if possible
       if (f) return f
 
       f = File.filename( filepath )

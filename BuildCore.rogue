@@ -30,9 +30,9 @@ class Build [singleton]
           endForEach
 
         case "Windows"
-          ROGO_EXE   = "Programs/RogueC/rogo.exe"
-          ROGUEC_EXE = "Programs/RogueC/roguec.exe"
-          BUILD_EXE  = ".rogo/Build.exe"
+          ROGO_EXE   = "Programs\\RogueC\\rogo.exe"
+          ROGUEC_EXE = "Programs\\RogueC\\roguec.exe"
+          BUILD_EXE  = ".rogo\\Build.exe"
           CXX = "cl"
           ROGUEC_CPP_FLAGS = "/EHsc /nologo"
           OUTFLAG  = "/Fe"
@@ -94,10 +94,10 @@ class Build [singleton]
       println "-------------------------------------------------------------------------------"
       File.create_folder( "Source/RogueC/Build" )
       create_version_file
-      run "cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=Build/RogueC $$"...
-          (ROGUEC_ROGUE_FLAGS,extra_roguec_flags)
-      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" Source/RogueC/Build/RogueC.cpp $$''...
-          (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,OUTFLAG,ROGUEC_EXE)
+      run "cd Source/RogueC && roguec RogueC.rogue --gc=manual --main --output=$ $$"...
+        (fix("Build/RogueC"),ROGUEC_ROGUE_FLAGS,extra_roguec_flags)
+      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" $ $$''...
+        (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,fix("Source/RogueC/Build/RogueC.cpp"),OUTFLAG,ROGUEC_EXE)
       if (File.exists("RogueC.obj")) File.delete( "RogueC.obj" )
 
 
@@ -114,10 +114,10 @@ class Build [singleton]
       File.create_folder( "Source/RogueC/Build" )
       local roguec_exe = "roguec"
       if (System.os == "Windows") roguec_exe = "Programs\\RogueC\\roguec"
-      run "$ Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Source/RogueC/Build/Rogo $"...
-        (roguec_exe,ROGUEC_ROGUE_FLAGS)
-      run ''$ $ Source/RogueC/Build/Rogo.cpp $$''...
-        (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,ROGO_EXE)
+      run "$ Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=$ $"...
+        (roguec_exe,fix("Source/RogueC/Build/Rogo"),ROGUEC_ROGUE_FLAGS)
+      run ''$ $ $ $$''...
+        (CXX,ROGUEC_CPP_FLAGS,fix("Source/RogueC/Build/Rogo.cpp"),OUTFLAG,ROGO_EXE)
       if (File.exists("Rogo.obj")) File.delete( "Rogo.obj" )
 
     check_rogo_launcher
@@ -198,7 +198,8 @@ class Build [singleton]
       println "Bootstrapping Rogo Build executable from C++ source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( ".rogo" )
-      run "$ $ Source/RogueC/Bootstrap/Build.cpp $$" (CXX,ROGUEC_CPP_FLAGS,OUTFLAG,BUILD_EXE)
+      run "$ $ $ $$"...
+        (CXX,ROGUEC_CPP_FLAGS,fix("Source/RogueC/Bootstrap/Build.cpp"),OUTFLAG,BUILD_EXE)
       if (File.exists("Build.obj")) File.delete( "Build.obj" )
 
     method build_roguec_bootstrap
@@ -206,8 +207,8 @@ class Build [singleton]
       println "Compiling RogueC from C++ bootstrap source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( File.folder(ROGUEC_EXE) )
-      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" Source/RogueC/Bootstrap/RogueC.cpp $$''...
-        (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,OUTFLAG,ROGUEC_EXE)
+      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" $ $$''...
+        (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,fix("Source/RogueC/Bootstrap/RogueC.cpp"),OUTFLAG,ROGUEC_EXE)
       if (File.exists("RogueC.obj")) File.delete( "RogueC.obj" )
       if (System.os == "Windows")
         run "type nul >> Source/RogueC/RogueC.rogue"
@@ -307,6 +308,7 @@ class Build [singleton]
       delete_launchers
 endClass
 
+
 #------------------------------------------------------------------------------
 # Introspection-based Launcher Framework
 #------------------------------------------------------------------------------
@@ -324,7 +326,7 @@ endForEach
 
 try
   if (args.count)
-    run( args.remove_first, args )
+    dispatch( args.remove_first, args )
   else
     rogo_default
   endIf
@@ -333,30 +335,84 @@ catch (err:Error)
   System.exit 1
 endTry
 
-routine run( cmd:String, args:Value )
-  local m = <<Global>>.find_method( method_prefix + cmd )
-  if (m)
-    if (m.parameter_count == 1 and args.count > 1)
-      # Wrap all args in a ValueList.
-      args = @[ args ]
+routine dispatch( cmd:String, args:Value )->Value
+    local m = <<Global>>.find_method( method_prefix + cmd )
+    if (m)
+      if (m.parameter_count == 1 and args.count > 1)
+        # Wrap all args in a ValueList.
+        args = @[ args ]
+      endIf
+      return m.call( Global, args )
+    else
+      println "ERROR: No such command '$'." (cmd)
+      println
+      rogo_help
     endIf
-    m.call( Global, args )
-  else
-    rogo_help
-  endIf
+  return UndefinedValue
 endRoutine
 
-routine rogo_help
+routine rogo_help( command="":String )
+  if (command.count)
+    local syntax = get_syntax( "rogo_" + command )
+    local success = false
+    if (syntax)
+      println "SYNTAX"
+      println "  " + syntax
+      println
+      success = true
+    endIf
+    local description = get_description( "rogo_" + command )
+    if (description)
+      println "DESCRIPTION"
+      forEach (line in LineReader(description.word_wrapped(76)))
+        print( "  " ).println( line )
+      endForEach
+      println
+      success = true
+    endIf
+    if (success)
+      return
+    else
+      println "ERROR: No such command '$'." (command)
+      println
+    endIf
+  endIf
+
   println "USAGE"
   local lines = String[]
   forEach (m in <<Global>>.methods)
     if (m.name.begins_with(method_prefix))
-      local line = "  rogo $" (m.name.after_first(method_prefix))
-      line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
-      lines.add( line )
+      if (not m.name.ends_with("_help_syntax") and not m.name.ends_with("_help_description"))
+        lines.add( "  " + get_syntax(m.name) )
+      endIf
     endIf
   endForEach
   lines.sort( (a,b)=>(a<b) )
   println (forEach in lines)
+  println
+endRoutine
+
+routine get_syntax( m_name:String )->String
+  local m = <<Global>>.find_method( m_name )
+  if (not m) return null
+
+  local m_syntax = <<Global>>.find_method( m_name + "_help_syntax" )
+  if (m_syntax)
+    return m_syntax( @[Global] )
+  else
+    local line = "rogo $" (m.name.after_first(method_prefix))
+    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
+    return line
+  endIf
+endRoutine
+
+routine get_description( m_name:String )->String
+  local m = <<Global>>.find_method( m_name )
+  local m_description = <<Global>>.find_method( m_name + "_help_description" )
+  if (m_description)
+    return m_description( @[Global] )
+  else
+    return null
+  endIf
 endRoutine
 

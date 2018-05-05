@@ -1672,7 +1672,7 @@ extern RogueByte_List* RogueStringBuilder_work_bytes;
 extern RogueClassStringBuilderPool* RogueStringBuilder_pool;
 extern RogueClassTable_Int32_String_* RogueMethodInfo__method_name_strings;
 extern RogueClassSet_String_* RogueParser_old_style_function_warnings;
-extern RogueClassTable_String_String_* RogueToken_filepath_to_filename;
+extern RogueClassStringTable_String_* RogueToken_filepath_to_filename;
 extern RogueClassTable_String_TokenType_* RogueTokenType_lookup;
 extern RogueClassTokenType* RogueTokenType_meta_block;
 extern RogueClassTokenType* RogueTokenType_meta_endBlock;
@@ -4603,6 +4603,7 @@ struct RogueClassCPPWriter : RogueObject
   RogueLogical needs_indent;
   RogueInt32 line_number;
   RogueClassToken* trace_token;
+  RogueClassToken* line_token;
   RogueStringBuilder* temp_buffer;
 
 };
@@ -11759,6 +11760,7 @@ ROGUE_EXPORT_C void RogueCPPWriter__mark_method_end( RogueClassCPPWriter* THIS )
 ROGUE_EXPORT_C void RogueCPPWriter__mark_routine_start__Method( RogueClassCPPWriter* THIS, RogueClassMethod* m_0 );
 ROGUE_EXPORT_C void RogueCPPWriter__mark_routine_end( RogueClassCPPWriter* THIS );
 ROGUE_EXPORT_C void RogueCPPWriter__update_trace_info__Token( RogueClassCPPWriter* THIS, RogueClassToken* t_0 );
+ROGUE_EXPORT_C void RogueCPPWriter__update_line_number__Token( RogueClassCPPWriter* THIS, RogueClassToken* t_0 );
 ROGUE_EXPORT_C RogueClassFile* RogueFile__init_object( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueString* RogueFile__to_String( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueString* RogueFile__type_name( RogueClassFile* THIS );

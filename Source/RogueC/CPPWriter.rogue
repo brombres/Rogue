@@ -1432,6 +1432,7 @@ class CPPWriter
     line_number = 1
 
     trace_token : Token
+    line_token  : Token
 
     temp_buffer = StringBuilder()
 
@@ -1947,6 +1948,7 @@ class CPPWriter
       noAction
 
     method update_trace_info( t:Token )
+      # trace_token used for both the 'trace' command and debug line numbers
       if (trace_token and t and t.filepath)
         if (t.filepath is not trace_token.filepath)
           if (RogueC.debug_mode)
@@ -1958,6 +1960,18 @@ class CPPWriter
         endIf
       endIf
       trace_token = t
+
+    method update_line_number( t:Token )
+      #{
+      if (line_token and t and t.filepath)
+        if (t.filepath is not line_token.filepath)
+          print( "#line " ).print( t.line ).print( " \"" ).print( t.filepath ).println( "\"" )
+        elseIf (t.line != line_token.line)
+          print( "#line " ).println( t.line )
+        endIf
+      endIf
+      line_token = t
+      }#
 endClass
 
 
@@ -2043,9 +2057,9 @@ augment RogueC
           compiler_name += " " + " ".join(RogueC.compiler_options)
         endIf
 
-        local exe = output_filepath
-        if (exe.contains('/'))
-          exe = File.path(exe) + "/" + File.filename(exe).to_lowercase
+        local exe = File.fix_slashes( output_filepath )
+        if (exe.contains(File.separator))
+          exe = File.path(exe) + File.separator + File.filename(exe).to_lowercase
         else
           exe = exe.to_lowercase
         endIf
@@ -2130,6 +2144,7 @@ augment Type
     method print_data_definition( writer:CPPWriter )
       if (omit_output or is_primitive) return
 
+      writer.update_line_number( t )
       writer.print( "struct " ).print( cpp_class_name )
       local is_error = false
       if (is_reference)
@@ -2148,6 +2163,7 @@ augment Type
         writer.println "// PROPERTIES"
         forEach (p in property_list)
           if (not is_error or p.type_context is this)
+            writer.update_line_number( p.t )
             if (is_compound and p.type.is_reference)
               writer.print( "ROGUE_DEF_COMPOUND_REF_PROP(")
               writer.print( p.type ).print(",").print( p.cpp_name )
@@ -2410,6 +2426,7 @@ augment Method
 
     method print_prototype( writer:CPPWriter )
       if (omit_output) return
+      writer.update_line_number( t )
       writer.print_export( this )
       print_signature( writer )
       writer.println( ";" )
@@ -2446,6 +2463,7 @@ augment Method
     method print_definition( writer:CPPWriter )
       if (omit_output) return
 
+      writer.update_line_number( t )
       print_signature( writer )
       writer.println
       writer.println "{"
@@ -2607,7 +2625,10 @@ augment CmdStatementList
     method write_cpp( writer:CPPWriter, is_statement=false:Logical, &skip_trace_update, &return_last )
       if (count?) writer.mark_statement_start(this[0].t.filepath, this[0].t.line, this[count-1].t.line)
       forEach (statement at index in this)
-        if (not skip_trace_update and statement.generates_output) writer.update_trace_info( statement.t )
+        if (not skip_trace_update and statement.generates_output)
+          writer.update_trace_info( statement.t )
+          writer.update_line_number( statement.t )
+        endIf
         if (return_last and index == count-1) writer.print( " return " )
         statement.write_cpp( writer, true )
         if (statement.requires_semicolon) writer.println ";"

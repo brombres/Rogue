@@ -9,7 +9,7 @@ class File
       if (not exists(filepath))
         local parent = folder( filepath )
         if (parent.count == 0) parent = "."
-        return "$/$" (absolute_filepath(parent),filename(filepath))
+        return "$$$" (absolute_filepath(parent),separator,filename(filepath))
       endIf
 
       local return_value : String
@@ -53,7 +53,7 @@ class File
               |    // fchdir only works with a path, not a path+filename (c_filepath).
               |    // Copy out the filename and null terminate the filepath to be just a path.
               |    int i = (int) strlen( c_filepath ) - 1;
-              |    while (i >= 0 && c_filepath[i] != '/') --i;
+              |    while (i >= 0 && c_filepath[i] != '/' && c_filepath[i] != '\\') --i;
               |    strcpy( filename, c_filepath+i+1 );
               |    if (i == -1) strcpy( c_filepath, "." );
               |    else         c_filepath[i] = 0;
@@ -140,7 +140,7 @@ class File
     method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
       if (File.is_folder(to_filepath))
         if (filename(from_filepath) != filename(to_filepath))
-          return copy_newer( from_filepath, to_filepath + "/" + File.filename(from_filepath),
+          return copy_newer( from_filepath, to_filepath + separator + File.filename(from_filepath),
             &=if_size_different, &=dry_run )
         endIf
       elseIf (File.is_newer_than(from_filepath,to_filepath))
@@ -307,18 +307,26 @@ class File
             if (File.matches_wildcard_pattern(name,pattern))
               if (non_wild_path == ".")
                 if (File.is_folder(name))
-                  if (parts.count)              results.add( File.listing("$/$"(name,parts.join('/')),options) )
-                  elseIf (options.is_recursive) results.add( File.listing("$"(name),options) )
-                  else                          results.add( name )
+                  if (parts.count)
+                    results.add( File.listing("$$$"(name,separator,parts.join(separator)),options) )
+                  elseIf (options.is_recursive)
+                    results.add( File.listing("$"(name),options) )
+                  else
+                    results.add( name )
+                  endIf
                 elseIf (parts.is_empty)
                   results.add( name )
                 endIf
               else
-                local subfolder = "$/$" (non_wild_path,name)
+                local subfolder = "$$$" (non_wild_path,separator,name)
                 if (File.is_folder(subfolder))
-                  if (parts.count)              results.add( File.listing("$/$"(subfolder,parts.join('/')),options) )
-                  elseIf (options.is_recursive) results.add( File.listing(subfolder, options) )
-                  else                          results.add( subfolder )
+                  if (parts.count)
+                    results.add( File.listing("$$$"(subfolder,separator,parts.join(separator)),options) )
+                  elseIf (options.is_recursive)
+                    results.add( File.listing(subfolder, options) )
+                  else
+                    results.add( subfolder )
+                  endIf
                 elseIf (parts.is_empty)
                   results.add( subfolder )
                 endIf
@@ -349,7 +357,7 @@ class File
       endIf
 
       if (folder.count and not (folder.ends_with('/') or folder.ends_with('\\')))
-        folder += '/'
+        folder += separator
       endIf
 
       local native_folder = folder + filepath
@@ -357,7 +365,9 @@ class File
         if (File.exists(native_folder))
           if (not (is_hidden(native_folder) and options.ignoring_hidden))
             if (options.is_files)
-              if (native_folder.count > 1 and native_folder.ends_with('/')) native_folder = native_folder.leftmost( -1 )
+              if (native_folder.count > 1 and (native_folder.ends_with('/') or native_folder.ends_with('\\')))
+                native_folder = native_folder.leftmost( -1 )
+              endIf
               result.add( native_folder )
             endIf
           endIf

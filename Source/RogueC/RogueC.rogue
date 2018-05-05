@@ -6,21 +6,6 @@ $include "Version.rogue" [optional]
 # - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
 # - Warn on assignment of intermediate value compound
 
-# TODO: fix compile error with the following program:
-#ThreadTest()
-#
-#class ThreadTest
-#  PROPERTIES
-#
-#  METHODS
-#    method init
-#      Thread().init( this=>count, 1, 10 )
-#      Thread().init( this=>count, 21, 30 )
-#
-#    method count( first:Int32, last:Int32 )
-#      println (forEach in first..last)
-#endClass
-
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CythonPlugin.rogue"
