@@ -94,8 +94,10 @@ if (buildfiles.any_newer_than(exe))
     endIf
   endForEach
 
+  local roguec = config//roguec
+  if (not File.exists(roguec)) roguec = "roguec"  # use system default
   local roguec_args = config//roguec_args->String
-  local cmd =  "$ --target=C++,Console,$" (config//roguec,System.os)
+  local cmd =  "$ --target=C++,Console,$" (roguec,System.os)
   cmd += " .rogo$$" (File.separator,forEach in buildfiles)
   cmd += " --api --debug --main --output=$ $" (base_name,roguec_args)
   println cmd
