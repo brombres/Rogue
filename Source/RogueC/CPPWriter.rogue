@@ -1436,6 +1436,8 @@ class CPPWriter
 
     temp_buffer = StringBuilder()
 
+    line_filepaths = StringTable<<String>>()
+
   METHODS
     method init( filepath )
 
@@ -1948,30 +1950,61 @@ class CPPWriter
       noAction
 
     method update_trace_info( t:Token )
-      # trace_token used for both the 'trace' command and debug line numbers
-      if (trace_token and t and t.filepath)
-        if (t.filepath is not trace_token.filepath)
-          if (RogueC.debug_mode)
+      if (RogueC.debug_mode)
+        if (trace_token and t and t.filepath)
+          if (t.filepath is not trace_token.filepath)
             print( ";__trace.filename = \"" ).print( t.filename ).println( "\";" )
             print( ";__trace.line = " ).print( t.line ).println( ";" )
+          elseIf (t.line != trace_token.line)
+            print( ";__trace.line = " ).print( t.line ).println( ";" )
           endIf
-        elseIf (t.line != trace_token.line)
-          if (RogueC.debug_mode) print( ";__trace.line = " ).print( t.line ).println( ";" )
+          trace_token = t
         endIf
       endIf
-      trace_token = t
 
     method update_line_number( t:Token )
-      #{
-      if (line_token and t and t.filepath)
-        if (t.filepath is not line_token.filepath)
-          print( "#line " ).print( t.line ).print( " \"" ).print( t.filepath ).println( "\"" )
+      if (t and t.filepath)
+        if (not line_token or (t.filepath is not line_token.filepath))
+          local line_filepath = line_filepaths[ t.filepath ]
+          if (not line_filepath)
+            local rogue_filepath = t.filepath.replacing( '\\', '/' )
+            local cpp_filepath = File.absolute_filepath(this.filepath).replacing( '\\', '/' )
+
+            local rogue_path = File.folder( rogue_filepath )
+            local cpp_path = File.folder( cpp_filepath )
+
+            while (rogue_path.count > 0 and cpp_path.count > 0 and rogue_path != cpp_path)
+              if (rogue_path.count > cpp_path.count) rogue_path = File.folder( rogue_path )
+              else                                   cpp_path = File.folder( cpp_path )
+            endWhile
+
+            if (rogue_path.count <= 1 or cpp_path.count <= 1)
+              # Empty or '/'; use filename only in either case
+              line_filepath = File.filename( rogue_filepath )
+            else
+              local common = rogue_path
+              line_filepath = rogue_filepath.rightmost( -(common.count+1) ) # without leading '/'
+              cpp_path = File.folder( cpp_filepath )
+              local previous_count = cpp_path.count
+              while (cpp_path != common)
+                cpp_path = File.folder( cpp_path )
+                line_filepath = "../" + line_filepath
+                local new_count = cpp_path.count
+                if (new_count == previous_count) escapeWhile
+                previous_count = new_count
+              endWhile
+            endIf
+            line_filepaths[ t.filepath ] = line_filepath
+          endIf
+
+          print( "#line " ).print( t.line ).print( " \"" ).print( line_filepath ).println( "\"" )
+
         elseIf (t.line != line_token.line)
           print( "#line " ).println( t.line )
+
         endIf
+        line_token = t
       endIf
-      line_token = t
-      }#
 endClass
 
 
