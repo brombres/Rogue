@@ -3,9 +3,9 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.4.2
-Date      | May 3, 2018
-Platforms | macOS, Linux (Ubuntu+), Windows, Cygwin
+Version   | v1.4.3
+Date      | May 6, 2018
+Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
 
 
 ## Installation
@@ -26,7 +26,7 @@ Platforms | macOS, Linux (Ubuntu+), Windows, Cygwin
     cd Rogue
     rogo
 
-4. Add the absolute path of the subfolder `Programs\RogueC` to the system PATH.
+4. Add the absolute path of the subfolder `Programs\RogueC` to the system PATH as directed by the `rogo` command.
 
 ## Syntax Highlighting
 

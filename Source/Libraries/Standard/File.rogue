@@ -767,7 +767,8 @@ class File
     filepath : String
 
   METHODS
-    method init( filepath )
+    method init( filepath:String )
+      this.filepath = fix_slashes( filepath )
 
     method absolute_filepath->String
       return File.absolute_filepath( this.filepath )

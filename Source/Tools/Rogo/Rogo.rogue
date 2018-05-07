@@ -96,7 +96,7 @@ if (buildfiles.any_newer_than(exe))
 
   local roguec_args = config//roguec_args->String
   local cmd =  "$ --target=C++,Console,$" (config//roguec,System.os)
-  cmd += " .rogo/$" (forEach in buildfiles)
+  cmd += " .rogo$$" (File.separator,forEach in buildfiles)
   cmd += " --api --debug --main --output=$ $" (base_name,roguec_args)
   println cmd
   if (0 != System.run(cmd))
