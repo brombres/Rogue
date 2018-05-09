@@ -1970,23 +1970,16 @@ class CPPWriter
             local rogue_filepath = t.filepath.replacing( '\\', '/' )
             local cpp_filepath = File.absolute_filepath(this.filepath).replacing( '\\', '/' )
 
-            local rogue_path = File.folder( rogue_filepath )
-            local cpp_path = File.folder( cpp_filepath )
+            local common_path = File.common_path( rogue_filepath, cpp_filepath )
 
-            while (rogue_path.count > 0 and cpp_path.count > 0 and rogue_path != cpp_path)
-              if (rogue_path.count > cpp_path.count) rogue_path = File.folder( rogue_path )
-              else                                   cpp_path = File.folder( cpp_path )
-            endWhile
-
-            if (rogue_path.count <= 1 or cpp_path.count <= 1)
-              # Empty or '/'; use filename only in either case
+            if (common_path.count == 0)
+              # Use filename only
               line_filepath = File.filename( rogue_filepath )
             else
-              local common = rogue_path
-              line_filepath = rogue_filepath.rightmost( -(common.count+1) ) # without leading '/'
-              cpp_path = File.folder( cpp_filepath )
+              line_filepath = rogue_filepath.rightmost( -(common_path.count+1) ) # without leading '/'
+              local cpp_path = File.folder( cpp_filepath )
               local previous_count = cpp_path.count
-              while (cpp_path != common)
+              while (cpp_path != common_path)
                 cpp_path = File.folder( cpp_path )
                 line_filepath = "../" + line_filepath
                 local new_count = cpp_path.count

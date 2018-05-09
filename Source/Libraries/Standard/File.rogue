@@ -99,6 +99,23 @@ class File
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter
       return CharacterToUTF8ByteWriter( File.writer(filepath) )
 
+    method common_path( filepath_a:String, filepath_b:String )->String
+      local a = filepath_a
+      local b = filepath_b
+
+      if (a == b) return a
+
+      # Remove trailing '/' or '\'
+      while (a.count > 1 and (a.ends_with('/') or a.ends_with('\\'))) a = a.leftmost( -1 )
+      while (b.count > 1 and (b.ends_with('/') or b.ends_with('\\'))) b = b.leftmost( -1 )
+
+      while ((a.count > 0 or b.count > 0) and a != b)
+        if (a.count > b.count) a = File.folder( a )
+        else                   b = File.folder( b )
+      endWhile
+
+      return a  # 'a' and 'b' are the same at this point
+
     method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
       # Copy always is the default or else only if newer and/or size different.
       if (if_newer)
@@ -789,6 +806,9 @@ class File
 
     method character_writer->CharacterToUTF8ByteWriter
       return CharacterToUTF8ByteWriter( this.writer )
+
+    method common_path( other_filepath:String )->String
+      return File.common_path( this.filepath, other_filepath )
 
     method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
       return File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
