@@ -204,6 +204,15 @@ class File
       else                        return filepath.replacing( '\\', '/' )
 
     method folder( filepath:String )->String
+      # Replace multiple slashes with single slashes
+      while (filepath.contains("//")) filepath = filepath.replacing( "//", "/" )
+      while (filepath.contains("\\\\")) filepath = filepath.replacing( "\\\\", "\\" )
+
+      # Discard trailing slash
+      if (filepath.ends_with('/') or filepath.ends_with('\\')) filepath = filepath.leftmost( -1 )
+
+      if (filepath.count == 0) return ""
+
       local i1 = filepath.locate_last( '/' )
       local i2 = filepath.locate_last( '\\' )
       if (i1.exists)
@@ -213,6 +222,8 @@ class File
       endIf
 
       if (not i1?) return ""
+      if (i1.value == 0) return filepath.leftmost(1)  # /abc -> /
+
       return filepath.from( 0, i1.value-1 )
 
     method is_folder( filepath:String )->Logical [essential]
