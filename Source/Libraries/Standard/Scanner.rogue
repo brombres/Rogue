@@ -103,13 +103,45 @@ class Scanner : Reader<<Character>>
     method has_another( n:Int32 )->Logical
       return (position+n <= count)
 
+    method next_is( ch:Character )->Logical
+      if (position == count) return 0
+      return (ch == data[position])
+
+    method next_is_hex_digit->Logical
+      local ch = peek
+      return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
+
+    method next_is_identifier( &allow_dollar )->Logical
+      return peek.is_identifier( &start, &=allow_dollar )
+
+    method next_is_number( base=10:Int32 )->Logical
+      if (next_is('-')) return peek(1).is_number( base )
+      return peek.is_number( base )
+
+    method next_is_real_number->Logical
+      if (not next_is_number) return false
+      use buffer = StringBuilder.pool
+        local pos = this.position
+        local line = this.line
+        local col  = this.column
+        local result = scan_number_string( buffer )
+        this.position = pos
+        this.line = line
+        this.column = col
+        return result
+      endUse
+
+    method next_is_string->Logical
+      local ch = peek
+      return (ch == '"' or ch == '\'')
+
     method peek->Character
       if (position == count) return 0->Character
       return data[position]
 
-    method peek( num_ahead:Int32 )->Character
+    method peek( lookahead:Int32 )->Character
       # Zero-based
-      local peek_pos = position + num_ahead
+      local peek_pos = position + lookahead
       if (peek_pos >= count) return 0->Character
       return data[peek_pos]
 
@@ -131,9 +163,151 @@ class Scanner : Reader<<Character>>
       if (ch >= 'A' and ch <= 'F') return 10 + (ch - 'A')
       return 0
 
+    method read_line->String
+      use buffer = StringBuilder.pool
+        while (has_another)
+          local ch = read
+          if (ch == '\n') escapeWhile
+          buffer.print( ch )
+        endWhile
+        return buffer->String
+      endUse
+
     method reset->this
       count = data.count
       return seek( 0 )
+
+    method scan_hex_sequence( buffer:StringBuilder )
+      local first = true
+      while (first or consume(','))
+        first = false
+        local ch = scan_hex_value( &variable_length )->Character
+        buffer.print( ch )
+      endWhile
+
+    method scan_hex_value( digits=6:Int32, &variable_length )->Int32
+      local value = 0
+      local i = 1
+      while (i <= digits)
+        if (not has_another or not next_is_hex_digit) return value
+        local intval = read.to_number(16)
+        value = (value:<<:4) + intval
+        ++i
+      endWhile
+      return value
+
+    method scan_identifier( &allow_dollar )->String
+      if (not peek.is_identifier(&start,&=allow_dollar)) return null
+      use buffer = StringBuilder.pool
+        buffer.print( read )
+        while (peek.is_identifier(&=allow_dollar)) buffer.print( read )
+        return buffer->String
+      endUse
+
+    method scan_int64( base=10:Int32 )->Int64
+      local is_negative = consume( '-' )
+      local result : Int64
+      while (peek.is_number(base))
+        result = result * base + read.to_number(base)
+      endWhile
+      if (is_negative) return -result
+      else             return result
+
+    method scan_number_string( buffer:StringBuilder )->Logical
+      # Returns true if number string contains a decimal point or an exponent
+      local is_real = false
+      if (consume('-')) buffer.print( '-' )
+      while (peek.is_number) buffer.print( read )
+      if (consume('.'))
+        is_real = true
+        buffer.print( '.' )
+        while (peek.is_number) buffer.print( read )
+      endIf
+      if (consume('e') or consume('E'))
+        is_real = true
+        buffer.print( 'e' )
+        if (consume('-'))   buffer.print( '-' )
+        else consume( '+' ) buffer.print( '+' )
+        while (peek.is_number) buffer.print( read )
+      endIf
+      return is_real
+
+    method scan_real64->Real64
+      use buffer = StringBuilder.pool
+        scan_number_string( buffer )
+        return buffer->Real64
+      endUse
+
+    method scan_string->String
+      local ch = peek
+      if (ch == '"')  return scan_string( '"', '"' )
+      if (ch == '\'') return scan_string( '\'', '\'' )
+      return null
+
+    method scan_string( open:Character, close:Character )->String
+      if (not consume(open)) return null
+      use buffer = StringBuilder.pool
+        while (has_another and not consume(close))
+          scan_string_character( buffer )
+        endWhile
+        return buffer->String
+      endUse
+
+    method scan_string_character( buffer:StringBuilder )
+      if (not has_another) return
+
+      local ch = peek
+
+      if (ch == '\\')
+        read
+
+        local value : Int32
+        if     (consume('b')) value = 8
+        elseIf (consume('e')) value = 27
+        elseIf (consume('f')) value = 12
+        elseIf (consume('n')) value = '\n'
+        elseIf (consume('r')) value = '\r'
+        elseIf (consume('t')) value = '\t'
+        elseIf (consume('v')) value = 11
+        elseIf (consume('0')) value = '\0'
+        elseIf (consume('/')) value = '/'
+        elseIf (consume('?')) value = '?'
+        elseIf (consume('\''))value = '\''
+        elseIf (consume('\\'))value = '\\'
+        elseIf (consume('"')) value = '"'
+        elseIf (consume('x')) value = scan_hex_value(2)
+        elseIf (consume('u')) value = scan_hex_value(4)
+        elseIf (consume('[')) scan_hex_sequence( buffer ); consume(']'); return
+        elseIf (has_another)  value = read
+        else                  value = '\\'
+
+        buffer.print( value->Character )
+
+      else
+        local value = read->Int32
+        if ((value & 0x80) != 0)
+          # Handle UTF8 encoding
+          local ch2 = read->Int32
+
+          if ((value & 0x20) == 0)
+            # %110xxxxx 10xxxxxx
+            value = value & 0x1f
+            ch2 = value & 0x3f
+            buffer.print( ((value:<<:6) | ch2)->Character )
+          else
+            # %1110xxxx 10xxxxxx 10xxxxxx
+            local ch3 = read->Int32
+            value = value & 15
+            ch2 = ch2 & 0x3f
+            ch3 = ch3 & 0x3f
+            buffer.print( ((value:<<:2) | (ch2:<<:6) | ch3)->Character )
+          endIf
+
+        else
+          buffer.print( value->Character )
+        endIf
+
+      endIf
 
     method seek( pos:Int32 )->this
       if (pos < 0)         pos = 0
