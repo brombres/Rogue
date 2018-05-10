@@ -433,6 +433,21 @@ class StringBuilder [essential]
       endIf
       return this
 
+    method to->Int32
+      utf8.reserve( 1 )
+      utf8[ utf8.count ] = 0
+      return native( "(RogueInt32)strtol( (char*)$utf8->data->as_bytes, 0, 10 )" )->Int32
+
+    method to->Int64
+      utf8.reserve( 1 )
+      utf8[ utf8.count ] = 0
+      return native( "(RogueInt64)strtoll( (char*)$utf8->data->as_bytes, 0, 10 )" )->Int64
+
+    method to->Real64
+      utf8.reserve( 1 )
+      utf8[ utf8.count ] = 0
+      return native( "strtod( (char*)$utf8->data->as_bytes, 0 )" )->Real64
+
     method to->String
       return String( utf8 )
 
