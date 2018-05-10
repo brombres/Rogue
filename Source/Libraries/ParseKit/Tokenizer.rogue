@@ -143,8 +143,7 @@ class Tokenizer
       throw error( "Expected $, found $." (text,peek) )
 
     method next_is_hex_digit->Logical
-      local ch = peek
-      return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
+      return scanner.next_is_hex_digit
 
     method peek->Character [macro]
       this.scanner.peek
@@ -152,7 +151,7 @@ class Tokenizer
     method read->Character [macro]
       this.scanner.read
 
-    method scan_character->Character
+    method scan_character
       if (not has_another) throw error( "Character expected." )
 
       local ch = peek
@@ -270,33 +269,19 @@ class Tokenizer
       return buffer->String
 
     method scan_int64( base:Int32 )->Int64
-      local result : Int64
-      while (peek.is_number(base))
-        result = result * base + read.to_number(base)
-      endWhile
-      return result
+      return scanner.scan_int64( base )
 
-    method scan_number_string->String
+    method scan_number_string->Logical
+      # Returns true if number string contains a decimal point or an exponent
       buffer.clear
-      while (peek.is_number) buffer.print( read )
-      if (consume('.'))
-        buffer.print( '.' )
-        while (peek.is_number) buffer.print( read )
-      endIf
-      if (consume('e') or consume('E'))
-        buffer.print( 'e' )
-        if (consume('-'))   buffer.print( '-' )
-        else consume( '+' ) buffer.print( '+' )
-        while (peek.is_number) buffer.print( read )
-      endIf
-      return buffer->String.to_lowercase
+      return scanner.scan_number_string( buffer )
 
     method scan_string( terminator:String )->String
       buffer.clear
       must_consume( terminator )
       while (has_another)
         if (consume(terminator)) return buffer->String
-        buffer.print( read )
+        scan_character
       endWhile
       throw error( "Unexpected end of input looking for end of string ($)." (terminator) )
 
@@ -369,15 +354,13 @@ class Tokenizer
       endIf
 
       if (base == 10)
-        local st = scan_number_string
-        if (st.contains('.') or st.contains('e') or st.contains('E'))
-          on_real( st->Real64 )
+        if (scan_number_string)
+          on_real( buffer->Real64 )
         else
-          on_integer( st->Int32 )
+          on_integer( buffer->Int32 )
         endIf
       else
-        local n = scan_int64( base )
-        on_integer( n )
+        on_integer( scan_int64(base) )
       endIf
 
       return true
