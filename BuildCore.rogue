@@ -316,19 +316,17 @@ endClass
 #------------------------------------------------------------------------------
 global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
 
-local args = @[]
-forEach (arg in System.command_line_arguments)
-  which (arg)
-    case "true":  args.add( true )
-    case "false": args.add( false )
-    case "null":  args.add( NullValue )
-    others:       args.add( arg )
-  endWhich
-endForEach
-
+local cmd = System.command_line_arguments.cloned
 try
-  if (args.count)
-    dispatch( args.remove_first, args )
+  if (cmd.count)
+    local args = String[]
+    while (cmd.count)
+      if (dispatch(cmd,args)) System.exit
+      args.insert( cmd.remove_last )
+    endWhile
+    println "ERROR: No such command '$'." (args.first)
+    println
+    rogo_help
   else
     rogo_default
   endIf
@@ -337,20 +335,22 @@ catch (err:Error)
   System.exit 1
 endTry
 
-routine dispatch( cmd:String, args:Value )->Value
-    local m = <<Global>>.find_method( method_prefix + cmd )
-    if (m)
-      if (m.parameter_count == 1 and args.count > 1)
-        # Wrap all args in a ValueList.
-        args = @[ args ]
-      endIf
-      return m.call( Global, args )
-    else
-      println "ERROR: No such command '$'." (cmd)
-      println
-      rogo_help
-    endIf
-  return UndefinedValue
+routine dispatch( cmd:String[], string_args:String[] )->Logical
+  local m = <<Global>>.find_method( method_prefix + cmd.join("_") )
+  if (not m) return false
+
+  local args = @[]
+  forEach (arg in string_args)
+    which (arg)
+      case "true":  args.add( true )
+      case "false": args.add( false )
+      case "null":  args.add( NullValue )
+      others:       args.add( arg )
+    endWhich
+  endForEach
+  if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
+  m.call( Global, args )
+  return true
 endRoutine
 
 routine rogo_help( command="":String )
