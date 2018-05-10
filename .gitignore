@@ -10,6 +10,7 @@ Programs
 /Test.rogue
 Test.cpp
 Test.h
+test.exe
 a.out
 RogueProgram.*
 Samples/**/*.h
