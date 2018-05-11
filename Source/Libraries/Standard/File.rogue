@@ -664,7 +664,6 @@ class File
       return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run )
 
     method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
-      if (dry_run) verbose = true
       dest_folder = File.fix_slashes( dest_folder )
 
       if (not exists(dest_folder) and not dry_run)
