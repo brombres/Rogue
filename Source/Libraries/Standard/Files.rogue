@@ -12,14 +12,16 @@ class Files
         this.base_folder = this.base_folder.rightmost( -2 )
       endIf
 
-    method init( base_folder:String, pattern:String, &ignore_hidden=true )
+    method init( base_folder:String, pattern:String, &ignore_hidden=true, &include_folders )
       init( File.fix_slashes(base_folder) )
-      add( pattern, &=ignore_hidden )
+      add( pattern, &=ignore_hidden, &=include_folders )
 
-    method add( pattern:String, &ignore_hidden=true )->this
+    method add( pattern:String, &ignore_hidden=true, &include_folders )->this
       forEach (listing_filepath in File.listing(base_folder+pattern,&=ignore_hidden))
         if (not filepaths.contains(listing_filepath))
-          filepaths.add( listing_filepath )
+          if (include_folders or not File.is_folder(listing_filepath))
+            filepaths.add( listing_filepath )
+          endIf
         endIf
       endForEach
 
