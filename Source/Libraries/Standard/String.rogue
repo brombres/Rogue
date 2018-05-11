@@ -545,7 +545,7 @@ class String
       local result = StringBuilder( count )
       forEach (ch in this)
         if (ch == look_for) result.print( replace_with )
-        else                   result.print( ch )
+        else                result.print( ch )
       endForEach
       return result->String
 
