@@ -1,15 +1,14 @@
 class StringBuilder [essential]
   GLOBAL PROPERTIES
-    $if (THREAD_MODE != "NONE")
-      work_bytes [threadLocal] = Byte[]
-    $else
-      work_bytes = Byte[]
-    $endIf
+    work_bytes [threadLocal] = Byte[]
 
-    pool = StringBuilderPool
+    pool [threadLocal] = StringBuilderPool()
     # To acquire a unique StringBuilder for a given scope:
-    #   use builder=StringBuilder.pool
+    #
+    #   use builder = StringBuilder.pool
+    #     # builder starts out clear()d and ready to go.
     #     ...
+    #     return builder->String
     #   endUse
 
   PROPERTIES
@@ -459,7 +458,7 @@ class StringBuilder [essential]
       return this
 endClass
 
-class StringBuilderPool [singleton]
+class StringBuilderPool
   PROPERTIES
     available = StringBuilder[]
 
