@@ -314,7 +314,23 @@ endClass
 #------------------------------------------------------------------------------
 # Introspection-based Launcher Framework
 #------------------------------------------------------------------------------
-global ::method_prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+global ::prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+
+class CommandSyntax      : StringTable<<String>> [singleton];
+class CommandDescription : StringTable<<String>> [singleton];
+
+routine syntax( command:String, text:String )
+  CommandSyntax[ command ] = text
+endRoutine
+
+routine description( command:String, text:String )
+  CommandDescription[ command ] = text
+endRoutine
+
+routine help( command:String, description=null:String, syntax=null:String )
+  if (description) Global.description( command, description )
+  if (syntax)      Global.syntax( command, syntax )
+endRoutine
 
 local cmd = System.command_line_arguments.cloned
 try
@@ -336,7 +352,7 @@ catch (err:Error)
 endTry
 
 routine dispatch( cmd:String[], string_args:String[] )->Logical
-  local m = <<Global>>.find_method( method_prefix + cmd.join("_") )
+  local m = <<Global>>.find_method( prefix + cmd.join("_") )
   if (not m) return false
 
   local args = @[]
@@ -355,7 +371,7 @@ endRoutine
 
 routine rogo_help( command="":String )
   if (command.count)
-    local syntax = get_syntax( "rogo_" + command )
+    local syntax = get_syntax( command )
     local success = false
     if (syntax)
       println "SYNTAX"
@@ -363,7 +379,7 @@ routine rogo_help( command="":String )
       println
       success = true
     endIf
-    local description = get_description( "rogo_" + command )
+    local description = get_description( command )
     if (description)
       println "DESCRIPTION"
       forEach (line in LineReader(description.word_wrapped(76)))
@@ -383,10 +399,8 @@ routine rogo_help( command="":String )
   println "USAGE"
   local lines = String[]
   forEach (m in <<Global>>.methods)
-    if (m.name.begins_with(method_prefix))
-      if (not m.name.ends_with("_help_syntax") and not m.name.ends_with("_help_description"))
-        lines.add( "  " + get_syntax(m.name) )
-      endIf
+    if (m.name.begins_with(prefix))
+      lines.add( "  " + get_syntax(m.name.after_first(prefix)) )
     endIf
   endForEach
   lines.sort( (a,b)=>(a<b) )
@@ -395,26 +409,21 @@ routine rogo_help( command="":String )
 endRoutine
 
 routine get_syntax( m_name:String )->String
-  local m = <<Global>>.find_method( m_name )
-  if (not m) return null
-
-  local m_syntax = <<Global>>.find_method( m_name + "_help_syntax" )
-  if (m_syntax)
-    return m_syntax( @[Global] )
+  if (CommandSyntax.contains(m_name))
+    return "rogo " + CommandSyntax[ m_name ]
   else
-    local line = "rogo $" (m.name.after_first(method_prefix))
+    local m = <<Global>>.find_method( prefix + m_name )
+    if (not m) return null
+    local line = "rogo $" (m_name)
     line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
     return line
   endIf
 endRoutine
 
 routine get_description( m_name:String )->String
-  local m = <<Global>>.find_method( m_name )
-  local m_description = <<Global>>.find_method( m_name + "_help_description" )
-  if (m_description)
-    return m_description( @[Global] )
+  if (CommandDescription.contains(m_name))
+    return CommandDescription[ m_name ]
   else
     return null
   endIf
 endRoutine
-
