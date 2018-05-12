@@ -108,6 +108,15 @@ endClass
 
 class SystemEnvironment [compound]
   METHODS
+    method contains( name:String )->Logical
+      local result : Logical
+      native @|char* c_result = getenv( (char*)$name->utf8 );
+              |if (c_result)
+              |{
+              |  $result = true;
+              |}
+      return result
+
     method get( name:String )->String
       local result : String
 
