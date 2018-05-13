@@ -783,6 +783,12 @@ class File
               |#endif
               |return 0.0;
 
+    method touch( filepath:String )
+      if (System.os == "Windows")
+        System.run "type nul >> $" (filepath)
+      else
+        System.run "touch $" (filepath)
+      endIf
 
     method writer( filepath:String )->FileWriter
       return FileWriter( filepath )
@@ -896,6 +902,9 @@ class File
 
     method timestamp->Real64
       return File.timestamp( this.filepath )
+
+    method touch
+      File.touch( this.filepath )
 
     method writer->FileWriter
       return File.writer( this.filepath )
