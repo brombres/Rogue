@@ -1523,6 +1523,9 @@ class ValueTable : Value
     method locate_last( query:(Function(Value)->Logical) )->Value
       return locate( query )
 
+    method remove( value:Value )->Value
+      return remove( value->String )
+
     method remove( key:String )->Value
       return data.remove( key )
 
