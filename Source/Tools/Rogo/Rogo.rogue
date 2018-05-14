@@ -28,11 +28,6 @@ native @|#endif
 
 config//cpp = compiler_invocation
 
-local buildfiles = Files( "." )
-if (File.exists("Build.rogue")) buildfiles.add( "Build.rogue" )
-if (File.exists("BuildCore.rogue")) buildfiles.add( "BuildCore.rogue" )
-if (File.exists("BuildLocal.rogue")) buildfiles.add( "BuildLocal.rogue" )
-
 local buildfile : String
 forEach (arg in System.command_line_arguments)
   if (arg == "--build" or arg.begins_with("--build="))
@@ -54,7 +49,14 @@ forEach (arg in System.command_line_arguments)
   endIf
 endForEach
 
-if (buildfile) buildfiles.add( buildfile )
+local buildfiles = Files( "." )
+if (buildfile)
+  buildfiles.add( buildfile )
+else
+  if (File.exists("Build.rogue")) buildfiles.add( "Build.rogue" )
+  if (File.exists("BuildCore.rogue")) buildfiles.add( "BuildCore.rogue" )
+  if (File.exists("BuildLocal.rogue")) buildfiles.add( "BuildLocal.rogue" )
+endIf
 
 if (not buildfiles.count)
   local w = (Console.width - 1).or_smaller( 79 )
