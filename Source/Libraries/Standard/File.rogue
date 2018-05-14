@@ -1066,6 +1066,33 @@ class FileReader : Reader<<Byte>>
 
       return result
 
+    method read( result:Byte[], limit:Int32 )->Int32
+      result.reserve( limit )
+
+      # Read up to the end of our internal buffer
+      local total_read = 0
+      local n = (buffer.count - buffer_position).or_smaller( limit )
+      if (n > 0)
+        native @|memcpy( $result->data->as_bytes + $result->count, $buffer->data->as_bytes+$buffer_position, $n );
+        buffer_position += n
+        position += n
+        total_read += n
+        limit -= n
+      endIf
+
+      if (limit > 0)
+        # fread directly from file
+        native @|$n = (RogueInt32) fread( $result->data->as_bytes+$result->count, 1, $limit, $this->fp );
+        total_read += n
+        position += n
+      endIf
+
+      if (position == count) close
+
+      result.count += total_read
+
+      return total_read
+
     method remaining->Int32
       return count - position
 

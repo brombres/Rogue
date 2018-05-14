@@ -22,11 +22,13 @@ class Reader<<$DataType>> [aspect]
 
     method read->$DataType [abstract]
 
-    method read( buffer:$DataType[], limit:Int32 )
-      forEach (1..limit)
-        if (not has_another) return
+    method read( buffer:$DataType[], limit:Int32 )->Int32
+      forEach (n in 0..<limit)
+        if (not has_another) close; return n
         buffer.add( read )
       endForEach
+      if (not has_another) close
+      return limit
 
     method reset->this
       seek( 0 )

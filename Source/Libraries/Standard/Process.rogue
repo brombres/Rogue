@@ -558,7 +558,7 @@ class WindowsProcessReader : Reader<<Byte>>
       ++@position
       return buffer.remove_first
 
-    method read( result:Byte[], limit:Int32 )
+    method read( result:Byte[], limit:Int32 )->Int32
       while (buffer.count < limit and fill_buffer) noAction
       local n = buffer.count.or_smaller( limit )
       if (n)
@@ -567,6 +567,7 @@ class WindowsProcessReader : Reader<<Byte>>
         buffer.discard( 0, n )
         @position += n
       endIf
+      return n
 endClass
 
 class WindowsProcessWriter : Writer<<Byte>>

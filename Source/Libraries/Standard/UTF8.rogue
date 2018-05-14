@@ -44,12 +44,6 @@ class UTF8Reader : Reader<<Character>>
       ++position
       return result
 
-    method read( buffer:Character[], limit:Int32 )
-      forEach (1..limit)
-        if (not has_another) return
-        buffer.add( read )
-      endForEach
-
     method reset->this
       seek( 0 )
       return this
