@@ -237,6 +237,10 @@ class File
       # Creates the specified folder along with intermediate folders
       # if necessary.  Returns 'true' on success or if the filepath
       # already exists as a folder.  Returns 'false' on failure to
+      while (filepath.count > 1 and (filepath.ends_with('/') or filepath.ends_with('\\')))
+        filepath = filepath.leftmost( -1 )
+      endWhile
+
       filepath = File.absolute_filepath( filepath )
 
       # create or if the filepath already exists but is not a folder.
