@@ -768,8 +768,15 @@ class File
           folder = File.folder( folder )
         endWhile
 
-        if (copy_newer(src_filepath,dest_filepath,&if_size_different,&=dry_run))
+        contingent
+          sufficient (not File.exists(dest_filepath))
+          sufficient (File.timestamp(src_filepath) > File.timestamp(dest_filepath))
+          sufficient (File.size(src_filepath) != File.size(dest_filepath))
+          necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
+
+        satisfied
           ++modified
+
           if (verbose)
             if (not printed_header)
               printed_header = true
@@ -781,7 +788,12 @@ class File
             endIf
             Console.print( "  " ).println( relative_filepath )
           endIf
-        endIf
+
+          if (not dry_run)
+            File.copy( src_filepath, dest_filepath )
+          endIf
+
+        endContingent
       endForEach
 
       if (not keep_unused)
