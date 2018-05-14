@@ -433,6 +433,8 @@ public:
   typedef unsigned __int16 RogueWord;
   typedef unsigned char    RogueByte;
   typedef bool             RogueLogical;
+  typedef unsigned __int64 RogueUInt64;
+  typedef unsigned __int32 RogueUInt32;
 #else
   typedef double           RogueReal64;
   typedef float            RogueReal32;
@@ -442,6 +444,8 @@ public:
   typedef uint16_t         RogueWord;
   typedef uint8_t          RogueByte;
   typedef bool             RogueLogical;
+  typedef uint64_t         RogueUInt64;
+  typedef uint32_t         RogueUInt32;
 #endif
 
 struct RogueAllocator;
