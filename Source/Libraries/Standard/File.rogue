@@ -191,9 +191,11 @@ class File
           if (not dry_run)
             local reader = File.reader( from_filepath )
             local writer = File.writer( to_filepath )
-
-            while (reader.has_another) writer.write( reader.read )
-
+            local file_buffer = Byte[]( 1024 )
+            while (reader.has_another)
+              reader.read( file_buffer.clear, 1024 )
+              writer.write( file_buffer )
+            endWhile
             writer.close
           endIf
         endIf
@@ -1289,25 +1291,19 @@ class FileWriter : Writer<<Byte>>
     method write( bytes:Byte[] )->this
       if (not fp) return this
 
-      if (bytes.count < 1024)
-        forEach (byte in bytes) write( byte )
-      else
-        flush
-        position += bytes.count
-        native @|fwrite( $bytes->data->as_bytes, 1, $bytes->count, $this->fp );
-      endIf
+      flush
+      position += bytes.count
+      native @|fwrite( $bytes->data->as_bytes, 1, $bytes->count, $this->fp );
+
       return this
 
     method write( data:String )->this
       if (not fp) return this
 
-      if (data.count < 1024)
-        forEach (i in 0..<data.byte_count) write( data.byte(i) )
-      else
-        flush
-        position += data.byte_count
-        native @|fwrite( $data->utf8, 1, $data->byte_count, $this->fp );
-      endIf
+      flush
+      position += data.byte_count
+      native @|fwrite( $data->utf8, 1, $data->byte_count, $this->fp );
+
       return this
 
     method write( builder:StringBuilder )->this
