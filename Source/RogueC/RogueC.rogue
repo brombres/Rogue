@@ -642,17 +642,16 @@ $endIf
             case "--libraries"
               if (not value.count) throw RogueError( ''One or more paths expected after "--libraries=".'' )
               forEach (path in value.split(';'))
-                if (not File.exists(path))
-                  throw RogueError( ''--libraries option specifies non-existent folder "$".'' (path) )
-                endIf
-                if (File.is_folder(path))
-                  path = File.ensure_ends_with_separator( path )
-                  if (not prefix_path_lookup.contains(path))
-                    prefix_path_list.add( path )
-                    prefix_path_lookup[ path ] = true
+                if (File.exists(path))
+                  if (File.is_folder(path))
+                    path = File.ensure_ends_with_separator( path )
+                    if (not prefix_path_lookup.contains(path))
+                      prefix_path_list.add( path )
+                      prefix_path_lookup[ path ] = true
+                    endIf
+                  else
+                    source_files.add( path )
                   endIf
-                else
-                  source_files.add( path )
                 endIf
               endForEach
 
