@@ -772,7 +772,6 @@ class File
 
         contingent
           sufficient (not File.exists(dest_filepath))
-          sufficient (File.timestamp(src_filepath) > File.timestamp(dest_filepath))
           sufficient (File.size(src_filepath) != File.size(dest_filepath))
           necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
 
