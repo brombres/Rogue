@@ -1735,6 +1735,8 @@ class CPPWriter
         if (line.count)
           if (result_type) print   line
           else             println line
+        else
+          println
         endIf
 
         indent = original_indent
