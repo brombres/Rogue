@@ -111,18 +111,16 @@ if (buildfiles.any_newer_than(exe))
 
   cmd = "$ $ $.cpp" (config//cpp,config//cpp_args,base_name)
 
-  local is_linux = (System.os == "Linux")
   local is_windows = (System.os == "Windows")
 
   install_library_manager
   forEach (library in config//libraries)
     install_library( library )
 
-    if (not is_linux)
-      # Linux generally doesn't need to specify -I include paths and -L library paths
-      cmd += '' -I "$"'' (header_location(library))
-      cmd += '' -L "$"'' (library_location(library))
-    endIf
+    # Linux generally doesn't need to specify -I include paths and -L library paths
+    # but occasionally it does (libfreetype)
+    if (header_location(library))  cmd += '' -I "$"'' (header_location(library))
+    if (library_location(library)) cmd += '' -L "$"'' (library_location(library))
   endForEach
 
   cmd += " $$ $" (?:{is_windows:"/Fe"||"-o "},exe,config//link)
@@ -319,6 +317,7 @@ endRoutine
 routine install_ubuntu_library( library:Value )
   local library_name = library//name->String
 
+  local performed_install = true
   local cmd = ''dpkg -L $ > /dev/null 2>&1'' (library_name)
   println "Checking for library $..." (library_name)
   println(cmd).flush
@@ -340,9 +339,40 @@ routine install_ubuntu_library( library:Value )
     if (0 != System.run(cmd))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
+
+    performed_install = true
   endIf
 
+  if (not performed_install)
+    println "Finding $ library..." (library_name)
+  endIf
+
+  # Save location in cache
+  if (0 != System.run("dpkg -L $ > .rogo/Build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
+
+  local header_path, library_path : String
+  if (library.contains("header"))   header_path = find_path( library, library//header )
+  if (library.contains("library")) library_path = find_path( library, library//library )
+
+  if (not header_path) header_path = find_path( library, "*.h" )
+  if (header_path)
+    println "  Header path:  $" (header_path)
+  endIf
+
+  if (not library_path) library_path = find_path( library, "*.a" )
+  if (not library_path) library_path = find_path( library, "*.dylib" )
+  if (not library_path) library_path = find_path( library, "*.so" )
+  if (library_path)
+    println "  Library path: $" (library_path)
+    println
+  endIf
+
+  File.delete( ".rogo/Build.temp" )
+
+  # Some Linux libraries don't have headers and lib files in the normal place (libjpeg-dev)
   cache.ensure_table("installed_libraries")[ library_name ] = true
+  cache.ensure_table( "header_locations" )[ library_name ] = header_path
+  cache.ensure_table( "library_locations" )[ library_name ] = library_path
   save_cache
 
 endRoutine
@@ -353,6 +383,7 @@ routine library_location( library:Value )->String
   endIf
 
   local path = cache//library_locations[ library//name ]
+  if (not path) return null
   if (File.exists(path)) return path
 
   println "Finding $ library..." (library//name)
@@ -367,6 +398,7 @@ routine header_location( library:Value )->String
   endIf
 
   local path = cache//header_locations[ library//name ]
+  if (not path) return null
   if (File.exists(path)) return path
 
   println "Finding $ library..." (library//name)
