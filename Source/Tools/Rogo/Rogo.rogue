@@ -11,8 +11,9 @@
 #   $LIBRARY(library-name) -> path/to/library-name/lib
 
 File.create_folder( ".rogo" )
-global config = @{ roguec:"roguec", filepath:".rogo/Cache.json" }
-global cache  = JSON.load_table( File(".rogo/Cache.json") ) : Value
+global cache_filepath = ".rogo/Cache-$.json" (System.os)
+global config = @{ roguec:"roguec", filepath:cache_filepath }
+global cache  = JSON.load_table( File(cache_filepath) ) : Value
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -157,7 +158,7 @@ endRoutine
 
 
 routine save_cache
-  cache.save( File(".rogo/Cache.json"), &formatted )
+  cache.save( File(cache_filepath), &formatted )
 endRoutine
 
 routine install_library_manager
