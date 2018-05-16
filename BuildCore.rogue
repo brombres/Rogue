@@ -125,6 +125,7 @@ class Build [singleton]
 
     method create_version_file
       if (System.os == "Windows") return
+      if (Process.run("git --version").exit_code != 0) return  # git not available
 
       local build = 1
       local commit_id : String
