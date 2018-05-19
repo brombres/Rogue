@@ -1973,6 +1973,13 @@ void Rogue_quit()
   }
 
   Rogue_thread_unregister();
+
+  Rogue_gc_logging = false;
+  Rogue_gc_count = 0;
+  Rogue_gc_requested = 0;
+  Rogue_gc_active = 0;
+  Rogue_call_stack = 0;
+  Rogue_weak_references = 0;
 }
 
 #if ROGUE_GC_MODE_BOEHM

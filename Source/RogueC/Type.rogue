@@ -1044,8 +1044,11 @@ class Type
         # We may or may not need init_class or init_class_thread_local to initialize global properties
         local needs_ic = false
         local needs_tl = false
+        local is_android = RogueC.compile_targets[ "Android" ]
+        # Android .so libraries persist between runs so Android needs to be able to reset all global state on launch.
+        # Thus we force an explicit initialization of even default values.
         forEach (s in global_list)
-          if (s.initial_value)
+          if (s.initial_value or is_android)
             if (s.is_thread_local)
               needs_tl = true
             else
@@ -1079,6 +1082,12 @@ class Type
                 mtl.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
               else
                 m.statements.insert( CmdWriteGlobal(s.t, s, s.initial_value.cloned) )
+              endIf
+            elseIf (is_android)
+              if (s.is_thread_local)
+                mtl.statements.insert( CmdWriteGlobal(s.t, s, s.type.create_default_value(s.t)) )
+              else
+                m.statements.insert( CmdWriteGlobal(s.t, s, s.type.create_default_value(s.t)) )
               endIf
             endIf
             --i

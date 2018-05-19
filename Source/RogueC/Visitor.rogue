@@ -1012,9 +1012,11 @@ class Visitor
 
     method dispatch( cmd:CmdCreateCompound )
       cmd.of_type.dispatch( this )
-      forEach (arg at index in cmd.args)
-        cmd.args[ index ] = arg.dispatch( this )
-      endForEach
+      if (cmd.args)
+        forEach (arg at index in cmd.args)
+          cmd.args[ index ] = arg.dispatch( this )
+        endForEach
+      endIf
 
     method dispatch( cmd:CmdCreateFunction )
       if (cmd.parameters)
