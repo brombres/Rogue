@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <math.h>
 #include <string.h>
-#include <sys/timeb.h>
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,7 +15,9 @@
 #include <exception>
 #include <cstddef>
 
-#if !defined(ROGUE_PLATFORM_WINDOWS)
+#if defined(ROGUE_PLATFORM_WINDOWS)
+#  include <sys/timeb.h>
+#else
 #  include <sys/time.h>
 #  include <unistd.h>
 #  include <signal.h>
@@ -29,7 +30,8 @@
 #endif
 
 #if defined(ANDROID)
-#  include <netinet/in.h>
+  #include <android/log.h>
+  #include <netinet/in.h>
 #endif
 
 #if defined(_WIN32)

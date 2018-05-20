@@ -2,6 +2,7 @@ BuildLocal.rogue
 Source/RogueC/Version.rogue
 Build
 Publish.mk
+*.swo
 *.swp
 .DS_Store
 Source/Compiler/Bard/RogueC.bc

@@ -276,13 +276,23 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
               |#endif
 
     method write( value:String )->this
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
-              |fflush( stdout );
+      $if (target("Android"))
+        native @|__android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $value->utf8 );
+      $else
+        native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
+                |fflush( stdout );
+      $endIf
       return this
 
     method write( buffer:StringBuilder )->this
-      native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stdout );
-              |fflush( stdout );
+      #buffer.reserve( 1 ).utf8.last = 0
+      $if (target("Android"))
+        buffer.reserve(1).utf8[ buffer.count ] = 0  # null terminate
+        native @|__android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $buffer->utf8->data->as_bytes );
+      $else
+        native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stdout );
+                |fflush( stdout );
+      $endIf
       return this
 
 endClass
@@ -293,13 +303,22 @@ class ConsoleErrorPrinter : PrintWriter<<output_buffer>>
 
   METHODS
     method write( value:String )->this
-      native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
-              |fflush( stderr );
+      $if (target("Android"))
+        native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $value->utf8 );
+      $else
+        native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
+                |fflush( stderr );
+      $endIf
       return this
 
     method write( buffer:StringBuilder )->this
-      native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stderr );
-              |fflush( stderr );
+      $if (target("Android"))
+        buffer.reserve(1).utf8[ buffer.count ] = 0  # null terminate
+        native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $buffer->utf8->data->as_bytes );
+      $else
+        native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stderr );
+                |fflush( stderr );
+      $endIf
       return this
 
 endClass
