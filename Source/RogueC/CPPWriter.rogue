@@ -11,6 +11,8 @@ augment Program
   METHODS
     method init
       block
+        # Xcode debugging doesn't work if it Rogue output contains #line numbers.
+
         $if defined(INTPTR_SIZE)
           local ptr_size = INTPTR_SIZE  # may be defined when compile platform is different architecture
         $else
@@ -1438,8 +1440,11 @@ class CPPWriter
 
     line_filepaths = StringTable<<String>>()
 
+    omit_line_numbers : Logical
+
   METHODS
     method init( filepath )
+        omit_line_numbers = (RogueC.compile_targets["macOS"] or RogueC.compile_targets["iOS"])
 
     method close
       local path = File.path( filepath )
@@ -1965,6 +1970,8 @@ class CPPWriter
       endIf
 
     method update_line_number( t:Token )
+      if (omit_line_numbers) return
+
       if (t and t.filepath)
         if (not line_token or (t.filepath is not line_token.filepath))
           local line_filepath = line_filepaths[ t.filepath ]
