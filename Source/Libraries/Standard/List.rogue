@@ -246,6 +246,23 @@ class List<<$DataType>> : GenericList
 
       return null
 
+    method limit_capacity( max_capacity:Int32 )->this
+      # If necessary, reduce the backing array to be no larger than 'max_capacity'.
+      # Content will be truncated if necessary - the resulting 'count' will be
+      # <= 'max_capacity'.
+      if (capacity > max_capacity)
+        if (max_capacity <= 0)
+          data = null
+          count = 0
+        else
+          count = count.or_smaller( max_capacity )
+          local new_data = Array<<$DataType>>( max_capacity )
+          new_data.set( 0, data, 0, count )
+          data = new_data
+        endIf
+      endIf
+      return this
+
     method locate( value:$DataType )->Int32? [preferred]
       if ($DataType isReference)
         if (value is null)
