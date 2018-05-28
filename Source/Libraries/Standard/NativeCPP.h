@@ -58,6 +58,18 @@
 #define ROGUE_COND(X) (X)
 
 //-----------------------------------------------------------------------------
+//  Logging
+//-----------------------------------------------------------------------------
+#ifdef __ANDROID__
+  #include <android/log.h>
+  #define ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "Rogue", __VA_ARGS__ )
+  #define ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "Rogue", __VA_ARGS__ )
+#else
+  #define ROGUE_LOG(...)       printf( __VA_ARGS__ )
+  #define ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
+#endif
+
+//-----------------------------------------------------------------------------
 //  Multithreading
 //-----------------------------------------------------------------------------
 // When exiting Rogue code for a nontrivial amount of time (e.g., making a
@@ -222,7 +234,7 @@ struct RoguePtr
   RoguePtr (  T oo )
    : o(oo)
   {
-    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
+    ROGUE_GCDEBUG_STATEMENT(ROGUE_LOG("ref "));
     ROGUE_GCDEBUG_STATEMENT(show());
     ROGUE_INCREF(o);
   }
@@ -230,7 +242,7 @@ struct RoguePtr
   RoguePtr (const RoguePtr<T> & oo)
    : o(oo.o)
   {
-    ROGUE_GCDEBUG_STATEMENT(printf("ref "));
+    ROGUE_GCDEBUG_STATEMENT(ROGUE_LOG("ref "));
     ROGUE_GCDEBUG_STATEMENT(show());
     ROGUE_INCREF(o);
   }
@@ -251,7 +263,7 @@ struct RoguePtr
     release();
     o = oo;
     ROGUE_INCREF(o);
-    ROGUE_GCDEBUG_STATEMENT(printf("assign "));
+    ROGUE_GCDEBUG_STATEMENT(ROGUE_LOG("assign "));
     ROGUE_GCDEBUG_STATEMENT(show());
     return *this;
   }
@@ -286,7 +298,7 @@ struct RoguePtr
   }
 
   void show () {
-    printf("ptr:%p o:%p rc:%i\n", this, o, o ? o->reference_count : -42);
+    ROGUE_LOG("ptr:%p o:%p rc:%i\n", this, o, o ? o->reference_count : -42);
   }
 };
 

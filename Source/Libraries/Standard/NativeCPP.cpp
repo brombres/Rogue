@@ -30,7 +30,6 @@
 #endif
 
 #if defined(ANDROID)
-  #include <android/log.h>
   #include <netinet/in.h>
 #endif
 
@@ -354,7 +353,7 @@ inline void Rogue_mtgc_enter()
   if (ROGUE_UNLIKELY(Rogue_mtgc_entered))
 #ifdef ROGUE_MTGC_DEBUG
   {
-    printf("ALREADY ENTERED\n");
+    ROGUE_LOG_ERROR("ALREADY ENTERED\n");
     exit(1);
   }
 #else
@@ -373,7 +372,7 @@ inline void Rogue_mtgc_exit()
   if (ROGUE_UNLIKELY(Rogue_mtgc_is_gc_thread)) return;
   if (ROGUE_UNLIKELY(Rogue_mtgc_entered <= 0))
   {
-    printf("Unabalanced Rogue enter/exit\n");
+    ROGUE_LOG_ERROR("Unabalanced Rogue enter/exit\n");
     exit(1);
   }
 
@@ -395,7 +394,7 @@ static void Rogue_mtgc_M1_M2_GC_M3 (int quit)
   {
     if (Rogue_mtgc_s > Rogue_mt_tc || Rogue_mtgc_s < 0)
     {
-      printf("INVALID VALUE OF S %i %i\n", Rogue_mtgc_s, Rogue_mt_tc);
+      ROGUE_LOG_ERROR("INVALID VALUE OF S %i %i\n", Rogue_mtgc_s, Rogue_mt_tc);
       exit(1);
     }
 
@@ -693,7 +692,7 @@ void RogueType_print_name( RogueType* THIS )
   RogueString* st = Rogue_literal_strings[ THIS->name_index ];
   if (st)
   {
-    printf( "%s", st->utf8 );
+    ROGUE_LOG( "%s", st->utf8 );
   }
 }
 
@@ -920,7 +919,7 @@ void RogueString_print_string( RogueString* st )
   }
   else
   {
-    printf( "null" );
+    ROGUE_LOG( "null" );
   }
 }
 
@@ -968,7 +967,7 @@ void RogueString_print_characters( RogueCharacter* characters, int count )
   }
   else
   {
-    printf( "null" );
+    ROGUE_LOG( "null" );
   }
 }
 
@@ -1112,9 +1111,9 @@ RogueString* RogueString_validate( RogueString* THIS )
 
   if (i != byte_count)
   {
-    printf( "*** RogueString validation error - invalid UTF8 (%d/%d):\n", i, byte_count );
-    printf( "%02x\n", utf8[0] );
-    printf( "%s\n", utf8 );
+    ROGUE_LOG_ERROR( "*** RogueString validation error - invalid UTF8 (%d/%d):\n", i, byte_count );
+    ROGUE_LOG_ERROR( "%02x\n", utf8[0] );
+    ROGUE_LOG_ERROR( "%s\n", utf8 );
     utf8[ i ] = 0;
     Rogue_print_stack_trace();
   }
@@ -1256,13 +1255,13 @@ void* RogueAllocationPage_allocate( RogueAllocationPage* THIS, int size )
 
   if (size > THIS->remaining) return 0;
 
-  //printf( "Allocating %d bytes from page.\n", size );
+  //ROGUE_LOG( "Allocating %d bytes from page.\n", size );
   void* result = THIS->cursor;
   THIS->cursor += size;
   THIS->remaining -= size;
   ((RogueObject*)result)->reference_count = 0;
 
-  //printf( "%d / %d\n", ROGUEMM_PAGE_SIZE - remaining, ROGUEMM_PAGE_SIZE );
+  //ROGUE_LOG( "%d / %d\n", ROGUEMM_PAGE_SIZE - remaining, ROGUEMM_PAGE_SIZE );
   return result;
 }
 
@@ -1299,7 +1298,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
     ROGUE_MUTEX_LOCK(Rogue_mtgc_w_mutex);
     if (Rogue_mtgc_w == 2)
     {
-      printf("ALLOC DURING GC!\n");
+      ROGUE_LOG_ERROR("ALLOC DURING GC!\n");
       exit(1);
     }
     ROGUE_MUTEX_UNLOCK(Rogue_mtgc_w_mutex);
@@ -1335,7 +1334,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
 
   if (obj)
   {
-    //printf( "found free object\n");
+    //ROGUE_LOG( "found free object\n");
     THIS->available_objects[slot] = obj->next_object;
     ROGUE_GC_SOA_UNLOCK;
     return obj;
@@ -1361,7 +1360,7 @@ void* RogueAllocator_allocate( RogueAllocator* THIS, int size )
       obj = (RogueObject*) RogueAllocationPage_allocate( THIS->pages, s << ROGUEMM_GRANULARITY_BITS );
       if (obj)
       {
-        //printf( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
+        //ROGUE_LOG( "free obj size %d\n", (s << ROGUEMM_GRANULARITY_BITS) );
         obj->next_object = THIS->available_objects[s];
         THIS->available_objects[s] = obj;
       }
@@ -1423,9 +1422,9 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
   obj->object_size = size;
 #endif
 
-  ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
+  ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( "Allocating " ) );
   ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
-  ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
+  ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
 
 #if ROGUE_GC_MODE_BOEHM_TYPED
@@ -1451,10 +1450,10 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
       data = GC_malloc_ignore_off_page( data_size );
     }
     ((RogueArray*)obj)->as_bytes = (RogueByte*)data;
-    ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
-    ROGUE_GCDEBUG_STATEMENT( printf( "  Elements " ) );
+    ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( "Allocating " ) );
+    ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( "  Elements " ) );
     ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(el_type) );
-    ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)data ) );
+    ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( " %p\n", (RogueObject*)data ) );
   }
 #endif
 
@@ -1475,9 +1474,9 @@ RogueObject* RogueAllocator_allocate_object( RogueAllocator* THIS, RogueType* of
 
   ROGUE_DEF_LOCAL_REF(RogueObject*, obj, (RogueObject*)mem);
 
-  ROGUE_GCDEBUG_STATEMENT( printf( "Allocating " ) );
+  ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( "Allocating " ) );
   ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(of_type) );
-  ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", (RogueObject*)obj ) );
+  ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( " %p\n", (RogueObject*)obj ) );
   //ROGUE_GCDEBUG_STATEMENT( Rogue_print_stack_trace() );
 
   obj->type = of_type;
@@ -1510,9 +1509,9 @@ void* RogueAllocator_free( RogueAllocator* THIS, void* data, int size )
       // can then see what it was.
       #if 0
       RogueObject* obj = (RogueObject*) data;
-      printf("DEL %i %p ", (int)pthread_self(), data);
+      ROGUE_LOG("DEL %i %p ", (int)pthread_self(), data);
       RogueType_print_name( obj-> type );
-      printf("\n");
+      ROGUE_LOG("\n");
       #endif
       ROGUE_DEL_BYTES( data );
     }
@@ -1630,9 +1629,9 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     }
     else
     {
-      ROGUE_GCDEBUG_STATEMENT( printf( "Freeing " ) );
+      ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( "Freeing " ) );
       ROGUE_GCDEBUG_STATEMENT( RogueType_print_name(cur->type) );
-      ROGUE_GCDEBUG_STATEMENT( printf( " %p\n", cur ) );
+      ROGUE_GCDEBUG_STATEMENT( ROGUE_LOG( " %p\n", cur ) );
       RogueAllocator_free( THIS, cur, cur->object_size );
     }
     cur = next_object;
@@ -1686,44 +1685,44 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
       }
     }
 
-    printf( "Post-GC: %d objects, %d bytes used.\n", object_count, byte_count );
+    ROGUE_LOG( "Post-GC: %d objects, %d bytes used.\n", object_count, byte_count );
   }
 }
 
 void Rogue_print_stack_trace ( bool leading_newline )
 {
   RogueDebugTrace* current = Rogue_call_stack;
-  if (current && leading_newline) printf( "\n" );
+  if (current && leading_newline) ROGUE_LOG( "\n" );
   while (current)
   {
-    printf( "%s\n", current->to_c_string() );
+    ROGUE_LOG( "%s\n", current->to_c_string() );
     current = current->previous_trace;
   }
-  printf("\n");
+  ROGUE_LOG("\n");
 }
 
 #if defined(ROGUE_PLATFORM_WINDOWS)
 void Rogue_segfault_handler( int signal )
 {
-  printf( "Access violation\n" );
+  ROGUE_LOG_ERROR( "Access violation\n" );
 #else
 void Rogue_segfault_handler( int signal, siginfo_t *si, void *arg )
 {
   if (si->si_addr < (void*)4096)
   {
     // Probably a null pointer dereference.
-    printf( "Null reference error (accessing memory at %p)\n",
+    ROGUE_LOG_ERROR( "Null reference error (accessing memory at %p)\n",
             si->si_addr );
   }
   else
   {
     if (si->si_code == SEGV_MAPERR)
-      printf( "Access to unmapped memory at " );
+      ROGUE_LOG_ERROR( "Access to unmapped memory at " );
     else if (si->si_code == SEGV_ACCERR)
-      printf( "Access to forbidden memory at " );
+      ROGUE_LOG_ERROR( "Access to forbidden memory at " );
     else
-      printf( "Unknown segfault accessing " );
-    printf("%p\n", si->si_addr);
+      ROGUE_LOG_ERROR( "Unknown segfault accessing " );
+    ROGUE_LOG_ERROR("%p\n", si->si_addr);
   }
 #endif
 
@@ -1929,7 +1928,7 @@ static inline void Rogue_collect_garbage_real()
   Rogue_gc_active = true;
   ++ Rogue_gc_count;
 
-//printf( "GC %d\n", Rogue_allocation_bytes_until_gc );
+//ROGUE_LOG( "GC %d\n", Rogue_allocation_bytes_until_gc );
   ROGUE_GC_RESET_COUNT;
 
   Rogue_on_gc_begin.call();
@@ -2010,7 +2009,7 @@ void Rogue_Boehm_DecRef (RogueObject* o)
 //-----------------------------------------------------------------------------
 void Rogue_terminate_handler()
 {
-  printf( "Uncaught exception.\n" );
+  ROGUE_LOG_ERROR( "Uncaught exception.\n" );
   exit(1);
 }
 //=============================================================================
