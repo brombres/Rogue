@@ -741,7 +741,7 @@ class String
     method to_uppercase->String
       local has_lc = false
       forEach (ch in this)
-        if (ch >= 'a' and ch <= 'a') has_lc = true; escapeForEach
+        if (ch >= 'a' and ch <= 'z') has_lc = true; escapeForEach
       endForEach
 
       if (not has_lc) return this
