@@ -25,7 +25,7 @@ class Lookup<<$ValueType,$TableType>>
     method init( skip_zero:Logical )
       init( 10, &=skip_zero )
 
-    method init( initial_capacity:Int32, skip_zero )
+    method init( initial_capacity:Int32, skip_zero=false )
       ensure values( initial_capacity )
       ensure indices( initial_capacity )
       clear
