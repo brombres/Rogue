@@ -16,19 +16,23 @@ class Lookup<<$ValueType,$TableType>>
     indices    : Int32[]
     ids        = $TableType()
     unused     = Int32[]
+    skip_zero  : Logical
 
   METHODS
     method init
       init( 10 )
 
-    method init( initial_capacity:Int32 )
+    method init( skip_zero:Logical )
+      init( 10, &=skip_zero )
+
+    method init( initial_capacity:Int32, skip_zero )
       ensure values( initial_capacity )
       ensure indices( initial_capacity )
       clear
 
     method clear->this
       values.clear
-      indices.clear.add( 0 )  # Dummy value to avoid using ID 0
+      if (skip_zero) indices.clear.add( 0 )  # Dummy value to avoid using ID 0
       ids.clear
       unused.clear
       return this
