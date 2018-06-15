@@ -228,6 +228,7 @@ class Build [singleton]
       println "-------------------------------------------------------------------------------"
       println "Creating $/roguec launcher linked to $" (BINDIR,ROGUEC_EXE)
       println "-------------------------------------------------------------------------------"
+      create_bindir
       local folder = Process.run( "pwd" ).output_string.before_first('\n')
       local script = "#!/bin/sh\n"
       script += ''exec "$/$" "$@"\n'' (folder,ROGUEC_EXE,'$')
@@ -263,6 +264,7 @@ class Build [singleton]
       println "-------------------------------------------------------------------------------"
       println "Creating $/rogo launcher linked to $" (BINDIR,ROGO_EXE)
       println "-------------------------------------------------------------------------------"
+      create_bindir
       local folder = Process.run( "pwd" ).output_string.before_first('\n')
       local script = "#!/bin/sh\n"
       script += ''exec "$/$" "$@"\n'' (folder,ROGO_EXE,'$')
@@ -271,11 +273,31 @@ class Build [singleton]
       run "$chmod a+x $/rogo" (SUDO_CMD,BINDIR)
       File.delete( ".rogo/launcher.script" )
 
-    method run( cmd:String, &silent )
+    method create_bindir
+      if (not File.exists(BINDIR))
+        println "$ does not exist. Creating..." (BINDIR)
+        if (not run( "mkdir$ $" (select{System.os=="Windows":"" || " -p"},BINDIR), &suppress_error ))
+          if (SUDO_CMD != "")
+            println "Error creating folder, trying again with 'sudo'"
+            run( "$mkdir$ $" (SUDO_CMD,select{System.os=="Windows":"" || " -p"},BINDIR) )
+          else
+            throw Error( "Build error." )
+          endIf
+        endIf
+        println "Created."
+        println "*** If 'roguec' doesn't work you probably need to add '$' to the system PATH. ***"
+      endIf
+
+    method run( cmd:String, &silent, &suppress_error )->Logical
       forEach (line in LineReader(cmd))
         if (not silent) print( "> " ).println( line )
-        if (0 != System.run(line)) throw Error( "Build error." )
+        local result = System.run( line )
+        if (result != 0)
+          if (suppress_error) return false
+          else                throw Error( "Build error." )
+        endIf
       endForEach
+      return true
 
     method locate_launcher( name:String )->String
       # Returns valid path or null
