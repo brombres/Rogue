@@ -1,38 +1,38 @@
-class Lookup<<$ValueType>> : Lookup<<$ValueType,Table<<$ValueType,Int32>>>>;
-class StringLookup         : Lookup<<String,StringTable<<Int32>>>>;
+class LookupList<<$ValueType>> : LookupList<<$ValueType,Table<<$ValueType,Int32>>>>;
+class StringLookupList         : LookupList<<String,StringTable<<Int32>>>>;
 
-class Lookup<<$ValueType,$TableType>>
-  # - StringLookup() works for most applications.
-  # - Lookup<<$ValueType>>() for other applications.
-  # - Similar to an indexed Set.
+class LookupList<<$ValueType,$TableType>>
+  # A LookupList blends the core functionality of a List with the fast lookup capabilities
+  # of a Table. In addition, each value added to a LookupList gets a 1-based integer ID
+  # whose value is fixed until that value is removed from the list.
+  #
+  # - LookupList<<$ValueType>>() is the standard use class.
+  # - StringLookupList() for strings.
   # - add() and get() items with the speed of a list.
   # - contains() and locate() with the speed of a table.
-  # - id(value)->Int32 gives an integer ID that is fixed as long as the value is in the lookup.
-  # - value(id)->ValueType returns the value associated with an integer ID.
-  # - remove(value), remove_index(index), remove_id(id), remove_first(), remove_last().
+  # - index(value)->Int32 gives the 0-based curent index of the value. Adds value to the list first if necessary.
+  # - id(value)->Int32 gives a 1-based integer ID that is fixed as long as the value is in the lookup list. Adds value if necessary.
+  # - get_by_id(id)->ValueType returns the value associated with an integer ID.
+  # - remove(value), remove_at(index), remove_id(id), remove_first(), remove_last().
 
   PROPERTIES
     values     : $ValueType[]
     indices    : Int32[]
     ids        = $TableType()
     unused     = Int32[]
-    skip_zero  : Logical
 
   METHODS
     method init
       init( 10 )
 
-    method init( skip_zero:Logical )
-      init( 10, &=skip_zero )
-
-    method init( initial_capacity:Int32, skip_zero=false )
+    method init( initial_capacity:Int32 )
       ensure values( initial_capacity )
       ensure indices( initial_capacity )
       clear
 
     method clear->this
       values.clear
-      if (skip_zero) indices.clear.add( 0 )  # Dummy value to avoid using ID 0
+      indices.clear.add( 0 )  # Dummy value to avoid using ID 0
       ids.clear
       unused.clear
       return this
@@ -59,6 +59,12 @@ class Lookup<<$ValueType,$TableType>>
     method count->Int32
       return values.count
 
+    method get( index:Int32 )->$ValueType
+      return values[ index ]
+
+    method get_by_id( id:Int32 )->$ValueType
+      return values[ indices[id] ]
+
     method id( value:$ValueType )->Int32
       local entry = ids.find( value )
       if (entry) return entry.value
@@ -73,9 +79,6 @@ class Lookup<<$ValueType,$TableType>>
       add( value )
       return result
 
-    method get( index:Int32 )->$ValueType
-      return values[ index ]
-
     method locate( value:$ValueType )->Int32?
       local entry = ids.find( value )
       if (entry) return indices[ entry.value ]
@@ -86,7 +89,7 @@ class Lookup<<$ValueType,$TableType>>
       if (entry is null) return value
 
       local id = entry.value
-      local remove_index = indices[ entry.value ]
+      local remove_index = indices[ id ]
 
       ids.remove( entry )
       values.remove_at( remove_index )
@@ -124,8 +127,5 @@ class Lookup<<$ValueType,$TableType>>
 
     method to->String
       return values->String
-
-    method value( id:Int32 )->$ValueType
-      return values[ indices[id] ]
 endClass
 

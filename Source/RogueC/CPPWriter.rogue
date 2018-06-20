@@ -1146,7 +1146,7 @@ augment Program
 
     method write_method_introspection_info( writer:CPPWriter )
       # Method names
-      local method_names = StringLookup()
+      local method_names = StringLookupList()
       local method_param_type_sigs = Table<<String,Int32>>()
       local method_param_types = Int32[]
       local method_param_name_sigs = Table<<String,Int32>>()
@@ -1218,7 +1218,7 @@ augment Program
 
       # Collect unique method info
       # NOTE: must compose method_info_index in the same order as print_dynamic_method_table_entries
-      local method_info_lookup = StringLookup()
+      local method_info_lookup = StringLookupList()
       local method_info_index = Int32[]
       local method_info_index_names = String[]
       forEach (type in type_list)

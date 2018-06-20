@@ -2,7 +2,7 @@ class Files
   # Manages a set of filepath strings.
   PROPERTIES
     base_folder : String
-    filepaths   = StringLookup()
+    filepaths   = StringLookupList()
 
   METHODS
     method init( base_folder:String )
