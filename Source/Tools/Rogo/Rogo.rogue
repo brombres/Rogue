@@ -1,10 +1,11 @@
-#$ ROGUEC      = roguec
-#$ ROGUEC_ARGS = --whatever
-#$ CPP         = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
-#$ CPP_ARGS    = -a -b -c
-#$ LIBRARIES   = libalpha( header:"name.h" library:"libname.a" )
-#$ LIBRARIES   = libbeta
-#$ LINK        = -lalpha -lbeta
+#$ ROGUEC       = roguec
+#$ ROGUEC_ARGS  = --whatever
+#$ CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
+#$ CPP_ARGS     = -a -b -c
+#$ LIBRARIES    = libalpha( header:"name.h" library:"libname.a" )
+#$ LIBRARIES    = libbeta
+#$ LINK         = -lalpha -lbeta
+#$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
 #   $HEADER(library-name)  -> path/to/library-name/include
@@ -14,6 +15,7 @@ File.create_folder( ".rogo" )
 global cache_filepath = ".rogo/Cache-$.json" (System.os)
 global config = @{ roguec:"roguec", filepath:cache_filepath }
 global cache  = JSON.load_table( File(cache_filepath) ) : Value
+global is_cache_modified : Logical
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -84,11 +86,31 @@ local base_name = exe   # e.g. Build
 if (System.os == "Windows") exe += ".exe"
 else                        exe += "-" + System.os  # e.g. Build-macOS
 
-if (buildfiles.any_newer_than(exe))
+local needs_recompile = buildfiles.any_newer_than( exe )
+block
+  if (not needs_recompile)
+    # Check other dependencies
+
+    local dependencies = StringLookupList()
+    scan_and_rewrite( File(forEach in buildfiles), dependencies, &scan_only )
+
+    forEach (pattern in dependencies)
+      local listing = File.listing( pattern, &files )
+      forEach (dependency in listing)
+        if (File.is_newer_than(dependency,exe))
+          needs_recompile = true
+          escapeBlock
+        endIf
+      endForEach
+    endForEach
+  endIf
+endBlock
+
+if (needs_recompile)
   println "Recompiling $..." (buildfile)
 
   # Scanning places copies in .rogo/
-  scan_config( File(forEach in buildfiles) )
+  scan_and_rewrite( File(forEach in buildfiles) )
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
@@ -158,6 +180,7 @@ endRoutine
 
 
 routine save_cache
+  is_cache_modified = false
   cache.save( File(cache_filepath), &formatted )
 endRoutine
 
@@ -408,15 +431,15 @@ routine header_location( library:Value )->String
   return header_location( library )
 endRoutine
 
-routine scan_config( file:File )
+routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_only )
   if (not file.exists) return
 
-  local writer = PrintWriter( File(".rogo/$"(file.filename)).writer )
+  local writer : PrintWriter
+  if (not scan_only) writer = PrintWriter( File(".rogo/$"(file.filename)).writer )
   forEach (original_line in LineReader(file))
     local line = original_line.trimmed
     if (line.begins_with("#$"))
       local cmd = line.rightmost( -2 )
-
       local args = cmd.after_first( "=" ).trimmed
       cmd = cmd.before_first( "=" ).trimmed.to_lowercase
 
@@ -452,6 +475,12 @@ routine scan_config( file:File )
             endWhile
           endIf
 
+        case "dependencies"
+          if (dependencies)
+            dependencies.add( args.trimmed )
+            is_cache_modified = true
+          endIf
+
         others
           # Join into single space-separated string
           if (config.contains(cmd))
@@ -460,57 +489,52 @@ routine scan_config( file:File )
             config[ cmd ] = args
           endIf
 
-          #{
-        others
-          forEach (arg in args.split(' '))
-            arg = arg.trimmed
-            config.ensure_list( cmd ).add( arg )
-          endForEach
-          }#
       endWhich
     endIf
 
-    line = original_line
-    local dollar = line.locate( '$' )
-    while (dollar.exists)
-      if (line.contains_at("$HEADER(",dollar.value))
-        local close_paren = line.locate( ')', dollar.value + 1 )
-        if (close_paren.exists)
-          local library_name = line.from(dollar.value+8,close_paren.value-1).trimmed
-          local library : Value
-          block
-            forEach (lib in config//libraries)
-              if (lib//name == library_name)
-                library = lib
-                escapeBlock
-              endIf
-            endForEach
-            library = @{ name:library_name }
-          endBlock
-          line = "$$$" (line.before(dollar.value),header_location(library),line.after(close_paren.value))
+    if (not scan_only)
+      line = original_line
+      local dollar = line.locate( '$' )
+      while (dollar.exists)
+        if (line.contains_at("$HEADER(",dollar.value))
+          local close_paren = line.locate( ')', dollar.value + 1 )
+          if (close_paren.exists)
+            local library_name = line.from(dollar.value+8,close_paren.value-1).trimmed
+            local library : Value
+            block
+              forEach (lib in config//libraries)
+                if (lib//name == library_name)
+                  library = lib
+                  escapeBlock
+                endIf
+              endForEach
+              library = @{ name:library_name }
+            endBlock
+            line = "$$$" (line.before(dollar.value),header_location(library),line.after(close_paren.value))
+          endIf
+        elseIf (line.contains_at("$LIBRARY(",dollar.value))
+          local close_paren = line.locate( ')', dollar.value + 1 )
+          if (close_paren.exists)
+            local library_name = line.from(dollar.value+9,close_paren.value-1).trimmed
+            local library : Value
+            block
+              forEach (lib in config//libraries)
+                if (lib//name == library_name)
+                  library = lib
+                  escapeBlock
+                endIf
+              endForEach
+              library = @{ name:library_name }
+            endBlock
+            line = "$$$" (line.before(dollar.value),library_location(library),line.after(close_paren.value))
+          endIf
         endIf
-      elseIf (line.contains_at("$LIBRARY(",dollar.value))
-        local close_paren = line.locate( ')', dollar.value + 1 )
-        if (close_paren.exists)
-          local library_name = line.from(dollar.value+9,close_paren.value-1).trimmed
-          local library : Value
-          block
-            forEach (lib in config//libraries)
-              if (lib//name == library_name)
-                library = lib
-                escapeBlock
-              endIf
-            endForEach
-            library = @{ name:library_name }
-          endBlock
-          line = "$$$" (line.before(dollar.value),library_location(library),line.after(close_paren.value))
-        endIf
-      endIf
-      dollar = line.locate( '$', dollar.value+1 )
-    endWhile
-    writer.println( line )
+        dollar = line.locate( '$', dollar.value+1 )
+      endWhile
+      writer.println( line )
+    endIf
   endForEach
-  writer.close
+  if (not scan_only) writer.close
 
 endRoutine
 
