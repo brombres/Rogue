@@ -1663,63 +1663,7 @@ class Parser
 
       local expression = parse_expression
 
-      t = peek
-      if (consume(TokenType.symbol_equals))
-        cur_statement_list.add( CmdAssign(t,expression,parse_expression) )
-        return
-      endIf
-
-      if (t.type.is_op_with_assign)
-        read
-        cur_statement_list.add( CmdModifyAndAssign( t, expression, t.type, parse_expression ) )
-        return
-      endIf
-
-      #{
-      if (consume(TokenType.symbol_access_assign))
-        local rhs = parse_expression
-        local access = rhs as CmdAccess
-        if (access is null) throw rhs.error( "Property access or method call expected." )
-        while (access.operand)
-          local operand = access.operand as CmdAccess
-          if (operand is null) throw access.operand.t.error( "Property access or method call expected." )
-          access = operand
-        endWhile
-        access.operand = expression.cloned
-        cur_statement_list.add( CmdAssign(t,expression,access) )
-      endIf
-      }#
-
-      if (consume(TokenType.symbol_plus_plus))
-        cur_statement_list.add( CmdStep(t, expression,1) )
-        return
-      endIf
-
-      if (consume(TokenType.symbol_minus_minus))
-        cur_statement_list.add( CmdStep(t, expression,-1) )
-        return
-      endIf
-
-      local t_type = t.type
-      if (t_type.is_op_with_assign)
-        read
-        local target = expression
-        local new_value = parse_expression
-        cur_statement_list.add( CmdModifyAndAssign( t, target, t_type, new_value) )
-        return
-      endIf
-
-      # No-parens args can follow an initial expression
-      if (not next_is_end_command and next_is_statement)
-        local access = expression as CmdAccess
-        if (access and access.args is null)
-          local args = CmdArgs()
-          while (not next_is_end_command and not peek.is_structure)
-            args.add( parse_expression )
-          endWhile
-          access.args = args
-        endIf
-      endIf
+      expression = parse_statement_with_context( expression )
 
       if (cmd_println and println_statement_count == cur_statement_list.count and implicit_loop_stack_count == implicit_loop_stack.count)
         # Try an alternate variation of print/println as long as no new commands, locals,
@@ -1744,6 +1688,63 @@ class Parser
       endIf
 
       cur_statement_list.add( expression )
+
+
+    method parse_statement_with_context( expression:Cmd )->Cmd
+      local t = peek
+      if (consume(TokenType.symbol_equals))
+        return CmdAssign( t,expression,parse_expression )
+      endIf
+
+      if (t.type.is_op_with_assign)
+        read
+        return CmdModifyAndAssign( t, expression, t.type, parse_expression )
+      endIf
+
+      #{
+      if (consume(TokenType.symbol_access_assign))
+        local rhs = parse_expression
+        local access = rhs as CmdAccess
+        if (access is null) throw rhs.error( "Property access or method call expected." )
+        while (access.operand)
+          local operand = access.operand as CmdAccess
+          if (operand is null) throw access.operand.t.error( "Property access or method call expected." )
+          access = operand
+        endWhile
+        access.operand = expression.cloned
+        cur_statement_list.add( CmdAssign(t,expression,access) )
+      endIf
+      }#
+
+      if (consume(TokenType.symbol_plus_plus))
+        return CmdStep( t, expression, 1 )
+      endIf
+
+      if (consume(TokenType.symbol_minus_minus))
+        return CmdStep( t, expression,-1 )
+      endIf
+
+      local t_type = t.type
+      if (t_type.is_op_with_assign)
+        read
+        local target = expression
+        local new_value = parse_expression
+        return CmdModifyAndAssign( t, target, t_type, new_value )
+      endIf
+
+      # No-parens args can follow an initial expression
+      if (not next_is_end_command and next_is_statement)
+        local access = expression as CmdAccess
+        if (access and access.args is null)
+          local args = CmdArgs()
+          while (not next_is_end_command and not peek.is_structure)
+            args.add( parse_expression )
+          endWhile
+          access.args = args
+        endIf
+      endIf
+
+      return expression
 
     method parse_which->CmdWhich
       local t = read  # 'which'
@@ -2888,9 +2889,24 @@ class Parser
     method parse_member_access( context:Cmd )->Cmd
       local t = peek
       if (consume(TokenType.symbol_dot))
-        # Part access e.g. obj.value
-        local access = parse_access( t, context )
-        return parse_member_access( access )
+        local next_is_empty_brackets = consume( TokenType.symbol_empty_brackets )
+        if (next_is_empty_brackets or consume(TokenType.symbol_open_bracket))
+          local cmd_chain = CmdChain( t, context )
+          if (not next_is_empty_brackets and not consume(TokenType.symbol_close_bracket))
+            local first = true
+            while (first or consume(TokenType.symbol_comma))
+              first = false
+              cmd_chain.add( parse_statement_with_context(parse_access(t,CmdAccess(t,cmd_chain.context_var_name))) )
+            endWhile
+            must_consume( TokenType.symbol_close_bracket )
+          endIf
+          return parse_member_access( cmd_chain )
+        else
+          # obj.value
+          # obj.value(...)
+          local access = parse_access( t, context )
+          return parse_member_access( access )
+        endIf
 
       elseIf (consume(TokenType.symbol_slash_slash))
         # Identifier access, e.g. table//key -> table["key"]

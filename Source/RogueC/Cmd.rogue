@@ -7274,3 +7274,40 @@ class CmdCallFnPtr( t, name:String, context:Cmd, method_info:Method, args:CmdArg
 
 endClass
 
+class CmdChain : Cmd
+  # Intermediate representation of context.[ a, b, c ]
+  # Equivalent to following as-if-chained: context.a.b.c
+  PROPERTIES
+    context     : Cmd
+    args        : CmdArgs
+    context_var_name : String
+
+  METHODS
+    method init( t, context, context_var_name=Program.create_unique_id, args=CmdArgs() )
+
+    method add( access:Cmd )
+      args.add( access )
+
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdChain( t, context.cloned(clone_args,new_t), context_var_name, args.cloned(clone_args,new_t) )
+
+    method implicit_type( scope:Scope )->Type
+      return context.implicit_type( scope )
+
+    method resolve( scope:Scope )->Cmd
+      local cmd_block = CmdBlock( t )
+      local context_var = Local( t, context_var_name )
+      context_var.initial_value = context.resolve( scope )
+      cmd_block.expression_type = context_var.initial_value.type
+      cmd_block.statements.add( CmdLocalDeclaration(t,context_var) )
+      forEach (arg in args)
+        cmd_block.statements.add( arg )
+      endForEach
+      cmd_block.statements.add( CmdReadLocal(t,context_var) )  # gets converted into a return
+      return cmd_block.resolve( scope )
+
+    method type->Type
+      return context.type
+endClass
+
