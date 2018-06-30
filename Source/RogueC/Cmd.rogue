@@ -7274,8 +7274,8 @@ class CmdCallFnPtr( t, name:String, context:Cmd, method_info:Method, args:CmdArg
 
 endClass
 
-class CmdChain : Cmd
-  # Intermediate representation of context.[ a, b, c ]
+class CmdContextBlock : Cmd
+  # Intermediate representation of context{a,b,c}
   # Equivalent to following as-if-chained: context.a.b.c
   PROPERTIES
     context     : Cmd
@@ -7290,7 +7290,7 @@ class CmdChain : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdChain( t, context.cloned(clone_args,new_t), context_var_name, args.cloned(clone_args,new_t) )
+      return CmdContextBlock( t, context.cloned(clone_args,new_t), context_var_name, args.cloned(clone_args,new_t) )
 
     method implicit_type( scope:Scope )->Type
       return context.implicit_type( scope )

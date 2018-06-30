@@ -71,7 +71,7 @@ class Visitor
       on_leave( cmd )
       return cmd
 
-    method visit( cmd:CmdChain )->Cmd
+    method visit( cmd:CmdContextBlock )->Cmd
       on_enter( cmd )
       dispatch( cmd )
       on_leave( cmd )
@@ -627,7 +627,7 @@ class Visitor
     method on_enter( cmd:CmdAssign )
     method on_enter( cmd:CmdBinary )
     method on_enter( cmd:CmdBlock )
-    method on_enter( cmd:CmdChain )
+    method on_enter( cmd:CmdContextBlock )
     method on_enter( cmd:CmdCall )
     method on_enter( cmd:CmdCallDynamicMethod )
     method on_enter( cmd:CmdCallPriorMethod )
@@ -734,7 +734,7 @@ class Visitor
     method on_leave( cmd:CmdAssign )
     method on_leave( cmd:CmdBinary )
     method on_leave( cmd:CmdBlock )
-    method on_leave( cmd:CmdChain )
+    method on_leave( cmd:CmdContextBlock )
     method on_leave( cmd:CmdCall )
     method on_leave( cmd:CmdCallDynamicMethod )
     method on_leave( cmd:CmdCallPriorMethod )
@@ -885,7 +885,7 @@ class Visitor
     method dispatch( cmd:CmdBlock )
       cmd.statements.dispatch( this )
 
-    method dispatch( cmd:CmdChain )
+    method dispatch( cmd:CmdContextBlock )
       cmd.context.dispatch( this )
       cmd.args.dispatch( this )
 
