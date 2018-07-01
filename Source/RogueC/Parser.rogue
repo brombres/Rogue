@@ -2891,6 +2891,9 @@ class Parser
 
       # **NOTE** any new token types handled should also be checked for in parse_context_block().
       if (consume(TokenType.symbol_dot))
+        if (consume(TokenType.symbol_empty_brackets)) return parse_member_access( context )
+        if (next_is(TokenType.symbol_open_bracket))   return parse_member_access( parse_context_block(context) )
+
         # obj.value
         # obj.value(...)
         local access = parse_access( t, context )
@@ -3315,7 +3318,7 @@ class Parser
               return access
             elseIf (next_is(TokenType.symbol_open_brace))
               # context{ .a, x:y, :z } -> { context.a, context.x=y, context//z = z }
-              return parse_context_block( access )
+              return parse_literal_table( access )
             endIf
           else
             if (next_is(TokenType.symbol_open_bracket))
@@ -3327,7 +3330,7 @@ class Parser
             elseIf (next_is(TokenType.symbol_open_brace))
               # TableType{...} TableType(){...}
               access.args = CmdArgs()
-              return parse_context_block( access )
+              return parse_literal_table( access )
             endIf
           endIf
         endIf
@@ -4022,7 +4025,52 @@ class Parser
 
       return CmdTypedLiteralList( context, elements )
 
-    method parse_context_block( context:CmdAccess )->Cmd
+    method parse_context_block( context:Cmd )->Cmd
+      local t = peek
+
+      must_consume( TokenType.symbol_open_bracket )
+      consume_eols
+      if (consume(TokenType.symbol_close_bracket)) return context
+
+      local cmd_block = CmdContextBlock( t, context )
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        consume_eols
+
+        first = false
+        t = peek
+
+        contingent
+          local t_type = t.type
+          sufficient (t_type is TokenType.symbol_dot)
+          sufficient (t_type is TokenType.symbol_slash_slash)
+          sufficient (t_type is TokenType.symbol_open_bracket)
+          sufficient (t_type is TokenType.symbol_arrow)
+          sufficient (t_type is TokenType.symbol_fat_arrow)
+          sufficient (t_type is TokenType.keyword_as)
+          necessary false
+
+        satisfied
+          # .x -> context.x, etc.
+          local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
+          cmd_block.add( parse_statement_with_context( parse_member_access(cmd) ) )
+
+        unsatisfied
+          # x -> context.x
+          local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
+          local access = parse_access( t, cmd )
+          consume_eols
+          cmd_block.add( parse_statement_with_context(access) )
+        endContingent
+
+        consume_eols
+      endWhile
+
+      must_consume( TokenType.symbol_close_bracket )
+      return parse_member_access( cmd_block )
+
+    method parse_literal_table( context:CmdAccess )->Cmd
       local t = peek
 
       must_consume( TokenType.symbol_open_brace )
@@ -4046,49 +4094,13 @@ class Parser
           cmd_block.add( CmdAssign(t,cmd,CmdAccess(t,name)) )
 
         else
-          contingent
-            local t_type = t.type
-            sufficient (t_type is TokenType.symbol_dot)
-            sufficient (t_type is TokenType.symbol_slash_slash)
-            sufficient (t_type is TokenType.symbol_open_bracket)
-            sufficient (t_type is TokenType.symbol_arrow)
-            sufficient (t_type is TokenType.symbol_fat_arrow)
-            sufficient (t_type is TokenType.keyword_as)
-            necessary false
-
-          satisfied
-            # .x -> context.x, etc.
-            local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
-            cmd_block.add( parse_statement_with_context( parse_member_access(cmd) ) )
-
-          unsatisfied
-            # x -> context.x or x:y -> context[x] = y
-            if (next_is_identifier)
-              local starting_pos = reader.position
-              local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
-              local access = parse_access( t, cmd )
-              consume_eols
-              if (consume(TokenType.symbol_colon))
-                # x:y -> context[x] = y
-                reader.position = starting_pos
-                cmd = CmdElementAccess( t, cmd, parse_expression )
-                consume_eols
-                must_consume( TokenType.symbol_colon )
-                consume_eols
-                cmd_block.add( CmdAssign(t,cmd,parse_expression) )
-              else
-                cmd_block.add( parse_statement_with_context(access) )
-              endIf
-            else
-              # x:y -> context[x] = y
-              local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
-              cmd = CmdElementAccess( t, cmd, parse_expression )
-              consume_eols
-              must_consume( TokenType.symbol_colon )
-              consume_eols
-              cmd_block.add( CmdAssign(t,cmd,parse_expression) )
-            endIf
-          endContingent
+          # x:y -> context[x] = y
+          local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
+          cmd = CmdElementAccess( t, cmd, parse_expression )
+          consume_eols
+          must_consume( TokenType.symbol_colon )
+          consume_eols
+          cmd_block.add( CmdAssign(t,cmd,parse_expression) )
         endIf
 
         consume_eols
@@ -4096,48 +4108,6 @@ class Parser
 
       must_consume( TokenType.symbol_close_brace )
       return parse_member_access( cmd_block )
-
-      #{
-    method parse_typed_literal_table( context:CmdAccess )->Cmd
-      must_consume( TokenType.symbol_open_brace )
-      consume_eols
-
-      local table = CmdTypedLiteralTable( context )
-      if (consume(TokenType.symbol_close_brace)) return table
-
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        first = false
-        consume_eols
-
-        local t = peek
-        if (consume(TokenType.symbol_colon))
-          # :x -> "x":x
-          consume_eols
-          local name = read_identifier
-          table.add( CmdLiteralString(t,name), CmdAccess(t,name) )
-        else
-          local key = parse_expression
-          consume_eols
-
-          local value : Cmd
-          if (consume(TokenType.symbol_colon))
-            consume_eols
-            t = peek
-            value = parse_expression
-          else
-            value = CmdLiteralLogical( t, true )
-          endIf
-
-          table.add( key, value )
-        endIf
-
-        consume_eols
-      endWhile
-
-      must_consume( TokenType.symbol_close_brace )
-      return table
-      }#
 
 endClass
 
