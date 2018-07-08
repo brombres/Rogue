@@ -2731,7 +2731,9 @@ augment CmdBlock
         writer.indent += 2
         statements.write_cpp( writer, &return_last )
         writer.indent -= 2
-        writer.println( "}())" )
+        writer.print( "}())" )
+        if (is_statement) writer.print( ";" )
+        writer.println
       else
         writer.println( "{" )
         writer.indent += 2

@@ -7275,7 +7275,7 @@ class CmdCallFnPtr( t, name:String, context:Cmd, method_info:Method, args:CmdArg
 endClass
 
 class CmdContextBlock : Cmd
-  # Intermediate representation of context{a,b,c}
+  # Intermediate representation of context.[a,b,c]
   # Equivalent to following as-if-chained: context.a.b.c
   PROPERTIES
     context     : Cmd
