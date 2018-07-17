@@ -477,7 +477,8 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_o
 
         case "dependencies"
           if (dependencies)
-            dependencies.add( args.trimmed )
+            if (args.begins_with('"')) args = args.after_first('"').before_last('"')
+            dependencies.add( args )
             is_cache_modified = true
           endIf
 
