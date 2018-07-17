@@ -446,6 +446,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_o
       which (cmd.before_first('('))
         case "config", "roguec"
           if (args.begins_with('"')) args = args.after_first('"').before_last('"')
+          elseIf (args.begins_with('\'')) args = args.after_first('\'').before_last('\'')
           config[ cmd ] = args
 
         case "libraries"
@@ -477,7 +478,8 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_o
 
         case "dependencies"
           if (dependencies)
-            if (args.begins_with('"')) args = args.after_first('"').before_last('"')
+            if (args.begins_with('"'))       args = args.after_first('"').before_last('"')
+            elseIf (args.begins_with('\'')) args = args.after_first('\'').before_last('\'')
             dependencies.add( args )
             is_cache_modified = true
           endIf
