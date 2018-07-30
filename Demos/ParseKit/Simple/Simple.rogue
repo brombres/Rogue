@@ -1,0 +1,135 @@
+$include "ParseKit"
+uses ParseKit<<Simple>>
+
+class SimpleTest
+  METHODS
+    method init
+      local parser = SimpleParser()
+      parser.set_source( "[Source]", System.command_line_arguments.join(" ") )
+      parser.consume_eols
+      while (parser.has_another)
+        local expr = parser.parse_expression()
+        println expr
+        parser.consume_eols
+      endWhile
+endClass
+
+
+class SimpleError : ParseError;
+
+
+augment TokenType
+  EOI( "eoi", "[end of input]" )
+  EOL( "eol", "[end of line]" )
+  IDENTIFIER( "identifier" )
+  INTEGER( "integer" )
+  PLUS(     "+", &is_symbol )
+  MINUS(    "-", &is_symbol )
+  ASTERISK( "*", &is_symbol )
+  SLASH(    "/", &is_symbol )
+  OPEN_PAREN(  "(", &is_symbol )
+  CLOSE_PAREN( ")", &is_symbol, &is_structural )
+endAugment
+
+
+class SimpleTokenizer : Tokenizer
+  METHODS
+    method on_identifier( name:String )
+      tokens.add( Token(TokenType.IDENTIFIER,name) )
+
+    method on_integer( value:Int64 )
+      tokens.add( Token(TokenType.INTEGER,value) )
+endClass
+
+
+class SimpleParser : Parser
+  PROPERTIES
+    parse_expression : ParseRule
+
+  METHODS
+    method init
+      # expression
+      local rule = add( ParseRule("expression") )
+
+      # add_subtract
+      rule = add_nested( BinaryParseRule("add_subtract") )
+      rule.on( "+", <<CmdAdd>> )
+      rule.on( "-", <<CmdSubtract>> )
+
+      # multiply_divide
+      rule = add_nested( BinaryParseRule("multiply_divide") )
+      rule.on( "*", <<CmdMultiply>> )
+      rule.on( "/", <<CmdDivide>> )
+
+      # negate
+      rule = add_nested( UnaryParseRule("negate") )
+      rule.on( "-", <<CmdNegate>> )
+
+      # term
+      rule = add_nested( ParseRule("term") )
+      rule.on( "(",
+        function (parser:SimpleParser)->Cmd
+          parser.must_consume( TokenType.OPEN_PAREN )
+          local result = parser.parse_expression()
+          parser.must_consume( TokenType.CLOSE_PAREN )
+          return result
+        endFunction
+      )
+      rule.on( "identifier", <<CmdAccess>> )
+      rule.on( "integer", <<CmdLiteralInt32>> )
+endClass
+
+
+class CmdAdd : CmdBinary
+  METHODS
+    method op->String
+      return "+"
+endClass
+
+
+class CmdSubtract : CmdBinary
+  METHODS
+    method op->String
+      return "-"
+endClass
+
+
+class CmdMultiply : CmdBinary
+  METHODS
+    method op->String
+      return "*"
+endClass
+
+
+class CmdDivide : CmdBinary
+  METHODS
+    method op->String
+      return "/"
+endClass
+
+class CmdNegate : CmdUnary
+  METHODS
+    method op->String
+      return "-"
+endClass
+
+
+class CmdAccess( t, name:String )  : Cmd
+  METHODS
+    method init( t )
+      name = t->String
+
+    method to->String
+      return name
+endClass
+
+
+class CmdLiteralInt32( t, value:Int32 )  : Cmd
+  METHODS
+    method init( t )
+      value = t->Int32
+
+    method to->String
+      return ""+value
+endClass
+
