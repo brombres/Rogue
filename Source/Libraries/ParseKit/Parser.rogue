@@ -52,22 +52,14 @@ class Parser
     method next_is( token_type:TokenType )->Logical [macro]
       this.reader.next_is( token_type )
 
-    method open( file:File )->this
-      reader = TokenReader( create_tokenizer.tokenize(file) )
-      return this
-
-    method open( filename:String, source:String )->this
-      reader = TokenReader( create_tokenizer.tokenize(filename,source) )
-      return this
-
     method parse( file:File )->Cmd
-      open( file )
       if (not parse_source) throw ErrorType( ''No ParseRule("source") has been defined via add() or add_nested().'' )
+      set_source( file )
       return parse_source()
 
     method parse( filename:String, source:String )->Cmd
-      open( filename, source )
       if (not parse_source) throw ErrorType( ''No ParseRule("source") has been defined via add() or add_nested().'' )
+      set_source( filename, source )
       return parse_source()
 
     method parse( rule_name:String )->Cmd
@@ -87,6 +79,13 @@ class Parser
     method read->Token [macro]
       this.reader.read
 
+    method set_source( file:File )->this
+      reader = TokenReader( create_tokenizer.tokenize(file) )
+      return this
+
+    method set_source( filename:String, source:String )->this
+      reader = TokenReader( create_tokenizer.tokenize(filename,source) )
+      return this
 
 endClass
 

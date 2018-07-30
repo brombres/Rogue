@@ -764,7 +764,7 @@ class BitCalcVM
 
     method execute( source:String )
       try
-        parser.open( "[Statement]", source )
+        parser.set_source( "[Statement]", source )
         parser.consume_eols
         while (parser.has_another)
           local statement = parser.parse_statement()
