@@ -50,7 +50,7 @@ class ParseRule
 
     method parse_nested->Cmd
       if (nested) return nested()
-      throw ErrorType( ''[Internal] Parse rule $ attempting to call non-existent nested parse rule.'' (name) )
+      throw parser.peek.error( "Syntax error: unexpected $." (parser.peek.description) )
 
     method peek->Token [macro]
       this.parser.reader.peek
