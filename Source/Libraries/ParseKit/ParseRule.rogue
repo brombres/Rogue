@@ -73,6 +73,7 @@ class ParseRule
       return on( TokenLookup[symbol], fn )
 
     method on( symbol:String, cmd_type:TypeInfo )->this
+      _require_instance_of( cmd_type, <<Cmd>> )
       if (not TokenLookup.contains(symbol))
         throw ErrorType( ''No token exists with symbol text "$".'' (symbol) )
       endIf
@@ -80,11 +81,17 @@ class ParseRule
 
     method on( type:TokenType, cmd_type:TypeInfo )->this
       # t of type -> <<CmdType>>(t)
+      _require_instance_of( cmd_type, <<Cmd>> )
       return on( type, (parser) with (cmd_type) => cmd_type.create_object<<Cmd>>.init(parser.read) )
 
     method on_default( fn:Function(ParserType)->Cmd )->this
       default_handler = fn
       return this
+
+    method _require_instance_of( cmd_type:TypeInfo, base_type:TypeInfo )
+      if (not cmd_type.instance_of(base_type))
+        throw Error( "Type $ must extend $." (cmd_type,base_type) )
+      endIf
 
 endClass
 
@@ -105,6 +112,7 @@ class UnaryParseRule : ParseRule
       endIf
 
     method on( type:TokenType, cmd_type:TypeInfo )->this
+      _require_instance_of( cmd_type, <<CmdUnary>> )
       lookup[ type ] = cmd_type
       return this
 endClass
@@ -132,6 +140,7 @@ class BinaryParseRule : ParseRule
       throw UnsupportedOperationError()
 
     method on( type:TokenType, cmd_type:TypeInfo )->this
+      _require_instance_of( cmd_type, <<CmdBinary>> )
       lookup[ type ] = cmd_type
       return this
 
