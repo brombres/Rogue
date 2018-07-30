@@ -2,7 +2,6 @@ module ParseKit<<$Language>>
 uses $Language
 
 $localDefine ParserType $join($Language,Parser)
-$localDefine ErrorType $join($Language,Error)
 
 class ParseRule
   PROPERTIES
@@ -68,14 +67,14 @@ class ParseRule
 
     method on( symbol:String, fn:Function(ParserType)->Cmd )->this
       if (not TokenLookup.contains(symbol))
-        throw ErrorType( ''No token exists with symbol text "$".'' (symbol) )
+        throw Error( ''No token exists with symbol text "$".'' (symbol) )
       endIf
       return on( TokenLookup[symbol], fn )
 
     method on( symbol:String, cmd_type:TypeInfo )->this
       _require_instance_of( cmd_type, <<Cmd>> )
       if (not TokenLookup.contains(symbol))
-        throw ErrorType( ''No token exists with symbol text "$".'' (symbol) )
+        throw Error( ''No token exists with symbol text "$".'' (symbol) )
       endIf
       return on( TokenLookup[symbol], cmd_type )
 
