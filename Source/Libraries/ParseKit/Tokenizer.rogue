@@ -119,20 +119,20 @@ class Tokenizer
       noAction
 
     method on_identifier( name:String )
-      # Must override
-      throw UnsupportedOperationError()
+      # Override this as desired
+      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (name) )
 
     method on_integer( value:Int64 )
-      # Must override
-      throw UnsupportedOperationError()
+      # Override this as desired
+      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
 
     method on_real( value:Real64 )
-      # Must override
-      throw UnsupportedOperationError()
+      # Override this as desired
+      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
 
     method on_string( value:String )
-      # Must override
-      throw UnsupportedOperationError()
+      # Override this as desired
+      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
 
     method must_consume( ch:Character )
       if (consume(ch)) return
