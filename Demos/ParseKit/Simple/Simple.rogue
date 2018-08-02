@@ -9,6 +9,7 @@ class SimpleTest
       parser.consume_eols
       while (parser.has_another)
         local expr = parser.parse_expression()
+        <insert_fold>
         println expr
         parser.consume_eols
       endWhile
@@ -133,3 +134,90 @@ class CmdLiteralInt32( t, value:Int32 )  : Cmd
       return ""+value
 endClass
 
+
+#------------------------------------------------------------------------------
+# Constant Folding Visitor
+#------------------------------------------------------------------------------
+augment Cmd
+  METHODS
+    method is_constant->Logical
+      return false
+
+    method to->Int32
+      return 0
+endAugment
+
+
+augment CmdLiteralInt32
+  METHODS
+    method is_constant->Logical
+      return true
+
+    method to->Int32
+      return value
+endAugment
+
+
+augment SimpleTest
+  METHODS
+    method init
+      <insert_fold>
+      expr = ConstantFoldVisitor().visit( expr )
+endAugment
+
+
+class ConstantFoldVisitor : Visitor
+  METHODS
+    method handle( cmd:CmdAdd )->Cmd
+      cmd.left  = visit( cmd.left )
+      cmd.right = visit( cmd.right )
+      if (cmd.left.is_constant and cmd.right.is_constant)
+        return CmdLiteralInt32( cmd.t, cmd.left->Int32 + cmd.right->Int32 )
+      else
+        return cmd
+      endIf
+
+    method handle( cmd:CmdSubtract )->Cmd
+      cmd.left  = visit( cmd.left )
+      cmd.right = visit( cmd.right )
+      if (cmd.left.is_constant and cmd.right.is_constant)
+        return CmdLiteralInt32( cmd.t, cmd.left->Int32 - cmd.right->Int32 )
+      else
+        return cmd
+      endIf
+
+    method handle( cmd:CmdMultiply )->Cmd
+      cmd.left  = visit( cmd.left )
+      cmd.right = visit( cmd.right )
+      if (cmd.left.is_constant and cmd.right.is_constant)
+        return CmdLiteralInt32( cmd.t, cmd.left->Int32 * cmd.right->Int32 )
+      else
+        return cmd
+      endIf
+
+    method handle( cmd:CmdDivide )->Cmd
+      cmd.left  = visit( cmd.left )
+      cmd.right = visit( cmd.right )
+      if (cmd.left.is_constant and cmd.right.is_constant)
+        return CmdLiteralInt32( cmd.t, cmd.left->Int32 / cmd.right->Int32 )
+      else
+        return cmd
+      endIf
+
+    method handle( cmd:CmdNegate )->Cmd
+      cmd.operand = visit( cmd.operand )
+      if (cmd.operand.is_constant)
+        return CmdLiteralInt32( cmd.t, -cmd.operand->Int32 )
+      else
+        return cmd
+      endIf
+endClass
+
+class LiteralCollectionVisitor: Visitor
+  PROPERTIES
+    int32s = Table<<Int32,Int32>>()
+  METHODS
+    method on_enter(
+        cmd:CmdLiteralInt32 )
+      int32s[ cmd.value ] = cmd.value
+endClass
