@@ -33,7 +33,9 @@ config//cpp = compiler_invocation
 
 local buildfiles = Files( "." )
 
+local should_create = false
 local buildfile : String
+local cmd_line_args = String[]
 forEach (arg in System.command_line_arguments)
   if (arg == "--build" or arg.begins_with("--build="))
     local cur_buildfile = arg.after_first( '=' )
@@ -49,11 +51,14 @@ forEach (arg in System.command_line_arguments)
         System.exit 1
       endIf
     endIf
-    System.command_line_arguments.remove( arg )
     buildfiles.add( cur_buildfile )
     if (buildfile is null) buildfile = cur_buildfile
-    escapeForEach
+
+  else
+    if (arg == "--create") should_create = true
+    cmd_line_args.add( arg )
   endIf
+
 endForEach
 
 if (not buildfile)
@@ -63,16 +68,175 @@ if (not buildfile)
 endIf
 
 if (not buildfiles.count)
-  local w = (Console.width - 1).or_smaller( 79 )
-  loop (w) do Console.error.print( '=' )
-  Console.error.println
-  local mesg = "ROGO ERROR\n\n"
-  mesg += "No standard build file exists (Build.rogue, BuildCore.rogue, BuildLocal.rogue) "
-  mesg += "and no alternate specified with --build=<filename>."
-  Console.error.println( mesg.word_wrapped(w) )
-  loop (w) do Console.error.print( '=' )
-  Console.error.println
-  System.exit 1
+  if (should_create)
+    println "Creating Build.rogue with default Rogo framework."
+    cmd_line_args.clear
+
+    File.save( "Build.rogue",
+      @|# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
+       |
+       |#$ ROGUEC_ARGS = --api
+       |
+       |# Rogo is a "build your own build system" facilitator. At its core Rogo just recompiles build files if
+       |# needed and then runs the build executable while forwarding any command line arguments. This file contains
+       |# a default framework which uses introspection to turn command line arguments into parameterized routine calls.
+       |
+       |# Example: to handle the command "rogo abc xyz 5", define "routine rogo_abc_xyz( n:Int32 )".
+       |
+       |# "rogo_default" will run in the absence of any other command line argument.
+       |
+       |routine rogo_default
+       |  rogo_help
+       |endRoutine
+       |
+       |routine execute( commands:String, &suppress_error )->Logical
+       |  forEach (cmd in LineReader(commands))
+       |    print( "> " ).println( cmd )
+       |    if (System.run(cmd) != 0)
+       |      if (suppress_error) return false
+       |      else                throw Error( "Build failed." )
+       |    endIf
+       |  endForEach
+       |  return true
+       |endRoutine
+       |
+       |#------------------------------------------------------------------------------
+       |# Introspection-based Launcher Framework
+       |#------------------------------------------------------------------------------
+       |global ::prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+       |
+       |class CommandSyntax      : StringTable<<String>> [singleton];
+       |class CommandDescription : StringTable<<String>> [singleton];
+       |
+       |routine syntax( command:String, text:String )
+       |  CommandSyntax[ command ] = text
+       |endRoutine
+       |
+       |routine description( command:String, text:String )
+       |  CommandDescription[ command ] = text
+       |endRoutine
+       |
+       |routine help( command:String, description=null:String, syntax=null:String )
+       |  if (description) Global.description( command, description )
+       |  if (syntax)      Global.syntax( command, syntax )
+       |endRoutine
+       |
+       |local cmd = System.command_line_arguments.cloned
+       |try
+       |  if (cmd.count)
+       |    local args = String[]
+       |    while (cmd.count)
+       |      if (dispatch(cmd,args)) System.exit
+       |      args.insert( cmd.remove_last )
+       |    endWhile
+       |    println "ERROR: No such command '$'." (args.first)
+       |    println
+       |    rogo_help
+       |  else
+       |    rogo_default
+       |  endIf
+       |catch (err:Error)
+       |  Console.error.println err
+       |  System.exit 1
+       |endTry
+       |
+       |routine dispatch( cmd:String[], string_args:String[] )->Logical
+       |  local m = <<Global>>.find_method( prefix + cmd.join("_") )
+       |  if (not m) return false
+       |
+       |  local args = @[]
+       |  forEach (arg in string_args)
+       |    which (arg)
+       |      case "true":  args.add( true )
+       |      case "false": args.add( false )
+       |      case "null":  args.add( NullValue )
+       |      others:       args.add( arg )
+       |    endWhich
+       |  endForEach
+       |  if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
+       |  m.call( Global, args )
+       |  return true
+       |endRoutine
+       |
+       |routine rogo_help( command="":String )
+       |  local args = System.command_line_arguments.cloned
+       |  if (args.count) args.remove_first
+       |  command = args.join( "_" )
+       |  if (command.count)
+       |    local syntax = get_syntax( command )
+       |    local success = false
+       |    if (syntax)
+       |      println "SYNTAX"
+       |      println "  " + syntax
+       |      println
+       |      success = true
+       |    endIf
+       |    local description = get_description( command )
+       |    if (description)
+       |      println "DESCRIPTION"
+       |      forEach (line in LineReader(description.word_wrapped(76)))
+       |        print( "  " ).println( line )
+       |      endForEach
+       |      println
+       |      success = true
+       |    endIf
+       |    if (success)
+       |      return
+       |    else
+       |      println "ERROR: No such command '$'." (command)
+       |      println
+       |    endIf
+       |  endIf
+       |
+       |  println "USAGE"
+       |  local lines = String[]
+       |  forEach (m in <<Global>>.methods)
+       |    if (m.name.begins_with(prefix))
+       |      lines.add( "  " + get_syntax(m.name.after_first(prefix)) )
+       |    endIf
+       |  endForEach
+       |  lines.sort( (a,b)=>(a<b) )
+       |  println (forEach in lines)
+       |  println
+       |endRoutine
+       |
+       |routine get_syntax( m_name:String )->String
+       |  if (CommandSyntax.contains(m_name))
+       |    return "rogo " + CommandSyntax[ m_name ]
+       |  else
+       |    local m = <<Global>>.find_method( prefix + m_name )
+       |    if (not m) return null
+       |    local line = "rogo $" (m_name.replacing('_',' '))
+       |    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
+       |    return line
+       |  endIf
+       |endRoutine
+       |
+       |routine get_description( m_name:String )->String
+       |  if (CommandDescription.contains(m_name))
+       |    return CommandDescription[ m_name ]
+       |  else
+       |    return null
+       |  endIf
+       |endRoutine
+    )
+    buildfiles.add( "Build.rogue" )
+
+  else
+    local w = (Console.width - 1).or_smaller( 79 )
+    loop (w) do Console.error.print( '=' )
+    Console.error.println
+    local mesg = "ROGO ERROR\n\n"
+    mesg += @|No standard build file exists (Build.rogue, BuildCore.rogue, BuildLocal.rogue)
+    mesg += @| and no alternate specified with --build=<filename>.
+             |
+             |
+    mesg += @|Type 'rogo --create' to create Build.rogue with a default framework.
+    Console.error.println( mesg.word_wrapped(w) )
+    loop (w) do Console.error.print( '=' )
+    Console.error.println
+    System.exit 1
+  endIf
 endIf
 
 local exe : String
@@ -153,7 +317,7 @@ if (needs_recompile)
   File.delete( File.filename(exe).before_last(".exe") + ".obj" )
 endIf
 
-System.exit( System.run(''$ $'' (exe,System.command_line_arguments.mapped<<String>>( (arg)=>prep_arg(arg) ).join(" "))) )
+System.exit( System.run(''$ $'' (exe,cmd_line_args.mapped<<String>>( (arg)=>prep_arg(arg) ).join(" "))) )
 
 routine prep_arg( arg:String )->String
   # Quotes and escapes string if necessary
