@@ -2092,11 +2092,21 @@ augment RogueC
           compiler_name += " " + " ".join(RogueC.compiler_options)
         endIf
 
-        local exe = File.fix_slashes( output_filepath )
-        if (exe.contains(File.separator))
-          exe = File.path(exe) + File.separator + File.filename(exe).to_lowercase
+        local exe : String
+        if (RogueC.exe_filepath)
+          exe = File.fix_slashes( RogueC.exe_filepath )
+          if (exe.contains(File.separator))
+            local exe_folder = File.folder( exe )
+            if (not File.exists(exe_folder))
+              File.create_folder( exe_folder )
+            elseIf (File.is_folder(exe))
+              exe += File.separator + File.filename(output_filepath)
+            endIf
+          elseIf (File.is_folder(exe))
+            exe += File.separator + File.filename(output_filepath)
+          endIf
         else
-          exe = exe.to_lowercase
+          exe = File.fix_slashes( output_filepath )
         endIf
 
         native @|#ifdef ROGUE_PLATFORM_WINDOWS

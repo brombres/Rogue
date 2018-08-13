@@ -63,6 +63,7 @@ class RogueC [singleton]
     generate_main   : Logical
     first_filepath  : String
     output_filepath : String
+    exe_filepath    : String
 
 $if defined(DEFAULT_TARGETS)
     default_targets = DEFAULT_TARGETS
@@ -242,6 +243,10 @@ $endIf
                    |      --essential=**      - All classes and all methods ("exhaustive")
                    |    See also: --api
                    |
+                   |  --exe=<filepath>
+                   |    Specify the destination folder and/or filename for the compiled
+                   |    executable. Only used with --compile or --execute. See also: --output
+                   |
                    |  --execute[="args"]
                    |    Use command line directives to compile and run the output of the
                    |    compiled .rogue program.  Automatically enables the --main option.
@@ -277,9 +282,9 @@ $endIf
                    |  --main
                    |    Include a main() function in the output file.
                    |
-                   |  --output=destpath/[filename]
-                   |    Specify the destination folder and optionally the base filename for the
-                   |    output.
+                   |  --output=<filepath>
+                   |    Specify the destination folder and/or the base filename for generated C++
+                   |    output. See also: --exe
                    |
                    |  --pkg-config=<pkg>
                    |    Gathers compiler flags for the given package from pkg-config and passes
@@ -596,6 +601,10 @@ $endIf
             case "--output"
               if (value.count == 0) throw RogueError( ''Output filepath expected after "--output=".'' )
               output_filepath = value
+
+            case "--exe"
+              if (value.count == 0) throw RogueError( ''Executable filepath expected after "--exe=".'' )
+              exe_filepath = value
 
             case "--compile"
               generate_main = true
