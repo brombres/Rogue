@@ -104,7 +104,7 @@ class Tokenizer
       return true
 
     method error( message:String )->ErrorType
-      return ErrorType( filepath, scanner.line, scanner.column, message )
+      return ErrorType( filepath, scanner.source, scanner.line, scanner.column, message )
 
     method has_another->Logical [macro]
       this.scanner.has_another
@@ -120,19 +120,19 @@ class Tokenizer
 
     method on_identifier( name:String )
       # Override this as desired
-      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (name) )
+      throw ErrorType( Token.next_filepath, Token.next_source, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (name) )
 
     method on_integer( value:Int64 )
       # Override this as desired
-      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
+      throw ErrorType( Token.next_filepath, Token.next_source, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
 
     method on_real( value:Real64 )
       # Override this as desired
-      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
+      throw ErrorType( Token.next_filepath, Token.next_source, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
 
     method on_string( value:String )
       # Override this as desired
-      throw ErrorType( Token.next_filepath, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
+      throw ErrorType( Token.next_filepath, Token.next_source, Token.next_line, Token.next_column, "Syntax error: unexpected '$'." (value) )
 
     method must_consume( ch:Character )
       if (consume(ch)) return
