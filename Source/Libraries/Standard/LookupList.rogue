@@ -127,5 +127,10 @@ class LookupList<<$ValueType,$TableType>>
 
     method to->String
       return values->String
+
+    method to->$ValueType[]
+      local result = $ValueType[]( count )
+      forEach (value in this) result.add( value )
+      return result
 endClass
 
