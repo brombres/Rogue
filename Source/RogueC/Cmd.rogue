@@ -3307,6 +3307,9 @@ class CmdWriteSingleton : Cmd
     method resolve( scope:Scope )->Cmd
       of_type.organize(scope,t)
       new_value = new_value.resolve(scope).require_value
+      if (not new_value.type.instance_of(of_type))
+        throw t.error( "Assigned value must be instanceOf type $." (of_type) )
+      endIf
       return this
 
 endClass
