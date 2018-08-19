@@ -4,6 +4,7 @@ $endIf
 
 $include "Standard/Array.rogue"
 $include "Standard/Atomics.rogue"
+$include "Standard/BitIO.rogue"
 $include "Standard/Boxed.rogue"
 $include "Standard/Console.rogue"
 $include "Standard/DataIO.rogue"

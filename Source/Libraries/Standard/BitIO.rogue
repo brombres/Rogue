@@ -1,0 +1,52 @@
+class BitReader
+  PROPERTIES
+    reader       : Reader<<Byte>>
+    bit_buffer   : Int64
+    buffer_count : Int32
+
+  METHODS
+    method init( input:Byte[] )
+      init( input.reader )
+
+    method init( reader )
+
+    method has_another->Logical
+      return buffer_count or reader.has_another
+
+    method read( nbits:Int32 )->Int32
+      while (buffer_count < nbits)
+        bit_buffer = (bit_buffer :<<: 8) | reader.read
+        buffer_count += 8
+      endWhile
+      buffer_count -= nbits
+      return (bit_buffer :>>: buffer_count) & ((Int64(1):<<:nbits)-1)
+endClass
+
+class BitWriter
+  PROPERTIES
+    bytes        : Byte[]
+    writer       : Writer<<Byte>>
+    bit_buffer   : Int64
+    buffer_count : Int32
+
+  METHODS
+    method init
+      init( Byte[] )
+
+    method init( bytes )
+      init( bytes.writer )
+
+    method init( writer )
+
+    method flush
+      if (buffer_count) write( 0, 8-buffer_count )
+
+    method write( value:Int32, nbits:Int32 )
+      bit_buffer = (bit_buffer :<<: nbits) | (value & ((Int64(1):<<:nbits)-1))
+      buffer_count += nbits
+      while (buffer_count >= 8)
+        buffer_count -= 8
+        writer.write( bit_buffer :>>: buffer_count )
+      endWhile
+
+endClass
