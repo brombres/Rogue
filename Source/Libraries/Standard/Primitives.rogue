@@ -812,6 +812,20 @@ class Character [primitive]
     method to_power_of_two->Character
       return this->Int32.to_power_of_two->Character
 
+    method to_printable_string->String
+      which (this)
+        case '\0': return "\\0"
+        case '\b': return "\\b"
+        case '\e': return "\\e"
+        case '\f': return "\\f"
+        case '\n': return "\\n"
+        case '\r': return "\\t"
+        case '\v': return "\\v"
+        others
+          if (this < 32 or this == 127 or (this >= 0xD800 and this <= 0xDFFF)) return "\\[$]" (this)
+          return this->String
+      endWhich
+
     method to_number( base=10:Int32 )->Int32
       local value : Int32
       if (this >= '0' and this <= '9')     value = this - '0'
