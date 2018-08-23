@@ -284,8 +284,34 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
+    method locate( other:$DataType[], i1=0:Int32 )->Int32?
+      local other_count = other.count
+      if (count < other_count) return null
+      forEach (starting_index in i1..(count-other_count))
+
+        contingent
+
+          forEach (i in 0..<other_count)
+            local a = this[ starting_index + i ]
+            local b = other[ i ]
+            if (a is null)
+              necessary (b is null)
+            elseIf (b is null)
+              necessary (a is null)
+            else
+              necessary (a == b)
+            endIf
+          endForEach
+
+        satisfied
+          return starting_index
+        endContingent
+
+      endForEach
+      return null
+
     method locate_last( value:$DataType, i1=null:Int32? )->Int32?
-      local starting_index = ?:{ i1 || count }
+      local starting_index = ?:{ i1 || count-1 }
       if ($DataType isReference)
         if (value is null)
           forEach (i of this from starting_index step -1)
@@ -301,9 +327,36 @@ class List<<$DataType>> : GenericList
       return null
 
     method locate_last( query:(Function($DataType)->Logical), i1=null:Int32? )->Int32?
-      local starting_index = ?:{ i1 || count }
+      local starting_index = ?:{ i1 || count-1 }
       forEach (value at index in this from starting_index step -1)
         if (query(value)) return index
+      endForEach
+      return null
+
+    method locate_last( other:$DataType[], i1=null:Int32? )->Int32?
+      local starting_index = ?:{ i1 || count-1 }
+      local other_count = other.count
+      if (count < other_count) return null
+      forEach (first_i in starting_index.or_smaller(count-other_count) downTo 0)
+
+        contingent
+
+          forEach (i in 0..<other_count)
+            local a = this[ first_i + i ]
+            local b = other[ i ]
+            if (a is null)
+              necessary (b is null)
+            elseIf (b is null)
+              necessary (a is null)
+            else
+              necessary (a == b)
+            endIf
+          endForEach
+
+        satisfied
+          return first_i
+        endContingent
+
       endForEach
       return null
 
