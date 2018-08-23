@@ -263,44 +263,46 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
-    method locate( value:$DataType )->Int32? [preferred]
+    method locate( value:$DataType, i1=0:Int32 )->Int32? [preferred]
       if ($DataType isReference)
         if (value is null)
-          forEach (i of this)
+          forEach (i of this from i1)
             if (value is this[i]) return i
           endForEach
           return null
         endIf
       endIf
 
-      forEach (i of this)
+      forEach (i of this from i1)
         if (value == this[i]) return i
       endForEach
       return null
 
-    method locate( query:(Function($DataType)->Logical) )->Int32?
-      forEach (value at index in this)
+    method locate( query:(Function($DataType)->Logical), i1=0:Int32 )->Int32?
+      forEach (value at index in this from i1)
         if (query(value)) return index
       endForEach
       return null
 
-    method locate_last( value:$DataType )->Int32?
+    method locate_last( value:$DataType, i1=null:Int32? )->Int32?
+      local starting_index = ?:{ i1 || count }
       if ($DataType isReference)
         if (value is null)
-          forEach (i of this step -1)
+          forEach (i of this from starting_index step -1)
             if (value is this[i]) return i
           endForEach
           return null
         endIf
       endIf
 
-      forEach (i of this step -1)
+      forEach (i of this from starting_index step -1)
         if (value == this[i]) return i
       endForEach
       return null
 
-    method locate_last( query:(Function($DataType)->Logical) )->Int32?
-      forEach (value at index in this step -1)
+    method locate_last( query:(Function($DataType)->Logical), i1=null:Int32? )->Int32?
+      local starting_index = ?:{ i1 || count }
+      forEach (value at index in this from starting_index step -1)
         if (query(value)) return index
       endForEach
       return null
