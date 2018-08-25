@@ -72,6 +72,9 @@ class List<<$DataType>> : GenericList
     method contains( query:(Function($DataType)->Logical) )->Logical
       return first( query ).exists
 
+    method contains( other:$DataType[] )->Logical
+      return this.locate( other )?
+
     method count( query:(Function($DataType)->Logical) )->Int32
       # Counts the number of items that pass the query function.
       local result = 0
@@ -371,6 +374,10 @@ class List<<$DataType>> : GenericList
 
     method modified( fn:(Function($DataType)->$DataType) )->$DataType[]
       return cloned.modify( fn )
+
+    method operator==( other:$DataType[] )->Logical
+      if (this is other) return true
+      return count == other.count and locate(other).exists
 
     method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
       # n           - A value between 0 and (permutation_count-1).  0 gives the
@@ -843,4 +850,3 @@ class ListRewriter<<$DataType>>
 
       return this
 endClass
-
