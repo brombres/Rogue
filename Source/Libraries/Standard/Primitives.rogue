@@ -474,6 +474,13 @@ class Int64 [primitive]
       buffer.print( (this & (base-1)).to_digit )
       return buffer
 
+    method required_bit_count->Int32
+      if (this & 0x8000_0000_0000_0000) return 64
+      if (this & 0x4000_0000_0000_0000) return 63
+      local bits = 1 : Int64
+      while ((Int64(1):<<:bits) <= this) ++bits
+      return bits
+
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
@@ -629,6 +636,13 @@ class Int32 [primitive]
 
     method or_smaller( other:Int32 )->Int32
       return select{ this<=other:this || other }
+
+    method required_bit_count->Int32
+      if (this & 0x8000_0000) return 32
+      if (this & 0x4000_0000) return 31
+      local bits = 1
+      while ((1:<<:bits) <= this) ++bits
+      return bits
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
