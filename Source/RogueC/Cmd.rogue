@@ -5812,10 +5812,15 @@ class CmdInstanceOf : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
-      if (operand.type is Program.type_Logical)
-        throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type'." )
-      elseIf (not operand.type.is_reference)
-        throw t.error( "Illegal 'instanceOf' on non-reference." )
+      if (not operand.type.is_reference)
+        if (operand instanceOf CmdReadSingleton)
+          # Comparing a type to a type
+          return CmdLiteralLogical( t, operand.type is target_type )
+        elseIf (operand.type is Program.type_Logical)
+          throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type'." )
+        else
+          throw t.error( "Illegal 'instanceOf' on non-reference." )
+        endIf
       endIf
       target_type.organize(scope, t)
       return this
