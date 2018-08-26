@@ -470,7 +470,8 @@ class Int64 [primitive]
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
 
-      if (digits > 1) (this:>>>:bits).print_in_power2_base( base, digits-1, buffer )
+      local remaining = this :>>: bits
+      if (digits > 1 or remaining) remaining.print_in_power2_base( base, digits-1, buffer )
       buffer.print( (this & (base-1)).to_digit )
       return buffer
 
@@ -793,6 +794,13 @@ class Character [primitive]
     method or_smaller( other:Character )->Character
       return select{ this<=other:this || other }
 
+    method required_bit_count->Int32
+      if (this & 0x8000_0000) return 32
+      if (this & 0x4000_0000) return 31
+      local bits = 1
+      while ((1:<<:bits) <= this) ++bits
+      return bits
+
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
@@ -817,8 +825,9 @@ class Character [primitive]
     method to_binary_string( digits=16:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
 
-    method to_hex_string( digits=4:Int32 )->String
-      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+    method to_hex_string( digits=null:Int32? )->String
+      if (not digits.exists) digits = ?:{ this>0xfFFFF:6 || this>0xFFFF:5 || 4 }
+      return (this->Int64).print_in_power2_base( 16, digits.value, StringBuilder() )->String
 
     method to_octal_string( digits=6:Int32 )->String
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
@@ -836,7 +845,8 @@ class Character [primitive]
         case '\r': return "\\t"
         case '\v': return "\\v"
         others
-          if (this < 32 or this == 127 or (this >= 0xD800 and this <= 0xDFFF)) return "\\[$]" (this)
+          if (this >= 256)              return "\\[$]" (this.to_hex_string(3))
+          if (this < 32 or this >= 127) return "\\x$"  (this.to_hex_string(2))
           return this->String
       endWhich
 
@@ -922,6 +932,12 @@ class Byte [primitive]
 
     method or_smaller( other:Byte )->Byte
       return select{ this<=other:this || other }
+
+    method required_bit_count->Int32
+      if (this & 0x80) return 8
+      local bits = 1
+      while ((1:<<:bits) <= this) ++bits
+      return bits
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
