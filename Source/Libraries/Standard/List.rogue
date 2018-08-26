@@ -1,4 +1,4 @@
-class GenericList
+class GenericList [abstract]
 endClass
 
 class List<<$DataType>> : GenericList
@@ -11,13 +11,16 @@ class List<<$DataType>> : GenericList
       init( 0 )
 
     method init( initial_capacity:Int32 )
-      if (initial_capacity) data = Array<<$DataType>>( initial_capacity )
+      if (initial_capacity != capacity) data = Array<<$DataType>>( initial_capacity )
+      clear
 
     method init( initial_capacity:Int32, initial_value:$DataType ) [preferred]
       if (initial_capacity)
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
         forEach (i in 0..<initial_capacity) data[i] = initial_value
+      else
+        clear
       endIf
 
     method init( initial_capacity:Int32, fn:(Function()->$DataType) )
@@ -25,6 +28,8 @@ class List<<$DataType>> : GenericList
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
         forEach (i in 0..<initial_capacity) data[i] = fn()
+      else
+        clear
       endIf
 
     method init( initial_capacity:Int32, fn:(Function(Int32)->$DataType) )
@@ -32,6 +37,8 @@ class List<<$DataType>> : GenericList
         data = Array<<$DataType>>( initial_capacity )
         count = initial_capacity
         forEach (i in 0..<initial_capacity) data[i] = fn( i )
+      else
+        clear
       endIf
 
     method apply( fn:(Function($DataType)) )->this
@@ -120,6 +127,35 @@ class List<<$DataType>> : GenericList
 
     method from( i1:Int32, i2:Int32 )->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, i1, i2+1 )
+
+    method dim( n:Int32 )
+      clear
+      reserve( n )
+      local default_value : $DataType
+      loop (n) add( default_value )
+
+    method dim( n:Int32, fn:Function()->$DataType )
+      clear
+      reserve( n )
+      loop (n) add( fn() )
+
+    method dim( n:Int32, fn:Function(Int32)->$DataType )
+      clear
+      reserve( n )
+      forEach (index in 0..<n) add( fn(index) )
+
+    method dim( n:Int32, o:Int32 )
+      if ($DataType instanceOf GenericList)
+        clear
+        reserve( n )
+        loop (n)
+          local row = $DataType()
+          row.dim( o )
+          add( row )
+        endLoop
+      else
+        throw UnsupportedOperationError()
+      endIf
 
     method discard( i1:Int32, n=1:Int32 )->this
       local i2 = i1 + n
@@ -436,6 +472,7 @@ class List<<$DataType>> : GenericList
 
     method reserve( additional_elements:Int32 )->$DataType[]
       local required_capacity = count + additional_elements
+      if (required_capacity == 0) return this
 
       if (not data)
         if (required_capacity < 10) required_capacity = 10
