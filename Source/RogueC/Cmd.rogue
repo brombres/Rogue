@@ -5812,11 +5812,26 @@ class CmdInstanceOf : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope ).require_value
-      if (not operand.type.is_reference)
-        if (operand instanceOf CmdReadSingleton)
-          # Comparing a type to a type
-          return CmdLiteralLogical( t, operand.type is target_type )
-        elseIf (operand.type is Program.type_Logical)
+
+      local operand_type = operand.type
+
+      if (operand instanceOf CmdReadSingleton)
+        # All type references start as "CmdReadSingleton" whether the type is actually a singleton or not
+        # Comparing a type to a type or a singleton object to a type
+        # If target type is not instanceOf the operand type then we're not trying to check a singleton object
+        # but rather just compare two types.
+        if (not operand_type.is_reference or not target_type.instance_of(operand_type))
+          return CmdLiteralLogical( t, operand_type.instance_of(target_type) )
+        endIf
+
+        operand_type.organize( scope, t )
+        if (not operand_type.is_singleton)
+          return CmdLiteralLogical( t, operand_type.instance_of(target_type) )
+        endIf
+      endIf
+
+      if (not operand_type.is_reference)
+        if (operand_type is Program.type_Logical)
           throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type'." )
         else
           throw t.error( "Illegal 'instanceOf' on non-reference." )
