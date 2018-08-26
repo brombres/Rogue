@@ -825,9 +825,8 @@ class Character [primitive]
     method to_binary_string( digits=16:Int32 )->String
       return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
 
-    method to_hex_string( digits=null:Int32? )->String
-      if (not digits.exists) digits = ?:{ this>0xfFFFF:6 || this>0xFFFF:5 || 4 }
-      return (this->Int64).print_in_power2_base( 16, digits.value, StringBuilder() )->String
+    method to_hex_string( digits=4:Int32 )->String
+      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
 
     method to_octal_string( digits=6:Int32 )->String
       return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
