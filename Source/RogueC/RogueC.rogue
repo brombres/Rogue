@@ -1,4 +1,4 @@
-$define ROGUE_RELEASE_VERSION "1.4.6"
+$define ROGUE_RELEASE_VERSION "1.4.7"
 
 $include "Version.rogue" [optional]
 
@@ -189,7 +189,8 @@ $endIf
                    |    then [api] will not cause it to be included in the generated code - use
                    |    --essential/[essential] for that.
                    |
-                   |    The [api] flag will ignore any methods marked with the [noAPI] attribute.
+                   |    The --api flag and the class-level [api] attribute will ignore any methods marked with
+                   |    the [noAPI] attribute.
                    |
                    |    VARIATIONS
                    |      --api

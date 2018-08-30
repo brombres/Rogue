@@ -2513,6 +2513,33 @@ augment Method
       writer.println
       writer.println "{"
 
+      if (is_generated and name=="create" and type_context.is_compound)
+        # Simple relay to actual compound constructor
+        writer.print   "  return "
+        writer.print   type_context.cpp_class_name
+        writer.print   "("
+        local first = true
+        if (not is_global)
+          first = false
+          if (type_context.is_aspect)
+            writer.print( Program.type_Object )
+          else
+            writer.print( type_context )
+          endIf
+          writer.print( " THIS" )
+        endIf
+        if (parameters.count)
+          forEach (param in parameters)
+            if (first) first = false
+            else       writer.print( ", " )
+            writer.print( param.cpp_name )
+          endForEach
+        endIf
+        writer.println ");"
+        writer.println "}"
+        return
+      endIf
+
       if (is_abstract and not type_context.is_aspect and overriding_methods.count == 0)
         # Empty abstract method
         if (return_type)
