@@ -649,6 +649,7 @@ class WindowsProcessWriter : Writer<<Byte>>
 
     method write( value:Byte )->this
       buffer.add( value )
+      return this
 
     method write( list:Byte[] )->this
       buffer.add( list )
