@@ -1444,7 +1444,7 @@ class CPPWriter
 
   METHODS
     method init( filepath )
-        omit_line_numbers = (RogueC.compile_targets["macOS"] or RogueC.compile_targets["iOS"])
+        omit_line_numbers = (RogueC.compile_targets["macOS"] or RogueC.compile_targets["iOS"]) or RogueC.omit_line_numbers
 
     method close
       local path = File.path( filepath )
