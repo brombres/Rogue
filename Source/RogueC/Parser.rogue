@@ -45,20 +45,34 @@ class Parser
       elseIf (not skip_reprocess) tokens = Preprocessor( this ).reprocess( tokens )
       reader = TokenReader( tokens )
       is_api_file = RogueC.all_api
-      if (not is_api_file and filepath and filepath.ends_with(".rogue"))
-        is_api_file = RogueC.api_files.contains( filepath )
+      is_essential_file = RogueC.all_essential
+
+      if (filepath and filepath.ends_with(".rogue"))
         if (not is_api_file)
-          forEach (pattern in RogueC.api_file_patterns)
-            if (File.matches_wildcard_pattern(filepath,pattern))
-              is_api_file = true
-              escapeForEach
-            endIf
-          endForEach
+          is_api_file = RogueC.api_files.contains( filepath )
+          if (not is_api_file)
+            forEach (pattern in RogueC.api_file_patterns)
+              if (File.matches_wildcard_pattern(filepath,pattern))
+                is_api_file = true
+                escapeForEach
+              endIf
+            endForEach
+          endIf
+        endIf
+        if (not is_essential_file)
+          is_essential_file = RogueC.essential_files.contains( filepath )
+          if (not is_essential_file)
+            forEach (pattern in RogueC.essential_files)
+              if (File.matches_wildcard_pattern(filepath,pattern))
+                is_essential_file = true
+                escapeForEach
+              endIf
+            endForEach
+          endIf
         endIf
       endIf
-      is_api_module = is_api_file
 
-      is_essential_file = RogueC.all_essential
+      is_api_module = is_api_file
       is_essential_module = is_essential_file
 
     method consume( type:TokenType )->Logical
