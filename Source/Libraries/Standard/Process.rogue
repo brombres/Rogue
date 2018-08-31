@@ -563,7 +563,7 @@ class WindowsProcessReader : Reader<<Byte>>
       local n = buffer.count.or_smaller( limit )
       if (n)
         result.reserve( n )
-        native @|memcpy( $result->data->as_bytes+$result->count, $buffer->data->as_bytes, n );
+        native @|memcpy( $result->data->as_bytes+$result->count, $buffer->data->as_bytes, $n );
         buffer.discard( 0, n )
         @position += n
       endIf
