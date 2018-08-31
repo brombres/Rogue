@@ -1030,6 +1030,7 @@ class Parser
             throw peek.error( "Literal string expected." )
           endIf
 
+          local t = peek
           this_method.native_code = read->String
 
           if (has_parens)
@@ -1041,6 +1042,16 @@ class Parser
             consume( TokenType.symbol_arrow )
             this_method.native_return_type = parse_type
           endIf
+
+          # Native macros get code in two places:
+          # 1. native_code and native_return_type
+          # 2. statements
+          # Originally there was only #1. Transitioning to system where all macros
+          # are also regular methods, adding #2. In the future it should be
+          # possible have #2 only.
+          local cmd = CmdInlineNative( t, this_method.native_code, this_method.native_return_type ) : Cmd
+          if (this_method.native_return_type) cmd = CmdReturn( t, cmd )
+          this_method.statements.add( cmd )
 
         else
           # macro this.fn(arg)
@@ -1384,10 +1395,6 @@ class Parser
       endIf
 
       if (consume(TokenType.keyword_return))
-        if (this_method and this_method.is_macro and this_method.return_type?)
-          throw t.error( "Omit the 'return' in a macro method with a return type." )
-        endIf
-
         if (next_is_end_command)
           cur_statement_list.add( CmdReturn(t) )
         else

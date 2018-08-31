@@ -151,6 +151,11 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
+            local cmd_return = statement as CmdReturn
+            if (cmd_return)
+              if (not cmd_return.value) nextIteration
+              statement = cmd_return.value
+            endIf
             local inline_statement = statement.cloned( macro_args, &new_t=t )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
@@ -165,7 +170,7 @@ class Scope
             case 1
               return inline_statements.first
             others
-              throw t.error( "Only single line macros are supported." )
+              throw t.error( "Only single-statement macros are supported." )
           endWhich
 
         else
@@ -190,6 +195,11 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
+            local cmd_return = statement as CmdReturn
+            if (cmd_return)
+              if (not cmd_return.value) nextIteration
+              statement = cmd_return.value
+            endIf
             local inline_statement = statement.cloned( macro_args, &new_t=t )
             if (inline_statement) inline_statements.add( inline_statement )
           endForEach
@@ -205,7 +215,7 @@ class Scope
             case 1
               return inline_statements.first
             others
-              throw t.error( "Only single line macros are supported." )
+              throw t.error( "Only single-statement macros are supported." )
           endWhich
 
 
