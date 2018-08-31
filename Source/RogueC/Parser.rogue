@@ -1809,6 +1809,7 @@ class Parser
           (t_type is TokenType.keyword_includeNativeHeader) or
           (t_type is TokenType.keyword_compileArg) or
           (t_type is TokenType.keyword_includeNativeHeader) or
+          (t_type is TokenType.keyword_includeSource) or
           (t_type is TokenType.meta_essential))
         ensure this_type.dependencies
         parse_statement( this_type.dependencies, false )
