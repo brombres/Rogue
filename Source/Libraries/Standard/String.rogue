@@ -223,6 +223,73 @@ class String
         return this == other
       endIf
 
+    method extract_string( format:String )->String
+      local (success,match_start,match_count) = _extraction_point( 0, count, format, 0, format.count, -1 )
+      if (not success) return null
+      return substring( match_start, match_count )
+
+    method extract_strings( format:String )->String[]
+      local result = String[]
+      if (extract_strings(format,result)) return result
+      return null
+
+    method extract_strings( format:String, result:String[] )->Logical
+      local i1 = result.count
+      local (success,match_start,match_count) = _extraction_point( 0, count, format, 0, format.count, false, result )
+      if (not success) return false
+      local i2 = result.count - 1
+      while (i1 < i2)
+        result.swap( i1, i2 )
+        ++i1
+        --i2
+      endWhile
+      return true
+
+    method _extraction_point( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32, found_match:Logical,
+        result=null:String[] )->(Logical,Int32,Int32)
+      if (fcount == 0)
+        if (remaining_count > 0 or not found_match) return (false,0,0)
+        return (true,0,0)
+      endIf
+
+      local r0 = f0 + 1
+      local rcount = fcount - 1
+      local ch = format[f0]
+      which (ch)
+        case '*':
+          forEach (n in 0..remaining_count)
+            local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, r0, rcount,
+              found_match, result )
+            if (success) return (success,match_start,match_count)
+          endForEach
+
+        case '$':
+          local m_start = i0
+          forEach (n in 0..remaining_count)
+            local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, r0, rcount,
+              true, result )
+            if (success)
+              if (result) result.add( substring(m_start,n) )
+              return (success,m_start,n)
+            endIf
+          endForEach
+
+        case '?':
+          if (remaining_count == 0) return (false,0,0)
+          ch = this[ i0 ]
+          return _extraction_point( i0+1, remaining_count-1, format, r0, rcount,
+            found_match, result )
+
+        others:
+          if (remaining_count == 0) return (false,0,0)
+          if (ch == this[i0])
+            return _extraction_point( i0+1, remaining_count-1, format, r0, rcount,
+              found_match, result )
+          endIf
+      endWhich
+
+      return (false,0,0)
+
     method from( i1:Int32 )->String
       return from( i1, count-1 )
 

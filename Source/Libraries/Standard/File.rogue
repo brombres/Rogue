@@ -642,6 +642,10 @@ class File
       return _matches_wildcard_pattern( filepath, 0, filepath.count, pattern, 0, pattern.count )
 
     method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32 )->Logical
+      # f0     - starting index in filepath
+      # fcount - remaining filepath count
+      # p0     - starting index in pattern
+      # pcount - remaining pattern count
       if (pcount == 0) return (fcount == 0)
 
       local remaining_pattern = pattern
