@@ -3088,7 +3088,11 @@ endAugment
 augment CmdLiteralInt64
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      writer.print( value ).print( "LL" )
+      if (value == Int64.minimum)
+        writer.print( "0x8000000000000000LL" )
+      else
+        writer.print( value ).print( "LL" )
+      endIf
 endAugment
 
 augment CmdLiteralInt32
