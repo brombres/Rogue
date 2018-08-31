@@ -2212,7 +2212,7 @@ augment Type
             if (is_compound and p.type.is_reference)
               writer.print( "ROGUE_DEF_COMPOUND_REF_PROP(")
               writer.print( p.type ).print(",").print( p.cpp_name )
-              writer.print( ");")
+              writer.println( ");")
             elseIf (p.is_native)
               writer.print_native_code( p.t, this, null, null, p.name )
             else
