@@ -324,9 +324,17 @@ augment Program
 
       # write dynamic dispatch method prototypes
       if (RogueC.all_methods_callable_dynamically)
-        forEach (sig in native_method_signature_list)
-          local m = native_method_signature_lookup[sig]  # one of the methods using this signature
-          if (m.called_dynamically or RogueC.all_methods_callable_dynamically)
+        local done = Set<<String>>()
+        forEach (type in type_list)
+          if (not type.method_list) nextIteration
+          forEach (m in type.method_list)
+            if (not m.cpp_typedef) nextIteration
+            if (not m.is_c_compatible) nextIteration
+            if (not m.type_context) nextIteration
+            if (not m.type_context.is_reference) nextIteration
+            if (done.contains(m.cpp_typedef)) nextIteration
+            done.add(m.cpp_typedef)
+
             writer.print_export( m )
             if (m.return_type and m.return_type.is_reference) writer.print( "void*" )
             else                                              writer.print( m.return_type )
@@ -340,7 +348,7 @@ augment Program
               writer.print( " p" ).print( i )
             endForEach
             writer.println( " );" )
-          endIf
+          endForEach
         endForEach
         writer.println
       endIf
