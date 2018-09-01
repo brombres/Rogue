@@ -108,13 +108,6 @@ class TokenType
     keyword_if                    : TokenType
     keyword_in                    : TokenType
     keyword_infinity              : TokenType
-    keyword_is                    : TokenType
-    keyword_isAspect              : TokenType
-    keyword_isClass               : TokenType
-    keyword_isCompound            : TokenType
-    keyword_isPrimitive           : TokenType
-    keyword_isReference           : TokenType
-    keyword_isString              : TokenType
     keyword_local                 : TokenType
     keyword_loop                  : TokenType
     keyword_NaN                   : TokenType
@@ -154,6 +147,14 @@ class TokenType
     keyword_downTo                : TokenType
     keyword_false                 : TokenType
     keyword_instanceOf            : TokenType
+    keyword_is                    : TokenType
+    keyword_isAspect              : TokenType
+    keyword_isClass               : TokenType
+    keyword_isComparable          : TokenType
+    keyword_isCompound            : TokenType
+    keyword_isPrimitive           : TokenType
+    keyword_isReference           : TokenType
+    keyword_isString              : TokenType
     keyword_meta                  : TokenType
     keyword_not                   : TokenType
     keyword_or                    : TokenType

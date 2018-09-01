@@ -161,6 +161,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdIsComparable )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdIsCompound )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -653,6 +659,7 @@ class Visitor
     method on_enter( cmd:CmdInlineNative )
     method on_enter( cmd:CmdIsAspect )
     method on_enter( cmd:CmdIsClass )
+    method on_enter( cmd:CmdIsComparable )
     method on_enter( cmd:CmdIsCompound )
     method on_enter( cmd:CmdIsPrimitive )
     method on_enter( cmd:CmdIsReference )
@@ -760,6 +767,7 @@ class Visitor
     method on_leave( cmd:CmdInlineNative )
     method on_leave( cmd:CmdIsAspect )
     method on_leave( cmd:CmdIsClass )
+    method on_leave( cmd:CmdIsComparable )
     method on_leave( cmd:CmdIsCompound )
     method on_leave( cmd:CmdIsPrimitive )
     method on_leave( cmd:CmdIsReference )
@@ -1261,6 +1269,10 @@ class Visitor
 
     method dispatch( cmd:CmdIsClass )
       cmd.operand = cmd.operand.dispatch( this )
+
+    method dispatch( cmd:CmdIsComparable )
+      cmd.left  = cmd.left.dispatch( this )
+      cmd.right = cmd.right.dispatch( this )
 
     method dispatch( cmd:CmdIsCompound )
       cmd.operand = cmd.operand.dispatch( this )

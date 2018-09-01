@@ -5885,6 +5885,36 @@ class CmdIsClass( t, operand:Cmd ) : Cmd
       return Program.type_Logical
 endClass
 
+class CmdIsComparable( t, left, right ) : CmdBinary
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsComparable( t, left.cloned(clone_args,new_t), right.cloned(clone_args,new_t) )
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
+    method resolve( scope:Scope )->Cmd
+      left = left.resolve( scope ).require_value
+      right = right.resolve( scope ).require_value
+      local left_type = left.type
+      local right_type = right.type
+
+      if (left_type.is_primitive and right_type.is_primitive) return CmdLiteralLogical( t, true )
+
+      local cmd = resolve_operator_method( "operator<", scope, left, left_type, right, right_type, &is_optional )
+      if (not cmd)
+        cmd = resolve_operator_method( "operator<>", scope, left, left_type, right, right_type, &is_optional )
+        if (not cmd )cmd = resolve_operator_method( "operator>", scope, right, right_type, left, left_type, &is_optional )
+      endIf
+
+      return CmdLiteralLogical( t, cmd? )
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+
 class CmdIsCompound( t, operand:Cmd ) : Cmd
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd

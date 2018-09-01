@@ -189,6 +189,7 @@ class Tokenizer
       TokenType.keyword_is                  = define( TokenType("is") )
       TokenType.keyword_isAspect            = define( TokenType("isAspect") )
       TokenType.keyword_isClass             = define( TokenType("isClass") )
+      TokenType.keyword_isComparable        = define( TokenType("isComparable") )
       TokenType.keyword_isCompound          = define( TokenType("isCompound") )
       TokenType.keyword_isPrimitive         = define( TokenType("isPrimitive") )
       TokenType.keyword_isReference         = define( TokenType("isReference") )

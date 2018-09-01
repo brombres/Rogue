@@ -34,10 +34,12 @@ class Tuple <<$T1,$T2>> (_1:$T1,_2:$T2) [compound]
       return true
 
     method operator< (other:Tuple<<$T1,$T2>>)->Logical
+      #if (isComparable(_1,_2))   # TODO: add in here and in all tuples
       if (_1 < other._1) return true
       if (_1 > other._1) return false
       if (_2 < other._2) return true
       if (_2 > other._2) return false
+      #endIf
       return false
 
     method cloned->this
