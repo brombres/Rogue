@@ -1875,7 +1875,7 @@ class Type
         endIf
       endIf
 
-      if (resolved) m.resolve
+      if (resolved) Program.methods_requiring_resolve.add( m )
 
     method injectGlobalMethod [api]
       local t = Program.vm.t
@@ -1886,6 +1886,7 @@ class Type
       parser.this_type = this
       parser.parse_method( &skip_add_to_type )  # sets this_method
       inject_global_method( parser.this_method )
+      Program.resolve_pending_methods
 
     method injectMethod [api]
       local t = Program.vm.t
@@ -1896,6 +1897,7 @@ class Type
       parser.this_type = this
       parser.parse_method( &skip_add_to_type )  # sets this_method
       inject_method( parser.this_method )
+      Program.resolve_pending_methods
 
     method inject_method( m:Method, at_index=null:Int32? )
       if (this.is_aspect) return
@@ -1992,7 +1994,7 @@ class Type
         endIf
       endIf
 
-      if (resolved) m.resolve
+      if (resolved) Program.methods_requiring_resolve.add( m )
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )
       # Apply augment to existing method

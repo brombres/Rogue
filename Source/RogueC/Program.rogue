@@ -76,6 +76,9 @@ class Program [essential singleton]
     vm = VM()
     metacode_hooks = StringTable<<CmdStatementList[]>>()
 
+    methods_requiring_resolve = Method[]
+    # Used by MethodTemplates
+
   METHODS
     method add_literal_string( value:String )->Int32
       if (not value) return 0
@@ -848,5 +851,11 @@ class Program [essential singleton]
       endIf
       if (not m_MethodInfo_call or not m_MethodInfo_call.is_used) return false
       return true
+
+    method resolve_pending_methods
+      if (methods_requiring_resolve.count)
+        (forEach in methods_requiring_resolve).resolve
+        methods_requiring_resolve.clear
+      endIf
 
 endClass

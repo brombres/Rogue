@@ -325,6 +325,8 @@ class MethodTemplates
         endForEach
       endForEach
 
+      Program.resolve_pending_methods
+
     method instantiate( name:String, specializer_count:Int32, t:Token, specialized_name:String, methods:Method[] )
       # This version with no parameter count is used during call resolution and only called when
       # no methods matching the specialized name (such as `get_property<<Int32>>`) are found.
@@ -343,6 +345,8 @@ class MethodTemplates
         endForEach
       endIf
 
+      Program.resolve_pending_methods
+
     method instantiate_overrides( key:String, t:Token, specialized_name:String )
       local group = templates[ key ]
       if (group)
@@ -355,5 +359,7 @@ class MethodTemplates
           endIf
         endForEach
       endIf
+
+      Program.resolve_pending_methods
 
 endClass
