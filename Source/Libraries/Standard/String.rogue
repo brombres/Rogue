@@ -224,11 +224,17 @@ class String
       endIf
 
     method extract_string( format:String )->String
+      # Example:
+      #   println "<tag name='abc'/>".extract_string( "*'$'*" )
+      #   # prints: abc
       local (success,match_start,match_count) = _extraction_point( 0, count, format, 0, format.count, -1 )
       if (not success) return null
       return substring( match_start, match_count )
 
     method extract_strings( format:String )->String[]
+      # Example:
+      #   println "position = (x,4)".extract_strings( "*($,$)" )
+      #   # prints: [x,4]
       local result = String[]
       if (extract_strings(format,result)) return result
       return null
