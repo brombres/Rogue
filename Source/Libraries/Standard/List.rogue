@@ -303,7 +303,7 @@ class List<<$DataType>> : GenericList
       return this
 
     method locate( value:$DataType, i1=0:Int32 )->Int32? [preferred]
-      if ($DataType isReference)
+      if (isReference($DataType))
         if (value is null)
           forEach (i of this from i1)
             if (value is this[i]) return i
@@ -351,7 +351,7 @@ class List<<$DataType>> : GenericList
 
     method locate_last( value:$DataType, i1=null:Int32? )->Int32?
       local starting_index = ?:{ i1 || count-1 }
-      if ($DataType isReference)
+      if (isReference($DataType))
         if (value is null)
           forEach (i of this from starting_index step -1)
             if (value is this[i]) return i
@@ -651,7 +651,7 @@ class List<<$DataType>> : GenericList
     method to->Value
       local result = @[]
       forEach (item in this)
-        if (item isReference)
+        if (isReference(item))
           if (item) result.add( item->Value )
           else      result.add( NullValue )
         else
@@ -673,7 +673,7 @@ class List<<$DataType>> : GenericList
     method unpack( values:Value )
       clear.reserve( values.count )
 
-      if (not ($DataType isAspect))
+      if (not isAspect($DataType))
         # Can't unpack aspect values because they're abstract types
 
         forEach (value in values)

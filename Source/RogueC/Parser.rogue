@@ -2890,18 +2890,6 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
-      elseIf (consume(TokenType.keyword_isAspect))
-        return parse_post_unary( CmdIsAspect(t,operand) )
-      elseIf (consume(TokenType.keyword_isClass))
-        return parse_post_unary( CmdIsClass(t,operand) )
-      elseIf (consume(TokenType.keyword_isCompound))
-        return parse_post_unary( CmdIsCompound(t,operand) )
-      elseIf (consume(TokenType.keyword_isPrimitive))
-        return parse_post_unary( CmdIsPrimitive(t,operand) )
-      elseIf (consume(TokenType.keyword_isReference))
-        return parse_post_unary( CmdIsReference(t,operand) )
-      elseIf (consume(TokenType.keyword_isString))
-        return parse_post_unary( CmdIsString(t,operand) )
       endIf
       return operand
 
@@ -3730,6 +3718,19 @@ class Parser
         must_consume( TokenType.symbol_close_paren )
         return CmdIsComparable( t, a, b )
 
+      elseIf (consume(TokenType.keyword_isAspect))
+        return CmdIsAspect( t, parse_isType_expression )
+      elseIf (consume(TokenType.keyword_isClass))
+        return CmdIsClass( t, parse_isType_expression )
+      elseIf (consume(TokenType.keyword_isCompound))
+        return CmdIsCompound( t, parse_isType_expression )
+      elseIf (consume(TokenType.keyword_isPrimitive))
+        return CmdIsPrimitive( t, parse_isType_expression )
+      elseIf (consume(TokenType.keyword_isReference))
+        return CmdIsReference( t, parse_isType_expression )
+      elseIf (consume(TokenType.keyword_isString))
+        return CmdIsString( t, parse_isType_expression )
+
       elseIf (consume(TokenType.meta_string))
         use builder=StringBuilder.pool
           must_consume( TokenType.symbol_open_paren )
@@ -3754,6 +3755,15 @@ class Parser
       else
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
+
+    method parse_isType_expression->Cmd
+      consume_eols
+      must_consume( TokenType.symbol_open_paren )
+      consume_eols
+      local expr = parse_expression
+      consume_eols
+      must_consume( TokenType.symbol_close_paren )
+      return expr
 
     method parse_ensure_statement->Cmd
       local t = read  # 'ensure'

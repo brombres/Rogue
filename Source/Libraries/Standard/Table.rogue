@@ -317,7 +317,7 @@ class Table<<$KeyType,$ValueType>>
       local result = @{}
       local cur = first_entry
       while (cur)
-        if (cur.value isReference)
+        if (isReference(cur.value))
           if (cur.value) result[ cur.key->String ] = cur.value->Value
           else           result[ cur.key->String ] = NullValue
         else
@@ -333,7 +333,7 @@ class Table<<$KeyType,$ValueType>>
     method unpack( values:Value )
       init
 
-      if ($KeyType isString and not ($ValueType isAspect))
+      if (isString($KeyType) and not isAspect($ValueType))
         # Value tables only have string keys
         # Can't unpack aspect values because they're abstract types
 

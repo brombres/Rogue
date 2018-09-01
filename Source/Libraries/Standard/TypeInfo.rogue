@@ -265,7 +265,7 @@ class TypeInfo
       endIf
 
       local i = property_info.index
-      if ($PropertyType isReference)
+      if (isReference($PropertyType))
         return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object as $PropertyType
       else
         return native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i]))" )->$PropertyType
@@ -535,7 +535,7 @@ class TypeInfo
       endIf
 
       local type = context.type_info
-      if ($PropertyType isReference)
+      if (isReference($PropertyType))
         return native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->$PropertyType
       else
         return native( "*(($($PropertyType)*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index]))" )->$PropertyType
@@ -600,7 +600,7 @@ class TypeInfo
       if (not property_info) return this
 
       local i = property_info.index
-      if ($PropertyType isReference)
+      if (isReference($PropertyType))
         native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i])) = $new_value;" )
       else
         native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i])) = $new_value;" )
@@ -649,7 +649,7 @@ class TypeInfo
       if (not property_info) return this
 
       local type = context.type_info
-      if ($PropertyType isReference)
+      if (isReference($PropertyType))
         native( "*((RogueObject**)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
       else
         native( "*(($($PropertyType)*)(((RogueByte*)(intptr_t)$context) + Rogue_types[$type->index].property_offsets[$property_info->index])) = $new_value;" )
@@ -853,7 +853,7 @@ class MethodInfo
       if (_return_type == -1)
         throw Error("Method does not return a value; Do not specify one using '->' or 'returns<<...>>'.")
       else
-        if ($RT isReference)
+        if (isReference($RT))
           if (not return_type.is_subclass(<<$RT>>))
             throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
           endIf
