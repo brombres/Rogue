@@ -13,6 +13,8 @@ class Build [singleton]
     ROGUEC_EXE         = "path/to/roguec"
     BUILD_EXE          = ".rogo/Build-Platform"
 
+    VERBOSE            = false
+
   METHODS
     method init
       which (System.os)
@@ -40,23 +42,23 @@ class Build [singleton]
       endWhich
 
       # Attempt to read override values from Local.mk
+      local overrides = String[]
       if (File.exists("Local.mk"))
-        local printed_header = false
         forEach (line in LineReader(File("Local.mk")))
           if (line.contains("="))
             local name  = line.before_first('=').trimmed
             local value = line.after_first('=').trimmed
             local p = type_info.find_property( name )
             if (p)
-              if (not printed_header)
-                printed_header = true
-                println "Local.mk overrides:"
-              endIf
-              println "$ = $" (name,value)
+              overrides.add( "$ = $" (name,value) )
               type_info.set_property( this, p, Value(value) )
             endIf
           endIf
         endForEach
+        if (VERBOSE and overrides.count)
+          println "Local.mk overrides:"
+          println (forEach in overrides)
+        endIf
       endIf
 
     method DEFAULT_CXX->String
