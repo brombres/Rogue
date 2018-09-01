@@ -192,8 +192,8 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method get( index:Int32 )->$DataType
-      return this.data[ index ]
+    method get( index:Int32 )->$DataType [macro]
+      this.data[ index ]
 
     method get( query:(Function($DataType)->Logical) )->$DataType[]
       local results = $DataType[]
