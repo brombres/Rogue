@@ -1086,9 +1086,9 @@ augment Program
                       |
                       |  def _make_accessors (n, t, o):
                       |    def accessor (self):
-                      |      return ctypes.cast(self.thisptr + o, t).contents.value
+                      |      return ctypes.cast(self.thisptr.value + o, t).contents.value
                       |    def mutator (self, value):
-                      |      ctypes.cast(self.thisptr + o, t).contents.value = value
+                      |      ctypes.cast(self.thisptr.value + o, t).contents.value = value
                       |    return (accessor,mutator)
                       |
                       |  for i,t in _rogue_type_index_to_pyclass.iteritems():

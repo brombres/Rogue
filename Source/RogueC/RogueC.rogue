@@ -103,6 +103,9 @@ $endIf
     todo_keywords = ["FIXME"]
     # Lines with comments containing the given keywords will be printed during compilation.
 
+    omit_line_numbers = false
+    # If true, don't emit #line directives
+
     compile_output    : Logical
     compiler_name     : String
     compiler_options  = String[]
@@ -290,6 +293,10 @@ $endIf
                    |
                    |  --main
                    |    Include a main() function in the output file.
+                   |
+                   |  --no-line-mapping
+                   |    Do not attempt to map Rogue line numbers to target code line numbers.
+                   |    (Mostly useful for debugging compiler errors.)
                    |
                    |  --output=<filepath>
                    |    Specify the destination folder and/or the base filename for generated C++
@@ -677,6 +684,9 @@ $endIf
             case "--main"
               if (value.count) throw RogueError( "Unexpected value for '--main' option." )
               generate_main = true
+
+            case "--no-line-mapping"
+              omit_line_numbers = true
 
             case "--package"
               if (not value.count)
