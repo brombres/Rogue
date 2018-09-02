@@ -566,7 +566,7 @@ class Parser
           attributes.add( Attribute.is_immutable )
         elseIf (consume("macro"))
           attributes.add( Attribute.is_macro )
-          attributes.add( Attribute.is_propagated )
+          #attributes.add( Attribute.is_propagated )
         elseIf (consume("mutating"))
           attributes.add( Attribute.is_mutating )
         elseIf (consume("nonAPI"))
@@ -1030,11 +1030,15 @@ class Parser
       consume_eols
 
       if (this_method.is_macro)
+
+        # Kludge to bridge old macro system to new
+        local is_native_macro = false
+        if (next_is(TokenType.keyword_return) and reader.peek(1).type is TokenType.keyword_native) reader.read
         if (consume(TokenType.keyword_native))
-          this_method.attributes.add( Attribute.is_native )
+          is_native_macro = true
         endIf
 
-        if (this_method.is_native)
+        if (this_method.is_native or is_native_macro)
           # macro native [(] "$this.fn($arg)" [)]
 
           local has_parens = consume( TokenType.symbol_open_paren )
@@ -1055,6 +1059,8 @@ class Parser
           if (next_is(TokenType.symbol_arrow))
             consume( TokenType.symbol_arrow )
             this_method.native_return_type = parse_type
+          elseIf (this_method.return_type)
+            this_method.native_return_type = this_method.return_type
           endIf
 
           # Native macros get code in two places:
@@ -1071,6 +1077,12 @@ class Parser
           # macro this.fn(arg)
           # macro ...
           parse_single_line_statements( this_method.statements )
+          if (this_method.statements.count == 1 and this_method.return_type)
+            local statement = this_method.statements.first
+            if (statement not instanceOf CmdReturn)
+              this_method.statements.[ clear, add(CmdReturn(statement.t,statement)) ]
+            endIf
+          endIf
         endIf
 
       else

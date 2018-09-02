@@ -65,7 +65,6 @@ class CyMethod
       return pyname
 
     method init ( builder:CyClass, context:Type, m:Method, static_dispatch=false:Logical, force=false:Logical )
-      if (m.is_macro) return this
       if (m.is_task) return this
       if (m.is_abstract) return this
       if (m.is_task_conversion) return this

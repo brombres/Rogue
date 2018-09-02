@@ -231,7 +231,7 @@ class Method
       return this
 
     method omit_output->Logical
-      if (is_native or is_macro or not is_used) return true
+      if (is_native or not is_used) return true
       if (is_abstract and not type_context.is_aspect)
         return (overriding_methods.count > 0)
       endIf
@@ -350,9 +350,7 @@ class Method
 
       resolve_statements
 
-      if (not is_macro)
-        introspection_call_handler = IntrospectionCallManager.handler( this )
-      endIf
+      introspection_call_handler = IntrospectionCallManager.handler( this )
 
       if (is_initializer)
         local return_t = t
@@ -528,7 +526,7 @@ class Method
 
     method validate
       # Perform miscellaneous validation
-      if (is_used and not is_macro)
+      if (is_used)
         if (overridden_method)
           if( index != overridden_method.index )
             @trace this, index, overridden_method, overridden_method.index

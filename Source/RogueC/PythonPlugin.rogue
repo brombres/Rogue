@@ -86,7 +86,6 @@ class PyMethod
       return pyname
 
     method init ( builder:PyClass, context:Type, m:Method, static_dispatch=false:Logical, force=false:Logical )
-      if (m.is_macro) return this
       if (m.is_task) return this
       if (m.is_abstract) return this
       if (m.is_task_conversion) return this
@@ -641,7 +640,6 @@ augment Program
             if (done.contains(cname)) nextIteration
             done.add(cname)
             if (not m.is_c_compatible) nextIteration
-            if (m.is_macro) nextIteration
             if (not m.is_used) nextIteration
             writer.print_export( m )
             writer.print( m.return_type )
@@ -1821,6 +1819,7 @@ augment Program
       # ctypes code, we recognize these special mangled names and
       # unmangle them.  This way, Python can access the macros, but within
       # Rogue, nothing changes (it still uses the macros).
+      #{
       forEach (type in type_list)
         forEach (m in type.method_list)
           if (not m.is_macro) nextIteration
@@ -1870,4 +1869,5 @@ augment Program
           m2.resolve
         endForEach
       endForEach
+      }#
 endAugment

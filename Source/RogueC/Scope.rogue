@@ -134,15 +134,14 @@ class Scope
       local cmd : Cmd
       if (m.is_global)
         # routine
-        if (m.is_native)
-          if (m.native_code)
-            context = context.resolve( this )
-            context.require_type_context
-            cmd = CmdCallInlineNativeRoutine( t, m, args )
-            if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
-          else
-            cmd = CmdCallNativeRoutine( t, m, args )
-          endIf
+        if (m.native_code)
+          context = context.resolve( this )
+          context.require_type_context
+          cmd = CmdCallInlineNativeRoutine( t, m, args )
+          if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
+
+        elseIf (m.is_native)
+          cmd = CmdCallNativeRoutine( t, m, args )
 
         elseIf (m.is_macro)
           if (macro_chain.contains(m)) throw t.error( "Illegal recursive macro definition." )
@@ -180,13 +179,12 @@ class Scope
 
       else
         # method
-        if (m.is_native)
-          if (m.native_code)
-            cmd = CmdCallInlineNativeMethod( t, context, m, args )
-            if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
-          else
-            cmd = CmdCallNativeMethod( t, context, m, args )
-          endIf
+        if (m.native_code)
+          cmd = CmdCallInlineNativeMethod( t, context, m, args )
+          if (m.native_return_type) cmd = cmd.cast_to( m.native_return_type, this )
+
+        elseIf (m.is_native)
+          cmd = CmdCallNativeMethod( t, context, m, args )
 
         elseIf (m.is_macro)
           if (macro_chain.contains(m)) throw t.error( "Illegal recursive macro definition." )

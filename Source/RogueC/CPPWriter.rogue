@@ -1161,23 +1161,21 @@ augment Program
       local method_param_names = Int32[]
       forEach (type in type_list)
         forEach (m in type.method_list.cloned.add(type.global_method_list))
-          if (not m.is_macro)
-            if (m.store_dynamically and m.is_used and not m.is_abstract)
-              method_names.add( m.name )
+          if (m.store_dynamically and m.is_used and not m.is_abstract)
+            method_names.add( m.name )
 
-              # parameter types
-              local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
-              if (not method_param_type_sigs.contains(sig))
-                method_param_type_sigs[sig] = method_param_types.count
-                method_param_types.add(m.parameters.mapped<<Int32>>( (l)=>(l.type.index) ))
-              endIf
+            # parameter types
+            local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+            if (not method_param_type_sigs.contains(sig))
+              method_param_type_sigs[sig] = method_param_types.count
+              method_param_types.add(m.parameters.mapped<<Int32>>( (l)=>(l.type.index) ))
+            endIf
 
-              # parameter names
-              sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
-              if (not method_param_name_sigs.contains(sig))
-                method_param_name_sigs[sig] = method_param_names.count
-                method_param_names.add(m.parameters.mapped<<Int32>>( (l)=>(Program.add_literal_string(l.name)) ))
-              endIf
+            # parameter names
+            sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+            if (not method_param_name_sigs.contains(sig))
+              method_param_name_sigs[sig] = method_param_names.count
+              method_param_names.add(m.parameters.mapped<<Int32>>( (l)=>(Program.add_literal_string(l.name)) ))
             endIf
           endIf
         endForEach
@@ -1232,44 +1230,40 @@ augment Program
       forEach (type in type_list)
         forEach (m at index in type.method_list)
           if (index >= type.dynamic_method_table_count) escapeForEach
-          if (not m.is_macro)
-            if (m.store_dynamically and m.is_used and not m.is_abstract)
-              local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
-              local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
-              local handler_index = -1
-              if (Program.using_introspection)
-                handler_index = m.introspection_call_handler.index
-              endIf
-
-              local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index )
-              method_info_lookup.add( entry )
-              method_info_index.add( method_info_lookup.index(entry) )
-              method_info_index_names.add( m->String )
-            else
-              local entry = '{-1,-1,-1,-1,-1,-1}'
-              method_info_lookup.add( entry )
-              method_info_index.add( method_info_lookup.index(entry) )
-              method_info_index_names.add( m->String )
+          if (m.store_dynamically and m.is_used and not m.is_abstract)
+            local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+            local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+            local handler_index = -1
+            if (Program.using_introspection)
+              handler_index = m.introspection_call_handler.index
             endIf
+
+            local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index )
+            method_info_lookup.add( entry )
+            method_info_index.add( method_info_lookup.index(entry) )
+            method_info_index_names.add( m->String )
+          else
+            local entry = '{-1,-1,-1,-1,-1,-1}'
+            method_info_lookup.add( entry )
+            method_info_index.add( method_info_lookup.index(entry) )
+            method_info_index_names.add( m->String )
           endIf
         endForEach
 
         forEach (m at index in type.global_method_list)
-          if (not m.is_macro)
-            if (m.store_dynamically and m.is_used and not m.is_abstract)
-              local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
-              local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
-              local handler_index = -1
-              if (Program.using_introspection)
-                handler_index = m.introspection_call_handler.index
-              endIf
-
-              local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index )
-              method_info_lookup.add( entry )
-              m.runtime_index = method_info_index.count
-              method_info_index.add( method_info_lookup.index(entry) )
-              method_info_index_names.add( m->String )
+          if (m.store_dynamically and m.is_used and not m.is_abstract)
+            local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+            local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+            local handler_index = -1
+            if (Program.using_introspection)
+              handler_index = m.introspection_call_handler.index
             endIf
+
+            local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index )
+            method_info_lookup.add( entry )
+            m.runtime_index = method_info_index.count
+            method_info_index.add( method_info_lookup.index(entry) )
+            method_info_index_names.add( m->String )
           endIf
         endForEach
       endForEach
@@ -2341,7 +2335,8 @@ augment Type
       forEach (m in global_method_list) determine_cpp_method_typedefs( m, buffer, list, lookup )
 
     method determine_cpp_method_typedefs( m:Method, buffer:StringBuilder, list:String[], lookup:Table<<String,Method>> )
-      if (not m.is_macro and m.store_dynamically and m.is_used)
+      if (m.store_dynamically and m.is_used)
+        #if (m.store_dynamically and m.is_used)
         buffer.clear
         if (m.return_type)
           if (m.return_type.is_reference) buffer.print( "void*" )
@@ -2381,10 +2376,11 @@ augment Type
     method print_dynamic_method_table_entries( at_index:Int32, writer:CPPWriter )->Int32
       dynamic_method_table_index = at_index
 
+      # Omit uncalled methods at the end
       local i2 = method_list.count - 1
       while (i2 > 0)
         local m = method_list[ i2 ]
-        if (not m.is_macro and m.store_dynamically and m.is_used) escapeWhile
+        if (m.store_dynamically and m.is_used) escapeWhile
         --i2
       endWhile
 
@@ -2392,17 +2388,15 @@ augment Type
       forEach (i in 0..i2)
         local m = method_list[i]
         #NOTE: method info in write_method_introspection_info must use this same order
-        if (not m.is_macro)
-          if (m.store_dynamically and m.is_used and not m.is_abstract)
-            # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
-            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
-          else
-            writer.print( "0," ).print( " // " ).print(m.type_context.name).print(".").print( m.signature )
-          endIf
-          if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
-          writer.println
-          ++at_index
+        if (m.store_dynamically and m.is_used and not m.is_abstract)
+          # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
+          writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
+        else
+          writer.print( "0," ).print( " // " ).print(m.type_context.name).print(".").print( m.signature )
         endIf
+        if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
+        writer.println
+        ++at_index
       endForEach
 
       dynamic_method_table_count = at_index - dynamic_method_table_index
@@ -2412,14 +2406,12 @@ augment Type
       print_type_name = true
       forEach (m in global_method_list)
         #NOTE: method info in write_method_introspection_info must use this same order
-        if (not m.is_macro)
-          if (m.store_dynamically and m.is_used and not m.is_abstract)
-            # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
-            writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
-            if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
-            writer.println
-            ++at_index
-          endIf
+        if (m.store_dynamically and m.is_used and not m.is_abstract)
+          # Note: can't cast multiple overloaded fns directly to void*, must go through fn pointer type first
+          writer.print( "(void*) (" ).print( m.cpp_typedef ).print(") ").print( m.cpp_name ).print( "," )
+          if (print_type_name) print_type_name = false; writer.print( " // " ).print( name )
+          writer.println
+          ++at_index
         endIf
       endForEach
       global_method_count = at_index - first_global_method_index

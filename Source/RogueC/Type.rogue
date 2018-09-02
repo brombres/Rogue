@@ -1362,8 +1362,8 @@ class Type
         endIf
       endIf
 
-      index_and_move_inline_to_end( global_method_list )
-      index_and_move_inline_to_end( method_list )
+      index_methods( global_method_list )
+      index_methods( method_list )
 
       Program.invoke_metacode( "Type.organized", this )
 
@@ -1395,20 +1395,12 @@ class Type
 
       forEach (base_type in base_types) base_type.cull_unused_methods
 
-      # Remove macros only to start with
-      local i = method_list.count - 1
-      while (i >= 0)
-        local m = method_list[i]
-        if (m.is_macro) method_list.remove( m )
-        --i
-      endWhile
-
       if (not has_extended_class)
         # Don't mess up the slots for extended classes.  No big deal since
         # code isn't actually generated for unused methods; cull_unused_methods()
         # merely prevents some extra 0's in the dynamic call table.
 
-        i = method_list.count - 1
+        local i = method_list.count - 1
         while (i >= 0)
           local m = method_list[i]
           if (not m.is_used)
@@ -1420,11 +1412,7 @@ class Type
         endWhile
       endIf
 
-      i = 0
-      forEach (m in method_list)
-        m.index = i
-        ++i
-      endForEach
+      forEach (m at i in method_list) m.index = i
 
     method has_global_references->Logical
       forEach (g in global_list)
@@ -2027,21 +2015,9 @@ class Type
         endIf
       endForEach
 
-    method index_and_move_inline_to_end( list:Method[] )
-      local i = list.count - 1
-      while (i >= 0)
-        local m = list[i]
-        if (m.is_macro)
-          list.remove( m )
-          list.add( m )
-        endIf
-        --i
-      endWhile
-
-      i = 0
-      forEach (m in list)
-        m.index = i
-        ++i
+    method index_methods( list:Method[] )
+      forEach (m at index in list)
+        m.index = index
       endForEach
 
     method omit_output->Logical
