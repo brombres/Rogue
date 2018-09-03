@@ -1,5 +1,3 @@
-class PrimitiveWorkBuffer : StringBuilder [singleton];
-
 class Real64 [primitive]
   GLOBAL METHODS
     method create( value:Real64 )->Real64
@@ -48,22 +46,26 @@ class Real64 [primitive]
       return this
 
     method decimal_digit_count->Int32
-      PrimitiveWorkBuffer.clear.print( this )
-      local dot = PrimitiveWorkBuffer.locate( '.' )
+      use buffer = StringBuilder.pool
+        buffer.print( this )
+        local dot = buffer.locate( '.' )
 
-      # NaN, +/- infinity
-      if (not dot.exists) return 0
+        # NaN, +/- infinity
+        if (not dot.exists) return 0
 
-      local start = dot.value + 1
-      local count = PrimitiveWorkBuffer.count
+        local start = dot.value + 1
+        local count = buffer.count
 
-      # Check for "3.0" etc.
-      if (count == start + 1 and PrimitiveWorkBuffer[start] == '0') return 0
+        # Check for "3.0" etc.
+        if (count == start + 1 and buffer[start] == '0') return 0
 
-      return (count - start)
+        return (count - start)
+      endUse
 
     method digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).count
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).count
+      endUse
 
     method floor->Real64 [macro]
       Math.floor( this )
@@ -165,7 +167,9 @@ class Real64 [primitive]
       return this->Int64.to_power_of_two->Real64
 
     method whole_digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).locate( '.' ).value
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).locate( '.' ).value
+      endUse
 
     method whole_part->Real64
       if (this >= 0) return floor
@@ -220,7 +224,9 @@ class Real32 [primitive]
       return this
 
     method digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).count
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).count
+      endUse
 
     method decimal_digit_count->Int32
       return this->Real64.decimal_digit_count
@@ -364,7 +370,9 @@ class Int64 [primitive]
       return this
 
     method digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).count
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).count
+      endUse
 
     method format( fmt:String, bits=64:Int32 )->String
       # fmt
@@ -615,7 +623,9 @@ class Int32 [primitive]
       return this
 
     method digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).count
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).count
+      endUse
 
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 32 )
@@ -909,7 +919,9 @@ class Byte [primitive]
       return this
 
     method digit_count->Int32
-      return PrimitiveWorkBuffer.clear.print( this ).count
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).count
+      endUse
 
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 8 )
