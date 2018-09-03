@@ -97,9 +97,11 @@ class Scanner : Reader<<Character>>
       return found
 
     method convert_crlf_to_newline
-      forEach (ch in writer=data.rewriter)
-        if (ch != 13) writer.write( ch )
-      endForEach
+      use writer = data.rewriter
+        forEach (ch in writer)
+          if (ch != 13) writer.write( ch )
+        endForEach
+      endUse
 
     method has_another->Logical
       return (position < count)

@@ -462,14 +462,16 @@ class Preprocessor
       endIf
 
       if (repeat_string_concatenation)
-        forEach (t in rewriter=tokens.rewriter)
-          if (t.type is TokenType.literal_string)
-            while (rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
-              t = t.type.create_token( t, t->String + rewriter.read->String )
-            endWhile
-          endIf
-          rewriter.write( t )
-        endForEach
+        use rewriter = tokens.rewriter
+          forEach (t in rewriter)
+            if (t.type is TokenType.literal_string)
+              while (rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
+                t = t.type.create_token( t, t->String + rewriter.read->String )
+              endWhile
+            endIf
+            rewriter.write( t )
+          endForEach
+        endUse
       endIf
 
     method read_define( keep_tokens:Logical, definitions:Definitions )
@@ -729,14 +731,15 @@ class Preprocessor
     method reprocess( tokens )->Token[]
       # All the heavy lifting has been done.  Just join any string literals that may now be
       # adjacent after a new template instance.
-      local rewriter = tokens.rewriter
-      while (rewriter.has_another)
-        local t = rewriter.read
-        while (t.type is TokenType.literal_string and rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
-          t = t.type.create_token( t, t->String + rewriter.read->String )
+      use rewriter = tokens.rewriter
+        while (rewriter.has_another)
+          local t = rewriter.read
+          while (t.type is TokenType.literal_string and rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
+            t = t.type.create_token( t, t->String + rewriter.read->String )
+          endWhile
+          rewriter.write( t )
         endWhile
-        rewriter.write( t )
-      endWhile
+      endUse
 
       return tokens
 endClass

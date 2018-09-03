@@ -449,69 +449,71 @@ class Type
       endIf
 
       local inherited_categories : Definition[]
-      forEach (base_type in rewriter=base_types.rewriter)
-        base_type.configure( scope, reference_t )
+      use rewriter = base_types.rewriter
+        forEach (base_type in rewriter)
+          base_type.configure( scope, reference_t )
 
-        if (not base_type.is_aspect)
-          if (is_aspect)
-            if (aspect_base_class)
-              throw t.error( "An aspect can only specify one base class ($ and $ are both specified)." (base_type,aspect_base_class))
-            else
-              aspect_base_class = base_type
-            endIf
-          elseIf (is_enum)
-            # Inherit category definitions while discarding the base type
-            if (not base_type.is_enum)
-              throw t.error( "Base type $ is not an enum - an enum can only extend other enums." (base_type.name) )
-            endIf
-
-            if (base_type.enum_properties)
-              ensure enum_properties
-              if (enum_properties.count)
-                # If this extended enum defines properties, make sure they begin with the same
-                # properties as the base enum defines.
-                contingent
-                  necessary (enum_properties.count >= base_type.enum_properties.count)
-                  forEach (base_p at index in base_type.enum_properties)
-                    local this_p = enum_properties[ index ]
-                    necessary (this_p.name == base_p.name and this_p.type.instance_of(base_p.type))
-                  endForEach
-                unsatisfied
-                  throw t.error( "Extended enum $ must begin its property declarations with the same properties declared in base enum $." (name,base_type.name))
-                endContingent
+          if (not base_type.is_aspect)
+            if (is_aspect)
+              if (aspect_base_class)
+                throw t.error( "An aspect can only specify one base class ($ and $ are both specified)." (base_type,aspect_base_class))
               else
-                forEach (base_p in base_type.enum_properties)
-                  enum_properties.add( base_p.cloned(this) )
-                endForEach
+                aspect_base_class = base_type
               endIf
-            endIf
+            elseIf (is_enum)
+              # Inherit category definitions while discarding the base type
+              if (not base_type.is_enum)
+                throw t.error( "Base type $ is not an enum - an enum can only extend other enums." (base_type.name) )
+              endIf
 
-            if (base_type.categories)
-              ensure inherited_categories( base_type.categories.count )
-              inherited_categories.reserve( base_type.categories.count )
-              forEach (c in base_type.categories) inherited_categories.add( c.cloned )
+              if (base_type.enum_properties)
+                ensure enum_properties
+                if (enum_properties.count)
+                  # If this extended enum defines properties, make sure they begin with the same
+                  # properties as the base enum defines.
+                  contingent
+                    necessary (enum_properties.count >= base_type.enum_properties.count)
+                    forEach (base_p at index in base_type.enum_properties)
+                      local this_p = enum_properties[ index ]
+                      necessary (this_p.name == base_p.name and this_p.type.instance_of(base_p.type))
+                    endForEach
+                  unsatisfied
+                    throw t.error( "Extended enum $ must begin its property declarations with the same properties declared in base enum $." (name,base_type.name))
+                  endContingent
+                else
+                  forEach (base_p in base_type.enum_properties)
+                    enum_properties.add( base_p.cloned(this) )
+                  endForEach
+                endIf
+              endIf
+
+              if (base_type.categories)
+                ensure inherited_categories( base_type.categories.count )
+                inherited_categories.reserve( base_type.categories.count )
+                forEach (c in base_type.categories) inherited_categories.add( c.cloned )
+              endIf
+            elseIf (is_compound)
+              throw t.error( "Compounds can only extend aspects." )
+            else
+              rewriter.write( base_type )
             endIf
-          elseIf (is_compound)
-            throw t.error( "Compounds can only extend aspects." )
           else
             rewriter.write( base_type )
           endIf
-        else
-          rewriter.write( base_type )
-        endIf
 
-        if (base_type is this)
-          throw t.error( "Class $ cannot extend itself." (this) )
-        endIf
+          if (base_type is this)
+            throw t.error( "Class $ cannot extend itself." (this) )
+          endIf
 
-        if (base_type.instance_of(this))
-          throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
-              (this,base_type,base_type,this) )
-        endIf
+          if (base_type.instance_of(this))
+            throw t.error( "Cyclic inheritance attempted - $ cannot extend $ because $ already extends $." ...
+                (this,base_type,base_type,this) )
+          endIf
 
-        # Inherit [api]
-        if (base_type.is_api) attributes.add( Attribute.is_api )
-      endForEach
+          # Inherit [api]
+          if (base_type.is_api) attributes.add( Attribute.is_api )
+        endForEach
+      endUse
 
       if (inherited_categories)
         ensure categories

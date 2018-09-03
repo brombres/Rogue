@@ -164,10 +164,11 @@ class List<<$DataType>> : GenericList
 
     method discard( discard_if:(Function($DataType)->Logical) )->this
       # Discards any item that passes the query function.
-      local rewriter = this.rewriter
-      forEach (value in rewriter)
-        if (not discard_if(value)) rewriter.write( value )
-      endForEach
+      use rewriter = this.rewriter
+        forEach (value in rewriter)
+          if (not discard_if(value)) rewriter.write( value )
+        endForEach
+      endUse
       return this
 
     method discard_from( index:Int32 )->this
@@ -261,15 +262,11 @@ class List<<$DataType>> : GenericList
       return count == 0
 
     method keep( keep_if:(Function($DataType)->Logical) )->this
-      local write_pos = 0
-      forEach (i of this)
-        local value = this[i]
-        if (keep_if(value))
-          this[write_pos] = value
-          ++write_pos
-        endIf
-      endForEach
-      discard_from( write_pos )
+      use rewriter = this.rewriter
+        forEach (value in rewriter)
+          if (keep_if(value)) rewriter.write( value )
+        endForEach
+      endUse
       return this
 
     method keeping( keep_if:(Function($DataType)->Logical) )->$DataType[]
@@ -460,9 +457,6 @@ class List<<$DataType>> : GenericList
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, 0 )
 
-    method rebuilder->ListRewriter<<$DataType>>
-      return ListRewriter<<$DataType>>( this )
-
     method reduced<<$ToType>>( reduce_fn:(Function(Int32,$DataType,$ToType)->$ToType) )->$ToType
       local result : $ToType
       forEach (index of this)
@@ -499,11 +493,12 @@ class List<<$DataType>> : GenericList
       # Returns the list of items that pass the query function while removing
       # them from this list.
       local result = $DataType[]
-      local rewriter = this.rewriter
-      forEach (value in rewriter)
-        if (query(value)) result.add( value )
-        else              rewriter.write( value )
-      endForEach
+      use rewriter = this.rewriter
+        forEach (value in rewriter)
+          if (query(value)) result.add( value )
+          else              rewriter.write( value )
+        endForEach
+      endUse
       return result
 
     method remove_at( index:Int32 )->$DataType
@@ -562,7 +557,7 @@ class List<<$DataType>> : GenericList
       return this
 
     method rewriter->ListRewriter<<$DataType>>
-      return ListRewriter<<$DataType>>( this )
+      return ListRewriter<<$DataType>>.acquire( this )
 
     method set( index:Int32, new_value:$DataType )
       this.data[ index ] = new_value
@@ -824,25 +819,48 @@ augment String[]
       return builder->String
 endAugment
 
-class ListRewriter<<$DataType>>
+class GenericListRewriter [abstract];
+
+class ListRewriter<<$DataType>> : GenericListRewriter
+  GLOBAL PROPERTIES
+    pool [threadLocal] : GenericListRewriter[]
+
   PROPERTIES
     list        : $DataType[]
     read_index  : Int32
     write_index : Int32
 
+  GLOBAL METHODS
+    method acquire( list:$DataType[] )->ListRewriter<<$DataType>>
+      if (pool and pool.count)
+        return (pool.remove_last as ListRewriter<<$DataType>>).reset( list )
+      else
+        return ListRewriter<<$DataType>>( list )
+      endIf
+
   METHODS
     method init( list )
+
+    method finish
+      list.discard_from( write_index )
 
     method has_another->Logical
       if (read_index < list.count)
         return true
       else
         # automatically finish up
-        list.discard_from( write_index )
+        finish
         return false
       endIf
 
       return (read_index < list.count)
+
+    method on_use->this
+      return this
+
+    method on_end_use
+      finish
+      (ensure pool).add( this )
 
     method peek( lookahead=0:Int32 )->$DataType
       return list[ read_index + lookahead ]
