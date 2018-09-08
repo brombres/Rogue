@@ -2585,6 +2585,31 @@ class CmdAccess : Cmd
         return null
       endIf
 
+      # Handle Dim<<Type>>
+      if (name.begins_with("Dim<<"))
+        local base_type = scope.find_type( name.after_first("<<").before_first(">>") )
+        if (base_type and args)
+          which (args.count)
+            case 1
+              return scope.find_type( base_type.name + "[]" )
+
+            case 2
+              if (args[1] instanceOf CmdCreateFunction)
+                return scope.find_type( base_type.name + "[]" )
+              else
+                return scope.find_type( base_type.name + "[][]" )
+              endIf
+
+            case 3
+              if (args[2] instanceOf CmdCreateFunction)
+                return scope.find_type( base_type.name + "[][]" )
+              else
+                return scope.find_type( base_type.name + "[][][]" )
+              endIf
+          endWhich
+        endIf
+      endIf
+
       return scope.find_type( name )
 
     method is_scoped_read_access->Logical
