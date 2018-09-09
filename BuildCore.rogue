@@ -329,9 +329,9 @@ class Build [singleton]
       rogo( &force )
 
     method clean
-      run @|rm -rf Source/RogueC/Build
-      run @|rm -rf .rogo
-      run @|rm -rf Programs/RogueC
+      File.delete( "Source/RogueC/Build" )
+      File.delete( ".rogo" )
+      File.delete( "Programs/RogueC" )
       delete_launchers
 endClass
 
