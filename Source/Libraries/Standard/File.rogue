@@ -1112,7 +1112,7 @@ class FileReader : Reader<<Byte>>
       return this
 
     method fp->IntPtr [macro]
-      native "$this->fp"
+      native("$this->fp")->IntPtr
 
     method has_another->Logical
       return (position < count)
@@ -1244,7 +1244,7 @@ class FileWriter : Writer<<Byte>>
       return this
 
     method fp->IntPtr [macro]
-      native( "$this->fp" )
+      native( "$this->fp" )->IntPtr
 
     method open( filepath, append=false:Logical )->Logical
       close
