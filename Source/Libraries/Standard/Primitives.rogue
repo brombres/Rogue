@@ -344,7 +344,7 @@ class Int64 [primitive]
       0x7FFFffffFFFFffff
 
     method minimum->Int64 [macro]
-      native("(0x8000000000000000LL)")->Int64
+      native("(-9223372036854775807LL - 1)")->Int64
 
   METHODS
     method abs->Int64
