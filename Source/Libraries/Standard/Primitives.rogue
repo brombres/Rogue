@@ -692,7 +692,7 @@ class Int32 [primitive]
       return '0'
 
     method to_binary_string( digits=32:Int32 )->String
-      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 2, digits, StringBuilder() )->String
 
     method to_hex_character->Character
       if (this < 0 or this > 35) return '0'
@@ -700,10 +700,10 @@ class Int32 [primitive]
       return Character( 'A' + (this-10) )
 
     method to_hex_string( digits=8:Int32 )->String
-      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 16, digits, StringBuilder() )->String
 
     method to_octal_string( digits=11:Int32 )->String
-      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 8, digits, StringBuilder() )->String
 
     method to_power_of_two->Int32
       if (this & 0xC0000000 or not this) return this
@@ -833,13 +833,13 @@ class Character [primitive]
       return this
 
     method to_binary_string( digits=16:Int32 )->String
-      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 2, digits, StringBuilder() )->String
 
     method to_hex_string( digits=4:Int32 )->String
-      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 16, digits, StringBuilder() )->String
 
     method to_octal_string( digits=6:Int32 )->String
-      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 8, digits, StringBuilder() )->String
 
     method to_power_of_two->Character
       return this->Int32.to_power_of_two->Character
@@ -976,16 +976,16 @@ class Byte [primitive]
       return Value( this->Int32 )
 
     method to_binary_string( digits=8:Int32 )->String
-      return (this->Int64).print_in_power2_base( 2, digits, StringBuilder() )->String
+      return (this->Int64 & 0xFF).print_in_power2_base( 2, digits, StringBuilder() )->String
 
     method to_hex_character->Character
       return Int32(this).to_hex_character
 
     method to_hex_string( digits=2:Int32 )->String
-      return (this->Int64).print_in_power2_base( 16, digits, StringBuilder() )->String
+      return (this->Int64 & 0xFF).print_in_power2_base( 16, digits, StringBuilder() )->String
 
     method to_octal_string( digits=3:Int32 )->String
-      return (this->Int64).print_in_power2_base( 8, digits, StringBuilder() )->String
+      return (this->Int64 & 0xFF).print_in_power2_base( 8, digits, StringBuilder() )->String
 
     method to_power_of_two->Byte
       return this->Int32.to_power_of_two->Byte
