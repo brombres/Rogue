@@ -287,12 +287,12 @@ class PyClass
         return n + "_"
       endIf
       if (n == 'to_String') return '__str__'
-      if (n == 'operator==') return '_eq_'
-      if (n == 'operator<=') return '_le_'
-      if (n == 'operator>=') return '_ge_'
-      if (n == 'operator!=') return '_ne_'
-      if (n == 'operator<') return '_lt_'
-      if (n == 'operator>') return '_gt_'
+      if (n == 'operator==') return '__eq__'
+      if (n == 'operator<=') return '__le__'
+      if (n == 'operator>=') return '__ge__'
+      if (n == 'operator!=') return '__ne__'
+      if (n == 'operator<') return '__lt__'
+      if (n == 'operator>') return '__gt__'
       if (n == 'operator+') return '_add_'
       #if (n == 'operator<>') return '_cmp_' # Doesn't work in Rogue yet?
       #if (n == 'hash_code') return '__hash__' # Handle this in Py base class
@@ -850,6 +850,14 @@ augment Program
                       |
                       |import ctypes
                       |
+                      |import functools
+                      |
+                      |def _total_ordering (cls):
+                      |  try:
+                      |    return functools.total_ordering(cls)
+                      |  except ValueError:
+                      |    return cls
+                      |
                       |def _load ():
                       |  global _lib
                       |  global _plib
@@ -1082,12 +1090,18 @@ augment Program
                       |    "Character" : ctypes.c_int32
                       |  }
                       |
-                      |  def _make_accessors (n, t, o):
+                      |  def _check_mutator_type (o, ti):
+                      |    if o._rogue_type_index_ == ti: return o.thisptr.value
+                      |    raise RuntimeError("Object %s is not of expected type" % (o,))
+                      |
+                      |  def _make_accessors (n, t, o, ref):
                       |    def accessor (self):
                       |      return ctypes.cast(self.thisptr.value + o, t).contents.value
                       |    def mutator (self, value):
                       |      ctypes.cast(self.thisptr.value + o, t).contents.value = value
-                      |    return (accessor,mutator)
+                      |    if ref is None: return (accessor,mutator)
+                      |    return (lambda self: get_wrapper(accessor(self)),
+                      |            lambda self,value: mutator(self, _check_mutator_type(value, ref)))
                       |
                       |  for i,t in _rogue_type_index_to_pyclass.iteritems():
                       |    for pi in xrange(0, _lib.pyrogue_get_property_count(i)):
@@ -1096,13 +1110,16 @@ augment Program
                       |      if o == -1: continue # It should be an aspect
                       |      ti = _lib.pyrogue_get_property_type_index(i, pi)
                       |      if _lib.pyrogue_type_is_reference(ti):
-                      |        ct = _RogueObjectPtr
+                      |        #TODO: Special handling for String?
+                      |        ref = ti
+                      |        ct = ctypes.POINTER(_RogueObjectPtr)
                       |      else:
+                      |        ref = None
                       |        tt = _lib.pyrogue_get_type(ti)
                       |        tn = pyrogue_get_string(_lib.RogueType_name(tt))
                       |        ct = ctypes.POINTER(_tn_to_ct.get(tn))
                       |        if ct is None: continue
-                      |      setattr(t, n, property(*_make_accessors(n, ct, o)))
+                      |      setattr(t, n, property(*_make_accessors(n, ct, o, ref)))
                       |
                       |# Method overload machinery
                       |class OverloadException (RuntimeError):
@@ -1432,6 +1449,7 @@ augment Program
           endForEach
           local fname = func.pyname
           if (not fname.begins_with("_")) fname = "_" + fname
+          if (fname.begins_with("__")) fname = "_" + func.pyclass + fname
           fname = "$.$_$_" (func.pyclass, fname, fnum)
           writer.print "[$], [$], [$], $, $ )" (",".join(func.py_types), ",".join(names), ",".join(func.defaults), fname, select{func.is_static_method:"True" || "False"})
         endForEach
@@ -1652,6 +1670,7 @@ augment Program
         if (cyclass.type.is_function) bases.add("_PyDelegate")
         local base = ", ".join(bases)
 
+        writer.println "@_total_ordering"
         writer.println "class $ ($):" (cyclass.pytype, base)
         writer.println  "  _rogue_type_index_ = $" (cyclass.type.index)
 
