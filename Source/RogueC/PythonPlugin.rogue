@@ -287,12 +287,12 @@ class PyClass
         return n + "_"
       endIf
       if (n == 'to_String') return '__str__'
-      if (n == 'operator==') return '_eq_'
-      if (n == 'operator<=') return '_le_'
-      if (n == 'operator>=') return '_ge_'
-      if (n == 'operator!=') return '_ne_'
-      if (n == 'operator<') return '_lt_'
-      if (n == 'operator>') return '_gt_'
+      if (n == 'operator==') return '__eq__'
+      if (n == 'operator<=') return '__le__'
+      if (n == 'operator>=') return '__ge__'
+      if (n == 'operator!=') return '__ne__'
+      if (n == 'operator<') return '__lt__'
+      if (n == 'operator>') return '__gt__'
       if (n == 'operator+') return '_add_'
       #if (n == 'operator<>') return '_cmp_' # Doesn't work in Rogue yet?
       #if (n == 'hash_code') return '__hash__' # Handle this in Py base class
@@ -849,6 +849,14 @@ augment Program
                       |import sys,os
                       |
                       |import ctypes
+                      |
+                      |import functools
+                      |
+                      |def _total_ordering (cls):
+                      |  try:
+                      |    return functools.total_ordering(cls)
+                      |  except ValueError:
+                      |    return cls
                       |
                       |def _load ():
                       |  global _lib
@@ -1441,6 +1449,7 @@ augment Program
           endForEach
           local fname = func.pyname
           if (not fname.begins_with("_")) fname = "_" + fname
+          if (fname.begins_with("__")) fname = "_" + func.pyclass + fname
           fname = "$.$_$_" (func.pyclass, fname, fnum)
           writer.print "[$], [$], [$], $, $ )" (",".join(func.py_types), ",".join(names), ",".join(func.defaults), fname, select{func.is_static_method:"True" || "False"})
         endForEach
@@ -1661,6 +1670,7 @@ augment Program
         if (cyclass.type.is_function) bases.add("_PyDelegate")
         local base = ", ".join(bases)
 
+        writer.println "@_total_ordering"
         writer.println "class $ ($):" (cyclass.pytype, base)
         writer.println  "  _rogue_type_index_ = $" (cyclass.type.index)
 
