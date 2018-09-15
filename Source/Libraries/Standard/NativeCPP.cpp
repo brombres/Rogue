@@ -1109,14 +1109,14 @@ RogueString* RogueString_validate( RogueString* THIS )
     }
   }
 
-  if (i != byte_count)
-  {
-    ROGUE_LOG_ERROR( "*** RogueString validation error - invalid UTF8 (%d/%d):\n", i, byte_count );
-    ROGUE_LOG_ERROR( "%02x\n", utf8[0] );
-    ROGUE_LOG_ERROR( "%s\n", utf8 );
-    utf8[ i ] = 0;
-    Rogue_print_stack_trace();
-  }
+  //if (i != byte_count)
+  //{
+  //  ROGUE_LOG_ERROR( "*** RogueString validation error - invalid UTF8 (%d/%d):\n", i, byte_count );
+  //  ROGUE_LOG_ERROR( "%02x\n", utf8[0] );
+  //  ROGUE_LOG_ERROR( "%s\n", utf8 );
+  //  utf8[ i ] = 0;
+  //  Rogue_print_stack_trace();
+  //}
 
   THIS->byte_count = i;
   THIS->character_count = character_count;
