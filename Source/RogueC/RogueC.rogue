@@ -1,4 +1,4 @@
-$define ROGUE_RELEASE_VERSION "1.4.8"
+$define ROGUE_RELEASE_VERSION "1.4.9"
 
 $include "Version.rogue" [optional]
 
