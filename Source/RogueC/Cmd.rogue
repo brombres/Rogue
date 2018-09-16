@@ -1322,7 +1322,10 @@ class CmdForEach : CmdControlStructure
 
         local result = CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements )
         result.set_control_logic( this )
-        result.add_control_var( collection_var )
+        if (not (first_cmd and step_size <= -1))
+          # 'forEach (i of list from n step -1)' doesn't need to use 'list' as a control var
+          result.add_control_var( collection_var )
+        endIf
         result.add_control_var( index_var )
         if (last_var) result.add_control_var( last_var )
         result.add_upkeep( modifier )
