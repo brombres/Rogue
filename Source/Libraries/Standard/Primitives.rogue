@@ -686,10 +686,19 @@ class Int32 [primitive]
     method to->Value
       return Value( this )
 
-    method to_digit->Character
-      if (this >= 0 and this <= 9)   return (this + '0')->Character
-      if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
-      return '0'
+    method to_digit( &base64 )->Character
+      if (base64)
+        if (this >= 0  and this <= 25) return (this + 'A')->Character
+        if (this >= 26 and this <= 51) return ((this-26) + 'a')->Character
+        if (this >= 52 and this <= 61) return ((this-52) + '0')->Character
+        if (this == 62) return '+'
+        if (this == 63) return '/'
+        return '='
+      else
+        if (this >= 0 and this <= 9)   return (this + '0')->Character
+        if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
+        return '0'
+      endIf
 
     method to_binary_string( digits=32:Int32 )->String
       return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 2, digits, StringBuilder() )->String
@@ -773,6 +782,9 @@ class Character [primitive]
              (this >= 'a' and this <= 'z') or
              (this >= 'A' and this <= 'Z')
 
+    method is_base64_digit->Logical
+      return is_alphanumeric or this == '+' or this == '/'
+
     method is_identifier( &start, &allow_dollar )->Logical
       if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
       if (not start and (this >= '0' and this <= '9')) return true
@@ -831,6 +843,14 @@ class Character [primitive]
       if (octal)  return to_octal_string( select{digits||6} )
       if (binary) return to_binary_string( select{digits||16} )
       return this
+
+    method to_base64_value->Int32
+      if (this >= 'A' and this <= 'Z') return (this - 'A')
+      if (this >= 'a' and this <= 'z') return 26 + (this - 'a')
+      if (this >= '0' and this <= '9') return 52 + (this - '0')
+      if (this == '+') return 62
+      if (this == '/') return 63
+      return 0
 
     method to_binary_string( digits=16:Int32 )->String
       return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 2, digits, StringBuilder() )->String

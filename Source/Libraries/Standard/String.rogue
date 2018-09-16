@@ -205,6 +205,28 @@ class String
     method count->Int32
       return native( '$this->character_count' )->Int32
 
+    method decode_base64->Byte[]
+      local builder = StringBuilder( count+2 )
+      forEach (ch in this)
+        if (ch.is_base64_digit) builder.print( ch )
+      endForEach
+      local remove_count = 0
+      while ((builder.count & 3) != 0) builder.print( '=' ); ++remove_count
+
+      local base64 = builder->String
+      local output_count = (base64.count * 3) / 4
+
+      local result = Byte[]( output_count )
+      local writer = BitWriter( result )
+      local reader = base64.reader
+      while (reader.has_another)
+        loop (4) writer.write( reader.read.to_base64_value, 6 )
+      endWhile
+      writer.flush
+
+      loop (remove_count) result.remove_last
+      return result
+
     method ends_with( ch:Character )->Logical
       return (count > 0 and this[count-1] == ch)
 

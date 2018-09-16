@@ -791,6 +791,20 @@ augment Byte[]
 
       return this
 
+    method to_base64->String
+      local base64_count = ((count+2) / 3) * 4
+      local result = StringBuilder( base64_count )
+      local reader = BitReader( this )
+      while (reader.has_another(6))
+        result.print( reader.read(6).to_digit(&base64) )
+      endWhile
+      if (reader.buffer_count)
+        local available_bits = reader.buffer_count
+        result.print( (reader.read(available_bits) :<<: (6-available_bits)).to_digit(&base64) )
+      endIf
+      while ((result.count & 3) != 0) result.print('=')
+      return String( result )
+
     method to_hex_string->String
       # Returns a string of hexadecimal digit pairs encoding each byte.
       #

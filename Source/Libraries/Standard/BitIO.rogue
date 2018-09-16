@@ -13,11 +13,23 @@ class BitReader
     method has_another->Logical
       return buffer_count or reader.has_another
 
-    method read( nbits:Int32 )->Int32
-      while (buffer_count < nbits)
+    method has_another( nbits:Int32 )->Logical
+      while (buffer_count < nbits and reader.has_another)
         bit_buffer = (bit_buffer :<<: 8) | reader.read
         buffer_count += 8
       endWhile
+      return (buffer_count >= nbits)
+
+    method read( nbits:Int32 )->Int32
+      has_another( nbits )  # buffer enough bits
+
+      if (buffer_count <= nbits)
+        local result = bit_buffer & ((Int64(1):<<:buffer_count)-1)
+        buffer_count = 0
+        bit_buffer = 0
+        return result
+      endIf
+
       buffer_count -= nbits
       return (bit_buffer :>>: buffer_count) & ((Int64(1):<<:nbits)-1)
 endClass
