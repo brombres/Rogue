@@ -946,6 +946,65 @@ augment Program
       writer.print( "RogueString* Rogue_literal_strings[" ).print( Program.literal_string_list.count ).println( "];" );
       writer.println
 
+      block
+        writer.print( "const char* Rogue_literal_c_strings[" ).print( Program.literal_string_list.count ).println( "] =" );
+        writer.println( "{" )
+        writer.indent += 2
+        local is_first = true
+        forEach (st in Program.literal_string_list)
+          if (is_first) is_first = false
+          else          writer.println( "," )
+          writer.print_literal_string( st )
+        endForEach
+        writer.println
+        writer.indent -= 2
+        writer.println( "};" )
+        writer.println
+      endBlock
+
+      block
+        local accessible_type_count =  0
+        forEach (type in type_list)
+          if (not type.omit_output or (type.is_native and not type.is_array))
+            ++accessible_type_count;
+          endIf
+        endForEach
+        writer.print( "const int Rogue_accessible_type_count = " ).print( accessible_type_count ).println( ";" )
+        writer.println
+
+        writer.print( "RogueType** Rogue_accessible_type_pointers[" ).print( accessible_type_count ).println( "] =" );
+        writer.println( "{" )
+        writer.indent += 2
+        local is_first = true
+        forEach (type in type_list)
+          if (not type.omit_output or (type.is_native and not type.is_array))
+            if (is_first) is_first = false
+            else          writer.println( "," )
+            writer.print( "&RogueType" ).print( type.cpp_name )
+          endIf
+        endForEach
+        writer.println
+        writer.indent -= 2
+        writer.println( "};" )
+        writer.println
+
+        writer.print( "const int Rogue_accessible_type_indices[" ).print( accessible_type_count ).println( "] =" );
+        writer.println( "{" )
+        writer.indent += 2
+        is_first = true
+        forEach (type at i in type_list)
+          if (not type.omit_output or (type.is_native and not type.is_array))
+            if (is_first) is_first = false
+            else          writer.println( "," )
+            writer.print( i )
+          endIf
+        endForEach
+        writer.println
+        writer.indent -= 2
+        writer.println( "};" )
+        writer.println
+      endBlock
+
       forEach (type in type_list) type.print_global_method_definitions( writer )
       writer.println
 
@@ -970,23 +1029,18 @@ augment Program
                       |
 
 
-      # Create types
-      forEach (type in type_list)
-        if (not type.omit_output or (type.is_native and not type.is_array))
-          writer.print("RogueType").print(type.cpp_name).print(" = &Rogue_types[ ").print(type.index).println(" ];")
-          # TODO
-        endIf
-      endForEach
+      # Set up types
+      writer.println @|for (int i=0; i<Rogue_accessible_type_count; ++i)
+                      |{
+                      |  *(Rogue_accessible_type_pointers[i]) = &Rogue_types[Rogue_accessible_type_indices[i]];
+                      |}
       writer.println
 
-      forEach (i of Program.literal_string_list)
-        writer.print( "Rogue_define_literal_string( " ).print(i)
-        writer.print( ", " )
-        local st = Program.literal_string_list[i]
-        writer.print_literal_string( st )
-        writer.print( ", " ).print( st.byte_count )
-        writer.print( " ); // ST" ).println( i )
-      endForEach
+      # Set up literal strings
+      writer.println @|for (int i=0; i<Rogue_literal_string_count; ++i)
+                      |{
+                      |  Rogue_define_literal_string( i, Rogue_literal_c_strings[i], -1 );
+                      |}
       writer.println
 
       # End of configure()
