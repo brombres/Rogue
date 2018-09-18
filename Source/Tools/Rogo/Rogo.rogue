@@ -131,6 +131,7 @@ if (not buildfiles.count)
        |    endWhile
        |    println "ERROR: No such command '$'." (args.first)
        |    println
+       |    System.command_line_arguments.clear
        |    rogo_help
        |  else
        |    rogo_default
