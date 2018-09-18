@@ -251,24 +251,33 @@ local base_name = exe   # e.g. Build
 if (System.os == "Windows") exe += ".exe"
 else                        exe += "-" + System.os  # e.g. Build-macOS
 
+
 local needs_recompile = buildfiles.any_newer_than( exe )
 block
-  if (not needs_recompile)
-    # Check other dependencies
+  local dependencies = StringLookupList()
+  scan_and_rewrite( File(forEach in buildfiles), dependencies, &scan_only )
 
-    local dependencies = StringLookupList()
-    scan_and_rewrite( File(forEach in buildfiles), dependencies, &scan_only )
-
-    forEach (pattern in dependencies)
-      local listing = File.listing( pattern, &files )
-      forEach (dependency in listing)
-        if (File.is_newer_than(dependency,exe))
-          needs_recompile = true
-          escapeBlock
-        endIf
-      endForEach
+  local i = 0
+  while (i < dependencies.count)
+    local pattern = dependencies[ i ]
+    local listing = File.listing( pattern, &files )
+    forEach (dependency in listing)
+      if (File.filename(dependency).begins_with("Build") and not buildfiles.contains(dependency))
+        scan_and_rewrite( dependency, dependencies, &scan_only )
+      endIf
     endForEach
-  endIf
+    ++i
+  endWhile
+
+  forEach (pattern in dependencies)
+    local listing = File.listing( pattern, &files )
+    forEach (dependency in listing)
+      if (File.is_newer_than(dependency,exe))
+        needs_recompile = true
+        escapeBlock
+      endIf
+    endForEach
+  endForEach
 endBlock
 
 if (needs_recompile)
