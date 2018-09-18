@@ -17,13 +17,19 @@ class Files
       add( pattern, &=ignore_hidden, &=include_folders )
 
     method add( pattern:String, &ignore_hidden=true, &include_folders )->this
-      forEach (listing_filepath in File.listing(base_folder+pattern,&=ignore_hidden))
-        if (not filepaths.contains(listing_filepath))
-          if (include_folders or not File.is_folder(listing_filepath))
-            filepaths.add( listing_filepath )
+      local target = base_folder+pattern
+      if (File.is_folder(target))
+        forEach (listing_filepath in File.listing(base_folder+pattern,&=ignore_hidden))
+          if (not filepaths.contains(listing_filepath))
+            if (include_folders or not File.is_folder(listing_filepath))
+              filepaths.add( listing_filepath )
+            endIf
           endIf
-        endIf
-      endForEach
+        endForEach
+
+      elseIf (File.exists(target))
+        filepaths.add( target )
+      endIf
 
       return this
 
