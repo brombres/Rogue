@@ -26,13 +26,13 @@ class Process
           return PosixProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
       endWhich
 
-    method run( cmd:String, &inherit_environment )->ProcessOutput
-      return run( Process(cmd,&readable,&is_blocking,&=inherit_environment) )
+    method run( cmd:String, &inherit_environment, &writable )->ProcessResult
+      return run( Process(cmd,&readable,&=writable,&is_blocking,&=inherit_environment) )
 
-    method run( args:String[], &inherit_environment )->ProcessOutput
-      return run( Process(args, &readable, &is_blocking, &=inherit_environment) )
+    method run( args:String[], &inherit_environment, &writable )->ProcessResult
+      return run( Process(args, &readable, &=writable, &is_blocking, &=inherit_environment) )
 
-    method run( process:Process )->ProcessOutput
+    method run( process:Process )->ProcessResult
       process.finish
 
       local output_bytes = Byte[]
@@ -45,7 +45,7 @@ class Process
         while (process.error_reader.has_another) error_bytes.add( process.error_reader.read )
       endIf
 
-      return ProcessOutput( process.exit_code, output_bytes, error_bytes )
+      return ProcessResult( process.exit_code, output_bytes, error_bytes )
 
   METHODS
     method launch( &readable, &writable, &inherit_environment )->Logical
@@ -656,7 +656,7 @@ class WindowsProcessWriter : Writer<<Byte>>
       return this
 endClass
 
-class ProcessOutput
+class ProcessResult
   PROPERTIES
     exit_code     : Int32
     output_bytes  : Byte[]
