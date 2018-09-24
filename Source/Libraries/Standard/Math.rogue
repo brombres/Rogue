@@ -11,7 +11,7 @@ class Math
       return native('atan((double)$n)')->Real64
 
     method atan2( y:Real64, x:Real64 )->Real64 [macro]
-      return native('atan2((double)$y,(double)$)->Real64x)')->Real64
+      return native('atan2((double)$y,(double)$x)')->Real64
 
     method ceiling( n:Real64 )->Real64 [macro]
       return native('ceil((double)$n)')->Real64
