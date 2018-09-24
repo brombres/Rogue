@@ -189,7 +189,7 @@ class JSONParser
       return buffer->String.consolidated
 
     method hex_character_to_value( ch:Character )->Int32 [macro]
-      ch.to_number
+      return ch.to_number
 
     method parse_hex_quad->Character
       local code = 0

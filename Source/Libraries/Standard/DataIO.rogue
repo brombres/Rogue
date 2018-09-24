@@ -76,7 +76,7 @@ class DataReader : Reader<<Byte>>
       endWhich
 
     method read_byte->Byte [macro]
-      this.read
+      return this.read
 
     method read_logical->Logical
       return (read != 0)
@@ -207,7 +207,7 @@ class DataWriter : Writer<<Byte>>
       endIf
 
     method write_byte( value:Byte )->this [macro]
-      this.write( value )
+      return this.write( value )
 
     method write_logical( value:Logical )->this
       if (value) return write( 1 )

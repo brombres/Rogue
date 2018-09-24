@@ -141,22 +141,22 @@ class TimeInterval( total_seconds:Real64 ) [compound]
 
   METHODS
     method days->Int32 [macro]
-      Int32( this.total_seconds.abs / (3600*24) )
+      return Int32( this.total_seconds.abs / (3600*24) )
 
     method hours->Int32 [macro]
-      Int32( (this.total_seconds.abs % (3600*24)) / 3600 )
+      return Int32( (this.total_seconds.abs % (3600*24)) / 3600 )
 
     method is_negative->Logical [macro]
-      (this.total_seconds.abs < 0)
+      return (this.total_seconds.abs < 0)
 
     method minutes->Int32 [macro]
-      Int32( (this.total_seconds.abs % 3600) / 60 )
+      return Int32( (this.total_seconds.abs % 3600) / 60 )
 
     method seconds->Int32 [macro]
-      Int32( this.total_seconds.abs % 60 )
+      return Int32( this.total_seconds.abs % 60 )
 
     method milliseconds->Int32 [macro]
-      Int32( (this.total_seconds.abs * 1000) % 1000 )
+      return Int32( (this.total_seconds.abs * 1000) % 1000 )
 
     method operator<( other:TimeInterval )->Logical
       return (total_seconds < other.total_seconds)

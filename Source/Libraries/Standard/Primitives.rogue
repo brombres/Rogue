@@ -30,7 +30,7 @@ class Real64 [primitive]
       else           return -this
 
     method ceiling->Real64 [macro]
-      Math.ceiling( this )
+      return Math.ceiling( this )
 
     method clamped( low:Real64, high:Real64 )->Real64
       if (this < low)  return low
@@ -68,7 +68,7 @@ class Real64 [primitive]
       endUse
 
     method floor->Real64 [macro]
-      Math.floor( this )
+      return Math.floor( this )
 
     method format( decimal_digits=null:Int32? )->String
       local digits = select{ decimal_digits || decimal_digit_count }
@@ -152,7 +152,7 @@ class Real64 [primitive]
       unitTest assert( (-5.0).sign == -1.0 )
 
     method sqrt->Real64 [macro]
-      Math.sqrt( this )
+      return Math.sqrt( this )
 
     method to->Object
       return Boxed<<Real64>>(this)
@@ -208,7 +208,7 @@ class Real32 [primitive]
       else           return -this
 
     method ceiling->Real32 [macro]
-      Real32( Math.ceiling(this) )
+      return Real32( Math.ceiling(this) )
 
     method clamped( low:Real32, high:Real32 )->Real32
       if (this < low)  return low
@@ -232,7 +232,7 @@ class Real32 [primitive]
       return this->Real64.decimal_digit_count
 
     method floor->Real32 [macro]
-      Real32( Math.floor(this) )
+      return Real32( Math.floor(this) )
 
     method format( decimal_digits=null:Int32? )->String
       return Real64(this).format( decimal_digits )
@@ -292,7 +292,7 @@ class Real32 [primitive]
       unitTest assert( Real32(-5.0).sign == Real32(-1.0) )
 
     method sqrt->Real32 [macro]
-      Real32( Math.sqrt(this) )
+      return Real32( Math.sqrt(this) )
 
     method to->Object
       return Boxed<<Real32>>(this)
@@ -341,10 +341,10 @@ class Int64 [primitive]
       return value->Int64
 
     method maximum->Int64 [macro]
-      0x7FFFffffFFFFffff
+      return 0x7FFFffffFFFFffff
 
     method minimum->Int64 [macro]
-      native("(-9223372036854775807LL - 1)")->Int64
+      return native("(-9223372036854775807LL - 1)")->Int64
 
   METHODS
     method abs->Int64
@@ -501,7 +501,7 @@ class Int64 [primitive]
       unitTest assert( Int64(-5).sign == Int64(-1) )
 
     method sqrt->Int64 [macro]
-      Int64( Math.sqrt(this) )
+      return Int64( Math.sqrt(this) )
 
     method th->String
       # Returns Xst, Xnd, Xrd, Xth as appropriate
@@ -549,7 +549,7 @@ class Int64 [primitive]
       return Value( Real64(this) )
 
     method to_digit->Character [macro]
-      (this->Int32).to_digit
+      return (this->Int32).to_digit
 
     method to_binary_string( digits=64:Int32 )->String
       return print_in_power2_base( 2, digits, StringBuilder() )->String
@@ -594,10 +594,10 @@ class Int32 [primitive]
       return value->Int32
 
     method maximum->Int32 [macro]
-      2147483647
+      return 2147483647
 
     method minimum->Int32 [macro]
-      native "(-2147483647 - 1)"
+      return native "(-2147483647 - 1)"
 
   METHODS
     method abs->Int32
@@ -659,13 +659,13 @@ class Int32 [primitive]
       return this->String.right_justified( spaces, fill )
 
     method sqrt->Int32 [macro]
-      Int32( Math.sqrt(this) )
+      return Int32( Math.sqrt(this) )
 
     method th->String
       return this->Int64.th
 
     method to->Int64 [macro]
-      $if (target("C++")) native "((RogueInt64)$this)"
+      return native "((RogueInt64)$this)"
 
     method to->Int64( unsigned:Logical )
       if (unsigned) return this & 0x0FFFFffff
@@ -827,7 +827,7 @@ class Character [primitive]
       return this->String.right_justified( spaces, fill )
 
     method sqrt->Character [macro]
-      Character( Math.sqrt(this) )
+      return Character( Math.sqrt(this) )
 
     method to->Object
       return Boxed<<Character>>(this)
@@ -978,7 +978,7 @@ class Byte [primitive]
       return (this - 256)
 
     method sqrt->Byte [macro]
-      Byte( Math.sqrt(this) )
+      return Byte( Math.sqrt(this) )
 
     method to->Object
       return Boxed<<Byte>>(this)

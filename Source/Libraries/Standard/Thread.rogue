@@ -456,7 +456,7 @@ class FastBarrier [compound]
     method destroy [macro]
       native "pthread_barrier_destroy(&$this._barrier);"
     method wait -> Logical [macro]
-      native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
+      return native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this._barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")->Logical
     method operator== (other:FastBarrier) -> Logical
       return false # Not comparable
 endClass
@@ -471,7 +471,7 @@ class Barrier
     method destroy
       native "pthread_barrier_destroy(&$this->_barrier);"
     method wait -> Logical [macro]
-      native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")
+      return native("ROGUE_BLOCKING_CALL((RogueInt32)(pthread_barrier_wait(&$this->_barrier) == PTHREAD_BARRIER_SERIAL_THREAD))")->Logical
 endClass
 
 

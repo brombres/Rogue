@@ -17,49 +17,49 @@ class Atomic <<$DataType>>
       set_value(value)
 
     method add_get (other : $DataType) -> $DataType [macro]
-      native "($this->_value += $other)"
+      return native("($this->_value += $other)")->$DataType
 
     method get_add (other : $DataType) -> $DataType [macro]
-      native "($this->_value.fetch_add($other))"
+      return native("($this->_value.fetch_add($other))")->$DataType
 
     method subtract_get (other : $DataType) -> $DataType [macro]
-      native "($this->_value -= $other)"
+      return native("($this->_value -= $other)")->$DataType
 
     method get_subtract (other : $DataType) -> $DataType [macro]
-      native "($this->_value.fetch_sub($other))"
+      return native("($this->_value.fetch_sub($other))")->$DataType
 
     method and_get (other : $DataType) -> $DataType [macro]
-      native "($this->_value &= $other)"
+      return native("($this->_value &= $other)")->$DataType
 
     method get_and (other : $DataType) -> $DataType [macro]
-      native "($this->_value.fetch_and($other))"
+      return native("($this->_value.fetch_and($other))")->$DataType
 
     method or_get (other : $DataType) -> $DataType [macro]
-      native "($this->_value |= $other)"
+      return native("($this->_value |= $other)")->$DataType
 
     method get_or (other : $DataType) -> $DataType [macro]
-      native "($this->_value.fetch_or($other))"
+      return native("($this->_value.fetch_or($other))")->$DataType
 
     method xor_get (other : $DataType) -> $DataType [macro]
-      native "($this->_value ^= $other)"
+      return native("($this->_value ^= $other)")->$DataType
 
     method get_xor (other : $DataType) -> $DataType [macro]
-      native "($this->_value.fetch_xor($other))"
+      return native("($this->_value.fetch_xor($other))")->$DataType
 
     method increment_get () -> $DataType [macro]
-      native "(++$this->_value)"
+      return native("(++$this->_value)")->$DataType
 
     method get_increment () -> $DataType [macro]
-      native "($this->_value++)"
+      return native("($this->_value++)")->$DataType
 
     method decrement_get () -> $DataType [macro]
-      native "(--$this->_value)"
+      return native("(--$this->_value)")->$DataType
 
     method get_decrement () -> $DataType [macro]
-      native "($this->_value--)"
+      return native("($this->_value--)")->$DataType
 
     method exchange (other : $DataType) -> $DataType [macro]
-      native "($this->_value.exchange($other))"
+      return native("($this->_value.exchange($other))")->$DataType
 
     method compare_and_set (expect : $DataType, other : $DataType) -> Logical
       local r : Logical
@@ -82,13 +82,13 @@ class Atomic <<$DataType>>
       return r
 
     method value () -> $DataType [macro]
-      native "($this->_value.load())"
+      return native("($this->_value.load())")->$DataType
 
     method set_value (value : $DataType) [macro]
-      native "$this->_value.store($value);"
+      native("$this->_value.store($value);")
 
     method lazy_set (value : $DataType) [macro]
-      native "$this->_value.store($value, std::memory_order_release);"
+      native("$this->_value.store($value, std::memory_order_release);")
 
     method to->String
       return value->String
@@ -114,7 +114,7 @@ class AtomicFlag
 
     method get_set () -> Logical [macro]
       # Sets to true and returns previous value
-      native "($this->_value.test_and_set())"
+      return native("($this->_value.test_and_set())")->Logical
 
     method set () [macro]
       # Sets to true
@@ -181,7 +181,7 @@ class AtomicLogical
       return r
 
     method value () -> Logical [macro]
-      native "($this->_value.load())"
+      return native("($this->_value.load())")->Logical
 
     method set_value (value : Logical) [macro]
       native "$this->_value.store($value);"

@@ -50,22 +50,22 @@ class Value
 
   METHODS
     method add( value:Int32 )->this [macro]
-      this.add( Value(value) )
+      return this.add( Value(value) )
 
     method add( value:Int64 )->this [macro]
-      this.add( Value(value) )
+      return this.add( Value(value) )
 
     method add( value:Logical )->this [macro]
-      this.add( Value(value) )
+      return this.add( Value(value) )
 
     method add( value:Real64 )->this [macro]
-      this.add( Value(value) )
+      return this.add( Value(value) )
 
     method add( value:Object )->this [macro]
-      this.add( Value(value) )
+      return this.add( Value(value) )
 
     method add( value:String )->this [macro]
-      this.add( Value(value) )
+      return this.add( Value(value) )
 
     method add( value:Value )->this
       return this
@@ -169,22 +169,22 @@ class Value
       return UndefinedValue
 
     method insert( value:Int32, before_index=0:Int32 )->this [macro]
-      this.insert( Value(value), before_index )
+      return this.insert( Value(value), before_index )
 
     method insert( value:Int64, before_index=0:Int32 )->this [macro]
-      this.insert( Value(value), before_index )
+      return this.insert( Value(value), before_index )
 
     method insert( value:Logical, before_index=0:Int32 )->this [macro]
-      this.insert( Value(value), before_index )
+      return this.insert( Value(value), before_index )
 
     method insert( value:Real64, before_index=0:Int32 )->this [macro]
-      this.insert( Value(value), before_index )
+      return this.insert( Value(value), before_index )
 
     method insert( value:Object, before_index=0:Int32 )->this [macro]
-      this.insert( Value(value), before_index )
+      return this.insert( Value(value), before_index )
 
     method insert( value:String, before_index=0:Int32 )->this [macro]
-      this.insert( Value(value), before_index )
+      return this.insert( Value(value), before_index )
 
     method insert( value:Value, before_index=0:Int32 )->this
       return this
@@ -417,46 +417,46 @@ class Value
       return file.save( to_json(formatted,omit_commas) )
 
     method set( index:Int32, value:Int32 )->this [macro]
-      this.set( index, Value(value) )
+      return this.set( index, Value(value) )
 
     method set( index:Int32, value:Int64 )->this [macro]
-      this.set( index, Value(value) )
+      return this.set( index, Value(value) )
 
     method set( index:Int32, value:Logical )->this [macro]
-      this.set( index, Value(value) )
+      return this.set( index, Value(value) )
 
     method set( index:Int32, value:Real64 )->this [macro]
-      this.set( index, Value(value) )
+      return this.set( index, Value(value) )
 
     method set( index:Int32, value:Object )->this [macro]
-      this.set( index, Value(value) )
+      return this.set( index, Value(value) )
 
     method set( index:Int32, value:String )->this [macro]
-      this.set( index, Value(value) )
+      return this.set( index, Value(value) )
 
     method set( index:Int32, value:Value )->this [preferred]
       return this
 
     method set( key:String, value:Int32 )->this [macro]
-      this.set( key, Value(value) )
+      return this.set( key, Value(value) )
 
     method set( key:String, value:Int64 )->this [macro]
-      this.set( key, Value(value) )
+      return this.set( key, Value(value) )
 
     method set( key:String, value:Logical )->this [macro]
-      this.set( key, Value(value) )
+      return this.set( key, Value(value) )
 
     method set( key:String, value:Real64 )->this [macro]
-      this.set( key, Value(value) )
+      return this.set( key, Value(value) )
 
     method set( key:String, value:Object )->this [macro]
-      this.set( key, Value(value) )
+      return this.set( key, Value(value) )
 
     method set( key:String, value:String )->this [macro]
-      this.set( key, Value(value) )
+      return this.set( key, Value(value) )
 
     method set( key:Value, value:Value )->this [macro]
-      this.set( key->String, value )
+      return this.set( key->String, value )
 
     method set( key:String, value:Value )->this [preferred]
       return this
@@ -501,7 +501,7 @@ class Value
       return @{}
 
     method to<<$AsType>>()->$AsType [macro]
-      (this->Object as $AsType)
+      return (this->Object as $AsType)
 
     method to_json( flags:Int32 )->String
       return to_json( StringBuilder(), flags )->String

@@ -480,7 +480,7 @@ class TypeInfo
       endIf
 
     method find_methods( method_name:String )->MethodInfo[] [macro]
-      this.method_info( method_name )
+      return this.method_info( method_name )
 
     method method_info( method_name:String )->MethodInfo[]
       local r = MethodInfo[]

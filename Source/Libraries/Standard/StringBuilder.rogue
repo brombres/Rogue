@@ -34,7 +34,7 @@ class StringBuilder [essential]
       print( initial_content )
 
     method capacity->Int32 [macro]
-      this.utf8.capacity
+      return this.utf8.capacity
 
     method clear->this [essential]
       utf8.clear
@@ -174,7 +174,7 @@ class StringBuilder [essential]
       return this
 
     method print( value:Real32 )->StringBuilder [macro]
-      this.print( value->Real64 )
+      return this.print( value->Real64 )
 
     method print( value:Int32 )->this
       return print( value->Int64 )
@@ -334,10 +334,10 @@ class StringBuilder [essential]
       return print( value ).print( '\n' )
 
     method println( value:Real32 )->this [macro]
-      this.println( value->Real64 )
+      return this.println( value->Real64 )
 
     method println( value:Real32, decimal_places:Int32 )->StringBuilder [macro]
-      this.println( value->Real64, decimal_places )
+      return this.println( value->Real64, decimal_places )
 
     method println( value:Int32 )->this
       return print( value ).print( '\n' )
@@ -372,7 +372,7 @@ class StringBuilder [essential]
       return ch
 
     method remove_first->Character [macro]
-      this.remove_at(0)
+      return this.remove_at(0)
 
     method remove_last->Character
       return remove_at( count-1 )

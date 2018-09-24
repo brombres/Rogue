@@ -2,46 +2,46 @@ class Math
   GLOBAL METHODS
     $if (target("C++"))
     method acos( n:Real64 )->Real64 [macro]
-      native 'acos((double)$n)'
+      return native('acos((double)$n)')->Real64
 
     method asin( n:Real64 )->Real64 [macro]
-      native 'asin((double)$n)'
+      return native('asin((double)$n)')->Real64
 
     method atan( n:Real64 )->Real64 [macro]
-      native 'atan((double)$n)'
+      return native('atan((double)$n)')->Real64
 
     method atan2( y:Real64, x:Real64 )->Real64 [macro]
-      native 'atan2((double)$y,(double)$x)'
+      return native('atan2((double)$y,(double)$)->Real64x)')->Real64
 
     method ceiling( n:Real64 )->Real64 [macro]
-      native 'ceil((double)$n)'
+      return native('ceil((double)$n)')->Real64
 
     method cos( n:Real64 )->Real64 [macro]
-      native 'cos((double)$n)'
+      return native('cos((double)$n)')->Real64
 
     method exp( n:Real64 )->Real64 [macro]
-      native 'exp((double)$n)'
+      return native('exp((double)$n)')->Real64
 
     method floor( n:Real64 )->Real64 [macro]
-      native 'floor((double)$n)'
+      return native('floor((double)$n)')->Real64
 
     method log( n:Real64 )->Real64 [macro]
-      native 'log((double)$n)'
+      return native('log((double)$n)')->Real64
 
     method log2( n:Real64 )->Real64 [macro]
-      native 'log2((double)$n)'
+      return native('log2((double)$n)')->Real64
 
     method log10( n:Real64 )->Real64 [macro]
-      native 'log10((double)$n)'
+      return native('log10((double)$n)')->Real64
 
     method sin( n:Real64 )->Real64 [macro]
-      native 'sin((double)$n)'
+      return native('sin((double)$n)')->Real64
 
     method sqrt( n:Real64 )->Real64 [macro]
-      native 'sqrt((double)$n)'
+      return native('sqrt((double)$n)')->Real64
 
     method tan( n:Real64 )->Real64 [macro]
-      native 'tan((double)$n)'
+      return native('tan((double)$n)')->Real64
 
     $endIf
 
@@ -145,7 +145,7 @@ class Degrees( value:Real64 ) [compound]
       endIf
 
     method cos->Real64 [macro]
-      Math.cos( (this.value / 180.0) * pi )
+      return Math.cos( (this.value / 180.0) * pi )
 
     method delta_to( other:Degrees )->Degrees
       # Returns the smallest number of degrees necessary to get from this
@@ -158,67 +158,67 @@ class Degrees( value:Real64 ) [compound]
       return Degrees(diff)
 
     method operator-()->Degrees [macro]
-      Degrees( -this.value )
+      return Degrees( -this.value )
 
     method operator+( degrees:Real64 )->Degrees [macro]
-      Degrees( this.value + degrees )
+      return Degrees( this.value + degrees )
 
     method operator-( degrees:Real64 )->Degrees [macro]
-      Degrees( this.value - degrees )
+      return Degrees( this.value - degrees )
 
     method operator*( degrees:Real64 )->Degrees [macro]
-      Degrees( this.value * degrees )
+      return Degrees( this.value * degrees )
 
     method operator/( degrees:Real64 )->Degrees [macro]
-      Degrees( this.value / degrees )
+      return Degrees( this.value / degrees )
 
     method operator%( degrees:Real64 )->Degrees [macro]
-      Degrees( this.value % degrees )
+      return Degrees( this.value % degrees )
 
     method operator^( degrees:Real64 )->Degrees [macro]
-      Degrees( this.value ^ degrees )
+      return Degrees( this.value ^ degrees )
 
     method operator+( other:Degrees )->Degrees [macro]
-      Degrees( this.value + other.value )
+      return Degrees( this.value + other.value )
 
     method operator-( other:Degrees )->Degrees [macro]
-      Degrees( this.value - other.value )
+      return Degrees( this.value - other.value )
 
     method operator*( other:Degrees )->Degrees [macro]
-      Degrees( this.value * other.value )
+      return Degrees( this.value * other.value )
 
     method operator/( other:Degrees )->Degrees [macro]
-      Degrees( this.value / other.value )
+      return Degrees( this.value / other.value )
 
     method operator%( other:Degrees )->Degrees [macro]
-      Degrees( this.value % other.value )
+      return Degrees( this.value % other.value )
 
     method operator^( other:Degrees )->Degrees [macro]
-      Degrees( this.value ^ other.value )
+      return Degrees( this.value ^ other.value )
 
     method operator==( other_value:Real64 )->Logical [macro]
-      this.value == other_value
+      return this.value == other_value
 
     method operator<( other_value:Real64 )->Logical [macro]
-      this.value < other_value
+      return this.value < other_value
 
     method operator==( other:Degrees )->Logical [macro]
-      this.value == other.value
+      return this.value == other.value
 
     method operator<( other:Degrees )->Logical [macro]
-      this.value < other.value
+      return this.value < other.value
 
     method sin->Real64 [macro]
-      Math.sin( (this.value / 180.0) * pi )
+      return Math.sin( (this.value / 180.0) * pi )
 
     method tan->Real64 [macro]
-      Math.sin( (this.value / 180.0) * pi )
+      return Math.sin( (this.value / 180.0) * pi )
 
     method to->String
       return "" + value
 
     method to->Radians [macro]
-      Radians( this )
+      return Radians( this )
 endClass
 
 
@@ -243,7 +243,7 @@ class Radians( value:Real64 ) [compound]
       endIf
 
     method cos->Real64 [macro]
-      Math.cos( this.value )
+      return Math.cos( this.value )
 
     method delta_to( other:Radians )->Radians
       # Returns the smallest number of radians necessary to get from this
@@ -256,67 +256,67 @@ class Radians( value:Real64 ) [compound]
       return Radians(diff)
 
     method operator-()->Radians [macro]
-      Radians( -this.value )
+      return Radians( -this.value )
 
     method operator+( radians:Real64 )->Radians [macro]
-      Radians( this.value + radians )
+      return Radians( this.value + radians )
 
     method operator-( radians:Real64 )->Radians [macro]
-      Radians( this.value - radians )
+      return Radians( this.value - radians )
 
     method operator*( radians:Real64 )->Radians [macro]
-      Radians( this.value * radians )
+      return Radians( this.value * radians )
 
     method operator/( radians:Real64 )->Radians [macro]
-      Radians( this.value / radians )
+      return Radians( this.value / radians )
 
     method operator%( radians:Real64 )->Radians [macro]
-      Radians( this.value % radians )
+      return Radians( this.value % radians )
 
     method operator^( radians:Real64 )->Radians [macro]
-      Radians( this.value ^ radians )
+      return Radians( this.value ^ radians )
 
     method operator+( other:Radians )->Radians [macro]
-      Radians( this.value + other.value )
+      return Radians( this.value + other.value )
 
     method operator-( other:Radians )->Radians [macro]
-      Radians( this.value - other.value )
+      return Radians( this.value - other.value )
 
     method operator*( other:Radians )->Radians [macro]
-      Radians( this.value * other.value )
+      return Radians( this.value * other.value )
 
     method operator/( other:Radians )->Radians [macro]
-      Radians( this.value / other.value )
+      return Radians( this.value / other.value )
 
     method operator%( other:Radians )->Radians [macro]
-      Radians( this.value % other.value )
+      return Radians( this.value % other.value )
 
     method operator^( other:Radians )->Radians [macro]
-      Radians( this.value ^ other.value )
+      return Radians( this.value ^ other.value )
 
     method operator==( other_value:Real64 )->Logical [macro]
-      this.value == other_value
+      return this.value == other_value
 
     method operator<( other_value:Real64 )->Logical [macro]
-      this.value < other_value
+      return this.value < other_value
 
     method operator==( other:Radians )->Logical [macro]
-      this.value == other.value
+      return this.value == other.value
 
     method operator<( other:Radians )->Logical [macro]
-      this.value < other.value
+      return this.value < other.value
 
     method sin->Real64 [macro]
-      Math.sin( this.value )
+      return Math.sin( this.value )
 
     method tan->Real64 [macro]
-      Math.tan( this.value )
+      return Math.tan( this.value )
 
     method to->String
       return "" + value
 
     method to->Degrees [macro]
-      Degrees( this )
+      return Degrees( this )
 endClass
 
 

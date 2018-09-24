@@ -1018,13 +1018,13 @@ class FileOptions( flags=0:Int32 ) [compound]
 
   METHODS
     method absolute->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
+      return FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
 
     method ignore_hidden->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
+      return FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
 
     method ignoring_hidden->Logical [macro]
-      (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
+      return (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
 
     method is_files_and_folders->Logical
       local f = (flags & FLAG_BOTH)
@@ -1037,49 +1037,49 @@ class FileOptions( flags=0:Int32 ) [compound]
       return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
 
     method is_absolute->Logical [macro]
-      (this.flags & FileOptions.FLAG_ABSOLUTE)
+      return (this.flags & FileOptions.FLAG_ABSOLUTE)
 
     method files->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_FILES )
+      return FileOptions( this.flags | FileOptions.FLAG_FILES )
 
     method folders->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
+      return FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
 
     method include_path->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
+      return FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
 
     method includes_path->Logical [macro]
-      ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
+      return ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
 
     method is_limited->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_RECURSIVE))
+      return (not (this.flags & FileOptions.FLAG_RECURSIVE))
 
     method is_recursive->Logical [macro]
-      (this.flags & FileOptions.FLAG_RECURSIVE)
+      return (this.flags & FileOptions.FLAG_RECURSIVE)
 
     method is_relative->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_ABSOLUTE))
+      return (not (this.flags & FileOptions.FLAG_ABSOLUTE))
 
     method limited->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
+      return FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
 
     method omit_path->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
+      return FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
 
     method omitting_path->Logical [macro]
-      (this.flags & FileOptions.FLAG_OMIT_PATH)
+      return (this.flags & FileOptions.FLAG_OMIT_PATH)
 
     method relative->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
+      return FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
 
     method recursive->FileOptions [macro]
-      FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
+      return FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
 
     method showing_hidden->FileOptions [macro]
-      FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
+      return FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
 
     method shows_hidden->Logical [macro]
-      (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
+      return (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
 
 endClass
 
@@ -1112,7 +1112,7 @@ class FileReader : Reader<<Byte>>
       return this
 
     method fp->IntPtr [macro]
-      native("$this->fp")->IntPtr
+      return native("$this->fp")->IntPtr
 
     method has_another->Logical
       return (position < count)
@@ -1244,7 +1244,7 @@ class FileWriter : Writer<<Byte>>
       return this
 
     method fp->IntPtr [macro]
-      native( "$this->fp" )->IntPtr
+      return native( "$this->fp" )->IntPtr
 
     method open( filepath, append=false:Logical )->Logical
       close

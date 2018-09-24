@@ -194,7 +194,7 @@ class List<<$DataType>> : GenericList
       return null
 
     method get( index:Int32 )->$DataType [macro]
-      this.data[ index ]
+      return this.data[ index ]
 
     method get( query:(Function($DataType)->Logical) )->$DataType[]
       local results = $DataType[]
