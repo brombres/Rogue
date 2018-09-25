@@ -4283,12 +4283,17 @@ class CmdAdd : CmdBinary
         return CmdAccess( t, CmdAdd(t,CmdLiteralString(t,""),lhs), "operator+", CmdArgs(rhs) ).resolve( scope )
       endIf
 
+      # Let left have a chance to invoke it's own operator+(String) before we arbitrarily convert left->String
+      local possible_cmd = prior.resolve_operator_method( method_name, scope, lhs, left_type, rhs, right_type, &is_optional )
+      if (possible_cmd) return possible_cmd.resolve( scope )
+
       if (left_type is not Program.type_String and right_type is Program.type_String)
         # non-string + string -> ("" + non-string) + string
         lhs = CmdAdd( t, CmdLiteralString(t,""), lhs ).resolve( scope )
         left_type = lhs.require_type
       endIf
-      return prior.resolve_operator_method( method_name, scope, lhs, left_type, rhs, right_type )
+
+      return prior.resolve_operator_method( method_name, scope, lhs, left_type, rhs, right_type, &=is_optional )
 
     method symbol->String
       return "+"
