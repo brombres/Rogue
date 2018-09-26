@@ -6,6 +6,7 @@ class UTF8Reader : Reader<<Character>>
   METHODS
     method init( byte_reader )
       next = null
+      if (peek == 0xFEFF) read   # discard Byte Order Marker (BOM)
 
     method close->this
       byte_reader.close

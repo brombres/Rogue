@@ -599,6 +599,15 @@ class File
       local count = size( filepath )
       local buffer = StringBuilder( count )
       local infile = reader( filepath )
+      if (count >= 3 and infile.peek == 0xEF)
+        loop (3) buffer.utf8.add( infile.read )
+        ++buffer.count
+        if (buffer[0] == 0xFEFF)
+          # Discard Byte Order Marker (BOM)
+          count -= 3
+          buffer.clear
+        endIf
+      endIf
       forEach (1..count)
         local b = infile.read
         buffer.utf8.add( b )
