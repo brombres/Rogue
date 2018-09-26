@@ -285,13 +285,35 @@ class String
       local ch = format[f0]
       which (ch)
         case '*':
+          # Match any number of characters
           forEach (n in 0..remaining_count)
             local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, r0, rcount,
               found_match, result )
             if (success) return (success,match_start,match_count)
           endForEach
 
+        case ' ':
+          # If characters both before and after the space in the pattern are alphanumeric,
+          # match 1 or more spaces or tabs. Otherwise match zero or more spaces or tabs
+          if (remaining_count == 0) return (false,0,0)
+
+          local n = 0
+          if (f0 > 0 and rcount > 0 and format[f0-1].is_identifier and format[f0+1].is_identifier)
+            # One or more spaces and tabs required
+            ch = this[i0]
+            if (ch != ' ' and ch != '\t') return (false,0,0)
+            ++n
+          endIf
+
+          while (n < remaining_count)
+            ch = this[i0+n]
+            if (ch != ' ' and ch != '\t') escapeWhile
+            ++n
+          endWhile
+          return _extraction_point( i0+n, remaining_count-n, format, r0, rcount, found_match, result )
+
         case '$':
+          # Match any number of characters and extract as a result
           local m_start = i0
           forEach (n in 0..remaining_count)
             local pt = _extraction_point( i0+n, remaining_count-n, format, r0, rcount,
@@ -303,12 +325,13 @@ class String
           endForEach
 
         case '?':
+          # Match any single character
           if (remaining_count == 0) return (false,0,0)
-          ch = this[ i0 ]
           return _extraction_point( i0+1, remaining_count-1, format, r0, rcount,
             found_match, result )
 
         others:
+          # Match one specific character
           if (remaining_count == 0) return (false,0,0)
           if (ch == this[i0])
             return _extraction_point( i0+1, remaining_count-1, format, r0, rcount,
