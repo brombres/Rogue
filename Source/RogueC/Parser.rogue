@@ -1016,6 +1016,11 @@ class Parser
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
 
+      if (this_method.is_special and this_type.name == "Boxed<<String>>" and this_method.name == "to_String")
+        # Boxed<<String>>.to->$DataType will end up conflicting with to->String; omit this method
+        skip_add_to_type = true
+      endIf
+
       if (not skip_add_to_type)
         if (as_global)
           this_type.add_global_method( this_method )
