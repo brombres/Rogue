@@ -708,6 +708,31 @@ class File
     method reader( filepath:String )->FileReader
       return FileReader( filepath )
 
+    method rewrite( filepath:String, mappings:Table<<String,String>> )
+      local fn = function( line:String )->String with (mappings)
+        local cur = mappings.first_entry
+        while (cur)
+          if (line.contains(cur.key))
+            line = line.replacing( cur.key, cur.value )
+          endIf
+          cur = cur.next_entry
+        endWhile
+        return line
+      endFunction
+
+      rewrite( filepath, fn )
+
+    method rewrite( filepath:String, fn1:Function(String)->String, fn2=null:Function(String)->String, fn3=null:Function(String)->String )
+      local data = load_as_string( filepath )
+      local result = StringBuilder( data.count * 1.1 )
+      forEach (line in LineReader(data))
+        line = fn1( line )
+        if (fn2) line = fn2( line )
+        if (fn3) line = fn3( line )
+        result.println( line )
+      endForEach
+      save( filepath, result->String )
+
     method save( filepath:String, data:Byte[] )->Logical
       local outfile = writer( filepath )
       outfile.write( data )
@@ -980,6 +1005,12 @@ class File
 
     method reader->FileReader
       return File.reader( this.filepath )
+
+    method rewrite( mappings:Table<<String,String>> )
+      File.rewrite( this.filepath, mappings )
+
+    method rewrite( fn1:Function(String)->String, fn2=null:Function(String)->String, fn3=null:Function(String)->String )
+      File.rewrite( this.filepath, fn1, fn2, fn3 )
 
     method save( data:Byte[] )->Logical
       return File.save( this.filepath, data )
