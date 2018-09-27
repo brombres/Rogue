@@ -698,6 +698,28 @@ class String
       forEach (i in i0..<this.count) buffer.print( this[i] )
       return buffer->String
 
+    method replacing( begins_with:String, ends_with:String, replace_with:Function(String)->String )->String
+      # Returns a modified string where all substrings beginning with begins_with and
+      # ending with ends_with (conservatively) are replaced by replace_with(substring).
+      local i1 = this.locate( begins_with )
+      if (not i1.exists) return this
+      local i2 = this.locate( ends_with, i1.value+begins_with.count )
+      if (not i2.exists) return this
+
+      local i0 = 0
+
+      local buffer = StringBuilder( count*1.1 )
+      while (i1.exists)
+        forEach (i in i0..<i1.value) buffer.print( this[i] )
+        buffer.print( replace_with(this.from(i1.value,i2.value+ends_with.count-1)) )
+        i0 = i2.value + ends_with.count
+        i1 = this.locate(begins_with,i0)
+        if (i1.exists) i2 = this.locate( ends_with, i1.value+begins_with.count )
+        else           escapeWhile
+      endWhile
+      forEach (i in i0..<this.count) buffer.print( this[i] )
+      return buffer->String
+
     method reversed->String
       local buffer = StringBuilder(count)
       forEach (ch in this step -1)
