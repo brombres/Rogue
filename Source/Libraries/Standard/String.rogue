@@ -672,7 +672,7 @@ class String
       # ''look_for'' are replaced with ''replace_with''.
       if (not contains(look_for)) return this
 
-      local buffer = StringBuilder(count*2)
+      local buffer = StringBuilder(count*1.1)
       forEach (ch in this)
         if (ch == look_for) buffer.print( replace_with )
         else                buffer.print( ch )
@@ -683,18 +683,19 @@ class String
     method replacing( look_for:String, replace_with:String )->String
       # Returns a modified string where all instances of
       # ''look_for'' are replaced with ''replace_with''.
-      local st = this
-      local i = st.locate(look_for)
-      if (not i.exists) return st
+      local i1 = this.locate(look_for)
+      if (not i1.exists) return this
 
-      local buffer = StringBuilder( count*2 )
-      while (i.exists)
-        buffer.print( st.before(i.value) )
+      local i0 = 0
+
+      local buffer = StringBuilder( count*1.1 )
+      while (i1.exists)
+        forEach (i in i0..<i1.value) buffer.print( this[i] )
         buffer.print( replace_with )
-        st = st.from( i.value + look_for.count )
-        i = st.locate(look_for)
+        i0 = i1.value + look_for.count
+        i1 = this.locate(look_for,i0)
       endWhile
-      buffer.print( st )
+      forEach (i in i0..<this.count) buffer.print( this[i] )
       return buffer->String
 
     method reversed->String
