@@ -469,7 +469,7 @@ class List<<$DataType>> : GenericList
       if (required_capacity == 0) return this
 
       if (not data)
-        if (required_capacity < 10) required_capacity = 10
+        if (required_capacity == 1) required_capacity = 10
         data = Array<<$DataType>>( required_capacity )
       elseIf (required_capacity > data.count)
         local cap = capacity
