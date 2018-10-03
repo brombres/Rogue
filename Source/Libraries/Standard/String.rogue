@@ -276,47 +276,40 @@ class String
     method _extraction_point( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32, found_match:Logical,
         result=null:String[] )->(Logical,Int32,Int32)
       if (fcount == 0)
+        while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
         if (remaining_count > 0 or not found_match) return (false,0,0)
         return (true,0,0)
       endIf
 
-      local r0 = f0 + 1
-      local rcount = fcount - 1
-      local ch = format[f0]
-      which (ch)
+      local format_ch = format[f0]
+      which (format_ch)
         case '*':
           # Match any number of characters
           forEach (n in 0..remaining_count)
-            local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, r0, rcount,
+            local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1,
               found_match, result )
             if (success) return (success,match_start,match_count)
           endForEach
 
         case ' ':
-          # If characters both before and after the space in the pattern are alphanumeric,
-          # match 1 or more spaces or tabs. Otherwise match zero or more spaces or tabs
-          if (remaining_count == 0) return (false,0,0)
-
+          # Match 1 or more spaces or tabs
           local n = 0
-          if (f0 > 0 and rcount > 0 and format[f0-1].is_identifier and format[f0+1].is_identifier)
-            # One or more spaces and tabs required
-            ch = this[i0]
-            if (ch != ' ' and ch != '\t') return (false,0,0)
-            ++n
-          endIf
-
           while (n < remaining_count)
-            ch = this[i0+n]
+            local ch = this[i0+n]
             if (ch != ' ' and ch != '\t') escapeWhile
             ++n
           endWhile
-          return _extraction_point( i0+n, remaining_count-n, format, r0, rcount, found_match, result )
+
+          if (n == 0) return (false,0,0)
+
+          return _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, found_match, result )
 
         case '$':
-          # Match any number of characters and extract as a result
+          # Match one or more characters and extract as a result
+          while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
           local m_start = i0
-          forEach (n in 0..remaining_count)
-            local pt = _extraction_point( i0+n, remaining_count-n, format, r0, rcount,
+          forEach (n in 1..remaining_count)
+            local pt = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1,
               true, result )
             if (pt._1)
               if (result) result.add( substring(m_start,n) )
@@ -327,15 +320,28 @@ class String
         case '?':
           # Match any single character
           if (remaining_count == 0) return (false,0,0)
-          return _extraction_point( i0+1, remaining_count-1, format, r0, rcount,
+          return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1,
             found_match, result )
 
         others:
           # Match one specific character
           if (remaining_count == 0) return (false,0,0)
-          if (ch == this[i0])
-            return _extraction_point( i0+1, remaining_count-1, format, r0, rcount,
+          local ch = this[i0]
+          if (format_ch == ch)
+            return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1,
               found_match, result )
+          elseIf (ch == ' ' or ch == '\t')
+            # Extra spaces and tabs okay as long as they're not between alphanumeric values
+            # Count how many spaces and tabs in a row
+            local n = 1
+            while (n < remaining_count)
+              ch = this[i0+n]
+              if (ch != ' ' and ch != '\t') escapeWhile
+              ++n
+            endWhile
+            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
+              return _extraction_point( i0+n, remaining_count-n, format, f0, fcount, found_match, result )
+            endIf
           endIf
       endWhich
 
