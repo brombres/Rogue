@@ -853,15 +853,18 @@ class String
       return result
 
     method to->Int32
+      if (count == 0) return 0
       return native( "(RogueInt32)strtol( (char*)$this->utf8, 0, 10 )" )->Int32
 
     method to->Int64
+      if (count == 0) return 0
       return native( "(RogueInt64)strtoll( (char*)$this->utf8, 0, 10 )" )->Int64
 
     method to->Object
       return this
 
     method to->Real64
+      if (count == 0) return 0
       return native( "strtod( (char*)$this->utf8, 0 )" )->Real64
 
     method to->String
