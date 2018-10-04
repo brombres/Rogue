@@ -42,5 +42,14 @@ class Reader<<$DataType>> [aspect]
     method skip( n:Int32 )->this
       forEach (1..n) read
       return this
+
+    method to->String
+      local buffer = $DataType[]
+      while (has_another) buffer.add( read )
+      if ($DataType instanceOf Byte)
+        return String( buffer )
+      else
+        return buffer->String
+      endIf
 endClass
 
