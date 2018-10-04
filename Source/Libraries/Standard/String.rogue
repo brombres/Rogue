@@ -307,7 +307,50 @@ class String
         case '$':
           # Match one or more characters and extract as a result
           while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
+
           local m_start = i0
+
+          if (fcount>=3 and format[f0+1] == '(')
+            if (format[f0+2] == ')')
+              f0     += 2
+              fcount -= 2
+            elseIf (fcount>=4 and format[f0+3] == ')')
+              which (format[f0+2])
+                case 'I'
+                  # Integer
+                  local i1 = i0
+                  local rcount = remaining_count
+                  if (rcount and this[i1] == '-') ++i1; --rcount
+                  local found_digit = false
+                  while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                  if (found_digit)
+                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result )
+                    if (pt._1)
+                      if (result) result.add( substring(m_start,i1-i0) )
+                      return (true,m_start,i1-i0)
+                    endIf
+                  endIf
+
+                case 'R'
+                  # Real number
+                  local i1 = i0
+                  local rcount = remaining_count
+                  if (rcount and this[i1] == '-') ++i1; --rcount
+                  local found_digit = false
+                  while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                  if (rcount and this[i1] == '.') ++i1; --rcount
+                  while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                  if (found_digit)
+                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result )
+                    if (pt._1)
+                      if (result) result.add( substring(m_start,i1-i0) )
+                      return (true,m_start,i1-i0)
+                    endIf
+                  endIf
+              endWhich
+            endIf
+          endIf
+
           forEach (n in 1..remaining_count)
             local pt = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1,
               true, result )
