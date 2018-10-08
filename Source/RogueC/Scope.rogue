@@ -639,20 +639,16 @@ class Scope
       endIf
 
       if (arg_count == 1)
-        # 1. Try candidate(arg) -> candidate(arg->toObject)
-        forEach (m in candidates.available)
-          local arg_type = args.first.type
-          local param_type = m.parameters.first.type
-          param_type.organize
-          if (param_type is Program.type_Object and arg_type.has_method_named("to_Object"))
-            args[0] = args[0].cast_to( Program.type_Object, this )
-            return m
-          endIf
-        endForEach
+        local arg_type = args.first.type
 
-        # 2. Try candidate(arg) -> candidate(arg->toString)
+        # We try m(arg->String) before m(arg->Object) because:
+        # - If arg were an object it would have already matched m(Object) earlier.
+        # - Only compounds would need to be converted for m(arg->Object).
+        # - Compounds may have both to->String and to->Object
+        # - to->String is preferred.
+
+        # 1. Try candidate(arg) -> candidate(arg->toString)
         forEach (m in candidates.available)
-          local arg_type = args.first.type
           local param_type = m.parameters.first.type
           param_type.organize
           if (param_type is Program.type_String and arg_type.has_method_named("to_String"))
@@ -661,9 +657,18 @@ class Scope
           endIf
         endForEach
 
+        # 2. Try candidate(arg) -> candidate(arg->toObject)
+        forEach (m in candidates.available)
+          local param_type = m.parameters.first.type
+          param_type.organize
+          if (param_type is Program.type_Object and arg_type.has_method_named("to_Object"))
+            args[0] = args[0].cast_to( Program.type_Object, this )
+            return m
+          endIf
+        endForEach
+
         # 3. Try candidate(arg) -> candidate(arg->to<ParameterType>)
         forEach (m in candidates.available)
-          local arg_type = args.first.type
           local param_type = m.parameters.first.type
           param_type.organize
           if (param_type is Program.type_Object and arg_type.has_method_named("to_"+param_type.name))
@@ -674,7 +679,6 @@ class Scope
 
         # 4. Try candidate(arg) -> candidate(arg->Value)
         forEach (m in candidates.available)
-          local arg_type = args.first.type
           local param_type = m.parameters.first.type
           param_type.organize
           if (param_type is Program.type_String and arg_type.has_method_named("to_Value"))
