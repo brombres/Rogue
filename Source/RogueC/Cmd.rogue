@@ -1135,18 +1135,19 @@ class CmdForEach : CmdControlStructure
     first_cmd           : Cmd
     last_cmd            : Cmd
     step_cmd            : Cmd
+    is_foreach_of       : Logical
 
   METHODS
-    method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList() )
+    method init( t, control_var_name, index_var_name, collection, step_cmd, statements=CmdStatementList(), is_foreach_of=false )
       control_type = CmdControlStructure.type_forEach
 
-    method init( t, control_var_tuple, index_var_name, collection, step_cmd, statements=CmdStatementList() )
+    method init( t, control_var_tuple, index_var_name, collection, step_cmd, statements=CmdStatementList(), is_foreach_of=false )
       control_type = CmdControlStructure.type_forEach
       control_var_tuple.synthesize_variables = true
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local result = CmdForEach( t, control_var_name, index_var_name, collection.cloned( clone_args, new_t ), clone(step_cmd,clone_args,new_t), null )
+      local result = CmdForEach( t, control_var_name, index_var_name, collection.cloned(clone_args,new_t), clone(step_cmd,clone_args,new_t), null, &=is_foreach_of )
       result.control_var_tuple = clone( control_var_tuple, clone_args, new_t ) as CmdTuple
       result.first_cmd = clone( first_cmd, clone_args, new_t )
       result.last_cmd = clone( last_cmd, clone_args, new_t )
@@ -1322,7 +1323,7 @@ class CmdForEach : CmdControlStructure
 
         local result = CmdGenericLoop( t, CmdControlStructure.type_forEach, condition, statements )
         result.set_control_logic( this )
-        if (not (first_cmd and step_size <= -1))
+        if (not (is_foreach_of and first_cmd and step_size <= -1))
           # 'forEach (i of list from n step -1)' doesn't need to use 'list' as a control var
           result.add_control_var( collection_var )
         endIf

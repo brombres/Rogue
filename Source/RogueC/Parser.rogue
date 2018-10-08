@@ -2582,7 +2582,7 @@ class Parser
               if (has_parens) must_consume( TokenType.symbol_close_paren )
               consume(TokenType.keyword_do)
 
-              local cmd_for_each = CmdForEach( t, null as String, access.name, collection, step_cmd )
+              local cmd_for_each = CmdForEach( t, null as String, access.name, collection, step_cmd, &is_foreach_of )
               cmd_for_each.first_cmd = first_cmd
               cmd_for_each.last_cmd = last_cmd
               cmd_for_each.collection_var_name = collection_var_name
