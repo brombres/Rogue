@@ -191,6 +191,19 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
+    method operator==( other:Table<<$KeyType,$ValueType>> )->Logical
+      if (count != other.count) return false
+
+      local cur = first_entry
+      while (cur)
+        local other_entry = other.find( cur.key )
+        if (not other_entry) return false
+        if (other_entry.value != cur.value) return false
+        cur = cur.next_entry
+      endWhile
+
+      return true
+
     method print_to( buffer:StringBuilder )->StringBuilder
       buffer.print( '{' )
       local cur = first_entry
