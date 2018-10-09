@@ -3518,8 +3518,10 @@ class Parser
         if (consume(TokenType.symbol_open_paren))
           consume_eols
           local comparison_var = Local( t, Program.create_unique_id )
-          cur_statement_list.add( CmdLocalDeclaration(t,comparison_var,&skip_initialization) )
+          local cmd_declaration = CmdLocalDeclaration( t, comparison_var, &skip_initialization )
+          cur_statement_list.add( cmd_declaration )
           comparison_var.initial_value = parse_expression
+          cmd_select.local_declaration = cmd_declaration
           cmd_select.local_info = comparison_var
           cmd_select.expression = comparison_var.initial_value
           consume_eols

@@ -2771,6 +2771,8 @@ endAugment
 augment CmdLocalDeclaration
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      if (discard) return
+
       if (local_info.type.is_reference)
         if (skip_initialization)
           writer.print("ROGUE_DEF_LOCAL_REF_NULL(").print(local_info.type).print(",").print(local_info.cpp_name).print(")")

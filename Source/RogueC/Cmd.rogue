@@ -380,9 +380,10 @@ class CmdLocalDeclaration : CmdStatement
   PROPERTIES
     local_info          : Local
     skip_initialization : Logical
+    discard             : Logical  # we made this just in case but it's no longer needed
 
   METHODS
-    method init( t, local_info, skip_initialization=false )
+    method init( t, local_info, skip_initialization=false, discard=false )
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -392,7 +393,7 @@ class CmdLocalDeclaration : CmdStatement
         if (new_value) new_value = new_value.cloned( clone_args, new_t )
         return task_args.replace_write_local( t, local_info, new_value )
       else
-        return CmdLocalDeclaration( t, local_info, skip_initialization )
+        return CmdLocalDeclaration( t, local_info, skip_initialization, discard )
       endIf
 
     method execute( vm:VM )->Value
@@ -6910,6 +6911,7 @@ endClass
 
 class CmdSelect : Cmd
   PROPERTIES
+    local_declaration : CmdLocalDeclaration
     local_info : Local
     expression : Cmd
     cases      : CmdSelectCase[]
@@ -6921,6 +6923,7 @@ class CmdSelect : Cmd
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSelect
       if (new_t) t = new_t
       local result = CmdSelect( t, local_info, clone(expression,clone_args,new_t), CmdSelectCase[](cases.count) )
+      if (local_declaration) result.local_declaration = local_declaration.cloned( clone_args, new_t ) as CmdLocalDeclaration
       forEach (c in cases) result.cases.add( c.cloned( clone_args, new_t ) )
       return result
 
@@ -6973,6 +6976,23 @@ class CmdSelect : Cmd
         throw t.error( "Selection list cannot be empty." )
       endIf
 
+      if (expression)
+        expression = expression.resolve( scope )
+        local expr_type = expression.require_type
+        if (not expr_type.is_primitive)
+          # Convert e.g. select(string){ case1:value1 || value2 } -> select{ string==case1:value1 || value2 }
+          # so that operator overloads are handled correctly.
+          forEach (c in cases from cases.count-2 step -1)
+            forEach (condition at index in c.conditions)
+              c.conditions[ index ] = CmdCompareEQ( expression.t, expression.cloned, condition )
+            endForEach
+          endForEach
+          expression = null
+          local_info = null
+          local_declaration.discard = true
+        endIf
+      endIf
+
       forEach (c in cases)
         c.resolve( scope )
         local case_type = c.type
@@ -6984,7 +7004,6 @@ class CmdSelect : Cmd
       endForEach
 
       if (expression)
-        expression = expression.resolve( scope )
         local expr_type = expression.require_type
         forEach (c in cases)
           c.cast_conditions( expr_type, scope )
