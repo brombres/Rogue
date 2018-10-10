@@ -697,6 +697,11 @@ class File
     method options->FileOptions
       return FileOptions()
 
+    method rename( old_filepath:String, new_filepath:String )->Logical
+      if (not File.exists(old_filepath)) return false
+      native @|rename( $old_filepath->utf8, $new_filepath->utf8 );
+      return File.exists( new_filepath )
+
     method parent( filepath:String, level=1:Int32 )->String
       if (level <= 0) return filepath
       if (level == 1) return folder( filepath )
@@ -1005,6 +1010,9 @@ class File
 
     method reader->FileReader
       return File.reader( this.filepath )
+
+    method rename( new_filepath:String )->Logical [macro]
+      return File.rename( this.filepath, new_filepath )
 
     method rewrite( mappings:Table<<String,String>> )
       File.rewrite( this.filepath, mappings )
