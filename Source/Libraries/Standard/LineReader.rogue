@@ -68,5 +68,10 @@ class LineReader : Reader<<String>>
 
       return this
 
+    method to->String[]
+      local lines = String[]
+      forEach (line in this) lines.add( line )
+      return lines
+
 endClass
 
