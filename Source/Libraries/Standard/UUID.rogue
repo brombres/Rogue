@@ -1,0 +1,48 @@
+class UUID
+  PROPERTIES
+    bytes     = Byte[](16)
+    as_string : String
+
+  METHODS
+    method init
+      bytes.clear
+      $if (target("Windows"))
+        nativeHeader  #include <Rpc.h>
+        nativeLibrary "Rpcrt4.lib"
+        native @|UUID uuid;
+                |UuidCreate( &uuid );
+        local d1 = native( "uuid.Data1" )->Int32
+        local d2 = native( "(RogueInt32) uuid.Data2" )->Int32
+        local d3 = native( "(RogueInt32) uuid.Data2" )->Int32
+        bytes.add( d1 :>>: 24 )
+        bytes.add( d1 :>>: 16 )
+        bytes.add( d1 :>>: 8 )
+        bytes.add( d1 )
+        bytes.add( d2 :>>: 8 )
+        bytes.add( d2 )
+        bytes.add( d3 :>>: 8 )
+        bytes.add( d3 )
+        forEach (i in 0..7)
+          bytes.add( native("uuid.Data4[$i]")->Byte )
+        endForEach
+      $else
+        nativeHeader #include <uuid/uuid.h>
+        native @|uuid_t uuid;
+                |uuid_generate( uuid );
+        forEach (i in 0..15)
+          bytes.add( native("uuid[$i]")->Byte )
+        endForEach
+      $endIf
+
+      local st = bytes.to_hex_string
+      local a = st.substring(  0,  8 )
+      local b = st.substring(  8,  4 )
+      local c = st.substring( 12,  4 )
+      local d = st.substring( 16,  4 )
+      local e = st.substring( 20, 12 )
+      as_string = "$-$-$-$-$" (a,b,c,d,e)
+
+    method to->String
+      return as_string
+endClass
+
