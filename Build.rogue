@@ -161,7 +161,7 @@ endRoutine
 #-------------------------------------------------------------------------------
 routine rogo_test
 #-------------------------------------------------------------------------------
-  local cmd = @|roguec Test.rogue --execute --debug --test --target="C++,Console"
+local cmd = 'roguec Test.rogue --execute --debug --test --no-line-mapping --target="C++,Console,$"' (System.os)
   println "> " + cmd
   System.run( cmd )
 endRoutine
