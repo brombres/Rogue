@@ -199,6 +199,7 @@ class Tokenizer
       TokenType.keyword_native              = define( TokenType("native") )
       TokenType.keyword_nativeCode          = define( NativeCodeTokenType("nativeCode") )
       TokenType.keyword_nativeHeader        = define( NativeCodeTokenType("nativeHeader") )
+      TokenType.keyword_nativeLibrary       = define( TokenType("nativeLibrary") )
       TokenType.keyword_necessary           = define( TokenType("necessary") )
       TokenType.keyword_noAction            = define( TokenType("noAction") )
       TokenType.keyword_null                = define( TokenType("null") )

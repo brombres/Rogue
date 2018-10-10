@@ -1311,11 +1311,23 @@ class Parser
       endIf
 
       if (consume(TokenType.keyword_nativeCode))
-        # Turn this nativeHeader into a Cmd node instead of storing the native header
-        # directly so that the header is only added if the method is resolved (meaning
+        # Turn this nativeCode into a Cmd node instead of storing the native code
+        # directly so that the code is only added if the method is resolved (meaning
         # it's actually used in the program).  This is a way to have classes with native
         # dependencies that don't get pulled in if they're unused.
         cur_statement_list.add( CmdNativeCode(t,t->String) )
+        return
+      endIf
+
+      if (consume(TokenType.keyword_nativeLibrary))
+        # Turn this nativeLibrary into a Cmd node instead of storing the native library
+        # directly so that the library is only added if the method is resolved (meaning
+        # it's actually used in the program).  This is a way to have classes with native
+        # dependencies that don't get pulled in if they're unused.
+        if (not next_is(TokenType.literal_string))
+          throw peek.error( "String specifying native library expected." )
+        endIf
+        cur_statement_list.add( CmdNativeLibrary(t,read->String) )
         return
       endIf
 
@@ -1822,6 +1834,7 @@ class Parser
 
       if ((t_type is TokenType.keyword_nativeHeader) or
           (t_type is TokenType.keyword_nativeCode) or
+          (t_type is TokenType.keyword_nativeLibrary) or
           (t_type is TokenType.keyword_includeNativeCode) or
           (t_type is TokenType.keyword_includeNativeHeader) or
           (t_type is TokenType.keyword_compileArg) or
@@ -1878,6 +1891,13 @@ class Parser
 
       elseIf (consume(TokenType.keyword_nativeCode))
         Program.native_code.add( t->String )
+        return true
+
+      elseIf (consume(TokenType.keyword_nativeLibrary))
+        if (not next_is(TokenType.literal_string))
+          throw peek.error( "String specifying native library expected." )
+        endIf
+        RogueC.native_libraries.add( read->String )
         return true
 
       elseIf (consume(TokenType.keyword_includeNativeCode))

@@ -575,6 +575,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdNativeLibrary )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdNativeHeader )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -676,6 +682,7 @@ class Visitor
     method on_enter( cmd:CmdModifyAndAssignProperty )
     method on_enter( cmd:CmdNativeSource )
     method on_enter( cmd:CmdNativeCode )
+    method on_enter( cmd:CmdNativeLibrary )
     method on_enter( cmd:CmdNativeHeader )
     method on_enter( cmd:CmdIncludeNative )
     method on_enter( cmd:CmdNecessary )
@@ -784,6 +791,7 @@ class Visitor
     method on_leave( cmd:CmdModifyAndAssignProperty )
     method on_leave( cmd:CmdNativeSource )
     method on_leave( cmd:CmdNativeCode )
+    method on_leave( cmd:CmdNativeLibrary )
     method on_leave( cmd:CmdNativeHeader )
     method on_leave( cmd:CmdIncludeNative )
     method on_leave( cmd:CmdNecessary )
@@ -986,6 +994,9 @@ class Visitor
       noAction
 
     method dispatch( cmd:CmdNativeCode )
+      noAction
+
+    method dispatch( cmd:CmdNativeLibrary )
       noAction
 
     method dispatch( cmd:CmdNativeHeader )

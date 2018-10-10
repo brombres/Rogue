@@ -2169,6 +2169,12 @@ augment RogueC
 
         block
           local cmd = "$ $.cpp /Fe$.exe" (compiler_name,output_filepath,exe)
+          if (RogueC.native_libraries.count)
+            cmd += " /link"
+            forEach (lib in RogueC.native_libraries)
+              cmd += " " + lib
+            endForEach
+          endIf
           println cmd
           if (System.run(cmd)) System.exit( 1 )
           local obj_filename = File.filename( exe + ".obj" )
@@ -2185,6 +2191,9 @@ augment RogueC
 
         block
           local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
+          forEach (lib in RogueC.native_libraries)
+            cmd += " -l" + lib
+          endForEach
           if (execute_args) cmd += " && ./$ $" (exe,execute_args)
           println cmd
           println
@@ -4129,6 +4138,12 @@ augment CmdNativeCode
 endAugment
 
 augment CmdNativeHeader
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      noAction
+endAugment
+
+augment CmdNativeLibrary
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       noAction

@@ -6613,6 +6613,21 @@ class CmdNativeCode : CmdNativeSource
       return this
 endClass
 
+class CmdNativeLibrary : Cmd
+  PROPERTIES
+    library : String
+
+  METHODS
+    method init( t, library )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdNativeLibrary
+      if (new_t) t = new_t
+      return CmdNativeLibrary( t, library )
+
+    method resolve( scope:Scope )->Cmd
+      return this
+endClass
+
 class CmdInlineNative : Cmd
   PROPERTIES
     code         : String

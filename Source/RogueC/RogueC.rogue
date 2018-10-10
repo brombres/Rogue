@@ -59,6 +59,8 @@ class RogueC [singleton]
     target_list        = String[]
     libraries_folder   = ""
 
+    native_libraries = StringLookupList()
+
     source_files    = String[]
     generate_main   : Logical
     first_filepath  : String
