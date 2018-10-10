@@ -805,15 +805,17 @@ augment Byte[]
       while ((result.count & 3) != 0) result.print('=')
       return String( result )
 
-    method to_hex_string->String
+    method to_hex_string( &uppercase, &lowercase )->String
       # Returns a string of hexadecimal digit pairs encoding each byte.
+      # Uppercase by default unless &lowercase is specified.
       #
       # Example:
       #
       #   println Byte[][0,127,160,255].to_hex_string  # "007FA0FF"
       local buffer = StringBuilder( count*2 )
       forEach (b in this) buffer.print( ((b:>>:4)&15).to_hex_character ).print( (b&15).to_hex_character )
-      return buffer->String
+      if (lowercase) return buffer->String.to_lowercase
+      else           return buffer->String.to_uppercase
 endAugment
 
 augment String[]
