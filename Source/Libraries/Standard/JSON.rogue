@@ -36,8 +36,6 @@ endClass
 
 class JSONParseError( message ) : Error;
 
-class JSONParserBuffer : StringBuilder [singleton];
-
 class JSONParser
   PROPERTIES
     reader : Scanner
@@ -167,26 +165,26 @@ class JSONParser
 
       if (not reader.has_another) return ""
 
-      local buffer = JSONParserBuffer
-      buffer.clear
-      local ch = reader.read
-      while (reader.has_another and ch != terminator)
-        if (ch == '\\')
+      use buffer = StringBuilder.pool
+        local ch = reader.read
+        while (reader.has_another and ch != terminator)
+          if (ch == '\\')
+            ch = reader.read
+            if (ch == 'b')     buffer.print( '\b' )
+            elseIf (ch == 'f') buffer.print( '\f' )
+            elseIf (ch == 'n') buffer.print( '\n' )
+            elseIf (ch == 'r') buffer.print( '\r' )
+            elseIf (ch == 't') buffer.print( '\t' )
+            elseIf (ch == 'u') buffer.print( parse_hex_quad )
+            else               buffer.print( ch )
+          else
+            buffer.print( ch )
+          endIf
           ch = reader.read
-          if (ch == 'b')     buffer.print( '\b' )
-          elseIf (ch == 'f') buffer.print( '\f' )
-          elseIf (ch == 'n') buffer.print( '\n' )
-          elseIf (ch == 'r') buffer.print( '\r' )
-          elseIf (ch == 't') buffer.print( '\t' )
-          elseIf (ch == 'u') buffer.print( parse_hex_quad )
-          else               buffer.print( ch )
-        else
-          buffer.print( ch )
-        endIf
-        ch = reader.read
-      endWhile
+        endWhile
 
-      return buffer->String.consolidated
+        return buffer->String.consolidated
+      endUse
 
     method hex_character_to_value( ch:Character )->Int32 [macro]
       return ch.to_number
@@ -207,21 +205,21 @@ class JSONParser
       if (ch == '"' or ch == '\'')
         return parse_string
       else
-        local buffer = JSONParserBuffer
-        buffer.clear
-        local finished = false
-        while (not finished and reader.has_another)
-          if (ch.is_identifier(&allow_dollar))
-            reader.read
-            buffer.print( ch->Character )
-            ch = reader.peek
-          else
-            finished = true
-          endIf
-        endWhile
+        use buffer = StringBuilder.pool
+          local finished = false
+          while (not finished and reader.has_another)
+            if (ch.is_identifier(&allow_dollar))
+              reader.read
+              buffer.print( ch->Character )
+              ch = reader.peek
+            else
+              finished = true
+            endIf
+          endWhile
 
-        if (buffer.count == 0) throw JSONParseError( "Identifier expected." )
-        return buffer->String.consolidated
+          if (buffer.count == 0) throw JSONParseError( "Identifier expected." )
+          return buffer->String.consolidated
+        endUse
       endIf
 
     method peek->Character
