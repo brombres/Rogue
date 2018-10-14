@@ -1,9 +1,16 @@
 $include "ParseKit"
 uses ParseKit<<Simple>>
 
+SimpleTest()
+
 class SimpleTest
   METHODS
     method init
+      if (System.command_line_arguments.is_empty)
+        println "USAGE: rogo <expression>"
+        return
+      endIf
+
       local parser = SimpleParser()
       parser.set_source( "[Source]", System.command_line_arguments.join(" ") )
       parser.consume_eols

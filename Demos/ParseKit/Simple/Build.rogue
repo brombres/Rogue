@@ -2,6 +2,3 @@
 
 #$ DEPENDENCIES = "Simple.rogue"
 $include "Simple.rogue"
-
-SimpleTest()
-
