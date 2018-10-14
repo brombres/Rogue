@@ -1,0 +1,329 @@
+module Geometry
+
+class XY( x:Real64, y:Real64 ) [compound]
+  DEFINITIONS
+    EPSILON = (1e-6)
+
+  GLOBAL METHODS
+    method create->XY
+      return XY( 0, 0 )
+
+    method create( n:Real64 )->XY
+      return XY( n, n )
+
+    method create( m:Real64, angle:Radians )->XY
+      return XY( m * angle.cos, m * angle.sin )
+
+    method create( m:Real64, angle:Degrees )->XY
+      return XY( m * angle.cos, m * angle.sin )
+
+    method create( value:Value )->XY
+      if (not value) return XY(0,0)
+
+      if (value.is_list)
+        return XY( value[0]->Real64, value[1]->Real64 )
+      elseIf (value.is_table)
+        if (value.contains("x")) return XY( value//x->Real64, value//y->Real64 )
+        else                     return XY( value//width->Real64, value//height->Real64 )
+      elseIf (value.is_number)
+        local n = value->Real64
+        return XY( n, n )
+      endIf
+
+      return XY(0,0)
+
+  METHODS
+    method abs->XY
+      return XY( select{x>=0:x||-x}, select{y>=0:y||-y} )
+
+    method ceiling->XY
+      return XY( Math.ceiling(x), Math.ceiling(y) )
+
+    method clamped( low:Real64, high:Real64 )->XY
+      # Adjusts both x and y to be within the given limits
+      local new_x = x
+      local new_y = y
+      if (new_x < low) new_x = low
+      if (new_y < low) new_y = low
+      if (new_x > high) new_x = high
+      if (new_y > high) new_y = high
+      return XY( new_x, new_y )
+
+    method clamped_low( low:Real64 )->XY
+      # Adjusts both x and y to be greater than or equal to 'low'
+      return XY( ?:{x<low:low || x}, ?:{y<low:low || y} )
+
+    method clamped_high( high:Real64 )->XY
+      # Adjusts both x and y to be less than or equal to 'high'
+      return XY( ?:{x>high:high || x}, ?:{y>high:high || y} )
+
+    method clamped( box:Box )->XY
+      # Adjusts this point to be within the boundaries of the given box.
+      local vx = x
+      local vy = y
+      local x1 = box.x1
+      local y1 = box.y1
+      local x2 = box.x2
+      local y2 = box.y2
+
+      if (vx < x1)     vx = x1
+      elseIf (vx > x2) vx = x2
+
+      if (vy < y1)     vy = y1
+      elseIf (vy > y2) vy = y2
+
+      return XY(vx,vy)
+
+    method clamped( line:Line )->XY
+      # Returns the point along the given line segment that is closest
+      # to this point.
+      #
+      # Notes:
+      #
+      # Points along the line are defined by:
+      #
+      #   Line(t) = line.a + t * (line.b - line.a)
+      #
+      # where t is 0 to 1.  We can define t as:
+      #
+      #   A = v - line.a
+      #   B = line.b - line.a
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local P1 = line.a
+      local P2 = line.b
+      local A = this - P1
+      local B = P2 - P1
+      local t_numer = A.dot(B)
+      if (t_numer < 0) return P1
+      local t_denom = B.dot(B)
+      if (t_numer > t_denom) return P2
+      return P1 + (t_numer / t_denom) * B
+
+    method clamped( ray:Ray )->XY
+      # Returns the point along the given ray that is closest
+      # to this point.
+      #
+      # Notes:
+      #
+      # Points along the ray are defined by:
+      #
+      #   Ray(t) = ray.position + t * ray.direction
+      #
+      # where t is 0 or higher.  We can define t as:
+      #
+      #   A = pt - line.position
+      #   B = line.direction
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local A = this - ray.position
+      local B = ray.direction
+      local t_numer = A.dot(B)
+      if (t_numer < 0) return ray.position
+      local t_denom = B.dot(B)
+      return ray.position + (t_numer / t_denom) * B
+
+    method cross( other:XY )->Real64
+      return x * other.y - y * other.x
+
+    method degrees->Degrees [macro]
+      Degrees( this.radians )
+
+    method distance_to( other:XY )->Real64
+      return (other - this).magnitude
+
+    method dot( other:XY )->Real64
+      return x * other.x + y * other.y
+
+    method floor->XY
+      return XY( Math.floor(x), Math.floor(y) )
+
+    method has_magnitude_greater_than( n:Real64 )->Logical
+      # Equivalent to and faster than v.magnitude >= n
+      return x*x + y*y >= n*n
+
+    method has_magnitude_less_than( n:Real64 )->Logical
+      # Equivalent to and faster than v.magnitude <= n
+      return x*x + y*y <= n*n
+
+    method is_non_zero->Logical
+      return x or y
+
+    method is_power_of_two->Logical
+      return x.is_power_of_two and y.is_power_of_two
+
+    method is_zero->Logical
+      return x.abs <= EPSILON and y.abs <= EPSILON
+
+    method magnitude->Real64
+      return Math.sqrt( x*x + y*y )
+
+    method magnitude_squared->Real64
+      return x*x + y*y
+
+    method max->Real64
+      return select{ x>=y:x || y }
+
+    method min->Real64
+      return select{ x<=y:x || y }
+
+    method max( other:XY )->XY
+      # Returns an XY containing the max X and the max Y of 'this' and 'other'.
+      return XY( Math.max(x,other.x), Math.max(y,other.y) )
+
+    method min( other:XY )->XY
+      # Returns an XY containing the min X and the min Y of 'this' and 'other'.
+      return XY( Math.min(x,other.x), Math.min(y,other.y) )
+
+    method normal->XY
+      # Returns the normal of this vector.
+      return XY( -y, x )
+
+    method normalized->XY
+      local msq = x*x + y*y
+      if (msq <= EPSILON) return XY(0,0)
+      local m = msq.sqrt
+      return XY( x/m, y/m )
+
+    method operator==( other:XY )->Logical
+      return (x == other.x) and (y == other.y)
+
+    method operator+( other:XY )->XY
+      return XY( x+other.x, y+other.y )
+
+    method operator-()->XY
+      return XY( -x, -y )
+
+    method operator-( other:XY )->XY
+      return XY( x-other.x, y-other.y )
+
+    method operator*( other:XY )->XY
+      return XY( x*other.x, y*other.y )
+
+    method operator*( value:Real64 )->XY
+      return XY( x*value, y*value )
+
+    method operator/( other:XY )->XY
+      return XY( x/other.x, y/other.y )
+
+    method operator/( value:Real64 )->XY
+      return XY( x/value, y/value )
+
+    method operator%( other:XY )->XY
+      return XY( x%other.x, y%other.y )
+
+    method operator%( value:Real64 )->XY
+      return XY( x%value, y%value )
+
+    method operator^( other:XY )->XY
+      return XY( x^other.x, y^other.y )
+
+    method operator^( value:Real64 )->XY
+      return XY( x^value, y^value )
+
+    method or_larger( other:XY )->XY
+      # Returns the largest X and the largest Y between this value and the other value.
+      return XY( this.x.or_larger(other.x), this.y.or_larger(other.y) )
+
+    method or_smaller( other:XY )->XY
+      # Returns the smaller X and the smaller Y between this value and the other value.
+      return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
+    method parallelum( axis:XY )->XY
+      # Returns the component of this vector that lies along the axis defined
+      # by the parameter.
+      return (this.dot(axis) / axis.dot(axis)) * axis
+
+    method perpendiculum( axis:XY )->XY
+      # Returns the component of this vector that lies perpendicular to the axis defined
+      # by the parameter.
+      return this - this.parallelum( axis )
+
+    method product->Real64
+      return x * y
+
+    method radians->Radians
+      return Radians( Math.atan2( y, x ) )
+
+    method reflected( surface_normal:XY )->XY
+      return this - 2 * (this.dot(surface_normal) * surface_normal)
+
+    method rotated( angle:Degrees )->XY [macro]
+      XY( this.magnitude, radians + angle->Radians )
+
+    method rotated( angle:Radians )->XY
+      return XY( magnitude, radians + angle )
+
+    method round->XY
+      return (this + XY(0.5,0.5)).floor
+
+    method side( line:Line )->Int32
+      # Returns 0 if on the line, 1 if on the same side as line.normal points out of,
+      # and -1 if on the opposite side
+      return line.direction.cross( this - line.a ).sign
+
+    method to->String
+      return StringBuilder().print( "[" ).print( x, 2 ).print( "," ).print( y, 2 ).print( "]" )->String
+
+    method to->Value( &integer )
+      if (integer)
+        return @{ x:x->Int32, y:y->Int32 }
+      else
+        return @{ x:x, y:y }
+      endIf
+
+    method to_power_of_two->XY
+      return XY( x.to_power_of_two, y.to_power_of_two )
+
+    method xv->XY
+      return XY(x,0)
+
+    method yv->XY
+      return XY(0,y)
+
+    method yx->XY
+      return XY(y,x)
+
+  GLOBAL METHODS
+    method operator+( value:Real64, v:XY )->XY
+      return XY( value+v.x, value+v.y )
+
+    method operator-( value:Real64, v:XY )->XY
+      return XY( value-v.x, value-v.y )
+
+    method operator*( value:Real64, v:XY )->XY
+      return XY( value*v.x, value*v.y )
+
+    method operator/( value:Real64, v:XY )->XY
+      return XY( value/v.x, value/v.y )
+
+    method operator%( value:Real64, v:XY )->XY
+      return XY( value%v.x, value%v.y )
+
+    method operator^( value:Real64, v:XY )->XY
+      return XY( value^v.x, value^v.y )
+
+    method zero->XY [macro]
+      XY(0,0)
+endClass
+
+augment Random
+  METHODS
+    method xy->XY:
+      # Creates a XY compound with randomized (x,y) values,
+      # each in the range (0.0,1.0) exclusive.
+      #
+      # Example:
+      #   local var random_screen_pos = Random.xy * Display.size
+      return XY( real64, real64 )
+
+    method xy( low:Real64, high:Real64 )->XY
+      # Returns a XY compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y) values.
+      return XY((real64 * (high-low)) + low,(real64 * (high-low)) + low)
+endAugment
+
+

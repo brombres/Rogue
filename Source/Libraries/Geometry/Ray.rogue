@@ -1,0 +1,131 @@
+module Geometry
+
+class Ray( position:XY, direction:XY ) [compound]
+  GLOBAL METHODS
+    method create( position:XY, angle:Degrees )->Ray
+      return Ray( position, XY(1.0,angle) )
+
+    method create( position:XY, angle:Radians )->Ray
+      return Ray( position, XY(1.0,angle) )
+
+  METHODS
+    method intersection( box:Box )->XY?
+      return intersection( box->Quad )
+
+    method intersection( circle:Circle )->XY?
+      # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
+      if (circle.contains(position)) return position
+      local delta = position - circle.position
+      local A = direction.dot( direction )
+      local v = 2 * direction * delta
+      local B = v.x + v.y
+      local C = delta.dot( delta ) - circle.radius^2
+      local discriminant = B*B - 4*A*C
+      if (discriminant <= 0) return null
+      local t = (2 * C) / (-B + discriminant.sqrt)
+      if (t < 0.0) return null
+      return position + t * direction
+
+    method intersection( line:Line )->XY?
+      local A = direction
+      local B = line.b - line.a
+      local C = line.a - position
+      local denom = B.cross(A)
+      local t0 = B.cross(C) / denom
+      local t1 = A.cross(C) / denom
+      if (t0 < 0.0 or t1 < 0.0 or t1 > 1.0) return null
+      return position + t0 * A
+
+    method intersection( quad:Quad )->XY?
+      local i = intersection( Line(quad.a,quad.b) )
+      if (i.exists) return i
+
+      i = intersection( Line(quad.b,quad.c) )
+      if (i.exists) return i
+
+      i = intersection( Line(quad.c,quad.d) )
+      if (i.exists) return i
+
+      return intersection( Line(quad.d,quad.a) )
+
+    method intersection( other:Ray )->XY?
+      local A = direction
+      local B = other.direction
+      local C = other.position - position
+      local denom = B.cross(A)
+      local t0 = B.cross(C) / denom
+      local t1 = A.cross(C) / denom
+      if (t0 < 0.0 or t1 < 0.0) return null
+      return position + t0 * A
+
+    method intersection( triangle:Triangle )->XY?
+      local i = intersection( Line(triangle.a,triangle.b) )
+      if (i.exists) return i
+
+      i = intersection( Line(triangle.b,triangle.c) )
+      if (i.exists) return i
+
+      return intersection( Line(triangle.c,triangle.a) )
+
+    method intersects( box:Box )->Logical
+      return intersection( box ).exists
+
+    method intersects( circle:Circle )->Logical
+      if (circle.contains(position)) return true
+      local closest_pt = circle.position.clamped( this )
+      return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
+
+    method intersects( line:Line )->Logical
+      return intersection( line ).exists
+
+    method intersects( quad:Quad )->Logical
+      return intersection( quad ).exists
+
+    method intersects( other:Ray )->Logical
+      return intersection( other ).exists
+
+    method intersects( triangle:Triangle )->Logical
+      return intersection( triangle ).exists
+
+    method operator+( offset:XY )->Ray
+      return Ray( position + offset, direction )
+
+    method operator-( offset:XY )->Ray
+      return Ray( position - offset, direction )
+
+    method reflected( box:Box )->Ray
+      return reflected( box->Quad )
+
+    method reflected( circle:Circle )->Ray
+      local i = intersection( circle )
+      if (not i.exists) return this
+      return Ray( i.value, direction.reflected( Line(circle.position,i.value).direction.normalized ) )
+
+    method reflected( quad:Quad )->Ray
+      if (this.intersects(Line(quad.a,quad.b))) return this.reflected( Line(quad.a,quad.b) )
+      if (this.intersects(Line(quad.b,quad.c))) return this.reflected( Line(quad.b,quad.c) )
+      if (this.intersects(Line(quad.c,quad.d))) return this.reflected( Line(quad.c,quad.d) )
+      return this.reflected( Line(quad.d,quad.a) )
+
+    method reflected( line:Line )->Ray
+      local i = intersection( line )
+      if (not i.exists) return this
+
+      if (position.side(line) < 0) line = line.reversed
+      return Ray( i.value, direction.reflected( line.normal ) )
+
+    method reflected( triangle:Triangle )->Ray
+      if (this.intersects(Line(triangle.a,triangle.b))) return this.reflected( Line(triangle.a,triangle.b) )
+      if (this.intersects(Line(triangle.b,triangle.c))) return this.reflected( Line(triangle.b,triangle.c) )
+      return this.reflected( Line(triangle.c,triangle.a) )
+
+    method to->Line
+      # Returns a Line with this ray's position as the first endpoint with
+      # the second endpoint an arbitrary 10,000 units away.
+      return this->Line( 10_000 )
+
+    method to->Line( length:Real64 )
+      return Line( position, position + direction*length )
+
+endClass
+

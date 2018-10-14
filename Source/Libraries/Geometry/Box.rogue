@@ -1,0 +1,233 @@
+module Geometry
+
+class Box( position:XY, size:XY ) [compound]
+  GLOBAL METHODS
+    method create( x:Real64, y:Real64, width:Real64, height:Real64 )->Box
+      return Box( XY(x,y), XY(width,height) )
+
+    method create( width:Real64, height:Real64 )->Box
+      return Box( XY(0,0), XY(width,height) )
+
+    method create( x:Real64, y:Real64, size:XY )->Box
+      return Box( XY(x,y), size )
+
+    method create( position:XY, width:Real64, height:Real64 )->Box
+      return Box( position, XY(width,height) )
+
+    method create( size:XY )->Box
+      return Box( XY(0,0), size )
+
+    method create( value:Value )->Box
+      if (value.is_list)
+        if (value.count == 2)
+          return Box( XY(value) )
+        else
+          return Box( value[0]->Real64, value[1]->Real64, value[2]->Real64, value[3]->Real64 )
+        endIf
+      elseIf (value.contains("position"))
+        return Box( XY(value//position), XY(value//size) )
+      else
+        return Box( value//x->Real64, value//y->Real64, value//width->Real64, value//height->Real64 )
+      endIf
+
+    method from_quad( top_left:XY, bottom_right:XY )->Box
+      return Box( top_left, bottom_right - top_left )
+
+  METHODS
+    method at( proportional_position:XY )->XY
+      return position + proportional_position * size
+
+    method at( u:Real64, v:Real64 )->XY
+      return position + XY(u,v) * size
+
+    method at_random->XY
+      return XY(Random.real64(position.x,size.x+position.x),Random.real64(position.y,size.y+position.y))
+
+    method bottom_left->XY
+      return (position + XY(0,size.y))
+
+    method bottom_right->XY
+      return (position + size)
+
+    method center->XY [macro]
+      return this.at(0.5,0.5)
+
+    method clamped( enclosing:Box )->Box
+      # Clamps this box to the enclosing box, first by positioning and then
+      # by resizing if it's still too large.
+      local inner = this
+      local pos = inner.position - enclosing.position
+      local br = pos + inner.size
+      if (br.x > enclosing.size.x) pos += XY(enclosing.size.x-br.x,0)
+      if (br.y > enclosing.size.y) pos += XY(0,enclosing.size.y-br.y)
+      return Box( pos.max(XY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
+
+    method contains( pos:XY )->Logical
+      if (pos.x < position.x or pos.x >= position.x + size.x) return false
+      if (pos.y < position.y or pos.y >= position.y + size.y) return false
+      return true
+
+    method cropped( delta:Real64 )->Box
+      return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
+
+    method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
+      return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
+
+    method expanded( delta:Real64 )->Box
+      return cropped( -delta )
+
+    method expanded( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
+      return cropped( -left, -top, -right, -bottom )
+
+$if not target("Console")
+    method fill( color:Color )->this
+      Display.fill( this, color )
+      return this
+
+    method fill( colors:Colors )->this
+      Display.fill( this, colors )
+      return this
+$endIf
+
+    method floor->Box
+      return Box( position.floor, size.floor )
+
+    method height->Real64 [macro]
+      return this.size.y
+
+    method intersection( rhs:Box )->Box?
+      # Returns the intersection of this box with another box.
+      local a_x1 = position.x
+      local a_y1 = position.y
+      local a_x2 = a_x1 + size.x
+      local a_y2 = a_y1 + size.y
+
+      local b_x1 = rhs.position.x
+      local b_y1 = rhs.position.y
+      local b_x2 = b_x1 + rhs.size.x
+      local b_y2 = b_y1 + rhs.size.y
+
+      if (a_x1 < b_x1) a_x1 = b_x1
+      if (a_y1 < b_y1) a_y1 = b_y1
+      if (a_x2 > b_x2) a_x2 = b_x2
+      if (a_y2 > b_y2) a_y2 = b_y2
+
+      if (a_x1 >= a_x2 or a_y1 >= a_y2) return null
+
+      return Box( a_x1, a_y1, a_x2-a_x1, a_y2-a_y1 )
+
+    method intersects( other:Box )->Logical
+      return (this & other).exists
+
+    method intersects( circle:Circle )->Logical
+      return this->Quad.intersects( circle )
+
+    method intersects( quad:Quad )->Logical
+      return this->Quad.intersects( quad )
+
+    method intersects( line:Line )->Logical
+      return this->Quad.intersects( line )
+
+    method intersects( triangle:Triangle )->Logical
+      return this->Quad.intersects( triangle )
+
+    method operator==( other:Box )->Logical
+      return (position == other.position and size == other.size)
+
+    method operator+( offset:XY )->Box
+      return Box( position+offset, size )
+
+    method operator-( offset:XY )->Box
+      return Box( position-offset, size )
+
+    method operator*( scale:Real64 )->Box
+      return Box( position*scale, size*scale )
+
+    method operator*( scale:XY )->Box
+      return Box( position*scale, size*scale )
+
+    method operator/( scale:Real64 )->Box
+      return this * (1/scale)
+
+    method operator/( scale:XY )->Box
+      return Box( position/scale, size/scale )
+
+    method operator&( rhs:Box )->Box?
+      return intersection( rhs )
+
+    method operator|( rhs:Box )->Box
+      # Returns the union of this box with another box.
+      if (size.is_zero) return rhs
+      if (rhs.size.is_zero) return this
+
+      local tl = position.min( rhs.position )
+      local br = bottom_right.max( rhs.bottom_right )
+
+      return Box( tl, br-tl )
+
+$if not target("Console")
+    method draw( color:Color, thickness=1:Int32 )->this
+      Display.draw( this, color, thickness )
+      return this
+$endIf
+
+    method rotated( angle:Degrees )->Quad [macro]
+      return this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Quad [macro]
+      return this->Quad.rotated( angle )
+
+$if (not target("Console"))
+    method transform( m:Matrix )->Quad
+      return Quad(
+        m * top_left,
+        m * top_right,
+        m * bottom_right,
+        m * bottom_left
+      )
+
+    method transformed( m:Matrix )->Box
+      return transform( m )->Box
+$endIf
+
+    method to->Quad
+      return Quad( this )
+
+    method to->String
+      return "[@$,$ $x$]" (x.format(".2"),y.format(".2"),width.format(".2"),height.format(".2"))
+
+    method to->Value( &integer )
+      if (integer)
+        return @{ x:x->Int32, y:y->Int32, width:width->Int32, height:height->Int32 }
+      else
+        return @{ x:x, y:y, width:width, height:height }
+      endIf
+
+    method top_left->XY [macro]
+      return this.position
+
+    method top_right->XY
+      return (position + XY(size.x,0))
+
+    method width->Real64 [macro]
+      return this.size.x
+
+    method x->Real64 [macro]
+      return this.position.x
+
+    method y->Real64 [macro]
+      return this.position.y
+
+    method x1->Real64 [macro]
+      return this.position.x
+
+    method y1->Real64 [macro]
+      return this.position.y
+
+    method x2->Real64
+      return this.position.x + this.size.x
+
+    method y2->Real64
+      return this.position.y + this.size.y
+
+endClass

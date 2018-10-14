@@ -310,7 +310,7 @@ class Build [singleton]
     method sync_libraries
       local dest = fix( "Programs/RogueC/" )
       local files = Files( "Source/Libraries" )
-      files.add( "Standard" ).add( "ParseKit" )
+      files.add( "Standard" ).add( "ParseKit" ).add( "Geometry" )
       local n_copied = File.sync_from( files, dest+"Libraries/", &dry_run )
       if (n_copied >= 10)
         println "Copying $ -> $" (fix("Source/Libraries"),fix(dest+"Libraries"))
