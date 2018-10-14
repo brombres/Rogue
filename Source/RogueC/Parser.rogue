@@ -156,7 +156,9 @@ class Parser
           endIf
 
         elseIf (t.type is TokenType.meta_uses)
-          id_map.use_module( read_module_id )
+          local module_id = read_module_id
+          RogueC.include_source( t, module_id, &is_optional )
+          id_map.use_module( module_id )
 
         elseIf (t.type is TokenType.symbol_dot or t.type is TokenType.symbol_slash_slash)
           # The 'x' in 'obj.x' and 'obj//x' is not a candidate for module (namespace) qualification
