@@ -149,10 +149,10 @@ class Preprocessor
             if (filepath_t.type is not TokenType.literal_string)
               throw reader.error( "Filepath expected." )
             endIf
-            local is_optional = consume_optional
+            local attributes = parse_include_attributes
             if (keep_tokens)
-              RogueC.include_source( t, filepath_t->String, &is_optional=is_optional )
-            # else next literal string will be discarded anyway
+              RogueC.set_include_attributes( filepath_t, filepath_t->String, attributes )
+              RogueC.include_source( t, filepath_t->String, &is_optional=attributes.is_optional )
             endIf
             nextIteration
 
@@ -567,15 +567,33 @@ class Preprocessor
         endIf
       endIf
 
-    method consume_optional->Logical
-      if (not consume(TokenType.symbol_open_bracket)) return false
-      local is_optional = false
-      while (consume("optional")) is_optional = true
-      if (not next_is(TokenType.symbol_close_bracket))
-        throw reader.peek.error( "Keyword 'optional' or closing ']' expected." )
+    method consume_eols
+      while (reader.has_another and reader.peek.type is TokenType.eol) reader.read
+
+    method parse_include_attributes->IncludeAttributes
+      if (not consume(TokenType.symbol_open_bracket) or consume(TokenType.symbol_close_bracket))
+        return IncludeAttributes()
       endIf
+
+      local is_optional = false
+      local is_essential = false
+      local is_api = false
+      consume_eols
+      while (reader.has_another and not reader.next_is(TokenType.symbol_close_bracket))
+        local t = reader.peek
+        local id = read_identifier
+        which (id)
+          case "optional":  is_optional = true
+          case "essential": is_essential = true
+          case "api":       is_api = true
+          others: throw t.error( "Illegal '$'. Possible attributes are 'optional', 'essential', and 'api'." (id) )
+        endWhich
+        consume_eols
+        consume( TokenType.symbol_comma )
+        consume_eols
+      endWhile
       must_consume( TokenType.symbol_close_bracket )
-      return is_optional
+      return IncludeAttributes( &=is_optional, &=is_essential, &=is_api )
 
     method must_consume( type:TokenType )
       local message = "Expected '$'." (type.name)
@@ -883,3 +901,4 @@ class Define
       endUse
 endClass
 
+class IncludeAttributes( &is_optional, &is_essential, &is_api ) [compound];

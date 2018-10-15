@@ -437,6 +437,22 @@ $endIf
     method on_compile_finished
       println "SUCCESS ($)" (stopwatch)
 
+    method set_include_attributes( t:Token, filepath:String, attributes:IncludeAttributes )
+      local file = find_source_file( t, filepath )
+      if (file is null) return  # error will be generated later if necessary
+
+      if (included_files.contains(file.filepath))
+        if (attributes.is_essential and not essential_files.contains(file.filepath))
+          throw t.error( ''"$" was already included without [essential] and cannot be retroactively processed."'' (filepath) )
+        endIf
+        if (attributes.is_api and not api_files.contains(file.filepath))
+          throw t.error( ''"$" was already included without [api] and cannot be retroactively processed."'' (filepath) )
+        endIf
+      else
+        if (attributes.is_essential) essential_files.add( file.filepath )
+        if (attributes.is_api)       api_files.add( file.filepath )
+      endIf
+
     method find_source_file( t:Token, filepath:String )->File
       if (t)
         # Try to fit new filepath onto end of context filepath.
@@ -498,7 +514,7 @@ $endIf
         endIf
       endIf
 
-      return file
+      return File( file.absolute_filepath )
 
     method include_source( filepath:String, &is_optional, &do_not_save_prefix, &from_command_line )
       include_source( null, filepath, is_optional, do_not_save_prefix, from_command_line )
@@ -514,7 +530,7 @@ $endIf
         else   throw RogueError( mesg )
       endIf
 
-      filepath = file.absolute_filepath
+      filepath = file.filepath
       if (included_files.contains(filepath)) return false
 
       included_files.add( filepath )
@@ -708,8 +724,8 @@ $endIf
                   if (file is null)
                     throw RogueError( ''Can not find file "$" for "--api=<filepath>".'' (value) )
                   endIf
-                  api_files.add( file.absolute_filepath )
-                  source_files.add( file.absolute_filepath )
+                  api_files.add( file.filepath )
+                  source_files.add( file.filepath )
                 else
                   api_classes.add( value )
                 endIf
@@ -731,8 +747,8 @@ $endIf
                 if (file is null)
                   throw RogueError( ''Can not find file "$" for "--essential=<filepath>".'' (value) )
                 endIf
-                essential_files.add( file.absolute_filepath )
-                source_files.add( file.absolute_filepath )
+                essential_files.add( file.filepath )
+                source_files.add( file.filepath )
               else
                 essential_declarations.add( value.split(',') )
               endIf
