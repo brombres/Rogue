@@ -320,11 +320,12 @@ class ModuleInstance
   PROPERTIES
     t                 : Token
     as_name           : String
+    instance_name         : String
     template_name     : String
     args              : Token[][]
 
   METHODS
-    method init( t, template_name, args, as_name )
+    method init( t, instance_name, template_name, args, as_name )
 
     method instantiate->Parser
       local template = Program.module_templates[ template_name ]
@@ -365,6 +366,7 @@ class ModuleInstance
         endUse
       endUse
       Program.module_names.add( as_name )
+      Program.module_as_name_to_instance_name[ as_name ] = instance_name
       return as_name
 endClass
 

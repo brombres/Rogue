@@ -75,6 +75,15 @@ class Parser
       is_api_module = is_api_file
       is_essential_module = is_essential_file
 
+      local exported_modules = Program.exported_modules( null )
+      if (exported_modules)
+        forEach (exported_module in exported_modules)
+          if (used_modules is null or not used_modules.contains(exported_module))
+            used_modules = UsedModule( exported_module, used_modules )
+          endIf
+        endForEach
+      endIf
+
     method consume( type:TokenType )->Logical
       if (not reader.next_is(type)) return false
       reader.read
@@ -142,8 +151,10 @@ class Parser
 
         elseIf (t.type is TokenType.meta_module)
           id_map.clear
+          local new_module_id : String
           if (next_is_identifier)
-            id_map.use_module( read_identifier )
+            new_module_id = read_identifier
+            id_map.use_module( new_module_id )
           else
             consume( TokenType.symbol_colon_colon )
           endIf
@@ -155,10 +166,32 @@ class Parser
             must_consume( TokenType.symbol_close_bracket )
           endIf
 
+          local exported_modules = Program.exported_modules( new_module_id )
+          if (exported_modules is null)
+            local as_name = Program.module_as_name_to_instance_name[ new_module_id ]
+            if (as_name) exported_modules = Program.exported_modules( as_name )
+          endIf
+          if (exported_modules)
+            forEach (exported_module in exported_modules)
+              id_map.use_module( exported_module )
+            endForEach
+          endIf
+
         elseIf (t.type is TokenType.meta_uses)
           local module_id = read_module_id
-          RogueC.include_source( t, module_id, &is_optional )
           id_map.use_module( module_id )
+          parse_uses_export
+
+          local exported_modules = Program.exported_modules( module_id )
+          if (exported_modules is null)
+            local as_name = Program.module_as_name_to_instance_name[ module_id ]
+            if (as_name) exported_modules = Program.exported_modules( as_name )
+          endIf
+          if (exported_modules)
+            forEach (exported_module in exported_modules)
+            id_map.use_module( exported_module )
+            endForEach
+          endIf
 
         elseIf (t.type is TokenType.symbol_dot or t.type is TokenType.symbol_slash_slash)
           # The 'x' in 'obj.x' and 'obj//x' is not a candidate for module (namespace) qualification
@@ -278,7 +311,10 @@ class Parser
 
       elseIf (t.type is TokenType.meta_uses)
         read  # 'uses'
-        used_modules = UsedModule( read_module_id, used_modules )
+        local module_id = read_module_id
+        used_modules = UsedModule( module_id, used_modules )
+        parse_uses_export
+
         must_consume_eols
         return true
 
@@ -300,6 +336,27 @@ class Parser
       endIf
 
       return false
+
+    method parse_uses_export->Logical
+      if (not consume(TokenType.symbol_open_bracket) or consume(TokenType.symbol_close_bracket))
+        return false
+      endIf
+
+      local should_export = false
+      consume_eols
+      while (reader.has_another and not reader.next_is(TokenType.symbol_close_bracket))
+        local t = reader.peek
+        local id = read_identifier
+        which (id)
+          case "export":  should_export = true
+          others: throw t.error( "Illegal '$', expected 'export'." (id) )
+        endWhich
+        consume_eols
+        consume( TokenType.symbol_comma )
+        consume_eols
+      endWhile
+      must_consume( TokenType.symbol_close_bracket )
+      return should_export
 
     method parse_class_template
       local t = read  # 'class'
@@ -4229,6 +4286,14 @@ endClass
 
 class UsedModule( name:String, previous:UsedModule )
   METHODS
+    method contains( module_name:String )->Logical
+      local cur = this
+      while (cur)
+        if (cur.name == module_name) return true
+        cur = cur.previous
+      endWhile
+      return false
+
     method find( global_var_name:String )->String
       local result = Program.module_global_map( name )[ global_var_name ]
       if (result)   return result

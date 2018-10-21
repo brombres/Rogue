@@ -51,16 +51,17 @@ endClass
 class PreprocessorTokenReader : Reader<<Token>>
   # Expands tokens based on Preprocessor.definitions
   PROPERTIES
-    tokens   : Token[]
-    stack    = Token[]  # stored in reverse order
-    position : Int32
-    count    : Int32
+    tokens     : Token[]
+    stack      : Token[]  # stored in reverse order
+    read_pos   : Int32
+    count      : Int32
     unfiltered : Int32
+    position   : Int32
 
-    local_definitions = Definitions[]
+    local_definitions : Definitions[]
 
   METHODS
-    method init( tokens )
+    method init( tokens, stack=Token[], local_definitions=Definitions[] )
       count = tokens.count
 
     method consume( type:TokenType )->Logical
@@ -211,11 +212,11 @@ class PreprocessorTokenReader : Reader<<Token>>
       throw peek.error( "Expected $, found $." (type.quoted_name,peek.quoted_name) )
 
     method next_is( type:TokenType )->Logical
-      if (position == count and stack.count == 0) return false
+      if (read_pos == count and stack.count == 0) return false
       return (peek.type is type)
 
     method next_is_unfiltered( type:TokenType )->Logical
-      if (position == count and stack.count == 0) return false
+      if (read_pos == count and stack.count == 0) return false
       return (peek_unfiltered.type is type)
 
     method peek->Token
@@ -223,10 +224,10 @@ class PreprocessorTokenReader : Reader<<Token>>
       if (this.unfiltered) return peek_unfiltered
 
       while (stack.is_empty)
-        if (position >= count) return TokenType.eoi.create_token( tokens.last )
+        if (read_pos >= count) return TokenType.eoi.create_token( tokens.last )
 
-        local t = tokens[position]
-        ++position
+        local t = tokens[read_pos]
+        ++read_pos
 
         # Possible definition expansion
         expand_definition( t )
@@ -237,12 +238,12 @@ class PreprocessorTokenReader : Reader<<Token>>
     method peek_unfiltered->Token
       if (stack.count) return stack.last
 
-      if (position >= count + stack.count)
+      if (read_pos >= count + stack.count)
         return TokenType.eoi.create_token( tokens.last )
       endIf
 
-      stack.add( tokens[position] )
-      ++position
+      stack.add( tokens[read_pos] )
+      ++read_pos
 
       return stack.last
 
@@ -289,6 +290,7 @@ class PreprocessorTokenReader : Reader<<Token>>
     method read->Token
       peek
       if (stack.count == 0) throw error( "Unexpected end of input." )
+      ++position
       return stack.remove_last
 
     method read_identifier->String
@@ -302,6 +304,20 @@ class PreprocessorTokenReader : Reader<<Token>>
         throw error( "Identifier expected, found $." (peek_unfiltered.quoted_name) )
       endIf
       return read->String
+
+    method restore_state( state:PreprocessorTokenReader )
+      stack = state.stack
+      local_definitions = state.local_definitions
+      read_pos = state.read_pos
+      unfiltered = state.unfiltered
+      position = state.position
+
+    method save_state->PreprocessorTokenReader
+      local result = ThisType( tokens, stack.cloned, local_definitions.cloned )
+      result.read_pos = this.read_pos
+      result.unfiltered = this.unfiltered
+      result.position = this.position
+      return result
 
 endClass
 

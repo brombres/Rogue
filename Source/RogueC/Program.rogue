@@ -15,10 +15,12 @@ class Program [essential singleton]
     template_lookup = Table<<String,Template>>()
 
     module_names = Set<<String>>()
+    module_as_name_to_instance_name = StringTable<<String>>()
 
     module_templates       = StringTable<<ModuleTemplate>>()
     module_instance_list   = ModuleInstance[]
     module_instance_lookup = StringTable<<ModuleInstance>>()
+    exported_modules       = StringTable<<StringLookupList>>()
 
     augment_lookup = Table<<String,Augment[]>>()
     #essential_list = essentialItem[]
@@ -57,7 +59,6 @@ class Program [essential singleton]
     m_MethodInfo_call  : Method
     type_Metacode      : Type
 
-
     type_StringBuilder : Type
 
     type_NativeLock  : Type
@@ -80,6 +81,16 @@ class Program [essential singleton]
     # Used by MethodTemplates
 
   METHODS
+    method add_exported_module( module_id:String, exported_id:String )
+      if (module_id is null)
+        module_id = "::"
+      else
+        local full_name = module_as_name_to_instance_name[ module_id ]
+        if (full_name) module_id = full_name
+      endIf
+      ensure @exported_modules[ module_id ]
+      exported_modules[ module_id ].add( exported_id )
+
     method add_literal_string( value:String )->Int32
       if (not value) return 0
 
@@ -94,6 +105,7 @@ class Program [essential singleton]
       endIf
 
     method add_module_id( module_name:String, id_name:String )
+      if (module_name is null) module_name = "::"
       local list = ids_by_module[ module_name ]
       if (not list)
         list = String[]
@@ -108,6 +120,10 @@ class Program [essential singleton]
         globals_by_module[ module_name ] = list
       endIf
       list.add( global_name )
+
+    method exported_modules( module_name:String )->StringLookupList
+      if (module_name is null) module_name = "::"
+      return @exported_modules[ module_name ]
 
     method module_id_map( module_name:String )->StringTable<<String>>
       local existing = module_id_maps[ module_name ]

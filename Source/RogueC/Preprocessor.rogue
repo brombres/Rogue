@@ -287,11 +287,12 @@ class Preprocessor
             nextIteration
 
           elseIf (t_type is TokenType.meta_uses)
-            # Only check for module templates here in order to instantiate them; 'uses' with standard modules can wait until later
+            # Only check for module templates here in order to instantiate them; 'uses' with standard modules can wait
             if (not keep_tokens)
               while (reader.has_another and not reader.next_is(TokenType.eol)) reader.read
 
             elseIf (reader.peek.type is TokenType.identifier and reader.peek(1).type is TokenType.symbol_open_specialize)
+              # Specialized module name
               local name_t = reader.peek
               local base_name = reader.read_identifier
               local args = Token[][]
@@ -335,6 +336,7 @@ class Preprocessor
                 local as_name : String
                 if (consume(TokenType.keyword_as))
                   as_name = reader.read_identifier
+                  Program.module_as_name_to_instance_name[ as_name ] = instance_name
                 else
                   # put 'uses' 'module-name<<...>>' back in the token stream for later
                   tokens.add( t )
@@ -352,18 +354,70 @@ class Preprocessor
                   endIf
 
                 else
-                  ensure instance( t, template_name, args, as_name )
+                  ensure instance( t, instance_name, template_name, args, as_name )
                   Program.module_instance_lookup[ instance_name ] = instance
                   Program.module_instance_list.add( instance )
                 endIf
+
+                if (parse_uses_export)
+                  Program.add_exported_module( cur_module, instance_name )
+                endIf
+
+                RogueC.include_source( t, instance_name.before_first('<'), &is_optional )
+
+                local eol_t = reader.peek
+                reader.must_consume( TokenType.eol )
+
+                local exported_modules = Program.exported_modules( instance_name )
+                if (exported_modules)
+                  forEach (exported_module in exported_modules)
+                    reader.push( TokenType.eol.create_token( t ) )
+                    reader.push( TokenType.identifier.create_token( t, exported_module ) )
+                    reader.push( TokenType.meta_uses.create_token( t ) )
+                  endForEach
+                endIf
+
+                reader.push( eol_t )
 
                 #local instance = ModuleInstance( t, "$<<$>>"(base_name,args.count), args )
                 #trace base_name, args
               endUse
               nextIteration
 
-            endIf
+            else
+              local save_state = reader.save_state
+              local module_id = read_identifier
+              if (parse_uses_export)
+                Program.add_exported_module( cur_module, module_id )
+              endIf
+              local end_pos = reader.position
+              reader.restore_state( save_state )
+              tokens.add( t )
+              while (reader.position < end_pos)
+                tokens.add( reader.read )
+              endWhile
 
+              RogueC.include_source( t, module_id, &is_optional )
+
+              local eol_t = reader.peek
+              reader.must_consume( TokenType.eol )
+              local exported_modules = Program.exported_modules( module_id )
+              if (exported_modules is null)
+                local as_name = Program.module_as_name_to_instance_name[ module_id ]
+                if (as_name) exported_modules = Program.exported_modules( as_name )
+              endIf
+              if (exported_modules)
+                forEach (exported_module in exported_modules)
+                  reader.push( TokenType.eol.create_token( t ) )
+                  reader.push( TokenType.identifier.create_token( t, exported_module ) )
+                  reader.push( TokenType.meta_uses.create_token( t ) )
+                endForEach
+              endIf
+              reader.push( eol_t )
+
+              nextIteration
+
+            endIf
 
           elseIf (t_type is TokenType.meta_block)
             if (keep_tokens)
@@ -473,6 +527,27 @@ class Preprocessor
           endForEach
         endUse
       endIf
+
+    method parse_uses_export->Logical
+      if (not consume(TokenType.symbol_open_bracket) or consume(TokenType.symbol_close_bracket))
+        return false
+      endIf
+
+      local should_export = false
+      consume_eols
+      while (reader.has_another and not reader.next_is(TokenType.symbol_close_bracket))
+        local t = reader.peek
+        local id = read_identifier
+        which (id)
+          case "export":  should_export = true
+          others: throw t.error( "Illegal '$', expected 'export'." (id) )
+        endWhich
+        consume_eols
+        consume( TokenType.symbol_comma )
+        consume_eols
+      endWhile
+      must_consume( TokenType.symbol_close_bracket )
+      return should_export
 
     method read_define( keep_tokens:Logical, definitions:Definitions )
       if (keep_tokens)

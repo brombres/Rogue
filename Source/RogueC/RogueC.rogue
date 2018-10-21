@@ -3,7 +3,7 @@ $define ROGUE_RELEASE_VERSION "1.4.13"
 $include "Version.rogue" [optional]
 
 # TODO:
-# - Develop a better default operator==() for compounds - memcmp isn't robust, use piecewise comparisons
+# - Generate error on "local v = null"
 # - Warn on assignment of intermediate value compound
 
 $include "Attributes.rogue"
