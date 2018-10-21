@@ -402,7 +402,7 @@ class Preprocessor
               local eol_t = reader.peek
               reader.must_consume( TokenType.eol )
               local exported_modules = Program.exported_modules( module_id )
-              if (exported_modules is null)
+              if (exported_modules is null and module_id)
                 local as_name = Program.module_as_name_to_instance_name[ module_id ]
                 if (as_name) exported_modules = Program.exported_modules( as_name )
               endIf
