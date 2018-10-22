@@ -5473,7 +5473,8 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
           return CmdWriteLocal( t, local_info, access ).resolve( scope )
       endWhich
 
-      new_value = new_value.resolve( scope ).cast_to( local_info.type, scope ).resolve( scope )
+      #new_value = new_value.resolve( scope ).cast_to( local_info.type, scope ).resolve( scope )
+      new_value = new_value.resolve( scope )
       return this
 
     method type->Type
@@ -5543,7 +5544,8 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
           return CmdWriteGlobal( t, global_info, access ).resolve( scope )
       endWhich
 
-      new_value = new_value.resolve(scope).cast_to( global_info.type, scope ).resolve( scope )
+      new_value = new_value.resolve( scope )
+      #new_value = new_value.resolve(scope).cast_to( global_info.type, scope ).resolve( scope )
       return this
 
     method type->Type
@@ -5612,7 +5614,8 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
       endWhich
 
       context = context.resolve(scope).require_value
-      new_value = new_value.resolve(scope).cast_to( property_info.type, scope ).resolve( scope )
+      new_value = new_value.resolve( scope )
+      #new_value = new_value.resolve(scope).cast_to( property_info.type, scope ).resolve( scope )
       return this
 
     method type->Type
