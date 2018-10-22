@@ -79,16 +79,6 @@ class Box( position:XY, size:XY ) [compound]
     method expanded( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
       return cropped( -left, -top, -right, -bottom )
 
-$if not target("Console")
-    method fill( color:Color )->this
-      Display.fill( this, color )
-      return this
-
-    method fill( colors:Colors )->this
-      Display.fill( this, colors )
-      return this
-$endIf
-
     method floor->Box
       return Box( position.floor, size.floor )
 
@@ -165,30 +155,11 @@ $endIf
 
       return Box( tl, br-tl )
 
-$if not target("Console")
-    method draw( color:Color, thickness=1:Int32 )->this
-      Display.draw( this, color, thickness )
-      return this
-$endIf
-
     method rotated( angle:Degrees )->Quad [macro]
       return this.rotated( angle->Radians )
 
     method rotated( angle:Radians )->Quad [macro]
       return this->Quad.rotated( angle )
-
-$if (not target("Console"))
-    method transform( m:Matrix )->Quad
-      return Quad(
-        m * top_left,
-        m * top_right,
-        m * bottom_right,
-        m * bottom_left
-      )
-
-    method transformed( m:Matrix )->Box
-      return transform( m )->Box
-$endIf
 
     method to->Quad
       return Quad( this )
