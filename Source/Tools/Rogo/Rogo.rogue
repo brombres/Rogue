@@ -209,13 +209,19 @@ if (not buildfiles.count)
        |      endBlock
        |
        |    method read_local_defs
+       |      read_local_defs( LOCAL_DEFS_FILE )
+       |
+       |    method read_local_defs( defs_filepath:String )
        |      # Attempt to read defs from Local.mk
        |      local overrides = String[]
-       |      if (File.exists(LOCAL_DEFS_FILE))
-       |        forEach (line in LineReader(File(LOCAL_DEFS_FILE)))
+       |      if (File.exists(defs_filepath))
+       |        forEach (line in LineReader(File(defs_filepath)))
        |          if (line.contains("="))
        |            local name  = line.before_first('=').trimmed
        |            local value = line.after_first('=').trimmed
+       |            if (value.begins_with('"') or value.begins_with('\''))
+       |              value = value.leftmost(-1).rightmost(-1)
+       |            endIf
        |            local p = <<Build>>.find_property( name )
        |            if (p)
        |              overrides.add( "$ = $" (name,value) )
