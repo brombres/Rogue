@@ -135,6 +135,7 @@ if (not buildfiles.count)
        |  METHODS
        |    method launch
        |      rogo_args.add( forEach in System.command_line_arguments )
+       |      read_local_defs
        |      on_launch
        |      parse_args
        |      dispatch_command
@@ -204,6 +205,23 @@ if (not buildfiles.count)
        |        # Use default command
        |        on_command_found
        |      endBlock
+       |
+       |    method read_local_defs
+       |      # Attempt to read defs from Local.mk
+       |      local overrides = String[]
+       |      if (File.exists("Local.mk"))
+       |        forEach (line in LineReader(File("Local.mk")))
+       |          if (line.contains("="))
+       |            local name  = line.before_first('=').trimmed
+       |            local value = line.after_first('=').trimmed
+       |            local p = <<Build>>.find_property( name )
+       |            if (p)
+       |              overrides.add( "$ = $" (name,value) )
+       |              <<Build>>.set_property( this, p, Value(value) )
+       |            endIf
+       |          endIf
+       |        endForEach
+       |      endIf
        |
        |    method _join( value:Value )->String
        |      local args = String[]
