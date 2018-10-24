@@ -132,6 +132,8 @@ if (not buildfiles.count)
        |    rogo_args           = @[]
        |    rogo_error          : Error
        |
+       |    LOCAL_DEFS_FILE     = "Local.mk"
+       |
        |  METHODS
        |    method launch
        |      rogo_args.add( forEach in System.command_line_arguments )
@@ -209,8 +211,8 @@ if (not buildfiles.count)
        |    method read_local_defs
        |      # Attempt to read defs from Local.mk
        |      local overrides = String[]
-       |      if (File.exists("Local.mk"))
-       |        forEach (line in LineReader(File("Local.mk")))
+       |      if (File.exists(LOCAL_DEFS_FILE))
+       |        forEach (line in LineReader(File(LOCAL_DEFS_FILE)))
        |          if (line.contains("="))
        |            local name  = line.before_first('=').trimmed
        |            local value = line.after_first('=').trimmed
