@@ -103,17 +103,12 @@ if (not buildfiles.count)
        |#------------------------------------------------------------------------------
        |# Introspection-based Launcher Framework
        |#------------------------------------------------------------------------------
-       |global ::prefix = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
-       |
-       |class CommandSyntax      : StringTable<<String>> [singleton];
-       |class CommandDescription : StringTable<<String>> [singleton];
-       |
        |routine syntax( command:String, text:String )
-       |  CommandSyntax[ command ] = text
+       |  Build.rogo_syntax[ command ] = text
        |endRoutine
        |
        |routine description( command:String, text:String )
-       |  CommandDescription[ command ] = text
+       |  Build.rogo_descriptions[ command ] = text
        |endRoutine
        |
        |routine help( command:String, description=null:String, syntax=null:String )
@@ -121,48 +116,104 @@ if (not buildfiles.count)
        |  if (syntax)      Global.syntax( command, syntax )
        |endRoutine
        |
-       |local cmd = System.command_line_arguments.cloned
        |try
-       |  if (cmd.count)
-       |    local args = String[]
-       |    while (cmd.count)
-       |      if (dispatch(cmd,args)) System.exit
-       |      args.insert( cmd.remove_last )
-       |    endWhile
-       |    println "ERROR: No such command '$'." (args.first)
-       |    println
-       |    System.command_line_arguments.clear
-       |    rogo_help
-       |  else
-       |    rogo_default
-       |  endIf
+       |  Build.launch
        |catch (err:Error)
-       |  Console.error.println err
-       |  System.exit 1
+       |  Build.rogo_error = err
+       |  Build.on_error
        |endTry
        |
-       |routine dispatch( cmd:String[], string_args:String[] )->Logical
-       |  local m = <<Global>>.find_method( prefix + cmd.join("_") )
-       |  if (not m) return false
+       |class Build [singleton]
+       |  PROPERTIES
+       |    rogo_syntax         = StringTable<<String>>()
+       |    rogo_descriptions   = StringTable<<String>>()
+       |    rogo_prefix         = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+       |    rogo_command        = "default"
+       |    rogo_args           = @[]
+       |    rogo_error          : Error
        |
-       |  local args = @[]
-       |  forEach (arg in string_args)
-       |    which (arg)
-       |      case "true":  args.add( true )
-       |      case "false": args.add( false )
-       |      case "null":  args.add( NullValue )
-       |      others:       args.add( arg )
-       |    endWhich
-       |  endForEach
-       |  if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
-       |  m.call( Global, args )
-       |  return true
-       |endRoutine
+       |  METHODS
+       |    method launch
+       |      rogo_args.add( forEach in System.command_line_arguments )
+       |      on_launch
+       |      parse_args
+       |      dispatch_command
+       |
+       |    method dispatch_command
+       |      local m = find_command( rogo_command )
+       |      require m
+       |
+       |      local args = @[]
+       |      forEach (arg in rogo_args)
+       |        which (arg)
+       |          case "true":  args.add( true )
+       |          case "false": args.add( false )
+       |          case "null":  args.add( NullValue )
+       |          others:       args.add( arg )
+       |        endWhich
+       |      endForEach
+       |      if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
+       |      m.call( Global, args )
+       |
+       |    method find_command( name:String )->MethodInfo
+       |      return <<Global>>.find_method( rogo_prefix + name )
+       |
+       |    method on_error
+       |      Console.error.println rogo_error
+       |      on_exit
+       |      System.exit 1
+       |
+       |    method on_command_found
+       |      noAction
+       |
+       |    method on_command_not_found
+       |      println "=" * 79
+       |      println "ERROR: No such command '$'." (rogo_args.first)
+       |      println "=" * 79
+       |      println
+       |      rogo_command = "help"
+       |      rogo_args.clear
+       |      on_command_found
+       |
+       |    method on_launch
+       |      noAction
+       |
+       |    method on_exit
+       |      noAction
+       |
+       |    method parse_args
+       |      block
+       |        if (rogo_args.count)
+       |          local parts = String[]
+       |          parts.add( forEach in rogo_args )
+       |          rogo_args.clear
+       |
+       |          while (parts.count)
+       |            local cmd = _join( parts )
+       |            if (find_command(cmd))
+       |              rogo_command = cmd
+       |              on_command_found
+       |              escapeBlock
+       |            endIf
+       |            rogo_args.insert( parts.remove_last )
+       |          endWhile
+       |
+       |          on_command_not_found
+       |        endIf
+       |
+       |        # Use default command
+       |        on_command_found
+       |      endBlock
+       |
+       |    method _join( value:Value )->String
+       |      local args = String[]
+       |      args.add( forEach in value )
+       |      return args.join( "_" )
+       |endClass
+       |
        |
        |routine rogo_help( command="":String )
-       |  local args = System.command_line_arguments.cloned
-       |  if (args.count) args.remove_first
-       |  command = args.join( "_" )
+       |  command = Build._join( Build.rogo_args )
        |  if (command.count)
        |    local syntax = get_syntax( command )
        |    local success = false
@@ -184,7 +235,9 @@ if (not buildfiles.count)
        |    if (success)
        |      return
        |    else
+       |      println "=" * 79
        |      println "ERROR: No such command '$'." (command)
+       |      println "=" * 79
        |      println
        |    endIf
        |  endIf
@@ -192,8 +245,8 @@ if (not buildfiles.count)
        |  println "USAGE"
        |  local lines = String[]
        |  forEach (m in <<Global>>.methods)
-       |    if (m.name.begins_with(prefix))
-       |      lines.add( "  " + get_syntax(m.name.after_first(prefix)) )
+       |    if (m.name.begins_with(Build.rogo_prefix))
+       |      lines.add( "  " + get_syntax(m.name.after_first(Build.rogo_prefix)) )
        |    endIf
        |  endForEach
        |  lines.sort( (a,b)=>(a<b) )
@@ -201,11 +254,12 @@ if (not buildfiles.count)
        |  println
        |endRoutine
        |
+       |
        |routine get_syntax( m_name:String )->String
-       |  if (CommandSyntax.contains(m_name))
-       |    return "rogo " + CommandSyntax[ m_name ]
+       |  if (Build.rogo_syntax.contains(m_name))
+       |    return "rogo " + Build.rogo_syntax[ m_name ]
        |  else
-       |    local m = <<Global>>.find_method( prefix + m_name )
+       |    local m = <<Global>>.find_method( Build.rogo_prefix + m_name )
        |    if (not m) return null
        |    local line = "rogo $" (m_name.replacing('_',' '))
        |    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
@@ -213,9 +267,10 @@ if (not buildfiles.count)
        |  endIf
        |endRoutine
        |
+       |
        |routine get_description( m_name:String )->String
-       |  if (CommandDescription.contains(m_name))
-       |    return CommandDescription[ m_name ]
+       |  if (Build.rogo_descriptions.contains(m_name))
+       |    return Build.rogo_descriptions[ m_name ]
        |  else
        |    return null
        |  endIf
