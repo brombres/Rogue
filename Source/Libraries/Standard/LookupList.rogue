@@ -60,6 +60,9 @@ class LookupList<<$ValueType>>
     method remove_at( index:Int32 )->$ValueType
       return remove( keys[index] )
 
+    method set( index:Int32, value:$ValueType ) [macro]
+      this.values[ index ] = value
+
     method set( key:String, value:$ValueType )
       local entry = indices.find( key )
       if (entry)
