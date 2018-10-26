@@ -2,6 +2,9 @@ class StringLookupList : LookupList<<String>>
   METHODS
     method add( key:String )
       this[ key ] = key
+
+    method to->String[]
+      return values
 endClass
 
 class LookupList<<$ValueType>>
