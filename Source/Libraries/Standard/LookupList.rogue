@@ -12,7 +12,6 @@ class LookupList<<$ValueType>>
     indices = StringTable<<Int32>>()
     values  = $ValueType[]
     keys    = String[]
-    unused  : Int32[]
 
   METHODS
     method clear
@@ -46,12 +45,10 @@ class LookupList<<$ValueType>>
       local entry = indices.find( key )
       if (entry)
         indices.remove( entry )
-        ensure unused
         local index = entry.value
-        unused.add( index )
         local result = values[ index ]
-        values[ index ] = default_value
-        keys[ index ] = ""
+        values.remove_at( index )
+        keys.remove_at( index )
         return result
       else
         return default_value
@@ -68,15 +65,8 @@ class LookupList<<$ValueType>>
       if (entry)
         values[ entry.value ] = value
       else
-        if (unused and unused.count)
-          local index = unused.remove_last
-          indices[ key ] = index
-          values[ index ] = value
-          keys[ index ] = key
-        else
-          indices[ key ] = values.count
-          values.add( value )
-          keys.add( key )
-        endIf
+        indices[ key ] = values.count
+        values.add( value )
+        keys.add( key )
       endIf
 endClass
