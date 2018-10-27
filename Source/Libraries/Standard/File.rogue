@@ -5,6 +5,7 @@ class File
   GLOBAL METHODS
     method absolute_filepath( filepath:String )->String
       if (not filepath) return null
+      filepath = expand_filepath( filepath )
 
       if (not exists(filepath))
         local parent = folder( filepath )
@@ -97,6 +98,7 @@ class File
       return filepath
 
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter
+      filepath = expand_filepath( filepath )
       return CharacterToUTF8ByteWriter( File.writer(filepath) )
 
     method common_path( filepath_a:String, filepath_b:String )->String
@@ -117,6 +119,9 @@ class File
       return a  # 'a' and 'b' are the same at this point
 
     method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
+      from_filepath = expand_filepath( from_filepath )
+      to_filepath = expand_filepath( to_filepath )
+
       # Copy always is the default or else only if newer and/or size different.
       if (if_newer)
         # The if_newer flag is a little convoluted to retain backwards compatibility
@@ -157,6 +162,9 @@ class File
       endIf
 
     method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
+      from_filepath = expand_filepath( from_filepath )
+      to_filepath = expand_filepath( to_filepath )
+
       if (File.is_folder(to_filepath))
         if (filename(from_filepath) != filename(to_filepath))
           return copy_newer( from_filepath, to_filepath + separator + File.filename(from_filepath),
@@ -217,6 +225,7 @@ class File
         };
       endNativeCode
 
+      filepath = expand_filepath( filepath )
       if (not File.exists(filepath)) return 0
 
       native @|RogueUInt32 result = ~0U;
@@ -237,6 +246,7 @@ class File
       # Creates the specified folder along with intermediate folders
       # if necessary.  Returns 'true' on success or if the filepath
       # already exists as a folder.  Returns 'false' on failure to
+      filepath = expand_filepath( filepath )
       while (filepath.count > 1 and (filepath.ends_with('/') or filepath.ends_with('\\')))
         filepath = filepath.leftmost( -1 )
       endWhile
@@ -260,6 +270,7 @@ class File
 
     method delete( filepath:String )->Logical
       if (not filepath) return false
+      filepath = expand_filepath( filepath )
       if (is_folder(filepath))
         delete( forEach in listing(filepath) )  # Recursively delete nested content
         return (0 == native( "rmdir( (const char*) $filepath->utf8 )")->Int32)
@@ -274,15 +285,28 @@ class File
       return filepath + separator
 
     method exists( filepath:String )->Logical
+      filepath = expand_filepath( filepath )
       native @|if ( !$filepath ) return false;
               |
               |struct stat s;
               |return (stat((char*)$filepath->utf8, &s) == 0);
 
+    method expand_filepath( filepath:String )->String
+      which (System.os)
+        case "macOS"
+          if (filepath.begins_with('~'))
+            filepath = System.environment//HOME + filepath.rightmost(-1)
+          endIf
+          return filepath
+        others
+          return filepath
+      endWhich
+
     method extension( filepath:String )->String
       return filepath.after_last( '.' )
 
     method filename( filepath:String )->String
+      filepath = expand_filepath( filepath )
       local i = filepath.locate_last( '/' )
       if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return filepath
@@ -293,6 +317,8 @@ class File
       else                        return filepath.replacing( '\\', '/' )
 
     method folder( filepath:String )->String
+      filepath = expand_filepath( filepath )
+
       # Replace multiple slashes with single slashes
       while (filepath.contains("//")) filepath = filepath.replacing( "//", "/" )
       while (filepath.contains("\\\\")) filepath = filepath.replacing( "\\\\", "\\" )
@@ -316,6 +342,8 @@ class File
       return filepath.from( 0, i1.value-1 )
 
     method is_folder( filepath:String )->Logical [essential]
+      filepath = expand_filepath( filepath )
+
       native @|if ( !$filepath ) return false;
               |
               |#if defined(ROGUE_PLATFORM_WINDOWS)
@@ -331,12 +359,14 @@ class File
               |#endif
 
     method is_hidden( filepath:String )->Logical
-      if (not filepath.begins_with('.'))       return false
-      if (filepath == "." or filepath == "..") return false
-      if (filepath.begins_with("./") or filepath.begins_with(".\\")) return false
+      local filename = File.filename( expand_filepath(filepath) )
+      if (not filename.begins_with('.'))       return false
+      if (filename == "." or filename == "..") return false
       return true
 
     method is_newer_than( filepath:String, other_filepath:String )->Logical
+      filepath = expand_filepath( filepath )
+      other_filepath = expand_filepath( other_filepath )
       if (not File.exists(filepath))       return false
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
@@ -442,6 +472,7 @@ class File
       endIf
 
     method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
+      folder = expand_filepath( folder )
       if (folder == ".") options = options.omit_path
 
       if (not options.omitting_path)
@@ -588,6 +619,7 @@ class File
 
 
     method load_as_bytes( filepath:String )->Byte[]
+      filepath = expand_filepath( filepath )
       local count = size( filepath )
       local bytes = Byte[]( count )
       local infile = reader( filepath )
@@ -596,6 +628,7 @@ class File
       return bytes
 
     method load_as_string( filepath:String )->String
+      filepath = expand_filepath( filepath )
       local count = size( filepath )
       local buffer = StringBuilder( count )
       local infile = reader( filepath )
@@ -625,6 +658,7 @@ class File
       # *  - Matches any number of characters but does not match '/' or '\'
       # ** - Matches any number of characters including slashes
       # ?  - Matches any one character except '/' and '\'
+      filepath = expand_filepath( filepath )
 
       # Check non-wildcard characters at the end of pattern first as an easy out
       local last_wildcard = -1
@@ -698,22 +732,28 @@ class File
       return FileOptions()
 
     method rename( old_filepath:String, new_filepath:String )->Logical
+      old_filepath = expand_filepath( old_filepath )
+      new_filepath = expand_filepath( new_filepath )
       if (not File.exists(old_filepath)) return false
       native @|rename( $old_filepath->utf8, $new_filepath->utf8 );
       return File.exists( new_filepath )
 
     method parent( filepath:String, level=1:Int32 )->String
+      filepath = expand_filepath( filepath )
       if (level <= 0) return filepath
       if (level == 1) return folder( filepath )
       return parent( folder(filepath), level-1 )
 
     method path( filepath:String )->String
+      filepath = expand_filepath( filepath )
       return folder( filepath )
 
     method reader( filepath:String )->FileReader
+      filepath = expand_filepath( filepath )
       return FileReader( filepath )
 
     method rewrite( filepath:String, mappings:Table<<String,String>> )
+      filepath = expand_filepath( filepath )
       local fn = function( line:String )->String with (mappings)
         local cur = mappings.first_entry
         while (cur)
@@ -728,6 +768,7 @@ class File
       rewrite( filepath, fn )
 
     method rewrite( filepath:String, fn1:Function(String)->String, fn2=null:Function(String)->String, fn3=null:Function(String)->String )
+      filepath = expand_filepath( filepath )
       local data = load_as_string( filepath )
       local result = StringBuilder( data.count * 1.1 )
       forEach (line in LineReader(data))
@@ -739,18 +780,21 @@ class File
       save( filepath, result->String )
 
     method save( filepath:String, data:Byte[] )->Logical
+      filepath = expand_filepath( filepath )
       local outfile = writer( filepath )
       outfile.write( data )
       outfile.close
       return not outfile.error
 
     method save( filepath:String, data:String )->Logical
+      filepath = expand_filepath( filepath )
       local outfile = writer( filepath )
       outfile.write( data )
       outfile.close
       return not outfile.error
 
     method save( filepath:String, data:StringBuilder )->Logical
+      filepath = expand_filepath( filepath )
       local outfile = writer( filepath )
       outfile.write( data )
       outfile.close
@@ -764,6 +808,7 @@ class File
               |#endif
 
     method size( filepath:String )->Int64
+      filepath = expand_filepath( filepath )
       native @|if ( !$filepath ) return 0;
               |
               |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
@@ -776,10 +821,13 @@ class File
               |return size;
 
     method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+      source_folder = expand_filepath( source_folder )
+      dest_folder = expand_filepath( dest_folder )
       return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run )
 
     method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
       dest_folder = File.fix_slashes( dest_folder )
+      dest_folder = expand_filepath( dest_folder )
 
       if (not exists(dest_folder) and not dry_run)
         create_folder( dest_folder )
@@ -862,6 +910,7 @@ class File
       return modified
 
     method timestamp( filepath:String )->Real64
+      filepath = expand_filepath( filepath )
       # Returns the last modified time since Jan 1, 1970
       native @|#if defined(_WIN32)
               |  HANDLE handle = CreateFile( (const char*)$filepath->utf8, 0, 0, NULL, OPEN_EXISTING,
@@ -910,6 +959,7 @@ class File
               |return 0.0;
 
     method touch( filepath:String )
+      filepath = expand_filepath( filepath )
       if (System.os == "Windows")
         System.run "type nul >> $" (filepath)
       else
@@ -917,9 +967,11 @@ class File
       endIf
 
     method writer( filepath:String )->FileWriter
+      filepath = expand_filepath( filepath )
       return FileWriter( filepath )
 
     method append_writer( filepath:String )->FileWriter
+      filepath = expand_filepath( filepath )
       return FileWriter( filepath, &append=true )
 
   PROPERTIES
@@ -928,6 +980,7 @@ class File
   METHODS
     method init( filepath:String )
       this.filepath = fix_slashes( filepath )
+      this.filepath = expand_filepath( this.filepath )
 
     method absolute_filepath->String
       return File.absolute_filepath( this.filepath )
@@ -1169,6 +1222,7 @@ class FileReader : Reader<<Byte>>
       close
 
       filepath = File.fix_slashes( filepath )
+      filepath = File.expand_filepath( filepath )
 
       native @|$this->fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !$this->fp ) return false;
@@ -1298,6 +1352,7 @@ class FileWriter : Writer<<Byte>>
       close
       error = false
 
+      filepath = File.expand_filepath( filepath )
       filepath = File.fix_slashes( filepath )
 
       if (append)
