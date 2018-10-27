@@ -1,4 +1,26 @@
 class Date( timestamp=System.time:Real64 ) [compound]
+  ENUMERATE
+    JANUARY   = 1
+    FEBRUARY  = 2
+    MARCH     = 3
+    APRIL     = 4
+    MAY       = 5
+    JUNE      = 6
+    JULY      = 7
+    AUGUST    = 8
+    SEPTEMBER = 9
+    OCTOBER   = 10
+    NOVEMBER  = 11
+    DECEMBER  = 12
+
+    SUNDAY    = 0
+    MONDAY    = 1
+    TUESDAY   = 2
+    WEDNESDAY = 3
+    THURSDAY  = 4
+    FRIDAY    = 5
+    SATURDAY  = 6
+
   GLOBAL METHODS
     method create( year:Int32, month:Int32, day:Int32, hour=0:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Date
       native @|time_t cur_seconds = 0;
@@ -17,6 +39,101 @@ class Date( timestamp=System.time:Real64 ) [compound]
               |
       return Date( native( "((RogueReal64)mktime(&cur_date))" )->Real64 + millisecond )
 
+    method create( date:String )->Date
+      local parts = String[]
+
+      if (date.extract_strings("$(I)-$(I)-$(I)T$(I):$(I):$(I)",parts))
+        # 2018-10-27T10:49
+        local y  = parts[0]->Int32
+        local m  = parts[1]->Int32
+        local d  = parts[2]->Int32
+        local hh = parts[3]->Int32
+        local mm = parts[4]->Int32
+        local ss = parts[5]->Int32
+        return Date( y, m, d, hh, mm, ss )
+
+      elseIf (date.extract_strings("$ $ $(I) $(I):$(I):$(I) $ $(I)",parts))
+        # Sat Oct 27 10:46:30 PDT 2018
+        local y  = parts[7]->Int32
+        local m  = month_name_to_index( parts[1] )
+        local d  = parts[2]->Int32
+        local hh = parts[3]->Int32
+        local mm = parts[4]->Int32
+        local ss = parts[5]->Int32
+        return Date( y, m, d, hh, mm, ss )
+
+      elseIf (date.extract_strings("$(I).$(I).$(I) $(I):$(I):$(I)*",parts))
+        # 2018.10.27 11:18:00[.000][AM]
+        local y  = parts[0]->Int32
+        local m  = parts[1]->Int32
+        local d  = parts[2]->Int32
+        local hh = parts[3]->Int32
+        local mm = parts[4]->Int32
+        local ss = parts[5]->Int32
+        local is_am = date.ends_with("am") or date.ends_with("AM")
+        local is_pm = date.ends_with("pm") or date.ends_with("PM")
+        local is_12 = is_am or is_pm
+        if (is_12)
+          date = date.leftmost(-2).trimmed
+          if (is_am)
+            if (hh == 12) hh = 0
+          else
+            if (hh != 12) hh += 12
+          endIf
+        endIf
+        local ms = 0
+        if (date[date.count-4] == '.')
+          ms = date.after_last( '.' )->Int32
+          date = date.leftmost( -4 )
+        endIf
+        return Date( y, m, d, hh, mm, ss, ms )
+
+      elseIf (date.extract_strings("$(I).$(I).$(I)",parts) or
+          date.extract_strings("$(I)/$(I)/$(I)",parts) or
+          date.extract_strings("$(I)-$(I)-$(I)",parts))
+        # 2018.10.27, 2018-10-27, 2018/10/27
+        local y  = parts[0]->Int32
+        local m  = parts[1]->Int32
+        local d  = parts[2]->Int32
+        return Date.ymd( y, m, d )
+
+      else
+        throw SyntaxError( "Unsupported date format: " + date )
+      endIf
+
+    method month_name_to_index( month_name:String )->Int32
+      # January->1, December->12
+      # Accepts partial month names e.g. "Jan"
+      if (month_name.count >= 3)
+        local ch0 = month_name[0].to_lowercase
+        local ch1 = month_name[1].to_lowercase
+        local ch2 = month_name[2].to_lowercase
+        which (ch0)
+          case 'j'
+            if (ch1 == 'a') return JANUARY
+            which (ch2)
+              case 'n': return JUNE
+              case 'l': return JULY
+            endWhich
+          case 'f': return FEBRUARY
+          case 'm'
+            which (ch2)
+              case 'r': return MARCH
+              case 'y': return MAY
+            endWhich
+          case 'a'
+            which (ch1)
+              case 'p': return APRIL
+              case 'u': return AUGUST
+            endWhich
+          case 's': return SEPTEMBER
+          case 'o': return OCTOBER
+          case 'n': return NOVEMBER
+          case 'd': return DECEMBER
+        endWhich
+      endIf
+      throw SyntaxError( "Invalid month name: " + month_name )
+
     method now->Date
       return Date()
 
@@ -26,6 +143,8 @@ class Date( timestamp=System.time:Real64 ) [compound]
   GLOBAL PROPERTIES
     month_names = [ "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December" ]
+
+    weekday_names = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ]
 
   METHODS
     method year->Int32
@@ -92,40 +211,53 @@ class Date( timestamp=System.time:Real64 ) [compound]
       return (timestamp == other.timestamp)
 
     method to->String
-      return this->String( &ymd, &hms, &ms )
+      return this->String( &ymd, &hms )
 
     method to->String( &ymd, &hms, &ms, &format=24:Int32 )
-      which (format)
-        case 12, 24: hms = true
-        others: println "*** ERROR calling Date->String() - &format should be 12 or 24 ***"
-      endWhich
-
-      local buffer = StringBuilder()
-
-      if (ymd)
-        buffer.print( year.right_justified(4,'0') ).print('.')
-        buffer.print( month.right_justified(2,'0') ).print('.')
-        buffer.print( day.right_justified(2,'0') )
-        if (hms or ms) buffer.print( ' ' )
-      endIf
       if (hms)
-        if (format == 12)
-          buffer.print( hour12 ).print( ':' )
-        else
-          buffer.print( hour.right_justified(2,'0') ).print(':')
-        endIf
-        buffer.print( minute.right_justified(2,'0') ).print(':')
-        buffer.print( second.right_justified(2,'0') )
-        if (ms) buffer.print( '.' )
-        if (format == 12)
-          if (is_am) buffer.print " AM"
-          else       buffer.print " PM"
-        endIf
+        which (format)
+          case 12, 24: noAction
+          others:      throw SyntaxError( "Date->String() &format should be 12 or 24." )
+        endWhich
       endIf
-      if (ms)
-        buffer.print( millisecond.right_justified(3,'0') )
-      endIf
-      return buffer->String
+
+      use buffer = StringBuilder.pool
+
+        if (ymd)
+          buffer.print( year.right_justified(4,'0') ).print('.')
+          buffer.print( month.right_justified(2,'0') ).print('.')
+          buffer.print( day.right_justified(2,'0') )
+          if (hms or ms) buffer.print( ' ' )
+        endIf
+
+        if (hms)
+          if (format == 12)
+            buffer.print( hour12 ).print( ':' )
+          else
+            buffer.print( hour.right_justified(2,'0') ).print(':')
+          endIf
+          buffer.print( minute.right_justified(2,'0') ).print(':')
+          buffer.print( second.right_justified(2,'0') )
+          if (ms)
+            buffer.print( '.' )
+            buffer.print( millisecond.right_justified(3,'0') )
+          endIf
+          if (format == 12)
+            if (is_am) buffer.print " AM"
+            else       buffer.print " PM"
+          endIf
+        endIf
+        return buffer->String
+
+      endUse
+
+    method weekday->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_wday;
+
+    method weekday_name->String
+      return weekday_names[ weekday ]
 
 endClass
 

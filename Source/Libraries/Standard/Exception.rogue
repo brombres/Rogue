@@ -77,3 +77,6 @@ class OutOfBoundsError : Error
 endClass
 
 class IOError : Error;
+
+class SyntaxError : Error;
+
