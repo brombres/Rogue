@@ -290,7 +290,7 @@ class CmdStatementList : Cmd[]
         return execute( vm )
       endUse
 
-    method resolve( scope:Scope, &use_separate_results_list )
+    method resolve( scope:Scope )
       local result = CmdStatementList( count )
 
       local original_body = scope.this_body

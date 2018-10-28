@@ -365,7 +365,7 @@ class Method
       local scope = Scope( type_context, this )
       forEach (p in parameters) scope.push_local( p )
 
-      statements.resolve( scope, this is Program.m_on_launch )
+      statements.resolve( scope )
 
       if (scope.local_list.count > parameters.count) throw t.error( "[INTERNAL] Locals left on scope stack." )
       if (scope.control_stack.count) throw t.error( "[INTERNAL] Control stucture left on scope stack." )
