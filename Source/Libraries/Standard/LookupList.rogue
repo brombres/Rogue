@@ -46,12 +46,20 @@ class LookupList<<$ValueType>>
       if (entry)
         indices.remove( entry )
         local index = entry.value
-        local result = values[ index ]
-        values.remove_at( index )
+
+        # Decrement remaining indices > index
+        entry = indices.first_entry
+        while (entry)
+          if (entry.value > index) --entry.value
+          entry = entry.next_entry
+        endWhile
+
         keys.remove_at( index )
-        return result
+        return values.remove_at( index )
+
       else
         return default_value
+
       endIf
 
     method remove_at( index:Int32 )->$ValueType
