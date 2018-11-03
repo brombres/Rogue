@@ -37,8 +37,13 @@ class LookupList<<$ValueType>>
         return default_value
       endIf
 
-    method index( key:String )->Int32
-      return indices[ key ]
+    method index( key:String )->Int32 [macro]
+      return this.indices[ key ]
+
+    method locate( key:String )->Int32?
+      local entry = indices.find( key )
+      if (entry) return entry.value
+      else       return null
 
     method remove( key:String )->$ValueType
       local default_value : $ValueType

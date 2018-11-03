@@ -27,8 +27,10 @@ class ParseError( filepath:String, source:String, line:Int32, column:Int32, mess
         if (line and column and source)
           builder.println.println
           forEach (line at index in LineReader(source))
-            builder.println( line )
-            if (index+1 == this.line) escapeForEach
+            if (index+1 == this.line)
+              builder.println( line )
+              escapeForEach
+            endIf
           endForEach
           builder.print( " " * (column-1) ).println( '^' )
         endIf
