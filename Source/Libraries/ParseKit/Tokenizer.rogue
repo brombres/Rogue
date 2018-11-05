@@ -217,7 +217,7 @@ class Tokenizer
         while (scanner.has_another and not consume("}" "#")) buffer.print( read )
       else
         # Single-line comment
-        while (scanner.has_another and not peek == '\n')
+        while (scanner.has_another and peek != '\n')
           buffer.print( read )
         endWhile
       endIf
