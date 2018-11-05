@@ -71,6 +71,15 @@ class ParseRule
       endIf
       return on( TokenLookup[symbol], fn )
 
+    method on( type:TokenType, fn:Function(ParserType,Cmd)->Cmd )->this
+      throw UnsupportedOperationError()
+
+    method on( symbol:String, fn:Function(ParserType,Cmd)->Cmd )->this
+      if (not TokenLookup.contains(symbol))
+        throw Error( ''No token exists with symbol text "$".'' (symbol) )
+      endIf
+      return on( TokenLookup[symbol], fn )
+
     method on( symbol:String, cmd_type:TypeInfo )->this
       _require_instance_of( cmd_type, <<Cmd>> )
       if (not TokenLookup.contains(symbol))
@@ -116,6 +125,34 @@ class UnaryParseRule : ParseRule
       return this
 endClass
 
+
+class ContextParseRule : ParseRule
+  PROPERTIES
+    lookup = Table<<TokenType,Function(ParserType,Cmd)->Cmd>>()
+
+  METHODS
+    method parse->Cmd
+      return parse( parse_nested )
+
+    method parse( context:Cmd )->Cmd
+      local entry = lookup.find( peek.type )
+      if (entry)
+        return entry.value( parser, context )
+      else
+        return context
+      endIf
+
+    method on( type:TokenType, fn:Function(ParserType)->Cmd )->this
+      throw UnsupportedOperationError()
+
+    method on( type:TokenType, cmd_type:TypeInfo )->this
+      throw UnsupportedOperationError()
+
+    method on( type:TokenType, fn:Function(ParserType,Cmd)->Cmd )->this
+      lookup[ type ] = fn
+      return this
+
+endClass
 
 class BinaryParseRule : ParseRule
   PROPERTIES
