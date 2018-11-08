@@ -70,7 +70,7 @@ class SimpleParser : Parser
       rule.on( "/", <<CmdDivide>> )
 
       # negate
-      rule = add_nested( UnaryParseRule("negate") )
+      rule = add_nested( PreUnaryParseRule("negate") )
       rule.on( "-", <<CmdNegate>> )
 
       # term

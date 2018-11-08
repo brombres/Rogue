@@ -109,6 +109,15 @@ class UnaryParseRule : ParseRule
     lookup = Table<<TokenType,TypeInfo>>()
 
   METHODS
+    method on( type:TokenType, cmd_type:TypeInfo )->this
+      _require_instance_of( cmd_type, <<CmdUnary>> )
+      lookup[ type ] = cmd_type
+      return this
+endClass
+
+
+class PreUnaryParseRule : UnaryParseRule
+  METHODS
     method parse->Cmd
       local t = peek
       local entry = lookup.find( t.type )
@@ -118,11 +127,21 @@ class UnaryParseRule : ParseRule
       else
         return prior.parse
       endIf
+endClass
 
-    method on( type:TokenType, cmd_type:TypeInfo )->this
-      _require_instance_of( cmd_type, <<CmdUnary>> )
-      lookup[ type ] = cmd_type
-      return this
+
+class PostUnaryParseRule : UnaryParseRule
+  METHODS
+    method parse->Cmd
+      local context = prior.parse
+      local t = peek
+      local entry = lookup.find( t.type )
+      if (entry)
+        read
+        return entry.value.create_object<<CmdUnary>>.init( t, context )
+      else
+        return context
+      endIf
 endClass
 
 

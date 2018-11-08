@@ -82,4 +82,16 @@ class LookupList<<$ValueType>>
         values.add( value )
         keys.add( key )
       endIf
+
+    method to->String
+      local builder = StringBuilder()
+      builder.print( '[' )
+      local first = true
+      forEach (i in 0..<count)
+        if (first) first = false
+        else       builder.print( ',' )
+        builder.[ print(keys[i]), print(':'), print(values[i]) ]
+      endForEach
+      builder.print( ']' )
+      return builder->String
 endClass

@@ -494,7 +494,8 @@ class BitCalcParser : Parser
       # ParseRule( "name", on_default:Function(BitCalcParser)->Cmd )
       #   An alternative to having to call on_default(...) separately.
       #
-      # UnaryParseRule( "name", ... )
+      # PreUnaryParseRule( "name", ... )
+      # PostUnaryParseRule( "name", ... )
       #   Specializes:
       #
       #     on(TokenType,TypeInfo)
@@ -594,7 +595,7 @@ class BitCalcParser : Parser
       rule.on( "^", <<CmdPower>> )
 
       # !
-      rule = add_nested( UnaryParseRule("unary") )
+      rule = add_nested( PreUnaryParseRule("unary") )
       rule.on( "-", <<CmdNegate>> )
       rule.on( "!", <<CmdBitwiseNot>> )
       rule.on( "%", this=>parse_percent_integer_as_binary )
