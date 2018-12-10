@@ -216,7 +216,8 @@ augment CmdUnary
     method execute( vm:BitCalcVM )->Int32?
       return operate( operand.evaluate(vm) )
 
-    method operate( value:Int32 )->Int32 [abstract]
+    method operate( value:Int32 )->Int32
+      return 0
 
     method resolve->Cmd
       operand = operand.resolve
@@ -228,7 +229,8 @@ augment CmdBinary
     method execute( vm:BitCalcVM )->Int32?
       return operate( left.evaluate(vm), right.evaluate(vm) )
 
-    method operate( lhs:Int32, rhs:Int32 )->Int32 [abstract]
+    method operate( lhs:Int32, rhs:Int32 )->Int32
+      return 0
 
     method resolve->Cmd
       left = left.resolve
