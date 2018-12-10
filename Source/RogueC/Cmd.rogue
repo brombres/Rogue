@@ -414,7 +414,7 @@ class CmdLocalDeclaration : CmdStatement
         if (local_info.type is null) local_info.type = initial_value_type
       endIf
 
-      if (local_info.type is null)
+      if (local_info.type is null or local_info.type is Program.type_null)
         throw t.error( "Cannot determine the type of the local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Int32)." (local_info.name,local_info.name) )
       endIf
 
