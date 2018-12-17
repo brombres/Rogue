@@ -44,6 +44,8 @@ augment Program
       Preprocessor.define( "Int", Tokenizer().tokenize(("compiler-generated"), int_name ) )
 
     method validate_cpp_name( name:String )->String
+      if (name == "default") return "_default_";
+
       local begins_with_code_prefix = false
       if (name.begins_with(code_prefix))
         begins_with_code_prefix = true
