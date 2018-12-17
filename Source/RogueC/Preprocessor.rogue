@@ -506,6 +506,23 @@ class Preprocessor
           endWhile
         endIf
 
+        if (t.type is TokenType.eol)
+          # Discard eols if the next token is a period
+          local lookahead = 0
+          loop
+            local next_t = reader.peek( lookahead )
+            ++lookahead
+            if (next_t.type is TokenType.eol) nextIteration
+            if (next_t.type is TokenType.symbol_dot)
+                # Discard all EOLS up to this token
+                while (reader.read is not next_t) noAction
+                t = next_t
+                escapeLoop
+            endIf
+            escapeLoop
+          endLoop
+        endIf
+
         if (keep_tokens) tokens.add( t )
         if (stop_on_eol and t.type is TokenType.eol) escapeWhile
 
