@@ -18,7 +18,7 @@ class Scanner : Reader<<Character>>
         endForEach
       endIf
 
-      data = Character[]( source.count + tab_count )
+      data = Character[]( source.count + tab_count*spaces_per_tab - tab_count )
       forEach (b in source)
         if (b == '\t' and spaces_per_tab)
           forEach (1..spaces_per_tab) data.add( 32 )
@@ -48,7 +48,7 @@ class Scanner : Reader<<Character>>
         endForEach
       endIf
 
-      data = Character[]( source.count + tab_count )
+      data = Character[]( source.count + tab_count*spaces_per_tab - tab_count )
       forEach (b in source)
         if (b == '\t' and spaces_per_tab)
           forEach (1..spaces_per_tab) data.add( 32 )
