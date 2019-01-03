@@ -131,9 +131,9 @@ class Method
 
       else
         if (label_name == "insert" and label_lookup.contains(label_name))
-          throw label_t.error( "All methods implicitly define the label <<insert>> at the beginning of the method.  No duplicates are allowed." )
+          throw label_t.error( "All methods implicitly define the label <insert> at the beginning of the method.  No duplicates are allowed." )
         elseIf (label_name == "append" and label_lookup.contains(label_name))
-          throw label_lookup[label_name].t.error( "All methods implicitly define the label <<append>> at the end of the method.  No duplicates are allowed." )
+          throw label_lookup[label_name].t.error( "All methods implicitly define the label <append> at the end of the method.  No duplicates are allowed." )
         endIf
 
       endIf
