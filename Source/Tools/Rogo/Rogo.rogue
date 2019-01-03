@@ -137,7 +137,7 @@ if (not buildfiles.count)
        |  METHODS
        |    method launch
        |      rogo_args.add( forEach in System.command_line_arguments )
-       |      read_local_defs
+       |      read_defs
        |      on_launch
        |      parse_args
        |      dispatch_command
@@ -208,10 +208,10 @@ if (not buildfiles.count)
        |        on_command_found
        |      endBlock
        |
-       |    method read_local_defs
-       |      read_local_defs( LOCAL_DEFS_FILE )
+       |    method read_defs
+       |      read_defs( LOCAL_DEFS_FILE )
        |
-       |    method read_local_defs( defs_filepath:String )
+       |    method read_defs( defs_filepath:String )
        |      # Attempt to read defs from Local.mk
        |      local overrides = String[]
        |      if (File.exists(defs_filepath))
