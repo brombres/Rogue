@@ -222,7 +222,8 @@ class ConvertReturnToEscapeVisitor : Visitor
         endIf
       else
         if (cmd_return.value)
-          throw t.error( "$ is not declared as returning a value." (this_method.signature) )
+          local sig = select{ this_method.signature || this_method.name+"()" }
+          throw t.error( "$ is not declared as returning a value." (sig) )
         endIf
       endIf
       cmd_block.statements.add( CmdEscape( t, container.control_type, container ) )

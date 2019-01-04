@@ -459,7 +459,8 @@ class CmdReturn : CmdStatement
     method resolve( scope:Scope )->Cmd
       if (value)
         if (not scope.this_method.return_type)
-          throw t.error( "$ is not declared as returning a value." (scope.this_method.signature) )
+          local sig = select{ scope.this_method.signature || scope.this_method.name+"()" }
+          throw t.error( "$ is not declared as returning a value." (sig) )
         endIf
         value = value.resolve( scope ).cast_to(scope.this_method.return_type,scope).resolve( scope )
 
