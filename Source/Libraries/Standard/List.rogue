@@ -261,6 +261,16 @@ class List<<$DataType>> : GenericList
     method is_empty->Logical
       return count == 0
 
+    method join( separator="\n":String )->String
+      local builder = StringBuilder()
+      local first = true
+      forEach (item in this)
+        if (first) first = false
+        else       builder.print( separator )
+        builder.print( item )
+      endForEach
+      return builder->String
+
     method keep( keep_if:(Function($DataType)->Logical) )->this
       use rewriter = this.rewriter
         forEach (value in rewriter)
@@ -631,20 +641,7 @@ class List<<$DataType>> : GenericList
       return this
 
     method to->String
-      return this->String( ",", "[", "]" )
-
-    method to->String( separator=",":String, prefix="[":String, suffix="]":String )
-      local buffer = StringBuilder()
-      if (prefix) buffer.print( prefix )
-      local first = true
-      forEach (value in this)
-        if (first)         first = false
-        elseIf (separator) buffer.print( separator )
-        if (value is null) buffer.print( "null" )
-        else               buffer.print( value->String )
-      endForEach
-      if (suffix) buffer.print( suffix )
-      return buffer
+      return "[$]" (this.join(","))
 
     method to->Value
       local result = @[]
@@ -819,23 +816,6 @@ augment Byte[]
       forEach (b in this) buffer.print( ((b:>>:4)&15).to_hex_character ).print( (b&15).to_hex_character )
       if (lowercase) return buffer->String.to_lowercase
       else           return buffer->String.to_uppercase
-endAugment
-
-augment String[]
-  METHODS
-    method join( separator="\n":String )->String
-      local total_count = 0
-      forEach (line in this) total_count += line.count
-
-      local builder = StringBuilder( total_count )
-      local first = true
-      forEach (line in this)
-        if (first) first = false
-        else       builder.print( separator )
-        builder.print( line )
-      endForEach
-
-      return builder->String
 endAugment
 
 class GenericListRewriter [abstract];
