@@ -732,13 +732,16 @@ class Tokenizer
       elseIf (ch == '#')
         return tokenize_comment
 
-      elseIf (ch >= '0' and ch <= '9')
+      elseIf (ch == '0')
         which (reader.peek(1))
           case 'b': return tokenize_integer_in_base(2)
           case 'c': return tokenize_integer_in_base(8)
           case 'x': return tokenize_integer_in_base(16)
           others:   return tokenize_number
         endWhich
+
+      elseIf (ch >= '0' and ch <= '9')
+        return tokenize_number
 
       elseIf (ch == '@' and reader.peek(1) == '|')
         return tokenize_verbatim_string
