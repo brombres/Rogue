@@ -841,7 +841,8 @@ class Type
           names_list_args.add( CmdLiteralString(def.t,def.name) )
         endForEach
         local cmd_if = CmdIf( t, CmdLogicalNot(t,CmdAccess(t,"@names")) )
-        cmd_if.statements.add( CmdAssign(t, CmdAccess(t,"names"), CmdCreateList(t,names_list_args)) )
+        local list_declaration = CmdAccess( t, "String[]" )
+        cmd_if.statements.add( CmdAssign(t, CmdAccess(t,"names"), CmdTypedLiteralList(list_declaration,names_list_args)) )
         m_names.statements.add( cmd_if )
         m_names.statements.add( CmdReturn(t,CmdAccess(t,"@names")) )
         m_names.organize( scope )

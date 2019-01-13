@@ -2,7 +2,6 @@ module ParseKit<<$Language>>
 uses $Language
 
 enum TokenType( symbol:String, text=null:String, &is_keyword, &is_symbol, &is_structural )
-
   METHODS
     method description->String
       if (text) return text
