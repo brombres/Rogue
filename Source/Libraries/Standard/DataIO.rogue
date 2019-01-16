@@ -137,7 +137,7 @@ class DataWriter : Writer<<Byte>>
       return this
 
     method flush->this
-      output.close
+      output.flush
       return this
 
     method position->Int32
