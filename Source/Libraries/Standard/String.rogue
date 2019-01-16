@@ -981,6 +981,14 @@ class String
       endForEach
       return result->String
 
+    method to_escaped_ascii->String
+      use builder = StringBuilder.pool
+        (forEach in this).print_escaped_ascii( builder )
+        if (builder == this) return this  # no escapes
+        else                 return builder->String
+      endUse
+      return this  # won't happen but C++ doesn't realize it
+
     method to_uppercase->String
       local has_lc = false
       forEach (ch in this)

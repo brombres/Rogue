@@ -816,6 +816,28 @@ class Character [primitive]
     method or_smaller( other:Character )->Character
       return select{ this<=other:this || other }
 
+    method print_escaped_ascii( builder:StringBuilder )
+      which (this)
+        case '\0': builder.print( "\\0" )
+        case '\b': builder.print( "\\b" )
+        case '\e': builder.print( "\\e" )
+        case '\f': builder.print( "\\f" )
+        case '\n': builder.print( "\\n" )
+        case '\r': builder.print( "\\t" )
+        case '\v': builder.print( "\\v" )
+        others
+          if (this >= 256)
+            builder.print( "\\[" )
+            this->Int64.print_in_power2_base( 16, 3, builder )
+            builder.print( ']' )
+          elseIf (this < 32 or this >= 127)
+            builder.print( "\\x" )
+            this->Int64.print_in_power2_base( 16, 2, builder )
+          else
+            builder.print( this )
+          endIf
+      endWhich
+
     method required_bit_count->Int32
       if (this & 0x8000_0000) return 32
       if (this & 0x4000_0000) return 31
@@ -864,20 +886,11 @@ class Character [primitive]
     method to_power_of_two->Character
       return this->Int32.to_power_of_two->Character
 
-    method to_printable_string->String
-      which (this)
-        case '\0': return "\\0"
-        case '\b': return "\\b"
-        case '\e': return "\\e"
-        case '\f': return "\\f"
-        case '\n': return "\\n"
-        case '\r': return "\\t"
-        case '\v': return "\\v"
-        others
-          if (this >= 256)              return "\\[$]" (this.to_hex_string(3))
-          if (this < 32 or this >= 127) return "\\x$"  (this.to_hex_string(2))
-          return this->String
-      endWhich
+    method to_escaped_ascii->String
+      use builder = StringBuilder.pool
+        print_escaped_ascii( builder )
+        return builder->String
+      endUse
 
     method to_number( base=10:Int32 )->Int32
       local value : Int32
