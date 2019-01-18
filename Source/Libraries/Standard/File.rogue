@@ -292,15 +292,14 @@ class File
               |return (stat((char*)$filepath->utf8, &s) == 0);
 
     method expand_filepath( filepath:String )->String
-      which (System.os)
-        case "macOS"
-          if (filepath.begins_with('~'))
-            filepath = System.environment//HOME + filepath.rightmost(-1)
-          endIf
+      if (filepath.begins_with('~'))
+        local home_folder = System.environment//HOME
+        if (home_folder and home_folder.count)
+          filepath = System.environment//HOME + filepath.rightmost(-1)
           return filepath
-        others
-          return filepath
-      endWhich
+        endIf
+      endIf
+      return filepath
 
     method extension( filepath:String )->String
       return filepath.after_last( '.' )
