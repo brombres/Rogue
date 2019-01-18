@@ -7,6 +7,7 @@ class Files
   METHODS
     method init( base_folder:String )
       if (base_folder == "") base_folder = "./"
+      base_folder = File.expand_filepath( base_folder )
       this.base_folder = File.fix_slashes( File.ensure_ends_with_separator( base_folder ) )
       if (this.base_folder.begins_with("./") or this.base_folder.begins_with(".\\"))
         this.base_folder = this.base_folder.rightmost( -2 )
@@ -104,6 +105,9 @@ class Files
         filepaths.remove( filepath )
       endForEach
       return this
+
+    method to->String
+      return filepaths->String[]
 
     method to->String[]
       return filepaths->String[]
