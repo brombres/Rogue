@@ -293,9 +293,15 @@ class File
 
     method expand_filepath( filepath:String )->String
       if (filepath.begins_with('~'))
-        local home_folder = System.environment//HOME
+        local home_folder : String
+        which (System.os)
+          case "Windows"
+            home_folder = System.environment//HOMEDRIVE + System.environment//HOMEPATH
+          others
+            home_folder = System.environment//HOME
+        endWhich
         if (home_folder and home_folder.count)
-          filepath = System.environment//HOME + filepath.rightmost(-1)
+          filepath = home_folder + filepath.rightmost(-1)
           return filepath
         endIf
       endIf
@@ -511,7 +517,7 @@ class File
 
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
-      local search_filepath = filepath + "*"
+      local search_filepath = native_folder + "*"
 
       native @|{
               |  WIN32_FIND_DATA entry;
