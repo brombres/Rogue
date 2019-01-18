@@ -5,6 +5,8 @@ class ParseError( filepath:String, source:String, line:Int32, column:Int32, mess
   METHODS
     method init( message )
 
+    method init( filepath, message )
+
     method init( t:Token, message )
       filepath = t.filepath
       line = t.line
