@@ -105,6 +105,6 @@ class Files
       endForEach
       return this
 
-    method to->String
-      return filepaths->String
+    method to->String[]
+      return filepaths->String[]
 endClass
