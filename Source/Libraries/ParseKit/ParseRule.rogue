@@ -201,3 +201,15 @@ class BinaryParseRule : ParseRule
 
 endClass
 
+class RightAssociativeBinaryParseRule : BinaryParseRule
+  METHODS
+    method parse( context:Cmd )->Cmd
+      local t = peek
+      local entry = lookup.find( t.type )
+      if (entry)
+        read
+        return entry.value.create_object<<CmdBinary>>.init( t, context, parse )
+      else
+        return context
+      endIf
+endClass
