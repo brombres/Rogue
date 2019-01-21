@@ -224,8 +224,9 @@ class Scanner : Reader<<Character>>
       local is_real = false
       if (consume('-')) buffer.print( '-' )
       while (peek.is_number) buffer.print( read )
-      if (consume('.'))
+      if (peek == '.' and peek(1) != '.')
         is_real = true
+        consume('.')
         buffer.print( '.' )
         while (peek.is_number) buffer.print( read )
       endIf
