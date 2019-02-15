@@ -218,7 +218,20 @@ class Tokenizer
       buffer.clear
       if (consume('{'))
         # Multi-line comment
-        while (scanner.has_another and not consume("}" "#")) buffer.print( read )
+        local depth = 1
+        while (scanner.has_another)
+          if (consume("#{"))
+            buffer.print("#{")
+            ++depth
+          elseIf (consume("}#"))
+            --depth
+            if (depth==0) return buffer->String
+            else          buffer.print("}#")
+          else
+            buffer.print( read )
+          endIf
+        endWhile
+        throw error( "End of input while looking for closing '}#'." )
       else
         # Single-line comment
         while (scanner.has_another and peek != '\n')
@@ -289,16 +302,22 @@ class Tokenizer
       endWhile
       throw error( "Unexpected end of input looking for end of string ($)." (terminator) )
 
-    method tokenize( filepath )->Token[]
+    method tokenize( filepath, line=1:Int32, column=1:Int32 )->Token[]
       scanner = Scanner( File(filepath), &=spaces_per_tab )
+      scanner.line = line
+      scanner.column = column
       return tokenize
 
-    method tokenize( filepath, source:String )->Token[]
+    method tokenize( filepath, source:String, line=1:Int32, column=1:Int32 )->Token[]
       scanner = Scanner( source, &=spaces_per_tab )
+      scanner.line = line
+      scanner.column = column
       return tokenize
 
-    method tokenize( filepath, source:Character[] )->Token[]
+    method tokenize( filepath, source:Character[], line=1:Int32, column=1:Int32 )->Token[]
       scanner = Scanner( source, &=spaces_per_tab )
+      scanner.line = line
+      scanner.column = column
       return tokenize
 
     method tokenize->Token[]

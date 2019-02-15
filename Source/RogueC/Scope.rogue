@@ -454,6 +454,9 @@ class Scope
                   local param_type = m.parameters[index].type
                   necessary (param_type.name.begins_with("(Function"))
 
+                  necessary (not param_type.name.ends_with("[]"))
+                  # A list of functions will never be a match for a generic function.
+
                   local callback_param_count = 0
                   if (param_type.callback_parameter_types) callback_param_count = param_type.callback_parameter_types.count
                   local fn_param_count = 0
