@@ -758,33 +758,29 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_o
           local close_paren = line.locate( ')', dollar.value + 1 )
           if (close_paren.exists)
             local library_name = line.from(dollar.value+8,close_paren.value-1).trimmed
-            local library : Value
             block
               forEach (lib in config//libraries)
                 if (lib//name == library_name)
-                  library = lib
+                  line = "$$$" (line.before(dollar.value),header_location(lib),line.after(close_paren.value))
                   escapeBlock
                 endIf
               endForEach
-              library = @{ name:library_name }
+              line = "$$" (line.before(dollar.value),line.after(close_paren.value))
             endBlock
-            line = "$$$" (line.before(dollar.value),header_location(library),line.after(close_paren.value))
           endIf
         elseIf (line.contains_at("$LIBRARY(",dollar.value))
           local close_paren = line.locate( ')', dollar.value + 1 )
           if (close_paren.exists)
             local library_name = line.from(dollar.value+9,close_paren.value-1).trimmed
-            local library : Value
             block
               forEach (lib in config//libraries)
                 if (lib//name == library_name)
-                  library = lib
+                  line = "$$$" (line.before(dollar.value),library_location(lib),line.after(close_paren.value))
                   escapeBlock
                 endIf
               endForEach
-              library = @{ name:library_name }
+              line = "$$" (line.before(dollar.value),line.after(close_paren.value))
             endBlock
-            line = "$$$" (line.before(dollar.value),library_location(library),line.after(close_paren.value))
           endIf
         endIf
         dollar = line.locate( '$', dollar.value+1 )
