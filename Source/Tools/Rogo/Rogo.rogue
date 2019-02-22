@@ -75,8 +75,6 @@ if (not buildfiles.count)
     File.save( "Build.rogue",
       @|# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
        |
-       |#$ ROGUEC_ARGS = --api
-       |
        |# Rogo is a "build your own build system" facilitator. At its core Rogo just recompiles build files if
        |# needed and then runs the build executable while forwarding any command line arguments. This file contains
        |# a default framework which uses introspection to turn command line arguments into parameterized routine calls.
