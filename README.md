@@ -3,7 +3,7 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.4.23
+Version   | v1.4.24
 Date      | February 23, 2019
 Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
 
