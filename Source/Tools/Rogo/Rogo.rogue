@@ -514,7 +514,7 @@ routine install_macos_library( library:Value )
 
   local performed_install = false
   println "Checking for library $..." (library_name)
-  local cmd = ''brew list $ > /dev/null 2>&1'' (library_name)
+  local cmd = ''pkg-config --cflags $ > /dev/null 2>&1'' (package)
   print("  ").println(cmd).flush
   if (0 != System.run(cmd))
     # Install library
@@ -565,7 +565,7 @@ routine install_ubuntu_library( library:Value )
 
   local performed_install = false
   println "Checking for library $..." (library_name)
-  local cmd = ''dpkg -L $ > /dev/null 2>&1'' (library_name)
+  local cmd = ''pkg-config --cflags $ > /dev/null 2>&1'' (package)
   print("  ").println(cmd).flush
   if (0 != System.run(cmd))
     # Install library
