@@ -2146,10 +2146,6 @@ augment RogueC
         endIf
         native @|#endif
 
-        if (RogueC.compiler_options.count)
-          compiler_name += " " + " ".join(RogueC.compiler_options)
-        endIf
-
         local exe : String
         if (RogueC.exe_filepath)
           exe = File.fix_slashes( RogueC.exe_filepath )
@@ -2177,6 +2173,9 @@ augment RogueC
               cmd += " " + lib
             endForEach
           endIf
+
+          if (RogueC.compiler_options.count) cmd += " " + " ".join(RogueC.compiler_options)
+
           println cmd
           if (System.run(cmd)) System.exit( 1 )
           local obj_filename = File.filename( exe + ".obj" )
@@ -2196,6 +2195,7 @@ augment RogueC
           forEach (lib in RogueC.native_libraries)
             cmd += " -l" + lib
           endForEach
+          if (RogueC.compiler_options.count) cmd += " " + " ".join(RogueC.compiler_options)
           if (execute_args) cmd += " && ./$ $" (exe,execute_args)
           println cmd
           println
