@@ -688,7 +688,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
                 local entry = @{ name:name }
                 config.ensure_list( cmd ).add( entry )
                 parser.consume_spaces
-                entry//package = name.before_first( '-' )
+                entry//package = name.before_first( '-' )  # default name is e.g. libpng-dev -> libpng
                 if (parser.consume('('))
                   parser.consume_spaces
                   while (parser.has_another)
@@ -699,7 +699,12 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
                       parser.consume_spaces
                       local value = parse_filepath( parser )
                       entry[ key ] = value
+                    else
+                      # An identifier with no mapped value is treated as the package name
+                      entry//package = key
                     endIf
+                    parser.consume_spaces
+                    parser.consume( ',' )
                     parser.consume_spaces
                   endWhile
                 endIf
