@@ -595,8 +595,7 @@ routine install_ubuntu_library( library:Value )
 
   # Save location in cache
   local library_flags : String
-  local result = Process.run( "pkg-config --cflags " + package )
-  result = Process.run( "pkg-config --cflags --libs " + package )
+  local result = Process.run( "pkg-config --cflags --libs " + package )
   if (result.exit_code == 0)
     library_flags = result.output_string.trimmed
     println "  Library flags: $" (library_flags)
@@ -617,7 +616,7 @@ routine library_flags( library:Value )->String
     install_library( library )
   endIf
 
-  local result = Process.run( "pkg-config --libs " + library//package )
+  local result = Process.run( "pkg-config --cflags --libs " + library//package )
   if (result.exit_code == 0)
     local flags = result.output_string.trimmed
     return flags
