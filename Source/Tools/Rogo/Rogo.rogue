@@ -9,7 +9,7 @@
 #$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
-#   $LIBRARY_FLAGS(library-name) -> -Ipath/to/include -Lpath/to/library
+#   $LIBRARY_FLAGS(lib1,lib2) -> -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...
 
 File.create_folder( ".rogo" )
 global cache_filepath = ".rogo/Cache-$.json" (System.os)
@@ -712,16 +712,20 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
         if (line.contains_at("$LIBRARY_FLAGS(",dollar.value))
           local close_paren = line.locate( ')', dollar.value + 1 )
           if (close_paren.exists)
-            local library_name = line.from(dollar.value,close_paren.value-1).after_first('(').trimmed
-            block
-              forEach (lib in config//libraries)
-                if (lib//name == library_name)
-                  line = "$$$" (line.before(dollar.value),library_flags(lib),line.after(close_paren.value))
-                  escapeBlock
-                endIf
-              endForEach
-              line = "$$" (line.before(dollar.value),line.after(close_paren.value))
-            endBlock
+            local replacement = ""
+            forEach (library_name in line.from(dollar.value,close_paren.value-1).after_first('(').split(','))
+              library_name = library_name.trimmed
+              block
+                forEach (lib in config//libraries)
+                  if (lib//name == library_name)
+                    if (replacement.count > 0) replacement += " "
+                    replacement += library_flags( lib )
+                    escapeBlock
+                  endIf
+                endForEach
+              endBlock
+            endForEach
+            line = "$$$" (line.before(dollar.value),replacement,line.after(close_paren.value))
           endIf
         endIf
         dollar = line.locate( '$', dollar.value+1 )
