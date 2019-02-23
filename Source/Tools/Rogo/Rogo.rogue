@@ -2,8 +2,9 @@
 #$ ROGUEC_ARGS  = --whatever
 #$ CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 #$ CPP_ARGS     = -a -b -c
-#$ LIBRARIES    = libalpha( header:"name.h" library:"libname.a" )
-#$ LIBRARIES    = libbeta
+#$ LIBRARIES    = libalpha
+#$ LIBRARIES    = libbeta(library-name)
+#$ LIBRARIES    = libfreetype6-dev(freetype2)
 #$ LINK         = -lalpha -lbeta
 #$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
@@ -330,6 +331,7 @@ local base_name = exe   # e.g. Build
 if (System.os == "Windows") exe += ".exe"
 else                        exe += "-" + System.os  # e.g. Build-macOS
 
+install_library_manager
 
 local needs_recompile = buildfiles.any_newer_than( exe )
 block
@@ -392,14 +394,13 @@ if (needs_recompile)
 
   local is_windows = (System.os == "Windows")
 
-  install_library_manager
   forEach (library in config//libraries)
     install_library( library )
 
-    # Linux generally doesn't need to specify -I include paths and -L library paths
+    # Linux generally doesn't need to specify include paths and library paths
     # but occasionally it does (libfreetype)
-    if (header_location(library))  cmd += '' -I "$"'' (header_location(library))
-    if (library_location(library)) cmd += '' -L "$"'' (library_location(library))
+    if (header_flags(library))  cmd += " $" (header_flags(library))
+    if (library_flags(library)) cmd += " $" (library_flags(library))
   endForEach
 
   cmd += " $$ $" (?:{is_windows:"/Fe"||"-o "},exe,config//link)
@@ -445,60 +446,59 @@ routine install_library_manager
     case "macOS"
       install_brew
     case "Linux"
-      #install_apt_file
+      install_ubuntu_pkg_config
   endWhich
 endRoutine
 
 routine install_brew
-  if (cache//brew_installed) return
-  if (0 == System.run("which brew > /dev/null 2>&1"))
-    cache//brew_installed = true
-    save_cache
-    return
-  endIf
-
-  require_command_line
-  if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
-    local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-    println cmd
-    if (0 == System.run(cmd))
-      cache//brew_installed = true
-      save_cache
-      return
+  if (0 != System.run("which brew > /dev/null 2>&1"))
+    require_command_line
+    if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+      local cmd = @|/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+      println cmd
+      if (0 != System.run(cmd))
+        throw Error( "Failed to install Homebrew." )
+      endIf
+    else
+      throw Error( "Missing required dependency 'brew' (Homebrew)." )
     endIf
-    throw Error( "Failed to install Homebrew." )
+
   endIf
 
-  throw Error( "Missing required dependency 'brew' (Homebrew)." )
+  if (0 != System.run("which pkg-config > /dev/null 2>&1"))
+    require_command_line
+    if (Console.input( "pkg-config must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+      local cmd = @|brew install pkg-config
+      println cmd
+      if (0 != System.run(cmd))
+        throw Error( "Failed to install pkg-config." )
+      endIf
+    else
+      throw Error( "Missing required dependency 'pkg-config'." )
+    endIf
+
+  endIf
 endRoutine
 
-#{
-routine install_apt_file
-  if (cache//apt_file_installed) return
-  if (0 == System.run("which apt-file > /dev/null 2>&1"))
-    cache//apt_file_installed = true
-    save_cache
-    return
-  endIf
-
-  require_command_line
-  if (Console.input( "\napt-file must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
-    local cmd = @|sudo apt-get install apt-file
-    println cmd
-    if (0 == System.run(cmd))
-      cache//apt_file_installed = true
-      save_cache
-      return
+routine install_ubuntu_pkg_config
+  if (0 != System.run("which pkg-config > /dev/null 2>&1"))
+    require_command_line
+    if (Console.input( "pkg-config must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
+      local cmd = @|sudo apt-get install pkg-config
+      println cmd
+      if (0 != System.run(cmd))
+        throw Error( "Failed to install pkg-config." )
+      endIf
+    else
+      throw Error( "Missing required dependency 'pkg-config'." )
     endIf
-    throw Error( "Failed to install apt-file." )
-  endIf
 
-  throw Error( "Missing required dependency 'apt-file'." )
+  endIf
 endRoutine
-}#
 
 routine install_library( library:Value )
-  if (cache//installed_libraries.contains(library//name)) return
+  local lib = cache//installed_libraries[ library//name ]
+  if (lib) return
 
   which (System.os)
     case "macOS"
@@ -512,9 +512,13 @@ endRoutine
 
 routine install_macos_library( library:Value )
   local library_name = library//name->String
+  local package = library//package->String
 
   local performed_install = false
-  if (0 != System.run( ''brew list $ > /dev/null 2>&1'' (library_name) ) )
+  println "Checking for library $..." (library_name)
+  local cmd = ''pkg-config --cflags $ > /dev/null 2>&1'' (package)
+  println(cmd).flush
+  if (0 != System.run(cmd))
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
@@ -527,7 +531,7 @@ routine install_macos_library( library:Value )
     local install_cmd = library//name
     if (library.contains("install")) install_cmd = library//install
 
-    local cmd = "brew install $" (install_cmd)
+    cmd = "brew install $" (install_cmd)
     println cmd
     if (0 != System.run(cmd))
       throw Error( "Failed to install library '$'." (library_name) )
@@ -541,65 +545,35 @@ routine install_macos_library( library:Value )
   endIf
 
   # Save location in cache
-  if (0 != System.run("brew list $ > .rogo/Build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
-
-  local header_path, library_path : String
-  if (library.contains("header"))   header_path = find_path( library, library//header )
-  if (library.contains("library")) library_path = find_path( library, library//library )
-
-  if (not header_path) header_path = find_path( library, "*.h" )
-  if (header_path)
-    println "  Header path:  $" (header_path)
+  local header_flags, library_flags : String
+  local result = Process.run( "pkg-config --cflags " + package )
+  if (result.exit_code == 0)
+    header_flags = result.output_string.trimmed
+    println "  Header flags:  $" (header_flags)
   endIf
 
-  if (not library_path) library_path = find_path( library, "*.a" )
-  if (not library_path) library_path = find_path( library, "*.dylib" )
-  if (not library_path) library_path = find_path( library, "*.so" )
-  if (library_path)
-    println "  Library path: $" (library_path)
-    println
+  result = Process.run( "pkg-config --libs " + package )
+  if (result.exit_code == 0)
+    library_flags = result.output_string.trimmed
+    println "  Library flags: $" (library_flags)
   endIf
 
-  File.delete( ".rogo/Build.temp" )
-
-  if (library_path and header_path)
+  if (library_flags and header_flags)
     cache.ensure_table("installed_libraries")[ library_name ] = true
-    cache.ensure_table( "header_locations" )[ library_name ] = header_path
-    cache.ensure_table( "library_locations" )[ library_name ] = library_path
     save_cache
-    return
+  else
+    throw Error( "Library not installed: '$'." (library_name) )
   endIf
 
-  throw Error( "Library not installed: '$'." (library_name) )
-
-endRoutine
-
-routine find_path( library:Value, pattern:String )->String
-  local original_pattern = pattern
-  if (not pattern.begins_with('/')) pattern = "**/" + pattern
-  local reader = LineReader( File(".rogo/Build.temp") )
-  forEach (line in reader)
-    line = line.trimmed
-    if (File.matches_wildcard_pattern(line,pattern))
-      local path_len = 0
-      while (not File._matches_wildcard_pattern(line,path_len,line.count-path_len,original_pattern,0,original_pattern.count))
-        ++path_len
-      endWhile
-      reader.close
-      return line.leftmost( path_len )
-    endIf
-  endForEach
-  reader.close
-
-  return null
 endRoutine
 
 routine install_ubuntu_library( library:Value )
   local library_name = library//name->String
+  local package = library//package->String
 
   local performed_install = true
-  local cmd = ''dpkg -L $ > /dev/null 2>&1'' (library_name)
   println "Checking for library $..." (library_name)
+  local cmd = ''pkg-config --cflags $ > /dev/null 2>&1'' (package)
   println(cmd).flush
   if (0 != System.run(cmd))
     # Install library
@@ -628,63 +602,59 @@ routine install_ubuntu_library( library:Value )
   endIf
 
   # Save location in cache
-  if (0 != System.run("dpkg -L $ > .rogo/Build.temp"(library_name))) throw Error( "Cannot locate library '$'." (library_name) )
-
-  local header_path, library_path : String
-  if (library.contains("header"))   header_path = find_path( library, library//header )
-  if (library.contains("library")) library_path = find_path( library, library//library )
-
-  if (not header_path) header_path = find_path( library, "*.h" )
-  if (header_path)
-    println "  Header path:  $" (header_path)
+  local header_flags, library_flags : String
+  local result = Process.run( "pkg-config --cflags " + package )
+  if (result.exit_code == 0)
+    header_flags = result.output_string.trimmed
+    println "  Header flags:  $" (header_flags)
   endIf
 
-  if (not library_path) library_path = find_path( library, "*.a" )
-  if (not library_path) library_path = find_path( library, "*.dylib" )
-  if (not library_path) library_path = find_path( library, "*.so" )
-  if (library_path)
-    println "  Library path: $" (library_path)
-    println
+  result = Process.run( "pkg-config --libs " + package )
+  if (result.exit_code == 0)
+    library_flags = result.output_string.trimmed
+    println "  Library flags: $" (library_flags)
   endIf
 
-  File.delete( ".rogo/Build.temp" )
+  if (library_flags and header_flags)
+    cache.ensure_table("installed_libraries")[ library_name ] = true
+    save_cache
+  else
+    throw Error( "Library not installed: '$'." (library_name) )
+  endIf
 
-  # Some Linux libraries don't have headers and lib files in the normal place (libjpeg-dev)
-  cache.ensure_table("installed_libraries")[ library_name ] = true
-  cache.ensure_table( "header_locations" )[ library_name ] = header_path
-  cache.ensure_table( "library_locations" )[ library_name ] = library_path
-  save_cache
 
 endRoutine
 
-routine library_location( library:Value )->String
+routine library_flags( library:Value )->String
   if (not cache//installed_libraries.contains(library//name))
     install_library( library )
   endIf
 
-  local path = cache//library_locations[ library//name ]
-  if (not path) return null
-  if (File.exists(path)) return path
-
-  println "Finding $ library..." (library//name)
-  cache//installed_libraries.remove( library//name )
-  save_cache
-  return library_location( library )
+  local result = Process.run( "pkg-config --libs " + library//package )
+  if (result.exit_code == 0)
+    local flags = result.output_string.trimmed
+    return flags
+  else
+    cache//installed_libraries.remove( library//name )
+    save_cache
+    return library_flags( library )
+  endIf
 endRoutine
 
-routine header_location( library:Value )->String
+routine header_flags( library:Value )->String
   if (not cache//installed_libraries.contains(library//name))
     install_library( library )
   endIf
 
-  local path = cache//header_locations[ library//name ]
-  if (not path) return null
-  if (File.exists(path)) return path
-
-  println "Finding $ library..." (library//name)
-  cache//installed_libraries.remove( library//name )
-  save_cache
-  return header_location( library )
+  local result = Process.run( "pkg-config --cflags " + library//package )
+  if (result.exit_code == 0)
+    local flags = result.output_string.trimmed
+    return flags
+  else
+    cache//installed_libraries.remove( library//name )
+    save_cache
+    return header_flags( library )
+  endIf
 endRoutine
 
 routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_rewrite, &skip_directives, &dependencies_only )
@@ -718,6 +688,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
                 local entry = @{ name:name }
                 config.ensure_list( cmd ).add( entry )
                 parser.consume_spaces
+                entry//package = name.before_first( '-' )
                 if (parser.consume('('))
                   parser.consume_spaces
                   while (parser.has_another)
@@ -769,7 +740,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
             block
               forEach (lib in config//libraries)
                 if (lib//name == library_name)
-                  line = "$$$" (line.before(dollar.value),header_location(lib),line.after(close_paren.value))
+                  line = "$$$" (line.before(dollar.value),header_flags(lib),line.after(close_paren.value))
                   escapeBlock
                 endIf
               endForEach
@@ -783,7 +754,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
             block
               forEach (lib in config//libraries)
                 if (lib//name == library_name)
-                  line = "$$$" (line.before(dollar.value),library_location(lib),line.after(close_paren.value))
+                  line = "$$$" (line.before(dollar.value),library_flags(lib),line.after(close_paren.value))
                   escapeBlock
                 endIf
               endForEach
