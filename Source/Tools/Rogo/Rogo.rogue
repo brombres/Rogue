@@ -334,7 +334,7 @@ else                        exe += "-" + System.os  # e.g. Build-macOS
 local needs_recompile = buildfiles.any_newer_than( exe )
 block
   local dependencies = StringLookupList()
-  scan_and_rewrite( File(forEach in buildfiles), dependencies, &scan_only )
+  scan_and_rewrite( File(forEach in buildfiles), dependencies, &skip_rewrite, &dependencies_only )
 
   local i = 0
   while (i < dependencies.count)
@@ -342,7 +342,7 @@ block
     local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.filename(dependency).begins_with("Build") and not buildfiles.contains(dependency))
-        scan_and_rewrite( dependency, dependencies, &scan_only )
+        scan_and_rewrite( dependency, dependencies, &skip_rewrite )
       endIf
     endForEach
     ++i
@@ -362,8 +362,8 @@ endBlock
 if (needs_recompile)
   println "Recompiling $..." (buildfile)
 
-  # Scanning places copies in .rogo/
-  scan_and_rewrite( File(forEach in buildfiles) )
+  # Collect info for config
+  scan_and_rewrite( File(forEach in buildfiles), &skip_rewrite )
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
@@ -372,6 +372,9 @@ if (needs_recompile)
       config[ key.before_first(os_arg) ] = config[ key ]
     endIf
   endForEach
+
+  # Now that we have the config info, rewriting to handle $ LIBRARY(name) etc. Places copies in .rogo/
+  scan_and_rewrite( File(forEach in buildfiles), &skip_directives )
 
   local roguec = config//roguec
   if (not File.exists(roguec)) roguec = "roguec"  # use system default
@@ -684,71 +687,78 @@ routine header_location( library:Value )->String
   return header_location( library )
 endRoutine
 
-routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_only )
+routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_rewrite, &skip_directives, &dependencies_only )
+  # Note: the organization and usage of this method has become inelegant over time. Could use a refactoring.
   if (not file.exists) return
 
   local writer : PrintWriter
-  if (not scan_only) writer = PrintWriter( File(".rogo/$"(file.filename)).writer )
+  if (not skip_rewrite) writer = PrintWriter( File(".rogo/$"(file.filename)).writer )
   forEach (original_line in LineReader(file))
     local line = original_line.trimmed
-    if (line.begins_with("#$"))
-      local cmd = line.rightmost( -2 )
-      local args = cmd.after_first( "=" ).trimmed
-      cmd = cmd.before_first( "=" ).trimmed.to_lowercase
+    if (not skip_directives)
+      if (line.begins_with("#$"))
+        local cmd = line.rightmost( -2 )
+        local args = cmd.after_first( "=" ).trimmed
+        cmd = cmd.before_first( "=" ).trimmed.to_lowercase
 
-      which (cmd.before_first('('))
-        case "config", "roguec"
-          if (args.begins_with('"')) args = args.after_first('"').before_last('"')
-          elseIf (args.begins_with('\'')) args = args.after_first('\'').before_last('\'')
-          config[ cmd ] = args
+        which (cmd.before_first('('))
+          case "config", "roguec"
+            if (not dependencies_only)
+              if (args.begins_with('"')) args = args.after_first('"').before_last('"')
+              elseIf (args.begins_with('\'')) args = args.after_first('\'').before_last('\'')
+              config[ cmd ] = args
+            endIf
 
-        case "libraries"
-          if (args.count)
-            local parser = JSONParser( Scanner(args) )
-            parser.consume_spaces
-            while (parser.has_another)
-              local name = parse_filepath( parser )
-              local entry = @{ name:name }
-              config.ensure_list( cmd ).add( entry )
+          case "libraries"
+            if (args.count and not dependencies_only)
+              local parser = JSONParser( Scanner(args) )
               parser.consume_spaces
-              if (parser.consume('('))
+              while (parser.has_another)
+                local name = parse_filepath( parser )
+                local entry = @{ name:name }
+                config.ensure_list( cmd ).add( entry )
                 parser.consume_spaces
-                while (parser.has_another)
-                  if (parser.consume(')')) escapeWhile
-                  local key = parser.parse_identifier
+                if (parser.consume('('))
                   parser.consume_spaces
-                  if (parser.consume(':'))
+                  while (parser.has_another)
+                    if (parser.consume(')')) escapeWhile
+                    local key = parser.parse_identifier
                     parser.consume_spaces
-                    local value = parse_filepath( parser )
-                    entry[ key ] = value
-                  endIf
-                  parser.consume_spaces
-                endWhile
+                    if (parser.consume(':'))
+                      parser.consume_spaces
+                      local value = parse_filepath( parser )
+                      entry[ key ] = value
+                    endIf
+                    parser.consume_spaces
+                  endWhile
+                endIf
+                parser.consume_spaces
+              endWhile
+            endIf
+
+          case "dependencies"
+            if (dependencies)
+              if (args.begins_with('"'))       args = args.after_first('"').before_last('"')
+              elseIf (args.begins_with('\'')) args = args.after_first('\'').before_last('\'')
+              dependencies.add( args )
+              is_cache_modified = true
+            endIf
+
+          others
+            if (not dependencies_only)
+              # Join into single space-separated string
+              if (config.contains(cmd))
+                config[ cmd ] = "$ $" (config[ cmd ],args)
+              else
+                config[ cmd ] = args
               endIf
-              parser.consume_spaces
-            endWhile
-          endIf
+            endIf
 
-        case "dependencies"
-          if (dependencies)
-            if (args.begins_with('"'))       args = args.after_first('"').before_last('"')
-            elseIf (args.begins_with('\'')) args = args.after_first('\'').before_last('\'')
-            dependencies.add( args )
-            is_cache_modified = true
-          endIf
-
-        others
-          # Join into single space-separated string
-          if (config.contains(cmd))
-            config[ cmd ] = "$ $" (config[ cmd ],args)
-          else
-            config[ cmd ] = args
-          endIf
-
-      endWhich
+        endWhich
+      endIf
     endIf
 
-    if (not scan_only)
+    if (not skip_rewrite)
       line = original_line
       local dollar = line.locate( '$' )
       while (dollar.exists)
@@ -786,7 +796,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &scan_o
       writer.println( line )
     endIf
   endForEach
-  if (not scan_only) writer.close
+  if (not skip_rewrite) writer.close
 
 endRoutine
 
