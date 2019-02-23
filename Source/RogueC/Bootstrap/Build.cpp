@@ -16990,11 +16990,11 @@ void RogueGlobal__rogo_publish( RogueClassGlobal* THIS )
   RogueDebugTrace __trace( "Global.rogo_publish()", "BuildLocal.rogue", 11 );
   ROGUE_GC_CHECK;
   ;__trace.line = 12;
-  ROGUE_DEF_LOCAL_REF(RogueString*,version_0,(((RogueString*)(RogueString__before_first__Character_Logical( ROGUE_ARG(((RogueString*)(RogueString__after_first__Character_Logical( ROGUE_ARG(((RogueString*)(RogueProcessResult__to_String( ROGUE_ARG((RogueProcess__run__String_Logical_Logical( Rogue_literal_strings[225], false, false ))) )))), (RogueCharacter)'v', false )))), (RogueCharacter)' ', false )))));
-  ;__trace.line = 13;
   RogueGlobal__rogo_default( ROGUE_ARG(THIS) );
-  ;__trace.line = 14;
+  ;__trace.line = 13;
   RogueGlobal__rogo_update_bootstrap__String( ROGUE_ARG(THIS), Rogue_literal_strings[0] );
+  ;__trace.line = 14;
+  ROGUE_DEF_LOCAL_REF(RogueString*,version_0,(((RogueString*)(RogueString__before_first__Character_Logical( ROGUE_ARG(((RogueString*)(RogueString__after_first__Character_Logical( ROGUE_ARG(((RogueString*)(RogueProcessResult__to_String( ROGUE_ARG((RogueProcess__run__String_Logical_Logical( Rogue_literal_strings[225], false, false ))) )))), (RogueCharacter)'v', false )))), (RogueCharacter)' ', false )))));
   ;__trace.line = 15;
   RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[226] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], version_0 ))) )))), Rogue_literal_strings[173] )))) )))), false, false );
   ;__trace.line = 16;
