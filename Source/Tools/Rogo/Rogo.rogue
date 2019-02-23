@@ -9,8 +9,7 @@
 #$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
-#   $HEADER(library-name)  -> path/to/library-name/include
-#   $LIBRARY(library-name) -> path/to/library-name/lib
+#   $LIBRARY_FLAGS(library-name) -> -Ipath/to/include -Lpath/to/library
 
 File.create_folder( ".rogo" )
 global cache_filepath = ".rogo/Cache-$.json" (System.os)
@@ -399,8 +398,7 @@ if (needs_recompile)
 
     # Linux generally doesn't need to specify include paths and library paths
     # but occasionally it does (libfreetype)
-    if (header_flags(library))  cmd += " $" (header_flags(library))
-    if (library_flags(library)) cmd += " $" (library_flags(library))
+    cmd += " $" (library_flags(library))
   endForEach
 
   cmd += " $$ $" (?:{is_windows:"/Fe"||"-o "},exe,config//link)
@@ -545,20 +543,14 @@ routine install_macos_library( library:Value )
   endIf
 
   # Save location in cache
-  local header_flags, library_flags : String
-  local result = Process.run( "pkg-config --cflags " + package )
-  if (result.exit_code == 0)
-    header_flags = result.output_string.trimmed
-    println "  Header flags:  $" (header_flags)
-  endIf
-
-  result = Process.run( "pkg-config --libs " + package )
+  local library_flags : String
+  local result = Process.run( "pkg-config --cflags --libs " + package )
   if (result.exit_code == 0)
     library_flags = result.output_string.trimmed
     println "  Library flags: $" (library_flags)
   endIf
 
-  if (library_flags and header_flags)
+  if (library_flags)
     cache.ensure_table("installed_libraries")[ library_name ] = true
     save_cache
   else
@@ -602,20 +594,15 @@ routine install_ubuntu_library( library:Value )
   endIf
 
   # Save location in cache
-  local header_flags, library_flags : String
+  local library_flags : String
   local result = Process.run( "pkg-config --cflags " + package )
-  if (result.exit_code == 0)
-    header_flags = result.output_string.trimmed
-    println "  Header flags:  $" (header_flags)
-  endIf
-
-  result = Process.run( "pkg-config --libs " + package )
+  result = Process.run( "pkg-config --cflags --libs " + package )
   if (result.exit_code == 0)
     library_flags = result.output_string.trimmed
     println "  Library flags: $" (library_flags)
   endIf
 
-  if (library_flags and header_flags)
+  if (library_flags)
     cache.ensure_table("installed_libraries")[ library_name ] = true
     save_cache
   else
@@ -638,22 +625,6 @@ routine library_flags( library:Value )->String
     cache//installed_libraries.remove( library//name )
     save_cache
     return library_flags( library )
-  endIf
-endRoutine
-
-routine header_flags( library:Value )->String
-  if (not cache//installed_libraries.contains(library//name))
-    install_library( library )
-  endIf
-
-  local result = Process.run( "pkg-config --cflags " + library//package )
-  if (result.exit_code == 0)
-    local flags = result.output_string.trimmed
-    return flags
-  else
-    cache//installed_libraries.remove( library//name )
-    save_cache
-    return header_flags( library )
   endIf
 endRoutine
 
@@ -738,24 +709,10 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
       line = original_line
       local dollar = line.locate( '$' )
       while (dollar.exists)
-        if (line.contains_at("$HEADER(",dollar.value))
+        if (line.contains_at("$LIBRARY_FLAGS(",dollar.value))
           local close_paren = line.locate( ')', dollar.value + 1 )
           if (close_paren.exists)
-            local library_name = line.from(dollar.value+8,close_paren.value-1).trimmed
-            block
-              forEach (lib in config//libraries)
-                if (lib//name == library_name)
-                  line = "$$$" (line.before(dollar.value),header_flags(lib),line.after(close_paren.value))
-                  escapeBlock
-                endIf
-              endForEach
-              line = "$$" (line.before(dollar.value),line.after(close_paren.value))
-            endBlock
-          endIf
-        elseIf (line.contains_at("$LIBRARY(",dollar.value))
-          local close_paren = line.locate( ')', dollar.value + 1 )
-          if (close_paren.exists)
-            local library_name = line.from(dollar.value+9,close_paren.value-1).trimmed
+            local library_name = line.from(dollar.value,close_paren.value-1).after_first('(').trimmed
             block
               forEach (lib in config//libraries)
                 if (lib//name == library_name)
