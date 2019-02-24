@@ -2,10 +2,12 @@
 #$ ROGUEC_ARGS  = --whatever
 #$ CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 #$ CPP_ARGS     = -a -b -c
+#$ LINK         = true              # Links following LIBRARIES with this Build file
+#$ LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes these additional flags
+#$ LINK         = false             # Linking turned off for following LIBRARIES
 #$ LIBRARIES    = libalpha
 #$ LIBRARIES    = libbeta(library-name)
 #$ LIBRARIES    = libfreetype6-dev(freetype2)
-#$ LINK         = -lalpha -lbeta
 #$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
@@ -16,6 +18,8 @@ global cache_filepath = ".rogo/Cache-$.json" (System.os)
 global config = @{ roguec:"roguec", filepath:cache_filepath }
 global cache  = JSON.load_table( File(cache_filepath) ) : Value
 global is_cache_modified : Logical
+global link_setting = false
+global link_args    = ""
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -395,13 +399,13 @@ if (needs_recompile)
 
   forEach (library in config//libraries)
     install_library( library )
-
-    # Linux generally doesn't need to specify include paths and library paths
-    # but occasionally it does (libfreetype)
-    cmd += " $" (library_flags(library))
+    if (library//link)
+      cmd += " $" (library_flags(library))
+    endIf
   endForEach
 
-  cmd += " $$ $" (?:{is_windows:"/Fe"||"-o "},exe,config//link)
+  cmd += " $$" (?:{is_windows:"/Fe"||"-o "},exe)
+  if (link_args != "") cmd += " " + link_args
 
   println cmd
   if (0 != System.run(cmd)) System.exit( 1 )
@@ -641,7 +645,8 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
         local args = cmd.after_first( "=" ).trimmed
         cmd = cmd.before_first( "=" ).trimmed.to_lowercase
 
-        which (cmd.before_first('('))
+        local base_cmd = cmd.before_first('(')
+        which (base_cmd)
           case "config", "roguec"
             if (not dependencies_only)
               if (args.begins_with('"')) args = args.after_first('"').before_last('"')
@@ -655,7 +660,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
               parser.consume_spaces
               while (parser.has_another)
                 local name = parse_filepath( parser )
-                local entry = @{ name:name }
+                local entry = @{ name:name, link:link_setting }
                 config.ensure_list( cmd ).add( entry )
                 parser.consume_spaces
                 entry//package = name.before_first( '-' )  # default name is e.g. libpng-dev -> libpng
@@ -692,6 +697,22 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
 
           others
             if (not dependencies_only)
+              if (base_cmd == "link")
+                if (args == "true" or args == "false")
+                  config[ cmd ] = args
+                  link_setting = (args == "true")
+                  escapeWhich
+                else
+                  link_setting = true
+                  link_args += " " + args
+                  which (config[cmd])
+                    case "true", "false"
+                      config[cmd] = args
+                      escapeWhich
+                  endWhich
+                endIf
+              endIf
+
               # Join into single space-separated string
               if (config.contains(cmd))
                 config[ cmd ] = "$ $" (config[ cmd ],args)
