@@ -346,6 +346,14 @@ class File
 
       return filepath.from( 0, i1.value-1 )
 
+    method is_different_than( filepath:String, other_filepath:String )->Logical
+      filepath = expand_filepath( filepath )
+      other_filepath = expand_filepath( other_filepath )
+      if (File.exists(filepath) xor File.exists(other_filepath)) return true
+      if (File.size(filepath) != File.size(other_filepath))      return true
+      if (File.crc32(filepath) != File.crc32(other_filepath))    return true
+      return false
+
     method is_folder( filepath:String )->Logical [essential]
       filepath = expand_filepath( filepath )
 
@@ -1020,6 +1028,9 @@ class File
 
     method delete->Logical
       return File.delete( this.filepath )
+
+    method is_different_than( other_filepath:String )->Logical
+      return File.is_different_than( this.filepath, other_filepath )
 
     method exists->Logical
       return File.exists( this.filepath )
