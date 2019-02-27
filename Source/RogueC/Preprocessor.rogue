@@ -466,36 +466,6 @@ class Preprocessor
             endIf
             nextIteration
 
-          elseIf (t_type is TokenType.meta_rogueVersionEQ)
-            local result = (compare_rogue_version == 0)
-            if (keep_tokens) add_logical( t, result )
-            nextIteration
-
-          elseIf (t_type is TokenType.meta_rogueVersionNE)
-            local result = (compare_rogue_version != 0)
-            if (keep_tokens) add_logical( t, result )
-            nextIteration
-
-          elseIf (t_type is TokenType.meta_rogueVersionLT)
-            local result = (compare_rogue_version < 0)
-            if (keep_tokens) add_logical( t, result )
-            nextIteration
-
-          elseIf (t_type is TokenType.meta_rogueVersionLE)
-            local result = (compare_rogue_version <= 0)
-            if (keep_tokens) add_logical( t, result )
-            nextIteration
-
-          elseIf (t_type is TokenType.meta_rogueVersionGT)
-            local result = (compare_rogue_version > 0)
-            if (keep_tokens) add_logical( t, result )
-            nextIteration
-
-          elseIf (t_type is TokenType.meta_rogueVersionGE)
-            local result = (compare_rogue_version >= 0)
-            if (keep_tokens) add_logical( t, result )
-            nextIteration
-
           endIf
         endIf
 
@@ -836,12 +806,10 @@ class Preprocessor
               local result = RogueC.compile_targets[target->String]->Logical
               must_consume(TokenType.symbol_close_paren)
               return result
-            case "rogueVersionEQ": return (compare_rogue_version == 0)
-            case "rogueVersionNE": return (compare_rogue_version != 0)
-            case "rogueVersionLT": return (compare_rogue_version <  0)
-            case "rogueVersionLE": return (compare_rogue_version <= 0)
-            case "rogueVersionGT": return (compare_rogue_version >  0)
-            case "rogueVersionGE": return (compare_rogue_version >= 0)
+            case "rogueVersion"
+              return Value( ROGUE_RELEASE_VERSION )
+            case "compareVersions"
+              return compare_versions
           endWhich
 
           local maybe = false
@@ -879,37 +847,17 @@ class Preprocessor
         return v
       endLoop
 
-    method compare_rogue_version->Int32
+    method compare_versions->Int32
       must_consume(TokenType.symbol_open_paren)
-      local t = reader.peek
-      must_consume(TokenType.literal_string)
+      consume_eols
+      local a = parse_logical_term->String
+      consume_eols
+      must_consume(TokenType.symbol_comma)
+      consume_eols
+      local b = parse_logical_term->String
+      consume_eols
       must_consume(TokenType.symbol_close_paren)
-      local this_v = ROGUE_RELEASE_VERSION
-      local other_v = t->String
-      local parts = count_dots(this_v).or_larger(count_dots(other_v)) + 1
-      forEach (part in 0..<parts)
-        local delta = extract_part(this_v,part) - extract_part(other_v,part)
-        if (delta != 0) return delta
-      endForEach
-      return 0  # equal
-
-    method count_dots( st:String )->Int32
-      local result = 0
-      if ((forEach in st) == '.') ++result
-      return result
-
-    method extract_part( v:String, part:Int32 )->Int32
-      local cur_p = 0
-      local result = 0
-      forEach (ch in v)
-        if (ch == '.')
-          ++cur_p
-          if (cur_p > part) return result
-        elseIf (cur_p == part and ch.is_number)
-          result = result * 10 + ch.to_number
-        endIf
-      endForEach
-      return result
+      return compare_versions( a, b )
 
     method read_identifier->String
       local t = reader.peek

@@ -24,12 +24,6 @@ class TokenType
     meta_module                   : TokenType
     meta_moduleName               : TokenType
     meta_rogueVersion             : TokenType
-    meta_rogueVersionEQ           : TokenType
-    meta_rogueVersionNE           : TokenType
-    meta_rogueVersionLT           : TokenType
-    meta_rogueVersionLE           : TokenType
-    meta_rogueVersionGT           : TokenType
-    meta_rogueVersionGE           : TokenType
     meta_uses                     : TokenType
     meta_string                   : TokenType
     meta_warning                  : TokenType
