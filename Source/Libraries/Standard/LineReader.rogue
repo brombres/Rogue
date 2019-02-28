@@ -7,7 +7,7 @@ class LineReader : Reader<<String>>
 
   METHODS
     method init( source )
-      next = prepare_next
+      next = null
 
     method init( reader:Reader<<Byte>> )
       init( UTF8Reader(reader) )
@@ -27,6 +27,7 @@ class LineReader : Reader<<String>>
       return next?
 
     method peek->String
+      has_another  # prep 'next' if necessary
       return next
 
     method prepare_next->String
@@ -44,8 +45,8 @@ class LineReader : Reader<<String>>
       return buffer->String
 
     method read->String
-      local result = next
-      next = prepare_next
+      local result = peek
+      next = null
       ++position
       return result
 
@@ -59,7 +60,7 @@ class LineReader : Reader<<String>>
       if (n < position)
         source.reset
         position = 0
-        next = prepare_next
+        next = null
       endIf
 
       while (n > position)
