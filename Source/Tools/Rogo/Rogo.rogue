@@ -489,7 +489,7 @@ routine configure_linux
   if (0 != System.run("which apt-get > /dev/null 2>&1"))
     if (0 == System.run("which yum > /dev/null 2>&1"))
       package_manager = "yum"
-      package_manager_install = "yum install"
+      package_manager_install = "sudo yum install"
     endIf
   endIf
 
