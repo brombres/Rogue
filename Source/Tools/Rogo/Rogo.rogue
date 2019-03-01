@@ -20,6 +20,8 @@ global cache  = JSON.load_table( File(cache_filepath) ) : Value
 global is_cache_modified : Logical
 global link_setting = false
 global link_args    = ""
+global package_manager = "apt"
+global package_manager_install = "sudo apt-get install"
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -334,7 +336,7 @@ local base_name = exe   # e.g. Build
 if (System.os == "Windows") exe += ".exe"
 else                        exe += "-" + System.os  # e.g. Build-macOS
 
-install_library_manager
+configure_os
 
 local needs_recompile = buildfiles.any_newer_than( exe )
 block
@@ -372,9 +374,10 @@ if (needs_recompile)
 
   # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
+  local os_arg_plus_package_manager = "($-$)" (System.os.to_lowercase,package_manager)
   forEach (key in config.keys)
-    if (key.contains(os_arg))
-      config[ key.before_first(os_arg) ] = config[ key ]
+    if (key.contains(os_arg) or key.contains(os_arg_plus_package_manager))
+      config[ key.before_first('(') ] = config[ key ]
     endIf
   endForEach
 
@@ -443,16 +446,16 @@ routine save_cache
   cache.save( File(cache_filepath), &formatted )
 endRoutine
 
-routine install_library_manager
+routine configure_os
   which (System.os)
     case "macOS"
-      install_brew
+      configure_macos
     case "Linux"
-      install_ubuntu_pkg_config
+      configure_linux
   endWhich
 endRoutine
 
-routine install_brew
+routine configure_macos
   if (0 != System.run("which brew > /dev/null 2>&1"))
     require_command_line
     if (Console.input( "\nHomebrew must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
@@ -482,11 +485,18 @@ routine install_brew
   endIf
 endRoutine
 
-routine install_ubuntu_pkg_config
+routine configure_linux
+  if (0 != System.run("which apt-get > /dev/null 2>&1"))
+    if (0 == System.run("which yum > /dev/null 2>&1"))
+      package_manager = "yum"
+      package_manager_install = "yum install"
+    endIf
+  endIf
+
   if (0 != System.run("which pkg-config > /dev/null 2>&1"))
     require_command_line
     if (Console.input( "pkg-config must be installed.  Install now (y/n)? " ).to_lowercase.begins_with('y'))
-      local cmd = @|sudo apt-get install pkg-config
+      local cmd = package_manager_install + " pkg-config"
       println cmd
       if (0 != System.run(cmd))
         throw Error( "Failed to install pkg-config." )
@@ -494,7 +504,6 @@ routine install_ubuntu_pkg_config
     else
       throw Error( "Missing required dependency 'pkg-config'." )
     endIf
-
   endIf
 endRoutine
 
@@ -506,7 +515,7 @@ routine install_library( library:Value )
     case "macOS"
       install_macos_library( library )
     case "Linux"
-      install_ubuntu_library( library )
+      install_linux_library( library )
     others
       throw Error( ''Rogo does not know how to install a library for "$".'' (System.os) )
   endWhich
@@ -563,7 +572,7 @@ routine install_macos_library( library:Value )
 
 endRoutine
 
-routine install_ubuntu_library( library:Value )
+routine install_linux_library( library:Value )
   local library_name = library//name->String
   local package = library//package->String
 
@@ -584,7 +593,7 @@ routine install_ubuntu_library( library:Value )
     local install_cmd = library//name
     if (library.contains("install")) install_cmd = library//install
 
-    cmd = "sudo apt-get install $" (install_cmd)
+    cmd = "$ $" (package_manager_install,install_cmd)
     println cmd
     if (0 != System.run(cmd))
       throw Error( "Failed to install library '$'." (library_name) )
