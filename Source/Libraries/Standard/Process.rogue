@@ -35,24 +35,21 @@ class Process
     method run( process:Process )->ProcessResult
       process.finish
 
-      local output_bytes = Byte[]
-      if (process.output_reader)
-        while (process.output_reader.has_another) output_bytes.add( process.output_reader.read )
-      endIf
-
-      local error_bytes = Byte[]
-      if (process.error_reader)
-        while (process.error_reader.has_another) error_bytes.add( process.error_reader.read )
-      endIf
-
-      return ProcessResult( process.exit_code, output_bytes, error_bytes )
+      return ProcessResult( process.exit_code, process.output_bytes, process.error_bytes )
 
   METHODS
-    method launch( &readable, &writable, &inherit_environment )->Logical
-      return false
-
     method close->this
       return finish
+
+    method error_bytes->Byte[]
+      local result = Byte[]
+      if (error_reader)
+        while (error_reader.has_another) result.add( error_reader.read )
+      endIf
+      return result
+
+    method error_string->String
+      return String( error_bytes )
 
     method exit_code->Int32
       return finish.@exit_code
@@ -67,8 +64,21 @@ class Process
       @is_finished = true
       return this
 
+    method launch( &readable, &writable, &inherit_environment )->Logical
+      return false
+
     method on_cleanup
       finish
+
+    method output_bytes->Byte[]
+      local result = Byte[]
+      if (output_reader)
+        while (output_reader.has_another) result.add( output_reader.read )
+      endIf
+      return result
+
+    method output_string->String
+      return String( output_bytes )
 
     method run->Int32
       return finish.@exit_code
