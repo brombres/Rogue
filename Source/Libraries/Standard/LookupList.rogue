@@ -1,7 +1,8 @@
 class StringLookupList : LookupList<<String>>
   METHODS
-    method add( key:String )
+    method add( key:String )->Int32
       this[ key ] = key
+      return indices[ key ]
 
     method to->String[]
       return values
@@ -73,14 +74,17 @@ class LookupList<<$ValueType>>
     method set( index:Int32, value:$ValueType ) [macro]
       this.values[ index ] = value
 
-    method set( key:String, value:$ValueType )
+    method set( key:String, value:$ValueType )->Int32
       local entry = indices.find( key )
       if (entry)
         values[ entry.value ] = value
+        return entry.value
       else
-        indices[ key ] = values.count
+        local index = values.count
+        indices[ key ] = index
         values.add( value )
         keys.add( key )
+        return index
       endIf
 
     method to->String
