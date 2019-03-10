@@ -71,6 +71,10 @@ class LookupList<<$ValueType>>
     method remove_at( index:Int32 )->$ValueType
       return remove( keys[index] )
 
+    method reserve( additional_elements:Int32 )
+      keys.reserve( additional_elements )
+      values.reserve( additional_elements )
+
     method set( index:Int32, value:$ValueType ) [macro]
       this.values[ index ] = value
 
