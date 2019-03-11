@@ -816,7 +816,7 @@ class Character [primitive]
     method or_smaller( other:Character )->Character
       return select{ this<=other:this || other }
 
-    method print_escaped_ascii( builder:StringBuilder )
+    method print_escaped_ascii( builder:StringBuilder, additional_characters_to_escape="":String )
       which (this)
         case '\0': builder.print( "\\0" )
         case '\b': builder.print( "\\b" )
@@ -826,7 +826,9 @@ class Character [primitive]
         case '\r': builder.print( "\\t" )
         case '\v': builder.print( "\\v" )
         others
-          if (this >= 256)
+          if (additional_characters_to_escape.contains(this))
+            builder.print( "\\" ).print( this )
+          elseIf (this >= 256)
             builder.print( "\\[" )
             this->Int64.print_in_power2_base( 16, 3, builder )
             builder.print( ']' )
@@ -886,9 +888,9 @@ class Character [primitive]
     method to_power_of_two->Character
       return this->Int32.to_power_of_two->Character
 
-    method to_escaped_ascii->String
+    method to_escaped_ascii( additional_characters_to_escape="":String )->String
       use builder = StringBuilder.pool
-        print_escaped_ascii( builder )
+        print_escaped_ascii( builder, additional_characters_to_escape )
         return builder->String
       endUse
 

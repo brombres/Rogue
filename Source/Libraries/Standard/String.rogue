@@ -981,9 +981,9 @@ class String
       endForEach
       return result->String
 
-    method to_escaped_ascii->String
+    method to_escaped_ascii( additional_characters_to_escape="":String )->String
       use builder = StringBuilder.pool
-        (forEach in this).print_escaped_ascii( builder )
+        (forEach in this).print_escaped_ascii( builder, additional_characters_to_escape )
         if (builder == this) return this  # no escapes
         else                 return builder->String
       endUse
