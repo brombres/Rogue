@@ -87,13 +87,19 @@ class Real64 [primitive]
       endIf
 
       local decimal_fmt = fmt.from_first( '.' )
-      local result = Int64(this).format( fmt.before_first('.') )
+      local this_int64 = Int64( this )
       local decimal_st : String
       if (decimal_fmt.count > 1)
         decimal_st = this.format( decimal_fmt.from(1)->Int32 )
+        if ((decimal_st->Real64.fractional_part*10)->Int32 < (this.fractional_part*10)->Int32)
+          # Fractional part rolled over
+          ++this_int64
+        endIf
       else
         decimal_st = this->String
       endIf
+
+      local result = this_int64.format( fmt.before_first('.') )
 
       return result + decimal_st.from_first( '.' )
 
