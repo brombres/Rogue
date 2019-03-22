@@ -1455,6 +1455,9 @@ endClass
 
 class FilePattern( pattern:String ) [compound]
   METHODS
+    method matches( st:String )->Logical
+      return File.matches_wildcard_pattern( st, pattern )
+
     method to->String
       return pattern
 endClass
