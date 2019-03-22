@@ -88,7 +88,7 @@ class File
       if (return_value is null)
         throw IOError("Could not get absolute path")
       endIf
-      return return_value
+      return fix_slashes( return_value )
 
     method before_wildcard_pattern( filepath:String )->String
       # Example: alpha/beta/image*.png -> alpha/beta
@@ -160,6 +160,12 @@ class File
 
         return modified
       endIf
+
+    method conventional_filepath( filepath:String )->String
+      which (true)
+        case System.is_windows: return filepath.replacing( '/', '\\' )
+        others:                 return filepath
+      endWhich
 
     method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
       from_filepath = expand_filepath( from_filepath )
@@ -292,10 +298,11 @@ class File
               |return (stat((char*)$filepath->utf8, &s) == 0);
 
     method expand_filepath( filepath:String )->String
-      if (filepath.begins_with('~'))
+      filepath = fix_slashes( filepath )
+      if (filepath == "~" or filepath.begins_with("~/"))
         local home_folder : String
-        which (System.os)
-          case "Windows"
+        which (true)
+          case System.is_windows
             home_folder = System.environment//HOMEDRIVE + System.environment//HOMEPATH
           others
             home_folder = System.environment//HOME
@@ -317,8 +324,9 @@ class File
       return filepath.from( i.value+1 )
 
     method fix_slashes( filepath:String )->String
-      if (System.os == "Windows") return filepath.replacing( '/', '\\' )
-      else                        return filepath
+      # Filepaths are always manipulated using forward slashes. Use .conventional_filepath() to
+      # turn a file or filepath into a Windows-style version for display.
+      return filepath.replacing( '\\', '/' )
 
     method folder( filepath:String )->String
       filepath = expand_filepath( filepath )
@@ -828,7 +836,7 @@ class File
 
     method touch( filepath:String )
       filepath = expand_filepath( filepath )
-      if (System.os == "Windows")
+      if (System.is_windows)
         System.run "type nul >> $" (filepath)
       else
         System.run "touch $" (filepath)
@@ -867,6 +875,9 @@ class File
 
     method copy_newer( to_filepath:String, &if_size_different, &dry_run )->Logical
       return File.copy_newer( this.filepath, to_filepath, if_size_different, dry_run )
+
+    method conventional_filepath->String
+      return File.conventional_filepath( this.filepath )
 
     method crc32->Int32
       return File.crc32( this.filepath )

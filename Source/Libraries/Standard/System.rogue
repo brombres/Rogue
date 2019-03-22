@@ -3,7 +3,23 @@ class System [essential]
     nativeHeader
       #if __APPLE__
         #include "TargetConditionals.h"
+         #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+           #define ROGUE_OS_IOS
+         #else
+           #define ROGUE_OS_MACOS
+         #endif
+      #elif _WIN64 || _WIN32
+         #define ROGUE_OS_WINDOWS
+      #elif ANDROID
+         #define ROGUE_OS_ANDROID
+      #elif __CYGWIN__
+         #define ROGUE_OS_CYGWIN
+      #elif defined(EMSCRIPTEN)
+        #define ROGUE_OS_WEB
+      #else
+        #define ROGUE_OS_LINUX
       #endif
+
     endNativeHeader
 
   GLOBAL PROPERTIES
@@ -19,10 +35,59 @@ class System [essential]
       $endIf
 
     method home_folder->String
-      which (System.os)
-        case "Windows": return System.environment//HOMEDRIVE + System.environment//HOMEPATH
-        others:         return System.environment//HOME
+      which (true)
+        case System.is_windows: return System.environment//HOMEDRIVE + System.environment//HOMEPATH
+        others:                 return System.environment//HOME
       endWhich
+
+    method is_android->Logical
+      native @|#if defined(ROGUE_OS_ANDROID)
+      return true
+      native @|#else
+      return false
+      native @|#endif
+
+    method is_cygwin->Logical
+      native @|#if defined(ROGUE_OS_CYGWIN)
+      return true
+      native @|#else
+      return false
+      native @|#endif
+
+    method is_ios->Logical
+      native @|#if defined(ROGUE_OS_IOS)
+      return true
+      native @|#else
+      return false
+      native @|#endif
+
+    method is_linux->Logical
+      native @|#if defined(ROGUE_OS_LINUX)
+      return true
+      native @|#else
+      return false
+      native @|#endif
+
+    method is_macos->Logical
+      native @|#if defined(ROGUE_OS_MACOS)
+      return true
+      native @|#else
+      return false
+      native @|#endif
+
+    method is_web->Logical
+      native @|#if defined(ROGUE_OS_WEB)
+      return true
+      native @|#else
+      return false
+      native @|#endif
+
+    method is_windows->Logical
+      native @|#if defined(ROGUE_OS_WINDOWS)
+      return true
+      native @|#else
+      return false
+      native @|#endif
 
     method os->String
       # Returns one of:
@@ -31,23 +96,23 @@ class System [essential]
       #   iOS
       #   Android
       #   Cygwin
-      #   emscripten
+      #   Web
       #   Linux (includes Unix and Posix)
-      local result = "Linux"  # default
-      native @|#if __APPLE__
-              |  #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-                   result = "iOS"
-      native @|  #else
-                   result = "macOS"
-      native @|  #endif
-              |#elif _WIN64 || _WIN32
-                 result = "Windows"
-      native @|#elif ANDROID
-                 result = "Android"
-      native @|#elif __CYGWIN__
-                 result = "Cygwin"
-      native @|#elif defined(EMSCRIPTEN)
-                 result = "emscripten"
+      local result : String
+      native @|#if defined(ROGUE_OS_ANDROID)
+      result = "Android"
+      native @|#elif defined(ROGUE_OS_CYGWIN)
+      result = "Cygwin"
+      native @|#elif defined(ROGUE_OS_IOS)
+      result = "iOS"
+      native @|#elif defined(ROGUE_OS_MACOS)
+      result = "macOS"
+      native @|#elif defined(ROGUE_OS_WEB)
+      result = "Web"
+      native @|#elif defined(ROGUE_OS_WINDOWS)
+      result = "Windows"
+      native @|#else
+      result = "Linux"
       native @|#endif
       return result
 

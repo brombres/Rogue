@@ -11,16 +11,16 @@ class Process
 
   GLOBAL METHODS
     method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )->Process
-      which (System.os)
-        case "Windows"
+      which (true)
+        case System.is_windows
           return WindowsProcess( cmd, &readable, &writable, &=is_blocking, &inherit_environment )
         others
           return PosixProcess( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
       endWhich
 
     method create( args:String[], &readable, &writable, &is_blocking, &inherit_environment )->Process
-      which (System.os)
-        case "Windows"
+      which (true)
+        case System.is_windows
           return WindowsProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
         others
           return PosixProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
