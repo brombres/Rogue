@@ -41,53 +41,53 @@ class System [essential]
       endWhich
 
     method is_android->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_ANDROID)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method is_cygwin->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_CYGWIN)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method is_ios->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_IOS)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method is_linux->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_LINUX)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method is_macos->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_MACOS)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method is_web->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_WEB)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method is_windows->Logical
+      local result = false
       native @|#if defined(ROGUE_OS_WINDOWS)
-      return true
-      native @|#else
-      return false
+      result = true
       native @|#endif
+      return result
 
     method os->String
       # Returns one of:

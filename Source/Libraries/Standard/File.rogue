@@ -416,7 +416,7 @@ class File
     method _listing( folder:String, collector:Function(String) )
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
-      local search_filepath = folder + "*"
+      local search_filepath = File.ensure_ends_with_separator(folder) + "*"
 
       native @|{
               |  WIN32_FIND_DATA entry;
@@ -682,6 +682,28 @@ class File
               |#else
               |  return '/';
               |#endif
+
+    method shell_escaped( filepath:String )->String
+      # TODO: add Windows-specific support
+      contingent
+        forEach (ch in filepath)
+          necessary (ch.is_alphanumeric or "#%+-._/".contains(ch))
+        endForEach
+        return filepath
+
+      unsatisfied
+        use builder = StringBuilder.pool
+          forEach (ch in filepath)
+            if (ch.is_alphanumeric or "#%+-._/".contains(ch))
+              builder.print( ch )
+            else
+              builder.print('\\').print(ch)
+            endIf
+          endForEach
+          return builder->String
+        endUse
+
+      endContingent
 
     method size( filepath:String )->Int64
       filepath = expand_filepath( filepath )
@@ -963,6 +985,9 @@ class File
 
     method save( data:StringBuilder )->Logical
       return File.save( this.filepath, data )
+
+    method shell_escaped->String
+      return File.shell_escaped( this.filepath )
 
     method size->Int64
       return File.size( this.filepath )
@@ -1493,18 +1518,12 @@ class FileListing
 
       if (options.is_absolute) folder = File.absolute_filepath( folder )
 
+      folder = File.ensure_ends_with_separator( folder )
+      if (File.is_folder(folder+pattern)) pattern += "/*"
+
       path_segments = File.fix_slashes(folder).split( '/' )
       if (path_segments.first == ".") path_segments.remove_first
       if (path_segments.count and path_segments.last == "") path_segments.remove_last
-      folder = File.ensure_ends_with_separator( folder )
-
-      which (pattern)
-        case "*"
-          pattern = ""
-        case "**"
-          pattern = ""
-          options = options.recursive
-      endWhich
 
       pattern_segments = File.fix_slashes(pattern).split( '/' )
       if (pattern_segments.first == "") pattern_segments.clear
@@ -1512,6 +1531,8 @@ class FileListing
       File._listing( folder, callback )
 
       # Process the results
+      filepath_segments.clear.add( path_segments ).add( pattern_segments )
+      pattern = filepath_segments.join( "/" )
       forEach (filepath in writer=results.rewriter)
         contingent
           if (pattern.count)

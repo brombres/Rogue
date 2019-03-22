@@ -13,9 +13,16 @@ class Files
         this.base_folder = this.base_folder.rightmost( -2 )
       endIf
 
+    method init( base_folder:String, pattern:FilePattern, &ignore_hidden=true, &include_folders )
+      init( File.fix_slashes(base_folder) )
+      add( pattern, &=ignore_hidden, &=include_folders )
+
     method init( base_folder:String, pattern:String, &ignore_hidden=true, &include_folders )
       init( File.fix_slashes(base_folder) )
       add( pattern, &=ignore_hidden, &=include_folders )
+
+    method add( pattern:FilePattern, &ignore_hidden=true, &include_folders )->this
+      return add( pattern->String, &=ignore_hidden, &=include_folders )
 
     method add( pattern:String, &ignore_hidden=true, &include_folders )->this
       local target = base_folder+pattern
