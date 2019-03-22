@@ -10,7 +10,7 @@ class File
       if (not exists(filepath))
         local parent = folder( filepath )
         if (parent.count == 0) parent = "."
-        return "$$$" (absolute_filepath(parent),separator,filename(filepath))
+        return "$/$" (absolute_filepath(parent),filename(filepath))
       endIf
 
       local return_value : String
@@ -54,7 +54,7 @@ class File
               |    // fchdir only works with a path, not a path+filename (c_filepath).
               |    // Copy out the filename and null terminate the filepath to be just a path.
               |    int i = (int) strlen( c_filepath ) - 1;
-              |    while (i >= 0 && c_filepath[i] != '/' && c_filepath[i] != '\\') --i;
+              |    while (i >= 0 && c_filepath[i] != '/') --i;
               |    strcpy( filename, c_filepath+i+1 );
               |    if (i == -1) strcpy( c_filepath, "." );
               |    else         c_filepath[i] = 0;
@@ -107,9 +107,9 @@ class File
 
       if (a == b) return a
 
-      # Remove trailing '/' or '\'
-      while (a.count > 1 and (a.ends_with('/') or a.ends_with('\\'))) a = a.leftmost( -1 )
-      while (b.count > 1 and (b.ends_with('/') or b.ends_with('\\'))) b = b.leftmost( -1 )
+      # Remove trailing '/'
+      while (a.count > 1 and a.ends_with('/')) a = a.leftmost( -1 )
+      while (b.count > 1 and b.ends_with('/')) b = b.leftmost( -1 )
 
       while ((a.count > 0 or b.count > 0) and a != b)
         if (a.count > b.count) a = File.folder( a )
@@ -130,7 +130,7 @@ class File
         local modified = false
 
         if (File.is_folder(to_filepath))
-          to_filepath += separator + File.filename(from_filepath)
+          to_filepath += '/' + File.filename(from_filepath)
         else
           local containing_folder = File.folder( to_filepath )
           if (not is_folder(containing_folder))
@@ -167,7 +167,7 @@ class File
 
       if (File.is_folder(to_filepath))
         if (filename(from_filepath) != filename(to_filepath))
-          return copy_newer( from_filepath, to_filepath + separator + File.filename(from_filepath),
+          return copy_newer( from_filepath, to_filepath + '/' + File.filename(from_filepath),
             &=if_size_different, &=dry_run )
         endIf
       elseIf (File.is_newer_than(from_filepath,to_filepath))
@@ -247,7 +247,7 @@ class File
       # if necessary.  Returns 'true' on success or if the filepath
       # already exists as a folder.  Returns 'false' on failure to
       filepath = expand_filepath( filepath )
-      while (filepath.count > 1 and (filepath.ends_with('/') or filepath.ends_with('\\')))
+      while (filepath.count > 1 and filepath.ends_with('/'))
         filepath = filepath.leftmost( -1 )
       endWhile
 
@@ -272,17 +272,17 @@ class File
       if (not filepath) return false
       filepath = expand_filepath( filepath )
       if (is_folder(filepath))
-        delete( forEach in listing(filepath) )  # Recursively delete nested content
+        delete( forEach in listing(filepath,FilePattern("*")) )  # Recursively delete nested content
         return (0 == native( "rmdir( (const char*) $filepath->utf8 )")->Int32)
       endIf
       return (0 == native( "unlink( (const char*) $filepath->utf8 )")->Int32)
 
     method ends_with_separator( filepath:String )->Logical
-      return (filepath.ends_with('/') or filepath.ends_with('\\'))
+      return filepath.ends_with('/')
 
     method ensure_ends_with_separator( filepath:String )->String
       if (ends_with_separator(filepath)) return filepath
-      return filepath + separator
+      return filepath + '/'
 
     method exists( filepath:String )->Logical
       filepath = expand_filepath( filepath )
@@ -313,34 +313,25 @@ class File
     method filename( filepath:String )->String
       filepath = expand_filepath( filepath )
       local i = filepath.locate_last( '/' )
-      if (not i?) i = filepath.locate_last( '\\' )
       if (not i?) return filepath
       return filepath.from( i.value+1 )
 
     method fix_slashes( filepath:String )->String
       if (System.os == "Windows") return filepath.replacing( '/', '\\' )
-      else                        return filepath.replacing( '\\', '/' )
+      else                        return filepath
 
     method folder( filepath:String )->String
       filepath = expand_filepath( filepath )
 
       # Replace multiple slashes with single slashes
       while (filepath.contains("//")) filepath = filepath.replacing( "//", "/" )
-      while (filepath.contains("\\\\")) filepath = filepath.replacing( "\\\\", "\\" )
 
       # Discard trailing slash
-      if (filepath.ends_with('/') or filepath.ends_with('\\')) filepath = filepath.leftmost( -1 )
+      if (filepath.ends_with('/')) filepath = filepath.leftmost( -1 )
 
       if (filepath.count == 0) return ""
 
       local i1 = filepath.locate_last( '/' )
-      local i2 = filepath.locate_last( '\\' )
-      if (i1.exists)
-        if (i2.exists) i1 = i1.value.or_larger( i2.value )
-      else
-        i1 = i2
-      endIf
-
       if (not i1?) return ""
       if (i1.value == 0) return filepath.leftmost(1)  # /abc -> /
 
@@ -384,12 +375,12 @@ class File
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
 
-    method join( parts:String[] )->String
+    method join( segments:String[] )->String
       local buffer = StringBuilder()
       local first = true
-      forEach part in parts
+      forEach part in segments
         if (not part) nextIteration
-        if (not first) buffer.print(separator, &!formatted)
+        if (not first) buffer.print('/', &!formatted)
         first = false
         buffer.print(part)
       endForEach
@@ -401,131 +392,23 @@ class File
     method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
       return join(String[][part1, part2, part3, part4, part5, part6])
 
-    method listing( folder:String, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
+    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
       local options = FileOptions()
-      if (ignore_hidden) options = options.ignore_hidden
-      if (recursive)     options = options.recursive
-      if (absolute)      options = options.absolute
-      if (omit_path)     options = options.omit_path
-      if (files)         options = options.files
-      if (folders)       options = options.folders
-      return listing( folder, options )
+      if (ignore_hidden)    options = options.ignore_hidden
+      if (recursive)        options = options.recursive
+      if (absolute)         options = options.absolute
+      if (omit_path)        options = options.omit_path
+      if (files)            options = options.files
+      if (folders)          options = options.folders
+      return listing( folder, filepattern, options )
 
-    method listing( folder:String, options:FileOptions )->String[]
-      if (folder == "./" or folder == ".\\") folder = "."
-      if (folder.begins_with("./") or folder.begins_with(".\\")) folder = folder.from( 2 )
+    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, options:FileOptions )->String[]
+      return FileListing( folder, filepattern->String, options ).results
 
-      if (folder.contains('*') or folder.contains('?'))
-        local full_pattern = folder
-
-        local parts = folder.replacing('\\','/').split('/')
-        local non_wild_parts = String[]
-        while (not parts.first.contains('*') and not parts.first.contains('?'))
-          non_wild_parts.add( parts.remove_first )
-        endWhile
-
-        local non_wild_path = select{ non_wild_parts.count:non_wild_parts.join(separator) || "." }
-        if (parts.first.contains("**"))
-          # Implied recursion
-          local filtered = String[]
-          forEach (filepath in File.listing(non_wild_path, options.recursive.include_path))
-            if (File.matches_wildcard_pattern(filepath,full_pattern))
-              if (options.omitting_path)
-                filtered.add( filepath.after_first(folder) )
-              elseIf (options.is_absolute)
-                filtered.add( File.absolute_filepath( filepath ) )
-              else
-                filtered.add( filepath )
-              endIf
-            endIf
-          endForEach
-          return filtered
-
-        else
-          # Wildcards are * or ? only
-          local pattern = parts.remove_first
-          local results = String[]
-          forEach (name in File.listing(non_wild_path,options.limited.omit_path))
-            if (is_hidden(name) and options.ignoring_hidden) nextIteration
-            if (File.matches_wildcard_pattern(name,pattern))
-              if (non_wild_path == ".")
-                if (File.is_folder(name))
-                  if (parts.count)
-                    results.add( File.listing("$$$"(name,separator,parts.join(separator)),options) )
-                  elseIf (options.is_recursive)
-                    results.add( File.listing("$"(name),options) )
-                  else
-                    results.add( name )
-                  endIf
-                elseIf (parts.is_empty)
-                  results.add( name )
-                endIf
-              else
-                local subfolder = "$$$" (non_wild_path,separator,name)
-                if (File.is_folder(subfolder))
-                  if (parts.count)
-                    results.add( File.listing("$$$"(subfolder,separator,parts.join(separator)),options) )
-                  elseIf (options.is_recursive)
-                    results.add( File.listing(subfolder, options) )
-                  else
-                    results.add( subfolder )
-                  endIf
-                elseIf (parts.is_empty)
-                  results.add( subfolder )
-                endIf
-              endIf
-            endIf
-          endForEach
-          return results
-        endIf
-
-      else
-        return listing( folder, options, "", String[] )
-
-      endIf
-
-    method listing( folder:String, options:FileOptions, filepath:String, result:String[] )->String[]
-      folder = expand_filepath( folder )
-      if (folder == ".") options = options.omit_path
-
-      if (not options.omitting_path)
-        if (options.is_absolute)
-          filepath = File.absolute_filepath( folder )  # add absolute path to every entry
-          folder = ""
-          options = options.omit_path
-        else
-          filepath = folder
-          folder = ""
-          options = options.omit_path
-        endIf
-      endIf
-
-      if (folder.count and not (folder.ends_with('/') or folder.ends_with('\\')))
-        folder += separator
-      endIf
-
-      local native_folder = folder + filepath
-      if (not is_folder(native_folder))
-        if (File.exists(native_folder))
-          if (not (is_hidden(native_folder) and options.ignoring_hidden))
-            if (options.is_files)
-              if (native_folder.count > 1 and (native_folder.ends_with('/') or native_folder.ends_with('\\')))
-                native_folder = native_folder.leftmost( -1 )
-              endIf
-              result.add( native_folder )
-            endIf
-          endIf
-        endIf
-        return result
-      endIf
-
-      if (filepath.count and not (filepath.ends_with('/') or filepath.ends_with('\\')))
-        filepath += File.separator
-      endIf
-
+    method _listing( folder:String, collector:Function(String) )
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
-      local search_filepath = native_folder + "*"
+      local search_filepath = folder + "*"
 
       native @|{
               |  WIN32_FIND_DATA entry;
@@ -554,19 +437,7 @@ class File
               |      {
                        block
                          local entry = native("RogueString_create_from_utf8(entry.cFileName,-1)")->String
-                         if (not (is_hidden(entry) and options.ignoring_hidden))
-                           entry = filepath + entry
-                           local _is_folder = is_folder( folder + entry )
-                           if (options.is_files_and_folders or
-                               (_is_folder and options.is_folders) or
-                               (not _is_folder and options.is_files))
-                             result.add( entry )
-                           endIf
-
-                           if (_is_folder and options.is_recursive and entry.count)
-                             listing( folder, options, entry, result )
-                           endIf
-                         endIf
+                         collector( entry )
                        endBlock
       native @|      }
               |    }
@@ -581,7 +452,7 @@ class File
               |  DIR* dir;
               |  struct dirent* entry;
               |
-              |  dir = opendir( (const char*) $native_folder->utf8 );
+              |  dir = opendir( (const char*) $folder->utf8 );
               |  if (dir)
               |  {
               |    entry = readdir( dir );
@@ -604,21 +475,8 @@ class File
               |      {
                        block
                          local entry = native("RogueString_create_from_utf8(entry->d_name,-1)")->String
-                         if (not (is_hidden(entry) and options.ignoring_hidden))
-                           entry = filepath + entry
-                           local _is_folder = is_folder( folder + entry )
-                           if (options.is_files_and_folders or
-                               (_is_folder and options.is_folders) or
-                               (not _is_folder and options.is_files))
-                             result.add( entry )
-                           endIf
-
-                           if (_is_folder and options.is_recursive and entry.count)
-                             listing( folder, options, entry, result )
-                           endIf
-                         endIf
+                         collector( entry )
                        endBlock
-
       native @|
               |      }
               |      entry = readdir( dir );
@@ -627,9 +485,6 @@ class File
               |  }
               |}
               |#endif // Windows vs Mac/Linux
-
-      return result
-
 
     method load_as_bytes( filepath:String )->Byte[]
       filepath = expand_filepath( filepath )
@@ -668,9 +523,9 @@ class File
       # regular text string that may contain the following special
       # characters:
       #
-      # *  - Matches any number of characters but does not match '/' or '\'
+      # *  - Matches any number of characters but does not match '/'
       # ** - Matches any number of characters including slashes
-      # ?  - Matches any one character except '/' and '\'
+      # ?  - Matches any one character except '/'
       filepath = expand_filepath( filepath )
 
       # Check non-wildcard characters at the end of pattern first as an easy out
@@ -711,18 +566,18 @@ class File
       which (ch)
         case '*':
           if (rcount and remaining_pattern[r0] == '*')
-            # Double asterisk - match all characters including '/' and '\'
+            # Double asterisk - match all characters including '/'
             ++r0
             --rcount
             forEach (n in 0..fcount)
               if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
             endForEach
           else
-            # Single asterisk - match any characters except '/' and '\'
+            # Single asterisk - match any characters except '/'
             forEach (n in 0..<fcount)
               ch = filepath[ f0+n ]
               if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
-              if (ch == '/' or ch == '\\') return false
+              if (ch == '/') return false
             endForEach
             return _matches_wildcard_pattern( "", 0, 0, remaining_pattern, r0, rcount )
           endIf
@@ -730,7 +585,7 @@ class File
         case '?':
           if (fcount == 0) return false
           ch = filepath[ f0 ]
-          if (ch == '/' or ch == '\\') return false
+          if (ch == '/') return false
           return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount )
 
         others:
@@ -852,7 +707,7 @@ class File
 
       dest_folder = ensure_ends_with_separator( dest_folder )
       local dest_name = dest_folder
-      if (dest_name.begins_with("./") or dest_name.begins_with(".\\")) dest_name = dest_name.from( 2 )
+      if (dest_name.begins_with("./")) dest_name = dest_name.from( 2 )
 
       if (dest_name == source_files.base_folder)
         Console.error.println( "ERROR: File.sync_from() has the same source and destination folders ($)."...
@@ -1023,7 +878,7 @@ class File
       return File.ends_with_separator( this.filepath )
 
     method ensure_ends_with_separator->this
-      if (not ends_with_separator) filepath += separator
+      if (not ends_with_separator) filepath += '/'
       return this
 
     method delete->Logical
@@ -1056,11 +911,11 @@ class File
     method is_newer_than( other_filepath:String )->Logical
       return File.is_newer_than( this.filepath, other_filepath )
 
-    method listing( &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
-      return File.listing( this.filepath, ignore_hidden, recursive, absolute, omit_path, files, folders )
+    method listing( filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
+      return File.listing( this.filepath, filepattern, ignore_hidden, recursive, absolute, omit_path, files, folders )
 
-    method listing( options:FileOptions )->String[]
-      return File.listing( this.filepath, options )
+    method listing( filepattern=FilePattern("*"):FilePattern, options:FileOptions )->String[]
+      return File.listing( this.filepath, filepattern, options )
 
     method load_as_bytes->Byte[]
       return File.load_as_bytes( this.filepath )
@@ -1147,10 +1002,10 @@ class FileOptions( flags=0:Int32 ) [compound]
       local f = (flags & FLAG_BOTH)
       return (f == 0) or (f == FLAG_BOTH)
 
-    method is_files->Logical
+    method keep_files->Logical
       return (flags & FLAG_FILES) or not (flags & FLAG_BOTH)
 
-    method is_folders->Logical
+    method keep_folders->Logical
       return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
 
     method is_absolute->Logical [macro]
@@ -1596,5 +1451,107 @@ class FDWriter : Writer<<Byte>>
 
     method write( builder:StringBuilder )->this
       return write( builder.utf8 )
+endClass
+
+class FilePattern( pattern:String ) [compound]
+  METHODS
+    method to->String
+      return pattern
+endClass
+
+class FileListing
+  PROPERTIES
+    folder            : String
+    pattern           : String
+    options           : FileOptions
+    path_segments     : String[]
+    pattern_segments  : String[]
+
+    filepath_segments = String[]
+    empty_segments    = String[]
+    results           = String[]
+
+    callback          : Function(String)
+
+  METHODS
+    method init( folder, pattern, options )
+      callback = this=>collect
+
+      if (options.is_absolute) folder = File.absolute_filepath( folder )
+
+      path_segments = File.fix_slashes(folder).split( '/' )
+      if (path_segments.first == ".") path_segments.remove_first
+      if (path_segments.count and path_segments.last == "") path_segments.remove_last
+      folder = File.ensure_ends_with_separator( folder )
+
+      which (pattern)
+        case "*"
+          pattern = ""
+        case "**"
+          pattern = ""
+          options = options.recursive
+      endWhich
+
+      pattern_segments = File.fix_slashes(pattern).split( '/' )
+      if (pattern_segments.first == "") pattern_segments.clear
+
+      File._listing( folder, callback )
+
+      # Process the results
+      forEach (filepath in writer=results.rewriter)
+        contingent
+          if (pattern.count)
+            # Directories were recursed into based on the pattern, but some files could have been added
+            # earlier that don't match the wildcard pattern.
+            necessary (File.matches_wildcard_pattern(filepath,pattern))
+          endIf
+
+          if (options.omitting_path) filepath = filepath.after_first( folder )
+
+        satisfied
+          writer.write( filepath )
+        endContingent
+      endForEach
+
+      results.sort( (a,b)=>(a<b) )
+
+    method collect( filename:String )
+      if (options.ignoring_hidden and filename.begins_with('.')) return
+      if (pattern_segments.count and not File.matches_wildcard_pattern(filename,pattern_segments.first)) return
+
+      filepath_segments.clear.add( path_segments ).add( filename )
+      local filepath = filepath_segments.join( "/" )
+      if (File.is_folder(filepath))
+        if (options.keep_folders) results.add( filepath )
+
+        if (pattern_segments.count)
+          # Implied recursion because we have more pattern segments
+          path_segments.add( filename )
+
+          if (pattern_segments.first == "**")
+            # Once we encounter `**`, switch to recursively collecting everything
+            # and let the top-level filter decide which ones match
+            local saved_options = options
+            options = options.recursive
+            local saved_segments = pattern_segments
+            pattern_segments = empty_segments
+            File._listing( filepath, callback )
+            pattern_segments = saved_segments
+            options = saved_options
+          else
+            local saved_segment = pattern_segments.remove_first
+            File._listing( filepath, callback )
+            pattern_segments.insert( saved_segment )
+          endIf
+
+          path_segments.remove_last
+        elseIf (options.is_recursive)
+          path_segments.add( filename )
+          File._listing( filepath, callback )
+          path_segments.remove_last
+        endIf
+      else
+        if (options.keep_files) results.add( filepath )
+      endIf
 endClass
 
