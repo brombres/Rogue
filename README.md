@@ -3,18 +3,27 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | v1.4.27
-Date      | March 1, 2019
+Version   | v1.4.28
+Date      | March 22, 2019
 Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
 
 ## Installation
 
 ### Mac & Linux
+#### Initial Installation
+
     git clone https://github.com/AbePralle/Rogue.git
     cd Rogue
     make  # bootstraps Rogue, creates 'roguec' and 'rogo' launchers
 
+#### Updating to the Latest Version
+
+    cd Rogue && git pull && make
+    # If any errors occur, run "make bootstrap"
+
+
 ### Windows
+#### Initial Installation
 1. Install Git and Visual Studio 2017 with C++ support.
 
 2. Use a VS "Developer Command Prompt" for the following and for working with Rogue in general.
@@ -26,6 +35,11 @@ Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
     rogo
 
 4. Add the absolute path of the subfolder `Programs\RogueC` to the system PATH as directed by the `rogo` command.
+
+#### Updating to the Latest Version
+
+    cd Rogue && git pull && rogo
+    # If any errors occur, run "rogo bootstrap"
 
 ## Syntax Highlighting
 
