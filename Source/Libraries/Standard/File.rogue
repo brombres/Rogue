@@ -400,18 +400,27 @@ class File
     method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
       return join(String[][part1, part2, part3, part4, part5, part6])
 
-    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
+    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
+      # Use the filepattern '**' for a recursive listing.
       local options = FileOptions()
       if (ignore_hidden)    options = options.ignore_hidden
-      if (recursive)        options = options.recursive
       if (absolute)         options = options.absolute
       if (omit_path)        options = options.omit_path
       if (files)            options = options.files
       if (folders)          options = options.folders
       return listing( folder, filepattern, options )
 
+    method listing( folder:String, filepattern:String, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
+      # Use the filepattern '**' for a recursive listing.
+      return listing( folder, FilePattern(filepattern), &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
+
     method listing( folder:String, filepattern=FilePattern("*"):FilePattern, options:FileOptions )->String[]
+      # Use the filepattern '**' for a recursive listing.
       return FileListing( folder, filepattern->String, options ).results
+
+    method listing( folder:String, filepattern:String, options:FileOptions )->String[]
+      # Use the filepattern '**' for a recursive listing.
+      return FileListing( folder, filepattern, options ).results
 
     method _listing( folder:String, collector:Function(String) )
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -944,8 +953,8 @@ class File
     method is_newer_than( other_filepath:String )->Logical
       return File.is_newer_than( this.filepath, other_filepath )
 
-    method listing( filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &recursive, &absolute, &omit_path, &files, &folders )->String[]
-      return File.listing( this.filepath, filepattern, ignore_hidden, recursive, absolute, omit_path, files, folders )
+    method listing( filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
+      return File.listing( this.filepath, filepattern, &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
 
     method listing( filepattern=FilePattern("*"):FilePattern, options:FileOptions )->String[]
       return File.listing( this.filepath, filepattern, options )
@@ -1031,17 +1040,17 @@ class FileOptions( flags=0:Int32 ) [compound]
     method ignore_hidden->FileOptions [macro]
       return FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
 
-    method ignoring_hidden->Logical [macro]
+    method is_ignoring_hidden->Logical [macro]
       return (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
 
-    method is_files_and_folders->Logical
+    method keeping_files_and_folders->Logical
       local f = (flags & FLAG_BOTH)
       return (f == 0) or (f == FLAG_BOTH)
 
-    method keep_files->Logical
+    method keeping_files->Logical
       return (flags & FLAG_FILES) or not (flags & FLAG_BOTH)
 
-    method keep_folders->Logical
+    method keeping_folders->Logical
       return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
 
     method is_absolute->Logical [macro]
@@ -1062,11 +1071,17 @@ class FileOptions( flags=0:Int32 ) [compound]
     method is_limited->Logical [macro]
       return (not (this.flags & FileOptions.FLAG_RECURSIVE))
 
+    method is_omitting_path->Logical [macro]
+      return (this.flags & FileOptions.FLAG_OMIT_PATH)
+
     method is_recursive->Logical [macro]
       return (this.flags & FileOptions.FLAG_RECURSIVE)
 
     method is_relative->Logical [macro]
       return (not (this.flags & FileOptions.FLAG_ABSOLUTE))
+
+    method is_showing_hidden->Logical [macro]
+      return (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
 
     method limited->FileOptions [macro]
       return FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
@@ -1074,20 +1089,14 @@ class FileOptions( flags=0:Int32 ) [compound]
     method omit_path->FileOptions [macro]
       return FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
 
-    method omitting_path->Logical [macro]
-      return (this.flags & FileOptions.FLAG_OMIT_PATH)
-
     method relative->FileOptions [macro]
       return FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
 
     method recursive->FileOptions [macro]
       return FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
 
-    method showing_hidden->FileOptions [macro]
+    method show_hidden->FileOptions [macro]
       return FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
-
-    method shows_hidden->Logical [macro]
-      return (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
 
 endClass
 
@@ -1546,7 +1555,7 @@ class FileListing
 
       if (file_exists)
         local filepath = filepath_pattern
-        if (options.omitting_path) filepath = filepath.after_first( folder )
+        if (options.is_omitting_path) filepath = filepath.after_first( folder )
         results.add( filepath )
         return
       endIf
@@ -1559,7 +1568,7 @@ class FileListing
             necessary (File.matches_wildcard_pattern(filepath,pattern))
           endIf
 
-          if (options.omitting_path) filepath = filepath.after_first( folder )
+          if (options.is_omitting_path) filepath = filepath.after_first( folder )
 
         satisfied
           writer.write( filepath )
@@ -1569,13 +1578,12 @@ class FileListing
       results.sort( (a,b)=>(a<b) )
 
     method collect( filename:String )
-      if (options.ignoring_hidden and filename.begins_with('.')) return
+      if (options.is_ignoring_hidden and filename.begins_with('.')) return
       if (pattern_segments.count and not File.matches_wildcard_pattern(filename,pattern_segments.first)) return
-
       filepath_segments.clear.add( path_segments ).add( filename )
       local filepath = filepath_segments.join( "/" )
       if (File.is_folder(filepath))
-        if (options.keep_folders) results.add( filepath )
+        if (options.keeping_folders) results.add( filepath )
 
         if (pattern_segments.count)
           # Implied recursion because we have more pattern segments
@@ -1604,7 +1612,7 @@ class FileListing
           path_segments.remove_last
         endIf
       else
-        if (options.keep_files) results.add( filepath )
+        if (options.keeping_files) results.add( filepath )
       endIf
 endClass
 
