@@ -1519,7 +1519,17 @@ class FileListing
       if (options.is_absolute) folder = File.absolute_filepath( folder )
 
       folder = File.ensure_ends_with_separator( folder )
-      if (File.is_folder(folder+pattern)) pattern += "/*"
+
+      local filepath_pattern = folder + pattern
+      local file_exists = false
+      if (File.exists(filepath_pattern))
+        if (File.is_folder(filepath_pattern))
+          pattern += "/*"
+        else
+          # 'pattern' refers to a single file (non-folder)
+          if (pattern.count > 0) file_exists = true
+        endIf
+      endIf
 
       path_segments = File.fix_slashes(folder).split( '/' )
       if (path_segments.first == ".") path_segments.remove_first
@@ -1528,11 +1538,19 @@ class FileListing
       pattern_segments = File.fix_slashes(pattern).split( '/' )
       if (pattern_segments.first == "") pattern_segments.clear
 
-      File._listing( folder, callback )
+      if (not file_exists) File._listing( folder, callback )
 
       # Process the results
       filepath_segments.clear.add( path_segments ).add( pattern_segments )
       pattern = filepath_segments.join( "/" )
+
+      if (file_exists)
+        local filepath = filepath_pattern
+        if (options.omitting_path) filepath = filepath.after_first( folder )
+        results.add( filepath )
+        return
+      endIf
+
       forEach (filepath in writer=results.rewriter)
         contingent
           if (pattern.count)
