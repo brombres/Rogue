@@ -33498,61 +33498,93 @@ RogueClassFileListing* RogueFileListing__init__String_String_FileOptions( RogueC
   }
   ;__trace.line = 1521;
   THIS->folder = (RogueFile__ensure_ends_with_separator__String( ROGUE_ARG(THIS->folder) ));
-  ;__trace.line = 1522;
-  if (ROGUE_COND((RogueFile__is_folder__String( ROGUE_ARG((RogueString__operatorPLUS__String_String( ROGUE_ARG(THIS->folder), ROGUE_ARG(THIS->pattern) ))) ))))
-  {
-    THIS->pattern = ((RogueString*)(RogueString__operatorPLUS__String( ROGUE_ARG(THIS->pattern), Rogue_literal_strings[58] )));
-  }
+  ;__trace.line = 1523;
+  ROGUE_DEF_LOCAL_REF(RogueString*,filepath_pattern_3,((RogueString__operatorPLUS__String_String( ROGUE_ARG(THIS->folder), ROGUE_ARG(THIS->pattern) ))));
   ;__trace.line = 1524;
-  THIS->path_segments = ((RogueString_List*)(RogueString__split__Character_Logical( ROGUE_ARG((RogueFile__fix_slashes__String( ROGUE_ARG(THIS->folder) ))), (RogueCharacter)'/', false )));
+  RogueLogical file_exists_4 = (false);
   ;__trace.line = 1525;
+  if (ROGUE_COND((RogueFile__exists__String( filepath_pattern_3 ))))
+  {
+    ;__trace.line = 1526;
+    if (ROGUE_COND((RogueFile__is_folder__String( filepath_pattern_3 ))))
+    {
+      ;__trace.line = 1527;
+      THIS->pattern = ((RogueString*)(RogueString__operatorPLUS__String( ROGUE_ARG(THIS->pattern), Rogue_literal_strings[58] )));
+    }
+    else if (ROGUE_COND(((((RogueString__count( ROGUE_ARG(THIS->pattern) )))) > (0))))
+    {
+      ;__trace.line = 1530;
+      file_exists_4 = ((RogueLogical)(true));
+    }
+  }
+  ;__trace.line = 1534;
+  THIS->path_segments = ((RogueString_List*)(RogueString__split__Character_Logical( ROGUE_ARG((RogueFile__fix_slashes__String( ROGUE_ARG(THIS->folder) ))), (RogueCharacter)'/', false )));
+  ;__trace.line = 1535;
   if (ROGUE_COND((RogueString__operatorEQUALSEQUALS__String_String( ROGUE_ARG(((RogueString*)(RogueString_List__first( ROGUE_ARG(THIS->path_segments) )))), Rogue_literal_strings[23] ))))
   {
     RogueString_List__remove_first( ROGUE_ARG(THIS->path_segments) );
   }
-  ;__trace.line = 1526;
+  ;__trace.line = 1536;
   if (ROGUE_COND(((!!(THIS->path_segments->count)) && ((RogueString__operatorEQUALSEQUALS__String_String( ROGUE_ARG(((RogueString*)(RogueString_List__last( ROGUE_ARG(THIS->path_segments) )))), Rogue_literal_strings[0] ))))))
   {
     RogueString_List__remove_last( ROGUE_ARG(THIS->path_segments) );
   }
-  ;__trace.line = 1528;
+  ;__trace.line = 1538;
   THIS->pattern_segments = ((RogueString_List*)(RogueString__split__Character_Logical( ROGUE_ARG((RogueFile__fix_slashes__String( ROGUE_ARG(THIS->pattern) ))), (RogueCharacter)'/', false )));
-  ;__trace.line = 1529;
+  ;__trace.line = 1539;
   if (ROGUE_COND((RogueString__operatorEQUALSEQUALS__String_String( ROGUE_ARG(((RogueString*)(RogueString_List__first( ROGUE_ARG(THIS->pattern_segments) )))), Rogue_literal_strings[0] ))))
   {
     RogueString_List__clear( ROGUE_ARG(THIS->pattern_segments) );
   }
-  ;__trace.line = 1531;
-  RogueFile___listing__String__Function_String__( ROGUE_ARG(THIS->folder), ROGUE_ARG(THIS->callback) );
-  ;__trace.line = 1534;
+  ;__trace.line = 1541;
+  if (ROGUE_COND(!(file_exists_4)))
+  {
+    RogueFile___listing__String__Function_String__( ROGUE_ARG(THIS->folder), ROGUE_ARG(THIS->callback) );
+  }
+  ;__trace.line = 1544;
   RogueString_List__add__String_List( ROGUE_ARG(((RogueString_List*)(RogueString_List__add__String_List( ROGUE_ARG(((RogueString_List*)(RogueString_List__clear( ROGUE_ARG(THIS->filepath_segments) )))), ROGUE_ARG(THIS->path_segments) )))), ROGUE_ARG(THIS->pattern_segments) );
-  ;__trace.line = 1535;
+  ;__trace.line = 1545;
   THIS->pattern = ((RogueString*)(RogueString_List__join__String( ROGUE_ARG(THIS->filepath_segments), Rogue_literal_strings[56] )));
-  ;__trace.line = 1536;
+  ;__trace.line = 1547;
+  if (ROGUE_COND(file_exists_4))
+  {
+    ;__trace.line = 1548;
+    ROGUE_DEF_LOCAL_REF(RogueString*,filepath_5,(filepath_pattern_3));
+    ;__trace.line = 1549;
+    if (ROGUE_COND((RogueLogical__create__Int32( ROGUE_ARG(((THIS->options.flags) & (2))) ))))
+    {
+      filepath_5 = ((RogueString*)(((RogueString*)(RogueString__after_first__String_Logical( filepath_5, ROGUE_ARG(THIS->folder), false )))));
+    }
+    ;__trace.line = 1550;
+    RogueString_List__add__String( ROGUE_ARG(THIS->results), filepath_5 );
+    ;__trace.line = 1551;
+    return (RogueClassFileListing*)(THIS);
+  }
+  ;__trace.line = 1554;
   {
     ROGUE_DEF_LOCAL_REF(RogueClassListRewriter_String_*,writer_0,(((RogueClassListRewriter_String_*)(RogueString_List__rewriter( ROGUE_ARG(THIS->results) )))));
     while (ROGUE_COND(((RogueListRewriter_String___has_another( writer_0 )))))
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueString*,filepath_0,(((RogueString*)(RogueListRewriter_String___read( writer_0 )))));
-      ;__trace.line = 1537;
+      ;__trace.line = 1555;
       {
         {
           {
-            ;__trace.line = 1538;
+            ;__trace.line = 1556;
             if (ROGUE_COND(!!(((RogueString__count( ROGUE_ARG(THIS->pattern) ))))))
             {
-              ;__trace.line = 1541;
+              ;__trace.line = 1559;
               if ( !((RogueFile__matches_wildcard_pattern__String_String( filepath_0, ROGUE_ARG(THIS->pattern) ))) ) goto _auto_2607;
             }
-            ;__trace.line = 1544;
+            ;__trace.line = 1562;
             if (ROGUE_COND((RogueLogical__create__Int32( ROGUE_ARG(((THIS->options.flags) & (2))) ))))
             {
               filepath_0 = ((RogueString*)(((RogueString*)(RogueString__after_first__String_Logical( filepath_0, ROGUE_ARG(THIS->folder), false )))));
             }
             }
           {
-            ;__trace.line = 1547;
+            ;__trace.line = 1565;
             RogueListRewriter_String___write__String( writer_0, filepath_0 );
             }
           goto _auto_2606;
@@ -33562,86 +33594,86 @@ RogueClassFileListing* RogueFileListing__init__String_String_FileOptions( RogueC
       _auto_2606:;
     }
   }
-  ;__trace.line = 1551;
+  ;__trace.line = 1569;
   RogueString_List__sort___Function_String_String_RETURNSLogical_( ROGUE_ARG(THIS->results), ROGUE_ARG(((RogueClass_Function_String_String_RETURNSLogical_*)(((RogueClassFunction_2608*)ROGUE_SINGLETON(Function_2608))))) );
-  ;__trace.line = 1553;
+  ;__trace.line = 1571;
   return (RogueClassFileListing*)(THIS);
 }
 
 void RogueFileListing__collect__String( RogueClassFileListing* THIS, RogueString* filename_0 )
 {
-  RogueDebugTrace __trace( "FileListing.collect(String)", "File.rogue", 1553 );
+  RogueDebugTrace __trace( "FileListing.collect(String)", "File.rogue", 1571 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 1554;
+  ;__trace.line = 1572;
   if (ROGUE_COND((((RogueLogical__create__Int32( ROGUE_ARG(((THIS->options.flags) & (32))) ))) && (((RogueString__begins_with__Character_Logical( filename_0, (RogueCharacter)'.', false )))))))
   {
     return;
   }
-  ;__trace.line = 1555;
+  ;__trace.line = 1573;
   if (ROGUE_COND(((!!(THIS->pattern_segments->count)) && (!((RogueFile__matches_wildcard_pattern__String_String( filename_0, ROGUE_ARG(((RogueString*)(RogueString_List__first( ROGUE_ARG(THIS->pattern_segments) )))) )))))))
   {
     return;
   }
-  ;__trace.line = 1557;
+  ;__trace.line = 1575;
   RogueString_List__add__String( ROGUE_ARG(((RogueString_List*)(RogueString_List__add__String_List( ROGUE_ARG(((RogueString_List*)(RogueString_List__clear( ROGUE_ARG(THIS->filepath_segments) )))), ROGUE_ARG(THIS->path_segments) )))), filename_0 );
-  ;__trace.line = 1558;
+  ;__trace.line = 1576;
   ROGUE_DEF_LOCAL_REF(RogueString*,filepath_1,(((RogueString*)(RogueString_List__join__String( ROGUE_ARG(THIS->filepath_segments), Rogue_literal_strings[56] )))));
-  ;__trace.line = 1559;
+  ;__trace.line = 1577;
   if (ROGUE_COND((RogueFile__is_folder__String( filepath_1 ))))
   {
-    ;__trace.line = 1560;
+    ;__trace.line = 1578;
     if (ROGUE_COND(((RogueFileOptions__keep_folders( THIS->options )))))
     {
       RogueString_List__add__String( ROGUE_ARG(THIS->results), filepath_1 );
     }
-    ;__trace.line = 1562;
+    ;__trace.line = 1580;
     if (ROGUE_COND(!!(THIS->pattern_segments->count)))
     {
-      ;__trace.line = 1564;
+      ;__trace.line = 1582;
       RogueString_List__add__String( ROGUE_ARG(THIS->path_segments), filename_0 );
-      ;__trace.line = 1566;
+      ;__trace.line = 1584;
       if (ROGUE_COND((RogueString__operatorEQUALSEQUALS__String_String( ROGUE_ARG(((RogueString*)(RogueString_List__first( ROGUE_ARG(THIS->pattern_segments) )))), Rogue_literal_strings[119] ))))
       {
-        ;__trace.line = 1569;
+        ;__trace.line = 1587;
         RogueClassFileOptions saved_options_2 = (THIS->options);
-        ;__trace.line = 1570;
+        ;__trace.line = 1588;
         THIS->options = RogueClassFileOptions( ((THIS->options.flags) | (1)) );
-        ;__trace.line = 1571;
+        ;__trace.line = 1589;
         ROGUE_DEF_LOCAL_REF(RogueString_List*,saved_segments_3,(THIS->pattern_segments));
-        ;__trace.line = 1572;
+        ;__trace.line = 1590;
         THIS->pattern_segments = THIS->empty_segments;
-        ;__trace.line = 1573;
+        ;__trace.line = 1591;
         RogueFile___listing__String__Function_String__( filepath_1, ROGUE_ARG(THIS->callback) );
-        ;__trace.line = 1574;
+        ;__trace.line = 1592;
         THIS->pattern_segments = saved_segments_3;
-        ;__trace.line = 1575;
+        ;__trace.line = 1593;
         THIS->options = saved_options_2;
       }
       else
       {
-        ;__trace.line = 1577;
+        ;__trace.line = 1595;
         ROGUE_DEF_LOCAL_REF(RogueString*,saved_segment_4,(((RogueString*)(RogueString_List__remove_first( ROGUE_ARG(THIS->pattern_segments) )))));
-        ;__trace.line = 1578;
+        ;__trace.line = 1596;
         RogueFile___listing__String__Function_String__( filepath_1, ROGUE_ARG(THIS->callback) );
-        ;__trace.line = 1579;
+        ;__trace.line = 1597;
         RogueString_List__insert__String_Int32( ROGUE_ARG(THIS->pattern_segments), saved_segment_4, 0 );
       }
-      ;__trace.line = 1582;
+      ;__trace.line = 1600;
       RogueString_List__remove_last( ROGUE_ARG(THIS->path_segments) );
     }
     else if (ROGUE_COND((RogueLogical__create__Int32( ROGUE_ARG(((THIS->options.flags) & (1))) ))))
     {
-      ;__trace.line = 1584;
+      ;__trace.line = 1602;
       RogueString_List__add__String( ROGUE_ARG(THIS->path_segments), filename_0 );
-      ;__trace.line = 1585;
+      ;__trace.line = 1603;
       RogueFile___listing__String__Function_String__( filepath_1, ROGUE_ARG(THIS->callback) );
-      ;__trace.line = 1586;
+      ;__trace.line = 1604;
       RogueString_List__remove_last( ROGUE_ARG(THIS->path_segments) );
     }
   }
   else if (ROGUE_COND(((RogueFileOptions__keep_files( THIS->options )))))
   {
-    ;__trace.line = 1589;
+    ;__trace.line = 1607;
     RogueString_List__add__String( ROGUE_ARG(THIS->results), filepath_1 );
   }
 }
@@ -35210,7 +35242,7 @@ RogueClassFileListing_collect_String_* RogueFileListing_collect_String___init__F
 
 RogueClassFunction_2608* RogueFunction_2608__init_object( RogueClassFunction_2608* THIS )
 {
-  RogueDebugTrace __trace( "Function_2608.init_object()", "File.rogue", 1551 );
+  RogueDebugTrace __trace( "Function_2608.init_object()", "File.rogue", 1569 );
   ROGUE_GC_CHECK;
   Rogue_Function_String_String_RETURNSLogical___init_object( ROGUE_ARG(((RogueClass_Function_String_String_RETURNSLogical_*)THIS)) );
   return (RogueClassFunction_2608*)(THIS);
@@ -35218,13 +35250,13 @@ RogueClassFunction_2608* RogueFunction_2608__init_object( RogueClassFunction_260
 
 RogueString* RogueFunction_2608__type_name( RogueClassFunction_2608* THIS )
 {
-  RogueDebugTrace __trace( "Function_2608.type_name()", "File.rogue", 1551 );
+  RogueDebugTrace __trace( "Function_2608.type_name()", "File.rogue", 1569 );
   return (RogueString*)(Rogue_literal_strings[346]);
 }
 
 RogueLogical RogueFunction_2608__call__String_String( RogueClassFunction_2608* THIS, RogueString* a_0, RogueString* b_1 )
 {
-  RogueDebugTrace __trace( "Function_2608.call(String,String)", "File.rogue", 1551 );
+  RogueDebugTrace __trace( "Function_2608.call(String,String)", "File.rogue", 1569 );
   return (RogueLogical)((((RogueString__operatorLTGT__String_String( a_0, b_1 ))) < (0)));
 }
 
