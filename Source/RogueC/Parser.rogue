@@ -2997,6 +2997,7 @@ class Parser
 
       # **NOTE** any new token types handled should also be checked for in parse_context_block().
       if (consume(TokenType.symbol_dot))
+        consume_eols
         if (consume(TokenType.symbol_empty_brackets)) return parse_member_access( context )
         if (next_is(TokenType.symbol_open_bracket))   return parse_member_access( parse_context_block(context) )
 
@@ -4178,8 +4179,10 @@ class Parser
       local cmd_block = CmdContextBlock( t, context )
 
       local first = true
-      while (first or consume(TokenType.symbol_comma))
+      local consumed_eol = false
+      while (first or consume(TokenType.symbol_comma) or (consumed_eol and not next_is(TokenType.symbol_close_bracket)))
         consume_eols
+        consumed_eol = false
 
         first = false
         t = peek
@@ -4203,11 +4206,10 @@ class Parser
           # x -> context.x
           local cmd = CmdAccess( t, cmd_block.context_var_name ) : Cmd
           local access = parse_access( t, cmd )
-          consume_eols
           cmd_block.add( parse_statement_with_context(access) )
         endContingent
 
-        consume_eols
+        consumed_eol = consume_eols
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
