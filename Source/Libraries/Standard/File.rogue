@@ -692,25 +692,48 @@ class File
               |  return '/';
               |#endif
 
+    method is_valid_filename_character( ch:Character, &any_os )->Logical
+      if (ch < 32 or ch == 127) return false
+      if (any_os or System.is_windows) return not ''"*:<>?/\\|''.contains( ch )
+      return ch != '/'
+
     method shell_escaped( filepath:String )->String
-      # TODO: add Windows-specific support
+      local acceptable : String
+      if (System.is_windows)
+        # Windows
+        # Characters that cannot be part of a filename:    "*:<>?/\|
+        # Non-alpha-num chars that don't require escaping: #$.-@_
+        acceptable = ''"*:<>?/\\|#$.-@_''
+      else
+        # Mac/Linux
+        # Characters that cannot be part of a filename:    /
+        # Non-alpha-num chars that don't require escaping: #%+-._~
+        acceptable = "/#%+-._~"
+      endIf
+
       contingent
         forEach (ch in filepath)
-          necessary (ch.is_alphanumeric or "#%+-._/".contains(ch))
+          necessary (ch.is_alphanumeric or acceptable.contains(ch))
         endForEach
         return filepath
 
       unsatisfied
-        use builder = StringBuilder.pool
-          forEach (ch in filepath)
-            if (ch.is_alphanumeric or "#%+-._/".contains(ch))
-              builder.print( ch )
-            else
-              builder.print('\\').print(ch)
-            endIf
-          endForEach
-          return builder->String
-        endUse
+        if (System.is_windows)
+          # Surrounding the filepath with double quotes is all the escaping we need.
+          return '"$"' (filepath)
+        else
+          # On Unixy OS's, put a '\' in front of every character that needs it.
+          use builder = StringBuilder.pool
+            forEach (ch in filepath)
+              if (ch.is_alphanumeric or acceptable.contains(ch))
+                builder.print( ch )
+              else
+                builder.print('\\').print(ch)
+              endIf
+            endForEach
+            return builder->String
+          endUse
+        endIf
 
       endContingent
 
