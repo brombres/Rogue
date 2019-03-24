@@ -35,10 +35,8 @@ class System [essential]
       $endIf
 
     method home_folder->String
-      which (true)
-        case System.is_windows: return System.environment//HOMEDRIVE + System.environment//HOMEPATH
-        others:                 return System.environment//HOME
-      endWhich
+      if (System.is_windows) return System.environment//HOMEDRIVE + System.environment//HOMEPATH
+      else                   return System.environment//HOME
 
     method is_android->Logical
       local result = false

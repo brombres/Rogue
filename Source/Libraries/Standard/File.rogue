@@ -162,10 +162,8 @@ class File
       endIf
 
     method conventional_filepath( filepath:String )->String
-      which (true)
-        case System.is_windows: return filepath.replacing( '/', '\\' )
-        others:                 return filepath
-      endWhich
+      if (System.is_windows) return filepath.replacing( '/', '\\' )
+      else                   return filepath
 
     method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
       from_filepath = expand_filepath( from_filepath )
@@ -301,12 +299,11 @@ class File
       filepath = fix_slashes( filepath )
       if (filepath == "~" or filepath.begins_with("~/"))
         local home_folder : String
-        which (true)
-          case System.is_windows
-            home_folder = System.environment//HOMEDRIVE + System.environment//HOMEPATH
-          others
-            home_folder = System.environment//HOME
-        endWhich
+        if (System.is_windows)
+          home_folder = System.environment//HOMEDRIVE + System.environment//HOMEPATH
+        else
+          home_folder = System.environment//HOME
+        endIf
         if (home_folder and home_folder.count)
           filepath = home_folder + filepath.rightmost(-1)
           return filepath
@@ -326,7 +323,8 @@ class File
     method fix_slashes( filepath:String )->String
       # Filepaths are always manipulated using forward slashes. Use .conventional_filepath() to
       # turn a file or filepath into a Windows-style version for display.
-      return filepath.replacing( '\\', '/' )
+      if (System.is_windows) return filepath.replacing( '\\', '/' )
+      else                   return filepath
 
     method folder( filepath:String )->String
       filepath = expand_filepath( filepath )
