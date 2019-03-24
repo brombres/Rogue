@@ -8709,6 +8709,7 @@ ROGUE_EXPORT_C RogueLogical RogueFile__save__String_Byte_List( RogueString* file
 ROGUE_EXPORT_C RogueLogical RogueFile__save__String_String( RogueString* filepath_0, RogueString* data_1 );
 ROGUE_EXPORT_C RogueLogical RogueFile__save__String_StringBuilder( RogueString* filepath_0, RogueStringBuilder* data_1 );
 ROGUE_EXPORT_C RogueCharacter RogueFile__separator();
+ROGUE_EXPORT_C RogueLogical RogueFile__is_valid_filename_character__Character_Logical( RogueCharacter ch_0, RogueLogical any_os_1 );
 ROGUE_EXPORT_C RogueString* RogueFile__shell_escaped__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueInt64 RogueFile__size__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueInt32 RogueFile__sync_from__String_String_Logical_Logical_Logical( RogueString* source_folder_0, RogueString* dest_folder_1, RogueLogical verbose_2, RogueLogical keep_unused_3, RogueLogical dry_run_4 );
