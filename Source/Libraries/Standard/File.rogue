@@ -889,7 +889,7 @@ class File
               |return 0.0;
 
     method touch( filepath:String )
-      filepath = expand_filepath( filepath )
+      filepath = shell_escaped( expand_filepath(filepath) )
       if (System.is_windows)
         System.run "type nul >> $" (filepath)
       else
