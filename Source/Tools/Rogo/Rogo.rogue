@@ -22,6 +22,7 @@ global link_setting = false
 global link_args    = ""
 global package_manager = "apt"
 global package_manager_install = "sudo apt-get install"
+global package_manager_list    : String
 
 local compiler_invocation : String
 native @|#if defined(DEFAULT_CXX)
@@ -490,6 +491,7 @@ routine configure_linux
     if (0 == System.run("which yum > /dev/null 2>&1"))
       package_manager = "yum"
       package_manager_install = "sudo yum install"
+      package_manager_list    = "rpm -ql"
     endIf
   endIf
 
@@ -508,7 +510,7 @@ routine configure_linux
 endRoutine
 
 routine install_library( library:Value )
-  local lib = cache//installed_libraries[ library//name ]
+  local lib = cache//library_flags[ library//name ]
   if (lib) return
 
   which (System.os)
@@ -521,15 +523,57 @@ routine install_library( library:Value )
   endWhich
 endRoutine
 
+routine run( cmd:String )->String
+  println(cmd).flush
+  local result = Process.run( cmd )
+  if (result.exit_code != 0) return null
+  return result.output_string.trimmed
+endRoutine
+
+routine find_macos_library( name:String, package:String )->Logical
+  local result = run( "  pkg-config --cflags " + package )
+  if (result)
+    local flags = String[]
+
+    # cflags
+    flags.add( result )
+
+    # static library path
+    local candidates : String[]
+    result = run( "  pkg-config --libs-only-L " + package )
+    if (result and result.begins_with("-L"))
+      candidates = File.listing( result.from(2) )
+    else
+      result = run( "  brew list -v " + name )
+      if (result)
+        candidates = result.split( '\n' )
+      endIf
+    endIf
+
+    if (candidates)
+      candidates.keep( $.ends_with(".a") )
+      if (candidates.count) flags.add( candidates.first )  # .a file to link in
+    else
+      return false
+    endIf
+
+    local all_flags = flags.join( ' ' )
+    println "  Library flags: $" (all_flags)
+    cache.ensure_table("library_flags")[ name ] = all_flags
+    save_cache
+    return true
+  endIf
+
+  return false
+endRoutine
+
 routine install_macos_library( library:Value )
   local library_name = library//name->String
   local package = library//package->String
 
-  local performed_install = false
   println "Checking for library $..." (library_name)
-  local cmd = ''pkg-config --cflags $ > /dev/null 2>&1'' (package)
-  print("  ").println(cmd).flush
-  if (0 != System.run(cmd))
+
+  if (not find_macos_library(library_name,package))
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
@@ -542,45 +586,46 @@ routine install_macos_library( library:Value )
     local install_cmd = library//name
     if (library.contains("install")) install_cmd = library//install
 
-    cmd = "brew install $" (install_cmd)
-    println cmd
-    if (0 != System.run(cmd))
+    run( "brew install $" (install_cmd) )  # this could succeed in principal but return non-zero with a warning, as with zlib
+    if (not find_macos_library(library_name,package))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
-
-    performed_install = true
   endIf
+endRoutine
 
-  if (not performed_install)
-    println "Finding $ library..." (library_name)
-  endIf
-
-  # Save location in cache
-  local library_flags : String
-  local result = Process.run( "pkg-config --cflags --libs " + package )
-  if (result.exit_code == 0)
-    library_flags = result.output_string.trimmed
-    println "  Library flags: $" (library_flags)
-  endIf
-
-  if (library_flags)
-    cache.ensure_table("installed_libraries")[ library_name ] = true
+routine find_linux_library( name:String, package:String )->Logical
+  # Try pkg-config first
+  local result = run( "  pkg-config --cflags --libs " + package )
+  if (result)
+    local flags = result
+    println "  Library flags: $" (flags)
+    cache.ensure_table("library_flags")[ name ] = flags
     save_cache
-  else
-    throw Error( "Library not installed: '$'." (library_name) )
+    return true
   endIf
 
+  # Next try rpm -ql for Yum+RPM Linux
+  if (package_manager_list)
+    println "  No found with pkg-config; checking with rpm"
+    result = run( "  $ $" (package_manager_list,package) )
+    if (result)
+      println "  Located"
+      cache.ensure_table("library_flags")[ name ] = ""  # library exists but has no flags
+      save_cache
+      return true
+    endIf
+  endIf
+
+  return false
 endRoutine
 
 routine install_linux_library( library:Value )
   local library_name = library//name->String
   local package = library//package->String
 
-  local performed_install = false
   println "Checking for library $..." (library_name)
-  local cmd = ''pkg-config --cflags $ > /dev/null 2>&1'' (package)
-  print("  ").println(cmd).flush
-  if (0 != System.run(cmd))
+
+  if (not find_linux_library(library_name,package))
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
@@ -593,51 +638,18 @@ routine install_linux_library( library:Value )
     local install_cmd = library//name
     if (library.contains("install")) install_cmd = library//install
 
-    cmd = "$ $" (package_manager_install,install_cmd)
-    println cmd
-    if (0 != System.run(cmd))
+    if (not run("$ $" (package_manager_install,install_cmd)) or not find_linux_library(library_name,package))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
-
-    performed_install = true
   endIf
-
-  if (not performed_install)
-    println "Finding $ library..." (library_name)
-  endIf
-
-  # Save location in cache
-  local library_flags : String
-  local result = Process.run( "pkg-config --cflags --libs " + package )
-  if (result.exit_code == 0)
-    library_flags = result.output_string.trimmed
-    println "  Library flags: $" (library_flags)
-  endIf
-
-  if (library_flags)
-    cache.ensure_table("installed_libraries")[ library_name ] = true
-    save_cache
-  else
-    throw Error( "Library not installed: '$'." (library_name) )
-  endIf
-
-
 endRoutine
 
 routine library_flags( library:Value )->String
-  if (not cache//installed_libraries.contains(library//name))
+  if (not cache//library_flags.contains(library//name))
     install_library( library )
   endIf
 
-  local result = Process.run( "pkg-config --cflags --libs " + library//package )
-  if (result.exit_code == 0)
-    local flags = result.output_string.trimmed
-    return flags
-  else
-    cache//installed_libraries.remove( library//name )
-    save_cache
-    return library_flags( library )
-  endIf
+  return cache//library_flags[library//name]->String
 endRoutine
 
 routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_rewrite, &skip_directives, &dependencies_only )
