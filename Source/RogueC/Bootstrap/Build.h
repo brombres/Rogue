@@ -2590,7 +2590,7 @@ ROGUE_EXPORT_C RogueString* RogueFile__fix_slashes__String( RogueString* filepat
 ROGUE_EXPORT_C RogueString* RogueFile__folder__String( RogueString* _auto_2855 );
 ROGUE_EXPORT_C RogueLogical RogueFile__is_folder__String( RogueString* _auto_2856 );
 ROGUE_EXPORT_C RogueLogical RogueFile__is_newer_than__String_String( RogueString* _auto_2857, RogueString* _auto_2858 );
-ROGUE_EXPORT   RogueString_List* RogueFile__listing__String_FilePattern_Logical_Logical_Logical_Logical_Logical_Logical( RogueString* folder_0, RogueClassFilePattern filepattern_1, RogueLogical ignore_hidden_2, RogueLogical recursive_3, RogueLogical absolute_4, RogueLogical omit_path_5, RogueLogical files_6, RogueLogical folders_7 );
+ROGUE_EXPORT   RogueString_List* RogueFile__listing__String_FilePattern_Logical_Logical_Logical_Logical_Logical( RogueString* folder_0, RogueClassFilePattern filepattern_1, RogueLogical ignore_hidden_2, RogueLogical absolute_3, RogueLogical omit_path_4, RogueLogical files_5, RogueLogical folders_6 );
 ROGUE_EXPORT   RogueString_List* RogueFile__listing__String_FilePattern_FileOptions( RogueString* folder_0, RogueClassFilePattern filepattern_1, RogueClassFileOptions options_2 );
 ROGUE_EXPORT_C void RogueFile___listing__String__Function_String__( RogueString* folder_0, RogueClass_Function_String__* collector_1 );
 ROGUE_EXPORT_C RogueLogical RogueFile__matches_wildcard_pattern__String_String( RogueString* _auto_2859, RogueString* pattern_1 );
@@ -3937,8 +3937,8 @@ ROGUE_EXPORT_C RogueTypeInfo* RogueOptionalReal64__type_info( RogueOptionalReal6
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Real64_* RogueOptionalReal64__to_Object( RogueOptionalReal64 THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FileOptions_* RogueFileOptions__introspector( RogueClassFileOptions THIS );
 ROGUE_EXPORT_C RogueClassValue* RogueFileOptions__to_Value( RogueClassFileOptions THIS );
-ROGUE_EXPORT_C RogueLogical RogueFileOptions__keep_files( RogueClassFileOptions THIS );
-ROGUE_EXPORT_C RogueLogical RogueFileOptions__keep_folders( RogueClassFileOptions THIS );
+ROGUE_EXPORT_C RogueLogical RogueFileOptions__keeping_files( RogueClassFileOptions THIS );
+ROGUE_EXPORT_C RogueLogical RogueFileOptions__keeping_folders( RogueClassFileOptions THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueFileOptions__type_info( RogueClassFileOptions THIS );
 ROGUE_EXPORT_C RogueString* RogueFileOptions__to_String( RogueClassFileOptions THIS );
 ROGUE_EXPORT_C RogueClassBoxed_FileOptions_* RogueFileOptions__to_Object( RogueClassFileOptions THIS );
