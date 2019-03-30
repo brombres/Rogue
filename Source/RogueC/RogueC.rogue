@@ -442,8 +442,17 @@ $endIf
       println "SUCCESS ($)" (stopwatch)
 
     method set_include_attributes( t:Token, filepath:String, attributes:IncludeAttributes )
-      local file = find_source_file( t, filepath )
+      local file = find_source_file( t, filepath, &allow_folder )
+
       if (file is null) return  # error will be generated later if necessary
+
+      if (file.is_folder)
+        # Set include attributes for each .rogue file in the folder (non-recursive)
+        forEach (folder_filepath in Files(file.filepath,"*.rogue"))
+          set_include_attributes( t, folder_filepath, attributes )
+        endForEach
+        return
+      endIf
 
       if (included_files.contains(file.filepath))
         if (attributes.is_essential and not essential_files.contains(file.filepath))
@@ -457,7 +466,7 @@ $endIf
         if (attributes.is_api)       api_files.add( file.filepath )
       endIf
 
-    method find_source_file( t:Token, filepath:String )->File
+    method find_source_file( t:Token, filepath:String, &allow_folder )->File
       if (t)
         # Try to fit new filepath onto end of context filepath.
         local context_path = t.filepath.replacing('\\','/').split('/')
@@ -506,7 +515,10 @@ $endIf
       if (file.is_folder)
         local path2 = File.join(filepath, "$.rogue" (file.filename))
         local file2 = File( path2 )
-        if (not file2.exists or file2.is_folder)
+        if (not file2.exists)
+          if (allow_folder) return File( file.absolute_filepath )
+          else              return null
+        elseIf (file2.is_folder)
           return null
         else
           if (not prefix_path_lookup.contains(File.ensure_ends_with_separator(file.filepath)))
@@ -525,13 +537,21 @@ $endIf
 
     method include_source( t:Token, filepath:String, &is_optional, &do_not_save_prefix, &from_command_line )->Logical
       # Preemptively (immediately) parses the given file.
-      local file = find_source_file(t,filepath)
+      local file = find_source_file( t, filepath, &allow_folder )
 
       if (file is null)
         if (is_optional) return false
         local mesg = ''No such file "$".'' (filepath)
         if (t) throw t.error( mesg )
         else   throw RogueError( mesg )
+      endIf
+
+      if (file.is_folder)
+        # $include each .rogue file in the folder (non-recursive)
+        forEach (folder_filepath in Files(file.filepath,"*.rogue"))
+          include_source( t, folder_filepath, &=is_optional, &=do_not_save_prefix, &=from_command_line )
+        endForEach
+        return true
       endIf
 
       filepath = file.filepath
