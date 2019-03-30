@@ -127,6 +127,10 @@ class Value
       local result = @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
       return result
 
+    method datatype->String
+      # Returns name of the non-Value type that this Value represents
+      return "Object"
+
     method decompressed->Value
       if (not contains("@id_list") or not contains("@indexed_data")) return this
 
@@ -574,6 +578,9 @@ class LogicalValue( value:Logical ) : Value
     false_value = LogicalValue( false )
 
   METHODS
+    method datatype->String
+      return "Logical"
+
     method is_logical->Logical
       return true
 
@@ -594,6 +601,9 @@ endClass
 
 class Real64Value( value:Real64 ) : Value
   METHODS
+    method datatype->String
+      return "Real64"
+
     method is_number->Logical
       return true
 
@@ -688,6 +698,9 @@ endClass
 
 class Int32Value( value:Int32 ) : Value
   METHODS
+    method datatype->String
+      return "Int32"
+
     method is_number->Logical
       return true
 
@@ -836,6 +849,9 @@ endClass
 
 class Int64Value( value:Int64 ) : Value
   METHODS
+    method datatype->String
+      return "Int64"
+
     method is_number->Logical
       return true
 
@@ -1007,6 +1023,9 @@ class StringValue( value:String ) : Value
     empty_string = StringValue( "" )
 
   METHODS
+    method datatype->String
+      return "String"
+
     method count->Int32
       return value.count
 
@@ -1143,6 +1162,10 @@ class ValueList : Value
       local result = fn( this )
       if (result is null) return NullValue
       else                return result
+
+    method datatype->String
+      if (count) return first.datatype + "[]"
+      return "Object[]"
 
     method decode_indexed( id_table:ValueIDLookupTable )->Value
       local result = ValueList( Value[](count) )
@@ -1411,6 +1434,10 @@ class ValueTable : Value
         if (query(v)) ++result
       endForEach
       return result
+
+    method datatype->String
+      if (count) return "Table<<String,$>>" (this[0].datatype)
+      return "Table<<String,Object>>"
 
     method decode_indexed( id_table:ValueIDLookupTable )->Value
       local result = @{}
