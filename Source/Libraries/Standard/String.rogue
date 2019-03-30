@@ -1,10 +1,26 @@
+enum StringEncoding
+  UTF8           = 0
+  ASCII          = 1
+  ASCII_256      = 2
+  EXTENDED_ASCII = 2
+endEnum
+
 class String
   GLOBAL METHODS
-    method create( utf8:Byte[] )->String
-      return native( 'RogueString_create_from_utf8( (char*)$utf8->data->as_bytes, $utf8->count )' )->String
+    method create( bytes:Byte[], encoding=StringEncoding.UTF8:StringEncoding )->String
+      return create( bytes, 0, bytes.count, encoding )
 
-    method create( utf8:Byte[], i1:Int32, count:Int32 )->String
-      return native( 'RogueString_create_from_utf8( (char*)($utf8->data->as_bytes+$i1), $count )' )->String
+    method create( bytes:Byte[], i1:Int32, count:Int32, encoding=StringEncoding.UTF8:StringEncoding )->String
+      which (encoding)
+        case StringEncoding.UTF8, StringEncoding.ASCII
+          return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes+$i1), $count )' )->String
+        case StringEncoding.ASCII_256
+          local buffer = StringBuilder( bytes.count )
+          buffer.print( Character(forEach in bytes) )
+          return buffer->String
+        others
+          throw Error( "Unsupported string encoding: " + encoding )
+      endWhich
 
     method create( characters:Character[] )->String
       return native( 'RogueString_create_from_characters( $characters )' )->String
