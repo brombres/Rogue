@@ -511,26 +511,12 @@ class File
       return bytes
 
     method load_as_string( filepath:String )->String
-      filepath = expand_filepath( filepath )
-      local count = size( filepath )
-      local buffer = StringBuilder( count )
-      local infile = reader( filepath )
-      if (count >= 3 and infile.peek == 0xEF)
-        loop (3) buffer.utf8.add( infile.read )
-        ++buffer.count
-        if (buffer[0] == 0xFEFF)
-          # Discard Byte Order Marker (BOM)
-          count -= 3
-          buffer.clear
-        endIf
+      local bytes = load_as_bytes( filepath )
+      if (bytes.count >= 3 and bytes.first == 0xEF)
+        # Discard Byte Order Marker (BOM)
+        bytes.discard( 0, 3 )
       endIf
-      forEach (1..count)
-        local b = infile.read
-        buffer.utf8.add( b )
-        if ((b & 0xC0) != 0x80) ++buffer.count
-      endForEach
-      infile.close
-      return buffer->String
+      return String( bytes )
 
     method matches_wildcard_pattern( filepath:String, pattern:String )->Logical
       # Determines whether or not the given filepath matches the given
