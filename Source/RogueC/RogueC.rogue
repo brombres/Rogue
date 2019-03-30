@@ -6,6 +6,10 @@ $include "Version.rogue" [optional]
 # - Generate error on "local v = null"
 # - Warn on assignment of intermediate value compound
 
+# Some essential methods to support metacode
+$essential String[].count
+$essential String[].get
+
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CythonPlugin.rogue"
