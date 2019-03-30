@@ -354,7 +354,9 @@ class CmdArgs : Cmd[]
 
     method execute( vm:VM )->Value
       local result = @[]
-      forEach (cmd in this) result.add( cmd.execute(vm) )
+      forEach (cmd in this)
+        result.add( cmd.execute(vm) )
+      endForEach
       return result
 
     method resolve( scope:Scope )
@@ -2386,8 +2388,9 @@ class CmdAccess : Cmd
 
           local m : MethodInfo
           if (obj)
-            m = type.find_method( name, args.count )
-            if (m is null) m = type.find_method( name )
+            if (args.count) m = find_method_by_arg_types( type.methods, name, args )
+            if (m is null)  m = type.find_method( name, args.count )  # then search by name & parameter count
+            if (m is null)  m = type.find_method( name ) # finally just the name
             if (m)
               ensure context( obj )
               args.insert( context )
@@ -2400,8 +2403,9 @@ class CmdAccess : Cmd
           endIf
 
           if (not m)
-            m = type.find_global_method( name, args.count )
-            if (m is null) m = type.find_global_method( name )
+            if (args.count) m = find_method_by_arg_types( type.global_methods, name, args )
+            if (m is null)  m = type.find_global_method( name, args.count )
+            if (m is null)  m = type.find_global_method( name )
             if (m) return m( args )
             local p = type.find_global_property( name )
             if (p) return type.global_property( p )
@@ -2472,11 +2476,14 @@ class CmdAccess : Cmd
         local type = TypeInfo[ name ]
         if (type)
           if (args)
+            local args = args.execute( vm )
             local obj = type.create_object
-            local m = type.find_method( "init", args.count )
-            if (m is null) m = type.find_method( name )  # omit arg requirements
-            if (m is null) throw t.error( "No such method or property $.$." (type.name,name) )
-            return m( obj, args.execute(vm) )
+            local m : MethodInfo
+            if (args.count) m = find_method_by_arg_types( type.methods, "init", args )
+            if (m is null) type.find_method( "init", args.count )
+            if (m is null) m = type.find_method( "init" )  # omit arg requirements
+            if (m) return m( obj, args )
+            else   return Value( obj )
           elseIf (name.ends_with("[]"))
             return Value( type.create_object )
           elseIf (type.is_singleton)
@@ -2509,6 +2516,21 @@ class CmdAccess : Cmd
 
       endIf
       throw t.error( ''Can't resolve metacode reference to "$".'' (name) )
+
+    method find_method_by_arg_types( methods:MethodInfo[], name:String, args:Value )->MethodInfo
+      forEach (m in methods)
+        if (m.name == name)
+          if (m.parameter_count >= args.count)
+            contingent
+              forEach (index in 0..<m.parameter_count.or_smaller(args.count))
+                necessary (m.parameter_type(index).name == args[index].datatype)
+              endForEach
+              return m
+            endContingent
+          endIf
+        endIf
+      endForEach
+      return null
 
     method execute_assignment( vm:VM, new_value:Value )
       if (context)
