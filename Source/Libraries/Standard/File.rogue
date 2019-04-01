@@ -1549,10 +1549,21 @@ class FileListing
 
       path_segments = File.fix_slashes(folder).split( '/' )
       if (path_segments.first == ".") path_segments.remove_first
-      if (path_segments.count and path_segments.last == "") path_segments.remove_last
+      if (path_segments.count and path_segments.last == "") path_segments.remove_last  # folder ended with "/"
 
       pattern_segments = File.fix_slashes(pattern).split( '/' )
-      if (pattern_segments.first == "") pattern_segments.clear
+      forEach (segment in writer=pattern_segments.rewriter)
+        # Fix up "ABC**XYZ" to be "ABC*/**/*XYZ" etc.
+        if (segment != "**" and segment.contains("**"))
+          local before = segment.before_first( "**" )
+          local after  = segment.after_first( "**" )
+          if (before.count) writer.write( before+'*' )
+          writer.write( "**" )
+          if (after.count) writer.write( '*'+after )
+        else
+          writer.write( segment )
+        endIf
+      endForEach
 
       if (not file_exists) File._listing( folder, callback )
 
