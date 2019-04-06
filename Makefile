@@ -78,6 +78,8 @@ revert: bootstrap
 clean: bootstrap_rogue
 	rogo clean
 
+uninstall: clean
+
 link: bootstrap_rogue
 
 unlink: bootstrap_rogue

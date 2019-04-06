@@ -92,6 +92,7 @@ class Tokenizer
       TokenType.meta_else            = define( DirectiveTokenType("$else") )
       TokenType.meta_endIf           = define( DirectiveTokenType("$endIf") )
       TokenType.meta_include         = define( DirectiveTokenType("$include") )
+      TokenType.meta_includeFolder   = define( DirectiveTokenType("$includeFolder") )
       TokenType.meta_join            = define( DirectiveTokenType("$join") )
       TokenType.meta_localDefine     = define( DirectiveTokenType("$localDefine") )
       TokenType.meta_localMacro      = define( DirectiveTokenType("$localMacro") )
@@ -187,6 +188,7 @@ class Tokenizer
       TokenType.keyword_includeNativeCode   = define( TokenType("includeNativeCode") )
       TokenType.keyword_includeNativeHeader = define( TokenType("includeNativeHeader") )
       TokenType.keyword_includeSource       = define( TokenType("includeSource") )
+      TokenType.keyword_includeSourceFolder = define( TokenType("includeSourceFolder") )
       TokenType.keyword_is                  = define( TokenType("is") )
       TokenType.keyword_isAspect            = define( TokenType("isAspect") )
       TokenType.keyword_isClass             = define( TokenType("isClass") )
@@ -374,6 +376,7 @@ class Tokenizer
 
           case "error":               add_new_token( TokenType.meta_error )
           case "include":             add_new_token( TokenType.meta_include )
+          case "includeFolder":       add_new_token( TokenType.meta_includeFolder )
           case "if":                  add_new_token( TokenType.meta_if )
           case "elseIf":              add_new_token( TokenType.meta_elseIf )
           case "else":                add_new_token( TokenType.meta_else )
