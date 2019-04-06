@@ -46,6 +46,7 @@ syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn keyword rogueStatement    yield
 syn keyword rogueStatement    compileError deprecated
+syn keyword rogueStatement    includeSource includeSourceFolder
 syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
@@ -59,6 +60,7 @@ syn match   rogueDirective    "\$compileArg\>"
 syn match   rogueDirective    "\$define\>"
 syn match   rogueDirective    "\$defined\>"
 syn match   rogueDirective    "\$include\>"
+syn match   rogueDirective    "\$includeFolder\>"
 syn match   rogueDirective    "\$if\>"
 syn match   rogueDirective    "\$elseIf\>"
 syn match   rogueDirective    "\$else\>"

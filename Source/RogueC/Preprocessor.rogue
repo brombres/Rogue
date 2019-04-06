@@ -152,6 +152,18 @@ class Preprocessor
             endIf
             nextIteration
 
+          elseIf (t_type is TokenType.meta_includeFolder)
+            local filepath_t = reader.read
+            if (filepath_t.type is not TokenType.literal_string)
+              throw reader.error( "Folder path expected." )
+            endIf
+            local attributes = parse_include_attributes
+            if (keep_tokens)
+              RogueC.set_include_attributes( filepath_t, filepath_t->String, attributes, &including_folder )
+              RogueC.include_source( t, filepath_t->String, &is_optional=attributes.is_optional, &including_folder )
+            endIf
+            nextIteration
+
           elseIf (t_type is TokenType.meta_elseIf)
             if (depth == 1) throw t.error( "Syntax error - $elseIf does not match any previous $if." )
             reader.push( t )
