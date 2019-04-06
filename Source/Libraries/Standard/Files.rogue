@@ -93,7 +93,7 @@ class Files
 
     method relative_filepath( filepath:String )->String
       if (base_folder.count == 0) return filepath
-      return filepath.rightmost( -base_folder.count )
+      return filepath.after_any( base_folder )
 
     method remove( pattern:String )->this
       if (pattern.contains('*') or pattern.contains('?'))

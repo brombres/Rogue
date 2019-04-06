@@ -14,6 +14,7 @@ class TokenType
     meta_else                     : TokenType
     meta_endIf                    : TokenType
     meta_include                  : TokenType
+    meta_includeFolder            : TokenType
     meta_join                     : TokenType
     meta_localDefine              : TokenType
     meta_localMacro               : TokenType
@@ -64,6 +65,7 @@ class TokenType
     keyword_includeNativeCode     : TokenType
     keyword_includeNativeHeader   : TokenType
     keyword_includeSource         : TokenType
+    keyword_includeSourceFolder   : TokenType
     keyword_method                : TokenType
     keyword_METHODS               : TokenType
     keyword_nativeCode            : TokenType
