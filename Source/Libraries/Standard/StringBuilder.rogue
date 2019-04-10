@@ -1,4 +1,4 @@
-class StringBuilder [essential]
+class StringBuilder : PrintWriter [essential]
   GLOBAL PROPERTIES
     work_bytes [threadLocal] = Byte[]
 
@@ -33,7 +33,7 @@ class StringBuilder [essential]
       init( initial_capacity )
       print( initial_content )
 
-    method capacity->Int32 [macro]
+    method capacity->Int32
       return this.utf8.capacity
 
     method clear->this [essential]
@@ -42,6 +42,11 @@ class StringBuilder [essential]
       at_newline = true
       cursor_index = 0
       cursor_offset = 0
+      return this
+
+    method close->this
+      # Concrete definition of the abstract method PrintWriter.close()
+      noAction
       return this
 
     method consolidated->String
@@ -56,6 +61,11 @@ class StringBuilder [essential]
       this[ index ]  # sets cursor position
       utf8.discard_from( cursor_offset )
       count = cursor_index
+
+    method flush->this
+      # Concrete definition of the abstract method PrintWriter.flush()
+      noAction
+      return this
 
     method get( index:Int32 )->Character
       if (index == 0)
@@ -150,7 +160,10 @@ class StringBuilder [essential]
     method print( value:Byte )->this
       return print( value->Int32 )
 
-    method print( value:Character, &formatted=true )->this
+    method print( value:Character )->this
+      return print( value, &formatted )
+
+    method print( value:Character, formatted:Logical )->this
       if (formatted)
         if (value == '\n')    at_newline = true
         elseIf (needs_indent) print_indent
@@ -173,7 +186,7 @@ class StringBuilder [essential]
       endIf
       return this
 
-    method print( value:Real32 )->StringBuilder [macro]
+    method print( value:Real32 )->StringBuilder
       return this.print( value->Real64 )
 
     method print( value:Int32 )->this
@@ -333,10 +346,10 @@ class StringBuilder [essential]
     method println( value:Character )->this
       return print( value ).print( '\n' )
 
-    method println( value:Real32 )->this [macro]
+    method println( value:Real32 )->this
       return this.println( value->Real64 )
 
-    method println( value:Real32, decimal_places:Int32 )->StringBuilder [macro]
+    method println( value:Real32, decimal_places:Int32 )->StringBuilder
       return this.println( value->Real64, decimal_places )
 
     method println( value:Int32 )->this
@@ -371,7 +384,7 @@ class StringBuilder [essential]
       endIf
       return ch
 
-    method remove_first->Character [macro]
+    method remove_first->Character
       return this.remove_at(0)
 
     method remove_last->Character
@@ -455,6 +468,12 @@ class StringBuilder [essential]
       # must be valid UTF-8.
       utf8.add( byte )
       if ((byte & 0xC0) != 0x80) ++count
+      return this
+
+    method write( buffer:StringBuilder )->this
+      # Concrete definition of the abstract method PrintWriter.write(StringBuilder)
+      reserve( buffer.utf8.count )
+      write( forEach in buffer.utf8 )
       return this
 endClass
 
