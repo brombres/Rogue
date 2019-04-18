@@ -424,27 +424,6 @@ class StringBuilder : PrintWriter [essential]
       endForEach
       return whole + decimal / 10.0^decimal_count
 
-    method set( index:Int32, ch:Character )->this
-      this[ index ]  # position cursor
-      if (ch < 0)
-        utf8[ cursor_offset ] = 0
-      elseIf (ch <= 0x7F)
-        utf8[ cursor_offset ] = ch
-      elseIf (ch <= 0x7FF)
-        utf8[ cursor_offset ]     = ( 0xC0 | (ch:>>>:6) )
-        utf8[ cursor_offset + 1 ] = ( 0x80 | (ch & 0x3F) )
-      elseIf (ch <= 0xFFFF)
-        utf8[ cursor_offset ]     = ( 0xE0 | (ch:>>>:12) )
-        utf8[ cursor_offset + 1 ] = ( 0x80 | ((ch:>>>:6) & 0x3F) )
-        utf8[ cursor_offset + 2 ] = ( 0x80 | (ch & 0x3F) )
-      else
-        utf8[ cursor_offset ]     = ( 0xF0 | (ch:>>>:18) )
-        utf8[ cursor_offset + 1 ] = ( 0x80 | ((ch:>>>:12) & 0x3F) )
-        utf8[ cursor_offset + 2 ] = ( 0x80 | ((ch:>>>:6) & 0x3F) )
-        utf8[ cursor_offset + 3 ] = ( 0x80 | (ch & 0x3F) )
-      endIf
-      return this
-
     method to->Int32
       utf8.reserve( 1 )
       utf8[ utf8.count ] = 0
