@@ -1014,8 +1014,12 @@ class ObjectValue( value:Object ) : Value
       return value->ValueTable
 
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
-      buffer.print( value->String )
-      return buffer
+      if (value is null)
+        buffer.print( "null" )
+        return buffer
+      else
+        return StringValue.to_json( value->String, buffer, flags )
+      endIf
 endClass
 
 class StringValue( value:String ) : Value
