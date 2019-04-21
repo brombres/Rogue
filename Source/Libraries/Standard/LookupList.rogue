@@ -38,6 +38,9 @@ class LookupList<<$ValueType>>
     method index( key:String )->Int32 [macro]
       return this.indices[ key ]
 
+    method is_empty->Logical [macro]
+      return (this.count == 0)
+
     method locate( key:String )->Int32?
       local entry = indices.find( key )
       if (entry) return entry.value
