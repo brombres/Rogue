@@ -515,15 +515,12 @@ $endIf
       endIf
 
       if (file.is_folder)
+        if (including_folder) return File( file.absolute_filepath )
         local path2 = File.join(filepath, "$.rogue" (file.filename))
         local file2 = File( path2 )
         if (not file2.exists)
-          if (including_folder)
-            return File( file.absolute_filepath )
-          else
-            if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
-            throw t.error( "'$include' used on a folder - use '$includeFolder' instead." )
-          endIf
+          if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
+          throw t.error( "'$include' used on a folder - use '$includeFolder' instead." )
         elseIf (file2.is_folder)
           return null
         else
