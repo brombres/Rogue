@@ -1221,17 +1221,17 @@ augment Program
             method_names.add( m.name )
 
             # parameter types
-            local sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
+            local sig = ",".join(m.parameters.map<<String>>( (l)=>(l.type.name) ))
             if (not method_param_type_sigs.contains(sig))
               method_param_type_sigs[sig] = method_param_types.count
-              method_param_types.add(m.parameters.mapped<<Int32>>( (l)=>(l.type.index) ))
+              method_param_types.add(m.parameters.map<<Int32>>( (l)=>(l.type.index) ))
             endIf
 
             # parameter names
-            sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+            sig = ",".join(m.parameters.map<<String>>( (l)=>(l.name) ))
             if (not method_param_name_sigs.contains(sig))
               method_param_name_sigs[sig] = method_param_names.count
-              method_param_names.add(m.parameters.mapped<<Int32>>( (l)=>(Program.add_literal_string(l.name)) ))
+              method_param_names.add(m.parameters.map<<Int32>>( (l)=>(Program.add_literal_string(l.name)) ))
             endIf
           endIf
         endForEach
@@ -1287,8 +1287,8 @@ augment Program
         forEach (m at index in type.method_list)
           if (index >= type.dynamic_method_table_count) escapeForEach
           if (m.store_dynamically and m.is_used and not m.is_abstract)
-            local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
-            local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+            local type_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.type.name) ))
+            local name_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.name) ))
             local handler_index = -1
             if (Program.using_introspection)
               handler_index = m.introspection_call_handler.index
@@ -1308,8 +1308,8 @@ augment Program
 
         forEach (m at index in type.global_method_list)
           if (m.store_dynamically and m.is_used and not m.is_abstract)
-            local type_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.type.name) ))
-            local name_sig = ",".join(m.parameters.mapped<<String>>( (l)=>(l.name) ))
+            local type_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.type.name) ))
+            local name_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.name) ))
             local handler_index = -1
             if (Program.using_introspection)
               handler_index = m.introspection_call_handler.index

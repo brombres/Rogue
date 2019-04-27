@@ -406,7 +406,7 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method mapped<<$ToType>>( map_fn:(Function($DataType)->$ToType) )->$ToType[]
+    method map<<$ToType>>( map_fn:(Function($DataType)->$ToType) )->$ToType[]
       local result = $ToType[]( capacity )
       forEach (element in this) result.add( map_fn(element) )
       return result
@@ -467,7 +467,7 @@ class List<<$DataType>> : GenericList
     method reader->ListReader<<$DataType>>
       return ListReader<<$DataType>>( this, 0 )
 
-    method reduced<<$ToType>>( reduce_fn:(Function(Int32,$DataType,$ToType)->$ToType) )->$ToType
+    method reduce<<$ToType>>( reduce_fn:(Function(Int32,$DataType,$ToType)->$ToType) )->$ToType
       local result : $ToType
       forEach (index of this)
         result = reduce_fn( index, this[index], result )
