@@ -2183,10 +2183,12 @@ augment RogueC
           local obj_filename = File.filename( exe + ".obj" )
           if (File.exists(obj_filename)) File.delete( obj_filename )
 
-          if (execute_args) cmd = ".\\$ $" (exe,execute_args)
-          println cmd
-          println
-          if (System.run(cmd)) System.exit( 1 )
+          if (execute_args)
+            cmd = ".\\$ $" (exe,execute_args)
+            println cmd
+            println
+            if (System.run(cmd)) System.exit( 1 )
+          endIf
         endBlock
 
         native @|#else
