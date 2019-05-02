@@ -2789,7 +2789,7 @@ augment CmdLocalDeclaration
       if (local_info.type.is_reference)
         if (skip_initialization)
           writer.print("ROGUE_DEF_LOCAL_REF_NULL(").print(local_info.type).print(",").print(local_info.cpp_name).print(")")
-        elseIf
+        else
           writer.print("ROGUE_DEF_LOCAL_REF(").print(local_info.type).print(",").print(local_info.cpp_name).print(",")
           if (local_info.initial_value)
             writer.print( "(" ).print_cast( local_info.initial_value.type, local_info.type )
