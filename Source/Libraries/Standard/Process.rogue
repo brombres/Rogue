@@ -425,7 +425,6 @@ class WindowsProcess : Process
 
     method is_finished->Logical
       if (@is_finished) return true
-      update_io
 
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |DWORD exit_code;
@@ -439,6 +438,7 @@ class WindowsProcess : Process
               |}
               |#endif
 
+      while (update_io) noAction
       return @is_finished
 
 
@@ -446,11 +446,9 @@ class WindowsProcess : Process
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
       while (not is_finished)
-        while (update_io) noAction
-
         (input_writer as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
 
-        native @|WaitForSingleObject( $this->process_info.hProcess, 1000 ); //INFINITE );
+        native @|WaitForSingleObject( $this->process_info.hProcess, 1000 );
       endWhile
 
       on_cleanup
@@ -508,9 +506,7 @@ class WindowsProcessReader : Reader<<Byte>>
               |$success = true;
               |ERROR_EXIT:
               |#endif
-      if (not success)
-        throw Error("Process reader could not be initialized.")
-      endIf
+      if (not success) throw Error("Process reader could not be initialized.")
 
     method close->this
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -530,7 +526,6 @@ class WindowsProcessReader : Reader<<Byte>>
     method fill_buffer->Logical
       buffer.reserve( 1024 );
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
-              |int c = $buffer->count;
               |if ($this->output_reader)
               |{
               |  DWORD available_count;
