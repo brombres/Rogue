@@ -197,6 +197,11 @@ class Parser
           # The 'x' in 'obj.x' and 'obj//x' is not a candidate for module (namespace) qualification
           skip_next_id = true
 
+        elseIf (t.type is TokenType.keyword_method)
+          # If a module "m" contains both "routine x" and a class with "method x" we don't want
+          # "method x" being converted to "method m::x".
+          skip_next_id = true
+
         else
           skip_next_id = false
 

@@ -3,9 +3,6 @@ class StringLookupList : LookupList<<String>>
     method add( key:String )->Int32
       this[ key ] = key
       return indices[ key ]
-
-    method to->String[]
-      return values
 endClass
 
 class LookupList<<$ValueType>>
@@ -40,6 +37,9 @@ class LookupList<<$ValueType>>
 
     method index( key:String )->Int32 [macro]
       return this.indices[ key ]
+
+    method is_empty->Logical [macro]
+      return (this.count == 0)
 
     method locate( key:String )->Int32?
       local entry = indices.find( key )
@@ -102,4 +102,7 @@ class LookupList<<$ValueType>>
       endForEach
       builder.print( ']' )
       return builder->String
+
+    method to->$ValueType[]
+      return values
 endClass

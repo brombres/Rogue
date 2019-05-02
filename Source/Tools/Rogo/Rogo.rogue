@@ -416,7 +416,7 @@ if (needs_recompile)
   File.delete( File.filename(exe).before_last(".exe") + ".obj" )
 endIf
 
-System.exit( System.run(''$ $'' (exe,cmd_line_args.mapped<<String>>( (arg)=>prep_arg(arg) ).join(" "))) )
+System.exit( System.run(''$ $'' (exe,cmd_line_args.map<<String>>( (arg)=>prep_arg(arg) ).join(" "))) )
 
 routine prep_arg( arg:String )->String
   # Quotes and escapes string if necessary

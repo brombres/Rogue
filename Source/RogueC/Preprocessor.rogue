@@ -60,13 +60,13 @@ class Preprocessor
         if (v.is_number)
           return v * -1
         endIf
-        return " ".join(toks.mapped<<String>>( (x)=>x ))
+        return " ".join(toks.map<<String>>( (x)=>x ))
       elseIf (toks.count == 0)
         # Count "$define FOO" as true
         return true
       elseIf (toks.count != 1)
         # Just string it all out.
-        return " ".join(toks.mapped<<String>>( (x)=>x ))
+        return " ".join(toks.map<<String>>( (x)=>x ))
       endIf
       local r = valueize(toks[0])
       if (r is null)

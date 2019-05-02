@@ -138,7 +138,8 @@ class Date( timestamp=System.time:Real64 ) [compound]
       return Date()
 
     method ymd( year:Int32, month:Int32, day:Int32 )->Date
-      return Date( year, month, day )
+      # Use hour 12 instead of hour 0 as a default so that time change won't mess up the result of adding 24 hours to date
+      return Date( year, month, day, &hour=12 )
 
   GLOBAL PROPERTIES
     month_names = [ "January", "February", "March", "April", "May", "June",

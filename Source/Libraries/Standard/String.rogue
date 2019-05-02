@@ -429,9 +429,9 @@ class String
       if (i1 < 0)          i1 = 0
       elseIf (i2 >= count) i2 = count - 1
 
-      if (i1 > i2) return ""
-
+      if (i1 > i2)  return ""
       if (i1 == i2) return ""+this[i1]
+      if (i1 == 0 and i2 == count-1) return this
 
       $if (target("C++"))
         native @|RogueInt32 byte_i1 = RogueString_set_cursor( $this, $i1 );
