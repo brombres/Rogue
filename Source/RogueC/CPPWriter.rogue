@@ -1502,7 +1502,9 @@ class CPPWriter
 
   METHODS
     method init( filepath )
-        omit_line_numbers = (RogueC.compile_targets["macOS"] or RogueC.compile_targets["iOS"]) or RogueC.omit_line_numbers
+      omit_line_numbers = true #(RogueC.compile_targets["macOS"] or RogueC.compile_targets["iOS"]) or RogueC.omit_line_numbers
+      # Currently line numbers can generate inside ROGUE_DEF_LOCAL_REF() macro statements which produces compile errors.
+      # Removing line numbers for now.
 
     method close
       local path = File.path( filepath )

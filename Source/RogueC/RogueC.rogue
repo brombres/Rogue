@@ -300,10 +300,6 @@ $endIf
                    |  --main
                    |    Include a main() function in the output file.
                    |
-                   |  --no-line-mapping
-                   |    Do not attempt to map Rogue line numbers to target code line numbers.
-                   |    (Mostly useful for debugging compiler errors.)
-                   |
                    |  --output=<filepath>
                    |    Specify the destination folder and/or the base filename for generated C++
                    |    output. See also: --exe
@@ -318,6 +314,11 @@ $endIf
                    # --target info filled in below
 
                    #|  --package=com.developer.app [Java only]
+
+                   #|  --no-line-mapping
+                   #|    Do not attempt to map Rogue line numbers to target code line numbers.
+                   #|    (Mostly useful for debugging compiler errors.)
+                   #|
 
           usage += supported_targets->String.replacing("]",",...]\n")
 
