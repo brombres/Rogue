@@ -429,6 +429,11 @@ class WindowsProcess : Process
     method is_finished->Logical
       if (@is_finished) return true
 
+      if (not process_created)
+        @is_finished = true
+        return true
+      endIf
+
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |DWORD exit_code;
               |if (GetExitCodeProcess( $this->process_info.hProcess, &exit_code ))
@@ -452,7 +457,7 @@ class WindowsProcess : Process
       while (not is_finished)
         (input_writer as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
 
-        native @|WaitForSingleObject( $this->process_info.hProcess, 1000 );
+        native @|WaitForSingleObject( $this->process_info.hProcess, 250 );
       endWhile
 
       on_cleanup
@@ -471,6 +476,7 @@ class WindowsProcess : Process
                 |CloseHandle( $this->process_info.hProcess );
                 |CloseHandle( $this->process_info.hThread );
                 |#endif
+        process_created = false
       endIf
 
 
