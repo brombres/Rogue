@@ -365,6 +365,9 @@ class WindowsProcess : Process
   # https://msdn.microsoft.com/en-us/library/windows/desktop/ms682499(v=vs.85).aspx
   PROPERTIES
     process_created : Logical
+    arg_string      : String
+      # The arg_string ref must be kept for the duration of the process; allowing it
+      # to be GC'd can crash the process
 
     native @|#ifdef ROGUE_PLATFORM_WINDOWS
             |STARTUPINFO         startup_info;
@@ -389,7 +392,7 @@ class WindowsProcess : Process
       error_reader  = WindowsProcessReader()
       input_writer  = WindowsProcessWriter()
 
-      local arg_string = args.join(" ")
+      arg_string = args.join(" ").cloned
 
       local output_reader = this.output_reader as WindowsProcessReader
       local error_reader  = this.error_reader as WindowsProcessReader
@@ -426,6 +429,11 @@ class WindowsProcess : Process
     method is_finished->Logical
       if (@is_finished) return true
 
+      if (not process_created)
+        @is_finished = true
+        return true
+      endIf
+
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |DWORD exit_code;
               |if (GetExitCodeProcess( $this->process_info.hProcess, &exit_code ))
@@ -439,6 +447,7 @@ class WindowsProcess : Process
               |#endif
 
       while (update_io) noAction
+
       return @is_finished
 
 
@@ -448,7 +457,7 @@ class WindowsProcess : Process
       while (not is_finished)
         (input_writer as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
 
-        native @|WaitForSingleObject( $this->process_info.hProcess, 1000 );
+        native @|WaitForSingleObject( $this->process_info.hProcess, 250 );
       endWhile
 
       on_cleanup
@@ -467,6 +476,7 @@ class WindowsProcess : Process
                 |CloseHandle( $this->process_info.hProcess );
                 |CloseHandle( $this->process_info.hThread );
                 |#endif
+        process_created = false
       endIf
 
 

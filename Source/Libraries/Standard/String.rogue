@@ -87,6 +87,9 @@ class String
 
 
   METHODS
+    method cloned->String
+      return native( 'RogueString_create_from_utf8( ($this->utf8), $this->byte_count )' )->String
+
     method after( index:Int32 )->String
       # Returns the substring of this string that occurs after
       # the given index.
