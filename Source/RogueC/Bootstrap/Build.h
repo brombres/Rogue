@@ -2170,6 +2170,7 @@ struct RogueClassWindowsProcess : RogueObject
   RogueInt32 exit_code;
   RogueLogical is_blocking;
   RogueLogical process_created;
+  RogueString* arg_string;
 #ifdef ROGUE_PLATFORM_WINDOWS
   STARTUPINFO         startup_info;
   PROCESS_INFORMATION process_info;
@@ -2768,6 +2769,7 @@ ROGUE_EXPORT_C RogueInt32 RogueString__hash_code( RogueString* THIS );
 ROGUE_EXPORT_C RogueString* RogueString__to_String( RogueString* THIS );
 ROGUE_EXPORT_C RogueClassValue* RogueString__to_Value( RogueString* THIS );
 ROGUE_EXPORT_C RogueString* RogueString__type_name( RogueString* THIS );
+ROGUE_EXPORT_C RogueString* RogueString__cloned( RogueString* THIS );
 ROGUE_EXPORT_C RogueString* RogueString__after__Int32( RogueString* THIS, RogueInt32 index_0 );
 ROGUE_EXPORT_C RogueString* RogueString__after_any__String_Logical( RogueString* THIS, RogueString* st_0, RogueLogical ignore_case_1 );
 ROGUE_EXPORT_C RogueString* RogueString__after_first__Character_Logical( RogueString* THIS, RogueCharacter ch_0, RogueLogical ignore_case_1 );
