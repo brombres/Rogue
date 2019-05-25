@@ -19,7 +19,7 @@ global config = @{ roguec:"roguec", filepath:cache_filepath }
 global cache  = JSON.load_table( File(cache_filepath) ) : Value
 global is_cache_modified : Logical
 global link_setting = false
-global link_args    = ""
+#global link_args = ""
 global package_manager = "apt"
 global package_manager_install = "sudo apt-get install"
 global package_manager_list    : String
@@ -409,6 +409,7 @@ if (needs_recompile)
   endForEach
 
   cmd += " $$" (?:{is_windows:"/Fe"||"-o "},exe)
+  local link_args = config//link
   if (link_args != "") cmd += " " + link_args
 
   println cmd
@@ -719,6 +720,31 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
           others
             if (not dependencies_only)
               if (base_cmd == "link")
+                if (cmd == "link" or cmd == "link($)" (System.os.to_lowercase))
+                  if (args == "true" or args == "false")
+                    # LINK true or LINK false
+                    link_setting = (args == "true")
+                  else
+                    # LINK <args> implies LINK true
+                    link_setting = true
+                    if (config[cmd]?) config[cmd] += " " + args
+                    else              config[cmd] = args
+                  endIf
+                endIf
+
+              else
+                # Join into single space-separated string
+                if (config.contains(cmd))
+                  config[ cmd ] = "$ $" (config[ cmd ],args)
+                else
+                  config[ cmd ] = args
+                endIf
+              endIf
+            endIf
+
+            #{
+            if (not dependencies_only)
+              if (base_cmd == "link")
                 if (args == "true" or args == "false")
                   config[ cmd ] = args
                   link_setting = (args == "true")
@@ -741,6 +767,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
                 config[ cmd ] = args
               endIf
             endIf
+            }#
 
         endWhich
       endIf
