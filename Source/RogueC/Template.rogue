@@ -60,7 +60,9 @@ class Template
 
       local augmented_tokens = tokens
       augmented_tokens = add_augmented_tokens( type, name, augmented_tokens )  # ex: Table
-      if (type.name != name)
+      if (type.name == name)
+        augmented_tokens = add_augmented_tokens( type, type.name+"<<>>", augmented_tokens ) # ex: Table<<>>
+      else
         augmented_tokens = add_augmented_tokens( type, type.name, augmented_tokens ) # ex: Table<<String,Int32>>
       endIf
 
