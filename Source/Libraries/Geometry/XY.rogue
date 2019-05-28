@@ -264,6 +264,12 @@ class XY( x:Real64, y:Real64 ) [compound]
       # and -1 if on the opposite side
       return line.direction.cross( this - line.a ).sign
 
+    method sign->XY
+      return XY( x.sign, y.sign )
+
+    method sum->Real64
+      return x + y
+
     method to->String
       return StringBuilder().print( "[" ).print( x, 2 ).print( "," ).print( y, 2 ).print( "]" )->String
 
