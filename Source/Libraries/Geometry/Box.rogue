@@ -161,6 +161,9 @@ class Box( position:XY, size:XY ) [compound]
     method rotated( angle:Radians )->Quad [macro]
       return this->Quad.rotated( angle )
 
+    method round->Box
+      return Box( position.round, size.round )
+
     method to->Quad
       return Quad( this )
 
