@@ -5015,7 +5015,18 @@ class CmdBitwiseOp : CmdBinary
       throw t.error( "The '$' operator cannot be applied to type $." (symbol,common_type) )
 endClass
 
-class CmdBitwiseAnd : CmdBitwiseOp
+class CmdBitwiseFlip : CmdBitwiseOp
+  METHODS
+    method resolve_for_common_type( scope:Scope, common_type:Type )->Cmd
+      if (common_type is Program.type_Logical)
+        left  = left.cast_to( Program.type_Logical, scope ).resolve( scope )
+        right = right.cast_to( Program.type_Logical, scope ).resolve( scope )
+        return this
+      endIf
+      return prior.resolve_for_common_type( scope, common_type )
+endClass
+
+class CmdBitwiseAnd : CmdBitwiseFlip
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -5040,7 +5051,7 @@ class CmdBitwiseAnd : CmdBitwiseOp
       return "&"
 endClass
 
-class CmdBitwiseOr : CmdBitwiseOp
+class CmdBitwiseOr : CmdBitwiseFlip
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -5065,7 +5076,7 @@ class CmdBitwiseOr : CmdBitwiseOp
       return "|"
 endClass
 
-class CmdBitwiseXor : CmdBitwiseOp
+class CmdBitwiseXor : CmdBitwiseFlip
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
