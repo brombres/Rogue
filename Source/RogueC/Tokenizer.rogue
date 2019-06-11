@@ -586,28 +586,7 @@ class Tokenizer
         buffer.print( value->Character )
 
       else
-        local value = reader.read->Int32
-        if ((value & 0x80) != 0)
-          # Handle UTF8 encoding
-          local ch2 = reader.read->Int32
-
-          if ((value & 0x20) == 0)
-            # %110xxxxx 10xxxxxx
-            value = value & 0x1f
-            ch2 = value & 0x3f
-            buffer.print( ((value:<<:6) | ch2)->Character )
-          else
-            # %1110xxxx 10xxxxxx 10xxxxxx
-            local ch3 = reader.read->Int32
-            value = value & 15
-            ch2 = ch2 & 0x3f
-            ch3 = ch3 & 0x3f
-            buffer.print( ((value:<<:2) | (ch2:<<:6) | ch3)->Character )
-          endIf
-
-        else
-          buffer.print( value->Character )
-        endIf
+        buffer.print( reader.read )
 
       endIf
 
