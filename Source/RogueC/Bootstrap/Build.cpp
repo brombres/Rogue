@@ -3321,17 +3321,17 @@ void RogueOptionalValue_trace( void* obj )
 
 const int Rogue_type_name_index_table[] =
 {
-  8,414,415,33,253,313,259,6,324,260,4,266,318,329,7,320,
-  255,328,268,317,326,1,2,3,5,251,257,316,252,325,319,254,
-  281,330,282,283,327,321,331,314,332,261,342,315,333,343,284,334,
-  285,286,262,344,356,263,335,258,287,264,416,265,417,418,267,269,
-  419,278,270,339,52,273,357,288,358,289,336,290,291,271,272,212,
-  213,345,274,420,275,360,276,277,279,280,292,421,256,322,337,293,
-  294,364,295,346,347,348,349,350,359,367,366,296,338,305,306,404,
-  384,405,385,297,323,298,422,299,300,406,386,340,301,407,387,302,
-  303,408,388,304,362,363,409,389,410,390,411,391,412,392,307,413,
-  393,365,361,308,309,310,311,312,16,11,341,351,352,353,354,355,
-  374,375,376,377,378,379,380,381,382,383
+  8,413,414,33,252,312,258,6,323,259,4,265,317,328,7,319,
+  254,327,267,316,325,1,2,3,5,250,256,315,251,324,318,253,
+  280,329,281,282,326,320,330,313,331,260,341,314,332,342,283,333,
+  284,285,261,343,355,262,334,257,286,263,415,264,416,417,266,268,
+  418,277,269,338,52,272,356,287,357,288,335,289,290,270,271,212,
+  213,344,273,419,274,359,275,276,278,279,291,420,255,321,336,292,
+  293,363,294,345,346,347,348,349,358,366,365,295,337,304,305,403,
+  383,404,384,296,322,297,421,298,299,405,385,339,300,406,386,301,
+  302,407,387,303,361,362,408,388,409,389,410,390,411,391,306,412,
+  392,364,360,307,308,309,310,311,16,11,340,350,351,352,353,354,
+  373,374,375,376,377,378,379,380,381,382
 };
 RogueInitFn Rogue_init_object_fn_table[] =
 {
@@ -9585,20 +9585,20 @@ const char* Rogue_method_name_strings[] =
 
 const int Rogue_method_param_names[] =
 {
-  423,424,425,368,368,426,427,428,429,430,431,432,433,432,434,435,430,436,432,437,438,439,440,441,442,
-  443,444,445,440,446,447,446,423,446,448,449,446,449,450,446,451,451,452,453,454,455,447,456,446,423,
-  456,446,447,457,446,423,457,446,458,459,460,446,461,446,462,463,462,427,463,464,465,464,451,466,465,
-  467,440,368,468,447,368,469,470,471,472,473,451,455,368,474,461,475,445,476,451,477,478,454,451,423,
-  479,480,481,482,483,484,485,486,487,427,487,486,488,489,490,491,492,493,494,495,496,497,498,499,500,
-  501,499,500,502,503,476,504,505,506,507,508,509,510,511,512,513,514,502,514,443,515,514,516,489,368,
-  517,518,519,520,521,522,523,524,525,526,504,476,503,476,476,368,451,489,476,527,521,528,529,489,530,
-  531,532,368,533,534,535,536,537,134,201,430,538,539,540,541,541,370,542,543,370,542,543,370,544,545,
-  546,547,548,549,550,546,547,549,550,540,551,552,553,542,554,555,556,557,552,553,558,552,559,540,370,
-  540,560,561,370,562,563,540,564,565,566,567,568,550,569,570,571,572,573,430,574,575,576,577,430,577,
-  575,578,579,580,581,582,583,584,585,586,587,588,527,484,564,484,451,452,589,590,591,592,593,594,595,
-  596,597,598,599,600,601,602,603,464,604,605,606,605,564,607,608,609,586,604,610,611,612,613,614,615,
-  616,617,574,575,577,618,574,575,619,577,620,574,575,621,577,622,623,624,625,626,627,628,629,630,631,
-  632,633,634,635,636,637,638,639,640,445,586,641,642,
+  422,423,424,367,367,425,426,427,428,429,430,431,432,431,433,434,429,435,431,436,437,438,439,440,441,
+  442,443,444,439,445,446,445,422,445,447,448,445,448,449,445,450,450,451,452,453,454,446,455,445,422,
+  455,445,446,456,445,422,456,445,457,458,459,445,460,445,461,462,461,426,462,463,464,463,450,465,464,
+  466,439,367,467,446,367,468,469,470,471,472,450,454,367,473,460,474,444,475,450,476,477,453,450,422,
+  478,479,480,481,482,483,484,485,486,426,486,485,487,488,489,490,491,492,493,494,495,496,497,498,499,
+  500,498,499,501,502,475,503,504,505,506,507,508,509,510,511,512,513,501,513,442,514,513,515,488,367,
+  516,517,518,519,520,521,522,523,524,525,503,475,502,475,475,367,450,488,475,526,520,527,528,488,529,
+  530,531,367,532,533,534,535,536,134,201,429,537,538,539,540,540,369,541,542,369,541,542,369,543,544,
+  545,546,547,548,549,545,546,548,549,539,550,551,552,541,553,554,555,556,551,552,557,551,558,539,369,
+  539,559,560,369,561,562,539,563,564,565,566,567,549,568,569,570,571,572,429,573,574,575,576,429,576,
+  574,577,578,579,580,581,582,583,584,585,586,587,526,483,563,483,450,451,588,589,590,591,592,593,594,
+  595,596,597,598,599,600,601,602,463,603,604,605,604,563,606,607,608,585,603,609,610,611,612,613,614,
+  615,616,573,574,576,617,573,574,618,576,619,573,574,620,576,621,622,623,624,625,626,627,628,629,630,
+  631,632,633,634,635,636,637,638,639,444,585,640,641,
 };
 
 const int Rogue_method_param_types[] =
@@ -11302,97 +11302,97 @@ const int Rogue_type_info_table[] ={
   // property_type_indices[ property_count ]
   // dynamic_method_count
   // global_method_count
-  18,0,0,3,152,1,2,0,4,643,644,645,646,3,2,4,15,81,1,8,0,82,1,2,0,0,26,
-  0,7,0,108,0,0,0,26,1,8,0,135,1,152,0,0,69,9,25,0,213,2,152,2,2,647,648,5,
-  11,6,649,466,650,651,652,653,5,10,10,10,10,14,41,2,13,0,256,2,6,152,0,2,564,466,
+  18,0,0,3,152,1,2,0,4,642,643,644,645,3,2,4,15,81,1,8,0,82,1,2,0,0,26,
+  0,7,0,108,0,0,0,26,1,8,0,135,1,152,0,0,69,9,25,0,213,2,152,2,2,646,647,5,
+  11,6,648,465,649,650,651,652,5,10,10,10,10,14,41,2,13,0,256,2,6,152,0,2,563,465,
   8,10,34,0,8,0,290,1,152,0,0,13,0,7,0,0,0,0,0,1,2,9,0,306,2,9,152,0,
-  0,17,0,8,0,323,1,152,0,0,17,0,7,0,0,0,0,0,6,2,10,0,348,1,152,0,1,654,
-  12,15,0,13,0,363,2,6,152,0,2,564,466,13,10,24,0,9,0,387,2,9,152,0,0,17,0,
-  7,0,0,0,0,0,1,2,13,0,407,2,6,152,0,2,564,466,17,10,21,0,8,0,428,1,152,0,
-  0,14,1,9,0,443,2,9,152,0,0,17,0,14,0,460,1,152,0,3,655,466,656,19,10,14,17,
-  0,13,0,477,2,6,152,0,2,564,466,20,10,36,0,9,0,513,2,9,152,0,0,17,0,7,0,0,
+  0,17,0,8,0,323,1,152,0,0,17,0,7,0,0,0,0,0,6,2,10,0,348,1,152,0,1,653,
+  12,15,0,13,0,363,2,6,152,0,2,563,465,13,10,24,0,9,0,387,2,9,152,0,0,17,0,
+  7,0,0,0,0,0,1,2,13,0,407,2,6,152,0,2,563,465,17,10,21,0,8,0,428,1,152,0,
+  0,14,1,9,0,443,2,9,152,0,0,17,0,14,0,460,1,152,0,3,654,465,655,19,10,14,17,
+  0,13,0,477,2,6,152,0,2,563,465,20,10,36,0,9,0,513,2,9,152,0,0,17,0,7,0,0,
   0,0,0,7,1,7,0,0,0,0,0,0,0,7,0,0,0,0,0,3,0,7,0,0,0,0,0,7,
-  5,8,0,553,1,152,0,0,140,11,22,0,704,1,152,0,7,445,504,657,658,659,660,661,10,3,27,
-  27,30,30,10,38,5,13,0,747,2,6,152,0,2,564,466,29,10,21,0,14,0,768,1,152,0,3,
-  445,494,495,10,10,10,16,1,9,0,785,2,9,152,0,0,17,0,13,0,802,2,6,152,0,2,564,
-  466,36,10,21,0,30,0,823,1,152,1,662,32,10,445,504,663,664,665,666,667,668,669,670,10,3,
-  3,3,23,10,10,10,10,10,21,4,24,0,848,1,152,0,8,466,671,672,673,674,675,676,677,10,
-  10,10,33,34,34,34,35,22,0,9,0,870,2,9,152,0,0,17,0,20,0,887,1,152,0,6,489,
-  368,678,679,680,681,10,3,34,34,34,10,14,0,8,0,901,1,152,0,0,14,0,9,0,915,2,9,
-  152,0,0,17,0,13,0,932,2,6,152,0,2,564,466,38,10,21,0,9,0,953,2,9,152,0,0,
-  17,0,13,0,970,2,6,152,0,2,564,466,40,10,21,0,9,0,991,2,9,152,0,0,17,0,14,0,
-  1008,1,152,0,3,502,682,683,152,23,26,24,0,11,0,1032,2,25,152,0,1,564,43,146,10,13,0,
-  1188,2,6,152,0,2,564,466,44,10,30,0,9,0,1218,2,9,152,0,0,17,0,11,0,1235,2,25,
-  152,0,1,564,46,140,10,24,0,1385,1,152,0,8,466,671,672,673,674,675,676,677,10,10,10,47,
-  48,48,48,49,26,0,9,0,1411,2,9,152,0,0,17,0,20,0,1428,1,152,0,6,489,368,678,679,
-  680,681,3,25,48,48,48,10,14,0,8,0,1442,1,152,0,0,14,0,8,0,1456,1,152,0,0,14,
-  0,11,0,1470,2,25,152,0,1,368,152,146,10,25,0,1626,2,53,152,0,8,466,671,672,673,674,675,
-  676,677,10,10,10,54,55,55,55,56,63,0,24,0,1689,1,152,0,8,466,671,672,673,674,675,676,
-  677,10,10,10,54,55,55,55,56,51,0,9,0,1740,2,9,152,0,0,17,0,20,0,1757,1,152,0,
-  6,489,368,678,679,680,681,3,3,55,55,55,10,14,1,8,0,1772,1,152,0,0,14,0,8,0,1786,
-  1,152,0,0,14,0,9,0,1800,0,0,1,684,10,11,0,15,0,1811,2,152,60,0,3,684,466,572,
-  10,10,3,16,0,9,0,1827,0,0,1,684,10,7,0,9,0,1834,0,0,1,684,10,1,0,8,0,1835,
-  1,152,0,0,13,8,31,0,1856,4,152,60,64,2,0,10,684,685,686,576,687,688,689,690,691,692,
+  5,8,0,553,1,152,0,0,140,11,22,0,704,1,152,0,7,444,503,656,657,658,659,660,10,3,27,
+  27,30,30,10,38,5,13,0,747,2,6,152,0,2,563,465,29,10,21,0,14,0,768,1,152,0,3,
+  444,493,494,10,10,10,16,1,9,0,785,2,9,152,0,0,17,0,13,0,802,2,6,152,0,2,563,
+  465,36,10,21,0,30,0,823,1,152,1,661,32,10,444,503,662,663,664,665,666,667,668,669,10,3,
+  3,3,23,10,10,10,10,10,21,4,24,0,848,1,152,0,8,465,670,671,672,673,674,675,676,10,
+  10,10,33,34,34,34,35,22,0,9,0,870,2,9,152,0,0,17,0,20,0,887,1,152,0,6,488,
+  367,677,678,679,680,10,3,34,34,34,10,14,0,8,0,901,1,152,0,0,14,0,9,0,915,2,9,
+  152,0,0,17,0,13,0,932,2,6,152,0,2,563,465,38,10,21,0,9,0,953,2,9,152,0,0,
+  17,0,13,0,970,2,6,152,0,2,563,465,40,10,21,0,9,0,991,2,9,152,0,0,17,0,14,0,
+  1008,1,152,0,3,501,681,682,152,23,26,24,0,11,0,1032,2,25,152,0,1,563,43,146,10,13,0,
+  1188,2,6,152,0,2,563,465,44,10,30,0,9,0,1218,2,9,152,0,0,17,0,11,0,1235,2,25,
+  152,0,1,563,46,140,10,24,0,1385,1,152,0,8,465,670,671,672,673,674,675,676,10,10,10,47,
+  48,48,48,49,26,0,9,0,1411,2,9,152,0,0,17,0,20,0,1428,1,152,0,6,488,367,677,678,
+  679,680,3,25,48,48,48,10,14,0,8,0,1442,1,152,0,0,14,0,8,0,1456,1,152,0,0,14,
+  0,11,0,1470,2,25,152,0,1,367,152,146,10,25,0,1626,2,53,152,0,8,465,670,671,672,673,674,
+  675,676,10,10,10,54,55,55,55,56,63,0,24,0,1689,1,152,0,8,465,670,671,672,673,674,675,
+  676,10,10,10,54,55,55,55,56,51,0,9,0,1740,2,9,152,0,0,17,0,20,0,1757,1,152,0,
+  6,488,367,677,678,679,680,3,3,55,55,55,10,14,1,8,0,1772,1,152,0,0,14,0,8,0,1786,
+  1,152,0,0,14,0,9,0,1800,0,0,1,683,10,11,0,15,0,1811,2,152,60,0,3,683,465,571,
+  10,10,3,16,0,9,0,1827,0,0,1,683,10,7,0,9,0,1834,0,0,1,683,10,1,0,8,0,1835,
+  1,152,0,0,13,8,31,0,1856,4,152,60,64,2,0,10,683,684,685,575,686,687,688,689,690,691,
   10,65,14,14,14,4,4,161,5,23,24,0,8,0,1880,1,2,0,0,26,0,12,0,1906,3,152,64,
-  2,0,1,688,4,21,0,8,0,1927,1,152,0,0,17,0,9,0,1944,2,16,152,0,0,14,0,34,0,
-  1958,1,152,0,13,693,694,695,696,697,698,699,700,701,702,703,704,705,69,69,3,3,3,3,3,
-  3,3,3,3,14,3,41,1,12,0,2000,1,152,0,2,541,706,3,70,23,0,15,0,2023,2,71,152,
-  0,3,707,424,708,72,19,19,28,0,14,0,2051,1,152,0,3,707,424,708,72,19,19,27,0,25,0,
-  2078,2,73,152,0,8,466,671,672,673,674,675,676,677,10,10,10,74,75,75,75,76,51,0,24,0,
-  2129,1,152,0,8,466,671,672,673,674,675,676,677,10,10,10,74,75,75,75,76,51,0,9,0,2180,
-  2,9,152,0,0,17,0,20,0,2197,1,152,0,6,489,368,678,679,680,681,3,10,75,75,75,10,
-  14,0,8,0,2211,1,152,0,0,14,0,14,0,2225,1,152,3,709,710,711,19,3,163,0,13,9,10,0,
-  2247,1,152,0,1,540,3,16,29,26,0,2292,3,52,53,152,0,8,466,671,672,673,674,675,676,677,
-  10,10,10,54,55,55,55,56,63,1,26,0,2356,3,52,53,152,0,8,466,671,672,673,674,675,676,
-  677,10,10,10,54,55,55,55,56,63,1,9,0,2420,2,25,152,0,0,140,10,19,0,2570,2,152,61,
-  0,5,684,712,713,427,714,10,60,3,4,24,21,0,9,0,2591,0,0,1,684,10,7,0,8,0,2598,
-  1,152,0,0,14,0,9,0,2612,2,84,152,0,0,14,0,24,0,2626,1,152,0,8,514,715,716,717,
-  685,718,719,576,19,83,83,58,14,14,10,14,26,3,18,0,2655,1,152,0,5,719,720,721,722,723,
-  10,5,5,3,3,17,0,8,0,2672,1,152,0,0,13,4,12,0,2689,1,152,0,2,724,725,89,23,
-  14,0,14,0,2703,3,152,91,2,0,2,726,427,58,4,20,0,8,0,2723,1,2,0,0,26,0,8,0,
-  2749,1,152,0,0,13,1,13,0,2763,2,6,152,0,2,564,466,94,10,23,0,9,0,2786,2,9,152,
-  0,0,17,0,10,0,2803,1,152,0,1,727,23,18,0,8,0,2821,1,152,0,0,14,0,17,0,2835,2,
-  92,152,1,648,93,3,527,728,729,19,10,10,19,1,8,0,2855,1,152,0,0,13,2,15,0,2870,2,
-  25,152,2,730,731,99,99,1,368,14,146,11,11,0,3027,2,25,152,0,1,368,10,146,10,11,0,3183,
-  2,25,152,0,1,368,23,146,10,11,0,3339,2,25,152,0,1,368,21,146,10,13,0,3495,2,25,152,
-  1,732,103,1,368,3,146,11,10,0,3652,3,81,25,152,0,0,140,10,26,0,3802,3,106,107,152,0,
-  8,466,671,672,673,674,675,676,677,10,10,10,108,109,109,109,110,51,0,25,0,3853,2,107,152,0,
-  8,466,671,672,673,674,675,676,677,10,10,10,108,109,109,109,110,51,0,24,0,3904,1,152,0,8,
-  466,671,672,673,674,675,676,677,10,10,10,108,109,109,109,110,51,0,9,0,3955,2,9,152,0,0,
-  17,0,20,0,3972,1,152,0,6,489,368,678,679,680,681,3,26,109,109,109,10,14,0,8,0,3986,1,
-  152,0,0,14,0,11,0,4000,2,66,152,0,1,368,160,19,0,15,0,4019,2,41,152,0,3,502,682,
-  683,152,23,26,24,0,11,0,4043,2,66,152,0,1,368,161,19,0,15,0,4062,2,41,152,0,3,502,
-  682,683,152,23,26,24,0,8,0,4086,1,152,0,0,14,0,13,0,4100,2,6,152,0,2,564,466,54,
-  10,25,0,15,0,4125,2,152,118,0,3,684,733,676,10,53,55,16,0,9,0,4141,0,0,1,684,10,
-  1,0,15,0,4142,2,152,61,0,3,684,733,676,10,53,55,16,0,15,0,4158,2,152,61,0,3,684,
-  733,676,10,53,55,16,0,11,0,4174,2,66,152,0,1,368,162,19,0,15,0,4193,2,41,152,0,3,
-  502,682,683,152,23,26,24,0,11,0,4217,2,16,152,0,1,644,63,15,0,19,0,4232,2,152,58,0,
-  5,684,540,685,427,734,10,3,14,5,23,21,0,11,0,4253,2,66,152,0,1,368,163,19,0,15,0,
-  4272,2,41,152,0,3,502,682,683,152,23,26,24,0,21,0,4296,2,152,83,0,6,684,540,466,735,
-  427,734,10,3,10,10,5,23,22,0,26,0,4318,1,152,0,9,552,370,558,736,737,738,739,740,741,
-  3,3,169,19,19,19,19,19,96,15,0,11,0,4333,2,66,152,0,1,368,164,19,0,15,0,4352,2,
-  41,152,0,3,502,682,683,152,23,26,24,0,15,0,4376,2,152,60,0,3,684,742,713,10,83,166,
-  17,0,31,0,4393,2,86,152,0,11,514,715,716,717,685,718,719,576,743,744,745,19,83,83,58,14,
-  14,10,14,14,3,23,29,3,27,0,4425,2,86,152,0,9,514,715,716,717,685,718,719,576,746,19,
-  83,83,58,14,14,10,14,23,27,3,11,0,4455,2,66,152,0,1,368,165,19,0,15,0,4474,2,41,
-  152,0,3,502,682,683,152,23,26,24,0,11,0,4498,2,66,152,0,1,368,166,19,0,15,0,4517,2,
-  41,152,0,3,502,682,683,152,23,26,24,0,11,0,4541,2,66,152,0,1,368,167,19,0,15,0,4560,
-  2,41,152,0,3,502,682,683,152,23,26,24,0,11,0,4584,2,66,152,0,1,368,168,19,0,15,0,
-  4603,2,41,152,0,3,502,682,683,152,23,26,24,0,8,0,4627,1,152,0,0,13,2,11,0,4642,2,
-  66,152,0,1,368,169,19,0,15,0,4661,2,41,152,0,3,502,682,683,152,23,26,24,0,11,0,4685,
-  2,96,152,0,1,502,128,15,0,9,0,4700,2,84,152,0,0,14,0,15,0,4714,2,152,58,0,3,
-  684,427,747,10,5,23,17,0,15,0,4731,2,152,83,0,3,684,427,748,10,5,23,17,0,15,0,4748,
-  2,152,83,0,3,684,578,749,10,86,150,17,0,19,0,4765,2,152,83,0,5,684,634,735,750,427,
-  10,10,10,14,5,21,0,19,0,4786,2,152,58,0,5,684,634,750,685,427,10,10,14,14,5,19,
-  0,7,0,4805,0,0,0,13,0,12,0,4818,1,152,0,2,751,752,3,18,17,0,13,0,4835,2,153,152,
-  0,2,751,752,3,18,17,0,14,0,4852,3,154,153,152,0,2,751,752,3,18,18,0,14,0,4870,3,
-  154,153,152,0,2,751,752,3,18,17,0,14,0,4887,3,154,153,152,0,2,751,752,3,18,17,0,
-  14,0,4904,3,154,153,152,0,2,751,752,3,18,17,0,14,0,4921,3,154,153,152,0,2,751,752,3,
-  18,17,0,13,0,4938,0,2,753,424,19,37,1,368,10,5,2,11,0,4945,0,0,2,368,369,10,14,
-  5,2,11,0,4952,0,0,2,368,369,7,14,5,2,7,0,4959,0,0,0,6,1,9,0,4966,0,0,1,
-  370,3,5,1,11,0,4972,0,0,2,368,369,3,14,5,2,11,0,4979,0,0,2,368,369,24,14,5,
-  2,11,0,4986,0,0,2,368,369,25,14,5,2,11,0,4993,0,0,2,368,369,21,14,5,1,9,0,4999,
-  0,0,1,371,10,7,1,
+  2,0,1,687,4,21,0,8,0,1927,1,152,0,0,17,0,9,0,1944,2,16,152,0,0,14,0,34,0,
+  1958,1,152,0,13,692,693,694,695,696,697,698,699,700,701,702,703,704,69,69,3,3,3,3,3,
+  3,3,3,3,14,3,41,1,12,0,2000,1,152,0,2,540,705,3,70,23,0,15,0,2023,2,71,152,
+  0,3,706,423,707,72,19,19,28,0,14,0,2051,1,152,0,3,706,423,707,72,19,19,27,0,25,0,
+  2078,2,73,152,0,8,465,670,671,672,673,674,675,676,10,10,10,74,75,75,75,76,51,0,24,0,
+  2129,1,152,0,8,465,670,671,672,673,674,675,676,10,10,10,74,75,75,75,76,51,0,9,0,2180,
+  2,9,152,0,0,17,0,20,0,2197,1,152,0,6,488,367,677,678,679,680,3,10,75,75,75,10,
+  14,0,8,0,2211,1,152,0,0,14,0,14,0,2225,1,152,3,708,709,710,19,3,163,0,13,9,10,0,
+  2247,1,152,0,1,539,3,16,29,26,0,2292,3,52,53,152,0,8,465,670,671,672,673,674,675,676,
+  10,10,10,54,55,55,55,56,63,1,26,0,2356,3,52,53,152,0,8,465,670,671,672,673,674,675,
+  676,10,10,10,54,55,55,55,56,63,1,9,0,2420,2,25,152,0,0,140,10,19,0,2570,2,152,61,
+  0,5,683,711,712,426,713,10,60,3,4,24,21,0,9,0,2591,0,0,1,683,10,7,0,8,0,2598,
+  1,152,0,0,14,0,9,0,2612,2,84,152,0,0,14,0,24,0,2626,1,152,0,8,513,714,715,716,
+  684,717,718,575,19,83,83,58,14,14,10,14,26,3,18,0,2655,1,152,0,5,718,719,720,721,722,
+  10,5,5,3,3,17,0,8,0,2672,1,152,0,0,13,4,12,0,2689,1,152,0,2,723,724,89,23,
+  14,0,14,0,2703,3,152,91,2,0,2,725,426,58,4,20,0,8,0,2723,1,2,0,0,26,0,8,0,
+  2749,1,152,0,0,13,1,13,0,2763,2,6,152,0,2,563,465,94,10,23,0,9,0,2786,2,9,152,
+  0,0,17,0,10,0,2803,1,152,0,1,726,23,18,0,8,0,2821,1,152,0,0,14,0,17,0,2835,2,
+  92,152,1,647,93,3,526,727,728,19,10,10,19,1,8,0,2855,1,152,0,0,13,2,15,0,2870,2,
+  25,152,2,729,730,99,99,1,367,14,146,11,11,0,3027,2,25,152,0,1,367,10,146,10,11,0,3183,
+  2,25,152,0,1,367,23,146,10,11,0,3339,2,25,152,0,1,367,21,146,10,13,0,3495,2,25,152,
+  1,731,103,1,367,3,146,11,10,0,3652,3,81,25,152,0,0,140,10,26,0,3802,3,106,107,152,0,
+  8,465,670,671,672,673,674,675,676,10,10,10,108,109,109,109,110,51,0,25,0,3853,2,107,152,0,
+  8,465,670,671,672,673,674,675,676,10,10,10,108,109,109,109,110,51,0,24,0,3904,1,152,0,8,
+  465,670,671,672,673,674,675,676,10,10,10,108,109,109,109,110,51,0,9,0,3955,2,9,152,0,0,
+  17,0,20,0,3972,1,152,0,6,488,367,677,678,679,680,3,26,109,109,109,10,14,0,8,0,3986,1,
+  152,0,0,14,0,11,0,4000,2,66,152,0,1,367,160,19,0,15,0,4019,2,41,152,0,3,501,681,
+  682,152,23,26,24,0,11,0,4043,2,66,152,0,1,367,161,19,0,15,0,4062,2,41,152,0,3,501,
+  681,682,152,23,26,24,0,8,0,4086,1,152,0,0,14,0,13,0,4100,2,6,152,0,2,563,465,54,
+  10,25,0,15,0,4125,2,152,118,0,3,683,732,675,10,53,55,16,0,9,0,4141,0,0,1,683,10,
+  1,0,15,0,4142,2,152,61,0,3,683,732,675,10,53,55,16,0,15,0,4158,2,152,61,0,3,683,
+  732,675,10,53,55,16,0,11,0,4174,2,66,152,0,1,367,162,19,0,15,0,4193,2,41,152,0,3,
+  501,681,682,152,23,26,24,0,11,0,4217,2,16,152,0,1,643,63,15,0,19,0,4232,2,152,58,0,
+  5,683,539,684,426,733,10,3,14,5,23,21,0,11,0,4253,2,66,152,0,1,367,163,19,0,15,0,
+  4272,2,41,152,0,3,501,681,682,152,23,26,24,0,21,0,4296,2,152,83,0,6,683,539,465,734,
+  426,733,10,3,10,10,5,23,22,0,26,0,4318,1,152,0,9,551,369,557,735,736,737,738,739,740,
+  3,3,169,19,19,19,19,19,96,15,0,11,0,4333,2,66,152,0,1,367,164,19,0,15,0,4352,2,
+  41,152,0,3,501,681,682,152,23,26,24,0,15,0,4376,2,152,60,0,3,683,741,712,10,83,166,
+  17,0,31,0,4393,2,86,152,0,11,513,714,715,716,684,717,718,575,742,743,744,19,83,83,58,14,
+  14,10,14,14,3,23,29,3,27,0,4425,2,86,152,0,9,513,714,715,716,684,717,718,575,745,19,
+  83,83,58,14,14,10,14,23,27,3,11,0,4455,2,66,152,0,1,367,165,19,0,15,0,4474,2,41,
+  152,0,3,501,681,682,152,23,26,24,0,11,0,4498,2,66,152,0,1,367,166,19,0,15,0,4517,2,
+  41,152,0,3,501,681,682,152,23,26,24,0,11,0,4541,2,66,152,0,1,367,167,19,0,15,0,4560,
+  2,41,152,0,3,501,681,682,152,23,26,24,0,11,0,4584,2,66,152,0,1,367,168,19,0,15,0,
+  4603,2,41,152,0,3,501,681,682,152,23,26,24,0,8,0,4627,1,152,0,0,13,2,11,0,4642,2,
+  66,152,0,1,367,169,19,0,15,0,4661,2,41,152,0,3,501,681,682,152,23,26,24,0,11,0,4685,
+  2,96,152,0,1,501,128,15,0,9,0,4700,2,84,152,0,0,14,0,15,0,4714,2,152,58,0,3,
+  683,426,746,10,5,23,17,0,15,0,4731,2,152,83,0,3,683,426,747,10,5,23,17,0,15,0,4748,
+  2,152,83,0,3,683,577,748,10,86,150,17,0,19,0,4765,2,152,83,0,5,683,633,734,749,426,
+  10,10,10,14,5,21,0,19,0,4786,2,152,58,0,5,683,633,749,684,426,10,10,14,14,5,19,
+  0,7,0,4805,0,0,0,13,0,12,0,4818,1,152,0,2,750,751,3,18,17,0,13,0,4835,2,153,152,
+  0,2,750,751,3,18,17,0,14,0,4852,3,154,153,152,0,2,750,751,3,18,18,0,14,0,4870,3,
+  154,153,152,0,2,750,751,3,18,17,0,14,0,4887,3,154,153,152,0,2,750,751,3,18,17,0,
+  14,0,4904,3,154,153,152,0,2,750,751,3,18,17,0,14,0,4921,3,154,153,152,0,2,750,751,3,
+  18,17,0,13,0,4938,0,2,752,423,19,37,1,367,10,5,2,11,0,4945,0,0,2,367,368,10,14,
+  5,2,11,0,4952,0,0,2,367,368,7,14,5,2,7,0,4959,0,0,0,6,1,9,0,4966,0,0,1,
+  369,3,5,1,11,0,4972,0,0,2,367,368,3,14,5,2,11,0,4979,0,0,2,367,368,24,14,5,
+  2,11,0,4986,0,0,2,367,368,25,14,5,2,11,0,4993,0,0,2,367,368,21,14,5,1,9,0,4999,
+  0,0,1,370,10,7,1,
 };
 
 const int Rogue_object_size_table[170] =
@@ -11905,10 +11905,10 @@ RogueType* RogueTypeOptionalValue;
 RogueType* RogueTypeOptionalReal64;
 RogueType* RogueTypeFileOptions;
 
-int Rogue_literal_string_count = 754;
-RogueString* Rogue_literal_strings[754];
+int Rogue_literal_string_count = 753;
+RogueString* Rogue_literal_strings[753];
 
-const char* Rogue_literal_c_strings[754] =
+const char* Rogue_literal_c_strings[753] =
 {
   "",
   "Real64",
@@ -12149,7 +12149,6 @@ const char* Rogue_literal_c_strings[754] =
   "git commit -am \"v",
   "git diff-index --quiet HEAD --",
   "Uncommitted changes - run 'rogo commit' first.",
-  "git checkout master\ngit merge develop\ngit push\ngit checkout develop",
   "cd Wiki && git pull\ncd Source/DocGen && make",
   "cd Wiki && git commit -am \"v",
   "cd Wiki && git push",
@@ -12400,8 +12399,8 @@ const char* Rogue_literal_c_strings[754] =
   "digits",
   "table_key_or_list_value",
   "key",
-  "_auto_339",
   "_auto_340",
+  "_auto_339",
   "global_property_name_index",
   "global_property_type_index",
   "property_name_index",
@@ -12415,15 +12414,15 @@ const char* Rogue_literal_c_strings[754] =
   "context",
   "property_info",
   "name",
-  "_auto_467",
-  "_auto_468",
   "_auto_469",
-  "_auto_638",
-  "_auto_639",
-  "_auto_640",
-  "_auto_641",
-  "_auto_642",
+  "_auto_468",
+  "_auto_467",
   "_auto_643",
+  "_auto_642",
+  "_auto_641",
+  "_auto_640",
+  "_auto_639",
+  "_auto_638",
   "args",
   "i",
   "bin_count",
@@ -12434,9 +12433,9 @@ const char* Rogue_literal_c_strings[754] =
   "param1",
   "param2",
   "_auto_416",
-  "_auto_417",
-  "_auto_418",
   "_auto_419",
+  "_auto_418",
+  "_auto_417",
   "list",
   "_auto_470",
   "query",
@@ -12489,9 +12488,9 @@ const char* Rogue_literal_c_strings[754] =
   "is_blocking",
   "inherit_environment",
   "process",
-  "_auto_661",
-  "_auto_662",
   "_auto_663",
+  "_auto_662",
+  "_auto_661",
   "string_index",
   "_buffer",
   "_auto_684",
@@ -12521,17 +12520,17 @@ const char* Rogue_literal_c_strings[754] =
   "_auto_1897",
   "result",
   "_auto_1900",
-  "_auto_1910",
-  "_auto_1911",
   "_auto_1912",
+  "_auto_1911",
+  "_auto_1910",
   "filename",
   "_auto_1942",
   "_auto_1943",
   "_auto_1947",
-  "_auto_1949",
   "_auto_1950",
-  "_auto_1953",
+  "_auto_1949",
   "_auto_1954",
+  "_auto_1953",
   "_auto_2057",
   "_auto_2058",
   "_auto_2361",
@@ -12545,10 +12544,10 @@ const char* Rogue_literal_c_strings[754] =
   "_auto_2622",
   "_auto_2630",
   "fd",
-  "_auto_2631",
   "_auto_2632",
-  "_auto_2636",
+  "_auto_2631",
   "_auto_2637",
+  "_auto_2636",
   "_auto_257",
   "_auto_755",
   "requirement",
@@ -13144,7 +13143,7 @@ RogueString* RogueString__operatorTIMES__String_Int32( RogueString* st_0, RogueI
 RogueStringBuilder* RogueStringBuilder__from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "StringBuilder.from_value(Value)", "StringBuilder.rogue", 1 );
-  return (RogueStringBuilder*)(((RogueStringBuilder*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[253] ))), values_0 ))),RogueTypeStringBuilder))));
+  return (RogueStringBuilder*)(((RogueStringBuilder*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[252] ))), values_0 ))),RogueTypeStringBuilder))));
 }
 
 void RogueStringBuilder__init_class_thread_local()
@@ -13208,7 +13207,7 @@ RogueLogical RogueLogical__create__Int32( RogueInt32 value_0 )
 RogueClass_Function___* Rogue_Function_____from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "(Function()).from_value(Value)", "Task.rogue", 33 );
-  return (RogueClass_Function___*)(((RogueClass_Function___*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[255] ))), values_0 ))),RogueType_Function___))));
+  return (RogueClass_Function___*)(((RogueClass_Function___*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[254] ))), values_0 ))),RogueType_Function___))));
 }
 
 RogueReal64 RogueReal64__create__Real64( RogueReal64 value_0 )
@@ -13262,7 +13261,7 @@ RogueCharacter RogueCharacter__from_value__Value( RogueClassValue* value_0 )
 RogueClassValue* RogueValue__from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "Value.from_value(Value)", "Value.rogue", 1 );
-  return (RogueClassValue*)(((RogueClassValue*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[251] ))), values_0 ))),RogueTypeValue))));
+  return (RogueClassValue*)(((RogueClassValue*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[250] ))), values_0 ))),RogueTypeValue))));
 }
 
 RogueClassValue* RogueValue__create__Character( RogueCharacter value_0 )
@@ -13368,7 +13367,7 @@ RogueLogical RogueOptionalValue__operator__Value( RogueClassValue* value_0 )
 RogueTypeInfo* RogueTypeInfo__from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "TypeInfo.from_value(Value)", "TypeInfo.rogue", 1 );
-  return (RogueTypeInfo*)(((RogueTypeInfo*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[257] ))), values_0 ))),RogueTypeTypeInfo))));
+  return (RogueTypeInfo*)(((RogueTypeInfo*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[256] ))), values_0 ))),RogueTypeTypeInfo))));
 }
 
 RogueTypeInfo* RogueTypeInfo__get__Int32( RogueInt32 index_0 )
@@ -13436,13 +13435,13 @@ RogueInt32 RogueTypeInfo__type_count()
 RogueClassPropertyInfo* RoguePropertyInfo__from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "PropertyInfo.from_value(Value)", "TypeInfo.rogue", 680 );
-  return (RogueClassPropertyInfo*)(((RogueClassPropertyInfo*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[252] ))), values_0 ))),RogueTypePropertyInfo))));
+  return (RogueClassPropertyInfo*)(((RogueClassPropertyInfo*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[251] ))), values_0 ))),RogueTypePropertyInfo))));
 }
 
 RogueClassMethodInfo* RogueMethodInfo__from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "MethodInfo.from_value(Value)", "TypeInfo.rogue", 700 );
-  return (RogueClassMethodInfo*)(((RogueClassMethodInfo*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[254] ))), values_0 ))),RogueTypeMethodInfo))));
+  return (RogueClassMethodInfo*)(((RogueClassMethodInfo*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[253] ))), values_0 ))),RogueTypeMethodInfo))));
 }
 
 RogueString* RogueMethodInfo___get_method_name__Int32( RogueInt32 method_index_0 )
@@ -14665,7 +14664,7 @@ void RogueMethodInfo__init_class()
 RogueClassTableEntry_String_String_* RogueTableEntry_String_String___from_value__Value( RogueClassValue* values_0 )
 {
   RogueDebugTrace __trace( "TableEntry<<String,String>>.from_value(Value)", "Table.rogue", 473 );
-  return (RogueClassTableEntry_String_String_*)(((RogueClassTableEntry_String_String_*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[258] ))), values_0 ))),RogueTypeTableEntry_String_String_))));
+  return (RogueClassTableEntry_String_String_*)(((RogueClassTableEntry_String_String_*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[257] ))), values_0 ))),RogueTypeTableEntry_String_String_))));
 }
 
 RogueReal64 RogueMath__ceiling__Real64( RogueReal64 n_0 )
@@ -16421,23 +16420,23 @@ void RogueRuntime__set_gc_threshold__Int32( RogueInt32 value_0 )
 
 RogueClassGenericListRewriter* RogueGenericListRewriter__from_value__Value( RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "GenericListRewriter.from_value(Value)", "List.rogue", 821 );
-  return (RogueClassGenericListRewriter*)(((RogueClassGenericListRewriter*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[256] ))), values_0 ))),RogueTypeGenericListRewriter))));
+  RogueDebugTrace __trace( "GenericListRewriter.from_value(Value)", "List.rogue", 831 );
+  return (RogueClassGenericListRewriter*)(((RogueClassGenericListRewriter*)(RogueObject_as(((RogueObject*)(RogueTypeInfo__create_object__Value( ROGUE_ARG((RogueTypeInfo__get__String( Rogue_literal_strings[255] ))), values_0 ))),RogueTypeGenericListRewriter))));
 }
 
 RogueClassListRewriter_String_* RogueListRewriter_String___acquire__String_List( RogueString_List* list_0 )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.acquire(String[])", "List.rogue", 833 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.acquire(String[])", "List.rogue", 843 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 834;
+  ;__trace.line = 844;
   if (ROGUE_COND(((!!(RogueListRewriter_String__pool)) && (!!(RogueListRewriter_String__pool->count)))))
   {
-    ;__trace.line = 835;
+    ;__trace.line = 845;
     return (RogueClassListRewriter_String_*)(((RogueClassListRewriter_String_*)(RogueListRewriter_String___reset__String_List( ROGUE_ARG(((RogueClassListRewriter_String_*)(RogueObject_as(((RogueClassGenericListRewriter*)(RogueGenericListRewriter_List__remove_last( ROGUE_ARG(RogueListRewriter_String__pool) ))),RogueTypeListRewriter_String_)))), list_0 ))));
   }
   else
   {
-    ;__trace.line = 837;
+    ;__trace.line = 847;
     return (RogueClassListRewriter_String_*)(((RogueClassListRewriter_String_*)(RogueListRewriter_String___init__String_List( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassListRewriter_String_*,ROGUE_CREATE_OBJECT(ListRewriter_String_))), list_0 ))));
   }
 }
@@ -16821,7 +16820,7 @@ RogueClassStringEncoding RogueStringEncoding__from_value__Value( RogueClassValue
   {
     return (RogueClassStringEncoding)(((RogueBoxed_StringEncoding___to_StringEncoding( ROGUE_ARG(((RogueClassBoxed_StringEncoding_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeBoxed_StringEncoding_)))) ))));
   }
-  return (RogueClassStringEncoding)(RogueClassStringEncoding( (RogueInt32__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
+  return (RogueClassStringEncoding)(RogueClassStringEncoding( (RogueInt32__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] ))) ))) )) ));
 }
 
 RogueOptionalInt32 RogueOptionalInt32__create()
@@ -16842,7 +16841,7 @@ RogueOptionalInt32 RogueOptionalInt32__from_value__Value( RogueClassValue* value
   {
     return (RogueOptionalInt32)(((RogueOptionalOptionalBoxed_Int32___to_Int32( ROGUE_ARG(((RogueClassOptionalBoxed_Int32_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeOptionalBoxed_Int32_)))) ))));
   }
-  return (RogueOptionalInt32)(RogueOptionalInt32( (RogueInt32__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] ))) ))) )) ));
+  return (RogueOptionalInt32)(RogueOptionalInt32( (RogueInt32__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
 }
 
 RogueOptionalByte RogueOptionalByte__create()
@@ -16863,7 +16862,7 @@ RogueOptionalByte RogueOptionalByte__from_value__Value( RogueClassValue* value_0
   {
     return (RogueOptionalByte)(((RogueOptionalOptionalBoxed_Byte___to_Byte( ROGUE_ARG(((RogueClassOptionalBoxed_Byte_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeOptionalBoxed_Byte_)))) ))));
   }
-  return (RogueOptionalByte)(RogueOptionalByte( (RogueByte__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] ))) ))) )) ));
+  return (RogueOptionalByte)(RogueOptionalByte( (RogueByte__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
 }
 
 RogueClassSystemEnvironment RogueSystemEnvironment__from_value__Value( RogueClassValue* value_0 )
@@ -16885,7 +16884,7 @@ RogueClassFilePattern RogueFilePattern__from_value__Value( RogueClassValue* valu
   {
     return (RogueClassFilePattern)(((RogueBoxed_FilePattern___to_FilePattern( ROGUE_ARG(((RogueClassBoxed_FilePattern_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeBoxed_FilePattern_)))) ))));
   }
-  return (RogueClassFilePattern)(RogueClassFilePattern( ((RogueString*)Rogue_call_ROGUEM0( 6, ROGUE_ARG(((RogueObject*)((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[370] )))) )) ));
+  return (RogueClassFilePattern)(RogueClassFilePattern( ((RogueString*)Rogue_call_ROGUEM0( 6, ROGUE_ARG(((RogueObject*)((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] )))) )) ));
 }
 
 RogueOptionalString RogueOptionalString__create()
@@ -16906,7 +16905,7 @@ RogueOptionalString RogueOptionalString__from_value__Value( RogueClassValue* val
   {
     return (RogueOptionalString)(((RogueOptionalOptionalBoxed_String___to_String( ROGUE_ARG(((RogueClassOptionalBoxed_String_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeOptionalBoxed_String_)))) ))));
   }
-  return (RogueOptionalString)(RogueOptionalString( ((RogueString*)Rogue_call_ROGUEM0( 6, ROGUE_ARG(((RogueObject*)((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] )))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] ))) ))) )) ));
+  return (RogueOptionalString)(RogueOptionalString( ((RogueString*)Rogue_call_ROGUEM0( 6, ROGUE_ARG(((RogueObject*)((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] )))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
 }
 
 RogueOptionalCharacter RogueOptionalCharacter__create()
@@ -16927,7 +16926,7 @@ RogueOptionalCharacter RogueOptionalCharacter__from_value__Value( RogueClassValu
   {
     return (RogueOptionalCharacter)(((RogueOptionalOptionalBoxed_Character___to_Character( ROGUE_ARG(((RogueClassOptionalBoxed_Character_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeOptionalBoxed_Character_)))) ))));
   }
-  return (RogueOptionalCharacter)(RogueOptionalCharacter( (RogueCharacter__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] ))) ))) )) ));
+  return (RogueOptionalCharacter)(RogueOptionalCharacter( (RogueCharacter__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
 }
 
 RogueOptionalValue RogueOptionalValue__create()
@@ -16948,7 +16947,7 @@ RogueOptionalValue RogueOptionalValue__from_value__Value( RogueClassValue* value
   {
     return (RogueOptionalValue)(((RogueOptionalOptionalBoxed_Value___to_Value( ROGUE_ARG(((RogueClassOptionalBoxed_Value_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeOptionalBoxed_Value_)))) ))));
   }
-  return (RogueOptionalValue)(RogueOptionalValue( ((RogueClassValue*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) )),RogueTypeValue))), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] ))) ))) )) ));
+  return (RogueOptionalValue)(RogueOptionalValue( ((RogueClassValue*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] ))) )),RogueTypeValue))), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
 }
 
 RogueOptionalReal64 RogueOptionalReal64__from_value__Value( RogueClassValue* value_0 )
@@ -16959,7 +16958,7 @@ RogueOptionalReal64 RogueOptionalReal64__from_value__Value( RogueClassValue* val
   {
     return (RogueOptionalReal64)(((RogueOptionalOptionalBoxed_Real64___to_Real64( ROGUE_ARG(((RogueClassOptionalBoxed_Real64_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeOptionalBoxed_Real64_)))) ))));
   }
-  return (RogueOptionalReal64)(RogueOptionalReal64( (RogueReal64__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[369] ))) ))) )) ));
+  return (RogueOptionalReal64)(RogueOptionalReal64( (RogueReal64__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[367] ))) ))) )), (RogueLogical__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[368] ))) ))) )) ));
 }
 
 RogueClassFileOptions RogueFileOptions__from_value__Value( RogueClassValue* value_0 )
@@ -16970,7 +16969,7 @@ RogueClassFileOptions RogueFileOptions__from_value__Value( RogueClassValue* valu
   {
     return (RogueClassFileOptions)(((RogueBoxed_FileOptions___to_FileOptions( ROGUE_ARG(((RogueClassBoxed_FileOptions_*)(RogueObject_as(((RogueObject*)Rogue_call_ROGUEM0( 139, value_0 )),RogueTypeBoxed_FileOptions_)))) ))));
   }
-  return (RogueClassFileOptions)(RogueClassFileOptions( (RogueInt32__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[371] ))) ))) )) ));
+  return (RogueClassFileOptions)(RogueClassFileOptions( (RogueInt32__create__Real64( ROGUE_ARG((Rogue_call_ROGUEM36( 137, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, value_0, Rogue_literal_strings[370] ))) ))) )) ));
 }
 
 
@@ -17821,16 +17820,14 @@ void RogueGlobal__rogo_publish( RogueClassGlobal* THIS )
   {
     ;__trace.line = 26;
     ROGUE_DEF_LOCAL_REF(RogueString*,version_0,(((RogueString*)(RogueString__before_first__Character_Logical( ROGUE_ARG(((RogueString*)(RogueString__after_first__Character_Logical( ROGUE_ARG(((RogueString*)(RogueProcessResult__to_String( ROGUE_ARG((RogueProcess__run__String_Logical_Logical( Rogue_literal_strings[235], false, false ))) )))), (RogueCharacter)'v', false )))), (RogueCharacter)' ', false )))));
-    ;__trace.line = 27;
-    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), Rogue_literal_strings[239], false, false );
-    ;__trace.line = 31;
-    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), Rogue_literal_strings[240], false, false );
     ;__trace.line = 33;
-    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[241] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], version_0 ))) )))), Rogue_literal_strings[177] )))) )))), false, false );
-    ;__trace.line = 34;
-    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), Rogue_literal_strings[242], false, false );
+    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), Rogue_literal_strings[239], false, false );
     ;__trace.line = 35;
-    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[243] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], version_0 ))) )))), Rogue_literal_strings[244] )))) )))), false, false );
+    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[240] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], version_0 ))) )))), Rogue_literal_strings[177] )))) )))), false, false );
+    ;__trace.line = 36;
+    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), Rogue_literal_strings[241], false, false );
+    ;__trace.line = 37;
+    RogueBuild__run__String_Logical_Logical( ((RogueClassBuild*)ROGUE_SINGLETON(Build)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[242] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], version_0 ))) )))), Rogue_literal_strings[243] )))) )))), false, false );
   }
 }
 
@@ -17928,7 +17925,7 @@ void RogueGlobal__on_launch( RogueClassGlobal* THIS )
 {
   RogueDebugTrace __trace( "Global.on_launch()", "BuildCore.rogue", 337 );
   ROGUE_GC_CHECK;
-  ((RogueClassGlobal*)ROGUE_SINGLETON(Global))->prefix = (RogueString__operatorPLUS__String_String( ROGUE_ARG(((((((RogueString__count( Rogue_literal_strings[0] )))))) ? (ROGUE_ARG(Rogue_literal_strings[245])) : ROGUE_ARG(Rogue_literal_strings[0]))), Rogue_literal_strings[246] ));
+  ((RogueClassGlobal*)ROGUE_SINGLETON(Global))->prefix = (RogueString__operatorPLUS__String_String( ROGUE_ARG(((((((RogueString__count( Rogue_literal_strings[0] )))))) ? (ROGUE_ARG(Rogue_literal_strings[244])) : ROGUE_ARG(Rogue_literal_strings[0]))), Rogue_literal_strings[245] ));
   ;__trace.line = 355;
   ROGUE_DEF_LOCAL_REF(RogueString_List*,cmd_0,(((RogueString_List*)(RogueString_List__cloned( ROGUE_ARG(RogueSystem_command_line_arguments) )))));
   ;__trace.line = 356;
@@ -19635,7 +19632,7 @@ RogueString* RogueStringBuilder__to_String( RogueStringBuilder* THIS )
 RogueString* RogueStringBuilder__type_name( RogueStringBuilder* THIS )
 {
   RogueDebugTrace __trace( "StringBuilder.type_name()", "StringBuilder.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[253]);
+  return (RogueString*)(Rogue_literal_strings[252]);
 }
 
 RogueStringBuilder* RogueStringBuilder__close( RogueStringBuilder* THIS )
@@ -20434,19 +20431,19 @@ RogueByte_List* RogueByte_List__init( RogueByte_List* THIS )
 
 RogueString* RogueByte_List__to_String( RogueByte_List* THIS )
 {
-  RogueDebugTrace __trace( "Byte[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "Byte[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueByte_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueByte_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueByte_List__to_Value( RogueByte_List* THIS )
 {
-  RogueDebugTrace __trace( "Byte[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "Byte[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueByte_List*,_auto_685_0,(THIS));
     RogueInt32 _auto_686_0 = (0);
@@ -20455,31 +20452,31 @@ RogueClassValue* RogueByte_List__to_Value( RogueByte_List* THIS )
     {
       ROGUE_GC_CHECK;
       RogueByte item_0 = (_auto_685_0->data->as_bytes[_auto_686_0]);
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND((false)))
       {
       }
       else
       {
-        ;__trace.line = 653;
+        ;__trace.line = 663;
         RogueValueList__add__Value( result_0, ROGUE_ARG((RogueValue__create__Byte( item_0 ))) );
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueByte_List__unpack__Value( RogueByte_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "Byte[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "Byte[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueByte_List__reserve__Int32( ROGUE_ARG(((RogueByte_List*)(RogueByte_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_688_0,(values_0));
       RogueInt32 _auto_689_0 = (0);
@@ -20488,7 +20485,7 @@ void RogueByte_List__unpack__Value( RogueByte_List* THIS, RogueClassValue* value
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_688_0, _auto_689_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueByte_List__add__Byte( ROGUE_ARG(THIS), ROGUE_ARG((RogueByte__from_value__Value( value_0 ))) );
       }
     }
@@ -20498,7 +20495,7 @@ void RogueByte_List__unpack__Value( RogueByte_List* THIS, RogueClassValue* value
 RogueString* RogueByte_List__type_name( RogueByte_List* THIS )
 {
   RogueDebugTrace __trace( "Byte[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[313]);
+  return (RogueString*)(Rogue_literal_strings[312]);
 }
 
 RogueByte_List* RogueByte_List__init__Int32( RogueByte_List* THIS, RogueInt32 initial_capacity_0 )
@@ -20712,172 +20709,172 @@ RogueString* RogueByte_List__join__String( RogueByte_List* THIS, RogueString* se
 
 RogueByte_List* RogueByte_List__reserve__Int32( RogueByte_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "Byte[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "Byte[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueByte_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueByte), false, 7 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueByte_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueByte_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueByte), false, 7 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueByte), false, 7 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueByte_List*)(THIS);
 }
 
 RogueByte RogueByte_List__remove_at__Int32( RogueByte_List* THIS, RogueInt32 index_0 )
 {
-  RogueDebugTrace __trace( "Byte[].remove_at(Int32)", "List.rogue", 514 );
+  RogueDebugTrace __trace( "Byte[].remove_at(Int32)", "List.rogue", 515 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 515;
+  ;__trace.line = 516;
   if (ROGUE_COND(((RogueLogical)((((unsigned int)index_0) >= (unsigned int)THIS->count)))))
   {
     throw ((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError___throw( ROGUE_ARG(((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError__init__Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassOutOfBoundsError*,ROGUE_CREATE_OBJECT(OutOfBoundsError))), index_0, ROGUE_ARG(THIS->count) )))) )));
   }
-  ;__trace.line = 517;
-  RogueByte result_1 = (THIS->data->as_bytes[index_0]);
   ;__trace.line = 518;
-  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
+  RogueByte result_1 = (THIS->data->as_bytes[index_0]);
   ;__trace.line = 519;
-  RogueByte zero_value_2 = 0;
+  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
   ;__trace.line = 520;
-  THIS->count = ((THIS->count) + (-1));
+  RogueByte zero_value_2 = 0;
   ;__trace.line = 521;
-  THIS->data->as_bytes[THIS->count] = (zero_value_2);
+  THIS->count = ((THIS->count) + (-1));
   ;__trace.line = 522;
+  THIS->data->as_bytes[THIS->count] = (zero_value_2);
+  ;__trace.line = 523;
   return (RogueByte)(result_1);
 }
 
 RogueByte RogueByte_List__remove_first( RogueByte_List* THIS )
 {
-  RogueDebugTrace __trace( "Byte[].remove_first()", "List.rogue", 524 );
+  RogueDebugTrace __trace( "Byte[].remove_first()", "List.rogue", 525 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 525;
+  ;__trace.line = 526;
   return (RogueByte)(((RogueByte_List__remove_at__Int32( ROGUE_ARG(THIS), 0 ))));
 }
 
 RogueByte RogueByte_List__remove_last( RogueByte_List* THIS )
 {
-  RogueDebugTrace __trace( "Byte[].remove_last()", "List.rogue", 527 );
+  RogueDebugTrace __trace( "Byte[].remove_last()", "List.rogue", 528 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 528;
+  ;__trace.line = 529;
   return (RogueByte)(((RogueByte_List__remove_at__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((THIS->count) - (1))) ))));
 }
 
 RogueByte_List* RogueByte_List__reverse( RogueByte_List* THIS )
 {
-  RogueDebugTrace __trace( "Byte[].reverse()", "List.rogue", 551 );
+  RogueDebugTrace __trace( "Byte[].reverse()", "List.rogue", 561 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 552;
+  ;__trace.line = 562;
   return (RogueByte_List*)(((RogueByte_List*)(RogueByte_List__reverse__Int32_Int32( ROGUE_ARG(THIS), 0, ROGUE_ARG(((THIS->count) - (1))) ))));
 }
 
 RogueByte_List* RogueByte_List__reverse__Int32_Int32( RogueByte_List* THIS, RogueInt32 i1_0, RogueInt32 i2_1 )
 {
-  RogueDebugTrace __trace( "Byte[].reverse(Int32,Int32)", "List.rogue", 554 );
+  RogueDebugTrace __trace( "Byte[].reverse(Int32,Int32)", "List.rogue", 564 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 555;
+  ;__trace.line = 565;
   if (ROGUE_COND(((i1_0) < (0))))
   {
     i1_0 = ((RogueInt32)(0));
   }
-  ;__trace.line = 556;
+  ;__trace.line = 566;
   if (ROGUE_COND(((i2_1) >= (THIS->count))))
   {
     i2_1 = ((RogueInt32)(((THIS->count) - (1))));
   }
-  ;__trace.line = 558;
+  ;__trace.line = 568;
   ROGUE_DEF_LOCAL_REF(RogueArray*,_data_2,(THIS->data));
-  ;__trace.line = 559;
+  ;__trace.line = 569;
   while (ROGUE_COND(((i1_0) < (i2_1))))
   {
     ROGUE_GC_CHECK;
-    ;__trace.line = 560;
+    ;__trace.line = 570;
     RogueByte temp_3 = (_data_2->as_bytes[i1_0]);
-    ;__trace.line = 561;
+    ;__trace.line = 571;
     _data_2->as_bytes[i1_0] = (_data_2->as_bytes[i2_1]);
-    ;__trace.line = 562;
+    ;__trace.line = 572;
     _data_2->as_bytes[i2_1] = (temp_3);
-    ;__trace.line = 563;
+    ;__trace.line = 573;
     ++i1_0;
-    ;__trace.line = 564;
+    ;__trace.line = 574;
     --i2_1;
   }
-  ;__trace.line = 567;
+  ;__trace.line = 577;
   return (RogueByte_List*)(THIS);
 }
 
 void RogueByte_List__set__Int32_Byte( RogueByte_List* THIS, RogueInt32 index_0, RogueByte new_value_1 )
 {
-  RogueDebugTrace __trace( "Byte[].set(Int32,Byte)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "Byte[].set(Int32,Byte)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_bytes[index_0] = (new_value_1);
 }
 
 RogueByte_List* RogueByte_List__shift__Int32_OptionalInt32_Int32_OptionalByte( RogueByte_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalByte fill_3 )
 {
-  RogueDebugTrace __trace( "Byte[].shift(Int32,Int32?,Int32,Byte?)", "List.rogue", 595 );
+  RogueDebugTrace __trace( "Byte[].shift(Int32,Int32?,Int32,Byte?)", "List.rogue", 605 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 596;
+  ;__trace.line = 606;
   if (ROGUE_COND(((delta_2) == (0))))
   {
     return (RogueByte_List*)(THIS);
   }
-  ;__trace.line = 598;
+  ;__trace.line = 608;
   RogueInt32 n_4 = 0;
-  ;__trace.line = 599;
+  ;__trace.line = 609;
   if (ROGUE_COND(element_count_1.exists))
   {
     n_4 = ((RogueInt32)(element_count_1.value));
   }
   else
   {
-    ;__trace.line = 600;
+    ;__trace.line = 610;
     n_4 = ((RogueInt32)(((THIS->count) - (i1_0))));
   }
-  ;__trace.line = 602;
+  ;__trace.line = 612;
   RogueInt32 dest_i2_5 = (((((((i1_0) + (delta_2))) + (n_4))) - (1)));
-  ;__trace.line = 603;
+  ;__trace.line = 613;
   RogueByte_List__expand_to_include__Int32( ROGUE_ARG(THIS), dest_i2_5 );
-  ;__trace.line = 604;
+  ;__trace.line = 614;
   RogueArray_set(THIS->data,((i1_0) + (delta_2)),((RogueArray*)(THIS->data)),i1_0,n_4);
-  ;__trace.line = 605;
+  ;__trace.line = 615;
   if (ROGUE_COND(fill_3.exists))
   {
-    ;__trace.line = 606;
+    ;__trace.line = 616;
     RogueByte value_6 = (fill_3.value);
-    ;__trace.line = 607;
+    ;__trace.line = 617;
     if (ROGUE_COND(((delta_2) > (0))))
     {
-      ;__trace.line = 608;
+      ;__trace.line = 618;
       {
         RogueInt32 i_7 = (i1_0);
         RogueInt32 _auto_89_8 = (((((i1_0) + (delta_2))) - (1)));
@@ -20890,7 +20887,7 @@ RogueByte_List* RogueByte_List__shift__Int32_OptionalInt32_Int32_OptionalByte( R
     }
     else
     {
-      ;__trace.line = 610;
+      ;__trace.line = 620;
       {
         RogueInt32 i_9 = (((((i1_0) + (delta_2))) + (n_4)));
         RogueInt32 _auto_90_10 = (((((i1_0) + (n_4))) - (1)));
@@ -20902,7 +20899,7 @@ RogueByte_List* RogueByte_List__shift__Int32_OptionalInt32_Int32_OptionalByte( R
       }
     }
   }
-  ;__trace.line = 613;
+  ;__trace.line = 623;
   return (RogueByte_List*)(THIS);
 }
 
@@ -20917,7 +20914,7 @@ RogueClassGenericList* RogueGenericList__init_object( RogueClassGenericList* THI
 RogueString* RogueGenericList__type_name( RogueClassGenericList* THIS )
 {
   RogueDebugTrace __trace( "GenericList.type_name()", "List.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[259]);
+  return (RogueString*)(Rogue_literal_strings[258]);
 }
 
 RogueString* RogueByte__to_String( RogueByte THIS )
@@ -20931,13 +20928,13 @@ RogueString* RogueByte__to_String( RogueByte THIS )
 RogueString* RogueArray_Byte___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<Byte>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[324]);
+  return (RogueString*)(Rogue_literal_strings[323]);
 }
 
 RogueString* RogueArray__type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array.type_name()", "Array.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[260]);
+  return (RogueString*)(Rogue_literal_strings[259]);
 }
 
 RogueInt32 RogueArray__count( RogueArray* THIS )
@@ -21078,7 +21075,7 @@ RogueClassStringBuilderPool* RogueStringBuilderPool__init_object( RogueClassStri
 RogueString* RogueStringBuilderPool__type_name( RogueClassStringBuilderPool* THIS )
 {
   RogueDebugTrace __trace( "StringBuilderPool.type_name()", "StringBuilder.rogue", 459 );
-  return (RogueString*)(Rogue_literal_strings[266]);
+  return (RogueString*)(Rogue_literal_strings[265]);
 }
 
 RogueStringBuilder* RogueStringBuilderPool__on_use( RogueClassStringBuilderPool* THIS )
@@ -21122,19 +21119,19 @@ RogueStringBuilder_List* RogueStringBuilder_List__init( RogueStringBuilder_List*
 
 RogueString* RogueStringBuilder_List__to_String( RogueStringBuilder_List* THIS )
 {
-  RogueDebugTrace __trace( "StringBuilder[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "StringBuilder[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueStringBuilder_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueStringBuilder_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueStringBuilder_List__to_Value( RogueStringBuilder_List* THIS )
 {
-  RogueDebugTrace __trace( "StringBuilder[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "StringBuilder[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueStringBuilder_List*,_auto_799_0,(THIS));
     RogueInt32 _auto_800_0 = (0);
@@ -21143,36 +21140,36 @@ RogueClassValue* RogueStringBuilder_List__to_Value( RogueStringBuilder_List* THI
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,item_0,(((RogueStringBuilder*)(_auto_799_0->data->as_objects[_auto_800_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM0( 7, ((RogueObject*)item_0) ))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueStringBuilder_List__unpack__Value( RogueStringBuilder_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "StringBuilder[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "StringBuilder[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueStringBuilder_List__reserve__Int32( ROGUE_ARG(((RogueStringBuilder_List*)(RogueStringBuilder_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_802_0,(values_0));
       RogueInt32 _auto_803_0 = (0);
@@ -21181,7 +21178,7 @@ void RogueStringBuilder_List__unpack__Value( RogueStringBuilder_List* THIS, Rogu
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_802_0, _auto_803_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueStringBuilder_List__add__StringBuilder( ROGUE_ARG(THIS), ROGUE_ARG((RogueStringBuilder__from_value__Value( value_0 ))) );
       }
     }
@@ -21191,7 +21188,7 @@ void RogueStringBuilder_List__unpack__Value( RogueStringBuilder_List* THIS, Rogu
 RogueString* RogueStringBuilder_List__type_name( RogueStringBuilder_List* THIS )
 {
   RogueDebugTrace __trace( "StringBuilder[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[318]);
+  return (RogueString*)(Rogue_literal_strings[317]);
 }
 
 RogueStringBuilder_List* RogueStringBuilder_List__init__Int32( RogueStringBuilder_List* THIS, RogueInt32 initial_capacity_0 )
@@ -21311,89 +21308,89 @@ RogueString* RogueStringBuilder_List__join__String( RogueStringBuilder_List* THI
 
 RogueStringBuilder_List* RogueStringBuilder_List__reserve__Int32( RogueStringBuilder_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "StringBuilder[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "StringBuilder[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueStringBuilder_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueStringBuilder*), true, 4 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueStringBuilder_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueStringBuilder_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueStringBuilder*), true, 4 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueStringBuilder*), true, 4 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueStringBuilder_List*)(THIS);
 }
 
 RogueStringBuilder* RogueStringBuilder_List__remove_at__Int32( RogueStringBuilder_List* THIS, RogueInt32 index_0 )
 {
-  RogueDebugTrace __trace( "StringBuilder[].remove_at(Int32)", "List.rogue", 514 );
+  RogueDebugTrace __trace( "StringBuilder[].remove_at(Int32)", "List.rogue", 515 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 515;
+  ;__trace.line = 516;
   if (ROGUE_COND(((RogueLogical)((((unsigned int)index_0) >= (unsigned int)THIS->count)))))
   {
     throw ((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError___throw( ROGUE_ARG(((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError__init__Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassOutOfBoundsError*,ROGUE_CREATE_OBJECT(OutOfBoundsError))), index_0, ROGUE_ARG(THIS->count) )))) )));
   }
-  ;__trace.line = 517;
-  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_1,(((RogueStringBuilder*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 518;
-  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
+  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,result_1,(((RogueStringBuilder*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 519;
-  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,zero_value_2,0);
+  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
   ;__trace.line = 520;
-  THIS->count = ((THIS->count) + (-1));
+  ROGUE_DEF_LOCAL_REF(RogueStringBuilder*,zero_value_2,0);
   ;__trace.line = 521;
-  THIS->data->as_objects[THIS->count] = zero_value_2;
+  THIS->count = ((THIS->count) + (-1));
   ;__trace.line = 522;
+  THIS->data->as_objects[THIS->count] = zero_value_2;
+  ;__trace.line = 523;
   return (RogueStringBuilder*)(result_1);
 }
 
 RogueStringBuilder* RogueStringBuilder_List__remove_last( RogueStringBuilder_List* THIS )
 {
-  RogueDebugTrace __trace( "StringBuilder[].remove_last()", "List.rogue", 527 );
+  RogueDebugTrace __trace( "StringBuilder[].remove_last()", "List.rogue", 528 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 528;
+  ;__trace.line = 529;
   return (RogueStringBuilder*)(((RogueStringBuilder*)(RogueStringBuilder_List__remove_at__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((THIS->count) - (1))) ))));
 }
 
 void RogueStringBuilder_List__set__Int32_StringBuilder( RogueStringBuilder_List* THIS, RogueInt32 index_0, RogueStringBuilder* new_value_1 )
 {
-  RogueDebugTrace __trace( "StringBuilder[].set(Int32,StringBuilder)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "StringBuilder[].set(Int32,StringBuilder)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
 RogueString* RogueArray_StringBuilder___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<StringBuilder>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[329]);
+  return (RogueString*)(Rogue_literal_strings[328]);
 }
 
 RogueString* RogueLogical__to_String( RogueLogical THIS )
@@ -21424,19 +21421,19 @@ Rogue_Function____List* Rogue_Function____List__init( Rogue_Function____List* TH
 
 RogueString* Rogue_Function____List__to_String( Rogue_Function____List* THIS )
 {
-  RogueDebugTrace __trace( "(Function())[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "(Function())[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(Rogue_Function____List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(Rogue_Function____List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* Rogue_Function____List__to_Value( Rogue_Function____List* THIS )
 {
-  RogueDebugTrace __trace( "(Function())[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "(Function())[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(Rogue_Function____List*,_auto_877_0,(THIS));
     RogueInt32 _auto_878_0 = (0);
@@ -21445,36 +21442,36 @@ RogueClassValue* Rogue_Function____List__to_Value( Rogue_Function____List* THIS 
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClass_Function___*,item_0,(((RogueClass_Function___*)(_auto_877_0->data->as_objects[_auto_878_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM0( 7, ((RogueObject*)item_0) ))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void Rogue_Function____List__unpack__Value( Rogue_Function____List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "(Function())[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "(Function())[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   Rogue_Function____List__reserve__Int32( ROGUE_ARG(((Rogue_Function____List*)(Rogue_Function____List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_880_0,(values_0));
       RogueInt32 _auto_881_0 = (0);
@@ -21483,7 +21480,7 @@ void Rogue_Function____List__unpack__Value( Rogue_Function____List* THIS, RogueC
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_880_0, _auto_881_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         Rogue_Function____List__add___Function___( ROGUE_ARG(THIS), ROGUE_ARG((Rogue_Function_____from_value__Value( value_0 ))) );
       }
     }
@@ -21493,7 +21490,7 @@ void Rogue_Function____List__unpack__Value( Rogue_Function____List* THIS, RogueC
 RogueString* Rogue_Function____List__type_name( Rogue_Function____List* THIS )
 {
   RogueDebugTrace __trace( "(Function())[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[320]);
+  return (RogueString*)(Rogue_literal_strings[319]);
 }
 
 Rogue_Function____List* Rogue_Function____List__init__Int32( Rogue_Function____List* THIS, RogueInt32 initial_capacity_0 )
@@ -21605,51 +21602,51 @@ RogueString* Rogue_Function____List__join__String( Rogue_Function____List* THIS,
 
 Rogue_Function____List* Rogue_Function____List__reserve__Int32( Rogue_Function____List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "(Function())[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "(Function())[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (Rogue_Function____List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClass_Function___*), true, 16 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((Rogue_Function____List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((Rogue_Function____List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClass_Function___*), true, 16 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClass_Function___*), true, 16 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (Rogue_Function____List*)(THIS);
 }
 
 void Rogue_Function____List__set__Int32__Function___( Rogue_Function____List* THIS, RogueInt32 index_0, RogueClass_Function___* new_value_1 )
 {
-  RogueDebugTrace __trace( "(Function())[].set(Int32,(Function()))", "List.rogue", 572 );
+  RogueDebugTrace __trace( "(Function())[].set(Int32,(Function()))", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
@@ -21664,7 +21661,7 @@ RogueClass_Function___* Rogue_Function_____init_object( RogueClass_Function___* 
 RogueString* Rogue_Function_____type_name( RogueClass_Function___* THIS )
 {
   RogueDebugTrace __trace( "(Function()).type_name()", "Task.rogue", 33 );
-  return (RogueString*)(Rogue_literal_strings[255]);
+  return (RogueString*)(Rogue_literal_strings[254]);
 }
 
 void Rogue_Function_____call( RogueClass_Function___* THIS )
@@ -21675,7 +21672,7 @@ void Rogue_Function_____call( RogueClass_Function___* THIS )
 RogueString* RogueArray__Function______type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<(Function())>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[328]);
+  return (RogueString*)(Rogue_literal_strings[327]);
 }
 
 RogueClassStackTrace* RogueStackTrace__init_object( RogueClassStackTrace* THIS )
@@ -21697,7 +21694,7 @@ RogueString* RogueStackTrace__to_String( RogueClassStackTrace* THIS )
 RogueString* RogueStackTrace__type_name( RogueClassStackTrace* THIS )
 {
   RogueDebugTrace __trace( "StackTrace.type_name()", "StackTrace.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[268]);
+  return (RogueString*)(Rogue_literal_strings[267]);
 }
 
 RogueClassStackTrace* RogueStackTrace__init__Int32( RogueClassStackTrace* THIS, RogueInt32 omit_count_0 )
@@ -21836,19 +21833,19 @@ RogueString_List* RogueString_List__init( RogueString_List* THIS )
 
 RogueString* RogueString_List__to_String( RogueString_List* THIS )
 {
-  RogueDebugTrace __trace( "String[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "String[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueString_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueString_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueString_List__to_Value( RogueString_List* THIS )
 {
-  RogueDebugTrace __trace( "String[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "String[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueString_List*,_auto_955_0,(THIS));
     RogueInt32 _auto_956_0 = (0);
@@ -21857,36 +21854,36 @@ RogueClassValue* RogueString_List__to_Value( RogueString_List* THIS )
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueString*,item_0,(((RogueString*)(_auto_955_0->data->as_objects[_auto_956_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(RogueString__to_Value( item_0 )))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueString_List__unpack__Value( RogueString_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "String[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "String[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueString_List__reserve__Int32( ROGUE_ARG(((RogueString_List*)(RogueString_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_958_0,(values_0));
       RogueInt32 _auto_959_0 = (0);
@@ -21895,7 +21892,7 @@ void RogueString_List__unpack__Value( RogueString_List* THIS, RogueClassValue* v
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_958_0, _auto_959_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueString_List__add__String( ROGUE_ARG(THIS), ROGUE_ARG((RogueString__from_value__Value( value_0 ))) );
       }
     }
@@ -21905,7 +21902,7 @@ void RogueString_List__unpack__Value( RogueString_List* THIS, RogueClassValue* v
 RogueString* RogueString_List__type_name( RogueString_List* THIS )
 {
   RogueDebugTrace __trace( "String[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[317]);
+  return (RogueString*)(Rogue_literal_strings[316]);
 }
 
 RogueString_List* RogueString_List__init__Int32( RogueString_List* THIS, RogueInt32 initial_capacity_0 )
@@ -22146,137 +22143,137 @@ RogueString_List* RogueString_List__quicksort___Function_String_String_RETURNSLo
 
 RogueString_List* RogueString_List__reserve__Int32( RogueString_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "String[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "String[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueString_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueString*), true, 3 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueString_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueString_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueString*), true, 3 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueString*), true, 3 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueString_List*)(THIS);
 }
 
 RogueString* RogueString_List__remove_at__Int32( RogueString_List* THIS, RogueInt32 index_0 )
 {
-  RogueDebugTrace __trace( "String[].remove_at(Int32)", "List.rogue", 514 );
+  RogueDebugTrace __trace( "String[].remove_at(Int32)", "List.rogue", 515 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 515;
+  ;__trace.line = 516;
   if (ROGUE_COND(((RogueLogical)((((unsigned int)index_0) >= (unsigned int)THIS->count)))))
   {
     throw ((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError___throw( ROGUE_ARG(((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError__init__Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassOutOfBoundsError*,ROGUE_CREATE_OBJECT(OutOfBoundsError))), index_0, ROGUE_ARG(THIS->count) )))) )));
   }
-  ;__trace.line = 517;
-  ROGUE_DEF_LOCAL_REF(RogueString*,result_1,(((RogueString*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 518;
-  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
+  ROGUE_DEF_LOCAL_REF(RogueString*,result_1,(((RogueString*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 519;
-  ROGUE_DEF_LOCAL_REF(RogueString*,zero_value_2,0);
+  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
   ;__trace.line = 520;
-  THIS->count = ((THIS->count) + (-1));
+  ROGUE_DEF_LOCAL_REF(RogueString*,zero_value_2,0);
   ;__trace.line = 521;
-  THIS->data->as_objects[THIS->count] = zero_value_2;
+  THIS->count = ((THIS->count) + (-1));
   ;__trace.line = 522;
+  THIS->data->as_objects[THIS->count] = zero_value_2;
+  ;__trace.line = 523;
   return (RogueString*)(result_1);
 }
 
 RogueString* RogueString_List__remove_first( RogueString_List* THIS )
 {
-  RogueDebugTrace __trace( "String[].remove_first()", "List.rogue", 524 );
+  RogueDebugTrace __trace( "String[].remove_first()", "List.rogue", 525 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 525;
+  ;__trace.line = 526;
   return (RogueString*)(((RogueString*)(RogueString_List__remove_at__Int32( ROGUE_ARG(THIS), 0 ))));
 }
 
 RogueString* RogueString_List__remove_last( RogueString_List* THIS )
 {
-  RogueDebugTrace __trace( "String[].remove_last()", "List.rogue", 527 );
+  RogueDebugTrace __trace( "String[].remove_last()", "List.rogue", 528 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 528;
+  ;__trace.line = 529;
   return (RogueString*)(((RogueString*)(RogueString_List__remove_at__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((THIS->count) - (1))) ))));
 }
 
 RogueClassListRewriter_String_* RogueString_List__rewriter( RogueString_List* THIS )
 {
-  RogueDebugTrace __trace( "String[].rewriter()", "List.rogue", 569 );
+  RogueDebugTrace __trace( "String[].rewriter()", "List.rogue", 579 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 570;
+  ;__trace.line = 580;
   return (RogueClassListRewriter_String_*)((RogueListRewriter_String___acquire__String_List( ROGUE_ARG(THIS) )));
 }
 
 void RogueString_List__set__Int32_String( RogueString_List* THIS, RogueInt32 index_0, RogueString* new_value_1 )
 {
-  RogueDebugTrace __trace( "String[].set(Int32,String)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "String[].set(Int32,String)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
 RogueString_List* RogueString_List__shift__Int32_OptionalInt32_Int32_OptionalString( RogueString_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalString fill_3 )
 {
-  RogueDebugTrace __trace( "String[].shift(Int32,Int32?,Int32,String?)", "List.rogue", 595 );
+  RogueDebugTrace __trace( "String[].shift(Int32,Int32?,Int32,String?)", "List.rogue", 605 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 596;
+  ;__trace.line = 606;
   if (ROGUE_COND(((delta_2) == (0))))
   {
     return (RogueString_List*)(THIS);
   }
-  ;__trace.line = 598;
+  ;__trace.line = 608;
   RogueInt32 n_4 = 0;
-  ;__trace.line = 599;
+  ;__trace.line = 609;
   if (ROGUE_COND(element_count_1.exists))
   {
     n_4 = ((RogueInt32)(element_count_1.value));
   }
   else
   {
-    ;__trace.line = 600;
+    ;__trace.line = 610;
     n_4 = ((RogueInt32)(((THIS->count) - (i1_0))));
   }
-  ;__trace.line = 602;
+  ;__trace.line = 612;
   RogueInt32 dest_i2_5 = (((((((i1_0) + (delta_2))) + (n_4))) - (1)));
-  ;__trace.line = 603;
+  ;__trace.line = 613;
   RogueString_List__expand_to_include__Int32( ROGUE_ARG(THIS), dest_i2_5 );
-  ;__trace.line = 604;
+  ;__trace.line = 614;
   RogueArray_set(THIS->data,((i1_0) + (delta_2)),((RogueArray*)(THIS->data)),i1_0,n_4);
-  ;__trace.line = 605;
+  ;__trace.line = 615;
   if (ROGUE_COND(fill_3.exists))
   {
-    ;__trace.line = 606;
+    ;__trace.line = 616;
     ROGUE_DEF_LOCAL_REF(RogueString*,value_6,(fill_3.value));
-    ;__trace.line = 607;
+    ;__trace.line = 617;
     if (ROGUE_COND(((delta_2) > (0))))
     {
-      ;__trace.line = 608;
+      ;__trace.line = 618;
       {
         RogueInt32 i_7 = (i1_0);
         RogueInt32 _auto_214_8 = (((((i1_0) + (delta_2))) - (1)));
@@ -22289,7 +22286,7 @@ RogueString_List* RogueString_List__shift__Int32_OptionalInt32_Int32_OptionalStr
     }
     else
     {
-      ;__trace.line = 610;
+      ;__trace.line = 620;
       {
         RogueInt32 i_9 = (((((i1_0) + (delta_2))) + (n_4)));
         RogueInt32 _auto_215_10 = (((((i1_0) + (n_4))) - (1)));
@@ -22301,22 +22298,22 @@ RogueString_List* RogueString_List__shift__Int32_OptionalInt32_Int32_OptionalStr
       }
     }
   }
-  ;__trace.line = 613;
+  ;__trace.line = 623;
   return (RogueString_List*)(THIS);
 }
 
 RogueString_List* RogueString_List__sort___Function_String_String_RETURNSLogical_( RogueString_List* THIS, RogueClass_Function_String_String_RETURNSLogical_* compare_fn_0 )
 {
-  RogueDebugTrace __trace( "String[].sort((Function(String,String)->Logical))", "List.rogue", 623 );
+  RogueDebugTrace __trace( "String[].sort((Function(String,String)->Logical))", "List.rogue", 633 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 624;
+  ;__trace.line = 634;
   return (RogueString_List*)(((RogueString_List*)(RogueString_List__quicksort___Function_String_String_RETURNSLogical_( ROGUE_ARG(THIS), compare_fn_0 ))));
 }
 
 RogueString* RogueArray_String___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<String>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[326]);
+  return (RogueString*)(Rogue_literal_strings[325]);
 }
 
 RogueInt32 RogueReal64__decimal_digit_count( RogueReal64 THIS )
@@ -22619,7 +22616,7 @@ RogueClassValueTable* RogueValue__to_ValueTable( RogueClassValue* THIS )
 RogueString* RogueValue__type_name( RogueClassValue* THIS )
 {
   RogueDebugTrace __trace( "Value.type_name()", "Value.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[251]);
+  return (RogueString*)(Rogue_literal_strings[250]);
 }
 
 RogueLogical RogueValue__contains__String( RogueClassValue* THIS, RogueString* table_key_or_list_value_0 )
@@ -22868,15 +22865,15 @@ RogueString* RogueTypeInfo__to_String( RogueTypeInfo* THIS )
 RogueString* RogueTypeInfo__type_name( RogueTypeInfo* THIS )
 {
   RogueDebugTrace __trace( "TypeInfo.type_name()", "TypeInfo.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[257]);
+  return (RogueString*)(Rogue_literal_strings[256]);
 }
 
-RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_339_0, RogueString* _auto_340_1 )
+RogueTypeInfo* RogueTypeInfo__init__Int32_String( RogueTypeInfo* THIS, RogueInt32 _auto_340_0, RogueString* _auto_339_1 )
 {
   RogueDebugTrace __trace( "TypeInfo.init(Int32,String)", "TypeInfo.rogue", 100 );
   ROGUE_GC_CHECK;
-  THIS->name = _auto_340_1;
-  THIS->index = _auto_339_0;
+  THIS->index = _auto_340_0;
+  THIS->name = _auto_339_1;
   ;__trace.line = 101;
   {
     ROGUE_DEF_LOCAL_REF(RogueString*,_auto_1048_0,(THIS->name));
@@ -23458,19 +23455,19 @@ RoguePropertyInfo_List* RoguePropertyInfo_List__init( RoguePropertyInfo_List* TH
 
 RogueString* RoguePropertyInfo_List__to_String( RoguePropertyInfo_List* THIS )
 {
-  RogueDebugTrace __trace( "PropertyInfo[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "PropertyInfo[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RoguePropertyInfo_List__to_Value( RoguePropertyInfo_List* THIS )
 {
-  RogueDebugTrace __trace( "PropertyInfo[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "PropertyInfo[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RoguePropertyInfo_List*,_auto_1109_0,(THIS));
     RogueInt32 _auto_1110_0 = (0);
@@ -23479,36 +23476,36 @@ RogueClassValue* RoguePropertyInfo_List__to_Value( RoguePropertyInfo_List* THIS 
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,item_0,(((RogueClassPropertyInfo*)(_auto_1109_0->data->as_objects[_auto_1110_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM0( 7, ((RogueObject*)item_0) ))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RoguePropertyInfo_List__unpack__Value( RoguePropertyInfo_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "PropertyInfo[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "PropertyInfo[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RoguePropertyInfo_List__reserve__Int32( ROGUE_ARG(((RoguePropertyInfo_List*)(RoguePropertyInfo_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_1112_0,(values_0));
       RogueInt32 _auto_1113_0 = (0);
@@ -23517,7 +23514,7 @@ void RoguePropertyInfo_List__unpack__Value( RoguePropertyInfo_List* THIS, RogueC
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_1112_0, _auto_1113_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RoguePropertyInfo_List__add__PropertyInfo( ROGUE_ARG(THIS), ROGUE_ARG((RoguePropertyInfo__from_value__Value( value_0 ))) );
       }
     }
@@ -23527,7 +23524,7 @@ void RoguePropertyInfo_List__unpack__Value( RoguePropertyInfo_List* THIS, RogueC
 RogueString* RoguePropertyInfo_List__type_name( RoguePropertyInfo_List* THIS )
 {
   RogueDebugTrace __trace( "PropertyInfo[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[316]);
+  return (RogueString*)(Rogue_literal_strings[315]);
 }
 
 RoguePropertyInfo_List* RoguePropertyInfo_List__init__Int32( RoguePropertyInfo_List* THIS, RogueInt32 initial_capacity_0 )
@@ -23639,51 +23636,51 @@ RogueString* RoguePropertyInfo_List__join__String( RoguePropertyInfo_List* THIS,
 
 RoguePropertyInfo_List* RoguePropertyInfo_List__reserve__Int32( RoguePropertyInfo_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "PropertyInfo[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "PropertyInfo[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RoguePropertyInfo_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassPropertyInfo*), true, 28 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RoguePropertyInfo_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RoguePropertyInfo_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassPropertyInfo*), true, 28 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassPropertyInfo*), true, 28 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RoguePropertyInfo_List*)(THIS);
 }
 
 void RoguePropertyInfo_List__set__Int32_PropertyInfo( RoguePropertyInfo_List* THIS, RogueInt32 index_0, RogueClassPropertyInfo* new_value_1 )
 {
-  RogueDebugTrace __trace( "PropertyInfo[].set(Int32,PropertyInfo)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "PropertyInfo[].set(Int32,PropertyInfo)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
@@ -23700,22 +23697,22 @@ RogueString* RoguePropertyInfo__to_String( RogueClassPropertyInfo* THIS )
   RogueDebugTrace __trace( "PropertyInfo.to_String()", "TypeInfo.rogue", 695 );
   ROGUE_GC_CHECK;
   ;__trace.line = 696;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( ROGUE_ARG(THIS) )))) ))) )))), Rogue_literal_strings[249] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueTypeInfo*)(Rogue_PropertyInfo__type( ROGUE_ARG(THIS) )))->name) ))) )))) ))));
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( ROGUE_ARG(THIS) )))) ))) )))), Rogue_literal_strings[248] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueTypeInfo*)(Rogue_PropertyInfo__type( ROGUE_ARG(THIS) )))->name) ))) )))) ))));
 }
 
 RogueString* RoguePropertyInfo__type_name( RogueClassPropertyInfo* THIS )
 {
   RogueDebugTrace __trace( "PropertyInfo.type_name()", "TypeInfo.rogue", 680 );
-  return (RogueString*)(Rogue_literal_strings[252]);
+  return (RogueString*)(Rogue_literal_strings[251]);
 }
 
-RogueClassPropertyInfo* RoguePropertyInfo__init__Int32_Int32_Int32( RogueClassPropertyInfo* THIS, RogueInt32 _auto_467_0, RogueInt32 _auto_468_1, RogueInt32 _auto_469_2 )
+RogueClassPropertyInfo* RoguePropertyInfo__init__Int32_Int32_Int32( RogueClassPropertyInfo* THIS, RogueInt32 _auto_469_0, RogueInt32 _auto_468_1, RogueInt32 _auto_467_2 )
 {
   RogueDebugTrace __trace( "PropertyInfo.init(Int32,Int32,Int32)", "TypeInfo.rogue", 687 );
   ROGUE_GC_CHECK;
-  THIS->property_type_index = _auto_469_2;
+  THIS->index = _auto_469_0;
   THIS->property_name_index = _auto_468_1;
-  THIS->index = _auto_467_0;
+  THIS->property_type_index = _auto_467_2;
   ;__trace.line = 689;
   return (RogueClassPropertyInfo*)(THIS);
 }
@@ -23739,7 +23736,7 @@ RogueTypeInfo* Rogue_PropertyInfo__type( RogueClassPropertyInfo* THIS )
 RogueString* RogueArray_PropertyInfo___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<PropertyInfo>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[325]);
+  return (RogueString*)(Rogue_literal_strings[324]);
 }
 
 RogueMethodInfo_List* RogueMethodInfo_List__init_object( RogueMethodInfo_List* THIS )
@@ -23762,19 +23759,19 @@ RogueMethodInfo_List* RogueMethodInfo_List__init( RogueMethodInfo_List* THIS )
 
 RogueString* RogueMethodInfo_List__to_String( RogueMethodInfo_List* THIS )
 {
-  RogueDebugTrace __trace( "MethodInfo[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "MethodInfo[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueMethodInfo_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueMethodInfo_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueMethodInfo_List__to_Value( RogueMethodInfo_List* THIS )
 {
-  RogueDebugTrace __trace( "MethodInfo[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "MethodInfo[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueMethodInfo_List*,_auto_1187_0,(THIS));
     RogueInt32 _auto_1188_0 = (0);
@@ -23783,36 +23780,36 @@ RogueClassValue* RogueMethodInfo_List__to_Value( RogueMethodInfo_List* THIS )
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassMethodInfo*,item_0,(((RogueClassMethodInfo*)(_auto_1187_0->data->as_objects[_auto_1188_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM0( 7, ((RogueObject*)item_0) ))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueMethodInfo_List__unpack__Value( RogueMethodInfo_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "MethodInfo[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "MethodInfo[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueMethodInfo_List__reserve__Int32( ROGUE_ARG(((RogueMethodInfo_List*)(RogueMethodInfo_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_1190_0,(values_0));
       RogueInt32 _auto_1191_0 = (0);
@@ -23821,7 +23818,7 @@ void RogueMethodInfo_List__unpack__Value( RogueMethodInfo_List* THIS, RogueClass
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_1190_0, _auto_1191_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueMethodInfo_List__add__MethodInfo( ROGUE_ARG(THIS), ROGUE_ARG((RogueMethodInfo__from_value__Value( value_0 ))) );
       }
     }
@@ -23831,7 +23828,7 @@ void RogueMethodInfo_List__unpack__Value( RogueMethodInfo_List* THIS, RogueClass
 RogueString* RogueMethodInfo_List__type_name( RogueMethodInfo_List* THIS )
 {
   RogueDebugTrace __trace( "MethodInfo[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[319]);
+  return (RogueString*)(Rogue_literal_strings[318]);
 }
 
 RogueMethodInfo_List* RogueMethodInfo_List__init__Int32( RogueMethodInfo_List* THIS, RogueInt32 initial_capacity_0 )
@@ -23943,51 +23940,51 @@ RogueString* RogueMethodInfo_List__join__String( RogueMethodInfo_List* THIS, Rog
 
 RogueMethodInfo_List* RogueMethodInfo_List__reserve__Int32( RogueMethodInfo_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "MethodInfo[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "MethodInfo[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueMethodInfo_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassMethodInfo*), true, 31 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueMethodInfo_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueMethodInfo_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassMethodInfo*), true, 31 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassMethodInfo*), true, 31 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueMethodInfo_List*)(THIS);
 }
 
 void RogueMethodInfo_List__set__Int32_MethodInfo( RogueMethodInfo_List* THIS, RogueInt32 index_0, RogueClassMethodInfo* new_value_1 )
 {
-  RogueDebugTrace __trace( "MethodInfo[].set(Int32,MethodInfo)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "MethodInfo[].set(Int32,MethodInfo)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
@@ -24006,7 +24003,7 @@ RogueString* RogueMethodInfo__to_String( RogueClassMethodInfo* THIS )
   ;__trace.line = 765;
   if (ROGUE_COND(!!(((RogueTypeInfo*)(Rogue_MethodInfo__return_type( ROGUE_ARG(THIS) ))))))
   {
-    return (RogueString*)((RogueString__operatorPLUS__String_String( ROGUE_ARG((RogueString__operatorPLUS__String_String( ROGUE_ARG(((RogueString*)(RogueMethodInfo__signature( ROGUE_ARG(THIS) )))), Rogue_literal_strings[250] ))), ROGUE_ARG(((RogueTypeInfo*)(Rogue_MethodInfo__return_type( ROGUE_ARG(THIS) )))->name) )));
+    return (RogueString*)((RogueString__operatorPLUS__String_String( ROGUE_ARG((RogueString__operatorPLUS__String_String( ROGUE_ARG(((RogueString*)(RogueMethodInfo__signature( ROGUE_ARG(THIS) )))), Rogue_literal_strings[249] ))), ROGUE_ARG(((RogueTypeInfo*)(Rogue_MethodInfo__return_type( ROGUE_ARG(THIS) )))->name) )));
   }
   ;__trace.line = 766;
   return (RogueString*)(((RogueString*)(RogueMethodInfo__signature( ROGUE_ARG(THIS) ))));
@@ -24015,19 +24012,19 @@ RogueString* RogueMethodInfo__to_String( RogueClassMethodInfo* THIS )
 RogueString* RogueMethodInfo__type_name( RogueClassMethodInfo* THIS )
 {
   RogueDebugTrace __trace( "MethodInfo.type_name()", "TypeInfo.rogue", 700 );
-  return (RogueString*)(Rogue_literal_strings[254]);
+  return (RogueString*)(Rogue_literal_strings[253]);
 }
 
-RogueClassMethodInfo* RogueMethodInfo__init__Int32_Int32_Int32_Int32_Int32_Int32( RogueClassMethodInfo* THIS, RogueInt32 _auto_638_0, RogueInt32 _auto_639_1, RogueInt32 _auto_640_2, RogueInt32 _auto_641_3, RogueInt32 _auto_642_4, RogueInt32 _auto_643_5 )
+RogueClassMethodInfo* RogueMethodInfo__init__Int32_Int32_Int32_Int32_Int32_Int32( RogueClassMethodInfo* THIS, RogueInt32 _auto_643_0, RogueInt32 _auto_642_1, RogueInt32 _auto_641_2, RogueInt32 _auto_640_3, RogueInt32 _auto_639_4, RogueInt32 _auto_638_5 )
 {
   RogueDebugTrace __trace( "MethodInfo.init(Int32,Int32,Int32,Int32,Int32,Int32)", "TypeInfo.rogue", 728 );
   ROGUE_GC_CHECK;
-  THIS->call_handler = _auto_643_5;
-  THIS->__return_type = _auto_642_4;
-  THIS->__first_param_type = _auto_641_3;
-  THIS->_first_param_name = _auto_640_2;
-  THIS->parameter_count = _auto_639_1;
-  THIS->index = _auto_638_0;
+  THIS->index = _auto_643_0;
+  THIS->parameter_count = _auto_642_1;
+  THIS->_first_param_name = _auto_641_2;
+  THIS->__first_param_type = _auto_640_3;
+  THIS->__return_type = _auto_639_4;
+  THIS->call_handler = _auto_638_5;
   ;__trace.line = 729;
   THIS->fn_ptr = ((RogueInt64)((intptr_t)Rogue_dynamic_method_table[THIS->index]));
   ;__trace.line = 731;
@@ -24249,7 +24246,7 @@ void RogueTable_Int32_String___unpack__Value( RogueClassTable_Int32_String_* THI
 RogueString* RogueTable_Int32_String___type_name( RogueClassTable_Int32_String_* THIS )
 {
   RogueDebugTrace __trace( "Table<<Int32,String>>.type_name()", "Table.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[281]);
+  return (RogueString*)(Rogue_literal_strings[280]);
 }
 
 RogueClassTable_Int32_String_* RogueTable_Int32_String___init__Int32( RogueClassTable_Int32_String_* THIS, RogueInt32 bin_count_0 )
@@ -24580,7 +24577,7 @@ void RogueTable_Int32_String____grow( RogueClassTable_Int32_String_* THIS )
 RogueString* RogueArray_TableEntry_Int32_String____type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<TableEntry<<Int32,String>>>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[330]);
+  return (RogueString*)(Rogue_literal_strings[329]);
 }
 
 RogueClassTableEntry_Int32_String_* RogueTableEntry_Int32_String___init_object( RogueClassTableEntry_Int32_String_* THIS )
@@ -24596,13 +24593,13 @@ RogueString* RogueTableEntry_Int32_String___to_String( RogueClassTableEntry_Int3
   RogueDebugTrace __trace( "TableEntry<<Int32,String>>.to_String()", "Table.rogue", 488 );
   ROGUE_GC_CHECK;
   ;__trace.line = 489;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Int32( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(THIS->key) )))) )))), Rogue_literal_strings[249] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->value) ))) )))), Rogue_literal_strings[18] )))) ))));
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Int32( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(THIS->key) )))) )))), Rogue_literal_strings[248] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->value) ))) )))), Rogue_literal_strings[18] )))) ))));
 }
 
 RogueString* RogueTableEntry_Int32_String___type_name( RogueClassTableEntry_Int32_String_* THIS )
 {
   RogueDebugTrace __trace( "TableEntry<<Int32,String>>.type_name()", "Table.rogue", 473 );
-  return (RogueString*)(Rogue_literal_strings[282]);
+  return (RogueString*)(Rogue_literal_strings[281]);
 }
 
 RogueClassTableEntry_Int32_String_* RogueTableEntry_Int32_String___init__Int32_String_Int32( RogueClassTableEntry_Int32_String_* THIS, RogueInt32 _key_0, RogueString* _value_1, RogueInt32 _hash_2 )
@@ -24630,7 +24627,7 @@ RogueClass_Function_TableEntry_Int32_String__TableEntry_Int32_String__RETURNSLog
 RogueString* Rogue_Function_TableEntry_Int32_String__TableEntry_Int32_String__RETURNSLogical___type_name( RogueClass_Function_TableEntry_Int32_String__TableEntry_Int32_String__RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(TableEntry<<Int32,String>>,TableEntry<<Int32,String>>)->Logical).type_name()", "Table.rogue", 11 );
-  return (RogueString*)(Rogue_literal_strings[283]);
+  return (RogueString*)(Rogue_literal_strings[282]);
 }
 
 RogueLogical Rogue_Function_TableEntry_Int32_String__TableEntry_Int32_String__RETURNSLogical___call__TableEntry_Int32_String__TableEntry_Int32_String_( RogueClass_Function_TableEntry_Int32_String__TableEntry_Int32_String__RETURNSLogical_* THIS, RogueClassTableEntry_Int32_String_* param1_0, RogueClassTableEntry_Int32_String_* param2_1 )
@@ -24642,7 +24639,7 @@ RogueLogical Rogue_Function_TableEntry_Int32_String__TableEntry_Int32_String__RE
 RogueString* RogueArray_MethodInfo___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<MethodInfo>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[327]);
+  return (RogueString*)(Rogue_literal_strings[326]);
 }
 
 RogueInt32_List* RogueInt32_List__init_object( RogueInt32_List* THIS )
@@ -24665,19 +24662,19 @@ RogueInt32_List* RogueInt32_List__init( RogueInt32_List* THIS )
 
 RogueString* RogueInt32_List__to_String( RogueInt32_List* THIS )
 {
-  RogueDebugTrace __trace( "Int32[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "Int32[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueInt32_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueInt32_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueInt32_List__to_Value( RogueInt32_List* THIS )
 {
-  RogueDebugTrace __trace( "Int32[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "Int32[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueInt32_List*,_auto_1330_0,(THIS));
     RogueInt32 _auto_1331_0 = (0);
@@ -24686,31 +24683,31 @@ RogueClassValue* RogueInt32_List__to_Value( RogueInt32_List* THIS )
     {
       ROGUE_GC_CHECK;
       RogueInt32 item_0 = (_auto_1330_0->data->as_int32s[_auto_1331_0]);
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND((false)))
       {
       }
       else
       {
-        ;__trace.line = 653;
+        ;__trace.line = 663;
         RogueValueList__add__Value( result_0, ROGUE_ARG((RogueValue__create__Int32( item_0 ))) );
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueInt32_List__unpack__Value( RogueInt32_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "Int32[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "Int32[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueInt32_List__reserve__Int32( ROGUE_ARG(((RogueInt32_List*)(RogueInt32_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_1333_0,(values_0));
       RogueInt32 _auto_1334_0 = (0);
@@ -24719,7 +24716,7 @@ void RogueInt32_List__unpack__Value( RogueInt32_List* THIS, RogueClassValue* val
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_1333_0, _auto_1334_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueInt32_List__add__Int32( ROGUE_ARG(THIS), ROGUE_ARG((RogueInt32__from_value__Value( value_0 ))) );
       }
     }
@@ -24729,7 +24726,7 @@ void RogueInt32_List__unpack__Value( RogueInt32_List* THIS, RogueClassValue* val
 RogueString* RogueInt32_List__type_name( RogueInt32_List* THIS )
 {
   RogueDebugTrace __trace( "Int32[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[321]);
+  return (RogueString*)(Rogue_literal_strings[320]);
 }
 
 RogueInt32_List* RogueInt32_List__init__Int32( RogueInt32_List* THIS, RogueInt32 initial_capacity_0 )
@@ -24841,58 +24838,58 @@ RogueString* RogueInt32_List__join__String( RogueInt32_List* THIS, RogueString* 
 
 RogueInt32_List* RogueInt32_List__reserve__Int32( RogueInt32_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "Int32[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "Int32[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueInt32_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueInt32), false, 10 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueInt32_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueInt32_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueInt32), false, 10 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueInt32), false, 10 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueInt32_List*)(THIS);
 }
 
 void RogueInt32_List__set__Int32_Int32( RogueInt32_List* THIS, RogueInt32 index_0, RogueInt32 new_value_1 )
 {
-  RogueDebugTrace __trace( "Int32[].set(Int32,Int32)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "Int32[].set(Int32,Int32)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_int32s[index_0] = (new_value_1);
 }
 
 RogueString* RogueArray_Int32___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<Int32>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[331]);
+  return (RogueString*)(Rogue_literal_strings[330]);
 }
 
 RogueCharacter_List* RogueCharacter_List__init_object( RogueCharacter_List* THIS )
@@ -24915,19 +24912,19 @@ RogueCharacter_List* RogueCharacter_List__init( RogueCharacter_List* THIS )
 
 RogueString* RogueCharacter_List__to_String( RogueCharacter_List* THIS )
 {
-  RogueDebugTrace __trace( "Character[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "Character[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueCharacter_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueCharacter_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueCharacter_List__to_Value( RogueCharacter_List* THIS )
 {
-  RogueDebugTrace __trace( "Character[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "Character[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueCharacter_List*,_auto_1401_0,(THIS));
     RogueInt32 _auto_1402_0 = (0);
@@ -24936,31 +24933,31 @@ RogueClassValue* RogueCharacter_List__to_Value( RogueCharacter_List* THIS )
     {
       ROGUE_GC_CHECK;
       RogueCharacter item_0 = (_auto_1401_0->data->as_characters[_auto_1402_0]);
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND((false)))
       {
       }
       else
       {
-        ;__trace.line = 653;
+        ;__trace.line = 663;
         RogueValueList__add__Value( result_0, ROGUE_ARG((RogueValue__create__Character( item_0 ))) );
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueCharacter_List__unpack__Value( RogueCharacter_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "Character[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "Character[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueCharacter_List__reserve__Int32( ROGUE_ARG(((RogueCharacter_List*)(RogueCharacter_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_1404_0,(values_0));
       RogueInt32 _auto_1405_0 = (0);
@@ -24969,7 +24966,7 @@ void RogueCharacter_List__unpack__Value( RogueCharacter_List* THIS, RogueClassVa
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_1404_0, _auto_1405_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueCharacter_List__add__Character( ROGUE_ARG(THIS), ROGUE_ARG((RogueCharacter__from_value__Value( value_0 ))) );
       }
     }
@@ -24979,7 +24976,7 @@ void RogueCharacter_List__unpack__Value( RogueCharacter_List* THIS, RogueClassVa
 RogueString* RogueCharacter_List__type_name( RogueCharacter_List* THIS )
 {
   RogueDebugTrace __trace( "Character[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[314]);
+  return (RogueString*)(Rogue_literal_strings[313]);
 }
 
 RogueCharacter_List* RogueCharacter_List__init__Int32( RogueCharacter_List* THIS, RogueInt32 initial_capacity_0 )
@@ -25091,58 +25088,58 @@ RogueString* RogueCharacter_List__join__String( RogueCharacter_List* THIS, Rogue
 
 RogueCharacter_List* RogueCharacter_List__reserve__Int32( RogueCharacter_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "Character[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "Character[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueCharacter_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueCharacter), false, 24 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueCharacter_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueCharacter_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueCharacter), false, 24 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueCharacter), false, 24 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueCharacter_List*)(THIS);
 }
 
 void RogueCharacter_List__set__Int32_Character( RogueCharacter_List* THIS, RogueInt32 index_0, RogueCharacter new_value_1 )
 {
-  RogueDebugTrace __trace( "Character[].set(Int32,Character)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "Character[].set(Int32,Character)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_characters[index_0] = (new_value_1);
 }
 
 RogueString* RogueArray_Character___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<Character>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[332]);
+  return (RogueString*)(Rogue_literal_strings[331]);
 }
 
 RogueClassIntrospector* RogueIntrospector__init_object( RogueClassIntrospector* THIS )
@@ -25172,7 +25169,7 @@ RogueClassValue* RogueIntrospector__to_Value( RogueClassIntrospector* THIS )
 RogueString* RogueIntrospector__type_name( RogueClassIntrospector* THIS )
 {
   RogueDebugTrace __trace( "Introspector.type_name()", "Introspection.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[261]);
+  return (RogueString*)(Rogue_literal_strings[260]);
 }
 
 RogueClassIntrospector* RogueIntrospector__init__Object( RogueClassIntrospector* THIS, RogueObject* _auto_416_0 )
@@ -25188,13 +25185,13 @@ RogueClassIntrospector* RogueIntrospector__init__Object( RogueClassIntrospector*
   return (RogueClassIntrospector*)(THIS);
 }
 
-RogueClassIntrospector* RogueIntrospector__init__Object_Int64_TypeInfo( RogueClassIntrospector* THIS, RogueObject* _auto_417_0, RogueInt64 _auto_418_1, RogueTypeInfo* _auto_419_2 )
+RogueClassIntrospector* RogueIntrospector__init__Object_Int64_TypeInfo( RogueClassIntrospector* THIS, RogueObject* _auto_419_0, RogueInt64 _auto_418_1, RogueTypeInfo* _auto_417_2 )
 {
   RogueDebugTrace __trace( "Introspector.init(Object,Int64,TypeInfo)", "Introspection.rogue", 34 );
   ROGUE_GC_CHECK;
-  THIS->_type = _auto_419_2;
+  THIS->context = _auto_419_0;
   THIS->address = _auto_418_1;
-  THIS->context = _auto_417_0;
+  THIS->_type = _auto_417_2;
   ;__trace.line = 36;
   return (RogueClassIntrospector*)(THIS);
 }
@@ -25500,7 +25497,7 @@ RogueString* RogueValueList__to_String( RogueClassValueList* THIS )
 RogueString* RogueValueList__type_name( RogueClassValueList* THIS )
 {
   RogueDebugTrace __trace( "ValueList.type_name()", "Value.rogue", 1141 );
-  return (RogueString*)(Rogue_literal_strings[342]);
+  return (RogueString*)(Rogue_literal_strings[341]);
 }
 
 RogueClassValueList* RogueValueList__add__Value( RogueClassValueList* THIS, RogueClassValue* value_0 )
@@ -25637,19 +25634,19 @@ RogueValue_List* RogueValue_List__init( RogueValue_List* THIS )
 
 RogueString* RogueValue_List__to_String( RogueValue_List* THIS )
 {
-  RogueDebugTrace __trace( "Value[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "Value[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueValue_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueValue_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueValue_List__to_Value( RogueValue_List* THIS )
 {
-  RogueDebugTrace __trace( "Value[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "Value[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueValue_List*,_auto_1523_0,(THIS));
     RogueInt32 _auto_1524_0 = (0);
@@ -25658,36 +25655,36 @@ RogueClassValue* RogueValue_List__to_Value( RogueValue_List* THIS )
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,item_0,(((RogueClassValue*)(_auto_1523_0->data->as_objects[_auto_1524_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND((RogueOptionalValue__operator__Value( item_0 ))))
         {
           RogueValueList__add__Value( result_0, item_0 );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueValue_List__unpack__Value( RogueValue_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "Value[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "Value[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueValue_List__reserve__Int32( ROGUE_ARG(((RogueValue_List*)(RogueValue_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_1526_0,(values_0));
       RogueInt32 _auto_1527_0 = (0);
@@ -25696,7 +25693,7 @@ void RogueValue_List__unpack__Value( RogueValue_List* THIS, RogueClassValue* val
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_1526_0, _auto_1527_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueValue_List__add__Value( ROGUE_ARG(THIS), ROGUE_ARG((RogueValue__from_value__Value( value_0 ))) );
       }
     }
@@ -25706,7 +25703,7 @@ void RogueValue_List__unpack__Value( RogueValue_List* THIS, RogueClassValue* val
 RogueString* RogueValue_List__type_name( RogueValue_List* THIS )
 {
   RogueDebugTrace __trace( "Value[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[315]);
+  return (RogueString*)(Rogue_literal_strings[314]);
 }
 
 RogueValue_List* RogueValue_List__init__Int32( RogueValue_List* THIS, RogueInt32 initial_capacity_0 )
@@ -25926,140 +25923,140 @@ RogueOptionalInt32 RogueValue_List__locate__Value_Int32( RogueValue_List* THIS, 
 
 RogueValue_List* RogueValue_List__reserve__Int32( RogueValue_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "Value[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "Value[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueValue_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassValue*), true, 25 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueValue_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueValue_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassValue*), true, 25 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassValue*), true, 25 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueValue_List*)(THIS);
 }
 
 RogueClassValue* RogueValue_List__remove__Value( RogueValue_List* THIS, RogueClassValue* value_0 )
 {
-  RogueDebugTrace __trace( "Value[].remove(Value)", "List.rogue", 494 );
+  RogueDebugTrace __trace( "Value[].remove(Value)", "List.rogue", 495 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 495;
-  RogueOptionalInt32 index_1 = (((RogueValue_List__locate__Value_Int32( ROGUE_ARG(THIS), value_0, 0 ))));
   ;__trace.line = 496;
+  RogueOptionalInt32 index_1 = (((RogueValue_List__locate__Value_Int32( ROGUE_ARG(THIS), value_0, 0 ))));
+  ;__trace.line = 497;
   if (ROGUE_COND(index_1.exists))
   {
-    ;__trace.line = 497;
+    ;__trace.line = 498;
     return (RogueClassValue*)(((RogueClassValue*)(RogueValue_List__remove_at__Int32( ROGUE_ARG(THIS), ROGUE_ARG(index_1.value) ))));
   }
   else
   {
-    ;__trace.line = 499;
+    ;__trace.line = 500;
     return (RogueClassValue*)(value_0);
   }
 }
 
 RogueClassValue* RogueValue_List__remove_at__Int32( RogueValue_List* THIS, RogueInt32 index_0 )
 {
-  RogueDebugTrace __trace( "Value[].remove_at(Int32)", "List.rogue", 514 );
+  RogueDebugTrace __trace( "Value[].remove_at(Int32)", "List.rogue", 515 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 515;
+  ;__trace.line = 516;
   if (ROGUE_COND(((RogueLogical)((((unsigned int)index_0) >= (unsigned int)THIS->count)))))
   {
     throw ((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError___throw( ROGUE_ARG(((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError__init__Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassOutOfBoundsError*,ROGUE_CREATE_OBJECT(OutOfBoundsError))), index_0, ROGUE_ARG(THIS->count) )))) )));
   }
-  ;__trace.line = 517;
-  ROGUE_DEF_LOCAL_REF(RogueClassValue*,result_1,(((RogueClassValue*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 518;
-  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
+  ROGUE_DEF_LOCAL_REF(RogueClassValue*,result_1,(((RogueClassValue*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 519;
-  ROGUE_DEF_LOCAL_REF(RogueClassValue*,zero_value_2,0);
+  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
   ;__trace.line = 520;
-  THIS->count = ((THIS->count) + (-1));
+  ROGUE_DEF_LOCAL_REF(RogueClassValue*,zero_value_2,0);
   ;__trace.line = 521;
-  THIS->data->as_objects[THIS->count] = zero_value_2;
+  THIS->count = ((THIS->count) + (-1));
   ;__trace.line = 522;
+  THIS->data->as_objects[THIS->count] = zero_value_2;
+  ;__trace.line = 523;
   return (RogueClassValue*)(result_1);
 }
 
 RogueClassValue* RogueValue_List__remove_first( RogueValue_List* THIS )
 {
-  RogueDebugTrace __trace( "Value[].remove_first()", "List.rogue", 524 );
+  RogueDebugTrace __trace( "Value[].remove_first()", "List.rogue", 525 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 525;
+  ;__trace.line = 526;
   return (RogueClassValue*)(((RogueClassValue*)(RogueValue_List__remove_at__Int32( ROGUE_ARG(THIS), 0 ))));
 }
 
 void RogueValue_List__set__Int32_Value( RogueValue_List* THIS, RogueInt32 index_0, RogueClassValue* new_value_1 )
 {
-  RogueDebugTrace __trace( "Value[].set(Int32,Value)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "Value[].set(Int32,Value)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
 RogueValue_List* RogueValue_List__shift__Int32_OptionalInt32_Int32_OptionalValue( RogueValue_List* THIS, RogueInt32 i1_0, RogueOptionalInt32 element_count_1, RogueInt32 delta_2, RogueOptionalValue fill_3 )
 {
-  RogueDebugTrace __trace( "Value[].shift(Int32,Int32?,Int32,Value?)", "List.rogue", 595 );
+  RogueDebugTrace __trace( "Value[].shift(Int32,Int32?,Int32,Value?)", "List.rogue", 605 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 596;
+  ;__trace.line = 606;
   if (ROGUE_COND(((delta_2) == (0))))
   {
     return (RogueValue_List*)(THIS);
   }
-  ;__trace.line = 598;
+  ;__trace.line = 608;
   RogueInt32 n_4 = 0;
-  ;__trace.line = 599;
+  ;__trace.line = 609;
   if (ROGUE_COND(element_count_1.exists))
   {
     n_4 = ((RogueInt32)(element_count_1.value));
   }
   else
   {
-    ;__trace.line = 600;
+    ;__trace.line = 610;
     n_4 = ((RogueInt32)(((THIS->count) - (i1_0))));
   }
-  ;__trace.line = 602;
+  ;__trace.line = 612;
   RogueInt32 dest_i2_5 = (((((((i1_0) + (delta_2))) + (n_4))) - (1)));
-  ;__trace.line = 603;
+  ;__trace.line = 613;
   RogueValue_List__expand_to_include__Int32( ROGUE_ARG(THIS), dest_i2_5 );
-  ;__trace.line = 604;
+  ;__trace.line = 614;
   RogueArray_set(THIS->data,((i1_0) + (delta_2)),((RogueArray*)(THIS->data)),i1_0,n_4);
-  ;__trace.line = 605;
+  ;__trace.line = 615;
   if (ROGUE_COND(fill_3.exists))
   {
-    ;__trace.line = 606;
+    ;__trace.line = 616;
     ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_6,(fill_3.value));
-    ;__trace.line = 607;
+    ;__trace.line = 617;
     if (ROGUE_COND(((delta_2) > (0))))
     {
-      ;__trace.line = 608;
+      ;__trace.line = 618;
       {
         RogueInt32 i_7 = (i1_0);
         RogueInt32 _auto_455_8 = (((((i1_0) + (delta_2))) - (1)));
@@ -26072,7 +26069,7 @@ RogueValue_List* RogueValue_List__shift__Int32_OptionalInt32_Int32_OptionalValue
     }
     else
     {
-      ;__trace.line = 610;
+      ;__trace.line = 620;
       {
         RogueInt32 i_9 = (((((i1_0) + (delta_2))) + (n_4)));
         RogueInt32 _auto_456_10 = (((((i1_0) + (n_4))) - (1)));
@@ -26084,14 +26081,14 @@ RogueValue_List* RogueValue_List__shift__Int32_OptionalInt32_Int32_OptionalValue
       }
     }
   }
-  ;__trace.line = 613;
+  ;__trace.line = 623;
   return (RogueValue_List*)(THIS);
 }
 
 RogueString* RogueArray_Value___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<Value>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[333]);
+  return (RogueString*)(Rogue_literal_strings[332]);
 }
 
 RogueClassValueTable* RogueValueTable__init_object( RogueClassValueTable* THIS )
@@ -26131,7 +26128,7 @@ RogueClassValueTable* RogueValueTable__to_ValueTable( RogueClassValueTable* THIS
 RogueString* RogueValueTable__type_name( RogueClassValueTable* THIS )
 {
   RogueDebugTrace __trace( "ValueTable.type_name()", "Value.rogue", 1389 );
-  return (RogueString*)(Rogue_literal_strings[343]);
+  return (RogueString*)(Rogue_literal_strings[342]);
 }
 
 RogueLogical RogueValueTable__contains__String( RogueClassValueTable* THIS, RogueString* key_0 )
@@ -26339,7 +26336,7 @@ void RogueTable_String_Value___unpack__Value( RogueClassTable_String_Value_* THI
 RogueString* RogueTable_String_Value___type_name( RogueClassTable_String_Value_* THIS )
 {
   RogueDebugTrace __trace( "Table<<String,Value>>.type_name()", "Table.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[284]);
+  return (RogueString*)(Rogue_literal_strings[283]);
 }
 
 RogueClassTable_String_Value_* RogueTable_String_Value___init__Int32( RogueClassTable_String_Value_* THIS, RogueInt32 bin_count_0 )
@@ -26765,7 +26762,7 @@ void RogueTable_String_Value____grow( RogueClassTable_String_Value_* THIS )
 RogueString* RogueArray_TableEntry_String_Value____type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<TableEntry<<String,Value>>>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[334]);
+  return (RogueString*)(Rogue_literal_strings[333]);
 }
 
 RogueClassTableEntry_String_Value_* RogueTableEntry_String_Value___init_object( RogueClassTableEntry_String_Value_* THIS )
@@ -26781,13 +26778,13 @@ RogueString* RogueTableEntry_String_Value___to_String( RogueClassTableEntry_Stri
   RogueDebugTrace __trace( "TableEntry<<String,Value>>.to_String()", "Table.rogue", 488 );
   ROGUE_GC_CHECK;
   ;__trace.line = 489;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[249] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Object( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(((RogueObject*)(THIS->value))) )))) )))), Rogue_literal_strings[18] )))) ))));
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[248] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Object( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(((RogueObject*)(THIS->value))) )))) )))), Rogue_literal_strings[18] )))) ))));
 }
 
 RogueString* RogueTableEntry_String_Value___type_name( RogueClassTableEntry_String_Value_* THIS )
 {
   RogueDebugTrace __trace( "TableEntry<<String,Value>>.type_name()", "Table.rogue", 473 );
-  return (RogueString*)(Rogue_literal_strings[285]);
+  return (RogueString*)(Rogue_literal_strings[284]);
 }
 
 RogueClassTableEntry_String_Value_* RogueTableEntry_String_Value___init__String_Value_Int32( RogueClassTableEntry_String_Value_* THIS, RogueString* _key_0, RogueClassValue* _value_1, RogueInt32 _hash_2 )
@@ -26815,7 +26812,7 @@ RogueClass_Function_TableEntry_String_Value__TableEntry_String_Value__RETURNSLog
 RogueString* Rogue_Function_TableEntry_String_Value__TableEntry_String_Value__RETURNSLogical___type_name( RogueClass_Function_TableEntry_String_Value__TableEntry_String_Value__RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(TableEntry<<String,Value>>,TableEntry<<String,Value>>)->Logical).type_name()", "Table.rogue", 11 );
-  return (RogueString*)(Rogue_literal_strings[286]);
+  return (RogueString*)(Rogue_literal_strings[285]);
 }
 
 RogueLogical Rogue_Function_TableEntry_String_Value__TableEntry_String_Value__RETURNSLogical___call__TableEntry_String_Value__TableEntry_String_Value_( RogueClass_Function_TableEntry_String_Value__TableEntry_String_Value__RETURNSLogical_* THIS, RogueClassTableEntry_String_Value_* param1_0, RogueClassTableEntry_String_Value_* param2_1 )
@@ -26835,7 +26832,7 @@ RogueClass_Function_Value_RETURNSLogical_* Rogue_Function_Value_RETURNSLogical__
 RogueString* Rogue_Function_Value_RETURNSLogical___type_name( RogueClass_Function_Value_RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(Value)->Logical).type_name()", "Value.rogue", 112 );
-  return (RogueString*)(Rogue_literal_strings[262]);
+  return (RogueString*)(Rogue_literal_strings[261]);
 }
 
 RogueLogical Rogue_Function_Value_RETURNSLogical___call__Value( RogueClass_Function_Value_RETURNSLogical_* THIS, RogueClassValue* param1_0 )
@@ -26871,7 +26868,7 @@ RogueClassValueTable* RogueObjectValue__to_ValueTable( RogueClassObjectValue* TH
 RogueString* RogueObjectValue__type_name( RogueClassObjectValue* THIS )
 {
   RogueDebugTrace __trace( "ObjectValue.type_name()", "Value.rogue", 999 );
-  return (RogueString*)(Rogue_literal_strings[344]);
+  return (RogueString*)(Rogue_literal_strings[343]);
 }
 
 RogueLogical RogueObjectValue__is_object( RogueClassObjectValue* THIS )
@@ -26917,7 +26914,7 @@ RogueClassStringTable_String_* RogueStringTable_String___init_object( RogueClass
 RogueString* RogueStringTable_String___type_name( RogueClassStringTable_String_* THIS )
 {
   RogueDebugTrace __trace( "StringTable<<String>>.type_name()", "Table.rogue", 568 );
-  return (RogueString*)(Rogue_literal_strings[356]);
+  return (RogueString*)(Rogue_literal_strings[355]);
 }
 
 RogueLogical RogueStringTable_String___contains__StringBuilder( RogueClassStringTable_String_* THIS, RogueStringBuilder* key_0 )
@@ -27261,7 +27258,7 @@ void RogueTable_String_String___unpack__Value( RogueClassTable_String_String_* T
 RogueString* RogueTable_String_String___type_name( RogueClassTable_String_String_* THIS )
 {
   RogueDebugTrace __trace( "Table<<String,String>>.type_name()", "Table.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[263]);
+  return (RogueString*)(Rogue_literal_strings[262]);
 }
 
 RogueClassTable_String_String_* RogueTable_String_String___init__Int32( RogueClassTable_String_String_* THIS, RogueInt32 bin_count_0 )
@@ -28234,7 +28231,7 @@ void RogueTable_String_String____grow( RogueClassTable_String_String_* THIS )
 RogueString* RogueArray_TableEntry_String_String____type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<TableEntry<<String,String>>>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[335]);
+  return (RogueString*)(Rogue_literal_strings[334]);
 }
 
 RogueClassTableEntry_String_String_* RogueTableEntry_String_String___init_object( RogueClassTableEntry_String_String_* THIS )
@@ -28250,13 +28247,13 @@ RogueString* RogueTableEntry_String_String___to_String( RogueClassTableEntry_Str
   RogueDebugTrace __trace( "TableEntry<<String,String>>.to_String()", "Table.rogue", 488 );
   ROGUE_GC_CHECK;
   ;__trace.line = 489;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[249] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->value) ))) )))), Rogue_literal_strings[18] )))) ))));
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[248] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->value) ))) )))), Rogue_literal_strings[18] )))) ))));
 }
 
 RogueString* RogueTableEntry_String_String___type_name( RogueClassTableEntry_String_String_* THIS )
 {
   RogueDebugTrace __trace( "TableEntry<<String,String>>.type_name()", "Table.rogue", 473 );
-  return (RogueString*)(Rogue_literal_strings[258]);
+  return (RogueString*)(Rogue_literal_strings[257]);
 }
 
 RogueClassTableEntry_String_String_* RogueTableEntry_String_String___init__String_String_Int32( RogueClassTableEntry_String_String_* THIS, RogueString* _key_0, RogueString* _value_1, RogueInt32 _hash_2 )
@@ -28284,7 +28281,7 @@ RogueClass_Function_TableEntry_String_String__TableEntry_String_String__RETURNSL
 RogueString* Rogue_Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical___type_name( RogueClass_Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(TableEntry<<String,String>>,TableEntry<<String,String>>)->Logical).type_name()", "Table.rogue", 11 );
-  return (RogueString*)(Rogue_literal_strings[287]);
+  return (RogueString*)(Rogue_literal_strings[286]);
 }
 
 RogueLogical Rogue_Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical___call__TableEntry_String_String__TableEntry_String_String_( RogueClass_Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical_* THIS, RogueClassTableEntry_String_String_* param1_0, RogueClassTableEntry_String_String_* param2_1 )
@@ -28304,7 +28301,7 @@ RogueClass_Function_String_RETURNSLogical_* Rogue_Function_String_RETURNSLogical
 RogueString* Rogue_Function_String_RETURNSLogical___type_name( RogueClass_Function_String_RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(String)->Logical).type_name()", "List.rogue", 79 );
-  return (RogueString*)(Rogue_literal_strings[264]);
+  return (RogueString*)(Rogue_literal_strings[263]);
 }
 
 RogueLogical Rogue_Function_String_RETURNSLogical___call__String( RogueClass_Function_String_RETURNSLogical_* THIS, RogueString* param1_0 )
@@ -28392,7 +28389,7 @@ RogueString* RogueStringReader__to_String( RogueClassStringReader* THIS )
 RogueString* RogueStringReader__type_name( RogueClassStringReader* THIS )
 {
   RogueDebugTrace __trace( "StringReader.type_name()", "String.rogue", 1182 );
-  return (RogueString*)(Rogue_literal_strings[265]);
+  return (RogueString*)(Rogue_literal_strings[264]);
 }
 
 RogueLogical RogueStringReader__has_another( RogueClassStringReader* THIS )
@@ -28468,7 +28465,7 @@ RogueClassMath* RogueMath__init_object( RogueClassMath* THIS )
 RogueString* RogueMath__type_name( RogueClassMath* THIS )
 {
   RogueDebugTrace __trace( "Math.type_name()", "Math.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[267]);
+  return (RogueString*)(Rogue_literal_strings[266]);
 }
 
 RogueClassConsole* RogueConsole__init_object( RogueClassConsole* THIS )
@@ -28536,7 +28533,7 @@ RogueString* RogueConsole__to_String( RogueClassConsole* THIS )
 RogueString* RogueConsole__type_name( RogueClassConsole* THIS )
 {
   RogueDebugTrace __trace( "Console.type_name()", "Console.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[269]);
+  return (RogueString*)(Rogue_literal_strings[268]);
 }
 
 RogueClassPrintWriter_output_buffer_* RogueConsole__close( RogueClassConsole* THIS )
@@ -28871,7 +28868,7 @@ RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__init_object( RogueClass
 RogueString* RogueConsoleErrorPrinter__type_name( RogueClassConsoleErrorPrinter* THIS )
 {
   RogueDebugTrace __trace( "ConsoleErrorPrinter.type_name()", "Console.rogue", 300 );
-  return (RogueString*)(Rogue_literal_strings[278]);
+  return (RogueString*)(Rogue_literal_strings[277]);
 }
 
 RogueClassConsoleErrorPrinter* RogueConsoleErrorPrinter__close( RogueClassConsoleErrorPrinter* THIS )
@@ -28968,7 +28965,7 @@ RogueClassBoxed* RogueBoxed__init_object( RogueClassBoxed* THIS )
 RogueString* RogueBoxed__type_name( RogueClassBoxed* THIS )
 {
   RogueDebugTrace __trace( "Boxed.type_name()", "Boxed.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[270]);
+  return (RogueString*)(Rogue_literal_strings[269]);
 }
 
 RogueClassFunction_621* RogueFunction_621__init_object( RogueClassFunction_621* THIS )
@@ -28982,7 +28979,7 @@ RogueClassFunction_621* RogueFunction_621__init_object( RogueClassFunction_621* 
 RogueString* RogueFunction_621__type_name( RogueClassFunction_621* THIS )
 {
   RogueDebugTrace __trace( "Function_621.type_name()", "Global.rogue", 9 );
-  return (RogueString*)(Rogue_literal_strings[339]);
+  return (RogueString*)(Rogue_literal_strings[338]);
 }
 
 void RogueFunction_621__call( RogueClassFunction_621* THIS )
@@ -29822,7 +29819,7 @@ RogueString* RogueFiles__to_String( RogueClassFiles* THIS )
 RogueString* RogueFiles__type_name( RogueClassFiles* THIS )
 {
   RogueDebugTrace __trace( "Files.type_name()", "Files.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[273]);
+  return (RogueString*)(Rogue_literal_strings[272]);
 }
 
 RogueClassFiles* RogueFiles__init__String( RogueClassFiles* THIS, RogueString* _auto_2887 )
@@ -30034,7 +30031,7 @@ RogueClassStringLookupList* RogueStringLookupList__init_object( RogueClassString
 RogueString* RogueStringLookupList__type_name( RogueClassStringLookupList* THIS )
 {
   RogueDebugTrace __trace( "StringLookupList.type_name()", "LookupList.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[357]);
+  return (RogueString*)(Rogue_literal_strings[356]);
 }
 
 RogueInt32 RogueStringLookupList__add__String( RogueClassStringLookupList* THIS, RogueString* key_0 )
@@ -30108,7 +30105,7 @@ RogueString* RogueLookupList_String___to_String( RogueClassLookupList_String_* T
 RogueString* RogueLookupList_String___type_name( RogueClassLookupList_String_* THIS )
 {
   RogueDebugTrace __trace( "LookupList<<String>>.type_name()", "LookupList.rogue", 8 );
-  return (RogueString*)(Rogue_literal_strings[288]);
+  return (RogueString*)(Rogue_literal_strings[287]);
 }
 
 RogueInt32 RogueLookupList_String___count( RogueClassLookupList_String_* THIS )
@@ -30224,7 +30221,7 @@ RogueClassStringTable_Int32_* RogueStringTable_Int32___init_object( RogueClassSt
 RogueString* RogueStringTable_Int32___type_name( RogueClassStringTable_Int32_* THIS )
 {
   RogueDebugTrace __trace( "StringTable<<Int32>>.type_name()", "Table.rogue", 568 );
-  return (RogueString*)(Rogue_literal_strings[358]);
+  return (RogueString*)(Rogue_literal_strings[357]);
 }
 
 RogueClassTable_String_Int32_* RogueTable_String_Int32___init_object( RogueClassTable_String_Int32_* THIS )
@@ -30320,7 +30317,7 @@ void RogueTable_String_Int32___unpack__Value( RogueClassTable_String_Int32_* THI
 RogueString* RogueTable_String_Int32___type_name( RogueClassTable_String_Int32_* THIS )
 {
   RogueDebugTrace __trace( "Table<<String,Int32>>.type_name()", "Table.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[289]);
+  return (RogueString*)(Rogue_literal_strings[288]);
 }
 
 RogueClassTable_String_Int32_* RogueTable_String_Int32___init__Int32( RogueClassTable_String_Int32_* THIS, RogueInt32 bin_count_0 )
@@ -30699,7 +30696,7 @@ void RogueTable_String_Int32____grow( RogueClassTable_String_Int32_* THIS )
 RogueString* RogueArray_TableEntry_String_Int32____type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<TableEntry<<String,Int32>>>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[336]);
+  return (RogueString*)(Rogue_literal_strings[335]);
 }
 
 RogueClassTableEntry_String_Int32_* RogueTableEntry_String_Int32___init_object( RogueClassTableEntry_String_Int32_* THIS )
@@ -30715,13 +30712,13 @@ RogueString* RogueTableEntry_String_Int32___to_String( RogueClassTableEntry_Stri
   RogueDebugTrace __trace( "TableEntry<<String,Int32>>.to_String()", "Table.rogue", 488 );
   ROGUE_GC_CHECK;
   ;__trace.line = 489;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[249] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Int32( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(THIS->value) )))) )))), Rogue_literal_strings[18] )))) ))));
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[248] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Int32( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(THIS->value) )))) )))), Rogue_literal_strings[18] )))) ))));
 }
 
 RogueString* RogueTableEntry_String_Int32___type_name( RogueClassTableEntry_String_Int32_* THIS )
 {
   RogueDebugTrace __trace( "TableEntry<<String,Int32>>.type_name()", "Table.rogue", 473 );
-  return (RogueString*)(Rogue_literal_strings[290]);
+  return (RogueString*)(Rogue_literal_strings[289]);
 }
 
 RogueClassTableEntry_String_Int32_* RogueTableEntry_String_Int32___init__String_Int32_Int32( RogueClassTableEntry_String_Int32_* THIS, RogueString* _key_0, RogueInt32 _value_1, RogueInt32 _hash_2 )
@@ -30749,7 +30746,7 @@ RogueClass_Function_TableEntry_String_Int32__TableEntry_String_Int32__RETURNSLog
 RogueString* Rogue_Function_TableEntry_String_Int32__TableEntry_String_Int32__RETURNSLogical___type_name( RogueClass_Function_TableEntry_String_Int32__TableEntry_String_Int32__RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(TableEntry<<String,Int32>>,TableEntry<<String,Int32>>)->Logical).type_name()", "Table.rogue", 11 );
-  return (RogueString*)(Rogue_literal_strings[291]);
+  return (RogueString*)(Rogue_literal_strings[290]);
 }
 
 RogueLogical Rogue_Function_TableEntry_String_Int32__TableEntry_String_Int32__RETURNSLogical___call__TableEntry_String_Int32__TableEntry_String_Int32_( RogueClass_Function_TableEntry_String_Int32__TableEntry_String_Int32__RETURNSLogical_* THIS, RogueClassTableEntry_String_Int32_* param1_0, RogueClassTableEntry_String_Int32_* param2_1 )
@@ -30769,7 +30766,7 @@ RogueClassSystem* RogueSystem__init_object( RogueClassSystem* THIS )
 RogueString* RogueSystem__type_name( RogueClassSystem* THIS )
 {
   RogueDebugTrace __trace( "System.type_name()", "System.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[271]);
+  return (RogueString*)(Rogue_literal_strings[270]);
 }
 
 RogueClassFile* RogueFile__init_object( RogueClassFile* THIS )
@@ -30791,7 +30788,7 @@ RogueString* RogueFile__to_String( RogueClassFile* THIS )
 RogueString* RogueFile__type_name( RogueClassFile* THIS )
 {
   RogueDebugTrace __trace( "File.type_name()", "File.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[272]);
+  return (RogueString*)(Rogue_literal_strings[271]);
 }
 
 RogueClassFile* RogueFile__init__String( RogueClassFile* THIS, RogueString* filepath_0 )
@@ -30869,7 +30866,7 @@ RogueString* RogueNullValue__to_String( RogueClassNullValue* THIS )
 RogueString* RogueNullValue__type_name( RogueClassNullValue* THIS )
 {
   RogueDebugTrace __trace( "NullValue.type_name()", "Value.rogue", 539 );
-  return (RogueString*)(Rogue_literal_strings[345]);
+  return (RogueString*)(Rogue_literal_strings[344]);
 }
 
 RogueLogical RogueNullValue__is_null( RogueClassNullValue* THIS )
@@ -30941,7 +30938,7 @@ RogueString* RogueLineReader__to_String( RogueClassLineReader* THIS )
 RogueString* RogueLineReader__type_name( RogueClassLineReader* THIS )
 {
   RogueDebugTrace __trace( "LineReader.type_name()", "LineReader.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[274]);
+  return (RogueString*)(Rogue_literal_strings[273]);
 }
 
 RogueLogical RogueLineReader__has_another( RogueClassLineReader* THIS )
@@ -31116,7 +31113,7 @@ RogueClass_Function_String_String_RETURNSLogical_* Rogue_Function_String_String_
 RogueString* Rogue_Function_String_String_RETURNSLogical___type_name( RogueClass_Function_String_String_RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(String,String)->Logical).type_name()", "List.rogue", 218 );
-  return (RogueString*)(Rogue_literal_strings[275]);
+  return (RogueString*)(Rogue_literal_strings[274]);
 }
 
 RogueLogical Rogue_Function_String_String_RETURNSLogical___call__String_String( RogueClass_Function_String_String_RETURNSLogical_* THIS, RogueString* param1_0, RogueString* param2_1 )
@@ -31136,7 +31133,7 @@ RogueClassFunction_657* RogueFunction_657__init_object( RogueClassFunction_657* 
 RogueString* RogueFunction_657__type_name( RogueClassFunction_657* THIS )
 {
   RogueDebugTrace __trace( "Function_657.type_name()", "BuildCore.rogue", 430 );
-  return (RogueString*)(Rogue_literal_strings[360]);
+  return (RogueString*)(Rogue_literal_strings[359]);
 }
 
 RogueLogical RogueFunction_657__call__String_String( RogueClassFunction_657* THIS, RogueString* a_0, RogueString* b_1 )
@@ -31156,7 +31153,7 @@ RogueClassProcess* RogueProcess__init_object( RogueClassProcess* THIS )
 RogueString* RogueProcess__type_name( RogueClassProcess* THIS )
 {
   RogueDebugTrace __trace( "Process.type_name()", "Process.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[276]);
+  return (RogueString*)(Rogue_literal_strings[275]);
 }
 
 RogueByte_List* RogueProcess__error_bytes( RogueClassProcess* THIS )
@@ -31262,16 +31259,16 @@ RogueString* RogueProcessResult__to_String( RogueClassProcessResult* THIS )
 RogueString* RogueProcessResult__type_name( RogueClassProcessResult* THIS )
 {
   RogueDebugTrace __trace( "ProcessResult.type_name()", "Process.rogue", 672 );
-  return (RogueString*)(Rogue_literal_strings[277]);
+  return (RogueString*)(Rogue_literal_strings[276]);
 }
 
-RogueClassProcessResult* RogueProcessResult__init__Int32_Byte_List_Byte_List( RogueClassProcessResult* THIS, RogueInt32 _auto_661_0, RogueByte_List* _auto_662_1, RogueByte_List* _auto_663_2 )
+RogueClassProcessResult* RogueProcessResult__init__Int32_Byte_List_Byte_List( RogueClassProcessResult* THIS, RogueInt32 _auto_663_0, RogueByte_List* _auto_662_1, RogueByte_List* _auto_661_2 )
 {
   RogueDebugTrace __trace( "ProcessResult.init(Int32,Byte[],Byte[])", "Process.rogue", 681 );
   ROGUE_GC_CHECK;
-  THIS->error_bytes = _auto_663_2;
+  THIS->exit_code = _auto_663_0;
   THIS->output_bytes = _auto_662_1;
-  THIS->exit_code = _auto_661_0;
+  THIS->error_bytes = _auto_661_2;
   ;__trace.line = 683;
   return (RogueClassProcessResult*)(THIS);
 }
@@ -31321,7 +31318,7 @@ RogueClassRuntime* RogueRuntime__init_object( RogueClassRuntime* THIS )
 RogueString* RogueRuntime__type_name( RogueClassRuntime* THIS )
 {
   RogueDebugTrace __trace( "Runtime.type_name()", "Runtime.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[279]);
+  return (RogueString*)(Rogue_literal_strings[278]);
 }
 
 RogueWeakReference* RogueWeakReference__init_object( RogueWeakReference* THIS )
@@ -31335,7 +31332,7 @@ RogueWeakReference* RogueWeakReference__init_object( RogueWeakReference* THIS )
 RogueString* RogueWeakReference__type_name( RogueWeakReference* THIS )
 {
   RogueDebugTrace __trace( "WeakReference.type_name()", "WeakReference.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[280]);
+  return (RogueString*)(Rogue_literal_strings[279]);
 }
 
 void RogueWeakReference__on_cleanup( RogueWeakReference* THIS )
@@ -31373,7 +31370,7 @@ RogueClassPrintWriterAdapter* RoguePrintWriterAdapter__init_object( RogueClassPr
 RogueString* RoguePrintWriterAdapter__type_name( RogueClassPrintWriterAdapter* THIS )
 {
   RogueDebugTrace __trace( "PrintWriterAdapter.type_name()", "PrintWriter.rogue", 131 );
-  return (RogueString*)(Rogue_literal_strings[292]);
+  return (RogueString*)(Rogue_literal_strings[291]);
 }
 
 RogueClassPrintWriterAdapter* RoguePrintWriterAdapter__close( RogueClassPrintWriterAdapter* THIS )
@@ -31498,7 +31495,7 @@ RogueClassPrintWriter_buffer_* RoguePrintWriter_buffer___write__StringBuilder( R
 
 RogueClassGenericListRewriter* RogueGenericListRewriter__init_object( RogueClassGenericListRewriter* THIS )
 {
-  RogueDebugTrace __trace( "GenericListRewriter.init_object()", "List.rogue", 821 );
+  RogueDebugTrace __trace( "GenericListRewriter.init_object()", "List.rogue", 831 );
   ROGUE_GC_CHECK;
   RogueObject__init_object( ROGUE_ARG(((RogueObject*)THIS)) );
   return (RogueClassGenericListRewriter*)(THIS);
@@ -31506,8 +31503,8 @@ RogueClassGenericListRewriter* RogueGenericListRewriter__init_object( RogueClass
 
 RogueString* RogueGenericListRewriter__type_name( RogueClassGenericListRewriter* THIS )
 {
-  RogueDebugTrace __trace( "GenericListRewriter.type_name()", "List.rogue", 821 );
-  return (RogueString*)(Rogue_literal_strings[256]);
+  RogueDebugTrace __trace( "GenericListRewriter.type_name()", "List.rogue", 831 );
+  return (RogueString*)(Rogue_literal_strings[255]);
 }
 
 RogueGenericListRewriter_List* RogueGenericListRewriter_List__init_object( RogueGenericListRewriter_List* THIS )
@@ -31530,19 +31527,19 @@ RogueGenericListRewriter_List* RogueGenericListRewriter_List__init( RogueGeneric
 
 RogueString* RogueGenericListRewriter_List__to_String( RogueGenericListRewriter_List* THIS )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "GenericListRewriter[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueGenericListRewriter_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueGenericListRewriter_List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueGenericListRewriter_List__to_Value( RogueGenericListRewriter_List* THIS )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "GenericListRewriter[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueGenericListRewriter_List*,_auto_1955_0,(THIS));
     RogueInt32 _auto_1956_0 = (0);
@@ -31551,36 +31548,36 @@ RogueClassValue* RogueGenericListRewriter_List__to_Value( RogueGenericListRewrit
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassGenericListRewriter*,item_0,(((RogueClassGenericListRewriter*)(_auto_1955_0->data->as_objects[_auto_1956_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM0( 7, ((RogueObject*)item_0) ))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueGenericListRewriter_List__unpack__Value( RogueGenericListRewriter_List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "GenericListRewriter[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueGenericListRewriter_List__reserve__Int32( ROGUE_ARG(((RogueGenericListRewriter_List*)(RogueGenericListRewriter_List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_1958_0,(values_0));
       RogueInt32 _auto_1959_0 = (0);
@@ -31589,7 +31586,7 @@ void RogueGenericListRewriter_List__unpack__Value( RogueGenericListRewriter_List
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_1958_0, _auto_1959_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueGenericListRewriter_List__add__GenericListRewriter( ROGUE_ARG(THIS), ROGUE_ARG((RogueGenericListRewriter__from_value__Value( value_0 ))) );
       }
     }
@@ -31599,7 +31596,7 @@ void RogueGenericListRewriter_List__unpack__Value( RogueGenericListRewriter_List
 RogueString* RogueGenericListRewriter_List__type_name( RogueGenericListRewriter_List* THIS )
 {
   RogueDebugTrace __trace( "GenericListRewriter[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[322]);
+  return (RogueString*)(Rogue_literal_strings[321]);
 }
 
 RogueGenericListRewriter_List* RogueGenericListRewriter_List__init__Int32( RogueGenericListRewriter_List* THIS, RogueInt32 initial_capacity_0 )
@@ -31711,89 +31708,89 @@ RogueString* RogueGenericListRewriter_List__join__String( RogueGenericListRewrit
 
 RogueGenericListRewriter_List* RogueGenericListRewriter_List__reserve__Int32( RogueGenericListRewriter_List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "GenericListRewriter[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueGenericListRewriter_List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassGenericListRewriter*), true, 92 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueGenericListRewriter_List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueGenericListRewriter_List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassGenericListRewriter*), true, 92 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassGenericListRewriter*), true, 92 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueGenericListRewriter_List*)(THIS);
 }
 
 RogueClassGenericListRewriter* RogueGenericListRewriter_List__remove_at__Int32( RogueGenericListRewriter_List* THIS, RogueInt32 index_0 )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].remove_at(Int32)", "List.rogue", 514 );
+  RogueDebugTrace __trace( "GenericListRewriter[].remove_at(Int32)", "List.rogue", 515 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 515;
+  ;__trace.line = 516;
   if (ROGUE_COND(((RogueLogical)((((unsigned int)index_0) >= (unsigned int)THIS->count)))))
   {
     throw ((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError___throw( ROGUE_ARG(((RogueClassOutOfBoundsError*)(RogueOutOfBoundsError__init__Int32_Int32( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassOutOfBoundsError*,ROGUE_CREATE_OBJECT(OutOfBoundsError))), index_0, ROGUE_ARG(THIS->count) )))) )));
   }
-  ;__trace.line = 517;
-  ROGUE_DEF_LOCAL_REF(RogueClassGenericListRewriter*,result_1,(((RogueClassGenericListRewriter*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 518;
-  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
+  ROGUE_DEF_LOCAL_REF(RogueClassGenericListRewriter*,result_1,(((RogueClassGenericListRewriter*)(THIS->data->as_objects[index_0]))));
   ;__trace.line = 519;
-  ROGUE_DEF_LOCAL_REF(RogueClassGenericListRewriter*,zero_value_2,0);
+  RogueArray_set(THIS->data,index_0,((RogueArray*)(THIS->data)),((index_0) + (1)),-1);
   ;__trace.line = 520;
-  THIS->count = ((THIS->count) + (-1));
+  ROGUE_DEF_LOCAL_REF(RogueClassGenericListRewriter*,zero_value_2,0);
   ;__trace.line = 521;
-  THIS->data->as_objects[THIS->count] = zero_value_2;
+  THIS->count = ((THIS->count) + (-1));
   ;__trace.line = 522;
+  THIS->data->as_objects[THIS->count] = zero_value_2;
+  ;__trace.line = 523;
   return (RogueClassGenericListRewriter*)(result_1);
 }
 
 RogueClassGenericListRewriter* RogueGenericListRewriter_List__remove_last( RogueGenericListRewriter_List* THIS )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].remove_last()", "List.rogue", 527 );
+  RogueDebugTrace __trace( "GenericListRewriter[].remove_last()", "List.rogue", 528 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 528;
+  ;__trace.line = 529;
   return (RogueClassGenericListRewriter*)(((RogueClassGenericListRewriter*)(RogueGenericListRewriter_List__remove_at__Int32( ROGUE_ARG(THIS), ROGUE_ARG(((THIS->count) - (1))) ))));
 }
 
 void RogueGenericListRewriter_List__set__Int32_GenericListRewriter( RogueGenericListRewriter_List* THIS, RogueInt32 index_0, RogueClassGenericListRewriter* new_value_1 )
 {
-  RogueDebugTrace __trace( "GenericListRewriter[].set(Int32,GenericListRewriter)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "GenericListRewriter[].set(Int32,GenericListRewriter)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
 RogueString* RogueArray_GenericListRewriter___type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<GenericListRewriter>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[337]);
+  return (RogueString*)(Rogue_literal_strings[336]);
 }
 
 RogueClassRandom* RogueRandom__init_object( RogueClassRandom* THIS )
@@ -31817,7 +31814,7 @@ RogueClassRandom* RogueRandom__init( RogueClassRandom* THIS )
 RogueString* RogueRandom__type_name( RogueClassRandom* THIS )
 {
   RogueDebugTrace __trace( "Random.type_name()", "Random.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[293]);
+  return (RogueString*)(Rogue_literal_strings[292]);
 }
 
 RogueInt64 RogueRandom__advance_state( RogueClassRandom* THIS )
@@ -31879,7 +31876,7 @@ RogueClass_Function_String__* Rogue_Function_String____init_object( RogueClass_F
 RogueString* Rogue_Function_String____type_name( RogueClass_Function_String__* THIS )
 {
   RogueDebugTrace __trace( "(Function(String)).type_name()", "List.rogue", 44 );
-  return (RogueString*)(Rogue_literal_strings[294]);
+  return (RogueString*)(Rogue_literal_strings[293]);
 }
 
 void Rogue_Function_String____call__String( RogueClass_Function_String__* THIS, RogueString* param1_0 )
@@ -31889,7 +31886,7 @@ void Rogue_Function_String____call__String( RogueClass_Function_String__* THIS, 
 
 RogueClassListRewriter_String_* RogueListRewriter_String___init_object( RogueClassListRewriter_String_* THIS )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.init_object()", "List.rogue", 823 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.init_object()", "List.rogue", 833 );
   ROGUE_GC_CHECK;
   RogueGenericListRewriter__init_object( ROGUE_ARG(((RogueClassGenericListRewriter*)THIS)) );
   return (RogueClassListRewriter_String_*)(THIS);
@@ -31897,107 +31894,107 @@ RogueClassListRewriter_String_* RogueListRewriter_String___init_object( RogueCla
 
 RogueString* RogueListRewriter_String___type_name( RogueClassListRewriter_String_* THIS )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.type_name()", "List.rogue", 823 );
-  return (RogueString*)(Rogue_literal_strings[364]);
+  RogueDebugTrace __trace( "ListRewriter<<String>>.type_name()", "List.rogue", 833 );
+  return (RogueString*)(Rogue_literal_strings[363]);
 }
 
 RogueClassListRewriter_String_* RogueListRewriter_String___init__String_List( RogueClassListRewriter_String_* THIS, RogueString_List* _auto_976_0 )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.init(String[])", "List.rogue", 841 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.init(String[])", "List.rogue", 851 );
   ROGUE_GC_CHECK;
   THIS->list = _auto_976_0;
-  ;__trace.line = 843;
+  ;__trace.line = 853;
   return (RogueClassListRewriter_String_*)(THIS);
 }
 
 void RogueListRewriter_String___finish( RogueClassListRewriter_String_* THIS )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.finish()", "List.rogue", 843 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.finish()", "List.rogue", 853 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 844;
+  ;__trace.line = 854;
   RogueString_List__discard_from__Int32( ROGUE_ARG(THIS->list), ROGUE_ARG(THIS->write_index) );
 }
 
 RogueLogical RogueListRewriter_String___has_another( RogueClassListRewriter_String_* THIS )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.has_another()", "List.rogue", 846 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.has_another()", "List.rogue", 856 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 847;
+  ;__trace.line = 857;
   if (ROGUE_COND(((THIS->read_index) < (THIS->list->count))))
   {
-    ;__trace.line = 848;
+    ;__trace.line = 858;
     return (RogueLogical)(true);
   }
   else
   {
-    ;__trace.line = 851;
+    ;__trace.line = 861;
     RogueListRewriter_String___finish( ROGUE_ARG(THIS) );
-    ;__trace.line = 852;
+    ;__trace.line = 862;
     return (RogueLogical)(false);
   }
-  ;__trace.line = 855;
+  ;__trace.line = 865;
   return (RogueLogical)(((THIS->read_index) < (THIS->list->count)));
 }
 
 RogueString* RogueListRewriter_String___read( RogueClassListRewriter_String_* THIS )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.read()", "List.rogue", 867 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.read()", "List.rogue", 877 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 868;
+  ;__trace.line = 878;
   ++THIS->read_index;
-  ;__trace.line = 869;
+  ;__trace.line = 879;
   return (RogueString*)(((RogueString*)(THIS->list->data->as_objects[((THIS->read_index) - (1))])));
 }
 
 RogueClassListRewriter_String_* RogueListRewriter_String___reset__String_List( RogueClassListRewriter_String_* THIS, RogueString_List* new_list_0 )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.reset(String[])", "List.rogue", 871 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.reset(String[])", "List.rogue", 881 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 872;
+  ;__trace.line = 882;
   if (ROGUE_COND(!!(new_list_0)))
   {
     THIS->list = new_list_0;
   }
-  ;__trace.line = 873;
+  ;__trace.line = 883;
   THIS->read_index = 0;
-  ;__trace.line = 874;
+  ;__trace.line = 884;
   THIS->write_index = 0;
-  ;__trace.line = 875;
+  ;__trace.line = 885;
   return (RogueClassListRewriter_String_*)(THIS);
 }
 
 RogueClassListRewriter_String_* RogueListRewriter_String___write__String( RogueClassListRewriter_String_* THIS, RogueString* value_0 )
 {
-  RogueDebugTrace __trace( "ListRewriter<<String>>.write(String)", "List.rogue", 877 );
+  RogueDebugTrace __trace( "ListRewriter<<String>>.write(String)", "List.rogue", 887 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 878;
+  ;__trace.line = 888;
   if (ROGUE_COND(((THIS->write_index) == (THIS->read_index))))
   {
-    ;__trace.line = 882;
+    ;__trace.line = 892;
     RogueString_List__reserve__Int32( ROGUE_ARG(THIS->list), 1 );
-    ;__trace.line = 884;
-    RogueInt32 unread_count_1 = (((THIS->list->count) - (THIS->read_index)));
-    ;__trace.line = 889;
-    RogueArray_set(THIS->list->data,((((RogueString_List__capacity( ROGUE_ARG(THIS->list) )))) - (unread_count_1)),((RogueArray*)(THIS->list->data)),THIS->read_index,unread_count_1);
-    ;__trace.line = 891;
-    THIS->read_index += ((((RogueString_List__capacity( ROGUE_ARG(THIS->list) )))) - (THIS->list->count));
     ;__trace.line = 894;
+    RogueInt32 unread_count_1 = (((THIS->list->count) - (THIS->read_index)));
+    ;__trace.line = 899;
+    RogueArray_set(THIS->list->data,((((RogueString_List__capacity( ROGUE_ARG(THIS->list) )))) - (unread_count_1)),((RogueArray*)(THIS->list->data)),THIS->read_index,unread_count_1);
+    ;__trace.line = 901;
+    THIS->read_index += ((((RogueString_List__capacity( ROGUE_ARG(THIS->list) )))) - (THIS->list->count));
+    ;__trace.line = 904;
     THIS->list->count = ((RogueString_List__capacity( ROGUE_ARG(THIS->list) )));
   }
-  ;__trace.line = 897;
+  ;__trace.line = 907;
   if (ROGUE_COND(((THIS->write_index) == (THIS->list->count))))
   {
-    ;__trace.line = 899;
+    ;__trace.line = 909;
     RogueString_List__add__String( ROGUE_ARG(THIS->list), value_0 );
   }
   else
   {
-    ;__trace.line = 901;
+    ;__trace.line = 911;
     RogueString_List__set__Int32_String( ROGUE_ARG(THIS->list), ROGUE_ARG(THIS->write_index), value_0 );
   }
-  ;__trace.line = 903;
+  ;__trace.line = 913;
   ++THIS->write_index;
-  ;__trace.line = 905;
+  ;__trace.line = 915;
   return (RogueClassListRewriter_String_*)(THIS);
 }
 
@@ -32012,7 +32009,7 @@ RogueClassQuicksort_String_* RogueQuicksort_String___init_object( RogueClassQuic
 RogueString* RogueQuicksort_String___type_name( RogueClassQuicksort_String_* THIS )
 {
   RogueDebugTrace __trace( "Quicksort<<String>>.type_name()", "Sort.rogue", 96 );
-  return (RogueString*)(Rogue_literal_strings[295]);
+  return (RogueString*)(Rogue_literal_strings[294]);
 }
 
 RogueClassLogicalValue* RogueLogicalValue__init_object( RogueClassLogicalValue* THIS )
@@ -32034,7 +32031,7 @@ RogueString* RogueLogicalValue__to_String( RogueClassLogicalValue* THIS )
 RogueString* RogueLogicalValue__type_name( RogueClassLogicalValue* THIS )
 {
   RogueDebugTrace __trace( "LogicalValue.type_name()", "Value.rogue", 575 );
-  return (RogueString*)(Rogue_literal_strings[346]);
+  return (RogueString*)(Rogue_literal_strings[345]);
 }
 
 RogueLogical RogueLogicalValue__is_logical( RogueClassLogicalValue* THIS )
@@ -32096,7 +32093,7 @@ RogueString* RogueInt32Value__to_String( RogueClassInt32Value* THIS )
 RogueString* RogueInt32Value__type_name( RogueClassInt32Value* THIS )
 {
   RogueDebugTrace __trace( "Int32Value.type_name()", "Value.rogue", 699 );
-  return (RogueString*)(Rogue_literal_strings[347]);
+  return (RogueString*)(Rogue_literal_strings[346]);
 }
 
 RogueLogical RogueInt32Value__is_int32( RogueClassInt32Value* THIS )
@@ -32205,7 +32202,7 @@ RogueString* RogueInt64Value__to_String( RogueClassInt64Value* THIS )
 RogueString* RogueInt64Value__type_name( RogueClassInt64Value* THIS )
 {
   RogueDebugTrace __trace( "Int64Value.type_name()", "Value.rogue", 850 );
-  return (RogueString*)(Rogue_literal_strings[348]);
+  return (RogueString*)(Rogue_literal_strings[347]);
 }
 
 RogueLogical RogueInt64Value__is_int64( RogueClassInt64Value* THIS )
@@ -32309,7 +32306,7 @@ RogueString* RogueReal64Value__to_String( RogueClassReal64Value* THIS )
 RogueString* RogueReal64Value__type_name( RogueClassReal64Value* THIS )
 {
   RogueDebugTrace __trace( "Real64Value.type_name()", "Value.rogue", 602 );
-  return (RogueString*)(Rogue_literal_strings[349]);
+  return (RogueString*)(Rogue_literal_strings[348]);
 }
 
 RogueLogical RogueReal64Value__is_number( RogueClassReal64Value* THIS )
@@ -32392,7 +32389,7 @@ RogueString* RogueStringValue__to_String( RogueClassStringValue* THIS )
 RogueString* RogueStringValue__type_name( RogueClassStringValue* THIS )
 {
   RogueDebugTrace __trace( "StringValue.type_name()", "Value.rogue", 1025 );
-  return (RogueString*)(Rogue_literal_strings[350]);
+  return (RogueString*)(Rogue_literal_strings[349]);
 }
 
 RogueInt32 RogueStringValue__count( RogueClassStringValue* THIS )
@@ -32515,7 +32512,7 @@ RogueString* RogueUndefinedValue__to_String( RogueClassUndefinedValue* THIS )
 RogueString* RogueUndefinedValue__type_name( RogueClassUndefinedValue* THIS )
 {
   RogueDebugTrace __trace( "UndefinedValue.type_name()", "Value.rogue", 563 );
-  return (RogueString*)(Rogue_literal_strings[359]);
+  return (RogueString*)(Rogue_literal_strings[358]);
 }
 
 RogueClassRuntimeTypeInfoLookup* RogueRuntimeTypeInfoLookup__init_object( RogueClassRuntimeTypeInfoLookup* THIS )
@@ -32529,7 +32526,7 @@ RogueClassRuntimeTypeInfoLookup* RogueRuntimeTypeInfoLookup__init_object( RogueC
 RogueString* RogueRuntimeTypeInfoLookup__type_name( RogueClassRuntimeTypeInfoLookup* THIS )
 {
   RogueDebugTrace __trace( "RuntimeTypeInfoLookup.type_name()", "TypeInfo.rogue", 677 );
-  return (RogueString*)(Rogue_literal_strings[367]);
+  return (RogueString*)(Rogue_literal_strings[366]);
 }
 
 RogueClassStringTable_TypeInfo_* RogueStringTable_TypeInfo___init_object( RogueClassStringTable_TypeInfo_* THIS )
@@ -32543,7 +32540,7 @@ RogueClassStringTable_TypeInfo_* RogueStringTable_TypeInfo___init_object( RogueC
 RogueString* RogueStringTable_TypeInfo___type_name( RogueClassStringTable_TypeInfo_* THIS )
 {
   RogueDebugTrace __trace( "StringTable<<TypeInfo>>.type_name()", "Table.rogue", 568 );
-  return (RogueString*)(Rogue_literal_strings[366]);
+  return (RogueString*)(Rogue_literal_strings[365]);
 }
 
 RogueClassTable_String_TypeInfo_* RogueTable_String_TypeInfo___init_object( RogueClassTable_String_TypeInfo_* THIS )
@@ -32644,7 +32641,7 @@ void RogueTable_String_TypeInfo___unpack__Value( RogueClassTable_String_TypeInfo
 RogueString* RogueTable_String_TypeInfo___type_name( RogueClassTable_String_TypeInfo_* THIS )
 {
   RogueDebugTrace __trace( "Table<<String,TypeInfo>>.type_name()", "Table.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[296]);
+  return (RogueString*)(Rogue_literal_strings[295]);
 }
 
 RogueClassTable_String_TypeInfo_* RogueTable_String_TypeInfo___init__Int32( RogueClassTable_String_TypeInfo_* THIS, RogueInt32 bin_count_0 )
@@ -32975,7 +32972,7 @@ void RogueTable_String_TypeInfo____grow( RogueClassTable_String_TypeInfo_* THIS 
 RogueString* RogueArray_TableEntry_String_TypeInfo____type_name( RogueArray* THIS )
 {
   RogueDebugTrace __trace( "Array<<TableEntry<<String,TypeInfo>>>>.type_name()", "Array.rogue", 18 );
-  return (RogueString*)(Rogue_literal_strings[338]);
+  return (RogueString*)(Rogue_literal_strings[337]);
 }
 
 RogueClassTableEntry_String_TypeInfo_* RogueTableEntry_String_TypeInfo___init_object( RogueClassTableEntry_String_TypeInfo_* THIS )
@@ -32991,13 +32988,13 @@ RogueString* RogueTableEntry_String_TypeInfo___to_String( RogueClassTableEntry_S
   RogueDebugTrace __trace( "TableEntry<<String,TypeInfo>>.to_String()", "Table.rogue", 488 );
   ROGUE_GC_CHECK;
   ;__trace.line = 489;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[249] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Object( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(((RogueObject*)(THIS->value))) )))) )))), Rogue_literal_strings[18] )))) ))));
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[15] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(THIS->key) ))) )))), Rogue_literal_strings[248] )))), ROGUE_ARG(((RogueString*)(RogueString__operatorPLUS__Object( ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], Rogue_literal_strings[0] ))), ROGUE_ARG(((RogueObject*)(THIS->value))) )))) )))), Rogue_literal_strings[18] )))) ))));
 }
 
 RogueString* RogueTableEntry_String_TypeInfo___type_name( RogueClassTableEntry_String_TypeInfo_* THIS )
 {
   RogueDebugTrace __trace( "TableEntry<<String,TypeInfo>>.type_name()", "Table.rogue", 473 );
-  return (RogueString*)(Rogue_literal_strings[305]);
+  return (RogueString*)(Rogue_literal_strings[304]);
 }
 
 RogueClassTableEntry_String_TypeInfo_* RogueTableEntry_String_TypeInfo___init__String_TypeInfo_Int32( RogueClassTableEntry_String_TypeInfo_* THIS, RogueString* _key_0, RogueTypeInfo* _value_1, RogueInt32 _hash_2 )
@@ -33025,7 +33022,7 @@ RogueClass_Function_TableEntry_String_TypeInfo__TableEntry_String_TypeInfo__RETU
 RogueString* Rogue_Function_TableEntry_String_TypeInfo__TableEntry_String_TypeInfo__RETURNSLogical___type_name( RogueClass_Function_TableEntry_String_TypeInfo__TableEntry_String_TypeInfo__RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(TableEntry<<String,TypeInfo>>,TableEntry<<String,TypeInfo>>)->Logical).type_name()", "Table.rogue", 11 );
-  return (RogueString*)(Rogue_literal_strings[306]);
+  return (RogueString*)(Rogue_literal_strings[305]);
 }
 
 RogueLogical Rogue_Function_TableEntry_String_TypeInfo__TableEntry_String_TypeInfo__RETURNSLogical___call__TableEntry_String_TypeInfo__TableEntry_String_TypeInfo_( RogueClass_Function_TableEntry_String_TypeInfo__TableEntry_String_TypeInfo__RETURNSLogical_* THIS, RogueClassTableEntry_String_TypeInfo_* param1_0, RogueClassTableEntry_String_TypeInfo_* param2_1 )
@@ -33074,7 +33071,7 @@ void RogueBoxed_StringEncoding___unpack__Value( RogueClassBoxed_StringEncoding_*
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2352_0->data->as_objects[_auto_2353_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[394] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[393] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueBoxedIntrospector_StringEncoding___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -33084,7 +33081,7 @@ void RogueBoxed_StringEncoding___unpack__Value( RogueClassBoxed_StringEncoding_*
 RogueString* RogueBoxed_StringEncoding___type_name( RogueClassBoxed_StringEncoding_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<StringEncoding>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[404]);
+  return (RogueString*)(Rogue_literal_strings[403]);
 }
 
 RogueInt64 RogueBoxed_StringEncoding___address( RogueClassBoxed_StringEncoding_* THIS )
@@ -33139,7 +33136,7 @@ RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncodi
 RogueString* RogueBoxedIntrospector_StringEncoding___type_name( RogueClassBoxedIntrospector_StringEncoding_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<StringEncoding>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[384]);
+  return (RogueString*)(Rogue_literal_strings[383]);
 }
 
 RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncoding___init__Object( RogueClassBoxedIntrospector_StringEncoding_* THIS, RogueObject* _auto_1328_0 )
@@ -33152,7 +33149,7 @@ RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncodi
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[374] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[373] ));
   ;__trace.line = 264;
   return (RogueClassBoxedIntrospector_StringEncoding_*)(THIS);
 }
@@ -33217,7 +33214,7 @@ void RogueOptionalBoxed_Int32___unpack__Value( RogueClassOptionalBoxed_Int32_* T
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2451_0->data->as_objects[_auto_2452_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[395] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[394] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueOptionalBoxedIntrospector_Int32___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -33227,7 +33224,7 @@ void RogueOptionalBoxed_Int32___unpack__Value( RogueClassOptionalBoxed_Int32_* T
 RogueString* RogueOptionalBoxed_Int32___type_name( RogueClassOptionalBoxed_Int32_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<Int32?>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[405]);
+  return (RogueString*)(Rogue_literal_strings[404]);
 }
 
 RogueInt64 RogueOptionalBoxed_Int32___address( RogueClassOptionalBoxed_Int32_* THIS )
@@ -33282,7 +33279,7 @@ RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32
 RogueString* RogueOptionalBoxedIntrospector_Int32___type_name( RogueClassOptionalBoxedIntrospector_Int32_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<Int32?>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[385]);
+  return (RogueString*)(Rogue_literal_strings[384]);
 }
 
 RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32___init__Object( RogueClassOptionalBoxedIntrospector_Int32_* THIS, RogueObject* _auto_1685_0 )
@@ -33295,7 +33292,7 @@ RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[375] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[374] ));
   ;__trace.line = 264;
   return (RogueClassOptionalBoxedIntrospector_Int32_*)(THIS);
 }
@@ -33331,7 +33328,7 @@ RogueClass_Function_TableEntry_String_String__RETURNSLogical_* Rogue_Function_Ta
 RogueString* Rogue_Function_TableEntry_String_String__RETURNSLogical___type_name( RogueClass_Function_TableEntry_String_String__RETURNSLogical_* THIS )
 {
   RogueDebugTrace __trace( "(Function(TableEntry<<String,String>>)->Logical).type_name()", "Table.rogue", 94 );
-  return (RogueString*)(Rogue_literal_strings[297]);
+  return (RogueString*)(Rogue_literal_strings[296]);
 }
 
 RogueLogical Rogue_Function_TableEntry_String_String__RETURNSLogical___call__TableEntry_String_String_( RogueClass_Function_TableEntry_String_String__RETURNSLogical_* THIS, RogueClassTableEntry_String_String_* param1_0 )
@@ -33360,19 +33357,19 @@ RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__init( 
 
 RogueString* RogueTableEntry_String_String__List__to_String( RogueTableEntry_String_String__List* THIS )
 {
-  RogueDebugTrace __trace( "TableEntry<<String,String>>[].to_String()", "List.rogue", 643 );
+  RogueDebugTrace __trace( "TableEntry<<String,String>>[].to_String()", "List.rogue", 653 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 644;
-  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[247] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueTableEntry_String_String__List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[248] )))) ))));
+  ;__trace.line = 654;
+  return (RogueString*)(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[246] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RogueTableEntry_String_String__List__join__String( ROGUE_ARG(THIS), Rogue_literal_strings[13] )))) ))) )))), Rogue_literal_strings[247] )))) ))));
 }
 
 RogueClassValue* RogueTableEntry_String_String__List__to_Value( RogueTableEntry_String_String__List* THIS )
 {
-  RogueDebugTrace __trace( "TableEntry<<String,String>>[].to_Value()", "List.rogue", 646 );
+  RogueDebugTrace __trace( "TableEntry<<String,String>>[].to_Value()", "List.rogue", 656 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 647;
+  ;__trace.line = 657;
   ROGUE_DEF_LOCAL_REF(RogueClassValueList*,result_0,(((RogueClassValueList*)(RogueValueList__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassValueList*,ROGUE_CREATE_OBJECT(ValueList))) )))));
-  ;__trace.line = 648;
+  ;__trace.line = 658;
   {
     ROGUE_DEF_LOCAL_REF(RogueTableEntry_String_String__List*,_auto_2463_0,(THIS));
     RogueInt32 _auto_2464_0 = (0);
@@ -33381,36 +33378,36 @@ RogueClassValue* RogueTableEntry_String_String__List__to_Value( RogueTableEntry_
     {
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassTableEntry_String_String_*,item_0,(((RogueClassTableEntry_String_String_*)(_auto_2463_0->data->as_objects[_auto_2464_0]))));
-      ;__trace.line = 649;
+      ;__trace.line = 659;
       if (ROGUE_COND(true))
       {
-        ;__trace.line = 650;
+        ;__trace.line = 660;
         if (ROGUE_COND(!!(item_0)))
         {
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM0( 7, ((RogueObject*)item_0) ))) );
         }
         else
         {
-          ;__trace.line = 651;
+          ;__trace.line = 661;
           RogueValueList__add__Value( result_0, ROGUE_ARG(((RogueClassValue*)(((RogueClassNullValue*)ROGUE_SINGLETON(NullValue))))) );
         }
       }
     }
   }
-  ;__trace.line = 656;
+  ;__trace.line = 666;
   return (RogueClassValue*)(((RogueClassValue*)(result_0)));
 }
 
 void RogueTableEntry_String_String__List__unpack__Value( RogueTableEntry_String_String__List* THIS, RogueClassValue* values_0 )
 {
-  RogueDebugTrace __trace( "TableEntry<<String,String>>[].unpack(Value)", "List.rogue", 668 );
+  RogueDebugTrace __trace( "TableEntry<<String,String>>[].unpack(Value)", "List.rogue", 678 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 669;
+  ;__trace.line = 679;
   RogueTableEntry_String_String__List__reserve__Int32( ROGUE_ARG(((RogueTableEntry_String_String__List*)(RogueTableEntry_String_String__List__clear( ROGUE_ARG(THIS) )))), ROGUE_ARG((Rogue_call_ROGUEM1( 28, values_0 ))) );
-  ;__trace.line = 671;
+  ;__trace.line = 681;
   if (ROGUE_COND(true))
   {
-    ;__trace.line = 674;
+    ;__trace.line = 684;
     {
       ROGUE_DEF_LOCAL_REF(RogueClassValue*,_auto_2466_0,(values_0));
       RogueInt32 _auto_2467_0 = (0);
@@ -33419,7 +33416,7 @@ void RogueTableEntry_String_String__List__unpack__Value( RogueTableEntry_String_
       {
         ROGUE_GC_CHECK;
         ROGUE_DEF_LOCAL_REF(RogueClassValue*,value_0,(((RogueClassValue*)Rogue_call_ROGUEM8( 39, _auto_2466_0, _auto_2467_0 ))));
-        ;__trace.line = 675;
+        ;__trace.line = 685;
         RogueTableEntry_String_String__List__add__TableEntry_String_String_( ROGUE_ARG(THIS), ROGUE_ARG((RogueTableEntry_String_String___from_value__Value( value_0 ))) );
       }
     }
@@ -33429,7 +33426,7 @@ void RogueTableEntry_String_String__List__unpack__Value( RogueTableEntry_String_
 RogueString* RogueTableEntry_String_String__List__type_name( RogueTableEntry_String_String__List* THIS )
 {
   RogueDebugTrace __trace( "TableEntry<<String,String>>[].type_name()", "List.rogue", 4 );
-  return (RogueString*)(Rogue_literal_strings[323]);
+  return (RogueString*)(Rogue_literal_strings[322]);
 }
 
 RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__init__Int32( RogueTableEntry_String_String__List* THIS, RogueInt32 initial_capacity_0 )
@@ -33565,59 +33562,59 @@ RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__quicks
 
 RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__reserve__Int32( RogueTableEntry_String_String__List* THIS, RogueInt32 additional_elements_0 )
 {
-  RogueDebugTrace __trace( "TableEntry<<String,String>>[].reserve(Int32)", "List.rogue", 477 );
+  RogueDebugTrace __trace( "TableEntry<<String,String>>[].reserve(Int32)", "List.rogue", 478 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 478;
-  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
   ;__trace.line = 479;
+  RogueInt32 required_capacity_1 = (((THIS->count) + (additional_elements_0)));
+  ;__trace.line = 480;
   if (ROGUE_COND(((required_capacity_1) == (0))))
   {
     return (RogueTableEntry_String_String__List*)(THIS);
   }
-  ;__trace.line = 481;
+  ;__trace.line = 482;
   if (ROGUE_COND(!(!!(THIS->data))))
   {
-    ;__trace.line = 482;
+    ;__trace.line = 483;
     if (ROGUE_COND(((required_capacity_1) == (1))))
     {
       required_capacity_1 = ((RogueInt32)(10));
     }
-    ;__trace.line = 483;
+    ;__trace.line = 484;
     THIS->data = RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_*), true, 55 );
   }
   else if (ROGUE_COND(((required_capacity_1) > (THIS->data->count))))
   {
-    ;__trace.line = 485;
-    RogueInt32 cap_2 = (((RogueTableEntry_String_String__List__capacity( ROGUE_ARG(THIS) ))));
     ;__trace.line = 486;
+    RogueInt32 cap_2 = (((RogueTableEntry_String_String__List__capacity( ROGUE_ARG(THIS) ))));
+    ;__trace.line = 487;
     if (ROGUE_COND(((required_capacity_1) < (((cap_2) + (cap_2))))))
     {
       required_capacity_1 = ((RogueInt32)(((cap_2) + (cap_2))));
     }
-    ;__trace.line = 487;
-    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_*), true, 55 )));
     ;__trace.line = 488;
-    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ROGUE_DEF_LOCAL_REF(RogueArray*,new_data_3,(RogueType_create_array( required_capacity_1, sizeof(RogueClassTableEntry_String_String_*), true, 55 )));
     ;__trace.line = 489;
+    RogueArray_set(new_data_3,0,((RogueArray*)(THIS->data)),0,-1);
+    ;__trace.line = 490;
     THIS->data = new_data_3;
   }
-  ;__trace.line = 492;
+  ;__trace.line = 493;
   return (RogueTableEntry_String_String__List*)(THIS);
 }
 
 void RogueTableEntry_String_String__List__set__Int32_TableEntry_String_String_( RogueTableEntry_String_String__List* THIS, RogueInt32 index_0, RogueClassTableEntry_String_String_* new_value_1 )
 {
-  RogueDebugTrace __trace( "TableEntry<<String,String>>[].set(Int32,TableEntry<<String,String>>)", "List.rogue", 572 );
+  RogueDebugTrace __trace( "TableEntry<<String,String>>[].set(Int32,TableEntry<<String,String>>)", "List.rogue", 582 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 573;
+  ;__trace.line = 583;
   THIS->data->as_objects[index_0] = new_value_1;
 }
 
 RogueTableEntry_String_String__List* RogueTableEntry_String_String__List__sort___Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical_( RogueTableEntry_String_String__List* THIS, RogueClass_Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical_* compare_fn_0 )
 {
-  RogueDebugTrace __trace( "TableEntry<<String,String>>[].sort((Function(TableEntry<<String,String>>,TableEntry<<String,String>>)->Logical))", "List.rogue", 623 );
+  RogueDebugTrace __trace( "TableEntry<<String,String>>[].sort((Function(TableEntry<<String,String>>,TableEntry<<String,String>>)->Logical))", "List.rogue", 633 );
   ROGUE_GC_CHECK;
-  ;__trace.line = 624;
+  ;__trace.line = 634;
   return (RogueTableEntry_String_String__List*)(((RogueTableEntry_String_String__List*)(RogueTableEntry_String_String__List__quicksort___Function_TableEntry_String_String__TableEntry_String_String__RETURNSLogical_( ROGUE_ARG(THIS), compare_fn_0 ))));
 }
 
@@ -33655,7 +33652,7 @@ RogueString* RogueTableReader_String_String___to_String( RogueClassTableReader_S
 RogueString* RogueTableReader_String_String___type_name( RogueClassTableReader_String_String_* THIS )
 {
   RogueDebugTrace __trace( "TableReader<<String,String>>.type_name()", "Table.rogue", 500 );
-  return (RogueString*)(Rogue_literal_strings[298]);
+  return (RogueString*)(Rogue_literal_strings[297]);
 }
 
 RogueLogical RogueTableReader_String_String___has_another( RogueClassTableReader_String_String_* THIS )
@@ -33725,7 +33722,7 @@ RogueString* RogueTableKeyReader_String_String___to_String( RogueClassTableKeyRe
 RogueString* RogueTableKeyReader_String_String___type_name( RogueClassTableKeyReader_String_String_* THIS )
 {
   RogueDebugTrace __trace( "TableKeyReader<<String,String>>.type_name()", "Table.rogue", 523 );
-  return (RogueString*)(Rogue_literal_strings[299]);
+  return (RogueString*)(Rogue_literal_strings[298]);
 }
 
 RogueLogical RogueTableKeyReader_String_String___has_another( RogueClassTableKeyReader_String_String_* THIS )
@@ -33795,7 +33792,7 @@ RogueString* RogueTableValueReader_String_String___to_String( RogueClassTableVal
 RogueString* RogueTableValueReader_String_String___type_name( RogueClassTableValueReader_String_String_* THIS )
 {
   RogueDebugTrace __trace( "TableValueReader<<String,String>>.type_name()", "Table.rogue", 546 );
-  return (RogueString*)(Rogue_literal_strings[300]);
+  return (RogueString*)(Rogue_literal_strings[299]);
 }
 
 RogueLogical RogueTableValueReader_String_String___has_another( RogueClassTableValueReader_String_String_* THIS )
@@ -33871,7 +33868,7 @@ void RogueOptionalBoxed_Byte___unpack__Value( RogueClassOptionalBoxed_Byte_* THI
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2538_0->data->as_objects[_auto_2539_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[396] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[395] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueOptionalBoxedIntrospector_Byte___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -33881,7 +33878,7 @@ void RogueOptionalBoxed_Byte___unpack__Value( RogueClassOptionalBoxed_Byte_* THI
 RogueString* RogueOptionalBoxed_Byte___type_name( RogueClassOptionalBoxed_Byte_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<Byte?>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[406]);
+  return (RogueString*)(Rogue_literal_strings[405]);
 }
 
 RogueInt64 RogueOptionalBoxed_Byte___address( RogueClassOptionalBoxed_Byte_* THIS )
@@ -33936,7 +33933,7 @@ RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte__
 RogueString* RogueOptionalBoxedIntrospector_Byte___type_name( RogueClassOptionalBoxedIntrospector_Byte_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<Byte?>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[386]);
+  return (RogueString*)(Rogue_literal_strings[385]);
 }
 
 RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte___init__Object( RogueClassOptionalBoxedIntrospector_Byte_* THIS, RogueObject* _auto_1770_0 )
@@ -33949,7 +33946,7 @@ RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte__
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[376] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[375] ));
   ;__trace.line = 264;
   return (RogueClassOptionalBoxedIntrospector_Byte_*)(THIS);
 }
@@ -33985,7 +33982,7 @@ RogueClassFunction_1772* RogueFunction_1772__init_object( RogueClassFunction_177
 RogueString* RogueFunction_1772__type_name( RogueClassFunction_1772* THIS )
 {
   RogueDebugTrace __trace( "Function_1772.type_name()", "Console.rogue", 76 );
-  return (RogueString*)(Rogue_literal_strings[340]);
+  return (RogueString*)(Rogue_literal_strings[339]);
 }
 
 void RogueFunction_1772__call( RogueClassFunction_1772* THIS )
@@ -34016,7 +34013,7 @@ RogueClassFileWriter* RogueFileWriter__init_object( RogueClassFileWriter* THIS )
 RogueString* RogueFileWriter__type_name( RogueClassFileWriter* THIS )
 {
   RogueDebugTrace __trace( "FileWriter.type_name()", "File.rogue", 1236 );
-  return (RogueString*)(Rogue_literal_strings[301]);
+  return (RogueString*)(Rogue_literal_strings[300]);
 }
 
 RogueClassFileWriter* RogueFileWriter__close( RogueClassFileWriter* THIS )
@@ -34199,7 +34196,7 @@ void RogueBoxed_SystemEnvironment___unpack__Value( RogueClassBoxed_SystemEnviron
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2616_0->data->as_objects[_auto_2617_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[397] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[396] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueBoxedIntrospector_SystemEnvironment___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -34209,7 +34206,7 @@ void RogueBoxed_SystemEnvironment___unpack__Value( RogueClassBoxed_SystemEnviron
 RogueString* RogueBoxed_SystemEnvironment___type_name( RogueClassBoxed_SystemEnvironment_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<SystemEnvironment>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[407]);
+  return (RogueString*)(Rogue_literal_strings[406]);
 }
 
 RogueInt64 RogueBoxed_SystemEnvironment___address( RogueClassBoxed_SystemEnvironment_* THIS )
@@ -34264,7 +34261,7 @@ RogueClassBoxedIntrospector_SystemEnvironment_* RogueBoxedIntrospector_SystemEnv
 RogueString* RogueBoxedIntrospector_SystemEnvironment___type_name( RogueClassBoxedIntrospector_SystemEnvironment_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<SystemEnvironment>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[387]);
+  return (RogueString*)(Rogue_literal_strings[386]);
 }
 
 RogueClassBoxedIntrospector_SystemEnvironment_* RogueBoxedIntrospector_SystemEnvironment___init__Object( RogueClassBoxedIntrospector_SystemEnvironment_* THIS, RogueObject* _auto_1897_0 )
@@ -34277,7 +34274,7 @@ RogueClassBoxedIntrospector_SystemEnvironment_* RogueBoxedIntrospector_SystemEnv
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[377] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[376] ));
   ;__trace.line = 264;
   return (RogueClassBoxedIntrospector_SystemEnvironment_*)(THIS);
 }
@@ -34336,7 +34333,7 @@ RogueString* RogueFileReader__to_String( RogueClassFileReader* THIS )
 RogueString* RogueFileReader__type_name( RogueClassFileReader* THIS )
 {
   RogueDebugTrace __trace( "FileReader.type_name()", "File.rogue", 1112 );
-  return (RogueString*)(Rogue_literal_strings[302]);
+  return (RogueString*)(Rogue_literal_strings[301]);
 }
 
 RogueClassFileReader* RogueFileReader__close( RogueClassFileReader* THIS )
@@ -34535,16 +34532,16 @@ RogueClassFileListing* RogueFileListing__init_object( RogueClassFileListing* THI
 RogueString* RogueFileListing__type_name( RogueClassFileListing* THIS )
 {
   RogueDebugTrace __trace( "FileListing.type_name()", "File.rogue", 1519 );
-  return (RogueString*)(Rogue_literal_strings[303]);
+  return (RogueString*)(Rogue_literal_strings[302]);
 }
 
-RogueClassFileListing* RogueFileListing__init__String_String_FileOptions( RogueClassFileListing* THIS, RogueString* _auto_1910_0, RogueString* _auto_1911_1, RogueClassFileOptions _auto_1912_2 )
+RogueClassFileListing* RogueFileListing__init__String_String_FileOptions( RogueClassFileListing* THIS, RogueString* _auto_1912_0, RogueString* _auto_1911_1, RogueClassFileOptions _auto_1910_2 )
 {
   RogueDebugTrace __trace( "FileListing.init(String,String,FileOptions)", "File.rogue", 1534 );
   ROGUE_GC_CHECK;
-  THIS->options = _auto_1912_2;
+  THIS->folder = _auto_1912_0;
   THIS->pattern = _auto_1911_1;
-  THIS->folder = _auto_1910_0;
+  THIS->options = _auto_1910_2;
   ;__trace.line = 1535;
   THIS->callback = ((RogueClass_Function_String__*)(((RogueClassFileListing_collect_String_*)(RogueFileListing_collect_String___init__FileListing( ROGUE_ARG(ROGUE_CREATE_REF(RogueClassFileListing_collect_String_*,ROGUE_CREATE_OBJECT(FileListing_collect_String_))), ROGUE_ARG(THIS) )))));
   ;__trace.line = 1537;
@@ -34803,7 +34800,7 @@ void RogueBoxed_FilePattern___unpack__Value( RogueClassBoxed_FilePattern_* THIS,
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2626_0->data->as_objects[_auto_2627_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[398] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[397] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueBoxedIntrospector_FilePattern___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -34813,7 +34810,7 @@ void RogueBoxed_FilePattern___unpack__Value( RogueClassBoxed_FilePattern_* THIS,
 RogueString* RogueBoxed_FilePattern___type_name( RogueClassBoxed_FilePattern_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<FilePattern>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[408]);
+  return (RogueString*)(Rogue_literal_strings[407]);
 }
 
 RogueInt64 RogueBoxed_FilePattern___address( RogueClassBoxed_FilePattern_* THIS )
@@ -34868,7 +34865,7 @@ RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___i
 RogueString* RogueBoxedIntrospector_FilePattern___type_name( RogueClassBoxedIntrospector_FilePattern_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<FilePattern>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[388]);
+  return (RogueString*)(Rogue_literal_strings[387]);
 }
 
 RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___init__Object( RogueClassBoxedIntrospector_FilePattern_* THIS, RogueObject* _auto_1943_0 )
@@ -34881,7 +34878,7 @@ RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___i
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[378] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[377] ));
   ;__trace.line = 264;
   return (RogueClassBoxedIntrospector_FilePattern_*)(THIS);
 }
@@ -34940,7 +34937,7 @@ RogueString* RogueUTF8Reader__to_String( RogueClassUTF8Reader* THIS )
 RogueString* RogueUTF8Reader__type_name( RogueClassUTF8Reader* THIS )
 {
   RogueDebugTrace __trace( "UTF8Reader.type_name()", "UTF8.rogue", 1 );
-  return (RogueString*)(Rogue_literal_strings[304]);
+  return (RogueString*)(Rogue_literal_strings[303]);
 }
 
 RogueLogical RogueUTF8Reader__has_another( RogueClassUTF8Reader* THIS )
@@ -35044,7 +35041,7 @@ RogueClassWindowsProcess* RogueWindowsProcess__init_object( RogueClassWindowsPro
 RogueString* RogueWindowsProcess__type_name( RogueClassWindowsProcess* THIS )
 {
   RogueDebugTrace __trace( "WindowsProcess.type_name()", "Process.rogue", 363 );
-  return (RogueString*)(Rogue_literal_strings[362]);
+  return (RogueString*)(Rogue_literal_strings[361]);
 }
 
 RogueLogical RogueWindowsProcess__is_finished( RogueClassWindowsProcess* THIS )
@@ -35205,12 +35202,12 @@ RogueClassWindowsProcess* RogueWindowsProcess__init__String_Logical_Logical_Logi
   return (RogueClassWindowsProcess*)(THIS);
 }
 
-RogueClassWindowsProcess* RogueWindowsProcess__init__String_List_Logical_Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueString_List* _auto_1949_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_1950_3, RogueLogical inherit_environment_4 )
+RogueClassWindowsProcess* RogueWindowsProcess__init__String_List_Logical_Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueString_List* _auto_1950_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_1949_3, RogueLogical inherit_environment_4 )
 {
   RogueDebugTrace __trace( "WindowsProcess.init(String[],Logical,Logical,Logical,Logical)", "Process.rogue", 381 );
   ROGUE_GC_CHECK;
-  THIS->is_blocking = _auto_1950_3;
-  THIS->args = _auto_1949_0;
+  THIS->args = _auto_1950_0;
+  THIS->is_blocking = _auto_1949_3;
   ;__trace.line = 382;
   if (ROGUE_COND(!(((RogueWindowsProcess__launch__Logical_Logical_Logical( ROGUE_ARG(THIS), readable_1, writable_2, inherit_environment_4 ))))))
   {
@@ -35265,7 +35262,7 @@ RogueClassPosixProcess* RoguePosixProcess__init_object( RogueClassPosixProcess* 
 RogueString* RoguePosixProcess__type_name( RogueClassPosixProcess* THIS )
 {
   RogueDebugTrace __trace( "PosixProcess.type_name()", "Process.rogue", 90 );
-  return (RogueString*)(Rogue_literal_strings[363]);
+  return (RogueString*)(Rogue_literal_strings[362]);
 }
 
 RogueClassPosixProcess* RoguePosixProcess__finish( RogueClassPosixProcess* THIS )
@@ -35526,12 +35523,12 @@ RogueLogical RoguePosixProcess__update_io__Logical( RogueClassPosixProcess* THIS
   return (RogueLogical)(false);
 }
 
-RogueClassPosixProcess* RoguePosixProcess__init__String_List_Logical_Logical_Logical_Logical( RogueClassPosixProcess* THIS, RogueString_List* _auto_1953_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_1954_3, RogueLogical inherit_environment_4 )
+RogueClassPosixProcess* RoguePosixProcess__init__String_List_Logical_Logical_Logical_Logical( RogueClassPosixProcess* THIS, RogueString_List* _auto_1954_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_1953_3, RogueLogical inherit_environment_4 )
 {
   RogueDebugTrace __trace( "PosixProcess.init(String[],Logical,Logical,Logical,Logical)", "Process.rogue", 118 );
   ROGUE_GC_CHECK;
-  THIS->is_blocking = _auto_1954_3;
-  THIS->args = _auto_1953_0;
+  THIS->args = _auto_1954_0;
+  THIS->is_blocking = _auto_1953_3;
   ;__trace.line = 119;
 #ifndef ROGUE_PLATFORM_WINDOWS
 
@@ -35616,7 +35613,7 @@ void RogueOptionalBoxed_String___unpack__Value( RogueClassOptionalBoxed_String_*
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2654_0->data->as_objects[_auto_2655_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[399] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[398] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueOptionalBoxedIntrospector_String___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -35626,7 +35623,7 @@ void RogueOptionalBoxed_String___unpack__Value( RogueClassOptionalBoxed_String_*
 RogueString* RogueOptionalBoxed_String___type_name( RogueClassOptionalBoxed_String_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<String?>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[409]);
+  return (RogueString*)(Rogue_literal_strings[408]);
 }
 
 RogueInt64 RogueOptionalBoxed_String___address( RogueClassOptionalBoxed_String_* THIS )
@@ -35681,7 +35678,7 @@ RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_Stri
 RogueString* RogueOptionalBoxedIntrospector_String___type_name( RogueClassOptionalBoxedIntrospector_String_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<String?>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[389]);
+  return (RogueString*)(Rogue_literal_strings[388]);
 }
 
 RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_String___init__Object( RogueClassOptionalBoxedIntrospector_String_* THIS, RogueObject* _auto_2058_0 )
@@ -35694,7 +35691,7 @@ RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_Stri
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[379] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[378] ));
   ;__trace.line = 264;
   return (RogueClassOptionalBoxedIntrospector_String_*)(THIS);
 }
@@ -35759,7 +35756,7 @@ void RogueOptionalBoxed_Character___unpack__Value( RogueClassOptionalBoxed_Chara
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2777_0->data->as_objects[_auto_2778_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[400] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[399] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueOptionalBoxedIntrospector_Character___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -35769,7 +35766,7 @@ void RogueOptionalBoxed_Character___unpack__Value( RogueClassOptionalBoxed_Chara
 RogueString* RogueOptionalBoxed_Character___type_name( RogueClassOptionalBoxed_Character_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<Character?>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[410]);
+  return (RogueString*)(Rogue_literal_strings[409]);
 }
 
 RogueInt64 RogueOptionalBoxed_Character___address( RogueClassOptionalBoxed_Character_* THIS )
@@ -35824,7 +35821,7 @@ RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_C
 RogueString* RogueOptionalBoxedIntrospector_Character___type_name( RogueClassOptionalBoxedIntrospector_Character_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<Character?>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[390]);
+  return (RogueString*)(Rogue_literal_strings[389]);
 }
 
 RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_Character___init__Object( RogueClassOptionalBoxedIntrospector_Character_* THIS, RogueObject* _auto_2362_0 )
@@ -35837,7 +35834,7 @@ RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_C
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[380] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[379] ));
   ;__trace.line = 264;
   return (RogueClassOptionalBoxedIntrospector_Character_*)(THIS);
 }
@@ -35902,7 +35899,7 @@ void RogueOptionalBoxed_Value___unpack__Value( RogueClassOptionalBoxed_Value_* T
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2780_0->data->as_objects[_auto_2781_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[401] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[400] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueOptionalBoxedIntrospector_Value___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -35912,7 +35909,7 @@ void RogueOptionalBoxed_Value___unpack__Value( RogueClassOptionalBoxed_Value_* T
 RogueString* RogueOptionalBoxed_Value___type_name( RogueClassOptionalBoxed_Value_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<Value?>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[411]);
+  return (RogueString*)(Rogue_literal_strings[410]);
 }
 
 RogueInt64 RogueOptionalBoxed_Value___address( RogueClassOptionalBoxed_Value_* THIS )
@@ -35967,7 +35964,7 @@ RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value
 RogueString* RogueOptionalBoxedIntrospector_Value___type_name( RogueClassOptionalBoxedIntrospector_Value_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<Value?>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[391]);
+  return (RogueString*)(Rogue_literal_strings[390]);
 }
 
 RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value___init__Object( RogueClassOptionalBoxedIntrospector_Value_* THIS, RogueObject* _auto_2371_0 )
@@ -35980,7 +35977,7 @@ RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[381] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[380] ));
   ;__trace.line = 264;
   return (RogueClassOptionalBoxedIntrospector_Value_*)(THIS);
 }
@@ -36045,7 +36042,7 @@ void RogueOptionalBoxed_Real64___unpack__Value( RogueClassOptionalBoxed_Real64_*
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2792_0->data->as_objects[_auto_2793_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[402] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[401] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueOptionalBoxedIntrospector_Real64___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -36055,7 +36052,7 @@ void RogueOptionalBoxed_Real64___unpack__Value( RogueClassOptionalBoxed_Real64_*
 RogueString* RogueOptionalBoxed_Real64___type_name( RogueClassOptionalBoxed_Real64_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<Real64?>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[412]);
+  return (RogueString*)(Rogue_literal_strings[411]);
 }
 
 RogueInt64 RogueOptionalBoxed_Real64___address( RogueClassOptionalBoxed_Real64_* THIS )
@@ -36110,7 +36107,7 @@ RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real
 RogueString* RogueOptionalBoxedIntrospector_Real64___type_name( RogueClassOptionalBoxedIntrospector_Real64_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<Real64?>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[392]);
+  return (RogueString*)(Rogue_literal_strings[391]);
 }
 
 RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real64___init__Object( RogueClassOptionalBoxedIntrospector_Real64_* THIS, RogueObject* _auto_2455_0 )
@@ -36123,7 +36120,7 @@ RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[382] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[381] ));
   ;__trace.line = 264;
   return (RogueClassOptionalBoxedIntrospector_Real64_*)(THIS);
 }
@@ -36159,7 +36156,7 @@ RogueClassQuicksort_TableEntry_String_String__* RogueQuicksort_TableEntry_String
 RogueString* RogueQuicksort_TableEntry_String_String____type_name( RogueClassQuicksort_TableEntry_String_String__* THIS )
 {
   RogueDebugTrace __trace( "Quicksort<<TableEntry<<String,String>>>>.type_name()", "Sort.rogue", 96 );
-  return (RogueString*)(Rogue_literal_strings[307]);
+  return (RogueString*)(Rogue_literal_strings[306]);
 }
 
 RogueClassBoxed_FileOptions_* RogueBoxed_FileOptions___init_object( RogueClassBoxed_FileOptions_* THIS )
@@ -36202,7 +36199,7 @@ void RogueBoxed_FileOptions___unpack__Value( RogueClassBoxed_FileOptions_* THIS,
       ROGUE_GC_CHECK;
       ROGUE_DEF_LOCAL_REF(RogueClassPropertyInfo*,p_0,(((RogueClassPropertyInfo*)(_auto_2810_0->data->as_objects[_auto_2811_0]))));
       ;__trace.line = 40;
-      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[403] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
+      RogueGlobal__println__String( ((RogueClassGlobal*)ROGUE_SINGLETON(Global)), ROGUE_ARG(((RogueString*)(RogueStringBuilder__to_String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__print__String( ROGUE_ARG(((RogueStringBuilder*)(RogueStringBuilder__init( ROGUE_ARG(ROGUE_CREATE_REF(RogueStringBuilder*,ROGUE_CREATE_OBJECT(StringBuilder))) )))), Rogue_literal_strings[402] )))), ROGUE_ARG((RogueString__operatorPLUS__String_String( Rogue_literal_strings[0], ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) )))) )))) );
       ;__trace.line = 41;
       RogueBoxedIntrospector_FileOptions___set__String_Value( i_1, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))), ROGUE_ARG(((RogueClassValue*)Rogue_call_ROGUEM5( 40, values_0, ROGUE_ARG(((RogueString*)(RoguePropertyInfo__name( p_0 )))) ))) );
     }
@@ -36212,7 +36209,7 @@ void RogueBoxed_FileOptions___unpack__Value( RogueClassBoxed_FileOptions_* THIS,
 RogueString* RogueBoxed_FileOptions___type_name( RogueClassBoxed_FileOptions_* THIS )
 {
   RogueDebugTrace __trace( "Boxed<<FileOptions>>.type_name()", "Boxed.rogue", 14 );
-  return (RogueString*)(Rogue_literal_strings[413]);
+  return (RogueString*)(Rogue_literal_strings[412]);
 }
 
 RogueInt64 RogueBoxed_FileOptions___address( RogueClassBoxed_FileOptions_* THIS )
@@ -36267,7 +36264,7 @@ RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___i
 RogueString* RogueBoxedIntrospector_FileOptions___type_name( RogueClassBoxedIntrospector_FileOptions_* THIS )
 {
   RogueDebugTrace __trace( "BoxedIntrospector<<FileOptions>>.type_name()", "Introspection.rogue", 257 );
-  return (RogueString*)(Rogue_literal_strings[393]);
+  return (RogueString*)(Rogue_literal_strings[392]);
 }
 
 RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___init__Object( RogueClassBoxedIntrospector_FileOptions_* THIS, RogueObject* _auto_2542_0 )
@@ -36280,7 +36277,7 @@ RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___i
   ;__trace.line = 261;
   THIS->address = (Rogue_call_ROGUEM2( 13, boxed_1 ));
   ;__trace.line = 262;
-  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[383] ));
+  THIS->_type = (RogueTypeInfo__get__String( Rogue_literal_strings[382] ));
   ;__trace.line = 264;
   return (RogueClassBoxedIntrospector_FileOptions_*)(THIS);
 }
@@ -36316,7 +36313,7 @@ RogueClassFileListing_collect_String_* RogueFileListing_collect_String___init_ob
 RogueString* RogueFileListing_collect_String___type_name( RogueClassFileListing_collect_String_* THIS )
 {
   RogueDebugTrace __trace( "FileListing.collect(String).type_name()", "File.rogue", 1535 );
-  return (RogueString*)(Rogue_literal_strings[365]);
+  return (RogueString*)(Rogue_literal_strings[364]);
 }
 
 void RogueFileListing_collect_String___call__String( RogueClassFileListing_collect_String_* THIS, RogueString* param1_0 )
@@ -36344,7 +36341,7 @@ RogueClassFunction_2625* RogueFunction_2625__init_object( RogueClassFunction_262
 RogueString* RogueFunction_2625__type_name( RogueClassFunction_2625* THIS )
 {
   RogueDebugTrace __trace( "Function_2625.type_name()", "File.rogue", 1598 );
-  return (RogueString*)(Rogue_literal_strings[361]);
+  return (RogueString*)(Rogue_literal_strings[360]);
 }
 
 RogueLogical RogueFunction_2625__call__String_String( RogueClassFunction_2625* THIS, RogueString* a_0, RogueString* b_1 )
@@ -36395,7 +36392,7 @@ RogueClassWindowsProcessWriter* RogueWindowsProcessWriter__init( RogueClassWindo
 RogueString* RogueWindowsProcessWriter__type_name( RogueClassWindowsProcessWriter* THIS )
 {
   RogueDebugTrace __trace( "WindowsProcessWriter.type_name()", "Process.rogue", 586 );
-  return (RogueString*)(Rogue_literal_strings[308]);
+  return (RogueString*)(Rogue_literal_strings[307]);
 }
 
 RogueClassWindowsProcessWriter* RogueWindowsProcessWriter__close( RogueClassWindowsProcessWriter* THIS )
@@ -36538,7 +36535,7 @@ RogueString* RogueWindowsProcessReader__to_String( RogueClassWindowsProcessReade
 RogueString* RogueWindowsProcessReader__type_name( RogueClassWindowsProcessReader* THIS )
 {
   RogueDebugTrace __trace( "WindowsProcessReader.type_name()", "Process.rogue", 497 );
-  return (RogueString*)(Rogue_literal_strings[309]);
+  return (RogueString*)(Rogue_literal_strings[308]);
 }
 
 RogueClassWindowsProcessReader* RogueWindowsProcessReader__close( RogueClassWindowsProcessReader* THIS )
@@ -36655,7 +36652,7 @@ RogueString* RoguePosixProcessReader__to_String( RogueClassPosixProcessReader* T
 RogueString* RoguePosixProcessReader__type_name( RogueClassPosixProcessReader* THIS )
 {
   RogueDebugTrace __trace( "PosixProcessReader.type_name()", "Process.rogue", 332 );
-  return (RogueString*)(Rogue_literal_strings[310]);
+  return (RogueString*)(Rogue_literal_strings[309]);
 }
 
 RogueClassPosixProcessReader* RoguePosixProcessReader__close( RogueClassPosixProcessReader* THIS )
@@ -36743,7 +36740,7 @@ RogueString* RogueFDReader__to_String( RogueClassFDReader* THIS )
 RogueString* RogueFDReader__type_name( RogueClassFDReader* THIS )
 {
   RogueDebugTrace __trace( "FDReader.type_name()", "File.rogue", 1349 );
-  return (RogueString*)(Rogue_literal_strings[311]);
+  return (RogueString*)(Rogue_literal_strings[310]);
 }
 
 RogueClassFDReader* RogueFDReader__close( RogueClassFDReader* THIS )
@@ -36816,12 +36813,12 @@ RogueByte RogueFDReader__read( RogueClassFDReader* THIS )
   return (RogueByte)(result_0);
 }
 
-RogueClassFDReader* RogueFDReader__init__Int32_Logical( RogueClassFDReader* THIS, RogueInt32 _auto_2631_0, RogueLogical _auto_2632_1 )
+RogueClassFDReader* RogueFDReader__init__Int32_Logical( RogueClassFDReader* THIS, RogueInt32 _auto_2632_0, RogueLogical _auto_2631_1 )
 {
   RogueDebugTrace __trace( "FDReader.init(Int32,Logical)", "File.rogue", 1365 );
   ROGUE_GC_CHECK;
-  THIS->auto_close = _auto_2632_1;
-  THIS->fd = _auto_2631_0;
+  THIS->fd = _auto_2632_0;
+  THIS->auto_close = _auto_2631_1;
   ;__trace.line = 1367;
   return (RogueClassFDReader*)(THIS);
 }
@@ -36896,7 +36893,7 @@ RogueClassFDWriter* RogueFDWriter__init_object( RogueClassFDWriter* THIS )
 RogueString* RogueFDWriter__type_name( RogueClassFDWriter* THIS )
 {
   RogueDebugTrace __trace( "FDWriter.type_name()", "File.rogue", 1426 );
-  return (RogueString*)(Rogue_literal_strings[312]);
+  return (RogueString*)(Rogue_literal_strings[311]);
 }
 
 RogueClassFDWriter* RogueFDWriter__close( RogueClassFDWriter* THIS )
@@ -37000,12 +36997,12 @@ RogueClassFDWriter* RogueFDWriter__write__Byte_List( RogueClassFDWriter* THIS, R
   return (RogueClassFDWriter*)(THIS);
 }
 
-RogueClassFDWriter* RogueFDWriter__init__Int32_Logical( RogueClassFDWriter* THIS, RogueInt32 _auto_2636_0, RogueLogical _auto_2637_1 )
+RogueClassFDWriter* RogueFDWriter__init__Int32_Logical( RogueClassFDWriter* THIS, RogueInt32 _auto_2637_0, RogueLogical _auto_2636_1 )
 {
   RogueDebugTrace __trace( "FDWriter.init(Int32,Logical)", "File.rogue", 1438 );
   ROGUE_GC_CHECK;
-  THIS->auto_close = _auto_2637_1;
-  THIS->fd = _auto_2636_0;
+  THIS->fd = _auto_2637_0;
+  THIS->auto_close = _auto_2636_1;
   ;__trace.line = 1440;
   return (RogueClassFDWriter*)(THIS);
 }
@@ -37259,7 +37256,7 @@ RogueClassError* RogueError__init_object( RogueClassError* THIS )
 RogueString* RogueError__type_name( RogueClassError* THIS )
 {
   RogueDebugTrace __trace( "Error.type_name()", "Exception.rogue", 42 );
-  return (RogueString*)(Rogue_literal_strings[341]);
+  return (RogueString*)(Rogue_literal_strings[340]);
 }
 
 RogueClassError* RogueError___throw( RogueClassError* THIS )
@@ -37282,7 +37279,7 @@ RogueClassOutOfBoundsError* RogueOutOfBoundsError__init_object( RogueClassOutOfB
 RogueString* RogueOutOfBoundsError__type_name( RogueClassOutOfBoundsError* THIS )
 {
   RogueDebugTrace __trace( "OutOfBoundsError.type_name()", "Exception.rogue", 67 );
-  return (RogueString*)(Rogue_literal_strings[351]);
+  return (RogueString*)(Rogue_literal_strings[350]);
 }
 
 RogueClassOutOfBoundsError* RogueOutOfBoundsError__init__String( RogueClassOutOfBoundsError* THIS, RogueString* _auto_755_0 )
@@ -37343,7 +37340,7 @@ RogueClassInstanceError* RogueInstanceError__init_object( RogueClassInstanceErro
 RogueString* RogueInstanceError__type_name( RogueClassInstanceError* THIS )
 {
   RogueDebugTrace __trace( "InstanceError.type_name()", "TypeInfo.rogue", 1001 );
-  return (RogueString*)(Rogue_literal_strings[352]);
+  return (RogueString*)(Rogue_literal_strings[351]);
 }
 
 RogueClassInstanceError* RogueInstanceError___throw( RogueClassInstanceError* THIS )
@@ -37366,7 +37363,7 @@ RogueClassRequirementError* RogueRequirementError__init_object( RogueClassRequir
 RogueString* RogueRequirementError__type_name( RogueClassRequirementError* THIS )
 {
   RogueDebugTrace __trace( "RequirementError.type_name()", "Exception.rogue", 51 );
-  return (RogueString*)(Rogue_literal_strings[353]);
+  return (RogueString*)(Rogue_literal_strings[352]);
 }
 
 RogueClassRequirementError* RogueRequirementError__init__String( RogueClassRequirementError* THIS, RogueString* requirement_0 )
@@ -37406,7 +37403,7 @@ RogueClassAssertionError* RogueAssertionError__init_object( RogueClassAssertionE
 RogueString* RogueAssertionError__type_name( RogueClassAssertionError* THIS )
 {
   RogueDebugTrace __trace( "AssertionError.type_name()", "Exception.rogue", 44 );
-  return (RogueString*)(Rogue_literal_strings[354]);
+  return (RogueString*)(Rogue_literal_strings[353]);
 }
 
 RogueClassAssertionError* RogueAssertionError__init__String( RogueClassAssertionError* THIS, RogueString* assertion_0 )
@@ -37446,7 +37443,7 @@ RogueClassIOError* RogueIOError__init_object( RogueClassIOError* THIS )
 RogueString* RogueIOError__type_name( RogueClassIOError* THIS )
 {
   RogueDebugTrace __trace( "IOError.type_name()", "Exception.rogue", 79 );
-  return (RogueString*)(Rogue_literal_strings[355]);
+  return (RogueString*)(Rogue_literal_strings[354]);
 }
 
 RogueClassIOError* RogueIOError___throw( RogueClassIOError* THIS )
@@ -37477,7 +37474,7 @@ RogueClassValue* RogueStringEncoding__to_Value( RogueClassStringEncoding THIS )
 RogueTypeInfo* RogueStringEncoding__type_info( RogueClassStringEncoding THIS )
 {
   RogueDebugTrace __trace( "StringEncoding.type_info()", "String.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[374] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[373] )));
 }
 
 RogueString* RogueStringEncoding__to_String( RogueClassStringEncoding THIS )
@@ -37549,7 +37546,7 @@ RogueString* RogueOptionalInt32__to_String( RogueOptionalInt32 THIS )
 RogueTypeInfo* RogueOptionalInt32__type_info( RogueOptionalInt32 THIS )
 {
   RogueDebugTrace __trace( "Int32?.type_info()", "Optional.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[375] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[374] )));
 }
 
 RogueClassOptionalBoxed_Int32_* RogueOptionalInt32__to_Object( RogueOptionalInt32 THIS )
@@ -37593,7 +37590,7 @@ RogueString* RogueOptionalByte__to_String( RogueOptionalByte THIS )
 RogueTypeInfo* RogueOptionalByte__type_info( RogueOptionalByte THIS )
 {
   RogueDebugTrace __trace( "Byte?.type_info()", "Optional.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[376] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[375] )));
 }
 
 RogueClassOptionalBoxed_Byte_* RogueOptionalByte__to_Object( RogueOptionalByte THIS )
@@ -37638,13 +37635,13 @@ RogueString* RogueSystemEnvironment__get__String( RogueClassSystemEnvironment TH
 RogueTypeInfo* RogueSystemEnvironment__type_info( RogueClassSystemEnvironment THIS )
 {
   RogueDebugTrace __trace( "SystemEnvironment.type_info()", "System.rogue", 172 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[377] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[376] )));
 }
 
 RogueString* RogueSystemEnvironment__to_String( RogueClassSystemEnvironment THIS )
 {
   RogueDebugTrace __trace( "SystemEnvironment.to_String()", "System.rogue", 172 );
-  return (RogueString*)(Rogue_literal_strings[372]);
+  return (RogueString*)(Rogue_literal_strings[371]);
 }
 
 RogueClassBoxed_SystemEnvironment_* RogueSystemEnvironment__to_Object( RogueClassSystemEnvironment THIS )
@@ -37680,7 +37677,7 @@ RogueString* RogueFilePattern__to_String( RogueClassFilePattern THIS )
 RogueTypeInfo* RogueFilePattern__type_info( RogueClassFilePattern THIS )
 {
   RogueDebugTrace __trace( "FilePattern.type_info()", "File.rogue", 1510 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[378] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[377] )));
 }
 
 RogueClassBoxed_FilePattern_* RogueFilePattern__to_Object( RogueClassFilePattern THIS )
@@ -37724,7 +37721,7 @@ RogueString* RogueOptionalString__to_String( RogueOptionalString THIS )
 RogueTypeInfo* RogueOptionalString__type_info( RogueOptionalString THIS )
 {
   RogueDebugTrace __trace( "String?.type_info()", "Optional.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[379] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[378] )));
 }
 
 RogueClassOptionalBoxed_String_* RogueOptionalString__to_Object( RogueOptionalString THIS )
@@ -37768,7 +37765,7 @@ RogueString* RogueOptionalCharacter__to_String( RogueOptionalCharacter THIS )
 RogueTypeInfo* RogueOptionalCharacter__type_info( RogueOptionalCharacter THIS )
 {
   RogueDebugTrace __trace( "Character?.type_info()", "Optional.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[380] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[379] )));
 }
 
 RogueClassOptionalBoxed_Character_* RogueOptionalCharacter__to_Object( RogueOptionalCharacter THIS )
@@ -37812,7 +37809,7 @@ RogueString* RogueOptionalValue__to_String( RogueOptionalValue THIS )
 RogueTypeInfo* RogueOptionalValue__type_info( RogueOptionalValue THIS )
 {
   RogueDebugTrace __trace( "Value?.type_info()", "Optional.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[381] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[380] )));
 }
 
 RogueClassOptionalBoxed_Value_* RogueOptionalValue__to_Object( RogueOptionalValue THIS )
@@ -37856,7 +37853,7 @@ RogueString* RogueOptionalReal64__to_String( RogueOptionalReal64 THIS )
 RogueTypeInfo* RogueOptionalReal64__type_info( RogueOptionalReal64 THIS )
 {
   RogueDebugTrace __trace( "Real64?.type_info()", "Optional.rogue", 1 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[382] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[381] )));
 }
 
 RogueClassOptionalBoxed_Real64_* RogueOptionalReal64__to_Object( RogueOptionalReal64 THIS )
@@ -37900,13 +37897,13 @@ RogueLogical RogueFileOptions__keeping_folders( RogueClassFileOptions THIS )
 RogueTypeInfo* RogueFileOptions__type_info( RogueClassFileOptions THIS )
 {
   RogueDebugTrace __trace( "FileOptions.type_info()", "File.rogue", 1035 );
-  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[383] )));
+  return (RogueTypeInfo*)((RogueTypeInfo__get__String( Rogue_literal_strings[382] )));
 }
 
 RogueString* RogueFileOptions__to_String( RogueClassFileOptions THIS )
 {
   RogueDebugTrace __trace( "FileOptions.to_String()", "File.rogue", 1035 );
-  return (RogueString*)(Rogue_literal_strings[373]);
+  return (RogueString*)(Rogue_literal_strings[372]);
 }
 
 RogueClassBoxed_FileOptions_* RogueFileOptions__to_Object( RogueClassFileOptions THIS )
