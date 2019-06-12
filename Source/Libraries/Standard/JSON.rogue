@@ -186,14 +186,11 @@ class JSONParser
         return buffer->String.consolidated
       endUse
 
-    method hex_character_to_value( ch:Character )->Int32 [macro]
-      return ch.to_number
-
     method parse_hex_quad->Character
       local code = 0
       forEach (i in 1..4)
         if (reader.has_another)
-          code = (code :<<: 4) | hex_character_to_value(reader.read)
+          code = (code :<<: 4) | reader.read.to_number(16)
         endIf
       endForEach
       return code->Character

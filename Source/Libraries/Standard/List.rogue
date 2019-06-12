@@ -459,9 +459,10 @@ class List<<$DataType>> : GenericList
 
     method random( generator=Random:Random )->$DataType
       # Returns an element at random
-      local default_value : $DataType
-      if (not count) return default_value
-
+      if (not count)
+        local default_value : $DataType
+        return default_value
+      endIf
       return this[ generator.int32(this.count) ]
 
     method reader->ListReader<<$DataType>>
@@ -526,6 +527,15 @@ class List<<$DataType>> : GenericList
 
     method remove_last->$DataType
       return remove_at( count - 1 )
+
+    method remove_random( generator=Random:Random )->$DataType
+      # Removes and returns an element at random
+      # If list is empty, returns the default value for the type (0/false/null).
+      if (not count)
+        local default_value : $DataType
+        return default_value
+      endIf
+      return remove_at( generator.int32(this.count) )
 
     method resize( new_count:Int32 )->this
       if (count != new_count)

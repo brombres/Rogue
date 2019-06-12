@@ -264,7 +264,7 @@ class Method
         return_type.configure
       endIf
 
-      forEach (param in parameters)
+      forEach (param in parameters step -1)
         if (not is_global)
           local property = type_context.find_property( param.name )
 
@@ -276,9 +276,6 @@ class Method
               statements.insert( CmdAssign(pt,CmdAccess(pt,param.name),CmdAccess(pt,new_name)) )
               param.name = new_name
               param.type = property.type
-            elseIf (property.type_context is type_context and property.is_incorporated == this.is_incorporated)
-              # Previously, parameters couldn't shadow properties.  We allow it now, so the following isn't commented out.
-              #throw param.t.error( ''"$" may not be used as a parameter name, because a property with this name already exists.'' (param.name) )
             endIf
           endIf
         endIf
