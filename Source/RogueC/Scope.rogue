@@ -115,6 +115,8 @@ class Scope
 
         if (named_arg)
           args.add( named_arg.to_value )
+        elseIf (param.initial_value is null)
+          throw t.error( "No argument given for parameter '$'." (param.original_name) )
         else
           args.add( param.initial_value.cloned )
         endIf
