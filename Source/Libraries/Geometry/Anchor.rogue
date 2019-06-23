@@ -1,0 +1,75 @@
+module Geometry
+
+class Anchor( position:XY ) [compound]
+  DEFINITIONS
+    TOP_LEFT      = Anchor( XY(  0,  0) )
+    TOP           = Anchor( XY(0.5,  0) )
+    TOP_RIGHT     = Anchor( XY(  1,  0) )
+    LEFT          = Anchor( XY(  0,0.5) )
+    CENTER        = Anchor( XY(0.5,0.5) )
+    RIGHT         = Anchor( XY(  1,0.5) )
+    BOTTOM_LEFT   = Anchor( XY(  0,  1) )
+    BOTTOM        = Anchor( XY(0.5,  1) )
+    BOTTOM_RIGHT  = Anchor( XY(  1,  1) )
+
+    LEFT_TOP      = TOP_LEFT
+    TOP_CENTER    = TOP
+    CENTER_TOP    = TOP
+    RIGHT_TOP     = TOP_RIGHT
+    LEFT_CENTER   = LEFT
+    CENTER_LEFT   = LEFT
+    LEFT_BOTTOM   = BOTTOM_LEFT
+    BOTTOM_CENTER = BOTTOM
+    CENTER_BOTTOM = BOTTOM
+    RIGHT_BOTTOM  = BOTTOM_RIGHT
+
+  GLOBAL PROPERTIES
+    lookup = Table<<String,Anchor>>()
+
+  GLOBAL METHODS
+    method init_class
+      lookup[ "TOP_LEFT" ]      = TOP_LEFT
+      lookup[ "TOP" ]           = TOP
+      lookup[ "TOP_RIGHT" ]     = TOP_RIGHT
+      lookup[ "LEFT" ]          = LEFT
+      lookup[ "CENTER" ]        = CENTER
+      lookup[ "RIGHT" ]         = RIGHT
+      lookup[ "BOTTOM_LEFT" ]   = BOTTOM_LEFT
+      lookup[ "BOTTOM" ]        = BOTTOM
+      lookup[ "BOTTOM_RIGHT" ]  = BOTTOM_RIGHT
+      lookup[ "LEFT_TOP" ]      = LEFT_TOP
+      lookup[ "TOP_CENTER" ]    = TOP_CENTER
+      lookup[ "CENTER_TOP" ]    = CENTER_TOP
+      lookup[ "RIGHT_TOP" ]     = RIGHT_TOP
+      lookup[ "LEFT_CENTER" ]   = LEFT_CENTER
+      lookup[ "CENTER_LEFT" ]   = CENTER_LEFT
+      lookup[ "LEFT_BOTTOM" ]   = LEFT_BOTTOM
+      lookup[ "BOTTOM_CENTER" ] = BOTTOM_CENTER
+      lookup[ "CENTER_BOTTOM" ] = CENTER_BOTTOM
+      lookup[ "RIGHT_BOTTOM" ]  = RIGHT_BOTTOM
+
+    method create->Anchor [macro]
+      return Anchor(XY(0,0))
+
+    method create( x:Real64, y:Real64 )->Anchor [macro]
+      return Anchor(XY(x,y))
+
+    method create( value:Value )->Anchor
+      if (not value) return Anchor.TOP_LEFT
+
+      if (value.is_string)
+        local entry = lookup.find( value )
+        if (entry) return entry.value
+        return Anchor.TOP_LEFT
+      else
+        return Anchor( XY(value) )
+      endIf
+
+
+  METHODS
+    method operator==( other:Anchor )->Logical
+      return position == other.position
+
+    method to->String
+      return position->String
+endClass
