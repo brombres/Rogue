@@ -388,6 +388,13 @@ class WindowsProcess : Process
     method launch( &readable, &writable, &inherit_environment )->Logical
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
+      forEach (arg in writer=args.rewriter)
+        # On Windows a cmd like:           "space separated.exe" "arg"
+        # Must be wrapped in extra quotes: ""space separated.exe" "arg""
+        if (arg.count('"') > 2) arg = ''"$"'' (arg)
+        writer.write( arg )
+      endForEach
+
       output_reader = WindowsProcessReader()
       error_reader  = WindowsProcessReader()
       input_writer  = WindowsProcessWriter()
