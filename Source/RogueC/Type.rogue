@@ -565,9 +565,13 @@ class Type
         base_type.extended_types.add( this )
       endForEach
 
+      local reset_ref_t = (not name.contains("[]") and not name.contains("<<"))
+      # If A uses B uses C, A sends its reference token in while resolving referenced types.
+      # The reference token will be reset to reference any class along the way that is not a list or template.
+
       if (element_type)            element_type.configure( &=reference_t )
-      forEach (p in global_list)   p.type.configure( &=reference_t )
-      forEach (p in property_list) p.type.configure( &=reference_t )
+      forEach (p in global_list)   p.type.configure( &reference_t=select{ reset_ref_t:p.t || reference_t} )
+      forEach (p in property_list) p.type.configure( &reference_t=select{ reset_ref_t:p.t || reference_t} )
 
       Program.invoke_metacode( "Type.configured", this )
 

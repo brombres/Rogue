@@ -2751,6 +2751,7 @@ ROGUE_EXPORT_C RogueString* RogueGlobal__get_description__String( RogueClassGlob
 ROGUE_EXPORT_C void RogueGlobal__rogo_edit( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_commit( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C void RogueGlobal__rogo_publish( RogueClassGlobal* THIS );
+ROGUE_EXPORT_C void RogueGlobal__rogo_tag( RogueClassGlobal* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueGlobal__compare_versions__String_String( RogueClassGlobal* THIS, RogueString* a_0, RogueString* b_1 );
 ROGUE_EXPORT_C RogueInt32 RogueGlobal__compare_verisons_count_dots__String( RogueClassGlobal* THIS, RogueString* st_0 );
 ROGUE_EXPORT_C RogueInt32 RogueGlobal__compare_versions_extract_part__String_Int32( RogueClassGlobal* THIS, RogueString* v_0, RogueInt32 part_1 );

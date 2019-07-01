@@ -5013,6 +5013,12 @@ class CmdBitwiseOp : CmdBinary
       endIf
 
       throw t.error( "The '$' operator cannot be applied to type $." (symbol,common_type) )
+
+    method implicit_type( scope:Scope)->Type
+      local left_type = left.implicit_type( scope )
+      local right_type = right.implicit_type( scope )
+      if (left_type and left_type is right_type) return left_type
+      return null
 endClass
 
 class CmdBitwiseFlip : CmdBitwiseOp

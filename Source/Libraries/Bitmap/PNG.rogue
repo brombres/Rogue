@@ -1,0 +1,282 @@
+module Bitmap
+  uses Geometry
+
+  # See Bitmap.rogue for assistance with linking to libpng.
+
+class PNGDecoder
+  DEPENDENCIES
+    $if (not target("Linux")) nativeHeader #include <setjmp.h>
+    nativeHeader
+    // +PNGDecoder
+    #include "png.h"
+    // -PNGDecoder
+    endNativeHeader
+
+    nativeCode
+      // +PNGDecoder
+      void Rogue_png_decoder_error_callback( png_structp png_ptr, png_const_charp msg )
+      {
+        fprintf(stderr, "libpng error: %s\n", msg);
+        fflush(stderr);
+
+        longjmp( ((RogueClassBitmap__PNGDecoder*)png_get_io_ptr(png_ptr))->on_error, 1 );
+      }
+
+      void Rogue_png_read_callback( png_structp png_ptr, png_bytep bytes, png_size_t count )
+      {
+        RogueClassBitmap__PNGDecoder* decoder = (RogueClassBitmap__PNGDecoder*) png_get_io_ptr( png_ptr );
+        int limit = decoder->reader->is_limited ? decoder->reader->limit : decoder->reader->list->count;
+        png_size_t remaining = (png_size_t) (limit - decoder->reader->position);
+        if (count > remaining)
+        {
+          count = (png_size_t) remaining;
+        }
+
+        if (count)
+        {
+          memcpy( bytes, decoder->reader->list->data->as_bytes + decoder->reader->position, count );
+          decoder->reader->position += count;
+        }
+      }
+      // -PNGDecoder
+    endNativeCode
+
+  PROPERTIES
+    image_width  : Int32
+    image_height : Int32
+    reader       : ListReader<<Byte>>
+    native "png_structp  png_ptr;"
+    native "png_infop    png_info_ptr;"
+    native "jmp_buf      on_error;"
+
+
+  METHODS
+    method decode( encoded_bytes:Byte[], dest_bitmap=null:Bitmap, &make_power_of_two )->Bitmap
+      reader = encoded_bytes.reader
+      native @|$this->png_ptr = png_create_read_struct( PNG_LIBPNG_VER_STRING, $this, Rogue_png_decoder_error_callback, NULL );
+              |if ( !$this->png_ptr )
+              |{
+              |  return 0;
+              |}
+              |
+              |png_set_add_alpha( $this->png_ptr, 255, PNG_FILLER_AFTER );
+              |
+              |$this->png_info_ptr = png_create_info_struct( $this->png_ptr );
+              |if ( !$this->png_info_ptr )
+              |{
+              |  png_destroy_read_struct( &$this->png_ptr, NULL, NULL );
+              |  return 0; // Out of memory
+              |}
+              |
+              |if (setjmp($this->on_error))
+              |{
+              |  png_destroy_read_struct( &$this->png_ptr, &$this->png_info_ptr, NULL );
+              |  return 0;
+              |}
+              |
+              |png_set_read_fn( $this->png_ptr, $this, Rogue_png_read_callback );
+              |
+              |// Prepare the reader to ignore all recognized chunks whose data won't be
+              |// used, i.e., all chunks recognized by libpng except for IHDR, PLTE, IDAT,
+              |// IEND, tRNS, bKGD, gAMA, and sRGB (small performance improvement).
+              |{
+              |  static png_byte chunks_to_ignore[] =
+              |  {
+              |     99,  72,  82,  77, '\0',  // cHRM
+              |    104,  73,  83,  84, '\0',  // hIST
+              |    105,  67,  67,  80, '\0',  // iCCP
+              |    105,  84,  88, 116, '\0',  // iTXt
+              |    111,  70,  70, 115, '\0',  // oFFs
+              |    112,  67,  65,  76, '\0',  // pCAL
+              |    112,  72,  89, 115, '\0',  // pHYs
+              |    115,  66,  73,  84, '\0',  // sBIT
+              |    115,  67,  65,  76, '\0',  // sCAL
+              |    115,  80,  76,  84, '\0',  // sPLT
+              |    115,  84,  69,  82, '\0',  // sTER
+              |    116,  69,  88, 116, '\0',  // tEXt
+              |    116,  73,  77,  69, '\0',  // tIME
+              |    122,  84,  88, 116, '\0'   // zTXt
+              |  };
+              |
+              |  png_set_keep_unknown_chunks( $this->png_ptr, PNG_HANDLE_CHUNK_NEVER,
+              |      chunks_to_ignore, sizeof(chunks_to_ignore)/5 );
+              |}
+              |
+              |png_read_png(
+              |    $this->png_ptr,
+              |    $this->png_info_ptr,
+              |    PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND |
+              |    PNG_TRANSFORM_GRAY_TO_RGB | PNG_TRANSFORM_BGR,
+              |    NULL
+              |);
+              |
+              |$image_width  = png_get_image_width( $this->png_ptr, $this->png_info_ptr );
+              |$image_height = png_get_image_height( $this->png_ptr, $this->png_info_ptr );
+
+
+               local w = image_width
+               local h = image_height
+               if (make_power_of_two)
+                 w = w.to_power_of_two
+                 h = h.to_power_of_two
+               endIf
+               ensure dest_bitmap( w, h )
+               ensure dest_bitmap.pixels( w * h )
+               dest_bitmap.pixels.ensure_capacity( w * h )
+               dest_bitmap.pixels.count = w * h
+               dest_bitmap.width = w
+               dest_bitmap.height = h
+
+      native @|
+              |int height = $image_height;
+              |png_bytepp row_pointers = png_get_rows( $this->png_ptr, $this->png_info_ptr );
+              |int row_size = (int) png_get_rowbytes( $this->png_ptr, $this->png_info_ptr );
+              |RogueInt32* pixels = $dest_bitmap->pixels->data->as_int32s;
+              |
+              |for (int j=0; j<height; ++j)
+              |{
+              |  memcpy( pixels, row_pointers[j], row_size );
+              |  pixels += $w;
+              |}
+              |
+              |png_destroy_read_struct( &$this->png_ptr, &$this->png_info_ptr, NULL );
+
+      return dest_bitmap
+
+    method image_size->XY
+      return XY( image_width, image_height )
+endClass
+
+
+class PNGEncoder
+  DEPENDENCIES
+    $if (not target("Linux")) nativeHeader #include <setjmp.h>
+    nativeHeader
+      // +PNGEncoder
+      #include "png.h"
+      // -PNGEncoder
+    endNativeHeader
+
+    nativeCode
+      // +PNGEncoder
+      void Rogue_png_encoder_error_callback( png_structp png_ptr, png_const_charp msg )
+      {
+        fprintf(stderr, "libpng error: %s\n", msg);
+        fflush(stderr);
+
+        longjmp( ((RogueClassBitmap__PNGEncoder*)png_get_io_ptr(png_ptr))->on_error, 1 );
+      }
+
+      void Rogue_png_encoder_write_callback( png_structp png_ptr, png_bytep bytes, png_size_t count )
+      {
+        RogueClassBitmap__PNGEncoder* encoder = (RogueClassBitmap__PNGEncoder*) png_get_io_ptr( png_ptr );
+        RogueByte_List__reserve__Int32( encoder->encoded_bytes, (RogueInt32) count );
+        memcpy( encoder->encoded_bytes->data->as_bytes + encoder->encoded_bytes->count, (RogueByte*)bytes, (RogueInt32) count );
+        encoder->encoded_bytes->count += (RogueInt32) count;
+      }
+
+      void Rogue_png_encoder_flush_callback( png_structp png_ptr )
+      {
+        // No action
+      }
+      // -PNGEncoder
+
+    endNativeCode
+
+  PROPERTIES
+    encoded_bytes : Byte[]
+    native "png_structp  png_ptr;"
+    native "png_infop    png_info_ptr;"
+    native "jmp_buf      on_error;"
+
+
+  METHODS
+    method encode( bitmap:Bitmap, encoded_bytes=null )->Byte[]
+      ensure encoded_bytes
+
+      local is_opaque = bitmap.is_opaque
+      local width = bitmap.width
+      local height = bitmap.height
+
+      native @|int j;
+              |int color_type;
+              |int bytes_per_pixel;
+              |png_bytepp row_pointers;
+              |png_bytep  bytes;
+              |
+              |$this->png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING, $this,
+              |    Rogue_png_encoder_error_callback, NULL );
+              |if ( !$this->png_ptr ) return 0; // Out of memory
+              |
+              |$this->png_info_ptr = png_create_info_struct( $this->png_ptr );
+              |if ( !$this->png_info_ptr )
+              |{
+              |  png_destroy_write_struct( &$this->png_ptr, NULL );
+              |  return 0;  // Out of memory
+              |}
+              |
+              |if (setjmp($this->on_error))
+              |{
+              |  png_destroy_write_struct( &$this->png_ptr, &$this->png_info_ptr );
+              |  return 0;
+              |}
+              |
+              |png_set_write_fn( $this->png_ptr, $this, Rogue_png_encoder_write_callback, Rogue_png_encoder_flush_callback );
+              |
+              |bytes = $bitmap->pixels->data->as_bytes;
+              |if ($is_opaque)
+              |{
+              |  // Temporarily repack the bitmap pixels as 24-bit instead of 32-bit
+              |  int n = $width * $height;
+              |  RogueInt32* src = $bitmap->pixels->data->as_int32s - 1;
+              |  png_bytep dest;
+              |
+              |  color_type = PNG_COLOR_TYPE_RGB;
+              |  bytes_per_pixel = 3;
+              |  dest = bytes;
+              |  while (--n >= 0)
+              |  {
+              |    int argb = *(++src);
+              |    dest[0] = (png_byte) argb;
+              |    dest[1] = (png_byte) (argb >> 8);
+              |    dest[2] = (png_byte) (argb >> 16);
+              |    dest += 3;
+              |  }
+              |}
+              |else
+              |{
+              |  color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+              |  bytes_per_pixel = 4;
+              |}
+              |
+              |png_set_IHDR( $this->png_ptr, $this->png_info_ptr, $width, $height, 8,
+              |     color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT );
+              |
+              |row_pointers = new png_bytep[ $height ];
+              |for (j=0; j<$height; ++j)
+              |{
+              |  row_pointers[j] = bytes + j*$width*bytes_per_pixel;
+              |}
+              |
+              |png_set_rows( $this->png_ptr, $this->png_info_ptr, row_pointers );
+              |
+              |png_write_png( $this->png_ptr, $this->png_info_ptr, PNG_TRANSFORM_BGR, 0 );
+              |
+              |delete row_pointers;
+              |
+              |if ($is_opaque)
+              |{
+              |  // Unpack 24-bit back to 32-bit
+              |  int n = $width * $height;
+              |  RogueByte*  src = (RogueByte*) bytes + (n-1)*3;
+              |  RogueInt32* dest = $bitmap->pixels->data->as_int32s + n;
+              |  while (--n >= 0)
+              |  {
+              |    *(--dest) = 0xFF000000 | (src[2]<<16) | (src[1]<<8) | src[0];
+              |    src -= 3;
+              |  }
+              |}
+
+      return encoded_bytes
+endClass
+

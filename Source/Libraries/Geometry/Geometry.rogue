@@ -1,4 +1,6 @@
+$include "Geometry/Anchor.rogue"
 $include "Geometry/Box.rogue"
+$include "Geometry/BresenhamLineGenerator.rogue"
 $include "Geometry/Circle.rogue"
 $include "Geometry/Line.rogue"
 $include "Geometry/Quad.rogue"

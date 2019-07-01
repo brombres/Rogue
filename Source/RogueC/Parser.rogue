@@ -1237,6 +1237,7 @@ class Parser
               if (not param.initial_value) param.initial_value = param.type.create_default_value( param.t )
             endIf
           endWhile
+          consume_eols
           must_consume( TokenType.symbol_close_paren )
         endIf
       endIf
