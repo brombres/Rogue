@@ -4087,7 +4087,11 @@ augment CmdSelect
 
       writer.print( ") ? (" )
 
-      if (value_type.is_reference) writer.print("ROGUE_ARG(")
+      if (value_type.is_reference)
+        writer.print("ROGUE_ARG((")
+        writer.print( value_type )
+        writer.print(")")
+      endIf
       select_case.value.write_cpp( writer )
       if (value_type.is_reference) writer.print(")")
 
