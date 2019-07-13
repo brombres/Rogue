@@ -862,8 +862,6 @@ class ListRewriter<<$DataType>> : GenericListRewriter
         return false
       endIf
 
-      return (read_index < list.count)
-
     method on_use->this
       return this
 
