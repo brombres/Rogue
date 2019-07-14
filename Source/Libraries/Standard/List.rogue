@@ -422,6 +422,13 @@ class List<<$DataType>> : GenericList
       if (this is other) return true
       return count == other.count and locate(other).exists
 
+    method operator*( n:Int32 )->$DataType[]
+      # Creates a new list containing 'n' concatenated copies of this list.
+      # Useful for creating an array-style list. For example, a list of 256 0's: [0] * 256
+      local result = $DataType[]( this.count * n )
+      loop (n) result.add( this )
+      return result
+
     method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
       # n           - A value between 0 and (permutation_count-1).  0 gives the
       #               original list and (permutation_count-1) gives the list in
