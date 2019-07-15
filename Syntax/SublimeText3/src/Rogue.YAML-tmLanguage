@@ -3,7 +3,7 @@
 # Sublime Text 3 syntax file
 # Language: Rogue
 # Maintainer: Shea Orr <sorr556@gmail.com>
-# URL: https://github.com/Plasmaworks/Rogue
+# URL: https://github.com/AbePralle/Rogue
 # Last Change: 2015.06.03
 #
 # Mac OSX: Place in '~/Library/Application Support/Sublime Text 3/Packages/User/'
@@ -82,10 +82,10 @@ repository:
     - name: meta.comment.block.rogue
       contentName: comment.block.rogue
       begin: (\#\{)
-      beginCaptures: 
+      beginCaptures:
         '1': {name: comment.block.begin.rogue}
       end: (\}\#)
-      endCaptures: 
+      endCaptures:
         '1': {name: comment.block.end.rogue}
 
     - name: comment.line.number-sign.rogue
