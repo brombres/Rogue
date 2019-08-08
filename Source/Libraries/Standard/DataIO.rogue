@@ -52,31 +52,26 @@ class DataReader : Reader<<Byte>>
       #     0xxxxxxx    0 .. 127
       #     11xxxxxx  -64 ..  -1
       #
-      # - If the first two bits are "10", then the next 3 bits + 1 are the
-      #   number of following bytes. The final 3 bits of the first byte
-      #   are the most significant 3 bits of the encoded value. This results
-      #   in the following bit patterns and ranges:
+      # - If the first two bits are "10" then the data has been encoded
+      #   in the next 6 bits as well as any number of following bytes,
+      #   using 7 data bits per byte with an MSBit of 0 representing a halt
+      #   or 1 a continuation. The next bit after the leading 10 is
+      #   treated as negative magnitude.
       #
-      #     10000xxx xxxxxxxx*1  (11-bit signed data,                 -400 ..                 3FF)
-      #     10001xxx xxxxxxxx*2  (19-bit signed data,               -40000 ..               3FFFF)
-      #     10010xxx xxxxxxxx*3  (27-bit signed data,             -4000000 ..             3FFFFFF)
-      #     10011xxx xxxxxxxx*4  (35-bit signed data,          -4_00000000 ..          3_FFFFFFFF)
-      #     10100xxx xxxxxxxx*5  (43-bit signed data,        -400_00000000 ..        3FF_FFFFFFFF)
-      #     10101xxx xxxxxxxx*6  (51-bit signed data,      -40000_00000000 ..      3FFFF_FFFFFFFF)
-      #     10110xxx xxxxxxxx*7  (59-bit signed data,    -4000000_00000000 ..    3FFFFFF_FFFFFFFF)
-      #     10111xxx xxxxxxxx*8  (67-bit signed data, -4_00000000_00000000 .. 3_FFFFFFFF_FFFFFFFF)
-      #
-      # - The upper 3 bits of the 67-bit value are not intended to contain meaningful information,
-      #   but they reflect the negative or non-negative value of the overall number with 111 or 000
-      #   so that a general encoding and decoding alogorithm can be used.
+      #     10xxxxxx 0yyyyyyy            (13-bit number xxxxxxyyyyyyy)
+      #     10xxxxxx 1yyyyyyy 0zzzzzzz   (20-bit number xxxxxxyyyyyyyzzzzzzz)
+      #     etc.
       local b = read : Int32
       if ((b & 0xc0) != 0x80) return b->Byte.signed
 
-      local n = ((b:>>>:3) & 0b111) + 1
-      local result = (b & 0b111) : Int64   #  0..7 (unsigned)
-      if (result >= 4) result -= 8         # -4..3 (signed)
+      local result = (b & 0b0011_1111) : Int64   #  0..63  (unsigned)
+      if (result >= 32) result -= 64           # -64..63 (signed)
 
-      loop (n) result = (result :<<: 8) | read
+      loop
+        local next = read
+        result = (result :<<: 7) | (next & 0b0111_1111)
+        if (not (next & 0b1000_0000)) escapeLoop
+      endLoop
 
       return result
 
@@ -188,51 +183,28 @@ class DataWriter : Writer<<Byte>>
       return write_int32( value )
 
     method write_int64x( value:Int64 )->this
-      # Writes 'value' in 1..9 bytes using a variable-length encoding scheme.
-      # Encoded values are treated as signed.
-      #
-      # - Values -64..127 are written as-is using a single byte. The first two bits
-      #   will not be "10":
-      #
-      #     0xxxxxxx    0 .. 127
-      #     11xxxxxx  -64 ..  -1
-      #
-      # - Otherwise a header byte is written in the form "10nnnxxx", where (nnn+1)
-      #   indicates the following number of bytes 1..8 and "xxx" is the most
-      #   significant 3 bits of the encoded value. This results in the following
-      #   bit patterns and ranges:
-      #
-      #     10000xxx xxxxxxxx*1  (11-bit signed data,                 -400 ..                 3FF)
-      #     10001xxx xxxxxxxx*2  (19-bit signed data,               -40000 ..               3FFFF)
-      #     10010xxx xxxxxxxx*3  (27-bit signed data,             -4000000 ..             3FFFFFF)
-      #     10011xxx xxxxxxxx*4  (35-bit signed data,          -4_00000000 ..          3_FFFFFFFF)
-      #     10100xxx xxxxxxxx*5  (43-bit signed data,        -400_00000000 ..        3FF_FFFFFFFF)
-      #     10101xxx xxxxxxxx*6  (51-bit signed data,      -40000_00000000 ..      3FFFF_FFFFFFFF)
-      #     10110xxx xxxxxxxx*7  (59-bit signed data,    -4000000_00000000 ..    3FFFFFF_FFFFFFFF)
-      #     10111xxx xxxxxxxx*8  (67-bit signed data, -4_00000000_00000000 .. 3_FFFFFFFF_FFFFFFFF)
-      #
-      # - The upper 3 bits of the 67-bit value are not intended to contain meaningful information,
-      #   but they reflect the negative or non-negative value of the overall number with 111 or 000
-      #   so that a general encoding and decoding alogorithm can be used.
+      # See read_int64x for format notes.
       if (value >= -64 and value < 128)
         return write( value )
       else
         local extra_bytes = 1
-        local shift = 8
-        local min = -0x400
-        local max =  0x3FF
+        local shift = 7
+        local min = -0x1000
+        local max =  0x0FFF
         loop 7
           if (value >= min and value <= max) escapeLoop
           ++extra_bytes
-          shift += 8
-          min = min :<<: 8
-          max = (max :<<: 8) | 0xFF
+          shift += 7
+          min = min :<<: 7
+          max = (max :<<: 7) | 0xFF
         endLoop
-        write( 0b10_000_000 | ((extra_bytes-1):<<:3) | ((value:>>>:shift)&0b111) )
-        loop extra_bytes
-          shift -= 8
-          write( (value:>>>:shift) & 0xFF )
+        write( 0b10_000000 | ((value:>>>:shift)&0b11_1111) )
+        loop extra_bytes-1
+          shift -= 7
+          write( 0b1000_0000 | ((value:>>>:shift) & 0b0111_1111) )
         endLoop
+        shift -= 7
+        write( (value:>>>:shift) & 0b0111_1111 )
       endIf
       return this
 
