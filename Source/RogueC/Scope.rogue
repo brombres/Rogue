@@ -564,22 +564,6 @@ class Scope
         if (candidates.has_match) return candidates.match
       endIf
 
-      # If some candidates have all Function arguments and others have no function arguments,
-      # discard candidates with function arguments.  (functions would have been matched already)
-      #{
-      forEach (m in candidates.available)
-        local some_non_fn_params = false
-
-        forEach (param in m.parameters)
-          if (not param.type.is_function) some_non_fn_params = true
-        endForEach
-
-        if (some_non_fn_params or m.parameters.count == 0)
-          candidates.compatible.add( m )
-        endIf
-      endForEach
-      }#
-
       if (not candidates.refine_matches) return null
       if (candidates.has_match) return candidates.match
 
@@ -686,12 +670,11 @@ class Scope
         forEach (m in candidates.available)
           local param_type = m.parameters.first.type
           param_type.organize
-          if (param_type is Program.type_String and arg_type.has_method_named("to_Value"))
+          if (param_type is Program.type_Value and arg_type.has_method_named("to_Value"))
             args[0] = args[0].cast_to( Program.type_Value, this )
             return m
           endIf
         endForEach
-
       endIf
 
       # Choose a [preferred] method if one is available
