@@ -102,8 +102,11 @@ class Method
 
       return m
 
-    method accepts_arg_count( n:Int32 )->Logical
-      return n >= min_args and n <= parameters.count
+    method accepts_arg_count( n:Int32, &var_args )->Logical
+      if (n >= min_args and n <= parameters.count) return true
+      if (not var_args) return false
+      if (parameters.is_empty or parameters.last.type is not Program.type_VarArgs) return false
+      return n >= (parameters.count-1)
 
     method add_parameter( p_t:Token, p_name:String, p_type=null:Type )->Local
       local p = Local( p_t, p_name, p_type )

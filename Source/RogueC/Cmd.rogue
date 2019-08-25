@@ -6869,6 +6869,9 @@ class CmdTypedLiteralList : Cmd
       local result = CmdAccess( t, list_var ).resolve( scope )
       return result
 
+    method to->String
+      return "CmdTypedLiteralList($,$)"(type,elements)
+
     method type->Type
       return Program.get_type_reference( t, context.name )
 endClass

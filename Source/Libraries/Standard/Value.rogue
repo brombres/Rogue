@@ -504,6 +504,9 @@ class Value
     method to->ValueTable
       return @{}
 
+    method to->VarArgs
+      return VarArgs().[ add(this) ]
+
     method to<<$AsType>>()->$AsType [macro]
       return (this->Object as $AsType)
 
@@ -1197,7 +1200,7 @@ class ValueList : Value
       data.insert( other, before_index )
       return this
 
-    method clear->ValueList
+    method clear->this
       data.clear
       return this
 
@@ -1338,6 +1341,11 @@ class ValueList : Value
     method to->ValueList
       return this
 
+    method to->VarArgs
+      local result = VarArgs().[ reserve(count) ]
+      forEach (value in this) result.add( value )
+      return result
+
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
 
@@ -1384,6 +1392,48 @@ $endIf
 
       method parse( json:String )->ValueList
         return JSON.parse_list( json )
+endClass
+
+class VarArgs : ValueList
+  METHODS
+    method cloned->VarArgs
+      local result = VarArgs( count )
+      forEach (value in this)
+        if (value) result.add( value.cloned )
+      endForEach
+      return result
+
+    method add( value:Value )->this
+      data.add( value )
+      return this
+
+    method add( other:Value[] )->this
+      data.add( other )
+      return this
+
+    method insert( value:Value, before_index=0:Int32 )->this
+      data.insert( value, before_index )
+      return this
+
+    method insert( other:Value[], before_index=0:Int32 )->this
+      data.insert( other, before_index )
+      return this
+
+    method clear->this
+      data.clear
+      return this
+
+    method reserve( additional_elements:Int32 )->this
+      data.reserve( additional_elements )
+      return this
+
+    method sort( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
+      data.sort( compare_fn )
+      return this
+
+    method sorted( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
+      return cloned.sort( compare_fn ) as VarArgs
+
 endClass
 
 class ValueTable : Value

@@ -54,6 +54,7 @@ class Program [essential singleton]
     type_Exception     : Type
     type_WeakReference : Type
     type_Value         : Type
+    type_VarArgs       : Type
     type_TypeInfo      : Type
     type_MethodInfo    : Type
     m_MethodInfo_call  : Method
@@ -258,6 +259,7 @@ class Program [essential singleton]
       type_Exception     = create_built_in_type( "Exception", Attribute.is_class )
       type_WeakReference = create_built_in_type( "WeakReference", Attribute.is_class )
       type_Value         = create_built_in_type( "Value", Attribute.is_class )
+      type_VarArgs       = create_built_in_type( "VarArgs", Attribute.is_class )
       type_TypeInfo      = create_built_in_type( "TypeInfo", Attribute.is_class )
       type_MethodInfo    = create_built_in_type( "MethodInfo", Attribute.is_class )
       type_Metacode      = create_built_in_type( "Metacode", Attribute.is_class )
