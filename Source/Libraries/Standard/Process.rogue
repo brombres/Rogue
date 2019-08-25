@@ -376,6 +376,15 @@ class WindowsProcess : Process
 
   METHODS
     method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )
+      # On Windows a cmd like:           "space separated.exe" "arg"
+      # Must be wrapped in extra quotes: ""space separated.exe" "arg""
+      if (cmd.count('"') > 2) cmd = ''"$"'' (cmd)
+
+      # I forget if there's a specific reason I chose 'cmd.exe /c' - perhaps just to do a path search.
+      # If there are any troubles with this approach, might be worth doing path searching manually
+      # (calling the Windows API function to do a path search) and requiring a caller that wants to
+      # run a cmd.exe built-in to specify cmd.exe themselves. --Abe
+
       init( ["cmd.exe","/c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
 
     method init( args, &readable, &writable, is_blocking=false, &inherit_environment )
@@ -387,13 +396,6 @@ class WindowsProcess : Process
 
     method launch( &readable, &writable, &inherit_environment )->Logical
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
-
-      forEach (arg in writer=args.rewriter)
-        # On Windows a cmd like:           "space separated.exe" "arg"
-        # Must be wrapped in extra quotes: ""space separated.exe" "arg""
-        if (arg.count('"') > 2) arg = ''"$"'' (arg)
-        writer.write( arg )
-      endForEach
 
       output_reader = WindowsProcessReader()
       error_reader  = WindowsProcessReader()

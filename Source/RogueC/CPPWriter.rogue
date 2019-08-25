@@ -1291,6 +1291,9 @@ augment Program
             local name_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.name) ))
             local handler_index = -1
             if (Program.using_introspection)
+              if (not m.introspection_call_handler)
+                throw m.t.error( "[INTERNAL] $::$ is unresolved." (m.type_context,m.signature) )
+              endIf
               handler_index = m.introspection_call_handler.index
             endIf
 
@@ -1312,6 +1315,9 @@ augment Program
             local name_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.name) ))
             local handler_index = -1
             if (Program.using_introspection)
+              if (not m.introspection_call_handler)
+                throw m.t.error( "[INTERNAL] $::$ is unresolved." (m.type_context,m.signature) )
+              endIf
               handler_index = m.introspection_call_handler.index
             endIf
 
@@ -4081,7 +4087,11 @@ augment CmdSelect
 
       writer.print( ") ? (" )
 
-      if (value_type.is_reference) writer.print("ROGUE_ARG(")
+      if (value_type.is_reference)
+        writer.print("ROGUE_ARG((")
+        writer.print( value_type )
+        writer.print(")")
+      endIf
       select_case.value.write_cpp( writer )
       if (value_type.is_reference) writer.print(")")
 

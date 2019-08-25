@@ -98,6 +98,18 @@ class Scope
       if (not args) args = CmdArgs()
 
       # Validate args
+      if (args.count > m.parameters.count)
+        if (m.parameters.count and m.parameters.last.type is Program.type_VarArgs)
+          local fixed_arg_count = m.parameters.count - 1
+          local fixed_args = CmdArgs()
+          loop (fixed_arg_count) fixed_args.add( args.remove_first )
+          fixed_args.add( CmdArgs(CmdTypedLiteralList(CmdAccess(t,"VarArgs"),args)) )
+          args = fixed_args
+        else
+          throw t.error( "[INTERNAL COMPILER ERROR] More arguments than parameters $ <> $" (args,m.parameters) )
+        endIf
+      endIf
+
       while (args.count < m.parameters.count)
         local param = m.parameters[ args.count ]
 
@@ -116,7 +128,11 @@ class Scope
         if (named_arg)
           args.add( named_arg.to_value )
         elseIf (param.initial_value is null)
-          throw t.error( "No argument given for parameter '$'." (param.original_name) )
+          if (args.count == m.parameters.count-1 and m.parameters.last.type is Program.type_VarArgs)
+            args.add( CmdTypedLiteralList(CmdAccess(t,"VarArgs"),CmdArgs()) )
+          else
+            throw t.error( "No argument given for parameter '$'." (param.original_name) )
+          endIf
         else
           args.add( param.initial_value.cloned )
         endIf
@@ -354,11 +370,69 @@ class Scope
 
       endIf
 
+      local has_fixed_args=false, has_var_args=false
+      local has_arg_type_var_args = false
+      if (args)
+        forEach (arg in args)
+          if (arg.type is Program.type_VarArgs)
+            has_arg_type_var_args = true
+            escapeForEach
+          endIf
+        endForEach
+      endIf
       forEach (m in candidates.available)
         forEach (param in m.parameters) param.type.organize
-        if (m.accepts_arg_count(total_arg_count)) candidates.compatible.add( m )
+        if (has_arg_type_var_args and m.accepts_arg_count(total_arg_count))
+          # Any argument of type VarArgs will be sent as a fixed parameter (not wrapped in another VarArgs) if possible
+          has_fixed_args = true
+          candidates.compatible.add( m )
+        elseIf (m.accepts_arg_count(total_arg_count,&var_args))
+          if (m.parameters.count > 0 and m.parameters.last.type is Program.type_VarArgs)
+            has_var_args = true
+          else
+            has_fixed_args = true
+          endIf
+          candidates.compatible.add( m )
+        endIf
       endForEach
       if (not candidates.update_matches) return null
+
+      # If multiple methods match and with a mix of var-args and non-var-args,
+      # discard the var-args methods.
+      if (has_fixed_args and has_var_args)
+        has_var_args = false
+        forEach (m in candidates.available)
+          if (m.accepts_arg_count(total_arg_count)) candidates.compatible.add( m )
+        endForEach
+        if (not candidates.refine_matches) return null
+        if (candidates.has_match) return candidates.match
+
+      elseIf (has_var_args)
+        # Else if multiple var-args methods match, keep only those with the highest
+        # number of parameters and convert an appropriate number of args into a
+        # ValueList
+        local max_params = 0
+        max_params = max_params.or_larger( (forEach in candidates.available).parameters.count )
+
+        if (args)
+          local fixed_arg_count = max_params - 1
+          if (args.count >= fixed_arg_count)
+            local fixed_args = CmdArgs()
+            loop (fixed_arg_count) fixed_args.add( args.remove_first )
+            fixed_args.add( CmdArgs(CmdTypedLiteralList(CmdAccess(access.t,"ValueList"),args.cloned)) )
+            args.clear.add( fixed_args )
+            arg_count = args.count
+            total_arg_count = arg_count + named_arg_count
+          endIf
+        endIf
+
+        forEach (m in candidates.available)
+          if (m.parameters.count == max_params) candidates.compatible.add( m )
+        endForEach
+
+        if (not candidates.refine_matches) return null
+        if (candidates.has_match) return candidates.match
+      endIf
 
       if (access.named_args)
         # Throw out any method that does not have one of the supplied named parameters
@@ -430,7 +504,7 @@ class Scope
             forEach (index of args)
               local arg_type = args[index].type
               local param_type = m.parameters[index].type
-              necessary (arg_type is param_type)
+              necessary (arg_type is param_type or (has_var_args and index==arg_count-1))
             endForEach
           satisfied
             candidates.compatible.add( m )
@@ -481,7 +555,7 @@ class Scope
             local m = candidates.match
             forEach (index of args)
               local arg = args[index]
-              if (arg.is_generic_function)
+              if (arg.is_generic_function and index < m.parameters.count)
                 local fn = (arg as CmdCreateFunction).cloned( null as CloneArgs )
                 fn.is_generic = false
                 args[index] = fn
@@ -563,22 +637,6 @@ class Scope
         candidates.update_matches
         if (candidates.has_match) return candidates.match
       endIf
-
-      # If some candidates have all Function arguments and others have no function arguments,
-      # discard candidates with function arguments.  (functions would have been matched already)
-      #{
-      forEach (m in candidates.available)
-        local some_non_fn_params = false
-
-        forEach (param in m.parameters)
-          if (not param.type.is_function) some_non_fn_params = true
-        endForEach
-
-        if (some_non_fn_params or m.parameters.count == 0)
-          candidates.compatible.add( m )
-        endIf
-      endForEach
-      }#
 
       if (not candidates.refine_matches) return null
       if (candidates.has_match) return candidates.match
@@ -686,12 +744,11 @@ class Scope
         forEach (m in candidates.available)
           local param_type = m.parameters.first.type
           param_type.organize
-          if (param_type is Program.type_String and arg_type.has_method_named("to_Value"))
+          if (param_type is Program.type_Value and arg_type.has_method_named("to_Value"))
             args[0] = args[0].cast_to( Program.type_Value, this )
             return m
           endIf
         endForEach
-
       endIf
 
       # Choose a [preferred] method if one is available

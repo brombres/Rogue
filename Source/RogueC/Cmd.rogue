@@ -3646,6 +3646,7 @@ class CmdCall : Cmd
     method resolve( scope:Scope )->Cmd
       if (context) context = context.resolve(scope).require_value
       args.resolve( scope )
+      method_info.resolve
       return this
 
     method resolve_adjust( scope:Scope, delta:Int32 )->Cmd
@@ -6867,6 +6868,9 @@ class CmdTypedLiteralList : Cmd
 
       local result = CmdAccess( t, list_var ).resolve( scope )
       return result
+
+    method to->String
+      return "CmdTypedLiteralList($,$)"(type,elements)
 
     method type->Type
       return Program.get_type_reference( t, context.name )
