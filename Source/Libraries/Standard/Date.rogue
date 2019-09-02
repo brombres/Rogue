@@ -22,7 +22,11 @@ class Date( timestamp=System.time:Real64 ) [compound]
     SATURDAY  = 6
 
   GLOBAL METHODS
-    method create( year:Int32, month:Int32, day:Int32, hour=0:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Date
+    method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Date
+      # A year earlier than 1970 will result a date of 1969.12.31 on Mac at least.
+      # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
+      # e.g. 19 -> 2019.
+      if (year < 100) year = (Date.now.year/100)*100 + year
       native @|time_t cur_seconds = 0;
               |tm* zero_date = localtime( &cur_seconds );
               |
