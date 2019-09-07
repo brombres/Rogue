@@ -503,6 +503,39 @@ class String
       # Returns 'true' if all character codes in this string are in the range 0..127.
       return native( "$this->is_ascii" )->Logical
 
+    method is_false->Logical
+      # Returns true if this string is "false", "f", "no", "n", "off", "disable", or "disabled", case-insensitive.
+      #
+      # The reason there is an is_false() instead of an is_true() is partly illustrated by the following example:
+      #
+      #   println Value(st)->Logical
+      #   # "true" prints:  true
+      #   # "false" prints: true (because any non-null Value string is considered logically true)
+      #
+      #   # Existing is_false()
+      #   if (st.is_false) println false
+      #   else             println Value(st)->Logical
+      #   # "true" prints:  true
+      #   # "false" prints: false
+      #
+      #   # Hypothetical is_true()
+      #   if (st.is_true) println true
+      #   else            println Value(st)->Logical
+      #   # "true" prints:  true
+      #   # "false" prints: true
+      #
+      # In other words, simply converting any string to Value will always give a to->Logical of true,
+      # so is_false() provides a way to intercept strings that represent Logical false as a special case.
+      if (this.equals( "false",    &ignore_case )) return true
+      if (this.equals( "f",        &ignore_case )) return true
+      if (this.equals( "no",       &ignore_case )) return true
+      if (this.equals( "n",        &ignore_case )) return true
+      if (this.equals( "off",      &ignore_case )) return true
+      if (this.equals( "disable",  &ignore_case )) return true
+      if (this.equals( "disabled", &ignore_case )) return true
+      if (this.equals( "0" )) return true
+      return false
+
     method is_integer->Logical
       if (count == 0) return false
       forEach (ch at index in this)
