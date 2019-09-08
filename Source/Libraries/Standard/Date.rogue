@@ -22,7 +22,11 @@ class Date( timestamp=System.time:Real64 ) [compound]
     SATURDAY  = 6
 
   GLOBAL METHODS
-    method create( year:Int32, month:Int32, day:Int32, hour=0:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Date
+    method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Date
+      # A year earlier than 1970 will result a date of 1969.12.31 on Mac at least.
+      # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
+      # e.g. 19 -> 2019.
+      if (year < 100) year = (Date.now.year/100)*100 + year
       native @|time_t cur_seconds = 0;
               |tm* zero_date = localtime( &cur_seconds );
               |
@@ -95,6 +99,24 @@ class Date( timestamp=System.time:Real64 ) [compound]
         local y  = parts[0]->Int32
         local m  = parts[1]->Int32
         local d  = parts[2]->Int32
+        return Date.ymd( y, m, d )
+
+      elseIf (date.extract_strings("$ $(I), $(I)",parts) or
+          date.extract_strings("$ $(I) $(I)",parts))
+        # August 29, 2019
+        # August 29 2019
+        local m  = month_name_to_index( parts[0]->String )
+        local d  = parts[1]->Int32
+        local y  = parts[2]->Int32
+        return Date.ymd( y, m, d )
+
+      elseIf (date.extract_strings("$(I) $, $(I)",parts) or
+          date.extract_strings("$(I) $ $(I)",parts))
+        # 29 August, 2019
+        # 29 August 2019
+        local d  = parts[0]->Int32
+        local m  = month_name_to_index( parts[1]->String )
+        local y  = parts[2]->Int32
         return Date.ymd( y, m, d )
 
       else
@@ -263,6 +285,8 @@ class Date( timestamp=System.time:Real64 ) [compound]
 endClass
 
 class TimeInterval( total_seconds:Real64 ) [compound]
+  # This time interval can be broken down into days, hours, minutes, seconds, and milliseconds.
+  # Those values are all independent and precise.
   GLOBAL METHODS
     method create( flag=true:Logical, days=0:Real64, hours=0:Real64, minutes=0:Real64, seconds=0:Real64, milliseconds=0:Real64 )->TimeInterval
       # 'flag' is ignored and is a kludge to disambiguate the compound initializers from this global create method.

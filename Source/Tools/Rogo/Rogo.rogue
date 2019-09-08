@@ -10,6 +10,9 @@
 #$ LIBRARIES    = libfreetype6-dev(freetype2)
 #$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
+#$ LIBRARIES    = name(package)
+#$ LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags>)
+
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
 #   $LIBRARY_FLAGS(lib1,lib2) -> -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...
 
@@ -570,6 +573,13 @@ routine find_macos_library( name:String, package:String )->Logical
     return true
   endIf
 
+  # "Library" may be executable package - use 'which' to check.
+  if (0 == System.run("which $ > /dev/null 2>&1"(package)))
+    cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
+    save_cache
+    return true
+  endIf
+
   return false
 endRoutine
 
@@ -622,6 +632,13 @@ routine find_linux_library( name:String, package:String )->Logical
     endIf
   endIf
 
+  # "Library" may be executable package - use 'which' to check.
+  if (0 == System.run("which $ > /dev/null 2>&1"(package)))
+    cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
+    save_cache
+    return true
+  endIf
+
   return false
 endRoutine
 
@@ -644,7 +661,10 @@ routine install_linux_library( library:Value )
     local install_cmd = library//name
     if (library.contains("install")) install_cmd = library//install
 
-    if (not run("$ $" (package_manager_install,install_cmd)) or not find_linux_library(library_name,package))
+    local cmd = "$ $" (package_manager_install,install_cmd)
+    print "> "
+    println cmd
+    if (0 != System.run(cmd) or not find_linux_library(library_name,package))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
   endIf

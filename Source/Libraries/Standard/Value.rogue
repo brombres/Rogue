@@ -216,6 +216,11 @@ class Value
       endForEach
       return false
 
+    method is_false->Logical
+      # Default behavior is to return (not this->Logical).
+      # StringValue overrides is_false() to return is_false() called on its string value.
+      return (not this->Logical)
+
     method is_int32->Logical
       return false
 
@@ -1046,6 +1051,10 @@ class StringValue( value:String ) : Value
       if (index < 0 or index >= value.count) return UndefinedValue
       return Value( ""+value[index] )
 
+    method is_false->Logical
+      # Returns is_false() called on this value's string.
+      return value.is_false
+
     method is_string->Logical
       return true
 
@@ -1077,7 +1086,7 @@ class StringValue( value:String ) : Value
       return value->Int64
 
     method to->Logical
-      return true
+      return not value.is_false
 
     method to->Real64
       return value->Real64
