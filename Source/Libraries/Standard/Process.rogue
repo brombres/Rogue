@@ -12,16 +12,16 @@ class Process
   GLOBAL METHODS
     method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )->Process
       if (System.is_windows)
-          return WindowsProcess( cmd, &readable, &writable, &=is_blocking, &inherit_environment )
+          return WindowsProcess( cmd, &=readable, &=writable, &=is_blocking, &=inherit_environment )
       else
           return PosixProcess( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
       endIf
 
     method create( args:String[], &readable, &writable, &is_blocking, &inherit_environment )->Process
       if (System.is_windows)
-        return WindowsProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
+        return WindowsProcess( args, &=readable, &=writable, &=is_blocking, &=inherit_environment )
       else
-        return PosixProcess( args, &readable, &writable, &=is_blocking, &inherit_environment )
+        return PosixProcess( args, &=readable, &=writable, &=is_blocking, &=inherit_environment )
       endIf
 
     method run( cmd:String, &inherit_environment, &writable )->ProcessResult
