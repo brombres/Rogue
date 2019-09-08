@@ -1086,7 +1086,7 @@ class StringValue( value:String ) : Value
       return value->Int64
 
     method to->Logical
-      return true
+      return not value.is_false
 
     method to->Real64
       return value->Real64
