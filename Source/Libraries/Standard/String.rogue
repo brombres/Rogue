@@ -203,6 +203,15 @@ class String
     method clipped( &left=0:Int32, &right=0:Int32 )->String
       return from( left, count-(right+1) )
 
+    method compare_to( other:String, &ignore_case )->Int32
+      if (other is null) return 1
+      if (ignore_case)
+        # to_lowercase() only creates a new object if the string is not lowercase already
+        return (to_lowercase <> other.to_lowercase)
+      else
+        return this <> other
+      endIf
+
     method consolidated->String
       return StringConsolidationTable[ this ]
 

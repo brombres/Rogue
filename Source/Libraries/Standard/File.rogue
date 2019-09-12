@@ -1595,7 +1595,7 @@ class FileListing
         endContingent
       endForEach
 
-      results.sort( (a,b)=>(a<b) )
+      results.sort( (a,b)=>(a.to_lowercase<b.to_lowercase) )
 
     method collect( filename:String )
       if (options.is_ignoring_hidden and filename.begins_with('.')) return
