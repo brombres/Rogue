@@ -32,6 +32,7 @@ module Bitmap
 
 
 $include "Bitmap/Color.rogue"
+$include "Bitmap/HSB.rogue"
 $include "Bitmap/JPEG.rogue"
 $include "Bitmap/PNG.rogue"
 
