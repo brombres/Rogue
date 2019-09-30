@@ -485,6 +485,9 @@ class Bitmap
     method get( x:Int32, y:Int32 )->Color
       return pixels[ y*width + x ]
 
+    method get( xy:XY )->Color
+      return get( xy.x, xy.y )
+
     method is_opaque->Logical
       local pixel_count = width * height
       native @|RogueInt32* data = (RogueInt32*) $pixels->data->as_int32s;
@@ -716,6 +719,9 @@ class Bitmap
     method set( x:Int32, y:Int32, color:Color )->this
       pixels[ y*width + x ] = color
       return this
+
+    method set( xy:XY, color:Color )->this
+      return set( xy.x, xy.y, color )
 
     method size->XY
       return XY( width, height )
