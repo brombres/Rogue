@@ -6,6 +6,7 @@ class BresenhamLineGenerator
     y1, y2, y, step_y, y_error : Int32
     error                      : Int32
     is_horizontal              : Logical
+    has_another                : Logical
 
   METHODS
     method init
@@ -26,6 +27,7 @@ class BresenhamLineGenerator
       return reset( a.x, a.y, b.x, b.y )
 
     method reset( x1, y1, x2, y2 )->this
+      has_another = true
       error = 0
       x = x1
       y = y1
@@ -78,6 +80,12 @@ class BresenhamLineGenerator
 
     method is_finished->Logical
       return (x == x2 and y == y2)
+
+    method read->XY
+      local result = this->XY
+      if (is_finished) has_another = false
+      else             advance
+      return result
 
     method steps_remaining->Int32
       if (is_horizontal)
