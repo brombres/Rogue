@@ -483,7 +483,11 @@ class Bitmap
       return false
 
     method get( x:Int32, y:Int32 )->Color
-      return pixels[ y*width + x ]
+      if (x < 0 or y < 0 or x >= width or y >= height)
+        return Color(0)
+      else
+        return pixels[ y*width + x ]
+      endIf
 
     method get( xy:XY )->Color
       return get( xy.x, xy.y )
@@ -717,7 +721,9 @@ class Bitmap
       return file.save( to_jpeg_bytes(quality) )
 
     method set( x:Int32, y:Int32, color:Color )->this
-      pixels[ y*width + x ] = color
+      if (x >= 0 and y >= 0 and x < width and y < height)
+        pixels[ y*width + x ] = color
+      endIf
       return this
 
     method set( xy:XY, color:Color )->this
