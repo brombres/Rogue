@@ -835,6 +835,25 @@ augment Byte[]
       else           return buffer->String.to_uppercase
 endAugment
 
+augment String[]
+  METHODS
+    method join( separator="\n":String )->String
+      # A better version of join() for String lists
+      local total_count = 0
+      forEach (line in this) total_count += line.count
+      if (this.count) total_count += separator.count * (this.count-1)
+
+      local builder = StringBuilder( total_count )
+      local first = true
+      forEach (line in this)
+        if (first) first = false
+        else       builder.print( separator )
+        builder.print( line )
+      endForEach
+
+      return builder->String
+endAugment
+
 class GenericListRewriter [abstract];
 
 class ListRewriter<<$DataType>> : GenericListRewriter
