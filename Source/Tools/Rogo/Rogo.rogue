@@ -93,6 +93,34 @@ if (not buildfiles.count)
        |
        |# "rogo_default" will run in the absence of any other command line argument.
        |
+       |# The following "comment directives" can be used in this file to control how RogueC compiles it and to
+       |# manage automatic dependency installation and linking.
+       |
+       |# Each of the following should be on a line beginning with the characters #$ (preceding whitespace is fine).
+       |# Sample args are given.
+       |
+       |#   ROGUEC       = roguec       # Path to roguec compiler to compile this file with
+       |#   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
+       |#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof   # C++ compiler path and/or invocation
+       |#   CPP_ARGS     = -a -b -c          # Additional C++ args
+       |#   LINK         = true              # Links following LIBRARIES with this Build file
+       |#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes these additional flags
+       |#   LINK         = false             # Linking turned off for following LIBRARIES - info can still be obtained from #$LIBRARY_FLAGS()
+       |#   LINK(macOS)  = ...               # Options applying only to System.os=="macOS" (use with any OS and any comment directive)
+       |#   LIBRARIES    = libalpha
+       |#   LIBRARIES    = libbeta(library-name)
+       |#   LIBRARIES    = libfreetype6-dev(freetype2)
+       |#   DEPENDENCIES = Library/Rogue/**/*.rogue
+       |#
+       |#   LIBRARIES    = name(package)
+       |#   LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags>)
+       |#
+       |# The following macro is replaced within this file (Build.rogue) - the libraries should also be declared in #$ LIBRARIES:
+       |#
+       |#   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
+       |#     ->
+       |#   -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...   # sample replacement
+       |
        |# description()s are optional - Rogo uses introspection to determine which commands are available.
        |# 'rogo help default' displays the description for "default", etc.
        |description( "default", "The default action is performed when no other actions are specified. Use 'rogo default' to explicitly perform the default option." )

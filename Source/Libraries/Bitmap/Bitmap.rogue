@@ -32,6 +32,7 @@ module Bitmap
 
 
 $include "Bitmap/Color.rogue"
+$include "Bitmap/HSB.rogue"
 $include "Bitmap/JPEG.rogue"
 $include "Bitmap/PNG.rogue"
 
@@ -99,10 +100,16 @@ class Bitmap
       height += rows
       return this
 
-    method blit( dest_bitmap:Bitmap, pos:XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+    method blit( dest_bitmap:Bitmap, x:Int32, y:Int32, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( dest_bitmap, XY(x,y), &=blit_fn )
+
+    method blit( dest_bitmap:Bitmap, pos=XY(0,0):XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
       blit( Box(0,0,size), dest_bitmap, pos, &=blit_fn )
 
-    method blit( bounds:Box, dest_bitmap:Bitmap, dest_position:XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+    method blit( bounds:Box, dest_bitmap:Bitmap, x:Int32, y:Int32, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( bounds, dest_bitmap, XY(x,y), &=blit_fn )
+
+    method blit( bounds:Box, dest_bitmap:Bitmap, dest_position=XY(0,0):XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
       local src_x1  = bounds.position.x->Int32
       local src_y1  = bounds.position.y->Int32
       local w       = bounds.width->Int32
@@ -482,7 +489,14 @@ class Bitmap
       return false
 
     method get( x:Int32, y:Int32 )->Color
-      return pixels[ y*width + x ]
+      if (x < 0 or y < 0 or x >= width or y >= height)
+        return Color(0)
+      else
+        return pixels[ y*width + x ]
+      endIf
+
+    method get( xy:XY )->Color
+      return get( xy.x, xy.y )
 
     method is_opaque->Logical
       local pixel_count = width * height
@@ -713,8 +727,13 @@ class Bitmap
       return file.save( to_jpeg_bytes(quality) )
 
     method set( x:Int32, y:Int32, color:Color )->this
-      pixels[ y*width + x ] = color
+      if (x >= 0 and y >= 0 and x < width and y < height)
+        pixels[ y*width + x ] = color
+      endIf
       return this
+
+    method set( xy:XY, color:Color )->this
+      return set( xy.x, xy.y, color )
 
     method size->XY
       return XY( width, height )

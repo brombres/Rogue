@@ -688,7 +688,7 @@ augment Program
         if (first) first = false
         else       writer.println ","
 
-        if (type.has_object_references and not type.is_aspect)
+        if (type is Program.type_Array or (type.has_object_references and not type.is_aspect))
           if (type.is_reference_array)
             writer.print "RogueArray_trace"
           else
