@@ -740,8 +740,6 @@ RogueObject* RogueType_singleton( RogueType* THIS )
 
     if ((fn = THIS->init_object_fn)) r = fn( ROGUE_ARG(r) );
 
-    ROGUE_INCREF(r);
-
     ROGUE_SET_SINGLETON(THIS, r);
 
     ROGUE_SINGLETON_UNLOCK;
