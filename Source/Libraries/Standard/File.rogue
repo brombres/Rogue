@@ -398,7 +398,7 @@ class File
     method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
       return join(String[][part1, part2, part3, part4, part5, part6])
 
-    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
+    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders, &unsorted )->String[]
       # Use the filepattern '**' for a recursive listing.
       local options = FileOptions()
       if (ignore_hidden)    options = options.ignore_hidden
@@ -406,6 +406,7 @@ class File
       if (omit_path)        options = options.omit_path
       if (files)            options = options.files
       if (folders)          options = options.folders
+      if (unsorted)         options = options.unsorted
       return listing( folder, filepattern, options )
 
     method listing( folder:String, filepattern:String, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
@@ -1041,6 +1042,7 @@ class FileOptions( flags=0:Int32 ) [compound]
     FLAG_FOLDERS            = 16
     FLAG_BOTH               = 24
     FLAG_IGNORE_HIDDEN      = 32
+    FLAG_UNSORTED           = 64
 
   METHODS
     method absolute->FileOptions [macro]
@@ -1092,6 +1094,9 @@ class FileOptions( flags=0:Int32 ) [compound]
     method is_showing_hidden->Logical [macro]
       return (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
 
+    method is_unsorted->Logical [macro]
+      return (this.flags & FileOptions.FLAG_UNSORTED)
+
     method limited->FileOptions [macro]
       return FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
 
@@ -1106,6 +1111,9 @@ class FileOptions( flags=0:Int32 ) [compound]
 
     method show_hidden->FileOptions [macro]
       return FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
+
+    method unsorted->FileOptions [macro]
+      return FileOptions( this.flags | FileOptions.FLAG_UNSORTED )
 
 endClass
 
@@ -1595,7 +1603,9 @@ class FileListing
         endContingent
       endForEach
 
-      results.sort( (a,b) => (a.compare_to(b,&ignore_case) < 0) )
+      if (not options.is_unsorted)
+        results.sort( (a,b) => (a.compare_to(b,&ignore_case) < 0) )
+      endIf
 
     method collect( filename:String )
       if (options.is_ignoring_hidden and filename.begins_with('.')) return

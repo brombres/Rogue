@@ -13,23 +13,23 @@ class Files
         this.base_folder = this.base_folder.rightmost( -2 )
       endIf
 
-    method init( base_folder:String, pattern:FilePattern, &ignore_hidden=true, &include_folders )
+    method init( base_folder:String, pattern:FilePattern, &ignore_hidden=true, &include_folders, &unsorted )
       init( File.fix_slashes(base_folder) )
-      add( pattern, &=ignore_hidden, &=include_folders )
+      add( pattern, &=ignore_hidden, &=include_folders, &=unsorted )
 
     method init( base_folder:String, pattern:String, &ignore_hidden=true, &include_folders )
       init( File.fix_slashes(base_folder) )
       add( pattern, &=ignore_hidden, &=include_folders )
 
-    method add( pattern:FilePattern, &ignore_hidden=true, &include_folders )->this
-      return add( pattern->String, &=ignore_hidden, &=include_folders )
+    method add( pattern:FilePattern, &ignore_hidden=true, &include_folders, &unsorted )->this
+      return add( pattern->String, &=ignore_hidden, &=include_folders, &=unsorted )
 
-    method add( pattern:String, &ignore_hidden=true, &include_folders )->this
+    method add( pattern:String, &ignore_hidden=true, &include_folders, &unsorted )->this
       local target = base_folder+pattern
       if (File.exists(target) and not File.is_folder(target))
         filepaths.add( target )
       else
-        forEach (listing_filepath in File.listing(base_folder,FilePattern(pattern),&=ignore_hidden))
+        forEach (listing_filepath in File.listing(base_folder,FilePattern(pattern),&=ignore_hidden,&=unsorted))
           if (not filepaths.contains(listing_filepath))
             if (include_folders or not File.is_folder(listing_filepath))
               filepaths.add( listing_filepath )
