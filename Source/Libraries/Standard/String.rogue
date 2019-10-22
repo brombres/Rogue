@@ -206,8 +206,42 @@ class String
     method compare_to( other:String, &ignore_case )->Int32
       if (other is null) return 1
       if (ignore_case)
-        # to_lowercase() only creates a new object if the string is not lowercase already
-        return (to_lowercase <> other.to_lowercase)
+        $if (target("C++"))
+          native @|if ($this == $other) return 0;
+                  |
+                  |RogueInt32 other_count = $other->byte_count;
+                  |RogueInt32 limit = $this->byte_count;
+                  |
+                  |int result;
+                  |if (limit == other_count)
+                  |{
+                  |  // Strings are same length
+                  |  #ifdef ROGUE_PLATFORM_WINDOWS
+                  |    result = strnicmp( $this->utf8, $other->utf8, limit );
+                  |  #else
+                  |    result = strncasecmp( $this->utf8, $other->utf8, limit );
+                  |  #endif
+                  |  if (result == 0) return 0;
+                  |}
+                  |else
+                  |{
+                  |  // Strings differ in length.  Compare the part that matches first.
+                  |  if (limit > other_count) limit = other_count;
+                  |  #ifdef ROGUE_PLATFORM_WINDOWS
+                  |    result = strnicmp( $this->utf8, $other->utf8, limit );
+                  |  #else
+                  |    result = strncasecmp( $this->utf8, $other->utf8, limit );
+                  |  #endif
+                  |  if (result == 0)
+                  |  {
+                  |    // Equal so far - the shorter string comes before the longer one.
+                  |    if (limit == other_count) return 1;
+                  |    return -1;
+                  |  }
+                  |}
+                  |if (result < 0) return -1;
+                  |else            return 1;
+        $endIf
       else
         return this <> other
       endIf
