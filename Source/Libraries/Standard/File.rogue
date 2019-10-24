@@ -511,13 +511,13 @@ class File
       infile.close
       return bytes
 
-    method load_as_string( filepath:String )->String
+    method load_as_string( filepath:String, encoding=StringEncoding.UTF8:StringEncoding )->String
       local bytes = load_as_bytes( filepath )
       if (bytes.count >= 3 and bytes.first == 0xEF)
         # Discard Byte Order Marker (BOM)
         bytes.discard( 0, 3 )
       endIf
-      return String( bytes )
+      return String( bytes, encoding )
 
     method matches_wildcard_pattern( filepath:String, pattern:String )->Logical
       # Determines whether or not the given filepath matches the given
@@ -972,8 +972,8 @@ class File
     method load_as_bytes->Byte[]
       return File.load_as_bytes( this.filepath )
 
-    method load_as_string->String
-      return File.load_as_string( this.filepath )
+    method load_as_string( encoding=StringEncoding.UTF8:StringEncoding )->String
+      return File.load_as_string( this.filepath, encoding )
 
     method matches_wildcard_pattern( pattern:String )->Logical
       return File.matches_wildcard_pattern( this.filepath, pattern )
