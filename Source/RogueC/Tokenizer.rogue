@@ -792,8 +792,14 @@ class Tokenizer
 
       satisfied
         local original_position = reader.position
-        reader.seek_location( reader.line, 1 )
-        print ''[$][$:$] '' (keyword,File.filename(filepath),reader.line)
+        local line = reader.line
+        if (comment.contains('\n'))
+          # reader.line is at end of comment. Adjust todo keyword start position
+          line -= comment.count('\n')
+          line += comment.before_first(keyword).count('\n')
+        endIf
+        reader.seek_location( line, 1 )
+        print ''[$][$:$] '' (keyword,File.filename(filepath),line)
         local consecutive_spaces = 0
         while (reader.has_another)
           local ch = reader.read
