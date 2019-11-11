@@ -5200,6 +5200,17 @@ class CmdBitwiseNot : CmdUnary
     method prefix_symbol->String
       return "!"
 
+    method resolve( scope:Scope )->Cmd
+      local result = prior.resolve( scope )
+      local cmd_not = result as CmdBitwiseNot
+      if (not cmd_not) return result
+
+      if (cmd_not.require_type is Program.type_Logical)
+        throw t.error( "Use 'not' instead of '!' to invert a Logical value." )
+      endIf
+
+      return result
+
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralInt32)
         return CmdLiteralInt32( t, !(operand as CmdLiteralInt32).value )
