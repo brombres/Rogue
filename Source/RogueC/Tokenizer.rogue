@@ -119,6 +119,7 @@ class Tokenizer
       TokenType.begin_augment_tokens  = define( StructureTokenType("(beginning of augment)").mark_non_method )
       TokenType.keyword_augment       = define( StructureTokenType("augment").mark_non_method )
       TokenType.keyword_case          = define( StructureTokenType("case") )
+      TokenType.keyword_caseNext      = define( StructureTokenType("caseNext") )
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
       TokenType.keyword_class         = define( StructureTokenType("class").mark_non_method )
       TokenType.keyword_CATEGORIES    = define( StructureTokenType("CATEGORIES").mark_non_method )

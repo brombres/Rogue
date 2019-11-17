@@ -715,6 +715,12 @@ class CmdWhich : CmdControlStructure
       # if all the cases are literal values and if no case contains a 'yield'.
       scope.control_stack.add( this )
 
+      local prev_case : CmdWhichCase
+      forEach (which_case in cases)
+        which_case.convert_case_next( prev_case )
+          prev_case = which_case
+      endForEach
+
       expression = expression.resolve( scope )
       if (expression.require_type.is_enum)
         expression = CmdAccess( t, expression, "value" ).resolve( scope )
@@ -849,15 +855,16 @@ endClass
 
 class CmdWhichCase : Cmd
   PROPERTIES
-    conditions : CmdArgs
-    statements : CmdStatementList
+    conditions   : CmdArgs
+    statements   : CmdStatementList
+    is_case_next : Logical
 
   METHODS
-    method init( t, conditions=CmdArgs(), statements=CmdStatementList() )
+    method init( t, conditions=CmdArgs(), statements=CmdStatementList(), is_case_next=false )
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdWhichCase
       if (new_t) t = new_t
-      return CmdWhichCase( t, conditions.cloned( clone_args, new_t ), statements.cloned( clone_args, new_t ) )
+      return CmdWhichCase( t, conditions.cloned( clone_args, new_t ), statements.cloned( clone_args, new_t ), is_case_next )
 
     method as_conditional( expression_var_name:String )->Cmd
       local cmd : Cmd
@@ -869,6 +876,15 @@ class CmdWhichCase : Cmd
         endIf
       endForEach
       return cmd
+
+    method convert_case_next( previous_case:CmdWhichCase )
+      if (not is_case_next) return
+      is_case_next = false
+      if (previous_case and previous_case.conditions.count)
+        conditions.add( CmdAdd(t,previous_case.conditions.last,CmdLiteralInt32(t,1)) )
+      else
+        conditions.add( CmdLiteralInt32(t,0) )
+      endIf
 
     method resolve_conditions( scope:Scope )->CmdWhichCase
       conditions.resolve( scope )
