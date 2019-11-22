@@ -709,17 +709,16 @@ class CmdWhich : CmdControlStructure
       return UndefinedValue
 
     method resolve( scope:Scope )->Cmd
+      local prev_case : CmdWhichCase
+      forEach (which_case in cases)
+        which_case.convert_case_next( prev_case )
+        prev_case = which_case
+      endForEach
 
       # Need to resolve all the cases and statements before deciding whether
       # to convert this to an if/elseIf block or a Switch.  We'll do Switch
       # if all the cases are literal values and if no case contains a 'yield'.
       scope.control_stack.add( this )
-
-      local prev_case : CmdWhichCase
-      forEach (which_case in cases)
-        which_case.convert_case_next( prev_case )
-          prev_case = which_case
-      endForEach
 
       expression = expression.resolve( scope )
       if (expression.require_type.is_enum)
