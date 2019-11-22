@@ -16,30 +16,16 @@
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
 #   $LIBRARY_FLAGS(lib1,lib2) -> -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...
 
-File.create_folder( ".rogo" )
-global cache_filepath = ".rogo/Cache-$.json" (System.os)
-global config = @{ roguec:"roguec", filepath:cache_filepath }
-global cache  = JSON.load_table( File(cache_filepath) ) : Value
+global rogo_folder    : String
+global cache_filepath : String
+global config         : Value
+global cache          : Value
 global is_cache_modified : Logical
 global link_setting = false
 #global link_args = ""
 global package_manager = "apt"
 global package_manager_install = "sudo apt-get install"
 global package_manager_list    : String
-
-local compiler_invocation : String
-native @|#if defined(DEFAULT_CXX)
-        |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
-        |#else
-           which (System.os)
-             case "Windows"
-               compiler_invocation = "cl /EHsc /nologo"
-             others
-               compiler_invocation = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
-           endWhich
-native @|#endif
-
-config//cpp = compiler_invocation
 
 local buildfiles = Files( "." )
 
@@ -61,20 +47,42 @@ forEach (arg in System.command_line_arguments)
         System.exit 1
       endIf
     endIf
-    buildfiles.add( cur_buildfile )
-    if (buildfile is null) buildfile = cur_buildfile
+    buildfiles = Files( File.folder(cur_buildfile), File.filename(cur_buildfile) )
+    buildfile = cur_buildfile
 
   else
     if (arg == "--create") should_create = true
     cmd_line_args.add( arg )
   endIf
-
 endForEach
 
+if (buildfile) rogo_folder = File.folder( File.absolute_filepath(buildfile) ) + "/.rogo"
+else           rogo_folder = ".rogo"
+
+File.create_folder( rogo_folder )
+cache_filepath = "$/Cache-$.json" (rogo_folder,System.os)
+config         = @{ roguec:"roguec", filepath:cache_filepath }
+cache          = JSON.load_table( File(cache_filepath) )
+
+local compiler_invocation : String
+native @|#if defined(DEFAULT_CXX)
+        |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
+        |#else
+           which (System.os)
+             case "Windows"
+               compiler_invocation = "cl /EHsc /nologo"
+             others
+               compiler_invocation = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
+           endWhich
+native @|#endif
+
+config//cpp = compiler_invocation
+
 if (not buildfile)
-  if (File.exists("Build.rogue")) buildfiles.add( "Build.rogue" )
-  if (File.exists("BuildCore.rogue")) buildfiles.add( "BuildCore.rogue" )
-  if (File.exists("BuildLocal.rogue")) buildfiles.add( "BuildLocal.rogue" )
+  # These add()s only succeed for files that actually exist.
+  buildfiles.add( "Build.rogue" )
+  buildfiles.add( "BuildCore.rogue" )
+  buildfiles.add( "BuildLocal.rogue" )
 endIf
 
 if (not buildfiles.count)
@@ -365,9 +373,9 @@ endIf
 local exe : String
 if (buildfile is null)
   buildfile = buildfiles[0]
-  exe = ".rogo$Build" (File.separator)
+  exe = "$$Build" (rogo_folder,File.separator)
 else
-  exe = ".rogo$$" (File.separator,File.filename(buildfile).before_first('.'))
+  exe = "$$$" (rogo_folder,File.separator,File.filename(buildfile).before_first('.'))
 endIf
 local base_name = exe   # e.g. Build
 if (System.os == "Windows") exe += ".exe"
@@ -425,7 +433,7 @@ if (needs_recompile)
   if (not File.exists(roguec)) roguec = "roguec"  # use system default
   local roguec_args = config//roguec_args->String
   local cmd =  "$ --target=C++,Console,$" (roguec,System.os)
-  cmd += " .rogo$$" (File.separator,File.filename(forEach in buildfiles))
+  cmd += " $$$" (rogo_folder,File.separator,File.filename(forEach in buildfiles))
   cmd += " --api --debug --main --output=$ $" (base_name,roguec_args)
   println cmd
   if (0 != System.run(cmd))
@@ -711,7 +719,7 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
   if (not file.exists) return
 
   local writer : PrintWriter
-  if (not skip_rewrite) writer = PrintWriter( File(".rogo/$"(file.filename)).writer )
+  if (not skip_rewrite) writer = PrintWriter( File("$/$"(rogo_folder,file.filename)).writer )
   forEach (original_line in LineReader(file))
     local line = original_line.trimmed
     if (not skip_directives)
