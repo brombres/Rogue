@@ -1876,16 +1876,20 @@ class Parser
       local t = read  # 'which'
       local cmd_which = CmdWhich( t, parse_expression )
       must_consume_eols
-      while (next_is(TokenType.keyword_case))
-        t = read  # 'case'
+      while (next_is(TokenType.keyword_case) or next_is(TokenType.keyword_caseNext))
+        t = read  # 'case' | 'caseNext'
         consume_eols
         local cmd_case = cmd_which.add_case( t )
-        local first = true
-        while (first or consume(TokenType.symbol_comma))
-          first = false
-          cmd_case.conditions.add( parse_expression )
-          consume_eols
-        endWhile
+        if (t.type is TokenType.keyword_case)
+          local first = true
+          while (first or consume(TokenType.symbol_comma))
+            first = false
+            cmd_case.conditions.add( parse_expression )
+            consume_eols
+          endWhile
+        else
+          cmd_case.is_case_next = true
+        endIf
         if (consume(TokenType.symbol_colon)) consume_eols
         parse_multi_line_statements( cmd_case.statements )
       endWhile

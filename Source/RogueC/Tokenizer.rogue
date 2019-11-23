@@ -119,6 +119,7 @@ class Tokenizer
       TokenType.begin_augment_tokens  = define( StructureTokenType("(beginning of augment)").mark_non_method )
       TokenType.keyword_augment       = define( StructureTokenType("augment").mark_non_method )
       TokenType.keyword_case          = define( StructureTokenType("case") )
+      TokenType.keyword_caseNext      = define( StructureTokenType("caseNext") )
       TokenType.keyword_catch         = define( StructureTokenType("catch") )
       TokenType.keyword_class         = define( StructureTokenType("class").mark_non_method )
       TokenType.keyword_CATEGORIES    = define( StructureTokenType("CATEGORIES").mark_non_method )
@@ -792,8 +793,14 @@ class Tokenizer
 
       satisfied
         local original_position = reader.position
-        reader.seek_location( reader.line, 1 )
-        print ''[$][$:$] '' (keyword,File.filename(filepath),reader.line)
+        local line = reader.line
+        if (comment.contains('\n'))
+          # reader.line is at end of comment. Adjust todo keyword start position
+          line -= comment.count('\n')
+          line += comment.before_first(keyword).count('\n')
+        endIf
+        reader.seek_location( line, 1 )
+        print ''[$][$:$] '' (keyword,File.filename(filepath),line)
         local consecutive_spaces = 0
         while (reader.has_another)
           local ch = reader.read

@@ -31,6 +31,9 @@ class String
     method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
       return create( characters.utf8, i1, count )
 
+    method create( file:File, encoding=StringEncoding.UTF8:StringEncoding )->String
+      return file.load_as_string( encoding )
+
     method create( value:Value )->String
       return value->String
 

@@ -236,7 +236,11 @@ class Date( timestamp=System.time:Real64 ) [compound]
     method to->String
       return this->String( &ymd, &hms )
 
-    method to->String( &ymd, &hms, &ms, &format=24:Int32 )
+    method to->String( &ymd, &hms, &ms, &format=24:Int32, &mdy )
+      if (mdy)
+        return "$ $, $" (month_names[month-1], day, year)
+      endIf
+
       if (hms)
         which (format)
           case 12, 24: noAction
