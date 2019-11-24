@@ -2445,6 +2445,13 @@ class CmdAccess : Cmd
           if (context.is_object or context.is_string)
             obj = context->Object
             type = obj.type_info
+          elseIf (context.is_number)
+            obj = context
+            if (context->Real64.fractional_part) type = <<Real64>>
+            else                                 type = <<Int32>>
+          elseIf (context.is_logical)
+            obj = context
+            type = <<Logical>>
           endIf
         endIf
 

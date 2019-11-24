@@ -847,7 +847,7 @@ class MethodInfo
 
   METHODS  # helper methods
     method _check_count (c : Int32)
-      if (c != parameter_count) throw Error("$ arguments passed to method taking $ arguments." (c, parameter_count))
+      if (c != parameter_count) throw Error("$ arguments passed to method taking $." (c, "# argument".pluralized(parameter_count)))
 
     method _check_return<<$RT>> ()
       if (_return_type == -1)
