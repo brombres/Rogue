@@ -3,6 +3,9 @@ $essential Files.*
 $essential String.*
 
 class VM
+  GLOBAL PROPERTIES
+    globals       = @{}
+
   PROPERTIES
     t             : Token
     context       : Object

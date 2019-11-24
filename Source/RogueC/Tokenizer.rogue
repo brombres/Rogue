@@ -1075,7 +1075,6 @@ class Tokenizer
         is_multi_line = consume('\n')
       endIf
 
-
       local start_index = tokens.count
       if (is_multi_line)
         # Multi-line
@@ -1104,11 +1103,15 @@ class Tokenizer
       tokens.discard_from( start_index )
 
       local original_position = reader.position  # Because parsing any 'trace' messes up the read position
+
+      Parser.is_parsing_metacode = true
       local parser = Parser( metatokens, &preprocess )
       parser.this_type = Program.type_Metacode
       local statements = CmdStatementList()
+
       parser.parse_multi_line_statements( statements )
       reader.seek( original_position )
+      Parser.is_parsing_metacode = false
 
       if (hook == "inline")
         local vm = VM()

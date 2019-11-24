@@ -438,6 +438,56 @@ class CmdLocalDeclaration : CmdStatement
 
 endClass
 
+class CmdMetacodeGlobalDeclaration : CmdStatement
+  PROPERTIES
+    local_info          : Local
+
+  METHODS
+    method init( t, local_info )
+
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdMetacodeGlobalDeclaration( t, local_info )
+
+    method execute( vm:VM )->Value
+      local value = UndefinedValue
+      if (local_info.initial_value)
+        value = local_info.initial_value.execute( vm )
+      endIf
+      VM.globals[ local_info.name ] = value
+      return UndefinedValue
+
+      #{
+    method resolve( scope:Scope )->Cmd
+      if (local_info.initial_value)
+        local_info.initial_value = local_info.initial_value.resolve( scope )
+        local initial_value_type = local_info.initial_value.require_type
+        if (local_info.type is null) local_info.type = initial_value_type
+      endIf
+
+      if (local_info.type is null or local_info.type is Program.type_null)
+        throw t.error( "Cannot determine the type of the local variable - either assign an initial value (local $ = ...) or assign a type (local $ : Int32)." (local_info.name,local_info.name) )
+      endIf
+
+      if (local_info.initial_value)
+        local_info.initial_value = local_info.initial_value.cast_to(local_info.type,scope).resolve( scope )
+      endIf
+
+      local_info.type.organize(scope, t)
+      scope.push_local( local_info )
+
+      return this
+      }#
+
+    method to->String
+      if (local_info.type)
+        return "CmdMetacodeGlobalDeclaration($:$)" (local_info.name,local_info.type.name)
+      else
+        return "CmdMetacodeGlobalDeclaration($)" (local_info.name)
+      endIf
+
+endClass
+
 
 class CmdReturn : CmdStatement
   PROPERTIES
@@ -2487,6 +2537,11 @@ class CmdAccess : Cmd
           return v.value
         endIf
 
+        # Check globals
+        if (VM.globals.contains(name))
+          return VM.globals[ name ]
+        endIf
+
         # Access is type name - global access or singleton
         local type = TypeInfo[ name ]
         if (type)
@@ -2600,6 +2655,11 @@ class CmdAccess : Cmd
         local v = vm.find_local( name )
         if (v)
           v.value = new_value
+          return
+        endIf
+
+        if (VM.globals.contains(name))
+          VM.globals[ name ] = new_value
           return
         endIf
 
