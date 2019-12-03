@@ -67,6 +67,18 @@ class Random [singleton]
     method reset( state )
       advance_state
 
+    method gaussian->Real64
+      # Returns a random number from a normal distribution of avg=0, stddev=1
+      # 68.2% chance of being between -1..1
+      # 95.45% chance of being between -2..2
+      # 99.73% chance of being -3..3
+      # 99.994% chance of being -4..4
+      # Real number precision limits the results to [-8.5,8.5]
+      # From: https://stackoverflow.com/a/218600/135791
+      local u1 = 1.0 - Random.real64
+      local u2 = 1.0 - Random.real64
+      return (-2.0 * Math.log(u1)).sqrt * Radians(pi * 2 * u2).sin
+
     method real64->Real64
       # Calculates the internal 'next_random' raw integer.
       return (advance_state->Real64 + 1.0) / 281474976710657.0
