@@ -75,8 +75,8 @@ class Random [singleton]
       # 99.994% chance of being -4..4
       # Real number precision limits the results to [-8.5,8.5]
       # From: https://stackoverflow.com/a/218600/135791
-      local u1 = 1.0 - Random.real64
-      local u2 = 1.0 - Random.real64
+      local u1 = 1.0 - this.real64
+      local u2 = 1.0 - this.real64
       return (-2.0 * Math.log(u1)).sqrt * Radians(pi * 2 * u2).sin
 
     method real64->Real64
