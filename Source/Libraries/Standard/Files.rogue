@@ -100,7 +100,8 @@ class Files
 
     method relative_filepath( filepath:String )->String
       if (base_folder.count == 0) return filepath
-      return filepath.after_any( base_folder )
+      if (not filepath.begins_with(base_folder)) return filepath
+      return filepath.after_first( base_folder )
 
     method remove( pattern:String )->this
       if (pattern.contains('*') or pattern.contains('?'))
