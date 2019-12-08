@@ -11,7 +11,7 @@
 #$ DEPENDENCIES = Library/Rogue/**/*.rogue
 
 #$ LIBRARIES    = name(package)
-#$ LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags>)
+#$ LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags> which:<which-name>)
 
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
 #   $LIBRARY_FLAGS(lib1,lib2) -> -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...
@@ -575,7 +575,10 @@ routine run( cmd:String )->String
   return result.output_string.trimmed
 endRoutine
 
-routine find_macos_library( name:String, package:String )->Logical
+routine find_macos_library( library:Value )->Logical
+  local name = library//name->String
+  local package = library//package->String
+
   local result = run( "  pkg-config --cflags " + package )
   if (result)
     local flags = String[]
@@ -610,7 +613,7 @@ routine find_macos_library( name:String, package:String )->Logical
   endIf
 
   # "Library" may be executable package - use 'which' to check.
-  if (0 == System.run("which $ > /dev/null 2>&1"(package)))
+  if (0 == System.run("which $ > /dev/null 2>&1"(library["which"])))
     cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
     save_cache
     return true
@@ -621,11 +624,9 @@ endRoutine
 
 routine install_macos_library( library:Value )
   local library_name = library//name->String
-  local package = library//package->String
-
   println "Checking for library $..." (library_name)
 
-  if (not find_macos_library(library_name,package))
+  if (not find_macos_library(library))
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
@@ -639,13 +640,16 @@ routine install_macos_library( library:Value )
     if (library.contains("install")) install_cmd = library//install
 
     run( "brew install $" (install_cmd) )  # this could succeed in principal but return non-zero with a warning, as with zlib
-    if (not find_macos_library(library_name,package))
+    if (not find_macos_library(library))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
   endIf
 endRoutine
 
-routine find_linux_library( name:String, package:String )->Logical
+routine find_linux_library( library:Value )->Logical
+  local name = library//name->String
+  local package = library//package->String
+
   # Try pkg-config first
   local result = run( "  pkg-config --cflags --libs " + package )
   if (result)
@@ -669,7 +673,7 @@ routine find_linux_library( name:String, package:String )->Logical
   endIf
 
   # "Library" may be executable package - use 'which' to check.
-  if (0 == System.run("which $ > /dev/null 2>&1"(package)))
+  if (0 == System.run("which $ > /dev/null 2>&1"(library["which"])))
     cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
     save_cache
     return true
@@ -680,11 +684,10 @@ endRoutine
 
 routine install_linux_library( library:Value )
   local library_name = library//name->String
-  local package = library//package->String
 
-  println "Checking for library $..." (library_name)
+  println "Checking for library $..." (library//name->String)
 
-  if (not find_linux_library(library_name,package))
+  if (not find_linux_library(library))
     # Install library
     require_command_line
     if (not Console.input( "\nLibrary '$' must be installed.  Install now (y/n)? "(library_name) ).to_lowercase.begins_with('y'))
@@ -700,7 +703,7 @@ routine install_linux_library( library:Value )
     local cmd = "$ $" (package_manager_install,install_cmd)
     print "> "
     println cmd
-    if (0 != System.run(cmd) or not find_linux_library(library_name,package))
+    if (System.run(cmd) or not find_linux_library(library))
       throw Error( "Failed to install library '$'." (library_name) )
     endIf
   endIf
@@ -746,7 +749,8 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
                 local entry = @{ name:name, link:link_setting }
                 config.ensure_list( cmd ).add( entry )
                 parser.consume_spaces
-                entry//package = name.before_first( '-' )  # default name is e.g. libpng-dev -> libpng
+                entry//package = name.before_first( "-dev" )  # default of e.g. libpng-dev is libpng
+                entry["which"] = name
                 if (parser.consume('('))
                   parser.consume_spaces
                   while (parser.has_another)
@@ -802,33 +806,6 @@ routine scan_and_rewrite( file:File, dependencies=null:StringLookupList, &skip_r
                 endIf
               endIf
             endIf
-
-            #{
-            if (not dependencies_only)
-              if (base_cmd == "link")
-                if (args == "true" or args == "false")
-                  config[ cmd ] = args
-                  link_setting = (args == "true")
-                  escapeWhich
-                else
-                  link_setting = true
-                  link_args += " " + args
-                  which (config[cmd])
-                    case "true", "false"
-                      config[cmd] = args
-                      escapeWhich
-                  endWhich
-                endIf
-              endIf
-
-              # Join into single space-separated string
-              if (config.contains(cmd))
-                config[ cmd ] = "$ $" (config[ cmd ],args)
-              else
-                config[ cmd ] = args
-              endIf
-            endIf
-            }#
 
         endWhich
       endIf
