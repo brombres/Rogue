@@ -65,7 +65,7 @@ class DataReader : Reader<<Byte>>
       if ((b & 0xc0) != 0x80) return b->Byte.signed
 
       local result = (b & 0b0011_1111) : Int64   #  0..63  (unsigned)
-      if (result >= 32) result -= 64           # -64..63 (signed)
+      if (result >= 32) result -= 64             # -64..63 (signed)
 
       loop
         local next = read
