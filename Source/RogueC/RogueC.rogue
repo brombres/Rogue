@@ -491,7 +491,7 @@ $endIf
         if (include_path.count == 0)
           new_path.add( filename )
           local new_filepath = File.join(new_path)
-          if (File.exists(new_filepath)) filepath = new_filepath
+          if (File.exists(new_filepath) and (not File.is_folder(new_filepath) or including_folder)) filepath = new_filepath
         endIf
       endIf
 
@@ -501,8 +501,7 @@ $endIf
         filepath += ".rogue"
         file = File( filepath )
       endIf
-
-      if (not file.exists)
+      if (not file.exists or (file.is_folder and not including_folder))
         forEach (prefix in prefix_path_list)
           local prefixed_filepath = File.join(prefix, filepath)
           local prefixed_file = File( prefixed_filepath )
@@ -539,7 +538,7 @@ $endIf
           filepath = path2
           file = file2
         endIf
-          if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
+        if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
       else
         if (including_folder)
           if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
@@ -849,7 +848,7 @@ $endIf
               plugins.add(
                 Plugin( "Test" ).on_generate_additional_types(
                   function->Logical
-                  @trace "All types resolved - generate additional types?"
+                    @trace "All types resolved - generate additional types?"
                     if (not Program.find_type("Alpha"))
                       local src = @|class Alpha [essential singleton]
                                    |  METHODS
