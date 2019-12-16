@@ -30,8 +30,10 @@ class TokenReader : Reader<<Token>>
 
     method next_is_statement_token->Logical
       if (position == count) return false
-      if (tokens[position].type.is_structure) return false
-      return true
+      local t_type = tokens[ position ].type
+      if (not t_type.is_structure) return true
+      if (t_type is TokenType.keyword_global and Parser.is_parsing_metacode) return true
+      return false
 
     method peek->Token
       if (position == count) return TokenType.eoi.create_token( tokens.last )

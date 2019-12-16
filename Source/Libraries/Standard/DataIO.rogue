@@ -65,7 +65,7 @@ class DataReader : Reader<<Byte>>
       if ((b & 0xc0) != 0x80) return b->Byte.signed
 
       local result = (b & 0b0011_1111) : Int64   #  0..63  (unsigned)
-      if (result >= 32) result -= 64           # -64..63 (signed)
+      if (result >= 32) result -= 64             # -64..63 (signed)
 
       loop
         local next = read
@@ -87,6 +87,15 @@ class DataReader : Reader<<Byte>>
     method read_byte->Byte [macro]
       return this.read
 
+    method read_bytes->Byte[]
+      return read_bytes( Byte[] )
+
+    method read_bytes( buffer:Byte[] )->Byte[]
+      local count = read_int32x
+      buffer.reserve( count )
+      loop (count) buffer.add( read_byte )
+      return buffer
+
     method read_logical->Logical
       return (read != 0)
 
@@ -95,10 +104,8 @@ class DataReader : Reader<<Byte>>
 
     method read_string( buffer:StringBuilder )->StringBuilder
       local count = read_int32x
-      forEach (1..count)
-        local ch = read_int32x
-        buffer.print( ch->Character )
-      endForEach
+      buffer.reserve( count )  # Reserves bytes, not characters, so may be less than required. That's okay.
+      loop (count) buffer.print( read_int32x->Character )
       return buffer
 
     method reset->this
@@ -219,6 +226,22 @@ class DataWriter : Writer<<Byte>>
 
     method write_byte( value:Byte )->this [macro]
       return this.write( value )
+
+    method write_bytes( data:Byte[], index=0:Int32, count=null:Int32? )
+      if (index > data.count)
+        write_int32x( 0 )
+        return
+      endIf
+
+      if (index < 0)
+        if (count.exists) count = count.value + index  # reduce count
+        index = 0
+      endIf
+
+      if (count.exists) count = count.value.clamped( 0, data.count-index )
+      else              count = data.count - index
+      write_int32x( count.value )
+      loop (count.value) write_byte( data[index] ); ++index
 
     method write_logical( value:Logical )->this
       if (value) return write( 1 )

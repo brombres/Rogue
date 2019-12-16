@@ -90,11 +90,9 @@ class Real64 [primitive]
       local this_int64 = Int64( this )
       local decimal_st : String
       if (decimal_fmt.count > 1)
-        decimal_st = this.format( decimal_fmt.from(1)->Int32 )
-        if ((decimal_st->Real64.fractional_part*10)->Int32 < (this.fractional_part*10)->Int32)
-          # Fractional part rolled over
-          ++this_int64
-        endIf
+        local decimal_digits = decimal_fmt.from(1)->Int32
+        decimal_st = this.format( decimal_digits )
+        this_int64 = decimal_st->Real64->Int64
       else
         decimal_st = this->String
       endIf

@@ -482,7 +482,7 @@ class Preprocessor
         endIf
 
         if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum or ...
-            t_type is TokenType.keyword_global)
+            (t_type is TokenType.keyword_global and not Parser.is_parsing_metacode))
           # Register this class/enum/routine/global module::id
           if (reader.peek.type is TokenType.identifier)
             if (keep_tokens) tokens.add( t )

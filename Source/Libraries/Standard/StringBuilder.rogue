@@ -324,7 +324,6 @@ class StringBuilder : PrintWriter [essential]
           work_bytes.add( ('0' + digit)->Character )
         endForEach
       endIf
-
       if (value >= 0.5)
         work_bytes.add( '5' )
         round_off_work_bytes

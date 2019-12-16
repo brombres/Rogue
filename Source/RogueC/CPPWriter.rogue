@@ -848,7 +848,7 @@ augment Program
       writer.println "{"
       writer.indent += 2
       writer.println @|// <FOR EACH TYPE>
-                      |// info_count (total int count including this int)
+                      |// info_count (total int count after info_count)
                       |// allocator_index
                       |// dynamic_method_table_index
                       |// base_type_count
@@ -876,9 +876,10 @@ augment Program
           writer.print( "," )  # fix
 
           ++items
-          if (items == 25) writer.println; items = 0
+          #if (items == 25) writer.println; items = 0
         endForEach
-        #writer.println; items = 0
+        writer.print( "// " ).println( type.name )
+        items = 0
       endForEach
 
       if (items > 0) writer.println
@@ -1287,6 +1288,7 @@ augment Program
         forEach (m at index in type.method_list)
           if (index >= type.dynamic_method_table_count) escapeForEach
           if (m.store_dynamically and m.is_used and not m.is_abstract)
+
             local type_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.type.name) ))
             local name_sig = ",".join(m.parameters.map<<String>>( (l)=>(l.name) ))
             local handler_index = -1
@@ -1407,11 +1409,7 @@ augment Program
     method collect_type_info( type:Type, info:Int32[] )
       info.add( 0 )  # allocator 0
 
-      if (type.is_primitive)
-        info.add( 0 )
-      else
-        info.add( type.dynamic_method_table_index )
-      endIf
+      info.add( type.dynamic_method_table_index )
 
       local flat_base_types = Type[]
       if (type.base_class) type.base_class.collect_base_types( flat_base_types )

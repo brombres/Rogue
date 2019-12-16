@@ -1,24 +1,21 @@
-class BitReader
+class BitReader : DataReader
   PROPERTIES
-    reader       : Reader<<Byte>>
     bit_buffer   : Int64
     buffer_count : Int32
 
   METHODS
-    method init( input:Byte[] )
-      init( input.reader )
-
-    method init( reader )
-
     method has_another->Logical
-      return buffer_count or reader.has_another
+      return buffer_count or source.has_another
 
     method has_another( nbits:Int32 )->Logical
-      while (buffer_count < nbits and reader.has_another)
-        bit_buffer = (bit_buffer :<<: 8) | reader.read
+      while (buffer_count < nbits and source.has_another)
+        bit_buffer = (bit_buffer :<<: 8) | source.read
         buffer_count += 8
       endWhile
       return (buffer_count >= nbits)
+
+    method read->Byte
+      return read( 8 )->Byte
 
     method read( nbits:Int32 )->Int32
       has_another( nbits )  # buffer enough bits
@@ -34,31 +31,28 @@ class BitReader
       return (bit_buffer :>>: buffer_count) & ((Int64(1):<<:nbits)-1)
 endClass
 
-class BitWriter
+class BitWriter : DataWriter
   PROPERTIES
     bytes        : Byte[]
-    writer       : Writer<<Byte>>
     bit_buffer   : Int64
     buffer_count : Int32
 
   METHODS
-    method init
-      init( Byte[] )
-
-    method init( bytes )
-      init( bytes.writer )
-
-    method init( writer )
-
-    method flush
+    method flush->this
       if (buffer_count) write( 0, 8-buffer_count )
+      prior.flush
+      return this
+
+    method write( value:Byte )->this
+      write( value, 8 )
+      return this
 
     method write( value:Int32, nbits:Int32 )
       bit_buffer = (bit_buffer :<<: nbits) | (value & ((Int64(1):<<:nbits)-1))
       buffer_count += nbits
       while (buffer_count >= 8)
         buffer_count -= 8
-        writer.write( bit_buffer :>>: buffer_count )
+        output.write( bit_buffer :>>: buffer_count )
       endWhile
 
 endClass

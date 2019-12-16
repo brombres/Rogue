@@ -1,6 +1,7 @@
 class Parser
   GLOBAL PROPERTIES
     old_style_function_warnings = Set<<String>>()
+    is_parsing_metacode : Logical
 
   PROPERTIES
     reader      : TokenReader
@@ -332,10 +333,14 @@ class Parser
       elseIf (next_is(TokenType.keyword_global))
         this_type = Program.get_type_reference( peek, "Global" )
         this_method = Program.get_on_launch_method( t )
-        local prev_statement_list = cur_statement_list
-        cur_statement_list = this_method.statements
-        parse_local_or_global
-        cur_statement_list = prev_statement_list
+        if (is_parsing_metacode)
+          parse_local_or_global
+        else
+          local prev_statement_list = cur_statement_list
+          cur_statement_list = this_method.statements
+          parse_local_or_global
+          cur_statement_list = prev_statement_list
+        endIf
         return true
 
       endIf
@@ -1504,6 +1509,10 @@ class Parser
           parse_local_or_global( &is_local )
           return
 
+        elseIf (is_parsing_metacode and next_is(TokenType.keyword_global))
+          parse_local_or_global( &!is_local )
+          return
+
         endIf
         #{
       else
@@ -2228,7 +2237,7 @@ class Parser
         return
       endIf
 
-      # local[=initial_value] [, ...]
+      # name[=initial_value] [, ...]
       local first = true
       while (first or consume(TokenType.symbol_comma))
         first = false
@@ -2261,6 +2270,10 @@ class Parser
         # locals
         forEach (v in local_declarations)
           cur_statement_list.add( CmdLocalDeclaration(v.t,v) )
+        endForEach
+      elseIf (is_parsing_metacode)
+        forEach (v in local_declarations)
+          cur_statement_list.add( CmdMetacodeGlobalDeclaration(v.t,v) )
         endForEach
       else
         # global properties
