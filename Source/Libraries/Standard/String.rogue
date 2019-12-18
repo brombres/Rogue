@@ -410,10 +410,11 @@ class String
 
     method _extraction_point( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32, found_match:Logical,
         result=null:String[], &wildcard_start, &wildcard_end )->(Logical,Int32,Int32)
+      # Returns: (success,match_start,match_count)
       if (fcount == 0)
         while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
         if ((remaining_count > 0 and not wildcard_end) or not found_match) return (false,0,0)
-        return (true,0,0)
+        return (true,0,i0)
       endIf
 
       if (wildcard_start)
@@ -421,7 +422,9 @@ class String
         forEach (n in 0..remaining_count)
           local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0, fcount,
             found_match, result, &=wildcard_end )
-          if (success) return (success,match_start,match_count)
+          if (success)
+            return (success,match_start+n,match_count-n)
+          endIf
         endForEach
       endIf
 
@@ -781,15 +784,15 @@ class String
 
       return null
 
-    method locate_pattern( pattern:String )->Int32?
+    method locate_pattern( pattern:String, i1=0:Int32 )->Span?
       # Returns the index of where the first '$' pattern marker occurs in this string, or null.
       # See contains_pattern() or matches_pattern() for a description of the pattern.
       #
       # EXAMPLE
       #   "ab cd ef gh ij".locate_pattern("cd $ gh") -> 6
-      local result = _extraction_point( 0, count, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )
-      if (not result._1) return null
-      return result._2
+      local (success,index,count) = _extraction_point( i1, count-i1, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )
+      if (success) return Span( index+i1, count-i1 )
+      else         return null
 
     method matches_pattern( pattern:String )->Logical
       # Returns true if this string matches the given pattern.
@@ -1414,4 +1417,16 @@ class StringConsolidationTable : StringTable<<String>> [singleton]
       return result
 endClass
 
+
+class Span( index:Int32, count:Int32 ) [compound]
+  METHODS
+    method i2->Int32
+      return index + (count-1)
+
+    method limit->Int32
+      return index + count
+
+    method to->String
+      return "@$ x$"(index,count)
+endClass
 
