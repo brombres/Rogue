@@ -311,7 +311,7 @@ class Build [singleton]
     method sync_libraries
       local dest = fix( "Programs/RogueC/" )
       local files = Files( "Source/Libraries" )
-      files.add( "Standard" ).add( "ParseKit" ).add( "Geometry" ).add( "Bitmap" )
+      files.add( "Standard" ).add( "ParseKit" ).add( "Geometry" ).add( "Bitmap" ).add( "XML" )
       File.sync_from( files, dest+"Libraries/", &verbose )
 
     method fix( filepath:String )->String
