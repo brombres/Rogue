@@ -275,8 +275,9 @@ endClass
 
 class XMLNodifier
   PROPERTIES
-    scanner : XMLScanner
-    nodes  : XML[]
+    scanner      : XMLScanner
+    nodes        : XML[]
+    preformatted = 0
 
   METHODS
     method init
@@ -287,10 +288,10 @@ class XMLNodifier
     method nodify( filepath:String, content:String, line=1:Int32, column=1:Int32 )->XML[]
       scanner = XMLScanner( filepath, content, line, column )
       nodes  = XML[]
-      while (tokenize_another) noAction
+      while (nodify_another) noAction
       return nodes
 
-    method tokenize_another->Logical
+    method nodify_another->Logical
       XML.set_position( scanner.filepath, scanner.line, scanner.column )
       if (not scanner.has_another) return false
       if (scanner.consume('<'))
@@ -331,19 +332,27 @@ class XMLNodifier
         endIf
         scanner.consume_whitespace
       endWhile
-      if (t.name) nodes.add( t )  # otherwise skip an invalid tag
+      if (t.name)
+        nodes.add( t )  # otherwise skip an invalid tag
+        if (t.name == "pre") ++preformatted
+      endIf
 
     method tokenize_end_tag
       local t = XML( XMLNodeType.END_TAG, scanner.scan_lowercase_id )
       while (scanner.has_another and not scanner.consume('>')) scanner.read
-      if (t.name) nodes.add( t )  # otherwise skip an invalid tag
+      if (t.name)
+        nodes.add( t )  # otherwise skip an invalid tag
+        if (t.name == "pre") preformatted = (preformatted - 1).clamped_low( 0 )
+      endIf
 
     method tokenize_text
       use builder = StringBuilder.pool
         if (scanner.consume_whitespace) builder.print( ' ' )
         while (scanner.has_another and not scanner.next_is('<'))
           builder.print( scanner.read )
-          if (scanner.consume_whitespace) builder.print( ' ' )
+          if (not preformatted)
+            if (scanner.consume_whitespace) builder.print( ' ' )
+          endIf
         endWhile
         if (builder.count) nodes.add( XML(XMLNodeType.TEXT,builder->String) )
       endUse
