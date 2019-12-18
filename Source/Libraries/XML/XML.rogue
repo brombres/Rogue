@@ -347,12 +347,10 @@ class XMLNodifier
 
     method tokenize_text
       use builder = StringBuilder.pool
-        if (scanner.consume_whitespace) builder.print( ' ' )
+        if (not preformatted and scanner.consume_whitespace) builder.print( ' ' )
         while (scanner.has_another and not scanner.next_is('<'))
           builder.print( scanner.read )
-          if (not preformatted)
-            if (scanner.consume_whitespace) builder.print( ' ' )
-          endIf
+          if (not preformatted and scanner.consume_whitespace) builder.print( ' ' )
         endWhile
         if (builder.count) nodes.add( XML(XMLNodeType.TEXT,builder->String) )
       endUse
