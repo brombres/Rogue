@@ -623,6 +623,7 @@ routine find_macos_library( library:Value )->Logical
   endIf
 
   # "Library" may be executable package - use 'which' to check.
+  println "  which " + library["which"]
   if (0 == System.run("which $ > /dev/null 2>&1"(library["which"])))
     cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
     save_cache
@@ -683,6 +684,7 @@ routine find_linux_library( library:Value )->Logical
   endIf
 
   # "Library" may be executable package - use 'which' to check.
+  println "  which " + library["which"]
   if (0 == System.run("which $ > /dev/null 2>&1"(library["which"])))
     cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
     save_cache
