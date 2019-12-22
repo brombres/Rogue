@@ -16,6 +16,14 @@
 # Build.rogue source replacements - the libraries should also be declared in #$ LIBRARIES:
 #   $LIBRARY_FLAGS(lib1,lib2) -> -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...
 
+# Command Line Option
+#
+# --build=<filepath>
+#   Compiles and runs the .rogue file at the given filepath.
+#
+# --create
+#   Creates a default Build.rogue file.
+
 global rogo_folder    : String
 global cache_filepath : String
 global config         : Value
@@ -211,7 +219,9 @@ if (not buildfiles.count)
        |      return <<Global>>.find_method( rogo_prefix + name )
        |
        |    method on_error
+       |      Console.error.println "=" * 79
        |      Console.error.println rogo_error
+       |      Console.error.println "=" * 79
        |      on_exit
        |      System.exit 1
        |
