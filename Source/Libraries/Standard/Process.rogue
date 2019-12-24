@@ -10,25 +10,27 @@ class Process
     is_blocking   : Logical
 
   GLOBAL METHODS
-    method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )->Process
+    method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment, &env )->Process
+      # 'env' is a shorter way of specifying inherit_environment. inherit_environment is the original
+      # flag and is retained for backwards compatability.
       if (System.is_windows)
-          return WindowsProcess( cmd, &=readable, &=writable, &=is_blocking, &=inherit_environment )
+          return WindowsProcess( cmd, &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
       else
-          return PosixProcess( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
+          return PosixProcess( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
       endIf
 
-    method create( args:String[], &readable, &writable, &is_blocking, &inherit_environment )->Process
+    method create( args:String[], &readable, &writable, &is_blocking, &inherit_environment, &env )->Process
       if (System.is_windows)
-        return WindowsProcess( args, &=readable, &=writable, &=is_blocking, &=inherit_environment )
+        return WindowsProcess( args, &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
       else
-        return PosixProcess( args, &=readable, &=writable, &=is_blocking, &=inherit_environment )
+        return PosixProcess( args, &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
       endIf
 
-    method run( cmd:String, &inherit_environment, &writable )->ProcessResult
-      return run( Process(cmd,&readable,&=writable,&is_blocking,&=inherit_environment) )
+    method run( cmd:String, &inherit_environment, &env, &writable )->ProcessResult
+      return run( Process(cmd,&readable,&=writable,&is_blocking,&=inherit_environment,&=env) )
 
-    method run( args:String[], &inherit_environment, &writable )->ProcessResult
-      return run( Process(args, &readable, &=writable, &is_blocking, &=inherit_environment) )
+    method run( args:String[], &inherit_environment, &env, &writable )->ProcessResult
+      return run( Process(args, &readable, &=writable, &is_blocking, &=inherit_environment, &=env) )
 
     method run( process:Process )->ProcessResult
       process.finish
@@ -112,11 +114,13 @@ class PosixProcess : Process
             |#endif
 
   METHODS
-    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )
-      init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
+    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment, &env )
+      init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
 
-    method init( args, &readable, &writable, is_blocking=false, &inherit_environment )
+    method init( args, &readable, &writable, is_blocking=false, &inherit_environment, &env )
       native @|#ifndef ROGUE_PLATFORM_WINDOWS
+
+      if (env) inherit_environment = env
 
       if (not launch(&=readable,&=writable,&=inherit_environment))
         native @|if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
@@ -375,7 +379,7 @@ class WindowsProcess : Process
             |#endif
 
   METHODS
-    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment )
+    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment, &env )
       # On Windows a cmd like:           "space separated.exe" "arg"
       # Must be wrapped in extra quotes: ""space separated.exe" "arg""
       if (cmd.count('"') > 2) cmd = ''"$"'' (cmd)
@@ -385,9 +389,10 @@ class WindowsProcess : Process
       # (calling the Windows API function to do a path search) and requiring a caller that wants to
       # run a cmd.exe built-in to specify cmd.exe themselves. --Abe
 
-      init( ["cmd.exe","/c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment )
+      init( ["cmd.exe","/c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
 
-    method init( args, &readable, &writable, is_blocking=false, &inherit_environment )
+    method init( args, &readable, &writable, is_blocking=false, &inherit_environment, &env )
+      if (env) inherit_environment = env
       if (not launch(&=readable,&=writable,&=inherit_environment))
         error = true
         @is_finished = true

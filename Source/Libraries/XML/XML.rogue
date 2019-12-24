@@ -91,6 +91,12 @@ class XML
     method count->Int32
       return children.count
 
+    method find( fn:Function(XML)->Logical )->XML
+      forEach (child in children)
+        if (fn(child)) return child
+      endForEach
+      return null
+
     method get( index:Int32 )->XML
       if (index < 0 or index >= children.count) return null
       return children[ index ]
@@ -303,6 +309,22 @@ class XMLNodifier
       endIf
       return true
 
+    method consume_whitespace( builder:StringBuilder )
+      loop
+        if (scanner.consume(' '))
+          if (not preformatted)
+            while (scanner.consume(' ')) noAction
+          endIf
+          builder.print( ' ' )
+          nextIteration
+        endIf
+        if (scanner.consume('\n'))
+          builder.print( '\n' )
+          nextIteration
+        endIf
+        return
+      endLoop
+
     method discard_comment
       while (scanner.has_another and not scanner.consume("-->")) scanner.read
 
@@ -347,10 +369,10 @@ class XMLNodifier
 
     method tokenize_text
       use builder = StringBuilder.pool
-        if (not preformatted and scanner.consume_whitespace) builder.print( ' ' )
+        consume_whitespace( builder )
         while (scanner.has_another and not scanner.next_is('<'))
           builder.print( scanner.read )
-          if (not preformatted and scanner.consume_whitespace) builder.print( ' ' )
+          consume_whitespace( builder )
         endWhile
         if (builder.count) nodes.add( XML(XMLNodeType.TEXT,builder->String) )
       endUse

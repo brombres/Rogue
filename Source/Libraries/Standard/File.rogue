@@ -118,6 +118,9 @@ class File
 
       return a  # 'a' and 'b' are the same at this point
 
+    method contains( filepath:String, filename:String )->Logical
+      return (File.listing( filepath, filename ).count > 0)
+
     method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
       from_filepath = expand_filepath( from_filepath )
       to_filepath = expand_filepath( to_filepath )
@@ -910,6 +913,9 @@ class File
 
     method common_path( other_filepath:String )->String
       return File.common_path( this.filepath, other_filepath )
+
+    method contains( filename:String )->Logical
+      return File.contains( this.filepath, filename )
 
     method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
       return File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
