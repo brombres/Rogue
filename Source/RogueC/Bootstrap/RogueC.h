@@ -8896,6 +8896,7 @@ ROGUE_EXPORT_C RogueString* RogueFile__absolute_filepath__String( RogueString* f
 ROGUE_EXPORT_C RogueString* RogueFile__before_wildcard_pattern__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueClassCharacterToUTF8ByteWriter* RogueFile__character_writer__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueString* RogueFile__common_path__String_String( RogueString* filepath_a_0, RogueString* filepath_b_1 );
+ROGUE_EXPORT_C RogueLogical RogueFile__contains__String_String( RogueString* filepath_0, RogueString* filename_1 );
 ROGUE_EXPORT_C RogueLogical RogueFile__copy__String_String_Logical_Logical_Logical( RogueString* from_filepath_0, RogueString* to_filepath_1, RogueLogical if_newer_2, RogueLogical if_size_different_3, RogueLogical dry_run_4 );
 ROGUE_EXPORT_C RogueString* RogueFile__conventional_filepath__String( RogueString* filepath_0 );
 ROGUE_EXPORT_C RogueLogical RogueFile__copy_newer__String_String_Logical_Logical( RogueString* from_filepath_0, RogueString* to_filepath_1, RogueLogical if_size_different_2, RogueLogical dry_run_3 );
@@ -9059,8 +9060,8 @@ ROGUE_EXPORT_C RogueCmdNamedArg_List* RogueQuicksort_CmdNamedArg___sort__CmdName
 ROGUE_EXPORT_C void RogueQuicksort_CmdNamedArg___sort__Array__Function_CmdNamedArg_CmdNamedArg_RETURNSLogical__Int32_Int32( RogueArray* data_0, RogueClass_Function_CmdNamedArg_CmdNamedArg_RETURNSLogical_* compare_fn_1, RogueInt32 i1_2, RogueInt32 i2_3 );
 ROGUE_EXPORT_C RogueClassListRewriter_IntrospectionCallHandler_* RogueListRewriter_IntrospectionCallHandler___acquire__IntrospectionCallHandler_List( RogueIntrospectionCallHandler_List* list_0 );
 ROGUE_EXPORT_C RogueClassListRewriter_Method_* RogueListRewriter_Method___acquire__Method_List( RogueMethod_List* list_0 );
-ROGUE_EXPORT_C RogueClassProcess* RogueProcess__create__String_Logical_Logical_Logical_Logical( RogueString* cmd_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical is_blocking_3, RogueLogical inherit_environment_4 );
-ROGUE_EXPORT_C RogueClassProcessResult* RogueProcess__run__String_Logical_Logical( RogueString* cmd_0, RogueLogical inherit_environment_1, RogueLogical writable_2 );
+ROGUE_EXPORT_C RogueClassProcess* RogueProcess__create__String_Logical_Logical_Logical_Logical_Logical( RogueString* cmd_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical is_blocking_3, RogueLogical inherit_environment_4, RogueLogical env_5 );
+ROGUE_EXPORT_C RogueClassProcessResult* RogueProcess__run__String_Logical_Logical_Logical( RogueString* cmd_0, RogueLogical inherit_environment_1, RogueLogical env_2, RogueLogical writable_3 );
 ROGUE_EXPORT_C RogueClassProcessResult* RogueProcess__run__Process( RogueClassProcess* process_0 );
 ROGUE_EXPORT_C void RogueStringEncoding__init_class();
 ROGUE_EXPORT   RogueClassStringEncoding RogueStringEncoding__from_value__Value( RogueClassValue* value_0 );
@@ -9818,6 +9819,7 @@ ROGUE_EXPORT_C RogueString* RogueFile__absolute_filepath( RogueClassFile* THIS )
 ROGUE_EXPORT_C RogueString* RogueFile__before_wildcard_pattern( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueClassCharacterToUTF8ByteWriter* RogueFile__character_writer( RogueClassFile* THIS );
 ROGUE_EXPORT_C RogueString* RogueFile__common_path__String( RogueClassFile* THIS, RogueString* other_filepath_0 );
+ROGUE_EXPORT_C RogueLogical RogueFile__contains__String( RogueClassFile* THIS, RogueString* filename_0 );
 ROGUE_EXPORT_C RogueLogical RogueFile__copy__String_Logical_Logical_Logical( RogueClassFile* THIS, RogueString* to_filepath_0, RogueLogical if_newer_1, RogueLogical if_size_different_2, RogueLogical dry_run_3 );
 ROGUE_EXPORT_C RogueLogical RogueFile__copy_newer__String_Logical_Logical( RogueClassFile* THIS, RogueString* to_filepath_0, RogueLogical if_size_different_1, RogueLogical dry_run_2 );
 ROGUE_EXPORT_C RogueString* RogueFile__conventional_filepath( RogueClassFile* THIS );
@@ -15052,8 +15054,8 @@ ROGUE_EXPORT_C RogueLogical RogueWindowsProcess__is_finished( RogueClassWindowsP
 ROGUE_EXPORT_C RogueClassWindowsProcess* RogueWindowsProcess__finish( RogueClassWindowsProcess* THIS );
 ROGUE_EXPORT_C RogueLogical RogueWindowsProcess__launch__Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueLogical readable_0, RogueLogical writable_1, RogueLogical inherit_environment_2 );
 ROGUE_EXPORT_C void RogueWindowsProcess__on_cleanup( RogueClassWindowsProcess* THIS );
-ROGUE_EXPORT_C RogueClassWindowsProcess* RogueWindowsProcess__init__String_Logical_Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueString* cmd_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical is_blocking_3, RogueLogical inherit_environment_4 );
-ROGUE_EXPORT_C RogueClassWindowsProcess* RogueWindowsProcess__init__String_List_Logical_Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueString_List* _auto_4848_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_4847_3, RogueLogical inherit_environment_4 );
+ROGUE_EXPORT_C RogueClassWindowsProcess* RogueWindowsProcess__init__String_Logical_Logical_Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueString* cmd_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical is_blocking_3, RogueLogical inherit_environment_4, RogueLogical env_5 );
+ROGUE_EXPORT_C RogueClassWindowsProcess* RogueWindowsProcess__init__String_List_Logical_Logical_Logical_Logical_Logical( RogueClassWindowsProcess* THIS, RogueString_List* _auto_4848_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_4847_3, RogueLogical inherit_environment_4, RogueLogical env_5 );
 ROGUE_EXPORT_C RogueLogical RogueWindowsProcess__update_io( RogueClassWindowsProcess* THIS );
 ROGUE_EXPORT_C RogueClassWindowsProcessReader* RogueWindowsProcessReader__init_object( RogueClassWindowsProcessReader* THIS );
 ROGUE_EXPORT_C RogueClassWindowsProcessReader* RogueWindowsProcessReader__init( RogueClassWindowsProcessReader* THIS );
@@ -15075,7 +15077,7 @@ ROGUE_EXPORT_C RogueString* RoguePosixProcess__type_name( RogueClassPosixProcess
 ROGUE_EXPORT_C RogueClassPosixProcess* RoguePosixProcess__finish( RogueClassPosixProcess* THIS );
 ROGUE_EXPORT_C RogueLogical RoguePosixProcess__launch__Logical_Logical_Logical( RogueClassPosixProcess* THIS, RogueLogical readable_0, RogueLogical writable_1, RogueLogical inherit_environment_2 );
 ROGUE_EXPORT_C RogueLogical RoguePosixProcess__update_io__Logical( RogueClassPosixProcess* THIS, RogueLogical poll_blocks_0 );
-ROGUE_EXPORT_C RogueClassPosixProcess* RoguePosixProcess__init__String_List_Logical_Logical_Logical_Logical( RogueClassPosixProcess* THIS, RogueString_List* _auto_4853_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_4852_3, RogueLogical inherit_environment_4 );
+ROGUE_EXPORT_C RogueClassPosixProcess* RoguePosixProcess__init__String_List_Logical_Logical_Logical_Logical_Logical( RogueClassPosixProcess* THIS, RogueString_List* _auto_4853_0, RogueLogical readable_1, RogueLogical writable_2, RogueLogical _auto_4852_3, RogueLogical inherit_environment_4, RogueLogical env_5 );
 ROGUE_EXPORT_C RogueClassPosixProcessReader* RoguePosixProcessReader__init_object( RogueClassPosixProcessReader* THIS );
 ROGUE_EXPORT_C RogueString* RoguePosixProcessReader__to_String( RogueClassPosixProcessReader* THIS );
 ROGUE_EXPORT_C RogueString* RoguePosixProcessReader__type_name( RogueClassPosixProcessReader* THIS );
