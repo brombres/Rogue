@@ -787,6 +787,10 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
 endClass
 
 augment Byte[]
+  GLOBAL METHODS
+    method create( file:File )->Byte[]
+      return file.load_as_bytes
+
   METHODS
     method init( hex:String )
       add( hex )
