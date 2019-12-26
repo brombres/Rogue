@@ -149,6 +149,7 @@ class DataWriter : Writer<<Byte>>
       init( list.writer )
 
     method close->this
+      flush
       output.close
       return this
 
