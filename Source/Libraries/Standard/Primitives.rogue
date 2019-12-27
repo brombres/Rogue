@@ -139,6 +139,11 @@ class Real64 [primitive]
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
+    method lerp( a:Real64, b:Real64 )->Real64
+      # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return Math.lerp( a, b, this )
+
     method or_larger( other:Real64 )->Real64
       return select{ this>=other:this || other }
 
@@ -286,6 +291,11 @@ class Real32 [primitive]
 
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
+
+    method lerp( a:Real32, b:Real32 )->Real32
+      # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return Math.lerp( a, b, this )->Real32
 
     method or_larger( other:Real32 )->Real32
       return select{ this>=other:this || other }
