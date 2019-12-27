@@ -1,17 +1,19 @@
 class Stopwatch
   PROPERTIES
-    start_time = System.time: Real64
+    start_time : Real64
     stop_time  : Real64?
+    time_fn    : Function->Real64
 
   METHODS
-    method init( &stopped )
+    method init( time_fn=null, &stopped )
+      start_time = time
       if (stopped) stop_time = start_time
 
     method elapsed->Real64
       if (stop_time.exists)
         return (stop_time.value - start_time)
       else
-        return (System.time - start_time)
+        return (time - start_time)
       endIf
 
     method is_running->Logical
@@ -21,22 +23,26 @@ class Stopwatch
       return stop_time.exists
 
     method restart->this
-      start_time = System.time
+      start_time = time
       stop_time = null
       return this
 
     method start->this
       # Starts if currently stopped; otherwise no effect.
       if (stop_time.exists)
-        start_time = System.time - elapsed
+        start_time = time - elapsed
         stop_time = null
       endIf
       return this
 
     method stop->this
       # Stops if currently running; otherwise no effect.
-      if (not stop_time.exists) stop_time = System.time
+      if (not stop_time.exists) stop_time = time
       return this
+
+    method time->Real64
+      if (time_fn) return time_fn()
+      else         return System.time
 
     method operator+( delta_time:Real64 )->this
       # Increase the elapsed interval of this stopwatch.
@@ -56,12 +62,14 @@ endClass
 
 class Timer
   PROPERTIES
-    duration                 : Real64
-    start_time = System.time : Real64
-    stop_time                : Real64?
+    duration   : Real64
+    start_time : Real64
+    stop_time  : Real64?
+    time_fn    : Function->Real64
 
   METHODS
-    method init( duration, &expired )
+    method init( duration, time_fn=null, &expired )
+      start_time = time
       if (expired)
         start_time -= duration
         while (not is_expired) start_time -= (duration - elapsed).or_larger(0.001)
@@ -71,7 +79,7 @@ class Timer
       if (stop_time.exists)
         return (stop_time.value - start_time)
       else
-        return (System.time - start_time)
+        return (time - start_time)
       endIf
 
     method is_expired->Logical
@@ -91,27 +99,31 @@ class Timer
       return duration - elapsed
 
     method restart->this
-      start_time = System.time
+      start_time = time
       stop_time = null
       return this
 
     method restart( duration )->this
-      start_time = System.time
+      start_time = time
       stop_time = null
       return this
 
     method start->this
       # Starts if currently stopped; otherwise no effect.
       if (stop_time.exists)
-        start_time = System.time - elapsed
+        start_time = time - elapsed
         stop_time = null
       endIf
       return this
 
     method stop->this
       # Stops if currently running; otherwise no effect.
-      if (not stop_time.exists) stop_time = System.time
+      if (not stop_time.exists) stop_time = time
       return this
+
+    method time->Real64
+      if (time_fn) return time_fn()
+      else         return System.time
 
     method to->String
       return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
