@@ -244,6 +244,34 @@ class XY( x:Real64, y:Real64 ) [compound]
     method product->Real64
       return x * y
 
+    method progress( a:XY, b:XY )->Real64
+      return progress( Line(a,b) )
+
+    method progress( line:Line )->Real64
+      # Clamps this point to the axis of the given line segment and returns this point's
+      # progress along the segment.
+      #
+      # Notes:
+      #
+      # Points along the line are defined by:
+      #
+      #   Line(t) = line.a + t * (line.b - line.a)
+      #
+      # where t is 0 to 1 if the point lies along the segment.  We can define t as:
+      #
+      #   A = v - line.a
+      #   B = line.b - line.a
+      #   t = dot(A,B) / dot(B,B)
+      #
+      # as this is the projection of A along and proportional to B.
+      local P1 = line.a
+      local P2 = line.b
+      local A = this - P1
+      local B = P2 - P1
+      local t_numer = A.dot(B)
+      local t_denom = B.dot(B)
+      return (t_numer / t_denom)
+
     method radians->Radians
       return Radians( Math.atan2( y, x ) )
 
@@ -314,6 +342,15 @@ class XY( x:Real64, y:Real64 ) [compound]
     method zero->XY [macro]
       XY(0,0)
 endClass
+
+augment Math
+  GLOBAL METHODS
+    method lerp( a:XY, b:XY, progress:Real64 )->XY
+      return a + (b-a) * progress
+
+    method lerp( line:Line, progress:Real64 )->XY
+      return line.a + (line.b-line.a) * progress
+endAugment
 
 augment Random
   METHODS
