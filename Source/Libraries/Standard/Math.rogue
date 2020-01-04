@@ -57,6 +57,11 @@ class Math
       if (n >= 0) return  n
       else        return -n
 
+    method lerp( a:Real64, b:Real64, progress:Real64 )->Real64
+      return a + (b-a) * progress
+
+    method lerp( a:Int32,  b:Int32,  progress:Real64 )->Int32
+      return a + (b-a) * progress
 
     method max( a:Int32, b:Int32 )->Int32
       if (a >= b) return a

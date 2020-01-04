@@ -339,49 +339,85 @@ class Value
       return this < Value( other )
 
     method operator-()->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator+( other:Value )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator-( other:Value )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator*( other:Value )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator/( other:Value )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator%( other:Value )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator^( other:Value )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator+( other:Real64 )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator-( other:Real64 )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator*( other:Real64 )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator/( other:Real64 )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator%( other:Real64 )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator^( other:Real64 )->Value
-      return Value( 0 )
+      return UndefinedValue
+
+    method operator+( other:Int64 )->Value
+      return this + other->Real64
+
+    method operator-( other:Int64 )->Value
+      return this - other->Real64
+
+    method operator*( other:Int64 )->Value
+      return this * other->Real64
+
+    method operator/( other:Int64 )->Value
+      return this / other->Real64
+
+    method operator%( other:Int64 )->Value
+      return this % other->Real64
+
+    method operator^( other:Int64 )->Value
+      return this ^ other->Real64
+
+    method operator+( other:Int32 )->Value
+      return this + other->Real64
+
+    method operator-( other:Int32 )->Value
+      return this - other->Real64
+
+    method operator*( other:Int32 )->Value
+      return this * other->Real64
+
+    method operator/( other:Int32 )->Value
+      return this / other->Real64
+
+    method operator%( other:Int32 )->Value
+      return this % other->Real64
+
+    method operator^( other:Int32 )->Value
+      return this ^ other->Real64
 
     method operator+( other:String )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method operator*( other:String )->Value
-      return Value( 0 )
+      return UndefinedValue
 
     method remove( value:Value )->Value
       return value
@@ -631,59 +667,45 @@ class Real64Value( value:Real64 ) : Value
       return Real64Value( -value )
 
     method operator+( other:Value )->Value
-      if (not other) return Value(0)
       return Real64Value( value + other->Real64 )
 
     method operator-( other:Value )->Value
-      if (not other) return Value(0)
       return Real64Value( value - other->Real64 )
 
     method operator*( other:Value )->Value
-      if (not other) return Value(0)
       return Real64Value( value * other->Real64 )
 
     method operator/( other:Value )->Value
-      if (not other) return Value(0)
       return Real64Value( value / other->Real64 )
 
     method operator%( other:Value )->Value
-      if (not other) return Value(0)
       return Real64Value( value % other->Real64 )
 
     method operator^( other:Value )->Value
-      if (not other) return Value(0)
       return Real64Value( value ^ other->Real64 )
 
     method operator+( other:Real64 )->Value
-      if (not other) return Value(0)
       return Real64Value( value + other )
 
     method operator-( other:Real64 )->Value
-      if (not other) return Value(0)
       return Real64Value( value - other )
 
     method operator*( other:Real64 )->Value
-      if (not other) return Value(0)
       return Real64Value( value * other )
 
     method operator/( other:Real64 )->Value
-      if (not other) return Value(0)
       return Real64Value( value / other )
 
     method operator%( other:Real64 )->Value
-      if (not other) return Value(0)
       return Real64Value( value % other )
 
     method operator^( other:Real64 )->Value
-      if (not other) return Value(0)
       return Real64Value( value ^ other )
 
     method operator+( other:String )->Value
-      if (not other) return Value(0)
       return StringValue( value + other )
 
     method operator*( other:String )->Value
-      if (not other) return Value(0)
       return StringValue( Int32(value) * other )
 
     method to->Character

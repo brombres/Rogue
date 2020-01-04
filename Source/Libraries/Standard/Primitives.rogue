@@ -139,11 +139,24 @@ class Real64 [primitive]
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
+    method lerp( a:Real64, b:Real64 )->Real64
+      # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return Math.lerp( a, b, this )
+
     method or_larger( other:Real64 )->Real64
       return select{ this>=other:this || other }
 
     method or_smaller( other:Real64 )->Real64
       return select{ this<=other:this || other }
+
+    method progress( a:Real64, b:Real64 )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   4.progress(0,16) -> 0.25
+      #   4.progress(16,0) -> 0.75
+      if (a == b) return 1.0
+      return (this - a) / (b - a)
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
@@ -279,11 +292,24 @@ class Real32 [primitive]
     method left_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.left_justified( spaces, fill )
 
+    method lerp( a:Real32, b:Real32 )->Real32
+      # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return Math.lerp( a, b, this )->Real32
+
     method or_larger( other:Real32 )->Real32
       return select{ this>=other:this || other }
 
     method or_smaller( other:Real32 )->Real32
       return select{ this<=other:this || other }
+
+    method progress( a:Real32, b:Real32 )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   4.progress(0,16) -> 0.25
+      #   4.progress(16,0) -> 0.75
+      if (a == b) return 1.0
+      return Real64(this - a) / Real64(b - a)
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
@@ -487,6 +513,18 @@ class Int64 [primitive]
       buffer.print( (this & (base-1)).to_digit )
       return buffer
 
+    method progress( a:Int64, b:Int64 )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   1.progress(1,5) -> 0.00
+      #   2.progress(1,5) -> 0.25
+      #   3.progress(1,5) -> 0.50
+      #   4.progress(1,5) -> 0.75
+      #   5.progress(1,5) -> 1.00
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      return Real64(this-a) / Real64(b-a)
+
     method required_bit_count->Int32
       if (this & 0x8000_0000_0000_0000) return 64
       if (this & 0x4000_0000_0000_0000) return 63
@@ -651,6 +689,14 @@ class Int32 [primitive]
 
     method or_smaller( other:Int32 )->Int32
       return select{ this<=other:this || other }
+
+    method progress( a:Int32, b:Int32 )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   2.progress(1,5) -> 0.25
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      return Real64(this-a) / Real64(b-a)
 
     method required_bit_count->Int32
       if (this & 0x8000_0000) return 32
@@ -982,6 +1028,14 @@ class Byte [primitive]
 
     method or_smaller( other:Byte )->Byte
       return select{ this<=other:this || other }
+
+    method progress( a:Byte, b:Byte )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   2.progress(1,5) -> 0.25
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      return Real64(this-a) / Real64(b-a)
 
     method required_bit_count->Int32
       if (this & 0x80) return 8
