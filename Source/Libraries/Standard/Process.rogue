@@ -114,7 +114,7 @@ class PosixProcess : Process
             |#endif
 
   METHODS
-    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment, &env )
+    method init( cmd:String, &readable, &writable, is_blocking=false:Logical, &inherit_environment, &env )
       init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
 
     method init( args, &readable, &writable, is_blocking=false, &inherit_environment, &env )
@@ -379,7 +379,7 @@ class WindowsProcess : Process
             |#endif
 
   METHODS
-    method init( cmd:String, &readable, &writable, &is_blocking, &inherit_environment, &env )
+    method init( cmd:String, &readable, &writable, is_blocking=false:Logical, &inherit_environment, &env )
       # On Windows a cmd like:           "space separated.exe" "arg"
       # Must be wrapped in extra quotes: ""space separated.exe" "arg""
       if (cmd.count('"') > 2) cmd = ''"$"'' (cmd)

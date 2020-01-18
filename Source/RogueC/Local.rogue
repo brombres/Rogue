@@ -6,9 +6,10 @@ class Local
     type          : Type
     index         : Int32
     initial_value : Cmd
+      # Also serves as default_value for parameters
     is_modified   : Logical # set if ever assigned a new value
     is_alias      : Logical
-      # Also serves as default_value for parameters
+    is_flag       : Logical # flag parameter declared in the style "&x"
 
   METHODS
     method init( t, name, type=null, initial_value=null )
@@ -22,6 +23,7 @@ class Local
       result.type = type
       result.index = index
       result.is_alias = is_alias
+      result.is_flag  = is_flag
       if (initial_value) result.initial_value = initial_value.cloned( clone_args )
 
       return result
