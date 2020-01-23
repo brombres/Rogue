@@ -144,6 +144,12 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
       endWhich
 endClass
 
+augment Real64
+  METHODS
+    method lerp( a:Color, b:Color )->Color
+      return Color( this.lerp(a.red,b.red), this.lerp(a.green,b.green), this.lerp(a.blue,b.blue), this.lerp(a.alpha,b.alpha) )
+endAugment
+
 augment Random
   METHODS
     method color->Color

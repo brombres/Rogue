@@ -73,3 +73,9 @@ class HSB( hue:Real64, saturation:Real64, brightness:Real64 ) [compound]
       return "($,$,$)" (hue,saturation,brightness)
 endClass
 
+augment Real64
+  METHODS
+    method lerp( a:HSB, b:HSB )->Color
+      return HSB( this.lerp(a.hue,b.hue), this.lerp(a.saturation,b.saturation), this.lerp(a.brightness,b.brightness) )
+endAugment
+
