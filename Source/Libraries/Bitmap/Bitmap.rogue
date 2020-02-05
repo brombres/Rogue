@@ -9,15 +9,13 @@
 #     In Build.rogue:
 #
 #       #$ LINK                 = true
-#       #$ LIBRARIES(macOS)     = libpng libjpeg zlib
-#       #$ LIBRARIES(macOS)     = libpng libjpeg zlib
+#       #$ LIBRARIES(macOS)     = libpng libjpeg(header:jpeglib.h) zlib
 #       #$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
 #
 #   Using Rogo to compile another .rogue program which uses Bitmap:
 #     In Build.rogue:
 #
-#       #$ LIBRARIES(macOS)     = libpng libjpeg zlib
-#       #$ LIBRARIES(macOS)     = libpng libjpeg zlib
+#       #$ LIBRARIES(macOS)     = libpng libjpeg(header:jpeglib.h) zlib
 #       #$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
 #       ...
 #       execute "roguec OtherProgram.rogue --compile-arg='$LIBRARY_FLAGS(libpng,libjpeg,zlib)'"

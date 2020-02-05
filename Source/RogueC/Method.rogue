@@ -272,6 +272,9 @@ class Method
           local property = type_context.find_property( param.name )
 
           if (property)
+            if (param.is_flag)
+              throw param.t.error( ''Shadowing a property with a flag parameter is not allowed. Change "&$" to be e.g. "$=false:Logical" or "$=false" instead.'' (param.name,param.name,param.name) )
+            endIf
             if (param.type is null)
               # Autostore parameter
               local new_name = Program.create_unique_id

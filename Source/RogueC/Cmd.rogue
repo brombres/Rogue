@@ -1578,7 +1578,7 @@ class CmdThrow : Cmd
     is_resolved : Logical
 
   METHODS
-    method init( t, expression, &is_resolved )
+    method init( t, expression, is_resolved=false )
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdThrow
       if (new_t) t = new_t

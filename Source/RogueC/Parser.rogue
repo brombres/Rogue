@@ -1238,6 +1238,7 @@ class Parser
             endIf
 
             if (is_flag)
+              param.is_flag = true
               if (not param.type) param.type = Program.type_Logical
               if (not param.initial_value) param.initial_value = param.type.create_default_value( param.t )
             endIf

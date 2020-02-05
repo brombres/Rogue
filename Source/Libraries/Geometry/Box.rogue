@@ -179,6 +179,12 @@ class Box( position:XY, size:XY ) [compound]
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor.position * (size-subset_size), subset_size )
 
+    method subset_x( new_width:Real64, anchor=Anchor.CENTER:Anchor )->Box
+      return subset( XY(new_width,height), anchor )
+
+    method subset_y( new_height:Real64, anchor=Anchor.CENTER:Anchor )->Box
+      return subset( XY(width,new_height), anchor )
+
     method to->Quad
       return Quad( this )
 
