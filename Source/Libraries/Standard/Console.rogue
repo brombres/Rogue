@@ -1,4 +1,4 @@
-class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
+class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
     nativeHeader
       #ifdef ROGUE_PLATFORM_WINDOWS
@@ -55,7 +55,6 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
 
     decode_bytes         = true
 
-    output_buffer        = StringBuilder()
     input_buffer         = StringBuilder()
 
     next_input_character : Int32?
@@ -91,6 +90,10 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
           input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
         endForEach
       endIf
+
+    method flush( buffer:StringBuilder )
+      write( buffer )
+      buffer.clear
 
     method has_another->Logical
       if (not next_input_character.exists)
@@ -297,11 +300,12 @@ class Console : Reader<<Character>>, PrintWriter<<output_buffer>> [singleton]
 
 endClass
 
-class ConsoleErrorPrinter : PrintWriter<<output_buffer>>
-  PROPERTIES
-    output_buffer = StringBuilder()
-
+class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
   METHODS
+    method flush( buffer:StringBuilder )
+      write( buffer )
+      buffer.clear
+
     method write( value:String )->this
       $if (target("Android"))
         native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $value->utf8 );
