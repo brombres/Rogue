@@ -39,6 +39,9 @@ class PrintWriter [aspect]
 endClass
 
 class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
+  PROPERTIES
+    $buffer = StringBuilder()
+
   METHODS
     method close->this
       noAction
@@ -134,7 +137,6 @@ endClass
 class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
   PROPERTIES
     output : Writer<<Byte>>
-    buffer = StringBuilder()
 
   METHODS
     method init( output )

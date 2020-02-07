@@ -55,7 +55,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     decode_bytes         = true
 
-    output_buffer        = StringBuilder()
     input_buffer         = StringBuilder()
 
     next_input_character : Int32?
@@ -302,9 +301,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 endClass
 
 class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
-  PROPERTIES
-    output_buffer = StringBuilder()
-
   METHODS
     method flush( buffer:StringBuilder )
       write( buffer )
