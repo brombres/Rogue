@@ -297,6 +297,12 @@ class StringBuilder : PrintWriter [essential]
         return print( "null" )
       endIf
 
+    method print( value:StringBuilder )->this
+      # Concrete definition of the abstract method PrintWriter.print(StringBuilder)
+      reserve( value.utf8.count )
+      write( forEach in value.utf8 )
+      return this
+
     method print_indent
       if (not needs_indent or indent == 0) return
       forEach (i in 1..indent) utf8.add( ' ' )
@@ -449,7 +455,6 @@ class StringBuilder : PrintWriter [essential]
       return this
 
     method write( buffer:StringBuilder )->this
-      # Concrete definition of the abstract method PrintWriter.write(StringBuilder)
       reserve( buffer.utf8.count )
       write( forEach in buffer.utf8 )
       return this

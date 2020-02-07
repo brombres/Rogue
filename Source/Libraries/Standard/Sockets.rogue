@@ -80,7 +80,7 @@ class BasicSocket : Socket
     port             : Int32
     reader           = BasicSocketReader( this )
     writer           = BasicSocketWriter( this )
-    printer          = PrintWriterAdapter( writer )
+    printer          = PrintWriter( writer )
 
 $if (not target("Web"))
     mutex            = Mutex()

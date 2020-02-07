@@ -1,7 +1,7 @@
 class PrintWriter [aspect]
   GLOBAL METHODS
     method create( writer:Writer<<Byte>> )->PrintWriter
-      return PrintWriterAdapter( writer )
+      return BufferedPrintWriter( writer )
 
   METHODS
     method close->this                                         [abstract]
@@ -24,6 +24,7 @@ class PrintWriter [aspect]
     method print( value:Real64, decimal_places:Int32 )->this   [abstract]
     method print( value:Real32 )->this                         [abstract]
     method print( value:String )->this                         [abstract]
+    method print( buffer:StringBuilder )->this                 [abstract]
     method println->this                                       [abstract]
     method println( value:Byte )->this                         [abstract]
     method println( value:Character )->this                    [abstract]
@@ -35,19 +36,19 @@ class PrintWriter [aspect]
     method println( value:Real32 )->this                       [abstract]
     method println( value:Object )->this                       [abstract]
     method println( value:String )->this                       [abstract]
-    method write( buffer:StringBuilder )->this                 [abstract]
 endClass
 
-class PrintWriter<<$buffer>> : PrintWriter [aspect]
+class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
   METHODS
     method close->this
       noAction
       return this
 
     method flush->this
-      write( $buffer )
-      $buffer.clear
+      flush( $buffer )
       return this
+
+    method flush( buffer:StringBuilder ) [abstract]
 
     method print( value:Byte )->this
       $buffer.print( value )
@@ -91,6 +92,10 @@ class PrintWriter<<$buffer>> : PrintWriter [aspect]
       if ($buffer.count > 1024) flush
       return this
 
+    method print( value:StringBuilder )->this
+      $buffer.print( value )
+      return this
+
     method println->this
       $buffer.print( '\n' )
       return flush
@@ -124,11 +129,9 @@ class PrintWriter<<$buffer>> : PrintWriter [aspect]
 
     method println( value:String )->this
       return print( value ).println
-
-    method write( buffer:StringBuilder )->this [abstract]
 endClass
 
-class PrintWriterAdapter : PrintWriter<<buffer>>
+class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
   PROPERTIES
     output : Writer<<Byte>>
     buffer = StringBuilder()
@@ -140,14 +143,9 @@ class PrintWriterAdapter : PrintWriter<<buffer>>
       output.close
       return this
 
-    method flush->this
-      write( buffer )
+    method flush( buffer:StringBuilder )
+      output.write( buffer.utf8 )
       buffer.clear
       output.flush
-      return this
-
-    method write( _buffer:StringBuilder )->this
-      output.write( _buffer.utf8 )
-      return this
 endClass
 
