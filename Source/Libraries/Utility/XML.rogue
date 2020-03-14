@@ -3,7 +3,7 @@ module XML
 # Simple XML parser
 #
 # Usage Sample:
-#   uses XML
+#   uses Utility/XML
 #
 #   local xml = XML( File("Test.html") )
 #   println xml
