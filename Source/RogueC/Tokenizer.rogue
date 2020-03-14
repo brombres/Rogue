@@ -687,6 +687,17 @@ class Tokenizer
             return scan_native_header
           elseIf (keyword_type is TokenType.meta_essential)
             return scan_essential_directive
+          elseIf (keyword_type is TokenType.meta_uses)
+            # Change 'uses A/B' into 'uses A\nuses B'
+            consume_spaces
+            local first = true
+            while (first or consume('/'))
+              if (not first) add_new_token( TokenType.eol )
+              first = false
+              add_new_token( TokenType.meta_uses )
+              add_new_token( TokenType.identifier, read_identifier )
+            endWhile
+            return true
           else
             return add_new_token( keyword_type )
           endIf
