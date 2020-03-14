@@ -96,9 +96,26 @@ class Date( timestamp=System.time:Real64 ) [compound]
           date.extract_strings("$(I)/$(I)/$(I)",parts) or
           date.extract_strings("$(I)-$(I)-$(I)",parts))
         # 2018.10.27, 2018-10-27, 2018/10/27
-        local y  = parts[0]->Int32
-        local m  = parts[1]->Int32
-        local d  = parts[2]->Int32
+        local a  = parts[0]->Int32
+        local b  = parts[1]->Int32
+        local c  = parts[2]->Int32
+        local y, m, d : Int32
+        if (a >= 100)
+          # YYYY-MM-DD
+          y = a
+          m = b
+          d = c
+        elseIf (c >= 100)
+          # MM-DD-YYYY
+          m = a
+          d = b
+          y = c
+        else
+          # MM-DD-YY
+          m = a
+          d = b
+          y = 2000 + c
+        endIf
         return Date.ymd( y, m, d )
 
       elseIf (date.extract_strings("$ $(I), $(I)",parts) or
