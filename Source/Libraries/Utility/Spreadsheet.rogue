@@ -2,7 +2,54 @@
 #   uses Utility/Spreadsheet
 #
 # EXAMPLE
-#   TODO
+# # Context for this example:
+# # - Column 0 contains row names and other columns contain row data.
+# # - A row named "Date" contains dates.
+# # - We will load CSV, delete all columns with Saturday & Sunday dates, and re-save.
+# uses Utility/Spreadsheet
+#
+# # Class 'Spreadsheet' currently only works with CSV files.
+# local table = Spreadsheet( File("Data.csv") )
+#
+# # "table.rows" and "table.columns" are Row[] and Column[] lists.
+# # We'll use standard "query function" syntax to find the row named "Date".
+# local row = table.rows.find( $[0].value == "Date" )
+# if (not row.exists)
+#   Console.error.println "ERROR: Date not found."
+#   System.exit 1
+# endIf
+#
+# # Create a function returning true for cells containing Saturday or Sunday dates.
+# local find_fn = function( cell:Cell )->Logical
+#   try
+#     local date = Date( cell.value->String )
+#     return select(date.weekday){ Date.SATURDAY,Date.SUNDAY:true || false }
+#   catch (Error)
+#     # Not a valid Date
+#     return false
+#   endTry
+# endFunction
+#
+# # 'row' is optional type 'Row?' so "row.value" gives us the object.
+# # We could access Row.cells:Cell[]. Row also contains helpers .find(fn)->Cell and .get(fn)->Cell[] helpers.
+# forEach (cell in row.value[find_fn])
+#   cell.delete_column
+# endForEach
+#
+# # More compact equivalent to the above:
+# # (forEach in (row.value[find_fn])).delete_column
+#
+# # Uncomment for debug printout
+# # println table.to_csv
+#
+# # Write the output
+# println "Saving Output.csv"
+# table.save( File("Output.csv") )
+#
+# # Two additional useful methods to mention:
+# # - table.get(column:Int32,row:Int32)->Value
+# # - table.set(column,row,value)  # expands table size if necessary
+
 module Spreadsheet
 
 class Spreadsheet
@@ -120,9 +167,15 @@ class Header
     method count->Int32
       return cells.count
 
+    method find( query:(Function(Cell)->Logical) )->Cell?
+      return cells.find( query )
+
     method get( index:Int32 )->Cell
       if (index < 0 or index >= cells.count) return null
       return cells[ index ]
+
+    method get( query:(Function(Cell)->Logical) )->Cell[]
+      return cells[ query ]
 endClass
 
 
