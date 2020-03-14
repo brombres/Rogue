@@ -476,7 +476,7 @@ $endIf
         if (attributes.is_api)       api_files.add( file.filepath )
       endIf
 
-    method find_source_file( t:Token, filepath:String, &including_folder )->File
+    method find_source_file( t:Token, filepath:String, &including_folder, &is_optional, &do_not_save_prefix )->File
       if (t)
         # Try to fit new filepath onto end of context filepath.
         local context_path = t.filepath.replacing('\\','/').split('/')
@@ -526,6 +526,10 @@ $endIf
         local path2 = File.join(filepath, "$.rogue" (file.filename))
         local file2 = File( path2 )
         if (not file2.exists)
+          if (is_optional)
+            if (not do_not_save_prefix) _save_search_path( file.filepath + File.separator )
+            return null
+          endIf
           if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
           throw t.error( "'$include' used on a folder - use '$includeFolder' instead." )
         elseIf (file2.is_folder)
@@ -541,6 +545,7 @@ $endIf
         if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
       else
         if (including_folder)
+          if (is_optional) return null
           if (t is null) t = TokenType.meta_include.create_token( "[Command Line]", 0, 0 )
           throw t.error( "'$includeFolder' used on a source file - use '$include' instead." )
         endIf
@@ -553,8 +558,7 @@ $endIf
 
     method include_source( t:Token, filepath:String, &is_optional, &do_not_save_prefix, &from_command_line, &including_folder )->Logical
       # Preemptively (immediately) parses the given file.
-      local file = find_source_file( t, filepath, &=including_folder )
-
+        local file = find_source_file( t, filepath, &=including_folder, &=is_optional, &=do_not_save_prefix )
       if (file is null)
         if (is_optional) return false
         local mesg = select{ including_folder:''No such folder "$".''(filepath) || ''No such file "$".'' (filepath) }
@@ -579,17 +583,17 @@ $endIf
         if (manual_files_essential) essential_files.add( filepath )
       endIf
 
-      if (not do_not_save_prefix)
-        local prefix = File.folder(filepath) + File.separator
-        if (not prefix_path_lookup.contains(prefix))
-          prefix_path_lookup[prefix] = true
-          prefix_path_list.add( prefix )
-        endIf
-      endIf
+      if (not do_not_save_prefix) _save_search_path( File.folder(filepath) + File.separator )
 
       parsers.add( Parser( filepath ) )
 
       return true
+
+    method _save_search_path( filepath:String )
+      if (not prefix_path_lookup.contains(filepath))
+        prefix_path_lookup[filepath] = true
+        prefix_path_list.add( filepath )
+      endIf
 
     method include_native( t:Token, filepath:String, native_type:String, is_optional:Logical )->Logical
       local file = File(filepath)
