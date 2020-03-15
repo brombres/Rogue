@@ -72,7 +72,7 @@ class Spreadsheet
         c.add( cell )
       endForEach
 
-    method add_column( values:@[] )
+    method add_column( values:Value )
       local i = columns.count
       forEach (value at j in values)
         set( i, j, value )
@@ -87,7 +87,7 @@ class Spreadsheet
         c.add( cell )
       endForEach
 
-    method add_row( values:@[] )
+    method add_row( values:Value )
       local j = rows.count
       forEach (value at i in values)
         set( i, j, value )
@@ -307,7 +307,7 @@ endClass
 class CSVParser
   PROPERTIES
     scanner : Scanner
-    row     = @[]
+    row     = Value.list : Value
     builder = StringBuilder()
 
   METHODS
