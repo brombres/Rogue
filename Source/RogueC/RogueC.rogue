@@ -663,7 +663,7 @@ $if defined(ROGUE_RELEASE_TIMESTAMP)
 $else
       local timestamp = System.time
 $endIf
-      local date = Date( timestamp )
+      local date = Timestamp( timestamp )
       println "$ $, $" (date.month_name, date.day, date.year)
 
     method process_command_line_arguments
