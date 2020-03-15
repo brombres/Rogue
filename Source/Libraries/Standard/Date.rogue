@@ -197,6 +197,9 @@ class Date( timestamp=System.time:Real64 ) [compound]
               |tm* date = localtime( &cur_seconds );
               |return date->tm_mday;
 
+    method hash_code->Int32
+      return timestamp->Int32
+
     method hour->Int32
       native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
               |tm* date = localtime( &cur_seconds );
