@@ -296,11 +296,21 @@ class Cell
       if (format is null or format is Format.GENERAL) format = Format( value )
       @value = format.parse( value )
 
+    method to->Logical
+      return value->Logical
+
+    method to->Int32
+      return value->Int32
+
+    method to->Int64
+      return value->Int64
+
+    method to->Real64
+      return value->Real64
+
     method to->String
-      use builder = StringBuilder.pool
-        format.print( value, builder, 0 )
-        return builder->String
-      endUse
+      return value->String
+
 endClass
 
 
