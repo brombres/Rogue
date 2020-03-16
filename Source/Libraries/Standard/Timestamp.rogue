@@ -1,0 +1,381 @@
+class Timestamp( timestamp=System.time:Real64 ) [compound]
+  ENUMERATE
+    JANUARY   = 1
+    FEBRUARY  = 2
+    MARCH     = 3
+    APRIL     = 4
+    MAY       = 5
+    JUNE      = 6
+    JULY      = 7
+    AUGUST    = 8
+    SEPTEMBER = 9
+    OCTOBER   = 10
+    NOVEMBER  = 11
+    DECEMBER  = 12
+
+    SUNDAY    = 0
+    MONDAY    = 1
+    TUESDAY   = 2
+    WEDNESDAY = 3
+    THURSDAY  = 4
+    FRIDAY    = 5
+    SATURDAY  = 6
+
+  GLOBAL METHODS
+    method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Timestamp
+      # A year earlier than 1970 will result a date of 1969.12.31 on Mac at least.
+      # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
+      # e.g. 19 -> 2019.
+      if (year < 100) year = (Timestamp.now.year/100)*100 + year
+      native @|time_t cur_seconds = 0;
+              |tm* zero_date = localtime( &cur_seconds );
+              |
+              |tm cur_date;
+              |memcpy( &cur_date, zero_date, sizeof(tm) );
+              |
+              |cur_date.tm_year = $year - 1900;
+              |cur_date.tm_mon  = $month - 1;
+              |cur_date.tm_mday = $day;
+              |cur_date.tm_hour = $hour;
+              |cur_date.tm_min  = $minute;
+              |cur_date.tm_sec  = $second;
+              |cur_date.tm_isdst = -1;
+              |
+      return Timestamp( native( "((RogueReal64)mktime(&cur_date))" )->Real64 + millisecond )
+
+    method create( date:String )->Timestamp
+      local parts = String[]
+
+      if (date.extract_strings("$(I)-$(I)-$(I)T$(I):$(I):$(I)",parts))
+        # 2018-10-27T10:49
+        local y  = parts[0]->Int32
+        local m  = parts[1]->Int32
+        local d  = parts[2]->Int32
+        local hh = parts[3]->Int32
+        local mm = parts[4]->Int32
+        local ss = parts[5]->Int32
+        return Timestamp( y, m, d, hh, mm, ss )
+
+      elseIf (date.extract_strings("$ $ $(I) $(I):$(I):$(I) $ $(I)",parts))
+        # Sat Oct 27 10:46:30 PDT 2018
+        local y  = parts[7]->Int32
+        local m  = month_name_to_index( parts[1] )
+        local d  = parts[2]->Int32
+        local hh = parts[3]->Int32
+        local mm = parts[4]->Int32
+        local ss = parts[5]->Int32
+        return Timestamp( y, m, d, hh, mm, ss )
+
+      elseIf (date.extract_strings("$(I).$(I).$(I) $(I):$(I):$(I)*",parts))
+        # 2018.10.27 11:18:00[.000][AM]
+        local y  = parts[0]->Int32
+        local m  = parts[1]->Int32
+        local d  = parts[2]->Int32
+        local hh = parts[3]->Int32
+        local mm = parts[4]->Int32
+        local ss = parts[5]->Int32
+        local is_am = date.ends_with("am") or date.ends_with("AM")
+        local is_pm = date.ends_with("pm") or date.ends_with("PM")
+        local is_12 = is_am or is_pm
+        if (is_12)
+          date = date.leftmost(-2).trimmed
+          if (is_am)
+            if (hh == 12) hh = 0
+          else
+            if (hh != 12) hh += 12
+          endIf
+        endIf
+        local ms = 0
+        if (date[date.count-4] == '.')
+          ms = date.after_last( '.' )->Int32
+          date = date.leftmost( -4 )
+        endIf
+        return Timestamp( y, m, d, hh, mm, ss, ms )
+
+      elseIf (date.extract_strings("$(I).$(I).$(I)",parts) or
+          date.extract_strings("$(I)/$(I)/$(I)",parts) or
+          date.extract_strings("$(I)-$(I)-$(I)",parts))
+        # 2018.10.27, 2018-10-27, 2018/10/27
+        local a  = parts[0]->Int32
+        local b  = parts[1]->Int32
+        local c  = parts[2]->Int32
+        local y, m, d : Int32
+        if (a >= 100)
+          # YYYY-MM-DD
+          y = a
+          m = b
+          d = c
+        elseIf (c >= 100)
+          # MM-DD-YYYY
+          m = a
+          d = b
+          y = c
+        else
+          # MM-DD-YY
+          m = a
+          d = b
+          y = 2000 + c
+        endIf
+        return Timestamp.ymd( y, m, d )
+
+      elseIf (date.extract_strings("$ $(I), $(I)",parts) or
+          date.extract_strings("$ $(I) $(I)",parts))
+        # August 29, 2019
+        # August 29 2019
+        local m  = month_name_to_index( parts[0]->String )
+        local d  = parts[1]->Int32
+        local y  = parts[2]->Int32
+        return Timestamp.ymd( y, m, d )
+
+      elseIf (date.extract_strings("$(I) $, $(I)",parts) or
+          date.extract_strings("$(I) $ $(I)",parts))
+        # 29 August, 2019
+        # 29 August 2019
+        local d  = parts[0]->Int32
+        local m  = month_name_to_index( parts[1]->String )
+        local y  = parts[2]->Int32
+        return Timestamp.ymd( y, m, d )
+
+      else
+        throw SyntaxError( "Unsupported date format: " + date )
+      endIf
+
+    method month_name_to_index( month_name:String )->Int32
+      # January->1, December->12
+      # Accepts partial month names e.g. "Jan"
+      if (month_name.count >= 3)
+        local ch0 = month_name[0].to_lowercase
+        local ch1 = month_name[1].to_lowercase
+        local ch2 = month_name[2].to_lowercase
+        which (ch0)
+          case 'j'
+            if (ch1 == 'a') return JANUARY
+            which (ch2)
+              case 'n': return JUNE
+              case 'l': return JULY
+            endWhich
+          case 'f': return FEBRUARY
+          case 'm'
+            which (ch2)
+              case 'r': return MARCH
+              case 'y': return MAY
+            endWhich
+          case 'a'
+            which (ch1)
+              case 'p': return APRIL
+              case 'u': return AUGUST
+            endWhich
+          case 's': return SEPTEMBER
+          case 'o': return OCTOBER
+          case 'n': return NOVEMBER
+          case 'd': return DECEMBER
+        endWhich
+      endIf
+      throw SyntaxError( "Invalid month name: " + month_name )
+
+    method now->Timestamp
+      return Timestamp()
+
+    method ymd( year:Int32, month:Int32, day:Int32 )->Timestamp
+      # Use hour 12 instead of hour 0 as a default so that time change won't mess up the result of adding 24 hours to date
+      return Timestamp( year, month, day, &hour=12 )
+
+  GLOBAL PROPERTIES
+    month_names = [ "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December" ]
+
+    weekday_names = [ "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" ]
+
+  METHODS
+    method year->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_year + 1900;
+
+    method day->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_mday;
+
+    method hash_code->Int32
+      return timestamp->Int32
+
+    method hour->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_hour;
+
+    method millisecond->Int32
+      return Int32( (timestamp * 1000) % 1000 )
+
+    method minute->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_min;
+
+    method month->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_mon + 1;
+
+    method month_name->String
+      return month_names[ month.clamped(1,month_names.count) - 1 ]
+
+    method second->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_sec;
+
+    method hour12->Int32
+      local h = hour
+      if (h == 0) return 12
+      if (h <= 12) return h
+      return (h - 12)
+
+    method is_am->Logical
+      return (hour < 12)
+
+    method is_pm->Logical
+      return (hour >= 12)
+
+    method operator+( other:TimeInterval )->Timestamp
+      return Timestamp( timestamp + other.total_seconds )
+
+    method operator-( other:TimeInterval )->Timestamp
+      return Timestamp( timestamp - other.total_seconds )
+
+    method operator-( other:Timestamp )->TimeInterval
+      return TimeInterval( timestamp - other.timestamp )
+
+    method operator<( other:Timestamp )->Logical
+      return (timestamp < other.timestamp)
+
+    method operator==( other:Timestamp )->Logical
+      return (timestamp == other.timestamp)
+
+    method to->Date
+      return Date( year, month, day )
+
+    method to->String
+      return this->String( &ymd, &hms )
+
+    method to->String( &ymd, &hms, &ms, &format=24:Int32, &mdy )
+      if (mdy)
+        return "$ $, $" (month_names[month-1], day, year)
+      endIf
+
+      if (hms)
+        which (format)
+          case 12, 24: noAction
+          others:      throw SyntaxError( "Timestamp->String() &format should be 12 or 24." )
+        endWhich
+      endIf
+
+      use buffer = StringBuilder.pool
+
+        if (ymd)
+          buffer.print( year.right_justified(4,'0') ).print('.')
+          buffer.print( month.right_justified(2,'0') ).print('.')
+          buffer.print( day.right_justified(2,'0') )
+          if (hms or ms) buffer.print( ' ' )
+        endIf
+
+        if (hms)
+          if (format == 12)
+            buffer.print( hour12 ).print( ':' )
+          else
+            buffer.print( hour.right_justified(2,'0') ).print(':')
+          endIf
+          buffer.print( minute.right_justified(2,'0') ).print(':')
+          buffer.print( second.right_justified(2,'0') )
+          if (ms)
+            buffer.print( '.' )
+            buffer.print( millisecond.right_justified(3,'0') )
+          endIf
+          if (format == 12)
+            if (is_am) buffer.print " AM"
+            else       buffer.print " PM"
+          endIf
+        endIf
+        return buffer->String
+
+      endUse
+
+    method weekday->Int32
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+              |tm* date = localtime( &cur_seconds );
+              |return date->tm_wday;
+
+    method weekday_name->String
+      return weekday_names[ weekday ]
+
+endClass
+
+class TimeInterval( total_seconds:Real64 ) [compound]
+  # This time interval can be broken down into days, hours, minutes, seconds, and milliseconds.
+  # Those values are all independent and precise.
+  GLOBAL METHODS
+    method create( flag=true:Logical, days=0:Real64, hours=0:Real64, minutes=0:Real64, seconds=0:Real64, milliseconds=0:Real64 )->TimeInterval
+      # 'flag' is ignored and is a kludge to disambiguate the compound initializers from this global create method.
+      return TimeInterval( days * (3600*24) + hours*3600 + minutes*60 + seconds + (milliseconds/1000.0) )
+
+    method hms( hours:Real64, minutes:Real64, seconds:Real64, ms=0:Real64 )->TimeInterval
+      return TimeInterval( &hours=hours, &minutes=minutes, &seconds=seconds, &milliseconds=ms )
+
+
+  METHODS
+    method days->Int32 [macro]
+      return Int32( this.total_seconds.abs / (3600*24) )
+
+    method hours->Int32 [macro]
+      return Int32( (this.total_seconds.abs % (3600*24)) / 3600 )
+
+    method is_negative->Logical [macro]
+      return (this.total_seconds.abs < 0)
+
+    method minutes->Int32 [macro]
+      return Int32( (this.total_seconds.abs % 3600) / 60 )
+
+    method seconds->Int32 [macro]
+      return Int32( this.total_seconds.abs % 60 )
+
+    method milliseconds->Int32 [macro]
+      return Int32( (this.total_seconds.abs * 1000) % 1000 )
+
+    method operator<( other:TimeInterval )->Logical
+      return (total_seconds < other.total_seconds)
+
+    method operator==( other:TimeInterval )->Logical
+      return (total_seconds == other.total_seconds)
+
+    method to->String
+      local buffer = StringBuilder()
+
+      if (total_seconds < 0) buffer.print( '-' )
+
+      local needs_comma = false
+
+      if (days)  buffer.print( days ).print( " day".pluralized(days) ); needs_comma = true
+
+      if (hours)
+        if (needs_comma) buffer.print( ", " )
+        buffer.print( hours ).print( " hour".pluralized(hours) ); needs_comma = true
+      endIf
+      if (minutes)
+        if (needs_comma) buffer.print( ", " )
+        buffer.print( minutes ).print( " minute".pluralized(minutes) ); needs_comma = true
+      endIf
+
+      if (seconds or milliseconds)
+        if (needs_comma) buffer.print( ", " )
+        needs_comma = true
+
+        buffer.print( (total_seconds % 60).format(3) ).print( " seconds" )
+      endIf
+
+      if (not buffer.count) return "0.000 seconds"
+
+      return buffer->String
+
+endClass
+

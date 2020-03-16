@@ -39,6 +39,9 @@ class Value
       if (value is null) return NullValue
       return value
 
+    method list->@[]
+      return @[]
+
     method load( file:File )->Value
       return JSON.load( file )
 
@@ -47,6 +50,9 @@ class Value
 
     method operator?( value:Value )->Logical
       return (value is not null and value.is_non_null and (not value.is_logical or value->Logical))
+
+    method table->@{}
+      return @{}
 
   METHODS
     method add( value:Int32 )->this [macro]

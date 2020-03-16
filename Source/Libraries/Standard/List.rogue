@@ -171,6 +171,10 @@ class List<<$DataType>> : GenericList
       endUse
       return this
 
+    method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
+      # Returns a copy of the list without any item that passes the query function.
+      return cloned.discard( discard_if )
+
     method discard_from( index:Int32 )->this
       if (data)
         local n = (count - index)
@@ -842,6 +846,7 @@ endAugment
 augment String[]
   METHODS
     method join( separator="\n":String )->String
+      <replace>
       # A better version of join() for String lists
       local total_count = 0
       forEach (line in this) total_count += line.count
