@@ -1,4 +1,4 @@
-class Timestamp( timestamp=System.time:Real64 ) [compound]
+class Timestamp( value=System.time:Real64 ) [compound]
   ENUMERATE
     JANUARY   = 1
     FEBRUARY  = 2
@@ -188,33 +188,33 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
 
   METHODS
     method year->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_year + 1900;
 
     method day->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_mday;
 
     method hash_code->Int32
-      return timestamp->Int32
+      return value->Int32
 
     method hour->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_hour;
 
     method millisecond->Int32
-      return Int32( (timestamp * 1000) % 1000 )
+      return Int32( (value * 1000) % 1000 )
 
     method minute->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_min;
 
     method month->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_mon + 1;
 
@@ -222,7 +222,7 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
       return month_names[ month.clamped(1,month_names.count) - 1 ]
 
     method second->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_sec;
 
@@ -239,19 +239,19 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
       return (hour >= 12)
 
     method operator+( other:TimeInterval )->Timestamp
-      return Timestamp( timestamp + other.total_seconds )
+      return Timestamp( value + other.total_seconds )
 
     method operator-( other:TimeInterval )->Timestamp
-      return Timestamp( timestamp - other.total_seconds )
+      return Timestamp( value - other.total_seconds )
 
     method operator-( other:Timestamp )->TimeInterval
-      return TimeInterval( timestamp - other.timestamp )
+      return TimeInterval( value - other.value )
 
     method operator<( other:Timestamp )->Logical
-      return (timestamp < other.timestamp)
+      return (value < other.value)
 
     method operator==( other:Timestamp )->Logical
-      return (timestamp == other.timestamp)
+      return (value == other.value)
 
     method to->Date
       return Date( year, month, day )
@@ -302,7 +302,7 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
       endUse
 
     method weekday->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_wday;
 
