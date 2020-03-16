@@ -22,6 +22,9 @@ class Timestamp( value=System.time:Real64 ) [compound]
     SATURDAY  = 6
 
   GLOBAL METHODS
+    method create( date:Date, time:Time )->Timestamp
+      return Timestamp( date.year, date.month, date.day, time.hour, time.minute, time.second, time.millisecond )
+
     method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Timestamp
       # A year earlier than 1970 will result a date of 1969.12.31 on Mac at least.
       # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
@@ -300,6 +303,9 @@ class Timestamp( value=System.time:Real64 ) [compound]
         return buffer->String
 
       endUse
+
+    method to->Time
+      return Time( hour, minute, second, millisecond )
 
     method weekday->Int32
       native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
