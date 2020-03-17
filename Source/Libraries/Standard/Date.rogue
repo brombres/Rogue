@@ -1,8 +1,6 @@
 #==============================================================================
 # Date.rogue
 #
-# 2020.03.15 - Created by Abe Pralle
-#
 # Represents a year/month/day date.
 # Note: does not represent a date+time as Java/JS Date does.
 #
@@ -47,6 +45,9 @@
 #   today.day_of_year:74
 #   today.days_in_month:31
 #   today.days_in_year:366
+#
+# HISTORY
+#   2020.03.15 - Created by Abe Pralle
 #==============================================================================
 
 class Date( year:Int32, month:Int32, day:Int32 ) [compound]
@@ -265,6 +266,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return month_names[ month.clamped(1,month_names.count) - 1 ]
 
     method operator+( days:Int32 )->Date
+      if (days < 0) return this - (-days)
       local date = this
 
       # Add years at a time
@@ -292,6 +294,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return date
 
     method operator-( days:Int32 )->Date
+      if (days < 0) return this + (-days)
       local date = this
       local delta = date.day_of_year + 1
 

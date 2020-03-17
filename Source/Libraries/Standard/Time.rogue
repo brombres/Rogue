@@ -3,16 +3,50 @@
 #
 # Models a time as a number of hours, minutes, seconds, and milliseconds.
 # Can be used as both an absolute time and a relative interval.
+#
+# Times wrap around on a 24-hour clock, so Time(23,0)+Time(2,0)==Time(1,0)
+# (23:00:00 + 02:00:00 == 01:00:00).
+#
+# Use Timestamp or DateTime if you need to work with times greater than 24
+# hours.
+#
+# HISTORY
+#   2020.03.16 - Created by Abe Pralle
 #==============================================================================
 
 class Time( value:Real64 ) [compound]
   GLOBAL METHODS
-    method create( hour:Int32, minute:Int32, second:Int32, millisecond:Int32 )->Time
+    method create( hour:Int32, minute:Int32, second=0:Int32, millisecond=0:Int32 )->Time
       hour   %= 24
       minute %= 60
       second %= 60
       millisecond %= 1000
       return Time( ((hour*3600 + minute*60 + second) * 1000 + millisecond) / 1000.0 )
+
+    method create( text:String )->Time
+      local st = text.to_lowercase
+      local parts = st.before_first('.').before_first(' ').split(':')
+      local h, m, s, ms : Int32
+      if (parts and parts.count >= 2 and parts.count <= 4)
+        h = parts[0]->Int32
+        m = parts[1]->Int32
+        if (parts.count >= 3)
+          s = parts[2]->Int32
+          if (parts.count == 4) ms = parts[3]->Int32
+        endIf
+      else
+        throw SyntaxError( "Unsupported time format: " + text )
+      endIf
+      if (ms == 0)
+        local ms_string = st.extract_string( "*.$(I)*" )
+        if (ms_string) ms = ms_string->Int32
+      endIf
+      if (st.contains("am") or st.contains("a.m."))
+        if (h == 12) h = 0
+      elseIf (st.contains("pm") or st.contains("p.m."))
+        if (h != 12) h += 12
+      endIf
+      return Time( h, m, s, ms )
 
     method from_timestamp( timestamp:Timestamp )->Time
       return Time( timestamp.hour, timestamp.minute, timestamp.second, timestamp.millisecond )
@@ -24,6 +58,12 @@ class Time( value:Real64 ) [compound]
     method hour->Int32
       return Int32(value / 3600)
 
+    method is_am->Logical
+      return hour < 12
+
+    method is_pm->Logical
+      return hour >= 12
+
     method minute->Int32
       return Int32(value % 3600) / 60
 
@@ -33,37 +73,52 @@ class Time( value:Real64 ) [compound]
     method millisecond->Int32
       return Int32(value * 1000) % 1000
 
+    method operator+( other:Time )->Time
+      return Time( (value+other.value) % (24*60*60) )
+
+    method operator-( other:Time )->Time
+      return Time( (value+other.value) % (24*60*60) )
+
+    method operator<>( other:Time )->Int32
+      return (value <> other.value)
+
     method to->String
       return this->String( "hh24:mm:ss" )
 
     method to->String( format:String )
       # format
-      #   hh24 - hour in 24-hour format with possible leading 0
-      #   hh12 - hour in 12-hour format with possible leading 0
-      #   hh   - same as hh24
-      #   h24  - hour in 24-hour format without any leading 0
-      #   h12  - hour in 12-hour format without any leading 0
-      #   h    - same as h24
-      #   mm   - minutes with possible leading 0
-      #   m    - minutes without any leading 0
-      #   ss   - seconds with possible leading 0
-      #   s    - seconds without any leading 0
-      #   ms   - 3-digit milliseconds with possible leading 0's
-      #   ampm - replaced with 'am' or 'pm' as appropriate
-      #   AMPM - replaced with 'AM' or 'PM' as appropriate
-      #   am   - same as ampm
-      #   pm   - same as ampm
-      #   AM   - same as AMPM
-      #   PM   - same as AMPM
+      #   hh24  - hour in 24-hour format with possible leading 0
+      #   hh12  - hour in 12-hour format with possible leading 0
+      #   hh    - same as hh24
+      #   h24   - hour in 24-hour format without any leading 0
+      #   h12   - hour in 12-hour format without any leading 0
+      #   h     - same as h24
+      #   mm    - minutes with possible leading 0
+      #   m     - minutes without any leading 0
+      #   ss    - seconds with possible leading 0
+      #   s     - seconds without any leading 0
+      #   ms    - 3-digit milliseconds with possible leading 0's
+      #   ampm  - replaced with 'am' or 'pm' as appropriate
+      #   AMPM  - replaced with 'AM' or 'PM' as appropriate
+      #   am/pm - replaced with 'am' or 'pm' as appropriate
+      #   AM/PM - replaced with 'AM' or 'PM' as appropriate
+      #   am    - same as ampm
+      #   pm    - same as ampm
+      #   AM    - same as AMPM
+      #   PM    - same as AMPM
       local is_12 = false
       local ampm  = select{ (hour < 12):"AM" || "PM" }
 
-      if (format.contains("ampm")) format = format.replacing( "ampm", "aplc" ); is_12 = true
-      if (format.contains("am"))   format = format.replacing( "am",   "aplc" ); is_12 = true
-      if (format.contains("pm"))   format = format.replacing( "pm",   "aplc" ); is_12 = true
-      if (format.contains("AMPM")) format = format.replacing( "AMPM", "apuc" ); is_12 = true
-      if (format.contains("AM"))   format = format.replacing( "AM",   "apuc" ); is_12 = true
-      if (format.contains("PM"))   format = format.replacing( "PM",   "apuc" ); is_12 = true
+      # Convert am/pm markers to a temporary name that doesn't contain 'm' so that
+      # minutes replacement doesn't mess it up.
+      if (format.contains("ampm"))  format = format.replacing( "ampm",  "aplc" ); is_12 = true
+      if (format.contains("am/pm")) format = format.replacing( "am/pm", "aplc" ); is_12 = true
+      if (format.contains("am"))    format = format.replacing( "am",    "aplc" ); is_12 = true
+      if (format.contains("pm"))    format = format.replacing( "pm",    "aplc" ); is_12 = true
+      if (format.contains("AMPM"))  format = format.replacing( "AMPM",  "apuc" ); is_12 = true
+      if (format.contains("AM/PM")) format = format.replacing( "AM/PM", "apuc" ); is_12 = true
+      if (format.contains("AM"))    format = format.replacing( "AM",    "apuc" ); is_12 = true
+      if (format.contains("PM"))    format = format.replacing( "PM",    "apuc" ); is_12 = true
 
       format = format.to_lowercase
 
@@ -88,8 +143,8 @@ class Time( value:Real64 ) [compound]
       if (format.contains("ss")) format = format.replacing( "ss", second.format("02") )
       if (format.contains("s"))  format = format.replacing( "s",  second->String )
 
-      if (format.contains("aplc")) format = format.replacing( "aplc", select{(hour<10):"am"||"pm"} )
-      if (format.contains("apuc")) format = format.replacing( "apuc", select{(hour<10):"AM"||"PM"} )
+      if (format.contains("aplc")) format = format.replacing( "aplc", select{(hour<12):"am"||"pm"} )
+      if (format.contains("apuc")) format = format.replacing( "apuc", select{(hour<12):"AM"||"PM"} )
 
       return format
 
