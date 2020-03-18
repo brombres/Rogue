@@ -1,0 +1,71 @@
+#==============================================================================
+# DateTime.rogue
+#
+# 2020.03.16 - Created by Abe Pralle
+#==============================================================================
+class DateTime( date:Date, time:Time ) [compound]
+  GLOBAL METHODS
+    method create( t:Timestamp )->DateTime
+      return DateTime(
+        Date( t.year, t.month, t.day ),
+        Time( t.hour, t.minute, t.second, t.millisecond )
+      )
+
+    method create( timestamp:Real64 )->DateTime
+      return DateTime( Timestamp(timestamp) )
+
+    method now->DateTime
+      return DateTime( Timestamp.now )
+
+  METHODS
+    method adjusted( years=0:Int32, months=0:Int32, weeks=0:Int32, days=0:Int32,
+                 hours=0:Int32, minutes=0:Int32, seconds=0:Int32, milliseconds=0:Int32 )->DateTime
+      return plus( years, months, weeks, days, hours, minutes, seconds, milliseconds )
+
+    method plus( years=0:Int32, months=0:Int32, weeks=0:Int32, days=0:Int32,
+                 hours=0:Int32, minutes=0:Int32, seconds=0:Int32, milliseconds=0:Int32 )->DateTime
+      local date = date
+      local time = time
+      loop (years.abs)  date += date.days_in_year * years.sign
+      loop (months.abs) date += date.days_in_month * years.sign
+      date += weeks * 7 + days
+      local dt = (((hours*3600 + minutes*60 + seconds) * 1000) + milliseconds) / 1000.0
+      if (dt > 0)
+        date += Int32( dt / (24*60*60) )
+        dt   %= 24 * 60 * 60
+        local modified_time = time + Time(dt)
+        if (modified_time.value < time.value) date  = date.incremented
+        time = modified_time
+      elseIf (dt < 0)
+        date += Int32( dt / (24*60*60) )
+        dt   %= -24 * 60 * 60
+        local modified_time = time + Time(dt)
+        if (modified_time.value > time.value) date = date.decremented
+        time = modified_time
+      endIf
+      return DateTime(date,time)
+
+    method minus( years=0:Int32, months=0:Int32, weeks=0:Int32, days=0:Int32,
+                 hours=0:Int32, minutes=0:Int32, seconds=0:Int32, milliseconds=0:Int32 )->DateTime
+      return plus( -years, -months, -weeks, -days, -hours, -minutes, -seconds, -milliseconds )
+
+    method operator-( other:DateTime )->TimeInterval
+      local days = date - other.date
+      local new_date = date - days
+      local time = time - other.time
+      if (time < other.time) new_date = new_date - days.sign
+      return TimeInterval( &days=days, &seconds=time.value )
+
+    method timestamp->Timestamp
+      return Timestamp( (this.adjusted(&hours=-Timestamp.gmt_time_zone_offset) - DateTime(Date(1970,1,1),Time(0))).total_seconds )
+
+    method to->Date
+      return date
+
+    method to->String
+      return "$ $" (date,time)
+
+    method to->Time
+      return time
+endClass
+
