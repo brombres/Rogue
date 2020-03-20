@@ -4,23 +4,13 @@
 # Models a time as a number of hours, minutes, seconds, and milliseconds.
 # Can be used as both an absolute time and a relative interval.
 #
-# Times wrap around on a 24-hour clock, so Time(23,0)+Time(2,0)==Time(1,0)
-# (23:00:00 + 02:00:00 == 01:00:00).
-#
-# Use Timestamp or DateTime if you need to work with times greater than 24
-# hours.
-#
 # HISTORY
 #   2020.03.16 - Created by Abe Pralle
 #==============================================================================
 
-class Time( value:Real64 ) [compound]
+class Time( total_seconds:Real64 ) [compound]
   GLOBAL METHODS
     method create( hour:Int32, minute:Int32, second=0:Int32, millisecond=0:Int32 )->Time
-      hour   %= 24
-      minute %= 60
-      second %= 60
-      millisecond %= 1000
       return Time( ((hour*3600 + minute*60 + second) * 1000 + millisecond) / 1000.0 )
 
     method create( text:String )->Time
@@ -55,8 +45,11 @@ class Time( value:Real64 ) [compound]
       return from_timestamp( Timestamp.now )
 
   METHODS
+    method days->Int32
+      return Int32(total_seconds / (24*3600))
+
     method hour->Int32
-      return Int32(value / 3600)
+      return Int32(total_seconds / 3600)
 
     method is_am->Logical
       return hour < 12
@@ -65,22 +58,25 @@ class Time( value:Real64 ) [compound]
       return hour >= 12
 
     method minute->Int32
-      return Int32(value % 3600) / 60
+      return Int32(total_seconds % 3600) / 60
 
     method second->Int32
-      return Int32(value % 60)
+      return Int32(total_seconds % 60)
 
     method millisecond->Int32
-      return Int32(value * 1000) % 1000
+      return Int32(total_seconds * 1000) % 1000
 
     method operator+( other:Time )->Time
-      return Time( (value+other.value) % (24*60*60) )
+      return Time( total_seconds + other.total_seconds )
 
     method operator-( other:Time )->Time
-      return Time( (value-other.value) % (24*60*60) )
+      return Time( total_seconds - other.total_seconds )
 
     method operator<>( other:Time )->Int32
-      return (value <> other.value)
+      return (total_seconds <> other.total_seconds)
+
+    method removing_days->Time
+      return total_seconds + days * (24*3600)
 
     method to->String
       return this->String( "hh24:mm:ss" )

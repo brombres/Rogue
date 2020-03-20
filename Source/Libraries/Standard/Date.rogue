@@ -325,9 +325,13 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
     method operator-( other:Date )->Int32
       # Returns the number of days between the two dates
-      local a = this
-      local b = other
-      if (a > b) swapValues(a,b)
+      local b = this
+      local a = other
+      local sign = 1
+      if (a > b)
+        sign = -1
+        swapValues(a,b)
+      endIf
 
       local diff = 0
       while (a.year < b.year)
@@ -335,7 +339,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
         a = Date( a.year+1, 1, 1 )
       endWhile
 
-      return diff + (b.day_of_year - a.day_of_year)
+      return sign * (diff + (b.day_of_year - a.day_of_year))
 
     method operator<( other:Date )->Logical
       return (hash_code < other.hash_code)

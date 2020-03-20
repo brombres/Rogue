@@ -11,23 +11,23 @@ class TimeInterval( total_seconds:Real64 ) [compound]
 
 
   METHODS
-    method days->Int32 [macro]
-      return Int32( this.total_seconds.abs / (3600*24) )
+    method days->Int32
+      return Int32( this.total_seconds / (3600*24) )
 
-    method hours->Int32 [macro]
-      return Int32( (this.total_seconds.abs % (3600*24)) / 3600 )
+    method hours->Int32
+      return Int32( (this.total_seconds.abs % (3600*24)) / 3600 * total_seconds.sign )
 
-    method is_negative->Logical [macro]
+    method is_negative->Logical
       return (this.total_seconds.abs < 0)
 
-    method minutes->Int32 [macro]
-      return Int32( (this.total_seconds.abs % 3600) / 60 )
+    method minutes->Int32
+      return Int32( (this.total_seconds.abs % 3600) / 60 * total_seconds.sign )
 
-    method seconds->Int32 [macro]
-      return Int32( this.total_seconds.abs % 60 )
+    method seconds->Int32
+      return Int32( (this.total_seconds.abs % 60) * total_seconds.sign )
 
     method milliseconds->Int32 [macro]
-      return Int32( (this.total_seconds.abs * 1000) % 1000 )
+      return Int32( ((this.total_seconds.abs * 1000) % 1000) * total_seconds.sign )
 
     method operator<( other:TimeInterval )->Logical
       return (total_seconds < other.total_seconds)
@@ -42,27 +42,33 @@ class TimeInterval( total_seconds:Real64 ) [compound]
 
       local needs_comma = false
 
-      if (days)  buffer.print( days ).print( " day".pluralized(days) ); needs_comma = true
+      if (days)  buffer.print( days.abs ).print( " day".pluralized(days) ); needs_comma = true
 
       if (hours)
         if (needs_comma) buffer.print( ", " )
-        buffer.print( hours ).print( " hour".pluralized(hours) ); needs_comma = true
+        buffer.print( hours.abs ).print( " hour".pluralized(hours.abs) ); needs_comma = true
       endIf
       if (minutes)
         if (needs_comma) buffer.print( ", " )
-        buffer.print( minutes ).print( " minute".pluralized(minutes) ); needs_comma = true
+        buffer.print( minutes.abs ).print( " minute".pluralized(minutes.abs) ); needs_comma = true
       endIf
 
       if (seconds or milliseconds)
         if (needs_comma) buffer.print( ", " )
         needs_comma = true
 
-        buffer.print( (total_seconds % 60).format(3) ).print( " seconds" )
+        buffer.print( (total_seconds.abs % 60).format(3) ).print( " seconds" )
       endIf
 
       if (not buffer.count) return "0.000 seconds"
 
       return buffer->String
+
+    method total_days->Real64
+      return this.total_seconds / (3600*24)
+
+    method total_hours->Real64
+      return this.total_seconds / 3600
 
 endClass
 

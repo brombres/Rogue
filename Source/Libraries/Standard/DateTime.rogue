@@ -14,6 +14,12 @@ class DateTime( date:Date, time:Time ) [compound]
     method create( timestamp:Real64 )->DateTime
       return DateTime( Timestamp(timestamp) )
 
+    method create( text:String )->DateTime
+      # text: assumes "<date> <time>" separated by a space
+      local parts = text.trimmed.split( ' ' )
+      if (parts.count != 2) throw SyntaxError( "Unsupported DateTime format: " + text )
+      return DateTime( Date(parts.first), Time(parts.last) )
+
     method now->DateTime
       return DateTime( Timestamp.now )
 
@@ -34,13 +40,13 @@ class DateTime( date:Date, time:Time ) [compound]
         date += Int32( dt / (24*60*60) )
         dt   %= 24 * 60 * 60
         local modified_time = time + Time(dt)
-        if (modified_time.value < time.value) date  = date.incremented
+        if (modified_time.total_seconds < time.total_seconds) date  = date.incremented
         time = modified_time
       elseIf (dt < 0)
         date += Int32( dt / (24*60*60) )
         dt   %= -24 * 60 * 60
         local modified_time = time + Time(dt)
-        if (modified_time.value > time.value) date = date.decremented
+        if (modified_time.total_seconds > time.total_seconds) date = date.decremented
         time = modified_time
       endIf
       return DateTime(date,time)
@@ -50,22 +56,83 @@ class DateTime( date:Date, time:Time ) [compound]
       return plus( -years, -months, -weeks, -days, -hours, -minutes, -seconds, -milliseconds )
 
     method operator-( other:DateTime )->TimeInterval
-      local days = date - other.date
-      local new_date = date - days
-      local time = time - other.time
-      if (time < other.time) new_date = new_date - days.sign
-      return TimeInterval( &days=days, &seconds=time.value )
+      local lower  = other
+      local higher = this
+      if (higher < lower) swapValues( lower, higher )
 
-    method timestamp->Timestamp
-      return Timestamp( (this.adjusted(&hours=-Timestamp.gmt_time_zone_offset) - DateTime(Date(1970,1,1),Time(0))).total_seconds )
+      local this_seconds  = (date - lower.date) * (24*3600) + time.total_seconds
+      local other_seconds = (other.date - lower.date) * (24*3600) + other.time.total_seconds
+
+      return TimeInterval( this_seconds - other_seconds )
+
+    method operator<( other:DateTime )->Logical
+      return (date < other.date) or (date == other.date and time < other.time)
+
+    method operator==( other:DateTime )->Logical
+      return (date == other.date) and (time == other.time)
 
     method to->Date
       return date
 
     method to->String
       return "$ $" (date,time)
+      # Equivalent to:
+      #   return "D(yyyy.mm.dd) T(hh:mm:ss)"
+
+    method to->String( format:String )
+      use builder = StringBuilder.pool
+        local scanner = Scanner( format )
+        forEach (ch in scanner)
+          if (ch == 'D')
+            if (scanner.consume('('))
+              local paren_count = 1
+              use format_builder = StringBuilder.pool
+                while (scanner.has_another)
+                  if (paren_count == 1 and scanner.consume(')')) escapeWhile
+                  local ch2 = scanner.read
+                  if (ch2 == '(')     ++paren_count
+                  elseIf (ch2 == ')') --paren_count
+                  format_builder.print( ch2 )
+                endWhile
+                builder.print( date->String(format_builder->String) )
+              endUse
+            else
+              builder.print( date->String )
+            endIf
+          elseIf (ch == 'T')
+            if (scanner.consume('('))
+              local paren_count = 1
+              use format_builder = StringBuilder.pool
+                while (scanner.has_another)
+                  if (paren_count == 1 and scanner.consume(')')) escapeWhile
+                  local ch2 = scanner.read
+                  if (ch2 == '(')     ++paren_count
+                  elseIf (ch2 == ')') --paren_count
+                  format_builder.print( ch2 )
+                endWhile
+                builder.print( time->String(format_builder->String) )
+              endUse
+            else
+              builder.print( time->String )
+            endIf
+          else
+            builder.print( ch )
+          endIf
+        endForEach
+        return builder->String
+      endUse
 
     method to->Time
       return time
+
+    method to->Timestamp
+      return Timestamp( (this.adjusted(&hours=-Timestamp.gmt_time_zone_offset) - DateTime(Date(1970,1,1),Time(0))).total_seconds )
+
+    method with_date( date:Date )->DateTime
+      return DateTime( date, time )
+
+    method with_time( time:Time )->DateTime
+      return DateTime( date, time )
+
 endClass
 
