@@ -63,7 +63,10 @@ class Spreadsheet
     method init( csv_file:File )
       CSVParser( this, csv_file )
 
-    method add_column
+    method init( csv:String )
+      CSVParser( this, csv )
+
+    method add_column->Column
       local c = Column( this, columns.count )
       columns.add( c )
       forEach (r in rows)
@@ -71,14 +74,16 @@ class Spreadsheet
         r.add( cell )
         c.add( cell )
       endForEach
+      return c
 
-    method add_column( values:Value )
+    method add_column( values:Value )->Column
       local i = columns.count
       forEach (value at j in values)
         set( i, j, value )
       endForEach
+      return columns[i]
 
-    method add_row
+    method add_row->Row
       local r = Row( this, rows.count )
       rows.add( r )
       forEach (c in columns)
@@ -86,12 +91,14 @@ class Spreadsheet
         r.add( cell )
         c.add( cell )
       endForEach
+      return r
 
-    method add_row( values:Value )
+    method add_row( values:Value )->Row
       local j = rows.count
       forEach (value at i in values)
         set( i, j, value )
       endForEach
+      return rows[j]
 
     method delete_column( index:Int32 )
       if (index < 0 or index >= columns.count) return
@@ -113,6 +120,9 @@ class Spreadsheet
       if (column < 0 or column >= columns.count) return UndefinedValue
       if (row < 0    or row    >= rows.count)    return UndefinedValue
       return columns[ column ][ row ].value
+
+    method save( file:File )
+      file.save( to_csv )
 
     method save( filepath:String )
       File.save( filepath, to_csv )
@@ -184,6 +194,9 @@ class Row : Header
     method delete
       table.delete_row( index )
 
+    method set( column_index:Int32, value:Value )
+      table.set( column_index, index, value )
+
     method to->String
       use builder = StringBuilder.pool
         forEach (cell at i in cells)
@@ -199,6 +212,9 @@ class Column : Header
   METHODS
     method delete
       table.delete_column( index )
+
+    method set( row_index:Int32, value:Value )
+      table.set( index, row_index, value )
 
     method to->String
       use builder = StringBuilder.pool
@@ -278,6 +294,9 @@ class Cell
     method delete_row
       row.delete
 
+    method is_empty->Logical
+      return value.is_empty
+
     method print( builder:StringBuilder, width=0:Int32, &csv )
       if (csv)
         use temp = StringBuilder.pool
@@ -322,7 +341,12 @@ class CSVParser
 
   METHODS
     method init( table:Spreadsheet, file:File )
-      scanner = Scanner( file )
+      init( table, Scanner(file) )
+
+    method init( table:Spreadsheet, csv:String )
+      init( table, Scanner(csv) )
+
+    method init( table:Spreadsheet, scanner )
       while (scanner.has_another)
         read_row
         table.add_row( row )
