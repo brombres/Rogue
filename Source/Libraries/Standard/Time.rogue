@@ -144,6 +144,15 @@ class Time( total_seconds:Real64 ) [compound]
 
       return format
 
+    method total_days->Real64
+      return total_seconds / (24*3600)
+
+    method total_hours->Real64
+      return total_seconds / 3600.0
+
+    method total_minutes->Real64
+      return total_seconds / 60.0
+
     method _replace_hours_12( text:String, find:String, h:Int32, fmt:String )->String
       if (not text.contains(find)) return text
       if (h == 0)      return text.replacing( find, 12.format(fmt) )
