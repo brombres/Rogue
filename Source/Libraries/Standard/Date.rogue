@@ -349,9 +349,9 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       # For Dates the hash code contains all necessary info so we can use it to compare safely
 
     method to->String
-      return "$.$.$" (year,month.format("02"),day.format("02"))
+      return "$-$-$" (year,month.format("02"),day.format("02"))
 
-    method to->String( format="yyyy.mm.dd":String, &verbose )
+    method to->String( format="yyyy-mm-dd":String, &verbose )
       # Format:
       #   yyyy  - 4-digit year
       #   yy    - 2-digit year

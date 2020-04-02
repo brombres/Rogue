@@ -77,7 +77,7 @@ class DateTime( date:Date, time:Time ) [compound]
     method to->String
       return "$ $" (date,time)
       # Equivalent to:
-      #   return "D(yyyy.mm.dd) T(hh:mm:ss)"
+      #   return "D(yyyy-mm-dd) T(hh:mm:ss)"
 
     method to->String( format:String )
       use builder = StringBuilder.pool

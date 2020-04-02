@@ -26,7 +26,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
       return Timestamp( date.year, date.month, date.day, time.hour, time.minute, time.second, time.millisecond )
 
     method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Timestamp
-      # A year earlier than 1970 will result a date of 1969.12.31 on Mac at least.
+      # A year earlier than 1970 will result a date of 1969-12-31 on Mac at least.
       # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
       # e.g. 19 -> 2019.
       if (year < 100) year = (Timestamp.now.year/100)*100 + year
@@ -295,8 +295,8 @@ class Timestamp( value=System.time:Real64 ) [compound]
       use buffer = StringBuilder.pool
 
         if (ymd)
-          buffer.print( year.right_justified(4,'0') ).print('.')
-          buffer.print( month.right_justified(2,'0') ).print('.')
+          buffer.print( year.right_justified(4,'0') ).print('-')
+          buffer.print( month.right_justified(2,'0') ).print('-')
           buffer.print( day.right_justified(2,'0') )
           if (hms or ms) buffer.print( ' ' )
         endIf
