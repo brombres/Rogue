@@ -222,6 +222,9 @@ class Value
       endForEach
       return false
 
+    method is_empty->Logical
+      return false
+
     method is_false->Logical
       # Default behavior is to return (not this->Logical).
       # StringValue overrides is_false() to return is_false() called on its string value.
@@ -612,6 +615,9 @@ endClass
 
 class UndefinedValue : NullValue [singleton]
   METHODS
+    method is_empty->Logical
+      return true
+
     method is_undefined->Logical
       return true
 
@@ -1079,6 +1085,9 @@ class StringValue( value:String ) : Value
       if (index < 0 or index >= value.count) return UndefinedValue
       return Value( ""+value[index] )
 
+    method is_empty->Logical
+      return value.count == 0
+
     method is_false->Logical
       # Returns is_false() called on this value's string.
       return value.is_false
@@ -1289,6 +1298,9 @@ class ValueList : Value
 
       if (results) return results
       else         return UndefinedValue
+
+    method is_empty->Logical
+      return data.count == 0
 
     method is_collection->Logical
       return true
@@ -1607,6 +1619,9 @@ class ValueTable : Value
 
     method is_collection->Logical
       return true
+
+    method is_empty->Logical
+      return data.count == 0
 
     method is_table->Logical
       return true

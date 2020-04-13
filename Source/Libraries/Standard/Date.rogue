@@ -1,8 +1,6 @@
 #==============================================================================
 # Date.rogue
 #
-# 2020.03.15 - Created by Abe Pralle
-#
 # Represents a year/month/day date.
 # Note: does not represent a date+time as Java/JS Date does.
 #
@@ -47,6 +45,9 @@
 #   today.day_of_year:74
 #   today.days_in_month:31
 #   today.days_in_year:366
+#
+# HISTORY
+#   2020.03.15 - Created by Abe Pralle
 #==============================================================================
 
 class Date( year:Int32, month:Int32, day:Int32 ) [compound]
@@ -265,6 +266,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return month_names[ month.clamped(1,month_names.count) - 1 ]
 
     method operator+( days:Int32 )->Date
+      if (days < 0) return this - (-days)
       local date = this
 
       # Add years at a time
@@ -292,6 +294,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return date
 
     method operator-( days:Int32 )->Date
+      if (days < 0) return this + (-days)
       local date = this
       local delta = date.day_of_year + 1
 
@@ -322,9 +325,13 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
     method operator-( other:Date )->Int32
       # Returns the number of days between the two dates
-      local a = this
-      local b = other
-      if (a > b) swapValues(a,b)
+      local b = this
+      local a = other
+      local sign = 1
+      if (a > b)
+        sign = -1
+        swapValues(a,b)
+      endIf
 
       local diff = 0
       while (a.year < b.year)
@@ -332,7 +339,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
         a = Date( a.year+1, 1, 1 )
       endWhile
 
-      return diff + (b.day_of_year - a.day_of_year)
+      return sign * (diff + (b.day_of_year - a.day_of_year))
 
     method operator<( other:Date )->Logical
       return (hash_code < other.hash_code)
@@ -342,9 +349,9 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       # For Dates the hash code contains all necessary info so we can use it to compare safely
 
     method to->String
-      return "$.$.$" (year,month.format("02"),day.format("02"))
+      return "$-$-$" (year,month.format("02"),day.format("02"))
 
-    method to->String( format="yyyy.mm.dd":String, &verbose )
+    method to->String( format="yyyy-mm-dd":String, &verbose )
       # Format:
       #   yyyy  - 4-digit year
       #   yy    - 2-digit year

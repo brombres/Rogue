@@ -1,4 +1,4 @@
-class Timestamp( timestamp=System.time:Real64 ) [compound]
+class Timestamp( value=System.time:Real64 ) [compound]
   ENUMERATE
     JANUARY   = 1
     FEBRUARY  = 2
@@ -22,8 +22,11 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
     SATURDAY  = 6
 
   GLOBAL METHODS
+    method create( date:Date, time:Time )->Timestamp
+      return Timestamp( date.year, date.month, date.day, time.hour, time.minute, time.second, time.millisecond )
+
     method create( year:Int32, month:Int32, day:Int32, hour=12:Int32, minute=0:Int32, second=0:Int32, millisecond=0:Int32 )->Timestamp
-      # A year earlier than 1970 will result a date of 1969.12.31 on Mac at least.
+      # A year earlier than 1970 will result a date of 1969-12-31 on Mac at least.
       # Therefore take the opportunity to adjust years < 100 to be prefixed with the current century,
       # e.g. 19 -> 2019.
       if (year < 100) year = (Timestamp.now.year/100)*100 + year
@@ -140,6 +143,24 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
         throw SyntaxError( "Unsupported date format: " + date )
       endIf
 
+    method gmt_time_zone_offset->Int32
+      # From:
+      # https://stackoverflow.com/a/44063597/135791
+      native@|    time_t gmt, rawtime = time(NULL);
+             |    struct tm *ptm;
+             |
+             |#if !defined(WIN32)
+             |    struct tm gbuf;
+             |    ptm = gmtime_r(&rawtime, &gbuf);
+             |#else
+             |    ptm = gmtime(&rawtime);
+             |#endif
+             |    // Request that mktime() looksup dst in timezone database
+             |    ptm->tm_isdst = -1;
+             |    gmt = mktime(ptm);
+             |
+             |    return ((int)difftime(rawtime, gmt)) / 3600;
+
     method month_name_to_index( month_name:String )->Int32
       # January->1, December->12
       # Accepts partial month names e.g. "Jan"
@@ -188,33 +209,33 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
 
   METHODS
     method year->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_year + 1900;
 
     method day->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_mday;
 
     method hash_code->Int32
-      return timestamp->Int32
+      return value->Int32
 
     method hour->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_hour;
 
     method millisecond->Int32
-      return Int32( (timestamp * 1000) % 1000 )
+      return Int32( (value * 1000) % 1000 )
 
     method minute->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_min;
 
     method month->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_mon + 1;
 
@@ -222,7 +243,7 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
       return month_names[ month.clamped(1,month_names.count) - 1 ]
 
     method second->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_sec;
 
@@ -239,19 +260,19 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
       return (hour >= 12)
 
     method operator+( other:TimeInterval )->Timestamp
-      return Timestamp( timestamp + other.total_seconds )
+      return Timestamp( value + other.total_seconds )
 
     method operator-( other:TimeInterval )->Timestamp
-      return Timestamp( timestamp - other.total_seconds )
+      return Timestamp( value - other.total_seconds )
 
     method operator-( other:Timestamp )->TimeInterval
-      return TimeInterval( timestamp - other.timestamp )
+      return TimeInterval( value - other.value )
 
     method operator<( other:Timestamp )->Logical
-      return (timestamp < other.timestamp)
+      return (value < other.value)
 
     method operator==( other:Timestamp )->Logical
-      return (timestamp == other.timestamp)
+      return (value == other.value)
 
     method to->Date
       return Date( year, month, day )
@@ -274,8 +295,8 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
       use buffer = StringBuilder.pool
 
         if (ymd)
-          buffer.print( year.right_justified(4,'0') ).print('.')
-          buffer.print( month.right_justified(2,'0') ).print('.')
+          buffer.print( year.right_justified(4,'0') ).print('-')
+          buffer.print( month.right_justified(2,'0') ).print('-')
           buffer.print( day.right_justified(2,'0') )
           if (hms or ms) buffer.print( ' ' )
         endIf
@@ -301,81 +322,16 @@ class Timestamp( timestamp=System.time:Real64 ) [compound]
 
       endUse
 
+    method to->Time
+      return Time( hour, minute, second, millisecond )
+
     method weekday->Int32
-      native @|time_t cur_seconds = (time_t) (RogueInt64)($timestamp);
+      native @|time_t cur_seconds = (time_t) (RogueInt64)($value);
               |tm* date = localtime( &cur_seconds );
               |return date->tm_wday;
 
     method weekday_name->String
       return weekday_names[ weekday ]
-
-endClass
-
-class TimeInterval( total_seconds:Real64 ) [compound]
-  # This time interval can be broken down into days, hours, minutes, seconds, and milliseconds.
-  # Those values are all independent and precise.
-  GLOBAL METHODS
-    method create( flag=true:Logical, days=0:Real64, hours=0:Real64, minutes=0:Real64, seconds=0:Real64, milliseconds=0:Real64 )->TimeInterval
-      # 'flag' is ignored and is a kludge to disambiguate the compound initializers from this global create method.
-      return TimeInterval( days * (3600*24) + hours*3600 + minutes*60 + seconds + (milliseconds/1000.0) )
-
-    method hms( hours:Real64, minutes:Real64, seconds:Real64, ms=0:Real64 )->TimeInterval
-      return TimeInterval( &hours=hours, &minutes=minutes, &seconds=seconds, &milliseconds=ms )
-
-
-  METHODS
-    method days->Int32 [macro]
-      return Int32( this.total_seconds.abs / (3600*24) )
-
-    method hours->Int32 [macro]
-      return Int32( (this.total_seconds.abs % (3600*24)) / 3600 )
-
-    method is_negative->Logical [macro]
-      return (this.total_seconds.abs < 0)
-
-    method minutes->Int32 [macro]
-      return Int32( (this.total_seconds.abs % 3600) / 60 )
-
-    method seconds->Int32 [macro]
-      return Int32( this.total_seconds.abs % 60 )
-
-    method milliseconds->Int32 [macro]
-      return Int32( (this.total_seconds.abs * 1000) % 1000 )
-
-    method operator<( other:TimeInterval )->Logical
-      return (total_seconds < other.total_seconds)
-
-    method operator==( other:TimeInterval )->Logical
-      return (total_seconds == other.total_seconds)
-
-    method to->String
-      local buffer = StringBuilder()
-
-      if (total_seconds < 0) buffer.print( '-' )
-
-      local needs_comma = false
-
-      if (days)  buffer.print( days ).print( " day".pluralized(days) ); needs_comma = true
-
-      if (hours)
-        if (needs_comma) buffer.print( ", " )
-        buffer.print( hours ).print( " hour".pluralized(hours) ); needs_comma = true
-      endIf
-      if (minutes)
-        if (needs_comma) buffer.print( ", " )
-        buffer.print( minutes ).print( " minute".pluralized(minutes) ); needs_comma = true
-      endIf
-
-      if (seconds or milliseconds)
-        if (needs_comma) buffer.print( ", " )
-        needs_comma = true
-
-        buffer.print( (total_seconds % 60).format(3) ).print( " seconds" )
-      endIf
-
-      if (not buffer.count) return "0.000 seconds"
-
-      return buffer->String
 
 endClass
 

@@ -427,12 +427,27 @@ if (needs_recompile)
   # Collect info for config
   scan_and_rewrite( File(forEach in buildfiles), &skip_rewrite )
 
-  # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and copy to ROGUEC, etc.
+  # Select ROGUEC(macOS) or ROGUEC(Linux) etc. based on the OS and merge into to ROGUEC, etc.
   local os_arg = "($)" (System.os.to_lowercase)
   local os_arg_plus_package_manager = "($-$)" (System.os.to_lowercase,package_manager)
   forEach (key in config.keys)
     if (key.contains(os_arg) or key.contains(os_arg_plus_package_manager))
-      config[ key.before_first('(') ] = config[ key ]
+      local generic_key = key.before_first('(')
+      if (config.contains(generic_key) and generic_key != "cpp" and generic_key != "roguec")
+        # Merge specialized-platform keys with generic keys
+        if (generic_key == "libraries")
+          # Overwrite same-name libraries
+          local table = @{}
+          forEach (item in config[generic_key]) table[item//name] = item
+          forEach (item in config[key])         table[item//name] = item
+          config[ generic_key ] = table.values
+        else
+          # Append specialized keys to end of generic key string
+          config[ generic_key ] += " " + config[key]
+        endIf
+      else
+        config[ generic_key ] = config[ key ]
+      endIf
     endIf
   endForEach
 
