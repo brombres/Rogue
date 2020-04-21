@@ -1,4 +1,8 @@
 #==============================================================================
+# USAGE
+#   uses Utility/Node
+#   ...
+#
 # EXAMPLES
 #   Simple Int32Node example:
 #     https://gist.github.com/AbePralle/f11d0bd55f8d81616c91205a3fe554c4
@@ -6,6 +10,8 @@
 #   More Complex Cmd node example with multimethod-style visitor
 #     https://gist.github.com/AbePralle/43ca8f8a74a4ef5a5fd001ad0e62f1d2
 #==============================================================================
+module Node
+
 class Node<<$ExtendedNodeType>>
   PROPERTIES
     parent                : $ExtendedNodeType
