@@ -2041,13 +2041,17 @@ class Type
 
       Program.invoke_metacode( "Type.resolve", this )
 
-      forEach (r in global_method_list)
-        r.resolve
-      endForEach
+      local i = 0
+      while (i < global_method_list.count)
+        global_method_list[i].resolve
+        ++i
+      endWhile
 
-      forEach (m in method_list)
-        m.resolve
-      endForEach
+      i = 0
+      while (i < method_list.count)
+        method_list[i].resolve
+        ++i
+      endWhile
 
       Program.invoke_metacode( "Type.resolved", this )
 

@@ -3224,7 +3224,6 @@ endAugment
 augment CmdAccess
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-println StackTrace()
       throw t.error( "[INTERNAL] $::write_cpp() is not defined (access name $)." (type_name,name) )
 endAugment
 
@@ -3455,6 +3454,7 @@ augment CmdCallStaticMethod
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement) writer.print("(").print_cast( method_info.return_type, method_info.return_type )
+
       writer.print( require method_info.cpp_name )
       writer.print( "( " )
       writer.print_arg( context, &cast_to = method_info.type_context, &is_mutating=method_info.is_mutating )
