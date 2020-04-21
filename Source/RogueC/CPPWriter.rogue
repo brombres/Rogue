@@ -3950,6 +3950,15 @@ augment CmdInstanceOf
       writer.print( ")" )
 endAugment
 
+augment CmdIsType
+  METHODS
+    method write_cpp( writer:CPPWriter, is_statement=false:Logical )
+      writer.print( "RogueObject_is_type(" )
+      operand.write_cpp( writer )
+      writer.print( "," )
+      writer.print_type_info( target_type )
+      writer.print( ")" )
+endAugment
 
 augment CmdTaskControl
   METHODS

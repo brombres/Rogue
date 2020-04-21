@@ -5987,7 +5987,7 @@ class CmdInstanceOf : CmdTypeOperator
 
       local operand_type = operand.type
 
-      if (operand instanceOf CmdReadSingleton)
+      if (operand instanceOf CmdReadSingleton or operand instanceOf CmdThisType)
         # All type references start as "CmdReadSingleton" whether the type is actually a singleton or not
         # Comparing a type to a type or a singleton object to a type
         # If target type is not instanceOf the operand type then we're not trying to check a singleton object
@@ -5999,6 +5999,58 @@ class CmdInstanceOf : CmdTypeOperator
         operand_type.organize( scope, t )
         if (not operand_type.is_singleton)
           return CmdLiteralLogical( t, operand_type.instance_of(target_type) )
+        endIf
+      endIf
+
+      if (not operand_type.is_reference)
+        if (operand_type is Program.type_Logical)
+          throw t.error( "Illegal logical operand for instanceOf - note that correct syntax is '<expression> not instanceOf Type' rather than 'not <expression> instanceOf Type'." )
+        else
+          throw t.error( "Illegal 'instanceOf' on non-reference." )
+        endIf
+      endIf
+      target_type.organize(scope, t)
+      return this
+
+    method type->Type
+      return Program.type_Logical
+endClass
+
+class CmdIsType : CmdTypeOperator
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdIsType( t, operand.cloned( clone_args, new_t ), target_type )
+
+    method execute( vm:VM )->Value
+      local obj_value = operand.execute( vm )
+      local obj = obj_value->Object
+      if (obj)
+        local type = obj.type_info
+        local as_type = TypeInfo[ target_type.name ]
+        if (as_type)
+          return type is as_type
+        endIf
+      endIf
+      return false
+
+    method resolve( scope:Scope )->Cmd
+      operand = operand.resolve( scope ).require_value
+
+      local operand_type = operand.type
+
+      if (operand instanceOf CmdReadSingleton or operand instanceOf CmdThisType)
+        # All type references start as "CmdReadSingleton" whether the type is actually a singleton or not
+        # Comparing a type to a type or a singleton object to a type
+        # If target type is not instanceOf the operand type then we're not trying to check a singleton object
+        # but rather just compare two types.
+        if (not operand_type.is_reference or target_type is not operand_type)
+          return CmdLiteralLogical( t, operand_type is target_type )
+        endIf
+
+        operand_type.organize( scope, t )
+        if (not operand_type.is_singleton)
+          return CmdLiteralLogical( t, operand_type is target_type )
         endIf
       endIf
 
@@ -7494,7 +7546,7 @@ class CmdThisType : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      return CmdThisType( t, this_type, args.cloned(clone_args,new_t) )
+      return CmdThisType( t, this_type, clone(args,clone_args,new_t) )
 
     method implicit_type( scope:Scope )->Type
       return this_type
@@ -7502,7 +7554,7 @@ class CmdThisType : Cmd
     method resolve( scope:Scope )->Cmd
       this_type.organize(scope,t)
       if (cmd_new is null)
-        cmd_new = CmdAccess( t, this_type.name, args.cloned ).resolve( scope )
+        cmd_new = CmdAccess( t, this_type.name, clone(args) ).resolve( scope )
       endIf
       return this
 

@@ -160,6 +160,7 @@ class TokenType
     keyword_isPrimitive           : TokenType
     keyword_isReference           : TokenType
     keyword_isString              : TokenType
+    keyword_isType                : TokenType
     keyword_meta                  : TokenType
     keyword_not                   : TokenType
     keyword_or                    : TokenType

@@ -198,6 +198,7 @@ class Tokenizer
       TokenType.keyword_isPrimitive         = define( TokenType("isPrimitive") )
       TokenType.keyword_isReference         = define( TokenType("isReference") )
       TokenType.keyword_isString            = define( TokenType("isString") )
+      TokenType.keyword_isType              = define( TokenType("isType") )
       TokenType.keyword_local               = define( TokenType("local") )
       TokenType.keyword_loop                = define( TokenType("loop") )
       TokenType.keyword_native              = define( TokenType("native") )
