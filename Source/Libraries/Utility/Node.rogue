@@ -55,6 +55,7 @@ class Node<<$ExtendedNodeType>>
     method dispatch_on<<$VisitorType>>( visitor:$VisitorType ) [propagated]
       if (ThisType instanceOf $ExtendedNodeType)
         visitor.on( this )
+        visitor.visit_children( this )
       endIf
 
     method get( index:Int32 )->$ExtendedNodeType
@@ -278,17 +279,9 @@ class NodeVisitor<<$ExtendedNodeType>>
     method handle( node:$ExtendedNodeType )->$ExtendedNodeType [propagated]
       # Default handler - overload for specialized `node` types if desired.
       if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
-        return null  # This handle() only kicks in for an extended class
+        return node  # This handle() only kicks in for an extended class
       else
         node.dispatch_on( this )
-
-        local remaining = node.remove_children
-        while (remaining)
-          local cur : $ExtendedNodeType
-          (cur,remaining) = remaining.split
-          local result = visit( cur )
-          if (result) node.add( result )
-        endWhile
       endIf
       return node
 
@@ -298,10 +291,25 @@ class NodeVisitor<<$ExtendedNodeType>>
 
     method visit( node:$ExtendedNodeType )->$ExtendedNodeType [propagated]
       if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
-        return null  # This visit() only kicks in for an extended class
+        return node  # This visit() only kicks in for an extended class
       else
         if (node is null) return null
         return node.dispatch_handle( this )
+      endIf
+
+    method visit_children( node:$ExtendedNodeType ) [propagated]
+      # Overload this method to handle extended node types if desired
+      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+        return # This visit() only kicks in for an extended class
+      else
+        if (node is null) return
+        local remaining = node.remove_children
+        while (remaining)
+          local cur : $ExtendedNodeType
+          (cur,remaining) = remaining.split
+          local result = visit( cur )
+          if (result) node.add( result )
+        endWhile
       endIf
 endClass
 
