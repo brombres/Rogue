@@ -17,6 +17,11 @@ class Box( position:XY, size:XY ) [compound]
     method create( size:XY )->Box
       return Box( XY(0,0), size )
 
+    method create( existing:Box )->Box
+      # Copy constructor. Boxes are immutable so this just returns the same
+      # box, but provided to ensure that Box(B) == B.
+      return existing
+
     method create( value:Value )->Box
       if (value.is_list)
         if (value.count == 2)
