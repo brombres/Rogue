@@ -608,6 +608,12 @@ class Program [essential singleton]
         endIf
       endWhile
 
+      # Run through type list one more time and look for unresolved methods. This can
+      # happen when method templates are instanced late in the process
+      forEach (type in type_list)
+        if (type.resolve_methods) types_resolved = false
+      endForEach
+
       return types_resolved
 
     method validate

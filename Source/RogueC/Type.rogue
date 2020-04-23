@@ -2041,22 +2041,38 @@ class Type
 
       Program.invoke_metacode( "Type.resolve", this )
 
-      local i = 0
-      while (i < global_method_list.count)
-        global_method_list[i].resolve
-        ++i
-      endWhile
-
-      i = 0
-      while (i < method_list.count)
-        method_list[i].resolve
-        ++i
-      endWhile
+      resolve_methods
 
       Program.invoke_metacode( "Type.resolved", this )
 
       resolve_chain.remove_last
       return this
+
+    method resolve_methods->Logical
+      local resolved_any = false
+
+      local i = 0
+      while (i < global_method_list.count)
+        local m = global_method_list[i]
+        if (not m.resolved)
+          m.resolve
+          resolved_any = true
+        endIf
+        ++i
+      endWhile
+
+      i = 0
+      while (i < method_list.count)
+        local m = method_list[i]
+        if (not m.resolved)
+          m.resolve
+          resolved_any = true
+        endIf
+        ++i
+      endWhile
+
+      return resolved_any
+
 
     method root_name->String
       return root_type.name
