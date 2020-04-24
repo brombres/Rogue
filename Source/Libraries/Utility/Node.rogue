@@ -14,12 +14,12 @@ module Node
 
 class Node<<$ExtendedNodeType>>
   PROPERTIES
-    parent                : $ExtendedNodeType
-    first                 : $ExtendedNodeType
-    last                  : $ExtendedNodeType
-    next                  : $ExtendedNodeType
-    count                 : Int32
-    is_structure_modified : Logical
+    parent      : $ExtendedNodeType
+    first       : $ExtendedNodeType
+    last        : $ExtendedNodeType
+    next        : $ExtendedNodeType
+    count       : Int32
+    is_modified : Logical
 
   METHODS
     method add( new_child:$ExtendedNodeType )
@@ -38,7 +38,7 @@ class Node<<$ExtendedNodeType>>
       remove_children
 
     method clear_structure_modified
-      is_structure_modified = false
+      is_modified = false
       if (first) first.clear_structure_modified
       if (next)  next.clear_structure_modified
 
@@ -100,10 +100,10 @@ class Node<<$ExtendedNodeType>>
       endWhile
 
       cur = new_child
-      cur.mark_structure_modified
+      cur.mark_modified
       while (cur is not last_new_child)
         cur = cur.next
-        cur.mark_structure_modified
+        cur.mark_modified
       endWhile
 
     method insert_next( new_sibling:$ExtendedNodeType )
@@ -127,14 +127,14 @@ class Node<<$ExtendedNodeType>>
 
       cur = this.next
       loop (mod_count)
-        cur.mark_structure_modified
+        cur.mark_modified
         cur = cur.next
       endLoop
 
-    method mark_structure_modified
-      if (is_structure_modified) return
-      is_structure_modified = true
-      if (parent) parent.mark_structure_modified
+    method mark_modified
+      if (is_modified) return
+      is_modified = true
+      if (parent) parent.mark_modified
 
     method name->String
       return type_name
@@ -170,11 +170,11 @@ class Node<<$ExtendedNodeType>>
       @first = null
       @last = null
       count = 0
-      mark_structure_modified
+      mark_modified
 
       cur = result
       while (cur)
-        cur.mark_structure_modified
+        cur.mark_modified
         cur = cur.next
       endWhile
 
@@ -263,12 +263,12 @@ class Node<<$ExtendedNodeType>>
           endWhile
         endIf
         --parent.count
-        parent.mark_structure_modified
+        parent.mark_modified
         @parent = null
       endIf
       if (not preserve_next)
         @next = null
-        mark_structure_modified
+        mark_modified
       endIf
 
 endClass
