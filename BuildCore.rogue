@@ -165,6 +165,7 @@ class Build [singleton]
       if (System.os != "Windows") build_roguec_bootstrap
       unlink
       link
+      File.touch "Build.rogue"  # make sure this recompiles nexttime
 
     method link
       build_rogo_launcher
