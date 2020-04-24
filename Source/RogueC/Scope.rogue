@@ -52,7 +52,6 @@ class Scope
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, flags=0:Int32 )->Cmd
       local is_initializer = (access.name == "init")
-
       local m = find_method( type_context, access, error_on_fail and access.context, flags )
       if (not m and not access.context)
         # No context specified; try Global context if error_on_fail is true, which means that we've
