@@ -1,0 +1,25 @@
+module UI
+
+class UILayout : UIView
+  GLOBAL METHODS
+    method h->UILayoutH
+      return UILayoutH()
+
+    method h( size:XY )->UILayoutH
+      return UILayoutH( size )
+
+    method h( bounds:Box )->UILayoutH
+      return UILayoutH( bounds )
+
+  PROPERTIES
+  METHODS
+    method on_buffer
+      noAction
+
+    method on_render
+      noAction
+endClass
+
+class UILayoutH : UILayout
+  METHODS
+endClass

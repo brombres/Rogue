@@ -1,0 +1,147 @@
+module UI
+  uses Utility/Node
+
+class UIComponent : Node<<UIComponent>>
+  PROPERTIES
+    position     : XY
+    size         : XY
+    is_modified  = true
+    needs_draw   : Logical
+    needs_render : Logical
+    renderer     : UIRenderer
+
+  METHODS
+    method init
+
+    method init( size )
+
+    method init( position, size )
+
+    method init( bounds:Box )
+      init( bounds.position, bounds.size )
+
+    method after_buffer
+      # Called at the end of a buffer operation after any children have been drawn
+      noAction
+
+    method after_render
+      # Called at the end of a render operation after any children have been drawn
+      noAction
+
+    method assign_renderer [propagated]
+      UITheme._dispatch_assign_renderer( this )
+
+    method bounds->Box
+      return Box( position, size )
+
+    method bounds( parent_bounds:Box )->Box
+      if (size.x)
+        if (size.y)
+          return Box( position, size )
+        else
+          return Box( position.x, parent_bounds.position.y, size.x, parent_bounds.size.y )
+        endIf
+      else
+        if (size.x)
+          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, size.y )
+        else
+          return parent_bounds
+        endIf
+      endIf
+
+    method draw
+      update_layout
+
+      if (renderer is null) assign_renderer
+
+      if (needs_draw)
+        needs_render = true
+        on_buffer
+      elseIf (UISettings.render_every_frame)
+        needs_render = true
+      endIf
+
+      if (needs_render)
+        on_render
+      endIf
+
+      local cur = first
+      while (cur)
+        cur.draw
+        cur = cur.next
+      endWhile
+
+      if (needs_draw)
+        needs_draw = false
+        after_buffer
+      endIf
+
+      if (needs_render)
+        needs_render = false
+        after_render
+      endIf
+
+    method invalidate
+      mark_modified
+
+    method on_buffer
+      # Called at the beginning of a buffer operation before any children have been drawn
+      _dispatch_buffer
+
+    method on_render
+      # Called at the beginning of a render operation before any children have been drawn
+      _dispatch_render
+
+    method on_update
+      noAction
+
+    method redraw
+      needs_draw = true
+      redraw_area( bounds )
+
+    method redraw_area( area:Box )
+      # Propagate area to root
+      if (parent) parent.redraw_area( area )
+
+    method update
+      on_update
+      update_layout
+      local cur = first
+      while (cur)
+        cur.update
+        cur = cur.next
+      endWhile
+
+    method update_children( enclosing_bounds:Box )
+      local cur = first
+      while (cur)
+        cur.update_layout( enclosing_bounds )
+        cur = cur.next
+      endWhile
+
+    method update_draw_buffer
+      needs_draw = false
+      needs_render = true
+
+    method update_layout
+      if (is_modified) update_layout( bounds )
+
+    method update_layout( enclosing_bounds:Box )
+      if (is_modified or enclosing_bounds != bounds)
+        is_modified = false
+        needs_draw = true
+        position = enclosing_bounds.position
+        size = enclosing_bounds.size
+        update_children( enclosing_bounds )
+      endIf
+
+    method _assign_renderer<<$Theme>>( theme:$Theme ) [propagated]
+      renderer = (UITheme as $Theme).renderer( this )
+
+    method _dispatch_buffer [propagated]
+      renderer.buffer( this )
+
+    method _dispatch_render [propagated]
+      renderer.render( this )
+endClass
+

@@ -1,0 +1,13 @@
+module UI
+  uses Geometry [export]
+
+class UISettings [singleton]
+  PROPERTIES
+    render_every_frame = true
+endClass
+
+$include "UIColorArea.rogue"
+$include "UIComponent.rogue"
+$include "UILayout.rogue"
+$include "UITheme.rogue"
+$include "UIView.rogue"

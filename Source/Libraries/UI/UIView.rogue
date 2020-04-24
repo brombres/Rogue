@@ -1,0 +1,12 @@
+module UI
+
+class UIView : UIComponent
+  METHODS
+    method update_children( enclosing_bounds:Box )
+      local cur = first
+      while (cur)
+        cur.update_layout( cur.bounds.positioned_within(enclosing_bounds) )
+        cur = cur.next
+      endWhile
+endClass
+

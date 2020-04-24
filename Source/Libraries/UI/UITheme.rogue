@@ -1,0 +1,36 @@
+module UI
+
+class UITheme [singleton]
+  GLOBAL PROPERTIES
+    printed_error_message = false
+
+  METHODS
+    method renderer( component:UIComponent )->UIRenderer
+      return UIRenderer()
+
+    method _dispatch_assign_renderer( component:UIComponent )
+      if (printed_error_message) return
+      printed_error_message = true
+      println "No UITheme selected. Before creating a UI, write e.g.:"
+      $if (target("Plasmacore"))
+        println "  UITheme = PlasmacoreSimpleUITheme()"
+      $else
+        println "  UITheme = SomeUITheme()"
+      $endIf
+endClass
+
+class UITheme<<$ExtendedType>> : UITheme
+  METHODS
+    method _dispatch_assign_renderer( component:UIComponent ) [propagated]
+      component._assign_renderer<<$ExtendedType>>( this as $ExtendedType )
+endClass
+
+class UIRenderer
+  METHODS
+    method buffer( component:UIComponent )
+      # Redraw any offscreen display buffers etc.
+      noAction
+
+    method render( component:UIComponent )
+endClass
+

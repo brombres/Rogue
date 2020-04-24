@@ -1,0 +1,13 @@
+module UI
+  uses Bitmap
+
+class UIColorArea( color:Color ) : UIComponent
+  METHODS
+    method init( color, size )
+
+    method init( color, bounds:Box )
+      prior.init( bounds )
+
+    method on_render
+      bounds.fill( color )
+endClass
