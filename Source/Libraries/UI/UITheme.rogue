@@ -25,12 +25,3 @@ class UITheme<<$ExtendedType>> : UITheme
       component._assign_renderer<<$ExtendedType>>( this as $ExtendedType )
 endClass
 
-class UIRenderer
-  METHODS
-    method buffer( component:UIComponent )
-      # Redraw any offscreen display buffers etc.
-      noAction
-
-    method render( component:UIComponent )
-endClass
-

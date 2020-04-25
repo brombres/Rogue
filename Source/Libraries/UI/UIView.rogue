@@ -5,7 +5,7 @@ class UIView : UIComponent
     method update_children( enclosing_bounds:Box )
       local cur = first
       while (cur)
-        cur.update_layout( cur.bounds.positioned_within(enclosing_bounds) )
+        cur.update_layout( cur.bounds )
         cur = cur.next
       endWhile
 endClass

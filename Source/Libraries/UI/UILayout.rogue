@@ -22,4 +22,15 @@ endClass
 
 class UILayoutH : UILayout
   METHODS
+    method minimum_height->Real64
+      return size.y
+
+    method minimum_width->Real64
+      return size.x
+
+    method maximum_height->Real64
+      return size.y
+
+    method maximum_width->Real64
+      return size.x
 endClass

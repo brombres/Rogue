@@ -84,6 +84,18 @@ class UIComponent : Node<<UIComponent>>
     method invalidate
       mark_modified
 
+    method minimum_height->Real64
+      return size.y
+
+    method minimum_width->Real64
+      return size.x
+
+    method maximum_height->Real64
+      return size.y
+
+    method maximum_width->Real64
+      return size.x
+
     method on_buffer
       # Called at the beginning of a buffer operation before any children have been drawn
       _dispatch_buffer

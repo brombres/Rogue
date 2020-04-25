@@ -9,5 +9,6 @@ endClass
 $include "UIColorArea.rogue"
 $include "UIComponent.rogue"
 $include "UILayout.rogue"
+$include "UIRenderer.rogue"
 $include "UITheme.rogue"
 $include "UIView.rogue"

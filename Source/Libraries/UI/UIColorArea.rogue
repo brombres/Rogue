@@ -7,7 +7,4 @@ class UIColorArea( color:Color ) : UIComponent
 
     method init( color, bounds:Box )
       prior.init( bounds )
-
-    method on_render
-      bounds.fill( color )
 endClass

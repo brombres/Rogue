@@ -12,14 +12,16 @@
 #==============================================================================
 module Node
 
-$macro forEachNode(cur,node)
-local cur = node.first
-while (cur)
+$macro forEachChild(cur,node)
+  block
+    local cur = node.first
+    while (cur)
 $endMacro
 
-$macro endForEachNode
-  cur = cur.next
-endWhile
+$macro endForEachChild
+      cur = cur.next
+    endWhile
+  endBlock
 $endMacro
 
 class Node<<$ExtendedNodeType>>
