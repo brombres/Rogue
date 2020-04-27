@@ -12,14 +12,24 @@
 #==============================================================================
 module Node
 
+$macro forEachChild(cur,node,command)
+  block
+    local cur = node.first_child
+    while (cur)
+      command
+      cur = cur.next_node
+    endWhile
+  endBlock
+$endMacro
+
 $macro forEachChild(cur,node)
   block
-    local cur = node.first
+    local cur = node.first_child
     while (cur)
 $endMacro
 
-$macro endForEachChild
-      cur = cur.next
+$macro endForEachChild(cur)
+      cur = cur.next_node
     endWhile
   endBlock
 $endMacro
@@ -27,9 +37,9 @@ $endMacro
 class Node<<$ExtendedNodeType>>
   PROPERTIES
     parent      : $ExtendedNodeType
-    first       : $ExtendedNodeType
-    last        : $ExtendedNodeType
-    next        : $ExtendedNodeType
+    first_child : $ExtendedNodeType
+    last_child  : $ExtendedNodeType
+    next_node        : $ExtendedNodeType
     count       : Int32
     is_modified : Logical
 
@@ -42,8 +52,8 @@ class Node<<$ExtendedNodeType>>
         parent.add( new_sibling )
       else
         local cur = this
-        while (cur.next) cur = cur.next
-        cur.@next = new_sibling
+        while (cur.next_node) cur = cur.next_node
+        cur.@next_node = new_sibling
       endIf
 
     method clear
@@ -51,8 +61,8 @@ class Node<<$ExtendedNodeType>>
 
     method clear_structure_modified
       is_modified = false
-      if (first) first.clear_structure_modified
-      if (next)  next.clear_structure_modified
+      if (first_child) first_child.clear_structure_modified
+      if (next_node)  next_node.clear_structure_modified
 
     method contains( node:$ExtendedNodeType )->Logical
       return (node and node.parent is this)
@@ -72,10 +82,10 @@ class Node<<$ExtendedNodeType>>
 
     method get( index:Int32 )->$ExtendedNodeType
       if (index < 0 or index >= count) return null
-      if (index == 0)       return first
-      if (index == count-1) return last
-      local cur = first
-      loop (index) cur = cur.next
+      if (index == 0)       return first_child
+      if (index == count-1) return last_child
+      local cur = first_child
+      loop (index) cur = cur.next_node
       return cur
 
     method insert( new_child:$ExtendedNodeType, before_index=0:Int32 )
@@ -86,20 +96,20 @@ class Node<<$ExtendedNodeType>>
 
       local last_new_child = new_child.last_sibling
 
-      if (first is null)
-        @first = new_child
-        @last = last_new_child
+      if (first_child is null)
+        @first_child = new_child
+        @last_child = last_new_child
       elseIf (before_index <= 0)
-        last_new_child.@next = first
-        @first = new_child
+        last_new_child.@next_node = first_child
+        @first_child = new_child
       elseIf (before_index >= count)
-        last.@next = new_child
-        @last = last_new_child
+        last_child.@next_node = new_child
+        @last_child = last_new_child
       else
-        local cur = first
-        loop (before_index-1) cur = cur.next
-        last_new_child.@next = cur.next
-        cur.@next = new_child
+        local cur = first_child
+        loop (before_index-1) cur = cur.next_node
+        last_new_child.@next_node = cur.next_node
+        cur.@next_node = new_child
       endIf
 
       ++count
@@ -107,40 +117,40 @@ class Node<<$ExtendedNodeType>>
       cur.@parent = this as $ExtendedNodeType
       while (cur is not last_new_child)
         ++count
-        cur = cur.next
+        cur = cur.next_node
         cur.@parent = this as $ExtendedNodeType
       endWhile
 
       cur = new_child
       cur.mark_modified
       while (cur is not last_new_child)
-        cur = cur.next
+        cur = cur.next_node
         cur.mark_modified
       endWhile
 
     method insert_next( new_sibling:$ExtendedNodeType )
       local cur = this as $ExtendedNodeType
-      local original_next = next
+      local original_next = next_node
       local mod_count = 0
       while (new_sibling)
-        cur.@next = new_sibling
+        cur.@next_node = new_sibling
         new_sibling.@parent = this.parent
         ++mod_count
         cur = new_sibling
-        new_sibling = new_sibling.next
+        new_sibling = new_sibling.next_node
       endWhile
 
-      cur.@next = original_next
+      cur.@next_node = original_next
       if (original_next is null)
-        if (parent) parent.@last = cur
+        if (parent) parent.@last_child = cur
       endIf
 
       if (parent) parent.count += mod_count
 
-      cur = this.next
+      cur = this.next_node
       loop (mod_count)
         cur.mark_modified
-        cur = cur.next
+        cur = cur.next_node
       endLoop
 
     method mark_modified
@@ -153,7 +163,7 @@ class Node<<$ExtendedNodeType>>
 
     method last_sibling->$ExtendedNodeType
       local cur = this as $ExtendedNodeType
-      while (cur.next) cur = cur.next
+      while (cur.next_node) cur = cur.next_node
       return cur
 
     method remove( child:$ExtendedNodeType )->$ExtendedNodeType
@@ -166,42 +176,42 @@ class Node<<$ExtendedNodeType>>
       return result
 
     method remove_first->$ExtendedNodeType
-      return remove( first )
+      return remove( first_child )
 
     method remove_last->$ExtendedNodeType
-      return remove( last )
+      return remove( last_child )
 
     method remove_children->$ExtendedNodeType
-      local result = first
+      local result = first_child
       local cur = result
       while (cur)
         cur.@parent = null
-        cur = cur.next
+        cur = cur.next_node
       endWhile
 
-      @first = null
-      @last = null
+      @first_child = null
+      @last_child = null
       count = 0
       mark_modified
 
       cur = result
       while (cur)
         cur.mark_modified
-        cur = cur.next
+        cur = cur.next_node
       endWhile
 
       return result
 
     method set_first( node:$ExtendedNodeType )
-      if (first) remove_first
+      if (first_child) remove_first
       insert( node )
 
     method set_last( node:$ExtendedNodeType )
-      if (last) remove_last
+      if (last_child) remove_last
       add( node )
 
     method set_next( node:$ExtendedNodeType )
-      if (next) next._detach
+      if (next_node) next_node._detach
       insert_next( node )
 
     method set_parent( new_parent:$ExtendedNodeType )
@@ -224,12 +234,12 @@ class Node<<$ExtendedNodeType>>
 
     method split->($ExtendedNodeType,$ExtendedNodeType)
       # Returns (head,tail)
-      local tail = next
+      local tail = next_node
       if (parent)
         _detach
         return (this as $ExtendedNodeType,parent.remove_children)
       else
-        @next = null
+        @next_node = null
         return (this as $ExtendedNodeType,tail)
       endIf
 
@@ -241,34 +251,34 @@ class Node<<$ExtendedNodeType>>
 
     method write( builder:StringBuilder )
       builder.print name
-      if (first)
+      if (first_child)
         builder.print '('
-        first.write( builder )
-        local cur = first.next
+        first_child.write( builder )
+        local cur = first_child.next_node
         while (cur)
           builder.print ','
           cur.write( builder )
-          cur = cur.next
+          cur = cur.next_node
         endWhile
         builder.print ')'
       endIf
 
     method _detach( &preserve_next )
       if (parent)
-        if (parent.first is this)
-          if (parent.last is this)
-            parent.@first = null
-            parent.@last = null
+        if (parent.first_child is this)
+          if (parent.last_child is this)
+            parent.@first_child = null
+            parent.@last_child = null
           else
-            parent.@first = this.next
+            parent.@first_child = this.next_node
           endIf
         else
-          local cur = parent.first
+          local cur = parent.first_child
           while (cur)
-            local next_sibling = cur.next
+            local next_sibling = cur.next_node
             if (next_sibling is this)
-              cur.@next = this.next
-              if (next_sibling is parent.last) parent.@last = cur
+              cur.@next_node = this.next_node
+              if (next_sibling is parent.last_child) parent.@last_child = cur
               escapeWhile
             endIf
             cur = next_sibling
@@ -279,7 +289,7 @@ class Node<<$ExtendedNodeType>>
         @parent = null
       endIf
       if (not preserve_next)
-        @next = null
+        @next_node = null
         mark_modified
       endIf
 
