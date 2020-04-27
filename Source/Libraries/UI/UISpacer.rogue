@@ -1,0 +1,18 @@
+module UI
+
+class UISpacer : UILayout
+  GLOBAL METHODS
+    method h( pixels:Int32 )->UISpacer
+      return UISpacer( XY(pixels,1) )
+
+    method v( pixels:Int32 )->UISpacer
+      return UISpacer( XY(1,pixels) )
+
+  METHODS
+    method init( size:XY )
+      prior.init( size )
+
+    method init( size:Real64 )
+      prior.init( XY(size) )
+endClass
+

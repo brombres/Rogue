@@ -1,0 +1,31 @@
+module UI
+
+#{
+class UIList : UILayout
+  GLOBAL METHODS
+    method h->UIBoxLayout
+      return UIList().[ is_horizontal=true ]
+
+    method h( size:XY )->UIList
+      return UIList( size ).[ is_horizontal=true ]
+
+    method h( bounds:Box )->UIList
+      return UIList( bounds ).[ is_horizontal=true ]
+
+    method v->UIList
+      return UIList()
+
+    method v( size:XY )->UIList
+      return UIList( size )
+
+    method v( bounds:Box )->UIList
+      return UIList( bounds )
+
+  PROPERTIES
+    is_horizontal : Logical
+    list_
+
+  METHODS
+    method update_subcomponent_layout
+endClass
+}#

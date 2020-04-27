@@ -1,0 +1,15 @@
+module UI
+
+class UIScrollView : UIView
+  PROPERTIES
+    scroll_offset : XY
+    scroll_limit  : XY
+
+  METHODS
+    method update_subcomponent_layout
+      prior.update_subcomponent_layout
+      if (first_child)
+        scroll_limit  = (first_child.size - this.size).or_larger(XY.zero)
+        first_child.position += scroll_offset
+      endIf
+endClass

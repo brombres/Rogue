@@ -3,7 +3,7 @@ module UI
 
 class UIColorArea( color:Color ) : UIComponent
   METHODS
-    method init( color, size )
+    method init( color, fixed_size )
 
     method init( color, bounds:Box )
       prior.init( bounds )
