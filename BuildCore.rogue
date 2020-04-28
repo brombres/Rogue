@@ -280,10 +280,10 @@ class Build [singleton]
     method create_bindir
       if (not File.exists(BINDIR))
         println "$ does not exist. Creating..." (BINDIR)
-        if (not run( "mkdir$ $" (select{System.os=="Windows":"" || " -p"},BINDIR), &suppress_error ))
+        if (not run( "mkdir$ $" (which{System.os=="Windows":"" || " -p"},BINDIR), &suppress_error ))
           if (SUDO_CMD != "")
             println "Error creating folder, trying again with 'sudo'"
-            run( "$mkdir$ $" (SUDO_CMD,select{System.os=="Windows":"" || " -p"},BINDIR) )
+            run( "$mkdir$ $" (SUDO_CMD,which{System.os=="Windows":"" || " -p"},BINDIR) )
           else
             throw Error( "Build error." )
           endIf

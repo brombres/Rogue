@@ -931,7 +931,7 @@ class Parser
 
             # insert named args
             if (named_args)
-              local p_list = select{ this_type.is_enum:this_type.enum_properties || this_type.property_list }
+              local p_list = which{ this_type.is_enum:this_type.enum_properties || this_type.property_list }
               if (p_list)
                 forEach (name in named_args.keys)
                   local i = p_list.locate( $.name == name )
@@ -1882,10 +1882,26 @@ class Parser
 
       return expression
 
-    method parse_which->CmdWhich
+    method parse_which->Cmd
       local t = read  # 'which'
-      local cmd_which = CmdWhich( t, parse_expression )
-      must_consume_eols
+
+      local expression : Cmd
+      local consumed_eols = false
+      consume_eols
+      if (consume(TokenType.symbol_open_paren))
+        consume_eols
+        expression = parse_expression
+        consume_eols
+        must_consume( TokenType.symbol_close_paren )
+        consumed_eols = consume_eols
+      endIf
+
+      if (next_is(TokenType.symbol_open_brace))
+        return parse_select( t, expression )
+      endIf
+
+      local cmd_which = CmdWhich( t, expression )
+      if (not consumed_eols) must_consume_eols
       while (next_is(TokenType.keyword_case) or next_is(TokenType.keyword_caseNext))
         t = read  # 'case' | 'caseNext'
         consume_eols
@@ -3653,88 +3669,18 @@ class Parser
 
         return CmdInlineNative( t, code, result_type )
 
-      elseIf (consume(TokenType.keyword_select))
+      elseIf (consume(TokenType.symbol_select) or consume(TokenType.keyword_which))
         consume_eols
-        local cmd_select = CmdSelect( t )
 
+        local expression : Cmd
         if (consume(TokenType.symbol_open_paren))
           consume_eols
-          local comparison_var = Local( t, Program.create_unique_id )
-          local cmd_declaration = CmdLocalDeclaration( t, comparison_var, &skip_initialization )
-          cur_statement_list.add( cmd_declaration )
-          comparison_var.initial_value = parse_expression
-          cmd_select.local_declaration = cmd_declaration
-          cmd_select.local_info = comparison_var
-          cmd_select.expression = comparison_var.initial_value
+          expression = parse_expression
           consume_eols
           must_consume( TokenType.symbol_close_paren )
           consume_eols
         endIf
-
-        must_consume( TokenType.symbol_open_brace )
-        local first = true
-        while (first or consume(TokenType.symbol_double_vertical_bar))
-          first = false
-          consume_eols
-          local select_case = CmdSelectCase( peek )
-          cmd_select.cases.add( select_case )
-
-          if (consume(TokenType.keyword_others))
-            consume_eols
-            must_consume( TokenType.symbol_colon )
-            consume_eols
-
-            # If we don't use the 'others' keyword then the last value
-            # will end up in 'conditions' to begin with so stick to that
-            # pattern.
-            select_case.conditions.add( parse_expression )
-
-            escapeWhile
-
-          else
-            select_case.conditions.add( parse_expression )
-            while (consume(TokenType.symbol_comma))
-              consume_eols
-              select_case.conditions.add( parse_expression )
-              consume_eols
-            endWhile
-
-            if (consume(TokenType.symbol_colon))
-              consume_eols
-              select_case.value = parse_expression
-              consume_eols
-            elseIf (select_case.conditions.count > 1)
-              must_consume( TokenType.symbol_colon )  # Force an error
-            endIf
-          endIf
-        endWhile
-
-        # Convert any `select{ x || z }` to `local temp=x; select{ x:x || z }`
-        forEach (i in 0..<cmd_select.cases.count - 1)
-          local select_case = cmd_select.cases[i]
-          if (not select_case.value)
-            local temp_var = Local( t, Program.create_unique_id )
-            temp_var.initial_value = select_case.conditions.remove_last
-            cur_statement_list.add( CmdLocalDeclaration(t,temp_var) )
-            select_case.local_info = temp_var
-            select_case.conditions.add( CmdReadLocal(t,temp_var) )
-            select_case.value = CmdReadLocal(t,temp_var)
-            select_case.condition_is_value = true
-          endIf
-        endForEach
-
-        if (cmd_select.cases.last.conditions.count > 1)
-          throw t.error( "The last part of a select{} must be a single expression." )
-        elseIf (cmd_select.cases.last.value)
-          throw t.error( "The last part of a select{} cannot have a condition." )
-        else
-          cmd_select.cases.last.value = cmd_select.cases.last.conditions.remove_first
-          cmd_select.cases.last.conditions.clear
-        endIf
-
-        must_consume( TokenType.symbol_close_brace )
-
-        return cmd_select
+        return parse_select( t, expression )
 
       elseIf (consume(TokenType.symbol_dollar))
         # Implicit query arg access.  E.g. list.discard( $.is_dead ) -> list.discard( (x)=>x.is_dead )
@@ -3919,6 +3865,85 @@ class Parser
       else
         throw peek.error( "Syntax error: unexpected '" + peek + "'." )
       endIf
+
+    method parse_select( t:Token, expression=null:Cmd )->CmdSelect
+      local cmd_select = CmdSelect( t )
+
+      if (expression)
+        local comparison_var = Local( t, Program.create_unique_id )
+        local cmd_declaration = CmdLocalDeclaration( t, comparison_var, &skip_initialization )
+        cur_statement_list.add( cmd_declaration )
+        comparison_var.initial_value = expression
+        cmd_select.local_declaration = cmd_declaration
+        cmd_select.local_info = comparison_var
+        cmd_select.expression = comparison_var.initial_value
+      endIf
+
+      must_consume( TokenType.symbol_open_brace )
+      local first = true
+      while (first or consume(TokenType.symbol_double_vertical_bar))
+        first = false
+        consume_eols
+        local select_case = CmdSelectCase( peek )
+        cmd_select.cases.add( select_case )
+
+        if (consume(TokenType.keyword_others))
+          consume_eols
+          must_consume( TokenType.symbol_colon )
+          consume_eols
+
+          # If we don't use the 'others' keyword then the last value
+          # will end up in 'conditions' to begin with so stick to that
+          # pattern.
+          select_case.conditions.add( parse_expression )
+
+          escapeWhile
+
+        else
+          select_case.conditions.add( parse_expression )
+          while (consume(TokenType.symbol_comma))
+            consume_eols
+            select_case.conditions.add( parse_expression )
+            consume_eols
+          endWhile
+
+          if (consume(TokenType.symbol_colon))
+            consume_eols
+            select_case.value = parse_expression
+            consume_eols
+          elseIf (select_case.conditions.count > 1)
+            must_consume( TokenType.symbol_colon )  # Force an error
+          endIf
+        endIf
+      endWhile
+
+      # Convert any `which{ x || z }` to `local temp=x; which{ x:x || z }`
+      forEach (i in 0..<cmd_select.cases.count - 1)
+        local select_case = cmd_select.cases[i]
+        if (not select_case.value)
+          local temp_var = Local( t, Program.create_unique_id )
+          temp_var.initial_value = select_case.conditions.remove_last
+          cur_statement_list.add( CmdLocalDeclaration(t,temp_var) )
+          select_case.local_info = temp_var
+          select_case.conditions.add( CmdReadLocal(t,temp_var) )
+          select_case.value = CmdReadLocal(t,temp_var)
+          select_case.condition_is_value = true
+        endIf
+      endForEach
+
+      if (cmd_select.cases.last.conditions.count > 1)
+        throw t.error( "The last part of a which{} must be a single expression." )
+      elseIf (cmd_select.cases.last.value)
+        throw t.error( "The last part of a which{} cannot have a condition." )
+      else
+        cmd_select.cases.last.value = cmd_select.cases.last.conditions.remove_first
+        cmd_select.cases.last.conditions.clear
+      endIf
+
+      must_consume( TokenType.symbol_close_brace )
+
+      return cmd_select
+
 
     method parse_isType_expression->Cmd
       consume_eols

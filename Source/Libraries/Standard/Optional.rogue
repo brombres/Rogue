@@ -17,108 +17,108 @@ endClass
 augment Real64?
   METHODS
     method to->Real32?
-      return select{ this|| Real32?() }
+      return which{ this|| Real32?() }
 
     method to->Int64?
-      return select{ this || Int64?() }
+      return which{ this || Int64?() }
 
     method to->Int32?
-      return select{ this || Int32?() }
+      return which{ this || Int32?() }
 
     method to->Character?
-      return select{ this || Character?() }
+      return which{ this || Character?() }
 
     method to->Byte?
-      return select{ this || Byte?() }
+      return which{ this || Byte?() }
 endAugment
 
 augment Real32?
   METHODS
     method to->Real64?
-      return select{ this|| Real64?() }
+      return which{ this|| Real64?() }
 
     method to->Int64?
-      return select{ this || Int64?() }
+      return which{ this || Int64?() }
 
     method to->Int32?
-      return select{ this || Int32?() }
+      return which{ this || Int32?() }
 
     method to->Character?
-      return select{ this || Character?() }
+      return which{ this || Character?() }
 
     method to->Byte?
-      return select{ this || Byte?() }
+      return which{ this || Byte?() }
 endAugment
 
 augment Int64?
   METHODS
     method to->Real64?
-      return select{ this|| Real64?() }
+      return which{ this|| Real64?() }
 
     method to->Real32?
-      return select{ this || Real32?() }
+      return which{ this || Real32?() }
 
     method to->Int32?
-      return select{ this || Int32?() }
+      return which{ this || Int32?() }
 
     method to->Character?
-      return select{ this || Character?() }
+      return which{ this || Character?() }
 
     method to->Byte?
-      return select{ this || Byte?() }
+      return which{ this || Byte?() }
 endAugment
 
 augment Int32?
   METHODS
     method to->Real64?
-      return select{ this|| Real64?() }
+      return which{ this|| Real64?() }
 
     method to->Real32?
-      return select{ this || Real32?() }
+      return which{ this || Real32?() }
 
     method to->Int64?
-      return select{ this || Int64?() }
+      return which{ this || Int64?() }
 
     method to->Character?
-      return select{ this || Character?() }
+      return which{ this || Character?() }
 
     method to->Byte?
-      return select{ this || Byte?() }
+      return which{ this || Byte?() }
 endAugment
 
 augment Character?
   METHODS
     method to->Real64?
-      return select{ this|| Real64?() }
+      return which{ this|| Real64?() }
 
     method to->Real32?
-      return select{ this || Real32?() }
+      return which{ this || Real32?() }
 
     method to->Int64?
-      return select{ this || Int64?() }
+      return which{ this || Int64?() }
 
     method to->Int32?
-      return select{ this || Int32?() }
+      return which{ this || Int32?() }
 
     method to->Byte?
-      return select{ this || Byte?() }
+      return which{ this || Byte?() }
 endAugment
 
 augment Byte?
   METHODS
     method to->Real64?
-      return select{ this|| Real64?() }
+      return which{ this|| Real64?() }
 
     method to->Real32?
-      return select{ this || Real32?() }
+      return which{ this || Real32?() }
 
     method to->Int64?
-      return select{ this || Int64?() }
+      return which{ this || Int64?() }
 
     method to->Int32?
-      return select{ this || Int32?() }
+      return which{ this || Int32?() }
 
     method to->Character?
-      return select{ this || Character?() }
+      return which{ this || Character?() }
 endAugment
 

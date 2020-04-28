@@ -199,11 +199,11 @@ augment Program
 
       # It'd be nice to be able to override these with a C++ -D arg...
       writer.print "#define ROGUE_GC_MODE_MANUAL "
-      writer.println select{RogueC.gc_mode == GCMode.MANUAL: "1" || "0"}
+      writer.println which{RogueC.gc_mode == GCMode.MANUAL: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_AUTO_ST "
-      writer.println select{RogueC.gc_mode == GCMode.AUTO_ST: "1" || "0"}
+      writer.println which{RogueC.gc_mode == GCMode.AUTO_ST: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_AUTO_MT "
-      writer.println select{RogueC.gc_mode == GCMode.AUTO_MT: "1" || "0"}
+      writer.println which{RogueC.gc_mode == GCMode.AUTO_MT: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_AUTO_ANY "
       if (RogueC.gc_mode == GCMode.AUTO_ST or RogueC.gc_mode == GCMode.AUTO_MT)
         writer.println "1"
@@ -211,9 +211,9 @@ augment Program
         writer.println "0"
       endIf
       writer.print "#define ROGUE_GC_MODE_BOEHM "
-      writer.println select{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
+      writer.println which{RogueC.gc_mode == GCMode.BOEHM: "1" || "0"}
       writer.print "#define ROGUE_GC_MODE_BOEHM_TYPED "
-      writer.println select{RogueC.gc_mode == GCMode.BOEHM_TYPED: "1" || "0"}
+      writer.println which{RogueC.gc_mode == GCMode.BOEHM_TYPED: "1" || "0"}
       writer.println
 
       # GC Threshold
@@ -1299,7 +1299,7 @@ augment Program
               handler_index = m.introspection_call_handler.index
             endIf
 
-            local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index )
+            local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], which{m.return_type:m.return_type.index || -1}, handler_index )
             method_info_lookup.add( entry )
             method_info_index.add( method_info_lookup.index(entry) )
             method_info_index_names.add( m->String )
@@ -1323,7 +1323,7 @@ augment Program
               handler_index = m.introspection_call_handler.index
             endIf
 
-            local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], select{m.return_type:m.return_type.index || -1}, handler_index )
+            local entry = "{$,$,$,$,$,$}" (method_names.index(m.name), m.parameters.count, method_param_name_sigs[name_sig], method_param_type_sigs[type_sig], which{m.return_type:m.return_type.index || -1}, handler_index )
             method_info_lookup.add( entry )
             m.runtime_index = method_info_index.count
             method_info_index.add( method_info_lookup.index(entry) )
@@ -1917,7 +1917,7 @@ class CPPWriter
       # If param_type is given and is an aspect, we do an aspect-wrap.
       # If cast_to is given, we'll insert a cast to this type.
 
-      local param_type = select{param_info : param_info.type || arg.type}->Type
+      local param_type = which{param_info : param_info.type || arg.type}->Type
       local is_alias = is_mutating or (param_info and param_info.is_alias)
       if (is_alias)
         if (arg.is_safely_mutable)

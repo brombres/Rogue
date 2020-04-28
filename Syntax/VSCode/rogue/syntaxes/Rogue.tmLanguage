@@ -249,7 +249,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(return|select|necessary|sufficient|noAction|yield|compileError|deprecated)\b</string>
+					<string>\b(return|necessary|sufficient|noAction|yield|compileError|deprecated)\b</string>
 					<key>name</key>
 					<string>keyword.control.rogue</string>
 				</dict>

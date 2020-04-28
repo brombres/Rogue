@@ -189,7 +189,7 @@ class SystemEnvironment [compound]
               |  $result = RogueString_create_from_utf8( c_result );
               |}
 
-      return select{ result:result || null }
+      return which{ result:result || null }
 
     method listing->String[]
       nativeHeader extern "C" char **environ;

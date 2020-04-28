@@ -507,7 +507,7 @@ endRoutine
 routine require_command_line
   if (System.environment["IDE"])
     throw Error( "$:$: error:Run 'make $' from the command line to install necessary libraries."...
-    ($sourceFilepath,$sourceLine,select{System.environment["TARGET"]||""}.to_lowercase) )
+    ($sourceFilepath,$sourceLine,which{System.environment["TARGET"]||""}.to_lowercase) )
   endIf
 endRoutine
 
