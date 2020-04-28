@@ -39,6 +39,11 @@ class XY( x:Real64, y:Real64 ) [compound]
     method ceiling->XY
       return XY( Math.ceiling(x), Math.ceiling(y) )
 
+    method clamped( low:XY, high:XY )->XY
+      local result_x = select{ x<low.x:low.x || x>high.x:high.x || x }
+      local result_y = select{ x<low.y:low.y || x>high.y:high.y || y }
+      return XY( result_x, result_y )
+
     method clamped( low:Real64, high:Real64 )->XY
       # Adjusts both x and y to be within the given limits
       local new_x = x
@@ -49,9 +54,19 @@ class XY( x:Real64, y:Real64 ) [compound]
       if (new_y > high) new_y = high
       return XY( new_x, new_y )
 
+    method clamped_low( low:XY )->XY
+      local result_x = select{ x<low.x:low.x || x }
+      local result_y = select{ y<low.y:low.y || y }
+      return XY( result_x, result_y )
+
     method clamped_low( low:Real64 )->XY
       # Adjusts both x and y to be greater than or equal to 'low'
       return XY( ?:{x<low:low || x}, ?:{y<low:low || y} )
+
+    method clamped_high( high:XY )->XY
+      local result_x = select{ x>high.x:high.x || x }
+      local result_y = select{ y>high.y:high.y || y }
+      return XY( result_x, result_y )
 
     method clamped_high( high:Real64 )->XY
       # Adjusts both x and y to be less than or equal to 'high'
