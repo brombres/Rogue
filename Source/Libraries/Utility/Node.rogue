@@ -15,8 +15,8 @@ module Node
 class Node<<$ExtendedNodeType>>
   PROPERTIES
     parent      : $ExtendedNodeType
-    first       : $ExtendedNodeType
-    last        : $ExtendedNodeType
+    first_child : $ExtendedNodeType
+    last_child  : $ExtendedNodeType
     next        : $ExtendedNodeType
     count       : Int32
     is_modified : Logical
@@ -39,7 +39,7 @@ class Node<<$ExtendedNodeType>>
 
     method clear_structure_modified
       is_modified = false
-      if (first) first.clear_structure_modified
+      if (first_child) first_child.clear_structure_modified
       if (next)  next.clear_structure_modified
 
     method contains( node:$ExtendedNodeType )->Logical
@@ -60,9 +60,9 @@ class Node<<$ExtendedNodeType>>
 
     method get( index:Int32 )->$ExtendedNodeType
       if (index < 0 or index >= count) return null
-      if (index == 0)       return first
-      if (index == count-1) return last
-      local cur = first
+      if (index == 0)       return first_child
+      if (index == count-1) return last_child
+      local cur = first_child
       loop (index) cur = cur.next
       return cur
 
@@ -74,17 +74,17 @@ class Node<<$ExtendedNodeType>>
 
       local last_new_child = new_child.last_sibling
 
-      if (first is null)
-        @first = new_child
-        @last = last_new_child
+      if (first_child is null)
+        @first_child = new_child
+        @last_child = last_new_child
       elseIf (before_index <= 0)
-        last_new_child.@next = first
-        @first = new_child
+        last_new_child.@next = first_child
+        @first_child = new_child
       elseIf (before_index >= count)
-        last.@next = new_child
-        @last = last_new_child
+        last_child.@next = new_child
+        @last_child = last_new_child
       else
-        local cur = first
+        local cur = first_child
         loop (before_index-1) cur = cur.next
         last_new_child.@next = cur.next
         cur.@next = new_child
@@ -120,7 +120,7 @@ class Node<<$ExtendedNodeType>>
 
       cur.@next = original_next
       if (original_next is null)
-        if (parent) parent.@last = cur
+        if (parent) parent.@last_child = cur
       endIf
 
       if (parent) parent.count += mod_count
@@ -154,21 +154,21 @@ class Node<<$ExtendedNodeType>>
       return result
 
     method remove_first->$ExtendedNodeType
-      return remove( first )
+      return remove( first_child )
 
     method remove_last->$ExtendedNodeType
-      return remove( last )
+      return remove( last_child )
 
     method remove_children->$ExtendedNodeType
-      local result = first
+      local result = first_child
       local cur = result
       while (cur)
         cur.@parent = null
         cur = cur.next
       endWhile
 
-      @first = null
-      @last = null
+      @first_child = null
+      @last_child = null
       count = 0
       mark_modified
 
@@ -181,11 +181,11 @@ class Node<<$ExtendedNodeType>>
       return result
 
     method set_first( node:$ExtendedNodeType )
-      if (first) remove_first
+      if (first_child) remove_first
       insert( node )
 
     method set_last( node:$ExtendedNodeType )
-      if (last) remove_last
+      if (last_child) remove_last
       add( node )
 
     method set_next( node:$ExtendedNodeType )
@@ -229,10 +229,10 @@ class Node<<$ExtendedNodeType>>
 
     method write( builder:StringBuilder )
       builder.print name
-      if (first)
+      if (first_child)
         builder.print '('
-        first.write( builder )
-        local cur = first.next
+        first_child.write( builder )
+        local cur = first_child.next
         while (cur)
           builder.print ','
           cur.write( builder )
@@ -243,20 +243,20 @@ class Node<<$ExtendedNodeType>>
 
     method _detach( &preserve_next )
       if (parent)
-        if (parent.first is this)
-          if (parent.last is this)
-            parent.@first = null
-            parent.@last = null
+        if (parent.first_child is this)
+          if (parent.last_child is this)
+            parent.@first_child = null
+            parent.@last_child = null
           else
-            parent.@first = this.next
+            parent.@first_child = this.next
           endIf
         else
-          local cur = parent.first
+          local cur = parent.first_child
           while (cur)
             local next_sibling = cur.next
             if (next_sibling is this)
               cur.@next = this.next
-              if (next_sibling is parent.last) parent.@last = cur
+              if (next_sibling is parent.last_child) parent.@last_child = cur
               escapeWhile
             endIf
             cur = next_sibling
