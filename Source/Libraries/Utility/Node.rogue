@@ -12,6 +12,28 @@
 #==============================================================================
 module Node
 
+$macro forEachChild(cur,node,command)
+  block
+    local cur = node.first_child
+    while (cur)
+      command
+      cur = cur.next
+    endWhile
+  endBlock
+$endMacro
+
+$macro forEachChild(cur,node)
+  block
+    local cur = node.first_child
+    while (cur)
+$endMacro
+
+$macro endForEachChild(cur)
+      cur = cur.next
+    endWhile
+  endBlock
+$endMacro
+
 class Node<<$ExtendedNodeType>>
   PROPERTIES
     parent      : $ExtendedNodeType
