@@ -73,7 +73,11 @@ class Box( position:XY, size:XY ) [compound]
       return Box( pos.max(XY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
 
     method contains( other:Box )->Logical
-      return contains(other.top_left) and contains(other.bottom_right)
+      local other_pos = other.position
+      local other_br = other.bottom_right
+      local this_br  = bottom_right
+      return ((other_pos.x >= position.x and other_pos.y >= position.y) and
+             (other_br.x <= this_br.x and other_br.y <= this_br.y))
 
     method contains( pos:XY )->Logical
       if (pos.x < position.x or pos.x >= position.x + size.x) return false
