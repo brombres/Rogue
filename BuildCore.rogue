@@ -1,3 +1,7 @@
+$if compareVersions(rogueVersion,"1.7.0") < 0
+$error "The installed version of roguec is too old to recompile Rogue; RogueC version 1.7.0 or better is required. Please run 'make bootstrap' (or 'rogo bootstrap' on Windows) to correct this."
+$endIf
+
 class Build [singleton]
   PROPERTIES
     ROGUEC_SRC         = Files( "Source", "RogueC/*.rogue" ).add( "Libraries/Standard/*" ) : Files
