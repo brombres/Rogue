@@ -52,7 +52,6 @@ class Scope
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, flags=0:Int32 )->Cmd
       local is_initializer = (access.name == "init")
-
       local m = find_method( type_context, access, error_on_fail and access.context, flags )
       if (not m and not access.context)
         # No context specified; try Global context if error_on_fail is true, which means that we've
@@ -324,8 +323,8 @@ class Scope
 
       local args = access.args
 
-      local arg_count = select{ args:args.count || 0 }
-      local named_arg_count = select{ access.named_args:access.named_args.count || 0 }
+      local arg_count = which{ args:args.count || 0 }
+      local named_arg_count = which{ access.named_args:access.named_args.count || 0 }
       local total_arg_count = arg_count + named_arg_count
 
       if (list) candidates.available.add( list )
@@ -473,8 +472,8 @@ class Scope
           endIf
         endForEach
 
-        arg_count = select{ args:args.count || 0 }
-        named_arg_count = select{ access.named_args:access.named_args.count || 0 }
+        arg_count = which{ args:args.count || 0 }
+        named_arg_count = which{ access.named_args:access.named_args.count || 0 }
         total_arg_count = arg_count + named_arg_count
 
         # Throw out any method that has a non-default parameter that does not have either a regular
@@ -568,7 +567,7 @@ class Scope
                   local param_types = callback_type.callback_parameter_types
                   if (not param_types or param_types.count != fn.parameters.count)
                     throw fn.t.error( "Incorrect number of parameters in generic function definition - expected $, found $."...
-                      (select{param_types:param_types.count || 0},fn.parameters.count) )
+                      (which{param_types:param_types.count || 0},fn.parameters.count) )
                   endIf
 
                   forEach (i of fn.parameters)
@@ -814,7 +813,7 @@ class CandidateMethods
               (base_name,access.name,scope_type) )
           else
             throw access.t.error( ''No such method or variable "$" exists in the current scope of type $$.'' (access.name,scope_type, ...
-                                  select{inferring_templates: ", and no existing method template could be instantiated via inference" || ""}) )
+                                  which{inferring_templates: ", and no existing method template could be instantiated via inference" || ""}) )
           endIf
 
         elseIf (require_compatible)
@@ -859,7 +858,7 @@ class CandidateMethods
           endIf
           buffer.indent += 2
           forEach (m in available)
-            local sig = select{ access.named_args:m.signature_with_named_args || m.signature }
+            local sig = which{ access.named_args:m.signature_with_named_args || m.signature }
             buffer.println( remove_module_names("$.$" (m.type_context.name,sig)) )
           endForEach
           buffer.indent -= 2

@@ -1,0 +1,337 @@
+#==============================================================================
+# USAGE
+#   uses Utility/Node
+#   ...
+#
+# EXAMPLES
+#   Simple Int32Node example:
+#     https://gist.github.com/AbePralle/f11d0bd55f8d81616c91205a3fe554c4
+#
+#   More Complex Cmd node example with multimethod-style visitor
+#     https://gist.github.com/AbePralle/43ca8f8a74a4ef5a5fd001ad0e62f1d2
+#==============================================================================
+module Node
+
+$macro forEachChild(cur,node,command)
+  block
+    local cur = node.first_child
+    while (cur)
+      command
+      cur = cur.next
+    endWhile
+  endBlock
+$endMacro
+
+$macro forEachChild(cur,node)
+  block
+    local cur = node.first_child
+    while (cur)
+$endMacro
+
+$macro endForEachChild(cur)
+      cur = cur.next
+    endWhile
+  endBlock
+$endMacro
+
+class Node<<$ExtendedNodeType>>
+  PROPERTIES
+    parent      : $ExtendedNodeType
+    first_child : $ExtendedNodeType
+    last_child  : $ExtendedNodeType
+    next        : $ExtendedNodeType
+    count       : Int32
+    is_modified : Logical
+
+  METHODS
+    method add( new_child:$ExtendedNodeType )
+      insert( new_child, count )
+
+    method add_next( new_sibling:$ExtendedNodeType )
+      if (parent)
+        parent.add( new_sibling )
+      else
+        local cur = this
+        while (cur.next) cur = cur.next
+        cur.@next = new_sibling
+      endIf
+
+    method clear
+      remove_children
+
+    method clear_structure_modified
+      is_modified = false
+      if (first_child) first_child.clear_structure_modified
+      if (next)  next.clear_structure_modified
+
+    method contains( node:$ExtendedNodeType )->Logical
+      return (node and node.parent is this)
+
+    method dispatch_handle<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
+      if (ThisType instanceOf $ExtendedNodeType)
+        return visitor.handle( this )
+      else
+        return null
+      endIf
+
+    method dispatch_on<<$VisitorType>>( visitor:$VisitorType ) [propagated]
+      if (ThisType instanceOf $ExtendedNodeType)
+        visitor.on( this )
+        visitor.visit_children( this )
+      endIf
+
+    method get( index:Int32 )->$ExtendedNodeType
+      if (index < 0 or index >= count) return null
+      if (index == 0)       return first_child
+      if (index == count-1) return last_child
+      local cur = first_child
+      loop (index) cur = cur.next
+      return cur
+
+    method insert( new_child:$ExtendedNodeType, before_index=0:Int32 )
+      if (new_child is null) return
+      if (new_child.parent is this) return
+
+      new_child._detach( &preserve_next )
+
+      local last_new_child = new_child.last_sibling
+
+      if (first_child is null)
+        @first_child = new_child
+        @last_child = last_new_child
+      elseIf (before_index <= 0)
+        last_new_child.@next = first_child
+        @first_child = new_child
+      elseIf (before_index >= count)
+        last_child.@next = new_child
+        @last_child = last_new_child
+      else
+        local cur = first_child
+        loop (before_index-1) cur = cur.next
+        last_new_child.@next = cur.next
+        cur.@next = new_child
+      endIf
+
+      ++count
+      local cur = new_child
+      cur.@parent = this as $ExtendedNodeType
+      while (cur is not last_new_child)
+        ++count
+        cur = cur.next
+        cur.@parent = this as $ExtendedNodeType
+      endWhile
+
+      cur = new_child
+      cur.mark_modified
+      while (cur is not last_new_child)
+        cur = cur.next
+        cur.mark_modified
+      endWhile
+
+    method insert_next( new_sibling:$ExtendedNodeType )
+      local cur = this as $ExtendedNodeType
+      local original_next = next
+      local mod_count = 0
+      while (new_sibling)
+        cur.@next = new_sibling
+        new_sibling.@parent = this.parent
+        ++mod_count
+        cur = new_sibling
+        new_sibling = new_sibling.next
+      endWhile
+
+      cur.@next = original_next
+      if (original_next is null)
+        if (parent) parent.@last_child = cur
+      endIf
+
+      if (parent) parent.count += mod_count
+
+      cur = this.next
+      loop (mod_count)
+        cur.mark_modified
+        cur = cur.next
+      endLoop
+
+    method mark_modified
+      if (is_modified) return
+      is_modified = true
+      if (parent) parent.mark_modified
+
+    method name->String
+      return type_name
+
+    method last_sibling->$ExtendedNodeType
+      local cur = this as $ExtendedNodeType
+      while (cur.next) cur = cur.next
+      return cur
+
+    method remove( child:$ExtendedNodeType )->$ExtendedNodeType
+      if (child and child.parent is this) child._detach
+      return child
+
+    method remove_at( index:Int32 )->$ExtendedNodeType
+      local result = this[ index ]
+      remove( result )
+      return result
+
+    method remove_first->$ExtendedNodeType
+      return remove( first_child )
+
+    method remove_last->$ExtendedNodeType
+      return remove( last_child )
+
+    method remove_children->$ExtendedNodeType
+      local result = first_child
+      local cur = result
+      while (cur)
+        cur.@parent = null
+        cur = cur.next
+      endWhile
+
+      @first_child = null
+      @last_child = null
+      count = 0
+      mark_modified
+
+      cur = result
+      while (cur)
+        cur.mark_modified
+        cur = cur.next
+      endWhile
+
+      return result
+
+    method set_first( node:$ExtendedNodeType )
+      if (first_child) remove_first
+      insert( node )
+
+    method set_last( node:$ExtendedNodeType )
+      if (last_child) remove_last
+      add( node )
+
+    method set_next( node:$ExtendedNodeType )
+      if (next) next._detach
+      insert_next( node )
+
+    method set_parent( new_parent:$ExtendedNodeType )
+      if (new_parent)
+        new_parent.add( this as $ExtendedNodeType )
+      endIf
+
+    method set( index:Int32, node:$ExtendedNodeType )
+      if (index < 0)
+        insert( node )
+      elseIf (index < 0)
+        set_first( node )
+      elseIf (index >= count)
+        add( node )
+      elseIf (index == count-1)
+        set_last( node )
+      else
+        this[index-1].set_next( node )
+      endIf
+
+    method split->($ExtendedNodeType,$ExtendedNodeType)
+      # Returns (head,tail)
+      local tail = next
+      if (parent)
+        _detach
+        return (this as $ExtendedNodeType,parent.remove_children)
+      else
+        @next = null
+        return (this as $ExtendedNodeType,tail)
+      endIf
+
+    method to->String
+      use builder = StringBuilder.pool
+        write( builder )
+        return builder
+      endUse
+
+    method write( builder:StringBuilder )
+      builder.print name
+      if (first_child)
+        builder.print '('
+        first_child.write( builder )
+        local cur = first_child.next
+        while (cur)
+          builder.print ','
+          cur.write( builder )
+          cur = cur.next
+        endWhile
+        builder.print ')'
+      endIf
+
+    method _detach( &preserve_next )
+      if (parent)
+        if (parent.first_child is this)
+          if (parent.last_child is this)
+            parent.@first_child = null
+            parent.@last_child = null
+          else
+            parent.@first_child = this.next
+          endIf
+        else
+          local cur = parent.first_child
+          while (cur)
+            local next_sibling = cur.next
+            if (next_sibling is this)
+              cur.@next = this.next
+              if (next_sibling is parent.last_child) parent.@last_child = cur
+              escapeWhile
+            endIf
+            cur = next_sibling
+          endWhile
+        endIf
+        --parent.count
+        parent.mark_modified
+        @parent = null
+      endIf
+      if (not preserve_next)
+        @next = null
+        mark_modified
+      endIf
+
+endClass
+
+
+class NodeVisitor<<$ExtendedNodeType>>
+  METHODS
+    method handle( node:$ExtendedNodeType )->$ExtendedNodeType [propagated]
+      # Default handler - overload for specialized `node` types if desired.
+      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+        return node  # This handle() only kicks in for an extended class
+      else
+        node.dispatch_on( this )
+      endIf
+      return node
+
+    method on( node:$ExtendedNodeType )
+      # Overload this method to handle extended node types
+      noAction
+
+    method visit( node:$ExtendedNodeType )->$ExtendedNodeType [propagated]
+      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+        return node  # This visit() only kicks in for an extended class
+      else
+        if (node is null) return null
+        return node.dispatch_handle( this )
+      endIf
+
+    method visit_children( node:$ExtendedNodeType ) [propagated]
+      # Overload this method to handle extended node types if desired
+      if (ThisType isType NodeVisitor<<$ExtendedNodeType>>)
+        return # This visit() only kicks in for an extended class
+      else
+        if (node is null) return
+        local remaining = node.remove_children
+        while (remaining)
+          local cur : $ExtendedNodeType
+          (cur,remaining) = remaining.split
+          local result = visit( cur )
+          if (result) node.add( result )
+        endWhile
+      endIf
+endClass
+

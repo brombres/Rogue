@@ -769,6 +769,11 @@ RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_typ
   return RogueType_instance_of( THIS->type, ancestor_type );
 }
 
+RogueLogical RogueObject_is_type( RogueObject* THIS, RogueType* ancestor_type )
+{
+  return THIS ? (THIS->type == ancestor_type) : false;
+}
+
 void* RogueObject_retain( RogueObject* THIS )
 {
   ROGUE_INCREF(THIS);

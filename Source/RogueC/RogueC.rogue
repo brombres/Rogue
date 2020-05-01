@@ -1,4 +1,4 @@
-$define ROGUE_RELEASE_VERSION "1.6.12"
+$define ROGUE_RELEASE_VERSION "1.7.0"
 
 $include "Version.rogue" [optional]
 
@@ -561,7 +561,7 @@ $endIf
         local file = find_source_file( t, filepath, &=including_folder, &=is_optional, &=do_not_save_prefix )
       if (file is null)
         if (is_optional) return false
-        local mesg = select{ including_folder:''No such folder "$".''(filepath) || ''No such file "$".'' (filepath) }
+        local mesg = which{ including_folder:''No such folder "$".''(filepath) || ''No such file "$".'' (filepath) }
         if (t) throw t.error( mesg )
         else   throw RogueError( mesg )
       endIf

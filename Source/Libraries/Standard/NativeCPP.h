@@ -616,6 +616,7 @@ ROGUE_CUSTOM_OBJECT_PROPERTY
 
 ROGUE_EXPORT_C RogueObject* RogueObject_as( RogueObject* THIS, RogueType* specialized_type );
 ROGUE_EXPORT_C RogueLogical RogueObject_instance_of( RogueObject* THIS, RogueType* ancestor_type );
+ROGUE_EXPORT_C RogueLogical RogueObject_is_type( RogueObject* THIS, RogueType* type );
 ROGUE_EXPORT_C void*        RogueObject_retain( RogueObject* THIS );
 ROGUE_EXPORT_C void*        RogueObject_release( RogueObject* THIS );
 ROGUE_EXPORT_C RogueString* RogueObject_to_string( RogueObject* THIS );

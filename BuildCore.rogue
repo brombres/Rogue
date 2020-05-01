@@ -1,3 +1,7 @@
+$if compareVersions(rogueVersion,"1.7.0") < 0
+$error "The installed version of roguec is too old to recompile Rogue; RogueC version 1.7.0 or better is required. Please run 'make bootstrap' (or 'rogo bootstrap' on Windows) to correct this."
+$endIf
+
 class Build [singleton]
   PROPERTIES
     ROGUEC_SRC         = Files( "Source", "RogueC/*.rogue" ).add( "Libraries/Standard/*" ) : Files
@@ -165,6 +169,7 @@ class Build [singleton]
       if (System.os != "Windows") build_roguec_bootstrap
       unlink
       link
+      File.touch "Build.rogue"  # make sure this recompiles nexttime
 
     method link
       build_rogo_launcher
@@ -279,10 +284,10 @@ class Build [singleton]
     method create_bindir
       if (not File.exists(BINDIR))
         println "$ does not exist. Creating..." (BINDIR)
-        if (not run( "mkdir$ $" (select{System.os=="Windows":"" || " -p"},BINDIR), &suppress_error ))
+        if (not run( "mkdir$ $" (which{System.os=="Windows":"" || " -p"},BINDIR), &suppress_error ))
           if (SUDO_CMD != "")
             println "Error creating folder, trying again with 'sudo'"
-            run( "$mkdir$ $" (SUDO_CMD,select{System.os=="Windows":"" || " -p"},BINDIR) )
+            run( "$mkdir$ $" (SUDO_CMD,which{System.os=="Windows":"" || " -p"},BINDIR) )
           else
             throw Error( "Build error." )
           endIf

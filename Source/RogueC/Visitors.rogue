@@ -222,7 +222,7 @@ class ConvertReturnToEscapeVisitor : Visitor
         endIf
       else
         if (cmd_return.value)
-          local sig = select{ this_method.signature || this_method.name+"()" }
+          local sig = which{ this_method.signature || this_method.name+"()" }
           throw t.error( "$ is not declared as returning a value." (sig) )
         endIf
       endIf

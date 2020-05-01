@@ -8,7 +8,7 @@ class Value
       return Value( value->String )
 
     method create( value:Logical )->Value
-      return select{ value:LogicalValue.true_value || LogicalValue.false_value }
+      return which{ value:LogicalValue.true_value || LogicalValue.false_value }
 
     method create( value:Byte )->Value
       return Int32Value( value )

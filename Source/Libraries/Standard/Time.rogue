@@ -103,7 +103,7 @@ class Time( total_seconds:Real64 ) [compound]
       #   AM    - same as AMPM
       #   PM    - same as AMPM
       local is_12 = false
-      local ampm  = select{ (hour < 12):"AM" || "PM" }
+      local ampm  = which{ (hour < 12):"AM" || "PM" }
 
       # Convert am/pm markers to a temporary name that doesn't contain 'm' so that
       # minutes replacement doesn't mess it up.
@@ -139,8 +139,8 @@ class Time( total_seconds:Real64 ) [compound]
       if (format.contains("ss")) format = format.replacing( "ss", second.format("02") )
       if (format.contains("s"))  format = format.replacing( "s",  second->String )
 
-      if (format.contains("aplc")) format = format.replacing( "aplc", select{(hour<12):"am"||"pm"} )
-      if (format.contains("apuc")) format = format.replacing( "apuc", select{(hour<12):"AM"||"PM"} )
+      if (format.contains("aplc")) format = format.replacing( "aplc", which{(hour<12):"am"||"pm"} )
+      if (format.contains("apuc")) format = format.replacing( "apuc", which{(hour<12):"AM"||"PM"} )
 
       return format
 

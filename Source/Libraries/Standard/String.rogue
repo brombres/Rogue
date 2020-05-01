@@ -54,31 +54,31 @@ class String
       endIf
 
     method operator+( st:String, value:Byte )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Character )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Int32 )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Logical )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Int64 )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Object )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Real64 )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:Real32 )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator+( st:String, value:String )->String
-      return select{ st || "null" }.operator+( value )
+      return which{ st || "null" }.operator+( value )
 
     method operator*( st:String, value:Int32 )->String
       if (st is null) return null

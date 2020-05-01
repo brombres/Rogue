@@ -608,6 +608,14 @@ class Program [essential singleton]
         endIf
       endWhile
 
+      # Run through type list one more time and look for unresolved methods. This can
+      # happen when method templates are instanced late in the process
+      forEach (type in type_list)
+        if (type.resolve_methods(&final_pass))
+          types_resolved = false
+        endIf
+      endForEach
+
       return types_resolved
 
     method validate
@@ -871,9 +879,8 @@ class Program [essential singleton]
       return true
 
     method resolve_pending_methods
-      if (methods_requiring_resolve.count)
-        (forEach in methods_requiring_resolve).resolve
-        methods_requiring_resolve.clear
-      endIf
+      while (methods_requiring_resolve.count)
+        methods_requiring_resolve.remove_last.resolve
+      endWhile
 
 endClass

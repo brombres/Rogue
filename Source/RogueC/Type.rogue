@@ -570,8 +570,8 @@ class Type
       # The reference token will be reset to reference any class along the way that is not a list or template.
 
       if (element_type)            element_type.configure( &=reference_t )
-      forEach (p in global_list)   p.type.configure( &reference_t=select{ reset_ref_t:p.t || reference_t} )
-      forEach (p in property_list) p.type.configure( &reference_t=select{ reset_ref_t:p.t || reference_t} )
+      forEach (p in global_list)   p.type.configure( &reference_t=which{ reset_ref_t:p.t || reference_t} )
+      forEach (p in property_list) p.type.configure( &reference_t=which{ reset_ref_t:p.t || reference_t} )
 
       Program.invoke_metacode( "Type.configured", this )
 
@@ -584,6 +584,7 @@ class Type
       m_create.attributes.add( Attribute.is_generated )
       m_create.return_type = this
       m_create.add_parameter( t, "value", Program.type_Int32 )
+      m_create.organize
 
       ensure categories
 
@@ -1619,7 +1620,7 @@ class Type
         inherit_method( m, list, lookup )
       endForEach
 
-    method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
+    method inherit_method( m:Method, list:Method[], lookup:Table<<String,Method>> )->Method
       local existing_m = global_method_lookup_by_signature[ m.signature ]
       if (existing_m)
         throw m.t.error( "A global method already exists with signature $." (m.signature) )
@@ -1666,7 +1667,7 @@ class Type
           if (m.type_context is existing_m.type_context)
             if (m.is_augment)
               apply_augment_labels( m, existing_m )
-              return
+              return m
             else
               throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
             endIf
@@ -1676,7 +1677,7 @@ class Type
         if (m.type_context.is_aspect)
           m.overriding_methods.add( existing_m )
           m.add_incorporating_class( this )
-          if (m.is_abstract) return
+          if (m.is_abstract) return m
 
           m = m.incorporate( this )
 
@@ -1706,7 +1707,7 @@ class Type
 
         list[i] = m
         lookup[m.signature] = m
-        override_inherited_propagated_method( m, list, lookup )
+        m = override_inherited_propagated_method( m, list, lookup )
 
       else
         # No existing method
@@ -1720,17 +1721,20 @@ class Type
 
         list.add( m )
         lookup[m.signature] = m
-        override_inherited_propagated_method( m, list, lookup )
+        m = override_inherited_propagated_method( m, list, lookup )
 
       endIf
 
-    method override_inherited_propagated_method( m:Method, list:Method[], lookup:Table<<String,Method>> )
+      return m
+
+    method override_inherited_propagated_method( m:Method, list:Method[], lookup:Table<<String,Method>> )->Method
       if (m.is_propagated and m.type_context is not this)
         # Override a copy of the method which will have the correct 'this' context.
         m = m.cloned.set_type_context( this )
         m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
         inherit_method( m, list, lookup )
       endIf
+      return m
 
     method inherit_global_methods( list:Method[], lookup:Table<<String,Method>> )
       forEach (base_type in base_types)
@@ -1783,7 +1787,8 @@ class Type
 
     method inject_global_method( m:Method, at_index=null:Int32? )
       if (this.is_aspect) return
-      m.assign_signature
+
+      m.organize( &!add_to_lookup )
 
       local existing_m = find_global_method( m.signature )
       if (existing_m)
@@ -1858,7 +1863,6 @@ class Type
           endForEach
         endIf
       else
-        m.organize( &!add_to_lookup )
         m.index = global_method_list.count
         at_index = global_method_list.count
         inherit_method( m, global_method_list, global_method_lookup_by_signature )
@@ -1900,7 +1904,7 @@ class Type
       if (this.is_aspect) return
       if (m.is_global) inject_global_method( m, at_index ); return
 
-      m.assign_signature
+      m.organize( &!add_to_lookup )
 
       ensure method_lookup_by_name[m.name]
 
@@ -1908,6 +1912,7 @@ class Type
       if (existing_m)
         if (m is existing_m)
           if (at_index.value)
+            # Method already exists in class but make sure it's at the correct index
             method_list.remove( m )
             method_list.insert( m, at_index.value )
             forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
@@ -1930,7 +1935,7 @@ class Type
             forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
           endIf
 
-          inherit_method( m, method_list, method_lookup_by_signature )
+          m = inherit_method( m, method_list, method_lookup_by_signature )
 
           m.overriding_methods = overrides
           forEach (overriding_m in overrides) overriding_m.overridden_method = m
@@ -1964,7 +1969,8 @@ class Type
         endIf
 
       elseIf (at_index.exists)
-        inherit_method( m, method_list, method_lookup_by_signature )
+        # Method slot does not exist but specific index given
+        m = inherit_method( m, method_list, method_lookup_by_signature )
         method_list.insert( method_list.remove_last, at_index.value )
         forEach (adjust_i in at_index.value..<method_list.count) method_list[ adjust_i ].index = adjust_i
         method_lookup_by_name[m.name].add( m )
@@ -1977,7 +1983,7 @@ class Type
           endForEach
         endIf
       else
-        m.organize( &!add_to_lookup )
+        # Method slot does not exist and no index given
         m.index = method_list.count
         at_index = method_list.count
         inherit_method( m, method_list, method_lookup_by_signature )
@@ -1991,7 +1997,9 @@ class Type
         endIf
       endIf
 
-      if (resolved) Program.methods_requiring_resolve.add( m )
+      if (resolved)
+        Program.methods_requiring_resolve.add( m )
+      endIf
 
     method apply_augment_labels( aug_m:Method, existing_m:Method )
       # Apply augment to existing method
@@ -2041,18 +2049,40 @@ class Type
 
       Program.invoke_metacode( "Type.resolve", this )
 
-      forEach (r in global_method_list)
-        r.resolve
-      endForEach
-
-      forEach (m in method_list)
-        m.resolve
-      endForEach
+      resolve_methods
 
       Program.invoke_metacode( "Type.resolved", this )
 
       resolve_chain.remove_last
       return this
+
+    method resolve_methods( &final_pass )->Logical
+      local resolved_any = false
+
+      local i = 0
+      while (i < global_method_list.count)
+        local m = global_method_list[i]
+        if (not m.resolved)
+          if (final_pass) throw m.t.error( "[Internal] Unresolved method: " + m )
+          m.resolve
+          resolved_any = true
+        endIf
+        ++i
+      endWhile
+
+      i = 0
+      while (i < method_list.count)
+        local m = method_list[i]
+        if (not m.resolved)
+          if (final_pass) throw m.t.error( "[Internal] Unresolved method: " + m )
+          m.resolve
+          resolved_any = true
+        endIf
+        ++i
+      endWhile
+
+      return resolved_any
+
 
     method root_name->String
       return root_type.name
