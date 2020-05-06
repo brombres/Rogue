@@ -102,6 +102,7 @@ class Tokenizer
       TokenType.meta_methodSignature = define( DirectiveTokenType("$methodSignature") )
       TokenType.meta_module          = define( StructuralDirectiveTokenType("module") )
       TokenType.meta_moduleName      = define( DirectiveTokenType("$moduleName") )
+      TokenType.meta_requireRogue    = define( DirectiveTokenType("$requireRogue") )
       TokenType.meta_rogueVersion    = define( DirectiveTokenType("$rogueVersion") )
       TokenType.meta_string          = define( DirectiveTokenType("$string") )
       TokenType.meta_uses            = define( StructuralDirectiveTokenType("uses") )
@@ -398,6 +399,7 @@ class Tokenizer
           case "localMacro":          add_new_token( TokenType.meta_localMacro )
           case "methodSignature":     add_new_token( TokenType.meta_methodSignature )
           case "moduleName":          add_new_token( TokenType.meta_moduleName )
+          case "requireRogue":        add_new_token( TokenType.meta_requireRogue )
           case "rogueVersion":        add_new_token( TokenType.meta_rogueVersion )
           case "string":              add_new_token( TokenType.meta_string )
           others

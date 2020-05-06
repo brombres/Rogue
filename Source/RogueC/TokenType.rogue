@@ -24,6 +24,7 @@ class TokenType
     meta_methodSignature          : TokenType
     meta_module                   : TokenType
     meta_moduleName               : TokenType
+    meta_requireRogue             : TokenType
     meta_rogueVersion             : TokenType
     meta_uses                     : TokenType
     meta_string                   : TokenType
