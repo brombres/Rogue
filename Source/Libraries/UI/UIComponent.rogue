@@ -163,7 +163,7 @@ class UIComponent : Node<<UIComponent>>
       if (is_modified or new_bounds != bounds)
         is_modified = false
         needs_draw = true
-        @size = XY( select{fixed_size.x||new_bounds.width}, select{fixed_size.y||new_bounds.height} ).floor
+        @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
         position = bounds.positioned_within( new_bounds ).position.floor
         update_subcomponent_layout
       endIf
