@@ -19,7 +19,7 @@ class Real64 [primitive]
       return value->Real64
 
     method create( value:Logical )->Real64
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method from_value( value:Value )->Real64
       return value->Real64
@@ -71,7 +71,7 @@ class Real64 [primitive]
       return Math.floor( this )
 
     method format( decimal_digits=null:Int32? )->String
-      local digits = select{ decimal_digits || decimal_digit_count }
+      local digits = which{ decimal_digits || decimal_digit_count }
       return StringBuilder().print( this, digits )->String
 
     method format( fmt:String )->String
@@ -145,10 +145,10 @@ class Real64 [primitive]
       return Math.lerp( a, b, this )
 
     method or_larger( other:Real64 )->Real64
-      return select{ this>=other:this || other }
+      return which{ this>=other:this || other }
 
     method or_smaller( other:Real64 )->Real64
-      return select{ this<=other:this || other }
+      return which{ this<=other:this || other }
 
     method progress( a:Real64, b:Real64 )->Real64
       # Returns the progress of this number along the interval from a to b.
@@ -162,7 +162,7 @@ class Real64 [primitive]
       return this->String.right_justified( spaces, fill )
 
     method sign->Real64
-      return Real64( select{ this>0:1 || this<0:-1 || 0 } )
+      return Real64( which{ this>0:1 || this<0:-1 || 0 } )
 
       unitTest assert( (5.0).sign == 1.0 )
       unitTest assert( (0.0).sign == 0.0 )
@@ -214,7 +214,7 @@ class Real32 [primitive]
       return value->Real32
 
     method create( value:Logical )->Real32
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method from_value( value:Value )->Real32
       return value->Real32
@@ -298,10 +298,10 @@ class Real32 [primitive]
       return Math.lerp( a, b, this )->Real32
 
     method or_larger( other:Real32 )->Real32
-      return select{ this>=other:this || other }
+      return which{ this>=other:this || other }
 
     method or_smaller( other:Real32 )->Real32
-      return select{ this<=other:this || other }
+      return which{ this<=other:this || other }
 
     method progress( a:Real32, b:Real32 )->Real64
       # Returns the progress of this number along the interval from a to b.
@@ -315,7 +315,7 @@ class Real32 [primitive]
       return this->String.right_justified( spaces, fill )
 
     method sign->Real32
-      return Real32( select{ this>0:1 || this<0:-1 || 0 } )
+      return Real32( which{ this>0:1 || this<0:-1 || 0 } )
 
       unitTest assert( Real32(5.0).sign == Real32(1.0) )
       unitTest assert( Real32(0.0).sign == Real32(0.0) )
@@ -365,7 +365,7 @@ class Int64 [primitive]
       return value->Int64
 
     method create( value:Logical )->Int64
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method from_value( value:Value )->Int64
       return value->Int64
@@ -498,10 +498,10 @@ class Int64 [primitive]
       return this->String.left_justified( spaces, fill )
 
     method or_larger( other:Int64 )->Int64
-      return select{ this>=other:this || other }
+      return which{ this>=other:this || other }
 
     method or_smaller( other:Int64 )->Int64
-      return select{ this<=other:this || other }
+      return which{ this<=other:this || other }
 
     method print_in_power2_base( base:Int32, digits=16:Int32, buffer:StringBuilder )->StringBuilder
       local bits = 0
@@ -536,7 +536,7 @@ class Int64 [primitive]
       return this->String.right_justified( spaces, fill )
 
     method sign->Int64
-      return Int64( select{ this>0:1 || this<0:-1 || 0 } )
+      return Int64( which{ this>0:1 || this<0:-1 || 0 } )
 
       unitTest assert( Int64(5).sign == Int64(1) )
       unitTest assert( Int64(0).sign == Int64(0) )
@@ -582,9 +582,9 @@ class Int64 [primitive]
       return StringBuilder().print( this )->String
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
-      if (hex)    return to_hex_string( select{digits||16} )
-      if (octal)  return to_octal_string( select{digits||22} )
-      if (binary) return to_binary_string( select{digits||64} )
+      if (hex)    return to_hex_string( which{digits||16} )
+      if (octal)  return to_octal_string( which{digits||22} )
+      if (binary) return to_binary_string( which{digits||64} )
       return this->String.right_justified( digits )
 
     method to->Value
@@ -630,7 +630,7 @@ class Int32 [primitive]
       return value->Int32
 
     method create( value:Logical )->Int32
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method from_value( value:Value )->Int32
       return value->Int32
@@ -685,10 +685,10 @@ class Int32 [primitive]
       return this->String.left_justified( spaces, fill )
 
     method or_larger( other:Int32 )->Int32
-      return select{ this>=other:this || other }
+      return which{ this>=other:this || other }
 
     method or_smaller( other:Int32 )->Int32
-      return select{ this<=other:this || other }
+      return which{ this<=other:this || other }
 
     method progress( a:Int32, b:Int32 )->Real64
       # Returns the progress of this number along the interval from a to b.
@@ -728,9 +728,9 @@ class Int32 [primitive]
       return "" + this
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
-      if (hex)    return to_hex_string( select{digits||8} )
-      if (octal)  return to_octal_string( select{digits||11} )
-      if (binary) return to_binary_string( select{digits||32} )
+      if (hex)    return to_hex_string( which{digits||8} )
+      if (octal)  return to_octal_string( which{digits||11} )
+      if (binary) return to_binary_string( which{digits||32} )
       return this
 
     method to->Value
@@ -771,7 +771,7 @@ class Int32 [primitive]
       return p2
 
     method sign->Int32
-      return select{ this>0:1 || this<0:-1 || 0 }
+      return which{ this>0:1 || this<0:-1 || 0 }
 
       unitTest assert( 5.sign  == 1 )
       unitTest assert( 0.sign  == 0 )
@@ -799,7 +799,7 @@ class Character [primitive]
       return value->Character
 
     method create( value:Logical )->Character
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method from_value( value:Value )->Character
       return value->Character
@@ -861,10 +861,10 @@ class Character [primitive]
       return this->String.left_justified( spaces, fill )
 
     method or_larger( other:Character )->Character
-      return select{ this>=other:this || other }
+      return which{ this>=other:this || other }
 
     method or_smaller( other:Character )->Character
-      return select{ this<=other:this || other }
+      return which{ this<=other:this || other }
 
     method print_escaped_ascii( builder:StringBuilder, additional_characters_to_escape="":String )
       which (this)
@@ -913,9 +913,9 @@ class Character [primitive]
       return Value( this->String )
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
-      if (hex)    return to_hex_string( select{digits||4} )
-      if (octal)  return to_octal_string( select{digits||6} )
-      if (binary) return to_binary_string( select{digits||16} )
+      if (hex)    return to_hex_string( which{digits||4} )
+      if (octal)  return to_octal_string( which{digits||6} )
+      if (binary) return to_binary_string( which{digits||16} )
       return this
 
     method to_base64_value->Int32
@@ -984,7 +984,7 @@ class Byte [primitive]
       return value
 
     method create( value:Logical )->Byte
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method from_value( value:Value )->Byte
       return value->Byte
@@ -1024,10 +1024,10 @@ class Byte [primitive]
       return this->String.left_justified( spaces, fill )
 
     method or_larger( other:Byte )->Byte
-      return select{ this>=other:this || other }
+      return which{ this>=other:this || other }
 
     method or_smaller( other:Byte )->Byte
-      return select{ this<=other:this || other }
+      return which{ this<=other:this || other }
 
     method progress( a:Byte, b:Byte )->Real64
       # Returns the progress of this number along the interval from a to b.
@@ -1060,9 +1060,9 @@ class Byte [primitive]
       return "" + this
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
-      if (hex)    return to_hex_string( select{digits||2} )
-      if (octal)  return to_octal_string( select{digits||3} )
-      if (binary) return to_binary_string( select{digits||8} )
+      if (hex)    return to_hex_string( which{digits||2} )
+      if (octal)  return to_octal_string( which{digits||3} )
+      if (binary) return to_binary_string( which{digits||8} )
       return this
 
     method to->Value

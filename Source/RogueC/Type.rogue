@@ -570,8 +570,8 @@ class Type
       # The reference token will be reset to reference any class along the way that is not a list or template.
 
       if (element_type)            element_type.configure( &=reference_t )
-      forEach (p in global_list)   p.type.configure( &reference_t=select{ reset_ref_t:p.t || reference_t} )
-      forEach (p in property_list) p.type.configure( &reference_t=select{ reset_ref_t:p.t || reference_t} )
+      forEach (p in global_list)   p.type.configure( &reference_t=which{ reset_ref_t:p.t || reference_t} )
+      forEach (p in property_list) p.type.configure( &reference_t=which{ reset_ref_t:p.t || reference_t} )
 
       Program.invoke_metacode( "Type.configured", this )
 

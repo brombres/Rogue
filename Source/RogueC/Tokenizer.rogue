@@ -211,7 +211,6 @@ class Tokenizer
       TokenType.keyword_of                  = define( TokenType("of") )
       TokenType.keyword_require             = define( TokenType("require") )
       TokenType.keyword_return              = define( TokenType("return") )
-      TokenType.keyword_select              = define( TokenType("select") )
       TokenType.keyword_nextIteration       = define( TokenType("nextIteration") )
       TokenType.keyword_step                = define( TokenType("step") )
       TokenType.keyword_sufficient          = define( TokenType("sufficient") )
@@ -293,6 +292,7 @@ class Tokenizer
       TokenType.symbol_plus_equals           = define( ModifyAndAssignTokenType("+=") )
       TokenType.symbol_plus_plus             = define( TokenType("++") )
       TokenType.symbol_question_mark         = define( TokenType("?") )
+      TokenType.symbol_select                = define( TokenType("?:") )
       TokenType.symbol_semicolon             = define( TokenType(";").mark_end_command )
       TokenType.symbol_shift_left            = define( TokenType(":<<:") )
       TokenType.symbol_shift_right           = define( TokenType(":>>:") )
@@ -481,7 +481,7 @@ class Tokenizer
           endIf
         endIf
 
-        if (consume("<<:"))  return TokenType.symbol_shift_left
+        if (consume("<<:"))      return TokenType.symbol_shift_left
         elseIf (consume(">>:"))  return TokenType.symbol_shift_right
         elseIf (consume(">>>:")) return TokenType.symbol_shift_right_x
         return TokenType.symbol_colon
@@ -506,7 +506,7 @@ class Tokenizer
         else                   return TokenType.symbol_gt
 
       elseIf (ch == '?')
-        if   (consume(':')) return TokenType.keyword_select
+        if   (consume(':')) return TokenType.symbol_select
         else                return TokenType.symbol_question_mark
 
       elseIf (ch == '@' )

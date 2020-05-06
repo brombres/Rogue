@@ -511,7 +511,7 @@ class CmdReturn : CmdStatement
     method resolve( scope:Scope )->Cmd
       if (value)
         if (not scope.this_method.return_type)
-          local sig = select{ scope.this_method.signature || scope.this_method.name+"()" }
+          local sig = which{ scope.this_method.signature || scope.this_method.name+"()" }
           throw t.error( "$ is not declared as returning a value." (sig) )
         endIf
         value = value.resolve( scope ).cast_to(scope.this_method.return_type,scope).resolve( scope )
@@ -2226,7 +2226,7 @@ class CmdLiteralLogical : CmdLiteral
       return this
 
     method to->Int32
-      return select{ value:1 || 0 }
+      return which{ value:1 || 0 }
 
     method to->Logical
       return value?
@@ -2883,7 +2883,7 @@ class CmdAccess : Cmd
       local this_type = scope.this_type
       if (name != scope.this_method.name) return
 
-      local arg_count = select{ args:args.count || 0 }
+      local arg_count = which{ args:args.count || 0 }
       if (arg_count != scope.this_method.parameters.count) return
       if (not (this_type.find_property(name,used_modules) or this_type.find_global(name))) return
 
@@ -2891,7 +2891,7 @@ class CmdAccess : Cmd
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
       if (args) throw t.error( "The result of a call cannot be assigned a value." )
-      local setter_name = select(name[0]) { '@':null || "set_"+name } : String
+      local setter_name = which(name[0]) { '@':null || "set_"+name } : String
 
       local context_was_null = context is null
       if (context is null)
@@ -3749,7 +3749,7 @@ class CmdCall : Cmd
       else
         # Transform get_name() into set_name(new_value)
         local setter_name = "set_" + method_info.name
-        local setter_args = select{ args:args.cloned || CmdArgs() }
+        local setter_args = which{ args:args.cloned || CmdArgs() }
         setter_args.add( CmdAdd(t,this,CmdLiteralInt32(t,delta)) )
         if (context)
           return CmdAccess( t, context.cloned, setter_name, setter_args ).resolve(scope)
@@ -6433,7 +6433,7 @@ class CmdCreateCallback( t, context:Cmd, name:String, signature:String, return_t
         forEach (p in m.parameters) parameter_types.add( p.type )
       endIf
 
-      local separator = select{ is_dynamically_specialized:"->" || "." }
+      local separator = which{ is_dynamically_specialized:"->" || "." }
       local callback_type_name = context_type.name + separator + name + Program.get_callback_type_signature(parameter_types)
       local callback_type = Program.get_type_reference( t, callback_type_name )
 
@@ -7187,7 +7187,7 @@ class CmdSelect : Cmd
         expression = expression.resolve( scope )
         local expr_type = expression.require_type
         if (not expr_type.is_primitive)
-          # Convert e.g. select(string){ case1:value1 || value2 } -> select{ string==case1:value1 || value2 }
+          # Convert e.g. which(string){ case1:value1 || value2 } -> which{ string==case1:value1 || value2 }
           # so that operator overloads are handled correctly.
           forEach (c in cases from cases.count-2 step -1)
             forEach (condition at index in c.conditions)
@@ -7255,7 +7255,7 @@ class CmdSelectCase : Cmd
       value = value.cast_to( to_type, scope ).resolve( scope ).require_value
 
     method implicit_type( scope:Scope )->Type
-      return select { value:value.implicit_type(scope) || null }
+      return which { value:value.implicit_type(scope) || null }
 
     method resolve( scope:Scope )->Cmd
       forEach (condition at i in conditions)

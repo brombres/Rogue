@@ -123,7 +123,6 @@ class TokenType
     keyword_of                    : TokenType
     keyword_require               : TokenType
     keyword_return                : TokenType
-    keyword_select                : TokenType
     keyword_nextIteration         : TokenType
     keyword_step                  : TokenType
     keyword_sufficient            : TokenType
@@ -213,6 +212,7 @@ class TokenType
     symbol_plus_equals            : TokenType
     symbol_plus_plus              : TokenType
     symbol_question_mark          : TokenType
+    symbol_select                 : TokenType
     symbol_semicolon              : TokenType
     symbol_shift_left             : TokenType
     symbol_shift_right            : TokenType

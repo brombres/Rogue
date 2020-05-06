@@ -151,7 +151,7 @@ class PyMethod
           defaults.add((default as CmdLiteralInt64).value)
           negatable = true
         elseIf default instanceOf CmdLiteralLogical
-          defaults.add(select{(default as CmdLiteralLogical).value: "True" || "False"})
+          defaults.add(which{(default as CmdLiteralLogical).value: "True" || "False"})
         elseIf default instanceOf CmdLiteralNull
           defaults.add("None") # Probably doesn't actually work right yet...
         elseIf default instanceOf CmdLiteralCharacter
@@ -1451,7 +1451,7 @@ augment Program
           if (not fname.begins_with("_")) fname = "_" + fname
           if (fname.begins_with("__")) fname = "_" + func.pyclass + fname
           fname = "$.$_$_" (func.pyclass, fname, fnum)
-          writer.print "[$], [$], [$], $, $ )" (",".join(func.py_types), ",".join(names), ",".join(func.defaults), fname, select{func.is_static_method:"True" || "False"})
+          writer.print "[$], [$], [$], $, $ )" (",".join(func.py_types), ",".join(names), ",".join(func.defaults), fname, which{func.is_static_method:"True" || "False"})
         endForEach
         writer.indent -= 2
         writer.println

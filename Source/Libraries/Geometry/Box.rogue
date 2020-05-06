@@ -50,6 +50,17 @@ class Box( position:XY, size:XY ) [compound]
     method at( u:Real64, v:Real64 )->XY
       return position + XY(u,v) * size
 
+    method at( grid_index:XY, grid_size:XY )->Box
+      # Example:
+      #   at( XY(i,j), XY(3,3) ) returns the bounds of one of the following grid cells:
+      #
+      #   (0,0) | (1,0) | (2,0)
+      #   ------+-------+------
+      #   (0,1) | (1,1) | (2,1)
+      #   ------+-------+------
+      #   (0,2) | (1,2) | (2,2)
+      return from_corners( at(grid_index/grid_size), at((grid_index+XY(1,1))/grid_size) )
+
     method at_random->XY
       return XY(Random.real64(position.x,size.x+position.x),Random.real64(position.y,size.y+position.y))
 
@@ -73,7 +84,11 @@ class Box( position:XY, size:XY ) [compound]
       return Box( pos.max(XY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
 
     method contains( other:Box )->Logical
-      return contains(other.top_left) and contains(other.bottom_right)
+      local other_pos = other.position
+      local other_br = other.bottom_right
+      local this_br  = bottom_right
+      return ((other_pos.x >= position.x and other_pos.y >= position.y) and
+             (other_br.x <= this_br.x and other_br.y <= this_br.y))
 
     method contains( pos:XY )->Logical
       if (pos.x < position.x or pos.x >= position.x + size.x) return false

@@ -23,7 +23,7 @@
 # local find_fn = function( cell:Cell )->Logical
 #   try
 #     local date = Date( cell.value->String )
-#     return select(date.weekday){ Date.SATURDAY,Date.SUNDAY:true || false }
+#     return which(date.weekday){ Date.SATURDAY,Date.SUNDAY:true || false }
 #   catch (Error)
 #     # Not a valid Date
 #     return false
