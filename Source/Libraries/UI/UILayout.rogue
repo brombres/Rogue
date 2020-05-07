@@ -1,5 +1,32 @@
 module UI
 
+class UILayout : UIComponent
+  GLOBAL METHODS
+    method absolute->UIAbsoluteLayout
+      return UIAbsoluteLayout()
+
+    method absolute( fixed_size:XY, content=null:UIComponent )->UIAbsoluteLayout
+      return UIAbsoluteLayout( fixed_size, content )
+
+    method absolute( bounds:Box, content=null:UIComponent )->UIAbsoluteLayout
+      return UIAbsoluteLayout( bounds, content )
+
+    method absolute( content:UIComponent )->UIAbsoluteLayout
+      return UIAbsoluteLayout().[ add(content) ]
+endClass
+
+class UIAbsoluteLayout : UILayout
+  METHODS
+    method update_subcomponent_layout
+      local bounds = display_bounds
+      forEachChild (cur,this)
+      local size = XY( which{cur.content_size.x||bounds.size.x}, which{cur.content_size.y||bounds.size.y} )
+      cur.update_layout( Box(bounds.position+cur.display_position,size) )
+      endForEachChild (cur)
+endClass
+
+
+#{
 class UILayout : UIView
   GLOBAL METHODS
     method h->UIBoxLayout
@@ -294,3 +321,5 @@ class UIBoxLayout : UILayout
         return flex
       endIf
 endClass
+}#
+

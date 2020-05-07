@@ -3,10 +3,10 @@ module UI
 
 class UIComponent : Node<<UIComponent>>
   PROPERTIES
-    position     : XY
-    size         : XY
-    fixed_size   : XY
-    anchor       = Anchor.CENTER : Anchor
+    display_position : XY
+    display_size     : XY
+    content_offset   : XY
+    content_size     : XY
 
     is_modified  = true
     needs_draw   : Logical
@@ -16,14 +16,15 @@ class UIComponent : Node<<UIComponent>>
   METHODS
     method init
 
-    method init( fixed_size, content=null:UIComponent )
-      init( XY.zero, fixed_size, content )
+    method init( content_size, content=null:UIComponent )
+      init( XY.zero, content_size, content )
 
-    method init( position, fixed_size, content=null:UIComponent )
+    method init( display_position, content_size, content=null:UIComponent )
+      display_size = content_size
       if (content) add( content )
 
-    method init( bounds:Box, content=null:UIComponent )
-      init( bounds.position, bounds.size, content )
+    method init( display_bounds:Box, content=null:UIComponent )
+      init( display_bounds.position, display_bounds.size, content )
 
     method init( content:UIComponent )
       add( content )
@@ -37,21 +38,26 @@ class UIComponent : Node<<UIComponent>>
       noAction
 
     method assign_renderer [propagated]
-      UITheme._dispatch_assign_renderer( this )
+      UIManager.theme._dispatch_assign_renderer( this )
 
-    method bounds->Box
-      return Box( position, size )
+    method content_bounds->Box
+      local cx = which{ content_size.x || display_size.x }
+      local cy = which{ content_size.y || display_size.y }
+      return Box( display_position+content_offset, XY(cx,cy) )
+
+    method display_bounds->Box
+      return Box( display_position, display_size )
 
     method compute_bounds( parent_bounds:Box )->Box
-      if (fixed_size.x)
-        if (fixed_size.y)
-          return Box( position, fixed_size )
+      if (content_size.x)
+        if (content_size.y)
+          return Box( display_position, content_size )
         else
-          return Box( position.x, parent_bounds.position.y, fixed_size.x, parent_bounds.size.y )
+          return Box( display_position.x, parent_bounds.position.y, content_size.x, parent_bounds.size.y )
         endIf
       else
-        if (fixed_size.x)
-          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, fixed_size.y )
+        if (content_size.x)
+          return Box( parent_bounds.position.x, display_position.y, parent_bounds.size.x, content_size.y )
         else
           return parent_bounds
         endIf
@@ -86,29 +92,29 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
     method horizontal_flex->Real64
-      if (fixed_size.x) return 0.0
+      if (content_size.x) return 0.0
       else              return 1.0
 
     method invalidate
       mark_modified
 
     method maximum_height( &subcomponents_only )->Real64
-      return fixed_size.y
+      return content_size.y
 
     method maximum_size( &subcomponents_only )->XY
       return XY( maximum_width, maximum_height )
 
     method maximum_width( &subcomponents_only )->Real64
-      return fixed_size.x
+      return content_size.x
 
     method minimum_height( &subcomponents_only )->Real64
-      return fixed_size.y
+      return content_size.y
 
     method minimum_size( &subcomponents_only )->XY
       return XY( minimum_width, minimum_height )
 
     method minimum_width( &subcomponents_only )->Real64
-      return fixed_size.x
+      return content_size.x
 
     method on_buffer
       # Called at the beginning of a buffer operation before any children have been drawn
@@ -121,35 +127,48 @@ class UIComponent : Node<<UIComponent>>
     method on_update
       noAction
 
+      #{
     method operator+( right_component:UIComponent )->UIComponent
       return UILayout.h.[ add(this), add(right_component) ]
 
     method operator/( bottom_component:UIComponent )->UIComponent
       return UILayout.v.[ add(this), add(bottom_component) ]
+      }#
 
     method redraw
       needs_draw = true
-      redraw_area( bounds )
+      redraw_area( display_bounds )
 
     method redraw_area( area:Box )
       # Propagate area to root
       if (parent) parent.redraw_area( area )
 
-    method set_fixed_size( new_fixed_size:XY )
-      if (@fixed_size != new_fixed_size) is_modified = true
-      @fixed_size = new_fixed_size
-      @size = new_fixed_size
+    method set_content_offset( new_content_offset:XY )
+      if (@content_offset != new_content_offset) is_modified = true
+      @content_offset = new_content_offset
 
-    method set_size( new_fixed_size:XY )
-      set_fixed_size( new_fixed_size )
+    method set_content_size( new_content_size:XY )
+      if (@content_size != new_content_size) is_modified = true
+      @content_size = new_content_size
+      @display_size = new_content_size
+
+    method set_is_modified( setting:Logical )
+      if (setting) mark_modified
+      @is_modified = true
+
+    method set_size( new_content_size:XY )
+      set_content_size( new_content_size )
 
     method update
+      update( display_bounds )
+
+    method update( new_bounds:Box )
       on_update
-      update_layout
+      update_layout( new_bounds )
       forEachChild (cur,this,cur.update)
 
     method update_subcomponent_layout
-      local bounds = this.bounds
+      local bounds = this.display_bounds
       forEachChild (cur,this,cur.update_layout(bounds))
 
     method update_draw_buffer
@@ -157,23 +176,23 @@ class UIComponent : Node<<UIComponent>>
       needs_render = true
 
     method update_layout
-      if (is_modified) update_layout( bounds )
+      update_layout( display_bounds )
 
     method update_layout( new_bounds:Box )
-      if (is_modified or new_bounds != bounds)
+      if (is_modified or new_bounds != display_bounds)
         is_modified = false
         needs_draw = true
-        @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
-        position = bounds.positioned_within( new_bounds ).position.floor
+        @display_size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
+        display_position = display_bounds.positioned_within( new_bounds ).position.floor
         update_subcomponent_layout
       endIf
 
     method vertical_flex->Real64
-      if (fixed_size.y) return 0.0
-      else              return 1.0
+      if (content_size.y) return 0.0
+      else                return 1.0
 
     method _assign_renderer<<$Theme>>( theme:$Theme ) [propagated]
-      renderer = (UITheme as $Theme).renderer( this )
+      renderer = (UIManager.theme as $Theme).renderer( this )
 
     method _dispatch_buffer [propagated]
       if (renderer.exists and renderer.value)

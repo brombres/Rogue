@@ -1,22 +1,12 @@
 module UI
 
-class UITheme [singleton]
-  GLOBAL PROPERTIES
-    printed_error_message = false
-
+class UITheme
   METHODS
     method renderer( component:UIComponent )->UIRenderer
       return null  # Can return null for anything that doesn't need to be drawn
 
     method _dispatch_assign_renderer( component:UIComponent )
-      if (printed_error_message) return
-      printed_error_message = true
-      println "No UITheme selected. Before creating a UI, write e.g.:"
-      $if (target("Plasmacore"))
-        println "  UITheme = PlasmacoreSimpleUITheme()"
-      $else
-        println "  UITheme = SomeUITheme()"
-      $endIf
+      component.renderer = null
 endClass
 
 class UITheme<<$ExtendedType>> : UITheme
