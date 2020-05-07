@@ -3,9 +3,4 @@ module UI
 
 class UIColorFill( color:Color ) : UIComponent
   METHODS
-    method init( color, content_size:XY )
-      prior.init( content_size )
-
-    method init( color, bounds:Box )
-      prior.init( bounds )
 endClass

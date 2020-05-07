@@ -5,14 +5,8 @@ class UILayout : UIComponent
     method absolute->UIAbsoluteLayout
       return UIAbsoluteLayout()
 
-    method absolute( fixed_size:XY, content=null:UIComponent )->UIAbsoluteLayout
-      return UIAbsoluteLayout( fixed_size, content )
-
-    method absolute( bounds:Box, content=null:UIComponent )->UIAbsoluteLayout
-      return UIAbsoluteLayout( bounds, content )
-
-    method absolute( content:UIComponent )->UIAbsoluteLayout
-      return UIAbsoluteLayout().[ add(content) ]
+    method absolute( content=null:UIComponent )->UIAbsoluteLayout
+      return UIAbsoluteLayout( content )
 endClass
 
 class UIAbsoluteLayout : UILayout

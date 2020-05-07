@@ -3,9 +3,9 @@ module UI
 
 class UIComponent : Node<<UIComponent>>
   PROPERTIES
-    display_position : XY
-    display_size     : XY
-    content_offset   : XY
+    position : XY
+    size     : XY
+    offset   : XY
     content_size     : XY
 
     is_modified  = true
@@ -14,20 +14,8 @@ class UIComponent : Node<<UIComponent>>
     renderer     : UIRenderer?
 
   METHODS
-    method init
-
-    method init( content_size, content=null:UIComponent )
-      init( XY.zero, content_size, content )
-
-    method init( display_position, content_size, content=null:UIComponent )
-      display_size = content_size
+    method init( content=null:UIComponent )
       if (content) add( content )
-
-    method init( display_bounds:Box, content=null:UIComponent )
-      init( display_bounds.position, display_bounds.size, content )
-
-    method init( content:UIComponent )
-      add( content )
 
     method after_buffer
       # Called at the end of a buffer operation after any children have been drawn
@@ -41,23 +29,23 @@ class UIComponent : Node<<UIComponent>>
       UIManager.theme._dispatch_assign_renderer( this )
 
     method content_bounds->Box
-      local cx = which{ content_size.x || display_size.x }
-      local cy = which{ content_size.y || display_size.y }
-      return Box( display_position+content_offset, XY(cx,cy) )
+      local cx = which{ content_size.x || size.x }
+      local cy = which{ content_size.y || size.y }
+      return Box( position+offset, XY(cx,cy) )
 
     method display_bounds->Box
-      return Box( display_position, display_size )
+      return Box( position, size )
 
     method compute_bounds( parent_bounds:Box )->Box
       if (content_size.x)
         if (content_size.y)
-          return Box( display_position, content_size )
+          return Box( position, content_size )
         else
-          return Box( display_position.x, parent_bounds.position.y, content_size.x, parent_bounds.size.y )
+          return Box( position.x, parent_bounds.position.y, content_size.x, parent_bounds.size.y )
         endIf
       else
         if (content_size.x)
-          return Box( parent_bounds.position.x, display_position.y, parent_bounds.size.x, content_size.y )
+          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, content_size.y )
         else
           return parent_bounds
         endIf
@@ -143,21 +131,45 @@ class UIComponent : Node<<UIComponent>>
       # Propagate area to root
       if (parent) parent.redraw_area( area )
 
-    method set_content_offset( new_content_offset:XY )
-      if (@content_offset != new_content_offset) is_modified = true
-      @content_offset = new_content_offset
+    method set_bounds( new_bounds:Box )
+      set_display_bounds( new_bounds )
 
-    method set_content_size( new_content_size:XY )
-      if (@content_size != new_content_size) is_modified = true
-      @content_size = new_content_size
-      @display_size = new_content_size
+    method set_content_bounds( new_bounds:Box )
+      offset = new_bounds.position
+      content_size = new_bounds.size
+
+    method set_content_size( new_size:XY )
+      if (@content_size != new_size)
+        is_modified = true
+        @content_size = new_size
+      endIf
+      if (@size != new_size)
+        is_modified = true
+        @size = new_size
+      endIf
+
+    method set_display_bounds( new_bounds:Box )
+      set_position( new_bounds.position )
+      set_size( new_bounds.size )
 
     method set_is_modified( setting:Logical )
       if (setting) mark_modified
       @is_modified = true
 
-    method set_size( new_content_size:XY )
-      set_content_size( new_content_size )
+    method set_offset( new_content_offset:XY )
+      if (@offset != new_content_offset)
+        is_modified = true
+        @offset = new_content_offset
+      endIf
+
+    method set_position( new_position:XY )
+      if (@position != new_position)
+        is_modified = true
+        @position = new_position
+      endIf
+
+    method set_size( new_size:XY )
+      set_content_size( new_size )
 
     method update
       update( display_bounds )
@@ -182,8 +194,8 @@ class UIComponent : Node<<UIComponent>>
       if (is_modified or new_bounds != display_bounds)
         is_modified = false
         needs_draw = true
-        @display_size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
-        display_position = display_bounds.positioned_within( new_bounds ).position.floor
+        @size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
+        @position = display_bounds.positioned_within( new_bounds ).position.floor
         update_subcomponent_layout
       endIf
 
