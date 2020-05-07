@@ -17,6 +17,9 @@ class UIComponent : Node<<UIComponent>>
     method init( content=null:UIComponent )
       if (content) add( content )
 
+    method after( e:UIScrollEvent )
+      noAction
+
     method after_buffer
       # Called at the end of a buffer operation after any children have been drawn
       noAction
@@ -28,10 +31,19 @@ class UIComponent : Node<<UIComponent>>
     method assign_renderer [propagated]
       UIManager.theme._dispatch_assign_renderer( this )
 
+    method bounds->Box
+      return display_bounds
+
     method content_bounds->Box
       local cx = which{ content_size.x || size.x }
       local cy = which{ content_size.y || size.y }
       return Box( position+offset, XY(cx,cy) )
+
+    method dispatch( e:UIScrollEvent )
+      forEachChild (cur,this)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEachChild (cur)
 
     method display_bounds->Box
       return Box( position, size )
@@ -79,6 +91,11 @@ class UIComponent : Node<<UIComponent>>
         after_render
       endIf
 
+    method handle( e:UIScrollEvent )
+      on( e )
+      if (not e.is_consumed) dispatch( e )
+      if (not e.is_consumed) after( e )
+
     method horizontal_flex->Real64
       if (content_size.x) return 0.0
       else              return 1.0
@@ -103,6 +120,9 @@ class UIComponent : Node<<UIComponent>>
 
     method minimum_width( &subcomponents_only )->Real64
       return content_size.x
+
+    method on( e:UIScrollEvent )
+      noAction
 
     method on_buffer
       # Called at the beginning of a buffer operation before any children have been drawn

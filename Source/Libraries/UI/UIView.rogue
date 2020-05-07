@@ -2,5 +2,8 @@ module UI
 
 class UIView : UIComponent
   METHODS
+    method on( e:UIScrollEvent )
+      dispatch( e )
+      if (not e.is_consumed) after( e )
 endClass
 

@@ -1,0 +1,35 @@
+module UI
+
+class UIEvent
+  PROPERTIES
+    is_consumed = false
+    timestamp   : Real64
+
+  METHODS
+    method init( other:UIEvent )
+      is_consumed = other.is_consumed
+      timestamp = other.timestamp
+
+    method cloned->UIEvent
+      throw UnsupportedOperationError()
+
+    method consume
+      this.is_consumed = true
+endClass
+
+class UIScrollEvent : UIEvent
+  PROPERTIES
+    delta       : XY
+
+  METHODS
+    method init( delta )
+
+    method cloned->UIScrollEvent
+      return UIScrollEvent( delta ).[ init(this) ]
+
+    method to->String
+      local buffer = StringBuilder().print( "Scroll " ).print( delta )
+      if (is_consumed) buffer.print( " (consumed)" )
+      return buffer->String
+endClass
+

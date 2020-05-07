@@ -1,7 +1,12 @@
 module UI
 
-class UIScrollView : UIComponent
+class UIScrollView : UIView
   PROPERTIES
 
   METHODS
+    method on( e:UIScrollEvent )
+      if (first_child)
+        first_child.offset += e.delta
+      endIf
+
 endClass
