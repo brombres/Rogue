@@ -3,10 +3,11 @@ module UI
 
 class UIComponent : Node<<UIComponent>>
   PROPERTIES
-    position : XY
-    size     : XY
-    offset   : XY
-    content_size     : XY
+    position     : XY
+    size         : XY
+    offset       : XY
+    content_size : XY
+    anchor       = Anchor.CENTER : Anchor
 
     is_modified  = true
     needs_draw   : Logical
@@ -16,6 +17,23 @@ class UIComponent : Node<<UIComponent>>
   METHODS
     method init( content=null:UIComponent )
       if (content) add( content )
+
+    method init( content:UIComponent, size )
+      if (content) add( content )
+
+    method init( size )
+
+    method add_spacer_h( pixels:Int32 )
+      add( UISpacer.h(pixels) )
+
+    method add_filler_h( weight=1.0:Real64 )
+      add( UIFiller.h(weight) )
+
+    method add_filler_v( weight=1.0:Real64 )
+      add( UIFiller.v(weight) )
+
+    method add_spacer_v( pixels:Int32 )
+      add( UISpacer.v(pixels) )
 
     method after( e:ScrollEvent )
       noAction
@@ -135,13 +153,11 @@ class UIComponent : Node<<UIComponent>>
     method on_update
       noAction
 
-      #{
     method operator+( right_component:UIComponent )->UIComponent
       return UILayout.h.[ add(this), add(right_component) ]
 
     method operator/( bottom_component:UIComponent )->UIComponent
       return UILayout.v.[ add(this), add(bottom_component) ]
-      }#
 
     method redraw
       needs_draw = true
@@ -215,7 +231,7 @@ class UIComponent : Node<<UIComponent>>
         is_modified = false
         needs_draw = true
         @size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
-        @position = display_bounds.positioned_within( new_bounds ).position.floor
+        @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
         update_subcomponent_layout
       endIf
 
