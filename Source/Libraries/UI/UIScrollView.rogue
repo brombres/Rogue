@@ -4,9 +4,10 @@ class UIScrollView : UIView
   PROPERTIES
 
   METHODS
-    method on( e:UIScrollEvent )
-      if (first_child)
-        first_child.offset += e.delta
-      endIf
+    method on( e:ScrollEvent )
+      forEachChild (cur,this)
+        if (e.is_consumed) return
+        cur.offset += e.delta
+      endForEachChild (cur)
 
 endClass

@@ -1,0 +1,221 @@
+module UI
+
+class Event
+  PROPERTIES
+    is_consumed = false
+    timestamp   : Real64
+
+  METHODS
+    method init( other:Event )
+      is_consumed = other.is_consumed
+      timestamp = other.timestamp
+
+    method cloned->Event
+      throw UnsupportedOperationError()
+
+    method consume
+      this.is_consumed = true
+endClass
+
+class KeyEvent : Event
+  PROPERTIES
+    keycode            : Int32
+    syscode            : Int32
+    is_press           : Logical
+    is_repeat          : Logical
+    modifier_key_state : Int32
+
+  METHODS
+    method init( keycode, syscode, is_press=false, is_repeat=false, modifier_key_state=Keyboard.modifier_key_state:Int32 )
+
+    method cloned->KeyEvent
+      return KeyEvent( keycode, syscode, is_press, is_repeat, modifier_key_state ).[ init(this) ]
+
+    method is_alt_pressed->Logical
+      return (modifier_key_state & Keyboard.ALT_MODIFIER_FLAG)
+
+    method is_control_pressed->Logical
+      return (modifier_key_state & Keyboard.CONTROL_MODIFIER_FLAG)
+
+    method is_os_pressed->Logical
+      return (modifier_key_state & Keyboard.OS_MODIFIER_FLAG)
+
+    method is_press( _keycode:Int32 )->Logical
+      return keycode == _keycode and is_press
+
+    method is_repeat( _keycode:Int32 )->Logical
+      return keycode == _keycode and is_repeat
+
+    method is_release->Logical [macro]
+      return not this.is_press
+
+    method is_release( _keycode:Int32 )->Logical
+      return keycode == _keycode and not is_press
+
+    method is_shift_pressed->Logical
+      return (modifier_key_state & Keyboard.SHIFT_MODIFIER_FLAG)
+
+    method to->String
+      local buffer = StringBuilder()
+      which (keycode)
+         case    1: buffer.print( "[LeftArrow] " )
+         case    2: buffer.print( "[UpArrow] " )
+         case    3: buffer.print( "[RightArrow] " )
+         case    4: buffer.print( "[DownArrow] " )
+         case    8: buffer.print( "[Backspace] " )
+         case '\t': buffer.print( "[Tab] " )
+         case '\n': buffer.print( "[Enter] " )
+         case   27: buffer.print( "[Escape] " )
+         case   32: buffer.print( "[Space] " )
+         case  127: buffer.print( "[Delete] " )
+         others
+           buffer.print( "(Keycode " ).print( Int32(keycode) ).print( ") " )
+       endWhich
+
+       if (is_press)
+         if (is_repeat) buffer.print( "pressed (repeating)" )
+         else           buffer.print( "pressed" )
+       else
+         buffer.print( "released" )
+       endIf
+
+        if (is_consumed) buffer.print( " (consumed)" )
+
+       return buffer->String
+
+    method unicode->Character
+      return Keycode.keycode_to_unicode( keycode, is_shift_pressed )
+
+endClass
+
+
+class TextEvent : Event
+  PROPERTIES
+    character : Character
+    text      : String
+
+  METHODS
+    method init( character, text )
+
+    method cloned->TextEvent
+      return TextEvent( character, text ).[ init(this) ]
+
+    method text->String
+      if (not @text) text = "" + character
+      return @text
+
+    method count->Int32
+      if (@text) return @text.count
+      else       return 1
+
+    method operator==( ch:Character )->Logical
+      return (this.character == ch and (@text is null or @text.count == 1))
+
+    method operator==( value:String )->Logical
+      which (value.count)
+        case 0
+          return false
+        case 1
+          return (character == value[0])
+        case 2
+          return (text == value)
+      endWhich
+
+    method to->String
+      return text
+endClass
+
+
+class PointerEvent : Event
+  ENUMERATE
+    MOVE     = 0
+    PRESS    = 1
+    RELEASE  = 2
+
+    LEFT     = 0
+    RIGHT    = 1
+    MIDDLE   = 2
+
+  PROPERTIES
+    type         : Int32
+    position     : XY
+    delta        : XY
+    index        : Int32
+    is_cancelled : Logical
+
+  METHODS
+    method init( type, position, delta, index, is_cancelled=false )
+
+    method cloned->PointerEvent
+      return PointerEvent( type, position, delta, index, is_cancelled ).[ init(this) ]
+
+    method is_move->Logical [macro]
+      return (this.type == PointerEvent.MOVE)
+
+    method is_press->Logical [macro]
+      return (this.type == PointerEvent.PRESS)
+
+    method is_press( button_index:Int32 )->Logical
+      return (this.type == PRESS and index == button_index)
+
+    method is_press_left->Logical
+      return is_press( 0 )
+
+    method is_press_right->Logical
+      return is_press( 1 )
+
+    method is_press_middle->Logical
+      return is_press( 2 )
+
+    method is_release->Logical [macro]
+      return (this.type == PointerEvent.RELEASE)
+
+    method is_release( button_index:Int32 )->Logical
+      return (this.type == RELEASE and index == button_index)
+
+    method is_release_left->Logical
+      return is_release( 0 )
+
+    method is_release_right->Logical
+      return is_release( 1 )
+
+    method is_release_middle->Logical
+      return is_release( 2 )
+
+    method operator+( offset:XY )->PointerEvent
+      return PointerEvent( type, position+offset, delta, index, is_cancelled )
+
+    method operator-( offset:XY )->PointerEvent
+      return this + (-offset)
+
+    method to->String
+      local buffer = StringBuilder()
+      buffer.print( "Pointer " )
+      which (type)
+        case MOVE:     buffer.print( "move" )
+        case PRESS:    buffer.print( "press index " ).print( index )
+        case RELEASE:  buffer.print( "release" )
+      endWhich
+      buffer.print( " at " ).print( position )
+      if (is_consumed) buffer.print( " (consumed)" )
+
+      return buffer->String
+endClass
+
+
+class ScrollEvent : Event
+  PROPERTIES
+    delta       : XY
+
+  METHODS
+    method init( delta )
+
+    method cloned->ScrollEvent
+      return ScrollEvent( delta ).[ init(this) ]
+
+    method to->String
+      local buffer = StringBuilder().print( "Scroll " ).print( delta )
+      if (is_consumed) buffer.print( " (consumed)" )
+      return buffer->String
+endClass
+

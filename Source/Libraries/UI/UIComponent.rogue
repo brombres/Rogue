@@ -17,7 +17,7 @@ class UIComponent : Node<<UIComponent>>
     method init( content=null:UIComponent )
       if (content) add( content )
 
-    method after( e:UIScrollEvent )
+    method after( e:ScrollEvent )
       noAction
 
     method after_buffer
@@ -39,7 +39,7 @@ class UIComponent : Node<<UIComponent>>
       local cy = which{ content_size.y || size.y }
       return Box( position+offset, XY(cx,cy) )
 
-    method dispatch( e:UIScrollEvent )
+    method dispatch( e:ScrollEvent )
       forEachChild (cur,this)
         if (e.is_consumed) return
         cur.handle( e )
@@ -91,7 +91,7 @@ class UIComponent : Node<<UIComponent>>
         after_render
       endIf
 
-    method handle( e:UIScrollEvent )
+    method handle( e:ScrollEvent )
       on( e )
       if (not e.is_consumed) dispatch( e )
       if (not e.is_consumed) after( e )
@@ -121,7 +121,7 @@ class UIComponent : Node<<UIComponent>>
     method minimum_width( &subcomponents_only )->Real64
       return content_size.x
 
-    method on( e:UIScrollEvent )
+    method on( e:ScrollEvent )
       noAction
 
     method on_buffer

@@ -1,10 +1,11 @@
 module UI
   uses Geometry [export]
 
+$include "Event.rogue"
+$include "Keyboard.rogue"
 $include "UIColorFill.rogue"
 $include "UIComponent.rogue"
 #$include "UIDivider.rogue"
-$include "UIEvent.rogue"
 #$include "UIFiller.rogue"
 $include "UILayout.rogue"
 #$include "UIList.rogue"

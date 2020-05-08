@@ -2,7 +2,7 @@ module UI
 
 class UIView : UIComponent
   METHODS
-    method on( e:UIScrollEvent )
+    method on( e:ScrollEvent )
       dispatch( e )
       if (not e.is_consumed) after( e )
 endClass
