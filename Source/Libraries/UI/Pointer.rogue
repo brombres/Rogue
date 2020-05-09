@@ -1,0 +1,63 @@
+module UI
+
+class Pointer [singleton]
+  PROPERTIES
+    position  : XY    # of first active or prior press
+    positions = XY[]  # of active presses
+
+  METHODS
+    method on( e:PointerEvent )
+      if (e.is_press)
+        positions.add( e.position )
+        if (positions.count == 1) position = e.position
+
+      elseIf (e.is_move)
+        which (positions.count)
+          case 0
+            position = e.position
+          case 1
+            position = e.position
+            positions[0] = position
+          others
+            local index = closest_pointer_index( e.position ).value
+            positions[ index ] = e.position
+            if (index == 0) position = e.position
+        endWhich
+
+      elseIf (e.is_release)
+        which (positions.count)
+          case 0
+            position = e.position
+          case 1
+            position = e.position
+            positions.remove_last
+          others
+            local index = closest_pointer_index(e.position).value
+            positions.remove_at( index )
+            if (index == 0) position = e.position
+        endWhich
+
+      endIf
+
+    method closest_pointer_index( pos:XY )->Int32?
+      which (positions.count)
+        case 0
+          return null
+        case 1
+          return 0
+        others
+          local shortest_index    : Int32?
+          local shortest_distance : Real64
+          forEach (xy at index in positions)
+            local d = (pos - xy).magnitude_squared
+            if (not shortest_index.exists or d < shortest_distance)
+              shortest_index = index
+              shortest_distance = d
+            endIf
+          endForEach
+          return shortest_index.value
+      endWhich
+
+    method press_count->Int32
+      return positions.count
+endClass

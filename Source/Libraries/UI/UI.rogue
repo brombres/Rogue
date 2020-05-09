@@ -4,6 +4,7 @@ module UI
 
 $include "Event.rogue"
 $include "Keyboard.rogue"
+$include "Pointer.rogue"
 $include "UIAbsoluteLayout.rogue"
 $include "UIColorFill.rogue"
 $include "UIColumnLayout.rogue"
@@ -12,6 +13,7 @@ $include "UIComponent.rogue"
 $include "UIFiller.rogue"
 $include "UILayout.rogue"
 #$include "UIList.rogue"
+$include "UIManager.rogue"
 $include "UIRenderer.rogue"
 $include "UIRowLayout.rogue"
 $include "UIScrollView.rogue"
@@ -19,29 +21,3 @@ $include "UISpacer.rogue"
 $include "UITheme.rogue"
 $include "UIView.rogue"
 
-class UIManager : UIComponent [singleton]
-  # Intended to be the root controller of any number of different UIComponent hierarchies.
-  # Tracks current focus and reroutes events to focused components as necessary with cooperation
-  # of individual components.
-  PROPERTIES
-    theme              : UITheme
-    render_every_frame = true
-
-    keyboard_focus : UIComponent
-    pointer_focus  : UIComponent
-
-  METHODS
-    method theme->UITheme
-      if (@theme) return @theme
-
-      println "No UITheme selected. Before creating a UI, write e.g.:"
-      $if (target("Plasmacore"))
-        println "  UIManager.theme = PlasmacoreSimpleUITheme()"
-      $else
-        println "  UIManager.theme = SomeUITheme()"
-      $endIf
-
-      @theme = UITheme()
-      return @theme
-
-endClass

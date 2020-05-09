@@ -1,0 +1,31 @@
+module UI
+
+class UIManager : UIComponent [singleton]
+  # Intended to be the root controller of any number of different UIComponent hierarchies.
+  # Tracks current focus and reroutes events to focused components as necessary with cooperation
+  # of individual components.
+  PROPERTIES
+    theme              : UITheme
+    render_every_frame = true
+
+    keyboard_focus : UIComponent
+    pointer_focus  : UIComponent
+    pointer_focus_origin : XY
+    is_dragging          : Logical
+
+  METHODS
+    method theme->UITheme
+      if (@theme) return @theme
+
+      println "No UITheme selected. Before creating a UI, write e.g.:"
+      $if (target("Plasmacore"))
+        println "  UIManager.theme = PlasmacoreSimpleUITheme()"
+      $else
+        println "  UIManager.theme = SomeUITheme()"
+      $endIf
+
+      @theme = UITheme()
+      return @theme
+
+endClass
+

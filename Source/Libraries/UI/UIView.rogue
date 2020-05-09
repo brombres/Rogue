@@ -2,7 +2,28 @@ module UI
 
 class UIView : UIComponent
   METHODS
+    method is_clickable->Logical
+      return false
+      # Views are not click targets although they still pass events
+      # to their children.
+
+    method on( e:KeyEvent )
+      if (is_handling_event) return
+      dispatch( e )
+      if (not e.is_consumed) after( e )
+
+    method on( e:PointerEvent )
+      if (is_handling_event) return
+      dispatch( e )
+      if (not e.is_consumed) after( e )
+
     method on( e:ScrollEvent )
+      if (is_handling_event) return
+      dispatch( e )
+      if (not e.is_consumed) after( e )
+
+    method on( e:TextEvent )
+      if (is_handling_event) return
       dispatch( e )
       if (not e.is_consumed) after( e )
 endClass
