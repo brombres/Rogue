@@ -128,13 +128,13 @@ class UIComponent : Node<<UIComponent>>
       forEachChild (cur,this,cur.draw)
 
       if (needs_draw)
-        needs_draw = false
         after_buffer
+        needs_draw = false
       endIf
 
       if (needs_render)
-        needs_render = false
         after_render
+        needs_render = false
       endIf
 
     method handle( e:KeyEvent )
@@ -199,7 +199,7 @@ class UIComponent : Node<<UIComponent>>
 
     method horizontal_flex->Real64
       if (content_size.x) return 0.0
-      else              return 1.0
+      else                return 1.0
 
     method invalidate
       mark_modified
@@ -288,7 +288,7 @@ class UIComponent : Node<<UIComponent>>
 
     method set_is_modified( setting:Logical )
       if (setting) mark_modified
-      @is_modified = true
+      @is_modified = setting
 
     method set_offset( new_content_offset:XY )
       if (@offset != new_content_offset)
@@ -326,11 +326,11 @@ class UIComponent : Node<<UIComponent>>
 
     method update_layout( new_bounds:Box )
       if (is_modified or new_bounds != display_bounds)
-        is_modified = false
         needs_draw = true
         @size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
         @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
         update_subcomponent_layout
+        is_modified = false
       endIf
 
     method vertical_flex->Real64

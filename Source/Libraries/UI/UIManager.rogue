@@ -19,7 +19,7 @@ class UIManager : UIComponent [singleton]
 
       println "No UITheme selected. Before creating a UI, write e.g.:"
       $if (target("Plasmacore"))
-        println "  UIManager.theme = PlasmacoreSimpleUITheme()"
+        println "  UIManager.theme = SimpleUITheme"
       $else
         println "  UIManager.theme = SomeUITheme()"
       $endIf
