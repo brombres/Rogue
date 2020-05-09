@@ -6,7 +6,6 @@ class UIManager : UIComponent [singleton]
   # of individual components.
   PROPERTIES
     theme              : UITheme
-    render_every_frame = true
 
     keyboard_focus : UIComponent
     pointer_focus  : UIComponent

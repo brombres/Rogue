@@ -9,11 +9,11 @@ class UIComponent : Node<<UIComponent>>
     content_size : XY
     anchor       = Anchor.CENTER : Anchor
 
-    is_modified  = true
+    is_modified  = true  # Inherited from Node - don't change this name or it will break things
+    draw_bounds  : Box?  # AKA invalidated area
+
     is_handling_event : Logical
-    needs_draw   : Logical
-    needs_render : Logical
-    renderer     : UIRenderer?
+    renderer          : UIRenderer?
 
   METHODS
     method init( content=null:UIComponent )
@@ -109,32 +109,30 @@ class UIComponent : Node<<UIComponent>>
         endIf
       endIf
 
-    method draw
-      update_layout
+    method draw( &force )
+      if (force)
+        if (is_modified) update_layout
+        redraw( display_bounds )
+      endIf
+      if (draw_bounds)
+        draw( draw_bounds.value )
+      endIf
+
+    method draw( draw_bounds:Box )
+      local subset = draw_bounds & display_bounds
+      if (not subset) return
 
       if (not renderer.exists) assign_renderer
 
-      if (needs_draw)
-        needs_render = true
-        on_buffer
-      elseIf (UIManager.render_every_frame)
-        needs_render = true
-      endIf
+      on_render
 
-      if (needs_render)
-        on_render
-      endIf
+      forEachChild (cur,this,cur.draw(subset.value))
 
-      forEachChild (cur,this,cur.draw)
+      after_render
 
-      if (needs_draw)
-        after_buffer
-        needs_draw = false
-      endIf
-
-      if (needs_render)
-        after_render
-        needs_render = false
+      if (not parent)
+        # This is the root which manages draw_bounds
+        this.draw_bounds = null
       endIf
 
     method handle( e:KeyEvent )
@@ -237,10 +235,6 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on_buffer
-      # Called at the beginning of a buffer operation before any children have been drawn
-      _dispatch_buffer
-
     method on_render
       # Called at the beginning of a render operation before any children have been drawn
       _dispatch_render
@@ -257,13 +251,19 @@ class UIComponent : Node<<UIComponent>>
     method operator/( bottom_component:UIComponent )->UIComponent
       return UILayout.v.[ add(this), add(bottom_component) ]
 
-    method redraw
-      needs_draw = true
-      redraw_area( display_bounds )
-
-    method redraw_area( area:Box )
-      # Propagate area to root
-      if (parent) parent.redraw_area( area )
+    method redraw( redraw_bounds=null:Box? )
+      if (not redraw_bounds) redraw_bounds = display_bounds
+      if (parent)
+        # Propagate the request up to the root
+        parent.redraw( redraw_bounds )
+      else
+        # This is the root
+        if (draw_bounds)
+          draw_bounds = draw_bounds.value | redraw_bounds.value
+        else
+          draw_bounds = redraw_bounds
+        endIf
+      endIf
 
     method set_bounds( new_bounds:Box )
       set_display_bounds( new_bounds )
@@ -306,7 +306,9 @@ class UIComponent : Node<<UIComponent>>
       set_content_size( new_size )
 
     method update
-      update( display_bounds )
+      on_update
+      if (not parent) update_layout( display_bounds )
+      forEachChild (cur,this,cur.update)
 
     method update( new_bounds:Box )
       on_update
@@ -317,16 +319,12 @@ class UIComponent : Node<<UIComponent>>
       local bounds = this.display_bounds
       forEachChild (cur,this,cur.update_layout(bounds))
 
-    method update_draw_buffer
-      needs_draw = false
-      needs_render = true
-
     method update_layout
       update_layout( display_bounds )
 
     method update_layout( new_bounds:Box )
       if (is_modified or new_bounds != display_bounds)
-        needs_draw = true
+        if (not parent) redraw( new_bounds )
         @size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
         @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
         update_subcomponent_layout
@@ -339,12 +337,6 @@ class UIComponent : Node<<UIComponent>>
 
     method _assign_renderer<<$Theme>>( theme:$Theme ) [propagated]
       renderer = (UIManager.theme as $Theme).renderer( this )
-
-    method _dispatch_buffer [propagated]
-      if (renderer.exists and renderer.value)
-        # The renderer can exist and be null
-        renderer.value.buffer( this )
-      endIf
 
     method _dispatch_render [propagated]
       if (renderer.exists and renderer.value)

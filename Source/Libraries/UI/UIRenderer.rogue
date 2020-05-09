@@ -2,23 +2,12 @@ module UI
 
 class UIRenderer
   METHODS
-    method buffer( component:UIComponent )
-      # Redraw any offscreen display buffers etc.
-      noAction
-
     method render( component:UIComponent )
       # Display dynamic or buffered content
 endClass
 
 class UIRenderer<<$ExtendedType>> : UIRenderer
   METHODS
-    method buffer( component:$ExtendedType )
-      # Redraw any offscreen display buffers etc.
-      noAction
-
-    method buffer( component:UIComponent )
-      buffer( component as $ExtendedType )
-
     method render( component:$ExtendedType )
       # Display dynamic or buffered content
       noAction
