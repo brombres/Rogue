@@ -10,4 +10,11 @@ class UIScrollView : UIView
         cur.offset += e.delta
       endForEachChild (cur)
 
+    method update_layout( new_bounds:Box )
+      if (not is_modified and new_bounds == display_bounds) return
+      prior.update_layout( new_bounds )
+      if (not first_child) return
+
+      #offset = offset.clamped_high(
+      #println first_child.offset
 endClass

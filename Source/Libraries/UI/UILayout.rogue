@@ -16,12 +16,5 @@ class UILayout : UIView
     UI_FACTORY_METHODS( absolute, UIAbsoluteLayout )
     UI_FACTORY_METHODS( h, UIRowLayout )
     UI_FACTORY_METHODS( v, UIColumnLayout )
-
-  METHODS
-    method on_buffer
-      noAction
-
-    method on_render
-      noAction
 endClass
 

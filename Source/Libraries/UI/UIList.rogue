@@ -1,31 +1,41 @@
 module UI
 
-#{
+$localMacro UI_FACTORY_METHODS(name,TypeName)
+    method name( content=null:UIComponent )->TypeName
+      return TypeName( content )
+
+    method name( size:XY )->TypeName
+      return TypeName( size )
+
+    method name( content:UIComponent, size:XY )->TypeName
+      return TypeName( content, size )
+$endMacro
+
+
 class UIList : UILayout
   GLOBAL METHODS
-    method h->UIBoxLayout
-      return UIList().[ is_horizontal=true ]
-
-    method h( size:XY )->UIList
-      return UIList( size ).[ is_horizontal=true ]
-
-    method h( bounds:Box )->UIList
-      return UIList( bounds ).[ is_horizontal=true ]
-
-    method v->UIList
-      return UIList()
-
-    method v( size:XY )->UIList
-      return UIList( size )
-
-    method v( bounds:Box )->UIList
-      return UIList( bounds )
+    UI_FACTORY_METHODS( v, UIVerticalList )
 
   PROPERTIES
-    is_horizontal : Logical
-    list_
-
-  METHODS
-    method update_subcomponent_layout
+    scroll_view : UIScrollView
+    layout      : UILayout
 endClass
-}#
+
+
+class UIVerticalList : UIList
+  METHODS
+    method init_component
+      layout = UILayout.v
+      scroll_view = UIScrollView( layout )
+      prior.add( scroll_view )
+
+    method add( component:UIComponent )
+      layout.add( component )
+
+    method count->Int32
+      return layout.count
+
+    method on_render
+      prior.on_render
+endClass
+

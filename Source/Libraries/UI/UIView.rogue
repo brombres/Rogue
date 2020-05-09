@@ -26,5 +26,8 @@ class UIView : UIComponent
       if (is_handling_event) return
       dispatch( e )
       if (not e.is_consumed) after( e )
+
+    method on_render
+      noAction
 endClass
 

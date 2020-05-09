@@ -17,12 +17,18 @@ class UIComponent : Node<<UIComponent>>
 
   METHODS
     method init( content=null:UIComponent )
+      init_component
       if (content) add( content )
 
-    method init( content:UIComponent, size )
+    method init( content:UIComponent, size:XY )
+      init( size )
       if (content) add( content )
 
-    method init( size )
+    method init( size:XY )
+      init_component
+      set_size( size )
+
+    method init_component
 
     method add_spacer_h( pixels:Int32 )
       add( UISpacer.h(pixels) )
@@ -66,6 +72,9 @@ class UIComponent : Node<<UIComponent>>
       local cx = which{ content_size.x || size.x }
       local cy = which{ content_size.y || size.y }
       return Box( position+offset, XY(cx,cy) )
+
+    method count->Int32
+      return @count
 
     method dispatch( e:KeyEvent )
       forEachChild (cur,this)
@@ -205,6 +214,9 @@ class UIComponent : Node<<UIComponent>>
     method is_clickable->Logical
       return true
 
+    method is_targeted->Logical
+      return display_bounds.contains( Pointer.position )
+
     method maximum_height( &subcomponents_only )->Real64
       return content_size.y
 
@@ -281,6 +293,8 @@ class UIComponent : Node<<UIComponent>>
         is_modified = true
         @size = new_size
       endIf
+
+    method set_count( @count )
 
     method set_display_bounds( new_bounds:Box )
       set_position( new_bounds.position )
