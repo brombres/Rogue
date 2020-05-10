@@ -261,6 +261,9 @@ class UIComponent : Node<<UIComponent>>
     method retain_focus( e:PointerEvent )
       UIManager.focus( e, this )
 
+    method scroll( delta:XY )
+      offset += delta
+
     method set_bounds( new_bounds:Box )
       set_display_bounds( new_bounds )
 
