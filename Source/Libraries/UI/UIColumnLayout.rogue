@@ -7,7 +7,7 @@ class UIColumnLayout : UILayout
 
     method maximum_width( &subcomponents_only )->Real64
       if (not subcomponents_only)
-        local fixed_x = content_size.x
+        local fixed_x = fixed_size.x
         if (fixed_x) return fixed_x
       endIf
       if (not first_child) return 0
@@ -22,7 +22,7 @@ class UIColumnLayout : UILayout
 
     method maximum_height( &subcomponents_only )->Real64
       if (not subcomponents_only)
-        local fixed_y = content_size.y
+        local fixed_y = fixed_size.y
         if (fixed_y) return fixed_y
       endIf
       if (not first_child) return 0
@@ -37,7 +37,7 @@ class UIColumnLayout : UILayout
 
     method minimum_width( &subcomponents_only )->Real64
       if (not subcomponents_only)
-        local fixed_x = content_size.x
+        local fixed_x = fixed_size.x
         if (fixed_x) return fixed_x
       endIf
       if (not first_child) return 0
@@ -50,7 +50,7 @@ class UIColumnLayout : UILayout
 
     method minimum_height( &subcomponents_only )->Real64
       if (not subcomponents_only)
-        local fixed_y = content_size.y
+        local fixed_y = fixed_size.y
         if (fixed_y) return fixed_y
       endIf
       if (not first_child) return 0

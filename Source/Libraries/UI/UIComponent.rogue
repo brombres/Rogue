@@ -3,11 +3,11 @@ module UI
 
 class UIComponent : Node<<UIComponent>>
   PROPERTIES
-    position     : XY
-    size         : XY
-    offset       : XY
-    content_size : XY
-    anchor       = Anchor.CENTER : Anchor
+    position   : XY
+    size       : XY
+    offset     : XY
+    fixed_size : XY
+    anchor     = Anchor.CENTER : Anchor
 
     is_modified  = true  # Inherited from Node - don't change this name or it will break things
     draw_bounds  : Box?  # AKA invalidated area
@@ -69,9 +69,12 @@ class UIComponent : Node<<UIComponent>>
       return display_bounds
 
     method content_bounds->Box
-      local cx = which{ content_size.x || size.x }
-      local cy = which{ content_size.y || size.y }
-      return Box( position+offset, XY(cx,cy) )
+      return Box( position+offset, content_size )
+
+    method content_size->XY
+      local cx = which{ fixed_size.x || size.x }
+      local cy = which{ fixed_size.y || size.y }
+      return XY( cx, cy )
 
     method count->Int32
       return @count
@@ -104,15 +107,15 @@ class UIComponent : Node<<UIComponent>>
       return Box( position, size )
 
     method compute_bounds( parent_bounds:Box )->Box
-      if (content_size.x)
-        if (content_size.y)
-          return Box( position, content_size )
+      if (fixed_size.x)
+        if (fixed_size.y)
+          return Box( position, fixed_size )
         else
-          return Box( position.x, parent_bounds.position.y, content_size.x, parent_bounds.size.y )
+          return Box( position.x, parent_bounds.position.y, fixed_size.x, parent_bounds.size.y )
         endIf
       else
-        if (content_size.x)
-          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, content_size.y )
+        if (fixed_size.x)
+          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, fixed_size.y )
         else
           return parent_bounds
         endIf
@@ -121,7 +124,7 @@ class UIComponent : Node<<UIComponent>>
     method draw( &force )
       if (force)
         if (is_modified) update_layout
-        redraw( display_bounds )
+        redraw( display_bounds )  # Sets up draw_bounds for the following call to draw()
       endIf
       if (draw_bounds)
         draw( draw_bounds.value )
@@ -205,8 +208,8 @@ class UIComponent : Node<<UIComponent>>
       is_handling_event = false
 
     method horizontal_flex->Real64
-      if (content_size.x) return 0.0
-      else                return 1.0
+      if (fixed_size.x) return 0.0
+      else              return 1.0
 
     method invalidate
       mark_modified
@@ -218,22 +221,22 @@ class UIComponent : Node<<UIComponent>>
       return display_bounds.contains( Pointer.position )
 
     method maximum_height( &subcomponents_only )->Real64
-      return content_size.y
+      return fixed_size.y
 
     method maximum_size( &subcomponents_only )->XY
       return XY( maximum_width, maximum_height )
 
     method maximum_width( &subcomponents_only )->Real64
-      return content_size.x
+      return fixed_size.x
 
     method minimum_height( &subcomponents_only )->Real64
-      return content_size.y
+      return fixed_size.y
 
     method minimum_size( &subcomponents_only )->XY
       return XY( minimum_width, minimum_height )
 
     method minimum_width( &subcomponents_only )->Real64
-      return content_size.x
+      return fixed_size.x
 
     method on( e:KeyEvent )
       noAction
@@ -282,12 +285,12 @@ class UIComponent : Node<<UIComponent>>
 
     method set_content_bounds( new_bounds:Box )
       offset = new_bounds.position
-      content_size = new_bounds.size
+      fixed_size = new_bounds.size
 
-    method set_content_size( new_size:XY )
-      if (@content_size != new_size)
+    method set_fixed_size( new_size:XY )
+      if (@fixed_size != new_size)
         is_modified = true
-        @content_size = new_size
+        @fixed_size = new_size
       endIf
       if (@size != new_size)
         is_modified = true
@@ -317,7 +320,7 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
     method set_size( new_size:XY )
-      set_content_size( new_size )
+      set_fixed_size( new_size )
 
     method update
       on_update
@@ -339,15 +342,15 @@ class UIComponent : Node<<UIComponent>>
     method update_layout( new_bounds:Box )
       if (is_modified or new_bounds != display_bounds)
         if (not parent) redraw( new_bounds )
-        @size = XY( which{content_size.x||new_bounds.width}, which{content_size.y||new_bounds.height} ).floor
+        @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
         @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
         update_subcomponent_layout
         is_modified = false
       endIf
 
     method vertical_flex->Real64
-      if (content_size.y) return 0.0
-      else                return 1.0
+      if (fixed_size.y) return 0.0
+      else              return 1.0
 
     method _assign_renderer<<$Theme>>( theme:$Theme ) [propagated]
       renderer = (UIManager.theme as $Theme).renderer( this )

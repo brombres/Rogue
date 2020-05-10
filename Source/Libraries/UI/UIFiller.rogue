@@ -12,15 +12,15 @@ class UIFiller : UILayout
     weight : Real64
 
   METHODS
-    method init( content_size, weight=1.0 )
+    method init( fixed_size, weight=1.0 )
 
     method horizontal_flex->Real64
-      if (content_size.x == 0) return weight
-      else                     return 0
+      if (fixed_size.x == 0) return weight
+      else                   return 0
 
     method vertical_flex->Real64
-      if (content_size.y == 0) return weight
-      else                     return 0
+      if (fixed_size.y == 0) return weight
+      else                   return 0
 
 endClass
 

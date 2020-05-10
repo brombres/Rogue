@@ -8,14 +8,6 @@ class UIScrollView : UIView
       forEachChild (cur,this)
         if (e.is_consumed) return
         cur.offset += e.delta
+        cur.offset = -((-cur.offset).clamped_high( cur.content_size - size ).clamped_low( XY.zero ))
       endForEachChild (cur)
-
-    method update_layout( new_bounds:Box )
-      if (not is_modified and new_bounds == display_bounds) return
-      prior.update_layout( new_bounds )
-      if (not first_child) return
-
-      #println first_child.content_size
-      #offset = offset.clamped_high(
-      #println first_child.offset
 endClass

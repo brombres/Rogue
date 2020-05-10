@@ -15,27 +15,23 @@ $endMacro
 class UIList : UILayout
   GLOBAL METHODS
     UI_FACTORY_METHODS( v, UIVerticalList )
-
-  PROPERTIES
-    scroll_view : UIScrollView
-    layout      : UILayout
 endClass
 
-
 class UIVerticalList : UIList
+  PROPERTIES
+    anchor = Anchor.TOP : Anchor
+
   METHODS
-    method init_component
-      layout = UILayout.v
-      scroll_view = UIScrollView( layout )
-      prior.add( scroll_view )
-
-    method add( component:UIComponent )
-      layout.add( component )
-
-    method count->Int32
-      return layout.count
-
-    method on_render
-      prior.on_render
+    method update_subcomponent_layout
+      local pos = content_bounds.position
+      local w   = size.x
+      @fixed_size = XY.zero
+      forEachChild (cur,this)
+        local cs = cur.content_size
+        if (cs.x == 0) cs = XY( w, cs.y )
+        @fixed_size = @fixed_size.or_larger( cs.xv ) + cs.yv
+        cur.update_layout( Box(pos,cs) )
+        pos += cs.yv
+      endForEachChild (cur)
 endClass
 
