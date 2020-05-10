@@ -162,21 +162,31 @@ class UIComponent : Node<<UIComponent>>
           if (UIManager.pointer_focus is not this) return
           if (e.is_release)
             UIManager.pointer_focus = null
-            if (not UIManager.is_dragging)
+            if (UIManager.is_dragging)
+              UIManager.is_dragging = false
+              on_drag_end( e )
+            else
               on_select( e )
             endIf
+            on_release( e )
           elseIf (e.is_move)
-            if (not UIManager.is_dragging)
-              if ((e.position - UIManager.pointer_focus_origin).magnitude_squared >= 8*8)
+            if (UIManager.is_dragging)
+              on_drag_move( e )
+            else
+              if ((e.position - UIManager.pointer_press.position).magnitude_squared >= 8*8)
                 UIManager.is_dragging = true
+                local origin = UIManager.pointer_press
+                on_drag_begin( origin )
+                on_drag_move( e.cloned.[delta=e.position-origin.position] )
               endIf
             endIf
           endIf
         else
           if (e.is_press)
             UIManager.pointer_focus = this
-            UIManager.pointer_focus_origin = e.position
+            UIManager.pointer_press = e
             UIManager.is_dragging = false
+            on_press( e )
           endIf
         endIf
       endIf
@@ -248,6 +258,21 @@ class UIComponent : Node<<UIComponent>>
       noAction
 
     method on( e:TextEvent )
+      noAction
+
+    method on_drag_begin( e:PointerEvent )
+      noAction
+
+    method on_drag_end( e:PointerEvent )
+      noAction
+
+    method on_drag_move( e:PointerEvent )
+      noAction
+
+    method on_press( e:PointerEvent )
+      noAction
+
+    method on_release( e:PointerEvent )
       noAction
 
     method on_render

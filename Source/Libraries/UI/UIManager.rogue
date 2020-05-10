@@ -9,8 +9,8 @@ class UIManager : UIComponent [singleton]
 
     keyboard_focus : UIComponent
     pointer_focus  : UIComponent
-    pointer_focus_origin : XY
-    is_dragging          : Logical
+    pointer_press  : PointerEvent  # used to remember origin and timestamp of drag start
+    is_dragging    : Logical
 
   METHODS
     method theme->UITheme
