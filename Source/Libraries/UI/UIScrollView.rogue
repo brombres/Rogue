@@ -15,6 +15,7 @@ class UIScrollView : UIView
       prior.update_layout( new_bounds )
       if (not first_child) return
 
+      #println first_child.content_size
       #offset = offset.clamped_high(
       #println first_child.offset
 endClass

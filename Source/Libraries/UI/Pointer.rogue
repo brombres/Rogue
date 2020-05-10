@@ -2,7 +2,7 @@ module UI
 
 class Pointer [singleton]
   PROPERTIES
-    position  : XY    # of first active or prior press
+    position  = XY(-1,-1)    # of first active or prior press
     positions = XY[]  # of active presses
 
   METHODS
