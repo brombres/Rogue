@@ -4,19 +4,25 @@ class UIScrollView : UIView
   PROPERTIES
 
   METHODS
-    method is_clickable->Logical
-      return true
+    method on( e:PointerEvent )
+      if (e.is_press)
+        retain_focus( e )
+      elseIf (e.is_drag_move)
+        forEachChild (cur,this)
+          cur.offset += e.delta
+          cur.offset = -((-cur.offset).clamped_high( cur.content_size - size ).clamped_low( XY.zero ))
+        endForEachChild (cur)
+      endIf
 
     method on( e:ScrollEvent )
+      if (not is_handling_event) handle( e )
+
       forEachChild (cur,this)
         if (e.is_consumed) return
         cur.offset += e.delta
         cur.offset = -((-cur.offset).clamped_high( cur.content_size - size ).clamped_low( XY.zero ))
       endForEachChild (cur)
 
-    method on_drag_move( e:PointerEvent )
-      forEachChild (cur,this)
-        cur.offset += e.delta
-        cur.offset = -((-cur.offset).clamped_high( cur.content_size - size ).clamped_low( XY.zero ))
-      endForEachChild (cur)
+      e.consume
+
 endClass

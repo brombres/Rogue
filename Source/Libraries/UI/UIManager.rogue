@@ -5,7 +5,8 @@ class UIManager : UIComponent [singleton]
   # Tracks current focus and reroutes events to focused components as necessary with cooperation
   # of individual components.
   PROPERTIES
-    theme              : UITheme
+    theme          : UITheme
+    drag_threshold = 8
 
     keyboard_focus : UIComponent
     pointer_focus  : UIComponent
@@ -13,6 +14,43 @@ class UIManager : UIComponent [singleton]
     is_dragging    : Logical
 
   METHODS
+    method focus( e:PointerEvent, target:UIComponent )
+      pointer_focus = target
+      pointer_press = e
+      is_dragging = false
+      e.is_processed = true
+      e.consume
+
+    method handle( e:PointerEvent, root:UIComponent )
+      e.is_processed = true
+      if (pointer_focus is null)
+        root.handle( e )
+        return
+      endIf
+
+      if (e.is_release)
+        if (is_dragging)
+          is_dragging = false
+          e.type = PointerEvent.DRAG_STOP
+        endIf
+        pointer_focus.handle( e )
+        pointer_focus = null
+      elseIf (e.is_move)
+        if (is_dragging)
+          e.type = PointerEvent.DRAG_MOVE
+          pointer_focus.handle( e )
+        else
+          if ((e.position - pointer_press.position).magnitude_squared >= drag_threshold^2)
+            is_dragging = true
+            local drag_start = pointer_press.cloned.[ type=PointerEvent.DRAG_START ]
+            pointer_focus.handle( drag_start )
+            e.type  = PointerEvent.DRAG_STOP
+            e.delta = e.position - pointer_press.position
+            pointer_focus.handle( e )
+          endIf
+        endIf
+      endIf
+
     method theme->UITheme
       if (@theme) return @theme
 

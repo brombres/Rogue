@@ -2,13 +2,15 @@ module UI
 
 class Event
   PROPERTIES
-    is_consumed = false
-    timestamp   : Real64
+    is_consumed  = false
+    timestamp    : Real64
+    is_processed : Logical  # for optional use by the UI library or other similar infrastructure
 
   METHODS
     method init( other:Event )
       is_consumed = other.is_consumed
       timestamp = other.timestamp
+      is_processed = other.is_processed
 
     method cloned->Event
       throw UnsupportedOperationError()
@@ -128,9 +130,12 @@ endClass
 
 class PointerEvent : Event
   ENUMERATE
-    MOVE     = 0
-    PRESS    = 1
-    RELEASE  = 2
+    MOVE       = 0
+    PRESS      = 1
+    RELEASE    = 2
+    DRAG_MOVE  = 3
+    DRAG_START = 4
+    DRAG_STOP  = 5
 
     LEFT     = 0
     RIGHT    = 1
@@ -142,12 +147,23 @@ class PointerEvent : Event
     delta        : XY
     index        : Int32
     is_cancelled : Logical
+    # When a touch event in progress is interrupted then a RELEASE event is sent
+    # with .is_cancelled==true.
 
   METHODS
     method init( type, position, delta, index, is_cancelled=false )
 
     method cloned->PointerEvent
       return PointerEvent( type, position, delta, index, is_cancelled ).[ init(this) ]
+
+    method is_drag_move->Logical [macro]
+      return (this.type == PointerEvent.DRAG_MOVE)
+
+    method is_drag_start->Logical [macro]
+      return (this.type == PointerEvent.DRAG_START)
+
+    method is_drag_stop->Logical [macro]
+      return (this.type == PointerEvent.DRAG_STOP)
 
     method is_move->Logical [macro]
       return (this.type == PointerEvent.MOVE)
@@ -192,9 +208,12 @@ class PointerEvent : Event
       local buffer = StringBuilder()
       buffer.print( "Pointer " )
       which (type)
-        case MOVE:     buffer.print( "move" )
-        case PRESS:    buffer.print( "press index " ).print( index )
-        case RELEASE:  buffer.print( "release" )
+        case MOVE:       buffer.print( "move" )
+        case PRESS:      buffer.print( "press index " ).print( index )
+        case RELEASE:    buffer.print( "release" )
+        case DRAG_START: buffer.print( "drag start" )
+        case DRAG_MOVE:  buffer.print( "drag move" )
+        case DRAG_STOP:  buffer.print( "drag stop" )
       endWhich
       buffer.print( " at " ).print( position )
       if (is_consumed) buffer.print( " (consumed)" )

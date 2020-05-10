@@ -157,38 +157,9 @@ class UIComponent : Node<<UIComponent>>
       is_handling_event = false
 
     method handle( e:PointerEvent )
-      if (is_clickable)
-        if (UIManager.pointer_focus)
-          if (UIManager.pointer_focus is not this) return
-          if (e.is_release)
-            UIManager.pointer_focus = null
-            if (UIManager.is_dragging)
-              UIManager.is_dragging = false
-              on_drag_end( e )
-            else
-              on_select( e )
-            endIf
-            on_release( e )
-          elseIf (e.is_move)
-            if (UIManager.is_dragging)
-              on_drag_move( e )
-            else
-              if ((e.position - UIManager.pointer_press.position).magnitude_squared >= 8*8)
-                UIManager.is_dragging = true
-                local origin = UIManager.pointer_press
-                on_drag_begin( origin )
-                on_drag_move( e.cloned.[delta=e.position-origin.position] )
-              endIf
-            endIf
-          endIf
-        else
-          if (e.is_press)
-            UIManager.pointer_focus = this
-            UIManager.pointer_press = e
-            UIManager.is_dragging = false
-            on_press( e )
-          endIf
-        endIf
+      if (not e.is_processed)
+        UIManager.handle( e, this )
+        return
       endIf
 
       is_handling_event = true
@@ -260,27 +231,9 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on_drag_begin( e:PointerEvent )
-      noAction
-
-    method on_drag_end( e:PointerEvent )
-      noAction
-
-    method on_drag_move( e:PointerEvent )
-      noAction
-
-    method on_press( e:PointerEvent )
-      noAction
-
-    method on_release( e:PointerEvent )
-      noAction
-
     method on_render
       # Called at the beginning of a render operation before any children have been drawn
       _dispatch_render
-
-    method on_select( e:PointerEvent )
-      noAction
 
     method on_update
       noAction
@@ -304,6 +257,9 @@ class UIComponent : Node<<UIComponent>>
           draw_bounds = redraw_bounds
         endIf
       endIf
+
+    method retain_focus( e:PointerEvent )
+      UIManager.focus( e, this )
 
     method set_bounds( new_bounds:Box )
       set_display_bounds( new_bounds )
