@@ -2,17 +2,21 @@ module UI
 
 class UIList : UILayout
   PROPERTIES
-    anchor = Anchor.TOP : Anchor
+    anchor       = Anchor.TOP : Anchor
+    content_size : XY
 
   METHODS
+    method content_size->XY
+      return @content_size
+
     method update_subcomponent_layout
       local pos = content_bounds.position
       local w   = size.x
-      @fixed_size = XY.zero
+      @content_size = XY.zero
       forEachChild (cur,this)
-        local cs = cur.content_size
+        local cs = cur.fixed_size
         if (cs.x == 0) cs = XY( w, cs.y )
-        @fixed_size = @fixed_size.or_larger( cs.xv ) + cs.yv
+        @content_size = @content_size.or_larger( cs.xv ) + cs.yv
         cur.update_layout( Box(pos,cs) )
         pos += cs.yv
       endForEachChild (cur)
