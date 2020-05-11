@@ -65,6 +65,9 @@ class UIComponent : Node<<UIComponent>>
     method assign_renderer [propagated]
       UIManager.theme._dispatch_assign_renderer( this )
 
+    method after_update_layout
+      # Event handler called after this component's layout has been updated.
+
     method bounds->Box
       return display_bounds
 
@@ -238,6 +241,9 @@ class UIComponent : Node<<UIComponent>>
     method on_update
       noAction
 
+    method on_update_layout
+      # Event handler called when this component's layout will definitely be updated.
+
     method operator+( right_component:UIComponent )->UIComponent
       return UILayout.h.[ add(this), add(right_component) ]
 
@@ -325,11 +331,13 @@ class UIComponent : Node<<UIComponent>>
 
     method update_layout( new_bounds:Box )
       if (is_modified or new_bounds != display_bounds)
+        on_update_layout
         if (not parent) redraw( new_bounds )
         @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
         @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
         update_subcomponent_layout
         is_modified = false
+        after_update_layout
       endIf
 
     method vertical_flex->Real64

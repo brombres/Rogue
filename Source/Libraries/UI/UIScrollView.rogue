@@ -4,10 +4,13 @@ class UIScrollView : UIView
   PROPERTIES
 
   METHODS
-    method on( e:PointerEvent )
+    method after( e:PointerEvent )
       if (e.is_press)
         retain_focus( e )
-      elseIf (e.is_drag_move)
+      endIf
+
+    method on( e:PointerEvent )
+      if (e.is_drag_move)
         scroll( e.delta )
         e.consume
       endIf
