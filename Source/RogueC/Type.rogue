@@ -1668,6 +1668,13 @@ class Type
             if (m.is_augment)
               apply_augment_labels( m, existing_m )
               return m
+            elseIf (existing_m.is_propagated)
+              # Replace propagated method with this "overriding" method
+              existing_m.attributes.flags &= !Attribute.is_propagated
+              existing_m.statements = m.statements
+              #existing_m.statements.dispatch( UpdateThisTypeVisitor(this,existing_m) )
+              #  ^ Shouldn't need this since we're replacing with a brand new method
+              return existing_m
             else
               throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
             endIf
