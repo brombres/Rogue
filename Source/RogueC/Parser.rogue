@@ -1103,6 +1103,22 @@ class Parser
 
       consume_eols
 
+      local t_start_pos = reader.position
+
+      parse_method_body
+
+      if (this_method.is_propagated and not this_method.source_tokens)
+        # [propagated] methods save the source tokens used to parse this method
+        local n = reader.position - t_start_pos
+        this_method.source_tokens = Token[]( n )
+        forEach (i in t_start_pos..<reader.position)
+          this_method.source_tokens.add( reader.tokens[i] )
+        endForEach
+      endIf
+
+      return true
+
+    method parse_method_body
       if (this_method.is_macro)
 
         # Kludge to bridge old macro system to new
@@ -1168,8 +1184,6 @@ class Parser
           this_method.statements.add( this_method.begin_label(peek,"append",false) )
         endIf
       endIf
-
-      return true
 
     method parse_method_header( as_global=false:Logical, default_attributes=null:Attributes )->Method
       local t = read  # 'routine' or 'method'
