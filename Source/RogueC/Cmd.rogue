@@ -4975,7 +4975,7 @@ class CmdCompare : CmdComparison
 
     method execute( vm:VM )->Value
       local lhs = left.execute( vm )
-      local rhs = left.execute( vm )
+      local rhs = right.execute( vm )
       if (lhs < rhs) return -1
       if (lhs > rhs) return  1
       return 0
@@ -5007,7 +5007,7 @@ class CmdCompareIs : CmdComparison
 
     method execute( vm:VM )->Value
       local lhs = left.execute( vm )
-      local rhs = left.execute( vm )
+      local rhs = right.execute( vm )
       local left_obj  = lhs->Object
       local right_obj = rhs->Object
       if (left_obj or right_obj)
@@ -5043,7 +5043,7 @@ class CmdCompareIsNot : CmdComparison
 
     method execute( vm:VM )->Value
       local lhs = left.execute( vm )
-      local rhs = left.execute( vm )
+      local rhs = right.execute( vm )
       local left_obj  = lhs->Object
       local right_obj = rhs->Object
       if (left_obj or right_obj)
