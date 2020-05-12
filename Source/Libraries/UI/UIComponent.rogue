@@ -58,9 +58,9 @@ class UIComponent : Node<<UIComponent>>
       # Called at the end of a buffer operation after any children have been drawn
       noAction
 
-    method after_render
+    method after_draw
       # Called at the end of a render operation after any children have been drawn
-      noAction
+      UIManager.theme._call_dispatch_after_draw( this )
 
     method after_update_layout
       # Event handler called after this component's layout has been updated.
@@ -134,11 +134,11 @@ class UIComponent : Node<<UIComponent>>
       local subset = draw_bounds & display_bounds
       if (not subset) return
 
-      on_render
+      on_draw
 
       forEachChild (cur,this,cur.draw(subset.value))
 
-      after_render
+      after_draw
 
       if (not parent)
         # This is the root which manages draw_bounds
@@ -229,9 +229,9 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on_render
+    method on_draw
       # Called at the beginning of a render operation before any children have been drawn
-      #_dispatch_render
+      UIManager.theme._call_dispatch_on_draw( this )
 
     method on_update
       noAction
@@ -343,14 +343,15 @@ class UIComponent : Node<<UIComponent>>
       if (fixed_size.y) return 0.0
       else              return 1.0
 
+    method _dispatch_after_draw<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.after_draw( this )
+
     method _dispatch_configure<<$ThemeType>>( theme:$ThemeType ) [propagated]
       if (is_configured) return
-      theme.configure( this )
+      theme.on_configure( this )
       is_configured = true
 
-      #{
-    method _dispatch_render<<$ThemeType>>( theme:$ThemeType ) [propagated]
-      theme.render( this )
-      }#
+    method _dispatch_on_draw<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.on_draw( this )
 endClass
 

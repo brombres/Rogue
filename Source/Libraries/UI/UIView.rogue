@@ -13,8 +13,5 @@ class UIView : UIComponent
 
     method on( e:TextEvent )
       if (not is_handling_event) handle( e )
-
-    method on_render
-      noAction
 endClass
 
