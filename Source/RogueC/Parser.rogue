@@ -1077,10 +1077,10 @@ class Parser
 
     method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type, first_token=TokenType.keyword_method:TokenType )->Logical
       consume_eols
-
       if (not next_is(first_token)) return false
 
       if (parse_method_header(as_global, default_attributes) is null) return true
+      # Sets up 'this_method'
 
       parse_attributes( this_method.attributes )
       if (parsing_augment) this_method.attributes.add( Attribute.is_augment )
@@ -3384,6 +3384,12 @@ class Parser
           elseIf (t.type is TokenType.symbol_comma or next_is(TokenType.symbol_close_specialize))
             return
 
+          elseIf (t.type is TokenType.keyword_ThisType)
+            read
+            local this_type_name = which{ this_type:this_type.name || "ThisType" }
+            if (tokens) tokens.add( TokenType.identifier.create_token(t,this_type_name) )
+            buffer.print( this_type_name )
+
           else
             if (tokens) tokens.add( t )
 
@@ -3736,7 +3742,8 @@ class Parser
         return parse_ensure_expression
 
       elseIf (next_is(TokenType.keyword_ThisType))
-        local result = CmdThisType( read, this_type, null )
+        t = read
+        local result = CmdThisType( t, this_type, null )
         if (next_is(TokenType.symbol_open_paren))
           result.args = CmdArgs()
           parse_args( result.args )
