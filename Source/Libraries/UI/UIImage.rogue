@@ -1,0 +1,4 @@
+module UI
+
+class UIImage : UIComponent
+endClass

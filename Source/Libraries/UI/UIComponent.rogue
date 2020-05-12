@@ -3,17 +3,17 @@ module UI
 
 class UIComponent : Node<<UIComponent>>
   PROPERTIES
-    position   : XY
-    size       : XY
-    offset     : XY
-    fixed_size : XY
-    anchor     = Anchor.CENTER : Anchor
+    position      : XY
+    size          : XY
+    offset        : XY
+    fixed_size    : XY
+    anchor        = Anchor.CENTER : Anchor
 
-    is_modified  = true  # Inherited from Node - don't change this name or it will break things
-    draw_bounds  : Box?  # AKA invalidated area
+    is_modified   = true     # Inherited from Node - don't change this name or it will break things
+    is_configured : Logical
+    draw_bounds   : Box?  # AKA invalidated area
 
     is_handling_event : Logical
-    renderer          : UIRenderer?
 
   METHODS
     method init( content=null:UIComponent )
@@ -61,9 +61,6 @@ class UIComponent : Node<<UIComponent>>
     method after_render
       # Called at the end of a render operation after any children have been drawn
       noAction
-
-    method assign_renderer [propagated]
-      UIManager.theme._dispatch_assign_renderer( this )
 
     method after_update_layout
       # Event handler called after this component's layout has been updated.
@@ -136,8 +133,6 @@ class UIComponent : Node<<UIComponent>>
     method draw( draw_bounds:Box )
       local subset = draw_bounds & display_bounds
       if (not subset) return
-
-      if (not renderer.exists) assign_renderer
 
       on_render
 
@@ -236,7 +231,7 @@ class UIComponent : Node<<UIComponent>>
 
     method on_render
       # Called at the beginning of a render operation before any children have been drawn
-      _dispatch_render
+      #_dispatch_render
 
     method on_update
       noAction
@@ -331,6 +326,10 @@ class UIComponent : Node<<UIComponent>>
 
     method update_layout( new_bounds:Box )
       if (is_modified or new_bounds != display_bounds)
+        if (not is_configured)
+          UIManager.theme._configure_components( this )
+          #apply( (cur) with (theme=UIManager.theme) => theme._dispatch_dispatch_configure(cur); return true )
+        endIf
         on_update_layout
         if (not parent) redraw( new_bounds )
         @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
@@ -344,13 +343,14 @@ class UIComponent : Node<<UIComponent>>
       if (fixed_size.y) return 0.0
       else              return 1.0
 
-    method _assign_renderer<<$Theme>>( theme:$Theme ) [propagated]
-      renderer = (UIManager.theme as $Theme).renderer( this )
+    method _dispatch_configure<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      if (is_configured) return
+      theme.configure( this )
+      is_configured = true
 
-    method _dispatch_render [propagated]
-      if (renderer.exists and renderer.value)
-        # The renderer can exist and be null
-        renderer.value.render( this )
-      endIf
+      #{
+    method _dispatch_render<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.render( this )
+      }#
 endClass
 
