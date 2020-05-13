@@ -599,6 +599,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdUse )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdOnEndUse )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -726,6 +732,7 @@ class Visitor
     method on_enter( cmd:CmdWriteProperty )
     method on_enter( cmd:CmdWriteSingleton )
     method on_enter( cmd:CmdSourceComment )
+    method on_enter( cmd:CmdUse )
     method on_enter( cmd:CmdOnEndUse )
     method on_enter( cmd:CmdThisType )
     method on_enter( cmd:CmdAssignFnPtr )
@@ -835,6 +842,7 @@ class Visitor
     method on_leave( cmd:CmdWriteProperty )
     method on_leave( cmd:CmdWriteSingleton )
     method on_leave( cmd:CmdSourceComment )
+    method on_leave( cmd:CmdUse )
     method on_leave( cmd:CmdOnEndUse )
     method on_leave( cmd:CmdThisType )
     method on_leave( cmd:CmdAssignFnPtr )
@@ -1299,6 +1307,10 @@ class Visitor
 
     method dispatch( cmd:CmdSourceComment )
       noAction
+
+    method dispatch( cmd:CmdUse )
+      cmd.expression = cmd.expression.dispatch( this )
+      cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdOnEndUse )
       noAction
