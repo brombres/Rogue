@@ -383,9 +383,10 @@ class CmdLocalDeclaration : CmdStatement
     local_info          : Local
     skip_initialization : Logical
     discard             : Logical  # we made this just in case but it's no longer needed
+    validate_name       : Logical  # check for visible locals with the same name
 
   METHODS
-    method init( t, local_info, skip_initialization=false, discard=false )
+    method init( t, local_info, skip_initialization=false, discard=false, validate_name=true )
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -395,7 +396,7 @@ class CmdLocalDeclaration : CmdStatement
         if (new_value) new_value = new_value.cloned( clone_args, new_t )
         return task_args.replace_write_local( t, local_info, new_value )
       else
-        return CmdLocalDeclaration( t, local_info, skip_initialization, discard )
+        return CmdLocalDeclaration( t, local_info, skip_initialization, discard, validate_name )
       endIf
 
     method execute( vm:VM )->Value
@@ -425,7 +426,7 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
       local_info.type.organize(scope, t)
-      scope.push_local( local_info )
+      scope.push_local( local_info, &=validate_name )
 
       return this
 
@@ -630,6 +631,48 @@ class CmdBlock : CmdControlStructure
 
 endClass
 
+
+class CmdBlockWithLocal : Cmd
+  PROPERTIES
+    variable_name : String
+    expression    : Cmd
+    statements    : CmdStatementList
+
+  METHODS
+    method init( t, variable_name, expression, statements=CmdStatementList() )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdBlockWithLocal
+      if (new_t) t = new_t
+      return CmdBlockWithLocal( t, variable_name, clone(expression,clone_args,new_t), statements.cloned(clone_args,new_t) )
+
+    method resolve( scope:Scope )->Cmd
+      # Transform
+      #   block v = expr
+      #      ...
+      #   endBlock
+      # ->
+      #   block
+      #     local v = expr
+      #     ...
+      #   endBlock
+      #
+      # Transform
+      #   block v
+      #      ...
+      #   endBlock
+      # ->
+      #   block
+      #     local v = v
+      #     ...
+      #   endBlock
+      local cmd_block = CmdBlock( t, statements )
+      if (not expression) expression = CmdAccess( t, variable_name )
+      local temp = Local( t, Program.create_unique_id, null, expression )
+      local v = Local( t, variable_name, null, CmdAccess(t,temp) )
+      statements.insert( CmdLocalDeclaration(t,v,&!validate_name) )  # Second command inserted first
+      statements.insert( CmdLocalDeclaration(t,temp) ) # First command inserted last
+      return cmd_block.resolve( scope )
+endClass
 
 class CmdIf : CmdControlStructure
   PROPERTIES

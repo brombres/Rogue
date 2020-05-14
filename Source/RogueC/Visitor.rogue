@@ -71,6 +71,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdBlockWithLocal )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdContextBlock )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -645,6 +651,7 @@ class Visitor
     method on_enter( cmd:CmdAssign )
     method on_enter( cmd:CmdBinary )
     method on_enter( cmd:CmdBlock )
+    method on_enter( cmd:CmdBlockWithLocal )
     method on_enter( cmd:CmdContextBlock )
     method on_enter( cmd:CmdCall )
     method on_enter( cmd:CmdCallDynamicMethod )
@@ -755,6 +762,7 @@ class Visitor
     method on_leave( cmd:CmdAssign )
     method on_leave( cmd:CmdBinary )
     method on_leave( cmd:CmdBlock )
+    method on_leave( cmd:CmdBlockWithLocal )
     method on_leave( cmd:CmdContextBlock )
     method on_leave( cmd:CmdCall )
     method on_leave( cmd:CmdCallDynamicMethod )
@@ -907,6 +915,10 @@ class Visitor
       endIf
 
     method dispatch( cmd:CmdBlock )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdBlockWithLocal )
+      if (cmd.expression) cmd.expression = cmd.expression.dispatch( this )
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdContextBlock )

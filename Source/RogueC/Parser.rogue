@@ -2520,15 +2520,55 @@ class Parser
 
       return cmd_loop
 
-    method parse_block->CmdBlock
-      local t = read
-      local cmd_block = CmdBlock( t )
+    method parse_block->Cmd
+      # block
+      #   ...
+      # endBlock
+      #
+      # block x [, y=a, ...]
+      #   ...
+      # endBlock
+      local t = read  # 'block'
 
-      must_consume_eols
-      parse_multi_line_statements( cmd_block.statements )
-      must_consume( TokenType.keyword_endBlock )
+      if (next_is_end_command)
+        local cmd_block = CmdBlock( t )
 
-      return cmd_block
+        must_consume_eols
+        parse_multi_line_statements( cmd_block.statements )
+        must_consume( TokenType.keyword_endBlock )
+
+        return cmd_block
+      else
+        local result    : CmdBlockWithLocal
+        local innermost : CmdBlockWithLocal
+
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          consume_eols
+
+          local var_name = read_identifier
+          local expr : Cmd
+          if (consume(TokenType.symbol_equals))
+            expr = parse_expression
+          endIf
+
+          local cmd_block = CmdBlockWithLocal( t, var_name, expr )
+          if (innermost)
+            innermost.statements.add( cmd_block )
+            innermost = cmd_block
+          else
+            result = cmd_block
+            innermost = cmd_block
+          endIf
+        endWhile
+
+        must_consume_eols
+        parse_multi_line_statements( innermost.statements )
+        must_consume( TokenType.keyword_endBlock )
+        return result
+      endIf
+
 
     method parse_while->CmdGenericLoop
       local t = read
