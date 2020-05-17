@@ -5,6 +5,7 @@ $include "Version.rogue" [optional]
 # TODO:
 # - Generate error on "local v = null"
 # - Warn on assignment of intermediate value compound
+# - Cannot augment auto-constructor e.g. "class TypeName(filename:String)"; missing <insert> and <append> labels
 
 # Some essential methods to support metacode
 $essential String[].count
