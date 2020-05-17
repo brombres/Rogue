@@ -541,6 +541,7 @@ class CmdControlStructure : CmdStatement
     type_contingent
     type_if
     type_else_if  # A nested if/else that was originally an elseIf
+    type_temporarily
     type_try
     type_which
 
@@ -631,6 +632,72 @@ class CmdBlock : CmdControlStructure
 
 endClass
 
+class CmdTemporarily : Cmd
+  PROPERTIES
+    target     : Cmd
+    temp_value : Cmd
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, target, temp_value, statements=CmdStatementList() )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdTemporarily
+      if (new_t) t = new_t
+      return CmdTemporarily( t, target.cloned(clone_args,new_t), temp_value.cloned(clone_args,new_t), statements.cloned(clone_args,new_t) )
+
+    method resolve( scope:Scope )->Cmd
+      # Transform
+      #   temporarily target = temp_value
+      #      ...
+      #      return x
+      #   endTemporarily
+      # ->
+      #   block
+      #     local auto_old_value = target
+      #     target = temp_value
+      #
+      #     try
+      #       ...
+      #       target = auto_old_value; return x
+      #     catch (err:Exception)
+      #       target = auto_old_value
+      #       throw err
+      #     endTry
+      #     if (no guaranteed return) target = auto_old_value
+      #   endBlock
+      local cmd_block = CmdBlock( t )
+      local v_old = Local( t, Program.create_unique_id, null, target.cloned )
+      cmd_block.statements.add( CmdLocalDeclaration(t,v_old) )
+      cmd_block.statements.add( CmdAssign(t,target,temp_value) )
+
+      local cmd_try = CmdTry( t, statements )
+      cmd_try.control_type = CmdControlStructure.type_temporarily
+      cmd_block.statements.add( cmd_try )
+
+      # TODO: replace with return path analysis eventually
+      local has_guaranteed_return = false
+      forEach (statement in cmd_try.statements)
+        if (statement instanceOf CmdReturn)
+          has_guaranteed_return = true
+          escapeForEach
+        endIf
+      endForEach
+
+      cmd_try.statements.dispatch( InjectCmdBeforeReturnVisitor(CmdAssign(t,target,CmdAccess(t,v_old))) )
+
+      local cmd_catch = cmd_try.add_catch( t )
+      cmd_catch.error_var = Local( t, Program.create_unique_id, Program.type_Exception )
+      cmd_catch.statements.add( CmdAssign(t,target.cloned,CmdAccess(t,v_old)) )
+      cmd_catch.statements.add( CmdThrow(t,CmdAccess(t,cmd_catch.error_var)) )
+
+      if (not has_guaranteed_return)
+        # The "guaranteed return" bit is to avoid a warning about unreachable code
+        cmd_block.statements.add( CmdAssign(t,target.cloned,CmdAccess(t,v_old)) )
+      endIf
+
+      return cmd_block.resolve( scope )
+
+endClass
 
 class CmdBlockWithLocal : Cmd
   PROPERTIES

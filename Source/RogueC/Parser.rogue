@@ -1493,6 +1493,10 @@ class Parser
           cur_statement_list.add( parse_block )
           return
 
+        elseIf (next_is(TokenType.keyword_temporarily))
+          cur_statement_list.add( parse_temporarily )
+          return
+
         elseIf (consume(TokenType.keyword_compileError))
           if (next_is(TokenType.literal_string))
             throw t.error( read->String )
@@ -1727,6 +1731,10 @@ class Parser
 
       elseIf (consume(TokenType.keyword_escapeLoop))
         cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_loop) )
+        return
+
+      elseIf (consume(TokenType.keyword_escapeTemporarily))
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_temporarily) )
         return
 
       elseIf (consume(TokenType.keyword_escapeIf))
@@ -2569,6 +2577,38 @@ class Parser
         return result
       endIf
 
+    method parse_temporarily->Cmd
+      # temporarily x=a [, y=b, ...]
+      #   ...
+      # endTemporarily
+      local t = read  # 'block'
+
+      local result    : CmdTemporarily
+      local innermost : CmdTemporarily
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        local target = parse_expression
+        must_consume( TokenType.symbol_equals )
+        local temp_value = parse_expression
+
+        local cmd_block = CmdTemporarily( t, target, temp_value )
+        if (innermost)
+          innermost.statements.add( cmd_block )
+          innermost = cmd_block
+        else
+          result = cmd_block
+          innermost = cmd_block
+        endIf
+      endWhile
+
+      must_consume_eols
+      parse_multi_line_statements( innermost.statements )
+      must_consume( TokenType.keyword_endTemporarily )
+      return result
 
     method parse_while->CmdGenericLoop
       local t = read
