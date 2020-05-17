@@ -2,61 +2,14 @@ module UI
 
 class UITheme
   METHODS
-    method on_configure( component:UIComponent )
-
     method after_draw( component:UIComponent )
 
     method on_draw( component:UIComponent )
 
-    method _configure_components( root:UIComponent )
-      noAction
+    method _dispatch_after_draw( component:UIComponent ) [propagated]
+      component.after_draw<<ThisType>>( this )
 
-    method _call_dispatch_after_draw( component:UIComponent )
-      noAction
-
-    method _call_dispatch_on_draw( component:UIComponent )
-      noAction
-endClass
-
-# This metacode injects methods along the following lines into each extended UITheme:
-#
-# method _configure_component( component:UIComponent )->Logical
-#   component._dispatch_configure<<ThisType>>( this )
-#   return true
-$metacode<Type.organize>
-local type_UITheme = Program.find_type( "UI::UITheme" )
-if (type_UITheme and this.instance_of(type_UITheme))
-  if (this is not type_UITheme and base_class is not type_UITheme)
-    sourceln "method _configure_component( component:UI::UIComponent )->Logical"
-    sourceln "  component._dispatch_configure<<$>>( this )" (this)
-    sourceln "  return true"
-    injectMethod
-
-    sourceln "method _call_dispatch_after_draw( component:UI::UIComponent )"
-    sourceln " component._dispatch_after_draw<<$>>( this )" (this)
-    injectMethod
-
-    sourceln "method _call_dispatch_on_draw( component:UI::UIComponent )"
-    sourceln " component._dispatch_on_draw<<$>>( this )" (this)
-    injectMethod
-  endIf
-endIf
-$endMetacode
-
-class UITheme<<$ExtendedType>> : UITheme
-  PROPERTIES
-    fn_configure = this=>_configure_component : Function(UIComponent)->Logical
-
-  METHODS
-    method on_configure( component:UIComponent )
-      noAction
-
-    # write additional configure(ExtendedUIComponent) methods as desired
-    method _configure_components( root:UIComponent )
-      root.apply( fn_configure )
-
-    method _configure_component( component:UIComponent )->Logical
-      noAction
-      return true
+    method _dispatch_on_draw( component:UIComponent ) [propagated]
+      component.on_draw<<ThisType>>( this )
 endClass
 
