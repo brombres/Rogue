@@ -71,6 +71,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdBlockWithLocal )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdContextBlock )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -599,6 +605,18 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdTemporarily )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
+    method visit( cmd:CmdUse )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method visit( cmd:CmdOnEndUse )->Cmd
       on_enter( cmd )
       dispatch( cmd )
@@ -639,6 +657,7 @@ class Visitor
     method on_enter( cmd:CmdAssign )
     method on_enter( cmd:CmdBinary )
     method on_enter( cmd:CmdBlock )
+    method on_enter( cmd:CmdBlockWithLocal )
     method on_enter( cmd:CmdContextBlock )
     method on_enter( cmd:CmdCall )
     method on_enter( cmd:CmdCallDynamicMethod )
@@ -726,6 +745,8 @@ class Visitor
     method on_enter( cmd:CmdWriteProperty )
     method on_enter( cmd:CmdWriteSingleton )
     method on_enter( cmd:CmdSourceComment )
+    method on_enter( cmd:CmdTemporarily )
+    method on_enter( cmd:CmdUse )
     method on_enter( cmd:CmdOnEndUse )
     method on_enter( cmd:CmdThisType )
     method on_enter( cmd:CmdAssignFnPtr )
@@ -748,6 +769,7 @@ class Visitor
     method on_leave( cmd:CmdAssign )
     method on_leave( cmd:CmdBinary )
     method on_leave( cmd:CmdBlock )
+    method on_leave( cmd:CmdBlockWithLocal )
     method on_leave( cmd:CmdContextBlock )
     method on_leave( cmd:CmdCall )
     method on_leave( cmd:CmdCallDynamicMethod )
@@ -835,6 +857,8 @@ class Visitor
     method on_leave( cmd:CmdWriteProperty )
     method on_leave( cmd:CmdWriteSingleton )
     method on_leave( cmd:CmdSourceComment )
+    method on_leave( cmd:CmdTemporarily )
+    method on_leave( cmd:CmdUse )
     method on_leave( cmd:CmdOnEndUse )
     method on_leave( cmd:CmdThisType )
     method on_leave( cmd:CmdAssignFnPtr )
@@ -899,6 +923,10 @@ class Visitor
       endIf
 
     method dispatch( cmd:CmdBlock )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdBlockWithLocal )
+      if (cmd.expression) cmd.expression = cmd.expression.dispatch( this )
       cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdContextBlock )
@@ -1299,6 +1327,15 @@ class Visitor
 
     method dispatch( cmd:CmdSourceComment )
       noAction
+
+    method dispatch( cmd:CmdTemporarily )
+      cmd.target     = cmd.target.dispatch( this )
+      cmd.temp_value = cmd.temp_value.dispatch( this )
+      cmd.statements.dispatch( this )
+
+    method dispatch( cmd:CmdUse )
+      cmd.expression = cmd.expression.dispatch( this )
+      cmd.statements.dispatch( this )
 
     method dispatch( cmd:CmdOnEndUse )
       noAction

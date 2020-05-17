@@ -31,12 +31,13 @@ syn keyword rogueConditional  if elseIf else endIf then
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs
 syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
 syn keyword rogueConditional  block endBlock
+syn keyword rogueConditional  temporarily endTemporarily
 syn keyword rogueConditional  unitTest endUnitTest
 syn keyword rogueLoop         await
 syn keyword rogueLoop         while endWhile forEach endForEach in of step downTo do
 syn keyword rogueLoop         loop endLoop
 syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
-syn keyword rogueBranch       escapeTry escapeUse
+syn keyword rogueBranch       escapeTry escapeUse escapeTemporarily
 syn keyword rogueBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
 syn keyword rogueBranch       nextIteration
 syn keyword rogueBoolean      true false pi

@@ -1103,6 +1103,22 @@ class Parser
 
       consume_eols
 
+      local t_start_pos = reader.position
+
+      parse_method_body
+
+      if (this_method.is_propagated and not this_method.source_tokens)
+        # [propagated] methods save the source tokens used to parse this method
+        local n = reader.position - t_start_pos
+        this_method.source_tokens = Token[]( n )
+        forEach (i in t_start_pos..<reader.position)
+          this_method.source_tokens.add( reader.tokens[i] )
+        endForEach
+      endIf
+
+      return true
+
+    method parse_method_body
       if (this_method.is_macro)
 
         # Kludge to bridge old macro system to new
@@ -1168,8 +1184,6 @@ class Parser
           this_method.statements.add( this_method.begin_label(peek,"append",false) )
         endIf
       endIf
-
-      return true
 
     method parse_method_header( as_global=false:Logical, default_attributes=null:Attributes )->Method
       local t = read  # 'routine' or 'method'
@@ -1479,6 +1493,10 @@ class Parser
           cur_statement_list.add( parse_block )
           return
 
+        elseIf (next_is(TokenType.keyword_temporarily))
+          cur_statement_list.add( parse_temporarily )
+          return
+
         elseIf (consume(TokenType.keyword_compileError))
           if (next_is(TokenType.literal_string))
             throw t.error( read->String )
@@ -1713,6 +1731,10 @@ class Parser
 
       elseIf (consume(TokenType.keyword_escapeLoop))
         cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_loop) )
+        return
+
+      elseIf (consume(TokenType.keyword_escapeTemporarily))
+        cur_statement_list.add( CmdEscape(t,CmdControlStructure.type_temporarily) )
         return
 
       elseIf (consume(TokenType.keyword_escapeIf))
@@ -2116,113 +2138,49 @@ class Parser
 
       return cmd_try
 
-    method parse_use_statement->CmdBlock
-      # Transform
+    method parse_use_statement->CmdUse
       #   use v = expr
       #      ...
-      #      return x
       #   endUse
-      # ->
-      #   block
-      #     local err : Exception
-      #     local usage = expr
-      #     local v = usage.on_use
-      #     local result : typeOf(x)
-      #     local has_return = false
-      #     try
-      #       ...
-      #       has_return = true
-      #       result = x
-      #       escapeTry
-      #     catch (e:Exception)
-      #       err = e
-      #     endTry
-      #     err = v.on_end_use( err )
-      #     if (err) throw err
-      #     if (has_return) return result
-      #   endBlock
       local t = read  # 'use'
-      local expr = parse_expression
-      local access = expr as CmdAccess
-      local v_name : String
-      local usage_name = Program.create_unique_id
-      local result_name : String
-      if (consume(TokenType.symbol_equals))
-        if (access is null or access.context or access.args)
-          throw expr.t.error( "Variable name expected." )
+      local result    : CmdUse
+      local innermost : CmdUse
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        local expr = parse_expression
+        local access = expr as CmdAccess
+        local v_name : String
+        if (consume(TokenType.symbol_equals))
+          if (access is null or access.context or access.args)
+            throw expr.t.error( "Variable name expected." )
+          else
+            v_name = access.name
+            expr = parse_expression
+          endIf
         else
-          v_name = access.name
-          expr = parse_expression
+          v_name = Program.create_unique_id
         endIf
-      else
-        v_name = Program.create_unique_id
-      endIf
+
+        local cmd_use = CmdUse( t, v_name, expr )
+        if (innermost)
+          innermost.statements.add( cmd_use )
+          innermost = cmd_use
+        else
+          result = cmd_use
+          innermost = cmd_use
+        endIf
+      endWhile
+
       must_consume_eols
 
-      local cmd_try = CmdTry( t )
-      cmd_try.control_type = CmdControlStructure.type_use
-      parse_multi_line_statements( cmd_try.statements )
+      parse_multi_line_statements( innermost.statements )
 
-      # TODO: replace with return path analysis eventually
-      local has_guaranteed_return = false
-      forEach (statement in cmd_try.statements)
-        if (statement instanceOf CmdReturn)
-          has_guaranteed_return = true
-          escapeForEach
-        endIf
-      endForEach
-
-      local has_return_name : String
-      local has_return_v : Local
-      if (not has_guaranteed_return)
-        has_return_name = Program.create_unique_id
-        has_return_v = Local( t, has_return_name, Program.type_Logical )
-      endIf
-      local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
-      local usage_v = Local( t, usage_name, null, expr )
-      local result_v : Local
-      if (this_method.return_type)
-        result_name = Program.create_unique_id
-        result_v = Local( t, result_name, this_method.return_type )
-      endIf
-
-      cmd_try.statements.dispatch( ConvertReturnToEscapeVisitor(this_method,result_name,has_return_name,cmd_try) )
-
-      local cmd_catch = cmd_try.add_catch( t )
-      cmd_catch.error_var = Local( t, Program.create_unique_id, Program.type_Exception )
-      cmd_catch.statements.add( CmdAssign(t,err_v,CmdAccess(t,cmd_catch.error_var)) )
-
-      local cmd_block = CmdBlock( t )
-      cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
-      if (has_return_v) cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
-      cmd_block.statements.add( CmdLocalDeclaration(t,usage_v) )
-      if (result_v) cmd_block.statements.add( CmdLocalDeclaration(t,result_v) )
-      local v = Local( t, v_name, null, CmdAccess(expr.t,usage_name,"on_use") )
-      cmd_block.statements.add( CmdLocalDeclaration(t,v) )
-      cmd_block.statements.add( CmdInlineNative(t,"Rogue_ignore_unused($$);"('$',v_name)) )
-      cmd_block.statements.add( cmd_try )
-
-      cmd_block.statements.add( CmdOnEndUse(t,usage_v,v,err_v) )
-
-      local cmd_if = CmdIf( t, CmdLogicalize(t,CmdAccess(t,err_v)) )
-      cmd_if.statements.add( CmdThrow(t,CmdAccess(t,err_v)) )
-      cmd_block.statements.add( cmd_if )
-
-      local statements_for_return = cmd_block.statements
-      if (not has_guaranteed_return)
-        cmd_if = CmdIf( t, CmdAccess(t,has_return_v) )
-        cmd_block.statements.add( cmd_if )
-        statements_for_return = cmd_if.statements
-      endIf
-      if (this_method.return_type)
-        statements_for_return.add( CmdReturn(t,CmdAccess(t,result_name)) )
-      else
-        statements_for_return.add( CmdReturn(t) )
-      endIf
-
-      consume_eols
       must_consume( TokenType.keyword_endUse )
-      return cmd_block
+      return result
 
     method parse_try_expression->Cmd
       # try expression else expression
@@ -2570,15 +2528,87 @@ class Parser
 
       return cmd_loop
 
-    method parse_block->CmdBlock
-      local t = read
-      local cmd_block = CmdBlock( t )
+    method parse_block->Cmd
+      # block
+      #   ...
+      # endBlock
+      #
+      # block x [, y=a, ...]
+      #   ...
+      # endBlock
+      local t = read  # 'block'
+
+      if (next_is_end_command)
+        local cmd_block = CmdBlock( t )
+
+        must_consume_eols
+        parse_multi_line_statements( cmd_block.statements )
+        must_consume( TokenType.keyword_endBlock )
+
+        return cmd_block
+      else
+        local result    : CmdBlockWithLocal
+        local innermost : CmdBlockWithLocal
+
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          consume_eols
+
+          local var_name = read_identifier
+          local expr : Cmd
+          if (consume(TokenType.symbol_equals))
+            expr = parse_expression
+          endIf
+
+          local cmd_block = CmdBlockWithLocal( t, var_name, expr )
+          if (innermost)
+            innermost.statements.add( cmd_block )
+            innermost = cmd_block
+          else
+            result = cmd_block
+            innermost = cmd_block
+          endIf
+        endWhile
+
+        must_consume_eols
+        parse_multi_line_statements( innermost.statements )
+        must_consume( TokenType.keyword_endBlock )
+        return result
+      endIf
+
+    method parse_temporarily->Cmd
+      # temporarily x=a [, y=b, ...]
+      #   ...
+      # endTemporarily
+      local t = read  # 'block'
+
+      local result    : CmdTemporarily
+      local innermost : CmdTemporarily
+
+      local first = true
+      while (first or consume(TokenType.symbol_comma))
+        first = false
+        consume_eols
+
+        local target = parse_expression
+        must_consume( TokenType.symbol_equals )
+        local temp_value = parse_expression
+
+        local cmd_block = CmdTemporarily( t, target, temp_value )
+        if (innermost)
+          innermost.statements.add( cmd_block )
+          innermost = cmd_block
+        else
+          result = cmd_block
+          innermost = cmd_block
+        endIf
+      endWhile
 
       must_consume_eols
-      parse_multi_line_statements( cmd_block.statements )
-      must_consume( TokenType.keyword_endBlock )
-
-      return cmd_block
+      parse_multi_line_statements( innermost.statements )
+      must_consume( TokenType.keyword_endTemporarily )
+      return result
 
     method parse_while->CmdGenericLoop
       local t = read

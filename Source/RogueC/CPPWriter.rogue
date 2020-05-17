@@ -2519,7 +2519,7 @@ augment Method
     runtime_index = -1      # only set/used for global methods
 
   METHODS
-    method cloned->Method
+    method cloned( &skip_body )->Method
       <initialize_result>
       result.cpp_name = cpp_name
       result.cpp_typedef = cpp_typedef

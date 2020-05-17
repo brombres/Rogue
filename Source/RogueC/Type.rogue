@@ -1672,8 +1672,6 @@ class Type
               # Replace propagated method with this "overriding" method
               existing_m.attributes.flags &= !Attribute.is_propagated
               existing_m.statements = m.statements
-              #existing_m.statements.dispatch( UpdateThisTypeVisitor(this,existing_m) )
-              #  ^ Shouldn't need this since we're replacing with a brand new method
               return existing_m
             else
               throw m.t.error( "Type $ already defines method $." (m.type_context,m.signature) )
@@ -1737,8 +1735,15 @@ class Type
     method override_inherited_propagated_method( m:Method, list:Method[], lookup:Table<<String,Method>> )->Method
       if (m.is_propagated and m.type_context is not this)
         # Override a copy of the method which will have the correct 'this' context.
-        m = m.cloned.set_type_context( this )
-        m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
+        m = m.cloned( &skip_body ).set_type_context( this )
+
+        # Re-parse cloned method from source tokens, which will update 'ThisType'
+        require m.source_tokens
+        local parser = Parser( m.source_tokens, &skip_reprocess )
+        parser.this_type = m.type_context
+        parser.this_method = m
+        parser.parse_method_body
+
         inherit_method( m, list, lookup )
       endIf
       return m

@@ -48,10 +48,12 @@ class Method
 
     deprecated_message : String
 
+    source_tokens : Token[]  # Retained by propagated methods in order to adjust and re-parse when necessary
+
   METHODS
     method init( t, type_context, name )
 
-    method cloned->Method
+    method cloned( &skip_body )->Method
       local result = Method( t, type_context, name )
 
       <initialize_result>
@@ -66,15 +68,21 @@ class Method
       result.parameters = Local[]
       forEach (p in parameters) result.parameters.add( p.cloned )
 
-      # Label list and lookup will be filled in by the CmdLabel nodes being
-      # cloned.
-      result.label_list = CmdLabel[]( label_list.count )
-      result.label_lookup = Table<<String,CmdLabel>>()
-
       result.min_args = min_args
-      result.statements = statements.cloned( CloneMethodArgs(result) )
-      result.native_code = native_code
+
+      if (not skip_body)
+        # Label list and lookup will be filled in by the CmdLabel nodes being
+        # cloned.
+        result.label_list = CmdLabel[]( label_list.count )
+        result.label_lookup = Table<<String,CmdLabel>>()
+
+        result.statements = statements.cloned( CloneMethodArgs(result) )
+        result.native_code = native_code
+      endIf
+
       result.index = index
+
+      if (source_tokens) result.source_tokens = source_tokens.cloned
 
       return result
 
