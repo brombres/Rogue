@@ -490,7 +490,7 @@ if (not buildfiles.count)
       builder.clear
       builder.println "#" + "=" * 79
       builder.println "# $.rogue" (project_name)
-      builder.println "# $" + Date.today
+      builder.println "# " + Date.today->String(&verbose)
       builder.println "#" + "=" * 79
       if (bitmap_option)
         builder.println "uses Bitmap\n"
