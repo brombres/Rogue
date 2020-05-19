@@ -384,6 +384,42 @@ class File
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
 
+    method is_valid_utf8( filepath:String )->Logical
+      local reader = File.reader( filepath )
+      contingent
+        while (reader.has_another)
+          local b = reader.read
+          if (b & 0x80)
+            necessary (b & 0x40) # 10xx_xxxx is an illegal first byte of UTF8
+            if (b & 0x20)
+              if (b & 0x10)
+                necessary ((b&8) == 0) # 1111_1xxx is illegal
+                loop (3)
+                  # 1111_0xxx
+                  necessary (reader.has_another)
+                  necessary ((reader.read & 0xC0) == 0x80)
+                endLoop
+              else
+                loop (2)
+                  # 1110_xxxx
+                  necessary (reader.has_another)
+                  necessary ((reader.read & 0xC0) == 0x80)
+                endLoop
+              endIf
+            else
+              # 110x_xxxx
+              necessary (reader.has_another)
+              necessary ((reader.read & 0xC0) == 0x80)
+            endIf
+          #else 0xxx_xxxx
+          endIf
+        endWhile
+      unsatisfied
+        reader.close
+        return false
+      endContingent
+      return true
+
     method join( segments:String[] )->String
       local buffer = StringBuilder()
       local first = true
@@ -968,6 +1004,9 @@ class File
 
     method is_newer_than( other_filepath:String )->Logical
       return File.is_newer_than( this.filepath, other_filepath )
+
+    method is_valid_utf8->Logical
+      return File.is_valid_utf8( this.filepath )
 
     method listing( filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
       return File.listing( this.filepath, filepattern, &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
