@@ -816,6 +816,13 @@ augment Byte[]
 
       return this
 
+    method has_byte_order_mark->Logical
+      if (count < 3) return false
+      if (this[0] != 0xEF) return false
+      if (this[1] != 0xBB) return false
+      if (this[2] != 0xBF) return false
+      return true
+
     method is_valid_utf8->Logical
       local i = 0
       local n = count

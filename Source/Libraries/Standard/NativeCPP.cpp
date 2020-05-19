@@ -856,6 +856,13 @@ RogueString* RogueString_create_from_utf8( const char* utf8, int count )
 {
   if (count == -1) count = (int) strlen( utf8 );
 
+  if (count >= 3 && (unsigned char)utf8[0] == 0xEF && (unsigned char)utf8[1] == 0xBB && (unsigned char)utf8[2] == 0xBF)
+  {
+    // Skip Byte Order Mark (BOM)
+    utf8  += 3;
+    count -= 3;
+  }
+
   RogueString* st = RogueString_create_with_byte_count( count );
   memcpy( st->utf8, utf8, count );
   return RogueString_validate( st );
