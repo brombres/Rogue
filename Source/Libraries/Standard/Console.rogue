@@ -327,13 +327,16 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
 
 endClass
 
-routine ConsoleStyle->ConsoleStyleBuilder
+class ConsoleStyle
   # USAGE
-  #   println "$Hello World!$" (ConsoleStyle.fg_white.bg_red, ConsoleStyle.reset)
-  return ConsoleStyleBuilder()
-endRoutine
-
-class ConsoleStyleBuilder
+  #   println "$Hello World!$" (ConsoleStyle().fg_white.bg_red, ConsoleStyle().reset)
+  #
+  # OR
+  #   ConsoleStyle.print( ConsoleStyle.FG_WHITE )
+  #   ConsoleStyle.print( ConsoleStyle.BG_RED )
+  #   print( "Hello World!" )
+  #   ConsoleStyle.print( ConsoleStyle.RESET )
+  #   println
   GLOBAL PROPERTIES
     RESET            = 0
     BOLD             = 1
@@ -385,6 +388,15 @@ class ConsoleStyleBuilder
     BG_LIGHT_CYAN    = 106
     BG_WHITE         = 107
 
+  GLOBAL METHODS
+    method print( code:Int32 )
+      Global.print( "\e[" )
+      Global.print( code )
+      Global.print( "m" )
+
+    method print( code:Int32, builder:StringBuilder )
+      builder.print( "\e[" ).print( code ).print( "m" )
+
   PROPERTIES
     codes = Int32[]
 
@@ -399,7 +411,7 @@ endClass
 #   method fg_red->this
 #     codes.add( FG_RED )
 #     return this
-$metacode<ConsoleStyleBuilder.organize_methods>
+$metacode<ConsoleStyle.organize_methods>
 forEach (p in global_list)
   sourceln "method $->this" (p.name.to_lowercase)
   sourceln "  codes.add( $ )" (p.name)
