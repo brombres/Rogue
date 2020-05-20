@@ -575,8 +575,9 @@ class File
       # regular text string that may contain the following special
       # characters:
       #
-      # *  - Matches any number of characters but does not match '/'
-      # ** - Matches any number of characters including slashes
+      # *    - Matches any number of characters but does not match '/'
+      # **   - Matches any number of characters including slashes
+      # ***/ - Matches any number of characters and a slash or else nothing.
       # ?  - Matches any one character except '/'
       filepath = expand_filepath( filepath )
 
@@ -618,12 +619,18 @@ class File
       which (ch)
         case '*':
           if (rcount and remaining_pattern[r0] == '*')
-            # Double asterisk - match all characters including '/'
             ++r0
             --rcount
-            forEach (n in 0..fcount)
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
-            endForEach
+            if (rcount >= 2 and remaining_pattern[r0] == '*' and remaining_pattern[r0+1] == '/')
+              # Triple asterisk and slash - match any characters and then a '/' or else match no characters.
+              if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2)) return true
+              return (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0,rcount))
+            else
+              # Double asterisk - match all characters including '/'
+              forEach (n in 0..fcount)
+                if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+              endForEach
+            endIf
           else
             # Single asterisk - match any characters except '/'
             forEach (n in 0..<fcount)
