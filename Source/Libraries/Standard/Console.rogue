@@ -345,7 +345,7 @@ class ConsoleStyle
     BLINK            = 5
     INVERSE          = 7
     HIDDEN           = 8
-    BOLD_OFF         = 21
+    BOLD_OFF         = 22
     DIM_OFF          = 22
     UNDERLINE_OFF    = 24
     BLINK_OFF        = 25
