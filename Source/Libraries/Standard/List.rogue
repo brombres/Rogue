@@ -197,7 +197,7 @@ class List<<$DataType>> : GenericList
       endForEach
       return null
 
-    method get( index:Int32 )->$DataType [macro]
+    method get( index:Int32 )->$DataType [essential macro]
       return this.data[ index ]
 
     method get( query:(Function($DataType)->Logical) )->$DataType[]
@@ -815,6 +815,54 @@ augment Byte[]
       endForEach
 
       return this
+
+    method has_byte_order_mark->Logical
+      if (count < 3) return false
+      if (this[0] != 0xEF) return false
+      if (this[1] != 0xBB) return false
+      if (this[2] != 0xBF) return false
+      return true
+
+    method is_valid_utf8->Logical
+      local i = 0
+      local n = count
+      while (i < n)
+        local b = this[ i ]
+        ++i
+        if (b & 0x80)
+          if (b & 0x40)
+            if (b & 0x20)
+              if (b & 0x10)
+                if (b & 8)
+                  # 1111_1xxx is illegal
+                  return false
+                else
+                  # 1111_0xxx
+                  loop 3
+                    if (i >= n or ((this[i] & 0xC0) != 0x80)) return false
+                    ++i
+                  endLoop
+                endIf
+              else
+                # 1110_xxxx
+                loop 2
+                  if (i >= n or ((this[i] & 0xC0) != 0x80)) return false
+                  ++i
+                endLoop
+              endIf
+            else
+              # 110x_xxxx
+              if (i >= n or ((this[i] & 0xC0) != 0x80)) return false
+              ++i
+            endIf
+          else
+            # 10xx_xxxx is an illegal first byte of UTF8
+            return false
+          endIf
+        #else 0xxx_xxxx
+        endIf
+      endWhile
+      return (i == n)
 
     method to_base64->String
       local base64_count = ((count+2) / 3) * 4

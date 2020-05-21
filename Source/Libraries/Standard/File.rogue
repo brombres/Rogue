@@ -346,6 +346,17 @@ class File
 
       return filepath.from( 0, i1.value-1 )
 
+    method has_byte_order_mark( filepath:String )->Logical
+      if (not File.exists(filepath)) return false
+      if (File.size(filepath) < 3)  return false
+      local has_bom = true
+      local reader = reader( filepath )
+      if (reader.read != 0xEF) has_bom = false
+      if (reader.read != 0xBB) has_bom = false
+      if (reader.read != 0xBF) has_bom = false
+      reader.close
+      return has_bom
+
     method is_different_than( filepath:String, other_filepath:String )->Logical
       filepath = expand_filepath( filepath )
       other_filepath = expand_filepath( other_filepath )
@@ -383,6 +394,42 @@ class File
       if (not File.exists(filepath))       return false
       if (not File.exists(other_filepath)) return true
       return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
+
+    method is_valid_utf8( filepath:String )->Logical
+      local reader = File.reader( filepath )
+      contingent
+        while (reader.has_another)
+          local b = reader.read
+          if (b & 0x80)
+            necessary (b & 0x40) # 10xx_xxxx is an illegal first byte of UTF8
+            if (b & 0x20)
+              if (b & 0x10)
+                necessary ((b&8) == 0) # 1111_1xxx is illegal
+                loop (3)
+                  # 1111_0xxx
+                  necessary (reader.has_another)
+                  necessary ((reader.read & 0xC0) == 0x80)
+                endLoop
+              else
+                loop (2)
+                  # 1110_xxxx
+                  necessary (reader.has_another)
+                  necessary ((reader.read & 0xC0) == 0x80)
+                endLoop
+              endIf
+            else
+              # 110x_xxxx
+              necessary (reader.has_another)
+              necessary ((reader.read & 0xC0) == 0x80)
+            endIf
+          #else 0xxx_xxxx
+          endIf
+        endWhile
+      unsatisfied
+        reader.close
+        return false
+      endContingent
+      return true
 
     method join( segments:String[] )->String
       local buffer = StringBuilder()
@@ -516,7 +563,7 @@ class File
 
     method load_as_string( filepath:String, encoding=StringEncoding.UTF8:StringEncoding )->String
       local bytes = load_as_bytes( filepath )
-      if (bytes.count >= 3 and bytes.first == 0xEF)
+      if (bytes.count >= 3 and bytes[0] == 0xEF and bytes[1] == 0xBB and bytes[2] == 0xBF)
         # Discard Byte Order Marker (BOM)
         bytes.discard( 0, 3 )
       endIf
@@ -528,8 +575,9 @@ class File
       # regular text string that may contain the following special
       # characters:
       #
-      # *  - Matches any number of characters but does not match '/'
-      # ** - Matches any number of characters including slashes
+      # *    - Matches any number of characters but does not match '/'
+      # **   - Matches any number of characters including slashes
+      # ***/ - Matches any number of characters and a slash or else nothing.
       # ?  - Matches any one character except '/'
       filepath = expand_filepath( filepath )
 
@@ -571,12 +619,18 @@ class File
       which (ch)
         case '*':
           if (rcount and remaining_pattern[r0] == '*')
-            # Double asterisk - match all characters including '/'
-            ++r0
-            --rcount
-            forEach (n in 0..fcount)
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
-            endForEach
+            if (rcount >= 3 and remaining_pattern[r0+1] == '*' and remaining_pattern[r0+2] == '/')
+              # Triple asterisk and slash - match any characters and then a '/' or else match no characters.
+              if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+3,rcount-3)) return true
+              return (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0,rcount))
+            else
+              # Double asterisk - match all characters including '/'
+              ++r0
+              --rcount
+              forEach (n in 0..fcount)
+                if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+              endForEach
+            endIf
           else
             # Single asterisk - match any characters except '/'
             forEach (n in 0..<fcount)
@@ -642,6 +696,7 @@ class File
 
     method rewrite( filepath:String, fn1:Function(String)->String, fn2=null:Function(String)->String, fn3=null:Function(String)->String )
       filepath = expand_filepath( filepath )
+      local has_bom = has_byte_order_mark( filepath )
       local data = load_as_string( filepath )
       local result = StringBuilder( data.count * 1.1 )
       forEach (line in LineReader(data))
@@ -650,7 +705,7 @@ class File
         if (fn3) line = fn3( line )
         result.println( line )
       endForEach
-      save( filepath, result->String )
+      save( filepath, result->String, &bom=has_bom )
 
     method save( filepath:String, data:Byte[] )->Logical
       filepath = expand_filepath( filepath )
@@ -659,16 +714,18 @@ class File
       outfile.close
       return not outfile.error
 
-    method save( filepath:String, data:String )->Logical
+    method save( filepath:String, data:String, &bom )->Logical
       filepath = expand_filepath( filepath )
       local outfile = writer( filepath )
+      if (bom) outfile.[ write(0xEF), write(0xBB), write(0xBF) ]
       outfile.write( data )
       outfile.close
       return not outfile.error
 
-    method save( filepath:String, data:StringBuilder )->Logical
+    method save( filepath:String, data:StringBuilder, &bom )->Logical
       filepath = expand_filepath( filepath )
       local outfile = writer( filepath )
+      if (bom) outfile.[ write(0xEF), write(0xBB), write(0xBF) ]
       outfile.write( data )
       outfile.close
       return not outfile.error
@@ -942,6 +999,9 @@ class File
     method delete->Logical
       return File.delete( this.filepath )
 
+    method has_byte_order_mark->Logical
+      return File.has_byte_order_mark( this.filepath )
+
     method is_different_than( other_filepath:String )->Logical
       return File.is_different_than( this.filepath, other_filepath )
 
@@ -968,6 +1028,9 @@ class File
 
     method is_newer_than( other_filepath:String )->Logical
       return File.is_newer_than( this.filepath, other_filepath )
+
+    method is_valid_utf8->Logical
+      return File.is_valid_utf8( this.filepath )
 
     method listing( filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
       return File.listing( this.filepath, filepattern, &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
@@ -1005,11 +1068,11 @@ class File
     method save( data:Byte[] )->Logical
       return File.save( this.filepath, data )
 
-    method save( data:String )->Logical
-      return File.save( this.filepath, data )
+    method save( data:String, &bom )->Logical
+      return File.save( this.filepath, data, &=bom )
 
-    method save( data:StringBuilder )->Logical
-      return File.save( this.filepath, data )
+    method save( data:StringBuilder, &bom )->Logical
+      return File.save( this.filepath, data, &=bom )
 
     method shell_escaped->String
       return File.shell_escaped( this.filepath )

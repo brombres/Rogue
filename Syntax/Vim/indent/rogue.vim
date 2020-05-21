@@ -20,9 +20,10 @@ setlocal indentexpr=GetRogueIndent(v:lnum)
 
 " if a line contains any of these, vim calls the indent function as soon as the last letter of that word is typed
 setlocal indentkeys&
-setlocal indentkeys+=forEach,=endForEach,=while,=endWhile,=nextIteration,=escapeForEach,=escapeWhile
+setlocal indentkeys+=forEach,=endForEach,=while,=endWhile,=nextIteration,=escapeForEach,=escapeWhile,=escapeTemporarily
 setlocal indentkeys+=if,=elseIf,=endIf
 setlocal indentkeys+=block,=endBlock
+setlocal indentkeys+=temporarily,=endTemporarily
 setlocal indentkeys+=try,=catch,=endTry
 setlocal indentkeys+=use,=endUse
 setlocal indentkeys+=which,=case,=others,=endWhich
@@ -204,6 +205,27 @@ function! FindIndentOfPrevBlock(startline)
       let s:depth=s:depth + 1
     endif
     if getline(s:lnum) =~ '\C^\s*block\>'
+      if(s:depth>0)
+        let s:depth= s:depth-1
+        let s:lnum=s:lnum-1
+      else
+        return indent(s:lnum)
+      endif
+    else
+      let s:lnum=s:lnum-1
+    endif
+  endwhile
+  return 0
+endfunction
+
+function! FindIndentOfPrevTemporarily(startline)
+  let s:lnum = a:startline
+  let s:depth=0
+  while s:lnum > 1
+    if getline(s:lnum) =~ '\C^\s*endTemporarily\>'  "we found a nested block
+      let s:depth=s:depth + 1
+    endif
+    if getline(s:lnum) =~ '\C^\s*temporarily\>'
       if(s:depth>0)
         let s:depth= s:depth-1
         let s:lnum=s:lnum-1
@@ -514,6 +536,10 @@ function! GetRogueIndent( line_num )
     return FindIndentOfPrevBlock(a:line_num-1)
   endif
 
+  if s:this_codeline =~ '\C^\s*\(endTemporarily\)\>'
+    return FindIndentOfPrevTemporarily(a:line_num-1)
+  endif
+
   if s:this_codeline =~ '\C^\s*\(endLoop\)\>'
     return FindIndentOfPrevLoop(a:line_num-1)
   endif
@@ -533,6 +559,11 @@ function! GetRogueIndent( line_num )
       return s:indnt
     else
       "echo('Prev is NOT Single line cond, prev = ' s:prev_codeline)
+      return s:indnt + s:sw
+    endif
+  endif
+
+  if s:prev_codeline =~ '\C^\s*\(temporarily\)\>'
       return s:indnt + s:sw
     endif
   endif

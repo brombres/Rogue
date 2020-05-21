@@ -231,7 +231,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(which|whichIs|case|caseNext|others|endWhich|endWhichIs|block|endBlock)\b</string>
+					<string>\b(which|whichIs|case|caseNext|others|endWhich|endWhichIs|block|endBlock|temporarily|endTemporarily)\b</string>
 					<key>name</key>
 					<string>keyword.control.rogue</string>
 				</dict>
@@ -315,7 +315,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(escapeWhich|escapeWhichIs|escapeIf|escapeContingent|escapeBlock|nextIteration)\b</string>
+					<string>\b(escapeWhich|escapeWhichIs|escapeIf|escapeContingent|escapeBlock|escapeTemporarily|nextIteration)\b</string>
 					<key>name</key>
 					<string>keyword.other.rogue</string>
 				</dict>

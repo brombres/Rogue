@@ -294,6 +294,25 @@ class Preprocessor
 
             nextIteration
 
+          elseIf (t_type is TokenType.meta_requireRogue)
+            local has_parens = consume( TokenType.symbol_open_paren )
+            local required_version = parse_logical_term->String
+            local message : String
+            if (consume(TokenType.symbol_comma))
+              message = parse_logical_term->String
+            endIf
+            if (has_parens) must_consume( TokenType.symbol_close_paren )
+            if (compare_versions(ROGUE_RELEASE_VERSION,required_version) < 0)
+              if (message)
+                message = message.replacing( "$CURRENT", ROGUE_RELEASE_VERSION )
+                message = message.replacing( "$REQUIRED", required_version )
+              else
+                message = "This file can only be compiled with Rogue version $ or better. RogueC $ is currently being used." (required_version,ROGUE_RELEASE_VERSION)
+              endIf
+              throw t.error( message )
+            endIf
+            nextIteration
+
           elseIf (t_type is TokenType.meta_uses)
             # Only check for module templates here in order to instantiate them; 'uses' with standard modules can wait
             if (not keep_tokens)

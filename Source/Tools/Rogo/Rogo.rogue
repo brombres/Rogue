@@ -95,10 +95,29 @@ endIf
 
 if (not buildfiles.count)
   if (should_create)
-    println "Creating Build.rogue with default Rogo framework."
+    local bitmap_option = cmd_line_args.contains( "--bitmap" )
+    local project_option = cmd_line_args.find( $.begins_with("--project") )
+    local project_name : String
+    if (project_option)
+      project_name = project_option.value.after_first('=')
+      if (project_name.count == 0) project_name = null
+    endIf
+    if (not project_name)
+      bitmap_option = false
+    endIf
+
+    print "Creating Build.rogue"
+    if (project_name)
+      print " and Source/$.rogue" (project_name)
+      if (bitmap_option) print " with Bitmap library support"
+      println
+    else
+      println " with default Rogo framework."
+    endIf
     cmd_line_args.clear
 
-    File.save( "Build.rogue",
+    local builder = StringBuilder()
+    builder.println ...
       @|# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
        |
        |# Rogo is a "build your own build system" facilitator. At its core Rogo just recompiles build files if
@@ -142,11 +161,113 @@ if (not buildfiles.count)
        |description( "default", "The default action is performed when no other actions are specified. Use 'rogo default' to explicitly perform the default option." )
        |description( "help",    "Displays a list of all actions that can be performed by Rogo." )
        |
-       |routine rogo_default
-       |  rogo_help
-       |endRoutine
-       |
-       |routine execute( commands:String, &suppress_error )->Logical
+
+    if (bitmap_option)
+      builder.println ...
+        @|#$ LIBRARIES(macOS)     = libpng libjpeg zlib
+         |#$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
+         |
+    endIf
+
+    if (project_name)
+      builder.println ''$define PROJECT           "$"'' ('$',project_name)
+      builder.println ''$define SRC_FILEPATH      "Source/$.rogue"'' ('$',project_name)
+      builder.println ''$define CPP_FILEPATH      "Build/$.cpp"'' ('$',project_name)
+      builder.println ''$define EXE_BASE_FILEPATH "Build/$"'' ('$',project_name)
+      builder.println ''$define LAUNCHER_NAME     "$"'' ('$',project_name.to_lowercase)
+      builder.println ''$define LAUNCHER_FILEPATH "/usr/local/bin/$"'' ('$',project_name.to_lowercase)
+
+      builder.println ...
+        @|routine exe_filepath->String
+         |  return "$-$" (EXE_BASE_FILEPATH,System.os)
+         |endRoutine
+         |
+         |routine rogo_default
+         |  rogo_build
+         |  rogo_run
+
+     builder.println "  #rogo_install_launcher  # Uncomment to automatically install a /usr/local/bin/$ launcher" (project_name.to_lowercase)
+     builder.println ...
+        @|endRoutine
+         |
+         |routine rogo_build
+         |  block exe_filepath
+         |    if (File.is_newer_than(SRC_FILEPATH,exe_filepath))
+         |      if (File.is_newer_than(SRC_FILEPATH,CPP_FILEPATH))
+         |        execute "roguec $ --main --output=$ --target=Console,C++" (SRC_FILEPATH,CPP_FILEPATH)
+         |      endIf
+
+    if (bitmap_option)
+      builder.println @|      local libs = which{ System.is_linux:" $LIBRARY_FLAGS(libpng-dev,libjpeg-dev)" || " $LIBRARY_FLAGS(libpng,libjpeg,zlib)" }
+    else
+      builder.println @|      local libs = ""
+    endIf
+    builder.println ...
+        @|      local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (CPP_FILEPATH,exe_filepath,libs)
+         |      execute cc
+         |    endIf
+         |  endBlock
+         |endRoutine
+         |
+         |routine rogo_run
+         |  execute exe_filepath
+         |endRoutine
+         |
+         |routine rogo_install_launcher
+         |  local exe_filepath = File.absolute_filepath( exe_filepath )
+         |  contingent
+         |    local result = Process.run( "which " + LAUNCHER_NAME, &env )
+         |    necessary (result.success)
+         |    local launcher_filepath = result->String.trimmed
+         |    necessary launcher_filepath
+         |    necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
+         |
+         |  unsatisfied
+         |    println "Creating launcher " + LAUNCHER_FILEPATH
+         |    local launcher_folder = File.folder( LAUNCHER_FILEPATH )
+         |    local sudo = ""
+         |    loop
+         |      try
+         |        if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
+         |        File.save( "$.launcher"(LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
+         |        execute( "$mv $.launcher $"(sudo,LAUNCHER_NAME,LAUNCHER_FILEPATH) )
+         |        execute( "$chmod a+x $"(sudo,LAUNCHER_FILEPATH) )
+         |        escapeLoop
+         |      catch (err:Error)
+         |        if (sudo != "") throw err
+         |        sudo = "sudo "
+         |      endTry
+         |    endLoop
+         |  endContingent
+         |endRoutine
+         |
+         |routine rogo_clean
+         |  verbose_delete( "Build" )
+         |  verbose_delete( LAUNCHER_FILEPATH )
+         |endRoutine
+         |
+         |routine verbose_delete( filepath:String )
+         |  if (File.exists(filepath))
+         |    println "> Delete " + filepath
+         |    if (not File.delete(filepath))
+         |      println "*** Failed to delete - retrying with sudo"
+         |      local cmd = ''sudo rm -rf $'' (File.shell_escaped(filepath))
+         |      execute cmd
+         |    endIf
+         |  endIf
+         |endRoutine
+
+    else
+      builder.println ...
+        @|routine rogo_default
+         |  rogo_help
+         |endRoutine
+         |
+
+    endIf
+
+    builder.println ...
+      @|routine execute( commands:String, &suppress_error )->Logical
        |  forEach (cmd in LineReader(commands))
        |    print( "> " ).println( cmd )
        |    if (System.run(cmd) != 0)
@@ -360,8 +481,33 @@ if (not buildfiles.count)
        |    return null
        |  endIf
        |endRoutine
-    )
+
+    File.save( "Build.rogue", builder->String )
     buildfiles.add( "Build.rogue" )
+
+    if (project_name)
+      # Create Source/ProjectName.rogue
+      builder.clear
+      builder.println "#" + "=" * 79
+      builder.println "# $.rogue" (project_name)
+      builder.println "# " + Date.today->String(&verbose)
+      builder.println "#" + "=" * 79
+      if (bitmap_option)
+        builder.println "uses Bitmap\n"
+      endIf
+
+      builder.println "$()" (project_name)
+      builder.println
+      builder.println "class $" (project_name)
+      builder.println ...
+        @|  METHODS
+         |    method init
+         |      trace
+         |endClass
+
+      File.create_folder( "Source" )
+      File.save( "Source/$.rogue"(project_name), builder->String )
+    endIf
 
   else
     local w = (Console.width - 1).or_smaller( 79 )
@@ -372,7 +518,16 @@ if (not buildfiles.count)
     mesg += @| and no alternate specified with --build=<filename>.
              |
              |
-    mesg += @|Type 'rogo --create' to create Build.rogue with a default framework.
+    mesg += @|Type 'rogo --create [options]' to create Build.rogue with a default framework.
+             |
+             |OPTIONS
+             |  --project=ProjectName
+             |    Creates additional starter framework for the specified ProjectName.
+             |
+             |  --bitmap
+             |    Links the starter project with libpng and libjpeg libraries. (Requires --project)
+             |
+             |If no options are specified then only Build.rogue is created.
     Console.error.println( mesg.word_wrapped(w) )
     loop (w) do Console.error.print( '=' )
     Console.error.println

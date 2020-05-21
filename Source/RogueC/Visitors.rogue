@@ -230,3 +230,39 @@ class ConvertReturnToEscapeVisitor : Visitor
       return cmd_block
 endClass
 
+class InjectCmdBeforeReturnVisitor( cmd:Cmd ) : Visitor
+  PROPERTIES
+    depth = 1
+
+  METHODS
+    method visit( cmd_escape:CmdEscape )->Cmd
+      if (depth > 1) return cmd_escape
+      local cmd_block = CmdBlock( cmd_escape.t )
+      cmd_block.statements.add( cmd.cloned )
+      cmd_block.statements.add( cmd_escape )
+      return cmd_block
+
+    method visit( cmd_temporarily:CmdTemporarily )->Cmd
+      ++depth
+      local result = prior.visit( cmd_temporarily )
+      --depth
+      return result
+
+    method visit( cmd_try:CmdTry )->Cmd
+      if (cmd_try.control_type == CmdControlStructure.type_temporarily)
+        ++depth
+        local result = prior.visit( cmd_try )
+        --depth
+        return result
+      else
+        return prior.visit( cmd_try )
+      endIf
+
+    method visit( cmd_return:CmdReturn )->Cmd
+      local t = cmd_return.t
+      local cmd_block = CmdBlock( t )
+      cmd_block.statements.add( cmd.cloned )
+      cmd_block.statements.add( cmd_return )
+      return cmd_block
+endClass
+

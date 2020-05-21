@@ -24,6 +24,7 @@ class TokenType
     meta_methodSignature          : TokenType
     meta_module                   : TokenType
     meta_moduleName               : TokenType
+    meta_requireRogue             : TokenType
     meta_rogueVersion             : TokenType
     meta_uses                     : TokenType
     meta_string                   : TokenType
@@ -55,6 +56,7 @@ class TokenType
     keyword_endLoop               : TokenType
     keyword_endRoutine            : TokenType
     keyword_endSubclass           : TokenType
+    keyword_endTemporarily        : TokenType
     keyword_endTry                : TokenType
     keyword_endUnitTest           : TokenType
     keyword_endUse                : TokenType
@@ -77,6 +79,7 @@ class TokenType
     keyword_routine               : TokenType
     keyword_satisfied             : TokenType
     keyword_subclass              : TokenType
+    keyword_temporarily           : TokenType
     keyword_unsatisfied           : TokenType
     keyword_with                  : TokenType
 
@@ -103,6 +106,7 @@ class TokenType
     keyword_escapeForEach         : TokenType
     keyword_escapeIf              : TokenType
     keyword_escapeLoop            : TokenType
+    keyword_escapeTemporarily     : TokenType
     keyword_escapeTry             : TokenType
     keyword_escapeUse             : TokenType
     keyword_escapeWhich           : TokenType

@@ -383,9 +383,10 @@ class CmdLocalDeclaration : CmdStatement
     local_info          : Local
     skip_initialization : Logical
     discard             : Logical  # we made this just in case but it's no longer needed
+    validate_name       : Logical  # check for visible locals with the same name
 
   METHODS
-    method init( t, local_info, skip_initialization=false, discard=false )
+    method init( t, local_info, skip_initialization=false, discard=false, validate_name=true )
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -395,7 +396,7 @@ class CmdLocalDeclaration : CmdStatement
         if (new_value) new_value = new_value.cloned( clone_args, new_t )
         return task_args.replace_write_local( t, local_info, new_value )
       else
-        return CmdLocalDeclaration( t, local_info, skip_initialization, discard )
+        return CmdLocalDeclaration( t, local_info, skip_initialization, discard, validate_name )
       endIf
 
     method execute( vm:VM )->Value
@@ -425,7 +426,7 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
       local_info.type.organize(scope, t)
-      scope.push_local( local_info )
+      scope.push_local( local_info, &=validate_name )
 
       return this
 
@@ -540,6 +541,7 @@ class CmdControlStructure : CmdStatement
     type_contingent
     type_if
     type_else_if  # A nested if/else that was originally an elseIf
+    type_temporarily
     type_try
     type_which
 
@@ -630,6 +632,114 @@ class CmdBlock : CmdControlStructure
 
 endClass
 
+class CmdTemporarily : Cmd
+  PROPERTIES
+    target     : Cmd
+    temp_value : Cmd
+    statements : CmdStatementList
+
+  METHODS
+    method init( t, target, temp_value, statements=CmdStatementList() )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdTemporarily
+      if (new_t) t = new_t
+      return CmdTemporarily( t, target.cloned(clone_args,new_t), temp_value.cloned(clone_args,new_t), statements.cloned(clone_args,new_t) )
+
+    method resolve( scope:Scope )->Cmd
+      # Transform
+      #   temporarily target = temp_value
+      #      ...
+      #      return x
+      #   endTemporarily
+      # ->
+      #   block
+      #     local auto_old_value = target
+      #     target = temp_value
+      #
+      #     try
+      #       ...
+      #       target = auto_old_value; return x
+      #     catch (err:Exception)
+      #       target = auto_old_value
+      #       throw err
+      #     endTry
+      #     if (no guaranteed return) target = auto_old_value
+      #   endBlock
+      local cmd_block = CmdBlock( t )
+      local v_old = Local( t, Program.create_unique_id, null, target.cloned )
+      cmd_block.statements.add( CmdLocalDeclaration(t,v_old) )
+      cmd_block.statements.add( CmdAssign(t,target,temp_value) )
+
+      local cmd_try = CmdTry( t, statements )
+      cmd_try.control_type = CmdControlStructure.type_temporarily
+      cmd_block.statements.add( cmd_try )
+
+      # TODO: replace with return path analysis eventually
+      local has_guaranteed_return = false
+      forEach (statement in cmd_try.statements)
+        if (statement instanceOf CmdReturn)
+          has_guaranteed_return = true
+          escapeForEach
+        endIf
+      endForEach
+
+      cmd_try.statements.dispatch( InjectCmdBeforeReturnVisitor(CmdAssign(t,target,CmdAccess(t,v_old))) )
+
+      local cmd_catch = cmd_try.add_catch( t )
+      cmd_catch.error_var = Local( t, Program.create_unique_id, Program.type_Exception )
+      cmd_catch.statements.add( CmdAssign(t,target.cloned,CmdAccess(t,v_old)) )
+      cmd_catch.statements.add( CmdThrow(t,CmdAccess(t,cmd_catch.error_var)) )
+
+      if (not has_guaranteed_return)
+        # The "guaranteed return" bit is to avoid a warning about unreachable code
+        cmd_block.statements.add( CmdAssign(t,target.cloned,CmdAccess(t,v_old)) )
+      endIf
+
+      return cmd_block.resolve( scope )
+
+endClass
+
+class CmdBlockWithLocal : Cmd
+  PROPERTIES
+    variable_name : String
+    expression    : Cmd
+    statements    : CmdStatementList
+
+  METHODS
+    method init( t, variable_name, expression, statements=CmdStatementList() )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdBlockWithLocal
+      if (new_t) t = new_t
+      return CmdBlockWithLocal( t, variable_name, clone(expression,clone_args,new_t), statements.cloned(clone_args,new_t) )
+
+    method resolve( scope:Scope )->Cmd
+      # Transform
+      #   block v = expr
+      #      ...
+      #   endBlock
+      # ->
+      #   block
+      #     local v = expr
+      #     ...
+      #   endBlock
+      #
+      # Transform
+      #   block v
+      #      ...
+      #   endBlock
+      # ->
+      #   block
+      #     local v = v
+      #     ...
+      #   endBlock
+      local cmd_block = CmdBlock( t, statements )
+      if (not expression) expression = CmdAccess( t, variable_name )
+      local temp = Local( t, Program.create_unique_id, null, expression )
+      local v = Local( t, variable_name, null, CmdAccess(t,temp) )
+      statements.insert( CmdLocalDeclaration(t,v,&!validate_name) )  # Second command inserted first
+      statements.insert( CmdLocalDeclaration(t,temp) ) # First command inserted last
+      return cmd_block.resolve( scope )
+endClass
 
 class CmdIf : CmdControlStructure
   PROPERTIES
@@ -4975,7 +5085,7 @@ class CmdCompare : CmdComparison
 
     method execute( vm:VM )->Value
       local lhs = left.execute( vm )
-      local rhs = left.execute( vm )
+      local rhs = right.execute( vm )
       if (lhs < rhs) return -1
       if (lhs > rhs) return  1
       return 0
@@ -5007,7 +5117,7 @@ class CmdCompareIs : CmdComparison
 
     method execute( vm:VM )->Value
       local lhs = left.execute( vm )
-      local rhs = left.execute( vm )
+      local rhs = right.execute( vm )
       local left_obj  = lhs->Object
       local right_obj = rhs->Object
       if (left_obj or right_obj)
@@ -5043,7 +5153,7 @@ class CmdCompareIsNot : CmdComparison
 
     method execute( vm:VM )->Value
       local lhs = left.execute( vm )
-      local rhs = left.execute( vm )
+      local rhs = right.execute( vm )
       local left_obj  = lhs->Object
       local right_obj = rhs->Object
       if (left_obj or right_obj)
@@ -7489,6 +7599,141 @@ class CmdSourceComment( t, comment:String ) : Cmd
       return "CmdSourceComment:$" (comment)
 endClass
 
+class CmdUse : Cmd
+  PROPERTIES
+    variable_name : String
+    expression    : Cmd
+    statements    : CmdStatementList
+
+  METHODS
+    method init( t, variable_name, expression, statements=CmdStatementList() )
+
+    method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdUse
+      if (new_t) t = new_t
+      return CmdUse( t, variable_name, expression.cloned(clone_args,new_t), statements.cloned(clone_args,new_t) )
+
+    method resolve( scope:Scope )->Cmd
+      # Transform
+      #   use v = expr
+      #      ...
+      #      return x
+      #   endUse
+      # ->
+      #   block
+      #     local err : Exception
+      #     local usage = expr
+      #     <if v exists> local old_v = v
+      #     <else>        local v : typeOf(usage.on_use || usage)
+      #     v = expression.on_use || expression
+      #     local result : typeOf(x)
+      #     local has_return = false
+      #     try
+      #       ...
+      #       has_return = true
+      #       result = x
+      #       escapeTry
+      #     catch (e:Exception)
+      #       err = e
+      #     endTry
+      #     <if v existed>v = old_v
+      #     err = usage.on_end_use( err )
+      #     if (err) throw err
+      #     if (has_return) return result
+      #   endBlock
+      local usage_name = Program.create_unique_id
+      local result_name : String
+
+      local cmd_try = CmdTry( t, statements )
+      cmd_try.control_type = CmdControlStructure.type_use
+
+      # TODO: replace with return path analysis eventually
+      local has_guaranteed_return = false
+      forEach (statement in cmd_try.statements)
+        if (statement instanceOf CmdReturn)
+          has_guaranteed_return = true
+          escapeForEach
+        endIf
+      endForEach
+
+      local has_return_name : String
+      local has_return_v : Local
+      if (not has_guaranteed_return)
+        has_return_name = Program.create_unique_id
+        has_return_v = Local( t, has_return_name, Program.type_Logical )
+      endIf
+      local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
+
+      expression = expression.resolve( scope ).require_value
+      local m_on_use = expression.type.method_lookup_by_name[ "on_use" ]
+      local has_use_api = (m_on_use and not expression.type.method_lookup_by_name[ "on_use" ].is_empty)
+      local usage_v : Local
+      if (has_use_api)
+        usage_v = Local( t, usage_name, null, expression )
+        expression = CmdAccess( expression.t, usage_name, "on_use" )
+      endIf
+
+      local result_v : Local
+      if (scope.this_method.return_type)
+        result_name = Program.create_unique_id
+        result_v = Local( t, result_name, scope.this_method.return_type )
+      endIf
+
+      cmd_try.statements.dispatch( ConvertReturnToEscapeVisitor(scope.this_method,result_name,has_return_name,cmd_try) )
+
+      local cmd_catch = cmd_try.add_catch( t )
+      cmd_catch.error_var = Local( t, Program.create_unique_id, Program.type_Exception )
+      cmd_catch.statements.add( CmdAssign(t,err_v,CmdAccess(t,cmd_catch.error_var)) )
+
+      local cmd_block = CmdBlock( t )
+      cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
+      if (has_return_v) cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
+      if (usage_v)  cmd_block.statements.add( CmdLocalDeclaration(t,usage_v) )
+      if (result_v) cmd_block.statements.add( CmdLocalDeclaration(t,result_v) )
+
+      local old_v : Local
+      local v = scope.find_local( variable_name )
+      if (v)
+        old_v = Local( t, Program.create_unique_id, null, CmdAccess(t,v) )
+        cmd_block.statements.add( CmdLocalDeclaration(t,old_v) )
+        cmd_block.statements.add( CmdAssign(t,v,expression) )
+      else
+        v = Local( t, variable_name, null, expression )
+        cmd_block.statements.add( CmdLocalDeclaration(t,v) )
+      endIf
+      cmd_block.statements.add( CmdInlineNative(t,"Rogue_ignore_unused($$);"('$',variable_name)) )
+      cmd_block.statements.add( cmd_try )
+
+      if (has_use_api)
+        cmd_block.statements.add( CmdOnEndUse(t,usage_v,v,err_v) )
+        # CmdOnEndUse no longer needs to be a separate class. It's an artifact of 'use'
+        # originally being expanded into a command block at the point of parsing rather
+        # than during resolve().
+      endIf
+
+      if (old_v)
+        cmd_block.statements.add( CmdAssign(t,v,CmdAccess(t,old_v)) )
+      endIf
+
+      local cmd_if = CmdIf( t, CmdLogicalize(t,CmdAccess(t,err_v)) )
+      cmd_if.statements.add( CmdThrow(t,CmdAccess(t,err_v)) )
+      cmd_block.statements.add( cmd_if )
+
+      local statements_for_return = cmd_block.statements
+      if (not has_guaranteed_return)
+        cmd_if = CmdIf( t, CmdAccess(t,has_return_v) )
+        cmd_block.statements.add( cmd_if )
+        statements_for_return = cmd_if.statements
+      endIf
+      if (scope.this_method.return_type)
+        statements_for_return.add( CmdReturn(t,CmdAccess(t,result_name)) )
+      else
+        statements_for_return.add( CmdReturn(t) )
+      endIf
+
+      return cmd_block.resolve( scope )
+
+endClass
+
 class CmdOnEndUse : Cmd
   PROPERTIES
     usage_v     : Local
@@ -7504,7 +7749,7 @@ class CmdOnEndUse : Cmd
 
     method resolve( scope:Scope )->Cmd
       local candidates = usage_v.type.method_lookup_by_name[ "on_end_use" ]
-      if (candidates.count == 0) throw t.error( "'use' context object does not define on_end_use()." )
+      if (not candidates or candidates.count == 0) throw t.error( "'use' context object does not define on_end_use()." )
       if (candidates.count >  1) throw t.error( "'use' context object can only have one method named on_end_use()." )
       local m = candidates.first
       m.resolve

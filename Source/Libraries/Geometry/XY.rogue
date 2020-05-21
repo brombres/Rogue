@@ -172,6 +172,9 @@ class XY( x:Real64, y:Real64 ) [compound]
     method is_zero->Logical
       return x.abs <= EPSILON and y.abs <= EPSILON
 
+    method is_zero( threshold:Real64 )->Logical
+      return x.abs <= threshold and y.abs <= threshold
+
     method magnitude->Real64
       return Math.sqrt( x*x + y*y )
 
@@ -365,6 +368,15 @@ augment Math
 
     method lerp( line:Line, progress:Real64 )->XY
       return line.a + (line.b-line.a) * progress
+endAugment
+
+augment Real64
+  METHODS
+    method lerp( a:XY, b:XY )->XY
+      return a + (b-a) * this
+
+    method lerp( line:Line )->XY
+      return line.a + (line.b-line.a) * this
 endAugment
 
 augment Random
