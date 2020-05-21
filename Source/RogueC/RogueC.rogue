@@ -16,6 +16,8 @@ $essential Int32.*
 $essential Character.*
 $essential Byte.*
 $essential Logical.*
+$essential Date.*
+$essential Time.*
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
