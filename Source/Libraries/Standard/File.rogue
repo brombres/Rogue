@@ -396,6 +396,7 @@ class File
       return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
 
     method is_valid_utf8( filepath:String )->Logical
+      if (not File.exists(filepath) or File.is_folder(filepath)) return false
       local reader = File.reader( filepath )
       contingent
         while (reader.has_another)
