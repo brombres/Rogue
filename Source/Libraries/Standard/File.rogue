@@ -1653,7 +1653,9 @@ class FileListing
 
       if (file_exists)
         local filepath = filepath_pattern
-        if (options.is_omitting_path) filepath = filepath.after_first( folder )
+        if (options.is_omitting_path and filepath.begins_with(folder))
+          filepath = filepath.after_first( folder )
+        endIf
         results.add( filepath )
         return
       endIf
@@ -1666,7 +1668,9 @@ class FileListing
             necessary (File.matches_wildcard_pattern(filepath,pattern))
           endIf
 
-          if (options.is_omitting_path) filepath = filepath.after_first( folder )
+          if (options.is_omitting_path and filepath.begins_with(folder))
+            filepath = filepath.after_first( folder )
+          endIf
 
         satisfied
           writer.write( filepath )
