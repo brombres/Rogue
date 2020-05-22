@@ -179,6 +179,7 @@ if (not buildfiles.count)
 
       builder.println ...
         @|routine exe_filepath->String
+         |  if (System.is_windows) return "Build/$.exe" (LAUNCHER_NAME)
          |  return "$-$" (EXE_BASE_FILEPATH,System.os)
          |endRoutine
          |
@@ -196,54 +197,74 @@ if (not buildfiles.count)
          |      if (File.is_newer_than(SRC_FILEPATH,CPP_FILEPATH))
          |        execute "roguec $ --main --output=$ --target=Console,C++" (SRC_FILEPATH,CPP_FILEPATH)
          |      endIf
+         |      if (System.is_windows)
+         |        local libs = ""
+         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (CPP_FILEPATH,exe_filepath,libs)
+         |        #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
+         |        execute cc
+         |      else
 
     if (bitmap_option)
-      builder.println @|      local libs = which{ System.is_linux:" $LIBRARY_FLAGS(libpng-dev,libjpeg-dev)" || " $LIBRARY_FLAGS(libpng,libjpeg,zlib)" }
+      builder.println @|        local libs = which{ System.is_linux:" $LIBRARY_FLAGS(libpng-dev,libjpeg-dev)" || " $LIBRARY_FLAGS(libpng,libjpeg,zlib)" }
     else
-      builder.println @|      local libs = ""
+      builder.println @|        local libs = ""
     endIf
     builder.println ...
-        @|      local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (CPP_FILEPATH,exe_filepath,libs)
-         |      execute cc
+        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (CPP_FILEPATH,exe_filepath,libs)
+         |        execute cc
+         |      endIf
          |    endIf
          |  endBlock
          |endRoutine
          |
          |routine rogo_run
-         |  execute exe_filepath
+         |  execute File.conventional_filepath(exe_filepath)
          |endRoutine
          |
          |routine rogo_install_launcher
          |  local exe_filepath = File.absolute_filepath( exe_filepath )
-         |  contingent
-         |    local result = Process.run( "which " + LAUNCHER_NAME, &env )
-         |    necessary (result.success)
-         |    local launcher_filepath = result->String.trimmed
-         |    necessary launcher_filepath
-         |    necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
+         |  if (System.is_windows)
+         |    local exe_folder = File.conventional_filepath( File.folder(exe_filepath) )
+         |    local path = System.environment//PATH
+         |    if (not path.to_lowercase.contains(exe_folder.to_lowercase))
+         |      println
+         |      println ''Add the following to your system PATH then reopen this console to be able to''
+         |      println ''launch $ by typing "$":'' (PROJECT,LAUNCHER_NAME)
+         |      println
+         |      println "  ADD THIS TO YOUR PATH"
+         |      println "  " + exe_folder
+         |    endIf
+         |  else
+         |    contingent
+         |      local result = Process.run( "which " + LAUNCHER_NAME, &env )
+         |      necessary (result.success)
+         |      local launcher_filepath = result->String.trimmed
+         |      necessary launcher_filepath
+         |      necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
          |
-         |  unsatisfied
-         |    println "Creating launcher " + LAUNCHER_FILEPATH
-         |    local launcher_folder = File.folder( LAUNCHER_FILEPATH )
-         |    local sudo = ""
-         |    loop
-         |      try
-         |        if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
-         |        File.save( "$.launcher"(LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
-         |        execute( "$mv $.launcher $"(sudo,LAUNCHER_NAME,LAUNCHER_FILEPATH) )
-         |        execute( "$chmod a+x $"(sudo,LAUNCHER_FILEPATH) )
-         |        escapeLoop
-         |      catch (err:Error)
-         |        if (sudo != "") throw err
-         |        sudo = "sudo "
-         |      endTry
-         |    endLoop
-         |  endContingent
+         |    unsatisfied
+         |      println "Creating launcher " + LAUNCHER_FILEPATH
+         |      local launcher_folder = File.folder( LAUNCHER_FILEPATH )
+         |      local sudo = ""
+         |      loop
+         |        try
+         |          if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
+         |          File.save( "$.launcher"(LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
+         |          execute( "$mv $.launcher $"(sudo,LAUNCHER_NAME,LAUNCHER_FILEPATH) )
+         |          execute( "$chmod a+x $"(sudo,LAUNCHER_FILEPATH) )
+         |          escapeLoop
+         |        catch (err:Error)
+         |          if (sudo != "") throw err
+         |          sudo = "sudo "
+         |        endTry
+         |      endLoop
+         |    endContingent
+         |  endIf
          |endRoutine
          |
          |routine rogo_clean
          |  verbose_delete( "Build" )
-         |  verbose_delete( LAUNCHER_FILEPATH )
+         |  if (not System.is_windows) verbose_delete( LAUNCHER_FILEPATH )
          |endRoutine
          |
          |routine verbose_delete( filepath:String )
@@ -492,6 +513,9 @@ if (not buildfiles.count)
       builder.println "# $.rogue" (project_name)
       builder.println "# " + Date.today->String(&verbose)
       builder.println "#" + "=" * 79
+      builder.print   "$requireRogue "
+      builder.println ''"$"'' ($rogueVersion)
+      builder.println
       if (bitmap_option)
         builder.println "uses Bitmap\n"
       endIf
