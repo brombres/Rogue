@@ -1215,8 +1215,8 @@ class FileReader : Reader<<Byte>>
       count = 0
       return this
 
-    method fp->IntPtr [macro]
-      return native("$this->fp")->IntPtr
+    method fp->Int64 [macro]
+      return native("$this->fp")->Int64
 
     method has_another->Logical
       return (position < count)
@@ -1348,8 +1348,8 @@ class FileWriter : Writer<<Byte>>
       buffer.clear
       return this
 
-    method fp->IntPtr [macro]
-      return native( "$this->fp" )->IntPtr
+    method fp->Int64 [macro]
+      return native( "$this->fp" )->Int64
 
     method open( filepath, append=false:Logical )->Logical
       close
