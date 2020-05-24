@@ -285,7 +285,8 @@ class File
       return (0 == native( "unlink( (const char*) $filepath->utf8 )")->Int32)
 
     method ends_with_separator( filepath:String )->Logical
-      return filepath.ends_with('/')
+      # \ is a valid filename character on macOS and Linux, so can't just blindly check for that
+      return filepath.ends_with('/') or (System.is_windows and filepath.ends_with('\\'))
 
     method ensure_ends_with_separator( filepath:String )->String
       if (ends_with_separator(filepath)) return filepath
@@ -396,6 +397,7 @@ class File
       return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
 
     method is_valid_utf8( filepath:String )->Logical
+      if (not File.exists(filepath) or File.is_folder(filepath)) return false
       local reader = File.reader( filepath )
       contingent
         while (reader.has_another)
@@ -579,6 +581,8 @@ class File
       # **   - Matches any number of characters including slashes
       # ***/ - Matches any number of characters and a slash or else nothing.
       # ?  - Matches any one character except '/'
+      #
+      # Note: A filepath with a ./ prefix is checked with and without the prefix.
       filepath = expand_filepath( filepath )
 
       # Check non-wildcard characters at the end of pattern first as an easy out
@@ -603,7 +607,12 @@ class File
         endIf
       endIf
 
-      return _matches_wildcard_pattern( filepath, 0, filepath.count, pattern, 0, pattern.count )
+      if (_matches_wildcard_pattern(filepath,0,filepath.count,pattern,0,pattern.count)) return true
+
+      if (filepath.count <= 2 or not filepath.begins_with("./")) return false
+
+      # Try ignoring the ./ prefix on the filepath
+      return (_matches_wildcard_pattern(filepath,2,filepath.count-2,pattern,0,pattern.count))
 
     method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32 )->Logical
       # f0     - starting index in filepath
@@ -943,6 +952,13 @@ class File
         System.run "touch $" (filepath)
       endIf
 
+    method without_trailing_separator( filepath:String )->String
+      # Removes trailing slash on anything except "/"
+      while (filepath.count > 1 and File.ends_with_separator(filepath))
+        filepath = filepath.leftmost( -1 )
+      endWhile
+      return filepath
+
     method writer( filepath:String )->FileWriter
       filepath = expand_filepath( filepath )
       return FileWriter( filepath )
@@ -1092,6 +1108,9 @@ class File
     method touch
       File.touch( this.filepath )
 
+    method without_trailing_separator->String
+      return File.without_trailing_separator( this.filepath )
+
     method writer->FileWriter
       return File.writer( this.filepath )
 
@@ -1214,8 +1233,8 @@ class FileReader : Reader<<Byte>>
       count = 0
       return this
 
-    method fp->IntPtr [macro]
-      return native("$this->fp")->IntPtr
+    method fp->Int64 [macro]
+      return native("$this->fp")->Int64
 
     method has_another->Logical
       return (position < count)
@@ -1347,8 +1366,8 @@ class FileWriter : Writer<<Byte>>
       buffer.clear
       return this
 
-    method fp->IntPtr [macro]
-      return native( "$this->fp" )->IntPtr
+    method fp->Int64 [macro]
+      return native( "$this->fp" )->Int64
 
     method open( filepath, append=false:Logical )->Logical
       close
@@ -1650,9 +1669,17 @@ class FileListing
       filepath_segments.clear.add( path_segments ).add( pattern_segments )
       pattern = filepath_segments.join( "/" )
 
+      # Need special handling for omitting the folder when it starts with "./"
+      local adjusted_folder = folder
+      if (options.is_omitting_path and folder.begins_with("./") and folder.count>2)
+        adjusted_folder = folder.rightmost( -2 )
+      endIf
+
       if (file_exists)
         local filepath = filepath_pattern
-        if (options.is_omitting_path) filepath = filepath.after_first( folder )
+        if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+          filepath = filepath.after_first( adjusted_folder )
+        endIf
         results.add( filepath )
         return
       endIf
@@ -1665,7 +1692,9 @@ class FileListing
             necessary (File.matches_wildcard_pattern(filepath,pattern))
           endIf
 
-          if (options.is_omitting_path) filepath = filepath.after_first( folder )
+          if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+            filepath = filepath.after_first( adjusted_folder )
+          endIf
 
         satisfied
           writer.write( filepath )

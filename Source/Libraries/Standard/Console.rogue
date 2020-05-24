@@ -72,6 +72,14 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
               |#endif
 
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  // Enable ANSI colors and styles on Windows
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  DWORD mode;
+              |  GetConsoleMode( h_stdout, &mode);
+              |  SetConsoleMode( h_stdout, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+              |#endif
+
       on_exit( function with (console=this) => console.reset_input_mode )
 
     method clear
