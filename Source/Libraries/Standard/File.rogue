@@ -285,7 +285,8 @@ class File
       return (0 == native( "unlink( (const char*) $filepath->utf8 )")->Int32)
 
     method ends_with_separator( filepath:String )->Logical
-      return filepath.ends_with('/')
+      # \ is a valid filename character on macOS and Linux, so can't just blindly check for that
+      return filepath.ends_with('/') or (System.is_windows and filepath.ends_with('\\'))
 
     method ensure_ends_with_separator( filepath:String )->String
       if (ends_with_separator(filepath)) return filepath
