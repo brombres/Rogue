@@ -581,6 +581,8 @@ class File
       # **   - Matches any number of characters including slashes
       # ***/ - Matches any number of characters and a slash or else nothing.
       # ?  - Matches any one character except '/'
+      #
+      # Note: A filepath with a ./ prefix is checked with and without the prefix.
       filepath = expand_filepath( filepath )
 
       # Check non-wildcard characters at the end of pattern first as an easy out
@@ -605,7 +607,12 @@ class File
         endIf
       endIf
 
-      return _matches_wildcard_pattern( filepath, 0, filepath.count, pattern, 0, pattern.count )
+      if (_matches_wildcard_pattern(filepath,0,filepath.count,pattern,0,pattern.count)) return true
+
+      if (filepath.count <= 2 or not filepath.begins_with("./")) return false
+
+      # Try ignoring the ./ prefix on the filepath
+      return (_matches_wildcard_pattern(filepath,2,filepath.count-2,pattern,0,pattern.count))
 
     method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32 )->Logical
       # f0     - starting index in filepath
