@@ -1669,10 +1669,16 @@ class FileListing
       filepath_segments.clear.add( path_segments ).add( pattern_segments )
       pattern = filepath_segments.join( "/" )
 
+      # Need special handling for omitting the folder when it starts with "./"
+      local adjusted_folder = folder
+      if (options.is_omitting_path and folder.begins_with("./") and folder.count>2)
+        adjusted_folder = folder.rightmost( -2 )
+      endIf
+
       if (file_exists)
         local filepath = filepath_pattern
-        if (options.is_omitting_path and filepath.begins_with(folder))
-          filepath = filepath.after_first( folder )
+        if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+          filepath = filepath.after_first( adjusted_folder )
         endIf
         results.add( filepath )
         return
@@ -1686,8 +1692,8 @@ class FileListing
             necessary (File.matches_wildcard_pattern(filepath,pattern))
           endIf
 
-          if (options.is_omitting_path and filepath.begins_with(folder))
-            filepath = filepath.after_first( folder )
+          if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+            filepath = filepath.after_first( adjusted_folder )
           endIf
 
         satisfied
