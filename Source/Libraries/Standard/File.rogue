@@ -944,6 +944,13 @@ class File
         System.run "touch $" (filepath)
       endIf
 
+    method without_trailing_separator( filepath:String )->String
+      # Removes trailing slash on anything except "/"
+      while (filepath.count > 1 and File.ends_with_separator(filepath))
+        filepath = filepath.leftmost( -1 )
+      endWhile
+      return filepath
+
     method writer( filepath:String )->FileWriter
       filepath = expand_filepath( filepath )
       return FileWriter( filepath )
@@ -1092,6 +1099,9 @@ class File
 
     method touch
       File.touch( this.filepath )
+
+    method without_trailing_separator->String
+      return File.without_trailing_separator( this.filepath )
 
     method writer->FileWriter
       return File.writer( this.filepath )
