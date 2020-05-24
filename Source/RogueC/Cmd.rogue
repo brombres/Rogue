@@ -7622,10 +7622,8 @@ class CmdUse : Cmd
       #   block
       #     local err : Exception
       #     local usage = expr
-      #     <if v exists> local old_v = v
-      #     <else>        local v : typeOf(usage.on_use || usage)
-      #     v = expression.on_use || expression
-      #     local result : typeOf(x)
+      #     local v = usage.on_use
+      #     local result : [this method return type]
       #     local has_return = false
       #     try
       #       ...
@@ -7635,7 +7633,6 @@ class CmdUse : Cmd
       #     catch (e:Exception)
       #       err = e
       #     endTry
-      #     <if v existed>v = old_v
       #     err = usage.on_end_use( err )
       #     if (err) throw err
       #     if (has_return) return result
@@ -7663,14 +7660,7 @@ class CmdUse : Cmd
       endIf
       local err_v = Local( t, Program.create_unique_id, Program.type_Exception )
 
-      expression = expression.resolve( scope ).require_value
-      local m_on_use = expression.type.method_lookup_by_name[ "on_use" ]
-      local has_use_api = (m_on_use and not expression.type.method_lookup_by_name[ "on_use" ].is_empty)
-      local usage_v : Local
-      if (has_use_api)
-        usage_v = Local( t, usage_name, null, expression )
-        expression = CmdAccess( expression.t, usage_name, "on_use" )
-      endIf
+      local usage_v = Local( t, usage_name, null, expression )
 
       local result_v : Local
       if (scope.this_method.return_type)
@@ -7687,32 +7677,18 @@ class CmdUse : Cmd
       local cmd_block = CmdBlock( t )
       cmd_block.statements.add( CmdLocalDeclaration(t,err_v) )
       if (has_return_v) cmd_block.statements.add( CmdLocalDeclaration(t,has_return_v) )
-      if (usage_v)  cmd_block.statements.add( CmdLocalDeclaration(t,usage_v) )
+      cmd_block.statements.add( CmdLocalDeclaration(t,usage_v) )
       if (result_v) cmd_block.statements.add( CmdLocalDeclaration(t,result_v) )
 
-      local old_v : Local
-      local v = scope.find_local( variable_name )
-      if (v)
-        old_v = Local( t, Program.create_unique_id, null, CmdAccess(t,v) )
-        cmd_block.statements.add( CmdLocalDeclaration(t,old_v) )
-        cmd_block.statements.add( CmdAssign(t,v,expression) )
-      else
-        v = Local( t, variable_name, null, expression )
-        cmd_block.statements.add( CmdLocalDeclaration(t,v) )
-      endIf
+      local v = Local( t, variable_name, null, CmdAccess(usage_v.t,usage_v.name,"on_use") )
+      cmd_block.statements.add( CmdLocalDeclaration(t,v) )
       cmd_block.statements.add( CmdInlineNative(t,"Rogue_ignore_unused($$);"('$',variable_name)) )
       cmd_block.statements.add( cmd_try )
 
-      if (has_use_api)
-        cmd_block.statements.add( CmdOnEndUse(t,usage_v,v,err_v) )
-        # CmdOnEndUse no longer needs to be a separate class. It's an artifact of 'use'
-        # originally being expanded into a command block at the point of parsing rather
-        # than during resolve().
-      endIf
-
-      if (old_v)
-        cmd_block.statements.add( CmdAssign(t,v,CmdAccess(t,old_v)) )
-      endIf
+      cmd_block.statements.add( CmdOnEndUse(t,usage_v,v,err_v) )
+      # CmdOnEndUse no longer needs to be a separate class. It's an artifact of 'use'
+      # originally being expanded into a command block at the point of parsing rather
+      # than during resolve(). TODO: refactor to incorporate
 
       local cmd_if = CmdIf( t, CmdLogicalize(t,CmdAccess(t,err_v)) )
       cmd_if.statements.add( CmdThrow(t,CmdAccess(t,err_v)) )
