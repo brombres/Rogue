@@ -450,7 +450,7 @@ class File
     method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
       return join(String[][part1, part2, part3, part4, part5, part6])
 
-    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders, &unsorted )->String[]
+    method listing( folder:String, filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path, &files, &folders, &unsorted )->String[]
       # Use the filepattern '**' for a recursive listing.
       local options = FileOptions()
       if (ignore_hidden)    options = options.ignore_hidden
@@ -465,9 +465,9 @@ class File
       # Use the filepattern '**' for a recursive listing.
       return listing( folder, FilePattern(filepattern), &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
 
-    method listing( folder:String, filepattern=FilePattern("*"):FilePattern, options:FileOptions )->String[]
+    method listing( folder:String, filepattern=null:FilePattern?, options:FileOptions )->String[]
       # Use the filepattern '**' for a recursive listing.
-      return FileListing( folder, filepattern->String, options ).results
+      return FileListing( folder, which{filepattern:filepattern.value->String||null}, options ).results
 
     method listing( folder:String, filepattern:String, options:FileOptions )->String[]
       # Use the filepattern '**' for a recursive listing.
@@ -1048,10 +1048,10 @@ class File
     method is_valid_utf8->Logical
       return File.is_valid_utf8( this.filepath )
 
-    method listing( filepattern=FilePattern("*"):FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
+    method listing( filepattern=null:FilePattern, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
       return File.listing( this.filepath, filepattern, &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
 
-    method listing( filepattern=FilePattern("*"):FilePattern, options:FileOptions )->String[]
+    method listing( filepattern=null:FilePattern, options:FileOptions )->String[]
       return File.listing( this.filepath, filepattern, options )
 
     method load_as_bytes->Byte[]
@@ -1630,6 +1630,23 @@ class FileListing
     method init( folder, pattern, options )
       callback = this=>collect
 
+      if (pattern is null)
+        # If no pattern is specified the treat the folder as a possible pattern
+        local path_segments = File.without_trailing_separator( File.fix_slashes(folder) ).split( '/' )
+        local pattern_segments = String[]
+        local first_wildcard_i = path_segments.locate( (p) => (p.contains('*') or p.contains('?')) )
+        if (first_wildcard_i)
+          forEach (p in path_segments from first_wildcard_i.value)
+            pattern_segments.add( p )
+          endForEach
+          path_segments.discard_from( first_wildcard_i.value )
+        endIf
+        if (path_segments.is_empty) folder = "."
+        else                        folder = path_segments.join( "/" )
+        if (pattern_segments.is_empty) pattern = "*"
+        else                           pattern = pattern_segments.join( "/" )
+      endIf
+
       if (options.is_absolute) folder = File.absolute_filepath( folder )
 
       folder = File.ensure_ends_with_separator( folder )
@@ -1650,18 +1667,6 @@ class FileListing
       if (path_segments.count and path_segments.last == "") path_segments.remove_last  # folder ended with "/"
 
       pattern_segments = File.fix_slashes(pattern).split( '/' )
-      forEach (segment in writer=pattern_segments.rewriter)
-        # Fix up "ABC**XYZ" to be "ABC*/**/*XYZ" etc.
-        if (segment != "**" and segment.contains("**"))
-          local before = segment.before_first( "**" )
-          local after  = segment.after_first( "**" )
-          if (before.count) writer.write( before+'*' )
-          writer.write( "**" )
-          if (after.count) writer.write( '*'+after )
-        else
-          writer.write( segment )
-        endIf
-      endForEach
 
       if (not file_exists) File._listing( folder, callback )
 
@@ -1712,12 +1717,10 @@ class FileListing
       local filepath = filepath_segments.join( "/" )
       if (File.is_folder(filepath))
         if (options.keeping_folders) results.add( filepath )
-
         if (pattern_segments.count)
           # Implied recursion because we have more pattern segments
           path_segments.add( filename )
-
-          if (pattern_segments.first == "**")
+          if (pattern_segments.first.begins_with("**"))
             # Once we encounter `**`, switch to recursively collecting everything
             # and let the top-level filter decide which ones match
             local saved_options = options

@@ -5,20 +5,43 @@ class Files
     filepaths   = StringLookupList()
 
   METHODS
-    method init( base_folder:String )
+    method init( base_folder:String, &allow_pattern=true )
+      base_folder = File.expand_filepath( File.fix_slashes(base_folder) )
+
+      if (allow_pattern)
+        # Treat the folder as a possible pattern
+        local path_segments = File.without_trailing_separator( base_folder ).split( '/' )
+        local pattern_segments = String[]
+        local first_wildcard_i = path_segments.locate( (p) => (p.contains('*') or p.contains('?')) )
+        if (first_wildcard_i)
+          forEach (p in path_segments from first_wildcard_i.value)
+            pattern_segments.add( p )
+          endForEach
+          path_segments.discard_from( first_wildcard_i.value )
+        endIf
+        if (pattern_segments.count)
+          if (path_segments.is_empty) base_folder = "."
+          else                        base_folder = path_segments.join( "/" )
+          local pattern : String
+          if (pattern_segments.is_empty) pattern = "*"
+          else                           pattern = pattern_segments.join( "/" )
+          init( base_folder, pattern )
+          return
+        endIf
+      endIf
+
       if (base_folder == "") base_folder = "./"
-      base_folder = File.expand_filepath( base_folder )
       this.base_folder = File.fix_slashes( File.ensure_ends_with_separator( base_folder ) )
       if (this.base_folder.begins_with("./") and this.base_folder.count > 2)
         this.base_folder = this.base_folder.rightmost( -2 )
       endIf
 
     method init( base_folder:String, pattern:FilePattern, &ignore_hidden=true, &include_folders, &unsorted )
-      init( File.fix_slashes(base_folder) )
+      init( base_folder, &!allow_pattern )
       add( pattern, &=ignore_hidden, &=include_folders, &=unsorted )
 
     method init( base_folder:String, pattern:String, &ignore_hidden=true, &include_folders )
-      init( File.fix_slashes(base_folder) )
+      init( base_folder, &!allow_pattern )
       add( pattern, &=ignore_hidden, &=include_folders )
 
     method add( pattern:FilePattern, &ignore_hidden=true, &include_folders, &unsorted )->this

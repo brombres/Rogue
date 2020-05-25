@@ -592,7 +592,7 @@ block
   local i = 0
   while (i < dependencies.count)
     local pattern = dependencies[ i ]
-    local listing = File.listing( ".", FilePattern(pattern), &files )
+    local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.filename(dependency).begins_with("Build") and not buildfiles.contains(dependency))
         scan_and_rewrite( dependency, dependencies, &skip_rewrite )
@@ -602,7 +602,7 @@ block
   endWhile
 
   forEach (pattern in dependencies)
-    local listing = File.listing( ".", FilePattern(pattern), &files )
+    local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.is_newer_than(dependency,exe))
         needs_recompile = true
