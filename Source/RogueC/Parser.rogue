@@ -2684,6 +2684,9 @@ class Parser
                 local from_cmd = parse_expression
                 local from_range = from_cmd as CmdRange
                 if (from_range)
+                  if (from_range instanceOf CmdRangeUpToLessThan)
+                    throw from_range.t.error( "'..<' isn't supported here - use '..' instead." )
+                  endIf
                   first_cmd = from_range.first
                   last_cmd = from_range.last
                   step_cmd = from_range.step_cmd

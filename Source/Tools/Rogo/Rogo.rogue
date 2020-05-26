@@ -170,17 +170,26 @@ if (not buildfiles.count)
     endIf
 
     if (project_name)
-      builder.println ''$define PROJECT           "$"'' ('$',project_name)
-      builder.println ''$define SRC_FILEPATH      "Source/$.rogue"'' ('$',project_name)
-      builder.println ''$define CPP_FILEPATH      "Build/$.cpp"'' ('$',project_name)
-      builder.println ''$define EXE_BASE_FILEPATH "Build/$"'' ('$',project_name)
-      builder.println ''$define LAUNCHER_NAME     "$"'' ('$',project_name.to_lowercase)
-      builder.println ''$define LAUNCHER_FILEPATH "/usr/local/bin/$"'' ('$',project_name.to_lowercase)
+      builder.println @|augment Build
+                       |  # You can create a Local.mk file with overrides for these values, e.g.:
+                       |  # LAUNCHER_FOLDER = "~/bin"
+                       |  PROPERTIES
+      builder.println ''    PROJECT         = "$"'' (project_name)
+      builder.println ''    LAUNCHER_NAME   = "$"'' (project_name.to_lowercase)
+      builder.println ''    LAUNCHER_FOLDER = "/usr/local/bin"''
 
       builder.println ...
-        @|routine exe_filepath->String
-         |  if (System.is_windows) return "Build/$.exe" (LAUNCHER_NAME)
-         |  return "$-$" (EXE_BASE_FILEPATH,System.os)
+        @|endAugment
+         |
+         |routine exe_filepath->String
+         |  if (System.is_windows) return "Build/$.exe" (Build.LAUNCHER_NAME)
+         |  return "Build/$-$" (Build.PROJECT,System.os)
+         |endRoutine
+         |
+         |routine launcher_folder->String
+         |  local result = Build.LAUNCHER_FOLDER
+         |  result = File.expand_filepath( result )
+         |  return File.without_trailing_separator( result )
          |endRoutine
          |
          |routine rogo_default
@@ -193,13 +202,16 @@ if (not buildfiles.count)
          |
          |routine rogo_build
          |  block exe_filepath
-         |    if (File.is_newer_than(SRC_FILEPATH,exe_filepath))
-         |      if (File.is_newer_than(SRC_FILEPATH,CPP_FILEPATH))
-         |        execute "roguec $ --main --output=$ --target=Console,C++" (SRC_FILEPATH,CPP_FILEPATH)
+         |    local source_files = Files( "Source", "***/*.rogue" )
+         |    local src_filepath = "Source/$.rogue" (Build.PROJECT)
+         |    if (source_files.any_newer_than(exe_filepath))
+         |      local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
+         |      if (source_files.any_newer_than(cpp_filepath))
+         |        execute "roguec $ --main --output=$ --target=Console,C++,$" (src_filepath,cpp_filepath,System.os)
          |      endIf
          |      if (System.is_windows)
          |        local libs = ""
-         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (CPP_FILEPATH,exe_filepath,libs)
+         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (cpp_filepath,exe_filepath,libs)
          |        #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
          |        execute cc
          |      else
@@ -210,7 +222,7 @@ if (not buildfiles.count)
       builder.println @|        local libs = ""
     endIf
     builder.println ...
-        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (CPP_FILEPATH,exe_filepath,libs)
+        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (cpp_filepath,exe_filepath,libs)
          |        execute cc
          |      endIf
          |    endIf
@@ -228,30 +240,30 @@ if (not buildfiles.count)
          |    local path = System.environment//PATH
          |    if (not path.to_lowercase.contains(exe_folder.to_lowercase))
          |      println
-         |      println ''Add the following to your system PATH then reopen this console to be able to''
-         |      println ''launch $ by typing "$":'' (PROJECT,LAUNCHER_NAME)
+         |      println ''Add the following to your system PATH then reopen this command prompt to be able''
+         |      println ''to launch $ by typing "$":'' (Build.PROJECT,Build.LAUNCHER_NAME)
          |      println
          |      println "  ADD THIS TO YOUR PATH"
          |      println "  " + exe_folder
          |    endIf
          |  else
          |    contingent
-         |      local result = Process.run( "which " + LAUNCHER_NAME, &env )
+         |      local result = Process.run( "which " + Build.LAUNCHER_NAME, &env )
          |      necessary (result.success)
          |      local launcher_filepath = result->String.trimmed
          |      necessary launcher_filepath
          |      necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
          |
          |    unsatisfied
-         |      println "Creating launcher " + LAUNCHER_FILEPATH
-         |      local launcher_folder = File.folder( LAUNCHER_FILEPATH )
+         |      local launcher_filepath = "$/$" (launcher_folder,Build.LAUNCHER_NAME)
+         |      println "Creating launcher " + launcher_filepath
          |      local sudo = ""
          |      loop
          |        try
          |          if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
-         |          File.save( "$.launcher"(LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
-         |          execute( "$mv $.launcher $"(sudo,LAUNCHER_NAME,LAUNCHER_FILEPATH) )
-         |          execute( "$chmod a+x $"(sudo,LAUNCHER_FILEPATH) )
+         |          File.save( "$.launcher"(Build.LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
+         |          execute( "$mv $.launcher $"(sudo,Build.LAUNCHER_NAME,launcher_filepath) )
+         |          execute( "$chmod a+x $"(sudo,launcher_filepath) )
          |          escapeLoop
          |        catch (err:Error)
          |          if (sudo != "") throw err
@@ -264,7 +276,7 @@ if (not buildfiles.count)
          |
          |routine rogo_clean
          |  verbose_delete( "Build" )
-         |  if (not System.is_windows) verbose_delete( LAUNCHER_FILEPATH )
+         |  if (not System.is_windows) verbose_delete( "$/$"(launcher_folder,Build.LAUNCHER_NAME) )
          |endRoutine
          |
          |routine verbose_delete( filepath:String )
@@ -580,7 +592,7 @@ block
   local i = 0
   while (i < dependencies.count)
     local pattern = dependencies[ i ]
-    local listing = File.listing( ".", FilePattern(pattern), &files )
+    local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.filename(dependency).begins_with("Build") and not buildfiles.contains(dependency))
         scan_and_rewrite( dependency, dependencies, &skip_rewrite )
@@ -590,7 +602,7 @@ block
   endWhile
 
   forEach (pattern in dependencies)
-    local listing = File.listing( ".", FilePattern(pattern), &files )
+    local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.is_newer_than(dependency,exe))
         needs_recompile = true

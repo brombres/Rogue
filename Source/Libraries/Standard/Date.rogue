@@ -293,6 +293,28 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
       return date
 
+    method operator+( interval:DateInterval )->Date
+      local y = year + interval.years
+      local dm = interval.months
+      if (dm >= 12)
+        y += dm / 12
+        dm -= (dm / 12) * 12
+      elseIf (dm <= -12)
+        y -= dm / -12
+        dm += (dm / -12) * 12
+      endIf
+      local m = month + dm
+      if (m < 1)
+        --y
+        m += 12
+      elseIf (m > 12)
+        ++y
+        m -= 12
+      endIf
+      local d = day.clamped_high( days_in_month(y,m) )
+      return Date( y, m, d ) + interval.days
+
+
     method operator-( days:Int32 )->Date
       if (days < 0) return this + (-days)
       local date = this
@@ -341,6 +363,9 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
       return sign * (diff + (b.day_of_year - a.day_of_year))
 
+    method operator-( interval:DateInterval )->Date
+      return this + DateInterval( -interval.years, -interval.months, -interval.days )
+
     method operator<( other:Date )->Logical
       return (hash_code < other.hash_code)
 
@@ -379,3 +404,33 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return format
 
 endClass
+
+class DateInterval( years:Int32, months:Int32, days:Int32 ) [compound]
+  GLOBAL METHODS
+    method days( n:Int32 )->DateInterval
+      return DateInterval( 0, 0, n )
+
+    method months( n:Int32 )->DateInterval
+      return DateInterval( 0, n, 0 )
+
+    method years( n:Int32 )->DateInterval
+      return DateInterval( n, 0, 0 )
+
+  METHODS
+    method operator+( date:Date )->Date
+      return date + this
+
+    method operator+( other:DateInterval )->DateInterval
+      return DateInterval( years+other.years, months+other.months, days+other.days )
+
+    method operator-( other:DateInterval )->DateInterval
+      return DateInterval( years-other.years, months-other.months, days-other.days )
+
+    method to->String
+      local parts = String[]
+      if (years)  parts.add( years.format(",") + " year".pluralized(years) )
+      if (months) parts.add( months.format(",") + " month".pluralized(months) )
+      if (days or parts.is_empty) parts.add( days.format(",") + " day".pluralized(days) )
+      return parts.join( " " )
+endClass
+
