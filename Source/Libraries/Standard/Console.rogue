@@ -79,8 +79,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  GetConsoleMode( h_stdout, &mode);
               |  SetConsoleMode( h_stdout, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
               |#endif
-
-      on_exit( function with (console=this) => console.reset_input_mode )
+              on_exit( function with (console=this) => console.reset_input_mode )
 
     method clear
       print( "\e[2J" ).flush

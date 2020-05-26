@@ -738,9 +738,9 @@ RogueObject* RogueType_singleton( RogueType* THIS )
     // so we can't just call RogueType_create_object().
     r = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
 
-    if ((fn = THIS->init_object_fn)) r = fn( ROGUE_ARG(r) );
-
     ROGUE_SET_SINGLETON(THIS, r);
+
+    if ((fn = THIS->init_object_fn)) r = fn( ROGUE_ARG(r) );
 
     ROGUE_SINGLETON_UNLOCK;
 
