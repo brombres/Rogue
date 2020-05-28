@@ -118,46 +118,12 @@ if (not buildfiles.count)
 
     local builder = StringBuilder()
     builder.println ...
-      @|# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
+      @|# To run this build file, install Rogue from github.com/AbePralle/Rogue then cd
+       |# to this folder and type "rogo" at the command line.
        |
-       |# Rogo is a "build your own build system" facilitator. At its core Rogo just recompiles build files if
-       |# needed and then runs the build executable while forwarding any command line arguments. This file contains
-       |# a default framework which uses introspection to turn command line arguments into parameterized routine calls.
-       |
-       |# Example: to handle the command "rogo abc xyz 5", define "routine rogo_abc_xyz( n:Int32 )".
-       |
-       |# "rogo_default" will run in the absence of any other command line argument.
-       |
-       |# The following "comment directives" can be used in this file to control how RogueC compiles it and to
-       |# manage automatic dependency installation and linking.
-       |
-       |# Each of the following should be on a line beginning with the characters #$ (preceding whitespace is fine).
-       |# Sample args are given.
-       |
-       |#   ROGUEC       = roguec       # Path to roguec compiler to compile this file with
-       |#   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
-       |#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof   # C++ compiler path and/or invocation
-       |#   CPP_ARGS     = -a -b -c          # Additional C++ args
-       |#   LINK         = true              # Links following LIBRARIES with this Build file
-       |#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes these additional flags
-       |#   LINK         = false             # Linking turned off for following LIBRARIES - info can still be obtained from #$LIBRARY_FLAGS()
-       |#   LINK(macOS)  = ...               # Options applying only to System.os=="macOS" (use with any OS and any comment directive)
-       |#   LIBRARIES    = libalpha
-       |#   LIBRARIES    = libbeta(library-name)
-       |#   LIBRARIES    = libfreetype6-dev(freetype2)
-       |#   DEPENDENCIES = Library/Rogue/**/*.rogue
-       |#
-       |#   LIBRARIES    = name(package)
-       |#   LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags>)
-       |#
-       |# The following macro is replaced within this file (Build.rogue) - the libraries should also be declared in #$ LIBRARIES:
-       |#
-       |#   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
-       |#     ->
-       |#   -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...   # sample replacement
-       |
-       |# description()s are optional - Rogo uses introspection to determine which commands are available.
-       |# 'rogo help default' displays the description for "default", etc.
+       |# description()s are optional - Rogo uses introspection to determine which
+       |# commands are available. 'rogo help default' displays the description for
+       |# "default", etc.
        |description( "default", "The default action is performed when no other actions are specified. Use 'rogo default' to explicitly perform the default option." )
        |description( "help",    "Displays a list of all actions that can be performed by Rogo." )
        |
@@ -295,12 +261,12 @@ if (not buildfiles.count)
         @|routine rogo_default
          |  rogo_help
          |endRoutine
-         |
 
     endIf
 
     builder.println ...
-      @|routine execute( commands:String, &suppress_error )->Logical
+      @|
+       |routine execute( commands:String, &suppress_error )->Logical
        |  forEach (cmd in LineReader(commands))
        |    print( "> " ).println( cmd )
        |    if (System.run(cmd) != 0)
@@ -311,9 +277,58 @@ if (not buildfiles.count)
        |  return true
        |endRoutine
        |
-       |#------------------------------------------------------------------------------
+       |#-------------------------------------------------------------------------------
        |# Introspection-based Launcher Framework
-       |#------------------------------------------------------------------------------
+       |#-------------------------------------------------------------------------------
+       |# Rogo is a "build your own build system" facilitator. At its core Rogo just
+       |# recompiles build files if needed and then runs the build executable while
+       |# forwarding any command line arguments. This file contains a default framework
+       |# which uses introspection to turn command line arguments into parameterized
+       |# routine calls.
+       |
+       |# Example: to handle the command "rogo abc xyz 5", define
+       |# "routine rogo_abc_xyz( n:Int32 )".
+       |
+       |# "rogo_default" will run in the absence of any other command line argument.
+       |
+       |# The following "comment directives" can be used in this file to control how
+       |# RogueC compiles it and to manage automatic dependency installation and
+       |# linking.
+       |
+       |# Each of the following should be on a line beginning with the characters #$
+       |# (preceding whitespace is fine). Sample args are given.
+       |
+       |#   ROGUEC       = roguec       # Path to roguec to compile this file with
+       |#   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
+       |#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing
+       |#                  -Wno-invalid-offsetof   # C++ compiler path and/or invocation
+       |#   CPP_ARGS     = -a -b -c          # Additional C++ args
+       |#   LINK         = true              # Links following LIBRARIES with this Build
+       |#                                    # file (otherwise just installs them)
+       |#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes
+       |#                                    # these additional flags
+       |#   LINK         = false             # Linking turned off for following
+       |#                                    # LIBRARIES - info can still be obtained
+       |#                                    # from $LIBRARY_FLAGS()
+       |#   LINK(macOS)  = ...               # Options applying only to
+       |#                                    # System.os=="macOS" (use with any OS and
+       |#                                    # any comment directive)
+       |#   LIBRARIES    = libalpha
+       |#   LIBRARIES    = libbeta(library-name)
+       |#   LIBRARIES    = libfreetype6-dev(freetype2)
+       |#   DEPENDENCIES = Library/Rogue/**/*.rogue
+       |#
+       |#   LIBRARIES    = name(package)
+       |#   LIBRARIES    = name(package:<package> install:<install-cmd>
+       |#                  link:<link-flags> which:<which-name>)
+       |#
+       |# The following macro is replaced within this file (Build.rogue) - the libraries
+       |# should normally also be declared in #$ LIBRARIES:
+       |#
+       |#   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
+       |#     ->
+       |#   -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...   # sample replacement
+       |
        |routine syntax( command:String, text:String )
        |  Build.rogo_syntax[ command ] = text
        |endRoutine
