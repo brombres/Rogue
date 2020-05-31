@@ -288,6 +288,7 @@ class String
       #   $    - Like '*' but discards leading whitespace; is used as a marker in extract_string(s).
       #   $(I) - Matches an integer character sequence.
       #   $(R) - Matches a real number character sequence.
+      #   $(#) - Matches a single digit 0-9
       #   $($) - Matches a single literal '$'.
       #   ' '  - A space matches 1 or more spaces and tabs.
       #
@@ -372,6 +373,7 @@ class String
       #   $    - Like '*' but discards leading whitespace; is used as a marker in extract_string(s).
       #   $(I) - Matches an integer character sequence.
       #   $(R) - Matches a real number character sequence.
+      #   $(#) - Matches a single digit 0-9
       #   $($) - Matches a single literal '$'.
       #   ' '  - A space matches 1 or more spaces and tabs.
       #
@@ -412,8 +414,11 @@ class String
         result=null:String[], &wildcard_start, &wildcard_end )->(Logical,Int32,Int32)
       # Returns: (success,match_start,match_count)
       if (fcount == 0)
-        while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
-        if ((remaining_count > 0 and not wildcard_end) or not found_match) return (false,0,0)
+        if (not wildcard_end)
+          while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
+          if (remaining_count > 0) return (false,0,0)
+        endIf
+        if (not found_match) return (false,0,0)
         return (true,0,i0)
       endIf
 
@@ -423,9 +428,10 @@ class String
           local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0, fcount,
             found_match, result, &=wildcard_end )
           if (success)
-            return (success,match_start+n,match_count-n)
+            return (success,n,match_count)
           endIf
         endForEach
+        return (false,0,0)
       endIf
 
       local format_ch = format[f0]
@@ -474,6 +480,7 @@ class String
                     local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result, &=wildcard_end )
                     if (pt._1)
                       if (result) result.add( substring(m_start,i1-i0) )
+                      if (wildcard_end) return (true,m_start,pt._3)
                       return (true,m_start,i1-i0)
                     endIf
                   endIf
@@ -491,7 +498,19 @@ class String
                     local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result, &=wildcard_end )
                     if (pt._1)
                       if (result) result.add( substring(m_start,i1-i0) )
+                      if (wildcard_end) return (true,m_start,pt._3)
                       return (true,m_start,i1-i0)
+                    endIf
+                  endIf
+
+                case '#'
+                  # Single digit 0-9
+                  if (remaining_count and this[i0].is_number)
+                    local pt = _extraction_point( i0+1, remaining_count-1, format, f0+4, fcount-4, true, result, &=wildcard_end )
+                    if (pt._1)
+                      if (result) result.add( substring(m_start,1) )
+                      if (wildcard_end) return (true,m_start,pt._3)
+                      return (true,m_start,1)
                     endIf
                   endIf
 
@@ -513,6 +532,7 @@ class String
             local pt = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, true, result, &=wildcard_end )
             if (pt._1)
               if (result) result.add( substring(m_start,n) )
+              if (wildcard_end) return (true,m_start,pt._3)
               return (true,m_start,n)
             endIf
           endForEach
@@ -529,16 +549,18 @@ class String
           if (format_ch == ch)
             return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
           elseIf (ch == ' ' or ch == '\t')
-            # Extra spaces and tabs okay as long as they're not between alphanumeric values
+            # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
             # Count how many spaces and tabs in a row
-            local n = 1
-            while (n < remaining_count)
-              ch = this[i0+n]
-              if (ch != ' ' and ch != '\t') escapeWhile
-              ++n
-            endWhile
-            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
-              return _extraction_point( i0+n, remaining_count-n, format, f0, fcount, found_match, result, &=wildcard_end )
+            if (f0 > 0)
+              local n = 1
+              while (n < remaining_count)
+                ch = this[i0+n]
+                if (ch != ' ' and ch != '\t') escapeWhile
+                ++n
+              endWhile
+              if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
+                return _extraction_point( i0+n, remaining_count-n, format, f0, fcount, found_match, result, &=wildcard_end )
+              endIf
             endIf
           endIf
       endWhich
@@ -791,8 +813,9 @@ class String
       # EXAMPLE
       #   "ab cd ef gh ij".locate_pattern("cd $ gh") -> 6
       local (success,index,count) = _extraction_point( i1, count-i1, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )
-      if (success) return Span( index+i1, count-i1 )
-      else         return null
+      if (not success) return null
+
+      return Span( i1+index, count-(i1+index) )
 
     method matches_pattern( pattern:String )->Logical
       # Returns true if this string matches the given pattern.
@@ -803,6 +826,7 @@ class String
       #   $    - Like '*' but discards leading whitespace; is used as a marker in extract_string(s).
       #   $(I) - Matches an integer character sequence.
       #   $(R) - Matches a real number character sequence.
+      #   $(#) - Matches a single digit 0-9
       #   $($) - Matches a single literal '$'.
       #   ' '  - A space matches 1 or more spaces and tabs.
       #
@@ -1011,6 +1035,94 @@ class String
       forEach (i in i0..<this.count) buffer.print( this[i] )
       return buffer->String
 
+    method replacing_pattern( search_pattern:String, replacement_pattern:String )->String
+      # Search pattern has same "$*?" wildcard format as .extract_strings():
+      #   - '$' acts as '*' but also denotes a piece to be extracted.
+      # Replacement pattern contains '$' to denote implicitly-paired points of substitution
+      # or'$(0)' etc. to indicate the 0th, etc. extracted value. '$()' can be used to
+      # escape the special meaning of a successive '(0)' and '$($)' can be written to
+      # indicate a literal '$'.
+      #
+      # If this string contains line breaks then the search is performed on separate lines
+      # in order to avoid excessive search times by wildcards.
+      #
+      # Examples:
+      #   "Alice and Bob".replacing_pattern( "$ and $", "$ & $" ) -> "Alice & Bob"
+      #   "Alice and Bob".replacing_pattern( "$ and $", "$(1) and $(0)" ) -> "Bob and Alice"
+      if (this.contains('\n'))
+        contingent
+          # Do an initial check to make sure the pattern occurs to avoid a bunch of
+          # unnecessary string allocations otherwise.
+          forEach (line in LineReader(this))
+            sufficient (line.contains_pattern(search_pattern))
+          endForEach
+          return this  # not found
+
+        satisfied
+          # The pattern occurs somewhere in this string
+          local result = StringBuilder( count )
+          forEach (line in LineReader(this))
+            result.println( line.replacing_pattern(search_pattern,replacement_pattern) )
+          endForEach
+          return result->String
+
+        endContingent
+
+      else
+        # No newlines.
+        local span = this.locate_pattern( search_pattern )
+        if (span)
+          block span = span.value
+            if (span.index > 0 or span.count < count)
+              # Extract the subset containing the pattern and perform the replacement on that
+              local replacement = substring(span).replacing_pattern(search_pattern,replacement_pattern)
+              local remaining = rightmost( count-(span.index+span.count) ).replacing_pattern( search_pattern, replacement_pattern )
+              return leftmost(span.index) + replacement + remaining
+            endIf
+          endBlock
+        endIf
+
+        local parts = this.extract_strings( search_pattern )
+        if (not parts) return this  # no change
+
+        local result = StringBuilder( count )
+        local remaining = replacement_pattern
+        local i = 0
+        while (remaining.contains('$'))
+          local literal = remaining.before_first( '$' )
+          if (literal.count)
+            result.print( literal )
+            remaining = remaining.rightmost( -literal.count )
+          endIf
+          if (remaining.begins_with("$($)"))
+            remaining = remaining.rightmost( -4 )
+            result.print( '$' )
+          elseIf (remaining.begins_with("$()"))
+            remaining = remaining.rightmost( -3 )
+            result.print( parts[i] )
+            i = (i + 1) % parts.count
+          elseIf (remaining.begins_with("$("))
+            local index_string = remaining.extract_string( "?($(I))*" )
+            if (index_string)
+              remaining = remaining.after_first( ')' )
+              local index = index_string->Int32
+              result.print( parts[index % parts.count] )
+            else
+              remaining = remaining.rightmost( -1 )
+              result.print( '$' )
+            endIf
+          else
+            # remaining must begin with a solitary '$'
+            remaining = remaining.rightmost( -1 )
+            result.print( parts[i] )
+            i = (i + 1) % parts.count
+          endIf
+        endWhile
+        result.print( remaining )
+        return result->String
+      endIf
+
+      #{
     method replacing( begins_with:String, ends_with:String, replace_with:Function(String)->String, &ignore_case )->String
       # Returns a modified string where all substrings beginning with begins_with and
       # ending with ends_with (conservatively) are replaced by replace_with(substring).
@@ -1032,6 +1144,7 @@ class String
       endWhile
       forEach (i in i0..<this.count) buffer.print( this[i] )
       return buffer->String
+      }#
 
     method reversed->String
       local buffer = StringBuilder(count)
@@ -1126,6 +1239,9 @@ class String
 
     method substring( i1:Int32, n:Int32 )->String
       return from( i1, i1+(n-1) )
+
+    method substring( span:Span )->String
+      return substring( span.index, span.count )
 
     method times( n:Int32 )->String
       if (n <= 0) return ""
