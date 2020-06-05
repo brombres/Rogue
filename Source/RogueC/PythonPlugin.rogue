@@ -1061,15 +1061,15 @@ augment Program
                       |
                       |_rogue_type_index_to_pyclass = {}
                       |def get_wrapper (raw_object_ptr):
+                      |  if raw_object_ptr is None: return None
                       |  cls = _rogue_type_index_to_pyclass[_lib.pyrogue_object_type_index(raw_object_ptr)]
+                      |  if cls is String: return pyrogue_get_string(raw_object_ptr)
                       |  return cls(__pyrogue_new_instance=raw_object_ptr)
                       |
                       |def cast_object (python_object, t):
                       |  """Cast a Python object to Rogue type t"""
-                      |  if t is String:
-                      |    if isinstance(python_object, str):
-                      |      return _lib.RogueString_create_from_utf8(python_object, -1)
-                      |    raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
+                      |  if isinstance(python_object, str) and issubclass(String, t):
+                      |    return _lib.RogueString_create_from_utf8(python_object, -1)
                       |  if python_object is None:
                       |    return None # Null pointers okay
                       |  if issubclass(t, _PyDelegate):
