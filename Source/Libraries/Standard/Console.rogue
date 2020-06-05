@@ -408,6 +408,18 @@ class ConsoleStyle
     codes = Int32[]
 
   METHODS
+    method clear
+      codes.clear
+
+    method print( builder:StringBuilder )
+      if (codes.is_empty) return
+      builder.print "\e["
+      forEach (code at i in codes)
+        if (i > 0) builder.print ';'
+        builder.print code
+      endForEach
+      builder.print "m"
+
     method to->String
       if (codes.is_empty) return ""
       return "\e[$m" (codes.join(";"))
