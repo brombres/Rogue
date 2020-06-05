@@ -1,0 +1,226 @@
+module Bitmap
+  uses Geometry
+
+class BMP [singleton]
+  DEFINITIONS
+    BI_BITFIELDS = 30
+
+  METHODS
+    method load( file:File )->Bitmap
+      # Use BMP.load(File) instead of Bitmap(File) if you want to avoid pulling in the
+      # native PNG and JPEG libraries.
+      return BMPDecoder().decode( file.load_as_bytes )
+endClass
+
+enum BMPVersion
+  BITMAPCOREHEADER    = 12
+  OS22XBITMAPHEADER16 = 16
+  OS22XBITMAPHEADER64 = 64
+  BITMAPINFOHEADER    = 40
+  BITMAPV2INFOHEADER  = 52
+  BITMAPV3INFOHEADER  = 56
+  BITMAPV4HEADER      = 108
+  BITMAPV5HEADER      = 124
+
+  METHODS
+    method operator<>( other:BMPVersion )->Int32
+      return value <> other.value
+endEnum
+
+class BMPReader : BitReader
+  METHODS
+    method read_uint16_lh->Int32
+      local result = read : Int32
+      return (read:<<:8)  | result
+
+    method read_int24_lh->Int32
+      local result = read : Int32
+      result = (read:<<:8)  | result
+      return (read:<<:16) | result
+
+    method read_int32_lh->Int32
+      local result = read : Int32
+      result = (read:<<:8)  | result
+      result = (read:<<:16) | result
+      return (read:<<:24) | result
+endClass
+
+class BMPColorComponentReader
+  PROPERTIES
+    bits  : Int32
+    shift : Int32
+    next  : BMPColorComponentReader
+
+  METHODS
+    method init( bits, shift, next=null )
+
+    method init( bitfield:BMPBitField, next=null )
+      init( bitfield.bit_count, bitfield.left_shift_for_argb, next )
+
+    method read( reader:BitReader, argb=0:Int32 )->Int32
+      if (bits) argb |= (reader.read->Int32 :<<: shift)
+      else      argb |= (255 :<<: shift)
+
+      if (next) return next.read( reader, argb )
+      else      return argb
+endClass
+
+class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
+  METHODS
+    method bit_count->Int32
+      if (bitmask == 0) return 0
+
+      local mask = bitmask
+      local n = 0
+      if (mask & 0x8000_0000)
+        n = 1
+        mask &= 0x7FFF_FFFF
+      endIf
+
+      while (not (mask & 1)) mask = (mask:>>>:1)
+      while (mask & 1) ++n; mask = (mask:>>>:1)
+
+      return n
+
+    method bit_shift->Int32
+      if (bitmask == 0)           return 0
+      if (bitmask == 0x8000_0000) return 31
+
+      local mask = bitmask & 0x7FFF_FFFF
+      local n = 0
+      while (not (mask & 1)) ++n; mask = (mask:>>>:1)
+
+      return n
+
+    method operator<>( other:BMPBitField )->Int32
+      return (bit_shift <> other.bit_shift)
+
+    method reader( next=null:BMPColorComponentReader )->BMPColorComponentReader
+      return BMPColorComponentReader( this, next )
+
+endClass
+
+class BMPDecoder
+  PROPERTIES
+
+  METHODS
+    method decode( encoded_bytes:Byte[], bitmap=null:Bitmap )->Bitmap
+      local reader = BMPReader( encoded_bytes )
+      reader.skip( 10 )
+      local pixel_data_position = reader.read_int32_lh
+
+      local header_start_pos = reader.position
+      local header_bytes = reader.read_int32_lh  # header size, also header version
+      local v = BMPVersion( header_bytes )
+      if (v < BMPVersion.BITMAPINFOHEADER)
+        throw Error( "Cannot read BMP (format $)." (v) )
+      endIf
+      local width  = reader.read_int32_lh
+      local height = reader.read_int32_lh
+      reader.skip( 2 )
+      local bpp = reader.read_uint16_lh
+      local compression_method = reader.read_int32_lh
+      if (compression_method & !BMP.BI_BITFIELDS)
+        # If anything besides BI_BITFIELDS is set then throw an error
+        throw Error( "Cannot read compressed BMP (compression method $)." (compression_method) )
+      endIf
+      reader.skip( 12 )
+
+      local palette_count = reader.read_int32_lh
+      if (not palette_count and bpp <= 8) palette_count = 2^bpp
+      reader.skip( 4 )  # ignore important colors
+
+      local bitfields = BMPBitField[]
+      if (compression_method & BMP.BI_BITFIELDS)
+        bitfields.add( BMPBitField(reader.read_int32_lh,16) )  # R
+        bitfields.add( BMPBitField(reader.read_int32_lh,8) )   # G
+        bitfields.add( BMPBitField(reader.read_int32_lh,0) )   # B
+        if (v >= BMPVersion.BITMAPV3INFOHEADER)
+          bitfields.add( BMPBitField(reader.read_int32_lh,24) )   # A
+        else
+          bitfields.add( BMPBitField(0,24) )   # A
+        endIf
+      else
+        # Use defaults
+        bitfields.add( BMPBitField(0xff0000,16) )  # R
+        bitfields.add( BMPBitField(0x00ff00,8) )   # G
+        bitfields.add( BMPBitField(0x0000ff,0) )   # B
+        if (bpp == 32) bitfields.add( BMPBitField(0xff000000,24) )  # A
+        else           bitfields.add( BMPBitField(0,24) )           # A
+      endIf
+
+      # Construct a chain of objects that know how to read pixel data
+      local pixel_reader : BMPColorComponentReader
+      bitfields.sort( (a,b) => (a >= b) )
+      pixel_reader = (forEach in bitfields).reader( pixel_reader )
+
+      reader.skip( (header_bytes - (reader.position-header_start_pos)).clamped_low(0) )  # Skip any remaining header
+
+      local palette : Color[]
+      if (palette_count)
+        ensure palette( palette_count )
+        loop (palette_count)
+          local b = reader.read_byte->Int32
+          local g = reader.read_byte->Int32
+          local r = reader.read_byte->Int32
+          local a = reader.read_byte->Int32
+          if (a == 0) a = 255
+          palette.add( Color(r,g,b,a) )
+        endLoop
+
+        # Pad palette to 2^bpp so we don't have to check palette indices
+        require (bpp <= 8)
+        loop (2^bpp - palette_count)
+          palette.add( Color.BLACK )
+        endLoop
+      endIf
+
+      reader.skip( (pixel_data_position - reader.position).clamped_low(0) )  # Skip to pixel data
+
+      local is_bottom_up = (height > 0)
+      height = height.abs
+
+      if (bitmap)
+        if (bitmap.pixels) bitmap.reset( width, height, null )
+        else               bitmap.init( width, height, Color(0) )
+      else
+        bitmap = Bitmap( width, height )
+      endIf
+
+      # Positive height means bottom-up pixel data; negative height means top-down
+      local line_start = 0
+      local next_line_offset = width
+      if (is_bottom_up)
+        line_start += (height-1) * width
+        next_line_offset = -width
+      endIf
+
+      # Calculate bits per row and round out to a multiple of 32 bits / 4 bytes
+      local bits_per_row = (width * bpp)
+      if (bits_per_row & 31) bits_per_row = (bits_per_row & !31) + 32
+
+      local skip_bits = bits_per_row - (width * bpp)
+
+      block pixels = bitmap.pixels
+        if (palette)
+          loop (height)
+            forEach (i in 0..<width)
+              pixels[ line_start+i ] = palette[ reader.read(bpp) ]
+            endForEach
+            reader.read( skip_bits )
+            line_start += next_line_offset
+          endLoop
+        else
+          loop (height)
+            forEach (i in 0..<width)
+              pixels[ line_start+i ] = pixel_reader.read( reader )
+            endForEach
+            reader.read( skip_bits )
+            line_start += next_line_offset
+          endLoop
+        endIf
+      endBlock
+
+      return bitmap
+endClass
+

@@ -684,6 +684,9 @@ class File
       filepath = expand_filepath( filepath )
       return folder( filepath )
 
+    method print_writer( filepath:String )->PrintWriter
+      return PrintWriter( writer(filepath) )
+
     method reader( filepath:String )->FileReader
       filepath = expand_filepath( filepath )
       return FileReader( filepath )
@@ -1068,6 +1071,9 @@ class File
 
     method path->String
       return File.folder( this.filepath )
+
+    method print_writer->PrintWriter
+      return File.print_writer( this.filepath )
 
     method reader->FileReader
       return File.reader( this.filepath )

@@ -29,6 +29,7 @@ module Bitmap
   uses Geometry [export]
 
 
+$include "Bitmap/BMP.rogue"
 $include "Bitmap/Color.rogue"
 $include "Bitmap/HSB.rogue"
 $include "Bitmap/JPEG.rogue"
@@ -86,6 +87,17 @@ class Bitmap
     method init( existing:Bitmap, bounds:Box )
       init( bounds.size )
       existing.blit( this, -bounds.position )
+
+    method reset( width, height, color=Color(0):Color? )
+      error                  = false
+      is_premultiplied_alpha = false
+      pixels.expand_to_count( width*height )
+      pixels.discard_from( width*height )
+      if (color)
+        local c = color.value
+        pixels.clear
+        loop (width*height) pixels.add( c )
+      endIf
 
     method cloned->Bitmap
       local result = Bitmap( size, pixels.cloned )
@@ -480,6 +492,10 @@ class Bitmap
 
       elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
         local decoder = JPEGDecoder()
+        return decoder.decode( bytes, this )?
+
+      elseIf (bytes[0] == 'B' and bytes[1] == 'M')
+        local decoder = BMPDecoder()
         return decoder.decode( bytes, this )?
 
       endIf
