@@ -1090,9 +1090,8 @@ augment Program
                       |    "Character" : ctypes.c_int32
                       |  }
                       |
-                      |  def _check_mutator_type (o, ti):
-                      |    if o._rogue_type_index_ == ti: return o.thisptr.value
-                      |    raise RuntimeError("Object %s is not of expected type" % (o,))
+                      |  def _cast_mutator_value (o, ti):
+                      |    return cast_object(o, _rogue_type_index_to_pyclass[ti])
                       |
                       |  def _make_accessors (n, t, o, ref):
                       |    def accessor (self):
@@ -1101,7 +1100,7 @@ augment Program
                       |      ctypes.cast(self.thisptr.value + o, t).contents.value = value
                       |    if ref is None: return (accessor,mutator)
                       |    return (lambda self: get_wrapper(accessor(self)),
-                      |            lambda self,value: mutator(self, _check_mutator_type(value, ref)))
+                      |            lambda self,value: mutator(self, _cast_mutator_value(value, ref)))
                       |
                       |  for i,t in _rogue_type_index_to_pyclass.iteritems():
                       |    for pi in xrange(0, _lib.pyrogue_get_property_count(i)):
@@ -1110,7 +1109,6 @@ augment Program
                       |      if o == -1: continue # It should be an aspect
                       |      ti = _lib.pyrogue_get_property_type_index(i, pi)
                       |      if _lib.pyrogue_type_is_reference(ti):
-                      |        #TODO: Special handling for String?
                       |        ref = ti
                       |        ct = ctypes.POINTER(_RogueObjectPtr)
                       |      else:
