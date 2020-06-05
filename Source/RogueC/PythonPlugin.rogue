@@ -1074,9 +1074,9 @@ augment Program
                       |    return None # Null pointers okay
                       |  if issubclass(t, _PyDelegate):
                       |    if hasattr(python_object, "__call__"):
-                      |      return (t._from_callable(python_object)).thisptr
+                      |      return (t._from_callable(python_object)).thisptr.value
                       |  if isinstance(python_object, t):
-                      |    return python_object.thisptr
+                      |    return python_object.thisptr.value
                       |  raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
                       |
                       |def _config_properties ():
@@ -1574,8 +1574,7 @@ augment Program
           local r = ccls.get_py_to_c(m.real_method.return_type).replacing("%", "retval")
           if (r != "retval") body += "    retval = $\n" (r)
           body += "    ctypes.cast(context.rv, ctypes.POINTER(_$)).contents.value = " (m.cproto_return)
-          body += ccls.get_py_to_c(m.real_method.return_type).replacing("%", "retval")
-          body += "\n"
+          body += "retval\n"
         endIf
 
         writer.print "# " + m.real_method.signature
