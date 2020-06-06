@@ -118,46 +118,12 @@ if (not buildfiles.count)
 
     local builder = StringBuilder()
     builder.println ...
-      @|# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
+      @|# To run this build file, install Rogue from github.com/AbePralle/Rogue then cd
+       |# to this folder and type "rogo" at the command line.
        |
-       |# Rogo is a "build your own build system" facilitator. At its core Rogo just recompiles build files if
-       |# needed and then runs the build executable while forwarding any command line arguments. This file contains
-       |# a default framework which uses introspection to turn command line arguments into parameterized routine calls.
-       |
-       |# Example: to handle the command "rogo abc xyz 5", define "routine rogo_abc_xyz( n:Int32 )".
-       |
-       |# "rogo_default" will run in the absence of any other command line argument.
-       |
-       |# The following "comment directives" can be used in this file to control how RogueC compiles it and to
-       |# manage automatic dependency installation and linking.
-       |
-       |# Each of the following should be on a line beginning with the characters #$ (preceding whitespace is fine).
-       |# Sample args are given.
-       |
-       |#   ROGUEC       = roguec       # Path to roguec compiler to compile this file with
-       |#   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
-       |#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof   # C++ compiler path and/or invocation
-       |#   CPP_ARGS     = -a -b -c          # Additional C++ args
-       |#   LINK         = true              # Links following LIBRARIES with this Build file
-       |#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes these additional flags
-       |#   LINK         = false             # Linking turned off for following LIBRARIES - info can still be obtained from #$LIBRARY_FLAGS()
-       |#   LINK(macOS)  = ...               # Options applying only to System.os=="macOS" (use with any OS and any comment directive)
-       |#   LIBRARIES    = libalpha
-       |#   LIBRARIES    = libbeta(library-name)
-       |#   LIBRARIES    = libfreetype6-dev(freetype2)
-       |#   DEPENDENCIES = Library/Rogue/**/*.rogue
-       |#
-       |#   LIBRARIES    = name(package)
-       |#   LIBRARIES    = name(package:<package> install:<install-cmd> link:<link-flags>)
-       |#
-       |# The following macro is replaced within this file (Build.rogue) - the libraries should also be declared in #$ LIBRARIES:
-       |#
-       |#   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
-       |#     ->
-       |#   -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...   # sample replacement
-       |
-       |# description()s are optional - Rogo uses introspection to determine which commands are available.
-       |# 'rogo help default' displays the description for "default", etc.
+       |# description()s are optional - Rogo uses introspection to determine which
+       |# commands are available. 'rogo help default' displays the description for
+       |# "default", etc.
        |description( "default", "The default action is performed when no other actions are specified. Use 'rogo default' to explicitly perform the default option." )
        |description( "help",    "Displays a list of all actions that can be performed by Rogo." )
        |
@@ -170,80 +136,113 @@ if (not buildfiles.count)
     endIf
 
     if (project_name)
-      builder.println ''$define PROJECT           "$"'' ('$',project_name)
-      builder.println ''$define SRC_FILEPATH      "Source/$.rogue"'' ('$',project_name)
-      builder.println ''$define CPP_FILEPATH      "Build/$.cpp"'' ('$',project_name)
-      builder.println ''$define EXE_BASE_FILEPATH "Build/$"'' ('$',project_name)
-      builder.println ''$define LAUNCHER_NAME     "$"'' ('$',project_name.to_lowercase)
-      builder.println ''$define LAUNCHER_FILEPATH "/usr/local/bin/$"'' ('$',project_name.to_lowercase)
+      builder.println @|augment Build
+                       |  # You can create a Local.mk file with overrides for these values, e.g.:
+                       |  # LAUNCHER_FOLDER = "~/bin"
+                       |  PROPERTIES
+      builder.println ''    PROJECT         = "$"'' (project_name)
+      builder.println ''    LAUNCHER_NAME   = "$"'' (project_name.to_lowercase)
+      builder.println ''    LAUNCHER_FOLDER = "/usr/local/bin"''
 
       builder.println ...
-        @|routine exe_filepath->String
-         |  return "$-$" (EXE_BASE_FILEPATH,System.os)
+        @|endAugment
+         |
+         |routine exe_filepath->String
+         |  if (System.is_windows) return "Build/$.exe" (Build.LAUNCHER_NAME)
+         |  return "Build/$-$" (Build.PROJECT,System.os)
+         |endRoutine
+         |
+         |routine launcher_folder->String
+         |  local result = Build.LAUNCHER_FOLDER
+         |  result = File.expand_filepath( result )
+         |  return File.without_trailing_separator( result )
          |endRoutine
          |
          |routine rogo_default
          |  rogo_build
          |  rogo_run
 
-     builder.println "#rogo_install_launcher  # Uncomment to automatically install a /usr/local/bin/$ launcher" (project_name.to_lowercase)
+     builder.println "  #rogo_install_launcher  # Uncomment to automatically install a /usr/local/bin/$ launcher" (project_name.to_lowercase)
      builder.println ...
         @|endRoutine
          |
          |routine rogo_build
          |  block exe_filepath
-         |    if (File.is_newer_than(SRC_FILEPATH,exe_filepath))
-         |      if (File.is_newer_than(SRC_FILEPATH,CPP_FILEPATH))
-         |        execute "roguec $ --main --output=$ --target=Console,C++" (SRC_FILEPATH,CPP_FILEPATH)
+         |    local source_files = Files( "Source", "***/*.rogue" )
+         |    local src_filepath = "Source/$.rogue" (Build.PROJECT)
+         |    if (source_files.any_newer_than(exe_filepath))
+         |      local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
+         |      if (source_files.any_newer_than(cpp_filepath))
+         |        execute "roguec $ --main --output=$ --target=Console,C++,$" (src_filepath,cpp_filepath,System.os)
          |      endIf
+         |      if (System.is_windows)
+         |        local libs = ""
+         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (cpp_filepath,exe_filepath,libs)
+         |        #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
+         |        execute cc
+         |      else
 
     if (bitmap_option)
-      builder.println @|      local libs = which{ System.is_linux:" $LIBRARY_FLAGS(libpng-dev,libjpeg-dev)" || " $LIBRARY_FLAGS(libpng,libjpeg,zlib)" }
+      builder.println @|        local libs = which{ System.is_linux:" $LIBRARY_FLAGS(libpng-dev,libjpeg-dev)" || " $LIBRARY_FLAGS(libpng,libjpeg,zlib)" }
     else
-      builder.println @|      local libs = ""
+      builder.println @|        local libs = ""
     endIf
     builder.println ...
-        @|      local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (CPP_FILEPATH,exe_filepath,libs)
-         |      execute cc
+        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (cpp_filepath,exe_filepath,libs)
+         |        execute cc
+         |      endIf
          |    endIf
          |  endBlock
          |endRoutine
          |
          |routine rogo_run
-         |  execute exe_filepath
+         |  execute File.conventional_filepath(exe_filepath)
          |endRoutine
          |
          |routine rogo_install_launcher
          |  local exe_filepath = File.absolute_filepath( exe_filepath )
-         |  contingent
-         |    local result = Process.run( "which " + LAUNCHER_NAME, &env )
-         |    necessary (result.success)
-         |    local launcher_filepath = result->String.trimmed
-         |    necessary launcher_filepath
-         |    necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
+         |  if (System.is_windows)
+         |    local exe_folder = File.conventional_filepath( File.folder(exe_filepath) )
+         |    local path = System.environment//PATH
+         |    if (not path.to_lowercase.contains(exe_folder.to_lowercase))
+         |      println
+         |      println ''Add the following to your system PATH then reopen this command prompt to be able''
+         |      println ''to launch $ by typing "$":'' (Build.PROJECT,Build.LAUNCHER_NAME)
+         |      println
+         |      println "  ADD THIS TO YOUR PATH"
+         |      println "  " + exe_folder
+         |    endIf
+         |  else
+         |    contingent
+         |      local result = Process.run( "which " + Build.LAUNCHER_NAME, &env )
+         |      necessary (result.success)
+         |      local launcher_filepath = result->String.trimmed
+         |      necessary launcher_filepath
+         |      necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
          |
-         |  unsatisfied
-         |    println "Creating launcher " + LAUNCHER_FILEPATH
-         |    local launcher_folder = File.folder( LAUNCHER_FILEPATH )
-         |    local sudo = ""
-         |    loop
-         |      try
-         |        if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
-         |        File.save( "$.launcher"(LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
-         |        execute( "$mv $.launcher $"(sudo,LAUNCHER_NAME,LAUNCHER_FILEPATH) )
-         |        execute( "$chmod a+x $"(sudo,LAUNCHER_FILEPATH) )
-         |        escapeLoop
-         |      catch (err:Error)
-         |        if (sudo != "") throw err
-         |        sudo = "sudo "
-         |      endTry
-         |    endLoop
-         |  endContingent
+         |    unsatisfied
+         |      local launcher_filepath = "$/$" (launcher_folder,Build.LAUNCHER_NAME)
+         |      println "Creating launcher " + launcher_filepath
+         |      local sudo = ""
+         |      loop
+         |        try
+         |          if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
+         |          File.save( "$.launcher"(Build.LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
+         |          execute( "$mv $.launcher $"(sudo,Build.LAUNCHER_NAME,launcher_filepath) )
+         |          execute( "$chmod a+x $"(sudo,launcher_filepath) )
+         |          escapeLoop
+         |        catch (err:Error)
+         |          if (sudo != "") throw err
+         |          sudo = "sudo "
+         |        endTry
+         |      endLoop
+         |    endContingent
+         |  endIf
          |endRoutine
          |
          |routine rogo_clean
          |  verbose_delete( "Build" )
-         |  verbose_delete( LAUNCHER_FILEPATH )
+         |  if (not System.is_windows) verbose_delete( "$/$"(launcher_folder,Build.LAUNCHER_NAME) )
          |endRoutine
          |
          |routine verbose_delete( filepath:String )
@@ -262,12 +261,12 @@ if (not buildfiles.count)
         @|routine rogo_default
          |  rogo_help
          |endRoutine
-         |
 
     endIf
 
     builder.println ...
-      @|routine execute( commands:String, &suppress_error )->Logical
+      @|
+       |routine execute( commands:String, &suppress_error )->Logical
        |  forEach (cmd in LineReader(commands))
        |    print( "> " ).println( cmd )
        |    if (System.run(cmd) != 0)
@@ -278,9 +277,58 @@ if (not buildfiles.count)
        |  return true
        |endRoutine
        |
-       |#------------------------------------------------------------------------------
+       |#-------------------------------------------------------------------------------
        |# Introspection-based Launcher Framework
-       |#------------------------------------------------------------------------------
+       |#-------------------------------------------------------------------------------
+       |# Rogo is a "build your own build system" facilitator. At its core Rogo just
+       |# recompiles build files if needed and then runs the build executable while
+       |# forwarding any command line arguments. This file contains a default framework
+       |# which uses introspection to turn command line arguments into parameterized
+       |# routine calls.
+       |
+       |# Example: to handle the command "rogo abc xyz 5", define
+       |# "routine rogo_abc_xyz( n:Int32 )".
+       |
+       |# "rogo_default" will run in the absence of any other command line argument.
+       |
+       |# The following "comment directives" can be used in this file to control how
+       |# RogueC compiles it and to manage automatic dependency installation and
+       |# linking.
+       |
+       |# Each of the following should be on a line beginning with the characters #$
+       |# (preceding whitespace is fine). Sample args are given.
+       |
+       |#   ROGUEC       = roguec       # Path to roguec to compile this file with
+       |#   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
+       |#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing
+       |#                  -Wno-invalid-offsetof   # C++ compiler path and/or invocation
+       |#   CPP_ARGS     = -a -b -c          # Additional C++ args
+       |#   LINK         = true              # Links following LIBRARIES with this Build
+       |#                                    # file (otherwise just installs them)
+       |#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes
+       |#                                    # these additional flags
+       |#   LINK         = false             # Linking turned off for following
+       |#                                    # LIBRARIES - info can still be obtained
+       |#                                    # from $LIBRARY_FLAGS()
+       |#   LINK(macOS)  = ...               # Options applying only to
+       |#                                    # System.os=="macOS" (use with any OS and
+       |#                                    # any comment directive)
+       |#   LIBRARIES    = libalpha
+       |#   LIBRARIES    = libbeta(library-name)
+       |#   LIBRARIES    = libfreetype6-dev(freetype2)
+       |#   DEPENDENCIES = Library/Rogue/**/*.rogue
+       |#
+       |#   LIBRARIES    = name(package)
+       |#   LIBRARIES    = name(package:<package> install:<install-cmd>
+       |#                  link:<link-flags> which:<which-name>)
+       |#
+       |# The following macro is replaced within this file (Build.rogue) - the libraries
+       |# should normally also be declared in #$ LIBRARIES:
+       |#
+       |#   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
+       |#     ->
+       |#   -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...   # sample replacement
+       |
        |routine syntax( command:String, text:String )
        |  Build.rogo_syntax[ command ] = text
        |endRoutine
@@ -490,13 +538,17 @@ if (not buildfiles.count)
       builder.clear
       builder.println "#" + "=" * 79
       builder.println "# $.rogue" (project_name)
-      builder.println "# $" + Date.today
+      builder.println "# " + Date.today->String(&verbose)
       builder.println "#" + "=" * 79
+      builder.print   "$requireRogue "
+      builder.println ''"$"'' ($rogueVersion)
+      builder.println
       if (bitmap_option)
         builder.println "uses Bitmap\n"
       endIf
 
       builder.println "$()" (project_name)
+      builder.println
       builder.println "class $" (project_name)
       builder.println ...
         @|  METHODS
@@ -555,7 +607,7 @@ block
   local i = 0
   while (i < dependencies.count)
     local pattern = dependencies[ i ]
-    local listing = File.listing( ".", FilePattern(pattern), &files )
+    local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.filename(dependency).begins_with("Build") and not buildfiles.contains(dependency))
         scan_and_rewrite( dependency, dependencies, &skip_rewrite )
@@ -565,7 +617,7 @@ block
   endWhile
 
   forEach (pattern in dependencies)
-    local listing = File.listing( ".", FilePattern(pattern), &files )
+    local listing = File.listing( pattern, &files )
     forEach (dependency in listing)
       if (File.is_newer_than(dependency,exe))
         needs_recompile = true

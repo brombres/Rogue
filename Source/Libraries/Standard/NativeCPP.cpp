@@ -738,9 +738,9 @@ RogueObject* RogueType_singleton( RogueType* THIS )
     // so we can't just call RogueType_create_object().
     r = RogueAllocator_allocate_object( THIS->allocator, THIS, THIS->object_size );
 
-    if ((fn = THIS->init_object_fn)) r = fn( ROGUE_ARG(r) );
-
     ROGUE_SET_SINGLETON(THIS, r);
+
+    if ((fn = THIS->init_object_fn)) r = fn( ROGUE_ARG(r) );
 
     ROGUE_SINGLETON_UNLOCK;
 
@@ -855,6 +855,13 @@ RogueString* RogueString_create_with_byte_count( int byte_count )
 RogueString* RogueString_create_from_utf8( const char* utf8, int count )
 {
   if (count == -1) count = (int) strlen( utf8 );
+
+  if (count >= 3 && (unsigned char)utf8[0] == 0xEF && (unsigned char)utf8[1] == 0xBB && (unsigned char)utf8[2] == 0xBF)
+  {
+    // Skip Byte Order Mark (BOM)
+    utf8  += 3;
+    count -= 3;
+  }
 
   RogueString* st = RogueString_create_with_byte_count( count );
   memcpy( st->utf8, utf8, count );

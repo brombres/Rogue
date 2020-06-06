@@ -33,13 +33,12 @@ class Process
       return run( Process(args, &readable, &=writable, &is_blocking, &=inherit_environment, &=env) )
 
     method run( process:Process )->ProcessResult
-      process.finish
-
-      return ProcessResult( process.exit_code, process.output_bytes, process.error_bytes )
+      return process.finish
 
   METHODS
     method close->this
-      return finish
+      finish
+      return this
 
     method error_bytes->Byte[]
       local result = Byte[]
@@ -60,9 +59,9 @@ class Process
     method is_running->Logical
       return (not is_finished)
 
-    method finish->this
+    method finish->ProcessResult
       @is_finished = true
-      return this
+      return ProcessResult( 1, Byte[], Byte[] )
 
     method launch( &readable, &writable, &inherit_environment )->Logical
       return false
@@ -240,7 +239,7 @@ class PosixProcess : Process
       return false
 
 
-    method finish->this
+    method finish->ProcessResult
       native @|#ifndef ROGUE_PLATFORM_WINDOWS
 
       if (not @is_finished)
@@ -279,9 +278,9 @@ class PosixProcess : Process
               |$this->cerr_pipe[0] = -1;
               |$this->cin_pipe[1] = -1;
 
-      native @|#endif // ROGUE_PLATFORM_WINDOWS
+      native @|#endif // not ROGUE_PLATFORM_WINDOWS
 
-      return this
+      return ProcessResult( @exit_code, output_bytes, error_bytes )
 
 
     method update_io( &poll_blocks )->Logical
@@ -465,7 +464,7 @@ class WindowsProcess : Process
       return @is_finished
 
 
-    method finish->this
+    method finish->ProcessResult
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
       while (not is_finished)
@@ -478,7 +477,7 @@ class WindowsProcess : Process
 
       native @|#endif
 
-      return this
+      return ProcessResult( @exit_code, output_bytes, error_bytes )
 
     method on_cleanup
       output_reader.close

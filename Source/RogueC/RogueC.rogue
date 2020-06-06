@@ -1,4 +1,4 @@
-$define ROGUE_RELEASE_VERSION "1.7.0"
+$define ROGUE_RELEASE_VERSION "1.7.4"
 
 $include "Version.rogue" [optional]
 
@@ -17,6 +17,8 @@ $essential Int32.*
 $essential Character.*
 $essential Byte.*
 $essential Logical.*
+$essential Date.*
+$essential Time.*
 
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"

@@ -701,20 +701,14 @@ class Tokenizer
               if (not first) add_new_token( TokenType.eol )
               first = false
               add_new_token( TokenType.meta_uses )
-              add_new_token( TokenType.identifier, read_identifier )
+              if (consume('$')) add_new_token( TokenType.placeholder_id, "$" + read_identifier )
+              else              add_new_token( TokenType.identifier, read_identifier )
             endWhile
             return true
           else
             return add_new_token( keyword_type )
           endIf
         else
-          #{
-          if (id == "set" and reader.peek == '-')
-            # Convert set-x to set_x
-            reader.read
-            id += '_' + read_identifier
-          endIf
-          }#
           return add_new_token( TokenType.identifier, id )
         endIf
         return true

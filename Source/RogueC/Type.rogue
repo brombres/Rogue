@@ -429,6 +429,7 @@ class Type
       endIf
 
       Program.invoke_metacode( "Type.configure", this )
+      Program.invoke_metacode( "$.configure"(name), this )
 
       if (not is_defined)
         is_defined = true
@@ -574,6 +575,7 @@ class Type
       forEach (p in property_list) p.type.configure( &reference_t=which{ reset_ref_t:p.t || reference_t} )
 
       Program.invoke_metacode( "Type.configured", this )
+      Program.invoke_metacode( "$.configured"(name), this )
 
       configure_chain.remove_last
       return this
@@ -992,6 +994,7 @@ class Type
       configure( &=reference_t )
 
       Program.invoke_metacode( "Type.organize", this )
+      Program.invoke_metacode( "$.organize"(name), this )
 
       forEach (base_type in base_types)
         base_type.organize( scope, reference_t )
@@ -1011,6 +1014,7 @@ class Type
       property_list = full_property_list
 
       Program.invoke_metacode( "Type.organize_properties", this )
+      Program.invoke_metacode( "$.organize_properties"(name), this )
 
       create_introspection_methods( scope )
 
@@ -1374,6 +1378,7 @@ class Type
       index_methods( method_list )
 
       Program.invoke_metacode( "Type.organized", this )
+      Program.invoke_metacode( "$.organized"(name), this )
 
       organizing = false
 
@@ -1584,6 +1589,7 @@ class Type
 
       # Let metacode add or modify methods
       Program.invoke_metacode( "Type.organize_methods", this )
+      Program.invoke_metacode( "$.organize_methods"(name), this )
 
       # Attempt to instantiate our own overrides of any method templates.
       if (method_templates)
@@ -2060,10 +2066,12 @@ class Type
       organize
 
       Program.invoke_metacode( "Type.resolve", this )
+      Program.invoke_metacode( "$.resolve"(name), this )
 
       resolve_methods
 
       Program.invoke_metacode( "Type.resolved", this )
+      Program.invoke_metacode( "$.resolved"(name), this )
 
       resolve_chain.remove_last
       return this

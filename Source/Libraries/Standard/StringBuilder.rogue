@@ -126,6 +126,9 @@ class StringBuilder : PrintWriter [essential]
       endIf
       return this
 
+    method last->Character
+      return this[ count-1 ]
+
     method locate( ch:Character )->Int32?
       forEach (i of this)
         if (this[i] == ch) return i

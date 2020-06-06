@@ -103,7 +103,6 @@ class Time( total_seconds:Real64 ) [compound]
       #   AM    - same as AMPM
       #   PM    - same as AMPM
       local is_12 = false
-      local ampm  = which{ (hour < 12):"AM" || "PM" }
 
       # Convert am/pm markers to a temporary name that doesn't contain 'm' so that
       # minutes replacement doesn't mess it up.

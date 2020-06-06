@@ -34,6 +34,13 @@ class System [essential]
                 |exit( $result_code );
       $endIf
 
+    method find_program( name:String )->String
+      # Returns the executable filepath of the given program or else null.
+      # Uses 'where' on Windows and 'which' on other platforms.
+      local result = Process.run( "$ $" (which{is_windows:"where"||"which"},name), &env )
+      if (not result.success) return null
+      return result->String.trimmed
+
     method home_folder->String
       if (System.is_windows) return System.environment//HOMEDRIVE + System.environment//HOMEPATH
       else                   return System.environment//HOME
