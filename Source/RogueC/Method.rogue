@@ -154,6 +154,9 @@ class Method
       label_list.add( cur_label )
       return cur_label
 
+    method can_operate_on_literal_null->Logical
+      return (attributes.flags & Attribute.can_operate_on_literal_null)
+
     method get_locals->Local[]
       return CollectLocalsVisitor().collect_locals( this )
 

@@ -4196,7 +4196,7 @@ class CmdTuple : Cmd
         # This doesn't support semi-odd things like "method _1(param=false)->t" which could
         # theoretically work.
         forEach (el_index in 0..<elements.count)
-          if (_get_element_type(rht, el_index) == null)
+          if (_get_element_type(rht, el_index) is null)
             throw t.error("Cannot assign $ elements because the right-hand side has $." (elements.count, el_index))
           endIf
         endForEach
