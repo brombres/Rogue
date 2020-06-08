@@ -145,7 +145,23 @@ class Scope
       args.resolve( this )
 
       forEach (i of args)
-        args[i] = args[i].cast_to( m.parameters[i].type, this ).resolve( this )
+        local arg = args[i]
+        if (arg instanceOf CmdLiteralNull)
+          if (m.name.begins_with("operator") and not m.can_operate_on_literal_null)
+            local mesg : String
+            if (m.name == "operator==")
+              mesg = ''Dangerous == comparison with literal null. Either write "x is null" instead, add the [canOperateOnLiteralNull] attribute to $.$, or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+            elseIf (m.name == "operator!=")
+              mesg = ''Dangerous != comparison with literal null. Either write "x is not null" instead, add the [canOperateOnLiteralNull] attribute to $.$, or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+            elseIf (m.name == "operator<>")
+              mesg = ''Dangerous comparison with literal null. Either write "x is null" (or "x is not null") instead, add the [canOperateOnLiteralNull] attribute to $.$, or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+            else
+              mesg = ''Dangerous operation on literal null. Either add the [canOperateOnLiteralNull] attribute to $.$ or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+            endIf
+            throw arg.t.error( mesg )
+          endIf
+        endIf
+        args[i] = arg.cast_to( m.parameters[i].type, this ).resolve( this )
       endForEach
 
       local cmd : Cmd

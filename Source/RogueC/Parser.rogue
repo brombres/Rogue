@@ -661,6 +661,8 @@ class Parser
           attributes.add( Attribute.is_synchronized )
         elseIf (consume("threadLocal"))
           attributes.add( Attribute.is_thread_local )
+        elseIf (consume("canOperateOnLiteralNull"))
+          attributes.add( Attribute.can_operate_on_literal_null )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else
