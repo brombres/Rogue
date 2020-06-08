@@ -150,13 +150,13 @@ class Scope
           if (m.name.begins_with("operator") and not m.can_operate_on_literal_null)
             local mesg : String
             if (m.name == "operator==")
-              mesg = ''Dangerous == comparison with literal null. Either write "x is null" instead, add the [canOperateOnLiteralNull] attribute to $.$, or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous == comparison with literal null. Either write "x is null", add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             elseIf (m.name == "operator!=")
-              mesg = ''Dangerous != comparison with literal null. Either write "x is not null" instead, add the [canOperateOnLiteralNull] attribute to $.$, or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous != comparison with literal null. Either write "x is not null", add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             elseIf (m.name == "operator<>")
-              mesg = ''Dangerous comparison with literal null. Either write "x is null" (or "x is not null") instead, add the [canOperateOnLiteralNull] attribute to $.$, or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous comparison with literal null. Either write "x is null" (or "x is not null"), add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             else
-              mesg = ''Dangerous operation on literal null. Either add the [canOperateOnLiteralNull] attribute to $.$ or cast the 'null' as the desired type ("null as $") to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous operation on literal null. Either add the [canOperateOnLiteralNull] attribute to $.$ or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             endIf
             throw arg.t.error( mesg )
           endIf
