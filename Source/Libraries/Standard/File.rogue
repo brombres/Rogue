@@ -633,7 +633,14 @@ class File
             # Match 0 characters (skip '**/' entirely)
             if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2)) return true
 
-            # Match 1+ characters for '**' and leave '/' to end pattern
+            # Match 0+ characters for '**' and leave '/' to end pattern (matches 1+ total)
+            ++r0
+            --rcount
+            forEach (n in 0..fcount)
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+            endForEach
+          elseIf (rcount and remaining_pattern[r0] == '*')
+            # '**' - match any characters including '/'
             ++r0
             --rcount
             forEach (n in 0..fcount)
