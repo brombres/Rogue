@@ -3651,7 +3651,13 @@ class Parser
         return parse_value_table( t )
 
       elseIf (consume(TokenType.symbol_at_bracket))
-        return parse_value_list( t )
+        if (consume(TokenType.symbol_close_bracket))
+          local result = CmdAccess( t, "ValueList",  CmdArgs() )
+          if (next_is(TokenType.symbol_open_paren)) parse_args( result.args )
+          return result
+        else
+          return parse_value_list( t )
+        endIf
 
       elseIf (consume(TokenType.symbol_empty_braces))
         return CmdAccess( t, "ValueTable", CmdArgs() )
