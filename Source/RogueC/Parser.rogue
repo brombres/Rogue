@@ -1481,12 +1481,6 @@ class Parser
           cur_statement_list.add( parse_which )
           return
 
-        #{
-        elseIf (next_is(TokenType.keyword_whichIs))
-          cur_statement_list.add( parse_which( true ) )
-          return
-          }#
-
         elseIf (next_is(TokenType.keyword_forEach))
           cur_statement_list.add( parse_for_each )
           return
@@ -1934,22 +1928,21 @@ class Parser
       local t = read  # 'which'
 
       local expression : Cmd
-      local consumed_eols = false
       consume_eols
-      if (consume(TokenType.symbol_open_paren))
-        consume_eols
-        expression = parse_expression
-        consume_eols
-        must_consume( TokenType.symbol_close_paren )
-        consumed_eols = consume_eols
-      endIf
 
       if (next_is(TokenType.symbol_open_brace))
         return parse_select( t, expression )
       endIf
 
+      expression = parse_expression
+
+      if (next_is(TokenType.symbol_open_brace))
+        return parse_select( t, expression )
+      endIf
+
+      must_consume_eols
+
       local cmd_which = CmdWhich( t, expression )
-      if (not consumed_eols) must_consume_eols
       while (next_is(TokenType.keyword_case) or next_is(TokenType.keyword_caseNext))
         t = read  # 'case' | 'caseNext'
         consume_eols
@@ -3117,8 +3110,9 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
+      else
+        return operand
       endIf
-      return operand
 
     method parse_member_access->Cmd
       return parse_member_access( parse_term )
