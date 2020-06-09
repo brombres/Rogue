@@ -1805,20 +1805,44 @@ class Parser
       local println_statement_count = cur_statement_list.count
       local implicit_loop_stack_count = implicit_loop_stack.count
       local cmd_println : CmdPrintln
-      if ((next_is_identifier("println") or next_is_identifier("print")) and reader.peek(1).type is TokenType.symbol_open_paren)
-        # Prepare to parse the print/println two different ways to allow a special syntax exception.
-        #
-        #   println (a+b)/c
-        #
-        # is parsed as both:
-        #
-        #   1.  println( (a + b) ) / c   # technically correct but probably unintended
-        #   2.  println( (a + b) / c )   # probably what developer intended
-        #
-        # If an implicit loop is parsed using Method 1 then we stop; otherwise a second implicit loop
-        # is generated when Method 2 is used. 'implicit_loop_stack_count' is used to check this.
-        ensure cmd_println( peek )
-        println_pos = reader.position
+      if (next_is_identifier("println") or next_is_identifier("print"))
+        if (reader.peek(1).type is TokenType.symbol_open_paren)
+          # Prepare to parse the print/println two different ways to allow a special syntax exception.
+          #
+          #   println (a+b)/c
+          #
+          # is parsed as both:
+          #
+          #   1.  println( (a + b) ) / c   # technically correct but probably unintended
+          #   2.  println( (a + b) / c )   # probably what developer intended
+          #
+          # Furthermore, if Method 2 ends up being used then it accepts a comma-separated or space-separated set of
+          # terms to print out, ending at the first ';' or EOL.
+          #
+          # If an implicit loop is parsed using Method 1 then we stop and use Method 1; otherwise a second
+          # implicit loop would be generated when Method 2 is used. 'implicit_loop_stack_count' is used to check this.
+          ensure cmd_println( peek )
+          println_pos = reader.position
+
+        else
+          # print/println followed by no-parens comma-separated or space-separated args
+          local is_println = next_is_identifier("println")
+          block t = read
+            if (next_is_end_command)
+              cur_statement_list.add( CmdAccess(t,t->String) )
+              return
+            endIf
+            local cmd = CmdAccess(t,"print",parse_expression) : Cmd
+            while (not next_is_end_command)
+              consume( TokenType.symbol_comma )  # Commas are optional
+              local expr = parse_expression
+              cmd = CmdAccess( expr.t, cmd, "print", expr )
+            endWhile
+            if (is_println) cmd = CmdAccess( cmd.t, cmd, "println" )
+            cur_statement_list.add( cmd )
+            return
+          endBlock
+        endIf
       endIf
 
       local expression = parse_expression
