@@ -24,6 +24,7 @@ class Parser
     implicit_loop_stack  = CmdControlStructure[]
 
     allow_placeholder_ids : Logical
+    allow_parens_operator = true
 
     is_api_module : Logical
     is_api_file   : Logical
@@ -2425,7 +2426,8 @@ class Parser
     method parse_if->CmdIf
       local t = read
       local cmd_if = CmdIf( t )
-      cmd_if.condition = parse_expression
+
+      cmd_if.condition = parse_expression( &no_parens_operator )
 
       consume(TokenType.keyword_then)
 
@@ -2525,7 +2527,7 @@ class Parser
         control_var.initial_value = CmdLiteralInt32( t, 1 )
 
         local last_var = Local( t, Program.create_unique_id )
-        last_var.initial_value = parse_expression
+        last_var.initial_value = parse_expression( &no_parens_operator )
 
         local step_cmd = CmdStepLocal( t, control_var, 1 )
 
@@ -2631,7 +2633,7 @@ class Parser
 
     method parse_while->CmdGenericLoop
       local t = read
-      local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, parse_expression )
+      local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, parse_expression(&no_parens_operator) )
 
       consume(TokenType.keyword_do)
 
@@ -2874,9 +2876,11 @@ class Parser
       #endWhile
       return result
 
-    method parse_expression->Cmd
-      consume_eols
-      return parse_range
+    method parse_expression( &no_parens_operator )->Cmd
+      temporarily allow_parens_operator = not no_parens_operator
+        consume_eols
+        return parse_range
+      endTemporarily
 
     method parse_range->Cmd
       return parse_range( parse_logical_xor )
@@ -3110,6 +3114,10 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
+      elseIf (allow_parens_operator and next_is(TokenType.symbol_open_paren))
+        local result = CmdAccess( t, operand, "call", CmdArgs() )
+        parse_args( result.args )
+        return result
       else
         return operand
       endIf
