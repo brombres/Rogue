@@ -1061,22 +1061,47 @@ class Parser
         endForEach
       else
         forEach (p in property_list)
-          local name = "property"
-          if (as_global) name = "global property"
-          if (p.initial_value)
-            p.type = p.initial_value.implicit_type( Scope(this_type,null) )
-            if (p.type is null)
-              #println p.initial_value.type_name
-              throw p.initial_value.t.error(
-                ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Int32" '' (name) )
-            endIf
-          else
-            throw p.t.error( ''An initial value or $ type (for example, ": Int32") must be specified.'' (name) )
-          endIf
+          determine_property_type( property_list, p, &is_global=as_global )
         endForEach
       endIf
 
       return true
+
+    method determine_property_type( property_list:Property[], p:Property, is_global:Logical )
+      if (not p.initial_value)
+        local property_type = which{ is_global:"global property" || "property" }
+        throw p.t.error( ''An initial value or $ type (for example, ": Int32") must be specified.'' (property_type) )
+      endIf
+
+      p.type = p.initial_value.implicit_type( Scope(this_type,null) )
+      if (p.type) return
+
+      local access = p.initial_value as CmdAccess
+      if (access and not access.context and not access.args)
+        # Plain variable name.
+        # See if it's a previously declared property in this same line of declarations
+        forEach (previous_p in property_list)
+          if (previous_p is p) escapeForEach
+          if (previous_p.name == access.name)
+            p.type = previous_p.type
+            return
+          endIf
+        endForEach
+
+        # See if it's a previously declared property in this type
+        local prev : Property
+        if (not is_global) prev = this_type.property_lookup[ access.name ]
+        if (not prev)      prev = this_type.global_lookup[ access.name ]
+        if (prev and prev.type)
+          p.type = prev.type
+          return
+        endIf
+      endIf
+
+      # Not found. Throw an error.
+      local property_type = which{ is_global:"global property" || "property" }
+      throw p.initial_value.t.error(
+      ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Int32" '' (property_type) )
 
     method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type, first_token=TokenType.keyword_method:TokenType )->Logical
       consume_eols
