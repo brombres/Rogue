@@ -1853,7 +1853,7 @@ class Parser
               return
             endIf
             local cmd = CmdAccess(t,"print",parse_expression) : Cmd
-            while (not next_is_end_command)
+            while (not next_is_end_command and not peek.is_structure)
               consume( TokenType.symbol_comma )  # Commas are optional
               local expr = parse_expression
               cmd = CmdAccess( expr.t, cmd, "print", expr )
