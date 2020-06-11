@@ -352,7 +352,7 @@ class CmdArgs : Cmd[]
     method dispatch( v:Visitor ) [propagated]
       v.visit( this )
 
-    method execute( vm:VM )->Value
+    method execute( vm:VM )->ValueList
       local result = @[]
       forEach (cmd in this)
         result.add( cmd.execute(vm) )
