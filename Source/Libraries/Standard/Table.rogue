@@ -340,9 +340,6 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
-    method to->ValueTable
-      return this->Value
-
     method unpack( values:Value )
       init
 

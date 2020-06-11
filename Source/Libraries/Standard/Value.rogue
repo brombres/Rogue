@@ -551,9 +551,6 @@ class Value
     method to->ValueList
       return @[ this ]
 
-    method to->ValueTable
-      return @{}
-
     method to->VarArgs
       return VarArgs().[ add(this) ]
 
@@ -1051,9 +1048,6 @@ class ObjectValue( value:Object ) : Value
 
     method to->String
       return value->String
-
-    method to->ValueTable
-      return value->ValueTable
 
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       if (value is null)
@@ -1701,9 +1695,6 @@ class ValueTable : Value
 
     method to->String
       return data->String
-
-    method to->ValueTable
-      return this
 
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
