@@ -1013,7 +1013,7 @@ augment Program
                       |        raise
                       |  @classmethod
                       |  def _pyrogue_type (cls):
-                      |    return pyrogue_get_type(cls._rogue_type_index_)
+                      |    return _lib.pyrogue_get_type(cls._rogue_type_index_)
                       |  def __del__ (self):
                       |    if (self.thisptr and _lib): _lib.RogueObject_release(self.thisptr)
                       |    self.thisptr = _NULL
