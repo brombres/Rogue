@@ -291,8 +291,5 @@ class CompoundIntrospection<<$ValueType>> [aspect]
 
     method to->Value
       return Value( Boxed<<$ValueType>>(this) )
-
-    method to->ValueList
-      return @[ this->Value ]
 endClass
 

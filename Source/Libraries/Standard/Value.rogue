@@ -548,9 +548,6 @@ class Value
     method to->Value
       return this
 
-    method to->ValueList
-      return @[ this ]
-
     method to->VarArgs
       return VarArgs().[ add(this) ]
 
@@ -620,9 +617,6 @@ class UndefinedValue : NullValue [singleton]
 
     method to->String
       return ""
-
-    method to->ValueList
-      return @[]
 endClass
 
 class LogicalValue( value:Logical ) : Value
@@ -1381,9 +1375,6 @@ class ValueList : Value
     method to->String
       return data->String
 
-    method to->ValueList
-      return this
-
     method to->VarArgs
       local result = VarArgs().[ reserve(count) ]
       forEach (value in this) result.add( value )
@@ -1915,7 +1906,7 @@ endClass
 
 class ValueIDLookupTable
   PROPERTIES
-    id_list   = @[]
+    id_list : Value
 
   METHODS
     method init( info:Value )

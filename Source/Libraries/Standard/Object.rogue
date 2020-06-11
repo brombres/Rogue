@@ -26,9 +26,6 @@ class Object [native]
     method to->Value [nonAPI]
       return Value( this )
 
-    method to->ValueList [nonAPI]
-      return @[ this->Value ]
-
     method type_info->TypeInfo [nonAPI]
       native @|return RogueType_type_info( $this->type );
 

@@ -676,9 +676,6 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method to->ValueList
-      return this->Value
-
     method to_array->Array<<$DataType>>
       local result = Array<<$DataType>>( count )
       forEach (i of this)
