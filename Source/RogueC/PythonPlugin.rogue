@@ -1374,7 +1374,7 @@ augment Program
               printed_comment = true
             endIf
             if (m.return_type)
-              writer.print "_plib." + f.cname + ".restype = "
+              writer.print "_plib._PyRogue_" + f.cname + "_.restype = "
               if (m.return_type.is_reference)
                 writer.print( "_RogueObjectPtr" )
               else
@@ -1382,7 +1382,7 @@ augment Program
               endIf
               writer.println()
             endIf
-            writer.print("_plib." + f.cname + ".argtypes = [" )
+            writer.print("_plib._PyRogue_" + f.cname + "_.argtypes = [" )
             forEach (i of m.parameters)
               local p = m.parameters[i]
               if (i > 0) writer.print( ", " )
