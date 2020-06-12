@@ -204,6 +204,9 @@ class Table<<$KeyType,$ValueType>>
 
       return true
 
+    method package->Value
+      return this->Value
+
     method print_to( buffer:StringBuilder )->StringBuilder
       buffer.print( '{' )
       local cur = first_entry

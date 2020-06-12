@@ -428,6 +428,9 @@ class Value
     method operator*( other:String )->Value
       return UndefinedValue
 
+    method package->Value
+      return this
+
     method remove( value:Value )->Value
       return value
 
@@ -1033,6 +1036,10 @@ class ObjectValue( value:Object ) : Value
   METHODS
     method is_object->Logical
       return true
+
+    method package->Value
+      if (value is null) return NullValue
+      return value.package
 
     method to->Logical
       return (value is not null)

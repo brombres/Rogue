@@ -94,6 +94,9 @@ class Set<<$T>>
     method as_array -> $T[]
       return _t.keys
 
+    method package->Value
+      return this->Value
+
     method to->$T[]
       return as_array
 
