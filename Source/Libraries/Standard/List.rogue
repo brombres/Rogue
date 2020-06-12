@@ -433,6 +433,9 @@ class List<<$DataType>> : GenericList
       loop (n) result.add( this )
       return result
 
+    method package->Value
+      return this->Value
+
     method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
       # n           - A value between 0 and (permutation_count-1).  0 gives the
       #               original list and (permutation_count-1) gives the list in
