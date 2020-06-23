@@ -37,6 +37,10 @@ class String
     method create( value:Value )->String
       return value->String
 
+    method exists( string:String )->Logical
+      # Returns false if the string is null or empty; otherwise returns true.
+      return (string and string.count?)
+
     method operator==( a:String, b:String )->Logical
       if (a is null) return (b is null)
       else           return a.operator==( b )
