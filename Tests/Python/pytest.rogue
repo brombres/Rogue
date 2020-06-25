@@ -1,0 +1,90 @@
+global rogue_global = 121
+
+routine rogue_routine ()->Int32
+  local r = rogue_global
+  rogue_global++
+  return r
+endRoutine
+
+
+class Foo [api]
+  PROPERTIES
+    prop_str = "hello"
+    prop_int = 42
+    prop_bar : Bar
+    prop_f_v_i : Function()->Int32
+    prop_f_s_i : Function(String)->Int32
+    prop_f_s_b : Function(String)->Bar
+    prop_f_s_o : Function(String)->Object
+    prop_f_i_s : Function(Int32)->String
+
+  GLOBAL METHODS
+    method gf_square (i : Int64) -> Int64
+      return i*i
+
+  METHODS
+    method f_ss (msg : String) -> String [api]
+      return msg.to_uppercase()
+
+    method f_sf (msg : String) -> (Function()->String)
+      local bar = function ()->String with (msg)
+        #println "Rogue callback returning '" + msg + "' in uppercase"
+        return msg.to_uppercase()
+      endFunction
+      return bar
+
+    method new_bar (val : String) -> Bar
+      return Bar(val)
+
+    method call_funcs () -> Logical
+      if (not prop_f_v_i) return false
+      if (not prop_f_s_i) return false
+      if (not prop_f_s_o) return false
+      if (not prop_f_s_b) return false
+
+      if (prop_f_v_i() != 99) return false
+
+      if (prop_f_s_i("33") != 330) return false
+
+      if (prop_f_s_o("FuncBar")->String != "<Bar PyFuncBar>") return false
+
+      if (prop_f_s_b("FuncBar").val != "PyFuncBar") return false
+
+      if (prop_f_i_s(4) != "!!!!") return false
+
+      return true
+
+    method f_opt_s (msg = "hi" : String)->String
+      return msg
+
+    method f_opt_i (n = 2 : Int32)->Int32
+      return n * n
+
+    method f_over () -> String
+      return "Nothing"
+
+    method f_over (i : Int32) -> String
+      return "Int32"
+
+    method f_over (s : String) -> String
+      return "String"
+
+    method f_over (i : Int32, s : String) -> String
+      return "Int32,String"
+
+    method f_over (i : Int32, o : Object) -> String
+      return "Int32,Object"
+endClass
+
+
+class Bar
+  PROPERTIES
+    val = "DefaultBar"
+
+  METHODS
+    method init (v: String)
+      val = v
+
+    method to->String
+      return "<Bar $>" (val)
+endClass
