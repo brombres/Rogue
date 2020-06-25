@@ -249,6 +249,7 @@ class PyProperty
 
       local call_code = pycls.get_py_to_c(p.type).replacing("%", "value")
       if (call_code == "") return this # Not supported
+      if (p.type.is_reference) call_code += ".value"
       write_c_code = "$ = $" (access, call_code)
 
       if (p.is_native) return # Not currently supported
@@ -348,7 +349,7 @@ class PyClass
       if (pass_ctype == "") return ""
       if t.is_reference
         local pass_ptype = get_p_type(t)
-        return "cast_object(%, $)" (pass_ptype)
+        return "cast_object(%, $).value" (pass_ptype)
       endIf
       return "%"
 
@@ -1070,18 +1071,26 @@ augment Program
                       |  if cls is String: return pyrogue_get_string(raw_object_ptr)
                       |  return cls(__pyrogue_new_instance=raw_object_ptr)
                       |
+                      |class _pyrogue_retained_raw_ptr (ctypes.c_void_p):
+                      |  def __init__ (self, n):
+                      |    super(_pyrogue_retained_raw_ptr,self).__init__(n)
+                      |    _lib.RogueObject_retain(self)
+                      |  def __del__ (self):
+                      |    _lib.RogueObject_release(self)
+                      |
                       |def cast_object (python_object, t):
                       |  """Cast a Python object to Rogue type t"""
                       |  if isinstance(python_object, str) and issubclass(String, t):
-                      |    if _is_py2: return _lib.RogueString_create_from_utf8(python_object, -1)
-                      |    return _lib.RogueString_create_from_utf8(python_object.encode("UTF-8"), -1)
+                      |    if _is_py2: o = _lib.RogueString_create_from_utf8(python_object, -1)
+                      |    o = _lib.RogueString_create_from_utf8(python_object.encode("UTF-8"), -1)
+                      |    return _pyrogue_retained_raw_ptr(o)
                       |  if python_object is None:
-                      |    return None # Null pointers okay
+                      |    return _NULL
                       |  if issubclass(t, _PyDelegate):
                       |    if hasattr(python_object, "__call__"):
-                      |      return (t._from_callable(python_object)).thisptr.value
+                      |      return _pyrogue_retained_raw_ptr((t._from_callable(python_object)).thisptr.value)
                       |  if isinstance(python_object, t):
-                      |    return python_object.thisptr.value
+                      |    return python_object.thisptr
                       |  raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
                       |
                       |def _config_properties ():
@@ -1096,7 +1105,7 @@ augment Program
                       |  }
                       |
                       |  def _cast_mutator_value (o, ti):
-                      |    return cast_object(o, _rogue_type_index_to_pyclass[ti])
+                      |    return cast_object(o, _rogue_type_index_to_pyclass[ti]).value
                       |
                       |  def _make_accessors (n, t, o, ref):
                       |    def accessor (self):
