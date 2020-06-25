@@ -975,6 +975,7 @@ augment Program
                       |def pyrogue_get_string (s):
                       |  # May return bytes or Unicode string.  For Python 3,
                       |  # we probably should always do the latter.
+                      |  if s is None: return None
                       |  d = _lib.pyrogue_string_utf8(s)[:_lib.pyrogue_string_byte_count(s)]
                       |  if _is_py2 and _lib.pyrogue_string_is_ascii(s): return d
                       |  return d.decode('UTF-8')
