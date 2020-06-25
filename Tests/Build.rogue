@@ -41,6 +41,7 @@ routine rogo_run_tests
   listing.remove( "Build.rogue" )
   listing.remove( "BuildCore.rogue" )
   listing.remove( "BuildLocal.rogue" )
+  File.create_folder( "Build" )
   println "=" * 79
   println "RUNNING TESTS"
   println "=" * 79
