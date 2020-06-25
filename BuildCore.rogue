@@ -332,6 +332,7 @@ class Build [singleton]
       File.delete( "Source/RogueC/Build" )
       File.delete( ".rogo" )
       File.delete( "Programs/RogueC" )
+      File.delete( "Tests/Build" )
       delete_launchers
 endClass
 
