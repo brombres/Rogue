@@ -18,19 +18,25 @@ def compile_module_mac (pypy_mode):
       subs = os.listdir(os.path.join(d), "include")
       if len(subs) == 1: return os.path.join(d, "include", subs[0])
       return None
-    incd = find_include()
-    if not incd: return False
+    if d:
+      incd = find_include(d)
+      if not incd: return False
+    else:
+      incd = None
 
     for compiler in "clang++ g++ c++".split():
       compile_c = [compiler] + "-O0 -std=gnu++11 -fPIC -shared -dynamic".split()
-      compile_c += ["-I", incd]
-      compile_c += ["-L", os.path.join(d, "lib"), "-l", "python"+v]
+      if incd: compile_c += ["-I", incd]
+      if d: compile_c += ["-L", os.path.join(d, "lib"), "-l", "python"+v]
       if pypy_mode: compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
       if subprocess.run(compile_c).returncode == 0: return True
 
     return False
+
+  if pypy_mode:
+    return try_compile(None, None)
 
   dirs = [
     ("/System/Library/Frameworks/Python.framework/Versions/2.7", "2.7"),
@@ -49,13 +55,16 @@ def compile_module_posix (pypy_mode):
   def try_compile (flags):
     for compiler in "clang++ g++ c++".split():
       compile_c = [compiler] + "-O0 -std=gnu++11 -fPIC -shared".split()
-      compile_c += flags.split()
+      if flags: compile_c += flags.split()
       if pypy_mode: compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
       if subprocess.run(compile_c).returncode == 0: return True
 
     return False
+
+  if pypy_mode:
+    return try_compile(None)
 
   include = [
     "-I /usr/include/python2.7",
