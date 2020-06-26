@@ -78,7 +78,6 @@ class TestPythonBindings (unittest.TestCase):
 
 
   def test_rogue_calling_python (self):
-
     # Test calling from Rogue into Python...
 
     def pyfunc_v_i ():
@@ -131,6 +130,22 @@ class TestPythonBindings (unittest.TestCase):
     self.assertEqual(f.f_over(32,None), "Int32,Object")
     self.assertEqual(f.f_over(32,b), "Int32,Object")
 
+
+  def test_rogue_code_exception (self):
+    # Test Rogue code that raises exception
+    self.assertRaisesRegex(RuntimeError, ".*This is from Rogue.*", f.f_rogue_exception)
+
+
+  def test_python_code_exception (self):
+    # Test Rogue calling Python function that raises exception
+
+    def pyfunc ():
+      raise RuntimeError("This is from Python")
+
+    f.prop_f_exception = pyfunc
+
+    s = f.f_python_exception()
+    self.assertTrue("This is from Python" in s)
 
 
 if __name__ == "__main__":

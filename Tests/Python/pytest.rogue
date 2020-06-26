@@ -17,6 +17,7 @@ class Foo [api]
     prop_f_s_b : Function(String)->Bar
     prop_f_s_o : Function(String)->Object
     prop_f_i_s : Function(Int32)->String
+    prop_f_exception : Function()
 
   GLOBAL METHODS
     method gf_square (i : Int64) -> Int64
@@ -74,6 +75,17 @@ class Foo [api]
 
     method f_over (i : Int32, o : Object) -> String
       return "Int32,Object"
+
+    method f_rogue_exception ()
+      throw Error("This is from Rogue")
+
+    method f_python_exception () -> String
+      try
+        prop_f_exception()
+      catch (err:Exception)
+        return err->String
+      endTry
+      return ""
 endClass
 
 
