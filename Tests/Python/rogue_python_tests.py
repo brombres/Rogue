@@ -7,17 +7,20 @@ def msg (*args):
   pass
 
 
-class TestPythonBindings (unittest.TestCase):
+def _configure ():
+  import pytest
+  g = globals()
+  for k in dir(pytest):
+    if k not in g:
+      g[k] = getattr(pytest, k)
+  global f, b
+  f = Foo()
+  b = f.new_bar("MyBar")
+
+class TestPythonBasics (unittest.TestCase):
   @classmethod
   def setUpClass (cls):
-    import pytest
-    g = globals()
-    for k in dir(pytest):
-      if k not in g:
-        g[k] = getattr(pytest, k)
-    global f, b
-    f = Foo()
-    b = f.new_bar("MyBar")
+    _configure()
 
 
   def test_rogue_globals (self):
@@ -69,6 +72,12 @@ class TestPythonBindings (unittest.TestCase):
     self.assertIs(f.prop_str, None)
 
 
+class TestPythonBindingsCalls (unittest.TestCase):
+  @classmethod
+  def setUpClass (cls):
+    _configure()
+
+
   def test_rogue_function_objects (self):
     # Test calling Rogue function objects from Python
 
@@ -108,6 +117,12 @@ class TestPythonBindings (unittest.TestCase):
     self.assertTrue(f.call_funcs())
 
 
+class TestPythonBindingsParameters (unittest.TestCase):
+  @classmethod
+  def setUpClass (cls):
+    _configure()
+
+
   def test_optional_arguments (self):
     # Test optional arguments
 
@@ -129,6 +144,12 @@ class TestPythonBindings (unittest.TestCase):
     self.assertEqual(f.f_over(32,"x"), "Int32,String")
     self.assertEqual(f.f_over(32,None), "Int32,Object")
     self.assertEqual(f.f_over(32,b), "Int32,Object")
+
+
+class TestPythonBindingsExceptions (unittest.TestCase):
+  @classmethod
+  def setUpClass (cls):
+    _configure()
 
 
   def test_rogue_code_exception (self):
