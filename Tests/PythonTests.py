@@ -12,7 +12,7 @@ def errmsg (*args):
   print(*args)
 
 
-def compile_module_mac ():
+def compile_module_mac (pypy_mode):
   def try_compile (d, v):
     def find_include (d):
       subs = os.listdir(os.path.join(d), "include")
@@ -25,6 +25,7 @@ def compile_module_mac ():
       compile_c = [compiler] + "-O0 -std=gnu++11 -fPIC -shared -dynamic".split()
       compile_c += ["-I", incd]
       compile_c += ["-L", os.path.join(d, "lib"), "-l", "python"+v]
+      if pypy_mode: compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
       if subprocess.run(compile_c).returncode == 0: return True
@@ -44,11 +45,12 @@ def compile_module_mac ():
   return False
 
 
-def compile_module_posix ():
+def compile_module_posix (pypy_mode):
   def try_compile (flags):
     for compiler in "clang++ g++ c++".split():
       compile_c = [compiler] + "-O0 -std=gnu++11 -fPIC -shared".split()
       compile_c += flags.split()
+      if pypy_mode: compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
       if subprocess.run(compile_c).returncode == 0: return True
@@ -82,40 +84,104 @@ def compile_module_posix ():
   return False
 
 
-try:
-  print("Attempting to build Python module...")
+def compile (pypy_mode):
+  try:
+    print("Attempting to build Python module...")
 
-  # Change into script's directory
-  os.chdir(os.path.dirname(os.path.realpath(__file__)))
-  os.chdir("Build")
+    compile_r = ("../../Programs/RogueC/RogueC-Linux --debug --api --essential "
+                 "--target=Python ../Python/pytest.rogue".split())
 
-  compile_r = ("../../Programs/RogueC/RogueC-Linux --debug --api --essential "
-               "--target=Python ../Python/pytest.rogue".split())
+    require(subprocess.run(compile_r).returncode == 0, "Executing Rogue compiler")
 
-  require(subprocess.run(compile_r).returncode == 0, "Executing Rogue compiler")
+    if sys.platform == "darwin":
+      require(compile_module_mac(pypy_mode))
+    elif os.name == "posix":
+      require(compile_module_posix(pypy_mode))
+    else:
+      errmsg("Unknown OS -- skipping Python tests")
+      sys.exit(0)
 
-  if sys.platform == "darwin":
-    require(compile_module_mac())
-  elif os.name == "posix":
-    require(compile_module_posix())
-  else:
-    errmsg("Unknown OS -- skipping Python tests")
-    sys.exit(0)
+    return True
+  except:
+    errmsg("Exception setting up Python tests")
+    return False
 
-  print("Executing Python tests...")
 
-  pp = os.environ.get("PYTHONPATH", "")
-  if pp: pp += ":"
-  pp += os.getcwd()
-  os.environ["PYTHONPATH"] = pp
 
-  exec_c = [sys.executable, os.path.join(os.getcwd(), "..", "Python", "rogue_python_tests.py"), "-v"]
-  os.execv(exec_c[0], exec_c)
+print("Executing Python tests...")
 
-  # Shouldn't reach this!
-  errmsg("Test didn't execute")
-  sys.exit(1)
+# Change into script's directory
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir("Build")
 
-except:
-  errmsg("Exception during Python testing")
+pp = os.environ.get("PYTHONPATH", "")
+if pp: pp += ":"
+pp += os.getcwd()
+os.environ["PYTHONPATH"] = pp
+
+exec_c = [None, os.path.join(os.getcwd(), "..", "Python", "rogue_python_tests.py"), "-v"]
+passed = []
+failed = []
+skipped = []
+
+current_mode = None
+
+def test (name, pypy_mode, *names):
+  global current_mode
+  ok = False
+  fail = False
+  skip = 0
+  if pypy_mode != current_mode:
+    if not compile(pypy_mode):
+      errmsg("SKIPPING -- Couldn't compile")
+      return
+    current_mode = pypy_mode
+  for py in names:
+    exec_c[0] = py
+    print("*** Trying", name, "using", exec_c[0], "(PyPy-compatible) ***" if pypy_mode else "***")
+    try:
+      if subprocess.run(exec_c).returncode == 0:
+        passed.append(name + (" pypy-compat" if pypy_mode else ""))
+        ok = True
+        break
+      else:
+        fail = True
+    except FileNotFoundError as e:
+      if e.filename == py:
+        skip+=1
+        print("SKIPPING -- " + str(e))
+        print()
+      else:
+        fail = True
+    except:
+      fail = True
+
+  print()
+  if ok: return
+  if fail: failed.append(name + (" pypy-compat" if pypy_mode else ""))
+  if skip == len(names):
+    skipped.append(name + (" pypy-compat" if pypy_mode else ""))
+
+
+test("python2", False, "python2", "python2.7")
+test("python3", False, "python3")
+test(sys.executable, False, sys.executable)
+test("python2", True, "python2", "python2.7")
+test("python3", True, "python3")
+test("pypy2", True, "pypy2", "pypy")
+test("pypy3", True, "pypy3")
+test(sys.executable, True, sys.executable)
+
+
+print("*** Python test results ***")
+
+for x in passed:
+  print(" PASS:", x)
+for x in skipped:
+  print(" SKIP:", x)
+for x in failed:
+  print(" FAIL:", x)
+
+
+if not passed:
   sys.exit(1)
