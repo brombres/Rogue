@@ -154,7 +154,9 @@ class TestPythonBindingsExceptions (unittest.TestCase):
 
   def test_rogue_code_exception (self):
     # Test Rogue code that raises exception
-    self.assertRaisesRegex(RuntimeError, ".*This is from Rogue.*", f.f_rogue_exception)
+    assertRR = getattr(self, "assertRaisesRegex", lambda a,b,c: self.assertRaises(a,c))
+
+    assertRR(RuntimeError, ".*This is from Rogue.*", f.f_rogue_exception)
 
 
   def test_python_code_exception (self):
