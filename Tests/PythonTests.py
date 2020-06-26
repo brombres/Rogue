@@ -12,10 +12,10 @@ def errmsg (*args):
   print(*args)
 
 
-def compile_module_mac (pypy_mode):
+def compile_module_mac (mode):
   def try_compile (d, v):
     def find_include (d):
-      subs = os.listdir(os.path.join(d), "include")
+      subs = os.listdir(os.path.join(d, "include"))
       if len(subs) == 1: return os.path.join(d, "include", subs[0])
       return None
     if d:
@@ -28,21 +28,25 @@ def compile_module_mac (pypy_mode):
       compile_c = [compiler] + "-O0 -std=gnu++11 -fPIC -shared -dynamic".split()
       if incd: compile_c += ["-I", incd]
       if d: compile_c += ["-L", os.path.join(d, "lib"), "-l", "python"+v]
-      if pypy_mode: compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
+      if mode == "pypy": compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
       if subprocess.run(compile_c).returncode == 0: return True
 
     return False
 
-  if pypy_mode:
+  if mode == "pypy":
     return try_compile(None, None)
 
-  dirs = [
-    ("/System/Library/Frameworks/Python.framework/Versions/2.7", "2.7"),
-    ("Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.7", "3.7"),
-    ("Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.8", "3.8"),
-    ]
+  if mode == 2:
+    dirs = [
+      ("/System/Library/Frameworks/Python.framework/Versions/2.7", "2.7"),
+      ]
+  else:
+    dirs = [
+      ("/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.7", "3.7"),
+      ("/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.8", "3.8"),
+      ]
 
   for d,v in dirs:
     if os.path.isdir(d):
@@ -51,40 +55,43 @@ def compile_module_mac (pypy_mode):
   return False
 
 
-def compile_module_posix (pypy_mode):
+def compile_module_posix (mode):
   def try_compile (flags):
     for compiler in "clang++ g++ c++".split():
       compile_c = [compiler] + "-O0 -std=gnu++11 -fPIC -shared".split()
       if flags: compile_c += flags.split()
-      if pypy_mode: compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
+      if mode == "pypy": compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
       if subprocess.run(compile_c).returncode == 0: return True
 
     return False
 
-  if pypy_mode:
+  if mode == "pypy":
     return try_compile(None)
 
-  include = [
-    "-I /usr/include/python2.7",
-    "-I /usr/include/python3.6",
-    "-I /usr/include/python3.7",
-    "-I /usr/include/python3.8",
-    ]
+  include = []
 
-  try:
-    out = subprocess.run(["pkg-config","python","--cflags"], stdout=subprocess.PIPE).stdout
-    out = out.strip()
-    if out: include.insert(0, out)
-  except Exception:
-    pass
-  try:
-    out = subprocess.run(["pkg-config","python3","--cflags"], stdout=subprocess.PIPE).stdout
-    out = out.strip()
-    if out: include.insert(0, out)
-  except Exception:
-    pass
+  if mode == 2:
+    include += [ "-I /usr/include/python2.7" ]
+    try:
+      out = subprocess.run(["pkg-config","python","--cflags"], stdout=subprocess.PIPE).stdout
+      out = out.strip()
+      if out: include.insert(0, out)
+    except Exception:
+      pass
+  else:
+    include += [
+      "-I /usr/include/python3.6",
+      "-I /usr/include/python3.7",
+      "-I /usr/include/python3.8",
+      ]
+    try:
+      out = subprocess.run(["pkg-config","python3","--cflags"], stdout=subprocess.PIPE).stdout
+      out = out.strip()
+      if out: include.insert(0, out)
+    except Exception:
+      pass
 
 
   for inc in include:
@@ -93,22 +100,27 @@ def compile_module_posix (pypy_mode):
   return False
 
 
-def compile (pypy_mode):
+def compile (mode):
   try:
     print("Attempting to build Python module...")
 
-    compile_r = ("../../Programs/RogueC/RogueC-Linux --debug --api --essential "
+    compile_r = ("--debug --api --essential "
                  "--target=Python ../Python/pytest.rogue".split())
+
+    if sys.platform == "darwin":
+      compile_r = ["../../Programs/RogueC/RogueC-macOS"] + compile_r
+    elif sys.platform in "linux linux2 linux3".split():
+      compile_r = ["../../Programs/RogueC/RogueC-Linux"] + compile_r
+    else:
+      errmsg("Unknown OS -- skipping Python tests")
+      sys.exit(0)
 
     require(subprocess.run(compile_r).returncode == 0, "Executing Rogue compiler")
 
     if sys.platform == "darwin":
-      require(compile_module_mac(pypy_mode))
-    elif os.name == "posix":
-      require(compile_module_posix(pypy_mode))
+      require(compile_module_mac(mode))
     else:
-      errmsg("Unknown OS -- skipping Python tests")
-      sys.exit(0)
+      require(compile_module_posix(mode))
 
     return True
   except:
@@ -135,22 +147,22 @@ skipped = []
 
 current_mode = None
 
-def test (name, pypy_mode, *names):
+def test (name, mode, *names):
   global current_mode
   ok = False
   fail = False
   skip = 0
-  if pypy_mode != current_mode:
-    if not compile(pypy_mode):
+  if mode != current_mode:
+    if not compile(mode):
       errmsg("SKIPPING -- Couldn't compile")
       return
-    current_mode = pypy_mode
+    current_mode = mode
   for py in names:
     exec_c[0] = py
-    print("*** Trying", name, "using", exec_c[0], "(PyPy-compatible) ***" if pypy_mode else "***")
+    print("*** Trying", name, "using", exec_c[0], "in mode", mode, "***")
     try:
       if subprocess.run(exec_c).returncode == 0:
-        passed.append(name + (" pypy-compat" if pypy_mode else ""))
+        passed.append(name + " " + str(mode))
         ok = True
         break
       else:
@@ -167,19 +179,18 @@ def test (name, pypy_mode, *names):
 
   print()
   if ok: return
-  if fail: failed.append(name + (" pypy-compat" if pypy_mode else ""))
+  if fail: failed.append(name + " " + str(mode))
   if skip == len(names):
-    skipped.append(name + (" pypy-compat" if pypy_mode else ""))
+    skipped.append(name + " " + str(mode))
 
 
-test("python2", False, "python2", "python2.7")
-test("python3", False, "python3")
-test(sys.executable, False, sys.executable)
-test("python2", True, "python2", "python2.7")
-test("python3", True, "python3")
-test("pypy2", True, "pypy2", "pypy")
-test("pypy3", True, "pypy3")
-test(sys.executable, True, sys.executable)
+test("python2", 2, "python2", "python2.7")
+test("python3", 3, "python3")
+test("python2", "pypy", "python2", "python2.7")
+test("python3", "pypy", "python3")
+test("pypy2", "pypy", "pypy2", "pypy")
+test("pypy3", "pypy", "pypy3")
+test(sys.executable, "pypy", sys.executable)
 
 
 print("*** Python test results ***")
