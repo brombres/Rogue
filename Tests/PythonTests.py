@@ -11,6 +11,12 @@ def require (cond, msg="Unknown"):
 def errmsg (*args):
   print(*args)
 
+def strs (args):
+  def fix (s):
+    if isinstance(s, bytes): return s.decode("UTF-8")
+    return str(s)
+  return [fix(s) for s in args]
+
 
 def compile_module_mac (mode):
   def try_compile (d, v):
@@ -31,7 +37,11 @@ def compile_module_mac (mode):
       if mode == "pypy": compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
+      print("Trying to compile:", " ".join(strs(compile_c)))
+
       if subprocess.run(compile_c).returncode == 0: return True
+
+      errmsg("Failed to compile.")
 
     return False
 
@@ -63,7 +73,11 @@ def compile_module_posix (mode):
       if mode == "pypy": compile_c += ["-DPYROGUE_PYPY_COMPATIBLE"]
       compile_c += "pytest_module.cpp -o pytest_module.so".split()
 
+      print("Trying to compile:", " ".join(strs(compile_c)))
+
       if subprocess.run(compile_c).returncode == 0: return True
+
+      errmsg("Failed to compile.")
 
     return False
 
@@ -123,8 +137,8 @@ def compile (mode):
       require(compile_module_posix(mode))
 
     return True
-  except:
-    errmsg("Exception setting up Python tests")
+  except Exception as e:
+    errmsg("Exception setting up Python tests: " + str(e))
     return False
 
 
