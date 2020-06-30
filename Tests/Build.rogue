@@ -13,6 +13,7 @@ augment Build
     PYTHON = "python3"
 
     tests_passed : Int32
+    total_tests  : Int32
 endAugment
 
 class Test
@@ -25,10 +26,15 @@ Test() subclass
   METHODS
     method init
       header( name )
+      ++Build.total_tests
+      try
 $endMacro
 
 $macro endTest
-      ++Build.tests_passed
+        ++Build.tests_passed
+      catch ( err:Error )
+        Console.error.println err
+      endTry
 endSubclass
 $endMacro
 
@@ -50,32 +56,42 @@ routine rogo_run_tests
 
   beginTest( "Rogo Test" )
     println "An inline rogo test"
+    # if (problem) throw Error(...)
+    #   OR
+    # require <condition>
+    #   ETC
   endTest
 
   println
   println "=" * 79
-  println "$/$ tests passed." (Build.tests_passed,Build.tests_passed)
+  println "$/$ tests passed." (Build.tests_passed,Build.total_tests)
   println "=" * 79
 endRoutine
 
 routine run_test( filename:String )
-  which (filename)
-    others
-      which (File.extension(filename))
-        case "py"
-          header( filename )
-          execute ''$ "$"'' (Build.PYTHON,filename)
-        case "rogue"
-          header( filename )
-          execute ''roguec --execute --test "$" --target="C++,Console,$" --output=Build'' (filename,System.os)
-        case "sh"
-          header( filename )
-          execute ''sh "$"'' (filename)
-        others
-          return
-      endWhich
-  endWhich
-  ++Build.tests_passed
+  try
+    which (filename)
+      others
+        which (File.extension(filename))
+          case "py"
+            header( filename )
+            execute ''$ "$"'' (Build.PYTHON,filename)
+          case "rogue"
+            header( filename )
+            execute ''roguec --execute --test "$" --target="C++,Console,$" --output=Build'' (filename,System.os)
+          case "sh"
+            header( filename )
+            execute ''sh "$"'' (filename)
+          others
+            return
+        endWhich
+    endWhich
+    ++Build.total_tests
+    ++Build.tests_passed
+  catch ( err:Error )
+    Console.error.println err
+    ++Build.total_tests
+  endTry
 endRoutine
 
 routine header( filename:String )

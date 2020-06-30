@@ -216,6 +216,5 @@ for x in skipped:
 for x in failed:
   print(" FAIL:", x)
 
-
-if not passed:
+if failed or not passed:
   sys.exit(1)
