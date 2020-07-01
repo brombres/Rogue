@@ -1196,6 +1196,7 @@ augment Program
                          |  {
                          |    printf( "Uncaught exception\n" );
                          |    RogueException__display( err );
+                         |    return 1;
                          |  }
                          |
                          |  return 0;

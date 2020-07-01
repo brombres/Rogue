@@ -428,6 +428,9 @@ class Value
     method operator*( other:String )->Value
       return UndefinedValue
 
+    method package->Value
+      return this
+
     method remove( value:Value )->Value
       return value
 
@@ -548,12 +551,6 @@ class Value
     method to->Value
       return this
 
-    method to->ValueList
-      return @[ this ]
-
-    method to->ValueTable
-      return @{}
-
     method to->VarArgs
       return VarArgs().[ add(this) ]
 
@@ -623,9 +620,6 @@ class UndefinedValue : NullValue [singleton]
 
     method to->String
       return ""
-
-    method to->ValueList
-      return @[]
 endClass
 
 class LogicalValue( value:Logical ) : Value
@@ -1043,6 +1037,10 @@ class ObjectValue( value:Object ) : Value
     method is_object->Logical
       return true
 
+    method package->Value
+      if (value is null) return NullValue
+      return value.package
+
     method to->Logical
       return (value is not null)
 
@@ -1051,9 +1049,6 @@ class ObjectValue( value:Object ) : Value
 
     method to->String
       return value->String
-
-    method to->ValueTable
-      return value->ValueTable
 
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       if (value is null)
@@ -1387,9 +1382,6 @@ class ValueList : Value
     method to->String
       return data->String
 
-    method to->ValueList
-      return this
-
     method to->VarArgs
       local result = VarArgs().[ reserve(count) ]
       forEach (value in this) result.add( value )
@@ -1702,9 +1694,6 @@ class ValueTable : Value
     method to->String
       return data->String
 
-    method to->ValueTable
-      return this
-
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       local pretty_print = ((flags & FORMATTED) and (is_complex or (flags & OMIT_COMMAS)))
 
@@ -1924,7 +1913,7 @@ endClass
 
 class ValueIDLookupTable
   PROPERTIES
-    id_list   = @[]
+    id_list : Value
 
   METHODS
     method init( info:Value )

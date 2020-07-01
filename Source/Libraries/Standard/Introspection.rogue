@@ -205,6 +205,7 @@ class Introspector
       return value
 
     method value->Value
+      if (type is <<String>>) return StringValue( context )
       if (type.is_reference) return ObjectValue( context )
 
       which (type.primitive_type)
@@ -290,11 +291,5 @@ class CompoundIntrospection<<$ValueType>> [aspect]
 
     method to->Value
       return Value( Boxed<<$ValueType>>(this) )
-
-    method to->ValueTable
-      return introspector->Value
-
-    method to->ValueList
-      return @[ this->Value ]
 endClass
 

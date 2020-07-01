@@ -249,6 +249,7 @@ class PyProperty
 
       local call_code = pycls.get_py_to_c(p.type).replacing("%", "value")
       if (call_code == "") return this # Not supported
+      if (p.type.is_reference) call_code += ".value"
       write_c_code = "$ = $" (access, call_code)
 
       if (p.is_native) return # Not currently supported
@@ -348,7 +349,7 @@ class PyClass
       if (pass_ctype == "") return ""
       if t.is_reference
         local pass_ptype = get_p_type(t)
-        return "cast_object(%, $)" (pass_ptype)
+        return "cast_object(%, $).value" (pass_ptype)
       endIf
       return "%"
 
@@ -477,9 +478,21 @@ augment Program
                       |ROGUE_EXPORT_C int pyrogue_get_property_count (int type_index);
                       |ROGUE_EXPORT_C void * pyrogue_get_property_name (int type_index, int property_index);
                       |
-                      |#include <Python.h> //TODO: Include this only in the .cpp file
+                      |#ifdef PYROGUE_PYPY_COMPATIBLE
+                      |  #define PYROGUE_XINCREF pyrogue_retain
+                      |  #define PYROGUE_XDECREF pyrogue_release
+                      |  #define PYROGUE_SET_ERR(MSG,EXC) pyrogue_error_callback(MSG, EXC)
+                      |#else
+                      |  #include <Python.h> //TODO: Include this only in the .cpp file
+                      |  #define PYROGUE_XINCREF Py_XINCREF
+                      |  #define PYROGUE_XDECREF Py_XDECREF
+                      |  #define PYROGUE_SET_ERR(MSG,EXC) PyErr_SetString(PyExc_RuntimeError, MSG)
+                      |#endif
                       |
                       |#define RogueObjectPtr void *
+                      |
+                      |typedef void (*pyrogue_ref_t)(void * o);
+                      |extern pyrogue_ref_t pyrogue_retain, pyrogue_release;
                       |
                       |struct PyRogueDelegateContext
                       |{
@@ -568,6 +581,34 @@ augment Program
                       |  return Rogue_types[type_index].property_count;
                       |}
                       |
+                      |
+                      |extern "C" int pyrogue_is_pypy_compatible ()
+                      |{
+                      |#ifdef PYROGUE_PYPY_COMPATIBLE
+                      |  return 1;
+                      |#else
+                      |  return 0;
+                      |#endif
+                      |}
+                      |
+                      |pyrogue_ref_t pyrogue_retain, pyrogue_release;
+                      |
+                      |extern "C" void pyrogue_set_ref_callbacks (pyrogue_ref_t retain, pyrogue_ref_t release)
+                      |{
+                      |  pyrogue_retain = retain;
+                      |  pyrogue_release = release;
+                      |}
+                      |
+                      |
+                      |typedef void (*pyrogue_error_cb_t)(const char * msg, void * exc);
+                      |
+                      |pyrogue_error_cb_t pyrogue_error_callback;
+                      |
+                      |extern "C" void pyrogue_set_error_callback (pyrogue_error_cb_t cb)
+                      |{
+                      |  pyrogue_error_callback = cb;
+                      |}
+                      |
                       |void pyrogue_translate_exception (RogueException * e)
                       |{
                       |  RogueString * msg = RogueException__format(e);
@@ -577,7 +618,7 @@ augment Program
                       |    strncpy(buf, (char*)msg->utf8, 2047);
                       |  else
                       |    strcpy(buf, "Unknown Rogue exception");
-                      |  PyErr_SetString(PyExc_RuntimeError, buf);
+                      |  PYROGUE_SET_ERR(buf, e);
                       |}
                       |
 
@@ -622,7 +663,7 @@ augment Program
             writer.println @|}
                             |catch (const std::exception& e)
                             |{
-                            |  PyErr_SetString(PyExc_RuntimeError, e.what());
+                            |  PYROGUE_SET_ERR(e.what(), nullptr);
             if (m.return_type) writer.println("  return 0;")
             writer.println @|}
             writer.indent -= 2
@@ -669,7 +710,7 @@ augment Program
             writer.println @|}
                             |catch (const std::exception& e)
                             |{
-                            |  PyErr_SetString(PyExc_RuntimeError, e.what());
+                            |  PYROGUE_SET_ERR(e.what(), nullptr);
             if (m.return_type) writer.println("  return 0;")
             writer.println @|}
             writer.indent -= 2
@@ -783,7 +824,7 @@ augment Program
                       |      if (err is not null) throw err
           src +=      "      $\n" (do_return)
           src +=     @|    method release
-                      |      native "Py_XDECREF((void*)(intptr_t)$this->_callable);"
+                      |      native "PYROGUE_XDECREF((void*)(intptr_t)$this->_callable);"
                       |      _callable = 0
                       |    method on_cleanup
                       |      release()
@@ -852,6 +893,9 @@ augment Program
                       |
                       |import functools
                       |
+                      |_is_py2 = sys.version_info.major == 2
+                      |_is_py3 = not _is_py2
+                      |
                       |def _total_ordering (cls):
                       |  try:
                       |    return functools.total_ordering(cls)
@@ -861,12 +905,17 @@ augment Program
                       |def _load ():
                       |  global _lib
                       |  global _plib
+                      |  global _is_pypy_compatible
                       |  name = os.path.splitext(__file__)[0] + "_module"
                       |  name = os.path.abspath(name)
                       |  for ext in (".so", ".dll"):
                       |    try:
                       |      _lib = ctypes.cdll.LoadLibrary(name + ext)
-                      |      _plib = ctypes.pydll.LoadLibrary(name + ext) # Could do better?
+                      |      _is_pypy_compatible = bool(_lib.pyrogue_is_pypy_compatible())
+                      |      if _is_pypy_compatible:
+                      |        _plib = _lib
+                      |      else:
+                      |        _plib = ctypes.pydll.LoadLibrary(name + ext) # Could do better?
                       |      break
                       |    except:
                       |      pass
@@ -874,6 +923,38 @@ augment Program
                       |    raise RuntimeError("Could not load " + name)
                       |
                       |_load()
+                      |
+                      |# Exceptions raised in Rogue code end up here.  It's global,
+                      |# which seems gross, but it used to set global Python error
+                      |# state with PyErr_SetString() anyway, so...
+                      |_error = None
+                      |
+                      |def _error_callback (msg, rogue_exception):
+                      |  # rogue_exception will be null if it's a C++ exception
+                      |  global _error
+                      |  _error = (msg, rogue_exception)
+                      |
+                      |if _is_pypy_compatible:
+                      |  def _pyrogue_errcheck (result, func, args):
+                      |    global _error
+                      |    if _error:
+                      |      e = _error
+                      |      _error = None
+                      |      #TODO: Translate e[1] into object
+                      |      raise RuntimeError(e[0].decode("UTF-8"))
+                      |    return result
+                      |else:
+                      |  _pyrogue_errcheck = None
+                      |
+                      |def _config_error ():
+                      |  cbtype = ctypes.CFUNCTYPE(None, ctypes.c_char_p, ctypes.c_void_p)
+                      |  global _error_callback_real
+                      |  _error_callback_real = cbtype(_error_callback)
+                      |  _lib.pyrogue_set_error_callback.restype = None
+                      |  _lib.pyrogue_set_error_callback.argtypes = [cbtype]
+                      |  _lib.pyrogue_set_error_callback(_error_callback_real)
+                      |
+                      |_config_error()
                       |
                       |def _config_types ():
                       |  global c_int64, c_int32, c_intptr
@@ -972,8 +1053,9 @@ augment Program
                       |def pyrogue_get_string (s):
                       |  # May return bytes or Unicode string.  For Python 3,
                       |  # we probably should always do the latter.
+                      |  if s is None: return None
                       |  d = _lib.pyrogue_string_utf8(s)[:_lib.pyrogue_string_byte_count(s)]
-                      |  if _lib.pyrogue_string_is_ascii(s): return d
+                      |  if _is_py2 and _lib.pyrogue_string_is_ascii(s): return d
                       |  return d.decode('UTF-8')
                       |
                       |
@@ -1010,7 +1092,7 @@ augment Program
                       |        raise
                       |  @classmethod
                       |  def _pyrogue_type (cls):
-                      |    return pyrogue_get_type(cls._rogue_type_index_)
+                      |    return _lib.pyrogue_get_type(cls._rogue_type_index_)
                       |  def __del__ (self):
                       |    if (self.thisptr and _lib): _lib.RogueObject_release(self.thisptr)
                       |    self.thisptr = _NULL
@@ -1061,20 +1143,29 @@ augment Program
                       |
                       |_rogue_type_index_to_pyclass = {}
                       |def get_wrapper (raw_object_ptr):
+                      |  if raw_object_ptr is None: return None
                       |  cls = _rogue_type_index_to_pyclass[_lib.pyrogue_object_type_index(raw_object_ptr)]
+                      |  if cls is String: return pyrogue_get_string(raw_object_ptr)
                       |  return cls(__pyrogue_new_instance=raw_object_ptr)
+                      |
+                      |class _pyrogue_retained_raw_ptr (ctypes.c_void_p):
+                      |  def __init__ (self, n):
+                      |    super(_pyrogue_retained_raw_ptr,self).__init__(n)
+                      |    _lib.RogueObject_retain(self)
+                      |  def __del__ (self):
+                      |    _lib.RogueObject_release(self)
                       |
                       |def cast_object (python_object, t):
                       |  """Cast a Python object to Rogue type t"""
-                      |  if t is String:
-                      |    if isinstance(python_object, str):
-                      |      return _lib.RogueString_create_from_utf8(python_object, -1)
-                      |    raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
+                      |  if isinstance(python_object, str) and issubclass(String, t):
+                      |    if _is_py2: o = _lib.RogueString_create_from_utf8(python_object, -1)
+                      |    o = _lib.RogueString_create_from_utf8(python_object.encode("UTF-8"), -1)
+                      |    return _pyrogue_retained_raw_ptr(o)
                       |  if python_object is None:
-                      |    return None # Null pointers okay
+                      |    return _NULL
                       |  if issubclass(t, _PyDelegate):
                       |    if hasattr(python_object, "__call__"):
-                      |      return (t._from_callable(python_object)).thisptr
+                      |      return _pyrogue_retained_raw_ptr((t._from_callable(python_object)).thisptr.value)
                       |  if isinstance(python_object, t):
                       |    return python_object.thisptr
                       |  raise TypeError("Object %s is not of type %s" % (repr(python_object), t))
@@ -1090,9 +1181,8 @@ augment Program
                       |    "Character" : ctypes.c_int32
                       |  }
                       |
-                      |  def _check_mutator_type (o, ti):
-                      |    if o._rogue_type_index_ == ti: return o.thisptr.value
-                      |    raise RuntimeError("Object %s is not of expected type" % (o,))
+                      |  def _cast_mutator_value (o, ti):
+                      |    return cast_object(o, _rogue_type_index_to_pyclass[ti]).value
                       |
                       |  def _make_accessors (n, t, o, ref):
                       |    def accessor (self):
@@ -1101,16 +1191,22 @@ augment Program
                       |      ctypes.cast(self.thisptr.value + o, t).contents.value = value
                       |    if ref is None: return (accessor,mutator)
                       |    return (lambda self: get_wrapper(accessor(self)),
-                      |            lambda self,value: mutator(self, _check_mutator_type(value, ref)))
+                      |            lambda self,value: mutator(self, _cast_mutator_value(value, ref)))
                       |
-                      |  for i,t in _rogue_type_index_to_pyclass.iteritems():
-                      |    for pi in xrange(0, _lib.pyrogue_get_property_count(i)):
+                      |  if _is_py3:
+                      |    xxrange = range
+                      |    classiter = _rogue_type_index_to_pyclass.items()
+                      |  else:
+                      |    xxrange = xrange
+                      |    classiter = _rogue_type_index_to_pyclass.iteritems()
+                      |
+                      |  for i,t in classiter:
+                      |    for pi in xxrange(0, _lib.pyrogue_get_property_count(i)):
                       |      n = pyrogue_get_string(_lib.pyrogue_get_property_name(i, pi))
                       |      o = _lib.pyrogue_get_property_offset(i, pi)
                       |      if o == -1: continue # It should be an aspect
                       |      ti = _lib.pyrogue_get_property_type_index(i, pi)
                       |      if _lib.pyrogue_type_is_reference(ti):
-                      |        #TODO: Special handling for String?
                       |        ref = ti
                       |        ct = ctypes.POINTER(_RogueObjectPtr)
                       |      else:
@@ -1125,6 +1221,38 @@ augment Program
                       |class OverloadException (RuntimeError):
                       |  pass
                       |
+                      |if _is_pypy_compatible:
+                      |  # PyPy doesn't have ctypes.pythonapi, so we can't just call
+                      |  # Py_IncRef/Py_DecRef.  So we basically just keep a dict with
+                      |  # objects that we want retained.  The Rogue side can call our
+                      |  # retain/release functions to manage these too.
+                      |  _retained = {}
+                      |  def _py_retain (o):
+                      |    #if o: print("RETAIN",o,"at",id(o),hex(id(o)))
+                      |    if o: _retained[id(o)] = o
+                      |  def _py_release (o):
+                      |    #print("RELESE",o)
+                      |    _retained.pop(id(o), None)
+                      |  def _config_ref ():
+                      |    cbtype = ctypes.CFUNCTYPE(None, ctypes.py_object)
+                      |    global _py_retain_cb
+                      |    global _py_release_cb
+                      |    _py_retain_cb = cbtype(_py_retain)
+                      |    _py_release_cb = cbtype(_py_release)
+                      |    _lib.pyrogue_set_ref_callbacks.restype = None
+                      |    _lib.pyrogue_set_ref_callbacks.argtypes = [cbtype, cbtype]
+                      |    _lib.pyrogue_set_ref_callbacks(_py_retain_cb, _py_release_cb)
+                      |  _config_ref()
+                      |else:
+                      |  _py_retain = lambda x: ctypes.pythonapi.Py_IncRef(ctypes.py_object(x))
+                      |  _py_release = lambda x: ctypes.pythonapi.Py_DecRef(ctypes.py_object(x))
+                      |  try:
+                      |    ctypes.pythonapi # Just access to check for it
+                      |  except AttributeError as e:
+                      |    sys.stderr.write("Exception trying to access Python API through ctypes\n")
+                      |    sys.stderr.write("If you are using PyPy, compile module with PYROGUE_PYPY_COMPATIBLE defined.\n")
+                      |    raise
+                      |
                       |class _PyDelegate (object):
                       |  """We mark all function types with this"""
                       |  @classmethod
@@ -1135,7 +1263,7 @@ augment Program
                       |    #print "_from_callable", f, cls
                       |    d = cls._pyrogue_pydelegate_type_()
                       |    fo = ctypes.py_object(f)
-                      |    ctypes.pythonapi.Py_IncRef(fo)
+                      |    _py_retain(f)
                       |    d._callable = ctypes.cast(ctypes.pointer(fo), ctypes.POINTER(c_intptr)).contents.value
                       |    #d._callable = id(f) # Same as above, practically speaking
                       |    d._calladdr = ctypes.cast(cls._pyrogue_thunk_, ctypes.c_void_p).value
@@ -1203,6 +1331,7 @@ augment Program
                       |      if type(arg) is int: return _M_NARROW
                       |    elif param_type is String:
                       |      if type(arg) is str: return _M_PERFECT
+                      |      if arg is None: return _M_NARROW #?
                       |    elif issubclass(param_type, _PyDelegate):
                       |      if hasattr(arg, '__call__'): return _M_PERFECT
                       |    elif arg is None and issubclass(param_type, PyRogueBase):
@@ -1325,6 +1454,7 @@ augment Program
             if (not m.type_context.is_reference) nextIteration
             if (m.is_global) nextIteration
             signatures.add(sig)
+            writer.print("if _pyrogue_errcheck: _plib._PyRogue_call_").print(m.cpp_typedef).println("_.errcheck = _pyrogue_errcheck")
             if (m.return_type)
               writer.print("_plib._PyRogue_call_").print(m.cpp_typedef).print("_.restype = ")
               if (m.return_type.is_reference)
@@ -1364,8 +1494,9 @@ augment Program
               writer.println('# cyclass $ $' (cyclass.pytype, cyclass.type))
               printed_comment = true
             endIf
+            writer.print("if _pyrogue_errcheck: _plib._PyRogue_").print(f.cname).println("_.errcheck = _pyrogue_errcheck")
             if (m.return_type)
-              writer.print "_plib." + f.cname + ".restype = "
+              writer.print "_plib._PyRogue_" + f.cname + "_.restype = "
               if (m.return_type.is_reference)
                 writer.print( "_RogueObjectPtr" )
               else
@@ -1373,7 +1504,7 @@ augment Program
               endIf
               writer.println()
             endIf
-            writer.print("_plib." + f.cname + ".argtypes = [" )
+            writer.print("_plib._PyRogue_" + f.cname + "_.argtypes = [" )
             forEach (i of m.parameters)
               local p = m.parameters[i]
               if (i > 0) writer.print( ", " )
@@ -1576,8 +1707,7 @@ augment Program
           local r = ccls.get_py_to_c(m.real_method.return_type).replacing("%", "retval")
           if (r != "retval") body += "    retval = $\n" (r)
           body += "    ctypes.cast(context.rv, ctypes.POINTER(_$)).contents.value = " (m.cproto_return)
-          body += ccls.get_py_to_c(m.real_method.return_type).replacing("%", "retval")
-          body += "\n"
+          body += "retval\n"
         endIf
 
         writer.print "# " + m.real_method.signature

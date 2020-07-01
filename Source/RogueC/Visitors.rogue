@@ -259,10 +259,33 @@ class InjectCmdBeforeReturnVisitor( cmd:Cmd ) : Visitor
       endIf
 
     method visit( cmd_return:CmdReturn )->Cmd
+      # Transform:
+      #   return x
+      # Into:
+      #   block
+      #     local temp = x
+      #     cmd
+      #     return temp
+      #   endBlock
+      #
+      # Transform:
+      #   return
+      # Into:
+      #   block
+      #     cmd
+      #     return
+      #   endBlock
       local t = cmd_return.t
       local cmd_block = CmdBlock( t )
-      cmd_block.statements.add( cmd.cloned )
-      cmd_block.statements.add( cmd_return )
+      if (cmd_return.value)
+        local v_temp = Local( t, Program.create_unique_id, null, cmd_return.value )
+        cmd_block.statements.add( CmdLocalDeclaration(t,v_temp) )
+        cmd_block.statements.add( cmd.cloned )
+        cmd_block.statements.add( CmdReturn(cmd_return.t,CmdAccess(t,v_temp)) )
+      else
+        cmd_block.statements.add( cmd.cloned )
+        cmd_block.statements.add( cmd_return )
+      endIf
       return cmd_block
 endClass
 

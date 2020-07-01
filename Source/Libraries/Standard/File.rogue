@@ -588,7 +588,11 @@ class File
       # Check non-wildcard characters at the end of pattern first as an easy out
       local last_wildcard = -1
       forEach (ch at i in pattern step -1)
-        if (ch == '*' or ch == '?')
+        if (ch == '*')
+          last_wildcard = i
+          if (i>0 and i+1<pattern.count and pattern[i-1]=='*' and pattern[i+1]=='/') ++last_wildcard
+          escapeForEach
+        elseIf (ch == '?')
           last_wildcard = i
           escapeForEach
         endIf
@@ -627,19 +631,25 @@ class File
       local ch = pattern[p0]
       which (ch)
         case '*':
-          if (rcount and remaining_pattern[r0] == '*')
-            if (rcount >= 3 and remaining_pattern[r0+1] == '*' and remaining_pattern[r0+2] == '/')
-              # Triple asterisk and slash - match any characters and then a '/' or else match no characters.
-              if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+3,rcount-3)) return true
-              return (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0,rcount))
-            else
-              # Double asterisk - match all characters including '/'
-              ++r0
-              --rcount
-              forEach (n in 0..fcount)
-                if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
-              endForEach
-            endIf
+          if (rcount >= 2 and remaining_pattern[r0] == '*' and remaining_pattern[r0+1] == '/')
+            # '**/' - match any characters (including '/') and ending with '/' or else match zero characters.
+
+            # Match 0 characters (skip '**/' entirely)
+            if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2)) return true
+
+            # Match 0+ characters for '**' and leave '/' to end pattern (matches 1+ total)
+            ++r0
+            --rcount
+            forEach (n in 0..fcount)
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+            endForEach
+          elseIf (rcount and remaining_pattern[r0] == '*')
+            # '**' - match any characters including '/'
+            ++r0
+            --rcount
+            forEach (n in 0..fcount)
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+            endForEach
           else
             # Single asterisk - match any characters except '/'
             forEach (n in 0..<fcount)

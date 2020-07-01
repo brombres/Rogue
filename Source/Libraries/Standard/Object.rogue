@@ -20,17 +20,24 @@ class Object [native]
     method operator==( other:Object )->Logical
       return this is other
 
+    method package->Value [nonAPI]
+      local result = @{}
+      local i = introspector
+      forEach (p in i.type.properties)
+        local name = p.name
+        if (p.type.is_primitive or p.type.is_compound)
+          result[ name ] = i[ name ]
+        else
+          result[ name ] = i[ name ].package
+        endIf
+      endForEach
+      return result
+
     method to->String [nonAPI]
       return "($ 0x$)" (type_name, object_id.to_hex_string)
 
     method to->Value [nonAPI]
       return Value( this )
-
-    method to->ValueList [nonAPI]
-      return @[ this->Value ]
-
-    method to->ValueTable [nonAPI]
-      return introspector->Value
 
     method type_info->TypeInfo [nonAPI]
       native @|return RogueType_type_info( $this->type );
