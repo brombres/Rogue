@@ -311,6 +311,41 @@ class Bitmap
               |  dest += $row_skip;
               |}
 
+    method flip( &h, &v )
+      if (not h and not v) h = true
+      if (h)
+        block width, height, pixels, i1=0, i2=width-1
+          while (i1 < i2)
+            local pos1 = i1
+            local pos2 = i2
+            loop (height)
+              pixels.swap(pos1,pos2)
+              pos1 += width
+              pos2 += width
+            endLoop
+            ++i1
+            --i2
+          endWhile
+        endBlock
+      endIf
+      if (v)
+        block width, height, pixels, line1=0, line2=height-1, start1=0, start2=line2*width
+          while (line1 < line2)
+            local pos1 = start1
+            local pos2 = start2
+            loop (width)
+              pixels.swap(pos1,pos2)
+              ++pos1
+              ++pos2
+            endLoop
+            ++line1
+            --line2
+            start1 += width
+            start2 -= width
+          endWhile
+        endBlock
+      endIf
+
     method extend_edges( bounds:Box )
       local x1 = bounds.position.x
       local y1 = bounds.position.y
@@ -733,6 +768,45 @@ class Bitmap
       local result = Bitmap( new_size )
       resize_to( result )
       return result
+
+    method rotate_180
+      flip( &h, &v )
+
+    method rotate_90( &cw, &ccw )
+      if (not cw and not ccw) cw = true
+      elseIf (cw and ccw)     return
+
+      local rotated_pixels = Color[]( pixels.count )
+      block width, height, pixels, dest=0
+        if (cw)
+          local src_start = (height-1) * width
+          forEach (i in 0..<width)
+            local src = src_start
+            forEach (j in (height-1) downTo 0)
+              rotated_pixels[dest] = pixels[src]
+              ++dest
+              src -= width
+            endForEach
+            ++src_start
+          endForEach
+
+        else
+          local src_start = (width-1)
+          forEach (i in (width-1) downTo 0)
+            local src = src_start
+            forEach (j in 0..<height)
+              rotated_pixels[dest] = pixels[src]
+              ++dest
+              src += width
+            endForEach
+            --src_start
+          endForEach
+
+        endIf
+      endBlock
+
+      pixels = rotated_pixels
+      swapValues width, height
 
     method save_as_png( file:File )->Logical
       return file.save( to_png_bytes )
