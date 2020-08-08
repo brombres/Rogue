@@ -36,12 +36,13 @@ class Attribute
     is_thread_local     = (1 :<<: 28)
     is_synchronized     = (1 :<<: 29)
     is_synchronizable   = (1 :<<: 30)
+    can_operate_on_literal_null = (Int64(1) :<<: 31)
 endClass
 
 
 class Attributes
   PROPERTIES
-    flags : Int32
+    flags : Int64
     tags  : String[]
 
   METHODS
@@ -58,7 +59,7 @@ class Attributes
       endIf
       return result
 
-    method add( flag:Int32 )->Attributes
+    method add( flag:Int64 )->Attributes
       flags |= flag
       return this
 
@@ -74,7 +75,7 @@ class Attributes
       endIf
       return this
 
-    method includes( flag:Int32 )->Logical
+    method includes( flag:Int64 )->Logical
       return (flags & flag) == flag
 
     method element_type_name->String

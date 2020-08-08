@@ -98,7 +98,7 @@ class PosixProcess : Process
         #include <spawn.h>
         #include <poll.h>
         #include <sys/wait.h>
-        extern char** environ;
+        extern "C" char** environ;
       #endif
     endNativeHeader
 

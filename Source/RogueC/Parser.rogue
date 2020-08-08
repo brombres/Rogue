@@ -24,6 +24,7 @@ class Parser
     implicit_loop_stack  = CmdControlStructure[]
 
     allow_placeholder_ids : Logical
+    allow_parens_operator = true
 
     is_api_module : Logical
     is_api_file   : Logical
@@ -661,6 +662,8 @@ class Parser
           attributes.add( Attribute.is_synchronized )
         elseIf (consume("threadLocal"))
           attributes.add( Attribute.is_thread_local )
+        elseIf (consume("canOperateOnLiteralNull"))
+          attributes.add( Attribute.can_operate_on_literal_null )
         elseIf (next_is(TokenType.identifier))
           attributes.add( read->String )
         else
@@ -1058,22 +1061,47 @@ class Parser
         endForEach
       else
         forEach (p in property_list)
-          local name = "property"
-          if (as_global) name = "global property"
-          if (p.initial_value)
-            p.type = p.initial_value.implicit_type( Scope(this_type,null) )
-            if (p.type is null)
-              #println p.initial_value.type_name
-              throw p.initial_value.t.error(
-                ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Int32" '' (name) )
-            endIf
-          else
-            throw p.t.error( ''An initial value or $ type (for example, ": Int32") must be specified.'' (name) )
-          endIf
+          determine_property_type( property_list, p, &is_global=as_global )
         endForEach
       endIf
 
       return true
+
+    method determine_property_type( property_list:Property[], p:Property, is_global:Logical )
+      if (not p.initial_value)
+        local property_type = which{ is_global:"global property" || "property" }
+        throw p.t.error( ''An initial value or $ type (for example, ": Int32") must be specified.'' (property_type) )
+      endIf
+
+      p.type = p.initial_value.implicit_type( Scope(this_type,null) )
+      if (p.type) return
+
+      local access = p.initial_value as CmdAccess
+      if (access and not access.context and not access.args)
+        # Plain variable name.
+        # See if it's a previously declared property in this same line of declarations
+        forEach (previous_p in property_list)
+          if (previous_p is p) escapeForEach
+          if (previous_p.name == access.name)
+            p.type = previous_p.type
+            return
+          endIf
+        endForEach
+
+        # See if it's a previously declared property in this type
+        local prev : Property
+        if (not is_global) prev = this_type.property_lookup[ access.name ]
+        if (not prev)      prev = this_type.global_lookup[ access.name ]
+        if (prev and prev.type)
+          p.type = prev.type
+          return
+        endIf
+      endIf
+
+      # Not found. Throw an error.
+      local property_type = which{ is_global:"global property" || "property" }
+      throw p.initial_value.t.error(
+      ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Int32" '' (property_type) )
 
     method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type, first_token=TokenType.keyword_method:TokenType )->Logical
       consume_eols
@@ -1479,12 +1507,6 @@ class Parser
           cur_statement_list.add( parse_which )
           return
 
-        #{
-        elseIf (next_is(TokenType.keyword_whichIs))
-          cur_statement_list.add( parse_which( true ) )
-          return
-          }#
-
         elseIf (next_is(TokenType.keyword_forEach))
           cur_statement_list.add( parse_for_each )
           return
@@ -1803,20 +1825,44 @@ class Parser
       local println_statement_count = cur_statement_list.count
       local implicit_loop_stack_count = implicit_loop_stack.count
       local cmd_println : CmdPrintln
-      if ((next_is_identifier("println") or next_is_identifier("print")) and reader.peek(1).type is TokenType.symbol_open_paren)
-        # Prepare to parse the print/println two different ways to allow a special syntax exception.
-        #
-        #   println (a+b)/c
-        #
-        # is parsed as both:
-        #
-        #   1.  println( (a + b) ) / c   # technically correct but probably unintended
-        #   2.  println( (a + b) / c )   # probably what developer intended
-        #
-        # If an implicit loop is parsed using Method 1 then we stop; otherwise a second implicit loop
-        # is generated when Method 2 is used. 'implicit_loop_stack_count' is used to check this.
-        ensure cmd_println( peek )
-        println_pos = reader.position
+      if (next_is_identifier("println") or next_is_identifier("print"))
+        if (reader.peek(1).type is TokenType.symbol_open_paren)
+          # Prepare to parse the print/println two different ways to allow a special syntax exception.
+          #
+          #   println (a+b)/c
+          #
+          # is parsed as both:
+          #
+          #   1.  println( (a + b) ) / c   # technically correct but probably unintended
+          #   2.  println( (a + b) / c )   # probably what developer intended
+          #
+          # Furthermore, if Method 2 ends up being used then it accepts a comma-separated or space-separated set of
+          # terms to print out, ending at the first ';' or EOL.
+          #
+          # If an implicit loop is parsed using Method 1 then we stop and use Method 1; otherwise a second
+          # implicit loop would be generated when Method 2 is used. 'implicit_loop_stack_count' is used to check this.
+          ensure cmd_println( peek )
+          println_pos = reader.position
+
+        else
+          # print/println followed by no-parens comma-separated or space-separated args
+          local is_println = next_is_identifier("println")
+          block t = read
+            if (next_is_end_command)
+              cur_statement_list.add( CmdAccess(t,t->String) )
+              return
+            endIf
+            local cmd = CmdAccess(t,"print",parse_expression) : Cmd
+            while (not next_is_end_command and not peek.is_structure)
+              consume( TokenType.symbol_comma )  # Commas are optional
+              local expr = parse_expression
+              cmd = CmdAccess( expr.t, cmd, "print", expr )
+            endWhile
+            if (is_println) cmd = CmdAccess( cmd.t, cmd, "println" )
+            cur_statement_list.add( cmd )
+            return
+          endBlock
+        endIf
       endIf
 
       local expression = parse_expression
@@ -1908,22 +1954,21 @@ class Parser
       local t = read  # 'which'
 
       local expression : Cmd
-      local consumed_eols = false
       consume_eols
-      if (consume(TokenType.symbol_open_paren))
-        consume_eols
-        expression = parse_expression
-        consume_eols
-        must_consume( TokenType.symbol_close_paren )
-        consumed_eols = consume_eols
-      endIf
 
       if (next_is(TokenType.symbol_open_brace))
         return parse_select( t, expression )
       endIf
 
+      expression = parse_expression
+
+      if (next_is(TokenType.symbol_open_brace))
+        return parse_select( t, expression )
+      endIf
+
+      must_consume_eols
+
       local cmd_which = CmdWhich( t, expression )
-      if (not consumed_eols) must_consume_eols
       while (next_is(TokenType.keyword_case) or next_is(TokenType.keyword_caseNext))
         t = read  # 'case' | 'caseNext'
         consume_eols
@@ -2406,7 +2451,8 @@ class Parser
     method parse_if->CmdIf
       local t = read
       local cmd_if = CmdIf( t )
-      cmd_if.condition = parse_expression
+
+      cmd_if.condition = parse_expression( &no_parens_operator )
 
       consume(TokenType.keyword_then)
 
@@ -2506,7 +2552,7 @@ class Parser
         control_var.initial_value = CmdLiteralInt32( t, 1 )
 
         local last_var = Local( t, Program.create_unique_id )
-        last_var.initial_value = parse_expression
+        last_var.initial_value = parse_expression( &no_parens_operator )
 
         local step_cmd = CmdStepLocal( t, control_var, 1 )
 
@@ -2612,7 +2658,7 @@ class Parser
 
     method parse_while->CmdGenericLoop
       local t = read
-      local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, parse_expression )
+      local cmd_while = CmdGenericLoop( t, CmdControlStructure.type_while, parse_expression(&no_parens_operator) )
 
       consume(TokenType.keyword_do)
 
@@ -2855,9 +2901,11 @@ class Parser
       #endWhile
       return result
 
-    method parse_expression->Cmd
-      consume_eols
-      return parse_range
+    method parse_expression( &no_parens_operator )->Cmd
+      temporarily allow_parens_operator = not no_parens_operator
+        consume_eols
+        return parse_range
+      endTemporarily
 
     method parse_range->Cmd
       return parse_range( parse_logical_xor )
@@ -3091,8 +3139,13 @@ class Parser
       local t = peek
       if (consume(TokenType.symbol_question_mark))
         return parse_post_unary( CmdLogicalize(t,operand) )
+      elseIf (allow_parens_operator and next_is(TokenType.symbol_open_paren))
+        local result = CmdAccess( t, operand, "call", CmdArgs() )
+        parse_args( result.args )
+        return result
+      else
+        return operand
       endIf
-      return operand
 
     method parse_member_access->Cmd
       return parse_member_access( parse_term )
@@ -3631,7 +3684,13 @@ class Parser
         return parse_value_table( t )
 
       elseIf (consume(TokenType.symbol_at_bracket))
-        return parse_value_list( t )
+        if (consume(TokenType.symbol_close_bracket))
+          local result = CmdAccess( t, "ValueList",  CmdArgs() )
+          if (next_is(TokenType.symbol_open_paren)) parse_args( result.args )
+          return result
+        else
+          return parse_value_list( t )
+        endIf
 
       elseIf (consume(TokenType.symbol_empty_braces))
         return CmdAccess( t, "ValueTable", CmdArgs() )
