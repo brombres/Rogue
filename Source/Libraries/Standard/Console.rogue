@@ -35,8 +35,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       native @|char st[4096];
               |if (!fgets( st, 4096, stdin ))
               |{
-              |  return RogueString_create_from_utf8( st, 0 );
-              |}
+              |  clearerr( stdin );
+                 throw IOError( "End of Input." )
+      native @|}
               |
               |// discard \n
               |int len = strlen( st );
@@ -92,6 +93,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       local n : Int32
       native @|char bytes[8];
               |$n = (RogueInt32) ROGUE_READ_CALL( STDIN_FILENO, &bytes, 8 );
+      if (n == 0 and is_blocking) throw IOError( "End of Input." )
       if (n > 0)
         forEach (i in 0..<n)
           input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
@@ -220,6 +222,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method read_line( prompt:StringBuilder )->String
       write prompt
       return read_line
+
+    method reset_input
+      # Allows stdin to be read again after a CTRL+D
+      native @|clearerr( stdin );
 
     method reset_input_mode
       native @|#if (ROGUE_CONSOLE_FULL)
