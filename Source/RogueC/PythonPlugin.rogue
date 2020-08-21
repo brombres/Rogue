@@ -1155,7 +1155,8 @@ augment Program
                       |  def __del__ (self):
                       |    _lib.RogueObject_release(self)
                       |
-                      |def cast_object (python_object, t):
+
+      writer.println @|def cast_object (python_object, t):
                       |  """Cast a Python object to Rogue type t"""
                       |  if isinstance(python_object, str) and issubclass(String, t):
                       |    if _is_py2: o = _lib.RogueString_create_from_utf8(python_object, -1)

@@ -102,9 +102,6 @@ if (not buildfiles.count)
       project_name = project_option.value.after_first('=')
       if (project_name.count == 0) project_name = null
     endIf
-    if (not project_name)
-      bitmap_option = false
-    endIf
 
     print "Creating Build.rogue"
     if (project_name)
@@ -112,7 +109,9 @@ if (not buildfiles.count)
       if (bitmap_option) print " with Bitmap library support"
       println
     else
-      println " with default Rogo framework."
+      print " with default Rogo framework"
+      if (bitmap_option) print " and Bitmap library support"
+      println
     endIf
     cmd_line_args.clear
 
@@ -130,8 +129,13 @@ if (not buildfiles.count)
 
     if (bitmap_option)
       builder.println ...
-        @|#$ LIBRARIES(macOS)     = libpng libjpeg zlib
+        @|#$ LINK                 = true
+         |   # Link the following in when compiling this Build.rogue
+         |
+         |#$ LIBRARIES(macOS)     = libpng libjpeg zlib
          |#$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
+         |
+         |uses Bitmap
          |
     endIf
 
@@ -576,7 +580,8 @@ if (not buildfiles.count)
              |    Creates additional starter framework for the specified ProjectName.
              |
              |  --bitmap
-             |    Links the starter project with libpng and libjpeg libraries. (Requires --project)
+             |    Links Build.rogue and the starter project (if --project is specified) with
+             |    libpng and libjpeg libraries.
              |
              |If no options are specified then only Build.rogue is created.
     Console.error.println( mesg.word_wrapped(w) )
