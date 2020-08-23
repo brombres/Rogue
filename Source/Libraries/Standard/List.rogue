@@ -654,6 +654,10 @@ class List<<$DataType>> : GenericList
       return subset( i1, count-i1 )
 
     method subset( i1:Int32, n:Int32 )->$DataType[]
+      if (n < 0)
+        n = (count - i1) + n
+        if (n <= 0) return $DataType[]
+      endIf
       local result = $DataType[]( n )
       forEach (i in i1..<i1+n) result.add( this[i] )
       return result
