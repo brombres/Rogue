@@ -201,13 +201,13 @@ class Bitmap
       return this
 
 
-    method crop( delta:Int32 )->this
-      return crop( delta, delta, delta, delta )
+    method crop( delta:Int32, pad_color=Color(0):Color )->this
+      return crop( delta, delta, delta, delta, &=pad_color )
 
-    method crop( left:Int32, top:Int32, right:Int32, bottom:Int32 )->this
+    method crop( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )->this
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return this
 
-      local result = Bitmap( width-(left+right), height-(top+bottom) )
+      local result = Bitmap( width-(left+right), height-(top+bottom), pad_color )
       blit( result, XY(-left,-top) )
 
       this.width = result.width
@@ -215,11 +215,12 @@ class Bitmap
       this.pixels = result.pixels
       return this
 
-    method crop( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )->this
+    method crop( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )->this
       if (width == new_width and height == new_height) return this
 
-      local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
-      local reframed = Bitmap( bounds.size )
+      local new_size = XY( new_width, new_height )
+      local bounds = Box(this.size).positioned_within( Box(new_size), anchor )
+      local reframed = Bitmap( new_size, pad_color )
       blit( reframed, bounds.position )
 
       this.width = reframed.width
@@ -227,22 +228,23 @@ class Bitmap
       this.pixels = reframed.pixels
       return this
 
-    method cropped( delta:Int32 )->this
-      return cropped( delta, delta, delta, delta )
+    method cropped( delta:Int32, pad_color=Color(0):Color )->this
+      return cropped( delta, delta, delta, delta, &=pad_color )
 
-    method cropped( left:Int32, top:Int32, right:Int32, bottom:Int32 )->Bitmap
+    method cropped( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )->Bitmap
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return this
 
-      local result = Bitmap( width-(left+right), height-(top+bottom) )
+      local result = Bitmap( width-(left+right), height-(top+bottom), pad_color )
       blit( result, XY(-left,-top) )
 
       return result
 
-    method cropped( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )->Bitmap
+    method cropped( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )->Bitmap
       if (width == new_width and height == new_height) return this
 
-      local bounds = Box(this.size).positioned_within( Box(new_width,new_height), anchor )
-      local reframed = Bitmap( bounds.size )
+      local new_size = XY( new_width, new_height )
+      local bounds = Box(this.size).positioned_within( Box(new_size), anchor )
+      local reframed = Bitmap( new_size, pad_color )
       blit( reframed, bounds.position )
 
       return reframed
@@ -310,6 +312,41 @@ class Bitmap
               |  }
               |  dest += $row_skip;
               |}
+
+    method flip( &h, &v )
+      if (not h and not v) h = true
+      if (h)
+        block width, height, pixels, i1=0, i2=width-1
+          while (i1 < i2)
+            local pos1 = i1
+            local pos2 = i2
+            loop (height)
+              pixels.swap(pos1,pos2)
+              pos1 += width
+              pos2 += width
+            endLoop
+            ++i1
+            --i2
+          endWhile
+        endBlock
+      endIf
+      if (v)
+        block width, height, pixels, line1=0, line2=height-1, start1=0, start2=line2*width
+          while (line1 < line2)
+            local pos1 = start1
+            local pos2 = start2
+            loop (width)
+              pixels.swap(pos1,pos2)
+              ++pos1
+              ++pos2
+            endLoop
+            ++line1
+            --line2
+            start1 += width
+            start2 -= width
+          endWhile
+        endBlock
+      endIf
 
     method extend_edges( bounds:Box )
       local x1 = bounds.position.x
@@ -594,13 +631,14 @@ class Bitmap
       endIf
       return this
 
-    method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor )
-      crop( new_width, new_height, anchor )
+    method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
+      crop( new_width, new_height, anchor, &=pad_color )
 
     method resize( new_width:Int32, new_height:Int32 )->this
       return resize( XY(new_width,new_height) )
 
     method resize( new_size:XY )->this
+      if (new_size.x == width and new_size.y == height) return this  # no need to resize
       local result = resized( new_size )
       width = result.width
       height = result.height
@@ -733,6 +771,45 @@ class Bitmap
       local result = Bitmap( new_size )
       resize_to( result )
       return result
+
+    method rotate_180
+      flip( &h, &v )
+
+    method rotate_90( &cw, &ccw )
+      if (not cw and not ccw) cw = true
+      elseIf (cw and ccw)     return
+
+      local rotated_pixels = Color[]( pixels.count )
+      block width, height, pixels, dest=0
+        if (cw)
+          local src_start = (height-1) * width
+          forEach (i in 0..<width)
+            local src = src_start
+            forEach (j in (height-1) downTo 0)
+              rotated_pixels[dest] = pixels[src]
+              ++dest
+              src -= width
+            endForEach
+            ++src_start
+          endForEach
+
+        else
+          local src_start = (width-1)
+          forEach (i in (width-1) downTo 0)
+            local src = src_start
+            forEach (j in 0..<height)
+              rotated_pixels[dest] = pixels[src]
+              ++dest
+              src += width
+            endForEach
+            --src_start
+          endForEach
+
+        endIf
+      endBlock
+
+      pixels = rotated_pixels
+      swapValues width, height
 
     method save_as_png( file:File )->Logical
       return file.save( to_png_bytes )
