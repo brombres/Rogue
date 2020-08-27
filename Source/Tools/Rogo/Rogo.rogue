@@ -164,11 +164,10 @@ if (not buildfiles.count)
          |
          |routine rogo_default
          |  rogo_build
-         |  rogo_run
-
      builder.println "  #rogo_install_launcher  # Uncomment to automatically install a /usr/local/bin/$ launcher" (project_name.to_lowercase)
      builder.println ...
-        @|endRoutine
+        @|  rogo_run
+         |endRoutine
          |
          |routine rogo_build
          |  block exe_filepath

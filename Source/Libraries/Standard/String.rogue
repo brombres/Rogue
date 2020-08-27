@@ -432,6 +432,7 @@ class String
           local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0, fcount,
             found_match, result, &=wildcard_end )
           if (success)
+            match_start *= 2  # just avoiding an unused variable warning
             return (success,n,match_count)
           endIf
         endForEach
