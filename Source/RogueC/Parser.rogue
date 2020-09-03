@@ -3588,7 +3588,7 @@ class Parser
               # context{} -> context
               return access
             elseIf (next_is(TokenType.symbol_open_brace))
-              # context{ .a, x:y, :z } -> { context.a, context.x=y, context//z = z }
+              # context{ x:y, :z } -> { context.x=y, context//z = z }
               return parse_literal_table( access )
             endIf
           else
@@ -3669,11 +3669,18 @@ class Parser
         local elements = CmdArgs()
         consume_eols
         if (not consume(TokenType.symbol_close_bracket))
-          local first = true
-          while (first or consume(TokenType.symbol_comma))
-            first = false
+          local has_another = true
+          while (has_another)
+            has_another = false
             elements.add( parse_expression )
-            consume_eols
+            contingent
+              consume_eols
+              sufficient (consume(TokenType.symbol_comma))
+              necessary  (not next_is(TokenType.symbol_close_bracket))
+            satisfied
+              has_another = true
+              consume_eols
+            endContingent
           endWhile
           must_consume( TokenType.symbol_close_bracket )
         endIf
@@ -4255,9 +4262,9 @@ class Parser
       consume_eols
       if (consume(TokenType.symbol_close_brace)) return table
 
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        first = false
+      local has_another = true
+      while (has_another)
+        has_another = false
         consume_eols
 
         t = peek
@@ -4295,6 +4302,14 @@ class Parser
         endIf
 
         consume_eols
+
+        contingent
+          sufficient (consume(TokenType.symbol_comma))
+          necessary  (not next_is(TokenType.symbol_close_brace))
+        satisfied
+          has_another = true
+          consume_eols
+        endContingent
       endWhile
 
       must_consume( TokenType.symbol_close_brace )
@@ -4306,10 +4321,9 @@ class Parser
       if (consume(TokenType.symbol_close_bracket)) return CmdAccess( t, "ValueList", CmdArgs() )
 
       local elements = CmdArgs()
-
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        first = false
+      local has_another = true
+      while (has_another)
+        has_another = false
         consume_eols
 
         local value : Cmd
@@ -4324,7 +4338,14 @@ class Parser
 
         elements.add( value )
 
-        consume_eols
+        contingent
+          consume_eols
+          sufficient (consume(TokenType.symbol_comma))
+          necessary  (not next_is(TokenType.symbol_close_bracket))
+        satisfied
+          has_another = true
+          consume_eols
+        endContingent
       endWhile
 
       must_consume( TokenType.symbol_close_bracket )
@@ -4336,9 +4357,9 @@ class Parser
 
       local elements = CmdArgs()
 
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        first = false
+      local has_another = true
+      while (has_another)
+        has_another = false
         consume_eols
         local t = peek
         if (next_is(TokenType.symbol_open_bracket))
@@ -4352,7 +4373,16 @@ class Parser
         else
           elements.add( parse_expression )
         endIf
-        consume_eols
+
+        contingent
+          consume_eols
+          sufficient (consume(TokenType.symbol_comma))
+          necessary  (not next_is(TokenType.symbol_close_bracket))
+        satisfied
+          has_another = true
+          consume_eols
+        endContingent
+
       endWhile
       must_consume( TokenType.symbol_close_bracket )
 
@@ -4413,11 +4443,11 @@ class Parser
 
       local cmd_block = CmdContextBlock( t, context )
 
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
+      local has_another = true
+      while (has_another)
         consume_eols
 
-        first = false
+        has_another = false
         t = peek
 
         if (consume(TokenType.symbol_colon))
@@ -4438,6 +4468,14 @@ class Parser
         endIf
 
         consume_eols
+
+        contingent
+          sufficient (consume(TokenType.symbol_comma))
+          necessary  (not next_is(TokenType.symbol_close_brace))
+        satisfied
+          has_another = true
+          consume_eols
+        endContingent
       endWhile
 
       must_consume( TokenType.symbol_close_brace )
