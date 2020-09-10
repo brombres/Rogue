@@ -96,6 +96,11 @@ class Scanner : Reader<<Character>>
       while (consume(' ')) found = true
       return found
 
+    method consume_whitespace->Logical
+      local found = false
+      while (consume(' ') or consume('\t')) found = true
+      return found
+
     method convert_crlf_to_newline
       use writer = data.rewriter
         forEach (ch in writer)
