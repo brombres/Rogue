@@ -9,7 +9,7 @@ class UIComponent : Node<<UIComponent>>
     fixed_size    : XY
     anchor        = Anchor.CENTER : Anchor
 
-    is_modified   = true     # Inherited from Node - don't change this name or it will break things
+    is_modified   = true  # Inherited from Node - don't change this name
     draw_bounds   : Box?  # AKA invalidated area
 
     is_handling_event : Logical
@@ -130,6 +130,7 @@ class UIComponent : Node<<UIComponent>>
         if (is_modified) update_layout
         redraw( display_bounds )  # Sets up draw_bounds for the following call to draw()
       endIf
+
       if (draw_bounds)
         draw( draw_bounds.value )
       endIf
@@ -318,7 +319,7 @@ class UIComponent : Node<<UIComponent>>
 
     method update
       on_update
-      if (not parent) update_layout( display_bounds )
+      if (not parent) update_layout
       forEachChild (cur,this,cur.update)
 
     method update( new_bounds:Box )
