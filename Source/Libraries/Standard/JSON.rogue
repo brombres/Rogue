@@ -287,8 +287,11 @@ class JSONParser
     method read->Character
       return reader.read
 
+    method consume_spaces
+      while (reader.consume_spaces) noAction
+
     method consume_whitespace
-      while (reader.consume_whitespace or reader.consume_eols) noAction
+      while (reader.consume_whitespace) noAction
 
     method consume_whitespace_and_eols
       while (reader.consume_whitespace or reader.consume_eols) noAction
