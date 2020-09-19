@@ -1,0 +1,20 @@
+module UI
+
+$localMacro UI_FACTORY_METHODS(name,TypeName)
+    method name( content=null:UIComponent )->TypeName
+      return TypeName( content )
+
+    method name( size:XY )->TypeName
+      return TypeName( size )
+
+    method name( content:UIComponent, size:XY )->TypeName
+      return TypeName( content, size )
+$endMacro
+
+class UILayout : UIView
+  GLOBAL METHODS
+    UI_FACTORY_METHODS( absolute, UIAbsoluteLayout )
+    UI_FACTORY_METHODS( h, UIRowLayout )
+    UI_FACTORY_METHODS( v, UIColumnLayout )
+endClass
+

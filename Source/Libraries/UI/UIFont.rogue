@@ -1,0 +1,10 @@
+module UI
+
+class UIFont
+  PROPERTIES
+    name   : String
+    height : Real64
+
+  METHODS
+    method init( name, height )
+endClass

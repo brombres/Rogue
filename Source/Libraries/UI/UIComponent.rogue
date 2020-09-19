@@ -1,0 +1,358 @@
+module UI
+  uses Utility/Node
+
+class UIComponent : Node<<UIComponent>>
+  PROPERTIES
+    position      : XY
+    size          : XY
+    offset        : XY
+    fixed_size    : XY
+    anchor        = Anchor.CENTER : Anchor
+
+    is_modified   = true  # Inherited from Node - don't change this name
+    draw_bounds   : Box?  # AKA invalidated area
+
+    is_handling_event : Logical
+
+  METHODS
+    method init( content=null:UIComponent )
+      init_component
+      if (content) add( content )
+
+    method init( content:UIComponent, size:XY )
+      init( size )
+      if (content) add( content )
+
+    method init( size:XY )
+      init_component
+      set_size( size )
+
+    method init_component
+
+    method add_spacer_h( pixels:Int32 )
+      add( UISpacer.h(pixels) )
+
+    method add_filler_h( weight=1.0:Real64 )
+      add( UIFiller.h(weight) )
+
+    method add_filler_v( weight=1.0:Real64 )
+      add( UIFiller.v(weight) )
+
+    method add_spacer_v( pixels:Int32 )
+      add( UISpacer.v(pixels) )
+
+    method after( e:KeyEvent )
+      noAction
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after( e:ScrollEvent )
+      noAction
+
+    method after( e:TextEvent )
+      noAction
+
+    method after_buffer
+      # Called at the end of a buffer operation after any children have been drawn
+      noAction
+
+    method after_draw
+      # Called at the end of a render operation after any children have been drawn
+      UIManager.theme._dispatch_after_draw( this )
+
+    method after_draw<<$Theme>>( theme:$Theme ) [propagated]
+      # Components can either override this method per-theme and draw themselves or they
+      # can let the theme draw them.
+      theme.after_draw( this )
+
+    method after_update_layout
+      # Event handler called after this component's layout has been updated.
+
+    method bounds->Box
+      return display_bounds
+
+    method content_bounds->Box
+      return Box( position+offset, content_size )
+
+    method content_size->XY
+      local cx = which{ fixed_size.x || size.x }
+      local cy = which{ fixed_size.y || size.y }
+      return XY( cx, cy )
+
+    method count->Int32
+      return @count
+
+    method dispatch( e:KeyEvent )
+      forEachChild (cur,this)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEachChild (cur)
+
+    method dispatch( e:PointerEvent )
+      forEachChild (cur,this)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEachChild (cur)
+
+    method dispatch( e:ScrollEvent )
+      forEachChild (cur,this)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEachChild (cur)
+
+    method dispatch( e:TextEvent )
+      forEachChild (cur,this)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEachChild (cur)
+
+    method display_bounds->Box
+      return Box( position, size )
+
+    method compute_bounds( parent_bounds:Box )->Box
+      if (fixed_size.x)
+        if (fixed_size.y)
+          return Box( position, fixed_size )
+        else
+          return Box( position.x, parent_bounds.position.y, fixed_size.x, parent_bounds.size.y )
+        endIf
+      else
+        if (fixed_size.x)
+          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, fixed_size.y )
+        else
+          return parent_bounds
+        endIf
+      endIf
+
+    method draw( &force )
+      if (force)
+        if (is_modified) update_layout
+        redraw( display_bounds )  # Sets up draw_bounds for the following call to draw()
+      endIf
+
+      if (draw_bounds)
+        draw( draw_bounds.value )
+      endIf
+
+    method draw( draw_bounds:Box )
+      local subset = draw_bounds & display_bounds
+      if (not subset) return
+
+      on_draw
+
+      forEachChild (cur,this,cur.draw(subset.value))
+
+      after_draw
+
+      if (not parent)
+        # This is the root which manages draw_bounds
+        this.draw_bounds = null
+      endIf
+
+    method handle( e:KeyEvent )
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method handle( e:PointerEvent )
+      if (not e.is_processed)
+        UIManager.handle( e, this )
+        return
+      endIf
+
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method handle( e:ScrollEvent )
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method handle( e:TextEvent )
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method horizontal_flex->Real64
+      if (fixed_size.x) return 0.0
+      else              return 1.0
+
+    method invalidate
+      mark_modified
+
+    method is_clickable->Logical
+      return true
+
+    method is_targeted->Logical
+      return display_bounds.contains( Pointer.position )
+
+    method maximum_height( &subcomponents_only )->Real64
+      return fixed_size.y
+
+    method maximum_size( &subcomponents_only )->XY
+      return XY( maximum_width, maximum_height )
+
+    method maximum_width( &subcomponents_only )->Real64
+      return fixed_size.x
+
+    method minimum_height( &subcomponents_only )->Real64
+      return fixed_size.y
+
+    method minimum_size( &subcomponents_only )->XY
+      return XY( minimum_width, minimum_height )
+
+    method minimum_width( &subcomponents_only )->Real64
+      return fixed_size.x
+
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+
+    method on_draw
+      # Called at the beginning of a render operation before any children have been drawn
+      UIManager.theme._dispatch_on_draw( this )
+
+    method on_draw<<$Theme>>( theme:$Theme ) [propagated]
+      # Components can either override this method per-theme and draw themselves or they
+      # can let the theme draw them.
+      theme.on_draw( this )
+
+    method on_update
+      noAction
+
+    method on_update_layout
+      # Event handler called when this component's layout will definitely be updated.
+
+    method operator+( right_component:UIComponent )->UIComponent
+      return UILayout.h.[ add(this), add(right_component) ]
+
+    method operator/( bottom_component:UIComponent )->UIComponent
+      return UILayout.v.[ add(this), add(bottom_component) ]
+
+    method redraw( redraw_bounds=null:Box? )
+      if (not redraw_bounds) redraw_bounds = display_bounds
+      if (parent)
+        # Propagate the request up to the root
+        parent.redraw( redraw_bounds )
+      else
+        # This is the root
+        if (draw_bounds)
+          draw_bounds = draw_bounds.value | redraw_bounds.value
+        else
+          draw_bounds = redraw_bounds
+        endIf
+      endIf
+
+    method retain_focus( e:PointerEvent )
+      UIManager.focus( e, this )
+
+    method scroll( delta:XY )
+      offset += delta
+
+    method set_bounds( new_bounds:Box )
+      set_display_bounds( new_bounds )
+
+    method set_content_bounds( new_bounds:Box )
+      offset = new_bounds.position
+      fixed_size = new_bounds.size
+
+    method set_fixed_size( new_size:XY )
+      if (@fixed_size != new_size)
+        is_modified = true
+        @fixed_size = new_size
+      endIf
+      if (@size != new_size)
+        is_modified = true
+        @size = new_size
+      endIf
+
+    method set_count( @count )
+
+    method set_display_bounds( new_bounds:Box )
+      set_position( new_bounds.position )
+      set_size( new_bounds.size )
+
+    method set_is_modified( setting:Logical )
+      if (setting) mark_modified
+      @is_modified = setting
+
+    method set_offset( new_content_offset:XY )
+      if (@offset != new_content_offset)
+        is_modified = true
+        @offset = new_content_offset
+      endIf
+
+    method set_position( new_position:XY )
+      if (@position != new_position)
+        is_modified = true
+        @position = new_position
+      endIf
+
+    method set_size( new_size:XY )
+      set_fixed_size( new_size )
+
+    method update
+      on_update
+      if (not parent) update_layout
+      forEachChild (cur,this,cur.update)
+
+    method update( new_bounds:Box )
+      on_update
+      update_layout( new_bounds )
+      forEachChild (cur,this,cur.update)
+
+    method update_subcomponent_layout
+      local bounds = this.display_bounds
+      forEachChild (cur,this,cur.update_layout(bounds))
+
+    method update_layout
+      update_layout( display_bounds )
+
+    method update_layout( new_bounds:Box )
+      if (is_modified or new_bounds != display_bounds)
+        on_update_layout
+        if (not parent) redraw( new_bounds )
+        @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
+        @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
+        update_subcomponent_layout
+        is_modified = false
+        after_update_layout
+      endIf
+
+    method vertical_flex->Real64
+      if (fixed_size.y) return 0.0
+      else              return 1.0
+
+    method _dispatch_after_draw<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.after_draw( this )
+
+    method _dispatch_on_draw<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.on_draw( this )
+endClass
+
