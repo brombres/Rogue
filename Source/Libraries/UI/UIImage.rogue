@@ -1,0 +1,10 @@
+module UI
+
+class UIImage : UIComponent
+  PROPERTIES
+    filename      : String
+    scale_to_fill : Logical
+
+  METHODS
+    method init( filename, scale_to_fill=false )
+endClass
