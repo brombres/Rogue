@@ -572,6 +572,13 @@ class Value
     method to_json( buffer:StringBuilder, flags=0:Int32 )->StringBuilder
       return buffer
 
+    method to_list<<$DataType>>->$DataType[]
+      local result = $DataType[]( count )
+      forEach (value in this)
+        result.add( value->$DataType )
+      endForEach
+      return result
+
     method values( list=null:Value )->Value
       if (list)
         list.add_all( this )
