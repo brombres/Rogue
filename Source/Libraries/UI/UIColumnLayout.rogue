@@ -3,21 +3,27 @@ module UI
 class UIColumnLayout : UILayout
   METHODS
     method horizontal_flex->Real64
-      return which{ minimum_width:0.0 || 1.0 }
+      if (not layout) return 0.0
+
+      local flex = 0.0
+      forEach (component in layout)
+        flex += component.horizontal_flex
+      endForEach
+      return flex
 
     method maximum_width( &subcomponents_only )->Real64
       if (not subcomponents_only)
         local fixed_x = fixed_size.x
         if (fixed_x) return fixed_x
       endIf
-      if (not first_child) return 0
+      if (not layout or layout.is_empty) return 0
 
       local max_width = 0
-      forEachChild (component,this)
+      forEach (component in layout)
         local w = component.maximum_width
         if (w == 0) return 0
-        max_width = max_width.or_larger( w )
-      endForEachChild (component)
+        max_width += w
+      endForEach
       return max_width
 
     method maximum_height( &subcomponents_only )->Real64
@@ -25,14 +31,14 @@ class UIColumnLayout : UILayout
         local fixed_y = fixed_size.y
         if (fixed_y) return fixed_y
       endIf
-      if (not first_child) return 0
+      if (not layout or layout.is_empty) return 0
 
       local max_height = 0
-      forEachChild (component,this)
+      forEach (component in layout)
         local h = component.maximum_height
         if (h == 0) return 0
-        max_height += h
-      endForEachChild (component)
+        max_height = max_height.or_larger( h )
+      endForEach
       return max_height
 
     method minimum_width( &subcomponents_only )->Real64
@@ -40,12 +46,12 @@ class UIColumnLayout : UILayout
         local fixed_x = fixed_size.x
         if (fixed_x) return fixed_x
       endIf
-      if (not first_child) return 0
+      if (not layout or layout.is_empty) return 0
 
       local min_width = 0
-      forEachChild (component,this)
-        min_width = min_width.or_larger( component.minimum_width )
-      endForEachChild (component)
+      forEach (component in layout)
+        min_width += component.minimum_width
+      endForEach
       return min_width
 
     method minimum_height( &subcomponents_only )->Real64
@@ -53,72 +59,66 @@ class UIColumnLayout : UILayout
         local fixed_y = fixed_size.y
         if (fixed_y) return fixed_y
       endIf
-      if (not first_child) return 0
+      if (not layout or layout.is_empty) return 0
 
       local min_height = 0
-      forEachChild (component,this)
-        min_height += component.minimum_height
-      endForEachChild (component)
+      forEach (component in layout)
+        min_height = min_height.or_larger( component.minimum_height )
+      endForEach
       return min_height
 
     method operator+( right_component:UIComponent )->UIComponent
-      return UILayout.h.[ add(this), add(right_component) ]
-
-    method operator/( bottom_component:UIComponent )->UIComponent
-      add( bottom_component )
+      add( right_component )
       return this
 
+    method operator/( bottom_component:UIComponent )->UIComponent
+      return UILayout.v.[ add(this), add(bottom_component) ]
+
     method update_subcomponent_layout
-      local content_height = this.minimum_height( &subcomponents_only )
-      local max_height = this.maximum_height
+      # Horizontal
+      local content_width = minimum_width( &subcomponents_only )
+      local max_width = maximum_width
 
-      local min_height = this.size.y
-      if (min_height < content_height) min_height = content_height
-      if (max_height and min_height > max_height) min_height = max_height
+      local min_width = this.size.x
+      if (min_width < content_width) min_width = content_width
+      if (max_width and min_width > max_width) min_width = max_width
 
-      if (min_height > content_height)
-        # Distribute extra height (beyond minimum) to components before laying out
-        local extra = min_height - content_height
-        local total_flex = this.vertical_flex
-        forEachChild (component,this)
-          local flex = component.vertical_flex
+      if (min_width > content_width)
+        # Distribute extra width (beyond minimum) to components before laying out
+        local extra = min_width - content_width
+        local total_flex = this.horizontal_flex
+        forEach (component in layout)
+          local flex = component.horizontal_flex
           if (flex)
-            local h = Int32( extra * flex / total_flex )
+            local w = Int32( extra * flex / total_flex )
             total_flex -= flex
-            component.@size = XY(0,component.minimum_height+h)
-            extra -= h
+            component.@size = XY(component.minimum_width+w,0)
+            extra -= w
           else
             component.@size = component.minimum_size
           endIf
-        endForEachChild (component)
+        endForEach
 
       else
-        # All components get set to their minimum height
-        forEachChild (component,this)
+        # All components get set to their minimum width
+        forEach (component in layout)
           component.@size = component.minimum_size
-        endForEachChild (component)
+        endForEach
       endIf
 
-      local y = @position.y
-      forEachChild (component,this)
-        local min_width = component.minimum_width
-        local max_width = component.maximum_width
-        local content_width = this.size.x
-        if (content_width < min_width) content_width = min_width
-        if (max_width and content_width > max_width) content_width = max_width
-        local x = @position.x
-        local h = component.size.y
-        component.update_layout( Box(x,y,this.size.x,h).subset(XY(content_width,h),component.anchor)+offset )
-        y += h
-      endForEachChild (component)
+      local x = @position.x
+      forEach (component in layout)
+        local min_height = component.minimum_height
+        local max_height = component.maximum_height
+        local content_height = this.size.y
+        if (content_height < min_height) content_height = min_height
+        if (max_height and content_height > max_height) content_height = max_height
+        local y = @position.y
+        local w = component.size.x
+        component.update_layout( Box(x,y,w,this.size.y).subset(XY(w,content_height), component.anchor)+offset )
+        x += w
+      endForEach
 
     method vertical_flex->Real64
-      local flex = 0.0
-      if (first_child)
-        forEachChild (component,this)
-          flex += component.vertical_flex
-        endForEachChild (component)
-      endIf
-      return flex
+      return which{ minimum_height:0.0 || 1.0 }
 endClass
-
