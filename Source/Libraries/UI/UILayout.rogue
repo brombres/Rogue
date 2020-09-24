@@ -14,7 +14,7 @@ $endMacro
 class UILayout : UIView
   GLOBAL METHODS
     UI_FACTORY_METHODS( absolute, UIAbsoluteLayout )
-    UI_FACTORY_METHODS( h, UIRowLayout )
-    UI_FACTORY_METHODS( v, UIColumnLayout )
+    UI_FACTORY_METHODS( h, UIColumnLayout )
+    UI_FACTORY_METHODS( v, UIRowLayout )
 endClass
 

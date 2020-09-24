@@ -12,7 +12,8 @@ class UIFiller : UILayout
     weight : Real64
 
   METHODS
-    method init( fixed_size, weight=1.0 )
+    method init( fixed_size:XY, weight=1.0 )
+      prior.init( fixed_size )
 
     method horizontal_flex->Real64
       if (fixed_size.x == 0) return weight

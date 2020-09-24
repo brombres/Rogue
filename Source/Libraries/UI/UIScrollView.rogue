@@ -21,9 +21,10 @@ class UIScrollView : UIView
       e.consume
 
     method scroll( delta:XY )
-      forEachChild (cur,this)
+      if (not layout) return
+      forEach (cur in layout)
         cur.offset += delta
         cur.offset = -((-cur.offset).clamped_high( cur.content_size - size ).clamped_low( XY.zero ))
-      endForEachChild (cur)
+      endForEach
 
 endClass

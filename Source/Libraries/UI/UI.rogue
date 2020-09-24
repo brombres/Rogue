@@ -1,6 +1,5 @@
 module UI
   uses Geometry [export]
-  uses Utility/Node
 
 $include "Event.rogue"
 $include "Keyboard.rogue"

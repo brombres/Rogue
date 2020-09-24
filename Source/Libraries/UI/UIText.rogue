@@ -9,5 +9,6 @@ class UIText : UIComponent
 
   METHODS
     method init( value, font=null, color=Color.WHITE )
+      init_component
 endClass
 
