@@ -781,6 +781,32 @@ class Scope
       endForEach
       if (preferred_m) return preferred_m
 
+
+      # If all global methods, keep the one with the most specific type context
+      contingent
+        forEach (m in candidates.available)
+          necessary (m.is_global)
+        endForEach
+
+        # Find method with most specific type context
+        local most_specific_type : Type
+        forEach (m in candidates.available)
+          local m_type_context = m.type_context
+          if (most_specific_type is null or m_type_context.instance_of(most_specific_type))
+            most_specific_type = m_type_context
+          endIf
+        endForEach
+
+        if (most_specific_type)
+          # Keep only the methods defined in the most specific type
+          forEach (m in candidates.available)
+            if (m.type_context is most_specific_type) candidates.compatible.add( m )
+          endForEach
+          if (not candidates.update_matches) return null
+          if (candidates.has_match) return candidates.match
+        endIf
+      endContingent
+
       candidates.update_matches  # Force error if required
       return null
 endClass
