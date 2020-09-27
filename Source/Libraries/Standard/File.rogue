@@ -292,6 +292,10 @@ class File
       if (ends_with_separator(filepath)) return filepath
       return filepath + '/'
 
+    method esc( filepath:String )->String
+      # File.esc(filepath) is shorthand for File.shell_escaped(File.conventional_filepath(filepath))
+      return File.shell_escaped( File.conventional_filepath(filepath) )
+
     method exists( filepath:String )->Logical
       filepath = expand_filepath( filepath )
       native @|if ( !$filepath ) return false;
@@ -1018,6 +1022,9 @@ class File
     method create_folder->Logical
       return File.create_folder( this.filepath )
 
+    method delete->Logical
+      return File.delete( this.filepath )
+
     method ends_with_separator->Logical
       return File.ends_with_separator( this.filepath )
 
@@ -1025,14 +1032,9 @@ class File
       if (not ends_with_separator) filepath += '/'
       return this
 
-    method delete->Logical
-      return File.delete( this.filepath )
-
-    method has_byte_order_mark->Logical
-      return File.has_byte_order_mark( this.filepath )
-
-    method is_different_than( other_filepath:String )->Logical
-      return File.is_different_than( this.filepath, other_filepath )
+    method esc->String
+      # File.esc() is shorthand for File.conventional_filepath.shell_escaped
+      return File.shell_escaped( File.conventional_filepath(this.filepath) )
 
     method exists->Logical
       return File.exists( this.filepath )
@@ -1048,6 +1050,12 @@ class File
 
     method folder->String
       return File.folder( this.filepath )
+
+    method has_byte_order_mark->Logical
+      return File.has_byte_order_mark( this.filepath )
+
+    method is_different_than( other_filepath:String )->Logical
+      return File.is_different_than( this.filepath, other_filepath )
 
     method is_folder->Logical
       return File.is_folder( this.filepath )
