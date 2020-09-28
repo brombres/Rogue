@@ -235,7 +235,6 @@ class TokenType
     symbol_double_vertical_bar    : TokenType
 
     # Noise words
-    keyword_then                  : TokenType
     keyword_do                    : TokenType
 
   PROPERTIES
