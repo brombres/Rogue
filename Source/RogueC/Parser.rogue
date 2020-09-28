@@ -2454,7 +2454,7 @@ class Parser
 
       cmd_if.condition = parse_expression( &no_parens_operator )
 
-      consume(TokenType.keyword_then)
+      consume( "then" )
 
       if (consume_eols)
         # multi-line if
