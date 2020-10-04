@@ -1247,7 +1247,7 @@ class FileReader : Reader<<Byte>>
     method on_cleanup
       close
 
-    method close->this
+    method close
       if (fp)
         native @|fclose( $this->fp );
                 |$this->fp = 0;
@@ -1255,7 +1255,6 @@ class FileReader : Reader<<Byte>>
 
       position = 0
       count = 0
-      return this
 
     method fp->Int64 [macro]
       return native("$this->fp")->Int64
@@ -1369,7 +1368,7 @@ class FileWriter : Writer<<Byte>>
     method on_cleanup
       close
 
-    method close->this
+    method close
       $if (target("Web")) nativeHeader extern "C" void Rogue_sync_local_storage();
 
       flush
@@ -1379,16 +1378,13 @@ class FileWriter : Writer<<Byte>>
         System.sync_storage
       endIf
 
-      return this
-
-    method flush->this
-      if (buffer.count == 0 or not fp) return this
+    method flush
+      if (buffer.count == 0 or not fp) return
 
       native @|fwrite( $buffer->data->as_bytes, 1, $buffer->count, $this->fp );
               |fflush( $this->fp );
 
       buffer.clear
-      return this
 
     method fp->Int64 [macro]
       return native( "$this->fp" )->Int64
@@ -1439,7 +1435,7 @@ class FileWriter : Writer<<Byte>>
 
       ++position
       buffer.add( ch )
-      if (buffer.count == 1024) return flush
+      if (buffer.count == 1024) flush
 
       return this
 
@@ -1506,12 +1502,11 @@ class FDReader : Reader<<Byte>>
 
       return true
 
-    method close->this
+    method close
       if (fd >= 0)
         native @|close( $fd );
         fd = -1
       endIf
-      return this
 
     method is_open->Logical
       return fd != -1
@@ -1560,7 +1555,7 @@ class FDWriter : Writer<<Byte>>
     method on_cleanup
       if (auto_close) close
 
-    method close->this
+    method close
       flush
 
       if (fd != -1)
@@ -1568,10 +1563,8 @@ class FDWriter : Writer<<Byte>>
         fd = -1
       endIf
 
-      return this
-
-    method flush->this
-      if (buffer.count == 0 or fd == -1) return this
+    method flush
+      if (buffer.count == 0 or fd == -1) return
 
       native @|if (-1 == write( $fd, $buffer->data->as_bytes, $buffer->count ))
               |{
@@ -1580,12 +1573,11 @@ class FDWriter : Writer<<Byte>>
               |}
 
       buffer.clear
-      return this
 
     method write( ch:Byte )->this
       ++position
       buffer.add( ch )
-      if (buffer.count == 1024) return flush
+      if (buffer.count == 1024) flush
 
       return this
 

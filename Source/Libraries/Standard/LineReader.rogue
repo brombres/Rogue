@@ -18,31 +18,34 @@ class LineReader : Reader<<String>>
     method init( string:String )
       init( string.reader )
 
-    method close->this
+    method close
       source.close
-      return this
 
     method has_another->Logical
-      if (next is null) next = prepare_next
-      return next?
+      return prepare_next
 
     method peek->String
-      has_another  # prep 'next' if necessary
+      prepare_next
       return next
 
-    method prepare_next->String
-      if (not source.has_another) return null
+    method prepare_next->Logical
+      if (next) return true
+
+      if (not source.has_another) return false
 
       prev = 0
-
       buffer.clear
       while (source.has_another)
         local ch = source.read
-        if (ch == '\n') prev = '\n'; return buffer->String
+        if (ch == '\n')
+          prev = '\n'
+          escapeWhile
+        endIf
         buffer.print( ch )
       endWhile
 
-      return buffer->String
+      next = buffer->String
+      return true
 
     method read->String
       local result = peek

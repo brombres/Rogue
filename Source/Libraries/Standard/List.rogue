@@ -773,9 +773,8 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
     method init( list )
       position = list.count
 
-    method close->this
+    method close
       list.discard_from( position )
-      return this
 
     method seek( pos:Int32 )->this
       if (pos < 0) pos = 0

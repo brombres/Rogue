@@ -8,9 +8,8 @@ class UTF8Reader : Reader<<Character>>
       next = null
       if (peek == 0xFEFF) read   # discard Byte Order Marker (BOM)
 
-    method close->this
+    method close
       byte_reader.close
-      return this
 
     method has_another->Logical
       return next.exists or byte_reader.has_another
@@ -69,13 +68,11 @@ class CharacterToUTF8ByteWriter : Writer<<Character>>
   METHODS
     method init( byte_writer )
 
-    method close->this
+    method close
       byte_writer.close
-      return this
 
-    method flush->this
+    method flush
       byte_writer.flush
-      return this
 
     method reset->this
       return seek( 0 )
@@ -117,14 +114,12 @@ class UTF8ByteToCharacterWriter : Writer<<Byte>>
   METHODS
     method init( character_writer )
 
-    method close->this
+    method close
       character_writer.close
-      return this
 
-    method flush->this
+    method flush
       bytes.clear
       character_writer.flush
-      return this
 
     method reset->this
       return seek( 0 )

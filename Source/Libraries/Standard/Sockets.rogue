@@ -11,7 +11,7 @@ class Socket [abstract]
   PROPERTIES
 
   METHODS
-    method close->this [abstract]
+    method close  [abstract]
 
     method remote_ip->String
       return "0.0.0.0"
@@ -42,7 +42,7 @@ class ServerSocket [abstract]
   METHODS
     method accept_connection->Socket [abstract]
 
-    method close->this               [abstract]
+    method close                     [abstract]
 
     method is_listening->Logical     [abstract]
 
@@ -165,7 +165,7 @@ $endIf
                UNLOCK
 
 
-    method close->this
+    method close
       LOCK
       if (@socket_id != -1)
         native @|close( $socket_id );
@@ -173,7 +173,6 @@ $endIf
       endIf
       state = CLOSED
       UNLOCK
-      return this
 
     method is_closed->Logical
       return (state == CLOSED)
@@ -274,12 +273,11 @@ class BasicServerSocket : ServerSocket
       result.remote_ip = native( "RogueString_create_from_utf8( hbuf )" )->String
       return result
 
-    method close->this
+    method close
       if (@socket_id != -1)
         native @|close( $socket_id );
         @socket_id = -1
       endIf
-      return this
 
     method is_listening->Logical
       return @is_listening
@@ -357,12 +355,11 @@ class BasicSocketWriter : Writer<<Byte>>
   METHODS
     method init( socket )
 
-    method close->this
+    method close
       socket.close
-      return this
 
-    method flush->this
-      if (write_buffer.count == 0) return this
+    method flush
+      if (write_buffer.count == 0) return
 
       local sent : Int32
 
@@ -374,18 +371,16 @@ class BasicSocketWriter : Writer<<Byte>>
               |catch (...)
               |{
                  socket.close
-                 return this
+                 return
       native @|}
 
-      if (sent == 0) return this
+      if (sent == 0) return
 
       if (sent > 0)
         write_buffer.discard( 0, sent )
       else
         if (native("errno != EAGAIN")->Logical) socket.close
       endIf
-
-      return this
 
     method reset->this
       throw UnsupportedOperationError( "BasicSocketWriter.reset()" )
@@ -401,7 +396,8 @@ class BasicSocketWriter : Writer<<Byte>>
 
     method write( value:Byte )->this
       write_buffer.add( value )
-      return flush
+      flush
+      return this
 
     method write( list:Byte[] )->this
       forEach (value in list) write( value )

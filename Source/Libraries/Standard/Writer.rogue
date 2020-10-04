@@ -7,11 +7,11 @@ class Writer<<$DataType>> [aspect]
     position : Int32
 
   METHODS
-    method close->this
-      return this
+    method close
+      noAction
 
-    method flush->this
-      return this
+    method flush
+      noAction
 
     method on_use->this
       return this

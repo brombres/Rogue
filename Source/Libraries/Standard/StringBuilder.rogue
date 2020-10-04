@@ -44,10 +44,9 @@ class StringBuilder : PrintWriter [essential]
       cursor_offset = 0
       return this
 
-    method close->this
+    method close
       # Concrete definition of the abstract method PrintWriter.close()
       noAction
-      return this
 
     method consolidated->String
       # Returns the equivalent string to the data in this StringBuilder,
@@ -62,10 +61,9 @@ class StringBuilder : PrintWriter [essential]
       utf8.discard_from( cursor_offset )
       count = cursor_index
 
-    method flush->this
+    method flush
       # Concrete definition of the abstract method PrintWriter.flush()
       noAction
-      return this
 
     method get( index:Int32 )->Character
       if (index == 0)

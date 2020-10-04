@@ -36,9 +36,8 @@ class Process
       return process.finish
 
   METHODS
-    method close->this
+    method close
       finish
-      return this
 
     method error_bytes->Byte[]
       local result = Byte[]
@@ -341,10 +340,9 @@ class PosixProcessReader : Reader<<Byte>>
     method init( process, fd:Int32 )
       fd_reader = FDReader( fd, &!auto_close )
 
-    method close->this
+    method close
       fd_reader.fd = -1
       position = 0
-      return this
 
     method has_another->Logical
       if (fd_reader.buffer_position >= fd_reader.buffer.count) process.update_io( process.is_blocking )
@@ -531,7 +529,7 @@ class WindowsProcessReader : Reader<<Byte>>
               |#endif
       if (not success) throw Error("Process reader could not be initialized.")
 
-    method close->this
+    method close
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |if ($this->output_reader)
               |{
@@ -544,7 +542,6 @@ class WindowsProcessReader : Reader<<Byte>>
               |  $this->output_writer = NULL;
               |}
               |#endif
-      return this
 
     method fill_buffer->Logical
       buffer.reserve( 1024 );
@@ -622,7 +619,7 @@ class WindowsProcessWriter : Writer<<Byte>>
         throw Error("Process reader could not be initialized.")
       endIf
 
-    method close->this
+    method close
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |if ($this->input_reader)
               |{
@@ -630,9 +627,9 @@ class WindowsProcessWriter : Writer<<Byte>>
               |  $this->input_reader = NULL;
               |}
               |#endif
-      return close_pipe
+      close_pipe
 
-    method close_pipe->this
+    method close_pipe
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |if ($this->input_writer)
               |{
@@ -640,10 +637,9 @@ class WindowsProcessWriter : Writer<<Byte>>
               |  $this->input_writer = NULL;
               |}
               |#endif
-      return this
 
-    method flush->this
-      if (not buffer.count) return this
+    method flush
+      if (not buffer.count) return
 
       local write_count = 0
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -661,8 +657,6 @@ class WindowsProcessWriter : Writer<<Byte>>
         @position += write_count
         buffer.discard( 0, write_count )
       endIf
-
-      return this
 
     method seek( pos:Int32 )->this
       throw UnsupportedOperationError()
