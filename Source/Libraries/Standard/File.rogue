@@ -705,6 +705,10 @@ class File
       filepath = expand_filepath( filepath )
       return FileReader( filepath )
 
+    method rebuilder( filepath:String )->LineRebuilder
+      filepath = expand_filepath( filepath )
+      return LineRebuilder( File(filepath) )
+
     method rewrite( filepath:String, mappings:Table<<String,String>> )
       filepath = expand_filepath( filepath )
       local fn = function( line:String )->String with (mappings)
@@ -1095,6 +1099,9 @@ class File
 
     method reader->FileReader
       return File.reader( this.filepath )
+
+    method rebuilder->LineRebuilder
+      return LineRebuilder( this )
 
     method rename( new_filepath:String )->Logical [macro]
       return File.rename( this.filepath, new_filepath )
