@@ -342,6 +342,11 @@ endClass
 
 class ConsoleStyle
   # USAGE
+  #  ConsoleStyle.print_dim
+  #  println ...
+  #  ConsoleStyle.print_dim_off
+  #
+  # OR
   #   println "$Hello World!$" (ConsoleStyle().fg_white.bg_red, ConsoleStyle().reset)
   #
   # OR
@@ -442,6 +447,18 @@ forEach (p in global_list)
   sourceln "  codes.add( $ )" (p.name)
   sourceln "  return this"
   injectMethod
+endForEach
+$endMetacode
+
+# Use metacode to generate a global print method for each code.
+# For example, for FG_RED the following method is generated:
+#   method print_fg_red
+#     print( FG_RED )
+$metacode<ConsoleStyle.organize_methods>
+forEach (p in global_list)
+  sourceln "method print_$" (p.name.to_lowercase)
+  sourceln "  print( $ )" (p.name)
+  injectGlobalMethod
 endForEach
 $endMetacode
 
