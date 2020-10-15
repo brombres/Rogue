@@ -1,0 +1,670 @@
+module TextCanvas
+
+uses Geometry [export]
+
+class TextCanvas  : BufferedPrintWriter<<builder>>
+  # A 2D canvas of styled console text.
+  PROPERTIES
+    buffer     : StyledCharacter[]
+    displayed  = StyledCharacter[]
+    width      : Int32
+    height     : Int32
+
+    cursor     : XY
+    autoscroll : Logical
+    style      = CurrentCharacterStyle()
+
+    clip       : Box?
+
+    _is_flushing : Logical
+
+  METHODS
+    method init( width, height, fill=' ':Character )
+      init( width, height, StyledCharacter(fill,style.current) )
+
+    method init( width, height, fill:StyledCharacter )
+      buffer = StyledCharacter[]( width * height )
+      loop (width*height) buffer.add( fill )
+      invalidate
+
+    method init( width, height, content:String )
+      init( width, height, ' ' )
+      if (content.contains('\n'))
+        local y = 0
+        forEach (line in LineReader(content))
+          forEach (ch at x in line)
+            set( x, y, ch )
+          endForEach
+          ++y
+        endForEach
+      else
+        buffer.clear
+        buffer.add( StyledCharacter(forEach in content) )
+      endIf
+
+    method init( width, height, buffer )
+      invalidate
+
+    method cloned->TextCanvas
+      return TextCanvas( width, height, buffer.cloned ).[ cursor=cursor ]
+
+    method clear( fill:StyledCharacter )
+      forEach (i of buffer) buffer[i] = fill
+      cursor = XY(0,0)
+
+    method clear( fill=' ':Character )
+      clear( StyledCharacter(fill,style.current) )
+
+    method crop( n:Int32 )
+      crop( n, n, n, n )
+
+    method crop( left:Int32, top:Int32, right:Int32, bottom:Int32 )
+      expand( -left, -top, -right, -bottom )
+
+    method expand( n:Int32 )
+      expand( n, n, n, n )
+
+    method expand( left:Int32, top:Int32, right:Int32, bottom:Int32 )
+      if (left == 0 and top == 0 and right == 0 and bottom == 0) return
+      local dest = TextCanvas( width+left+right, height+top+bottom )
+      draw( dest, left, top )
+      buffer = dest.buffer
+      width = dest.width
+      height = dest.height
+      invalidate
+
+    method display( output=Global:PrintWriter )
+      # Prints to the standard output or a specified PrintWriter.
+      flush
+
+      ConsoleStyle.reset( output )
+
+      local cur_style = CharacterStyle.NONE
+      local index = 0
+      loop height
+        loop width
+          local ch = buffer[ index ]
+          ++index
+          cur_style = cur_style.apply( ch.style, output )
+          output.print( ch.value )
+        endLoop
+        output.println
+      endLoop
+
+      ConsoleStyle.reset( output )
+
+    method display( x:Int32, y:Int32 )
+      # (1,1) is the top-left corner of the console
+      flush
+      ConsoleStyle.reset
+
+      local cur_style = CharacterStyle.NONE
+      local line_start = 0
+      forEach (j in 0..<height)
+        local is_drawing = false
+        forEach (i in 0..<width)
+          local index = line_start + i
+          local ch = buffer[index]
+          if (ch == displayed[index])
+            is_drawing = false
+          else
+            if (not is_drawing)
+              is_drawing = true
+              Console.set_cursor( x+i, y+j )
+            endIf
+            cur_style = cur_style.apply( ch.style )
+            Console.print( ch.value )
+            displayed[index] = ch
+          endIf
+        endForEach
+        line_start += width
+      endForEach
+
+      ConsoleStyle.reset
+
+
+    method display( xy:XY )
+      display( xy.x, xy.y )
+
+    method draw( src:TextCanvas, x:Int32, y:Int32 )
+      local og_cursor = cursor
+
+      local i2 = src.width-1
+      local j2 = src.height-1
+
+      forEach (j in 0..j2)
+        cursor = XY(x,y+j)
+        local index = j*src.width
+        forEach (i in 0..i2)
+          local ch = src.buffer[ index ]
+          if (ch.value)
+            style.current = ch.style
+            print( ch.value )
+          else
+            flush
+            @cursor += XY(1,0)
+          endIf
+          ++index
+        endForEach
+        println
+      endForEach
+
+      cursor = og_cursor
+
+    method draw( src:TextCanvas, xy:XY )
+      draw( src, xy.x, xy.y )
+
+    method draw( bounds:Box, ch:Character )
+      draw( bounds, StyledCharacter(ch,style.current) )
+
+    method draw( bounds:Box, ch:StyledCharacter )
+      local w = bounds.width
+      local h = bounds.height
+      local x1 = bounds.x    : Int32
+      local y1 = bounds.y    : Int32
+      local x2 = bounds.x2-1 : Int32
+      local y2 = bounds.y2-1 : Int32
+      fill( Box(x1,y1,w,1), ch )
+      fill( Box(x1,y2,w,1), ch )
+      fill( Box(x1,y1+1,1,h-2), ch )
+      fill( Box(x2,y1+1,1,h-2), ch )
+
+    method draw( bounds:Box, pattern:String )
+      # Pattern: "ABCDEFGHI" where:
+      #   ABC
+      #   D F
+      #   GHI
+      # Example:
+      #   ABBBBC
+      #   D    F
+      #   D    F
+      #   GHHHHI
+      local w = bounds.width
+      local h = bounds.height
+      local x1 = bounds.x    : Int32
+      local y1 = bounds.y    : Int32
+      local x2 = bounds.x2-1 : Int32
+      local y2 = bounds.y2-1 : Int32
+      fill( Box(x1+1,y1,w-2,1), pattern[1%pattern.count] )
+      fill( Box(x1+1,y2,w-2,1), pattern[7%pattern.count] )
+      fill( Box(x1,y1+1,1,h-2), pattern[3%pattern.count] )
+      fill( Box(x2,y1+1,1,h-2), pattern[5%pattern.count] )
+      set( x1, y1, pattern[0] )
+      set( x2, y1, pattern[2%pattern.count] )
+      set( x1, y2, pattern[6%pattern.count] )
+      set( x2, y2, pattern[8%pattern.count] )
+
+    method draw( pattern:String )
+      draw( Box(width,height), pattern )
+
+    method fill( bounds:Box, ch:Character )
+      fill( bounds, StyledCharacter(ch,style.current) )
+
+    method fill( ch:Character )
+      fill( Box(width,height), StyledCharacter(ch,style.current) )
+
+    method fill( bounds:Box, ch:StyledCharacter )
+      local intersection = bounds & Box(width,height)
+      if (not intersection) return
+      bounds = intersection.value
+
+      local index = bounds.y * width + bounds.x
+      local w = bounds.width
+      local row_skip = width - w
+      loop (bounds.height)
+        loop (w)
+          buffer[index] = ch
+          ++index
+        endLoop
+        index += row_skip
+      endLoop
+
+    method fill( ch:StyledCharacter )
+      fill( Box(width,height), ch )
+
+    method fill( bounds:Box, pattern:String )
+      # Pattern: "ABCDEFGHI" where:
+      #   ABC
+      #   DEF
+      #   GHI
+      # Example:
+      #   ABBBBC
+      #   DEEEEF
+      #   DEEEEF
+      #   GHHHHI
+      fill( bounds.cropped(1), pattern[4%pattern.count] )
+      draw( bounds, pattern )
+
+    method fill( pattern:String )
+      fill( Box(0,0,width,height), pattern )
+
+    method flush
+      if (_is_flushing) return
+      temporarily _is_flushing=true
+        flush( builder )
+      endTemporarily
+
+    method flush( buffer:StringBuilder )
+      local x1 = cursor.x
+      forEach (ch in buffer)
+        if (ch == '\r') nextIteration
+        if (ch == '\n')
+          @cursor = XY(x1,cursor.y+1)
+          if (autoscroll and cursor.y > height)
+            local delta = (cursor.y - height)
+            shift( 0, -delta )
+            @cursor -= XY(0,delta)
+          endIf
+        else
+          set( cursor, ch )
+          @cursor += XY(1,0)
+        endIf
+      endForEach
+      buffer.clear
+
+    method get( i:Int32, j:Int32 )->StyledCharacter
+      if (i < 0 or j < 0 or i >= width or j >= height) return StyledCharacter(0)
+      return buffer[ j*width + i ]
+
+    method get( xy:XY )->StyledCharacter
+      return get( xy.x, xy.y )
+
+    method invalidate
+      displayed.resize( width*height )
+
+      local zero = StyledCharacter(0)
+      displayed[ forEach of displayed ] = zero
+
+    method invalidate( bounds:Box )
+      local intersection = bounds & Box(width,height)
+      if (not intersection) return
+      bounds = intersection.value
+
+      local index = bounds.y * width + bounds.x
+      local w = bounds.width
+      local row_skip = width - w
+      loop (bounds.height)
+        loop (w)
+          displayed[index] = StyledCharacter(0)
+          ++index
+        endLoop
+        index += row_skip
+      endLoop
+
+    method resize( new_width:Int32, new_height:Int32 )
+      if (width == new_width and height == new_height) return
+      expand( 0, 0, new_width-width, new_height-height )
+
+    method set( i:Int32, j:Int32, ch:Character )
+      local clip = which{ this.clip || Box(0,0,width,height) }
+      if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2)
+        return
+      endIf
+      buffer[ j*width + i ] = StyledCharacter(ch,style.current)
+
+    method set( i:Int32, j:Int32, ch:StyledCharacter )
+      local clip = which{ this.clip || Box(0,0,width,height) }
+      if (i < clip.x or j < clip.y or i >= clip.x2 or j >= clip.y2) return
+      buffer[ j*width + i ] = ch
+
+    method set( xy:XY, ch:Character )
+      set( xy.x, xy.y, ch )
+
+    method set( xy:XY, ch:StyledCharacter )
+      set( xy.x, xy.y, ch )
+
+    method set_clip( new_clip:Box? )
+      flush
+      @clip = new_clip
+
+    method set_cursor( new_pos:XY )
+      flush
+      @cursor = new_pos
+
+    method shift( dx:Int32, dy:Int32, fill_ch=' ':Character )
+      if (dx and dy)
+        shift( dx, 0, fill_ch )
+        shift( 0, dy, fill_ch )
+        return
+      elseIf (dx == 0 and dy == 0)
+        return
+      endIf
+
+      if (dx > 0 or dy > 0)
+        # Iterate backwards, copying forward
+        local offset = dy*width + dx
+        local index = (width * height) - offset
+        while (index > 0)
+          --index
+          buffer[index+offset] = buffer[index]
+        endWhile
+        fill( Box(0,0,?:{dx||width},?:{dy||height}), fill_ch )
+      else
+        # Iterate forward, copying backward
+        local offset = -(dy*width + dx)
+        local index = offset
+        local limit = width * height
+        while (index < limit)
+          buffer[index-offset] = buffer[index]
+          ++index
+        endWhile
+        if (dx)
+          fill( Box(width+dx,0,-dx,height), fill_ch )
+        else
+          fill( Box(0,height+dy,width,-dy), fill_ch )
+        endIf
+      endIf
+
+    method style->CurrentCharacterStyle
+      flush
+      return @style
+
+    method to->String
+      flush
+      local builder = StringBuilder()
+      display( builder )
+      return builder->String
+endClass
+
+class StyledCharacter( value=' ':Character, style=CharacterStyle.NONE:CharacterStyle ) [compound]
+  METHODS
+    method operator==( other:StyledCharacter )->Logical
+      return (value == other.value and style == other.style)
+endClass
+
+class CurrentCharacterStyle
+  PROPERTIES
+    current : CharacterStyle
+
+  METHODS
+    method clear
+      current = CharacterStyle.NONE
+
+    method reset
+      clear
+
+    method bold
+      current += CharacterStyle.BOLD
+
+    method dim
+      current += CharacterStyle.DIM
+
+    method underline
+      current += CharacterStyle.UNDERLINE
+
+    method blink
+      current += CharacterStyle.BLINK
+
+    method inverse
+      current += CharacterStyle.INVERSE
+
+    method hidden
+      current += CharacterStyle.HIDDEN
+
+    method bold_off
+      current -= CharacterStyle.BOLD
+
+    method dim_off
+      current -= CharacterStyle.DIM
+
+    method underline_off
+      current -= CharacterStyle.UNDERLINE
+
+    method blink_off
+      current -= CharacterStyle.BLINK
+
+    method inverse_off
+      current -= CharacterStyle.INVERSE
+
+    method hidden_off
+      current -= CharacterStyle.HIDDEN
+
+    method fg_default
+      current = current.fg( CharacterStyle.FG_DEFAULT )
+
+    method fg_black
+      current = current.fg( CharacterStyle.FG_BLACK )
+
+    method fg_red
+      current = current.fg( CharacterStyle.FG_RED )
+
+    method fg_green
+      current = current.fg( CharacterStyle.FG_GREEN )
+
+    method fg_yellow
+      current = current.fg( CharacterStyle.FG_YELLOW )
+
+    method fg_blue
+      current = current.fg( CharacterStyle.FG_BLUE )
+
+    method fg_magenta
+      current = current.fg( CharacterStyle.FG_MAGENTA )
+
+    method fg_cyan
+      current = current.fg( CharacterStyle.FG_CYAN )
+
+    method fg_light_gray
+      current = current.fg( CharacterStyle.FG_LIGHT_GRAY )
+
+    method fg_dark_gray
+      current = current.fg( CharacterStyle.FG_DARK_GRAY )
+
+    method fg_light_red
+      current = current.fg( CharacterStyle.FG_LIGHT_RED )
+
+    method fg_light_green
+      current = current.fg( CharacterStyle.FG_LIGHT_GREEN )
+
+    method fg_light_yellow
+      current = current.fg( CharacterStyle.FG_LIGHT_YELLOW )
+
+    method fg_light_blue
+      current = current.fg( CharacterStyle.FG_LIGHT_BLUE )
+
+    method fg_light_magenta
+      current = current.fg( CharacterStyle.FG_LIGHT_MAGENTA )
+
+    method fg_light_cyan
+      current = current.fg( CharacterStyle.FG_LIGHT_CYAN )
+
+    method fg_white
+      current = current.fg( CharacterStyle.FG_WHITE )
+
+    method bg_default
+      current = current.bg( CharacterStyle.BG_DEFAULT )
+
+    method bg_black
+      current = current.bg( CharacterStyle.BG_BLACK )
+
+    method bg_red
+      current = current.bg( CharacterStyle.BG_RED )
+
+    method bg_green
+      current = current.bg( CharacterStyle.BG_GREEN )
+
+    method bg_yellow
+      current = current.bg( CharacterStyle.BG_YELLOW )
+
+    method bg_blue
+      current = current.bg( CharacterStyle.BG_BLUE )
+
+    method bg_magenta
+      current = current.bg( CharacterStyle.BG_MAGENTA )
+
+    method bg_cyan
+      current = current.bg( CharacterStyle.BG_CYAN )
+
+    method bg_light_gray
+      current = current.bg( CharacterStyle.BG_LIGHT_GRAY )
+
+    method bg_dark_gray
+      current = current.bg( CharacterStyle.BG_DARK_GRAY )
+
+    method bg_light_red
+      current = current.bg( CharacterStyle.BG_LIGHT_RED )
+
+    method bg_light_green
+      current = current.bg( CharacterStyle.BG_LIGHT_GREEN )
+
+    method bg_light_yellow
+      current = current.bg( CharacterStyle.BG_LIGHT_YELLOW )
+
+    method bg_light_blue
+      current = current.bg( CharacterStyle.BG_LIGHT_BLUE )
+
+    method bg_light_magenta
+      current = current.bg( CharacterStyle.BG_LIGHT_MAGENTA )
+
+    method bg_light_cyan
+      current = current.bg( CharacterStyle.BG_LIGHT_CYAN )
+
+    method bg_white
+      current = current.bg( CharacterStyle.BG_WHITE )
+
+endClass
+
+class CharacterStyle( flags:Int32 ) [compound]
+  DEFINITIONS
+    NONE                 = CharacterStyle(0)
+
+    FG_MASK              =       0b11111_0000_0000
+    BG_MASK              = 0b11111_00000_0000_0000
+    FG_SHIFT             = 8
+    BG_SHIFT             = 13
+
+    BOLD                 = (1 :<<: 0)
+    DIM                  = (1 :<<: 1)
+    UNDERLINE            = (1 :<<: 2)
+    BLINK                = (1 :<<: 3)
+    INVERSE              = (1 :<<: 4)
+    HIDDEN               = (1 :<<: 5)
+
+    FG_DEFAULT           = (0  :<<: 8)
+    FG_BLACK             = (1  :<<: 8)
+    FG_RED               = (2  :<<: 8)
+    FG_GREEN             = (3  :<<: 8)
+    FG_YELLOW            = (4  :<<: 8)
+    FG_BLUE              = (5  :<<: 8)
+    FG_MAGENTA           = (6  :<<: 8)
+    FG_CYAN              = (7  :<<: 8)
+    FG_LIGHT_GRAY        = (8  :<<: 8)
+    FG_DARK_GRAY         = (9  :<<: 8)
+    FG_LIGHT_RED         = (10 :<<: 8)
+    FG_LIGHT_GREEN       = (11 :<<: 8)
+    FG_LIGHT_YELLOW      = (12 :<<: 8)
+    FG_LIGHT_BLUE        = (13 :<<: 8)
+    FG_LIGHT_MAGENTA     = (14 :<<: 8)
+    FG_LIGHT_CYAN        = (15 :<<: 8)
+    FG_WHITE             = (16 :<<: 8)
+
+    BG_DEFAULT           = (0  :<<: 13)
+    BG_BLACK             = (1  :<<: 13)
+    BG_RED               = (2  :<<: 13)
+    BG_GREEN             = (3  :<<: 13)
+    BG_YELLOW            = (4  :<<: 13)
+    BG_BLUE              = (5  :<<: 13)
+    BG_MAGENTA           = (6  :<<: 13)
+    BG_CYAN              = (7  :<<: 13)
+    BG_LIGHT_GRAY        = (8  :<<: 13)
+    BG_DARK_GRAY         = (9  :<<: 13)
+    BG_LIGHT_RED         = (10 :<<: 13)
+    BG_LIGHT_GREEN       = (11 :<<: 13)
+    BG_LIGHT_YELLOW      = (12 :<<: 13)
+    BG_LIGHT_BLUE        = (13 :<<: 13)
+    BG_LIGHT_MAGENTA     = (14 :<<: 13)
+    BG_LIGHT_CYAN        = (15 :<<: 13)
+    BG_WHITE             = (16 :<<: 13)
+
+  GLOBAL PROPERTIES
+    fg_colors =
+    [
+      ConsoleStyle.FG_DEFAULT,
+      ConsoleStyle.FG_BLACK,
+      ConsoleStyle.FG_RED,
+      ConsoleStyle.FG_GREEN,
+      ConsoleStyle.FG_YELLOW,
+      ConsoleStyle.FG_BLUE,
+      ConsoleStyle.FG_MAGENTA
+      ConsoleStyle.FG_CYAN,
+      ConsoleStyle.FG_LIGHT_GRAY,
+      ConsoleStyle.FG_DARK_GRAY,
+      ConsoleStyle.FG_LIGHT_RED,
+      ConsoleStyle.FG_LIGHT_GREEN,
+      ConsoleStyle.FG_LIGHT_YELLOW,
+      ConsoleStyle.FG_LIGHT_BLUE,
+      ConsoleStyle.FG_LIGHT_MAGENTA,
+      ConsoleStyle.FG_LIGHT_CYAN,
+      ConsoleStyle.FG_WHITE
+    ] : Int32[]
+
+    bg_colors =
+    [
+      ConsoleStyle.BG_DEFAULT,
+      ConsoleStyle.BG_BLACK,
+      ConsoleStyle.BG_RED,
+      ConsoleStyle.BG_GREEN,
+      ConsoleStyle.BG_YELLOW,
+      ConsoleStyle.BG_BLUE,
+      ConsoleStyle.BG_MAGENTA
+      ConsoleStyle.BG_CYAN,
+      ConsoleStyle.BG_LIGHT_GRAY,
+      ConsoleStyle.BG_DARK_GRAY,
+      ConsoleStyle.BG_LIGHT_RED,
+      ConsoleStyle.BG_LIGHT_GREEN,
+      ConsoleStyle.BG_LIGHT_YELLOW,
+      ConsoleStyle.BG_LIGHT_BLUE,
+      ConsoleStyle.BG_LIGHT_MAGENTA,
+      ConsoleStyle.BG_LIGHT_CYAN,
+      ConsoleStyle.BG_WHITE
+    ] : Int32[]
+
+  METHODS
+    method apply( new_style:CharacterStyle, output=Global:PrintWriter )->CharacterStyle
+      block flags=new_style.flags
+        local diff = this.flags ~ flags
+        if (diff)
+          if (diff & BOLD)
+            if (flags & BOLD) ConsoleStyle.bold( output )
+            else              ConsoleStyle.bold_off( output )
+          endIf
+          if (diff & DIM)
+            if (flags & DIM) ConsoleStyle.dim( output )
+            else             ConsoleStyle.dim_off( output )
+          endIf
+          if (diff & UNDERLINE)
+            if (flags & UNDERLINE) ConsoleStyle.underline( output )
+            else                   ConsoleStyle.underline_off( output )
+          endIf
+          if (diff & BLINK)
+            if (flags & BLINK) ConsoleStyle.blink( output )
+            else               ConsoleStyle.blink_off( output )
+          endIf
+          if (diff & INVERSE)
+            if (flags & INVERSE) ConsoleStyle.inverse( output )
+            else                 ConsoleStyle.inverse_off( output )
+          endIf
+          if (diff & HIDDEN)
+            if (flags & HIDDEN) ConsoleStyle.hidden( output )
+            else                ConsoleStyle.hidden_off( output )
+          endIf
+          if (diff & FG_MASK) ConsoleStyle.print( fg_colors[(flags&FG_MASK) :>>: FG_SHIFT], output )
+          if (diff & BG_MASK) ConsoleStyle.print( bg_colors[(flags&BG_MASK) :>>: BG_SHIFT], output )
+        endIf
+      endBlock
+      return new_style
+
+    method bg( color:Int32 )->CharacterStyle
+      return CharacterStyle( (flags & !BG_MASK) | color )
+
+    method fg( color:Int32 )->CharacterStyle
+      return CharacterStyle( (flags & !FG_MASK) | color )
+
+    method operator+( flag:Int32 )->CharacterStyle
+      return CharacterStyle( flags | flag )
+
+    method operator-( flag:Int32 )->CharacterStyle
+      return CharacterStyle( flags & !flag )
+
+    method reset
+      ConsoleStyle.reset
+endClass
