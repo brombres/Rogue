@@ -340,22 +340,19 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
 
 endClass
 
-class ConsoleStyle
+class ConsoleStyle [singleton]
   # USAGE
-  #  ConsoleStyle.print_dim
-  #  println ...
-  #  ConsoleStyle.print_dim_off
-  #
-  # OR
-  #   println "$Hello World!$" (ConsoleStyle().fg_white.bg_red, ConsoleStyle().reset)
+  #  ConsoleStyle.[ fg_white, bg_red ]
+  #  println "Hello World!"
+  #  ConsoleStyle.reset
   #
   # OR
   #   ConsoleStyle.print( ConsoleStyle.FG_WHITE )
   #   ConsoleStyle.print( ConsoleStyle.BG_RED )
-  #   print( "Hello World!" )
+  #   println "Hello World!"
   #   ConsoleStyle.print( ConsoleStyle.RESET )
-  #   println
-  GLOBAL PROPERTIES
+  #   ConsoleStyle.flush
+  PROPERTIES
     RESET            = 0
     BOLD             = 1
     DIM              = 2
@@ -406,59 +403,33 @@ class ConsoleStyle
     BG_LIGHT_CYAN    = 106
     BG_WHITE         = 107
 
-  GLOBAL METHODS
+  METHODS
     method print( code:Int32 )
       Global.print( "\e[" )
       Global.print( code )
-      Global.print( "m" )
+      Global.print( "m" ).flush
 
     method print( code:Int32, builder:StringBuilder )
       builder.print( "\e[" ).print( code ).print( "m" )
 
-  PROPERTIES
-    codes = Int32[]
+    method flush
+      Global.flush
 
-  METHODS
-    method clear
-      codes.clear
-
-    method print( builder:StringBuilder )
-      if (codes.is_empty) return
-      builder.print "\e["
-      forEach (code at i in codes)
-        if (i > 0) builder.print ';'
-        builder.print code
-      endForEach
-      builder.print "m"
-
-    method to->String
-      if (codes.is_empty) return ""
-      return "\e[$m" (codes.join(";"))
+    method reset
+      print( RESET )
 endClass
-
-# Use metacode to generate a modifier method for each code.
-# For example, for FG_RED the following method is generated:
-#   method fg_red->this
-#     codes.add( FG_RED )
-#     return this
-$metacode<ConsoleStyle.organize_methods>
-forEach (p in global_list)
-  sourceln "method $->this" (p.name.to_lowercase)
-  sourceln "  codes.add( $ )" (p.name)
-  sourceln "  return this"
-  injectMethod
-endForEach
-$endMetacode
 
 # Use metacode to generate a global print method for each code.
 # For example, for FG_RED the following method is generated:
-#   method print_fg_red
+#   method fg_red
 #     print( FG_RED )
 $metacode<ConsoleStyle.organize_methods>
-forEach (p in global_list)
-  sourceln "method print_$" (p.name.to_lowercase)
-  sourceln "  print( $ )" (p.name)
-  injectGlobalMethod
+forEach (p in property_list)
+  if (p.name != "RESET")
+    sourceln "method $" (p.name.to_lowercase)
+    sourceln "  print( $ )" (p.name)
+    injectMethod
+  endIf
 endForEach
 $endMetacode
 
