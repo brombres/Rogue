@@ -1,0 +1,103 @@
+module ConsoleUI
+  uses UI [export]
+  uses Utility/TextCanvas [export]
+  uses Geometry [export]
+
+class ConsoleUITheme : UITheme [singleton]
+  METHODS
+endClass
+
+class ConsoleUICanvas : TextCanvas [singleton]
+  METHODS
+    method init
+      prior.init( Console.width, Console.height )
+
+    method draw( src:ConsoleUITextBox )
+      resize( Console.width, Console.height )
+      draw( src.canvas, src.position )
+endClass
+
+class ConsoleUIView : UIView
+  METHODS
+    method init
+      UIManager.theme = ConsoleUITheme
+
+    method after_draw
+      ConsoleUICanvas.display(1,1)
+
+    method update_layout
+      update_layout( Box(0,0,Console.width,Console.height) )
+endClass
+
+class ConsoleUIText : UIComponent
+  PROPERTIES
+    text      : String
+    alignment = 0.0
+
+  METHODS
+    method init( text )
+      prior.init( XY(0,1) )
+
+    method center
+      alignment = 0.5
+
+    method left
+      alignment = 0.0
+
+    method on_draw
+      temporarily ConsoleUICanvas.clip=display_bounds
+        ConsoleUICanvas.fill( display_bounds, ' ' )
+        ConsoleUICanvas.cursor = position + XY( Int32((size.x - text.count) * alignment), 0 )
+        ConsoleUICanvas.print( text )
+      endTemporarily
+
+    method right
+      alignment = 1.0
+endClass
+
+class ConsoleUIList : UIList
+  METHODS
+    method add( text:String )
+      add( ConsoleUIText(text) )
+endClass
+
+class ConsoleUITextBox : UIComponent
+  PROPERTIES
+    canvas : TextCanvas
+
+  METHODS
+    method init
+      prior.init
+      canvas = TextCanvas(1,1)
+
+    method init( width:Int32, height:Int32 )
+      prior.init( XY(width,height) )
+      canvas = TextCanvas( width.clamped_low(1), height.clamped_low(1) )
+
+    method init( canvas )
+      prior.init( XY(canvas.width,canvas.height) )
+
+    method after_update_layout
+      canvas.resize( size.x, size.y )
+
+    method on_draw
+      ConsoleUICanvas.draw( this )
+endClass
+
+class ConsoleUIFrame : UIComponent
+  PROPERTIES
+    frame_characters : String
+
+  METHODS
+    method init( content:UIComponent, frame_characters="+-+| |+-+" )
+      prior.init( content )
+
+    method on_draw
+      ConsoleUICanvas.draw( display_bounds, frame_characters )
+      prior.on_draw
+
+    method update_subcomponent_layout
+      local bounds = display_bounds.cropped( 1 )
+      (forEach in components).update_layout(bounds)
+endClass
+
