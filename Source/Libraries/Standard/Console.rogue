@@ -287,6 +287,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       native @|#endif
       return this
 
+    method set_show_cursor( setting=true:Logical, output=Global:PrintWriter )
+      # Console.show_cursor = true / false
+      output.flush
+      output.print( "\e[?25" ).print( ?:{setting:'h'||'l'} ).flush
+
     method width->Int32
       native @|#if (ROGUE_CONSOLE_FULL)
               |  struct winsize sz;
