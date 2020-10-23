@@ -264,6 +264,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       output.flush
       output.print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
 
+    method set_enable_mouse_events( setting=true:Logical, output=Global:PrintWriter )
+      # Console.enable_mouse_events = true/false
+      output.flush
+      output.print( which{setting:"\e[?1003h" || "\e[?1003l"} )
+
     method set_immediate_mode( setting:Logical )->this
       native @|#if (ROGUE_CONSOLE_FULL)
 
