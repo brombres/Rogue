@@ -47,10 +47,9 @@ class BitWriter : DataWriter
     buffer_count : Int32
 
   METHODS
-    method flush->this
+    method flush
       if (buffer_count) write( 0, 8-buffer_count )
       prior.flush
-      return this
 
     method write( value:Byte )->this
       write( value, 8 )

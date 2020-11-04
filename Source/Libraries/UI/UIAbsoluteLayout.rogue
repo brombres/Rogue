@@ -1,0 +1,12 @@
+module UI
+
+class UIAbsoluteLayout : UILayout
+  METHODS
+    method update_subcomponent_layout
+      local bounds = display_bounds
+      forEach (cur in layout)
+        local size = XY( which{cur.fixed_size.x||bounds.size.x}, which{cur.fixed_size.y||bounds.size.y} )
+          cur.update_layout( Box(bounds.position+cur.position,size) )
+      endForEach
+endClass
+

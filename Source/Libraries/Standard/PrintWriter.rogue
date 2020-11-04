@@ -4,15 +4,15 @@ class PrintWriter [aspect]
       return BufferedPrintWriter( writer )
 
   METHODS
-    method close->this                                         [abstract]
-    method flush->this                                         [abstract]
+    method close         [abstract]
+    method flush         [abstract]
 
-    method on_use->this
-      return this
+      #method on_use->this
+      #return this
 
-    method on_end_use( err:Exception )->Exception
-      close
-      return err
+      #method on_end_use( err:Exception )->Exception
+      #close
+      #return err
 
     method print( value:Byte )->this                           [abstract]
     method print( value:Character )->this                      [abstract]
@@ -43,13 +43,11 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
     $buffer = StringBuilder()
 
   METHODS
-    method close->this
+    method close
       noAction
-      return this
 
-    method flush->this
+    method flush
       flush( $buffer )
-      return this
 
     method flush( buffer:StringBuilder ) [abstract]
 
@@ -59,7 +57,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
 
     method print( value:Character )->this
       $buffer.print( value )
-      if (value == '\n') return flush
+      if (value == '\n') flush
       return this
 
     method print( value:Int32 )->this
@@ -101,7 +99,8 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
 
     method println->this
       $buffer.print( '\n' )
-      return flush
+      flush
+      return this
 
     method println( value:Byte )->this
       return print( value ).println
@@ -141,9 +140,8 @@ class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
   METHODS
     method init( output )
 
-    method close->this
+    method close
       output.close
-      return this
 
     method flush( buffer:StringBuilder )
       output.write( buffer.utf8 )

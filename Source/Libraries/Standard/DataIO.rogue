@@ -148,14 +148,12 @@ class DataWriter : Writer<<Byte>>
     method init( list:Byte[] )
       init( list.writer )
 
-    method close->this
+    method close
       flush
       output.close
-      return this
 
-    method flush->this
+    method flush
       output.flush
-      return this
 
     method position->Int32
       return output.position

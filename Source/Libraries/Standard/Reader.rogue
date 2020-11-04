@@ -3,8 +3,8 @@ class Reader<<$DataType>> [aspect]
     position : Int32
 
   METHODS
-    method close->this
-      return this
+    method close
+      noAction
 
     method has_another->Logical [abstract]
 

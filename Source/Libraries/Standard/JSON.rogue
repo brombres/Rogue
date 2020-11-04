@@ -1,31 +1,35 @@
 class JSON
   GLOBAL METHODS
-    method load( file:File )->Value
+    method load( file:File, &suppress_error=true )->Value
       if (not file or not file.exists) return UndefinedValue
-      return parse( file.load_as_string )
+      return parse( file.load_as_string, &=suppress_error )
 
-    method load_list( file:File )->Value
+    method load_list( file:File, &suppress_error=true )->Value
       if (not file or not file.exists) return @[]
-      return parse_list( file.load_as_string )
+      return parse_list( file.load_as_string, &=suppress_error )
 
-    method load_table( file:File )->Value
+    method load_table( file:File, &suppress_error=true )->Value
       if (not file or not file.exists) return @{}
-      return parse_table( file.load_as_string )
+      return parse_table( file.load_as_string, &=suppress_error )
 
-    method parse( json:String )->Value
+    method parse( file:File, &suppress_error=true )->Value
+      return parse( file.load_as_string, &=suppress_error )
+
+    method parse( json:String, &suppress_error=true )->Value
       try
         return JSONParser( json ).parse_value
-      catch (JSONParseError)
+      catch (err:JSONParseError)
+        if (not suppress_error) throw err
         return UndefinedValue
       endTry
 
-    method parse_list( json:String )->ValueList
-      local list = parse(json) as ValueList
+    method parse_list( json:String, &suppress_error=true )->ValueList
+      local list = parse(json,&=suppress_error) as ValueList
       if (list) return list
       return ValueList()
 
-    method parse_table( json:String )->ValueTable
-      local table = parse(json) as ValueTable
+    method parse_table( json:String, &suppress_error=true )->ValueTable
+      local table = parse(json,&=suppress_error) as ValueTable
       if (table) return table
       return ValueTable()
 
@@ -44,6 +48,9 @@ class JSONParser
     method init( json:String )
       reader = Scanner( json )
 
+    method init( file:File )
+      init( file.load_as_string )
+
     method init( reader )
 
     method consume( ch:Character )->Logical
@@ -56,7 +63,7 @@ class JSONParser
       return (reader.peek == ch)
 
     method parse_value->Value
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       if (not reader.has_another) return UndefinedValue
 
@@ -93,11 +100,11 @@ class JSONParser
       endIf
 
     method parse_table( open_ch='{':Character, close_ch='}':Character )->Value
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       if (not reader.consume(open_ch)) return UndefinedValue
 
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       local table = ValueTable()
       if (reader.consume(close_ch)) return table
@@ -108,21 +115,21 @@ class JSONParser
         first = false
         prev_pos = reader.position
 
-        consume_spaces_and_eols
+        consume_whitespace_and_eols
 
         if (next_is_identifier)
           local key = parse_identifier
-          consume_spaces_and_eols
+          consume_whitespace_and_eols
 
           if (key.count)
             if (reader.consume(':'))
-              consume_spaces_and_eols
+              consume_whitespace_and_eols
               local value = parse_value
               table.set( key, value )
             else
               table.set( key, true )
             endIf
-            consume_spaces_and_eols
+            consume_whitespace_and_eols
           endIf
         endIf
       endWhile
@@ -132,11 +139,11 @@ class JSONParser
       return table
 
     method parse_list( open_ch='[':Character, close_ch=']':Character )->Value
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       if (not reader.consume(open_ch)) return UndefinedValue
 
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       local list = ValueList()
       if (reader.consume(close_ch)) return list
@@ -146,10 +153,10 @@ class JSONParser
       while (first or reader.consume(',') or (reader.has_another and reader.peek!=close_ch and reader.position>prev_pos))
         first = false
         prev_pos = reader.position
-        consume_spaces_and_eols
+        consume_whitespace_and_eols
         if (reader.peek == close_ch) escapeWhile
         list.add( parse_value )
-        consume_spaces_and_eols
+        consume_whitespace_and_eols
       endWhile
 
       if (not reader.consume(close_ch)) throw JSONParseError( "'$' expected." (close_ch) )
@@ -157,7 +164,7 @@ class JSONParser
       return list
 
     method parse_string->String
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       local terminator = '"'
       if     (reader.consume( '"' ))  terminator = '"'
@@ -196,7 +203,7 @@ class JSONParser
       return code->Character
 
     method parse_identifier->String
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       local ch = reader.peek
       if (ch == '"' or ch == '\'')
@@ -228,12 +235,12 @@ class JSONParser
       return (ch == '"' or ch == '\'')
 
     method parse_number->Value
-      consume_spaces_and_eols
+      consume_whitespace_and_eols
 
       local sign = 1.0
       if (reader.consume( '-' ))
         sign = -1.0
-        consume_spaces_and_eols
+        consume_whitespace_and_eols
       endIf
 
       local n = 0.0
@@ -283,8 +290,11 @@ class JSONParser
     method consume_spaces
       while (reader.consume_spaces) noAction
 
-    method consume_spaces_and_eols
-      while (reader.consume_spaces or reader.consume_eols) noAction
+    method consume_whitespace
+      while (reader.consume_whitespace) noAction
+
+    method consume_whitespace_and_eols
+      while (reader.consume_whitespace or reader.consume_eols) noAction
 
 endClass
 

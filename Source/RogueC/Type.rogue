@@ -1903,7 +1903,7 @@ class Type
       local filepath = "$ - Meta:$" (t.filepath,t.line)
       local parser = Parser( t, filepath, src )
       parser.this_type = this
-      parser.parse_method( &skip_add_to_type )  # sets this_method
+      parser.parse_method( &as_global, &skip_add_to_type )  # sets this_method
       inject_global_method( parser.this_method )
       Program.resolve_pending_methods
 

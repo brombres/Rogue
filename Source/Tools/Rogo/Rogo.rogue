@@ -105,6 +105,7 @@ if (not buildfiles.count)
 
     print "Creating Build.rogue"
     if (project_name)
+      project_name = project_name.replacing( " ", "" )
       print " and Source/$.rogue" (project_name)
       if (bitmap_option) print " with Bitmap library support"
       println
@@ -176,11 +177,11 @@ if (not buildfiles.count)
          |    if (source_files.any_newer_than(exe_filepath))
          |      local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
          |      if (source_files.any_newer_than(cpp_filepath))
-         |        execute "roguec $ --main --output=$ --target=Console,C++,$" (src_filepath,cpp_filepath,System.os)
+         |        execute "roguec $ --main --output=$ --target=Console,C++,$" (File.esc(src_filepath),File.esc(cpp_filepath),System.os)
          |      endIf
          |      if (System.is_windows)
          |        local libs = ""
-         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (cpp_filepath,exe_filepath,libs)
+         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (File.esc(cpp_filepath),File.esc(exe_filepath),libs)
          |        #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
          |        execute cc
          |      else
@@ -191,7 +192,7 @@ if (not buildfiles.count)
       builder.println @|        local libs = ""
     endIf
     builder.println ...
-        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (cpp_filepath,exe_filepath,libs)
+        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (File.esc(cpp_filepath),File.esc(exe_filepath),libs)
          |        execute cc
          |      endIf
          |    endIf
@@ -199,7 +200,7 @@ if (not buildfiles.count)
          |endRoutine
          |
          |routine rogo_run
-         |  execute File.conventional_filepath(exe_filepath)
+         |  execute File.esc( exe_filepath )
          |endRoutine
          |
          |routine rogo_install_launcher

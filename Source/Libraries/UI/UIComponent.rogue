@@ -1,0 +1,422 @@
+module UI
+
+class UIComponent
+  PROPERTIES
+    position       : XY
+    size           : XY
+    offset         : XY
+    fixed_size     : XY
+    anchor         = Anchor.CENTER : Anchor
+
+    needs_layout   = true
+    clip_bounds    : Box?  # AKA invalidated area
+
+    is_handling_event : Logical
+
+    parent     : UIComponent
+    components : UIComponent[]
+    layout     : UIComponent[]
+
+  METHODS
+    method init( content=null:UIComponent )
+      init_component
+      if (content) add( content )
+
+    method init( content:UIComponent, size:XY )
+      init( size )
+      if (content) add( content )
+
+    method init( size:XY )
+      set_size( size )
+      init_component
+
+    method init_component
+
+    method add( component:UIComponent )
+      ensure components
+      if (component) component.parent = this
+      components.add( component )
+      needs_layout = true
+
+    method add_spacer_h( pixels:Int32 )
+      add( UISpacer.h(pixels) )
+
+    method add_filler_h( weight=1.0:Real64 )
+      add( UIFiller.h(weight) )
+
+    method add_filler_v( weight=1.0:Real64 )
+      add( UIFiller.v(weight) )
+
+    method add_spacer_v( pixels:Int32 )
+      add( UISpacer.v(pixels) )
+
+    method add_to_layout( parent:UIComponent )
+      parent.layout.add( this )
+      this.parent = parent
+
+    method after( e:KeyEvent )
+      noAction
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after( e:ScrollEvent )
+      noAction
+
+    method after( e:TextEvent )
+      noAction
+
+    method after_buffer
+      # Called at the end of a buffer operation after any children have been drawn
+      noAction
+
+    method after_draw
+      # Called at the end of a render operation after any children have been drawn
+      UIManager.theme._dispatch_after_draw( this )
+
+    method after_draw<<$Theme>>( theme:$Theme ) [propagated]
+      # Components can either override this method per-theme and draw themselves or they
+      # can let the theme draw them.
+      theme.after_draw( this )
+
+    method after_update_layout
+      # Event handler called after this component's layout has been updated.
+
+    method bounds->Box
+      return display_bounds
+
+    method content_bounds->Box
+      return Box( position+offset, content_size )
+
+    method content_size->XY
+      local cx = which{ fixed_size.x || size.x }
+      local cy = which{ fixed_size.y || size.y }
+      return XY( cx, cy )
+
+    method count->Int32
+      if (not components) return 0
+      return components.count
+
+    method dispatch( e:KeyEvent )
+      if (not layout) return
+      forEach (cur in layout)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEach
+
+    method dispatch( e:PointerEvent )
+      if (not layout) return
+      forEach (cur in layout)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEach
+
+    method dispatch( e:ScrollEvent )
+      if (not layout) return
+      forEach (cur in layout)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEach
+
+    method dispatch( e:TextEvent )
+      if (not layout) return
+      forEach (cur in layout)
+        if (e.is_consumed) return
+        cur.handle( e )
+      endForEach
+
+    method display_bounds->Box
+      return Box( position, size )
+
+    method compute_bounds( parent_bounds:Box )->Box
+      if (fixed_size.x)
+        if (fixed_size.y)
+          return Box( position, fixed_size )
+        else
+          return Box( position.x, parent_bounds.position.y, fixed_size.x, parent_bounds.size.y )
+        endIf
+      else
+        if (fixed_size.x)
+          return Box( parent_bounds.position.x, position.y, parent_bounds.size.x, fixed_size.y )
+        else
+          return parent_bounds
+        endIf
+      endIf
+
+    method draw
+      draw( false )
+
+    method draw( force:Logical )
+      if (force or needs_layout)
+        if (needs_layout) update_layout
+        invalidate( display_bounds )  # Sets up clip_bounds for the following call to draw()
+      endIf
+
+      if (clip_bounds) draw( clip_bounds.value )
+
+    method draw( redraw_bounds:Box )
+      clip_bounds = redraw_bounds & display_bounds
+      if (not clip_bounds) return
+      on_draw
+
+      if (layout)
+        (forEach in layout).draw( clip_bounds.value )
+      endIf
+
+      after_draw
+
+      clip_bounds = null
+
+    method handle( e:KeyEvent )
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method handle( e:PointerEvent )
+      if (not e.is_processed)
+        UIManager.handle( e, this )
+        return
+      endIf
+
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method handle( e:ScrollEvent )
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method handle( e:TextEvent )
+      is_handling_event = true
+      on( e )
+      if (not e.is_consumed)
+        dispatch( e )
+        if (not e.is_consumed) after( e )
+      endIf
+      is_handling_event = false
+
+    method horizontal_flex->Real64
+      if (fixed_size.x) return 0.0
+      else              return 1.0
+
+    method invalidate( redraw_bounds=null:Box? )
+      if (not redraw_bounds) redraw_bounds = display_bounds
+      if (clip_bounds) clip_bounds = clip_bounds.value | redraw_bounds.value
+      else             clip_bounds = redraw_bounds
+
+      if (parent)
+        # Propagate the request up to the root
+        parent.invalidate( clip_bounds )
+      endIf
+
+    method is_clickable->Logical
+      return true
+
+    method is_targeted->Logical
+      return display_bounds.contains( Pointer.position )
+
+    method lay_out_subcomponents
+      # "original" components -> "decorated" layout
+      if (layout) layout.clear
+      if (not components) return
+
+      (forEach in components).lay_out_subcomponents
+
+      ensure layout
+      on_begin_layout
+      on_add_component
+      (forEach in components).add_to_layout( this )
+      after_add_component
+      on_end_layout
+
+    method maximum_height( &subcomponents_only )->Real64
+      return fixed_size.y
+
+    method maximum_size( &subcomponents_only )->XY
+      return XY( maximum_width, maximum_height )
+
+    method maximum_width( &subcomponents_only )->Real64
+      return fixed_size.x
+
+    method minimum_height( &subcomponents_only )->Real64
+      return fixed_size.y
+
+    method minimum_size( &subcomponents_only )->XY
+      return XY( minimum_width, minimum_height )
+
+    method minimum_width( &subcomponents_only )->Real64
+      return fixed_size.x
+
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+
+    method on_draw
+      # Called at the beginning of a render operation before any children have been drawn
+      UIManager.theme._dispatch_on_draw( this )
+
+    method on_draw<<$Theme>>( theme:$Theme ) [propagated]
+      # Components can either override this method per-theme and draw themselves or they
+      # can let the theme draw them.
+      theme.on_draw( this )
+
+    method on_resize
+      noAction
+
+    method on_update
+      noAction
+
+    method on_update_layout
+      # Event handler called when this component's layout will definitely be updated.
+
+    method operator+( right_component:UIComponent )->UIComponent
+      return UILayout.h.[ add(this), add(right_component) ]
+
+    method operator/( bottom_component:UIComponent )->UIComponent
+      return UILayout.v.[ add(this), add(bottom_component) ]
+
+    method print_structure( component=null:UIComponent )
+      if (not component) component = this
+      println "$ $" (component.type_name,component.bounds)
+      if (component.components)
+        temporarily global_output_buffer.indent = global_output_buffer.indent + 2
+          print_structure( forEach in component.components )
+        endTemporarily
+      endIf
+
+    method remove( component:UIComponent )
+      if (components)
+        components.remove( component )
+        needs_layout = true
+      endIf
+
+    method retain_focus( e:PointerEvent )
+      UIManager.focus( e, this )
+
+    method scroll( delta:XY )
+      offset += delta
+
+    method set_bounds( new_bounds:Box )
+      set_display_bounds( new_bounds )
+
+    method set_content_bounds( new_bounds:Box )
+      offset = new_bounds.position
+      fixed_size = new_bounds.size
+
+    method set_fixed_size( new_size:XY )
+      if (@fixed_size != new_size)
+        invalidate
+        @fixed_size = new_size
+      endIf
+      if (@size != new_size)
+        invalidate
+        @size = new_size
+      endIf
+
+    method set_display_bounds( new_bounds:Box )
+      set_position( new_bounds.position )
+      set_size( new_bounds.size )
+
+    method set_needs_layout( setting:Logical )
+      @needs_layout = setting
+      if (parent and setting) parent.needs_layout = true
+
+    method set_offset( new_content_offset:XY )
+      if (@offset != new_content_offset)
+        invalidate
+        @offset = new_content_offset
+      endIf
+
+    method set_position( new_position:XY )
+      if (@position != new_position)
+        invalidate
+        @position = new_position
+      endIf
+
+    method set_size( new_size:XY )
+      set_fixed_size( new_size )
+
+    method update
+      on_update
+      if (not parent) update_layout
+      if (layout)
+        (forEach in layout).update
+      endIf
+
+    method update( new_bounds:Box )
+      on_update
+      update_layout( new_bounds )
+      if (layout)
+        (forEach in layout).update
+      endIf
+
+    method update_layout
+      update_layout( display_bounds )
+
+    method update_layout( new_bounds:Box )
+      local is_resized = new_bounds != display_bounds
+      if (is_resized or needs_layout)
+        @needs_layout = false
+
+        on_update_layout
+
+        @size = XY( which{fixed_size.x||new_bounds.width}, which{fixed_size.y||new_bounds.height} ).floor
+        @position = display_bounds.positioned_within( new_bounds, anchor ).position.floor
+        clip_bounds = display_bounds
+
+        lay_out_subcomponents
+        if (layout) update_subcomponent_layout
+
+        after_update_layout
+        if (is_resized) on_resize
+      endIf
+
+    method update_subcomponent_layout
+      local bounds = this.display_bounds
+      (forEach in layout).update_layout(bounds)
+
+    method vertical_flex->Real64
+      if (fixed_size.y) return 0.0
+      else              return 1.0
+
+    method _dispatch_after_draw<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.after_draw( this )
+
+    method _dispatch_on_draw<<$ThemeType>>( theme:$ThemeType ) [propagated]
+      theme.on_draw( this )
+
+    method on_begin_layout
+      noAction
+
+    method on_add_component
+      noAction
+
+    method after_add_component
+      noAction
+
+    method on_end_layout
+      noAction
+
+endClass
+

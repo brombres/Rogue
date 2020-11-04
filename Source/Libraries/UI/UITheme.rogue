@@ -1,0 +1,15 @@
+module UI
+
+class UITheme
+  METHODS
+    method after_draw( component:UIComponent )
+
+    method on_draw( component:UIComponent )
+
+    method _dispatch_after_draw( component:UIComponent ) [propagated]
+      component.after_draw<<ThisType>>( this )
+
+    method _dispatch_on_draw( component:UIComponent ) [propagated]
+      component.on_draw<<ThisType>>( this )
+endClass
+

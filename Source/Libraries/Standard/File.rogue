@@ -292,6 +292,10 @@ class File
       if (ends_with_separator(filepath)) return filepath
       return filepath + '/'
 
+    method esc( filepath:String )->String
+      # File.esc(filepath) is shorthand for File.shell_escaped(File.conventional_filepath(filepath))
+      return File.shell_escaped( File.conventional_filepath(filepath) )
+
     method exists( filepath:String )->Logical
       filepath = expand_filepath( filepath )
       native @|if ( !$filepath ) return false;
@@ -701,6 +705,10 @@ class File
       filepath = expand_filepath( filepath )
       return FileReader( filepath )
 
+    method rebuilder( filepath:String )->LineRebuilder
+      filepath = expand_filepath( filepath )
+      return LineRebuilder( File(filepath) )
+
     method rewrite( filepath:String, mappings:Table<<String,String>> )
       filepath = expand_filepath( filepath )
       local fn = function( line:String )->String with (mappings)
@@ -1018,6 +1026,9 @@ class File
     method create_folder->Logical
       return File.create_folder( this.filepath )
 
+    method delete->Logical
+      return File.delete( this.filepath )
+
     method ends_with_separator->Logical
       return File.ends_with_separator( this.filepath )
 
@@ -1025,14 +1036,9 @@ class File
       if (not ends_with_separator) filepath += '/'
       return this
 
-    method delete->Logical
-      return File.delete( this.filepath )
-
-    method has_byte_order_mark->Logical
-      return File.has_byte_order_mark( this.filepath )
-
-    method is_different_than( other_filepath:String )->Logical
-      return File.is_different_than( this.filepath, other_filepath )
+    method esc->String
+      # File.esc() is shorthand for File.conventional_filepath.shell_escaped
+      return File.shell_escaped( File.conventional_filepath(this.filepath) )
 
     method exists->Logical
       return File.exists( this.filepath )
@@ -1048,6 +1054,12 @@ class File
 
     method folder->String
       return File.folder( this.filepath )
+
+    method has_byte_order_mark->Logical
+      return File.has_byte_order_mark( this.filepath )
+
+    method is_different_than( other_filepath:String )->Logical
+      return File.is_different_than( this.filepath, other_filepath )
 
     method is_folder->Logical
       return File.is_folder( this.filepath )
@@ -1087,6 +1099,9 @@ class File
 
     method reader->FileReader
       return File.reader( this.filepath )
+
+    method rebuilder->LineRebuilder
+      return LineRebuilder( this )
 
     method rename( new_filepath:String )->Logical [macro]
       return File.rename( this.filepath, new_filepath )
@@ -1239,7 +1254,7 @@ class FileReader : Reader<<Byte>>
     method on_cleanup
       close
 
-    method close->this
+    method close
       if (fp)
         native @|fclose( $this->fp );
                 |$this->fp = 0;
@@ -1247,7 +1262,6 @@ class FileReader : Reader<<Byte>>
 
       position = 0
       count = 0
-      return this
 
     method fp->Int64 [macro]
       return native("$this->fp")->Int64
@@ -1361,7 +1375,7 @@ class FileWriter : Writer<<Byte>>
     method on_cleanup
       close
 
-    method close->this
+    method close
       $if (target("Web")) nativeHeader extern "C" void Rogue_sync_local_storage();
 
       flush
@@ -1371,16 +1385,13 @@ class FileWriter : Writer<<Byte>>
         System.sync_storage
       endIf
 
-      return this
-
-    method flush->this
-      if (buffer.count == 0 or not fp) return this
+    method flush
+      if (buffer.count == 0 or not fp) return
 
       native @|fwrite( $buffer->data->as_bytes, 1, $buffer->count, $this->fp );
               |fflush( $this->fp );
 
       buffer.clear
-      return this
 
     method fp->Int64 [macro]
       return native( "$this->fp" )->Int64
@@ -1431,7 +1442,7 @@ class FileWriter : Writer<<Byte>>
 
       ++position
       buffer.add( ch )
-      if (buffer.count == 1024) return flush
+      if (buffer.count == 1024) flush
 
       return this
 
@@ -1498,12 +1509,11 @@ class FDReader : Reader<<Byte>>
 
       return true
 
-    method close->this
+    method close
       if (fd >= 0)
         native @|close( $fd );
         fd = -1
       endIf
-      return this
 
     method is_open->Logical
       return fd != -1
@@ -1552,7 +1562,7 @@ class FDWriter : Writer<<Byte>>
     method on_cleanup
       if (auto_close) close
 
-    method close->this
+    method close
       flush
 
       if (fd != -1)
@@ -1560,10 +1570,8 @@ class FDWriter : Writer<<Byte>>
         fd = -1
       endIf
 
-      return this
-
-    method flush->this
-      if (buffer.count == 0 or fd == -1) return this
+    method flush
+      if (buffer.count == 0 or fd == -1) return
 
       native @|if (-1 == write( $fd, $buffer->data->as_bytes, $buffer->count ))
               |{
@@ -1572,12 +1580,11 @@ class FDWriter : Writer<<Byte>>
               |}
 
       buffer.clear
-      return this
 
     method write( ch:Byte )->this
       ++position
       buffer.add( ch )
-      if (buffer.count == 1024) return flush
+      if (buffer.count == 1024) flush
 
       return this
 

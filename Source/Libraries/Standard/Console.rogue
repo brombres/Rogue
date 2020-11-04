@@ -82,11 +82,13 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |#endif
               on_exit( function with (console=this) => console.reset_input_mode )
 
-    method clear
-      print( "\e[2J" ).flush
+    method clear( output=Global:PrintWriter )
+      output.flush
+      output.print( "\e[2J" ).flush
 
-    method clear_to_eol
-      print( "\e[K" ).flush
+    method clear_to_eol( output=Global:PrintWriter )
+      output.flush
+      output.print( "\e[K" ).flush
 
     method fill_input_queue
       # Internal use
@@ -186,16 +188,17 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  return 24;
               |#endif
 
-    method move_cursor( dx:Int32, dy:Int32 )
+    method move_cursor( dx:Int32, dy:Int32, output=Global:PrintWriter )
+      output.flush
       if (dx)
-        if (dx > 0) print( "\e[" ).print(  dx ).print( 'C' )
-        else        print( "\e[" ).print( -dx ).print( 'D' )
+        if (dx > 0) output.print( "\e[" ).print(  dx ).print( 'C' )
+        else        output.print( "\e[" ).print( -dx ).print( 'D' )
       endIf
       if (dy)
-        if (dy > 0) print( "\e[" ).print(  dy ).print( 'B' )
-        else        print( "\e[" ).print( -dy ).print( 'A' )
+        if (dy > 0) output.print( "\e[" ).print(  dy ).print( 'B' )
+        else        output.print( "\e[" ).print( -dy ).print( 'A' )
       endIf
-      Global.flush
+      output.flush
 
     method peek->Character
       if (has_another) return next_input_character.value
@@ -233,8 +236,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
               |#endif
 
-    method restore_cursor_position
-      print( "\e[u" ).flush
+    method restore_cursor_position( output=Global:PrintWriter )
+      output.flush
+      output.print( "\e[u" ).flush
 
     method set_is_blocking( setting:Logical )->this
       native @|#if (ROGUE_CONSOLE_FULL)
@@ -252,11 +256,18 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
       return this
 
-    method save_cursor_position
-      print( "\e[s" ).flush
+    method save_cursor_position( output=Global:PrintWriter )
+      output.flush
+      output.print( "\e[s" ).flush
 
-    method set_cursor( x:Int32, y:Int32 )
-      print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
+    method set_cursor( x:Int32, y:Int32, output=Global:PrintWriter )
+      output.flush
+      output.print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
+
+    method set_enable_mouse_events( setting=true:Logical, output=Global:PrintWriter )
+      # Console.enable_mouse_events = true/false
+      output.flush
+      output.print( which{setting:"\e[?1003h" || "\e[?1003l"} )
 
     method set_immediate_mode( setting:Logical )->this
       native @|#if (ROGUE_CONSOLE_FULL)
@@ -280,6 +291,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
       native @|#endif
       return this
+
+    method set_show_cursor( setting=true:Logical, output=Global:PrintWriter )
+      # Console.show_cursor = true / false
+      output.flush
+      output.print( "\e[?25" ).print( ?:{setting:'h'||'l'} ).flush
 
     method width->Int32
       native @|#if (ROGUE_CONSOLE_FULL)
@@ -340,17 +356,19 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
 
 endClass
 
-class ConsoleStyle
+class ConsoleStyle [singleton]
   # USAGE
-  #   println "$Hello World!$" (ConsoleStyle().fg_white.bg_red, ConsoleStyle().reset)
+  #  ConsoleStyle.[ fg_white, bg_red ]
+  #  println "Hello World!"
+  #  ConsoleStyle.reset
   #
   # OR
   #   ConsoleStyle.print( ConsoleStyle.FG_WHITE )
   #   ConsoleStyle.print( ConsoleStyle.BG_RED )
-  #   print( "Hello World!" )
+  #   println "Hello World!"
   #   ConsoleStyle.print( ConsoleStyle.RESET )
-  #   println
-  GLOBAL PROPERTIES
+  #   ConsoleStyle.flush
+  PROPERTIES
     RESET            = 0
     BOLD             = 1
     DIM              = 2
@@ -401,46 +419,28 @@ class ConsoleStyle
     BG_LIGHT_CYAN    = 106
     BG_WHITE         = 107
 
-  GLOBAL METHODS
-    method print( code:Int32 )
-      Global.print( "\e[" )
-      Global.print( code )
-      Global.print( "m" )
+  METHODS
+    method print( code:Int32, output=Global:PrintWriter )
+      output.flush
+      output.print( "\e[" )
+      output.print( code )
+      output.print( "m" ).flush
 
     method print( code:Int32, builder:StringBuilder )
       builder.print( "\e[" ).print( code ).print( "m" )
 
-  PROPERTIES
-    codes = Int32[]
-
-  METHODS
-    method clear
-      codes.clear
-
-    method print( builder:StringBuilder )
-      if (codes.is_empty) return
-      builder.print "\e["
-      forEach (code at i in codes)
-        if (i > 0) builder.print ';'
-        builder.print code
-      endForEach
-      builder.print "m"
-
-    method to->String
-      if (codes.is_empty) return ""
-      return "\e[$m" (codes.join(";"))
+    method flush
+      Global.flush
 endClass
 
-# Use metacode to generate a modifier method for each code.
+# Use metacode to generate a global print method for each code.
 # For example, for FG_RED the following method is generated:
-#   method fg_red->this
-#     codes.add( FG_RED )
-#     return this
+#   method fg_red
+#     print( FG_RED )
 $metacode<ConsoleStyle.organize_methods>
-forEach (p in global_list)
-  sourceln "method $->this" (p.name.to_lowercase)
-  sourceln "  codes.add( $ )" (p.name)
-  sourceln "  return this"
+forEach (p in property_list)
+  sourceln "method $( output=Global:PrintWriter )" (p.name.to_lowercase)
+  sourceln "  print( $, output )" (p.name)
   injectMethod
 endForEach
 $endMetacode

@@ -1,10 +1,12 @@
-$define ROGUE_RELEASE_VERSION "1.7.6"
+$define ROGUE_RELEASE_VERSION "1.7.7"
+$define ROGUE_RELEASE_DATE "October 31, 2020"
 
 $include "Version.rogue" [optional]
 
 # TODO:
 # - Generate error on "local v = null"
 # - Warn on assignment of intermediate value compound
+# - Cannot augment auto-constructor e.g. "class TypeName(filename:String)"; missing <insert> and <append> labels
 
 # Some essential methods to support metacode
 $essential String[].count
@@ -660,13 +662,7 @@ $else
 $endIf
       print( ')' )
       println
-$if defined(ROGUE_RELEASE_TIMESTAMP)
-      local timestamp = ROGUE_RELEASE_TIMESTAMP
-$else
-      local timestamp = System.time
-$endIf
-      local date = Timestamp( timestamp )
-      println "$ $, $" (date.month_name, date.day, date.year)
+      println ROGUE_RELEASE_DATE
 
     method process_command_line_arguments
       forEach (arg in System.command_line_arguments)

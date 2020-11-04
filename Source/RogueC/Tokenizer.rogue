@@ -315,7 +315,6 @@ class Tokenizer
       TokenType.symbol_double_vertical_bar   = define( TokenType("||") )
 
       # Noise words
-      TokenType.keyword_then                 = define( TokenType("then") )
       TokenType.keyword_do                   = define( TokenType("do") )
 
     method consume( ch:Character )->Logical

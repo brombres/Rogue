@@ -1,0 +1,14 @@
+module UI
+  uses Bitmap
+
+class UIText : UIComponent
+  PROPERTIES
+    value : String
+    font  : UIFont
+    color : Color
+
+  METHODS
+    method init( value, font=null, color=Color.WHITE )
+      init_component
+endClass
+
