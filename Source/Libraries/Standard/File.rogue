@@ -905,7 +905,7 @@ class File
           if (verbose)
             if (not printed_header)
               printed_header = true
-              Console.println( "Deleting unused files" )
+              Console.println( "Deleting unused files in " + dest_files.base_folder )
             endIf
             Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
           endIf
