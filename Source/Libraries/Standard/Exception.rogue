@@ -11,14 +11,15 @@ class Exception [essential]
 
     method display [essential]
       local builder = StringBuilder()
-      builder.println( "=" * ((Console.width-1).or_smaller(79)) )
+      local w = Console.width.or_smaller(80)
+      builder.println( "=" * w )
       builder.println type_name
-      builder.println message.word_wrap(79,",").join
+      builder.println message.word_wrap(w,",").join
       if (stack_trace.entries.count)
         builder.println
         builder.println stack_trace->String.trimmed
       endIf
-      builder.println( "=" * ((Console.width-1).or_smaller(79)) )
+      builder.println( "=" * w )
       println builder
 
     method to->String [essential]
