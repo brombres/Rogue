@@ -94,7 +94,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       ConsoleStyle.reset( output )
 
     method display( x:Int32, y:Int32 )
-      # (1,1) is the top-left corner of the console
+      # (0,0) is the top-left corner of the console
       flush
       ConsoleStyle.reset
 

@@ -1,26 +1,36 @@
 class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
     nativeHeader
-      #ifdef ROGUE_PLATFORM_WINDOWS
-        #define ROGUE_CONSOLE_FULL 0
-      #else
-        #define ROGUE_CONSOLE_FULL 1
-      #endif
-      #if ROGUE_CONSOLE_FULL
-        #include <termios.h>
-        #include <unistd.h>
-        #include <sys/ioctl.h>
-      #endif
-      #ifndef STDIN_FILENO     /* Probably Windows */
-        #define STDIN_FILENO 0 /* Probably correct */
-      #endif
       #if defined(ROGUE_PLATFORM_WINDOWS)
         #include <io.h>
         #define ROGUE_READ_CALL _read
       #else
+        #include <termios.h>
+        #include <unistd.h>
+        #include <sys/ioctl.h>
         #define ROGUE_READ_CALL read
       #endif
+
+      #ifndef STDIN_FILENO      /* Probably Windows */
+        #define STDIN_FILENO  0 /* Probably correct */
+        #define STDOUT_FILENO 1
+        #define STDERR_FILENO 2
+      #endif
+
+      void Rogue_fwrite( const char* utf8, int byte_count, int out );
     endNativeHeader
+
+    nativeCode
+      void Rogue_fwrite( const char* utf8, int byte_count, int out )
+      {
+        while (byte_count)
+        {
+          int n = (int) write( out, utf8, byte_count );
+          if (n == -1) return;
+          byte_count -= n;
+        }
+      }
+    endNativeCode
 
   ENUMERATE
     UP_ARROW    = 17
@@ -50,37 +60,50 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     error             = ConsoleErrorPrinter()
 
     immediate_mode       = false
-    # Setting to true/false automatically sets is_blocking to false/true
+    # Set to 'true' to turn off echo and line buffering and to turn on mouse events
 
-    is_blocking          = true
+    show_cursor          : Logical
+    # Starts 'true' but set in init() to bypass the setter
 
-    decode_bytes         = true
+    events = ConsoleEvent[]
+    # All keyboard and mouse events get turned into ConsoleEvents and queued here
 
-    input_buffer         = StringBuilder()
+    windows_in_quick_edit_mode : Logical
+    windows_button_state       : Int32
+    windows_last_press_type    : Int32
+
+    decode_utf8  = true
+
+    input_buffer = StringBuilder()
 
     next_input_character : Int32?
-    input_bytes          = Byte[]
+    _input_bytes         = Byte[]
 
-    native @|#if (ROGUE_CONSOLE_FULL)
+    native @|#if !defined(ROGUE_PLATFORM_WINDOWS)
             |  termios original_terminal_settings;
             |  int     original_stdin_flags;
             |#endif
 
   METHODS
     method init
-      native @|#if (ROGUE_CONSOLE_FULL)
-              |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
-              |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
-              |#endif
-
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |  // Enable ANSI colors and styles on Windows
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  DWORD mode;
-              |  GetConsoleMode( h_stdout, &mode);
+              |  GetConsoleMode( h_stdout, &mode );
               |  SetConsoleMode( h_stdout, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+              |  SetConsoleOutputCP(65001);  // Extended characters
+              |
+              |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+              |  GetConsoleMode( h_stdin, &mode );
+                 windows_in_quick_edit_mode = native("!!(mode & ENABLE_QUICK_EDIT_MODE)")->Logical
+
+      native @|#else
+              |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+              |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
               |#endif
-              on_exit( function with (console=this) => console.reset_input_mode )
+      on_exit( function with (console=this) => console.reset_io_mode )
+      @show_cursor = true
 
     method clear( output=Global:PrintWriter )
       output.flush
@@ -90,102 +113,257 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       output.flush
       output.print( "\e[K" ).flush
 
-    method fill_input_queue
-      # Internal use
-      local n : Int32
-      native @|char bytes[8];
-              |$n = (RogueInt32) ROGUE_READ_CALL( STDIN_FILENO, &bytes, 8 );
-      if (n == 0 and is_blocking) throw IOError( "End of Input." )
-      if (n > 0)
-        forEach (i in 0..<n)
-          input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
-        endForEach
-      endIf
+    method _fill_input_buffer( minimum=1:Int32 )->Logical
+      if (_input_bytes.count >= minimum) return true
+
+      local n = 1024  # just to get us into the loop
+      while (n == 1024)
+        native @|char bytes[1024];
+                |$n = (RogueInt32) ROGUE_READ_CALL( STDIN_FILENO, &bytes, 1024 );
+        if (n == 0 and not @immediate_mode) throw IOError( "End of Input." )
+        if (n > 0)
+          forEach (i in 0..<n)
+            _input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
+          endForEach
+        endIf
+      endWhile
+      
+      return _input_bytes.count >= minimum
 
     method flush( buffer:StringBuilder )
       write( buffer )
       buffer.clear
 
     method has_another->Logical
-      if (not next_input_character.exists)
-        fill_input_queue
-        if (input_bytes.count)
-          local b1 = input_bytes.remove_first
-          contingent
-            necessary (decode_bytes)
-            necessary (input_bytes.count)  # more available?
+      # Only reports on character input events, ignoring pointer events.
+      # Use has_another_event() instead to check for either kind of event.
+      if ((forEach in events).is_character) return true
+      _fill_event_queue
+      if ((forEach in events).is_character) return true
+      return false
 
-            # More available
-            if (b1 == 27)
-              # Escape sequence
-              necessary (input_bytes.count >= 2 and input_bytes.first == 91)
-              input_bytes.remove_first
-              next_input_character = (input_bytes.remove_first - 65) + Console.UP_ARROW
+    method has_another_event->Logical
+      if (events.count) return true
+      _fill_event_queue
+      return events.count
 
-            else
-              necessary (b1 >= 0xC0)
+    method _fill_event_queue
+      if (System.is_windows and immediate_mode)
+        # Only use special Windows version for immediate mode
+        _fill_event_queue_windows
+      else 
+        # Windows will work with Unix mode otherwise
+        _fill_event_queue_unix
+      endIf
 
-              local result : Int32
+    method _fill_event_queue_windows
+      # Used only for Windows and only in immediate mode
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |HANDLE       h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+              |DWORD        event_count = 0;
+              |
+              |GetNumberOfConsoleInputEvents( h_stdin, &event_count );
+               while (native("(RogueInt32)event_count")->Int32)
+                 _fill_event_queue_windows_process_next
+                native @|GetNumberOfConsoleInputEvents( h_stdin, &event_count );
+               endWhile
 
-              # UTF-8
-              if ((b1 & 0b1110_0000) == 0b1100_0000)
-                necessary (input_bytes.count >= 1)
-                result = b1 & 0b0001_1111
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-              elseIf ((b1 & 0b1111_0000) == 0b1110_0000)
-                necessary (input_bytes.count >= 2)
-                result = b1 & 0b0000_1111
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-              elseIf ((b1 & 0b1111_1000) == 0b1111_0000)
-                necessary (input_bytes.count >= 3)
-                result = b1 & 0b0000_0111
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-              elseIf ((b1 & 0b1111_1100) == 0b1111_1000)
-                necessary (input_bytes.count >= 4)
-                result = b1 & 0b0000_0011
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-              else
-                necessary (input_bytes.count >= 5)
-                result = b1 & 0b0000_0001
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-                result = (result :<<: 6) | (input_bytes.remove_first & 0b11_1111)
-              endIf
+      native @|#endif // ROGUE_PLATFORM_WINDOWS
 
-              next_input_character = result
+    method _fill_event_queue_windows_process_next
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+
+      # If Windows and in immediate mode use Peek/ReadConsoleInput.
+      local unicode, event_flags, new_button_state, x, y : Int32
+
+      native @|HANDLE       h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+              |DWORD        event_count = 0;
+              |INPUT_RECORD record;
+              |ReadConsoleInput( h_stdin, &record, 1, &event_count );
+              |if (record.EventType == MOUSE_EVENT)
+              |{
+              |  $event_flags = (RogueInt32) record.Event.MouseEvent.dwEventFlags;
+              |  $new_button_state = (RogueInt32) record.Event.MouseEvent.dwButtonState;
+              |  $x = (RogueInt32) record.Event.MouseEvent.dwMousePosition.X;
+              |  $y = (RogueInt32) record.Event.MouseEvent.dwMousePosition.Y;
+              |
+              |  // Adjust Y coordinate to be relative to visible top-left corner of console
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info))
+              |  {
+              |    $y -= info.srWindow.Top;
+              |  }
+
+                 if (event_flags)
+                   if (event_flags & native("DOUBLE_CLICK")->Int32)
+                     events.add ConsoleEvent( windows_last_press_type, x, y )
+                     events.add ConsoleEvent( ConsoleEventType.POINTER_RELEASE, x, y )
+                   elseIf (event_flags & native("MOUSE_MOVED")->Int32)
+                     events.add ConsoleEvent( ConsoleEventType.POINTER_MOVE, x, y )
+                   elseIf (event_flags & native("MOUSE_WHEELED")->Int32)
+                     if ((new_button_state & 0xFFFF0000) > 0)
+                       events.add ConsoleEvent( ConsoleEventType.SCROLL_UP, x, y )
+                     else
+                       events.add ConsoleEvent( ConsoleEventType.SCROLL_DOWN, x, y )
+                     endIf
+                   endIf
+                 else
+                   # Button pressed or released
+                   local toggled = (windows_button_state ~ new_button_state)
+                   if (toggled)
+                     if (toggled & native("FROM_LEFT_1ST_BUTTON_PRESSED")->Int32)
+                       if (new_button_state & native("FROM_LEFT_1ST_BUTTON_PRESSED")->Int32)
+                         windows_last_press_type = ConsoleEventType.POINTER_PRESS_LEFT
+                         events.add ConsoleEvent( ConsoleEventType.POINTER_PRESS_LEFT, x, y )
+                       else
+                         events.add ConsoleEvent( ConsoleEventType.POINTER_RELEASE, x, y )
+                       endIf
+                     elseIf (toggled & native("RIGHTMOST_BUTTON_PRESSED")->Int32)
+                       if (new_button_state & native("RIGHTMOST_BUTTON_PRESSED")->Int32)
+                         windows_last_press_type = ConsoleEventType.POINTER_PRESS_RIGHT
+                         events.add ConsoleEvent( ConsoleEventType.POINTER_PRESS_RIGHT, x, y )
+                       else
+                         events.add ConsoleEvent( ConsoleEventType.POINTER_RELEASE, x, y )
+                       endIf
+                     endIf
+                   endIf
+                   windows_button_state = new_button_state
+                 endIf
+                 return
+
+      native @|} // if MOUSE_EVENT
+              |
+              |if (record.EventType == KEY_EVENT && record.Event.KeyEvent.bKeyDown && 
+              |    record.Event.KeyEvent.uChar.UnicodeChar)
+              |{
+              |  $unicode = (RogueInt32) record.Event.KeyEvent.uChar.UnicodeChar;
+                 if (unicode == 13) unicode = 10
+                 events.add ConsoleEvent( ConsoleEventType.CHARACTER, unicode, 0 )
+                 return
+      native @|}
+              |
+              |#endif // ROGUE_PLATFORM_WINDOWS
+
+    method _fill_event_queue_unix
+      _fill_event_queue_unix_process_next
+      while (_input_bytes.count)
+        _fill_event_queue_unix_process_next
+      endWhile
+
+    method _fill_event_queue_unix_process_next
+      if (not _fill_input_buffer(1)) return
+
+      local b1 = _input_bytes.remove_first
+
+      if (b1 == 27)
+        # Escape sequence
+        if ((_input_bytes.count >= 2) and _input_bytes.first == 91)
+          _input_bytes.remove_first  # 91 / '['
+          if (_input_bytes.first == 77)
+            if (_fill_input_buffer(4))
+              # Mouse event
+              _input_bytes.remove_first  # 77
+              local event_type : ConsoleEventType
+              local type = UnixConsoleMouseEventType(_input_bytes.remove_first)
+              which (type)
+                case UnixConsoleMouseEventType.PRESS_LEFT:  event_type = ConsoleEventType.POINTER_PRESS_LEFT
+                case UnixConsoleMouseEventType.PRESS_RIGHT: event_type = ConsoleEventType.POINTER_PRESS_RIGHT
+                case UnixConsoleMouseEventType.RELEASE:     event_type = ConsoleEventType.POINTER_RELEASE
+                case UnixConsoleMouseEventType.DRAG_LEFT:   event_type = ConsoleEventType.POINTER_MOVE
+                case UnixConsoleMouseEventType.DRAG_RIGHT:  event_type = ConsoleEventType.POINTER_MOVE
+                case UnixConsoleMouseEventType.MOVE:        event_type = ConsoleEventType.POINTER_MOVE
+                case UnixConsoleMouseEventType.SCROLL_UP:   event_type = ConsoleEventType.SCROLL_UP
+                case UnixConsoleMouseEventType.SCROLL_DOWN: event_type = ConsoleEventType.SCROLL_DOWN
+                others: return
+              endWhich
+
+              local x = _input_bytes.remove_first->Int32 - 33
+              local y = _input_bytes.remove_first->Int32 - 33
+              events.add ConsoleEvent( event_type, x, y )
+              return
             endIf
-
-          unsatisfied
-            next_input_character = b1
-
-          endContingent
-
-          if (input_bytes.count > 0 and input_bytes.count < 6)
-            # If there are more bytes left then characters are getting piped or redirected in.
-            # Read enough to make sure we have a full UTF-8 sequence for next time.
-            fill_input_queue
+          elseIf (_input_bytes.first == 51)
+            _input_bytes.remove_first
+            if (_fill_input_buffer(1))
+              if (_input_bytes.first == 126)
+                _input_bytes.remove_first
+                events.add ConsoleEvent( ConsoleEventType.CHARACTER, 8, 0 )  # BACKSPACE
+                return
+              endIf
+            endIf
+          else
+            # Assume arrow event
+            local ch = (_input_bytes.remove_first - 65) + Console.UP_ARROW
+            events.add ConsoleEvent( ConsoleEventType.CHARACTER, ch, 0 )
+            return
           endIf
-
         endIf
       endIf
-      return next_input_character.exists
+
+      if (b1 < 0xC0 or not decode_utf8)
+        # ASCII or non-UTF-8
+        events.add ConsoleEvent( ConsoleEventType.CHARACTER, b1, 0 )
+        return
+      endIf
+
+      local ch = b1 : Int32
+
+trace _input_bytes
+      contingent
+        # UTF-8
+        if ((b1 & 0b1110_0000) == 0b1100_0000)
+trace
+          necessary (_fill_input_buffer(1))
+trace
+          ch = b1 & 0b0001_1111
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+        elseIf ((b1 & 0b1111_0000) == 0b1110_0000)
+trace
+          necessary (_fill_input_buffer(2))
+trace
+          ch = b1 & 0b0000_1111
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+        elseIf ((b1 & 0b1111_1000) == 0b1111_0000)
+trace
+          necessary (_fill_input_buffer(3))
+trace
+          ch = b1 & 0b0000_0111
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+        elseIf ((b1 & 0b1111_1100) == 0b1111_1000)
+          necessary (_fill_input_buffer(4))
+          ch = b1 & 0b0000_0011
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+        else
+          necessary (_fill_input_buffer(5))
+          ch = b1 & 0b0000_0001
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+          ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
+        endIf
+      endContingent
+
+      events.add ConsoleEvent( ConsoleEventType.CHARACTER, ch, 0 )
 
     method height->Int32
-      native @|#if (ROGUE_CONSOLE_FULL)
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return (info.srWindow.Bottom - info.srWindow.Top) + 1;
+              |  else return 24;
+              |#else
               |  struct winsize sz;
               |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
               |
               |  return sz.ws_row;
-              |#else
-              |  return 24;
               |#endif
 
     method move_cursor( dx:Int32, dy:Int32, output=Global:PrintWriter )
@@ -201,14 +379,33 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       output.flush
 
     method peek->Character
-      if (has_another) return next_input_character.value
-      else             return 0
+      if (has_another)
+        forEach (event in events)
+          if (event.is_character) return event.x
+        endForEach
+      endIf
+      return 0
+
+    method peek_event->ConsoleEvent
+      return events.first
+
+    method println( text:String, wrap:Logical )
+      println text.word_wrapped( this.width )
 
     method read->Character
       if (not has_another) return 0
-      local result = next_input_character.value
-      next_input_character = null
-      return result
+
+      while (events.count)
+        local event = events.remove_first
+        if (event.is_character)
+          return event.x
+        endIf
+      endWhile
+
+      return 0
+
+    method read_event->ConsoleEvent
+      return events.remove_first
 
     method read_line->String
       input_buffer.clear
@@ -230,100 +427,104 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       # Allows stdin to be read again after a CTRL+D
       native @|clearerr( stdin );
 
-    method reset_input_mode
-      native @|#if (ROGUE_CONSOLE_FULL)
-              |  tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
-              |  fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
-              |#endif
+    method reset_io_mode
+      immediate_mode = false
+      show_cursor = true
 
     method restore_cursor_position( output=Global:PrintWriter )
       output.flush
       output.print( "\e[u" ).flush
-
-    method set_is_blocking( setting:Logical )->this
-      native @|#if (ROGUE_CONSOLE_FULL)
-
-      if (@is_blocking != setting)
-        @is_blocking = setting
-        if (@is_blocking)
-          native @|fcntl( STDIN_FILENO, F_SETFL, O_NONBLOCK );
-        else
-          native @|fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
-        endIf
-      endIf
-
-      native @|#endif
-
-      return this
 
     method save_cursor_position( output=Global:PrintWriter )
       output.flush
       output.print( "\e[s" ).flush
 
     method set_cursor( x:Int32, y:Int32, output=Global:PrintWriter )
+      ++x
+      ++y
       output.flush
       output.print( "\e[" ).print( y ).print( ';' ).print( x ).print( 'H' ).flush
 
     method set_enable_mouse_events( setting=true:Logical, output=Global:PrintWriter )
       # Console.enable_mouse_events = true/false
-      output.flush
-      output.print( which{setting:"\e[?1003h" || "\e[?1003l"} )
 
-    method set_immediate_mode( setting:Logical )->this
-      native @|#if (ROGUE_CONSOLE_FULL)
-
+    method set_immediate_mode( setting:Logical )
+      # setting==true: turn off echo and line buffer, turn on mouse events.
+      #                Must call next_is_mouse_event/read_mouse_event
       if (@immediate_mode != setting)
         @immediate_mode = setting
         if (@immediate_mode)
           # Turn off blocking and line buffering
-          is_blocking = false
-          native @|termios new_settings;
-                  |tcgetattr( STDIN_FILENO, &new_settings );
-                  |new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
-                  |new_settings.c_cc[VMIN] = 0;
-                  |new_settings.c_cc[VTIME] = 0;
-                  |tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+          windows_button_state = 0
+          native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+                  |  DWORD mode;
+                  |  GetConsoleMode( h_stdin, &mode );
+                  |  SetConsoleMode( h_stdin, (mode & ~(ENABLE_QUICK_EDIT_MODE)) | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT );
+                  |#else
+                  |  termios new_settings;
+                  |  tcgetattr( STDIN_FILENO, &new_settings );
+                  |  new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
+                  |  new_settings.c_cc[VMIN] = 0;
+                  |  new_settings.c_cc[VTIME] = 0;
+                  |  tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+                  |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK );
+
+                     # Enable mouse events
+                     Global.[flush].print( "\e[?1003h" ).flush
+          native @|#endif
         else
-          is_blocking = true
-          native @|tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+          native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+                  |  DWORD mode;
+                  |  GetConsoleMode( h_stdin, &mode );
+                  |  if ($this->windows_in_quick_edit_mode) mode |= ENABLE_QUICK_EDIT_MODE;
+                  |  SetConsoleMode( h_stdin, mode );
+                  |#else
+                  |  tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+                  |  fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+
+                     # Disable mouse events
+                     Global.[flush].print( "\e[?1003l" ).flush
+          native @|#endif
         endIf
       endIf
 
-      native @|#endif
-      return this
-
     method set_show_cursor( setting=true:Logical, output=Global:PrintWriter )
+      if (@show_cursor == setting) return
+      @show_cursor = setting
+
       # Console.show_cursor = true / false
       output.flush
       output.print( "\e[?25" ).print( ?:{setting:'h'||'l'} ).flush
 
     method width->Int32
-      native @|#if (ROGUE_CONSOLE_FULL)
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return info.dwSize.X;
+              |  else return 80;
+              |#else
               |  struct winsize sz;
               |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
               |
               |  return sz.ws_col;
-              |#else
-              |  return 80;
               |#endif
 
     method write( value:String )->this
       $if (target("Android"))
         native @|__android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $value->utf8 );
       $else
-        native @|fwrite( $value->utf8, 1, $value->byte_count, stdout );
-                |fflush( stdout );
+      native @|Rogue_fwrite( (char*)$value->utf8, $value->byte_count, STDOUT_FILENO );
       $endIf
       return this
 
     method write( buffer:StringBuilder )->this
-      #buffer.reserve( 1 ).utf8.last = 0
       $if (target("Android"))
         buffer.reserve(1).utf8[ buffer.count ] = 0  # null terminate
         native @|__android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $buffer->utf8->data->as_bytes );
       $else
-        native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stdout );
-                |fflush( stdout );
+        native @|Rogue_fwrite( (char*)$buffer->utf8->data->as_bytes, $buffer->utf8->count, STDOUT_FILENO );
       $endIf
       return this
 
@@ -339,8 +540,7 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
       $if (target("Android"))
         native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $value->utf8 );
       $else
-        native @|fwrite( $value->utf8, 1, $value->byte_count, stderr );
-                |fflush( stderr );
+        native @|Rogue_fwrite( (char*)$value->utf8, $value->byte_count, STDERR_FILENO );
       $endIf
       return this
 
@@ -349,12 +549,81 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
         buffer.reserve(1).utf8[ buffer.count ] = 0  # null terminate
         native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $buffer->utf8->data->as_bytes );
       $else
-        native @|fwrite( $buffer->utf8->data->as_bytes, 1, $buffer->utf8->count, stderr );
-                |fflush( stderr );
+        native @|Rogue_fwrite( (char*)$buffer->utf8->data->as_bytes, $buffer->utf8->count, STDERR_FILENO );
       $endIf
       return this
 
 endClass
+
+enum ConsoleEventType
+  CHARACTER
+  POINTER_PRESS_LEFT
+  POINTER_PRESS_RIGHT
+  POINTER_RELEASE
+  POINTER_MOVE
+  SCROLL_UP
+  SCROLL_DOWN
+endEnum
+
+class ConsoleEvent( type:ConsoleEventType, x:Int32, y:Int32 ) [compound]
+  METHODS
+    method is_character->Logical
+      return (type == ConsoleEventType.CHARACTER)
+
+    method is_pointer_press->Logical
+      return (type==ConsoleEventType.POINTER_PRESS_LEFT or type==ConsoleEventType.POINTER_PRESS_RIGHT)
+
+    method is_pointer_press_left->Logical
+      return (type==ConsoleEventType.POINTER_PRESS_LEFT)
+
+    method is_pointer_press_right->Logical
+      return (type==ConsoleEventType.POINTER_PRESS_RIGHT)
+
+    method is_pointer_release->Logical
+      return (type==ConsoleEventType.POINTER_RELEASE)
+
+    method is_scroll_up->Logical
+      return (type==ConsoleEventType.SCROLL_UP)
+
+    method is_scroll_down->Logical
+      return (type==ConsoleEventType.SCROLL_DOWN)
+
+    method to->String
+      which (type)
+        case ConsoleEventType.CHARACTER
+          which (Int32(x))
+            case 8:                   return "BACKSPACE"
+            case '\t':                return "TAB"
+            case 10:                  return "NEWLINE"
+            case 27:                  return "ESCAPE"
+            case Console.UP_ARROW:    return "UP"
+            case Console.DOWN_ARROW:  return "DOWN"
+            case Console.RIGHT_ARROW: return "RIGHT"
+            case Console.LEFT_ARROW:  return "LEFT"
+            case 127:                 return "DELETE"
+            others:                   return ""+Character(x)
+          endWhich
+        case ConsoleEventType.SCROLL_UP,
+             ConsoleEventType.SCROLL_DOWN
+          return type->String
+        others
+          return "$($,$)" (type,x->Int32,y->Int32)
+      endWhich
+
+    method unicode->Character
+      return Character(x)
+endClass
+
+enum UnixConsoleMouseEventType
+  PRESS_LEFT  = 32
+  PRESS_RIGHT = 34
+  RELEASE     = 35
+  DRAG_LEFT   = 64
+  DRAG_RIGHT  = 66
+  MOVE        = 67
+  SCROLL_UP   = 96
+  SCROLL_DOWN = 97
+endEnum
 
 class ConsoleStyle [singleton]
   # USAGE
@@ -449,4 +718,3 @@ forEach (p in property_list)
   injectMethod
 endForEach
 $endMetacode
-
