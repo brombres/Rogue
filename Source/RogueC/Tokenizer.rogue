@@ -398,7 +398,7 @@ class Tokenizer
           case "warning":             add_new_token( TokenType.meta_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
-          case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
+          case "sourceLine":          handle_source_line_directive
           case "block":               add_new_token( TokenType.meta_block )
           case "endBlock":            add_new_token( TokenType.meta_endBlock )
           case "join":                add_new_token( TokenType.meta_join )
@@ -560,6 +560,18 @@ class Tokenizer
         throw error( "Unexpected input '"+ch+"'." )
       endIf
 
+    method handle_source_line_directive
+      if (consume('('))
+        if (not consume(')'))
+          local line = scan_long
+          if (not consume(')')) throw error( "Closing ')' expected." )
+          next_line = line
+          reader.line = line
+          return
+        endIf
+      endIf
+        
+      add_new_token( TokenType.literal_int32, next_line )
 
     method next_is_hex_digit->Logical
       local ch = reader.peek
