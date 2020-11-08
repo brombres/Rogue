@@ -1650,7 +1650,10 @@ class FileListing
     callback          : Function(String)
 
   METHODS
-    method init( folder, pattern, options )
+    method init( folder, pattern=null, options )
+      folder = fix( folder )
+      pattern = fix( pattern )
+
       callback = this=>collect
 
       if (pattern is null)
@@ -1768,5 +1771,18 @@ class FileListing
       else
         if (options.keeping_files) results.add( filepath )
       endIf
+
+    method fix( pattern:String )->String
+      # Without this fix, "**Alpha*" would not match "Source/Alpha.rogue"
+      if (not (pattern and pattern.contains("**"))) return pattern
+
+      # Replace **[^/] with **/*
+      local parts = pattern.split( "**/" )
+      forEach (part at index in parts)
+        parts[index] = part.replacing( "**", "**/*" )
+      endForEach
+      pattern = parts.join( "**/" )
+
+      return pattern
 endClass
 
