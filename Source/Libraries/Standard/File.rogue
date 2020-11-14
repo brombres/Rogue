@@ -575,7 +575,7 @@ class File
       endIf
       return String( bytes, encoding )
 
-    method matches_wildcard_pattern( filepath:String, pattern:String )->Logical
+    method matches_wildcard_pattern( filepath:String, pattern:String, &ignore_case )->Logical
       # Determines whether or not the given filepath matches the given
       # semi-Unix/Dos-style 'wildcard pattern'.  'pattern' is a
       # regular text string that may contain the following special
@@ -609,20 +609,26 @@ class File
 
           local i = last_wildcard + 1
           forEach (ch in filepath from filepath.count-end_count)
-            if (ch != pattern[i]) return false
+            local pattern_ch = pattern[i]
+            if (ignore_case)
+              ch = ch.to_lowercase
+              pattern_ch = pattern_ch.to_lowercase
+            endIf
+            if (ch != pattern_ch) return false
             ++i
           endForEach
         endIf
       endIf
 
-      if (_matches_wildcard_pattern(filepath,0,filepath.count,pattern,0,pattern.count)) return true
+      if (_matches_wildcard_pattern(filepath,0,filepath.count,pattern,0,pattern.count,&=ignore_case)) return true
 
       if (filepath.count <= 2 or not filepath.begins_with("./")) return false
 
       # Try ignoring the ./ prefix on the filepath
-      return (_matches_wildcard_pattern(filepath,2,filepath.count-2,pattern,0,pattern.count))
+      return (_matches_wildcard_pattern(filepath,2,filepath.count-2,pattern,0,pattern.count,&=ignore_case))
 
-    method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32 )->Logical
+    method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32,
+       &ignore_case )->Logical
       # f0     - starting index in filepath
       # fcount - remaining filepath count
       # p0     - starting index in pattern
@@ -639,41 +645,43 @@ class File
             # '**/' - match any characters (including '/') and ending with '/' or else match zero characters.
 
             # Match 0 characters (skip '**/' entirely)
-            if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2)) return true
+            if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2,&=ignore_case)) return true
 
             # Match 0+ characters for '**' and leave '/' to end pattern (matches 1+ total)
             ++r0
             --rcount
             forEach (n in 0..fcount)
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount,&=ignore_case)) return true
             endForEach
           elseIf (rcount and remaining_pattern[r0] == '*')
             # '**' - match any characters including '/'
             ++r0
             --rcount
             forEach (n in 0..fcount)
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount,&=ignore_case)) return true
             endForEach
           else
             # Single asterisk - match any characters except '/'
             forEach (n in 0..<fcount)
               ch = filepath[ f0+n ]
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount)) return true
+              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount, &=ignore_case)) return true
               if (ch == '/') return false
             endForEach
-            return _matches_wildcard_pattern( "", 0, 0, remaining_pattern, r0, rcount )
+            return _matches_wildcard_pattern( "", 0, 0, remaining_pattern, r0, rcount, &=ignore_case )
           endIf
 
         case '?':
           if (fcount == 0) return false
           ch = filepath[ f0 ]
           if (ch == '/') return false
-          return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount )
+          return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount, &=ignore_case )
 
         others:
           if (fcount == 0) return false
-          if (ch == filepath[f0])
-            return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount )
+          local filepath_ch = filepath[f0]
+          if (ignore_case) ch = ch.to_lowercase; filepath_ch = filepath_ch.to_lowercase
+          if (ch == filepath_ch)
+            return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount, &=ignore_case )
           endIf
       endWhich
       return false
@@ -1085,8 +1093,8 @@ class File
     method load_as_string( encoding=StringEncoding.UTF8:StringEncoding )->String
       return File.load_as_string( this.filepath, encoding )
 
-    method matches_wildcard_pattern( pattern:String )->Logical
-      return File.matches_wildcard_pattern( this.filepath, pattern )
+    method matches_wildcard_pattern( pattern:String, &ignore_case )->Logical
+      return File.matches_wildcard_pattern( this.filepath, pattern, &=ignore_case )
 
     method parent( level=1:Int32 )->String
       return File.parent( this.filepath, level )
