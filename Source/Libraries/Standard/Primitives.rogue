@@ -821,6 +821,10 @@ class Character [primitive]
     method digit_count->Int32
       return 1
 
+    method equals( other:Character, &ignore_case )->Logical
+      if (ignore_case) return this.to_lowercase == other.to_lowercase
+      return this == other
+
     method hash_code->Int32
       return this->Int32
 
