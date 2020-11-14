@@ -282,7 +282,7 @@ class String
         $endIf
       endIf
 
-    method contains_pattern( pattern:String )->Logical
+    method contains_pattern( pattern:String, &ignore_case )->Logical
       # Returns true if this string contains the pattern "*<pattern>*" - in other words any number of characters
       # can come before and after the matching pattern.
       #
@@ -301,7 +301,7 @@ class String
       #
       # For example, "a += c".contains_pattern("a+=c") -> true
       # For example, "a b c".contains_pattern("abc") -> false
-      return _extraction_point( 0, count, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )._1
+      return _extraction_point( 0, count, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end, &=ignore_case )._1
 
     method count->Int32
       return native( '$this->character_count' )->Int32
@@ -370,7 +370,7 @@ class String
         return this == other
       endIf
 
-    method extract_string( format:String )->String
+    method extract_string( format:String, &ignore_case )->String
       # Extracts the string corresponding to the first '$' marker in the given format pattern.
       #
       # The format pattern is matched literally apart from the following special sequences and behavior:
@@ -389,7 +389,7 @@ class String
       # EXAMPLE
       #   println "<tag name='abc'/>".extract_string( "*'$'*" )
       #   # prints: abc
-      local (success,match_start,match_count) = _extraction_point( 0, count, format, 0, format.count, -1 )
+      local (success,match_start,match_count) = _extraction_point( 0, count, format, 0, format.count, -1, &ignore_case )
       if (not success) return null
       return substring( match_start, match_count )
 
@@ -404,9 +404,9 @@ class String
       if (extract_strings(format,result)) return result
       return null
 
-    method extract_strings( format:String, result:String[] )->Logical
+    method extract_strings( format:String, result:String[], &ignore_case )->Logical
       local i1 = result.count
-      local pt = _extraction_point( 0, count, format, 0, format.count, false, result )
+      local pt = _extraction_point( 0, count, format, 0, format.count, false, result, &=ignore_case )
       if (not pt._1) return false
       local i2 = result.count - 1
       while (i1 < i2)
@@ -416,8 +416,9 @@ class String
       endWhile
       return true
 
-    method _extraction_point( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32, found_match:Logical,
-        result=null:String[], &wildcard_start, &wildcard_end )->(Logical,Int32,Int32)
+    method _extraction_point( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
+        found_match:Logical, result=null:String[],
+        &wildcard_start, &wildcard_end, &ignore_case )->(Logical,Int32,Int32)
       # Returns: (success,match_start,match_count)
       if (fcount == 0)
         if (not wildcard_end)
@@ -432,7 +433,7 @@ class String
         # Match any number of characters
         forEach (n in 0..remaining_count)
           local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0, fcount,
-            found_match, result, &=wildcard_end )
+            found_match, result, &=wildcard_end, &=ignore_case )
           if (success)
             match_start *= 2  # just avoiding an unused variable warning
             return (success,n,match_count)
@@ -447,7 +448,7 @@ class String
           # Match any number of characters
           forEach (n in 0..remaining_count)
             local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1,
-              found_match, result, &=wildcard_end )
+              found_match, result, &=wildcard_end, &=ignore_case )
             if (success) return (success,match_start,match_count)
           endForEach
 
@@ -462,7 +463,8 @@ class String
 
           if (n == 0) return (false,0,0)
 
-          return _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
+          return _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, found_match, result,
+            &=wildcard_end, &=ignore_case )
 
         case '$':
           # Match one or more characters and extract as a result
@@ -484,7 +486,8 @@ class String
                   local found_digit = false
                   while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
                   if (found_digit)
-                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result, &=wildcard_end )
+                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result,
+                      &=wildcard_end, &=ignore_case )
                     if (pt._1)
                       if (result) result.add( substring(m_start,i1-i0) )
                       if (wildcard_end) return (true,m_start,pt._3)
@@ -502,7 +505,8 @@ class String
                   if (rcount and this[i1] == '.') ++i1; --rcount
                   while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
                   if (found_digit)
-                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result, &=wildcard_end )
+                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result,
+                      &=wildcard_end, &=ignore_case )
                     if (pt._1)
                       if (result) result.add( substring(m_start,i1-i0) )
                       if (wildcard_end) return (true,m_start,pt._3)
@@ -513,7 +517,8 @@ class String
                 case '#'
                   # Single digit 0-9
                   if (remaining_count and this[i0].is_number)
-                    local pt = _extraction_point( i0+1, remaining_count-1, format, f0+4, fcount-4, true, result, &=wildcard_end )
+                    local pt = _extraction_point( i0+1, remaining_count-1, format, f0+4, fcount-4, true,
+                      result, &=wildcard_end, &=ignore_case )
                     if (pt._1)
                       if (result) result.add( substring(m_start,1) )
                       if (wildcard_end) return (true,m_start,pt._3)
@@ -524,8 +529,8 @@ class String
                 case '$'
                   # $($) matches a single literal $
                   if (remaining_count and this[i0] == '$')
-                    local (success,match_start,match_count) = _extraction_point( i0+1, remaining_count-1, format, f0+4, fcount-4,
-                      found_match, result, &=wildcard_end )
+                    local (success,match_start,match_count) = _extraction_point( i0+1, remaining_count-1, format,
+                      f0+4, fcount-4, found_match, result, &=wildcard_end, &=ignore_case )
                     if (success) return (success,match_start,match_count)
                   endIf
               endWhich
@@ -536,7 +541,8 @@ class String
           endIf
 
           forEach (n in 1..remaining_count)
-            local pt = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, true, result, &=wildcard_end )
+            local pt = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, true, result,
+              &=wildcard_end, &=ignore_case )
             if (pt._1)
               if (result) result.add( substring(m_start,n) )
               if (wildcard_end) return (true,m_start,pt._3)
@@ -547,14 +553,16 @@ class String
         case '?':
           # Match any single character
           if (remaining_count == 0) return (false,0,0)
-          return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
+          return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end, &=ignore_case )
 
         others:
           # Match one specific character
           if (remaining_count == 0) return (false,0,0)
           local ch = this[i0]
+          if (ignore_case) ch = ch.to_lowercase; format_ch = format_ch.to_lowercase
+
           if (format_ch == ch)
-            return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
+            return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end, &=ignore_case )
           elseIf (ch == ' ' or ch == '\t')
             # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
             # Count how many spaces and tabs in a row
@@ -566,7 +574,7 @@ class String
                 ++n
               endWhile
               if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
-                return _extraction_point( i0+n, remaining_count-n, format, f0, fcount, found_match, result, &=wildcard_end )
+                return _extraction_point( i0+n, remaining_count-n, format, f0, fcount, found_match, result, &=wildcard_end, &=ignore_case )
               endIf
             endIf
           endIf
@@ -816,18 +824,18 @@ class String
 
       return null
 
-    method locate_pattern( pattern:String, i1=0:Int32 )->Span?
+    method locate_pattern( pattern:String, i1=0:Int32, &ignore_case )->Span?
       # Returns the index of where the first '$' pattern marker occurs in this string, or null.
       # See contains_pattern() or matches_pattern() for a description of the pattern.
       #
       # EXAMPLE
       #   "ab cd ef gh ij".locate_pattern("cd $ gh") -> 6
-      local (success,index,count) = _extraction_point( i1, count-i1, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )
+      local (success,index,count) = _extraction_point( i1, count-i1, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end, &=ignore_case )
       if (not success) return null
 
       return Span( i1+index, count-(i1+index) )
 
-    method matches_pattern( pattern:String )->Logical
+    method matches_pattern( pattern:String, &ignore_case )->Logical
       # Returns true if this string matches the given pattern.
       #
       # The pattern is matched literally apart from the following special sequences and behavior:
@@ -845,7 +853,7 @@ class String
       #
       # For example, "a += c".matches_pattern("a+=c") -> true
       # For example, "a b c".matches_pattern("abc") -> false
-      return _extraction_point( 0, count, pattern, 0, pattern.count, -1 )._1
+      return _extraction_point( 0, count, pattern, 0, pattern.count, -1, &=ignore_case )._1
 
     method operator+( value:Byte )->String
       return (this + value->Int32)
