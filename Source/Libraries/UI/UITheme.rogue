@@ -1,15 +1,22 @@
 module UI
 
 class UITheme
+  PROPERTIES
+    default_font : UIFont
+
   METHODS
     method after_draw( component:UIComponent )
+
+    method default_font->UIFont
+      if (not @default_font) throw Error( "UITheme.default_font is not set." )
+      return @default_font
 
     method on_draw( component:UIComponent )
 
     method _dispatch_after_draw( component:UIComponent ) [propagated]
       component.after_draw<<ThisType>>( this )
 
-    method _dispatch_on_draw( component:UIComponent ) [propagated]
+    method _dispatch_on_draw( component:UIComponent )    [propagated]
       component.on_draw<<ThisType>>( this )
 endClass
 

@@ -1,0 +1,67 @@
+module UI
+
+class UIModifier : UIComponent
+  METHODS
+    method attributes->UIAttribute
+      if (first_child) return first_child.attributes
+      else             return null
+
+    method content_position->XY
+      if (first_child)
+        if (parent) return parent.content_position
+        else        return XY.zero
+      else
+        return prior.content_position
+      endIf
+
+    method display_position->XY
+      if (first_child)
+        if (parent) return parent.content_position
+        else        return XY.zero
+      else
+        return prior.display_position
+      endIf
+
+    method draw( draw_bounds:Box )
+      if (first_child) first_child.draw( draw_bounds )
+
+    method find( pos:XY, &always_check_subcomponents )->UIComponent
+      if (next)
+        # Recursively find the last sibling that contains 'pos'
+        local result = next.find( pos, &=always_check_subcomponents )
+        if (result) return result
+      endIf
+
+      if (not first_child) return null
+      return first_child.find( pos, &=always_check_subcomponents )
+
+    method flags->Int32
+      if (first_child) return first_child.flags
+      else             return 0
+
+    method measure [override]
+      if (first_child) first_child.measure
+
+    method set_attributes( attributes:UIAttribute )
+      if (first_child) first_child.attributes = attributes
+
+    method set_flags( flags:Int32 )
+      if (first_child) first_child.flags = flags
+
+    method update_layout( placement:UIContentPlacer )->UIContentPlacer
+      if (first_child)
+        placement   = first_child.update_layout( placement )
+        @position   = first_child.@position
+        @size       = first_child.@size
+      endIf
+      return placement
+
+    method update_layout( placement:UIIntervalPlacement )->UIIntervalPlacement
+      if (first_child)
+        placement = first_child.update_layout( placement )
+        @position = first_child.@position
+        @size     = first_child.@size
+      endIf
+      return placement
+endClass
+

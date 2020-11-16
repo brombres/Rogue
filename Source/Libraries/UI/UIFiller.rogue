@@ -1,27 +1,10 @@
 module UI
 
-class UIFiller : UILayout
+class UIFiller : UIComponent
   GLOBAL METHODS
-    method h( weight=1.0:Real64 )->UIFiller
-      return UIFiller( XY(0,1), weight )
+    method h->UIFiller
+      return UIFiller().[ fixed_height=0 ]
 
-    method v( weight=1.0:Real64 )->UIFiller
-      return UIFiller( XY(1,0), weight )
-
-  PROPERTIES
-    weight : Real64
-
-  METHODS
-    method init( fixed_size:XY, weight=1.0 )
-      prior.init( fixed_size )
-
-    method horizontal_flex->Real64
-      if (fixed_size.x == 0) return weight
-      else                   return 0
-
-    method vertical_flex->Real64
-      if (fixed_size.y == 0) return weight
-      else                   return 0
-
+    method v->UIFiller
+      return UIFiller().[ fixed_width=0 ]
 endClass
-
