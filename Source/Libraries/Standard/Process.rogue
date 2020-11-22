@@ -667,13 +667,11 @@ class WindowsProcessWriter : Writer<<Byte>>
     method skip( n:Int32 )->this
       return seek( position + n )
 
-    method write( value:Byte )->this
+    method write( value:Byte )
       buffer.add( value )
-      return this
 
-    method write( list:Byte[] )->this
+    method write( list:Byte[] )
       buffer.add( list )
-      return this
 endClass
 
 class ProcessResult

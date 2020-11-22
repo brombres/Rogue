@@ -786,11 +786,10 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
       position = list.count
       return this
 
-    method write( value:$DataType )->this
+    method write( value:$DataType )
       if (position == list.count) list.add( value )
       else                        list[ position ] = value
       ++position
-      return this
 endClass
 
 augment Byte[]
@@ -968,7 +967,7 @@ class ListRewriter<<$DataType>> : GenericListRewriter
       write_index = 0
       return this
 
-    method write( value:$DataType )->this
+    method write( value:$DataType )
       if (write_index == read_index)
         # We're adding more items to the list then it originally had.
 
@@ -995,6 +994,4 @@ class ListRewriter<<$DataType>> : GenericListRewriter
         list[ write_index ] = value
       endIf
       ++write_index
-
-      return this
 endClass

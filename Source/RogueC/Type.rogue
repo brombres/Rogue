@@ -1353,8 +1353,6 @@ class Type
             m = add_method( p.t, "set_" + p.name )
             m.add_parameter( p.t, "@"+p.name )
             m.attributes.add( Attribute.is_fallback )
-            m.return_type = this
-            m.statements.add( CmdReturn(p.t,CmdLiteralThis(p.t, this)) )
             m.organize( scope )
           endIf
         endForEach

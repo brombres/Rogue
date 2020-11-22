@@ -448,17 +448,15 @@ class StringBuilder : PrintWriter [essential]
     method to->String
       return String( utf8 )
 
-    method write( byte:Byte )->this
+    method write( byte:Byte )
       # Writes the given raw byte to this StringBuilder.  Any sequence of bytes written
       # must be valid UTF-8.
       utf8.add( byte )
       if ((byte & 0xC0) != 0x80) ++count
-      return this
 
-    method write( buffer:StringBuilder )->this
+    method write( buffer:StringBuilder )
       reserve( buffer.utf8.count )
       write( forEach in buffer.utf8 )
-      return this
 endClass
 
 class StringBuilderPool

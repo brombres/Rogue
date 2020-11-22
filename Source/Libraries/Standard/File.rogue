@@ -1448,35 +1448,29 @@ class FileWriter : Writer<<Byte>>
 
       return this
 
-    method write( ch:Byte )->this
-      if (not fp) return this
+    method write( ch:Byte )
+      if (not fp) return
 
       ++position
       buffer.add( ch )
       if (buffer.count == 1024) flush
 
-      return this
-
-    method write( bytes:Byte[] )->this
-      if (not fp) return this
+    method write( bytes:Byte[] )
+      if (not fp) return
 
       flush
       position += bytes.count
       native @|fwrite( $bytes->data->as_bytes, 1, $bytes->count, $this->fp );
 
-      return this
-
-    method write( data:String )->this
-      if (not fp) return this
+    method write( data:String )
+      if (not fp) return
 
       flush
       position += data.byte_count
       native @|fwrite( $data->utf8, 1, $data->byte_count, $this->fp );
 
-      return this
-
-    method write( builder:StringBuilder )->this
-      return write( builder.utf8 )
+    method write( builder:StringBuilder )
+      write( builder.utf8 )
 endClass
 
 
@@ -1592,15 +1586,13 @@ class FDWriter : Writer<<Byte>>
 
       buffer.clear
 
-    method write( ch:Byte )->this
+    method write( ch:Byte )
       ++position
       buffer.add( ch )
       if (buffer.count == 1024) flush
 
-      return this
-
-    method write( bytes:Byte[] )->this
-      if (fd == -1 or bytes.count == 0) return this
+    method write( bytes:Byte[] )
+      if (fd == -1 or bytes.count == 0) return
 
       if (bytes.count < 1024)
         forEach (byte in bytes) write( byte )
@@ -1614,10 +1606,8 @@ class FDWriter : Writer<<Byte>>
                 |}
       endIf
 
-      return this
-
-    method write( data:String )->this
-      if (fd == -1 or data.count == 0) return this
+    method write( data:String )
+      if (fd == -1 or data.count == 0) return
 
       if (data.count < 1024)
         forEach (i in 0..<data.byte_count) write( data.byte(i) )
@@ -1631,10 +1621,8 @@ class FDWriter : Writer<<Byte>>
                 |}
       endIf
 
-      return this
-
-    method write( builder:StringBuilder )->this
-      return write( builder.utf8 )
+    method write( builder:StringBuilder )
+      write( builder.utf8 )
 endClass
 
 class FilePattern( pattern:String ) [compound]

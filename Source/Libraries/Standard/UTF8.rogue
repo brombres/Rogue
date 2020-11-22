@@ -91,18 +91,17 @@ class CharacterToUTF8ByteWriter : Writer<<Character>>
     method skip( n:Int32 )->this
       throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.skip(Int32)" )
 
-    method write( value:Character )->this
+    method write( value:Character )
       if (value <= 0x7F)
         byte_writer.write( value )
       elseIf (value <= 0x7FF)
-        byte_writer.write( 0xC0 | (value:>>>:6) ).write( 0x80 | (value & 0x3F) )
+        byte_writer.[ write( 0xC0 | (value:>>>:6) ), write( 0x80 | (value & 0x3F) ) ]
       elseIf (value <= 0xFFFF)
-        byte_writer.write( 0xE0 | (value:>>>:12) ).write( 0x80 | ((value:>>>:6) & 0x3F) ).write( 0x80 | (value & 0x3F) )
+        byte_writer.[ write( 0xE0 | (value:>>>:12) ), write( 0x80 | ((value:>>>:6) & 0x3F) ), write( 0x80 | (value & 0x3F) ) ]
       else
-        byte_writer.write( 0xF0 | (value:>>>:18) ).write( 0x80 | ((value:>>>:12) & 0x3F) )
-        byte_writer.write( 0x80 | ((value:>>>:6) & 0x3F) ).write( 0x80 | (value & 0x3F) )
+        byte_writer.[ write( 0xF0 | (value:>>>:18) ), write( 0x80 | ((value:>>>:12) & 0x3F) ) ]
+        byte_writer.[ write( 0x80 | ((value:>>>:6) & 0x3F) ), write( 0x80 | (value & 0x3F) ) ]
       endIf
-      return this
 endClass
 
 
@@ -138,7 +137,7 @@ class UTF8ByteToCharacterWriter : Writer<<Byte>>
     method skip( n:Int32 )->this
       throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.skip(Int32)" )
 
-    method write( value:Byte )->this
+    method write( value:Byte )
       bytes.add( value )
 
       local ch = bytes[0] : Character
@@ -174,7 +173,5 @@ class UTF8ByteToCharacterWriter : Writer<<Byte>>
         bytes.clear
         character_writer.write( ch )
       endIf
-
-      return this
 endClass
 

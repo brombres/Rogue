@@ -394,13 +394,11 @@ class BasicSocketWriter : Writer<<Byte>>
     method skip( n:Int32 )->this
       throw UnsupportedOperationError( "BasicSocketWriter.skip()" )
 
-    method write( value:Byte )->this
+    method write( value:Byte )
       write_buffer.add( value )
       flush
-      return this
 
-    method write( list:Byte[] )->this
+    method write( list:Byte[] )
       forEach (value in list) write( value )
-      return this
 endClass
 

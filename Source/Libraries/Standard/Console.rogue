@@ -511,22 +511,20 @@ trace
               |  return sz.ws_col;
               |#endif
 
-    method write( value:String )->this
+    method write( value:String )
       $if (target("Android"))
         native @|__android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $value->utf8 );
       $else
       native @|Rogue_fwrite( (char*)$value->utf8, $value->byte_count, STDOUT_FILENO );
       $endIf
-      return this
 
-    method write( buffer:StringBuilder )->this
+    method write( buffer:StringBuilder )
       $if (target("Android"))
         buffer.reserve(1).utf8[ buffer.count ] = 0  # null terminate
         native @|__android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $buffer->utf8->data->as_bytes );
       $else
         native @|Rogue_fwrite( (char*)$buffer->utf8->data->as_bytes, $buffer->utf8->count, STDOUT_FILENO );
       $endIf
-      return this
 
 endClass
 
@@ -536,22 +534,20 @@ class ConsoleErrorPrinter : BufferedPrintWriter<<output_buffer>>
       write( buffer )
       buffer.clear
 
-    method write( value:String )->this
+    method write( value:String )
       $if (target("Android"))
         native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $value->utf8 );
       $else
         native @|Rogue_fwrite( (char*)$value->utf8, $value->byte_count, STDERR_FILENO );
       $endIf
-      return this
 
-    method write( buffer:StringBuilder )->this
+    method write( buffer:StringBuilder )
       $if (target("Android"))
         buffer.reserve(1).utf8[ buffer.count ] = 0  # null terminate
         native @|__android_log_print( ANDROID_LOG_ERROR, "Rogue", "%s", $buffer->utf8->data->as_bytes );
       $else
         native @|Rogue_fwrite( (char*)$buffer->utf8->data->as_bytes, $buffer->utf8->count, STDERR_FILENO );
       $endIf
-      return this
 
 endClass
 
