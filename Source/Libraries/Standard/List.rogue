@@ -915,7 +915,7 @@ endAugment
 
 class GenericListRewriter [abstract];
 
-class ListRewriter<<$DataType>> : GenericListRewriter
+class ListRewriter<<$DataType>> : GenericListRewriter, Writer<<$DataType>>
   GLOBAL PROPERTIES
     pool [threadLocal] : GenericListRewriter[]
 
@@ -950,9 +950,10 @@ class ListRewriter<<$DataType>> : GenericListRewriter
     method on_use->this
       return this
 
-    method on_end_use
+    method on_end_use( err:Exception )->Exception
       finish
       (ensure pool).add( this )
+      return err
 
     method peek( lookahead=0:Int32 )->$DataType
       return list[ read_index + lookahead ]
