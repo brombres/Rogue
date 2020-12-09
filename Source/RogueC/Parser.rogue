@@ -3617,6 +3617,7 @@ class Parser
             first = false
             args.add( parse_expression )
           endWhile
+          consume_eols
           must_consume( TokenType.symbol_close_paren )
           return CmdFormattedString( t, t->String, args )
         endIf
