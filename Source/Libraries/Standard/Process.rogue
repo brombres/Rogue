@@ -8,6 +8,7 @@ class Process
     is_finished   : Logical
     exit_code     : Int32
     is_blocking   : Logical
+    result        : ProcessResult
 
   GLOBAL METHODS
     method create( cmd:String, &readable, &writable, &is_blocking, &inherit_environment, &env )->Process
@@ -60,7 +61,8 @@ class Process
 
     method finish->ProcessResult
       @is_finished = true
-      return ProcessResult( 1, Byte[], Byte[] )
+      if (not result) result = ProcessResult( 1, Byte[], Byte[] )
+      return result
 
     method launch( &readable, &writable, &inherit_environment )->Logical
       return false
@@ -220,6 +222,7 @@ class PosixProcess : Process
 
     method is_finished->Logical
       if (@is_finished) return true
+
       native @|#ifndef ROGUE_PLATFORM_WINDOWS
               |int status;
               |if ($this->pid)
@@ -228,13 +231,14 @@ class PosixProcess : Process
               |  wstatus = waitpid( $this->pid,&status,WNOHANG );
               |  if ($this->pid == wstatus && WIFEXITED(status))
               |  {
-              |    $this->pid = 0;
-              |    $exit_code = WEXITSTATUS( status );
                    finish
                    return true
       native @|  }
               |}
               |#endif
+
+      while (update_io) noAction
+
       return false
 
 
@@ -279,7 +283,8 @@ class PosixProcess : Process
 
       native @|#endif // not ROGUE_PLATFORM_WINDOWS
 
-      return ProcessResult( @exit_code, output_bytes, error_bytes )
+      if (not result) result = ProcessResult( @exit_code, output_bytes, error_bytes )
+      return result
 
 
     method update_io( &poll_blocks )->Logical
@@ -309,15 +314,17 @@ class PosixProcess : Process
         local keep_going = false
         forEach (which_fd in 0..<2)
           local has_input = native("$this->poll_list[$which_fd].revents & POLLIN")->Logical
-          local has_other = native("$this->poll_list[$which_fd].revents & ~POLLIN")->Logical
+          #local has_other = native("$this->poll_list[$which_fd].revents & ~POLLIN")->Logical
           local reader = ?:{which_fd == 0: output_reader || error_reader}
 
-          if (has_input) (reader as PosixProcessReader).fd_reader.buffer_more
+          if (has_input)
+            (reader as PosixProcessReader).fd_reader.buffer_more
+            keep_going = true
+          endIf
 
           # Anything besides readable is "bad" (it's most likely the other end hanging up)
-          if (has_other) (reader as PosixProcessReader).fd_reader.close
-
-          if ((reader as PosixProcessReader).fd_reader.is_open) keep_going = true
+          #if (not has_input and has_other) (reader as PosixProcessReader).fd_reader.close
+          #if ((reader as PosixProcessReader).fd_reader.is_open) keep_going = true
         endForEach
         return keep_going # If anyone wants to keep going, we keep going
       elseIf ((status == -1) and native("errno == EINTR")->Logical)
@@ -475,7 +482,8 @@ class WindowsProcess : Process
 
       native @|#endif
 
-      return ProcessResult( @exit_code, output_bytes, error_bytes )
+      if (not result) result = ProcessResult( @exit_code, output_bytes, error_bytes )
+      return result
 
     method on_cleanup
       output_reader.close
