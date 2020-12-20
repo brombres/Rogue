@@ -197,6 +197,9 @@ class Method
     method is_native->Logical
       return (attributes.flags & Attribute.is_native)
 
+    method is_override->Logical
+      return (attributes.flags & Attribute.is_override)
+
     method is_preferred->Logical
       return (attributes.flags & Attribute.is_preferred)
 
@@ -346,6 +349,10 @@ class Method
     method resolve
       if (resolved) return
       resolved = true
+
+      if (is_override and not overridden_method)
+        throw t.error( "$.$ is declared as an override but no such method exists in base class $." (type_context,signature,type_context.base_class) )
+      endIf
 
       forEach (param in parameters)
         param.type.configure

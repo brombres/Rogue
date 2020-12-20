@@ -641,6 +641,8 @@ class Parser
           attributes.add( Attribute.is_mutating )
         elseIf (consume("nonAPI"))
           attributes.add( Attribute.is_nonAPI )
+        elseIf (consume("override"))
+          attributes.add( Attribute.is_override )
         elseIf (consume("preferred"))
           attributes.add( Attribute.is_preferred )
         elseIf (consume("primitive"))
