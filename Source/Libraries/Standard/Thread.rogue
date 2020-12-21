@@ -9,6 +9,11 @@ nativeHeader
 
 #if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
 
+#ifdef __APPLE__
+  #import <mach/thread_act.h>
+  #import <mach/thread_policy.h>
+#endif
+
 // Platform-appropriate semaphore
 // Based on https://stackoverflow.com/a/27847103/135791
 #ifdef __APPLE__
@@ -365,11 +370,20 @@ $endIf
       if (not has_thread) return false
       local ok = 0
       native @|#if ROGUE_THREAD_MODE == ROGUE_THREAD_MODE_PTHREADS
-              |  $ok = 1;
-              |  cpu_set_t cpus;
-              |  CPU_ZERO(&cpus);
-              |  CPU_SET($core, &cpus);
-              |  pthread_setaffinity_np($this->thread, sizeof(cpus), &cpus);
+              |  #ifdef __APPLE__
+              |    // Does not really assign to a specific core, but allows setting
+              |    // things to *different* cores.
+              |    $ok = 1;
+              |    thread_affinity_policy_data_t pol = {$core};
+              |    thread_policy_set(pthread_mach_thread_np($this->thread), THREAD_AFFINITY_POLICY,
+              |                      (thread_policy_t)&pol, THREAD_AFFINITY_POLICY_COUNT);
+              |  #elif defined(__linux__)
+              |    $ok = 1;
+              |    cpu_set_t cpus;
+              |    CPU_ZERO(&cpus);
+              |    CPU_SET($core, &cpus);
+              |    pthread_setaffinity_np($this->thread, sizeof(cpus), &cpus);
+              |  #endif
               |#endif
       return ok
 
