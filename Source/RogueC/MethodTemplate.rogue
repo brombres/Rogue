@@ -199,7 +199,7 @@ class MethodInferencer
   METHODS
     method init (template : MethodTemplate, mappings : Table<<String,Token[]>>)
       local index = 0
-      forEach (kv in mappings.reader)
+      forEach (kv in mappings.entries)
         rev_map[kv.value.last] = index
         index++
       endForEach

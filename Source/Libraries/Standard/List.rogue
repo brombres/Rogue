@@ -90,44 +90,6 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method ensure_capacity( desired_capacity:Int32 )->this
-      return reserve( desired_capacity - count )
-
-    method expand( additional_count:Int32 )->this
-      # Adds 'additional_count' items to this list, each with the default
-      # value of null/0/false.
-      reserve( additional_count )
-      count += additional_count
-      return this
-
-    method expand_to_count( minimum_count:Int32 )->this
-      # Expands the list if necessary to have at least 'minimum_count' elements.
-      if (count < minimum_count)
-        ensure_capacity( minimum_count )
-        count = minimum_count
-      endIf
-      return this
-
-    method expand_to_include( index:Int32 )->this
-      # Expands the list if necessary to include the specified index.
-      return expand_to_count( index + 1 )
-
-    method first->$DataType
-      return this.data[0]
-
-    method first( query:(Function($DataType)->Logical) )->$DataType?
-      forEach (value in this)
-        if (query(value)) return value
-      endForEach
-
-      return null
-
-    method from( i1:Int32 )->ListReader<<$DataType>>
-      return ListReader<<$DataType>>( this, i1 )
-
-    method from( i1:Int32, i2:Int32 )->ListReader<<$DataType>>
-      return ListReader<<$DataType>>( this, i1, i2+1 )
-
     method dim( n:Int32 )
       clear
       reserve( n )
@@ -185,6 +147,28 @@ class List<<$DataType>> : GenericList
       endIf
       return this
 
+    method ensure_capacity( desired_capacity:Int32 )->this
+      return reserve( desired_capacity - count )
+
+    method expand( additional_count:Int32 )->this
+      # Adds 'additional_count' items to this list, each with the default
+      # value of null/0/false.
+      reserve( additional_count )
+      count += additional_count
+      return this
+
+    method expand_to_count( minimum_count:Int32 )->this
+      # Expands the list if necessary to have at least 'minimum_count' elements.
+      if (count < minimum_count)
+        ensure_capacity( minimum_count )
+        count = minimum_count
+      endIf
+      return this
+
+    method expand_to_include( index:Int32 )->this
+      # Expands the list if necessary to include the specified index.
+      return expand_to_count( index + 1 )
+
     method filter( keep_if:(Function($DataType)->Logical) )->this
       return this.keep( keep_if )
 
@@ -196,6 +180,22 @@ class List<<$DataType>> : GenericList
         if (query(value)) return value
       endForEach
       return null
+
+    method first->$DataType
+      return this.data[0]
+
+    method first( query:(Function($DataType)->Logical) )->$DataType?
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+
+      return null
+
+    method from( i1:Int32 )->ListIterator<<$DataType>>
+      return ListIterator<<$DataType>>( this, i1 )
+
+    method from( i1:Int32, i2:Int32 )->ListIterator<<$DataType>>
+      return ListIterator<<$DataType>>( this, i1, i2+1 )
 
     method get( index:Int32 )->$DataType [essential macro]
       return this.data[ index ]
@@ -264,6 +264,9 @@ class List<<$DataType>> : GenericList
 
     method is_empty->Logical
       return count == 0
+
+    method iterator->ListIterator<<$DataType>>
+      return ListIterator<<$DataType>>( this, 0 )
 
     method join( separator="\n":String )->String
       local builder = StringBuilder()
@@ -480,7 +483,7 @@ class List<<$DataType>> : GenericList
       return this[ generator.int32(this.count) ]
 
     method reader->ListReader<<$DataType>>
-      return ListReader<<$DataType>>( this, 0 )
+      return ListReader<<$DataType>>( this )
 
     method reduce<<$ToType>>( reduce_fn:(Function(Int32,$DataType,$ToType)->$ToType) )->$ToType
       local result : $ToType
@@ -720,6 +723,37 @@ $if defined(SCRIPT_HELPERS)
     method _get_base_address()->IntPtr [essential]
       return native("&($this->data->as_bytes)")->IntPtr
 $endIf
+endClass
+
+class ListIterator<<$DataType>>( list:($DataType[]), position=0:Int32, limit=-1:Int32 ) [compound]
+  METHODS
+    method has_another->Logical
+      if (limit == -1) return (position < list.count)
+      else             return (position < limit)
+
+    method peek->$DataType
+      return list[ position ]
+
+    method read->$DataType [mutating]
+      ++position
+      return list[ position-1 ]
+
+    method read_another->$DataType? [mutating]
+      if (limit == -1)
+        if (position == list.count) return null
+      else
+        if (position == limit) return null
+      endIf
+      ++position
+      return list[ position-1 ]
+
+    method to->$DataType[]
+      return to_list
+
+    method to_list->$DataType[]
+      local result = $DataType[]
+      result.add( forEach in this )
+      return result
 endClass
 
 class ListReader<<$DataType>> : Reader<<$DataType>>

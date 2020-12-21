@@ -1445,8 +1445,8 @@ augment Program
 
       writer.println "# --- Prototypes of Rogue Methods ---"
       local signatures = Set<<String>>()
-      forEach (cyclass in wrapped_types.value_reader)
-        forEach (fi in cyclass.funcs.value_reader)
+      forEach (cyclass in wrapped_types.values)
+        forEach (fi in cyclass.funcs.values)
           forEach (f in fi)
             local m = f.real_method
             local sig = m.cpp_typedef
@@ -1482,9 +1482,9 @@ augment Program
 
       # Static methods get actual names
       signatures.clear
-      forEach (cyclass in wrapped_types.value_reader)
+      forEach (cyclass in wrapped_types.values)
         local printed_comment = false
-        forEach (fi in cyclass.funcs.value_reader)
+        forEach (fi in cyclass.funcs.values)
           forEach (f in fi)
             local m = f.real_method
             local sig = f.cname
@@ -1656,7 +1656,7 @@ augment Program
     method py_write_delegate_thunks (writer:CPPWriter)
       writer.println "# Delegate thunks"
       local thunks = Table<<String,Int32>>()  # thunk_sig to number
-      forEach (ccls in py_delegates.value_reader)
+      forEach (ccls in py_delegates.values)
         local m = ccls.funcs['call'][0]
         local sig = m.thunk_sig.before_first("->") # Return type doesn't factor in here, since it's handled by pointer
         if (thunks.contains(sig))
@@ -1687,7 +1687,7 @@ augment Program
       # in a table.  If it's already *in* the table, we can just reuse the old one.
       # Kind of hacky, but works okay.
       local thunk_bodies = Table<<String, Int32>>()
-      forEach (ccls at i in py_delegates.value_reader)
+      forEach (ccls at i in py_delegates.values)
         local m = ccls.funcs['call'][0]
         local params = String[]
         params.add("context")
@@ -1745,7 +1745,7 @@ augment Program
         endIf
         prev = cyclasses.count - sorted_types.count
         local ss = Set<<Type>>()
-        forEach (t in cyclasses.value_reader)
+        forEach (t in cyclasses.values)
           ss.add(t.type)
         endForEach
         ss = ss.difference(done)
@@ -1753,7 +1753,7 @@ augment Program
         #  println t
         #endForEach
         #trace sorted_types.count, cyclasses.count
-        forEach (t in cyclasses.value_reader)
+        forEach (t in cyclasses.values)
           if (done.contains(t.type)) nextIteration
           local ok = false
           if (t.type.base_types.count == 0)
@@ -1831,7 +1831,7 @@ augment Program
         writer.println
 
         # Iterate over each method name; write the method (and its overloads)
-        forEach (fi in cyclass.funcs.value_reader)
+        forEach (fi in cyclass.funcs.values)
           local constructor = fi[0].is_initializer
           local overloading = fi.count > 1 or constructor
           # We always overload constructors.  Why?  I don't remember anymore!
@@ -1943,7 +1943,7 @@ augment Program
       local rglobal = Program.type_lookup["Global"]
       local cyglobal = cyclasses[rglobal]
       if rglobal and cyglobal
-        forEach (fi in cyglobal.funcs.value_reader)
+        forEach (fi in cyglobal.funcs.values)
           local constructor = fi[0].is_initializer
           if (constructor) nextIteration
           # If it's a global method, we call it directly.  Otherwise, call it on the

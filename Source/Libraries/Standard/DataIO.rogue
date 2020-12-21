@@ -15,7 +15,7 @@ class DataReader : Reader<<Byte>>
       init( file.reader )
 
     method init( list:Byte[] )
-      init( list.reader )
+      init( ListReader<<Byte>>(list) )
 
     method has_another->Logical
       return source.has_another

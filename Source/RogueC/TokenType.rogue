@@ -3,6 +3,7 @@ class TokenType
     lookup                        : Table<<String,TokenType>>
 
     # Meta commands
+    meta_auto_id                  : TokenType
     meta_block                    : TokenType
     meta_endBlock                 : TokenType
     meta_define                   : TokenType

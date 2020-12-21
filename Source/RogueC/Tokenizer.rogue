@@ -81,6 +81,7 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
+      TokenType.meta_auto_id         = define( DirectiveTokenType("$auto_id") )
       TokenType.meta_block           = define( DirectiveTokenType("$block") )
       TokenType.meta_endBlock        = define( DirectiveTokenType("$endBlock") )
       TokenType.meta_define          = define( DirectiveTokenType("$define") )
@@ -357,6 +358,10 @@ class Tokenizer
 
         local id = read_identifier
         which (id)
+          case "auto_id"
+            add_new_token( TokenType.identifier, Program.create_unique_id )
+            return null
+
           case "define"
             add_new_token( TokenType.meta_define )
 

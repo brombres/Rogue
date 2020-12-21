@@ -266,8 +266,8 @@ class Value
     method is_undefined->Logical
       return false
 
-    method keys->String[]
-      return String[]
+    method keys->TableKeysIterator<<String,Value>>
+      return TableKeysIterator<<String,Value>>( null )
 
     method last->Value
       return this[ count - 1 ]
@@ -1532,7 +1532,7 @@ class ValueTable : Value
 
     method count( query:(Function(Value)->Logical) )->Int32
       local result = 0
-      forEach (v in data.value_reader)
+      forEach (v in data.values)
         if (query(v)) ++result
       endForEach
       return result
@@ -1594,7 +1594,7 @@ class ValueTable : Value
 
     method get( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
-      local result = data[ keys[index] ]
+      local result = data[ index ]
       if (result is null) return UndefinedValue
       return result
 
@@ -1625,12 +1625,11 @@ class ValueTable : Value
     method is_table->Logical
       return true
 
-    method keys->String[]
+    method keys->TableKeysIterator<<String,Value>>
       return data.keys
 
     method last( query:(Function(Value)->Logical) )->Value
-      forEach (key in keys step -1)
-        local v = this[ key ]
+      forEach (v in data step -1)
         if (query(v)) return v
       endForEach
       return UndefinedValue
@@ -1681,7 +1680,7 @@ class ValueTable : Value
 
     method remove_at( index:Int32 )->Value
       if (index < 0 or index >= count) return UndefinedValue
-      return data.remove( data.keys[index] )
+      return data.remove_at( index )
 
     method set( index:Int32, value:Value )->this [preferred]
       return set( ""+index, value )

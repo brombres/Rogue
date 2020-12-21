@@ -12,28 +12,6 @@
 #==============================================================================
 module Node
 
-$macro forEachChild(cur,node,command)
-  block
-    local cur = node.first_child
-    while (cur)
-      command
-      cur = cur.next
-    endWhile
-  endBlock
-$endMacro
-
-$macro forEachChild(cur,node)
-  block
-    local cur = node.first_child
-    while (cur)
-$endMacro
-
-$macro endForEachChild(cur)
-      cur = cur.next
-    endWhile
-  endBlock
-$endMacro
-
 class Node<<$ExtendedNodeType>>
   PROPERTIES
     parent      : $ExtendedNodeType
@@ -60,10 +38,11 @@ class Node<<$ExtendedNodeType>>
       # Recursively traverse this node and all its children, calling fn(node) on each.
       # If fn(node) ever returns false then the traversal will abort.
       if (not fn(this as $ExtendedNodeType)) return false
-      forEachChild (cur,this)
-        if (not cur.apply(fn)) return false
-      endForEachChild (cur)
+      if (not (forEach in this).apply(fn)) return false
       return true
+
+    method children->NodeIterator<<$ExtendedNodeType>>
+      return NodeIterator<<$ExtendedNodeType>>( first_child )
 
     method clear
       remove_children
@@ -162,6 +141,9 @@ class Node<<$ExtendedNodeType>>
         cur.is_modified = true
         cur = cur.next
       endLoop
+
+    method iterator->NodeIterator<<$ExtendedNodeType>>
+      return NodeIterator<<$ExtendedNodeType>>( this as $ExtendedNodeType )
 
     method set_is_modified( setting:Logical )
       if (@is_modified == setting) return
@@ -305,6 +287,22 @@ class Node<<$ExtendedNodeType>>
 
 endClass
 
+class NodeIterator<<$ExtendedNodeType>>( cur:$ExtendedNodeType ) [compound]
+  METHODS
+    method has_another->Logical
+      return cur?
+
+    method read->$ExtendedNodeType [mutating]
+      local result = cur
+      cur .= next
+      return result
+
+    method read_another->$ExtendedNodeType? [mutating]
+      if (not cur) return null
+      local result = cur
+      cur .= next
+      return result
+endClass
 
 class NodeVisitor<<$ExtendedNodeType>>
   METHODS

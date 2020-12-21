@@ -337,9 +337,11 @@ class String
 
       local result = Byte[]( output_count )
       local writer = BitWriter( result )
-      local reader = base64.reader
-      while (reader.has_another)
-        loop (4) writer.write( reader.read.to_base64_value, 6 )
+      local iterator = base64.iterator
+      while (iterator.has_another)
+        loop (4)
+          writer.write( iterator.read.to_base64_value, 6 )
+        endLoop
       endWhile
       writer.flush
 
@@ -696,10 +698,13 @@ class String
 
       return true
 
-    method join( substrings:String[] )->String
-      return join( substrings.reader )
+    method iterator->StringIterator
+      return StringIterator( this, 0, count )
 
-    method join( substrings:Reader<<String>> )->String
+    method join( substrings:String[] )->String
+      return join( substrings.iterator )
+
+    method join( substrings:ListIterator<<String>> )->String
       local result = StringBuilder()
       local first = true
       forEach (s in substrings)
@@ -1460,6 +1465,39 @@ class String
     method word_wrapped( width:Int32, allow_break_after=null:String )->String
       return word_wrap( width, StringBuilder(), allow_break_after )->String
 
+endClass
+
+class StringIterator( string:String, position:Int32, count:Int32 ) [compound]
+  GLOBAL METHODS
+    method create( string:String )->StringIterator
+      return StringIterator( string, 0, string.count )
+
+  METHODS
+    method has_another->Logical
+      return (position < count)
+
+    method has_another( n:Int32 )->Logical
+      return (position + n <= count)
+
+    method peek->Character
+      if (position == count) return 0
+      return string[ position ]
+
+    method read->Character [mutating]
+      ++position
+      return string[ position-1 ]
+
+    method read_another->Character? [mutating]
+      if (position == count) return null
+      ++position
+      return string[ position-1 ]
+
+    method to->String
+      use builder=StringBuilder.pool
+        builder.reserve( count - position )
+        builder.print( forEach in this )
+        return builder->String
+      endUse
 endClass
 
 class StringReader : Reader<<Character>>

@@ -947,7 +947,8 @@ class Parser
                   endIf
                 endForEach
               elseIf (named_args.count)
-                throw named_args.first.t.error( "No such enum property '$'." (named_args.keys.first) )
+                local names = named_args.keys
+                throw named_args.first.t.error( "No such enum property '$'." (names.read) )
               endIf
             endIf
 
