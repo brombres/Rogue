@@ -4438,6 +4438,41 @@ class CmdNegate : CmdUnary
 endClass
 
 
+#{
+class CmdGrouping : CmdUnary
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdGrouping( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      return operand.execute(vm)
+
+    method fn_name->String
+      return "operator()"
+
+    method implicit_type( scope:Scope )->Type
+      return operand.implicit_type(scope)
+
+    method prefix_symbol->String
+      return "("
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      return operand
+
+    method resolve_for_operand_type( scope:Scope, operand_type:Type )->Cmd
+      if (operand_type.has_method_named("operator()"))
+        return CmdAccess( t, operand, "operator()" ).resolve( scope )
+      else
+        return operand
+      endIf
+
+    method suffix_symbol->String
+      return ")"
+endClass
+}#
+
+
 #------------------------------------------------------------------------------
 # Binary Operators
 #------------------------------------------------------------------------------
