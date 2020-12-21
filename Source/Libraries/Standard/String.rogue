@@ -1375,6 +1375,9 @@ class String
 
       return result
 
+    method substring( i1:Int32 )->String
+      return from( i1 )
+
     method substring( i1:Int32, n:Int32 )->String
       if (n < 0)
         n = (count - i1) + n
