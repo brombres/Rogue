@@ -1903,25 +1903,14 @@ class Parser
         return CmdAssign( t,expression,parse_expression )
       endIf
 
+      if (consume(TokenType.symbol_dot_equals))
+        return CmdAssign( t, expression, parse_access(t,expression.cloned) )
+      endIf
+
       if (t.type.is_op_with_assign)
         read
         return CmdModifyAndAssign( t, expression, t.type, parse_expression )
       endIf
-
-      #{
-      if (consume(TokenType.symbol_access_assign))
-        local rhs = parse_expression
-        local access = rhs as CmdAccess
-        if (access is null) throw rhs.error( "Property access or method call expected." )
-        while (access.operand)
-          local operand = access.operand as CmdAccess
-          if (operand is null) throw access.operand.t.error( "Property access or method call expected." )
-          access = operand
-        endWhile
-        access.operand = expression.cloned
-        cur_statement_list.add( CmdAssign(t,expression,access) )
-      endIf
-      }#
 
       if (consume(TokenType.symbol_plus_plus))
         return CmdStep( t, expression, 1 )
