@@ -350,35 +350,42 @@ class Method
       if (resolved) return
       resolved = true
 
-      if (is_override and not overridden_method)
-        throw t.error( "$.$ is declared as an override but no such method exists in base class $." (type_context,signature,type_context.base_class) )
-      endIf
+      try
+        if (is_override and not overridden_method)
+          throw t.error( "$.$ is declared as an override but no such method exists in base class $." (type_context,signature,type_context.base_class) )
+        endIf
 
-      forEach (param in parameters)
-        param.type.configure
-      endForEach
-      if (return_type) return_type.configure
+        forEach (param in parameters)
+          param.type.configure
+        endForEach
+        if (return_type) return_type.configure
 
-      if (type_context.is_aspect and not is_global)
-        aspect_statements = statements
-        statements = CmdStatementList()
-      endIf
+        if (type_context.is_aspect and not is_global)
+          aspect_statements = statements
+          statements = CmdStatementList()
+        endIf
 
-      # Assign indices to local variables
-      forEach (v at i in get_locals) v.index = i
+        # Assign indices to local variables
+        forEach (v at i in get_locals) v.index = i
 
-      if (is_task) convert_to_task
+        if (is_task) convert_to_task
 
-      resolve_statements
+        resolve_statements
 
-      introspection_call_handler = IntrospectionCallManager.handler( this )
+        introspection_call_handler = IntrospectionCallManager.handler( this )
 
-      if (is_initializer)
-        local return_t = t
-        if (statements.count) return_t = statements.last.t
-        local scope = Scope( type_context, this )
-        statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
-      endIf
+        if (is_initializer)
+          local return_t = t
+          if (statements.count) return_t = statements.last.t
+          local scope = Scope( type_context, this )
+          statements.add( CmdReturn(return_t,CmdLiteralThis(return_t,type_context)).resolve(scope) )
+        endIf
+
+      catch (error:Error)
+        resolved = false
+        throw error
+
+      endTry
 
     method resolve_statements
       if (not resolved) resolve
