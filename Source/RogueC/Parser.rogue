@@ -182,7 +182,7 @@ class Parser
         elseIf (t.type is TokenType.meta_uses)
           local module_id = read_module_id
           id_map.use_module( module_id )
-          parse_uses_export
+          parse_uses_attributes
 
           local exported_modules = Program.exported_modules( module_id )
           if (exported_modules is null and module_id)
@@ -320,7 +320,7 @@ class Parser
         read  # 'uses'
         local module_id = read_module_id
         used_modules = UsedModule( module_id, used_modules )
-        parse_uses_export
+        parse_uses_attributes
 
         must_consume_eols
         return true
@@ -348,26 +348,28 @@ class Parser
 
       return false
 
-    method parse_uses_export->Logical
+    method parse_uses_attributes->UsesAttributes
       if (not consume(TokenType.symbol_open_bracket) or consume(TokenType.symbol_close_bracket))
-        return false
+        return UsesAttributes()
       endIf
 
       local should_export = false
+      local no_include    = false
       consume_eols
       while (reader.has_another and not reader.next_is(TokenType.symbol_close_bracket))
         local t = reader.peek
         local id = read_identifier
         which (id)
-          case "export":  should_export = true
-          others: throw t.error( "Illegal '$', expected 'export'." (id) )
+          case "export":    should_export = true
+          case "noInclude": no_include = true
+          others: throw t.error( "Illegal '$', expected 'export' or 'noInclude'." (id) )
         endWhich
         consume_eols
         consume( TokenType.symbol_comma )
         consume_eols
       endWhile
       must_consume( TokenType.symbol_close_bracket )
-      return should_export
+      return UsesAttributes( &=should_export, &=no_include )
 
     method parse_class_template
       local t = read  # 'class'
