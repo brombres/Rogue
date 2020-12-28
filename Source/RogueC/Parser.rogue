@@ -213,7 +213,7 @@ class Parser
       reader.position = 0  # rewind
 
     method read_module_id->String
-      local module_id = read_identifier
+      local module_id = read_identifier.after_any( '/' )
       if (module_id.contains('<'))
         local module_instance = Program.module_instance_lookup[ module_id ]
         require module_instance

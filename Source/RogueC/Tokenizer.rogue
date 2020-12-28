@@ -698,16 +698,46 @@ class Tokenizer
           elseIf (keyword_type is TokenType.meta_essential)
             return scan_essential_directive
           elseIf (keyword_type is TokenType.meta_uses)
-            # Change 'uses A/B' into 'uses A\nuses B'
-            consume_spaces
-            local first = true
-            while (first or consume('/'))
-              if (not first) add_new_token( TokenType.eol )
-              first = false
-              add_new_token( TokenType.meta_uses )
-              if (consume('$')) add_new_token( TokenType.placeholder_id, "$" + read_identifier )
-              else              add_new_token( TokenType.identifier, read_identifier )
+            local has_placeholder_id = false
+            local n = 0
+            while (reader.has_another(n) and reader.peek(n) != '\n')
+              if (reader.peek(n) == '$')
+                has_placeholder_id = true
+                escapeWhile
+              endIf
+              ++n
             endWhile
+            if (has_placeholder_id)
+              # uses A/$B
+              #   ->
+              # uses A
+              # uses $B
+              consume_spaces
+              local first = true
+              while (first or consume('/'))
+                if (first) first = false
+                else       add_new_token( TokenType.eol )
+                add_new_token( TokenType.meta_uses )
+                if (consume('$')) add_new_token( TokenType.placeholder_id, "$" + read_identifier )
+                else              add_new_token( TokenType.identifier, read_identifier )
+              endWhile
+            else
+              # uses A/B
+              #   ->
+              # uses "A/B"  # Not a string, just A/B combined into single identifier
+
+              use module_id=StringBuilder.pool
+                consume_spaces
+                local first = true
+                while (first or consume('/'))
+                  if (first) first = false
+                  else       module_id.print '/'
+                  module_id.print( read_identifier )
+                endWhile
+                add_new_token( TokenType.meta_uses )
+                add_new_token( TokenType.identifier, module_id->String )
+              endUse
+            endIf
             return true
           else
             return add_new_token( keyword_type )

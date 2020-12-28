@@ -562,7 +562,7 @@ $endIf
 
     method include_source( t:Token, filepath:String, &is_optional, &do_not_save_prefix, &from_command_line, &including_folder )->Logical
       # Preemptively (immediately) parses the given file.
-        local file = find_source_file( t, filepath, &=including_folder, &=is_optional, &=do_not_save_prefix )
+      local file = find_source_file( t, filepath, &=including_folder, &=is_optional, &=do_not_save_prefix )
       if (file is null)
         if (is_optional) return false
         local mesg = which{ including_folder:''No such folder "$".''(filepath) || ''No such file "$".'' (filepath) }

@@ -112,7 +112,6 @@ class Preprocessor
       local repeat_string_concatenation = false
       while (reader.has_another)
         local t = reader.read
-
         local t_type = t.type
         if (t.is_directive)
           if (t_type is TokenType.meta_define)
@@ -415,8 +414,10 @@ class Preprocessor
               nextIteration
 
             else
+              # Regular/non-template module ID
               local save_state = reader.save_state
-              local module_id = read_identifier
+              local qualified_module_id = read_identifier
+              local module_id = qualified_module_id.after_any( '/' )
               local uses_attributes = parse_uses_attributes
               if (uses_attributes.should_export)
                 Program.add_exported_module( cur_module, module_id )
@@ -429,7 +430,7 @@ class Preprocessor
               endWhile
 
               if (not uses_attributes.no_include)
-                RogueC.include_source( t, module_id, &is_optional )
+                RogueC.include_source( t, qualified_module_id, &is_optional )
               endIf
 
               local eol_t = reader.peek
