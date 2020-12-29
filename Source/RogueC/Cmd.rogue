@@ -7053,6 +7053,7 @@ class CmdMakeRequisite : Cmd
       return false
 
     method resolve( scope:Scope )->Cmd
+      # See Visitors.rogue : DependencyInjectionVisitor.on_enter(CmdMakeRequisite)
       return this
 endClass
 

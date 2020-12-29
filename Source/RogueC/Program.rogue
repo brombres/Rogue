@@ -1,7 +1,5 @@
 $include "Augment.rogue"
 
-class RequisiteItem( t:Token, type:Type, signature=null:String );
-
 class Program [essential singleton]
   PROPERTIES
     code_prefix  = "Rogue"
