@@ -323,7 +323,7 @@ class File
       return filepath
 
     method extension( filepath:String )->String
-      return filepath.after_last( '.' )
+      return File.filename( filepath ).after_last( '.' )
 
     method filename( filepath:String )->String
       filepath = expand_path( filepath )
