@@ -400,6 +400,15 @@ class StringBuilder : PrintWriter [essential]
       utf8.reserve( additional_bytes )
       return this
 
+    method reverse
+      # Reverses the characters in this StringBuilder.
+      use builder=StringBuilder.pool
+        builder.reserve( count )
+        builder.print( forEach in this step -1 )
+        clear
+        print builder
+      endUse
+
     method round_off_work_bytes
       if (work_bytes.remove_last >= '5')
         local i = work_bytes.count - 1
