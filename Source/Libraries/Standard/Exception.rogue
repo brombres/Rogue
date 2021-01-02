@@ -81,3 +81,12 @@ class IOError : Error;
 
 class SyntaxError : Error;
 
+class InvalidFormatError : Error
+  METHODS
+    method init( name:String, value:String )
+      prior.init( "Invalid format for '$': $" (name,value) )
+endClass
+
+class OverflowError : Error;
+
+class DivideByZeroError( message="Illegal division by zero." ) : Error;
