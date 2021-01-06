@@ -42,9 +42,11 @@ class Cmd
         return scope.resolve_call( this_type, CmdAccess(t,this,m_name), true )
       endIf
 
-      if (target_type.find_method( "init($)"(this_type.name) )...
-          or target_type.find_global_method( "create($)"(this_type.name)))
-        return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
+      if (not target_type.instance_of(this_type) or allow_implicit_narrowing)
+        if (target_type.find_method( "init($)"(this_type.name) )...
+            or target_type.find_global_method( "create($)"(this_type.name)))
+          return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
+        endIf
       endIf
 
       if (is_conversion)
@@ -400,7 +402,7 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
     method execute( vm:VM )->Value
-      local value = UndefinedValue
+      local value = UndefinedValue : Value
       if (not skip_initialization and local_info.initial_value)
         value = local_info.initial_value.execute( vm )
       endIf
@@ -451,7 +453,7 @@ class CmdMetacodeGlobalDeclaration : CmdStatement
       return CmdMetacodeGlobalDeclaration( t, local_info )
 
     method execute( vm:VM )->Value
-      local value = UndefinedValue
+      local value = UndefinedValue : Value
       if (local_info.initial_value)
         value = local_info.initial_value.execute( vm )
       endIf
