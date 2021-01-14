@@ -452,7 +452,7 @@ class Program [essential singleton]
           throw p.t.error( mesg )
         endIf
       endIf
-      type_Global.add_property( p )
+      type_Global.add_global( p )
 
     method resolve
       is_resolving = true

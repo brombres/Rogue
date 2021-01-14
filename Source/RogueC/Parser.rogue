@@ -379,14 +379,15 @@ class Parser
 
     method parse_routine
       local t = peek # 'routine'
-      local original_type = this_type
-      this_type = Program.get_type_reference( peek, "Global" )
-      parse_method( false, &first_token=TokenType.keyword_routine)
-      must_consume( TokenType.keyword_endRoutine )
-      if (not this_method and not this_type.method_templates)
-        throw t.error("Failed to parse routine")
-      endIf
-      this_type = original_type
+      temporarily this_type = Program.get_type_reference( peek, "Global" )
+        local attributes : Attributes
+        if (is_api_module) attributes = Attributes( Attribute.is_essential )
+        parse_method( &as_global, &first_token=TokenType.keyword_routine, &default_attributes=attributes )
+        must_consume( TokenType.keyword_endRoutine )
+        if (not this_method and not this_type.method_templates)
+          throw t.error("Failed to parse routine")
+        endIf
+      endTemporarily
 
     method parse_template_tokens( template:Template, end_type:TokenType )
       local is_api_class = is_api_module
@@ -849,11 +850,11 @@ class Parser
       if (consume(TokenType.keyword_GLOBAL))
         if (consume(TokenType.keyword_PROPERTIES))
           local attributes = parse_attributes
-          while (parse_properties(true, &default_attributes=attributes)) noAction
+          while (parse_properties(&as_global, &default_attributes=attributes)) noAction
           return true
         elseIf (consume(TokenType.keyword_METHODS))
           local attributes = parse_attributes
-          while (parse_method(true, &default_attributes=attributes)) noAction
+          while (parse_method(&as_global, &default_attributes=attributes)) noAction
           return true
         endIf
       endIf

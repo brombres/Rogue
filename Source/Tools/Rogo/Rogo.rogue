@@ -380,7 +380,7 @@ if (not buildfiles.count)
        |
        |    method dispatch_command
        |      local m = find_command( rogo_command )
-       |      require m
+       |      require m || "no such routine rogo_$()" (rogo_command)
        |
        |      local args = @[]
        |      forEach (arg in rogo_args)
@@ -392,10 +392,10 @@ if (not buildfiles.count)
        |        endWhich
        |      endForEach
        |      if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
-       |      m.call( Global, args )
+       |      m( args )
        |
        |    method find_command( name:String )->MethodInfo
-       |      return <<Global>>.find_method( rogo_prefix + name )
+       |      return <<Global>>.find_global_method( rogo_prefix + name )
        |
        |    method on_error
        |      local w = Console.width.or_smaller( 80 )
@@ -511,7 +511,7 @@ if (not buildfiles.count)
        |
        |  println "USAGE"
        |  local lines = String[]
-       |  forEach (m in <<Global>>.methods)
+       |  forEach (m in <<Global>>.global_methods)
        |    if (m.name.begins_with(Build.rogo_prefix))
        |      lines.add( "  " + get_syntax(m.name.after_first(Build.rogo_prefix)) )
        |    endIf
@@ -526,7 +526,7 @@ if (not buildfiles.count)
        |  if (Build.rogo_syntax.contains(m_name))
        |    return "rogo " + Build.rogo_syntax[ m_name ]
        |  else
-       |    local m = <<Global>>.find_method( Build.rogo_prefix + m_name )
+       |    local m = <<Global>>.find_global_method( Build.rogo_prefix + m_name )
        |    if (not m) return null
        |    local line = "rogo $" (m_name.replacing('_',' '))
        |    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))

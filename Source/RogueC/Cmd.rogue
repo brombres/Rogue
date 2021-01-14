@@ -3268,7 +3268,7 @@ class CmdElementAccess : Cmd
       else
         local args = CmdArgs()
         args.add( index )
-        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true )
+        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), &error_on_fail )
       endIf
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
