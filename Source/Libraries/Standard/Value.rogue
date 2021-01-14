@@ -88,6 +88,9 @@ class Value
       endIf
       return this
 
+    method at( index:Int32 )->Value
+      return get( index )
+
     method clear->this
       return this
 
@@ -1505,6 +1508,16 @@ class ValueTable : Value
 
       return ValueTable( result_data )
 
+    method add_all( other:Value )->this
+      if (other.is_table)
+        forEach (key in other.keys)
+          this[ key ] = other[ key ]
+        endForEach
+      else
+        prior.add_all( other )
+      endIf
+      return this
+
     method apply( fn:Function(Value)->Value )->Value
       local cur = data.first_entry
       while (cur)
@@ -1515,6 +1528,9 @@ class ValueTable : Value
       local result = fn( this )
       if (result is null) return NullValue
       else                return result
+
+    method at( index:Int32 )->Value
+      return data.at( index )
 
     method clear->this
       data.clear
