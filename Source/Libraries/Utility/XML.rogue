@@ -152,7 +152,7 @@ class XML
           builder.print( "<" )
           builder.print( name )
           if (attributes)
-            forEach (entry in attributes.reader)
+            forEach (entry in attributes.entries)
               builder.print( " " )
               builder.print( entry.key )
               builder.print( "=" )
