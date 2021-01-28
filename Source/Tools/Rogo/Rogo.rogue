@@ -662,6 +662,8 @@ endBlock
 if (needs_recompile)
   println "Recompiling $..." (buildfile)
 
+  update_old_buildfiles( buildfiles )
+
   # Collect info for config
   scan_and_rewrite( File(forEach in buildfiles), &skip_rewrite )
 
@@ -1117,4 +1119,71 @@ routine parse_filepath( parser:JSONParser )->String
   if (buffer.count == 0) buffer.print( parser.read )
 
   return buffer->String
+endRoutine
+
+routine update_old_buildfiles( buildfiles:Files )
+  local all_content = ""
+  all_content += File.load_as_string( forEach in buildfiles ) + "\n"
+  contingent
+    necessary (all_content.contains("find_method"))
+    necessary (all_content.contains(".methods"))
+    necessary (all_content.contains(".call( Global,"))
+
+    println "="*80
+    println @|ATTENTION
+             |
+             |Rogo buildfiles have been detected that use an outdated mechanism for calling
+             |routines via introspection. Rogo is rewriting those files to fix them. Backups
+             |will be stored in .rogo/OldBuildfiles. No further action is required.
+             |
+
+    local backup_folder = ".rogo/OldBuildfiles"
+    require File.create_folder( backup_folder )
+
+    forEach (filepath in buildfiles)
+      local content = File.load_as_string( filepath )
+      local updated_content = update_old_buildfile( content )
+      if (updated_content is not content)
+        println "Rewriting " + filepath
+        local backup_filepath = "$/$" (backup_folder,File.filename(filepath))
+        if (File.exists(backup_filepath))
+          local n = 2
+          while (File.exists("$/$-$"(backup_folder,n,File.filename(filepath)))) ++n
+          backup_filepath = "$/$-$" (backup_folder,n,File.filename(filepath))
+        endIf
+        println "  Saving original to $" (backup_filepath)
+        File.save( backup_filepath, content )
+        File.save( filepath, updated_content )
+      endIf
+    endForEach
+
+    println "="*80
+  endContingent
+endRoutine
+
+routine update_old_buildfile( content:String )->String
+  local is_modified = false
+  use builder=StringBuilder.pool
+    forEach (line in LineReader(content))
+      if (line.ends_with("require m"))
+        is_modified = true
+        line = line.before_first("require") + @|require m || "no such routine rogo_$()" (rogo_command)
+      endIf
+      if (line.contains("find_method"))
+        is_modified = true
+        line .= replacing( "find_method", "find_global_method" )
+      endIf
+      if (line.contains(".methods"))
+        is_modified = true
+        line .= replacing( ".methods", ".global_methods" )
+      endIf
+      if (line.contains(".call( Global,"))
+        is_modified = true
+        line .= replacing( ".call( Global,", "(" )
+      endIf
+      builder.println( line )
+    endForEach
+    if (is_modified) return builder->String
+  endUse
+  return content
 endRoutine
