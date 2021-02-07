@@ -768,7 +768,7 @@ augment Program
 
       writer.println @|  {
                       |    auto singleton = ROGUE_GET_SINGLETON(type);
-                      |    if (singleton) type->trace_fn( singleton );
+                      |    if (singleton) singleton->type->trace_fn( singleton );
                       |  }
                       |}
 
