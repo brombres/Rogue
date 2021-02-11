@@ -55,6 +55,37 @@ class Node<<$ExtendedNodeType>>
     method contains( node:$ExtendedNodeType )->Logical
       return (node and node.parent is this)
 
+    method detach( &preserve_next )
+      if (parent)
+        if (parent.first_child is this)
+          if (parent.last_child is this)
+            parent.@first_child = null
+            parent.@last_child = null
+          else
+            parent.@first_child = this.next
+          endIf
+        else
+          local cur = parent.first_child
+          while (cur)
+            local next_sibling = cur.next
+            if (next_sibling is this)
+              cur.@next = this.next
+              if (next_sibling is parent.last_child) parent.@last_child = cur
+              escapeWhile
+            endIf
+            cur = next_sibling
+          endWhile
+        endIf
+        --parent.count
+        parent.is_modified = true
+        @parent = null
+      endIf
+      if (not preserve_next)
+        @next = null
+        is_modified = true
+      endIf
+
+
     method dispatch_handle<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
       if (ThisType instanceOf $ExtendedNodeType)
         return visitor.handle( this )
@@ -79,7 +110,7 @@ class Node<<$ExtendedNodeType>>
     method insert( new_child:$ExtendedNodeType, before_index=0:Int32 )
       if (new_child is null) return
       if (new_child.parent is this) return
-      new_child._detach( &preserve_next )
+      new_child.detach( &preserve_next )
 
       local last_new_child = new_child.last_sibling
 
@@ -159,7 +190,7 @@ class Node<<$ExtendedNodeType>>
       return cur
 
     method remove( child:$ExtendedNodeType )->$ExtendedNodeType
-      if (child and child.parent is this) child._detach
+      if (child and child.parent is this) child.detach
       return child
 
     method remove_at( index:Int32 )->$ExtendedNodeType
@@ -203,7 +234,7 @@ class Node<<$ExtendedNodeType>>
       add( node )
 
     method set_next( node:$ExtendedNodeType )
-      if (next) next._detach
+      if (next) next.detach
       insert_next( node )
 
     method set_parent( new_parent:$ExtendedNodeType )
@@ -228,7 +259,7 @@ class Node<<$ExtendedNodeType>>
       # Returns (head,tail)
       local tail = next
       if (parent)
-        _detach
+        detach
         return (this as $ExtendedNodeType,parent.remove_children)
       else
         @next = null
@@ -253,36 +284,6 @@ class Node<<$ExtendedNodeType>>
           cur = cur.next
         endWhile
         builder.print ')'
-      endIf
-
-    method _detach( &preserve_next )
-      if (parent)
-        if (parent.first_child is this)
-          if (parent.last_child is this)
-            parent.@first_child = null
-            parent.@last_child = null
-          else
-            parent.@first_child = this.next
-          endIf
-        else
-          local cur = parent.first_child
-          while (cur)
-            local next_sibling = cur.next
-            if (next_sibling is this)
-              cur.@next = this.next
-              if (next_sibling is parent.last_child) parent.@last_child = cur
-              escapeWhile
-            endIf
-            cur = next_sibling
-          endWhile
-        endIf
-        --parent.count
-        parent.is_modified = true
-        @parent = null
-      endIf
-      if (not preserve_next)
-        @next = null
-        is_modified = true
       endIf
 
 endClass
