@@ -149,7 +149,9 @@ if (not buildfiles.count)
       builder.println ''    LAUNCHER_FOLDER   = "/usr/local/bin"''
       builder.println ''    ROGUEC_FLAGS      = "--debug"''
       builder.println ''    CPP_FLAGS_UNIX    = "-O0"''
+      builder.println ''                        # /O3 to optimize''
       builder.println ''    CPP_FLAGS_WINDOWS = "/Od"''
+      builder.println ''                        # /Ob2ity /GF /Gy to optimize''
 
       builder.println ...
         @|endAugment

@@ -8,7 +8,7 @@ class Build [singleton]
     ROGO_SRC            = Files( "Source", "Tools/Rogo/*.rogue" ).add( "Libraries/Standard/*" ) : Files
     ROGUEC_ROGUE_FLAGS  = ""
     ROGUEC_CPP_FLAGS    = "-Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
-    ROGUEC_CPP_OPTIMIZE = which{ System.is_windows:"/O2" || "-O3" } : String
+    ROGUEC_CPP_OPTIMIZE = which{ System.is_windows:"/Ob2ity /GF /Gy" || "-O3" } : String
     BINDIR              = "/usr/local/bin"
     CXX                 = "g++"
     SUDO_CMD            = ""
@@ -221,8 +221,8 @@ class Build [singleton]
       println "Compiling RogueC from C++ bootstrap source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( File.folder(ROGUEC_EXE) )
-      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" $ $$''...
-        (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,fix("Source/RogueC/Bootstrap/RogueC.cpp"),OUTFLAG,ROGUEC_EXE)
+      run ''$ $ $ -DDEFAULT_CXX="\\\"$\\\"" $ $$''...
+        (CXX,ROGUEC_CPP_OPTIMIZE,ROGUEC_CPP_FLAGS,DEFAULT_CXX,fix("Source/RogueC/Bootstrap/RogueC.cpp"),OUTFLAG,ROGUEC_EXE)
       if (File.exists("RogueC.obj")) File.delete( "RogueC.obj" )
       if (System.os == "Windows")
         run "type nul >> Source\\RogueC\\RogueC.rogue"
