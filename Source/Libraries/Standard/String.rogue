@@ -1420,6 +1420,7 @@ class String
 
     method to->Real64
       if (count == 0) return 0
+      if (this.contains(',')) return this.replacing(",","")->Real64
       return native( "strtod( (char*)$this->utf8, 0 )" )->Real64
 
     method to->String
