@@ -599,9 +599,8 @@ class ConsoleEvent( type:ConsoleEventType, x:Int32, y:Int32 ) [compound]
         case ConsoleEventType.SCROLL_UP,
              ConsoleEventType.SCROLL_DOWN
           return type->String
-        others
-          return "$($,$)" (type,x->Int32,y->Int32)
       endWhich
+      return "$($,$)" (type,x->Int32,y->Int32)
 
     method unicode->Character
       return Character(x)

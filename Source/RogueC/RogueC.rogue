@@ -1,5 +1,5 @@
-$define ROGUE_RELEASE_VERSION "1.7.8"
-$define ROGUE_RELEASE_DATE "November 4, 2020"
+$define ROGUE_RELEASE_VERSION "1.8.0"
+$define ROGUE_RELEASE_DATE "March 15, 2021"
 
 $include "Version.rogue" [optional]
 
