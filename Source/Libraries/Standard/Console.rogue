@@ -389,9 +389,6 @@ trace
     method peek_event->ConsoleEvent
       return events.first
 
-    method println( text:String, wrap:Logical )
-      println text.word_wrapped( this.width )
-
     method read->Character
       if (not has_another) return 0
 
