@@ -657,9 +657,9 @@ class Scope
       if (candidates.has_match) return candidates.match
 
 
-      # More specialized arg check (if every parameter of some method m2 has
-      # an equivalent or more specialized type than the corresponding arg in
-      # m1 then discard m1).
+      # More specialized arg check - find a method where every parameter type
+      # is either equivalent to or more specialized than the parameter type for
+      # every other method
       if (arg_count)
         if (candidates.available.count > 1)
           forEach (m1 in candidates.available)
@@ -669,13 +669,11 @@ class Scope
                   forEach (index of args)
                     local m1_arg_type = m1.parameters[index].type
                     local m2_arg_type = m2.parameters[index].type
-                    necessary (m2_arg_type.is_equivalent_or_more_specific_than(m1_arg_type))
+                    necessary (m1_arg_type.is_equivalent_or_more_specific_than(m2_arg_type))
                   endForEach
-                  sufficient true
                 endIf
               endForEach
-            unsatisfied
-              candidates.compatible.add( m1 )
+              candidates.compatible.add( m1 )  # m1 param types >= param types of all other methods
             endContingent
           endForEach
           if (candidates.compatible.count)

@@ -1,5 +1,5 @@
-$define ROGUE_RELEASE_VERSION "1.7.7"
-$define ROGUE_RELEASE_DATE "October 31, 2020"
+$define ROGUE_RELEASE_VERSION "1.8.0"
+$define ROGUE_RELEASE_DATE "March 15, 2021"
 
 $include "Version.rogue" [optional]
 
@@ -562,7 +562,7 @@ $endIf
 
     method include_source( t:Token, filepath:String, &is_optional, &do_not_save_prefix, &from_command_line, &including_folder )->Logical
       # Preemptively (immediately) parses the given file.
-        local file = find_source_file( t, filepath, &=including_folder, &=is_optional, &=do_not_save_prefix )
+      local file = find_source_file( t, filepath, &=including_folder, &=is_optional, &=do_not_save_prefix )
       if (file is null)
         if (is_optional) return false
         local mesg = which{ including_folder:''No such folder "$".''(filepath) || ''No such file "$".'' (filepath) }

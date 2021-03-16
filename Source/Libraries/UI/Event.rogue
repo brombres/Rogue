@@ -21,14 +21,14 @@ endClass
 
 class KeyEvent : Event
   PROPERTIES
-    keycode            : Int32
+    keycode            : Int32   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
     syscode            : Int32
     is_press           : Logical
     is_repeat          : Logical
     modifier_key_state : Int32
 
   METHODS
-    method init( keycode, syscode, is_press=false, is_repeat=false, modifier_key_state=Keyboard.modifier_key_state:Int32 )
+    method init( keycode, syscode, is_press=false, is_repeat=false, modifier_key_state=Keyboard.modifier_key_state )
 
     method cloned->KeyEvent
       return KeyEvent( keycode, syscode, is_press, is_repeat, modifier_key_state ).[ init(this) ]
@@ -86,6 +86,7 @@ class KeyEvent : Event
        return buffer->String
 
     method unicode->Character
+      if (keycode == Keycode.UNICODE) return syscode->Character
       return Keycode.keycode_to_unicode( keycode, is_shift_pressed )
 
 endClass

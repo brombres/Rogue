@@ -30,7 +30,6 @@ global config         : Value
 global cache          : Value
 global is_cache_modified : Logical
 global link_setting = false
-#global link_args = ""
 global package_manager = "apt"
 global package_manager_install = "sudo apt-get install"
 global package_manager_list    : String
@@ -145,9 +144,14 @@ if (not buildfiles.count)
                        |  # You can create a Local.mk file with overrides for these values, e.g.:
                        |  # LAUNCHER_FOLDER = "~/bin"
                        |  PROPERTIES
-      builder.println ''    PROJECT         = "$"'' (project_name)
-      builder.println ''    LAUNCHER_NAME   = "$"'' (project_name.to_lowercase)
-      builder.println ''    LAUNCHER_FOLDER = "/usr/local/bin"''
+      builder.println ''    PROJECT           = "$"'' (project_name)
+      builder.println ''    LAUNCHER_NAME     = "$"'' (project_name.to_lowercase)
+      builder.println ''    LAUNCHER_FOLDER   = "/usr/local/bin"''
+      builder.println ''    ROGUEC_FLAGS      = "--debug"''
+      builder.println ''    CPP_FLAGS_UNIX    = "-O0"''
+      builder.println ''                        # /O3 to optimize''
+      builder.println ''    CPP_FLAGS_WINDOWS = "/Od"''
+      builder.println ''                        # /Ob2ity /GF /Gy to optimize''
 
       builder.println ...
         @|endAugment
@@ -159,7 +163,7 @@ if (not buildfiles.count)
          |
          |routine launcher_folder->String
          |  local result = Build.LAUNCHER_FOLDER
-         |  result = File.expand_filepath( result )
+         |  result = File.expand_path( result )
          |  return File.without_trailing_separator( result )
          |endRoutine
          |
@@ -177,11 +181,12 @@ if (not buildfiles.count)
          |    if (source_files.any_newer_than(exe_filepath))
          |      local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
          |      if (source_files.any_newer_than(cpp_filepath))
-         |        execute "roguec $ --main --output=$ --target=Console,C++,$" (File.esc(src_filepath),File.esc(cpp_filepath),System.os)
+         |        execute "roguec $ $ --main --output=$ --target=Console,C++,$"...
+         |                (File.esc(src_filepath),Build.ROGUEC_FLAGS,File.esc(cpp_filepath),System.os)
          |      endIf
          |      if (System.is_windows)
          |        local libs = ""
-         |        local cc = "cl /EHsc /nologo $ /Fe$ $" (File.esc(cpp_filepath),File.esc(exe_filepath),libs)
+         |        local cc = "cl $ /EHsc /nologo $ /Fe$ $" (Build.CPP_FLAGS_WINDOWS,File.esc(cpp_filepath),File.esc(exe_filepath),libs)
          |        #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
          |        execute cc
          |      else
@@ -192,7 +197,8 @@ if (not buildfiles.count)
       builder.println @|        local libs = ""
     endIf
     builder.println ...
-        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$" (File.esc(cpp_filepath),File.esc(exe_filepath),libs)
+        @|        local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ $ -o $$"...
+         |          (Build.CPP_FLAGS_UNIX,File.esc(cpp_filepath),File.esc(exe_filepath),libs)
          |        execute cc
          |      endIf
          |    endIf
@@ -374,7 +380,7 @@ if (not buildfiles.count)
        |
        |    method dispatch_command
        |      local m = find_command( rogo_command )
-       |      require m
+       |      require m || "no such routine rogo_$()" (rogo_command)
        |
        |      local args = @[]
        |      forEach (arg in rogo_args)
@@ -386,15 +392,16 @@ if (not buildfiles.count)
        |        endWhich
        |      endForEach
        |      if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
-       |      m.call( Global, args )
+       |      m( args )
        |
        |    method find_command( name:String )->MethodInfo
-       |      return <<Global>>.find_method( rogo_prefix + name )
+       |      return <<Global>>.find_global_method( rogo_prefix + name )
        |
        |    method on_error
-       |      Console.error.println "=" * 79
+       |      local w = Console.width.or_smaller( 80 )
+       |      Console.error.println "=" * w
        |      Console.error.println rogo_error
-       |      Console.error.println "=" * 79
+       |      Console.error.println "=" * w
        |      on_exit
        |      System.exit 1
        |
@@ -402,9 +409,10 @@ if (not buildfiles.count)
        |      noAction
        |
        |    method on_command_not_found
-       |      println "=" * 79
+       |      local w = Console.width.or_smaller( 80 )
+       |      println "=" * w
        |      println "ERROR: No such command '$'." (rogo_args.first)
-       |      println "=" * 79
+       |      println "=" * w
        |      println
        |      rogo_command = "help"
        |      rogo_args.clear
@@ -493,16 +501,17 @@ if (not buildfiles.count)
        |    if (success)
        |      return
        |    else
-       |      println "=" * 79
+       |      local w = Console.width.or_smaller( 80 )
+       |      println "=" * w
        |      println "ERROR: No such command '$'." (command)
-       |      println "=" * 79
+       |      println "=" * w
        |      println
        |    endIf
        |  endIf
        |
        |  println "USAGE"
        |  local lines = String[]
-       |  forEach (m in <<Global>>.methods)
+       |  forEach (m in <<Global>>.global_methods)
        |    if (m.name.begins_with(Build.rogo_prefix))
        |      lines.add( "  " + get_syntax(m.name.after_first(Build.rogo_prefix)) )
        |    endIf
@@ -517,7 +526,7 @@ if (not buildfiles.count)
        |  if (Build.rogo_syntax.contains(m_name))
        |    return "rogo " + Build.rogo_syntax[ m_name ]
        |  else
-       |    local m = <<Global>>.find_method( Build.rogo_prefix + m_name )
+       |    local m = <<Global>>.find_global_method( Build.rogo_prefix + m_name )
        |    if (not m) return null
        |    local line = "rogo $" (m_name.replacing('_',' '))
        |    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
@@ -540,24 +549,43 @@ if (not buildfiles.count)
     if (project_name)
       # Create Source/ProjectName.rogue
       builder.clear
-      builder.println "#" + "=" * 79
+      builder.println "#" + "=" * 80
       builder.println "# $.rogue" (project_name)
       builder.println "# " + Date.today->String(&verbose)
-      builder.println "#" + "=" * 79
+      builder.println "#" + "=" * 80
+      builder.println
       builder.print   "$requireRogue "
       builder.println ''"$"'' ($rogueVersion)
       builder.println
+      builder.println "uses Utility/CommandLineParser"
       if (bitmap_option)
-        builder.println "uses Bitmap\n"
+        builder.println "uses Bitmap"
       endIf
+      builder.println
 
-      builder.println "$()" (project_name)
+      builder.println @|try
+      builder.println "  $( System.command_line_arguments )" (project_name)
+      builder.println @|catch (error:Error)
+                       |  local w = Console.width.or_smaller( 80 )
+                       |  Console.error.println "="*w
+                       |  Console.error.println "ERROR"
+                       |  Console.error.println error->String.word_wrapped(w-2).indented(2)
+                       |  Console.error.println "="*w
+                       |  System.exit 1
+                       |endTry
       builder.println
       builder.println "class $" (project_name)
       builder.println ...
         @|  METHODS
-         |    method init
-         |      trace
+         |    method init( args:String[] )
+         |      local command = CommandLineParser().
+         |      [
+         |        # option( "--flag", &alias="-f" )
+         |        # option( "--setting=",  &alias="-s" )
+         |      ].parse( System.command_line_arguments )
+         |
+         |      trace command
+         |      # has //options and possibly //args
          |endClass
 
       File.create_folder( "Source" )
@@ -565,9 +593,8 @@ if (not buildfiles.count)
     endIf
 
   else
-    local w = (Console.width - 1).or_smaller( 79 )
-    loop (w) do Console.error.print( '=' )
-    Console.error.println
+    local w = Console.width.or_smaller( 80 )
+    Console.error.println "=" * w
     local mesg = "ROGO ERROR\n\n"
     mesg += @|No standard build file exists (Build.rogue, BuildCore.rogue, BuildLocal.rogue)
     mesg += @| and no alternate specified with --build=<filename>.
@@ -634,6 +661,8 @@ endBlock
 
 if (needs_recompile)
   println "Recompiling $..." (buildfile)
+
+  update_old_buildfiles( buildfiles )
 
   # Collect info for config
   scan_and_rewrite( File(forEach in buildfiles), &skip_rewrite )
@@ -1090,4 +1119,71 @@ routine parse_filepath( parser:JSONParser )->String
   if (buffer.count == 0) buffer.print( parser.read )
 
   return buffer->String
+endRoutine
+
+routine update_old_buildfiles( buildfiles:Files )
+  local all_content = ""
+  all_content += File.load_as_string( forEach in buildfiles ) + "\n"
+  contingent
+    necessary (all_content.contains("find_method"))
+    necessary (all_content.contains(".methods"))
+    necessary (all_content.contains(".call( Global,"))
+
+    println "="*80
+    println @|ATTENTION
+             |
+             |Rogo buildfiles have been detected that use an outdated mechanism for calling
+             |routines via introspection. Rogo is rewriting those files to fix them. Backups
+             |will be stored in .rogo/OldBuildfiles. No further action is required.
+             |
+
+    local backup_folder = ".rogo/OldBuildfiles"
+    require File.create_folder( backup_folder )
+
+    forEach (filepath in buildfiles)
+      local content = File.load_as_string( filepath )
+      local updated_content = update_old_buildfile( content )
+      if (updated_content is not content)
+        println "Rewriting " + filepath
+        local backup_filepath = "$/$" (backup_folder,File.filename(filepath))
+        if (File.exists(backup_filepath))
+          local n = 2
+          while (File.exists("$/$-$"(backup_folder,n,File.filename(filepath)))) ++n
+          backup_filepath = "$/$-$" (backup_folder,n,File.filename(filepath))
+        endIf
+        println "  Saving original to $" (backup_filepath)
+        File.save( backup_filepath, content )
+        File.save( filepath, updated_content )
+      endIf
+    endForEach
+
+    println "="*80
+  endContingent
+endRoutine
+
+routine update_old_buildfile( content:String )->String
+  local is_modified = false
+  use builder=StringBuilder.pool
+    forEach (line in LineReader(content))
+      if (line.ends_with("require m"))
+        is_modified = true
+        line = line.before_first("require") + @|require m || "no such routine rogo_$()" (rogo_command)
+      endIf
+      if (line.contains("find_method"))
+        is_modified = true
+        line .= replacing( "find_method", "find_global_method" )
+      endIf
+      if (line.contains(".methods"))
+        is_modified = true
+        line .= replacing( ".methods", ".global_methods" )
+      endIf
+      if (line.contains(".call( Global,"))
+        is_modified = true
+        line .= replacing( ".call( Global,", "(" )
+      endIf
+      builder.println( line )
+    endForEach
+    if (is_modified) return builder->String
+  endUse
+  return content
 endRoutine

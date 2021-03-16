@@ -81,6 +81,7 @@ class Tokenizer
       TokenType.lookup        = Table<<String,TokenType>>()
 
       # Directives
+      TokenType.meta_auto_id         = define( DirectiveTokenType("$auto_id") )
       TokenType.meta_block           = define( DirectiveTokenType("$block") )
       TokenType.meta_endBlock        = define( DirectiveTokenType("$endBlock") )
       TokenType.meta_define          = define( DirectiveTokenType("$define") )
@@ -357,6 +358,10 @@ class Tokenizer
 
         local id = read_identifier
         which (id)
+          case "auto_id"
+            add_new_token( TokenType.identifier, Program.create_unique_id )
+            return null
+
           case "define"
             add_new_token( TokenType.meta_define )
 
@@ -393,7 +398,7 @@ class Tokenizer
           case "warning":             add_new_token( TokenType.meta_warning )
           case "essential":           scan_essential_directive; return null
           case "sourceFilepath":      add_new_token( TokenType.literal_string, next_filepath )
-          case "sourceLine":          add_new_token( TokenType.literal_int32, next_line )
+          case "sourceLine":          handle_source_line_directive
           case "block":               add_new_token( TokenType.meta_block )
           case "endBlock":            add_new_token( TokenType.meta_endBlock )
           case "join":                add_new_token( TokenType.meta_join )
@@ -555,6 +560,18 @@ class Tokenizer
         throw error( "Unexpected input '"+ch+"'." )
       endIf
 
+    method handle_source_line_directive
+      if (consume('('))
+        if (not consume(')'))
+          local line = scan_long
+          if (not consume(')')) throw error( "Closing ')' expected." )
+          next_line = line
+          reader.line = line
+          return
+        endIf
+      endIf
+        
+      add_new_token( TokenType.literal_int32, next_line )
 
     method next_is_hex_digit->Logical
       local ch = reader.peek
@@ -693,16 +710,46 @@ class Tokenizer
           elseIf (keyword_type is TokenType.meta_essential)
             return scan_essential_directive
           elseIf (keyword_type is TokenType.meta_uses)
-            # Change 'uses A/B' into 'uses A\nuses B'
-            consume_spaces
-            local first = true
-            while (first or consume('/'))
-              if (not first) add_new_token( TokenType.eol )
-              first = false
-              add_new_token( TokenType.meta_uses )
-              if (consume('$')) add_new_token( TokenType.placeholder_id, "$" + read_identifier )
-              else              add_new_token( TokenType.identifier, read_identifier )
+            local has_placeholder_id = false
+            local n = 0
+            while (reader.has_another(n) and reader.peek(n) != '\n')
+              if (reader.peek(n) == '$')
+                has_placeholder_id = true
+                escapeWhile
+              endIf
+              ++n
             endWhile
+            if (has_placeholder_id)
+              # uses A/$B
+              #   ->
+              # uses A
+              # uses $B
+              consume_spaces
+              local first = true
+              while (first or consume('/'))
+                if (first) first = false
+                else       add_new_token( TokenType.eol )
+                add_new_token( TokenType.meta_uses )
+                if (consume('$')) add_new_token( TokenType.placeholder_id, "$" + read_identifier )
+                else              add_new_token( TokenType.identifier, read_identifier )
+              endWhile
+            else
+              # uses A/B
+              #   ->
+              # uses "A/B"  # Not a string, just A/B combined into single identifier
+
+              use module_id=StringBuilder.pool
+                consume_spaces
+                local first = true
+                while (first or consume('/'))
+                  if (first) first = false
+                  else       module_id.print '/'
+                  module_id.print( read_identifier )
+                endWhile
+                add_new_token( TokenType.meta_uses )
+                add_new_token( TokenType.identifier, module_id->String )
+              endUse
+            endIf
             return true
           else
             return add_new_token( keyword_type )

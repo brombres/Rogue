@@ -768,7 +768,7 @@ augment Program
 
       writer.println @|  {
                       |    auto singleton = ROGUE_GET_SINGLETON(type);
-                      |    if (singleton) type->trace_fn( singleton );
+                      |    if (singleton) singleton->type->trace_fn( singleton );
                       |  }
                       |}
 
@@ -4041,12 +4041,12 @@ endAugment
 augment CmdSelect
   METHODS
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
-      write_cpp( cases.reader, writer, &first_case )
+      write_cpp( cases.iterator, writer, &first_case )
 
-    method write_cpp( reader:ListReader<<CmdSelectCase>>, writer:CPPWriter, &first_case )
-      local select_case = reader.read
+    method write_cpp( iterator:ListIterator<<CmdSelectCase>>, writer:CPPWriter, &first_case )
+      local select_case = iterator.read
 
-      if (not reader.has_another)
+      if (not iterator.has_another)
         # Final value
         if (value_type.is_reference) writer.print("ROGUE_ARG(")
         select_case.value.write_cpp( writer )
@@ -4092,7 +4092,7 @@ augment CmdSelect
 
       writer.print( ") : " )
 
-      write_cpp( reader, writer )
+      write_cpp( iterator, writer )
 
       writer.print ")"
 endAugment

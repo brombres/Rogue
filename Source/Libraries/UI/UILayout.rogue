@@ -1,20 +1,41 @@
 module UI
 
 $localMacro UI_FACTORY_METHODS(name,TypeName)
-    method name( content=null:UIComponent )->TypeName
-      return TypeName( content )
+    method name->TypeName
+      return TypeName()
 
     method name( size:XY )->TypeName
       return TypeName( size )
 
-    method name( content:UIComponent, size:XY )->TypeName
-      return TypeName( content, size )
+    method name( content:UIComponent )->TypeName
+      return TypeName( content )
+
+    method name( c1:UIComponent, c2:UIComponent, c3=null:UIComponent, c4=null:UIComponent )->TypeName
+      local result = TypeName( c1 )
+      result.add( c2 )
+      if (c3) result.add( c3 )
+      if (c4) result.add( c4 )
+      return result
+
+    method name( c1:UIComponent, c2:UIComponent, c3:UIComponent, c4:UIComponent, c5:UIComponent,
+                 c6=null:UIComponent, c7=null:UIComponent, c8=null:UIComponent )->TypeName
+      local result = name( c1, c2, c3, c4 )
+      result.add( c5 )
+      if (c6) result.add( c6 )
+      if (c7) result.add( c7 )
+      return result
 $endMacro
 
-class UILayout : UIView
+class UILayout : UIComponent
   GLOBAL METHODS
-    UI_FACTORY_METHODS( absolute, UIAbsoluteLayout )
-    UI_FACTORY_METHODS( h, UIColumnLayout )
-    UI_FACTORY_METHODS( v, UIRowLayout )
+    UI_FACTORY_METHODS( h, UIHorizontalLayout )
+    UI_FACTORY_METHODS( v, UIVerticalLayout )
+    UI_FACTORY_METHODS( xy, UIXYLayout )
+
+  PROPERTIES
+
+  METHODS
+    method update_layout_size( frame_size:XY, content_size:XY ) [override]
+      size = frame_size
 endClass
 

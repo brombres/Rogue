@@ -100,18 +100,9 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       if (discard_list) remove( forEach in discard_list )
 
-    method entries( list=null:TableEntry<<$KeyType,$ValueType>>[] )->TableEntry<<$KeyType,$ValueType>>[]
-      # Returns a list of table entries.
-      ensure list( count )
-      list.reserve( count )
-
-      local cur = first_entry
-      while (cur)
-        list.add( cur )
-        cur = cur.next_entry
-      endWhile
-
-      return list
+    method entries->TableEntriesIterator<<$KeyType,$ValueType>>
+      # Returns an iterator compound.
+      return TableEntriesIterator<<$KeyType,$ValueType>>( first_entry )
 
     method is_empty->Logical
       return (count == 0)
@@ -169,18 +160,9 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
-    method keys( list=null:$KeyType[] )->$KeyType[]
-      # Returns a list of table keys.
-      ensure list( count )
-      list.reserve( count )
-
-      local cur = first_entry
-      while (cur)
-        list.add( cur.key )
-        cur = cur.next_entry
-      endWhile
-
-      return list
+    method keys->TableKeysIterator<<$KeyType,$ValueType>>
+      # Returns an iterator compound.
+      return TableKeysIterator<<$KeyType,$ValueType>>( first_entry )
 
     method locate( query:(Function($ValueType)->Logical) )->$KeyType[]
       local result = $KeyType[]
@@ -279,6 +261,17 @@ class Table<<$KeyType,$ValueType>>
 
       return entry
 
+    method remove_at( index:Int32 )->$ValueType
+      if (index < 0 or index >= count)
+        local zero_result : $ValueType
+        return zero_result
+      endIf
+
+      local cur = first_entry
+      loop (index) cur = cur.next_entry
+      remove( cur )
+
+      return cur.value
 
     method set( key:$KeyType, value:$ValueType )->this
       local entry = find( key )
@@ -309,7 +302,7 @@ class Table<<$KeyType,$ValueType>>
     method sort( compare_fn:(Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical) )->this
       if (count <= 1) return this
 
-      local list = entries
+      local list = entries.to_list
       list.sort( compare_fn )
       forEach (i in 0..<(list.count-1))
         list[i].next_entry       = list[i+1]
@@ -355,27 +348,9 @@ class Table<<$KeyType,$ValueType>>
         endForEach
       endIf
 
-    method values( list=null:$ValueType[] )->$ValueType[]
-      # Returns a list of table keys.
-      ensure list( count )
-      list.reserve( count )
-
-      local cur = first_entry
-      while (cur)
-        list.add( cur.value )
-        cur = cur.next_entry
-      endWhile
-
-      return list
-
-    method reader->TableReader<<$KeyType,$ValueType>>
-      return TableReader<<$KeyType,$ValueType>>(this)
-
-    method key_reader->TableKeyReader<<$KeyType,$ValueType>>
-      return TableKeyReader<<$KeyType,$ValueType>>(this)
-
-    method value_reader->TableValueReader<<$KeyType,$ValueType>>
-      return TableValueReader<<$KeyType,$ValueType>>(this)
+    method values->TableValuesIterator<<$KeyType,$ValueType>>
+      # Returns an iterator compound.
+      return TableValuesIterator<<$KeyType,$ValueType>>( first_entry )
 
     method _adjust_entry_order( entry:TableEntry<<$KeyType,$ValueType>> )
       if (first_entry is last_entry) return # still in order, only one entry
@@ -496,72 +471,78 @@ class TableEntry<<$KeyType,$ValueType>>
       return value
 endClass
 
-
-class TableReader<<$KeyType,$ValueType>> : Reader<<TableEntry<<$KeyType,$ValueType>>>>
-  PROPERTIES
-    table     : Table<<$KeyType,$ValueType>>
-    cur_entry : TableEntry<<$KeyType,$ValueType>>
-
+class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueType>> ) [compound]
   METHODS
-    method init (table)
-      cur_entry = table.first_entry
-
     method has_another->Logical
-      return cur_entry?
+      return cur?
 
-    method peek->TableEntry<<$KeyType,$ValueType>>
-      return cur_entry
+    method read->TableEntry<<$KeyType,$ValueType>> [mutating]
+      local result = cur
+      cur = cur.next_entry
+      return result
 
-    method read->TableEntry<<$KeyType,$ValueType>>
-      local result = cur_entry
-      cur_entry = cur_entry.next_entry
-      ++@position
+    method read_another->TableEntry<<$KeyType,$ValueType>>? [mutating]
+      if (not cur) return null
+      local result = cur
+      cur = cur.next_entry
+      return result
+
+    method to->TableEntry<<$KeyType,$ValueType>>[]
+      return to_list
+
+    method to_list->TableEntry<<$KeyType,$ValueType>>[]
+      local result = TableEntry<<$KeyType,$ValueType>>[]
+      result.add( forEach in this )
       return result
 endClass
 
-
-class TableKeyReader<<$KeyType,$ValueType>> : Reader<<$KeyType>>
-  PROPERTIES
-    table     : Table<<$KeyType,$ValueType>>
-    cur_entry : TableEntry<<$KeyType,$ValueType>>
-
+class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueType>> ) [compound]
   METHODS
-    method init (table)
-      cur_entry = table.first_entry
-
     method has_another->Logical
-      return cur_entry?
+      return cur?
 
-    method peek->$KeyType
-      return cur_entry.key
+    method read->$KeyType [mutating]
+      local result = cur.key
+      cur = cur.next_entry
+      return result
 
-    method read->$KeyType
-      local result = cur_entry.key
-      cur_entry = cur_entry.next_entry
-      ++@position
+    method read_another->$KeyType? [mutating]
+      if (not cur) return null
+      local result = cur.key
+      cur = cur.next_entry
+      return result
+
+    method to->$KeyType[]
+      return to_list
+
+    method to_list->$KeyType[]
+      local result = $KeyType[]
+      result.add( forEach in this )
       return result
 endClass
 
-
-class TableValueReader<<$KeyType,$ValueType>> : Reader<<$ValueType>>
-  PROPERTIES
-    table     : Table<<$KeyType,$ValueType>>
-    cur_entry : TableEntry<<$KeyType,$ValueType>>
-
+class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueType>> ) [compound]
   METHODS
-    method init (table)
-      cur_entry = table.first_entry
-
     method has_another->Logical
-      return cur_entry?
+      return cur?
 
-    method peek->$ValueType
-      return cur_entry.value
+    method read->$ValueType [mutating]
+      local result = cur.value
+      cur = cur.next_entry
+      return result
 
-    method read->$ValueType
-      local result = cur_entry.value
-      cur_entry = cur_entry.next_entry
-      ++@position
+    method read_another->$ValueType? [mutating]
+      if (not cur) return null
+      local result = cur.value
+      cur = cur.next_entry
+      return result
+
+    method to->$ValueType[]
+      return to_list
+
+    method to_list->$ValueType[]
+      local result = $ValueType[]
+      result.add( forEach in this )
       return result
 endClass
 

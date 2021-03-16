@@ -36,6 +36,12 @@ class PrintWriter [aspect]
     method println( value:Real32 )->this                       [abstract]
     method println( value:Object )->this                       [abstract]
     method println( value:String )->this                       [abstract]
+
+    method println( text:String, wrap:Logical )
+      println text.word_wrapped( Console.width )
+
+    method println( text:String, wrap:Int32 )
+      println text.word_wrapped( Console.width.or_smaller(wrap) )
 endClass
 
 class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]

@@ -1,0 +1,55 @@
+module UI
+
+class UIContentSizer( container_size:XY, cursor=XY.zero:XY, limits=XY.zero:XY, row_height=0:Real64 ) [compound]
+  METHODS
+    method available_width->Real64
+      return (container_size.x - cursor.x)
+
+    method can_fit( component:UIComponent )->Logical
+      return cursor.x + component.size.x <= container_size.x
+
+    method placing( component:UIComponent )->UIContentSizer
+      block cursor, limits, row_height
+        local component_size = component.size
+        cursor += component_size.xv
+        row_height .= or_larger( component_size.y )
+        limits .= or_larger( XY(cursor.x,cursor.y+row_height) )
+        return UIContentSizer( container_size, cursor, limits, row_height )
+      endBlock
+
+    method with_newline( min_row_height=0:Real64 )->UIContentSizer
+      local new_cursor = XY( 0, cursor.y+row_height.or_larger(min_row_height) )
+      return UIContentSizer( container_size, new_cursor, limits.or_larger(XY(cursor.x,new_cursor.y)), 0 )
+endClass
+
+class UIContentPlacer( bounds:Box, cursor=XY.zero:XY, row_height=0:Real64 ) [compound]
+  METHODS
+    method can_fit( component:UIComponent )->Logical
+      return cursor.x + component.size.x <= bounds.size.x
+
+    method placing( component:UIComponent )->UIContentPlacer
+      block cursor, row_height
+        local component_size = component.size
+        component.update_layout_bounds( Box(bounds.position+cursor,component_size) )
+        cursor += component_size.xv
+        row_height .= or_larger( component_size.y )
+        return UIContentPlacer( bounds, cursor, row_height )
+      endBlock
+
+    method with_newline( min_row_height=0:Real64 )->UIContentPlacer
+      local new_cursor = XY( 0, cursor.y+row_height.or_larger(min_row_height) )
+      return UIContentPlacer( bounds, new_cursor, 0 )
+endClass
+
+class UIIntervalPlacement( container:UIComponent, delta:XY, cursor=XY.zero:XY, limits=XY.zero:XY ) [compound]
+  METHODS
+    method placing( component:UIComponent )->UIIntervalPlacement
+      component.position = cursor
+      block cursor, limits
+        limits .= or_larger( cursor + component.size )
+        cursor += component.size * delta
+        return UIIntervalPlacement( container, delta, cursor, limits )
+      endBlock
+endClass
+
+

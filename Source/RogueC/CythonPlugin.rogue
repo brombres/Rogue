@@ -478,7 +478,7 @@ augment Program
 
     method cy_write_delegate_thunk_pointers (writer:CPPWriter, prefix="":String, suffix="":String)
       if (not writer) return
-      forEach (cyclass in cy_delegates.value_reader)
+      forEach (cyclass in cy_delegates.values)
         local m = cyclass.funcs["call"][0]
         local func = find_function_root(cyclass.type)
         require func
@@ -1056,7 +1056,7 @@ augment Program
         writer.println "    pass # Aspect:$" (type.is_aspect)
         if (wrapped_types.contains(type))
           local cls = wrapped_types[type]
-          forEach (p in cls.properties.value_reader)
+          forEach (p in cls.properties.values)
             if (p.is_static) nextIteration
             writer.println "    $ $" (p.ctype, p.prop.cpp_name)
           endForEach
@@ -1076,8 +1076,8 @@ augment Program
       writer.indent+=2
 
       local signatures = Set<<String>>()
-      forEach (cyclass in wrapped_types.value_reader)
-        forEach (fi in cyclass.funcs.value_reader)
+      forEach (cyclass in wrapped_types.values)
+        forEach (fi in cyclass.funcs.values)
           forEach (f in fi)
             local m = f.real_method
             local sig = m.cpp_typedef
@@ -1099,9 +1099,9 @@ augment Program
       endForEach
 
       signatures.clear
-      forEach (cyclass in wrapped_types.value_reader)
+      forEach (cyclass in wrapped_types.values)
         writer.println('# cyclass $ $' (cyclass.pytype, cyclass.type))
-        forEach (fi in cyclass.funcs.value_reader)
+        forEach (fi in cyclass.funcs.values)
           forEach (f in fi)
             local sig = '$ $ ($) except +PyRogue_handle_rogue_exception' (f.cproto_return, f.cname, ", ".join(f.cproto_params))
             if (signatures.contains(sig)) nextIteration
@@ -1120,7 +1120,7 @@ augment Program
 
       writer.println "# --- Backing variables for global properties ---"
       writer.println 'cdef extern from "$":' (filepath+".h")
-      forEach (cyclass in wrapped_types.value_reader)
+      forEach (cyclass in wrapped_types.values)
         forEach (p in cyclass.properties)
           if (not p.is_static) nextIteration
           writer.println "  cdef extern $ $" (p.ctype, p.cname)
@@ -1258,7 +1258,7 @@ augment Program
 
     method cy_write_delegate_thunks (writer:CPPWriter)
       writer.println "# Delegate thunks"
-      forEach (ccls in cy_delegates.value_reader)
+      forEach (ccls in cy_delegates.values)
         local m = ccls.funcs['call'][0]
         local j = 0
         local params = String[]
@@ -1312,7 +1312,7 @@ augment Program
         endIf
         prev = cyclasses.count - sorted_types.count
         local ss = Set<<Type>>()
-        forEach (t in cyclasses.value_reader)
+        forEach (t in cyclasses.values)
           ss.add(t.type)
         endForEach
         ss = ss.difference(done)
@@ -1320,7 +1320,7 @@ augment Program
         #  println t
         #endForEach
         #trace sorted_types.count, cyclasses.count
-        forEach (t in cyclasses.value_reader)
+        forEach (t in cyclasses.values)
           if (done.contains(t.type)) nextIteration
           local ok = false
           if (t.type.base_types.count == 0)
@@ -1418,7 +1418,7 @@ augment Program
         writer.println
 
         # Iterate over each method name; write the method (and its overloads)
-        forEach (fi in cyclass.funcs.value_reader)
+        forEach (fi in cyclass.funcs.values)
           local constructor = fi[0].is_initializer
           local overloading = fi.count > 1 or constructor
           # We always overload constructors.  Why?  I don't remember anymore!
@@ -1542,7 +1542,7 @@ augment Program
       local rglobal = Program.type_lookup["Global"]
       local cyglobal = cyclasses[rglobal]
       if rglobal and cyglobal
-        forEach (fi in cyglobal.funcs.value_reader)
+        forEach (fi in cyglobal.funcs.values)
           local constructor = fi[0].is_initializer
           if (constructor) nextIteration
           writer.println "def $ (*args, **kwargs):" (fi[0].pyname)

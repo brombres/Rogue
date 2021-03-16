@@ -42,9 +42,11 @@ class Cmd
         return scope.resolve_call( this_type, CmdAccess(t,this,m_name), true )
       endIf
 
-      if (target_type.find_method( "init($)"(this_type.name) )...
-          or target_type.find_global_method( "create($)"(this_type.name)))
-        return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
+      if (not target_type.instance_of(this_type) or allow_implicit_narrowing)
+        if (target_type.find_method( "init($)"(this_type.name) )...
+            or target_type.find_global_method( "create($)"(this_type.name)))
+          return CmdAccess( t, target_type.name, CmdArgs(this) ).resolve( scope )
+        endIf
       endIf
 
       if (is_conversion)
@@ -400,7 +402,7 @@ class CmdLocalDeclaration : CmdStatement
       endIf
 
     method execute( vm:VM )->Value
-      local value = UndefinedValue
+      local value = UndefinedValue : Value
       if (not skip_initialization and local_info.initial_value)
         value = local_info.initial_value.execute( vm )
       endIf
@@ -451,7 +453,7 @@ class CmdMetacodeGlobalDeclaration : CmdStatement
       return CmdMetacodeGlobalDeclaration( t, local_info )
 
     method execute( vm:VM )->Value
-      local value = UndefinedValue
+      local value = UndefinedValue : Value
       if (local_info.initial_value)
         value = local_info.initial_value.execute( vm )
       endIf
@@ -1398,7 +1400,7 @@ class CmdForEach : CmdControlStructure
             if (first_cmd) throw t.error( "'forEach' cannot specify a 'from' when iterating over a reader-type collection." )
             local m_has_another0 = type.find_method( "has_another()" )
             local m_read = type.find_method( "read()" )
-            if (not m_has_another0 or not m_read) throw collection.t.error( "Collection implements neither count()/get() nor has_another()/read()." )
+            if (not m_has_another0 or not m_read) throw collection.t.error( "Collection defines neither count()/get() nor has_another()/read()." )
             local m_has_another = m_has_another0.returns<<Logical>>
             local context = @[ Value(obj) ]
             v_index.value = Value(0)
@@ -1514,7 +1516,18 @@ class CmdForEach : CmdControlStructure
         return result.resolve( scope )
 
       else
-        # commandBlock
+        # Using read_another:
+        #   local reader = expression
+        #   local next = reader.read_another
+        #   local index  = 0
+        #   while (next.exists)
+        #     local control_var = next.value
+        #     next = reader.read
+        #     statements
+        #     ++index
+        #   endWhile
+        #
+        # Using has_another+read:
         #   local reader = expression
         #   local index  = 0
         #   while (reader.has_another)
@@ -1526,12 +1539,14 @@ class CmdForEach : CmdControlStructure
           throw first_cmd.t.error( "'forEach' cannot specify a 'from' when iterating over a reader-type collection." )
         endIf
 
+        local m_read_another = collection_type.find_method("read_another()")
         local has_another = (collection_type.find_property("has_another") or collection_type.find_method("has_another()"))
         local m_read  = collection_type.find_method("read()")
-        if (not has_another or not m_read)
-          throw collection.t.error( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at) or a reader (.has_another, .read)." )
+        if (not m_read_another and (not has_another or not m_read))
+          throw collection.t.error( "Illegal iteration target - forEach requires either an indexed collection (.count, .get/.at), an iterator (.read_another) or a reader (.has_another, .read)." )
         endIf
-        if (not m_read.return_type) throw collection.t.error( "Object's read() method does not return a value." )
+        if (m_read_another and not m_read_another.return_type) throw collection.t.error( "Target's read_another() method does not return a value." )
+        if (m_read and not m_read.return_type) throw collection.t.error( "Target's read() method does not return a value." )
         if (step_cmd)
           throw step_cmd.t.error( "Cannot specify a step size for a reader - only for an indexed collection." )
         endIf
@@ -1542,22 +1557,45 @@ class CmdForEach : CmdControlStructure
           index_var = Local( t, index_var_name, Program.type_Int32, CmdLiteralInt32(t,0) )
         endIf
 
-        if (control_var_name)
-          local control_var = Local( t, control_var_name, m_read.return_type,
-            CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
-          statements.insert( CmdLocalDeclaration(collection.t,control_var) )
-        elseIf (control_var_tuple)
-          local control_tuple = CmdAssign(control_var_tuple.t, control_var_tuple, ...
-            CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
-          statements.insert(control_tuple)
+        local next_var : Local
+        if (m_read_another)
+          next_var = Local( t, Program.create_unique_id, null, CmdAccess(t,reader_var.name,"read_another") )
+          statements.insert( CmdAssign(t,next_var,CmdAccess(t,reader_var.name,"read_another")) )
+          if (control_var_name)
+            local control_var = Local( t, control_var_name, null,
+            CmdAccess(t,CmdAccess(t,next_var.name),"value")  )
+            statements.insert( CmdLocalDeclaration(collection.t,control_var) )
+          elseIf (control_var_tuple)
+            local control_tuple = CmdAssign(control_var_tuple.t, control_var_tuple, ...
+              CmdAccess(t,CmdAccess(t,control_var_name),"value")  )
+            statements.insert(control_tuple)
+          endIf
         else
-          statements.insert( CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+          if (control_var_name)
+            local control_var = Local( t, control_var_name, m_read.return_type,
+              CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+            statements.insert( CmdLocalDeclaration(collection.t,control_var) )
+          elseIf (control_var_tuple)
+            local control_tuple = CmdAssign(control_var_tuple.t, control_var_tuple, ...
+              CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+            statements.insert(control_tuple)
+          else
+            statements.insert( CmdAccess(collection.t,CmdAccess(collection.t,reader_var.name),"read")  )
+          endIf
         endIf
 
         local rt = reader_var.t
-        local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, CmdAccess(rt,CmdReadLocal(rt,reader_var),"has_another"), statements )
+
+        local upkeep : Cmd
+        if (m_read_another)
+          upkeep = CmdAccess( rt, CmdReadLocal(rt,next_var), "exists" )
+        else
+          upkeep = CmdAccess( rt, CmdReadLocal(rt,reader_var), "has_another" )
+        endIf
+        local cmd_loop = CmdGenericLoop( t, CmdControlStructure.type_forEach, upkeep, statements )
         cmd_loop.set_control_logic( this )
         cmd_loop.add_control_var( reader_var )
+        if (m_read_another) cmd_loop.add_control_var( next_var )
         if (index_var)
           cmd_loop.add_control_var( index_var )
           cmd_loop.add_upkeep( CmdStepLocal(t,index_var,1) )
@@ -3230,7 +3268,7 @@ class CmdElementAccess : Cmd
       else
         local args = CmdArgs()
         args.add( index )
-        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), true )
+        return scope.resolve_call( context_type, CmdAccess(t,context,"get",args), &error_on_fail )
       endIf
 
     method resolve_assignment( scope:Scope, new_value:Cmd )->Cmd
@@ -3387,6 +3425,9 @@ class CmdAssign : Cmd
 
     method init( t, local_info:Local, new_value )
       target = CmdAccess( t, local_info.name )
+
+    method init( t, name:String, new_value )
+      target = CmdAccess( t, name )
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
@@ -4395,6 +4436,41 @@ class CmdNegate : CmdUnary
     method suffix_symbol->String
       return ")"
 endClass
+
+
+#{
+class CmdGrouping : CmdUnary
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdGrouping( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      return operand.execute(vm)
+
+    method fn_name->String
+      return "operator()"
+
+    method implicit_type( scope:Scope )->Type
+      return operand.implicit_type(scope)
+
+    method prefix_symbol->String
+      return "("
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      return operand
+
+    method resolve_for_operand_type( scope:Scope, operand_type:Type )->Cmd
+      if (operand_type.has_method_named("operator()"))
+        return CmdAccess( t, operand, "operator()" ).resolve( scope )
+      else
+        return operand
+      endIf
+
+    method suffix_symbol->String
+      return ")"
+endClass
+}#
 
 
 #------------------------------------------------------------------------------
@@ -7014,6 +7090,7 @@ class CmdMakeRequisite : Cmd
       return false
 
     method resolve( scope:Scope )->Cmd
+      # See Visitors.rogue : DependencyInjectionVisitor.on_enter(CmdMakeRequisite)
       return this
 endClass
 

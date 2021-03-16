@@ -48,8 +48,12 @@ class DependencyInjectionVisitor : Visitor
         local sig = pattern.after_first('.')
 
         if (sig == "*")
-          forEach (r in req_type.global_method_list) r.make_essential
-          forEach (m in req_type.method_list)        m.make_essential
+          forEach (r in req_type.global_method_list)
+            if (not r.is_deprecated) r.make_essential
+          endForEach
+          forEach (m in req_type.method_list)
+            if (not m.is_deprecated) m.make_essential
+          endForEach
 
         elseIf (sig.contains('('))
           local m = req_type.find_method( sig )

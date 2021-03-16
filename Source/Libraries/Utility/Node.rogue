@@ -12,28 +12,6 @@
 #==============================================================================
 module Node
 
-$macro forEachChild(cur,node,command)
-  block
-    local cur = node.first_child
-    while (cur)
-      command
-      cur = cur.next
-    endWhile
-  endBlock
-$endMacro
-
-$macro forEachChild(cur,node)
-  block
-    local cur = node.first_child
-    while (cur)
-$endMacro
-
-$macro endForEachChild(cur)
-      cur = cur.next
-    endWhile
-  endBlock
-$endMacro
-
 class Node<<$ExtendedNodeType>>
   PROPERTIES
     parent      : $ExtendedNodeType
@@ -60,10 +38,11 @@ class Node<<$ExtendedNodeType>>
       # Recursively traverse this node and all its children, calling fn(node) on each.
       # If fn(node) ever returns false then the traversal will abort.
       if (not fn(this as $ExtendedNodeType)) return false
-      forEachChild (cur,this)
-        if (not cur.apply(fn)) return false
-      endForEachChild (cur)
+      if (not (forEach in this).apply(fn)) return false
       return true
+
+    method children->NodeIterator<<$ExtendedNodeType>>
+      return NodeIterator<<$ExtendedNodeType>>( first_child )
 
     method clear
       remove_children
@@ -75,6 +54,37 @@ class Node<<$ExtendedNodeType>>
 
     method contains( node:$ExtendedNodeType )->Logical
       return (node and node.parent is this)
+
+    method detach( &preserve_next )
+      if (parent)
+        if (parent.first_child is this)
+          if (parent.last_child is this)
+            parent.@first_child = null
+            parent.@last_child = null
+          else
+            parent.@first_child = this.next
+          endIf
+        else
+          local cur = parent.first_child
+          while (cur)
+            local next_sibling = cur.next
+            if (next_sibling is this)
+              cur.@next = this.next
+              if (next_sibling is parent.last_child) parent.@last_child = cur
+              escapeWhile
+            endIf
+            cur = next_sibling
+          endWhile
+        endIf
+        --parent.count
+        parent.is_modified = true
+        @parent = null
+      endIf
+      if (not preserve_next)
+        @next = null
+        is_modified = true
+      endIf
+
 
     method dispatch_handle<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
       if (ThisType instanceOf $ExtendedNodeType)
@@ -100,8 +110,7 @@ class Node<<$ExtendedNodeType>>
     method insert( new_child:$ExtendedNodeType, before_index=0:Int32 )
       if (new_child is null) return
       if (new_child.parent is this) return
-
-      new_child._detach( &preserve_next )
+      new_child.detach( &preserve_next )
 
       local last_new_child = new_child.last_sibling
 
@@ -130,11 +139,13 @@ class Node<<$ExtendedNodeType>>
         cur.@parent = this as $ExtendedNodeType
       endWhile
 
+      this.is_modified = true
+
       cur = new_child
-      cur.mark_modified
+      cur.is_modified = true
       while (cur is not last_new_child)
         cur = cur.next
-        cur.mark_modified
+        cur.is_modified = true
       endWhile
 
     method insert_next( new_sibling:$ExtendedNodeType )
@@ -158,14 +169,17 @@ class Node<<$ExtendedNodeType>>
 
       cur = this.next
       loop (mod_count)
-        cur.mark_modified
+        cur.is_modified = true
         cur = cur.next
       endLoop
 
-    method mark_modified
-      if (is_modified) return
-      is_modified = true
-      if (parent) parent.mark_modified
+    method iterator->NodeIterator<<$ExtendedNodeType>>
+      return NodeIterator<<$ExtendedNodeType>>( this as $ExtendedNodeType )
+
+    method set_is_modified( setting:Logical )
+      if (@is_modified == setting) return
+      @is_modified = setting
+      if (setting and parent) parent.is_modified = true
 
     method name->String
       return type_name
@@ -176,7 +190,7 @@ class Node<<$ExtendedNodeType>>
       return cur
 
     method remove( child:$ExtendedNodeType )->$ExtendedNodeType
-      if (child and child.parent is this) child._detach
+      if (child and child.parent is this) child.detach
       return child
 
     method remove_at( index:Int32 )->$ExtendedNodeType
@@ -201,11 +215,11 @@ class Node<<$ExtendedNodeType>>
       @first_child = null
       @last_child = null
       count = 0
-      mark_modified
+      is_modified = true
 
       cur = result
       while (cur)
-        cur.mark_modified
+        cur.is_modified = true
         cur = cur.next
       endWhile
 
@@ -220,7 +234,7 @@ class Node<<$ExtendedNodeType>>
       add( node )
 
     method set_next( node:$ExtendedNodeType )
-      if (next) next._detach
+      if (next) next.detach
       insert_next( node )
 
     method set_parent( new_parent:$ExtendedNodeType )
@@ -245,7 +259,7 @@ class Node<<$ExtendedNodeType>>
       # Returns (head,tail)
       local tail = next
       if (parent)
-        _detach
+        detach
         return (this as $ExtendedNodeType,parent.remove_children)
       else
         @next = null
@@ -272,38 +286,24 @@ class Node<<$ExtendedNodeType>>
         builder.print ')'
       endIf
 
-    method _detach( &preserve_next )
-      if (parent)
-        if (parent.first_child is this)
-          if (parent.last_child is this)
-            parent.@first_child = null
-            parent.@last_child = null
-          else
-            parent.@first_child = this.next
-          endIf
-        else
-          local cur = parent.first_child
-          while (cur)
-            local next_sibling = cur.next
-            if (next_sibling is this)
-              cur.@next = this.next
-              if (next_sibling is parent.last_child) parent.@last_child = cur
-              escapeWhile
-            endIf
-            cur = next_sibling
-          endWhile
-        endIf
-        --parent.count
-        parent.mark_modified
-        @parent = null
-      endIf
-      if (not preserve_next)
-        @next = null
-        mark_modified
-      endIf
-
 endClass
 
+class NodeIterator<<$ExtendedNodeType>>( cur:$ExtendedNodeType ) [compound]
+  METHODS
+    method has_another->Logical
+      return cur?
+
+    method read->$ExtendedNodeType [mutating]
+      local result = cur
+      cur .= next
+      return result
+
+    method read_another->$ExtendedNodeType? [mutating]
+      if (not cur) return null
+      local result = cur
+      cur .= next
+      return result
+endClass
 
 class NodeVisitor<<$ExtendedNodeType>>
   METHODS

@@ -746,7 +746,7 @@ class MethodInfo
       if (index < 0 or index >= parameter_count) return null
       return native( "Rogue_literal_strings[ Rogue_method_param_names[$_first_param_name + $index] ]" )->String
 
-    method parameter_type( index:Int32 )->TypeInfo
+    method parameter_type( index:Int32 )->TypeInfo [essential]
       if (index < 0 or index >= parameter_count) return null
       return TypeInfo.get( native("Rogue_method_param_types[$_first_param_type + $index]")->Int32 )
 

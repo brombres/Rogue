@@ -177,6 +177,9 @@ class Keycode
     F23             223
     F24             224
 
+    UNICODE         255
+    # A KeyEvent containing .keycode == Keycode.UNICODE means that .syscode is the Unicode value
+
   GLOBAL PROPERTIES
     unshifted_keycode_to_unicode =
       ''                                       '    ,-./0123456789 ; =  '' ...
@@ -188,10 +191,21 @@ class Keycode
       ''@ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}  ~             \n                 '' ...
       ''              * +-./0123456789   =''
 
+    unicode_to_keycode     : Int32[]
+    unicode_to_shift_state : Logical[]
+
   GLOBAL METHODS
     method keycode_to_unicode( keycode:Int32, &is_shift_pressed )->Character
-      if (keycode < SPACE or keycode >= unshifted_keycode_to_unicode.count) return 0
-      if (keycode == SPACE) return ' '
+      if (keycode <= SPACE)
+        which (keycode)
+          case Keycode.SPACE:  return ' '
+          case Keycode.ENTER:  return '\n'
+          case Keycode.TAB:    return '\t'
+          case Keycode.DELETE: return Character(127)
+          others:              return 0
+        endWhich
+      endIf
+      if (keycode >= unshifted_keycode_to_unicode.count) return 0
 
       local result : Character
       if (is_shift_pressed) result = shifted_keycode_to_unicode[ keycode ]
@@ -199,4 +213,27 @@ class Keycode
 
       if (result == ' ') return 0  # we already handled actual SPACE; others are placeholders for zero
       return result
+
+    method unicode_to_keycode( unicode:Character )->(Int32,Logical)  # keycode, is_shifted
+      if (not @unicode_to_keycode)
+        @unicode_to_keycode    = Dim<<Int32>>(128)
+        unicode_to_shift_state = Dim<<Logical>>(128)
+        forEach (keycode in 32..127)
+          local ucode = shifted_keycode_to_unicode[ keycode ]
+          @unicode_to_keycode[ ucode ] = keycode
+          unicode_to_shift_state[ ucode ] = true
+        endForEach
+        forEach (keycode in 32..127)
+          local ucode = unshifted_keycode_to_unicode[ keycode ]
+          @unicode_to_keycode[ ucode ] = keycode
+          unicode_to_shift_state[ ucode ] = false
+        endForEach
+        @unicode_to_keycode['\t'] = Keycode.TAB
+        @unicode_to_keycode['\n'] = Keycode.ENTER
+        @unicode_to_keycode[' ']  = Keycode.SPACE
+        @unicode_to_keycode[127]  = Keycode.DELETE
+      endIf
+      if (unicode < 128) return (@unicode_to_keycode[unicode],unicode_to_shift_state[unicode])
+      else               return (Keycode.UNICODE,false)
 endClass
+

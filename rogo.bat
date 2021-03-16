@@ -11,7 +11,7 @@
 )
 @if not exist ".rogo\Bootstrap.exe" (
   if not exist ".rogo" mkdir ".rogo"
-  cl Source\RogueC\Bootstrap\Build.cpp /EHsc /nologo /Fe.rogo\Bootstrap.exe
+  cl /Ob2ity /GF /Gy Source\RogueC\Bootstrap\Build.cpp /EHsc /nologo /Fe.rogo\Bootstrap.exe
   @if exist Build.obj ( del Build.obj )
   @.rogo\Bootstrap.exe check_bootstrap
 )
