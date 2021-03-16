@@ -99,7 +99,7 @@ class Box( position:XY, size:XY ) [compound]
       return Box( XY(x+delta,y+delta), XY(width-(delta+delta),height-(delta+delta)) )
 
     method cropped( left:Real64, top:Real64, right:Real64, bottom:Real64 )->Box
-      return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)) )
+      return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)).or_larger(XY.zero) )
 
     method expanded( delta:Real64 )->Box
       return cropped( -delta )
@@ -187,9 +187,13 @@ class Box( position:XY, size:XY ) [compound]
       return Box( enclosing.position + anchor.position * (enclosing.size-size), size )
 
     method relative_to( anchor:Anchor )->Box
-      # Returns the result box where Box(box.at(anchor),this.size) == this
-      # E.g. if anchor is Anchor.BOTTOM and Box is [@100,100 20x20], the return value is
-      # [@90,80 20x20]].
+      # Returns box of this.size that is positioned relative to its original position
+      # as an origin.
+      #
+      # For example, if XY(640,480) is the center of the screen, then:
+      # - Box(640,480,100,100) places the top-left corner of the box on (640,480)
+      # - Box(640,480,100,100).relative_to(Anchor.CENTER) places the center of the box on (640,480)
+      # - Box(640,480,100,100).relative_to(Anchor.BOTTOM_RIGHT) places the bottom-right corner of the box on (640,480)
       return Box( position - anchor.position * size, size )
 
     method rotated( angle:Degrees )->Quad [macro]

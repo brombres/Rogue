@@ -15,7 +15,7 @@ class DataReader : Reader<<Byte>>
       init( file.reader )
 
     method init( list:Byte[] )
-      init( list.reader )
+      init( ListReader<<Byte>>(list) )
 
     method has_another->Logical
       return source.has_another
@@ -174,24 +174,23 @@ class DataWriter : Writer<<Byte>>
       output.skip( n )
       return this
 
-    method write( value:Byte )->this
+    method write( value:Byte )
       output.write( value )
-      return this
 
-    method write_real64( value:Real64 )->this
-      return write_int64( value.integer_bits )
+    method write_real64( value:Real64 )
+      write_int64( value.integer_bits )
 
-    method write_real32( value:Real32 )->this
-      return write_int32( value.integer_bits )
+    method write_real32( value:Real32 )
+      write_int32( value.integer_bits )
 
-    method write_int64( value:Int64 )->this
+    method write_int64( value:Int64 )
       write_int32( value:>>>:32 )
-      return write_int32( value )
+      write_int32( value )
 
-    method write_int64x( value:Int64 )->this
+    method write_int64x( value:Int64 )
       # See read_int64x for format notes.
       if (value >= -64 and value < 128)
-        return write( value )
+        write( value )
       else
         local extra_bytes = 1
         local shift = 7
@@ -212,19 +211,18 @@ class DataWriter : Writer<<Byte>>
         shift -= 7
         write( (value:>>>:shift) & 0b0111_1111 )
       endIf
-      return this
 
-    method write_int32( value:Int32 )->this
+    method write_int32( value:Int32 )
       write( value:>>>:24 )
       write( value:>>>:16 )
       write( value:>>>:8 )
-      return write( value )
+      write( value )
 
-    method write_int32x( value:Int32 )->this
-      return write_int64x( value->Int64 )
+    method write_int32x( value:Int32 )
+      write_int64x( value->Int64 )
 
-    method write_byte( value:Byte )->this [macro]
-      return this.write( value )
+    method write_byte( value:Byte ) [macro]
+      this.write( value )
 
     method write_bytes( data:Byte[], index=0:Int32, count=null:Int32? )
       if (index > data.count)
@@ -242,15 +240,13 @@ class DataWriter : Writer<<Byte>>
       write_int32x( count.value )
       loop (count.value) write_byte( data[index] ); ++index
 
-    method write_logical( value:Logical )->this
-      if (value) return write( 1 )
-      else       return write( 0 )
+    method write_logical( value:Logical )
+      write( which{value:1 || 0} )
 
-    method write_string( value:String )->this
+    method write_string( value:String )
       if (not value) value = ""
       write_int32x( value.count )
       forEach (ch in value) write_int32x( ch )
-      return this
 endClass
 
 class BufferedDataWriter : DataWriter
@@ -270,9 +266,8 @@ class BufferedDataWriter : DataWriter
       output.reset
       return this
 
-    method write( list:Byte[] )->this
+    method write( list:Byte[] )
       buffer.reserve( list.count ).data.set( position, list.data, 0, list.count )
       skip( list.count )
-      return this
 endClass
 

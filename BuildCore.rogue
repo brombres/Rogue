@@ -8,7 +8,7 @@ class Build [singleton]
     ROGO_SRC            = Files( "Source", "Tools/Rogo/*.rogue" ).add( "Libraries/Standard/*" ) : Files
     ROGUEC_ROGUE_FLAGS  = ""
     ROGUEC_CPP_FLAGS    = "-Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
-    ROGUEC_CPP_OPTIMIZE = which{ System.is_windows:"/O2" || "-O3" } : String
+    ROGUEC_CPP_OPTIMIZE = which{ System.is_windows:"/Ob2ity /GF /Gy" || "-O3" } : String
     BINDIR              = "/usr/local/bin"
     CXX                 = "g++"
     SUDO_CMD            = ""
@@ -221,8 +221,8 @@ class Build [singleton]
       println "Compiling RogueC from C++ bootstrap source..."
       println "-------------------------------------------------------------------------------"
       File.create_folder( File.folder(ROGUEC_EXE) )
-      run ''$ $ -DDEFAULT_CXX="\\\"$\\\"" $ $$''...
-        (CXX,ROGUEC_CPP_FLAGS,DEFAULT_CXX,fix("Source/RogueC/Bootstrap/RogueC.cpp"),OUTFLAG,ROGUEC_EXE)
+      run ''$ $ $ -DDEFAULT_CXX="\\\"$\\\"" $ $$''...
+        (CXX,ROGUEC_CPP_OPTIMIZE,ROGUEC_CPP_FLAGS,DEFAULT_CXX,fix("Source/RogueC/Bootstrap/RogueC.cpp"),OUTFLAG,ROGUEC_EXE)
       if (File.exists("RogueC.obj")) File.delete( "RogueC.obj" )
       if (System.os == "Windows")
         run "type nul >> Source\\RogueC\\RogueC.rogue"
@@ -319,8 +319,8 @@ class Build [singleton]
     method sync_libraries
       local dest = fix( "Programs/RogueC/" )
       local files = Files( "Source/Libraries" )
-      files.add( "Standard" ).add( "ParseKit" ).add( "Geometry" ).add( "Bitmap" ).add( "Utility" )
-      files.add( "UI" )
+      files.add( "Standard/**" ).add( "ParseKit/**" ).add( "Geometry/**" ).add( "Bitmap/**" ).add( "Utility/**" )
+      files.add( "UI/**" )
       File.sync_from( files, dest+"Libraries/", &verbose )
 
     method fix( filepath:String )->String
@@ -383,7 +383,7 @@ catch (err:Error)
 endTry
 
 routine dispatch( cmd:String[], string_args:String[] )->Logical
-  local m = <<Global>>.find_method( prefix + cmd.join("_") )
+  local m = <<Global>>.find_global_method( prefix + cmd.join("_") )
   if (not m) return false
 
   local args = @[]
@@ -396,7 +396,7 @@ routine dispatch( cmd:String[], string_args:String[] )->Logical
     endWhich
   endForEach
   if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
-  m.call( Global, args )
+  m( args )
   return true
 endRoutine
 
@@ -432,7 +432,7 @@ routine rogo_help( command="":String )
 
   println "USAGE"
   local lines = String[]
-  forEach (m in <<Global>>.methods)
+  forEach (m in <<Global>>.global_methods)
     if (m.name.begins_with(prefix))
       lines.add( "  " + get_syntax(m.name.after_first(prefix)) )
     endIf
@@ -446,7 +446,7 @@ routine get_syntax( m_name:String )->String
   if (CommandSyntax.contains(m_name))
     return "rogo " + CommandSyntax[ m_name ]
   else
-    local m = <<Global>>.find_method( prefix + m_name )
+    local m = <<Global>>.find_global_method( prefix + m_name )
     if (not m) return null
     local line = "rogo $" (m_name.replacing('_',' '))
     line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))

@@ -37,6 +37,7 @@ class Attribute
     is_synchronized     = (1 :<<: 29)
     is_synchronizable   = (1 :<<: 30)
     can_operate_on_literal_null = (Int64(1) :<<: 31)
+    is_override         = (Int64(1) :<<: 32)
 endClass
 
 

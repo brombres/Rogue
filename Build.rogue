@@ -80,19 +80,19 @@ routine rogo_remake( remake_count:Int32 )
 endRoutine
 
 routine remake
-  Build.roguec
+  Build.roguec( &dev )
 endRoutine
 
 #-------------------------------------------------------------------------------
 routine rogo_debug
 #-------------------------------------------------------------------------------
-  Build.roguec( "in debug mode", "--debug" )
+  Build.roguec( "in debug mode", "--debug", &dev )
 endRoutine
 
 #-------------------------------------------------------------------------------
 routine rogo_exhaustive
 #-------------------------------------------------------------------------------
-Build.roguec( "with --api=* and --threads", "--api=* --threads" )
+Build.roguec( "with --api=* and --threads", "--api=* --threads", &dev )
 endRoutine
 
 #-------------------------------------------------------------------------------

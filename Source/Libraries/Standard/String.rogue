@@ -282,7 +282,7 @@ class String
         $endIf
       endIf
 
-    method contains_pattern( pattern:String )->Logical
+    method contains_pattern( pattern:String, &ignore_case )->Logical
       # Returns true if this string contains the pattern "*<pattern>*" - in other words any number of characters
       # can come before and after the matching pattern.
       #
@@ -301,7 +301,7 @@ class String
       #
       # For example, "a += c".contains_pattern("a+=c") -> true
       # For example, "a b c".contains_pattern("abc") -> false
-      return _extraction_point( 0, count, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )._1
+      return locate_pattern( pattern, &=ignore_case )?
 
     method count->Int32
       return native( '$this->character_count' )->Int32
@@ -337,9 +337,11 @@ class String
 
       local result = Byte[]( output_count )
       local writer = BitWriter( result )
-      local reader = base64.reader
-      while (reader.has_another)
-        loop (4) writer.write( reader.read.to_base64_value, 6 )
+      local iterator = base64.iterator
+      while (iterator.has_another)
+        loop (4)
+          writer.write( iterator.read.to_base64_value, 6 )
+        endLoop
       endWhile
       writer.flush
 
@@ -368,7 +370,7 @@ class String
         return this == other
       endIf
 
-    method extract_string( format:String )->String
+    method extract_string( format:String, &ignore_case )->String
       # Extracts the string corresponding to the first '$' marker in the given format pattern.
       #
       # The format pattern is matched literally apart from the following special sequences and behavior:
@@ -387,190 +389,349 @@ class String
       # EXAMPLE
       #   println "<tag name='abc'/>".extract_string( "*'$'*" )
       #   # prints: abc
-      local (success,match_start,match_count) = _extraction_point( 0, count, format, 0, format.count, -1 )
-      if (not success) return null
-      return substring( match_start, match_count )
+      local strings = extract_strings( format, &=ignore_case )
+      if (not strings or strings.is_empty) return null
+      return strings.first
 
-    method extract_strings( format:String )->String[]
+    method extract_strings( format:String, &ignore_case )->String[]
       # Extracts multiple strings, each corresponding to a '$' marker in the format pattern.
       # See extract_string() for additional details.
       #
       # EXAMPLE
       #   println "position = (x,4)".extract_strings( "*($,$)" )
       #   # prints: [x,4]
-      local result = String[]
-      if (extract_strings(format,result)) return result
-      return null
+      return extract_strings( format, String[], &=ignore_case )
 
-    method extract_strings( format:String, result:String[] )->Logical
-      local i1 = result.count
-      local pt = _extraction_point( 0, count, format, 0, format.count, false, result )
-      if (not pt._1) return false
-      local i2 = result.count - 1
+    method extract_strings( format:String, results:String[], &ignore_case )->String[]
+      local i1 = results.count
+
+      local span = locate_pattern( format, &=ignore_case )
+      if (not span) return null
+
+      local i = span.value.index
+      local n = span.value.count
+      if (i > 0 or n < count) return null
+      if (not substring(i,n)._extract_strings(0, n, format, 0, format.count, results, &=ignore_case)) return null
+
+      # Extracted strings were added to 'results' in reverse order. Reverse the order of
+      # all strings added after the original contents.
+      local i2 = results.count - 1
       while (i1 < i2)
-        result.swap( i1, i2 )
+        results.swap( i1, i2 )
         ++i1
         --i2
       endWhile
-      return true
+      return results
 
-    method _extraction_point( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32, found_match:Logical,
-        result=null:String[], &wildcard_start, &wildcard_end )->(Logical,Int32,Int32)
-      # Returns: (success,match_start,match_count)
+    method _extract_strings( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
+        results:String[], &ignore_case )->Logical
       if (fcount == 0)
-        if (not wildcard_end)
-          while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
-          if (remaining_count > 0) return (false,0,0)
-        endIf
-        if (not found_match) return (false,0,0)
-        return (true,0,i0)
-      endIf
-
-      if (wildcard_start)
-        # Match any number of characters
-        forEach (n in 0..remaining_count)
-          local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0, fcount,
-            found_match, result, &=wildcard_end )
-          if (success)
-            match_start *= 2  # just avoiding an unused variable warning
-            return (success,n,match_count)
-          endIf
-        endForEach
-        return (false,0,0)
+        while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
+        if (remaining_count > 0) return false
+        return true
       endIf
 
       local format_ch = format[f0]
-      which (format_ch)
-        case '*':
-          # Match any number of characters
-          forEach (n in 0..remaining_count)
-            local (success,match_start,match_count) = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1,
-              found_match, result, &=wildcard_end )
-            if (success) return (success,match_start,match_count)
-          endForEach
+      contingent
+        which (format_ch)
+          case '*':
+            # Conservatively match any number of characters
+            forEach (n in 0..remaining_count)
+              if (_extract_strings( i0+n, remaining_count-n, format, f0+1, fcount-1, results, &=ignore_case )) return results
+            endForEach
 
-        case ' ':
-          # Match 1 or more spaces or tabs
-          local n = 0
-          while (n < remaining_count)
-            local ch = this[i0+n]
-            if (ch != ' ' and ch != '\t') escapeWhile
-            ++n
-          endWhile
+          case ' ':
+            # Match 1 or more spaces or tabs
+            local n = 0
+            while (n < remaining_count)
+              local ch = this[i0+n]
+              if (ch != ' ' and ch != '\t') escapeWhile
+              ++n
+            endWhile
 
-          if (n == 0) return (false,0,0)
+            if (n == 0) return false
 
-          return _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
+            return _extract_strings( i0+n, remaining_count-n, format, f0+1, fcount-1, results,
+              &=ignore_case )
 
-        case '$':
-          # Match one or more characters and extract as a result
-          while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
+          case '$':
+            # Match one or more characters and extract as a results
+            while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
+            local m_start = i0
 
-          local m_start = i0
+            if (fcount>=3 and format[f0+1] == '(')
+              if (format[f0+2] == ')')
+                f0     += 2
+                fcount -= 2
+              elseIf (fcount>=4 and format[f0+3] == ')')
+                which (format[f0+2])
+                  case 'I'
+                    # Integer
+                    local i1 = i0
+                    local rcount = remaining_count
+                    if (rcount and this[i1] == '-') ++i1; --rcount
+                    local found_digit = false
+                    while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
 
-          if (fcount>=3 and format[f0+1] == '(')
-            if (format[f0+2] == ')')
-              f0     += 2
-              fcount -= 2
-            elseIf (fcount>=4 and format[f0+3] == ')')
-              which (format[f0+2])
-                case 'I'
-                  # Integer
-                  local i1 = i0
-                  local rcount = remaining_count
-                  if (rcount and this[i1] == '-') ++i1; --rcount
-                  local found_digit = false
-                  while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
-                  if (found_digit)
-                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result, &=wildcard_end )
-                    if (pt._1)
-                      if (result) result.add( substring(m_start,i1-i0) )
-                      if (wildcard_end) return (true,m_start,pt._3)
-                      return (true,m_start,i1-i0)
+                    if (found_digit)
+                      if (_extract_strings(i1, rcount, format, f0+4, fcount-4, results, &=ignore_case))
+                        results.add( substring(i0,i1-i0) )
+                        return true
+                      endIf
                     endIf
-                  endIf
 
-                case 'R'
-                  # Real number
-                  local i1 = i0
-                  local rcount = remaining_count
-                  if (rcount and this[i1] == '-') ++i1; --rcount
-                  local found_digit = false
-                  while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
-                  if (rcount and this[i1] == '.') ++i1; --rcount
-                  while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
-                  if (found_digit)
-                    local pt = _extraction_point( i1, rcount, format, f0+4, fcount-4, true, result, &=wildcard_end )
-                    if (pt._1)
-                      if (result) result.add( substring(m_start,i1-i0) )
-                      if (wildcard_end) return (true,m_start,pt._3)
-                      return (true,m_start,i1-i0)
+                  case 'R'
+                    # Real number
+                    local i1 = i0
+                    local rcount = remaining_count
+                    if (rcount and this[i1] == '-') ++i1; --rcount
+                    local found_digit = false
+                    while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                    if (rcount and this[i1] == '.') ++i1; --rcount
+                    while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                    if (found_digit)
+                      if (_extract_strings( i1, rcount, format, f0+4, fcount-4, results, &=ignore_case))
+                        results.add( substring(i0,i1-i0) )
+                        return true
+                      endIf
                     endIf
-                  endIf
 
-                case '#'
-                  # Single digit 0-9
-                  if (remaining_count and this[i0].is_number)
-                    local pt = _extraction_point( i0+1, remaining_count-1, format, f0+4, fcount-4, true, result, &=wildcard_end )
-                    if (pt._1)
-                      if (result) result.add( substring(m_start,1) )
-                      if (wildcard_end) return (true,m_start,pt._3)
-                      return (true,m_start,1)
+                  case '#'
+                    # Single digit 0-9
+                    if (remaining_count and this[i0].is_number)
+                      if (_extract_strings(i0+1, remaining_count-1, format, f0+4, fcount-4, results, &=ignore_case))
+                        results.add( substring(m_start,1) )
+                        return true
+                      endIf
                     endIf
-                  endIf
 
-                case '$'
-                  # $($) matches a single literal $
-                  if (remaining_count and this[i0] == '$')
-                    local (success,match_start,match_count) = _extraction_point( i0+1, remaining_count-1, format, f0+4, fcount-4,
-                      found_match, result, &=wildcard_end )
-                    if (success) return (success,match_start,match_count)
-                  endIf
-              endWhich
+                  case '$'
+                    # $($) matches a single literal $
+                    if (remaining_count and this[i0] == '$')
+                      if (_extract_strings( i0+1, remaining_count-1, format, f0+4, fcount-4, results, &=ignore_case))
+                        return true
+                      endIf
+                    endIf
+                endWhich
 
-              return (false,0,0)
+                return false
 
-            endIf
-          endIf
-
-          forEach (n in 1..remaining_count)
-            local pt = _extraction_point( i0+n, remaining_count-n, format, f0+1, fcount-1, true, result, &=wildcard_end )
-            if (pt._1)
-              if (result) result.add( substring(m_start,n) )
-              if (wildcard_end) return (true,m_start,pt._3)
-              return (true,m_start,n)
-            endIf
-          endForEach
-
-        case '?':
-          # Match any single character
-          if (remaining_count == 0) return (false,0,0)
-          return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
-
-        others:
-          # Match one specific character
-          if (remaining_count == 0) return (false,0,0)
-          local ch = this[i0]
-          if (format_ch == ch)
-            return _extraction_point( i0+1, remaining_count-1, format, f0+1, fcount-1, found_match, result, &=wildcard_end )
-          elseIf (ch == ' ' or ch == '\t')
-            # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
-            # Count how many spaces and tabs in a row
-            if (f0 > 0)
-              local n = 1
-              while (n < remaining_count)
-                ch = this[i0+n]
-                if (ch != ' ' and ch != '\t') escapeWhile
-                ++n
-              endWhile
-              if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
-                return _extraction_point( i0+n, remaining_count-n, format, f0, fcount, found_match, result, &=wildcard_end )
               endIf
             endIf
-          endIf
-      endWhich
 
-      return (false,0,0)
+            forEach (n in 1..remaining_count)
+              if (_extract_strings( i0+n, remaining_count-n, format, f0+1, fcount-1, results, &=ignore_case))
+                results.add( substring(m_start,n) )
+                return true
+              endIf
+            endForEach
+
+          case '?':
+            # Match any single character
+            if (remaining_count == 0) return false
+            return _extract_strings( i0+1, remaining_count-1, format, f0+1, fcount-1, results, &=ignore_case )
+
+          case '\\':
+            # Escape any especial meaning of the next character
+            if (remaining_count == 0) return false
+            if (fcount == 1)
+              return _extract_strings( i0, remaining_count, format, f0+1, fcount-1, results, &=ignore_case )
+            endIf
+            ++f0
+            --fcount
+            format_ch = format[f0]
+            sufficient true
+          others
+            sufficient true
+        endWhich
+        escapeContingent
+
+      satisfied
+        # Match one specific character
+        if (remaining_count == 0) return false
+        local ch = this[i0]
+        if (ignore_case) ch = ch.to_lowercase; format_ch = format_ch.to_lowercase
+
+        if (format_ch == ch)
+          return _extract_strings( i0+1, remaining_count-1, format, f0+1, fcount-1, results, &=ignore_case )
+        elseIf (ch == ' ' or ch == '\t')
+          # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
+          # Count how many spaces and tabs in a row
+          if (f0 > 0)
+            local n = 1
+            while (n < remaining_count)
+              ch = this[i0+n]
+              if (ch != ' ' and ch != '\t') escapeWhile
+              ++n
+            endWhile
+            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
+              return _extract_strings( i0+n, remaining_count-n, format, f0, fcount, results, &=ignore_case )
+            endIf
+          endIf
+        endIf
+      endContingent
+
+      return false
+
+    method _pattern_match_count( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
+        &ignore_case )->Int32
+      if (fcount == 0)
+        while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
+        return i0
+      endIf
+
+      local format_ch = format[f0]
+      contingent
+        which (format_ch)
+          case '*':
+            if (fcount == 1)
+              # Last pattern symbol - greedily match any number of characters
+              local result = -1
+              forEach (n in 0..remaining_count)
+                local count = _pattern_match_count( i0+n, remaining_count-n, format, f0+1, fcount-1, &=ignore_case )
+                if (count == -1) return result
+                result = count
+              endForEach
+              return result
+            else
+              # Intermediate symbol - conservatively match any number of characters
+              forEach (n in 0..remaining_count)
+                local count = _pattern_match_count( i0+n, remaining_count-n, format, f0+1, fcount-1, &=ignore_case )
+                if (count != -1) return count
+              endForEach
+              return -1
+            endIf
+
+          case ' ':
+            # Match 1 or more spaces or tabs
+            local n = 0
+            while (n < remaining_count)
+              local ch = this[i0+n]
+              if (ch != ' ' and ch != '\t') escapeWhile
+              ++n
+            endWhile
+
+            if (n == 0) return -1
+
+            return _pattern_match_count( i0+n, remaining_count-n, format, f0+1, fcount-1, &=ignore_case )
+
+          case '$':
+            # Match one or more characters
+            while (remaining_count and (this[i0]==' ' or this[i0]=='\t')) ++i0; --remaining_count
+
+            if (fcount>=3 and format[f0+1] == '(')
+              if (format[f0+2] == ')')
+                f0     += 2
+                fcount -= 2
+              elseIf (fcount>=4 and format[f0+3] == ')')
+                which (format[f0+2])
+                  case 'I'
+                    # Integer
+                    local i1 = i0
+                    local rcount = remaining_count
+                    if (rcount and this[i1] == '-') ++i1; --rcount
+                    local found_digit = false
+                    while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+
+                    if (found_digit)
+                      return _pattern_match_count( i1, rcount, format, f0+4, fcount-4, &=ignore_case )
+                    endIf
+
+                  case 'R'
+                    # Real number
+                    local i1 = i0
+                    local rcount = remaining_count
+                    if (rcount and this[i1] == '-') ++i1; --rcount
+                    local found_digit = false
+                    while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                    if (rcount and this[i1] == '.') ++i1; --rcount
+                    while (rcount and this[i1].is_number) ++i1; --rcount; found_digit = true
+                    if (found_digit)
+                      return _pattern_match_count( i1, rcount, format, f0+4, fcount-4, &=ignore_case )
+                    endIf
+
+                  case '#'
+                    # Single digit 0-9
+                    if (remaining_count and this[i0].is_number)
+                      return _pattern_match_count( i0+1, remaining_count-1, format, f0+4, fcount-4, &=ignore_case )
+                    endIf
+
+                  case '$'
+                    # $($) matches a single literal $
+                    if (remaining_count and this[i0] == '$')
+                      return _pattern_match_count( i0+1, remaining_count-1, format, f0+4, fcount-4, &=ignore_case )
+                    endIf
+                endWhich
+
+                return -1
+
+              endIf
+            endIf
+
+            if (fcount == 1)
+              # Last pattern symbol - greedy match
+              local result = -1
+              forEach (len in 0..remaining_count)
+                local n = _pattern_match_count( i0+len, remaining_count-len, format, f0+1, fcount-1, &=ignore_case )
+                if (n == -1) return result
+                result = i0+len
+              endForEach
+              return result
+            else
+              # Conservative match
+              forEach (n in 1..remaining_count)
+                local count = _pattern_match_count( i0+n, remaining_count-n, format, f0+1, fcount-1, &=ignore_case )
+                if (count != -1) return count
+              endForEach
+              return -1
+            endIf
+
+          case '?':
+            # Match any single character
+            if (remaining_count == 0) return -1
+            return _pattern_match_count( i0+1, remaining_count-1, format, f0+1, fcount-1, &=ignore_case )
+
+          case '\\':
+            # Escape any especial meaning of the next character
+            if (remaining_count == 0) return -1
+            if (fcount == 1)
+              return _pattern_match_count( i0, remaining_count, format, f0+1, fcount-1, &=ignore_case )
+            endIf
+            ++f0
+            --fcount
+            format_ch = format[f0]
+            sufficient true
+          others
+            sufficient true
+        endWhich
+        escapeContingent
+
+      satisfied
+        # Match one specific character
+        if (remaining_count == 0) return -1
+        local ch = this[i0]
+        if (ignore_case) ch = ch.to_lowercase; format_ch = format_ch.to_lowercase
+
+        if (format_ch == ch)
+          return _pattern_match_count( i0+1, remaining_count-1, format, f0+1, fcount-1, &=ignore_case )
+        elseIf (ch == ' ' or ch == '\t')
+          # Extra spaces and tabs okay as long as they're not between alphanumeric values or at the beginning
+          # Count how many spaces and tabs in a row
+          if (f0 > 0)
+            local n = 1
+            while (n < remaining_count)
+              ch = this[i0+n]
+              if (ch != ' ' and ch != '\t') escapeWhile
+              ++n
+            endWhile
+            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
+              return _pattern_match_count( i0+n, remaining_count-n, format, f0, fcount, &=ignore_case )
+            endIf
+          endIf
+        endIf
+      endContingent
+
+      return -1
 
     method from( i1:Int32 )->String
       return from( i1, count-1 )
@@ -696,10 +857,13 @@ class String
 
       return true
 
-    method join( substrings:String[] )->String
-      return join( substrings.reader )
+    method iterator->StringIterator
+      return StringIterator( this, 0, count )
 
-    method join( substrings:Reader<<String>> )->String
+    method join( substrings:String[] )->String
+      return join( substrings.iterator )
+
+    method join( substrings:ListIterator<<String>> )->String
       local result = StringBuilder()
       local first = true
       forEach (s in substrings)
@@ -811,18 +975,16 @@ class String
 
       return null
 
-    method locate_pattern( pattern:String, i1=0:Int32 )->Span?
-      # Returns the index of where the first '$' pattern marker occurs in this string, or null.
-      # See contains_pattern() or matches_pattern() for a description of the pattern.
-      #
+    method locate_pattern( pattern:String, i1=0:Int32, &ignore_case )->Span?
       # EXAMPLE
-      #   "ab cd ef gh ij".locate_pattern("cd $ gh") -> 6
-      local (success,index,count) = _extraction_point( i1, count-i1, pattern, 0, pattern.count, -1, &wildcard_start, &wildcard_end )
-      if (not success) return null
+      #   "ab cd ef gh ij".locate_pattern("cd $ gh") -> Span(3,8)
+      forEach (i in i1..<count)
+        local n = _pattern_match_count( i, count-i, pattern, 0, pattern.count, &=ignore_case )
+        if (n != -1) return Span( i, n-i )
+      endForEach
+      return null
 
-      return Span( i1+index, count-(i1+index) )
-
-    method matches_pattern( pattern:String )->Logical
+    method matches_pattern( pattern:String, &ignore_case )->Logical
       # Returns true if this string matches the given pattern.
       #
       # The pattern is matched literally apart from the following special sequences and behavior:
@@ -840,7 +1002,9 @@ class String
       #
       # For example, "a += c".matches_pattern("a+=c") -> true
       # For example, "a b c".matches_pattern("abc") -> false
-      return _extraction_point( 0, count, pattern, 0, pattern.count, -1 )._1
+      local span = locate_pattern( pattern, &=ignore_case )
+      if (not span) return false
+      return span.value.index == 0 and span.value.count == count
 
     method operator+( value:Byte )->String
       return (this + value->Int32)
@@ -1040,7 +1204,7 @@ class String
       forEach (i in i0..<this.count) buffer.print( this[i] )
       return buffer->String
 
-    method replacing_pattern( search_pattern:String, replacement_pattern:String )->String
+    method replacing_pattern( search_pattern:String, replacement_pattern:String, parens="()":String )->String
       # Search pattern has same "$*?" wildcard format as .extract_strings():
       #   - '$' acts as '*' but also denotes a piece to be extracted.
       # Replacement pattern contains '$' to denote implicitly-paired points of substitution
@@ -1054,6 +1218,9 @@ class String
       # Examples:
       #   "Alice and Bob".replacing_pattern( "$ and $", "$ & $" ) -> "Alice & Bob"
       #   "Alice and Bob".replacing_pattern( "$ and $", "$(1) and $(0)" ) -> "Bob and Alice"
+      if (not parens or parens.count < 2) parens = "()"
+      local open_paren = parens[0]
+      local close_paren = parens[1]
       if (this.contains('\n'))
         contingent
           # Do an initial check to make sure the pattern occurs to avoid a bunch of
@@ -1067,7 +1234,7 @@ class String
           # The pattern occurs somewhere in this string
           local result = StringBuilder( count )
           forEach (line in LineReader(this))
-            result.println( line.replacing_pattern(search_pattern,replacement_pattern) )
+            result.println( line.replacing_pattern(search_pattern,replacement_pattern,parens) )
           endForEach
           return result->String
 
@@ -1080,8 +1247,8 @@ class String
           block span = span.value
             if (span.index > 0 or span.count < count)
               # Extract the subset containing the pattern and perform the replacement on that
-              local replacement = substring(span).replacing_pattern(search_pattern,replacement_pattern)
-              local remaining = rightmost( count-(span.index+span.count) ).replacing_pattern( search_pattern, replacement_pattern )
+              local replacement = substring(span).replacing_pattern(search_pattern,replacement_pattern,parens)
+              local remaining = rightmost( count-(span.index+span.count) ).replacing_pattern( search_pattern, replacement_pattern, parens )
               return leftmost(span.index) + replacement + remaining
             endIf
           endBlock
@@ -1091,39 +1258,29 @@ class String
         if (not parts) return this  # no change
 
         local result = StringBuilder( count )
-        local remaining = replacement_pattern
+        local scanner = Scanner( replacement_pattern )
         local i = 0
-        while (remaining.contains('$'))
-          local literal = remaining.before_first( '$' )
-          if (literal.count)
-            result.print( literal )
-            remaining = remaining.rightmost( -literal.count )
-          endIf
-          if (remaining.begins_with("$($)"))
-            remaining = remaining.rightmost( -4 )
-            result.print( '$' )
-          elseIf (remaining.begins_with("$()"))
-            remaining = remaining.rightmost( -3 )
-            result.print( parts[i] )
-            i = (i + 1) % parts.count
-          elseIf (remaining.begins_with("$("))
-            local index_string = remaining.extract_string( "?($(I))*" )
-            if (index_string)
-              remaining = remaining.after_first( ')' )
-              local index = index_string->Int32
-              result.print( parts[index % parts.count] )
+        while (scanner.has_another)
+          if (scanner.consume('\\'))
+            if (scanner.has_another) result.print( scanner.read )
+          elseIf (scanner.consume('$'))
+            if (scanner.consume(open_paren))
+              if (scanner.consume(close_paren))
+                result.print( parts[i] ); i = (i + 1) % parts.count
+              else
+                local n = 0
+                while (scanner.has_another and not scanner.consume(close_paren))
+                  n = n * 10 + scanner.read.to_number
+                endWhile
+                result.print( parts[n%parts.count] )
+              endIf
             else
-              remaining = remaining.rightmost( -1 )
-              result.print( '$' )
+              result.print( parts[i] ); i = (i + 1) % parts.count
             endIf
           else
-            # remaining must begin with a solitary '$'
-            remaining = remaining.rightmost( -1 )
-            result.print( parts[i] )
-            i = (i + 1) % parts.count
+            result.print( scanner.read )
           endIf
         endWhile
-        result.print( remaining )
         return result->String
       endIf
 
@@ -1218,6 +1375,9 @@ class String
 
       return result
 
+    method substring( i1:Int32 )->String
+      return from( i1 )
+
     method substring( i1:Int32, n:Int32 )->String
       if (n < 0)
         n = (count - i1) + n
@@ -1247,19 +1407,20 @@ class String
       forEach (ch in this) result.add( ch )
       return result
 
-    method to->Int32
+    method to->Int32( base=10:Int32 )
       if (count == 0) return 0
-      return native( "(RogueInt32)strtol( (char*)$this->utf8, 0, 10 )" )->Int32
+      return native( "(RogueInt32)strtol( (char*)$this->utf8, 0, $base )" )->Int32
 
-    method to->Int64
+    method to->Int64( base=10:Int32 )
       if (count == 0) return 0
-      return native( "(RogueInt64)strtoll( (char*)$this->utf8, 0, 10 )" )->Int64
+      return native( "(RogueInt64)strtoll( (char*)$this->utf8, 0, $base )" )->Int64
 
     method to->Object
       return this
 
     method to->Real64
       if (count == 0) return 0
+      if (this.contains(',')) return this.replacing(",","")->Real64
       return native( "strtod( (char*)$this->utf8, 0 )" )->Real64
 
     method to->String
@@ -1460,6 +1621,39 @@ class String
     method word_wrapped( width:Int32, allow_break_after=null:String )->String
       return word_wrap( width, StringBuilder(), allow_break_after )->String
 
+endClass
+
+class StringIterator( string:String, position:Int32, count:Int32 ) [compound]
+  GLOBAL METHODS
+    method create( string:String )->StringIterator
+      return StringIterator( string, 0, string.count )
+
+  METHODS
+    method has_another->Logical
+      return (position < count)
+
+    method has_another( n:Int32 )->Logical
+      return (position + n <= count)
+
+    method peek->Character
+      if (position == count) return 0
+      return string[ position ]
+
+    method read->Character [mutating]
+      ++position
+      return string[ position-1 ]
+
+    method read_another->Character? [mutating]
+      if (position == count) return null
+      ++position
+      return string[ position-1 ]
+
+    method to->String
+      use builder=StringBuilder.pool
+        builder.reserve( count - position )
+        builder.print( forEach in this )
+        return builder->String
+      endUse
 endClass
 
 class StringReader : Reader<<Character>>

@@ -6,7 +6,7 @@ class Files
 
   METHODS
     method init( base_folder:String, &allow_pattern=true )
-      base_folder = File.expand_filepath( File.fix_slashes(base_folder) )
+      base_folder = File.expand_path( File.fix_slashes(base_folder) )
 
       if (allow_pattern)
         # Treat the folder as a possible pattern

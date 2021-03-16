@@ -121,11 +121,13 @@ class Type
       return m
 
     method add_global( s_t:Token, s_name:String )->Property
-      local s = Property( s_t, this, s_name )
-      s.attributes |= Attribute.is_global
-      global_list.add( s )
-      global_lookup[s_name] = s
-      return s
+      return add_global( Property(s_t,this,s_name) )
+
+    method add_global( p:Property )->Property
+      p.attributes |= Attribute.is_global
+      global_list.add( p )
+      global_lookup[p.name] = p
+      return p
 
     method add_property( p_t:Token, p_name:String, p_type=null:Type, initial_value=null:Cmd )->Property
       return add_property( Property(p_t, this, p_name, p_type, initial_value) )
@@ -1353,8 +1355,6 @@ class Type
             m = add_method( p.t, "set_" + p.name )
             m.add_parameter( p.t, "@"+p.name )
             m.attributes.add( Attribute.is_fallback )
-            m.return_type = this
-            m.statements.add( CmdReturn(p.t,CmdLiteralThis(p.t, this)) )
             m.organize( scope )
           endIf
         endForEach

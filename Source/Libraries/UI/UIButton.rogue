@@ -1,0 +1,16 @@
+module UI
+
+class UIButton : UIWidget
+  PROPERTIES
+    on_select_callback : Function
+
+  METHODS
+    method handle_select
+      on_select
+
+    method on_select( on_select_callback )
+      noAction
+
+    method on_select
+      if (on_select_callback) on_select_callback()
+endClass

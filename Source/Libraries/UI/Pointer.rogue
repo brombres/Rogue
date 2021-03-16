@@ -2,7 +2,7 @@ module UI
 
 class Pointer [singleton]
   PROPERTIES
-    position  = XY(-1,-1)    # of first active or prior press
+    position  : XY?   # of most recently active press (may be still active)
     positions = XY[]  # of active presses
 
   METHODS
@@ -17,7 +17,7 @@ class Pointer [singleton]
             position = e.position
           case 1
             position = e.position
-            positions[0] = position
+            positions[0] = position.value
           others
             local index = closest_pointer_index( e.position ).value
             positions[ index ] = e.position

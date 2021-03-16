@@ -1,0 +1,54 @@
+module UI
+
+class UIContent : UIComponent, BufferedPrintWriter<<text_buffer>>
+  METHODS
+    method init
+
+    method init( component:UIComponent )
+      prior.add( component )
+
+    method init( text:String )
+      add( UIText(text) )
+
+    method add( component:UIComponent )
+      flush
+      prior.add( component )
+
+    method add( text:String )
+      print text
+
+    method flush( buffer:StringBuilder )
+      if (buffer.count)
+        prior.add( UIText(buffer->String) )
+        buffer.clear
+      endIf
+
+    method on_draw
+      noAction
+
+    method text->String
+      use builder = StringBuilder.pool
+        forEach (subcomponent in children)
+          builder.print( subcomponent.text )
+        endForEach
+        return builder->String
+      endUse
+
+    method update_subcomponent_layout
+      block bounds = padding.apply(Box(size))
+        local placer = UIContentPlacer( bounds )
+        placer = (forEach in children).update_layout( placer )
+      endBlock
+
+    method update_subcomponent_sizes( container_size:XY )->XY
+      # Returns minimum size to enclose all subcomponents
+      if (text_buffer.count)
+        flush
+        if (count) last_child.measure
+      endIf
+
+      local sizer = UIContentSizer( container_size )
+      sizer = (forEach in children).update_layout_size( sizer )
+      return sizer.limits
+endClass
+

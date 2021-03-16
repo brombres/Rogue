@@ -112,7 +112,6 @@ class Preprocessor
       local repeat_string_concatenation = false
       while (reader.has_another)
         local t = reader.read
-
         local t_type = t.type
         if (t.is_directive)
           if (t_type is TokenType.meta_define)
@@ -386,11 +385,14 @@ class Preprocessor
                   Program.module_instance_list.add( instance )
                 endIf
 
-                if (parse_uses_export)
+                local uses_attributes = parse_uses_attributes
+                if (uses_attributes.should_export)
                   Program.add_exported_module( cur_module, instance_name )
                 endIf
 
-                RogueC.include_source( t, instance_name.before_first('<'), &is_optional )
+                if (not uses_attributes.no_include)
+                  RogueC.include_source( t, instance_name.before_first('<'), &is_optional )
+                endIf
 
                 local eol_t = reader.peek
                 reader.must_consume( TokenType.eol )
@@ -412,9 +414,12 @@ class Preprocessor
               nextIteration
 
             else
+              # Regular/non-template module ID
               local save_state = reader.save_state
-              local module_id = read_identifier
-              if (parse_uses_export)
+              local qualified_module_id = read_identifier
+              local module_id = qualified_module_id.after_any( '/' )
+              local uses_attributes = parse_uses_attributes
+              if (uses_attributes.should_export)
                 Program.add_exported_module( cur_module, module_id )
               endIf
               local end_pos = reader.position
@@ -424,7 +429,9 @@ class Preprocessor
                 tokens.add( reader.read )
               endWhile
 
-              RogueC.include_source( t, module_id, &is_optional )
+              if (not uses_attributes.no_include)
+                RogueC.include_source( t, qualified_module_id, &is_optional )
+              endIf
 
               local eol_t = reader.peek
               reader.must_consume( TokenType.eol )
@@ -585,26 +592,28 @@ class Preprocessor
         tokens.add( Token(TokenType.keyword_false).set_location(t) )
       endIf
 
-    method parse_uses_export->Logical
+    method parse_uses_attributes->UsesAttributes
       if (not consume(TokenType.symbol_open_bracket) or consume(TokenType.symbol_close_bracket))
-        return false
+        return UsesAttributes()
       endIf
 
       local should_export = false
+      local no_include    = false
       consume_eols
       while (reader.has_another and not reader.next_is(TokenType.symbol_close_bracket))
         local t = reader.peek
         local id = read_identifier
         which (id)
-          case "export":  should_export = true
-          others: throw t.error( "Illegal '$', expected 'export'." (id) )
+          case "export":    should_export = true
+          case "noInclude": no_include = true
+          others: throw t.error( "Illegal '$', expected 'export' or 'noInclude'." (id) )
         endWhich
         consume_eols
         consume( TokenType.symbol_comma )
         consume_eols
       endWhile
       must_consume( TokenType.symbol_close_bracket )
-      return should_export
+      return UsesAttributes( &=should_export, &=no_include )
 
     method read_define( keep_tokens:Logical, definitions:Definitions )
       if (keep_tokens)
@@ -1051,3 +1060,5 @@ class Define
 endClass
 
 class IncludeAttributes( &is_optional, &is_essential, &is_api ) [compound];
+
+class UsesAttributes( &should_export, &no_include ) [compound];

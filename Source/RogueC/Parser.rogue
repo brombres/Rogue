@@ -182,7 +182,7 @@ class Parser
         elseIf (t.type is TokenType.meta_uses)
           local module_id = read_module_id
           id_map.use_module( module_id )
-          parse_uses_export
+          parse_uses_attributes
 
           local exported_modules = Program.exported_modules( module_id )
           if (exported_modules is null and module_id)
@@ -213,7 +213,7 @@ class Parser
       reader.position = 0  # rewind
 
     method read_module_id->String
-      local module_id = read_identifier
+      local module_id = read_identifier.after_any( '/' )
       if (module_id.contains('<'))
         local module_instance = Program.module_instance_lookup[ module_id ]
         require module_instance
@@ -320,7 +320,7 @@ class Parser
         read  # 'uses'
         local module_id = read_module_id
         used_modules = UsedModule( module_id, used_modules )
-        parse_uses_export
+        parse_uses_attributes
 
         must_consume_eols
         return true
@@ -348,26 +348,28 @@ class Parser
 
       return false
 
-    method parse_uses_export->Logical
+    method parse_uses_attributes->UsesAttributes
       if (not consume(TokenType.symbol_open_bracket) or consume(TokenType.symbol_close_bracket))
-        return false
+        return UsesAttributes()
       endIf
 
       local should_export = false
+      local no_include    = false
       consume_eols
       while (reader.has_another and not reader.next_is(TokenType.symbol_close_bracket))
         local t = reader.peek
         local id = read_identifier
         which (id)
-          case "export":  should_export = true
-          others: throw t.error( "Illegal '$', expected 'export'." (id) )
+          case "export":    should_export = true
+          case "noInclude": no_include = true
+          others: throw t.error( "Illegal '$', expected 'export' or 'noInclude'." (id) )
         endWhich
         consume_eols
         consume( TokenType.symbol_comma )
         consume_eols
       endWhile
       must_consume( TokenType.symbol_close_bracket )
-      return should_export
+      return UsesAttributes( &=should_export, &=no_include )
 
     method parse_class_template
       local t = read  # 'class'
@@ -377,14 +379,15 @@ class Parser
 
     method parse_routine
       local t = peek # 'routine'
-      local original_type = this_type
-      this_type = Program.get_type_reference( peek, "Global" )
-      parse_method( false, &first_token=TokenType.keyword_routine)
-      must_consume( TokenType.keyword_endRoutine )
-      if (not this_method and not this_type.method_templates)
-        throw t.error("Failed to parse routine")
-      endIf
-      this_type = original_type
+      temporarily this_type = Program.get_type_reference( peek, "Global" )
+        local attributes : Attributes
+        if (is_api_module) attributes = Attributes( Attribute.is_essential )
+        parse_method( &as_global, &first_token=TokenType.keyword_routine, &default_attributes=attributes )
+        must_consume( TokenType.keyword_endRoutine )
+        if (not this_method and not this_type.method_templates)
+          throw t.error("Failed to parse routine")
+        endIf
+      endTemporarily
 
     method parse_template_tokens( template:Template, end_type:TokenType )
       local is_api_class = is_api_module
@@ -641,6 +644,8 @@ class Parser
           attributes.add( Attribute.is_mutating )
         elseIf (consume("nonAPI"))
           attributes.add( Attribute.is_nonAPI )
+        elseIf (consume("override"))
+          attributes.add( Attribute.is_override )
         elseIf (consume("preferred"))
           attributes.add( Attribute.is_preferred )
         elseIf (consume("primitive"))
@@ -845,11 +850,11 @@ class Parser
       if (consume(TokenType.keyword_GLOBAL))
         if (consume(TokenType.keyword_PROPERTIES))
           local attributes = parse_attributes
-          while (parse_properties(true, &default_attributes=attributes)) noAction
+          while (parse_properties(&as_global, &default_attributes=attributes)) noAction
           return true
         elseIf (consume(TokenType.keyword_METHODS))
           local attributes = parse_attributes
-          while (parse_method(true, &default_attributes=attributes)) noAction
+          while (parse_method(&as_global, &default_attributes=attributes)) noAction
           return true
         endIf
       endIf
@@ -947,7 +952,8 @@ class Parser
                   endIf
                 endForEach
               elseIf (named_args.count)
-                throw named_args.first.t.error( "No such enum property '$'." (named_args.keys.first) )
+                local names = named_args.keys
+                throw named_args.first.t.error( "No such enum property '$'." (names.read) )
               endIf
             endIf
 
@@ -1900,25 +1906,14 @@ class Parser
         return CmdAssign( t,expression,parse_expression )
       endIf
 
+      if (consume(TokenType.symbol_dot_equals))
+        return CmdAssign( t, expression, parse_access(t,expression.cloned) )
+      endIf
+
       if (t.type.is_op_with_assign)
         read
         return CmdModifyAndAssign( t, expression, t.type, parse_expression )
       endIf
-
-      #{
-      if (consume(TokenType.symbol_access_assign))
-        local rhs = parse_expression
-        local access = rhs as CmdAccess
-        if (access is null) throw rhs.error( "Property access or method call expected." )
-        while (access.operand)
-          local operand = access.operand as CmdAccess
-          if (operand is null) throw access.operand.t.error( "Property access or method call expected." )
-          access = operand
-        endWhile
-        access.operand = expression.cloned
-        cur_statement_list.add( CmdAssign(t,expression,access) )
-      endIf
-      }#
 
       if (consume(TokenType.symbol_plus_plus))
         return CmdStep( t, expression, 1 )
@@ -3616,6 +3611,7 @@ class Parser
             first = false
             args.add( parse_expression )
           endWhile
+          consume_eols
           must_consume( TokenType.symbol_close_paren )
           return CmdFormattedString( t, t->String, args )
         endIf

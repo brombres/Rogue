@@ -1,30 +1,33 @@
 module UI
 
-class UIScrollView : UIView
+class UIScrollView : UILayout
   PROPERTIES
+    offset : XY
 
   METHODS
-    method after( e:PointerEvent )
-      if (e.is_press)
-        retain_focus( e )
-      endIf
-
-    method on( e:PointerEvent )
-      if (e.is_drag_move)
-        scroll( e.delta )
-        e.consume
-      endIf
-
     method on( e:ScrollEvent )
-      if (not is_handling_event) handle( e )
-      scroll( e.delta )
-      e.consume
+      if (Pointer.position and display_bounds.contains(Pointer.position.value))
+        offset -= e.delta.yv
+        request_redraw
+      endIf
 
-    method scroll( delta:XY )
-      if (not layout) return
-      forEach (cur in layout)
-        cur.offset += delta
-        cur.offset = -((-cur.offset).clamped_high( cur.content_size - size ).clamped_low( XY.zero ))
-      endForEach
+    method offset->XY [override]
+      return @offset
+
+    method set_offset( @offset )
+      @offset = @offset.clamped_high( 0 )
+      local bottom_offset = (height - content.height).clamped_high(0)
+      if (@offset.y < bottom_offset) @offset = XY( 0, bottom_offset )
+
+    method update_layout_size( container_size:XY ) [override]
+      local tracks_bottom = (offset.y == (height - content.height).clamped_high(0))
+
+      prior.update_layout_size( container_size )
+
+      local bottom_offset = (height - content.height).clamped_high(0)
+      if (tracks_bottom or offset.y < bottom_offset)
+        offset = XY( 0, bottom_offset )
+      endIf
 
 endClass
+

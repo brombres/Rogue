@@ -51,9 +51,8 @@ class BitWriter : DataWriter
       if (buffer_count) write( 0, 8-buffer_count )
       prior.flush
 
-    method write( value:Byte )->this
+    method write( value:Byte )
       write( value, 8 )
-      return this
 
     method write( value:Int32, nbits:Int32 )
       bit_buffer = (bit_buffer :<<: nbits) | (value & ((Int64(1):<<:nbits)-1))

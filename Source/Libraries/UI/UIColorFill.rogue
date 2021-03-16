@@ -1,6 +1,0 @@
-module UI
-  uses Bitmap
-
-class UIColorFill( color:Color ) : UIComponent
-  METHODS
-endClass

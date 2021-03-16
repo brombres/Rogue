@@ -1,24 +1,213 @@
 module UI
   uses Geometry [export]
+  uses Utility/WorkList
 
 $include "Event.rogue"
 $include "Keyboard.rogue"
 $include "Pointer.rogue"
-$include "UIAbsoluteLayout.rogue"
-$include "UIColorFill.rogue"
-$include "UIColumnLayout.rogue"
+
+$include "UIAttribute.rogue"
+$include "UIButton.rogue"
 $include "UIComponent.rogue"
-#$include "UIDivider.rogue"
+$include "UIContent.rogue"
 $include "UIFiller.rogue"
 $include "UIFont.rogue"
-$include "UIImage.rogue"
+$include "UIHorizontalLayout.rogue"
 $include "UILayout.rogue"
 $include "UIList.rogue"
-$include "UIManager.rogue"
-$include "UIRowLayout.rogue"
+$include "UIModifier.rogue"
+$include "UIPadding.rogue"
+$include "UIPlacement.rogue"
 $include "UIScrollView.rogue"
 $include "UISpacer.rogue"
 $include "UIText.rogue"
+$include "UITextStyle.rogue"
 $include "UITheme.rogue"
+$include "UIVerticalLayout.rogue"
+$include "UIWidget.rogue"
+$include "UIXYLayout.rogue"
+
+#{
+$include "UIAbsoluteLayout.rogue"
+$include "UIColorFill.rogue"
+$include "UIContainer.rogue"
+$include "UIFiller.rogue"
+$include "UIImage.rogue"
+$include "UIList.rogue"
+$include "UIScrollView.rogue"
+$include "UISpacer.rogue"
 $include "UIView.rogue"
+}#
+
+class UI [singleton]
+  # Manages a UIComponent tree. Dispatches events, maintains input focus, current clipping region, etc.
+  PROPERTIES
+    #theme         : UITheme
+    theme          : UITheme
+    dirty_bounds   : Box?
+    clip           : Box?
+    current_bounds : Box?
+    content        = UIComponent()
+    pointer_focus  : UIComponent
+    keyboard_focus : UIComponent
+
+
+    #{
+    drag_threshold = 8
+
+    keyboard_focus : UIComponent
+    pointer_focus  : UIComponent
+    pointer_press  : PointerEvent  # used to remember origin and timestamp of drag start
+    is_dragging    : Logical
+    }#
+
+  METHODS
+    method init( theme )
+
+    method add( layer:UIComponent )
+      content.add( layer )
+
+    method after( e:KeyEvent )
+      noAction
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after( e:ScrollEvent )
+      noAction
+
+    method after( e:TextEvent )
+      noAction
+
+    method clear_focus
+      keyboard_focus = null
+      pointer_focus = null
+
+    method contains( pos:XY )->Logical
+      if (not current_bounds) return false
+      return current_bounds.value.contains( pos )
+
+    method draw
+      UI = this
+      if (dirty_bounds and current_bounds)
+        dirty_bounds = dirty_bounds.value & current_bounds.value
+        if (dirty_bounds)
+          clip = dirty_bounds
+          dirty_bounds = null
+          content.draw( clip.value )
+        endIf
+      endIf
+
+    method find( pos:XY )->UIComponent
+      return content.find( pos )
+
+    method handle( e:KeyEvent )
+      UI = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (keyboard_focus)
+        keyboard_focus.handle( e )
+      else
+        content.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:PointerEvent )
+      UI = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (pointer_focus)
+        pointer_focus.handle( e )
+      else
+        content.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:ScrollEvent )
+      UI = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (pointer_focus)
+        pointer_focus.handle( e )
+      else
+        content.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:TextEvent )
+      UI = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (keyboard_focus)
+        keyboard_focus.handle( e )
+      else
+        content.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+
+    method on_resize
+      noAction
+
+    method on_update
+
+    method set_clip( @clip )
+      noAction
+
+    method update
+      UI = this
+      on_update
+      content.update
+
+    method update( bounds:Box )
+      UI = this
+      update
+      update_layout( bounds )
+
+    method update_layout( bounds:Box )
+      UI = this
+      if (content.count)
+        local bounds_changed = (current_bounds and current_bounds.value != bounds)
+        if (not current_bounds)
+          # UI hasn't ever been drawn
+          dirty_bounds = bounds
+        endIf
+        current_bounds = bounds
+        if (bounds_changed)
+          dirty_bounds = bounds  # Redraw the entire UI
+          on_resize
+        endIf
+        if (bounds_changed or content.is_modified)
+          content.update_layout( bounds )
+        endIf
+      endIf
+
+endClass
 
