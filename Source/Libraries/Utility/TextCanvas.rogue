@@ -5,16 +5,16 @@ uses Geometry [export]
 class TextCanvas  : BufferedPrintWriter<<builder>>
   # A 2D canvas of styled console text.
   PROPERTIES
-    buffer     : StyledCharacter[]
-    displayed  = StyledCharacter[]
-    width      : Int32
-    height     : Int32
+    buffer       : StyledCharacter[]
+    displayed    = StyledCharacter[]
+    width        : Int32
+    height       : Int32
 
-    cursor     : XY
-    autoscroll : Logical
-    style      = CurrentCharacterStyle()
+    cursor       : XY
+    autoscroll   : Logical
+    style        = CurrentCharacterStyle()
 
-    clip       : Box?
+    clip         : Box?
 
     _is_flushing : Logical
 
@@ -138,8 +138,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         forEach (i in 0..i2)
           local ch = src.buffer[ index ]
           if (ch.value)
-            style.current = ch.style
-            print( ch.value )
+            set( cursor, ch )
           else
             flush
             @cursor += XY(1,0)
@@ -205,6 +204,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method fill( bounds:Box, ch:StyledCharacter )
       local intersection = bounds & Box(width,height)
+      if (not intersection) return
+      if (clip) intersection = intersection.value & clip.value
       if (not intersection) return
       bounds = intersection.value
 
