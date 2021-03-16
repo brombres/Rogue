@@ -100,7 +100,6 @@ class Node<<$ExtendedNodeType>>
     method insert( new_child:$ExtendedNodeType, before_index=0:Int32 )
       if (new_child is null) return
       if (new_child.parent is this) return
-
       new_child._detach( &preserve_next )
 
       local last_new_child = new_child.last_sibling
@@ -130,11 +129,13 @@ class Node<<$ExtendedNodeType>>
         cur.@parent = this as $ExtendedNodeType
       endWhile
 
+      this.is_modified = true
+
       cur = new_child
-      cur.mark_modified
+      cur.is_modified = true
       while (cur is not last_new_child)
         cur = cur.next
-        cur.mark_modified
+        cur.is_modified = true
       endWhile
 
     method insert_next( new_sibling:$ExtendedNodeType )
@@ -158,14 +159,14 @@ class Node<<$ExtendedNodeType>>
 
       cur = this.next
       loop (mod_count)
-        cur.mark_modified
+        cur.is_modified = true
         cur = cur.next
       endLoop
 
-    method mark_modified
-      if (is_modified) return
-      is_modified = true
-      if (parent) parent.mark_modified
+    method set_is_modified( setting:Logical )
+      if (@is_modified == setting) return
+      @is_modified = setting
+      if (setting and parent) parent.is_modified = true
 
     method name->String
       return type_name
@@ -201,11 +202,11 @@ class Node<<$ExtendedNodeType>>
       @first_child = null
       @last_child = null
       count = 0
-      mark_modified
+      is_modified = true
 
       cur = result
       while (cur)
-        cur.mark_modified
+        cur.is_modified = true
         cur = cur.next
       endWhile
 
@@ -294,12 +295,12 @@ class Node<<$ExtendedNodeType>>
           endWhile
         endIf
         --parent.count
-        parent.mark_modified
+        parent.is_modified = true
         @parent = null
       endIf
       if (not preserve_next)
         @next = null
-        mark_modified
+        is_modified = true
       endIf
 
 endClass
