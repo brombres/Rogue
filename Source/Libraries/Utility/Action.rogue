@@ -1,0 +1,222 @@
+$include "ProgressFn.rogue"
+
+class Action
+  GLOBAL METHODS
+    method create( fn:Function() )->Action
+      return ActionCall( fn )
+
+    method create( fn:Function(Real64), duration:Real64, progress_fn=ProgressFn.LINEAR:Function(Real64)->Real64 )->Action
+      return ActionCallWithProgress( fn, duration, progress_fn )
+
+    method finish_all( cmd:Action )->Action
+      while (cmd)
+        cmd.finish
+        cmd = cmd.update
+      endWhile
+      return null
+
+    method operator+( a:Action, b:Action )->Action
+      if (not a) return b
+      if (not b) return a
+      return a.and_then( b )
+
+    method operator|( a:Action, b:Action )->Action
+      if (not a) return b
+      if (not b) return a
+      return a.also( b )
+
+  PROPERTIES
+    duration    : Real64
+    progress_fn = ProgressFn.LINEAR : Function(Real64)->Real64
+
+    next        : Action
+    concurrent  : Action
+
+    t           : Real64
+    dt          : Real64
+    last_time   : Real64 # 0:not started
+
+  METHODS
+    method init( duration=0, progress_fn=ProgressFn.LINEAR )
+
+    method and_then( node:Action )->this
+      if (node)
+        local cur = this
+        while (cur.next) cur = cur.next
+        cur.next = node
+      endIf
+      return this
+
+    method and_then_also( node:Action )->this
+      if (next) next = next.also( node )
+      else      next = node
+      return this
+
+    method also( node:Action )->this
+      if (node)
+        local cur = this
+        while (cur.concurrent) cur = cur.concurrent
+        cur.concurrent = node
+      endIf
+      return this
+
+    method count->Int32
+      local n = 1
+      if (next) n += next.count
+      if (concurrent) n += concurrent.count
+      return n
+
+    method describe->String
+      return type_name
+
+    method finish
+      if (duration < 0) duration = 0
+      t = duration
+
+    method insert_next( node:Action )->this
+      if (node) next = node.and_then( next )
+      return this
+
+    method is_finished->Logical
+      return (duration >= 0 and t >= duration)
+
+    method last->Action
+      # Returns the last node in this chain
+      local cur = this
+      while (cur.next ) cur = cur.next
+      return cur
+
+    method on_start
+
+    method on_update
+
+    method on_finish
+
+    method progress->Real64
+      return which{ duration>0:progress_fn(t/duration) || 1.0 }
+
+    method set_duration( @duration )->this
+      return this
+
+    method set_progress_fn( @progress_fn )->this
+      return this
+
+    method start_next->Action
+      # Finds the successor to this node, adjusts links if necessary, and
+      # returns it or the result of a call to its update().
+      if (next)
+        if (concurrent)
+          # Attach any parallel commands remaining in this finished command to the
+          # next command in this chain that will be the new head.
+          next = next.also( concurrent )
+          concurrent = null
+        endIf
+        return next.update
+      elseIf (concurrent)
+        # start_next() is called after update(), which has already updated 'concurrent' this tick.
+        return concurrent
+      else
+        return null
+      endIf
+
+    method to->String
+      local result = describe
+      if (next) result = "$ + $" (result,next->String)
+      if (concurrent) result = "($) | ($)" (result,concurrent)
+      return result
+
+    method update->Action
+      local cur_time = System.time
+      if (not last_time)
+        on_start
+      else
+        dt = (cur_time - last_time).clamped(0,1.0/10.0)
+        t += dt
+        if (duration >= 0 and t > duration) t = duration
+      endIf
+
+      last_time = cur_time
+
+      on_update
+
+      if (concurrent)
+        concurrent = concurrent.update
+      endIf
+
+      if (not is_finished) return this
+
+      on_finish
+
+      return start_next
+endClass
+
+
+class ActionList : Action
+  # Contains nested actions
+  PROPERTIES
+    actions : Action
+
+  METHODS
+    method describe->String
+      if (actions) return "[" + actions + "]"
+      else         return "[]"
+
+    method finish
+      prior.finish
+      if (actions) actions.finish
+
+    method is_finished->Logical
+      if (actions) return false
+      return (duration >= 0 and t >= duration)
+
+    method operator+( action:Action )->ActionList
+      actions += action
+      return this
+
+    method operator|( action:Action )->ActionList
+      actions |= action
+      return this
+
+    method update->Action
+      local cur_time = System.time
+      if (not last_time)
+        on_start
+      else
+        dt = (cur_time - last_time).clamped(0,1.0/10.0)
+        t += dt
+        if (duration >= 0 and t > duration) t = duration
+      endIf
+
+      last_time = cur_time
+
+      on_update
+      if (actions) actions = actions.update
+
+      if (concurrent)
+        concurrent = concurrent.update
+      endIf
+
+      if (not is_finished) return this
+
+      on_finish
+
+      return start_next
+endClass
+
+
+class ActionWait( duration ) : Action;
+
+
+class ActionCall( fn:Function() ) : Action
+  METHODS
+    method on_start
+      fn()
+endClass
+
+
+class ActionCallWithProgress( fn:Function(Real64), duration, progress_fn ) : Action
+  METHODS
+    method on_update
+      fn( progress )
+endClass
+
