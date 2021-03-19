@@ -706,7 +706,7 @@ endClass
 $metacode<ConsoleStyle.organize_methods>
 forEach (p in property_list)
   sourceln "method $( output=Global:PrintWriter )" (p.name.to_lowercase)
-  sourceln "  print( $, output )" (p.name)
+  sourceln "  print( $, output ); output.flush" (p.name)
   injectMethod
 endForEach
 $endMetacode
