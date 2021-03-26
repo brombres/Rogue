@@ -6,10 +6,14 @@ class UIXYLayout : UILayout
     clamp_content : Logical
 
   METHODS
+    method add( component:UIComponent )
+      component.original_position = component.position - this.position # relative to this layout
+      prior.add( component )
+
     method add( component:UIComponent, position:XY, anchor=null:Anchor? )
       if (anchor) component.anchor = anchor.value
       component.original_position = position - this.position # relative to this layout
-      add( component )
+      prior.add( component )
 
     method clamp_content
       @clamp_content = true

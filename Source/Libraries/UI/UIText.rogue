@@ -1,10 +1,12 @@
 module UI
 
-class UIText : UIComponent
+class UIText : UITextComponent
   PROPERTIES
     value : String
 
   METHODS
+    method init
+
     method init( value )
       if (value.count > 1 and value.contains('\n'))
         local left  = value.before_first('\n')
@@ -14,84 +16,21 @@ class UIText : UIComponent
         if (String.exists(right)) add( UIText(right) )
       endIf
 
-    method anchor->Anchor
-      if (parent and parent instanceOf UIText) return parent.anchor
-      return prior.anchor
-
-    method content_position->XY
-      # Do not add this UIText's position or offset if child fragments exist
-      if (first_child)
-        if (parent) return parent.content_position
-        else        return XY.zero
-      else
-        return prior.content_position
-      endIf
-
-    method display_position->XY
-      # Do not add this UIText's position if child fragments exist
-      if (first_child)
-        if (parent) return parent.content_position
-        else        return XY.zero
-      else
-        return prior.display_position
-      endIf
-
-    method draw( clip:Box )
-      if (count)
-        forEach (child in children)
-          child.draw( clip )
-        endForEach
-      else
-        prior.draw( clip )
-      endIf
-
-    method find( pos:XY, &always_check_subcomponents )->UIComponent
-      return prior.find( pos, &always_check_subcomponents )
-
-    method font->UIFont
-      if (parent and parent instanceOf UIText) return parent.font
-      return prior.font
-
-    method measure [override]
-      if (count)
-        (forEach in children).measure
-      else
-        prior.measure
-      endIf
-
     method on_measure [override]
       size = font.measure( value )
 
     method text->String
-      return value
+      if (count) return prior.text
+      else       return value
 
     method to->String
-      return "UIText($)" (value)
-
-    method update_layout_size( container_size:XY )
-      if (count)
-        (forEach in children).measure
-        (forEach in children).update_layout_size( container_size )
-      else
-        prior.update_layout_size( container_size )
-      endIf
-
-    method update_layout( placer:UIContentPlacer )->UIContentPlacer
-      if (count)
-        # Update position of child fragments
-        placer = (forEach in children).update_layout( placer )
-        return placer
-      else
-        return prior.update_layout( placer )
-      endIf
+      if (count) return prior.to_String
+      else       return "UIText($)" (value)
 
     method update_layout_size( sizer:UIContentSizer )->UIContentSizer
       if (count)
-        # Update size of child fragments
-        forEach (subcomponent in children)
-          sizer = subcomponent.update_layout_size( sizer )
-        endForEach
-        return sizer
+        # Prior version will call update_layout_size() on each child individually
+        return prior.update_layout_size( sizer )
       endIf
 
       local available_w = sizer.available_width
@@ -115,49 +54,5 @@ class UIText : UIComponent
       endIf
 
       return prior.update_layout_size( sizer )
-
-      #{
-    method update_layout_bounds( new_bounds:Box )
-      if (count)
-        (forEach in children).update_layout_bounds( new_bounds )
-      else
-        prior.update_layout_bounds( new_bounds )
-      endIf
-      }#
-
-    method update_subcomponent_layout
-      if (count)
-        (forEach in children).update_subcomponent_layout
-        return
-      else
-        prior.update_subcomponent_layout
-      endIf
-
-    method update_subcomponent_sizes( container_size:XY )->XY
-      # Returns minimum size to enclose all subcomponents
-      local min_size : XY
-      if (count)
-        min_size .= or_larger( (forEach in children).update_subcomponent_sizes(container_size) )
-        return min_size
-      else
-        return prior.update_subcomponent_sizes( container_size )
-      endIf
-endClass
-
-
-class UINewline : UIComponent
-  METHODS
-    method on_draw
-      noAction
-    
-    method on_measure
-      size = XY( 0, font.height )
-
-    method update_layout( placement:UIContentPlacer )->UIContentPlacer
-      position = placement.cursor
-      return placement.with_newline( size.y )
-
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
-      return sizer.with_newline( size.y )
 endClass
 

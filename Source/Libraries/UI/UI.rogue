@@ -21,6 +21,7 @@ $include "UIPlacement.rogue"
 $include "UIScrollView.rogue"
 $include "UISpacer.rogue"
 $include "UIText.rogue"
+$include "UITextComponent.rogue"
 $include "UITextStyle.rogue"
 $include "UITheme.rogue"
 $include "UIVerticalLayout.rogue"
@@ -177,6 +178,9 @@ class UI [singleton]
       noAction
 
     method on_update
+
+    method remove( layer:UIComponent )
+      content.remove( layer )
 
     method set_clip( @clip )
       noAction
