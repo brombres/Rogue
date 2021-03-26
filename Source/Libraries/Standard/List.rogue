@@ -731,8 +731,12 @@ class ListIterator<<$DataType>>( list:($DataType[]), position=0:Int32, limit=-1:
       if (limit == -1) return (position < list.count)
       else             return (position < limit)
 
-    method peek->$DataType
-      return list[ position ]
+    method has_another( n:Int32 )->Logical
+      if (limit == -1) return (position + n <= list.count)
+      else             return (position + n <= limit)
+
+    method peek( lookahead=0:Int32 )->$DataType
+      return list[ position+lookahead ]
 
     method read->$DataType [mutating]
       ++position
