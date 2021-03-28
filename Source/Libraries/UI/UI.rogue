@@ -8,6 +8,7 @@ $include "Pointer.rogue"
 
 $include "UIAttribute.rogue"
 $include "UIButton.rogue"
+$include "UIBorder.rogue"
 $include "UIComponent.rogue"
 $include "UIContent.rogue"
 $include "UIFiller.rogue"
@@ -26,7 +27,7 @@ $include "UITextStyle.rogue"
 $include "UITheme.rogue"
 $include "UIVerticalLayout.rogue"
 $include "UIWidget.rogue"
-$include "UIXYLayout.rogue"
+$include "UIAbsoluteLayout.rogue"
 
 #{
 $include "UIAbsoluteLayout.rogue"

@@ -6,6 +6,18 @@ class UIModifier : UIComponent
       if (first_child) return first_child.attributes
       else             return null
 
+    method can_split->Logical
+      if (first_child) return first_child.can_split
+      else             return false
+
+    method can_split( max_width:Int32 )->Logical
+      if (first_child) return first_child.can_split( max_width )
+      else             return false
+
+    method contains_newline->Logical
+      if (first_child) return first_child.contains_newline
+      else             return false
+
     method content_position->XY
       if (first_child)
         if (parent) return parent.content_position
@@ -35,6 +47,10 @@ class UIModifier : UIComponent
       if (not first_child) return null
       return first_child.find( pos, &=always_check_subcomponents )
 
+    method first_element_width->Real64
+      if (first_child) return first_child.first_element_width
+      else             return 0
+
     method flags->Int32
       if (first_child) return first_child.flags
       else             return 0
@@ -47,14 +63,6 @@ class UIModifier : UIComponent
 
     method set_flags( flags:Int32 )
       if (first_child) first_child.flags = flags
-
-    method update_layout( placement:UIContentPlacer )->UIContentPlacer
-      if (first_child)
-        placement   = first_child.update_layout( placement )
-        @position   = first_child.@position
-        @size       = first_child.@size
-      endIf
-      return placement
 
     method update_layout( placement:UIIntervalPlacement )->UIIntervalPlacement
       if (first_child)

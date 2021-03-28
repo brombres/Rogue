@@ -1,44 +1,153 @@
 module UI
 
-class UIContentSizer( container_size:XY, cursor=XY.zero:XY, limits=XY.zero:XY, row_height=0:Real64 ) [compound]
-  METHODS
-    method available_width->Real64
-      return (container_size.x - cursor.x)
+class UIContentWrapper
+  GLOBAL METHODS
+    method prep( components:UIComponent[], max_width:Int32 )->XY
+      # Returns minimum enclosing size
+      if (components.is_empty) return XY.zero
 
-    method can_fit( component:UIComponent )->Logical
-      return cursor.x + component.size.x <= container_size.x
+      local min_size = XY.zero
+      local i1       = 0
+      while (i1 < components.count)
+        local i2 = _find_approximate_eol( components, i1, max_width )
+        i2 = _refine_eol( components, i1, i2, max_width )
 
-    method placing( component:UIComponent )->UIContentSizer
-      block cursor, limits, row_height
-        local component_size = component.size
-        cursor += component_size.xv
-        row_height .= or_larger( component_size.y )
-        limits .= or_larger( XY(cursor.x,cursor.y+row_height) )
-        return UIContentSizer( container_size, cursor, limits, row_height )
-      endBlock
+        local w = 0.0
+        local h = 0.0
+        forEach (i in i1..i2)
+          local component = components[i]
+          w += component.size.x
+          h .= or_larger( component.size.y )
+        endForEach
+        min_size = XY( min_size.x.or_larger(w), min_size.y+h )
+        i1 = i2 + 1
+      endWhile
 
-    method with_newline( min_row_height=0:Real64 )->UIContentSizer
-      local new_cursor = XY( 0, cursor.y+row_height.or_larger(min_row_height) )
-      return UIContentSizer( container_size, new_cursor, limits.or_larger(XY(cursor.x,new_cursor.y)), 0 )
-endClass
+      # Re-apply current sizes to give each component a chance to update
+      # its internal layout if necessary.
+      forEach (component in components)
+        component.update_layout_size( component.size )
+      endForEach
 
-class UIContentPlacer( bounds:Box, cursor=XY.zero:XY, row_height=0:Real64 ) [compound]
-  METHODS
-    method can_fit( component:UIComponent )->Logical
-      return cursor.x + component.size.x <= bounds.size.x
+      return min_size
 
-    method placing( component:UIComponent )->UIContentPlacer
-      block cursor, row_height
-        local component_size = component.size
-        component.update_layout_bounds( Box(bounds.position+cursor,component_size) )
-        cursor += component_size.xv
-        row_height .= or_larger( component_size.y )
-        return UIContentPlacer( bounds, cursor, row_height )
-      endBlock
+    method place( components:UIComponent[], bounds:Box )
+      # Returns minimum enclosing size
+      if (components.is_empty) return
 
-    method with_newline( min_row_height=0:Real64 )->UIContentPlacer
-      local new_cursor = XY( 0, cursor.y+row_height.or_larger(min_row_height) )
-      return UIContentPlacer( bounds, new_cursor, 0 )
+      local max_width = bounds.size.x
+      local position = bounds.position
+
+      local i1 = 0
+      local y  = 0.0
+      while (i1 < components.count)
+        local i2 = _find_approximate_eol( components, i1, max_width )
+        i2 = _refine_eol( components, i1, i2, max_width )
+
+        local x = 0.0
+        local row_height = 0.0
+        forEach (i in i1..i2)
+          local component = components[i]
+          local size = component.size
+          local w = component.size.x
+          local h = component.size.y
+          row_height .= or_larger( h )
+          component.update_layout_bounds( Box(position+XY(x,y),size) )
+          x += w
+        endForEach
+        y += row_height
+
+        i1 = i2 + 1
+      endWhile
+
+    method _find_approximate_eol( components:UIComponent[], i1:Int32, max_width:Int32 )->Int32
+      local w = 0.0
+      local i2 = i1
+
+      # Find the number of components that will meet or exceed the given width
+      loop
+        local cur = components[i2]
+        w += cur.size.x
+        if (w >= max_width)
+          w -= cur.size.x
+          escapeLoop
+        endIf
+
+        if (cur.contains_newline) return i2
+
+        ++i2
+        if (i2 == components.count) return (i2-1)
+      endLoop
+
+      # Keep going until the last component can be split (contains a space or newline)
+      loop
+        local cur = components[i2]
+        w += cur.size.x
+        if (cur.can_split) return i2
+
+        ++i2
+        if (i2 == components.count) escapeLoop
+      endLoop
+
+      return components.count - 1
+
+    method _refine_eol( components:UIComponent[], i1:Int32, i2:Int32, max_width:Int32 )->Int32
+      local original_i2 = i2
+
+      # Recalculate our starting width
+      local w = 0.0
+      w += components[ forEach in i1..i2 ].size.x
+      local original_w = w
+
+      while (w > max_width and i2 >= i1)
+        local cur = components[i2]  # guaranteed to be splittable
+
+        w -= cur.size.x
+        if (w < max_width)
+          # If we take off the current splittable piece are we under the limit?
+          # If so let's try splitting the current piece where we need to.
+          local available_w = max_width - w
+          if (cur.can_split(available_w))
+            # Do it
+            _split( components, cur, available_w )
+            return i2
+          endIf
+        endIf
+
+        # Unable to split a small enough piece. Back up until we find another splittable piece.
+        --i2
+        while (i2 >= i1)
+          cur = components[i2]
+          if (cur.can_split) escapeWhile
+          w -= cur.size.x
+          --i2
+        endWhile
+      endWhile
+
+      if (i2 >= i1) return i2
+
+      # Nowhere to split. Truncate instead.
+      w = original_w
+      i2 = original_i2
+      while (w > max_width)
+        local cur = components[i2]
+        w -= cur.size.x
+        if (w <= max_width)
+          if (w == max_width or w + cur.first_element_width > max_width) return i2 - 1
+          _split( components, cur, max_width-w )
+          return i2
+        endIf
+        --i2
+      endWhile
+
+      return original_i2  # unreachable
+
+    method _split( components:UIComponent[], cur:UIComponent, max_width:Int32 )
+      forEach (component in rewriter=components.rewriter)
+        if (component is cur) cur.split( max_width, rewriter )
+        else                  rewriter.write component
+      endForEach
+
 endClass
 
 class UIIntervalPlacement( container:UIComponent, delta:XY, cursor=XY.zero:XY, limits=XY.zero:XY ) [compound]

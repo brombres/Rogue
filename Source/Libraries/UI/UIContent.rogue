@@ -1,4 +1,5 @@
 module UI
+  uses Utility/WorkList
 
 class UIContent : UIComponent, BufferedPrintWriter<<text_buffer>>
   METHODS
@@ -35,20 +36,32 @@ class UIContent : UIComponent, BufferedPrintWriter<<text_buffer>>
       endUse
 
     method update_subcomponent_layout
-      block bounds = padding.apply(Box(size))
-        local placer = UIContentPlacer( bounds )
-        placer = (forEach in children).update_layout( placer )
-      endBlock
+      use list = WorkList<<UIComponent>>
+        (forEach in children).collect_components( list )
+        local bounds = padding.apply( Box(size) )
+        UIContentWrapper.place( list, bounds )
+      endUse
 
     method update_subcomponent_sizes( container_size:XY )->XY
       # Returns minimum size to enclose all subcomponents
+
       if (text_buffer.count)
+        local cur = last_child
         flush
-        if (count) last_child.measure
+        if (cur is not last_child)
+          if (not cur) cur = first_child
+          while (cur)
+            cur.measure
+            cur .= next
+          endWhile
+        endIf
       endIf
 
-      local sizer = UIContentSizer( container_size )
-      sizer = (forEach in children).update_layout_size( sizer )
-      return sizer.limits
+      if (not count) return XY.zero
+
+      use list = WorkList<<UIComponent>>
+        (forEach in children).collect_components( list )
+        return UIContentWrapper.prep( list, container_size.x )
+      endUse
 endClass
 

@@ -16,8 +16,81 @@ class UIText : UITextComponent
         if (String.exists(right)) add( UIText(right) )
       endIf
 
+    method init( child:UIComponent )
+      value = child.text
+      add( child )
+
+    method can_split->Logical
+      return value.contains(' ')
+
+    method can_split( max_width:Int32 )->Logical
+      local i = value.locate( ' ' )
+      return (i and font.measure(value,0,i.value+1).x <= max_width)
+
+    method first_element_width->Real64
+      # Used to aid UIContent word wrap.
+      if (value.count == 0) return 0
+      return font.measure( value, 0, 1 ).x
+
     method on_measure [override]
       size = font.measure( value )
+
+    method split( max_width:Int32, writer:ListRewriter<<UIComponent>> )
+      local font = this.font
+
+      local first_i = value.locate( ' ' )
+      if (first_i.exists)
+        forEach (i in value.count-2 downTo 0)
+          local ch = value[i]
+          if (ch == ' ')
+            if (font.measure(value,0,i+1).x <= max_width or i == first_i.value)
+              _split( i+1, writer )
+              return
+            endIf
+          endIf
+        endForEach
+      else
+        # Cannot split as requested. Split arbitrarily instead. Include at least
+        # one character although that should already be accounted for.
+        if (value.count <= 1)
+          writer.write( this )
+          return
+        endIf
+
+        local w = font.measure(value,0,1).x
+        forEach (i in value from 1)
+          local next_w = font.measure( value, i, 1 ).x
+          if (w + next_w > max_width)
+            local part_1 = UIText( value.leftmost(i) ).[ measure ]
+            local part_2 = UIText( value.from(i) ).[ measure ]
+            add( part_1 )
+            add( part_2 )
+            writer.write( part_1 )
+            writer.write( part_2 )
+            return
+          else
+            w += next_w
+          endIf
+        endForEach
+      endIf
+
+      writer.write( this )
+
+    method _split( i:Int32, writer:ListRewriter<<UIComponent>> )
+      local a = value.leftmost(i)
+      local b = value.from(i)
+
+      if (a.count)
+        local part_1 = UIText(a).[ measure ]
+        add( part_1 )
+        writer.write( part_1 )
+      endIf
+
+      if (b.count)
+        local part_2 = UIText(b).[ measure ]
+        add( part_2 )
+        writer.write( part_2 )
+      endIf
 
     method text->String
       if (count) return prior.text
@@ -27,32 +100,11 @@ class UIText : UITextComponent
       if (count) return prior.to_String
       else       return "UIText($)" (value)
 
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
+    method write_text( builder:StringBuilder )
       if (count)
-        # Prior version will call update_layout_size() on each child individually
-        return prior.update_layout_size( sizer )
+        prior.write_text( builder )
+      else
+        builder.print value
       endIf
-
-      local available_w = sizer.available_width
-      if (size.x <= available_w or value.count <= 1)
-        return prior.update_layout_size( sizer )
-      endIf
-
-      # Find a space to break after
-      local font = this.font
-      local first_i = value.locate( ' ' )
-      if (first_i.exists)
-        forEach (i in value.count-2 downTo 0)
-          if (value[i] == ' ')
-            if (font.measure(value,0,i+1).x <= available_w or i == first_i.value)
-              add( UIText( value.leftmost(i+1) ).[ measure ] )
-              add( UIText( value.from(i+1) ).[ measure ] )
-              return update_layout_size( sizer )
-            endIf
-          endIf
-        endForEach
-      endIf
-
-      return prior.update_layout_size( sizer )
 endClass
 

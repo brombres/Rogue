@@ -2,9 +2,20 @@ module UI
 
 class UITextComponent : UIComponent
   METHODS
+    method alignment->Anchor
+      if (parent and parent instanceOf UITextComponent) return parent.alignment
+      return prior.alignment
+
     method anchor->Anchor
       if (parent and parent instanceOf UITextComponent) return parent.anchor
       return prior.anchor
+
+    method collect_components( list:UIComponent[] )
+      if (first_child)
+        (forEach in children).collect_components( list )
+      else
+        prior.collect_components( list )
+      endIf
 
     method content_position->XY
       # Do not add this UITextComponent's position or offset if child fragments exist
@@ -76,26 +87,6 @@ class UITextComponent : UIComponent
         prior.update_layout_size( container_size )
       endIf
 
-    method update_layout( placer:UIContentPlacer )->UIContentPlacer
-      if (count)
-        # Update position of child fragments
-        placer = (forEach in children).update_layout( placer )
-        return placer
-      else
-        return prior.update_layout( placer )
-      endIf
-
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
-      if (count)
-        # Update size of child fragments
-        forEach (subcomponent in children)
-          sizer = subcomponent.update_layout_size( sizer )
-        endForEach
-        return sizer
-      endIf
-
-      return prior.update_layout_size( sizer )
-
     method update_subcomponent_layout
       if (count)
         (forEach in children).update_subcomponent_layout
@@ -113,22 +104,34 @@ class UITextComponent : UIComponent
       else
         return prior.update_subcomponent_sizes( container_size )
       endIf
+
+    method write_text( builder:StringBuilder )
+      if (count)
+        (forEach in children).write_text( builder )
+      else
+        prior.write_text( builder )
+      endIf
 endClass
 
 
 class UINewline : UIComponent
   METHODS
+    method can_split->Logical
+      return true
+
+    method can_split( max_width:Int32 )->Logical
+      return true
+
+    method contains_newline->Logical
+      return true
+
     method on_draw
       noAction
     
     method on_measure
       size = XY( 0, font.height )
 
-    method update_layout( placement:UIContentPlacer )->UIContentPlacer
-      position = placement.cursor
-      return placement.with_newline( size.y )
-
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
-      return sizer.with_newline( size.y )
+    method text->String
+      return "\n"
 endClass
 

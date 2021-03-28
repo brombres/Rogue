@@ -30,7 +30,7 @@ class UILayout : UIComponent
   GLOBAL METHODS
     UI_FACTORY_METHODS( h, UIHorizontalLayout )
     UI_FACTORY_METHODS( v, UIVerticalLayout )
-    UI_FACTORY_METHODS( xy, UIXYLayout )
+    UI_FACTORY_METHODS( absolute, UIAbsoluteLayout )
 
   PROPERTIES
 
