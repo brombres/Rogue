@@ -233,6 +233,18 @@ class Box( position:XY, size:XY ) [compound]
     method top_right->XY
       return (position + XY(size.x,0))
 
+    method with_height( new_height:Real64 )->Box
+      return Box( this.position, this.size.x, new_height )
+
+    method with_position( new_position:XY )->Box
+      return Box( new_position, this.size )
+
+    method with_size( new_size:XY )->Box
+      return Box( this.position, new_size )
+
+    method with_width( new_width:Real64 )->Box
+      return Box( this.position, new_width, this.size.y )
+
     method width->Real64 [macro]
       return this.size.x
 

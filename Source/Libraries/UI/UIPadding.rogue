@@ -12,6 +12,9 @@ class UIPadding( left:Int32, top:Int32, right:Int32, bottom:Int32 ) [compound]
     method operator+( n:Int32 )->UIPadding
       return UIPadding( left+n, top+n, right+n, bottom+n )
 
+    method operator+( other:UIPadding )->UIPadding
+      return UIPadding( left+other.left, top+other.top, right+other.right, bottom+other.bottom )
+
     method top_left->XY
       return XY( left, top )
 

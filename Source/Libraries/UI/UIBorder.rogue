@@ -1,0 +1,10 @@
+module UI
+
+class UIBorder : UIComponent
+  PROPERTIES
+     padding : UIPadding
+ 
+  METHODS
+    method padding->UIPadding
+      return prior.padding + @padding
+endClass
