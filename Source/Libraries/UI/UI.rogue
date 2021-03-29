@@ -65,6 +65,7 @@ class UI [singleton]
 
   METHODS
     method init( theme )
+      UI = this
 
     method add( layer:UIComponent )
       content.add( layer )

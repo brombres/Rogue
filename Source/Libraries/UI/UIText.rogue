@@ -8,12 +8,16 @@ class UIText : UITextComponent
     method init
 
     method init( value )
-      if (value.count > 1 and value.contains('\n'))
-        local left  = value.before_first('\n')
-        local right = value.after_first('\n')
-        if (String.exists(left))  add( UIText(left) )
-        add( UINewline() )
-        if (String.exists(right)) add( UIText(right) )
+      if (value.contains('\n'))
+        if (value.count > 1)
+          local left  = value.before_first('\n')
+          local right = value.after_first('\n')
+          if (String.exists(left))  add( UIText(left) )
+          add( UINewline() )
+          if (String.exists(right)) add( UIText(right) )
+        else
+          add( UINewline() )
+        endIf
       endIf
 
     method init( child:UIComponent )

@@ -265,7 +265,7 @@ class UIComponent : Node<<UIComponent>>
         if (result) return result
       endIf
 
-      if (not always_check_subcomponents or contains(pos)) return this
+      if (count == 0 and contains(pos)) return this
       return null
 
     method first_element_width->Real64

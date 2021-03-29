@@ -56,7 +56,10 @@ class UIModifier : UIComponent
       else             return 0
 
     method measure [override]
-      if (first_child) first_child.measure
+      if (first_child)
+        first_child.measure
+        @size = first_child.@size
+      endIf
 
     method set_attributes( attributes:UIAttribute )
       if (first_child) first_child.attributes = attributes
