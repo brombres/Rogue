@@ -198,6 +198,8 @@ class PreprocessorTokenReader : Reader<<Token>>
           else
             expand_definition( def_t )
           endIf
+        elseIf (def_t.type is TokenType.meta_join)
+          expand_definition( def_t )
         else
           stack.add( def_t )
         endIf
