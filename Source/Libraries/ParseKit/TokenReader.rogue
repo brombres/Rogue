@@ -32,16 +32,16 @@ class TokenReader
       return (peek.type == token_type)
 
     method peek->Token
-      if (position == tokens.count) return Token( TokenType.EOI ).set_position( tokens.last )
+      if (position == tokens.count) return Token( TokenType.EOI ).[ set_position(tokens.last) ]
       return tokens[ position ]
 
     method peek( lookahead:Int32 )->Token
       local i = position + lookahead
-      if (i >= tokens.count) return Token( TokenType.EOI ).set_position( tokens.last )
+      if (i >= tokens.count) return Token( TokenType.EOI ).[ set_position(tokens.last) ]
       return tokens[ i ]
 
     method read->Token
-      if (position == tokens.count) return Token( TokenType.EOI ).set_position( tokens.last )
+      if (position == tokens.count) return Token( TokenType.EOI ).[ set_position(tokens.last) ]
       ++position
       return tokens[ position - 1 ]
 endClass
