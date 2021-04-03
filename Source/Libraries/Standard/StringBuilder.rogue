@@ -48,6 +48,32 @@ class StringBuilder : PrintWriter [essential]
       # Concrete definition of the abstract method PrintWriter.close()
       noAction
 
+    method compare_to( st:String )->Int32
+      local limit = count.or_smaller( st.count )
+      forEach (i in 0..<limit)
+        local cmp = Int32(this[i]) <> Int32(st[i])
+        if (cmp < 0) return -1
+        if (cmp > 0) return  1
+      endForEach
+
+      local cmp = this.count - st.count
+      if (cmp < 0) return -1
+      if (cmp > 0) return  1
+      return 0
+
+    method compare_to( other:StringBuilder )->Int32
+      local limit = count.or_smaller( other.count )
+      forEach (i in 0..<limit)
+        local cmp = Int32(this[i]) <> Int32(other[i])
+        if (cmp < 0) return -1
+        if (cmp > 0) return  1
+      endForEach
+
+      local cmp = this.count - other.count
+      if (cmp < 0) return -1
+      if (cmp > 0) return  1
+      return 0
+
     method consolidated->String
       # Returns the equivalent string to the data in this StringBuilder,
       # reusing a previously consolidated String object if possible.
