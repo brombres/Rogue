@@ -226,7 +226,7 @@ class Value
       return false
 
     method is_empty->Logical
-      return false
+      return true
 
     method is_false->Logical
       # Default behavior is to return (not this->Logical).
