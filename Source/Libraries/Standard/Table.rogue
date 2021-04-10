@@ -476,6 +476,9 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
     method has_another->Logical
       return cur?
 
+    method peek->TableEntry<<$KeyType,$ValueType>>
+      return cur
+
     method read->TableEntry<<$KeyType,$ValueType>> [mutating]
       local result = cur
       cur = cur.next_entry
@@ -501,6 +504,9 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
     method has_another->Logical
       return cur?
 
+    method peek->$KeyType
+      return cur.key
+
     method read->$KeyType [mutating]
       local result = cur.key
       cur = cur.next_entry
@@ -525,6 +531,9 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
   METHODS
     method has_another->Logical
       return cur?
+
+    method peek->$ValueType
+      return cur.value
 
     method read->$ValueType [mutating]
       local result = cur.value
