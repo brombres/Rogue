@@ -104,7 +104,7 @@ class ConsoleUITheme : UITheme [singleton]
       return @default_font
 
     method on_draw( component:UIComponent )
-      ConsoleUICanvas.fill( component.display_bounds, "CCCC CCCC" )
+      ConsoleUICanvas.fill( component.display_bounds, ' ' )
 
     method on_draw( component:UIBorder )
       ConsoleUICanvas.fill( component.display_bounds, ' ' )

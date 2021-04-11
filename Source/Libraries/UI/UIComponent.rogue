@@ -320,6 +320,10 @@ class UIComponent : Node<<UIComponent>>
 
       after( e )
 
+    method handle_resize_ui( new_size:XY )
+      on_resize_ui( new_size )
+      (forEach in children).handle_resize_ui( new_size )
+
     method has_keyboard_focus->Logical
       return (UI.keyboard_focus is this)
 
@@ -404,6 +408,9 @@ class UIComponent : Node<<UIComponent>>
       noAction
 
     method on_release_pointer_focus
+      noAction
+
+    method on_resize_ui( new_size:XY )
       noAction
 
     method on_update

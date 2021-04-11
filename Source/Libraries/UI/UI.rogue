@@ -200,15 +200,12 @@ class UI [singleton]
     method update_layout( bounds:Box )
       UI = this
       if (content.count)
-        local bounds_changed = (current_bounds and current_bounds.value != bounds)
-        if (not current_bounds)
-          # UI hasn't ever been drawn
-          dirty_bounds = bounds
-        endIf
+        local bounds_changed = (not current_bounds or current_bounds.value != bounds)
         current_bounds = bounds
         if (bounds_changed)
           dirty_bounds = bounds  # Redraw the entire UI
           on_resize
+          content.handle_resize_ui( bounds.size )
         endIf
         if (bounds_changed or content.is_modified)
           content.update_layout( bounds )
