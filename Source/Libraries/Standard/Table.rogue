@@ -479,6 +479,15 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
     method peek->TableEntry<<$KeyType,$ValueType>>
       return cur
 
+    method peek( lookahead:Int32 )->TableEntry<<$KeyType,$ValueType>>
+      block cur
+        loop (lookahead)
+          if (not cur) return null
+          cur = cur.next_entry
+        endLoop
+        return cur
+      endBlock
+
     method read->TableEntry<<$KeyType,$ValueType>> [mutating]
       local result = cur
       cur = cur.next_entry
@@ -507,6 +516,17 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
     method peek->$KeyType
       return cur.key
 
+    method peek( lookahead:Int32 )->$KeyType
+      block cur
+        loop (lookahead)
+          if (not cur) escapeBlock
+          cur = cur.next_entry
+        endLoop
+        if (cur) return cur.key
+      endBlock
+      local default : $KeyType
+      return default
+
     method read->$KeyType [mutating]
       local result = cur.key
       cur = cur.next_entry
@@ -534,6 +554,17 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
 
     method peek->$ValueType
       return cur.value
+
+    method peek( lookahead:Int32 )->$ValueType
+      block cur
+        loop (lookahead)
+          if (not cur) escapeBlock
+          cur = cur.next_entry
+        endLoop
+        if (cur) return cur.value
+      endBlock
+      local default : $ValueType
+      return default
 
     method read->$ValueType [mutating]
       local result = cur.value
