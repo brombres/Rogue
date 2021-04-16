@@ -310,6 +310,19 @@ class NodeIterator<<$ExtendedNodeType>>( cur:$ExtendedNodeType ) [compound]
       local result = cur
       cur .= next
       return result
+
+    method to->$ExtendedNodeType[]
+      return to_list
+
+    method to_list->$ExtendedNodeType[]
+      local result = $ExtendedNodeType[]
+      block cur
+        while (cur)
+          result.add( cur )
+          cur .= next
+        endWhile
+      endBlock
+      return result
 endClass
 
 class NodeVisitor<<$ExtendedNodeType>>
