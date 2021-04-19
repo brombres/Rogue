@@ -251,6 +251,44 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method fill( pattern:String )
       fill( Box(0,0,width,height), pattern )
 
+    method flipped( &h, &v )->TextCanvas
+      if (not v) h = true
+      local result = TextCanvas( width, height )
+
+      local iterator = this.buffer.iterator
+
+      if (h)
+        if (v)
+          forEach (j in result.height-1 downTo 0)
+            forEach (i in result.width-1 downTo 0)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        else
+          forEach (j in 0..<result.height)
+            forEach (i in result.width-1 downTo 0)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        endIf
+      else
+        if (v)
+          forEach (j in result.height-1 downTo 0)
+            forEach (i in 0..<result.width)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        else
+          forEach (j in 0..<result.height)
+            forEach (i in 0..<result.width)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        endIf
+      endIf
+
+      return result
+
     method flush
       if (_is_flushing) return
       temporarily _is_flushing=true
@@ -307,6 +345,30 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method resize( new_width:Int32, new_height:Int32 )
       if (width == new_width and height == new_height) return
       expand( 0, 0, new_width-width, new_height-height )
+
+    method rotated_180->TextCanvas
+      return flipped( &h, &v )
+
+    method rotated_90( &cw, &ccw )->TextCanvas
+      if (not ccw) cw = true
+      local result = TextCanvas( height, width )
+
+      local iterator = this.buffer.iterator
+      if (ccw)
+        forEach (i in 0..<result.width)
+          forEach (j in result.height-1 downTo 0)
+            result.set( i, j, iterator.read )
+          endForEach
+        endForEach
+      else
+        forEach (i in result.width-1 downTo 0)
+          forEach (j in 0..<result.height)
+            result.set( i, j, iterator.read )
+          endForEach
+        endForEach
+      endIf
+
+      return result
 
     method set( i:Int32, j:Int32, ch:Character )
       local clip = which{ this.clip || Box(0,0,width,height) }
@@ -681,3 +743,4 @@ class CharacterStyle( flags:Int32 ) [compound]
     method reset
       ConsoleStyle.reset
 endClass
+
