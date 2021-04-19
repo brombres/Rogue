@@ -67,7 +67,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method expand( left:Int32, top:Int32, right:Int32, bottom:Int32 )
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return
       local dest = TextCanvas( width+left+right, height+top+bottom )
-      draw( dest, left, top )
+      dest.draw( this, left, top )
       buffer = dest.buffer
       width = dest.width
       height = dest.height
@@ -127,28 +127,20 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       display( xy.x, xy.y )
 
     method draw( src:TextCanvas, x:Int32, y:Int32 )
-      local og_cursor = cursor
-
       local i2 = src.width-1
       local j2 = src.height-1
 
       forEach (j in 0..j2)
-        cursor = XY(x,y+j)
+        local cursor = XY(x,y+j)
         local index = j*src.width
         forEach (i in 0..i2)
           local ch = src.buffer[ index ]
-          if (ch.value)
-            set( cursor, ch )
-          else
-            flush
-            @cursor += XY(1,0)
-          endIf
+          if (ch.value) set( cursor, ch )
+          cursor += XY(1,0)
           ++index
         endForEach
         println
       endForEach
-
-      cursor = og_cursor
 
     method draw( src:TextCanvas, xy:XY )
       draw( src, xy.x, xy.y )
