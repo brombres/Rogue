@@ -45,6 +45,16 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method init( width, height, buffer )
       invalidate
 
+    method init( content:String, width:Int32 )
+      init( width, content.count/width )
+      draw( content, width )
+
+    method init( lines:String[] )
+      local max_w = 0
+      max_w .= or_larger( (forEach in lines).count )
+      lines = lines.map<<String>>( (line) with (max_w) => line.left_justified(max_w) )
+      init( lines.join(""), max_w )
+
     method cloned->TextCanvas
       return TextCanvas( width, height, buffer.cloned ).[ cursor=cursor ]
 
@@ -184,6 +194,16 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       set( x2, y1, pattern[2%pattern.count] )
       set( x1, y2, pattern[6%pattern.count] )
       set( x2, y2, pattern[8%pattern.count] )
+
+    method draw( text_image:String, width:Int32, position=XY.zero:XY )
+      local height = text_image.count / width
+      local src = 0
+      forEach (j in 0..<height)
+        forEach (i in 0..<width)
+          set( position+XY(i,j), text_image[src] )
+          ++src
+        endForEach
+      endForEach
 
     method draw( pattern:String )
       draw( Box(width,height), pattern )
