@@ -18,6 +18,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     _is_flushing : Logical
 
+    pixellate_lookup : Character[]
+
   METHODS
     method init( width, height, fill=' ':Character )
       init( width, height, StyledCharacter(fill,style.current) )
@@ -341,6 +343,66 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         endLoop
         index += row_skip
       endLoop
+
+    method pixellated( style=CharacterStyle.NONE:CharacterStyle )->TextCanvas
+      # "Pixellates" non-space characters in this TextCanvas into quarter block characters.
+      # The width and height of the resulting TextCanvas are half what they originally were.
+      #
+      # Example:
+      #   local st = @|######
+      #               |#     #   ####    ####   #    #  ######
+      #               |#     #  #    #  #    #  #    #  #
+      #               |######   #    #  #       #    #  #####
+      #               |#   #    #    #  #  ###  #    #  #
+      #               |#    #   #    #  #    #  #    #  #
+      #               |#     #   ####    ####    ####   ######
+      #
+      #   println TextCanvas( st.split('\n') ).pixellated
+      #
+      # Output:
+      #   ▛▀▀▖ ▄▄  ▄▄ ▗  ▖▗▄▄▖
+      #   ▙▄▄▘▐  ▌▐  ▘▐  ▌▐▄▄ 
+      #   ▌ ▚ ▐  ▌▐ ▀▌▐  ▌▐   
+      #   ▘  ▘ ▀▀  ▀▀  ▀▀ ▝▀▀▘
+      #
+      # Note: produces characters that are not suppoted by the default fonts of
+      # Windows command prompt. Installing and using DejaVu Sans Mono in your
+      # CMD prompt should fix things.
+      if (not pixellate_lookup)
+        # AB -> ABCD
+        # CD
+        pixellate_lookup = Character[]
+        pixellate_lookup.add( [      ' ', '\[2597]', '\[2596]', '\[2584]'] )
+        pixellate_lookup.add( ['\[259D]', '\[2590]', '\[259E]', '\[259F]'] )
+        pixellate_lookup.add( ['\[2598]', '\[259A]', '\[258C]', '\[2599]'] )
+        pixellate_lookup.add( ['\[2580]', '\[259C]', '\[259B]', '\[2588]'] )
+      endIf
+
+      local w = width
+      local h = height
+      if ((w & 1) or (h & 1))
+        if (w & 1) ++w
+        if (h & 1) ++h
+        return this.cloned.[resize(w,h)].pixellated
+      endIf
+
+      local result = TextCanvas( w/2, h/2 )
+      local dj = 0
+      forEach (j in 0..<h step 2)
+        local di = 0
+        forEach (i in 0..<w step 2)
+          local bits = 0
+          if (get(i,j).value     != ' ') bits |= 0b1000
+          if (get(i+1,j).value   != ' ') bits |= 0b0100
+          if (get(i,j+1).value   != ' ') bits |= 0b0010
+          if (get(i+1,j+1).value != ' ') bits |= 0b0001
+          result.set( di, dj, StyledCharacter(pixellate_lookup[bits],style) )
+          ++di
+        endForEach
+        ++dj
+      endForEach
+
+      return result
 
     method resize( new_width:Int32, new_height:Int32 )
       if (width == new_width and height == new_height) return
