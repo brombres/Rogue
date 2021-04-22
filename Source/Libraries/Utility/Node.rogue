@@ -56,6 +56,13 @@ class Node<<$ExtendedNodeType>>
       return (node and node.parent is this)
 
     method detach( &preserve_next )
+      # Detaches this node from its current parent and all of its siblings.
+      #
+      # preserve_next
+      #   When true, this node's 'next' is not cleared. Nodes that are the head
+      #   sibling of a list can be added as children; this flag is used internally
+      #   to making sure a node is detached while not accidentally removing all
+      #   successive nodes.
       if (parent)
         if (parent.first_child is this)
           if (parent.last_child is this)
@@ -176,12 +183,7 @@ class Node<<$ExtendedNodeType>>
     method iterator->NodeIterator<<$ExtendedNodeType>>
       return NodeIterator<<$ExtendedNodeType>>( this as $ExtendedNodeType )
 
-    method set_is_modified( setting:Logical )
-      if (@is_modified == setting) return
-      @is_modified = setting
-      if (setting and parent) parent.is_modified = true
-
-    method name->String
+    method node_name->String
       return type_name
 
     method last_sibling->$ExtendedNodeType
@@ -229,6 +231,11 @@ class Node<<$ExtendedNodeType>>
       if (first_child) remove_first
       insert( node )
 
+    method set_is_modified( setting:Logical )
+      if (@is_modified == setting) return
+      @is_modified = setting
+      if (setting and parent) parent.is_modified = true
+
     method set_last( node:$ExtendedNodeType )
       if (last_child) remove_last
       add( node )
@@ -273,7 +280,7 @@ class Node<<$ExtendedNodeType>>
       endUse
 
     method write( builder:StringBuilder )
-      builder.print name
+      builder.print node_name
       if (first_child)
         builder.print '('
         first_child.write( builder )
@@ -302,6 +309,19 @@ class NodeIterator<<$ExtendedNodeType>>( cur:$ExtendedNodeType ) [compound]
       if (not cur) return null
       local result = cur
       cur .= next
+      return result
+
+    method to->$ExtendedNodeType[]
+      return to_list
+
+    method to_list->$ExtendedNodeType[]
+      local result = $ExtendedNodeType[]
+      block cur
+        while (cur)
+          result.add( cur )
+          cur .= next
+        endWhile
+      endBlock
       return result
 endClass
 

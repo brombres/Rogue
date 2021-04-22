@@ -576,7 +576,10 @@ class String
     method _pattern_match_count( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
         &ignore_case )->Int32
       if (fcount == 0)
-        while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
+        # Taking this out in 1.8.1 - not sure why we're including additional whitespace at the end
+        # of pattern matching. This might break something else but it should be worked around
+        # another way.
+        #while (remaining_count and (this[i0]==' ' or this[i0]=='\t') and remaining_count) ++i0; --remaining_count
         return i0
       endIf
 
@@ -1203,6 +1206,14 @@ class String
       endWhile
       forEach (i in i0..<this.count) buffer.print( this[i] )
       return buffer->String
+
+    method replacing_at( index:Int32, n:Int32, replace_with:String )->String
+      use builder = StringBuilder.pool
+        forEach (i in 0..<index) builder.print this[i]
+        builder.print replace_with
+        forEach (i in index+n..<count) builder.print this[i]
+        return builder->String
+      endUse
 
     method replacing_pattern( search_pattern:String, replacement_pattern:String, parens="()":String )->String
       # Search pattern has same "$*?" wildcard format as .extract_strings():

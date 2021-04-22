@@ -1,3 +1,9 @@
+$if ((THREAD_MODE == "NONE") or target("Web"))
+  $localDefine USING_THREADS false
+$else
+  $localDefine USING_THREADS true
+$endIf
+
 class Socket [abstract]
   # Abstract base class of BasicSocket and SecureSocket
   GLOBAL METHODS
@@ -52,7 +58,7 @@ class ServerSocket [abstract]
 
 endClass
 
-$if (not target("Web"))
+$if (USING_THREADS)
   $localDefine LOCK mutex.lock
   $localDefine UNLOCK mutex.unlock
 $else
@@ -82,7 +88,7 @@ class BasicSocket : Socket
     writer           = BasicSocketWriter( this )
     printer          = PrintWriter( writer )
 
-$if (not target("Web"))
+$if (USING_THREADS)
     mutex            = Mutex()
 $endIf
 
@@ -90,11 +96,11 @@ $endIf
 
   METHODS
     method init( remote_address, port )
-$if (target("Web"))
+$if (USING_THREADS)
+      Thread( this=>handle_connection )
+$else
       # Emscripten doesn't have pthreads
       handle_connection
-$else
-      Thread( this=>handle_connection )
 $endIf
 
     method init( @socket_id )

@@ -1,0 +1,35 @@
+module UI
+
+class UIAbsoluteLayout : UILayout
+  # An absolute layout. Modifies component positions based on their anchors.
+  PROPERTIES
+    clamp_content : Logical
+
+  METHODS
+    method add( component:UIComponent )
+      prior.add( component )
+
+    method add( component:UIComponent, position:XY, anchor=null:Anchor? )
+      if (anchor) component.anchor = anchor.value
+      prior.add( component )
+
+    method clamp_content
+      @clamp_content = true
+
+    method update_subcomponent_bounds( component:UIComponent, bounds:Box )
+      bounds = bounds.relative_to( component.anchor ).floor
+      if (@clamp_content) bounds = bounds.clamped( this.bounds )
+      component.update_layout_bounds( Box(bounds.position.floor,component.size) )
+
+    method update_subcomponent_layout [override]
+      forEach (component in children)
+        update_subcomponent_bounds( component, Box(component.position,component.size) )
+      endForEach
+
+    method update_subcomponent_sizes( container_size:XY )->XY [override]
+      forEach (component in children)
+        component.update_layout_size( component.size )
+      endForEach
+
+      return container_size
+endClass

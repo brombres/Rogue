@@ -226,7 +226,7 @@ class Value
       return false
 
     method is_empty->Logical
-      return false
+      return true
 
     method is_false->Logical
       # Default behavior is to return (not this->Logical).
@@ -1050,6 +1050,15 @@ class ObjectValue( value:Object ) : Value
     method package->Value
       if (value is null) return NullValue
       return value.package
+
+    method operator==( other:Value )->Logical
+      if (this is other) return true
+      if (other.is_object)
+        if (value is other->Object) return true
+        if (value is null or other->Object is null) return false
+        if (value == other->Object) return true
+      endIf
+      return false
 
     method to->Logical
       return (value is not null)

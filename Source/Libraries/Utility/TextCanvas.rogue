@@ -18,6 +18,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     _is_flushing : Logical
 
+    pixellate_lookup : Character[]
+
   METHODS
     method init( width, height, fill=' ':Character )
       init( width, height, StyledCharacter(fill,style.current) )
@@ -45,6 +47,16 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method init( width, height, buffer )
       invalidate
 
+    method init( content:String, width:Int32 )
+      init( width, content.count/width )
+      draw( content, width )
+
+    method init( lines:String[] )
+      local max_w = 0
+      max_w .= or_larger( (forEach in lines).count )
+      lines = lines.map<<String>>( (line) with (max_w) => line.left_justified(max_w) )
+      init( lines.join(""), max_w )
+
     method cloned->TextCanvas
       return TextCanvas( width, height, buffer.cloned ).[ cursor=cursor ]
 
@@ -67,7 +79,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method expand( left:Int32, top:Int32, right:Int32, bottom:Int32 )
       if (left == 0 and top == 0 and right == 0 and bottom == 0) return
       local dest = TextCanvas( width+left+right, height+top+bottom )
-      draw( dest, left, top )
+      dest.draw( this, left, top )
       buffer = dest.buffer
       width = dest.width
       height = dest.height
@@ -127,28 +139,20 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       display( xy.x, xy.y )
 
     method draw( src:TextCanvas, x:Int32, y:Int32 )
-      local og_cursor = cursor
-
       local i2 = src.width-1
       local j2 = src.height-1
 
       forEach (j in 0..j2)
-        cursor = XY(x,y+j)
+        local cursor = XY(x,y+j)
         local index = j*src.width
         forEach (i in 0..i2)
           local ch = src.buffer[ index ]
-          if (ch.value)
-            set( cursor, ch )
-          else
-            flush
-            @cursor += XY(1,0)
-          endIf
+          if (ch.value) set( cursor, ch )
+          cursor += XY(1,0)
           ++index
         endForEach
         println
       endForEach
-
-      cursor = og_cursor
 
     method draw( src:TextCanvas, xy:XY )
       draw( src, xy.x, xy.y )
@@ -192,6 +196,16 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       set( x2, y1, pattern[2%pattern.count] )
       set( x1, y2, pattern[6%pattern.count] )
       set( x2, y2, pattern[8%pattern.count] )
+
+    method draw( text_image:String, width:Int32, position=XY.zero:XY )
+      local height = text_image.count / width
+      local src = 0
+      forEach (j in 0..<height)
+        forEach (i in 0..<width)
+          set( position+XY(i,j), text_image[src] )
+          ++src
+        endForEach
+      endForEach
 
     method draw( pattern:String )
       draw( Box(width,height), pattern )
@@ -238,6 +252,44 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method fill( pattern:String )
       fill( Box(0,0,width,height), pattern )
+
+    method flipped( &h, &v )->TextCanvas
+      if (not v) h = true
+      local result = TextCanvas( width, height )
+
+      local iterator = this.buffer.iterator
+
+      if (h)
+        if (v)
+          forEach (j in result.height-1 downTo 0)
+            forEach (i in result.width-1 downTo 0)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        else
+          forEach (j in 0..<result.height)
+            forEach (i in result.width-1 downTo 0)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        endIf
+      else
+        if (v)
+          forEach (j in result.height-1 downTo 0)
+            forEach (i in 0..<result.width)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        else
+          forEach (j in 0..<result.height)
+            forEach (i in 0..<result.width)
+              result.set( i, j, iterator.read )
+            endForEach
+          endForEach
+        endIf
+      endIf
+
+      return result
 
     method flush
       if (_is_flushing) return
@@ -292,9 +344,93 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         index += row_skip
       endLoop
 
+    method pixellated( style=CharacterStyle.NONE:CharacterStyle )->TextCanvas
+      # "Pixellates" non-space characters in this TextCanvas into quarter block characters.
+      # The width and height of the resulting TextCanvas are half what they originally were.
+      #
+      # Example:
+      #   local st = @|######
+      #               |#     #   ####    ####   #    #  ######
+      #               |#     #  #    #  #    #  #    #  #
+      #               |######   #    #  #       #    #  #####
+      #               |#   #    #    #  #  ###  #    #  #
+      #               |#    #   #    #  #    #  #    #  #
+      #               |#     #   ####    ####    ####   ######
+      #
+      #   println TextCanvas( st.split('\n') ).pixellated
+      #
+      # Output:
+      #   ▛▀▀▖ ▄▄  ▄▄ ▗  ▖▗▄▄▖
+      #   ▙▄▄▘▐  ▌▐  ▘▐  ▌▐▄▄ 
+      #   ▌ ▚ ▐  ▌▐ ▀▌▐  ▌▐   
+      #   ▘  ▘ ▀▀  ▀▀  ▀▀ ▝▀▀▘
+      #
+      # Note: produces characters that are not suppoted by the default fonts of
+      # Windows command prompt. Installing and using DejaVu Sans Mono in your
+      # CMD prompt should fix things.
+      if (not pixellate_lookup)
+        # AB -> ABCD
+        # CD
+        pixellate_lookup = Character[]
+        pixellate_lookup.add( [      ' ', '\[2597]', '\[2596]', '\[2584]'] )
+        pixellate_lookup.add( ['\[259D]', '\[2590]', '\[259E]', '\[259F]'] )
+        pixellate_lookup.add( ['\[2598]', '\[259A]', '\[258C]', '\[2599]'] )
+        pixellate_lookup.add( ['\[2580]', '\[259C]', '\[259B]', '\[2588]'] )
+      endIf
+
+      local w = width
+      local h = height
+      if ((w & 1) or (h & 1))
+        if (w & 1) ++w
+        if (h & 1) ++h
+        return this.cloned.[resize(w,h)].pixellated
+      endIf
+
+      local result = TextCanvas( w/2, h/2 )
+      local dj = 0
+      forEach (j in 0..<h step 2)
+        local di = 0
+        forEach (i in 0..<w step 2)
+          local bits = 0
+          if (get(i,j).value     != ' ') bits |= 0b1000
+          if (get(i+1,j).value   != ' ') bits |= 0b0100
+          if (get(i,j+1).value   != ' ') bits |= 0b0010
+          if (get(i+1,j+1).value != ' ') bits |= 0b0001
+          result.set( di, dj, StyledCharacter(pixellate_lookup[bits],style) )
+          ++di
+        endForEach
+        ++dj
+      endForEach
+
+      return result
+
     method resize( new_width:Int32, new_height:Int32 )
       if (width == new_width and height == new_height) return
       expand( 0, 0, new_width-width, new_height-height )
+
+    method rotated_180->TextCanvas
+      return flipped( &h, &v )
+
+    method rotated_90( &cw, &ccw )->TextCanvas
+      if (not ccw) cw = true
+      local result = TextCanvas( height, width )
+
+      local iterator = this.buffer.iterator
+      if (ccw)
+        forEach (i in 0..<result.width)
+          forEach (j in result.height-1 downTo 0)
+            result.set( i, j, iterator.read )
+          endForEach
+        endForEach
+      else
+        forEach (i in result.width-1 downTo 0)
+          forEach (j in 0..<result.height)
+            result.set( i, j, iterator.read )
+          endForEach
+        endForEach
+      endIf
+
+      return result
 
     method set( i:Int32, j:Int32, ch:Character )
       local clip = which{ this.clip || Box(0,0,width,height) }
@@ -669,3 +805,4 @@ class CharacterStyle( flags:Int32 ) [compound]
     method reset
       ConsoleStyle.reset
 endClass
+

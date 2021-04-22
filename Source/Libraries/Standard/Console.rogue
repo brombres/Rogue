@@ -101,6 +101,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       native @|#else
               |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
               |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
+              |
+              |  if ( !$this->original_terminal_settings.c_cc[VMIN] ) $this->original_terminal_settings.c_cc[VMIN] = 1;
+              |  $this->original_terminal_settings.c_lflag |= (ECHO | ECHOE | ICANON);
+              |  $this->original_stdin_flags &= ~(O_NONBLOCK);
               |#endif
       on_exit( function with (console=this) => console.reset_io_mode )
       @show_cursor = true
@@ -425,6 +429,8 @@ trace
       native @|clearerr( stdin );
 
     method reset_io_mode
+      @immediate_mode = true
+      @show_cursor = false
       immediate_mode = false
       show_cursor = true
 
@@ -476,6 +482,7 @@ trace
                   |  DWORD mode;
                   |  GetConsoleMode( h_stdin, &mode );
                   |  if ($this->windows_in_quick_edit_mode) mode |= ENABLE_QUICK_EDIT_MODE;
+                  |  mode |= (ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT);
                   |  SetConsoleMode( h_stdin, mode );
                   |#else
                   |  tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
@@ -706,7 +713,7 @@ endClass
 $metacode<ConsoleStyle.organize_methods>
 forEach (p in property_list)
   sourceln "method $( output=Global:PrintWriter )" (p.name.to_lowercase)
-  sourceln "  print( $, output )" (p.name)
+  sourceln "  print( $, output ); output.flush" (p.name)
   injectMethod
 endForEach
 $endMetacode

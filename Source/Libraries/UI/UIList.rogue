@@ -34,7 +34,7 @@ class UIList : UIComponent, BufferedPrintWriter<<text_buffer>>
         local i = text.locate( '\n' )
         while (i.exists)
           content.add( UIText(text.leftmost(i.value)) )
-          content = null
+          @content = null
           text = text.from( i.value+1 )
           i = text.locate( '\n' )
         endWhile
@@ -43,6 +43,8 @@ class UIList : UIComponent, BufferedPrintWriter<<text_buffer>>
 
     method on_draw
       noAction
+
+    method set_content( @content )
 
     method update_subcomponent_layout
       block bounds = padding.apply( Box(size) )

@@ -12,6 +12,9 @@ class ConsoleUI : UI
     method init
       prior.init( ConsoleUITheme )
 
+    method init( theme:UITheme )
+      prior.init( theme )
+
     method draw
       prior.draw
       ConsoleUICanvas.display( XY(0,0) )
@@ -101,7 +104,10 @@ class ConsoleUITheme : UITheme [singleton]
       return @default_font
 
     method on_draw( component:UIComponent )
-      ConsoleUICanvas.fill( component.display_bounds, "CCCC CCCC" )
+      ConsoleUICanvas.fill( component.display_bounds, ' ' )
+
+    method on_draw( component:UIBorder )
+      ConsoleUICanvas.fill( component.display_bounds, ' ' )
 
     method on_draw( component:UIBoxFrame )
       ConsoleUICanvas.fill( component.display_bounds, "\[250C]\[2500]\[2510]\[2502] \[2502]\[2514]\[2500]\[2518]" )
@@ -163,18 +169,9 @@ class ConsoleUIButton : UIButton
       default_size = font.measure( text ).floor + XY(2,2)
 endClass
 
-class UIBoxFrame : UIComponent
-  METHODS
-    method padding->UIPadding
-      return prior.padding + 1
-
-    method update_subcomponent_sizes( container_size:XY )->XY [override]
-      local min_size : XY
-      forEach (component in children)
-        component.update_layout_size( container_size )
-        min_size .= or_larger( component.size )
-      endForEach
-      return min_size
+class UIBoxFrame : UIBorder
+  PROPERTIES
+    padding = UIPadding(1)
 endClass
 
 class ConsoleUICanvas : TextCanvas [singleton]

@@ -503,7 +503,7 @@ class Int64 [primitive]
     method or_smaller( other:Int64 )->Int64
       return which{ this<=other:this || other }
 
-    method print_in_power2_base( base:Int32, digits=16:Int32, buffer:StringBuilder )->StringBuilder
+    method print_in_power2_base( base:Int32, digits=16:Int32, buffer:PrintWriter )->PrintWriter
       local bits = 0
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
@@ -870,27 +870,28 @@ class Character [primitive]
     method or_smaller( other:Character )->Character
       return which{ this<=other:this || other }
 
-    method print_escaped_ascii( builder:StringBuilder, additional_characters_to_escape="":String )
+    method print_escaped_ascii( writer:PrintWriter, additional_characters_to_escape="":String )
       which (this)
-        case '\0': builder.print( "\\0" )
-        case '\b': builder.print( "\\b" )
-        case '\e': builder.print( "\\e" )
-        case '\f': builder.print( "\\f" )
-        case '\n': builder.print( "\\n" )
-        case '\r': builder.print( "\\t" )
-        case '\v': builder.print( "\\v" )
+        case '\\': writer.print( "\\\\" )
+        case '\0': writer.print( "\\0" )
+        case '\b': writer.print( "\\b" )
+        case '\e': writer.print( "\\e" )
+        case '\f': writer.print( "\\f" )
+        case '\n': writer.print( "\\n" )
+        case '\r': writer.print( "\\t" )
+        case '\v': writer.print( "\\v" )
         others
           if (additional_characters_to_escape.contains(this))
-            builder.print( "\\" ).print( this )
+            writer.print( "\\" ).print( this )
           elseIf (this >= 256)
-            builder.print( "\\[" )
-            this->Int64.print_in_power2_base( 16, 3, builder )
-            builder.print( ']' )
+            writer.print( "\\[" )
+            this->Int64.print_in_power2_base( 16, 3, writer )
+            writer.print( ']' )
           elseIf (this < 32 or this >= 127)
-            builder.print( "\\x" )
-            this->Int64.print_in_power2_base( 16, 2, builder )
+            writer.print( "\\x" )
+            this->Int64.print_in_power2_base( 16, 2, writer )
           else
-            builder.print( this )
+            writer.print( this )
           endIf
       endWhich
 

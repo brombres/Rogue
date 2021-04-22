@@ -1,163 +1,114 @@
 module UI
 
-class UIText : UIComponent
+class UIText : UITextComponent
   PROPERTIES
     value : String
 
   METHODS
+    method init
+
     method init( value )
-      if (value.count > 1 and value.contains('\n'))
-        local left  = value.before_first('\n')
-        local right = value.after_first('\n')
-        if (String.exists(left))  add( UIText(left) )
-        add( UINewline() )
-        if (String.exists(right)) add( UIText(right) )
+      if (value.contains('\n'))
+        if (value.count > 1)
+          local left  = value.before_first('\n')
+          local right = value.after_first('\n')
+          if (String.exists(left))  add( UIText(left) )
+          add( UINewline() )
+          if (String.exists(right)) add( UIText(right) )
+        else
+          add( UINewline() )
+        endIf
       endIf
 
-    method anchor->Anchor
-      if (parent and parent instanceOf UIText) return parent.anchor
-      return prior.anchor
+    method init( child:UIComponent )
+      value = child.text
+      add( child )
 
-    method content_position->XY
-      # Do not add this UIText's position or offset if child fragments exist
-      if (first_child)
-        if (parent) return parent.content_position
-        else        return XY.zero
-      else
-        return prior.content_position
-      endIf
+    method can_split->Logical
+      return value.contains(' ')
 
-    method display_position->XY
-      # Do not add this UIText's position if child fragments exist
-      if (first_child)
-        if (parent) return parent.content_position
-        else        return XY.zero
-      else
-        return prior.display_position
-      endIf
+    method can_split( max_width:Int32 )->Logical
+      local i = value.locate( ' ' )
+      return (i and font.measure(value,0,i.value+1).x <= max_width)
 
-    method draw( clip:Box )
-      if (count)
-        forEach (child in children)
-          child.draw( clip )
-        endForEach
-      else
-        prior.draw( clip )
-      endIf
-
-    method find( pos:XY, &always_check_subcomponents )->UIComponent
-      return prior.find( pos, &always_check_subcomponents )
-
-    method font->UIFont
-      if (parent and parent instanceOf UIText) return parent.font
-      return prior.font
-
-    method measure [override]
-      if (count)
-        (forEach in children).measure
-      else
-        prior.measure
-      endIf
+    method first_element_width->Real64
+      # Used to aid UIContent word wrap.
+      if (value.count == 0) return 0
+      return font.measure( value, 0, 1 ).x
 
     method on_measure [override]
       size = font.measure( value )
 
-    method text->String
-      return value
-
-    method to->String
-      return "UIText($)" (value)
-
-    method update_layout_size( container_size:XY )
-      if (count)
-        (forEach in children).measure
-        (forEach in children).update_layout_size( container_size )
-      else
-        prior.update_layout_size( container_size )
-      endIf
-
-    method update_layout( placer:UIContentPlacer )->UIContentPlacer
-      if (count)
-        # Update position of child fragments
-        placer = (forEach in children).update_layout( placer )
-        return placer
-      else
-        return prior.update_layout( placer )
-      endIf
-
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
-      if (count)
-        # Update size of child fragments
-        forEach (subcomponent in children)
-          sizer = subcomponent.update_layout_size( sizer )
-        endForEach
-        return sizer
-      endIf
-
-      local available_w = sizer.available_width
-      if (size.x <= available_w or value.count <= 1)
-        return prior.update_layout_size( sizer )
-      endIf
-
-      # Find a space to break after
+    method split( max_width:Int32, writer:ListRewriter<<UIComponent>> )
       local font = this.font
+
       local first_i = value.locate( ' ' )
       if (first_i.exists)
         forEach (i in value.count-2 downTo 0)
-          if (value[i] == ' ')
-            if (font.measure(value,0,i+1).x <= available_w or i == first_i.value)
-              add( UIText( value.leftmost(i+1) ).[ measure ] )
-              add( UIText( value.from(i+1) ).[ measure ] )
-              return update_layout_size( sizer )
+          local ch = value[i]
+          if (ch == ' ')
+            if (font.measure(value,0,i+1).x <= max_width or i == first_i.value)
+              _split( i+1, writer )
+              return
             endIf
+          endIf
+        endForEach
+      else
+        # Cannot split as requested. Split arbitrarily instead. Include at least
+        # one character although that should already be accounted for.
+        if (value.count <= 1)
+          writer.write( this )
+          return
+        endIf
+
+        local w = font.measure(value,0,1).x
+        forEach (i in value from 1)
+          local next_w = font.measure( value, i, 1 ).x
+          if (w + next_w > max_width)
+            local part_1 = UIText( value.leftmost(i) ).[ measure ]
+            local part_2 = UIText( value.from(i) ).[ measure ]
+            add( part_1 )
+            add( part_2 )
+            writer.write( part_1 )
+            writer.write( part_2 )
+            return
+          else
+            w += next_w
           endIf
         endForEach
       endIf
 
-      return prior.update_layout_size( sizer )
+      writer.write( this )
 
-      #{
-    method update_layout_bounds( new_bounds:Box )
-      if (count)
-        (forEach in children).update_layout_bounds( new_bounds )
-      else
-        prior.update_layout_bounds( new_bounds )
-      endIf
-      }#
+    method _split( i:Int32, writer:ListRewriter<<UIComponent>> )
+      local a = value.leftmost(i)
+      local b = value.from(i)
 
-    method update_subcomponent_layout
-      if (count)
-        (forEach in children).update_subcomponent_layout
-        return
-      else
-        prior.update_subcomponent_layout
+      if (a.count)
+        local part_1 = UIText(a).[ measure ]
+        add( part_1 )
+        writer.write( part_1 )
       endIf
 
-    method update_subcomponent_sizes( container_size:XY )->XY
-      # Returns minimum size to enclose all subcomponents
-      local min_size : XY
-      if (count)
-        min_size .= or_larger( (forEach in children).update_subcomponent_sizes(container_size) )
-        return min_size
-      else
-        return prior.update_subcomponent_sizes( container_size )
+      if (b.count)
+        local part_2 = UIText(b).[ measure ]
+        add( part_2 )
+        writer.write( part_2 )
       endIf
-endClass
 
+    method text->String
+      if (count) return prior.text
+      else       return value
 
-class UINewline : UIComponent
-  METHODS
-    method on_draw
-      noAction
-    
-    method on_measure
-      size = XY( 0, font.height )
+    method to->String
+      if (count) return prior.to_String
+      else       return "UIText($)" (value)
 
-    method update_layout( placement:UIContentPlacer )->UIContentPlacer
-      position = placement.cursor
-      return placement.with_newline( size.y )
-
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
-      return sizer.with_newline( size.y )
+    method write_text( builder:StringBuilder )
+      if (count)
+        prior.write_text( builder )
+      else
+        builder.print value
+      endIf
 endClass
 

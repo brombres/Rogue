@@ -88,7 +88,9 @@ class UIComponent : Node<<UIComponent>>
     method after_update_layout
 
     method alignment->Anchor
-      # 'alignment' affects text within this component.
+      # 'alignment' affects text within this component. Unlike 'anchor',
+      # 'alignment' is propagated to child components until a new alignment
+      # is set.
       if (attributes)
         local result = attributes.alignment
         if (result.exists) return result.value
@@ -116,6 +118,12 @@ class UIComponent : Node<<UIComponent>>
     method bounds->Box
       return Box( position, size )
 
+    method can_split->Logical
+      return false
+
+    method can_split( max_width:Int32 )->Logical
+      return false
+
     method capture_keyboard_focus->Logical
       if (UI.keyboard_focus and UI.keyboard_focus is not this) return false
       UI.keyboard_focus = this
@@ -126,6 +134,9 @@ class UIComponent : Node<<UIComponent>>
       UI.pointer_focus = this
       return true
 
+    method collect_components( list:UIComponent[] )
+      list.add( this )
+
     method clip->Box
       return UI.clip.value
 
@@ -135,31 +146,21 @@ class UIComponent : Node<<UIComponent>>
     method contains( pos:XY )->Logical
       return display_bounds.contains( pos )
 
+    method contains( component:UIComponent )->Logical
+      while (component)
+        if (component is this) return true
+        component .= parent
+      endWhile
+      return false
+
+    method contains_newline->Logical
+      return false
+
     method content->UIComponent
       return first_child
 
     method content_bounds->Box
       return Box( content_position, size )
-
-    method find( pos:XY, &always_check_subcomponents )->UIComponent
-      # The algorithm looks a little unusual because we want to find the
-      # LAST child that contains 'pos'.
-
-      if (next)
-        # Recursively find the last sibling that contains 'pos'
-        local result = next.find( pos, &=always_check_subcomponents )
-        if (result) return result
-      endIf
-
-      if (not always_check_subcomponents and not contains(pos)) return null # Don't bother checking children
-
-      if (first_child)
-        local result = first_child.find( pos, &=always_check_subcomponents )
-        if (result) return result
-      endIf
-
-      if (not always_check_subcomponents or contains(pos)) return this
-      return null
 
     method default_height
       # Sets this component's fixed height to be its default height after it is measured.
@@ -185,6 +186,30 @@ class UIComponent : Node<<UIComponent>>
       if (parent) return position + offset + parent.content_position
       else        return position + offset
 
+    method dispatch( e:KeyEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:PointerEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:ScrollEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:TextEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
     method display_position->XY
       if (parent) return position + parent.content_position
       else        return position
@@ -192,7 +217,9 @@ class UIComponent : Node<<UIComponent>>
     method draw( draw_bounds:Box )
       if (not size.is_zero)
         local clip = draw_bounds & display_bounds
-        if (not clip) return
+        if (not clip)
+          return
+        endIf
         draw_bounds = clip.value
       endIf
 
@@ -221,6 +248,30 @@ class UIComponent : Node<<UIComponent>>
     method expand_to_fill_width
       flags &= !FLAG_WIDTH_MASK   # turn off fixed and shrink flags
 
+    method find( pos:XY, &always_check_subcomponents )->UIComponent
+      # The algorithm looks a little unusual because we want to find the
+      # LAST child that contains 'pos'.
+
+      if (next)
+        # Recursively find the last sibling that contains 'pos'
+        local result = next.find( pos, &=always_check_subcomponents )
+        if (result) return result
+      endIf
+
+      if (not always_check_subcomponents and not contains(pos)) return null # Don't bother checking children
+
+      if (first_child)
+        local result = first_child.find( pos, &=always_check_subcomponents )
+        if (result) return result
+      endIf
+
+      if (count == 0 and contains(pos)) return this
+      return null
+
+    method first_element_width->Real64
+      # Used to aid UIContent word wrap.
+      return size.x
+
     method font->UIFont
       if (attributes) return attributes.font
       return UI.theme.default_font
@@ -229,10 +280,10 @@ class UIComponent : Node<<UIComponent>>
       on( e )
       if (e.is_consumed) return
 
-      forEach (child in children)
-        child.handle( e )
+      if (first_child)
+        first_child.dispatch( e )
         if (e.is_consumed) return
-      endForEach
+      endIf
 
       after( e )
 
@@ -240,10 +291,10 @@ class UIComponent : Node<<UIComponent>>
       on( e )
       if (e.is_consumed) return
 
-      forEach (child in children)
-        child.handle( e )
+      if (first_child)
+        first_child.dispatch( e )
         if (e.is_consumed) return
-      endForEach
+      endIf
 
       after( e )
 
@@ -251,10 +302,10 @@ class UIComponent : Node<<UIComponent>>
       on( e )
       if (e.is_consumed) return
 
-      forEach (child in children)
-        child.handle( e )
+      if (first_child)
+        first_child.dispatch( e )
         if (e.is_consumed) return
-      endForEach
+      endIf
 
       after( e )
 
@@ -262,12 +313,16 @@ class UIComponent : Node<<UIComponent>>
       on( e )
       if (e.is_consumed) return
 
-      forEach (child in children)
-        child.handle( e )
+      if (first_child)
+        first_child.dispatch( e )
         if (e.is_consumed) return
-      endForEach
+      endIf
 
       after( e )
+
+    method handle_resize_ui( new_size:XY )
+      on_resize_ui( new_size )
+      (forEach in children).handle_resize_ui( new_size )
 
     method has_keyboard_focus->Logical
       return (UI.keyboard_focus is this)
@@ -355,7 +410,7 @@ class UIComponent : Node<<UIComponent>>
     method on_release_pointer_focus
       noAction
 
-    method on_resize
+    method on_resize_ui( new_size:XY )
       noAction
 
     method on_update
@@ -420,6 +475,12 @@ class UIComponent : Node<<UIComponent>>
 
     method set_attributes( @attributes )
       noAction
+
+    method set_content( content:UIComponent )
+      if (content is not first_child or count != 1)
+        clear
+        add content
+      endIf
 
     method set_default_height( h:Real64 )
       if (not (flags & FLAG_HEIGHT_MASK)) size = XY( size.x, h )
@@ -489,6 +550,9 @@ class UIComponent : Node<<UIComponent>>
     method shrink_to_fit_width
       flags = (flags & !FLAG_WIDTH_MASK) | FLAG_SHRINK_TO_FIT_WIDTH
 
+    method split( max_width:Int32, writer:ListRewriter<<UIComponent>> )
+      writer.write( this )
+
     method text->String
       return this->String
 
@@ -538,10 +602,6 @@ class UIComponent : Node<<UIComponent>>
     method update_layout_size( frame_size:XY, content_size:XY )
       size = frame_size.or_larger( content_size )   # overloaded by UILayout to disregard content size
 
-    method update_layout_size( sizer:UIContentSizer )->UIContentSizer
-      if (not sizer.can_fit(this)) sizer .= with_newline
-      return sizer.placing( this )
-
     method update_subcomponent_layout
       block bounds = padding.apply(Box(size))
         forEach (component in children)
@@ -557,10 +617,6 @@ class UIComponent : Node<<UIComponent>>
         min_size .= or_larger( component.size )
       endForEach
       return min_size
-
-    method update_layout( placer:UIContentPlacer )->UIContentPlacer
-      if (not placer.can_fit(this)) placer .= with_newline
-      return placer.placing( this )
 
     method update_layout( placement:UIIntervalPlacement )->UIIntervalPlacement
       return placement.placing( this )
@@ -582,6 +638,9 @@ class UIComponent : Node<<UIComponent>>
     method weight->XY
       if (attributes) return attributes.weight
       return XY(1,1)
+
+    method write_text( builder:StringBuilder )
+      builder.print text
 
 endClass
 

@@ -15,7 +15,7 @@ class Exception [essential]
       builder.println( "=" * w )
       builder.println type_name
       builder.println message.word_wrap(w,",").join
-      if (stack_trace.entries.count)
+      if (stack_trace and stack_trace.entries.count)
         builder.println
         builder.println stack_trace->String.trimmed
       endIf
@@ -26,8 +26,7 @@ class Exception [essential]
       return message
 
     method format->String [essential]
-      local st = stack_trace->String
-      if (st is null) st = "No stack trace"
+      local st = which{ stack_trace:stack_trace->String || "No stack trace" }
       st = st.trimmed
       if (st.count) st = "\n" + st
       return which{ this:this->String || "Unknown" } + st

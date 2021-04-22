@@ -60,7 +60,7 @@ class UIWidget : UIComponent
         if (contains_e)
           if (widget_state == UIWidgetState.IDLE)
             widget_state = UIWidgetState.TARGETED
-            e.consume
+            #e.consume
           endIf
         else
           if (widget_state == UIWidgetState.TARGETED or widget_state == UIWidgetState.PRESSED)

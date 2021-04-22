@@ -1,6 +1,6 @@
 module UI
 
-class UITextStyle : UIModifier
+class UITextStyle : UITextComponent
   METHODS
     method init( content:UIComponent )
       prior.init( content )
