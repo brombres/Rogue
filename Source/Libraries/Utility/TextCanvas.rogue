@@ -361,8 +361,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       #
       # Output:
       #   ▛▀▀▖ ▄▄  ▄▄ ▗  ▖▗▄▄▖
-      #   ▙▄▄▘▐  ▌▐  ▘▐  ▌▐▄▄ 
-      #   ▌ ▚ ▐  ▌▐ ▀▌▐  ▌▐   
+      #   ▙▄▄▘▐  ▌▐  ▘▐  ▌▐▄▄
+      #   ▌ ▚ ▐  ▌▐ ▀▌▐  ▌▐
       #   ▘  ▘ ▀▀  ▀▀  ▀▀ ▝▀▀▘
       #
       # Note: produces characters that are not suppoted by the default fonts of
@@ -520,6 +520,9 @@ class CurrentCharacterStyle
     method reset
       clear
 
+    method bg( color:Int32 )
+      current = current.bg( color )
+
     method bold
       current += CharacterStyle.BOLD
 
@@ -555,6 +558,9 @@ class CurrentCharacterStyle
 
     method hidden_off
       current -= CharacterStyle.HIDDEN
+
+    method fg( color:Int32 )
+      current = current.fg( color )
 
     method fg_default
       current = current.fg( CharacterStyle.FG_DEFAULT )

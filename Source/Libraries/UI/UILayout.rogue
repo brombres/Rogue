@@ -28,14 +28,11 @@ $endMacro
 
 class UILayout : UIComponent
   GLOBAL METHODS
-    UI_FACTORY_METHODS( h, UIHorizontalLayout )
-    UI_FACTORY_METHODS( v, UIVerticalLayout )
     UI_FACTORY_METHODS( absolute, UIAbsoluteLayout )
-
-  PROPERTIES
-
-  METHODS
-    method update_layout_size( frame_size:XY, content_size:XY ) [override]
-      size = frame_size
+    UI_FACTORY_METHODS( flow,     UIFlowLayout )
+    UI_FACTORY_METHODS( h,        UIHorizontalLayout )
+    UI_FACTORY_METHODS( list,     UIList )
+    UI_FACTORY_METHODS( stack,    UIStackLayout )
+    UI_FACTORY_METHODS( v,        UIVerticalLayout )
 endClass
 

@@ -1,5 +1,6 @@
 module UI
   uses Utility/Node
+  uses Utility/WorkList
 
 class UIComponent : Node<<UIComponent>>
   DEFINITIONS
@@ -7,60 +8,30 @@ class UIComponent : Node<<UIComponent>>
     FLAG_FIXED_HEIGHT          = 2
     FLAG_SHRINK_TO_FIT_WIDTH   = 4
     FLAG_SHRINK_TO_FIT_HEIGHT  = 8
-    FLAG_WIDTH_MASK            = (FLAG_FIXED_WIDTH | FLAG_SHRINK_TO_FIT_WIDTH)
+    FLAG_WIDTH_MASK            = (FLAG_FIXED_WIDTH  | FLAG_SHRINK_TO_FIT_WIDTH)
     FLAG_HEIGHT_MASK           = (FLAG_FIXED_HEIGHT | FLAG_SHRINK_TO_FIT_HEIGHT)
-    FLAG_SIZE_MASK             = (FLAG_WIDTH_MASK | FLAG_HEIGHT_MASK)
-    FLAG_DEFAULT_WIDTH         = 16
-    FLAG_DEFAULT_HEIGHT        = 32
+    FLAG_SIZE_MASK             = (FLAG_WIDTH_MASK   | FLAG_HEIGHT_MASK)
 
   PROPERTIES
-    position    : XY
-    size        : XY
-    flags       : Int32
-    attributes  : UIAttribute
-    
+    position   : XY
+    size       : XY
+    flags      : Int32
+    attributes : UIAttribute
+
   METHODS
     method init
 
-    method init( w:Real64, h:Real64 )
-      init( XY(w,h) )
+    method init( content:UIComponent )
+      add( content )
 
-    method init( size:XY )
+    method init( size )
       fixed_size = size
 
-    method init( position, size:XY )
-      init( size )
-
-    method init( bounds:Box )
-      init( bounds.position, bounds.size )
-
-    method init( content:UIComponent )
-      init
-      if (content) add( content )
-
-    method add( attribute:UIAttribute )
-      if (not attribute.is_stacking and attributes)
-        local attribute_type_name = attribute.type_name
-        if (attributes.type_name is attribute_type_name)
-          attribute.next = attributes.next
-          attributes = attribute
-          return
-        else
-          local prev = attributes
-          local cur = attributes.next
-          while (cur)
-            if (cur.type_name is attribute_type_name)
-              prev.next = attribute
-              attribute.next = cur.next
-              return
-            endIf
-            prev = cur
-            cur .= next
-          endWhile
-        endIf
-      endIf
-      attribute.next = attributes
-      attributes = attribute
+    method alignment->Anchor
+      # 'alignment' affects text within this component and subcomponents. Unlike
+      # 'anchor', 'alignment' is propagated to child components until a new alignment
+      # is set.
+      return UIAttributes.alignment( this )
 
     method after( e:KeyEvent )
       noAction
@@ -74,6 +45,9 @@ class UIComponent : Node<<UIComponent>>
     method after( e:TextEvent )
       noAction
 
+    method after( e:UIResizeEvent )
+      noAction
+
     method after_draw
       UI.theme._dispatch_after_draw( this )
 
@@ -82,47 +56,23 @@ class UIComponent : Node<<UIComponent>>
       # they can let the theme draw them.
       theme.after_draw( this )
 
+    method after_prepare_layout
+      UI.theme._dispatch_after_prepare_layout( this )
+
+    method after_prepare_layout<<$Theme>>( theme:$Theme )  [propagated]
+      theme.after_prepare_layout( this )
+
     method after_update
       noAction
 
     method after_update_layout
-
-    method alignment->Anchor
-      # 'alignment' affects text within this component. Unlike 'anchor',
-      # 'alignment' is propagated to child components until a new alignment
-      # is set.
-      if (attributes)
-        local result = attributes.alignment
-        if (result.exists) return result.value
-      endIf
-      if (parent) return parent.alignment
-      return Anchor.TOP_LEFT
+      noAction
 
     method anchor->Anchor
-      # 'anchor' affects the placement of this component.
-      if (attributes) return attributes.anchor
-      return Anchor.TOP_LEFT
-
-    method attribute<<$OfType>>->$OfType
-      local cur = attributes
-      while (cur)
-        local match = cur as $OfType
-        if (match) return match
-        cur .= next
-      endWhile
-      return null
-
-    method attributes->UIAttribute
-      return @attributes
+      return UIAttributes.anchor( this )
 
     method bounds->Box
       return Box( position, size )
-
-    method can_split->Logical
-      return false
-
-    method can_split( max_width:Int32 )->Logical
-      return false
 
     method capture_keyboard_focus->Logical
       if (UI.keyboard_focus and UI.keyboard_focus is not this) return false
@@ -134,11 +84,22 @@ class UIComponent : Node<<UIComponent>>
       UI.pointer_focus = this
       return true
 
-    method collect_components( list:UIComponent[] )
-      list.add( this )
+    method can_split_x( max_width:Int32 )->Logical
+      return false
+
+    method clear_modified
+      (forEach in children).clear_modified
+      @is_modified = false
 
     method clip->Box
       return UI.clip.value
+
+    method collect_drawable( list:UIComponent[] )
+      if (is_drawable)
+        list.add( this )
+      else
+        (forEach in children).collect_drawable( list )
+      endIf
 
     method contains( e:PointerEvent )->Logical
       return contains( e.position )
@@ -153,38 +114,13 @@ class UIComponent : Node<<UIComponent>>
       endWhile
       return false
 
-    method contains_newline->Logical
-      return false
-
-    method content->UIComponent
-      return first_child
-
-    method content_bounds->Box
-      return Box( content_position, size )
-
-    method default_height
-      # Sets this component's fixed height to be its default height after it is measured.
-      flags |= FLAG_DEFAULT_HEIGHT
-
-    method default_width
-      # Sets this component's fixed width to be its default width after it is measured.
-      flags |= FLAG_DEFAULT_WIDTH
-
-    method default_size
-      # Sets this component's fixed size to be its default size after it is measured.
-      flags |= FLAG_DEFAULT_WIDTH | FLAG_DEFAULT_HEIGHT
-
-    method display_bounds->Box
-      return Box( display_position, size )
-
-    method clear_modified
-      (forEach in children).clear_modified
-      @is_modified = false
-
     method content_position->XY
-      # Same as display_position except adds this component's content offset()
-      if (parent) return position + offset + parent.content_position
-      else        return position + offset
+      # Same as display_position except incorporates this component's content offset()
+      if (parent) return (position - offset) + parent.content_position
+      else        return (position - offset)
+
+    method description->String
+      return _description.to_json
 
     method dispatch( e:KeyEvent )
       # Send input events to children in reverse order because the top layer comes last
@@ -210,34 +146,42 @@ class UIComponent : Node<<UIComponent>>
       if (e.is_consumed) return
       handle( e )
 
+    method dispatch_on_update_layout
+      on_update_layout
+      (forEach in children).dispatch_on_update_layout
+
+    method dispatch_after_update_layout
+      after_update_layout
+      (forEach in children).dispatch_after_update_layout
+
+    method display_bounds->Box
+      return Box( display_position, size )
+
     method display_position->XY
       if (parent) return position + parent.content_position
       else        return position
 
-    method draw( draw_bounds:Box )
-      if (not size.is_zero)
-        local clip = draw_bounds & display_bounds
-        if (not clip)
-          return
-        endIf
-        draw_bounds = clip.value
+    method draw( clip_bounds:Box )
+      local display_bounds = display_bounds
+      local draw_bounds = clip_bounds & display_bounds
+      if (draw_bounds)
+        temporarily UI.clip = draw_bounds.value
+          on_draw
+          local inner_bounds = clip_bounds & to_inner_bounds(display_bounds)
+          if (inner_bounds)
+              draw_subcomponents( inner_bounds.value )
+          endIf
+          after_draw
+        endTemporarily
       endIf
 
-      temporarily UI.clip = draw_bounds
-        on_draw
-        local inner_bounds = draw_bounds & padding.apply(display_bounds)
-        if (inner_bounds)
-          temporarily UI.clip = inner_bounds.value
-            draw_subcomponents( inner_bounds.value )
-          endTemporarily
-        endIf
-        after_draw
-      endTemporarily
-
     method draw_subcomponents( draw_bounds:Box )
-      forEach (component in children)
-        component.draw( draw_bounds )
-      endForEach
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+        forEach (component in subcomponents)
+          component.draw( draw_bounds )
+        endForEach
+      endUse
 
     method expand_to_fill
       flags &= !(FLAG_WIDTH_MASK|FLAG_HEIGHT_MASK)  # turn off fixed and shrink flags
@@ -248,33 +192,36 @@ class UIComponent : Node<<UIComponent>>
     method expand_to_fill_width
       flags &= !FLAG_WIDTH_MASK   # turn off fixed and shrink flags
 
-    method find( pos:XY, &always_check_subcomponents )->UIComponent
+    method find( pos:XY )->UIComponent
       # The algorithm looks a little unusual because we want to find the
       # LAST child that contains 'pos'.
 
       if (next)
         # Recursively find the last sibling that contains 'pos'
-        local result = next.find( pos, &=always_check_subcomponents )
+        local result = next.find( pos )
         if (result) return result
       endIf
 
-      if (not always_check_subcomponents and not contains(pos)) return null # Don't bother checking children
+      if (not is_modifier and not contains(pos)) return null # Don't bother checking children
 
       if (first_child)
-        local result = first_child.find( pos, &=always_check_subcomponents )
+        local result = first_child.find( pos )
         if (result) return result
       endIf
 
       if (count == 0 and contains(pos)) return this
       return null
 
-    method first_element_width->Real64
-      # Used to aid UIContent word wrap.
-      return size.x
+    method first_drawable_child->UIComponent
+      forEach (child in children)
+        if (child.is_drawable) return child
+        local result = child.first_drawable_child
+        if (result) return result
+      endForEach
+      return null
 
     method font->UIFont
-      if (attributes) return attributes.font
-      return UI.theme.default_font
+      return UIAttributes.font( this )
 
     method handle( e:KeyEvent )
       on( e )
@@ -320,9 +267,10 @@ class UIComponent : Node<<UIComponent>>
 
       after( e )
 
-    method handle_resize_ui( new_size:XY )
-      on_resize_ui( new_size )
-      (forEach in children).handle_resize_ui( new_size )
+    method handle( e:UIResizeEvent )
+      on( e )
+      (forEach in children).handle( e )
+      after( e )
 
     method has_keyboard_focus->Logical
       return (UI.keyboard_focus is this)
@@ -330,8 +278,17 @@ class UIComponent : Node<<UIComponent>>
     method has_pointer_focus->Logical
       return (UI.pointer_focus is this)
 
-    method height->Real64
-      return size.y
+    method height->Real64 [macro]
+      return this.size.y
+
+    method inner_display_bounds->Box
+      return to_inner_bounds( display_bounds )
+
+    method is_br->Logical
+      return false
+
+    method is_drawable->Logical
+      return true
 
     method is_expand_to_fill_height->Logical
       return not (@flags & FLAG_HEIGHT_MASK)
@@ -340,10 +297,13 @@ class UIComponent : Node<<UIComponent>>
       return not (@flags & FLAG_WIDTH_MASK)
 
     method is_fixed_height->Logical
-      return (@flags & FLAG_FIXED_HEIGHT)?
+      return (flags & FLAG_FIXED_HEIGHT)
 
     method is_fixed_width->Logical
-      return (@flags & FLAG_FIXED_WIDTH)?
+      return (flags & FLAG_FIXED_WIDTH)
+
+    method is_modifier->Logical
+      return true
 
     method is_shrink_to_fit_height->Logical
       return (@flags & FLAG_SHRINK_TO_FIT_HEIGHT)?
@@ -351,35 +311,37 @@ class UIComponent : Node<<UIComponent>>
     method is_shrink_to_fit_width->Logical
       return (@flags & FLAG_SHRINK_TO_FIT_WIDTH)?
 
-    method is_style_bold->Logical
-      if (parent) return parent.is_style_bold
-      return false
-
-    method is_style_inverse->Logical
-      if (parent) return parent.is_style_inverse
-      return false
-
-    method is_style_italic->Logical
-      if (parent) return parent.is_style_italic
-      return false
-
-    method is_style_underline->Logical
-      if (parent) return parent.is_style_underline
-      return false
-
-    method max_content_size( container_size:XY )->XY
-      return container_size  # no restriction
-
-    method measure
-      on_measure
-
-      # on_measure must have set "default_width/height/size = ..." or "size = ..."
-      # for this to work correctly.
-      if (flags & FLAG_DEFAULT_WIDTH)  fixed_width = size.x
-      if (flags & FLAG_DEFAULT_HEIGHT) fixed_height = size.y
-
     method offset->XY
       return XY.zero
+
+    method prepare_layout
+      local og_size = size
+
+      on_prepare_layout
+      (forEach in children).prepare_layout
+      after_prepare_layout
+
+      if (size != og_size) is_modified = true
+
+    method measure_content_width( subcomponents:UIComponent[] )->Real64?
+      local result : Real64?
+      forEach (component in subcomponents)
+        local w = component.measure_width( null )
+        if (w)
+          if (not result or w.value > result.value) result = w
+        endIf
+      endForEach
+      return result
+
+    method measure_content_height( subcomponents:UIComponent[] )->Real64?
+      local result : Real64?
+      forEach (component in subcomponents)
+        local h = component.measure_height( null )
+        if (h)
+          if (not result or h.value > result.value) result = h
+        endIf
+      endForEach
+      return result
 
     method on( e:KeyEvent )
       noAction
@@ -393,6 +355,15 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
+    method on( e:UIResizeEvent )
+      noAction
+
+    method on_update
+      noAction
+
+    method on_update_layout
+      noAction
+
     method on_draw
       UI.theme._dispatch_on_draw( this )
 
@@ -401,8 +372,11 @@ class UIComponent : Node<<UIComponent>>
       # they can let the theme draw them.
       theme.on_draw( this )
 
-    method on_measure
-      noAction
+    method on_prepare_layout
+      UI.theme._dispatch_on_prepare_layout( this )
+
+    method on_prepare_layout<<$Theme>>( theme:$Theme )  [propagated]
+      theme.on_prepare_layout( this )
 
     method on_release_keyboard_focus
       noAction
@@ -410,34 +384,11 @@ class UIComponent : Node<<UIComponent>>
     method on_release_pointer_focus
       noAction
 
-    method on_resize_ui( new_size:XY )
-      noAction
-
-    method on_update
-      noAction
-
-    method original_position->XY
-      if (attributes) return attributes.original_position
-      return XY.zero
-
     method operator+( rhs:UIComponent )->UIComponent
       return UILayout.h( this, rhs )
 
     method operator/( rhs:UIComponent )->UIComponent
       return UILayout.v( this, rhs )
-
-    method padding->UIPadding
-      if (attributes) return attributes.padding
-      return UIPadding(0)
-
-    method print_state( output=StringBuilder():StringBuilder )->StringBuilder
-      output.println "$$" (type_name,which{is_modified:" [modified]"||""})
-      if (count)
-        output.indent += 2
-        (forEach in children).print_state( output )
-        output.indent -= 2
-      endIf
-      return output
 
     method release_keyboard_focus
       if (UI.keyboard_focus is this)
@@ -467,51 +418,48 @@ class UIComponent : Node<<UIComponent>>
     method request_layout
       is_modified = true  # class Node setter auto-propagates this up the hierarchy
 
-    method set_alignment( alignment:Anchor )
-      add( UIAttributeAlignment(alignment) )
+    method set_alignment( value:Anchor )
+      attributes += UIAlignmentAttribute(value)
 
-    method set_anchor( anchor:Anchor )
-      add( UIAttributeAnchor(anchor) )
+    method set_anchor( value:Anchor )
+      attributes += UIAnchorAttribute(value)
 
-    method set_attributes( @attributes )
-      noAction
+    method set_default_height( h:Int32 )
+      if (not is_fixed_height) height = h
 
-    method set_content( content:UIComponent )
-      if (content is not first_child or count != 1)
-        clear
-        add content
-      endIf
+    method set_default_size( new_default_size:XY )
+      default_width  = new_default_size.x
+      default_height = new_default_size.y
 
-    method set_default_height( h:Real64 )
-      if (not (flags & FLAG_HEIGHT_MASK)) size = XY( size.x, h )
+    method set_default_width( w:Int32 )
+      if (not is_fixed_width) width = w
 
-    method set_default_width( w:Real64 )
-      if (not (flags & FLAG_WIDTH_MASK)) size = XY( w, size.y )
-
-    method set_default_size( new_size:XY )
-      if (not (flags & FLAG_HEIGHT_MASK)) size = XY( size.x, new_size.y )
-      if (not (flags & FLAG_WIDTH_MASK))  size = XY( new_size.x, size.y )
-
-    method set_fixed_height( h:Real64 )
+    method set_fixed_height( h:Int32 )
       flags = (flags & !FLAG_HEIGHT_MASK) | FLAG_FIXED_HEIGHT
       size = XY( size.x, h )
 
-    method set_fixed_width( w:Real64 )
+    method set_fixed_size( new_fixed_size:XY )
+      flags = (flags & !FLAG_SIZE_MASK) | FLAG_FIXED_WIDTH | FLAG_FIXED_HEIGHT
+      size = XY( new_fixed_size.x, new_fixed_size.y )
+
+    method set_fixed_width( w:Int32 )
       flags = (flags & !FLAG_WIDTH_MASK) | FLAG_FIXED_WIDTH
       size = XY( w, size.y )
 
-    method set_fixed_size( new_size:XY )
-      flags = (flags & !(FLAG_WIDTH_MASK|FLAG_HEIGHT_MASK)) | FLAG_FIXED_WIDTH | FLAG_FIXED_HEIGHT
-      size = new_size
-
     method set_font( font:UIFont )
-      add( UIAttributeFont(font) )
+      attributes += UIFontAttribute( font )
+
+    method set_height( h:Real64 )
+      if (h == size.y) return
+      request_redraw  # redraw old area
+      size = XY( size.x, h )
+      request_layout  # includes redraw of new area
 
     method set_is_modified( setting:Logical )
+      if (setting) request_redraw
       if (@is_modified == setting) return
       @is_modified = setting
       if (setting)
-        request_redraw
         local cur = parent
         while (cur)
           cur.@is_modified = true
@@ -519,26 +467,20 @@ class UIComponent : Node<<UIComponent>>
         endWhile
       endIf
 
-    method set_height( h:Real64 )
-      size = XY( size.x, h )
-
-    method set_original_position( value:XY )
-      add( UIAttributeOriginalPosition(value) )
-
-    method set_padding( value:Int32 )
-      add( UIAttributePadding(UIPadding(value)) )
-
-    method set_padding( left:Int32, top:Int32, right:Int32, bottom:Int32 )
-      add( UIAttributePadding(UIPadding(left,top,right,bottom)) )
+    method set_offset( offset:XY )
+      throw UnsupportedOperationError()
 
     method set_weight( w:Real64 )
-      add( UIAttributeWeight(XY(w,w)) )
+      attributes += UIWeightAttribute(XY(w,w))
 
     method set_weight( w:XY )
-      add( UIAttributeWeight(w) )
+      attributes += UIWeightAttribute(w)
 
     method set_width( w:Real64 )
+      if (w == size.x) return
+      request_redraw  # redraw old area
       size = XY( w, size.y )
+      request_layout  # includes redraw of new area
 
     method shrink_to_fit
       shrink_to_fit_width
@@ -550,97 +492,134 @@ class UIComponent : Node<<UIComponent>>
     method shrink_to_fit_width
       flags = (flags & !FLAG_WIDTH_MASK) | FLAG_SHRINK_TO_FIT_WIDTH
 
-    method split( max_width:Int32, writer:ListRewriter<<UIComponent>> )
-      writer.write( this )
+    method split_after( i:Int32 )->UIComponent
+      return null
+
+    method split_x( max_width=null:Int32? )->UIComponent
+      return null
 
     method text->String
-      return this->String
+      return null
 
-    method to->String
-      return type_name.after_any( "::" )
+    method to_inner_bounds( bounds:Box )->Box
+      # Transforms the given bounds (which may be local bounds or display bounds)
+      # into inner bounds. Usually there is no change but borders and frames usually
+      # crop the box.
+      return bounds
+
+    method to_outer_bounds( bounds:Box )->Box
+      # Transforms inner bounds into outer bounds. Default approach uses to_inner_bounds
+      # and calculates the inverse, so in most cases only to_inner_bounds() needs
+      # to be overridden.
+      local shrunk = to_inner_bounds(Box(10000,10000))
+      return Box( bounds.position-shrunk.position, bounds.size+(XY(10000,10000)-shrunk.size) )
 
     method update
       on_update
       update_subcomponents
       after_update
 
-    # Layout Infrastructure
-    # ---------------------
-    # update_layout_size
-    #   update_subcomponent_sizes
-    #   update_subcomponent_layout
-    # update_layout_bounds  (positions components using sizes established above)
     method update_layout( new_bounds:Box )
       # Only called on a top-level UIComponent
-      update_layout_size( new_bounds.size )
-      update_layout_bounds( new_bounds )
+      prepare_layout
+      dispatch_on_update_layout
+      update_layout_width( new_bounds.size.x )
+      update_layout_height( new_bounds.size.y )
+      update_layout_placement( new_bounds )
+      dispatch_after_update_layout
       clear_modified
 
-    method update_layout_bounds( new_bounds:Box )
-      position = Box(size).positioned_within( new_bounds, anchor ).position.floor
+    method update_layout_placement( container:Box )
+      local anchor = this.anchor
+      position = Box(size).positioned_within( container, anchor ).position.floor
+      update_subcomponent_placement( to_inner_bounds(Box(size)) )
 
-    method update_layout_size( container_size:XY )
-      if (not is_modified and container_size == size) return
+    method update_layout_width( container_width:Real64 )
+      width = which{ measure_width(container_width) || container_width }
 
-      local padding = this.padding
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+        update_subcomponent_widths( subcomponents, to_inner_bounds(Box(size)).size.x )
+      endUse
 
-      local w = which{ (flags&FLAG_FIXED_WIDTH):size.x  ||  container_size.x }
-      local h = which{ (flags&FLAG_FIXED_HEIGHT):size.y ||  container_size.y }
-      local inner_w = (w - padding.x).clamped_low( 0 )
-      local inner_h = (h - padding.y).clamped_low( 0 )
+    method measure_width( container_width:Real64? )->Real64?
+      if (is_fixed_width) return size.x
+      if (is_expand_to_fill_width) return container_width
 
-      (forEach in children).measure
-      local content_size = update_subcomponent_sizes( XY(inner_w,inner_h) )
-      if (flags & (FLAG_SHRINK_TO_FIT_WIDTH|FLAG_SHRINK_TO_FIT_HEIGHT))
-        if (flags & FLAG_SHRINK_TO_FIT_WIDTH)  w .= or_smaller( content_size.x+padding.y )
-        if (flags & FLAG_SHRINK_TO_FIT_HEIGHT) h .= or_smaller( content_size.y+padding.x )
+      # Shrink to fit content width
+      local result : Real64?
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+        result = measure_content_width( subcomponents )
+      endUse
+
+      if (result)
+        return to_outer_bounds( Box(0,0,result.value,0) ).size.x
       endIf
+      return container_width
 
-      update_layout_size( XY(w,h), content_size )
-      update_subcomponent_layout
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Real64 )
+      (forEach in subcomponents).update_layout_width( container_width )
 
-    method update_layout_size( frame_size:XY, content_size:XY )
-      size = frame_size.or_larger( content_size )   # overloaded by UILayout to disregard content size
+    method update_layout_height( container_height:Real64 )
+      height = which{ measure_height(container_height) || container_height }
 
-    method update_subcomponent_layout
-      block bounds = padding.apply(Box(size))
-        forEach (component in children)
-          component.update_layout_bounds( bounds )
-        endForEach
-      endBlock
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+        update_subcomponent_heights( subcomponents, to_inner_bounds(Box(size)).size.y )
+      endUse
 
-    method update_subcomponent_sizes( container_size:XY )->XY
-      # Returns minimum size to enclose all subcomponents - will vary by extended type.
-      local min_size : XY
-      forEach (component in children)
-        component.update_layout_size( container_size )
-        min_size .= or_larger( component.size )
+    method measure_height( container_height:Real64? )->Real64?
+      if (is_fixed_height) return size.y
+      if (is_expand_to_fill_height) return container_height
+
+      # Shrink to fit content height
+      local result : Real64?
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+        result = measure_content_height( subcomponents )
+      endUse
+
+      if (result)
+        return to_outer_bounds( Box(0,0,0,result.value) ).size.y
+      endIf
+      return container_height
+
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Real64 )
+      (forEach in subcomponents).update_layout_height( container_height )
+
+    method update_subcomponent_placement( container:Box )
+      use list = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( list )
+        update_subcomponent_placement( list, container )
+      endUse
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box )
+      forEach (component in subcomponents)
+        component.update_layout_placement( container )
       endForEach
-      return min_size
-
-    method update_layout( placement:UIIntervalPlacement )->UIIntervalPlacement
-      return placement.placing( this )
-
-    method update_shrink_to_fit_size
-      if (flags & (FLAG_SHRINK_TO_FIT_WIDTH|FLAG_SHRINK_TO_FIT_HEIGHT))
-        local max_size : XY
-        max_size .= or_larger( (forEach in children).size )
-        if (is_shrink_to_fit_width)  width = max_size.x
-        if (is_shrink_to_fit_height) height = max_size.y
-      endIf
 
     method update_subcomponents
       (forEach in children).update
 
-    method width->Real64
-      return size.x
-
     method weight->XY
-      if (attributes) return attributes.weight
-      return XY(1,1)
+      return UIAttributes.weight( this )
 
-    method write_text( builder:StringBuilder )
-      builder.print text
+    method width->Real64 [macro]
+      return this.size.x
+
+    method _description->Value
+      local result = @{ name:type_name.after_any(':') }
+      _extended_description( result )
+      if (first_child)
+        local subcomponents = result.ensure_list( "children" )
+        forEach (child in children) subcomponents.add( child._description )
+      endIf
+      return result
+
+    method _extended_description( table:Value )
+      local bounds = display_bounds
+      table//bounds = @[ bounds.x, bounds.y, bounds.width, bounds.height ]
 
 endClass
 

@@ -1,85 +1,29 @@
 module UI
 
-class UIList : UIComponent, BufferedPrintWriter<<text_buffer>>
-  PROPERTIES
-    content : UIContent
-
+class UIList : UILayout
   METHODS
-    method init
+    method init_object
+      shrink_to_fit_height
 
-    method init( component:UIComponent )
-      prior.add( component )
-
-    method init( text:String )
-      print( text )
-
-    method add( component:UIComponent )
-      flush
-      content = null
-      prior.add( component )
-
-    method add( text:String )
-      print text
-
-    method content->UIContent
-      if (@content) return @content
-      @content = UIContent().[ shrink_to_fit_height ]
-      prior.add( @content )
-      return @content
-
-    method flush( buffer:StringBuilder )
-      if (buffer.count)
-        local text = buffer->String
-        buffer.clear
-        local i = text.locate( '\n' )
-        while (i.exists)
-          content.add( UIText(text.leftmost(i.value)) )
-          @content = null
-          text = text.from( i.value+1 )
-          i = text.locate( '\n' )
-        endWhile
-        if (text.count) content.add( UIText(text) )
-      endIf
-
-    method on_draw
-      noAction
-
-    method set_content( @content )
-
-    method update_subcomponent_layout
-      block bounds = padding.apply( Box(size) )
-        local cursor = bounds.position
-        local w = bounds.size.x
-        forEach (component in children)
-          local h = component.size.y
-          component.update_layout_bounds( Box(cursor,w,h) )
-          cursor += XY( 0, h )
-        endForEach
-      endBlock
-   
-    method update_subcomponent_sizes( container_size:XY )->XY
-      # Returns minimum size to enclose all subcomponents - will vary by extended type.
-      if (text_buffer.count)
-        # Flush print buffer and then measure any new children
-        local cur = last_child  # remember original last child
-        flush
-        content = null
-
-        # Measure new children
-        if (count)
-          if (not cur) cur = first_child
-          (forEach in cur.iterator).measure
-        endIf
-      endIf
-
-      local min_height : Int32
-      local w = container_size.x
-      forEach (component in children)
-        local h = which{ component.size.y || 1 }
-        component.update_layout_size( XY(w,h) )
-        min_height += component.size.y
+    method measure_content_height( subcomponents:UIComponent[] )->Real64?
+      local total_w = 0.0
+      forEach (component in subcomponents)
+        local h = component.measure_height( null )
+        if (not h) return null
+        total_w += h.value
       endForEach
-      return XY( w, min_height )
-   
-endClass
+      return total_w
 
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Real64 )
+      forEach (component in subcomponents)
+        component.update_layout_height( component.measure_height(container_height).value )
+      endForEach
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+      local cursor = container.position
+      local w      = size.x
+      forEach (component in subcomponents)
+        component.update_layout_placement( Box(cursor,w,component.size.y) )
+        cursor += XY(0,component.size.y)
+      endForEach
+endClass

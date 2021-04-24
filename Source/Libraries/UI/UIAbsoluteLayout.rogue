@@ -9,27 +9,31 @@ class UIAbsoluteLayout : UILayout
     method add( component:UIComponent )
       prior.add( component )
 
-    method add( component:UIComponent, position:XY, anchor=null:Anchor? )
-      if (anchor) component.anchor = anchor.value
+    method add( component:UIComponent, position:XY )
       prior.add( component )
 
     method clamp_content
+      # Content will be prevented from going offscreen
       @clamp_content = true
 
-    method update_subcomponent_bounds( component:UIComponent, bounds:Box )
-      bounds = bounds.relative_to( component.anchor ).floor
+    method update_subcomponent_bounds( component:UIComponent )
+      local bounds = component.bounds.relative_to( component.anchor ).floor
       if (@clamp_content) bounds = bounds.clamped( this.bounds )
-      component.update_layout_bounds( Box(bounds.position.floor,component.size) )
+      component.update_layout_placement( Box(bounds.position.floor,component.size) )
 
-    method update_subcomponent_layout [override]
-      forEach (component in children)
-        update_subcomponent_bounds( component, Box(component.position,component.size) )
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+      forEach (component in subcomponents)
+        update_subcomponent_bounds( component )
       endForEach
 
-    method update_subcomponent_sizes( container_size:XY )->XY [override]
-      forEach (component in children)
-        component.update_layout_size( component.size )
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Real64 )
+      forEach (component in subcomponents)
+        component.update_layout_width( component.measure_width(container_width).value )
       endForEach
 
-      return container_size
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Real64 )
+      forEach (component in subcomponents)
+        component.update_layout_height( component.measure_height(container_height).value )
+      endForEach
+
 endClass
