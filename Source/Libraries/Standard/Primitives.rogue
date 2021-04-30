@@ -106,7 +106,7 @@ class Real64 [primitive]
       else           return whole_part - this
 
     method hash_code->Int32
-      return integer_bits->Int32
+      return integer_bits.hash_code
 
     method integer_bits->Int64
       $if (target("C++"))
@@ -260,6 +260,9 @@ class Real32 [primitive]
     method fractional_part->Real32
       if (this >= 0) return this - whole_part
       else           return whole_part - this
+
+    method hash_code->Int32
+      return integer_bits
 
     method integer_bits->Int32
       $if (target("C++"))
@@ -486,7 +489,7 @@ class Int64 [primitive]
       return result
 
     method hash_code->Int32
-      return this
+      return Int32(this :>>: 32) ~ Int32(this)
 
     method introspector->Introspector
       return BoxedIntrospector<<Int64>>( this->Object )
