@@ -184,9 +184,9 @@ class JPEGEncoder
       local width = bitmap.width
       local height = bitmap.height
 
-      native @|unsigned long encoded_size = 0;
-              |RogueByte*    encoded_buffer = 0;
-              |JSAMPROW      row_pointer;
+      native @|size_t     encoded_size = 0;
+              |RogueByte* encoded_buffer = 0;
+              |JSAMPROW   row_pointer;
               |
               |$this->jpeg_info.err = jpeg_std_error( (struct jpeg_error_mgr*) &$error_handler );
               |$error_handler.jpeg_error_manager.error_exit = Rogue_jpeg_encoder_error_callback;
