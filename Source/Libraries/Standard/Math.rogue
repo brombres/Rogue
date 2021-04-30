@@ -1,4 +1,7 @@
 class Math
+  DEFINITIONS
+    E = 2.718281828459045
+
   GLOBAL METHODS
     $if (target("C++"))
     method acos( n:Real64 )->Real64 [macro]
