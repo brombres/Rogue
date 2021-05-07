@@ -131,7 +131,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
           endForEach
         endIf
       endWhile
-      
+
       return _input_bytes.count >= minimum
 
     method flush( buffer:StringBuilder )
@@ -155,7 +155,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       if (System.is_windows and immediate_mode)
         # Only use special Windows version for immediate mode
         _fill_event_queue_windows
-      else 
+      else
         # Windows will work with Unix mode otherwise
         _fill_event_queue_unix
       endIf
@@ -238,7 +238,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
       native @|} // if MOUSE_EVENT
               |
-              |if (record.EventType == KEY_EVENT && record.Event.KeyEvent.bKeyDown && 
+              |if (record.EventType == KEY_EVENT && record.Event.KeyEvent.bKeyDown &&
               |    record.Event.KeyEvent.uChar.UnicodeChar)
               |{
               |  $unicode = (RogueInt32) record.Event.KeyEvent.uChar.UnicodeChar;
@@ -429,8 +429,6 @@ trace
       native @|clearerr( stdin );
 
     method reset_io_mode
-      @immediate_mode = true
-      @show_cursor = false
       immediate_mode = false
       show_cursor = true
 
