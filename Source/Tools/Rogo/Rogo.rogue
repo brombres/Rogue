@@ -66,25 +66,6 @@ endForEach
 if (buildfile) rogo_folder = File.folder( File.absolute_filepath(buildfile) ) + "/.rogo"
 else           rogo_folder = ".rogo"
 
-File.create_folder( rogo_folder )
-cache_filepath = "$/Cache-$.json" (rogo_folder,System.os)
-config         = @{ roguec:"roguec", filepath:cache_filepath }
-cache          = JSON.load_table( File(cache_filepath) )
-
-local compiler_invocation : String
-native @|#if defined(DEFAULT_CXX)
-        |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
-        |#else
-           which (System.os)
-             case "Windows"
-               compiler_invocation = "cl /EHsc /nologo"
-             others
-               compiler_invocation = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
-           endWhich
-native @|#endif
-
-config//cpp = compiler_invocation
-
 if (not buildfile)
   # These add()s only succeed for files that actually exist.
   buildfiles.add( "Build.rogue" )
@@ -141,7 +122,7 @@ if (not buildfiles.count)
 
     if (project_name)
       builder.println @|augment Build
-                       |  # You can create a Local.mk file with overrides for these values, e.g.:
+                       |  # You can create a Local.settings file with overrides for these values, e.g.:
                        |  # LAUNCHER_FOLDER = "~/bin"
                        |  PROPERTIES
       builder.println ''    PROJECT           = "$"'' (project_name)
@@ -368,7 +349,7 @@ if (not buildfiles.count)
        |    rogo_args           = @[]
        |    rogo_error          : Error
        |
-       |    LOCAL_DEFS_FILE     = "Local.mk"
+       |    LOCAL_SETTINGS_FILE = "Local.settings"
        |
        |  METHODS
        |    method launch
@@ -449,10 +430,10 @@ if (not buildfiles.count)
        |      endBlock
        |
        |    method read_defs
-       |      read_defs( LOCAL_DEFS_FILE )
+       |      read_defs( LOCAL_SETTINGS_FILE )
        |
        |    method read_defs( defs_filepath:String )
-       |      # Attempt to read defs from Local.mk
+       |      # Attempt to read defs from Local.settings
        |      local overrides = String[]
        |      if (File.exists(defs_filepath))
        |        forEach (line in LineReader(File(defs_filepath)))
@@ -617,6 +598,25 @@ if (not buildfiles.count)
     System.exit 1
   endIf
 endIf
+
+File.create_folder( rogo_folder )
+cache_filepath = "$/Cache-$.json" (rogo_folder,System.os)
+config         = @{ roguec:"roguec", filepath:cache_filepath }
+cache          = JSON.load_table( File(cache_filepath) )
+
+local compiler_invocation : String
+native @|#if defined(DEFAULT_CXX)
+        |  $compiler_invocation = RogueString_create_from_utf8( DEFAULT_CXX );
+        |#else
+           which (System.os)
+             case "Windows"
+               compiler_invocation = "cl /EHsc /nologo"
+             others
+               compiler_invocation = "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
+           endWhich
+native @|#endif
+
+config//cpp = compiler_invocation
 
 local exe : String
 if (buildfile is null)

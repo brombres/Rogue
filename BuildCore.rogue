@@ -127,8 +127,9 @@ class Build [singleton]
       if (System.os == "Windows") roguec_exe = "Programs\\RogueC\\roguec"
       run "$ $ --gc=manual --main --output=$ $"...
       (roguec_exe,fix("Source/Tools/Rogo/Rogo.rogue"),fix("Source/RogueC/Build/Rogo"),ROGUEC_ROGUE_FLAGS)
-      run ''$ $ $ $$''...
-        (CXX,ROGUEC_CPP_FLAGS,fix("Source/RogueC/Build/Rogo.cpp"),OUTFLAG,ROGO_EXE)
+      local opt = which{ System.is_windows:"" || "-O3 " }
+      run ''$ $$ $ $$''...
+          (CXX,opt,ROGUEC_CPP_FLAGS,fix("Source/RogueC/Build/Rogo.cpp"),OUTFLAG,ROGO_EXE)
       if (File.exists("Rogo.obj")) File.delete( "Rogo.obj" )
 
     check_rogo_launcher
