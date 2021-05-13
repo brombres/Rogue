@@ -204,6 +204,7 @@ class Tokenizer
       TokenType.keyword_isString            = define( TokenType("isString") )
       TokenType.keyword_isType              = define( TokenType("isType") )
       TokenType.keyword_local               = define( TokenType("local") )
+      TokenType.keyword_localize            = define( TokenType("localize") )
       TokenType.keyword_loop                = define( TokenType("loop") )
       TokenType.keyword_native              = define( TokenType("native") )
       TokenType.keyword_nativeCode          = define( NativeCodeTokenType("nativeCode") )
@@ -570,7 +571,7 @@ class Tokenizer
           return
         endIf
       endIf
-        
+
       add_new_token( TokenType.literal_int32, next_line )
 
     method next_is_hex_digit->Logical

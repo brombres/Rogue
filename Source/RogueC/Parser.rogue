@@ -1552,7 +1552,7 @@ class Parser
           cur_statement_list.add( parse_use_statement )
           return
 
-        elseIf (next_is(TokenType.keyword_local))
+        elseIf (next_is(TokenType.keyword_local) or next_is(TokenType.keyword_localize))
           parse_local_or_global( &is_local )
           return
 
@@ -2237,36 +2237,56 @@ class Parser
 
     method parse_local_or_global( &is_local )
       local_declarations.clear
-      local t = read   # "local" or "global"
+      local t = read   # one of: local, global, localize
 
-      # Destructuring/tuple assignment
-      if (next_is(TokenType.symbol_open_paren))
-        local expression = parse_expression
-        if ((expression as CmdTuple) is null)
-          throw expression.t.error("Expected tuple of variables for destructuring assignment.")
-        endIf
-        (expression as CmdTuple).synthesize_variables = true
-        must_consume(TokenType.symbol_equals)
-        t = peek
-        cur_statement_list.add( CmdAssign(t,expression,parse_expression) )
-        return
-      endIf
+      local is_localize = t.type is TokenType.keyword_localize
 
-      # name[=initial_value] [, ...]
-      local first = true
-      while (first or consume(TokenType.symbol_comma))
-        first = false
-        t = peek
-        local name = read_identifier
-        local v = Local( t, name )
-        local_declarations.add( v )
-        if (consume(TokenType.symbol_equals))
+      if (is_localize)
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          t = peek
+          local name = peek_identifier
+          local v = Local( t, name )
+          local_declarations.add( v )
+
+          # id(...) -> this.id(...)
+          reader.push( TokenType.symbol_dot.create_token(t) )
+          reader.push( TokenType.keyword_this.create_token(t) )
+
           v.initial_value = parse_expression
+        endWhile
+
+      else
+        # Destructuring/tuple assignment
+        if (not is_localize and next_is(TokenType.symbol_open_paren))
+          local expression = parse_expression
+          if ((expression as CmdTuple) is null)
+            throw expression.t.error("Expected tuple of variables for destructuring assignment.")
+          endIf
+          (expression as CmdTuple).synthesize_variables = true
+          must_consume(TokenType.symbol_equals)
+          t = peek
+          cur_statement_list.add( CmdAssign(t,expression,parse_expression) )
+          return
         endIf
-        if (not is_local and next_is(TokenType.symbol_comma))
-          throw peek.error( "Only one global variable can be declared at a time. Use multiple 'global' commands as needed." )
-        endIf
-      endWhile
+
+        # name[=initial_value] [, ...]
+        local first = true
+        while (first or consume(TokenType.symbol_comma))
+          first = false
+          t = peek
+          local name = read_identifier
+          local v = Local( t, name )
+          local_declarations.add( v )
+          if (consume(TokenType.symbol_equals))
+            v.initial_value = parse_expression
+          endIf
+          if (not is_local and next_is(TokenType.symbol_comma))
+            throw peek.error( "Only one global variable can be declared at a time. Use multiple 'global' commands as needed." )
+          endIf
+        endWhile
+      endIf
 
       # [: Type]
       if (consume(TokenType.symbol_colon))
@@ -2871,6 +2891,22 @@ class Parser
     method read->Token
       return reader.read
 
+    method peek_identifier->String
+      if (not next_is(TokenType.identifier))
+        if (next_is(TokenType.type_identifier))
+          local result = peek->Type.name
+          return result
+        endIf
+        if (peek.type is TokenType.placeholder_id and allow_placeholder_ids)
+          # Template tokens are being searched through; allow placeholder ids
+          # to act as regular ids for now
+          return peek->String
+        endIf
+        throw error( "Identifier expected, found $." (peek.quoted_name) )
+      endIf
+
+      return peek->String
+
     method read_identifier( allow_at_sign=false:Logical )->String
       local direct_access = false
       if (allow_at_sign) direct_access = consume( TokenType.symbol_at )
@@ -2891,9 +2927,6 @@ class Parser
 
       local result = read->String
       if (direct_access) result = "@" + result
-      #while (consume(TokenType.symbol_colon_colon))
-      #result += "::" + read_identifier
-      #endWhile
       return result
 
     method parse_expression( &no_parens_operator )->Cmd

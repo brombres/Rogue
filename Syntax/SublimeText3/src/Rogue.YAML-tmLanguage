@@ -159,7 +159,7 @@ repository:
   scope_declaration:
     patterns:
     - name: storage.modifier.rogue
-      match: \b(readOnly|writeOnly|public|private|limited|const|local|deferred|singleton|managed|primitive|aspect)\b
+      match: \b(readOnly|writeOnly|public|private|limited|const|local|localize|deferred|singleton|managed|primitive|aspect)\b
 
     - name: storage.modifier.rogue
       match: \b(native|inline|inlineNative|requisite|abstract|final|propagated|foreign)\b
