@@ -53,9 +53,21 @@ class Node<<$ExtendedNodeType>>
       if (next)  next.clear_structure_modified
 
     method contains( node:$ExtendedNodeType )->Logical
-      return (node and node.parent is this)
+      if (not node) return false
+      node .= parent
+      while (node)
+        if (node is this) return true
+        node .= parent
+      endWhile
+      return false
 
-    method detach( &preserve_next )
+    method description->String
+      local result = "$"(type_name)
+      if (first_child) result += "($)"(first_child)
+      if (next)        result += "," + next
+      return result
+
+    method detach( &preserve_next )->$ExtendedNodeType
       # Detaches this node from its current parent and all of its siblings.
       #
       # preserve_next
@@ -63,13 +75,19 @@ class Node<<$ExtendedNodeType>>
       #   sibling of a list can be added as children; this flag is used internally
       #   to making sure a node is detached while not accidentally removing all
       #   successive nodes.
+      local tail = this
+      local n = 1
+      if (preserve_next)
+        while (tail.next) tail .= next; ++n
+      endIf
+
       if (parent)
         if (parent.first_child is this)
-          if (parent.last_child is this)
+          if (parent.last_child is tail)
             parent.@first_child = null
             parent.@last_child = null
           else
-            parent.@first_child = this.next
+            parent.@first_child = tail.next
           endIf
         else
           local cur = parent.first_child
@@ -77,13 +95,13 @@ class Node<<$ExtendedNodeType>>
             local next_sibling = cur.next
             if (next_sibling is this)
               cur.@next = this.next
-              if (next_sibling is parent.last_child) parent.@last_child = cur
+              if (tail is parent.last_child) parent.@last_child = cur
               escapeWhile
             endIf
             cur = next_sibling
           endWhile
         endIf
-        --parent.count
+        parent.count -= n
         parent.is_modified = true
         @parent = null
       endIf
@@ -91,6 +109,7 @@ class Node<<$ExtendedNodeType>>
         @next = null
         is_modified = true
       endIf
+      return this as $ExtendedNodeType
 
 
     method dispatch_handle<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
@@ -191,8 +210,19 @@ class Node<<$ExtendedNodeType>>
       while (cur.next) cur = cur.next
       return cur
 
+    method locate( child:$ExtendedNodeType )->Int32?
+      # Returns 0-based index of child in this node's children or else null.
+      local i = 0
+      local cur = first_child
+      while (cur)
+        if (cur is child) return i
+        cur .= next
+        ++i
+      endWhile
+      return null
+
     method remove( child:$ExtendedNodeType )->$ExtendedNodeType
-      if (child and child.parent is this) child.detach
+      child.detach
       return child
 
     method remove_at( index:Int32 )->$ExtendedNodeType
@@ -271,26 +301,6 @@ class Node<<$ExtendedNodeType>>
       else
         @next = null
         return (this as $ExtendedNodeType,tail)
-      endIf
-
-    method to->String
-      use builder = StringBuilder.pool
-        write( builder )
-        return builder
-      endUse
-
-    method write( builder:StringBuilder )
-      builder.print node_name
-      if (first_child)
-        builder.print '('
-        first_child.write( builder )
-        local cur = first_child.next
-        while (cur)
-          builder.print ','
-          cur.write( builder )
-          cur = cur.next
-        endWhile
-        builder.print ')'
       endIf
 
 endClass
