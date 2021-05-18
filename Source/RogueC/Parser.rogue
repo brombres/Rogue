@@ -504,8 +504,6 @@ class Parser
         augments.add( aug )
       endIf
 
-      if (consume(TokenType.symbol_semicolon)) return
-
       if (consume(TokenType.symbol_colon))
         aug.base_types.add( parse_type )
         consume_eols
@@ -515,6 +513,8 @@ class Parser
           consume_eols
         endWhile
       endIf
+
+      if (consume(TokenType.symbol_semicolon)) return
       consume_eols
 
       while (reader.has_another and not next_is(TokenType.keyword_endAugment))
