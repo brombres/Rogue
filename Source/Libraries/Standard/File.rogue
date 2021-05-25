@@ -442,12 +442,13 @@ class File
 
     method join( segments:String[] )->String
       local buffer = StringBuilder()
-      local first = true
-      forEach part in segments
+      local needs_separator = false
+      forEach (part at index in segments)
         if (not part) nextIteration
-        if (not first) buffer.print('/', &!formatted)
-        first = false
+        if (needs_separator) buffer.print('/', &!formatted)
+        if (index > 0 and part.begins_with('/')) part .= rightmost(-1)
         buffer.print(part)
+        needs_separator = not File.ends_with_separator( part )
       endForEach
       return buffer
 
@@ -836,13 +837,13 @@ class File
               |
               |return size;
 
-    method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+    method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
       if (dry_run) verbose = true
       source_folder = expand_path( source_folder )
       dest_folder = expand_path( dest_folder )
-      return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run )
+      return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run, &=missing_only )
 
-    method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run )->Int32
+    method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
       if (dry_run) verbose = true
       dest_folder = File.fix_slashes( dest_folder )
       dest_folder = expand_path( dest_folder )
@@ -885,6 +886,7 @@ class File
 
         contingent
           sufficient (not File.exists(dest_filepath))
+          necessary  (not missing_only)
           sufficient (File.size(src_filepath) != File.size(dest_filepath))
           necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
 
@@ -982,6 +984,57 @@ class File
         System.run "type nul >> $" (filepath)
       else
         System.run "touch $" (filepath)
+      endIf
+
+    method with_destination( filepath:String, destination_filepath:String )->String
+      # Uses console-style filename and folder rules to modify a source filepath
+      # given a destination filepath, with one big difference: if the destination
+      # filepath does not include a folder then the source folder from the
+      # source filepath is used instead. Use an explicit "./" prefix to specify
+      # the current folder as the destination folder.
+      #
+      #
+      # File( "path1/filename1" ).with_destination( "path2/filename2" ) -> "path2/filename2"
+      # File( "path1/filename1" ).with_destination( "path2" )           -> "path2/filename1"
+      # File( "path1/filename1" ).with_destination( "filename2" )       -> "path1/filename2"
+      # File( "filename1" ).with_destination( "path2/filename2" )       -> "path2/filename2"
+      # File( "filename1" ).with_destination( "path2" )                 -> "path2/filename1"
+      # File( "filename1" ).with_destination( "filename2" )             -> "filename2"
+      # File( "path1" ).with_destination( "path2/filename2" )           -> "path2/filename2"
+      # File( "path1" ).with_destination( "path2" )                     -> "path2/path1"
+      # File( "path1" ).with_destination( "filename2" )                 -> "filename2"
+      #
+      # Definitions
+      # - path:     .exists and .is_folder
+      # - filename: not .exists or (.exists and not .is_folder)
+      filepath = File.without_trailing_separator( File.expand_path(filepath) )
+      destination_filepath = File.without_trailing_separator( File.expand_path(destination_filepath) )
+
+      if (File.is_folder(destination_filepath))
+        if (File.is_folder(filepath))
+          # File( "path1" ).with_destination( "path2" ) -> "path2/path1"
+          return join( destination_filepath, filepath )
+        else
+          # File( "path1/filename1" ).with_destination( "path2" ) -> "path2/filename1"
+          # File( "filename1" ).with_destination( "path2" )       -> "path2/filename1"
+          return join( destination_filepath, File.filename(filepath) )
+        endIf
+
+      elseIf (File.is_folder(File.folder(destination_filepath)) or File.is_folder(filepath))
+        # File( "path1/filename1" ).with_destination( "path2/filename2" ) -> "path2/filename2"
+        # File( "filename1" ).with_destination( "path2/filename2" )       -> "path2/filename2"
+        # File( "path1" ).with_destination( "path2/filename2" )           -> "path2/filename2"
+        # File( "path1" ).with_destination( "filename2" )                 -> "filename2"
+        return destination_filepath
+
+      elseIf (File.is_folder(File.folder(filepath)))
+        # File( "path1/filename1" ).with_destination( "filename2" )       -> "path1/filename2"
+        return join( File.folder(filepath), destination_filepath )
+
+      else
+        # File( "filename1" ).with_destination( "filename2" ) -> "filename2"
+        return destination_filepath
+
       endIf
 
     method without_trailing_separator( filepath:String )->String
@@ -1138,17 +1191,20 @@ class File
     method size->Int64
       return File.size( this.filepath )
 
-    method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run )->Int32
-      return File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run )
+    method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
+      return File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run, &=missing_only )
 
-    method sync_from( source_files:Files, &verbose, &keep_unused, &dry_run )->Int32
-      return File.sync_from( source_files, this.filepath, verbose, keep_unused, dry_run )
+    method sync_from( source_files:Files, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
+      return File.sync_from( source_files, this.filepath, verbose, keep_unused, dry_run, &=missing_only )
 
     method timestamp->Real64
       return File.timestamp( this.filepath )
 
     method touch
       File.touch( this.filepath )
+
+    method with_destination( destination_filepath:String )->String
+      return File.with_destination( this.filepath, destination_filepath )
 
     method without_trailing_separator->String
       return File.without_trailing_separator( this.filepath )
