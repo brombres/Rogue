@@ -129,12 +129,18 @@ class Files
     method remove( pattern:String )->this
       if (pattern.contains('*') or pattern.contains('?'))
         forEach (filepath at index in filepaths step -1)
-          if (File.matches_wildcard_pattern(filepath,pattern))
+          if (File.matches_wildcard_pattern(filepath,pattern) or
+              File.matches_wildcard_pattern(relative_filepath(filepath),pattern))
             filepaths.remove_at( index )
           endIf
         endForEach
       else
-        filepaths.remove( pattern )
+        if (filepaths.contains(pattern))
+          filepaths.remove( pattern )
+        elseIf (base_folder.count and not pattern.begins_with(base_folder))
+          local full_filepath = File.join( base_folder, pattern )
+          filepaths.remove( full_filepath )
+        endIf
       endIf
       return this
 
