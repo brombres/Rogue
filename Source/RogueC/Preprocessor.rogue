@@ -544,9 +544,8 @@ class Preprocessor
           while (reader.peek.type is TokenType.literal_string)
             t = t.type.create_token( t, t->String + reader.read->String )
           endWhile
-        endIf
 
-        if (t.type is TokenType.eol)
+        elseIf (t.type is TokenType.eol)
           # Discard eols if the next token is a period
           local lookahead = 0
           loop

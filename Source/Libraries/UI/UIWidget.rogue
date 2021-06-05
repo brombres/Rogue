@@ -7,6 +7,7 @@ endEnum
 class UIWidget : UIComponent
   PROPERTIES
     widget_state : UIWidgetState
+    _on_select   : Function
 
   METHODS
     method init
@@ -19,6 +20,8 @@ class UIWidget : UIComponent
       alignment = Anchor.CENTER
 
     method handle_select
+      if (_on_select) _on_select()
+      else            on_select
 
     method is_disabled->Logical
       return (widget_state == UIWidgetState.DISABLED)
@@ -69,8 +72,7 @@ class UIWidget : UIComponent
         endIf
       endIf
 
-    method on_measure
-      default_size = font.measure( text ).floor
+    method on_select
 
     method release_pointer_focus
       if (UI.pointer_focus is this)
@@ -82,6 +84,8 @@ class UIWidget : UIComponent
     method set_disabled( setting:Logical )
       if (setting == is_disabled) return
       widget_state = which{ is_disabled:UIWidgetState.DISABLED || UIWidgetState.IDLE }
+
+    method set_on_select( _on_select )
 
     method text->String
       if (first_child) return first_child.text

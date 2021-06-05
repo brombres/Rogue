@@ -2,9 +2,15 @@ module UI
 
 class UIBorder : UIComponent
   PROPERTIES
-     padding : UIPadding
- 
+    left_padding, top_padding, right_padding, bottom_padding : Real64
+
   METHODS
-    method padding->UIPadding
-      return prior.padding + @padding
+    method set_padding( value:Real64 )
+      left_padding   = value
+      right_padding  = value
+      top_padding    = value
+      bottom_padding = value
+
+    method to_inner_bounds( bounds:Box )->Box [override]
+      return bounds.cropped( left_padding, top_padding, right_padding, bottom_padding )
 endClass

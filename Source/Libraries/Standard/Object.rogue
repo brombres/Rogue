@@ -6,6 +6,9 @@ class Object [native]
     method init
       noAction
 
+    method description->String [nonAPI]
+      return "($ 0x$)" (type_name, object_id.to_hex_string)
+
     method hash_code->Int32
       return object_id->Int32
 
@@ -34,7 +37,7 @@ class Object [native]
       return result
 
     method to->String [nonAPI]
-      return "($ 0x$)" (type_name, object_id.to_hex_string)
+      return description
 
     method to->Value [nonAPI]
       return Value( this )

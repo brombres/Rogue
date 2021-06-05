@@ -49,7 +49,7 @@ syn keyword rogueStatement    compileError deprecated
 syn keyword rogueStatement    includeSource includeSourceFolder
 syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
-syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local global
+syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local localize global
 syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro endMacro essential abstract final compound override propagated foreign preferred mutating
 syn keyword rogueStorageClass threadLocal synchronized synchronizable

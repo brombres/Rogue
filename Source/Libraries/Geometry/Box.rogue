@@ -64,6 +64,9 @@ class Box( position:XY, size:XY ) [compound]
     method at_random->XY
       return XY(Random.real64(position.x,size.x+position.x),Random.real64(position.y,size.y+position.y))
 
+    method bottom->Real64
+      return this.position.y + this.size.y
+
     method bottom_left->XY
       return (position + XY(0,size.y))
 
@@ -149,6 +152,9 @@ class Box( position:XY, size:XY ) [compound]
     method intersects( triangle:Triangle )->Logical
       return this->Quad.intersects( triangle )
 
+    method left->Real64 [macro]
+      return this.position.x
+
     method operator==( other:Box )->Logical
       return (position == other.position and size == other.size)
 
@@ -196,6 +202,9 @@ class Box( position:XY, size:XY ) [compound]
       # - Box(640,480,100,100).relative_to(Anchor.BOTTOM_RIGHT) places the bottom-right corner of the box on (640,480)
       return Box( position - anchor.position * size, size )
 
+    method right->Real64
+      return this.position.x + this.size.x
+
     method rotated( angle:Degrees )->Quad [macro]
       return this.rotated( angle->Radians )
 
@@ -226,6 +235,9 @@ class Box( position:XY, size:XY ) [compound]
       else
         return @{ x:x, y:y, width:width, height:height }
       endIf
+
+    method top->Real64 [macro]
+      return this.position.y
 
     method top_left->XY [macro]
       return this.position

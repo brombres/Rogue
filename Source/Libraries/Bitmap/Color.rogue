@@ -34,6 +34,15 @@ class Color( argb:Int32 ) [compound]
     method alpha_byte->Int32
       return (argb :>>: 24) & 255
 
+    method alpha_premultiplied->Color
+      local a = alpha_byte
+      return Color( (red_byte*a)/255, (green_byte*a)/255, (blue_byte*a)/255, a )
+
+    method alpha_unmultiplied->Color
+      local a = alpha_byte
+      if (a == 0) return Color(0)
+      return Color( (red_byte*255)/a, (green_byte*255)/a, (blue_byte*255)/a, a )
+
     method blue->Real64
       return (argb & 255) / 255.0
 
@@ -46,8 +55,19 @@ class Color( argb:Int32 ) [compound]
     method green_byte->Int32
       return (argb :>>: 8) & 255
 
+    method hash_code->Int32
+      return argb
+
     method is_opaque->Logical
       return ((argb & 0xFF000000) == 0xFF000000)
+
+    method operator*( other:Color )->Color
+      local a = other.alpha
+      local inverse_a = 1.0 - a
+      local r = red * inverse_a   + other.red *a
+      local g = green * inverse_a + other.green *a
+      local b = blue * inverse_a  + other.blue *a
+      return Color( r, g, b, alpha*inverse_a+a )
 
     method red->Real64
       return ((argb :>>: 16) & 255) / 255.0

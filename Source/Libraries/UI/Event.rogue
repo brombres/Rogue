@@ -225,17 +225,98 @@ endClass
 
 class ScrollEvent : Event
   PROPERTIES
-    delta       : XY
+    delta         : XY
+    is_precise    : Logical
+      # True for Apple Magic Mouse and Trackpad, AKA supports gestures and momentum.
+      # If this is true then is_progress and is_momentum are valid (and vice versa).
+    in_progress   : Logical
+      # macOS: in_progress means that either the finger is still resting on the Magic Mouse/trackpad
+      # or that a "momentum scroll" is active. Either way scroll events are guaranteed to continue
+      # to be received until one where 'in_progress' is false.
+    is_momentum   : Logical
+    density       : Real64
 
   METHODS
-    method init( delta )
+    method init( delta, is_precise=false, in_progress=false, is_momentum=false, density=1 )
 
     method cloned->ScrollEvent
-      return ScrollEvent( delta ).[ init(this) ]
+      return ScrollEvent( delta, &=is_precise, &=in_progress, &=is_momentum, &=density ).[ init(this) ]
 
     method to->String
       local buffer = StringBuilder().print( "Scroll " ).print( delta )
+      buffer.print( " [$x]"(density) )
+      if (in_progress) buffer.print( " [in progress]" )
+      if (is_momentum) buffer.print( " [momentum]" )
       if (is_consumed) buffer.print( " (consumed)" )
       return buffer->String
 endClass
+
+class ScrollRate
+  # macOS with Magic Mouse or trackpad:
+  # - Tracks 0.25 seconds of continuous-gesture scroll data and accelerates
+  #   the scroll deltas to allow behavior similar to built-in OS scrolling.
+  #
+  # Other OS or input device:
+  # - Scales each scroll delta by 'base_scale' with no acceleration.
+  PROPERTIES
+    base_scale     : Real64
+    delta          : XY
+    history_x      = ScrollEvent[]
+    history_y      = ScrollEvent[]
+    acceleration_x = 1.0
+    acceleration_y = 1.0
+
+  METHODS
+    method init( base_scale=5 )
+
+    method add( e:ScrollEvent )->XY
+      # Returns the scaled or accelerated scroll-delta.
+      contingent
+        necessary (e.is_precise)
+        necessary (not e.is_momentum)
+
+        delta = XY(
+          _process<<history_x,x,acceleration_x>>(e),
+          _process<<history_y,y,acceleration_y>>(e)
+        )
+
+      unsatisfied
+        delta = e.delta * base_scale
+        if (not e.is_precise) delta *= e.density
+        history_x.clear
+        history_y.clear
+        acceleration_x = 1.0
+        acceleration_y = 1.0
+
+      endContingent
+
+      return delta
+
+    method _same_direction( v1:Real64, v2:Real64 )->Logical
+      if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
+      return not ((v1 > 0) xor (v2 > 0))
+
+    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Real64
+      while ($HISTORY.count and $HISTORY.first.timestamp < e.timestamp - 0.25) $HISTORY.remove_first
+
+      local result = 0.0
+      if ($HISTORY.count and _same_direction($HISTORY.first.delta.$XY,e.delta.$XY))
+        $HISTORY.add( e )
+        result += (forEach in $HISTORY).delta.$XY
+        result /= $HISTORY.count
+        if ($HISTORY.count == 1)
+          $ACCELERATION = 1.0
+        else
+          result *= $ACCELERATION
+        endIf
+      else
+        $HISTORY.[ clear, add(e) ]
+        result = e.delta.$XY
+        $ACCELERATION = 1.0
+      endIf
+
+      $ACCELERATION = ($ACCELERATION * 1.25).clamped_high( base_scale*2 )
+      return result
+endClass
+
 

@@ -1,74 +1,50 @@
 module UI
-  uses Geometry [export]
-  uses Utility/WorkList
+
+uses Geometry [export]
 
 $include "Event.rogue"
 $include "Keyboard.rogue"
 $include "Pointer.rogue"
 
-$include "UIAttribute.rogue"
-$include "UIButton.rogue"
+$include "UIAbsoluteLayout.rogue"
+$include "UIAttributes.rogue"
 $include "UIBorder.rogue"
 $include "UIComponent.rogue"
 $include "UIContent.rogue"
 $include "UIFiller.rogue"
+$include "UIFlowLayout.rogue"
 $include "UIFont.rogue"
 $include "UIHorizontalLayout.rogue"
 $include "UILayout.rogue"
 $include "UIList.rogue"
 $include "UIModifier.rogue"
-$include "UIPadding.rogue"
 $include "UIPlacement.rogue"
 $include "UIScrollView.rogue"
+$include "UIScrollViewController.rogue"
 $include "UISpacer.rogue"
+$include "UIStackLayout.rogue"
 $include "UIText.rogue"
-$include "UITextComponent.rogue"
-$include "UITextStyle.rogue"
 $include "UITheme.rogue"
 $include "UIVerticalLayout.rogue"
 $include "UIWidget.rogue"
-$include "UIAbsoluteLayout.rogue"
 
-#{
-$include "UIAbsoluteLayout.rogue"
-$include "UIColorFill.rogue"
-$include "UIContainer.rogue"
-$include "UIFiller.rogue"
-$include "UIImage.rogue"
-$include "UIList.rogue"
-$include "UIScrollView.rogue"
-$include "UISpacer.rogue"
-$include "UIView.rogue"
-}#
+class UIResizeEvent( size:XY ) [compound];
 
 class UI [singleton]
-  # Manages a UIComponent tree. Dispatches events, maintains input focus, current clipping region, etc.
   PROPERTIES
-    #theme         : UITheme
-    theme          : UITheme
+    bounds : Box
+    layers = UIStackLayout()
+    theme  : UITheme
+
+    pointer_focus  : UIComponent
+    keyboard_focus : UIComponent
+
     dirty_bounds   : Box?
     clip           : Box?
-    current_bounds : Box?
-    content        = UIComponent()
-    pointer_focus  : UIComponent
-    keyboard_focus : UIComponent
-
-
-    #{
-    drag_threshold = 8
-
-    keyboard_focus : UIComponent
-    pointer_focus  : UIComponent
-    pointer_press  : PointerEvent  # used to remember origin and timestamp of drag start
-    is_dragging    : Logical
-    }#
 
   METHODS
     method init( theme )
       UI = this
-
-    method add( layer:UIComponent )
-      content.add( layer )
 
     method after( e:KeyEvent )
       noAction
@@ -82,27 +58,51 @@ class UI [singleton]
     method after( e:TextEvent )
       noAction
 
+    method after( e:UIResizeEvent )
+      noAction
+
+    method after_draw
+      noAction
+
+    method after_update
+      noAction
+
+    method add( layer:UIComponent )
+      layers.add( layer )
+
     method clear_focus
       keyboard_focus = null
       pointer_focus = null
 
     method contains( pos:XY )->Logical
-      if (not current_bounds) return false
-      return current_bounds.value.contains( pos )
+      return bounds.contains( pos )
+
+    method default_font->UIFont
+      return theme.default_font
+
+    method description->String
+      return layers->String
+
+    method drag_threshold->Real64
+      return 16
 
     method draw
       UI = this
-      if (dirty_bounds and current_bounds)
-        dirty_bounds = dirty_bounds.value & current_bounds.value
+      on_draw
+
+      if (dirty_bounds)
+        dirty_bounds = dirty_bounds.value & bounds
         if (dirty_bounds)
           clip = dirty_bounds
           dirty_bounds = null
-          content.draw( clip.value )
+          layers.draw( clip.value )
         endIf
       endIf
 
+      after_draw
+
     method find( pos:XY )->UIComponent
-      return content.find( pos )
+      return layers.find( pos )
 
     method handle( e:KeyEvent )
       UI = this
@@ -113,7 +113,7 @@ class UI [singleton]
       if (keyboard_focus)
         keyboard_focus.handle( e )
       else
-        content.handle( e )
+        layers.handle( e )
       endIf
       if (e.is_consumed) return
 
@@ -128,7 +128,7 @@ class UI [singleton]
       if (pointer_focus)
         pointer_focus.handle( e )
       else
-        content.handle( e )
+        layers.handle( e )
       endIf
       if (e.is_consumed) return
 
@@ -143,7 +143,7 @@ class UI [singleton]
       if (pointer_focus)
         pointer_focus.handle( e )
       else
-        content.handle( e )
+        layers.handle( e )
       endIf
       if (e.is_consumed) return
 
@@ -158,7 +158,7 @@ class UI [singleton]
       if (keyboard_focus)
         keyboard_focus.handle( e )
       else
-        content.handle( e )
+        layers.handle( e )
       endIf
       if (e.is_consumed) return
 
@@ -176,39 +176,72 @@ class UI [singleton]
     method on( e:TextEvent )
       noAction
 
+    method on( e:UIResizeEvent )
+      noAction
+
+    method on_draw
+      noAction
+
     method on_resize
       noAction
 
     method on_update
+      noAction
+
+    method release_focus
+      release_keyboard_focus
+      release_pointer_focus
+
+    method release_keyboard_focus
+      if (keyboard_focus) keyboard_focus.release_pointer_focus
+
+    method release_pointer_focus
+      if (pointer_focus) pointer_focus.release_pointer_focus
 
     method remove( layer:UIComponent )
-      content.remove( layer )
+      layers.remove( layer )
+
+    method request_layout
+      layers.is_modified = true
+
+    method request_redraw
+      dirty_bounds = bounds
+
+    method set_bounds( new_bounds:Box )
+      if (new_bounds == bounds) return
+      @bounds = new_bounds
+      request_layout
+      local e = UIResizeEvent( new_bounds.size )
+      on( e )
+      layers.handle( e )
+      after( e )
 
     method set_clip( @clip )
-      noAction
+      noAction # Override in specialized UI to have clip take effect
 
     method update
       UI = this
       on_update
-      content.update
+      layers.update
+      after_update
 
     method update( bounds:Box )
       UI = this
+
+      # Must update before layout so that new components created in update() can be measured in
+      # update_layout()
       update
       update_layout( bounds )
 
-    method update_layout( bounds:Box )
+    method update_layout( new_bounds:Box )
       UI = this
-      if (content.count)
-        local bounds_changed = (not current_bounds or current_bounds.value != bounds)
-        current_bounds = bounds
-        if (bounds_changed)
-          dirty_bounds = bounds  # Redraw the entire UI
-          on_resize
-          content.handle_resize_ui( bounds.size )
-        endIf
-        if (bounds_changed or content.is_modified)
-          content.update_layout( bounds )
+      if (layers.count)
+        local bounds_changed = (bounds != new_bounds)
+        bounds = new_bounds
+        if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire UI
+
+        if (bounds_changed or layers.is_modified)
+          layers.update_layout( new_bounds )
         endIf
       endIf
 

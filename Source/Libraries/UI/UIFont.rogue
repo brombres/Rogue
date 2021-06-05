@@ -1,4 +1,5 @@
 module UI
+uses Bitmap
 
 class UIFont [abstract]
   PROPERTIES
@@ -6,6 +7,8 @@ class UIFont [abstract]
 
   METHODS
     method init( name )
+    method cloned->UIFont                   [abstract]
+
     method draw( text:String, position:XY ) [abstract]
     method height->Real64                   [abstract]
     method measure( ch:Character )->XY      [abstract]
@@ -38,6 +41,5 @@ class UIFont [abstract]
 
       return XY( max_w, h )
 
-    method word_wrap( text:String, max_width:Int32 )->String[] [abstract]
 endClass
 

@@ -1,24 +1,37 @@
 module ConsoleUI
-  uses Geometry [export]
-  uses UI [export]
-  uses Utility/TextCanvas
+
+uses UI [export]
+uses Utility/TextCanvas
 
 class ConsoleUI : UI
+  GLOBAL PROPERTIES
+    bold_font      : ConsoleUIFont
+    inverse_font   : ConsoleUIFont
+    underline_font : ConsoleUIFont
+
   PROPERTIES
     mouse_position : XY?
     button_pressed = Dim<<Logical>>(2)
 
   METHODS
     method init
-      prior.init( ConsoleUITheme )
+      init( ConsoleUITheme )
 
     method init( theme:UITheme )
       prior.init( theme )
+      if (not bold_font)
+        bold_font = default_font.cloned.[ bold=true ]
+        inverse_font = default_font.cloned.[ inverse=true ]
+        underline_font = default_font.cloned.[ underline=true ]
+      endIf
+
+    method default_font->ConsoleUIFont
+      return prior.default_font as ConsoleUIFont
 
     method draw
       prior.draw
-      ConsoleUICanvas.display( XY(0,0) )
-      Console.set_cursor( 0, Console.height-2 )
+      ConsoleUICanvas.display( bounds.position )
+      Console.set_cursor( 0, bounds.y2 )
 
     method handle( e:PointerEvent )
       if (mouse_position.exists) e.delta = e.position - mouse_position.value
@@ -32,15 +45,14 @@ class ConsoleUI : UI
       Pointer.positions.clear.add( pos )
       handle( PointerEvent(type,pos,XY(0,0),index) )
 
-    method on_resize
+    method on( e:UIResizeEvent )
       Console.clear
-      local bounds = current_bounds.value
-      ConsoleUICanvas.resize( bounds.size.x, bounds.size.y )
-      prior.on_resize
+      ConsoleUICanvas.resize( e.size.x, e.size.y )
+      prior.on( e )
 
     method on_update
       loop 2048
-        if (Console.has_another_event)
+        if (Console.immediate_mode and Console.has_another_event)
           local event = Console.read_event
           which (event.type)
             case ConsoleEventType.CHARACTER
@@ -87,6 +99,29 @@ class ConsoleUI : UI
         endIf
       endLoop
 
+    method run
+      System.sleep(0.2)  # helps prevent initial screen corruption
+      Console.immediate_mode = true
+      Console.show_cursor = false
+      Console.clear
+
+      try
+        loop
+          update( Box(0,0,Console.width,Console.height) )
+          draw
+
+          # If it needs a redraw right after drawing then we're animating
+          if (dirty_bounds) System.sleep( 1.0/60.0 )
+          else              System.sleep( 0.1 )
+        endLoop
+
+      catch (error:Error)
+        Console.immediate_mode = false
+        Console.show_cursor = true
+        Console.clear
+        println error
+      endTry
+
     method send_release_event( index:Int32, event:ConsoleEvent )
       if (not button_pressed[index]) return
       button_pressed[index] = false
@@ -94,7 +129,6 @@ class ConsoleUI : UI
 
     method set_clip( @clip )
       if (clip) ConsoleUICanvas.clip = clip.value
-
 endClass
 
 class ConsoleUITheme : UITheme [singleton]
@@ -103,75 +137,12 @@ class ConsoleUITheme : UITheme [singleton]
       if (not @default_font) @default_font = ConsoleUIFont
       return @default_font
 
-    method on_draw( component:UIComponent )
-      ConsoleUICanvas.fill( component.display_bounds, ' ' )
-
-    method on_draw( component:UIBorder )
-      ConsoleUICanvas.fill( component.display_bounds, ' ' )
-
-    method on_draw( component:UIBoxFrame )
-      ConsoleUICanvas.fill( component.display_bounds, "\[250C]\[2500]\[2510]\[2502] \[2502]\[2514]\[2500]\[2518]" )
-
-    method on_draw( component:UILayout )
-      noAction
-
-    method on_draw( component:UIScrollView )
-      noAction
-
     method on_draw( component:UIText )
-      if (component.is_style_bold)      ConsoleUICanvas.style.bold
-      if (component.is_style_italic)    ConsoleUICanvas.style.underline
-      if (component.is_style_inverse)   ConsoleUICanvas.style.inverse
-      if (component.is_style_underline) ConsoleUICanvas.style.underline
-
+      local text = component.text
       local font = component.font
-      local text = component.value
       local text_size = font.measure( text )
       local position  = Box(text_size).positioned_within( component.display_bounds, component.alignment ).position.floor
       font.draw( text, position )
-
-      if (component.is_style_bold)      ConsoleUICanvas.style.bold_off
-      if (component.is_style_italic)    ConsoleUICanvas.style.underline_off
-      if (component.is_style_inverse)   ConsoleUICanvas.style.inverse_off
-      if (component.is_style_underline) ConsoleUICanvas.style.underline_off
-
-    method on_draw( component:ConsoleUIButton )
-      ConsoleUICanvas.fill( component.display_bounds, "\[250C]\[2500]\[2510]\[2502] \[2502]\[2514]\[2500]\[2518]" )
-
-      if (component.is_pressed)
-        ConsoleUICanvas.style.inverse
-        ConsoleUICanvas.style.dim
-      elseIf (component.is_targeted)
-        ConsoleUICanvas.style.inverse
-      endIf
-
-      block font=component.font, text=component.text, display_bounds=component.display_bounds
-        local text_size = font.measure( text )
-        local position  = display_bounds.position + XY(1,1)
-        ConsoleUICanvas.set_cursor( position )
-        local left_padding = (((display_bounds.width-2) - text_size.x) / 2).floor
-        local right_padding = ((display_bounds.width-2) - (left_padding+text_size.x))
-        loop (left_padding) ConsoleUICanvas.print ' '
-        ConsoleUICanvas.print text
-        loop (right_padding) ConsoleUICanvas.print ' '
-      endBlock
-
-      ConsoleUICanvas.style.inverse_off
-      ConsoleUICanvas.style.dim_off
-endClass
-
-class ConsoleUIButton : UIButton
-  METHODS
-    method draw_subcomponents( draw_bounds:Box )
-      noAction
-
-    method on_measure
-      default_size = font.measure( text ).floor + XY(2,2)
-endClass
-
-class UIBoxFrame : UIBorder
-  PROPERTIES
-    padding = UIPadding(1)
 endClass
 
 class ConsoleUICanvas : TextCanvas [singleton]
@@ -181,13 +152,39 @@ class ConsoleUICanvas : TextCanvas [singleton]
 endClass
 
 class ConsoleUIFont : UIFont [singleton]
+  PROPERTIES
+    is_bold      : Logical
+    is_inverse   : Logical
+    is_underline : Logical
+    color        : Int32?
+    bg_color     : Int32?
+
   METHODS
     method init
       prior.init( "ConsoleUIFont" )
 
+    method cloned->ConsoleUIFont
+      return ConsoleUIFont().[
+        bold      = is_bold
+        inverse   = is_inverse
+        underline = is_underline
+        color     = color
+        bg_color  = bg_color
+      ]
+
     method draw( text:String, position:XY ) [override]
       ConsoleUICanvas.set_cursor( position )
+      if (is_bold)      ConsoleUICanvas.style.bold
+      if (is_inverse)   ConsoleUICanvas.style.inverse
+      if (is_underline) ConsoleUICanvas.style.underline
+      if (color)    ConsoleUICanvas.style.fg( color.value )
+      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
       ConsoleUICanvas.print text
+      if (color)    ConsoleUICanvas.style.fg_default
+      if (bg_color) ConsoleUICanvas.style.bg_default
+      if (is_bold)      ConsoleUICanvas.style.bold_off
+      if (is_inverse)   ConsoleUICanvas.style.inverse_off
+      if (is_underline) ConsoleUICanvas.style.underline_off
 
     method height->Real64
       return 1
@@ -201,7 +198,62 @@ class ConsoleUIFont : UIFont [singleton]
           else         return XY(1,1)
       endWhich
 
-    method word_wrap( text:String, max_width:Int32  )->String[]
-      return text.word_wrap( max_width )
+    method set_bold( is_bold )
+    method set_inverse( is_inverse )
+    method set_underline( is_underline )
+endClass
+
+
+class ConsoleUIInverseFill : UIComponent
+  METHODS
+    method on_draw
+      ConsoleUICanvas.style.inverse
+      ConsoleUICanvas.fill( display_bounds, ' ' )
+      ConsoleUICanvas.style.inverse_off
+endClass
+
+
+class ConsoleUIFrame : UIBorder
+  PROPERTIES
+    color    : Int32?
+    bg_color : Int32?
+
+  METHODS
+    method init_object
+      padding = 1
+
+    method on_draw
+      if (color)    ConsoleUICanvas.style.fg( color.value )
+      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      ConsoleUICanvas.fill( display_bounds, "\[250C]\[2500]\[2510]\[2502] \[2502]\[2514]\[2500]\[2518]" )
+      if (color)    ConsoleUICanvas.style.fg_default
+      if (bg_color) ConsoleUICanvas.style.bg_default
+endClass
+
+
+class ConsoleUITitleFrame : ConsoleUIFrame
+  PROPERTIES
+    title   : UIComponent
+    content : UIComponent
+
+  METHODS
+    method init( content )
+
+    method init( title, content )
+
+    method init( title:String, content=null:UIComponent )
+      init( UIText(title).[anchor=Anchor.CENTER,font=ConsoleUI.inverse_font], content )
+
+    method on_prepare_layout
+      if (count) return
+
+      local header = ConsoleUIInverseFill().[ fixed_height=1 ]
+      if (title) header.add( title )
+
+      local vbox = UILayout.v
+      vbox.add( header )
+      if (content) vbox.add( content )
+      else         vbox.add( UIFiller() )
+      add( vbox )
 endClass
 

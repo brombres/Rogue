@@ -1,67 +1,30 @@
 module UI
-  uses Utility/WorkList
 
-class UIContent : UIComponent, BufferedPrintWriter<<text_buffer>>
+class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
   METHODS
     method init
+      prior.init
 
     method init( component:UIComponent )
-      prior.add( component )
+      prior.init( component )
 
     method init( text:String )
-      add( UIText(text) )
+      init( UIText(text) )
 
-    method add( component:UIComponent )
+    method add( component:UIComponent ) [override]
       flush
       prior.add( component )
 
-    method add( text:String )
-      print text
-
     method flush( buffer:StringBuilder )
       if (buffer.count)
-        prior.add( UIText(buffer->String) )
+        local text = buffer->String
         buffer.clear
+        prior.add( UIText(text) )
       endIf
 
-    method on_draw
-      noAction
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Real64 ) [override]
+      flush
+      prior.update_subcomponent_widths( subcomponents, container_width )
 
-    method text->String
-      use builder = StringBuilder.pool
-        forEach (subcomponent in children)
-          builder.print( subcomponent.text )
-        endForEach
-        return builder->String
-      endUse
-
-    method update_subcomponent_layout
-      use list = WorkList<<UIComponent>>
-        (forEach in children).collect_components( list )
-        local bounds = padding.apply( Box(size) )
-        UIContentWrapper.place( list, bounds )
-      endUse
-
-    method update_subcomponent_sizes( container_size:XY )->XY
-      # Returns minimum size to enclose all subcomponents
-
-      if (text_buffer.count)
-        local cur = last_child
-        flush
-        if (cur is not last_child)
-          if (not cur) cur = first_child
-          while (cur)
-            cur.measure
-            cur .= next
-          endWhile
-        endIf
-      endIf
-
-      if (not count) return XY.zero
-
-      use list = WorkList<<UIComponent>>
-        (forEach in children).collect_components( list )
-        return UIContentWrapper.prep( list, container_size.x )
-      endUse
 endClass
 

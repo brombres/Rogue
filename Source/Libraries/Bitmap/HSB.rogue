@@ -28,6 +28,12 @@ class HSB( hue:Real64, saturation:Real64, brightness:Real64 ) [compound]
       return HSB( hue, saturation, brightness )
 
   METHODS
+    method description->String
+      return "($,$,$)" (hue.format("3.0"),saturation.format(".2"),brightness.format(".2"))
+
+    method hash_code->Int32
+      return hue.hash_code ~ saturation.hash_code ~ brightness.hash_code
+
     method to->Color
       local r, g, b : Real64
       if (saturation)
@@ -70,7 +76,7 @@ class HSB( hue:Real64, saturation:Real64, brightness:Real64 ) [compound]
       endIf
 
     method to->String
-      return "($,$,$)" (hue,saturation,brightness)
+      return description
 endClass
 
 augment Real64

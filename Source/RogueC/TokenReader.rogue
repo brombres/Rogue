@@ -43,6 +43,11 @@ class TokenReader : Reader<<Token>>
       if (position + num_ahead >= count) return TokenType.eoi.create_token( tokens.last )
       return tokens[ position + num_ahead ]
 
+    method push( t:Token )
+      # Inserts this token before the current read position
+      tokens.insert( t, position )
+      ++count
+
     method read->Token
       ++position
       return tokens[ position - 1 ]

@@ -423,7 +423,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(readOnly|writeOnly|public|private|const|local|singleton|primitive|aspect)\b</string>
+					<string>\b(readOnly|writeOnly|public|private|const|local|localize|singleton|primitive|aspect)\b</string>
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>

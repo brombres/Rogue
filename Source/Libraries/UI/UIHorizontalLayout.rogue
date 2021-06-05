@@ -2,88 +2,61 @@ module UI
 
 class UIHorizontalLayout : UILayout
   METHODS
-    method update_subcomponent_sizes( container_size:XY )->XY
-      # Returns minimum size to enclose all subcomponents
-
-      # Find fixed width vs available width
-      local fixed_w = 0.0
-      local n_flex  = 0
-      local total_weight = 0.0
-      forEach (component in children)
-        if (component.is_fixed_width)
-          fixed_w += component.size.x
-        else
-          ++n_flex
-          total_weight += component.weight.x
-        endIf
+    method measure_content_width( subcomponents:UIComponent[] )->Real64?
+      local total_w = 0.0
+      forEach (component in subcomponents)
+        local w = component.measure_width( null )
+        if (not w) return null
+        total_w += w.value
       endForEach
-      local excess_w = which{ n_flex:(container_size.x - fixed_w).clamped_low(0) || 0.0 }
+      return total_w
 
-      # Update sizes of fixed_width and shrink_to_fit_width items. Allocate widths to the
-      # shrink_to_fit_width items as if they were expand_to_fill_width, but save actual
-      # expand_to_fill_width items for a following pass so they can take up any unused space.
-      local min_size : XY
-      local h = container_size.y
-      local remaining_w = excess_w
-      forEach (component in children)
-        local w = component.size.x
-        contingent
-          sufficient (component.is_fixed_width)
-          necessary  (component.is_shrink_to_fit_width)
-          w = which(n_flex){ 1:remaining_w || Int32(excess_w*(component.weight.x/total_weight)) }
-          remaining_w -= w
-          --n_flex
-        satisfied
-          component.update_layout_size( XY(w,h) )
-          min_size = XY( min_size.x+component.size.x,min_size.y.or_larger(component.size.y) )
-        endContingent
+    method measure_content_height( subcomponents:UIComponent[] )->Real64?
+      local max_h = 0.0
+      forEach (component in subcomponents)
+        local h = component.measure_height( null )
+        if (not h) return null
+        max_h .= or_larger( h.value )
       endForEach
+      return max_h
 
-      # Recalculate available flex space
-      fixed_w = 0.0
-      n_flex  = 0
-      total_weight = 0.0
-      forEach (component in children)
-        if (component.is_expand_to_fill_width)
-          ++n_flex
-          total_weight += component.weight.x
-        else
-          fixed_w += component.size.x
-        endIf
-      endForEach
-      excess_w = which{ n_flex:(container_size.x - fixed_w).clamped_low(0) || 0.0 }
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Real64 )
+      use subcomponent_widths = WorkList<<Real64?>>
+        local fixed_w     = 0.0
+        local flex_count  = 0
+        local flex_weight = 0.0
+        forEach (component in subcomponents)
+          local w = component.measure_width( null )
+          subcomponent_widths.add( w )
+          if (w)
+            fixed_w += w.value
+          else
+            ++flex_count
+            flex_weight += component.weight.x
+          endIf
+        endForEach
 
-      # Update sizes of expand_to_fill_width items.
-      remaining_w = excess_w
-      forEach (component in children)
-        if (component.is_expand_to_fill_width)
-          local w = component.size.x
-          w = which(n_flex){ 1:remaining_w || Int32(excess_w*(component.weight.x/total_weight)) }
-          remaining_w -= w
-          --n_flex
+        local excess_w = Real64( (container_width - fixed_w).clamped_low(0).floor )
+        local remaining_w = excess_w
+        forEach (component at i in subcomponents)
+          local w = subcomponent_widths[i]
+          local new_w : Real64
+          if (w)
+            new_w = component.size.x
+          else
+            new_w = which(flex_count){ 1:remaining_w || (excess_w*(component.weight.x/flex_weight)).floor }
+            remaining_w -= new_w
+            --flex_count
+          endIf
+          component.update_layout_width( new_w )
+        endForEach
+      endUse
 
-          component.update_layout_size( XY(w,h) )
-          min_size = XY( min_size.x+component.size.x,min_size.y.or_larger(component.size.y) )
-        endIf
-      endForEach
-
-      return min_size
-
-    method update_subcomponent_layout
-      local bounds = padding.apply( Box(size) )
-
-      local content_w = 0.0
-      forEach (component in children)
-        content_w += component.size.x
-      endForEach
-
-      local h = bounds.size.y
-      local cursor = Box(XY(content_w,h)).positioned_within( Box(bounds.size), anchor ).position.floor
-      forEach (component in children)
-        local sz = component.size
-        local placement = Box(sz).positioned_within( Box(cursor,sz.x,h), component.anchor ).floor
-        component.update_layout_bounds( placement )
-        cursor += sz.xv
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+      local cursor = container.position
+      local h = container.size.y
+      forEach (component in subcomponents)
+        component.update_layout_placement( Box(cursor, XY(component.size.x,h)) )
+        cursor += component.size.xv
       endForEach
 endClass
-

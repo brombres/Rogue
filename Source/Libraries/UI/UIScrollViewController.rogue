@@ -1,0 +1,304 @@
+module UI
+
+class UIScrollViewController
+  PROPERTIES
+    view     : UIScrollView
+
+  METHODS
+    method init( view )
+      noAction
+
+    method after_prepare_layout
+      noAction
+
+    method after_update
+      noAction
+
+    method after_update_layout
+      noAction
+
+    method offset->XY
+      return view.@offset
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on_prepare_layout
+      noAction
+
+    method on_update
+      noAction
+
+    method on_update_layout
+      noAction
+
+    method scroll_to( new_offset:XY )
+      offset = new_offset
+
+    method scroll_to_bottom
+      offset = view.bottom_offset
+
+    method scroll_to_top
+      offset = view.top_offset
+
+    method set_offset( new_offset:XY )
+      view.offset = new_offset
+
+endClass
+
+
+class StandardUIScrollViewController : UIScrollViewController
+  PROPERTIES
+    velocity : XY
+    decay    : XY
+
+    tracks_bottom          = true
+    scrolling_to           : XY?
+    is_scrolling_to_bottom : Logical
+    is_scrolling_to_top    : Logical
+
+    active_scroll          = false
+    allow_momentum_scroll  = true
+    allow_overscroll       = true
+    clamp_to_bounds        = true
+
+    scroll_rate = ScrollRate(5)
+
+    is_pressed  = false
+    is_dragging = false
+    drag_time   = Stopwatch()
+    drag_start  : XY
+    drag_pos    : XY
+    drag_deltas = XY[]
+    drag_delta  : XY
+
+  METHODS
+    method after_update_layout
+      if (tracks_bottom)
+        offset = XY( 0, view.bottom_offset )
+      endIf
+
+    method on( e:PointerEvent )
+      if (e.is_press)
+        if (not is_dragging and view.contains(e))
+          if (view.capture_pointer_focus)
+            decay = 0.10   # halt any scrolling going on
+            is_pressed = true
+            drag_time.restart
+            drag_pos = e.position
+            drag_start = drag_pos
+            e.consume
+            return
+          endIf
+        endIf
+
+      elseIf (e.is_move)
+        if (is_dragging)
+          drag_delta = (e.position - drag_pos).yv
+          drag_pos = e.position
+          scroll( drag_delta * XY(0,-1) )
+          e.consume
+          return
+        elseIf (is_pressed)
+          if (e.position.distance_to(drag_pos) >= UI.drag_threshold)
+            is_dragging = true
+            drag_deltas.clear
+            drag_pos = e.position
+            e.consume
+            return
+          endIf
+        else
+          # Pass move event to children
+          if (view.first_child)
+            view.first_child.dispatch( e )
+            return
+          endIf
+        endIf
+
+      elseIf (e.is_release)
+        is_pressed = false
+        view.release_pointer_focus
+        if (is_dragging)
+          is_dragging = false
+          decay = 0.10
+          if (drag_deltas.count)
+            local sum = XY.zero
+            sum += (forEach in drag_deltas)
+            local avg = sum / drag_deltas.count
+            if (avg.y.abs >= 5)
+              decay = 0.96
+              velocity += avg.yv
+            endIf
+          endIf
+          e.consume
+          return
+        else
+          decay = 0.10
+          if (velocity.abs.max < 1)
+            # We pressed and released list without dragging it.  Send a press/release event
+            # to subcomponents.
+            local e_press = e.cloned.[ type=PointerEvent.PRESS ]
+            view.on_select( e_press, e )
+            return
+          endIf
+        endIf
+      endIf
+
+    method on( e:ScrollEvent )
+      if (not allow_momentum_scroll)
+        if (e.is_momentum)
+          if (not e.in_progress) allow_momentum_scroll = true
+          return
+        endIf
+      endIf
+
+      if (Pointer.position and view.display_bounds.contains(Pointer.position.value))
+        scroll( scroll_rate.add(e).yv * XY(0,-1), &clamp=not e.is_precise )
+        if (e.in_progress)
+          if (e.is_momentum)
+            if (view.@offset.y < view.top_offset or view.@offset.y > view.bottom_offset)
+              allow_momentum_scroll = false  # ran OOB
+            endIf
+          else
+            active_scroll = true
+          endIf
+        else
+          allow_momentum_scroll = true
+          active_scroll = false
+        endIf
+      else
+        # Mouse may have moved out while still scrolling
+        active_scroll = false
+        allow_momentum_scroll = true
+      endIf
+
+    method on_prepare_layout
+      if (not tracks_bottom)
+        tracks_bottom = (offset.y >= view.bottom_offset)
+      endIf
+
+    method on_update
+      if (is_scrolling_to_bottom)
+        local bottom_offset = view.bottom_offset
+        local delta = bottom_offset - offset.y
+        offset = XY( offset.x, offset.y + delta*0.1 )
+        if ((bottom_offset - offset.y).abs < 1)
+          if (not view.is_modified)
+            offset = XY( offset.x, bottom_offset )
+            is_scrolling_to_bottom = false
+            tracks_bottom = true
+          endIf
+        endIf
+
+      elseIf (is_scrolling_to_top)
+        local top_offset = view.top_offset
+        local delta = top_offset - offset.y
+        offset = XY( offset.x, offset.y + delta*0.1 )
+        if ((top_offset - offset.y).abs < 1)
+          if (not view.is_modified)
+            offset = XY( offset.x, top_offset )
+            is_scrolling_to_top = false
+            tracks_bottom = (offset.y >= view.bottom_offset)
+          endIf
+        endIf
+
+      elseIf (scrolling_to)
+        local target = scrolling_to.value
+        local delta = target - offset
+        offset += delta * 0.1
+        if ((target - offset).abs.max < 1)
+          if (not view.is_modified)
+            offset = target
+            scrolling_to = null
+            tracks_bottom = (offset.y >= view.bottom_offset)
+          endIf
+        endIf
+      endIf
+
+      if (is_dragging)
+        # Save 1/10th second of drag deltas to calculate swipe velocity on drag release
+        if (drag_deltas.count >= 10) drag_deltas.remove_first
+        drag_deltas.add( drag_delta )
+
+      elseIf (not active_scroll)
+        if (not velocity.is_zero)
+          offset   += velocity
+          velocity *= decay
+          if (velocity.x.abs < 0.1) velocity .= yv
+          if (velocity.y.abs < 0.1) velocity .= xv
+        endIf
+
+        if (clamp_to_bounds)
+          local bottom_offset = view.bottom_offset
+          local _offset = view.@offset
+          if (_offset.y < 0)
+            if (_offset.y > 1)
+              offset = _offset.xv
+            else
+              offset = _offset * XY(1,0.8)
+              decay = XY(0,0.5)
+            endIf
+          elseIf (_offset.y > bottom_offset)
+            local delta = (_offset.y - bottom_offset)
+            if (delta.abs < 1)
+              offset = XY( _offset.x, bottom_offset )
+            else
+              offset = XY( _offset.x, (bottom_offset + delta * 0.8) )
+              decay = XY(0,0.5)
+            endIf
+          endIf
+        endIf
+      endIf
+
+    method scroll( delta:XY, &clamp )
+      if (delta.abs.max < 0.1) return
+
+      localize offset
+      local target = offset + delta.yv
+      if (target.y <= 0 and delta.y < 0)
+        local excess_p = ((-4*target.y) / view.size.y.or_larger(1)).clamped_high(1)
+        local in_bounds_portion = delta * (1.0 - excess_p)
+        local oob_portion = delta * excess_p
+        local oob_limiter = (1.0 - excess_p) ^ 8
+        set_offset( offset + in_bounds_portion + oob_portion*oob_limiter, &=clamp )
+        return
+      elseIf (target.y >= view.bottom_offset and delta.y > 0)
+        local excess_p  = ((4*(target.y - view.bottom_offset)) / view.size.y.or_larger(1)).clamped_high(1)
+        local in_bounds_portion = delta * (1.0 - excess_p)
+        local oob_portion = delta * excess_p
+        local oob_limiter = (1.0 - excess_p) ^ 8
+        set_offset( offset + in_bounds_portion + oob_portion*oob_limiter, &=clamp )
+        return
+      endIf
+
+      set_offset( target, &=clamp )
+
+    method scroll_to( offset:XY )
+      scrolling_to = offset
+
+    method scroll_to_bottom
+      is_scrolling_to_bottom = true
+      view.request_redraw
+
+    method scroll_to_top
+      is_scrolling_to_top = true
+      tracks_bottom = false
+      view.request_redraw
+
+    method set_offset( new_offset:XY, clamp:Logical )
+      if (new_offset == offset) return
+      if (not allow_overscroll) clamp = true
+      if (not clamp_to_bounds) clamp = false
+
+      local bottom_offset = view.bottom_offset
+      local _offset = new_offset.floor
+      if (clamp) _offset = _offset.clamped_low( XY.zero ).clamped_high( XY(0,bottom_offset) )
+      tracks_bottom = (_offset.y >= bottom_offset)
+      view.offset = _offset
+      view.request_redraw
+
+endClass
+

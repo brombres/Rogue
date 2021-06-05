@@ -1,0 +1,6 @@
+module UI
+
+class UIStackLayout : UILayout
+  METHODS
+endClass
+
