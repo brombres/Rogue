@@ -1463,6 +1463,53 @@ class String
       endUse
       return this  # won't happen but C++ doesn't realize it
 
+    method to_plain_ascii->String
+      # Converts or strips any non-ASCII Unicode.
+      # - Converts letters with diacritical marks to plain ASCII letters (ä -> a).
+      # - Converts some other letter-like symbols into letters.
+      # - Strips out any other characters with Unicode values greater than 127.
+
+      # Make one pass to see if there's anything that needs converting or removing.
+      contingent
+        forEach (ch in this)
+          sufficient (ch & !0x7F)
+        endForEach
+        return this  # no changes required
+      endContingent
+
+      # Original Unicode
+      #              ''¡¢£ ¥¦ ¨         ²³´µ  ¸¹     ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ ØÙÚÛÜÝÞßàáâãäåæ''
+      #              ''çèéêëìíîïðñòóôõö øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħ''...
+      #              ''ĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧ''...
+      #              ''ŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſ''
+      local lookup = ''!cL Y| "         23'u  ,1     ?AAAAAAACEEEEIIIIENOOOOO OUUUUYPsaaaaaaa''...
+                     ''ceeeeiiiienooooo ouuuuypyAaAaAaCcCcCcCcDdDdEeEeEeEeEeGgGgGgGgHhHh''...
+                     ''IiIiIiIiIiIiJjKkkLlLlLlLlLlNnNnNnnNnOoOoOoOoRrRrRrSsSsSsSsTtTtTt''...
+                     ''UuUuUuUuUuUuWwYyYZzZzZzs''
+
+      use result = StringBuilder.pool
+        result.reserve( this.count )
+
+        forEach (ch in this)
+          if (ch & !0x7F)
+            which (ch)
+              case 'Æ': result.print "AE"
+              case 'æ': result.print "ae"
+              case 'Œ': result.print "OE"
+              case 'œ': result.print "oe"
+              others
+                if (ch >= 161 and ch <= 383)
+                  local ch2 = lookup[ ch-161 ]
+                  if (ch2 != ' ') result.print ch2
+                endIf
+            endWhich
+          else
+            result.print ch
+          endIf
+        endForEach
+        return result
+      endUse
+
     method to_uppercase->String
       local has_lc = false
       forEach (ch in this)
