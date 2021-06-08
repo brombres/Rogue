@@ -821,7 +821,29 @@ endRoutine
 
 routine install_library( library:Value )
   local lib = cache//library_flags[ library//name ]
-  if (lib) return
+  if (lib)
+    # Make sure each filepath actually exists
+    block lib = lib->String
+      local parts = String[]
+      local i = locate_nonescaped_space( lib )
+      while (i)
+        local part = lib.leftmost( i.value )
+        if (String.exists(part)) parts.add( part )
+        lib .= from( i.value+1 )
+        i = locate_nonescaped_space( lib )
+      endWhile
+      if (String.exists(lib)) parts.add( lib )
+
+      contingent
+        forEach (part in parts)
+          part .= after_any( "-I" )
+          necessary (File.exists(part))
+        endForEach
+      satisfied
+        return
+      endContingent
+    endBlock
+  endIf
 
   which (System.os)
     case "macOS"
@@ -831,6 +853,22 @@ routine install_library( library:Value )
     others
       throw Error( ''Rogo does not know how to install a library for "$".'' (System.os) )
   endWhich
+endRoutine
+
+routine locate_nonescaped_space( st:String )->Int32?
+  local skip = false
+  forEach (ch at index in st)
+    if (skip)
+      skip = false
+    else
+      which (ch)
+        case '\\': skip = true
+        case ' ':  return index
+      endWhich
+    endIf
+  endForEach
+
+  return null
 endRoutine
 
 routine run( cmd:String )->String
