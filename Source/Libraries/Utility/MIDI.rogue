@@ -1,0 +1,239 @@
+#===================================================================================================
+# MIDI.rogue
+#
+# June 7, 2021 by Abe Pralle
+#
+# REFERENCES
+#   https://www.cs.cmu.edu/~music/cmsip/readings/Standard-MIDI-file-format-updated.pdf
+#   http://midi.teragonaudio.com/tech/midifile.htm
+#===================================================================================================
+
+class MIDIMusic
+  PROPERTIES
+    format           : Int32   # 0, 1, or 2
+    is_smpte         : Logical # if walse then uses metric ticks per quarter note
+    smpte_format     : Int32   # -24, -25, -29, or -30 - only valid if 'is_smpte'
+    ticks            : Int32   # if 'not is_smpte' then ticks per quarter-note, else ticks per frame
+
+    copyright_notice : String
+
+    tracks           = MIDITrack[]
+    unknown_chunks   = UnknownMIDIChunk[]
+
+  METHODS
+    method init( file:File )
+      init( file.load_as_bytes )
+
+    method init( bytes:Byte[] )
+      MIDIReader( this, bytes )
+
+endClass
+
+class MIDIReader
+  PROPERTIES
+    music  : MIDIMusic
+    reader : BitReader
+
+  METHODS
+    method init( music, bytes:Byte[] )
+      reader = BitReader( bytes )
+
+      read_header
+
+      while (reader.has_another)
+        read_chunk
+      endWhile
+
+    method read_chunk
+      local type = read_chunk_type
+      local size = reader.read_int32
+      which (type)
+        case "MTrk"
+          read_track( size )
+        others
+          local chunk = UnknownMIDIChunk(type)
+          local data = Byte[](size)
+          loop (size) data.add( reader.read )
+          chunk.data = data
+          music.unknown_chunks.add( chunk )
+      endWhich
+
+    method read_chunk_type->String
+      use result = StringBuilder.pool
+        loop (4) result.print( Character(reader.read) )
+        return result->String
+      endUse
+
+    method read_header
+      require read_chunk_type == "MThd"
+      local header_bytes = reader.read_int32
+      require header_bytes >= 6
+      music.format = reader.read(16)
+      require music.format >= 0 and music.format <= 2
+      reader.read(16) # Ignore track count; it can be inferred later
+      music.is_smpte = reader.read(1)?
+      if (music.is_smpte)
+        music.smpte_format = reader.read(7) - 65536
+        music.ticks = reader.read  # ticks per frame
+      else
+        music.ticks = reader.read(15) # ticks per quarter-note
+      endIf
+
+      # Ignore any remaining header bytes (unlikely to be any)
+      loop (header_bytes - 6) reader.read
+
+    method read_track( size:Int32 )
+@trace size
+      local track = MIDITrack()
+
+      local limit = reader.position + size
+      while (reader.position < limit)
+        local delta_time = read_variable_length_value
+        local event_type = read_event_type
+        which (event_type)
+          case MIDIEventType.META
+            local meta_type = reader.read
+            which (meta_type)
+              case 0x00
+                # 00       Sequence Number = Track Index
+                # 02 SS SS Sequence Number
+                local n = reader.read
+                which (n)
+                  case 0: track.sequence_number = music.tracks.count
+                  case 2: track.sequence_number = reader.read(16)
+                  others: throw Error( "Unsupported Meta Sequence Number byte count: $."(n) )
+                endWhich
+
+              case 0x01
+                # Text Event
+                track.events.add( MIDIMetaEventText(delta_time,read_string) )
+
+              case 0x02
+                # Copyright Notice
+                music.copyright_notice = read_string
+
+              case 0x02F
+                # End of Track
+                reader.read  # '0'
+                println "End of Track"
+
+              case 0x03
+                # Track Name
+                track.name = read_string
+
+              case 0x21
+                # MIDI Port
+                reader.read  # byte count of 1
+                local port = reader.read
+                println "MIDI Port: $"( port)
+
+              case 0x51
+                # Tempo
+                reader.read  # byte count of 3
+                local tempo = reader.read(24)  # microseconds per MIDI quarter-note
+                println "Tempo: $" (tempo)
+
+              case 0x54
+                # SMPTE Offset
+                reader.read  # byte count of 5
+                local h  = reader.read
+                local m  = reader.read
+                local s  = reader.read
+                local f  = reader.read
+                local ff = reader.read
+                println "SMPTE Offset $:$:$:$.$" (h.format("02"),m.format("02"),s.format("02"),f.format("02"),ff.format("02"))
+
+              case 0x58
+                # Time Signature
+                reader.read  # byte count of 4
+                local numerator               = reader.read
+                local denominator             = reader.read
+                local clocks_per_quarter      = reader.read
+                local _32nd_notes_per_quarter = reader.read
+                println "Time Signature: $/$, $ clocks and $ 32nd notes per quarter-note"(numerator,2^denominator,
+                  clocks_per_quarter, _32nd_notes_per_quarter)
+
+              case 0x59
+                # Key Signature
+                reader.read  # byte count of 2
+                local sf = reader.read
+                local mi = reader.read
+                println "Key Signature: $, $ key" (
+                  which(sf){ -7:"7 flats" || -1:"1 flat" || 1:"1 sharp" || 7:"7 sharps" || 0:"key of C" || sf+"?" },
+                  which(mi){ 0:"major" || "minor" }
+                )
+
+              others
+                throw Error( "Unrecognized MIDI meta event type $."(meta_type->String(&hex,2)) )
+            endWhich
+          others
+            throw Error( "Unhandled MIDI event type $." (event_type) )
+        endWhich
+      endWhile
+
+      music.tracks.add( track )
+
+    method read_event_type->MIDIEventType
+      local type = reader.read
+      which (type)
+        case 0xFF: return MIDIEventType.META
+        others:    throw Error( "Unrecognized MIDI event type 0x$." (type.to_hex_string(2)) )
+      endWhich
+
+    method read_string->String
+      local n = read_variable_length_value
+      use builder = StringBuilder.pool
+        builder.reserve( n )
+        loop (n) builder.print( Character(reader.read) )
+        return builder->String
+      endUse
+
+    method read_variable_length_value->Int32
+      local has_more = reader.read(1)?
+      local result = reader.read(7)
+      while (has_more)
+        has_more = reader.read(1)?
+        result = (result :<<: 7) | reader.read(7)
+      endWhile
+      return result
+endClass
+
+class MIDIChunk
+endClass
+
+class UnknownMIDIChunk : MIDIChunk
+  PROPERTIES
+    type : String
+    data : Byte[]
+
+  METHODS
+    method init( type )
+endClass
+
+class MIDITrack : MIDIChunk
+  PROPERTIES
+    name             : String
+    sequence_number  : Int32?
+    events           = MIDIEvent[]
+endClass
+
+enum MIDIEventType
+  META = 0xFF
+endEnum
+
+enum MIDIMetaEventType
+  SEQUENCE_NUMBER = 0x00
+endEnum
+
+class MIDIEvent( delta_time:Real64 )
+endClass
+
+class MIDIMetaEvent : MIDIEvent
+endClass
+
+class MIDIMetaEventText( delta_time, text:String ) : MIDIMetaEvent
+  METHODS
+    method description->String
+      return "$ Meta Text $" (delta_time,text)
+endClass
+
