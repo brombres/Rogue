@@ -14,6 +14,9 @@ class BitReader : DataReader
       endWhile
       return (buffer_count >= nbits)
 
+    method peek->Byte
+      return peek(8)->Byte
+
     method peek( nbits:Int32 )->Int32
       has_another( nbits )  # buffer enough bits
 
