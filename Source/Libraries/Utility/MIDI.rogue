@@ -6,6 +6,7 @@
 # REFERENCES
 #   https://www.cs.cmu.edu/~music/cmsip/readings/Standard-MIDI-file-format-updated.pdf
 #   http://midi.teragonaudio.com/tech/midifile.htm
+#   https://interglacial.com/pub/dr_midi.html
 #===================================================================================================
 
 class MIDIMusic
@@ -83,102 +84,167 @@ class MIDIReader
       loop (header_bytes - 6) reader.read
 
     method read_track( size:Int32 )
-@trace size
       local track = MIDITrack()
 
+      local previous_event_type = MIDIEventType.NOTE_OFF : Int32
       local limit = reader.position + size
       while (reader.position < limit)
         local delta_time = read_variable_length_value
-        local event_type = read_event_type
-        which (event_type)
-          case MIDIEventType.META
-            local meta_type = reader.read
-            which (meta_type)
-              case 0x00
-                # 00       Sequence Number = Track Index
-                # 02 SS SS Sequence Number
-                local n = reader.read
-                which (n)
-                  case 0: track.sequence_number = music.tracks.count
-                  case 2: track.sequence_number = reader.read(16)
-                  others: throw Error( "Unsupported Meta Sequence Number byte count: $."(n) )
+
+        if (reader.peek(1)) previous_event_type = reader.read
+        local event_type  = previous_event_type
+        local channel = event_type & 0x0F
+
+        local high    = (event_type :>>: 4) & 0xF
+        which (high)
+          case MIDIEventType.NOTE_OFF
+            local note     = reader.read & 0x7F
+            local velocity = reader.read & 0x7F
+            println "Note Off channel:$ note:$ velocity:$" (channel,note,velocity)
+
+          case MIDIEventType.NOTE_ON
+            local note     = reader.read & 0x7F
+            local velocity = reader.read & 0x7F
+            println "Note On channel:$ note:$ velocity:$" (channel,note,velocity)
+
+          case MIDIEventType.AFTERTOUCH
+            local note     = reader.read & 0x7F
+            local velocity = reader.read & 0x7F
+            println "Aftertouch channel:$ note:$ velocity:$" (channel,note,velocity)
+
+          case MIDIEventType.CONTROL_CHANGE
+            local controller = reader.read & 0x7F
+            local value      = reader.read & 0x7F
+            println "Control Change channel:$ controller:$ value:$" (channel,controller,value)
+
+          case MIDIEventType.PROGRAM_CHANGE
+            local patch = reader.read & 0x7F
+            println "Program Change channel:$ patch:$" (channel,patch)
+
+          case MIDIEventType.CHANNEL_PRESSURE
+            local pressure = reader.read & 0x7F
+            println "Channel Pressure channel:$ pressure:$" (channel,pressure)
+
+          case MIDIEventType.PITCH_WHEEL
+            local lo    = reader.read & 0x7F
+            local hi    = reader.read & 0x7F
+            local delta = (hi :<<: 7) | lo
+            println "Pitch Wheel channel:$ delta:$ ($)" (channel,delta->String(&hex),delta-0x2000)
+
+          case MIDIEventType.SYSTEM
+            which (event_type)
+              case MIDIEventType.META
+                local meta_type = reader.read
+                which (meta_type)
+                  case MIDIMetaEventType.SEQUENCE_NUMBER
+                    # 00       Sequence Number = Track Index
+                    # 02 SS SS Sequence Number
+                    local n = reader.read
+                    which (n)
+                      case 0: track.sequence_number = music.tracks.count
+                      case 2: track.sequence_number = reader.read(16)
+                      others: throw Error( "Unsupported Meta Sequence Number byte count: $."(n) )
+                    endWhich
+
+                  case MIDIMetaEventType.TEXT
+                    # Text Event
+                    track.events.add( MIDIMetaEventText(delta_time,read_string) )
+
+                  case MIDIMetaEventType.COPYRIGHT_NOTICE
+                    # Copyright Notice
+                    music.copyright_notice = read_string
+
+                  case MIDIMetaEventType.TRACK_NAME
+                    # Track Name
+                    track.name = read_string
+                    println "Track Name: " + track.name
+
+                  case MIDIMetaEventType.INSTRUMENT_NAME
+                    local instrument_name = read_string
+                    println "Instrument Name: $" (instrument_name)
+
+                  case MIDIMetaEventType.LYRIC
+                    local lyric = read_string
+                    println "Lyric: $" (lyric)
+
+                  case MIDIMetaEventType.MARKER
+                    local marker = read_string
+                    println "Marker: $" (marker)
+
+                  case MIDIMetaEventType.CUE_POINT
+                    local cue_point = read_string
+                    println "Cue Point: $" (cue_point)
+
+                  case MIDIMetaEventType.CHANNEL_PREFIX
+                    reader.read # byte count: 1
+                    local cc = reader.read
+                    println "MIDI Channel Prefix: $" (cc)
+
+                  case MIDIMetaEventType.MIDI_PORT
+                    # MIDI Port
+                    reader.read  # byte count of 1
+                    local port = reader.read
+                    println "MIDI Port: $"( port)
+
+                  case MIDIMetaEventType.END_OF_TRACK
+                    # End of Track
+                    reader.read  # '0'
+                    println "End of Track"
+
+                  case MIDIMetaEventType.TEMPO
+                    # Tempo
+                    reader.read  # byte count of 3
+                    local tempo = reader.read(24)  # microseconds per MIDI quarter-note
+                    println "Tempo: $" (tempo)
+
+                  case MIDIMetaEventType.SMPTE_OFFSET
+                    # SMPTE Offset
+                    reader.read  # byte count of 5
+                    local h  = reader.read
+                    local m  = reader.read
+                    local s  = reader.read
+                    local f  = reader.read
+                    local ff = reader.read
+                    println "SMPTE Offset $:$:$:$.$" (h.format("02"),m.format("02"),s.format("02"),f.format("02"),ff.format("02"))
+
+                  case MIDIMetaEventType.TIME_SIGNATURE
+                    # Time Signature
+                    reader.read  # byte count of 4
+                    local numerator               = reader.read
+                    local denominator             = reader.read
+                    local clocks_per_quarter      = reader.read
+                    local _32nd_notes_per_quarter = reader.read
+                    println "Time Signature: $/$, $ clocks and $ 32nd notes per quarter-note"(numerator,2^denominator,
+                      clocks_per_quarter, _32nd_notes_per_quarter)
+
+                  case MIDIMetaEventType.KEY_SIGNATURE
+                    # Key Signature
+                    reader.read  # byte count of 2
+                    local sf = reader.read
+                    local mi = reader.read
+                    println "Key Signature: $, $ key" (
+                      which(sf){ -7:"7 flats" || -1:"1 flat" || 1:"1 sharp" || 7:"7 sharps" || 0:"key of C" || sf+"?" },
+                      which(mi){ 0:"major" || "minor" }
+                    )
+
+                  case MIDIMetaEventType.PROPRIETARY
+                    local count = read_variable_length_value
+                    print "Proprietary Event:"
+                    loop count
+                      print " " + reader.read->String(&hex,2)
+                    endLoop
+                  others
+                    throw Error( "Unhandled MIDI meta event type $."(meta_type->String(&hex,2)) )
                 endWhich
-
-              case 0x01
-                # Text Event
-                track.events.add( MIDIMetaEventText(delta_time,read_string) )
-
-              case 0x02
-                # Copyright Notice
-                music.copyright_notice = read_string
-
-              case 0x02F
-                # End of Track
-                reader.read  # '0'
-                println "End of Track"
-
-              case 0x03
-                # Track Name
-                track.name = read_string
-
-              case 0x21
-                # MIDI Port
-                reader.read  # byte count of 1
-                local port = reader.read
-                println "MIDI Port: $"( port)
-
-              case 0x51
-                # Tempo
-                reader.read  # byte count of 3
-                local tempo = reader.read(24)  # microseconds per MIDI quarter-note
-                println "Tempo: $" (tempo)
-
-              case 0x54
-                # SMPTE Offset
-                reader.read  # byte count of 5
-                local h  = reader.read
-                local m  = reader.read
-                local s  = reader.read
-                local f  = reader.read
-                local ff = reader.read
-                println "SMPTE Offset $:$:$:$.$" (h.format("02"),m.format("02"),s.format("02"),f.format("02"),ff.format("02"))
-
-              case 0x58
-                # Time Signature
-                reader.read  # byte count of 4
-                local numerator               = reader.read
-                local denominator             = reader.read
-                local clocks_per_quarter      = reader.read
-                local _32nd_notes_per_quarter = reader.read
-                println "Time Signature: $/$, $ clocks and $ 32nd notes per quarter-note"(numerator,2^denominator,
-                  clocks_per_quarter, _32nd_notes_per_quarter)
-
-              case 0x59
-                # Key Signature
-                reader.read  # byte count of 2
-                local sf = reader.read
-                local mi = reader.read
-                println "Key Signature: $, $ key" (
-                  which(sf){ -7:"7 flats" || -1:"1 flat" || 1:"1 sharp" || 7:"7 sharps" || 0:"key of C" || sf+"?" },
-                  which(mi){ 0:"major" || "minor" }
-                )
-
               others
-                throw Error( "Unrecognized MIDI meta event type $."(meta_type->String(&hex,2)) )
+                throw Error( "Unhandled MIDI system event type $." (event_type->String(&binary,8)) )
             endWhich
           others
-            throw Error( "Unhandled MIDI event type $." (event_type) )
+            throw Error( "Unhandled MIDI event type $xxxx." (high->String(&binary,4)) )
         endWhich
       endWhile
 
       music.tracks.add( track )
-
-    method read_event_type->MIDIEventType
-      local type = reader.read
-      which (type)
-        case 0xFF: return MIDIEventType.META
-        others:    throw Error( "Unrecognized MIDI event type 0x$." (type.to_hex_string(2)) )
-      endWhich
 
     method read_string->String
       local n = read_variable_length_value
@@ -218,11 +284,35 @@ class MIDITrack : MIDIChunk
 endClass
 
 enum MIDIEventType
-  META = 0xFF
+  NOTE_OFF         = 0x8   # 0b1000
+  NOTE_ON          = 0x9   # 0b1001
+  AFTERTOUCH       = 0xA   # 0b1010
+  CONTROL_CHANGE   = 0xB   # 0b1011
+  PROGRAM_CHANGE   = 0xC   # 0b1100
+  CHANNEL_PRESSURE = 0xD   # 0b1101
+  PITCH_WHEEL      = 0xE   # 0b1110
+  SYSTEM           = 0xF   # 0b1111
+
+  META     = 0xFF
 endEnum
 
 enum MIDIMetaEventType
-  SEQUENCE_NUMBER = 0x00
+  SEQUENCE_NUMBER  = 0x00
+  TEXT             = 0x01
+  COPYRIGHT_NOTICE = 0x02
+  TRACK_NAME       = 0x03
+  INSTRUMENT_NAME  = 0x04
+  LYRIC            = 0x05
+  MARKER           = 0x06
+  CUE_POINT        = 0x07
+  CHANNEL_PREFIX   = 0x20
+  MIDI_PORT        = 0x21
+  END_OF_TRACK     = 0x2F
+  TEMPO            = 0x51
+  SMPTE_OFFSET     = 0x54
+  TIME_SIGNATURE   = 0x58
+  KEY_SIGNATURE    = 0x59
+  PROPRIETARY      = 0x7F
 endEnum
 
 class MIDIEvent( delta_time:Real64 )
