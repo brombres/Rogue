@@ -926,17 +926,9 @@ class String
       local this_limit = (count - other_count) + 1
       if (other_count == 0 or this_limit <= 0) return null
 
-      local i1 : Int32
-      if (optional_i1)
-        i1 = optional_i1.value - 1
-        if (i1 < -1) i1 = -1
-      else
-        i1 = -1
-      endIf
-
-      while (native("++$i1")->Int32 < this_limit)
-        if (contains_at(other,i1,&=ignore_case)) return i1
-      endWhile
+      forEach (i in which{optional_i1||0}..<this_limit)
+        if (contains_at(other,i,&=ignore_case)) return i
+      endForEach
 
       return null
 
@@ -977,6 +969,50 @@ class String
       endWhile
 
       return null
+
+    method locate_nth( ch:Character, n:Int32, optional_i1=null:Int32?, &ignore_case )->Int32?
+      # n=1 finds the first match from the left side (or optional first index), etc.
+      local index = locate( ch, optional_i1, &=ignore_case )
+
+      loop n - 1
+        if (not index) return null
+        index = locate( ch, index.value+1, &=ignore_case )
+      endLoop
+
+      return index
+
+    method locate_nth( other:String, n:Int32, optional_i1=null:Int32?, &ignore_case )->Int32?
+      # n=1 finds the first match from the left side (or optional first index), etc.
+      local index = locate( other, optional_i1, &=ignore_case )
+
+      loop n - 1
+        if (not index) return null
+        index = locate( other, index.value+1, &=ignore_case )
+      endLoop
+
+      return index
+
+    method locate_nth_last( ch:Character, n:Int32, optional_i1=null:Int32?, &ignore_case )->Int32?
+      # n=1 finds the first match from the right side (or optional first index), etc.
+      local index = locate_last( ch, optional_i1, &=ignore_case )
+
+      loop n - 1
+        if (not index) return null
+        index = locate_last( ch, index.value-1, &=ignore_case )
+      endLoop
+
+      return index
+
+    method locate_nth_last( other:String, n:Int32, optional_i1=null:Int32?, &ignore_case )->Int32?
+      # n=1 finds the first match from the right side (or optional first index), etc.
+      local index = locate_last( other, optional_i1, &=ignore_case )
+
+      loop n - 1
+        if (not index) return null
+        index = locate_last( other, index.value-1, &=ignore_case )
+      endLoop
+
+      return index
 
     method locate_pattern( pattern:String, i1=0:Int32, &ignore_case )->Span?
       # EXAMPLE
