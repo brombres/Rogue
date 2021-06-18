@@ -9,11 +9,12 @@ class LineReader : Reader<<String>>
     method init( source )
       next = null
 
-    method init( reader:Reader<<Byte>> )
-      init( UTF8Reader(reader) )
+    method init( reader:Reader<<Byte>>, encoding=StringEncoding.UTF8:StringEncoding )
+      if (encoding == StringEncoding.EXTENDED_ASCII) init( ExtendedASCIIReader(reader) )
+      else                                           init( UTF8Reader(reader) )
 
-    method init( file:File )
-      init( file.reader )
+    method init( file:File, encoding=StringEncoding.UTF8:StringEncoding )
+      init( file.reader, encoding )
 
     method init( string:String )
       init( string.reader )
@@ -37,6 +38,7 @@ class LineReader : Reader<<String>>
       buffer.clear
       while (source.has_another)
         local ch = source.read
+        if (ch == '\r') nextIteration
         if (ch == '\n')
           prev = '\n'
           escapeWhile
