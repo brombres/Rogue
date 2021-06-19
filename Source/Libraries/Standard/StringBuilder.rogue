@@ -466,16 +466,40 @@ class StringBuilder : PrintWriter [essential]
       return whole + decimal / 10.0^decimal_count
 
     method to->Int32
+      if (this.contains(','))
+        use builder = StringBuilder.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Int32
+        endUse
+      endIf
       utf8.reserve( 1 )
       utf8[ utf8.count ] = 0
       return native( "(RogueInt32)strtol( (char*)$utf8->data->as_bytes, 0, 10 )" )->Int32
 
     method to->Int64
+      if (this.contains(','))
+        use builder = StringBuilder.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Int64
+        endUse
+      endIf
       utf8.reserve( 1 )
       utf8[ utf8.count ] = 0
       return native( "(RogueInt64)strtoll( (char*)$utf8->data->as_bytes, 0, 10 )" )->Int64
 
     method to->Real64
+      if (this.contains(','))
+        use builder = StringBuilder.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Real64
+        endUse
+      endIf
       utf8.reserve( 1 )
       utf8[ utf8.count ] = 0
       return native( "strtod( (char*)$utf8->data->as_bytes, 0 )" )->Real64

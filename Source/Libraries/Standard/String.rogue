@@ -1456,10 +1456,26 @@ class String
 
     method to->Int32( base=10:Int32 )
       if (count == 0) return 0
+      if (this.contains(','))
+        use builder = StringBuilder.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Int32
+        endUse
+      endIf
       return native( "(RogueInt32)strtol( (char*)$this->utf8, 0, $base )" )->Int32
 
     method to->Int64( base=10:Int32 )
       if (count == 0) return 0
+      if (this.contains(','))
+        use builder = StringBuilder.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Int64
+        endUse
+      endIf
       return native( "(RogueInt64)strtoll( (char*)$this->utf8, 0, $base )" )->Int64
 
     method to->Object
@@ -1467,7 +1483,14 @@ class String
 
     method to->Real64
       if (count == 0) return 0
-      if (this.contains(',')) return this.replacing(",","")->Real64
+      if (this.contains(','))
+        use builder = StringBuilder.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Real64
+        endUse
+      endIf
       return native( "strtod( (char*)$this->utf8, 0 )" )->Real64
 
     method to->String
