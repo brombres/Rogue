@@ -164,16 +164,16 @@ class MIDIReader
                 track.events.add( MIDIEvent(event_type,dt) )
 
               case MIDIEventType.SYSTEM_START
-                track.events.add( MIDISystemEventStart(dt) )
+                track.events.add( MIDIEvent(event_type,dt) )
 
               case MIDIEventType.SYSTEM_CONTINUE
-                track.events.add( MIDISystemEventContinue(dt) )
+                track.events.add( MIDIEvent(event_type,dt) )
 
               case MIDIEventType.SYSTEM_STOP
-                track.events.add( MIDISystemEventStop(dt) )
+                track.events.add( MIDIEvent(event_type,dt) )
 
               case MIDIEventType.SYSTEM_ACTIVE_SENSING
-                track.events.add( MIDISystemEventActiveSensing(dt) )
+                track.events.add( MIDIEvent(event_type,dt) )
 
               case MIDIEventType.SYSTEM_META
                 local meta_type = reader.read->Int32
@@ -181,69 +181,70 @@ class MIDIReader
                   case MIDIEventType.META_SEQUENCE_NUMBER
                     # 00       Sequence Number = Track Index
                     # 02 SS SS Sequence Number
+                    local seq : Int32
                     local n = reader.read
                     which (n)
                       case 0
-                        track.sequence_number = music.tracks.count
-                        track.events.add( MIDIMetaEvent(meta_type,dt) )
+                        seq = music.tracks.count
                       case 2
-                        track.sequence_number = reader.read(16)
-                        track.events.add( MIDIMetaEventSequenceNumber(dt,track.sequence_number.value) )
+                        seq = reader.read(16)
                       others
                         throw Error( "Unsupported Meta Sequence Number byte count: $."(n) )
                     endWhich
+                    track.sequence_number = seq
+                    track.events.add( MIDIEvent(meta_type,dt,seq) )
 
                   case MIDIEventType.META_TEXT
                     # Text Event
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,read_string) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=read_string) )
 
                   case MIDIEventType.META_COPYRIGHT_NOTICE
                     # Copyright Notice
                     music.copyright_notice = read_string
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,music.copyright_notice) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=music.copyright_notice) )
 
                   case MIDIEventType.META_TRACK_NAME
                     # Track Name
                     track.name = read_string
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,track.name) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=track.name) )
 
                   case MIDIEventType.META_INSTRUMENT_NAME
                     local instrument_name = read_string
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,instrument_name) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=instrument_name) )
 
                   case MIDIEventType.META_LYRIC
                     local lyric = read_string
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,lyric) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=lyric) )
 
                   case MIDIEventType.META_MARKER
                     local marker = read_string
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,marker) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=marker) )
 
                   case MIDIEventType.META_CUE_POINT
                     local cue_point = read_string
-                    track.events.add( MIDIMetaTextEvent(meta_type,dt,cue_point) )
+                    track.events.add( MIDIEvent(meta_type,dt,&text=cue_point) )
 
                   case MIDIEventType.META_CHANNEL_PREFIX
                     reader.read # byte count: 1
                     local cc = reader.read
-                    track.events.add( MIDIMetaEventChannelPrefix(dt,cc) )
+                    track.events.add( MIDIEvent(meta_type,dt,cc) )
 
                   case MIDIEventType.META_MIDI_PORT
                     # MIDI Port
                     reader.read  # byte count of 1
                     local port = reader.read
-                    track.events.add( MIDIMetaEventMIDIPort(dt,port) )
+                    track.events.add( MIDIEvent(meta_type,dt,port) )
 
                   case MIDIEventType.META_END_OF_TRACK
                     # End of Track
                     reader.read  # '0'
-                    track.events.add( MIDIMetaEvent(meta_type,dt) )
+                    track.events.add( MIDIEvent(meta_type,dt) )
 
                   case MIDIEventType.META_TEMPO
                     # Tempo
                     reader.read  # byte count of 3
                     local tempo = reader.read(24)  # microseconds per MIDI quarter-note
-                    track.events.add( MIDIMetaEventTempo(dt,tempo) )
+                    track.events.add( MIDIEvent(dt,tempo) )
 
                   case MIDIEventType.META_SMPTE_OFFSET
                     # SMPTE Offset
@@ -253,7 +254,7 @@ class MIDIReader
                     local s  = reader.read
                     local f  = reader.read
                     local ff = reader.read
-                    track.events.add( MIDIMetaEventSMPTEOffset(dt,h,m,s,f,ff) )
+                    track.events.add( MIDIEvent(meta_type,dt,&data=MIDISMPTETimecode(h,m,s,f,ff)) )
 
                   case MIDIEventType.META_TIME_SIGNATURE
                     # Time Signature
@@ -262,14 +263,14 @@ class MIDIReader
                     local denom  = reader.read
                     local clocks = reader.read
                     local _32nds = reader.read
-                    track.events.add( MIDIMetaEventTimeSignature(dt,num,denom,clocks,_32nds) )
+                    track.events.add( MIDIEvent(meta_type,dt,&data=MIDITimeSignature(num,denom,clocks,_32nds)) )
 
                   case MIDIEventType.META_KEY_SIGNATURE
                     # Key Signature
                     reader.read  # byte count of 2
                     local sf = reader.read
                     local mi = reader.read
-                    track.events.add( MIDIMetaEventKeySignature(dt,sf,mi) )
+                    track.events.add( MIDIEvent(dt,sf,mi) )
 
                   case MIDIEventType.META_PROPRIETARY
                     local count = read_variable_length_value
@@ -371,7 +372,8 @@ enum MIDIEventType
   SYSTEM_RESET                 = 0xFF  # same as SYSTEM_META; used in real time
 endEnum
 
-class MIDIEvent( type:MIDIEventType, dt:Int32, charlie=0:Int32, alpha=0:Int32, beta=0:Int32, data=null:Object )
+class MIDIEvent( type:MIDIEventType, dt:Int32, charlie=0:Int32, alpha=0:Int32, beta=0:Int32,
+    text=null:String, data=null:Object ) [compound]
   METHODS
     method description->String
       use builder = StringBuilder.pool
@@ -389,173 +391,58 @@ class MIDIEvent( type:MIDIEventType, dt:Int32, charlie=0:Int32, alpha=0:Int32, b
             builder.print " ch:$ delta:$ ($)" (charlie->String(&hex,1),alpha->String(&hex),alpha-0x2000)
           case MIDIEventType.SYSTEM_EXCLUSIVE
             builder.print " id:$ data:$" (alpha->String(&hex,2),data as Byte[])
-          case MIDIEventType.SYSTEM_SONG_POSITION_POINTER,
+          case MIDIEventType.META_CHANNEL_PREFIX,
+               MIDIEventType.META_MIDI_PORT,
+               MIDIEventType.META_SEQUENCE_NUMBER,
+               MIDIEventType.META_TEMPO,
+               MIDIEventType.SYSTEM_SONG_POSITION_POINTER,
                MIDIEventType.SYSTEM_SONG_SELECT
             builder.print " v:$" (alpha->String(&hex,2))
-          case MIDIEventType.SYSTEM_TUNE_REQUEST,
+          case MIDIEventType.META_COPYRIGHT_NOTICE,
+               MIDIEventType.META_TRACK_NAME,
+               MIDIEventType.META_INSTRUMENT_NAME,
+               MIDIEventType.META_LYRIC,
+               MIDIEventType.META_MARKER,
+               MIDIEventType.META_CUE_POINT
+             builder.print(" ").print(text)
+          case MIDIEventType.META_END_OF_TRACK,
+               MIDIEventType.SYSTEM_ACTIVE_SENSING,
+               MIDIEventType.SYSTEM_CONTINUE,
+               MIDIEventType.SYSTEM_START,
+               MIDIEventType.SYSTEM_STOP,
+               MIDIEventType.SYSTEM_TUNE_REQUEST,
                MIDIEventType.SYSTEM_TIMING_CLOCK
             noAction
           case MIDIEventType.META_PROPRIETARY
             builder.print " data:$" (data as Byte[])
+          case MIDIEventType.META_SMPTE_OFFSET
+            builder.print " offset:$" (data as MIDISMPTETimecode)
+          case MIDIEventType.META_TIME_SIGNATURE
+            builder.print " $" (data as MIDITimeSignature)
+          case MIDIEventType.META_KEY_SIGNATURE
+            builder.print " $, $ key"...
+            (
+              which(alpha){ -7:"7 flats" || -1:"1 flat" || 1:"1 sharp" || 7:"7 sharps" || 0:"key of C" || alpha+"?" },
+              which(beta){ 0:"major" || "minor" }
+            )
         endWhich
         return builder->String
       endUse
+
+    method to->String
+      return description
 endClass
 
-class MIDIChannelEvent : MIDIEvent
-  PROPERTIES
-    channel : Int32
-
+class MIDISMPTETimecode( h:Int32, m:Int32, s:Int32, f:Int32, ff:Int32 )
   METHODS
-    method init( type:MIDIEventType, dt:Int32, channel )
-      prior.init( type->Int32 & 0xF0, dt )
-
-    method description->String
-      return "$ ch:$" (prior.description,channel->String(&hex,1))
-endClass
-
-class MIDIChannelValue7Event : MIDIChannelEvent
-  PROPERTIES
-    v : Int32
-
-  METHODS
-    method init( type:MIDIEventType, dt:Int32, channel:Int32, v )
-      prior.init( type, dt, channel )
-
-    method description->String
-      return "$ v:$" (prior.description,v->String(&hex,2))
-endClass
-
-class MIDIEventProgramChange : MIDIChannelValue7Event
-  METHODS
-    method init( dt:Int32, channel:Int32, v:Int32 )
-      prior.init( MIDIEventType.PROGRAM_CHANGE, dt, channel, v )
-endClass
-
-class MIDISystemEvent : MIDIEvent
-endClass
-
-class MIDISystemEvent<<$midi_event_type>> : MIDISystemEvent
-  METHODS
-    method init( dt:Int32 )
-      prior.init( MIDIEventType.$midi_event_type, dt )
-endClass
-
-class MIDISystemEventStart : MIDISystemEvent<<SYSTEM_START>>;
-class MIDISystemEventContinue : MIDISystemEvent<<SYSTEM_CONTINUE>>;
-class MIDISystemEventStop : MIDISystemEvent<<SYSTEM_STOP>>;
-class MIDISystemEventActiveSensing : MIDISystemEvent<<SYSTEM_ACTIVE_SENSING>>;
-
-class MIDIMetaEvent : MIDIEvent
-endClass
-
-class MIDIMetaValue8Event : MIDIMetaEvent
-  PROPERTIES
-    value : Int32
-
-  METHODS
-    method init( meta_type:MIDIEventType, dt:Int32, value )
-      prior.init( meta_type, dt )
-
-    method description->String
-      return "$ v:$" (prior.description,value)
-endClass
-
-class MIDIMetaEventChannelPrefix : MIDIMetaValue8Event
-  METHODS
-    method init( dt:Int32, value:Int32 )
-      prior.init( MIDIEventType.META_CHANNEL_PREFIX, dt, value )
-endClass
-
-class MIDIMetaEventMIDIPort : MIDIMetaValue8Event
-  METHODS
-    method init( dt:Int32, value:Int32 )
-      prior.init( MIDIEventType.META_MIDI_PORT, dt, value )
-endClass
-
-class MIDIMetaEventSequenceNumber : MIDIMetaEvent
-  PROPERTIES
-    value : Int32
-
-  METHODS
-    method init( dt:Int32, value )
-      prior.init( MIDIEventType.META_SEQUENCE_NUMBER, dt )
-
-    method description->String
-      return "$ v:$" (prior.description,value->String(&hex,2))
-endClass
-
-class MIDIMetaEventTempo : MIDIMetaEvent
-  PROPERTIES
-    value : Int32
-
-  METHODS
-    method init( dt:Int32, value )
-      prior.init( MIDIEventType.META_TEMPO, dt )
-
-    method description->String
-      return "$ v:$" (prior.description,value->String(&hex,3))
-endClass
-
-class MIDIMetaTextEvent : MIDIMetaEvent
-  PROPERTIES
-    text : String
-
-  METHODS
-    method init( meta_type:MIDIEventType, dt:Int32, text )
-      prior.init( meta_type, dt )
-
-    method description->String
-      return prior.description + " " + text
-endClass
-
-class MIDIMetaEventSMPTEOffset : MIDIMetaEvent
-  PROPERTIES
-    h  : Int32
-    m  : Int32
-    s  : Int32
-    f  : Int32
-    ff : Int32
-
-  METHODS
-    method init( dt:Int32, h, m, s, f, ff )
-      prior.init( MIDIEventType.META_SMPTE_OFFSET, dt )
-
     method description->String
       return "$ $:$:$:$.$" (prior.description,h.format("02"),m.format("02"),s.format("02"),f.format("02"),ff.format("02"))
 endClass
 
-class MIDIMetaEventTimeSignature : MIDIMetaEvent
-  PROPERTIES
-    numerator               : Int32
-    denominator             : Int32
-    clocks_per_quarter      : Int32
-    _32nd_notes_per_quarter : Int32
-
+class MIDITimeSignature( numerator:Int32, denominator:Int32, clocks_per_quarter:Int32, _32nd_notes_per_quarter:Int32 )
   METHODS
-    method init( dt:Int32, numerator, denominator, clocks_per_quarter, _32nd_notes_per_quarter )
-      prior.init( MIDIEventType.META_TIME_SIGNATURE, dt )
-
     method description->String
       return "$ $/$, clocks:$ 32nd notes per quarter-note:$"...
         (prior.description, numerator,2^denominator, clocks_per_quarter, _32nd_notes_per_quarter)
-endClass
-
-class MIDIMetaEventKeySignature : MIDIMetaEvent
-  PROPERTIES
-    sf : Int32
-    mi : Int32
-
-  METHODS
-    method init( dt:Int32, sf, mi )
-      prior.init( MIDIEventType.META_KEY_SIGNATURE, dt )
-
-    method description->String
-      return "$: $, $ key"...
-        (
-          prior.description,
-          which(sf){ -7:"7 flats" || -1:"1 flat" || 1:"1 sharp" || 7:"7 sharps" || 0:"key of C" || sf+"?" },
-          which(mi){ 0:"major" || "minor" }
-        )
 endClass
 
