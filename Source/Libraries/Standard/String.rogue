@@ -1622,6 +1622,38 @@ class String
       if (i.exists) return from( 0, i.value )
       else          return this
 
+    method with_trailing( ch:Character )->String
+      # Returns a string that ends with the given character. If this string already ends with the
+      # given character then this string is returned unchanged.
+      if (this.ends_with(ch)) return this
+      return this + ch
+
+    method with_trailing( text:String )->String
+      # Returns a string that ends with the given text. If this string already ends with the given
+      # text then this string is returned unchanged.
+      if (this.ends_with(text)) return this
+      return this + text
+
+    method without_trailing( ch:Character )->String
+      # Like before_suffix() but removes multiple copies of the given character.
+      local result = this
+      local next   = result.before_suffix( ch )
+      while (result != next)
+        result = next
+        next   = result.before_suffix( ch )
+      endWhile
+      return result
+
+    method without_trailing( text:String )->String
+      # Like before_suffix() but removes multiple copies of the given string.
+      local result = this
+      local next   = result.before_suffix( text )
+      while (result != next)
+        result = next
+        next   = result.before_suffix( text )
+      endWhile
+      return result
+
     method word_wrap( width:Int32, allow_break_after=null:String )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin
