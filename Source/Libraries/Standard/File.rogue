@@ -1709,6 +1709,18 @@ class FileListing
       folder = fix( folder )
       pattern = fix( pattern )
 
+      if (File.exists(folder) and not File.is_folder(folder))
+        # We have a single file instead of a folder
+        local filepath = folder
+        if (options.is_ignoring_hidden and filepath.begins_with('.')) return
+        if (options.keeping_files)
+          if (options.is_absolute) filepath = File.absolute_filepath( filepath )
+          if (options.is_omitting_path) filepath = File.filename( filepath )
+          results.add( filepath )
+        endIf
+        return
+      endIf
+
       callback = this=>collect
 
       if (pattern is null)
