@@ -1607,7 +1607,6 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
     if (cur->object_size < 0)
     {
       // Referenced.
-      cur->object_size = ~cur->object_size;
       cur->next_object = survivors;
       survivors = cur;
     }
@@ -1626,6 +1625,15 @@ void RogueAllocator_collect_garbage( RogueAllocator* THIS )
   // All objects are in a state where a non-negative size means that the object is
   // due to be deleted.
   Rogue_on_gc_trace_finished.call();
+
+  // Now that on_gc_trace_finished() has been called we can reset the "collected" status flag
+  // on all objects requiring cleanup.
+  cur = THIS->objects_requiring_cleanup;
+  while (cur)
+  {
+    if (cur->object_size < 0) cur->object_size = ~cur->object_size;
+    cur = cur->next_object;
+  }
 
   // Reset or delete each general object
   cur = THIS->objects;
