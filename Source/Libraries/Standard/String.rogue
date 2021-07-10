@@ -3,11 +3,19 @@ enum StringEncoding
   ASCII          = 1
   ASCII_256      = 2
   EXTENDED_ASCII = 2
+  AUTODETECT     = 3
 endEnum
 
 class String
   GLOBAL METHODS
-    method create( bytes:Byte[], encoding=StringEncoding.UTF8:StringEncoding )->String
+    method create( bytes:Byte[], encoding=StringEncoding.AUTODETECT:StringEncoding )->String
+      if (encoding == StringEncoding.AUTODETECT)
+        #local is_valid = bytes.is_valid_utf8
+        #native @|printf( "is valid utf8:%d\n", (int)$is_valid );
+#trace bytes.is_valid_utf8
+        encoding = which{ bytes.is_valid_utf8:StringEncoding.UTF8 || StringEncoding.ASCII_256 }
+      endIf
+
       which (encoding)
         case StringEncoding.UTF8, StringEncoding.ASCII
           return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes), $bytes->count )' )->String
@@ -56,7 +64,7 @@ class String
     method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
       return create( characters.utf8, i1, count )
 
-    method create( file:File, encoding=StringEncoding.UTF8:StringEncoding )->String
+    method create( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       return file.load_as_string( encoding )
 
     method create( value:Value )->String

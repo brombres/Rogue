@@ -571,7 +571,7 @@ class File
       infile.close
       return bytes
 
-    method load_as_string( filepath:String, encoding=StringEncoding.UTF8:StringEncoding )->String
+    method load_as_string( filepath:String, encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       local bytes = load_as_bytes( filepath )
       if (bytes.count >= 3 and bytes[0] == 0xEF and bytes[1] == 0xBB and bytes[2] == 0xBF)
         # Discard Byte Order Marker (BOM)
@@ -1146,7 +1146,7 @@ class File
     method load_as_bytes->Byte[]
       return File.load_as_bytes( this.filepath )
 
-    method load_as_string( encoding=StringEncoding.UTF8:StringEncoding )->String
+    method load_as_string( encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       return File.load_as_string( this.filepath, encoding )
 
     method matches_wildcard_pattern( pattern:String, &ignore_case )->Logical

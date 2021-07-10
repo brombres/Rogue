@@ -9,11 +9,11 @@ class LineReader : Reader<<String>>
     method init( source )
       next = null
 
-    method init( reader:Reader<<Byte>>, encoding=StringEncoding.UTF8:StringEncoding )
+    method init( reader:Reader<<Byte>>, encoding=StringEncoding.AUTODETECT:StringEncoding )
       if (encoding == StringEncoding.EXTENDED_ASCII) init( ExtendedASCIIReader(reader) )
       else                                           init( UTF8Reader(reader) )
 
-    method init( file:File, encoding=StringEncoding.UTF8:StringEncoding )
+    method init( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )
       init( file.reader, encoding )
 
     method init( string:String )
