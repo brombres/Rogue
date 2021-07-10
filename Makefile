@@ -27,6 +27,8 @@ bootstrap:
 	@echo -------------------------------------------------------------------------------
 	@echo "Bootstrapping Rogo Build executable from C++ source..."
 	@echo -------------------------------------------------------------------------------
+	rm -rf .rogo
+	rm -rf Programs/RogueC
 	mkdir -p .rogo
 	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) Source/RogueC/Bootstrap/Build.cpp -o $(BUILD_EXE)
 	$(BUILD_EXE) bootstrap_skip_build_executable
