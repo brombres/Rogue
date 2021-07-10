@@ -8,19 +8,44 @@ endEnum
 class String
   GLOBAL METHODS
     method create( bytes:Byte[], encoding=StringEncoding.UTF8:StringEncoding )->String
-      return create( bytes, 0, bytes.count, encoding )
-
-    method create( bytes:Byte[], i1:Int32, count:Int32, encoding=StringEncoding.UTF8:StringEncoding )->String
       which (encoding)
         case StringEncoding.UTF8, StringEncoding.ASCII
-          return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes+$i1), $count )' )->String
+          return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes), $bytes->count )' )->String
         case StringEncoding.ASCII_256
-          local buffer = StringBuilder( bytes.count )
-          buffer.print( Character(forEach in bytes) )
-          return buffer->String
+          # Count number of 2-byte characters
+          local len = 0
+          native @|unsigned char* src = $bytes->data->as_bytes - 1;
+                  |for (int i=$bytes->count; --i>=0; )
+                  |{
+                  |  if (*(++src) & 0x80) ++$len;
+                  |}
+
+          # Convert ASCII-256 to UTF-8
+          local new_count = bytes.count + len
+          local utf8_bytes = Byte[]( bytes.count + len )
+          utf8_bytes.count = new_count
+          native @|src = $bytes->data->as_bytes + $bytes->count;
+                  |unsigned char* dest = $utf8_bytes->data->as_bytes + $new_count;
+                  |for (int i=$bytes->count; --i>=0; )
+                  |{
+                  |  unsigned char ch = *(--src);
+                  |  if (ch & 0x80)
+                  |  {
+                  |    *(--dest) = 0x80 | (ch & 0x3F);
+                  |    *(--dest) = 0xC0 | ((ch>>6) & 0x03);
+                  |  }
+                  |  else
+                  |  {
+                  |    *(--dest) = ch;
+                  |  }
+                  |}
+                  |return RogueString_create_from_utf8( (char*)($utf8_bytes->data->as_bytes), $utf8_bytes->count );
         others
           throw Error( "Unsupported string encoding: " + encoding )
       endWhich
+
+    method create( bytes:Byte[], i1:Int32, count:Int32 )->String
+      return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes+$i1), $count )' )->String
 
     method create( characters:Character[] )->String
       return native( 'RogueString_create_from_characters( $characters )' )->String
@@ -308,9 +333,22 @@ class String
 
     method count( look_for:Character )->Int32
       local result = 0
-      forEach (ch in this)
-        if (ch == look_for) ++result
-      endForEach
+      if (look_for < 128)
+        native @|int n = $this->byte_count;
+                |char* src = $this->utf8 + n;
+                |while (--n >= 0)
+                |{
+                |  if (*(--src) == $look_for) ++$result;
+                |}
+        return result
+
+      else
+        forEach (ch in this)
+          if (ch == look_for) ++result
+        endForEach
+
+      endIf
+
       return result
 
     method count( look_for:String )->Int32
