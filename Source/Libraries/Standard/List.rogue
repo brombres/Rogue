@@ -751,11 +751,11 @@ class ListIterator<<$DataType>>( list:($DataType[]), position=0:Int32, limit=-1:
       ++position
       return list[ position-1 ]
 
-    method to->$DataType[]
-      return to_list
+    method to->$DataType[]( result=null:$DataType[] )
+      return to_list( result )
 
-    method to_list->$DataType[]
-      local result = $DataType[]
+    method to_list( result=null:$DataType[] )->$DataType[]
+      ensure result( list.count )
       result.add( forEach in this )
       return result
 endClass

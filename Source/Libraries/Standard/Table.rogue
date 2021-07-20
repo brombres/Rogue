@@ -499,11 +499,11 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
       cur = cur.next_entry
       return result
 
-    method to->TableEntry<<$KeyType,$ValueType>>[]
-      return to_list
+    method to->TableEntry<<$KeyType,$ValueType>>[]( result=null:TableEntry<<$KeyType,$ValueType>>[] )
+      return to_list( result )
 
-    method to_list->TableEntry<<$KeyType,$ValueType>>[]
-      local result = TableEntry<<$KeyType,$ValueType>>[]
+    method to_list( result=null:TableEntry<<$KeyType,$ValueType>>[] )->TableEntry<<$KeyType,$ValueType>>[]
+      ensure result
       result.add( forEach in this )
       return result
 endClass
@@ -538,11 +538,11 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
       cur = cur.next_entry
       return result
 
-    method to->$KeyType[]
-      return to_list
+    method to->$KeyType[]( result=null:$KeyType[] )
+      return to_list( result )
 
-    method to_list->$KeyType[]
-      local result = $KeyType[]
+    method to_list( result=null:$KeyType[] )->$KeyType[]
+      ensure result
       result.add( forEach in this )
       return result
 endClass
@@ -577,11 +577,11 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
       cur = cur.next_entry
       return result
 
-    method to->$ValueType[]
-      return to_list
+    method to->$ValueType[]( result=null:$ValueType[] )
+      return to_list( result )
 
-    method to_list->$ValueType[]
-      local result = $ValueType[]
+    method to_list( result=null:$ValueType[] )->$ValueType[]
+      ensure result
       result.add( forEach in this )
       return result
 endClass
