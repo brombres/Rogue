@@ -559,14 +559,34 @@ if (not buildfiles.count)
       builder.println ...
         @|  METHODS
          |    method init( args:String[] )
-         |      local command = CommandLineParser().
-         |      [
-         |        # option( "--flag", &alias="-f" )
-         |        # option( "--setting=",  &alias="-s" )
-         |      ].parse( System.command_line_arguments )
+         |      local command = parse_args( args )
          |
          |      trace command
          |      # has //options and possibly //args
+         |
+         |      if (command//options//help)
+         |        print_usage
+         |        System.exit 0
+         |      endIf
+         |
+         |    method parse_args( args:String[] )->Value
+         |      local command = CommandLineParser().
+         |      [
+         |        option( "--flag",     &alias="-f" )
+         |        option( "--help",     &aliases=["-h","-?"] )
+         |        option( "--setting=", &alias="-s" )
+         |      ].parse( args )
+         |      return command
+         |
+         |    method print_usage
+         |      println @|USAGE
+      builder.println ...
+         "               |  $ [OPTIONS]" (project_name.to_lowercase)
+      builder.println ...
+        @|               |
+         |               |OPTIONS
+         |               |  --help, -h, -?
+         |               |    Show this help text.
          |endClass
 
       File.create_folder( "Source" )
