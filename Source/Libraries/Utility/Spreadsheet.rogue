@@ -332,26 +332,39 @@ class Cell
 
 endClass
 
-
-class CSVParser
+class CSVScanner
   PROPERTIES
     scanner : Scanner
-    row     = Value.list : Value
     builder = StringBuilder()
+    row     : Int32
+    column  : Int32
 
   METHODS
-    method init( table:Spreadsheet, file:File )
-      init( table, Scanner(file) )
+    method init( file:File )
+      init( Scanner(file) )
 
-    method init( table:Spreadsheet, csv:String )
-      init( table, Scanner(csv) )
+    method init( csv:String )
+      init( Scanner(csv) )
 
-    method init( table:Spreadsheet, scanner )
+    method init( scanner )
+      noAction
+
+    method scan_table
+      row = 0
+      column = 0
       while (scanner.has_another)
-        read_row
-        table.add_row( row )
-        row.clear
+        scan_row
       endWhile
+      on_table
+
+    method on_cell( content:StringBuilder )
+      noAction
+
+    method on_row
+      noAction
+
+    method on_table
+      noAction
 
     method consume_eol
       scanner.consume( 13 ) # optional
@@ -363,20 +376,25 @@ class CSVParser
     method next_is_eol->Logical
       return (scanner.next_is(10) or scanner.next_is(13))
 
-    method read_row
+    method scan_row
       local first = true
       while (first or scanner.consume(','))
         first = false
-        read_cell
+        scan_cell
       endWhile
 
       consume_eol
+      on_row
+      ++row
+      column = 0
 
-    method read_cell
+    method scan_cell
       if (scanner.next_is('"')) read_quoted_content
       else                      read_regular_content
-      row.add( Value(builder->String) )
+
+      on_cell( builder )
       builder.clear
+      ++column
 
     method read_regular_content
       while (scanner.has_another and not next_is_end_of_cell)
@@ -397,5 +415,31 @@ class CSVParser
           builder.print( scanner.read )
         endIf
       endWhile
+endClass
+
+
+
+class CSVParser : CSVScanner
+  PROPERTIES
+    table       : Spreadsheet
+    row_builder = Value.list : Value
+
+  METHODS
+    method init( table:Spreadsheet, file:File )
+      init( table, Scanner(file) )
+
+    method init( table:Spreadsheet, csv:String )
+      init( table, Scanner(csv) )
+
+    method init( table, scanner:Scanner )
+      init( scanner )
+      scan_table
+
+    method on_cell( content:StringBuilder ) [override]
+      row_builder.add( Value(content->String) )
+
+    method on_row [override]
+      table.add_row( row_builder )
+      row_builder.clear
 endClass
 

@@ -4377,6 +4377,9 @@ class CmdLogicalNot : CmdUnary
     method execute( vm:VM )->Value
       return Value( not operand.execute( vm )->Logical )
 
+    method implicit_type( scope:Scope )->Type
+      return Program.type_Logical
+
     method prefix_symbol->String
       return "not "
 

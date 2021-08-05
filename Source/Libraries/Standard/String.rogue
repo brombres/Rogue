@@ -3,24 +3,57 @@ enum StringEncoding
   ASCII          = 1
   ASCII_256      = 2
   EXTENDED_ASCII = 2
+  AUTODETECT     = 3
 endEnum
 
 class String
   GLOBAL METHODS
-    method create( bytes:Byte[], encoding=StringEncoding.UTF8:StringEncoding )->String
-      return create( bytes, 0, bytes.count, encoding )
+    method create( bytes:Byte[], encoding=StringEncoding.AUTODETECT:StringEncoding )->String
+      if (encoding == StringEncoding.AUTODETECT)
+        #local is_valid = bytes.is_valid_utf8
+        #native @|printf( "is valid utf8:%d\n", (int)$is_valid );
+#trace bytes.is_valid_utf8
+        encoding = which{ bytes.is_valid_utf8:StringEncoding.UTF8 || StringEncoding.ASCII_256 }
+      endIf
 
-    method create( bytes:Byte[], i1:Int32, count:Int32, encoding=StringEncoding.UTF8:StringEncoding )->String
       which (encoding)
         case StringEncoding.UTF8, StringEncoding.ASCII
-          return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes+$i1), $count )' )->String
+          return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes), $bytes->count )' )->String
         case StringEncoding.ASCII_256
-          local buffer = StringBuilder( bytes.count )
-          buffer.print( Character(forEach in bytes) )
-          return buffer->String
+          # Count number of 2-byte characters
+          local len = 0
+          native @|unsigned char* src = $bytes->data->as_bytes - 1;
+                  |for (int i=$bytes->count; --i>=0; )
+                  |{
+                  |  if (*(++src) & 0x80) ++$len;
+                  |}
+
+          # Convert ASCII-256 to UTF-8
+          local new_count = bytes.count + len
+          local utf8_bytes = Byte[]( bytes.count + len )
+          utf8_bytes.count = new_count
+          native @|src = $bytes->data->as_bytes + $bytes->count;
+                  |unsigned char* dest = $utf8_bytes->data->as_bytes + $new_count;
+                  |for (int i=$bytes->count; --i>=0; )
+                  |{
+                  |  unsigned char ch = *(--src);
+                  |  if (ch & 0x80)
+                  |  {
+                  |    *(--dest) = 0x80 | (ch & 0x3F);
+                  |    *(--dest) = 0xC0 | ((ch>>6) & 0x03);
+                  |  }
+                  |  else
+                  |  {
+                  |    *(--dest) = ch;
+                  |  }
+                  |}
+                  |return RogueString_create_from_utf8( (char*)($utf8_bytes->data->as_bytes), $utf8_bytes->count );
         others
           throw Error( "Unsupported string encoding: " + encoding )
       endWhich
+
+    method create( bytes:Byte[], i1:Int32, count:Int32 )->String
+      return native( 'RogueString_create_from_utf8( (char*)($bytes->data->as_bytes+$i1), $count )' )->String
 
     method create( characters:Character[] )->String
       return native( 'RogueString_create_from_characters( $characters )' )->String
@@ -31,7 +64,7 @@ class String
     method create( characters:StringBuilder, i1:Int32, count:Int32 )->String
       return create( characters.utf8, i1, count )
 
-    method create( file:File, encoding=StringEncoding.UTF8:StringEncoding )->String
+    method create( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       return file.load_as_string( encoding )
 
     method create( value:Value )->String
@@ -308,9 +341,22 @@ class String
 
     method count( look_for:Character )->Int32
       local result = 0
-      forEach (ch in this)
-        if (ch == look_for) ++result
-      endForEach
+      if (look_for < 128)
+        native @|int n = $this->byte_count;
+                |char* src = $this->utf8 + n;
+                |while (--n >= 0)
+                |{
+                |  if (*(--src) == $look_for) ++$result;
+                |}
+        return result
+
+      else
+        forEach (ch in this)
+          if (ch == look_for) ++result
+        endForEach
+
+      endIf
+
       return result
 
     method count( look_for:String )->Int32
@@ -1621,6 +1667,38 @@ class String
       local i = locate_last( st, &=ignore_case )
       if (i.exists) return from( 0, i.value )
       else          return this
+
+    method with_trailing( ch:Character )->String
+      # Returns a string that ends with the given character. If this string already ends with the
+      # given character then this string is returned unchanged.
+      if (this.ends_with(ch)) return this
+      return this + ch
+
+    method with_trailing( text:String )->String
+      # Returns a string that ends with the given text. If this string already ends with the given
+      # text then this string is returned unchanged.
+      if (this.ends_with(text)) return this
+      return this + text
+
+    method without_trailing( ch:Character )->String
+      # Like before_suffix() but removes multiple copies of the given character.
+      local result = this
+      local next   = result.before_suffix( ch )
+      while (result != next)
+        result = next
+        next   = result.before_suffix( ch )
+      endWhile
+      return result
+
+    method without_trailing( text:String )->String
+      # Like before_suffix() but removes multiple copies of the given string.
+      local result = this
+      local next   = result.before_suffix( text )
+      while (result != next)
+        result = next
+        next   = result.before_suffix( text )
+      endWhile
+      return result
 
     method word_wrap( width:Int32, allow_break_after=null:String )->String[]
       # Returns a word-wrapped version of this string as a list of lines.

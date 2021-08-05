@@ -5,6 +5,10 @@ class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
       return $DataType?( default_value, false )
 
   METHODS
+    method required_value->$DataType
+      require exists || "Non-null value expected"
+      return value
+
     method to->String
       if (exists) return value->String
       else        return "null"
