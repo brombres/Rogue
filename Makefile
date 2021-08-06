@@ -20,11 +20,19 @@ BUILD_EXE = .rogo/Build-$(PLATFORM)
 all: bootstrap_rogue
 	rogo
 
-Programs/RogueC/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/Bootstrap/RogueC.h libs
+homebrew: unix
+
+unix: Programs/RogueC/roguec Programs/RogueC/rogo libs
+
+Programs/RogueC/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/Bootstrap/RogueC.h
 	mkdir -p Programs/RogueC
 	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="\"$(CXX) $(ROGUEC_CPP_FLAGS)\"" \
 		Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/roguec
 	cp -r Source/Libraries Programs/RogueC
+
+Programs/RogueC/rogo: Source/Tools/Rogo/Rogo.rogue
+	Programs/RogueC/roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Programs/RogueC/rogo \
+		--compile --compile-arg="-O3"
 
 libs:
 	mkdir -p Programs/RogueC
