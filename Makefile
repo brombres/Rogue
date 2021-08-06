@@ -20,6 +20,16 @@ BUILD_EXE = .rogo/Build-$(PLATFORM)
 all: bootstrap_rogue
 	rogo
 
+Programs/RogueC/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/Bootstrap/RogueC.h libs
+	mkdir -p Programs/RogueC
+	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="\"$(CXX) $(ROGUEC_CPP_FLAGS)\"" \
+		Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/roguec
+	cp -r Source/Libraries Programs/RogueC
+
+libs:
+	mkdir -p Programs/RogueC
+	cp -r Source/Libraries Programs/RogueC
+
 bootstrap_rogue: $(BUILD_EXE)
 	@$(BUILD_EXE) check_bootstrap
 
@@ -64,8 +74,6 @@ rogo: bootstrap_rogue
 libraries: bootstrap_rogue
 	@$(BUILD_EXE) check_bootstrap
 	rogo libraries
-
-libs: libraries
 
 x2: bootstrap_rogue
 	rogo x 2
