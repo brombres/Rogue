@@ -30,7 +30,6 @@ $(INSTALL_FOLDER)/bin/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/B
 	mkdir -p $(INSTALL_FOLDER)/bin
 	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="\"$(CXX) $(ROGUEC_CPP_FLAGS)\"" \
 		Source/RogueC/Bootstrap/RogueC.cpp -o $(INSTALL_FOLDER)/bin/roguec
-	cp -r Source/Libraries $(INSTALL_FOLDER)/RogueC
 
 .PHONY: libraries
 libraries:
