@@ -1,3 +1,5 @@
+INSTALL_FOLDER=.
+
 ROGUEC_CPP_FLAGS = -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
 ifeq ($(OS),Windows_NT)
@@ -22,21 +24,17 @@ all: bootstrap_rogue
 
 homebrew: unix
 
-unix: Programs/RogueC/roguec Programs/RogueC/rogo libs
+unix: $(INSTALL_FOLDER)/bin/roguec libraries
 
-Programs/RogueC/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/Bootstrap/RogueC.h
-	mkdir -p Programs/RogueC
+$(INSTALL_FOLDER)/bin/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/Bootstrap/RogueC.h
+	mkdir -p $(INSTALL_FOLDER)/bin
 	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="\"$(CXX) $(ROGUEC_CPP_FLAGS)\"" \
-		Source/RogueC/Bootstrap/RogueC.cpp -o Programs/RogueC/roguec
-	cp -r Source/Libraries Programs/RogueC
+		Source/RogueC/Bootstrap/RogueC.cpp -o $(INSTALL_FOLDER)/bin/roguec
+	cp -r Source/Libraries $(INSTALL_FOLDER)/RogueC
 
-Programs/RogueC/rogo: Source/Tools/Rogo/Rogo.rogue
-	Programs/RogueC/roguec Source/Tools/Rogo/Rogo.rogue --gc=manual --main --output=Programs/RogueC/rogo \
-		--compile --compile-arg="-O3"
-
-libs:
-	mkdir -p Programs/RogueC
-	cp -r Source/Libraries Programs/RogueC
+.PHONY: libraries
+libraries:
+	cp -r Source/Libraries $(INSTALL_FOLDER)
 
 bootstrap_rogue: $(BUILD_EXE)
 	@$(BUILD_EXE) check_bootstrap
@@ -79,7 +77,7 @@ update_bootstrap: bootstrap_rogue
 rogo: bootstrap_rogue
 	rogo rogo
 
-libraries: bootstrap_rogue
+libs: bootstrap_rogue
 	@$(BUILD_EXE) check_bootstrap
 	rogo libraries
 
