@@ -14041,7 +14041,7 @@ const char* Rogue_literal_c_strings[965] =
   "git commit -am \"v",
   "git checkout master",
   "git pull",
-  "git tag ",
+  "git tag v",
   " && git push --tags",
   "git checkout develop",
   "git diff-index --quiet HEAD --",
@@ -44486,18 +44486,6 @@ void Rogue_launch()
   RogueUnixConsoleMouseEventType__init_class();
 
   Rogue_init_thread();
-
-  #ifdef ROGUE_PLATFORM_WINDOWS
-  char executable_filepath_buffer[ 2048 ];
-  if ( !GetModuleFileName( NULL, executable_filepath_buffer, 2048 ) )
-  {
-    strcpy( executable_filepath_buffer, "rogue.exe" );
-  }
-  RogueSystem_executable_filepath = RogueString_create_from_utf8( executable_filepath_buffer, -1 );
-  #else
-  RogueSystem_executable_filepath = RogueString_create_from_utf8(
-      Rogue_argc ? Rogue_argv[0] : "Rogue", -1 );
-  #endif
 
   for (int i=1; i<Rogue_argc; ++i)
   {
