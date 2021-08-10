@@ -125,6 +125,8 @@ class String
       if (string is null) return null
       return string.operator*( count )
 
+    method operator/( prefix:String, suffix:String )->String
+      return "$/$" (prefix.without_trailing('/'),suffix)
 
   METHODS
     method cloned->String

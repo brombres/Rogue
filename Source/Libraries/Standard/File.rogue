@@ -1107,6 +1107,9 @@ class File
     method exists->Logical
       return File.exists( this.filepath )
 
+    method expand_path->String
+      return File.expand_path( this.filepath )
+
     method extension->String
       return File.extension( this.filepath )
 
@@ -1151,6 +1154,13 @@ class File
 
     method matches_wildcard_pattern( pattern:String, &ignore_case )->Logical
       return File.matches_wildcard_pattern( this.filepath, pattern, &=ignore_case )
+
+    method operator/( path_segment:String )->File
+      if (path_segment == "..")
+        if (filepath.contains('/')) return File( File.path(filepath) )
+        else                        return File( File.path(absolute_filepath) )
+      endIf
+      return File( this.expand_path / path_segment )
 
     method parent( level=1:Int32 )->String
       return File.parent( this.filepath, level )

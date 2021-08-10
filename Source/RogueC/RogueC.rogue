@@ -177,7 +177,9 @@ $endIf
       )
 
     method launch
-      local libs = File.ensure_ends_with_separator(File.join(File.path(System.executable_filepath), "Libraries"))
+      local libs = File.path( System.executable_filepath )
+      if (not File.exists(libs/"Libraries")) libs = File.parent( libs )
+      libs = libs/"Libraries/"
       if (File.exists(libs))
         libraries_folder = libs
         prefix_path_list.add( libs )
