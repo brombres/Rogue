@@ -28,6 +28,43 @@ class System [essential]
     environment            : SystemEnvironment
 
   GLOBAL METHODS
+    method executable_filepath->String
+      if (@executable_filepath) return @executable_filepath
+
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  char buffer[ 2048 ];
+              |  if ( !GetModuleFileName( NULL, buffer, 2048 ) )
+              |  {
+              |    strcpy( buffer, "rogue.exe" );
+              |  }
+              |  RogueSystem_executable_filepath = RogueString_create_from_utf8( buffer, -1 );
+              |
+              |#elif defined(__APPLE__)
+              |  char buffer[PATH_MAX];
+              |  char raw_filepath[PATH_MAX];
+              |  uint32_t buffer_size = (uint32_t) PATH_MAX;
+              |  if (0 != _NSGetExecutablePath(raw_filepath,&buffer_size))
+              |  {
+              |    raw_filepath[0] = 0;
+              |  }
+              |  realpath( raw_filepath, buffer );
+              |  RogueSystem_executable_filepath = RogueString_create_from_utf8( buffer, -1 );
+              |
+              |#else
+              |  // Linux
+              |  char buffer[PATH_MAX];
+              |  char raw_filepath[PATH_MAX];
+              |  #if defined(__sun)
+              |    strcpy( raw_filepath, "/proc/self/path/a.out" );
+              |  #else
+              |    strcpy( raw_filepath, "/proc/self/exe" );
+              |  #endif
+              |  if (0 == realpath( raw_filepath, buffer )) strcpy( buffer, "" );
+              |  RogueSystem_executable_filepath = RogueString_create_from_utf8( buffer, -1 );
+              |#endif
+
+      return @executable_filepath
+
     method exit( result_code=0:Int32 )
       $if (target("C++"))
         native @|Rogue_quit();

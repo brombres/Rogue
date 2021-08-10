@@ -1112,19 +1112,7 @@ augment Program
       writer.println
 
       # Copy command line args to System class
-      writer.println @|#ifdef ROGUE_PLATFORM_WINDOWS
-                      |char executable_filepath_buffer[ 2048 ];
-                      |if ( !GetModuleFileName( NULL, executable_filepath_buffer, 2048 ) )
-                      |{
-                      |  strcpy( executable_filepath_buffer, "rogue.exe" );
-                      |}
-                      |RogueSystem_executable_filepath = RogueString_create_from_utf8( executable_filepath_buffer, -1 );
-                      |#else
-                      |RogueSystem_executable_filepath = RogueString_create_from_utf8(
-                      |    Rogue_argc ? Rogue_argv[0] : "Rogue", -1 );
-                      |#endif
-                      |
-                      |for (int i=1; i<Rogue_argc; ++i)
+      writer.println @|for (int i=1; i<Rogue_argc; ++i)
                       |{
                       |  RogueString_List__add__String( RogueSystem_command_line_arguments,
                       |      RogueString_create_from_utf8( Rogue_argv[i], -1 ) );
