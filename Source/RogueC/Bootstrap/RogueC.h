@@ -10064,6 +10064,7 @@ ROGUE_EXPORT_C void RogueRuntime__init_class();
 ROGUE_EXPORT_C RogueString* RogueRuntime__literal_string__Int32( RogueInt32 string_index_0 );
 ROGUE_EXPORT_C RogueInt32 RogueRuntime__literal_string_count();
 ROGUE_EXPORT_C void RogueRuntime__set_gc_threshold__Int32( RogueInt32 value_0 );
+ROGUE_EXPORT_C RogueString* RogueSystem__executable_filepath();
 ROGUE_EXPORT_C void RogueSystem__exit__Int32( RogueInt32 result_code_0 );
 ROGUE_EXPORT_C RogueLogical RogueSystem__is_windows();
 ROGUE_EXPORT_C RogueInt32 RogueSystem__run__String( RogueString* command_0 );

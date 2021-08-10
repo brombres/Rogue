@@ -3,24 +3,16 @@ Rogue
 
 About     | Current Release
 ----------|-----------------------
-Version   | 1.8.5
-Date      | 2021.08.05
+Version   | 1.8.6
+Date      | 2021.08.09
 Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
 
 ## Installation
 
 ### Mac & Linux
-#### Initial Installation
 
-    git clone https://github.com/AbePralle/Rogue.git
-    cd Rogue
-    make  # bootstraps Rogue, creates 'roguec' and 'rogo' launchers
-
-#### Updating to the Latest Version
-
-    cd Rogue && git pull && make
-    # If any errors occur, run "make bootstrap"
-
+1. Install [homebrew](https://brew.sh).
+2. `brew install abepralle/tools/roguec`
 
 ### Windows
 #### Initial Installation
