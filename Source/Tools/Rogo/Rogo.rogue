@@ -893,7 +893,7 @@ endRoutine
 
 routine run( cmd:String )->String
   println(cmd).flush
-  local result = Process.run( cmd )
+  local result = Process.run( cmd, &env )
   if (result.exit_code != 0) return null
   return result.output_string.trimmed
 endRoutine
@@ -908,6 +908,12 @@ routine find_macos_library( library:Value )->Logical
 
     # cflags
     flags.add( result )
+
+    # library( link:... ) flags
+    if (library//link and not library//link.is_logical)
+      # If the link flags are more than just 'true'.
+      flags.add( library//link )
+    endIf
 
     # static library path
     local candidates : String[]
@@ -938,7 +944,9 @@ routine find_macos_library( library:Value )->Logical
   # "Library" may be executable package - use 'which' to check.
   println "  which " + library["which"]
   if (0 == System.run("which $ > /dev/null 2>&1"(library["which"])))
-    cache.ensure_table("library_flags")[ name ] = ""  # package exists but has no flags
+    local flags = which{ library//link || Value("") }
+    if (flags != "") println "  Library flags: $" (flags)
+    cache.ensure_table("library_flags")[ name ] = flags  # package exists but has no flags
     save_cache
     return true
   endIf
