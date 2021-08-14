@@ -13,6 +13,9 @@ Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
 
 1. Install [homebrew](https://brew.sh).
 2. `brew install abepralle/tools/roguec`
+3. `brew install abepralle/tools/rogo` (Optional)
+
+Note: the build tool [Rogo](https://github.com/AbePralle/Rogo) was formerly bundled with `roguec` on Mac and Linux. Both may need to be installed for any projects that list Rogue as a dependency.
 
 ### Windows
 #### Initial Installation
