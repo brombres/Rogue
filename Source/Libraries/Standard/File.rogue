@@ -840,6 +840,16 @@ class File
               |
               |return size;
 
+    method symlink( filepath:String, target:String )
+      filepath = expand_path( filepath )
+      target = expand_path( target )
+      if (System.is_windows)
+        local option = which{ File.is_folder(filepath):"/D " || "" }
+        Process.run( "mklink $$ $" (option,File.esc(filepath),File.esc(target)) )
+      else
+        Process.run( "ln -s $ $" (File.esc(target),File.esc(filepath)) )
+      endIf
+
     method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
       if (dry_run) verbose = true
       source_folder = expand_path( source_folder )
@@ -1206,6 +1216,9 @@ class File
 
     method size->Int64
       return File.size( this.filepath )
+
+    method symlink( target:String )
+      File.symlink( this.filepath, target )
 
     method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
       return File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run, &=missing_only )

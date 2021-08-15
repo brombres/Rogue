@@ -9,7 +9,7 @@
 #===============================================================================
 
 class SHA [singleton]
-  # USAGE
+  # EXAMPLE USAGE
   #   uses Utility/SHA
   #
   #   println SHA.sha256( "" )
