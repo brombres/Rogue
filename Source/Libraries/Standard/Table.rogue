@@ -186,7 +186,7 @@ class Table<<$KeyType,$ValueType>>
 
       return true
 
-    method package->Value
+    method to_value_package->Value
       return this->Value
 
     method print_to( buffer:StringBuilder )->StringBuilder
