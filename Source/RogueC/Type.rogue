@@ -895,15 +895,15 @@ class Type
       endBlock
 
       block
-        # to->String
-        local m_to_String = add_method( t, "to_String" )
-        m_to_String.attributes.add( Attribute.is_generated )
-        m_to_String.return_type = Program.type_String
+        # description->String
+        local m_description = add_method( t, "description" )
+        m_description.attributes.add( Attribute.is_generated )
+        m_description.return_type = Program.type_String
         if (categories.is_empty)
-          m_to_String.statements.add( CmdReturn(t,CmdLiteralString(t,name)) )
+          m_description.statements.add( CmdReturn(t,CmdLiteralString(t,name)) )
         else
           local cmd_which = CmdWhich( t, CmdAccess(t,"value") )
-          m_to_String.statements.add( cmd_which )
+          m_description.statements.add( cmd_which )
           local handled_cases = Set<<Int32>>()
           forEach (def in categories)
             if (not handled_cases.contains(def.value))
@@ -916,6 +916,15 @@ class Type
           local cmd_others = cmd_which.add_case_others( t )
           cmd_others.statements.add( CmdReturn(t,CmdLiteralString(t,"(undefined)")) )
         endIf
+        m_description.organize( scope )
+      endBlock
+
+      block
+        # to->String
+        local m_to_String = add_method( t, "to_String" )
+        m_to_String.attributes.add( Attribute.is_generated )
+        m_to_String.return_type = Program.type_String
+        m_to_String.statements.add( CmdReturn(t,CmdAccess(t,"description")) )
         m_to_String.organize( scope )
       endBlock
 
@@ -1205,13 +1214,24 @@ class Type
         if (m) m.make_essential
       endIf
 
+      # Add a default description->String to compounds
+      if ((is_compound or is_primitive) and this is not Program.type_NativeLock)
+        local m = find_method( "description()" )
+        if (not m)
+          m = add_method( t, "description" )
+          m.return_type = Program.type_String
+          m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
+          m.organize( scope )
+        endIf
+      endIf
+
       # Add a default to->String to compounds
       if ((is_compound or is_primitive) and this is not Program.type_NativeLock)
         local m = find_method( "to_String()" )
         if (not m)
           m = add_method( t, "to_String" )
           m.return_type = Program.type_String
-          m.statements.add( CmdReturn(t,CmdLiteralString(t,"($)"(name))) )
+          m.statements.add( CmdReturn(t,CmdAccess(t,"description")) )
           m.organize( scope )
         endIf
 
