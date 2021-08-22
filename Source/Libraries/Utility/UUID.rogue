@@ -1,3 +1,5 @@
+# uses Utility/UUID
+# @trace UUID()
 class UUID
   PROPERTIES
     bytes     = Byte[](16)
