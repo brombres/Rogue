@@ -529,6 +529,17 @@ class Int64 [primitive]
       return Real64(this-a) / Real64(b-a)
 
     method required_bit_count->Int32
+      if (this < 0)
+        if (this < 0xC000_0000_0000_0000) return 64
+        local bits = 1 : Int64
+        local threshold = -1 : Int64
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
       if (this & 0x8000_0000_0000_0000) return 64
       if (this & 0x4000_0000_0000_0000) return 63
       local bits = 1 : Int64
@@ -712,6 +723,17 @@ class Int32 [primitive]
       return Real64(this-a) / Real64(b-a)
 
     method required_bit_count->Int32
+      if (this < 0)
+        if (this < 0xC000_0000) return 32
+        local bits = 1
+        local threshold = -1
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
       if (this & 0x8000_0000) return 32
       if (this & 0x4000_0000) return 31
       local bits = 1
@@ -919,11 +941,7 @@ class Character [primitive]
       endWhich
 
     method required_bit_count->Int32
-      if (this & 0x8000_0000) return 32
-      if (this & 0x4000_0000) return 31
-      local bits = 1
-      while ((1:<<:bits) <= this) ++bits
-      return bits
+      return this->Int32.required_bit_count
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
