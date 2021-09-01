@@ -247,6 +247,28 @@ class DataWriter : Writer<<Byte>>
       if (not value) value = ""
       write_int32x( value.count )
       forEach (ch in value) write_int32x( ch )
+
+  GLOBAL METHODS
+    method int64x_byte_count( value:Int64 )->Int32
+      # See read_int64x for format notes.
+      if (value >= -64 and value < 128)
+        return 1
+      else
+        local extra_bytes = 1
+        local shift = 7
+        local min = -0x1000
+        local max =  0x0FFF
+        loop 7
+          if (value >= min and value <= max) escapeLoop
+          ++extra_bytes
+          shift += 7
+          min = min :<<: 7
+          max = (max :<<: 7) | 0xFF
+        endLoop
+        return extra_bytes + 1
+      endIf
+
+
 endClass
 
 class BufferedDataWriter : DataWriter
