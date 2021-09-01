@@ -1,0 +1,30 @@
+class Average<<$DataType>> [compound]
+  # Convenience class for calculating a numerical average.
+  #
+  # EXAMPLE
+  #   uses Utility/Average
+  #
+  #   local avg = Average<<Int32>>()
+  #   avg.add( 48 )
+  #   avg.add( 49 )
+  #   avg.add( 51 )
+  #   avg.add( 52 )
+  #   @trace avg.sum      # 200
+  #   @trace avg.count    # 4
+  #   @trace avg.average  # 50.0
+  PROPERTIES
+    sum   : $DataType
+    count : Int32
+
+  METHODS
+    method add( value:$DataType ) [mutating]
+      sum += value
+      ++count
+
+    method average->Real64
+      return sum / Real64(count)
+
+    method description->String
+      return average.format(".2")
+endClass
+
