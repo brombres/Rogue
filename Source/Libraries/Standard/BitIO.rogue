@@ -4,6 +4,9 @@ class BitReader : DataReader
     buffer_count : Int32
 
   METHODS
+    method flush
+      buffer_count = 0
+
     method has_another->Logical
       return buffer_count or source.has_another
 
