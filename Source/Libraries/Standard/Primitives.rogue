@@ -603,6 +603,7 @@ class Int64 [primitive]
       return Boxed<<Int64>>(this)
 
     method to->String
+      if (this >= -1 and this <= 9) return this->Int32->String
       return StringBuilder().print( this )->String
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
@@ -770,6 +771,21 @@ class Int32 [primitive]
       return Boxed<<Int32>>(this)
 
     method to->String
+      if (this >= -1 and this <= 9)
+        which (this)
+          case -1: return "-1"
+          case  0: return "0"
+          case  1: return "1"
+          case  2: return "2"
+          case  3: return "3"
+          case  4: return "4"
+          case  5: return "5"
+          case  6: return "6"
+          case  7: return "7"
+          case  8: return "8"
+          case  9: return "9"
+        endWhich
+      endIf
       return "" + this
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
@@ -1113,6 +1129,7 @@ class Byte [primitive]
       return Boxed<<Byte>>(this)
 
     method to->String
+      if (this <= 9) return this->Int32->String
       return "" + this
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
