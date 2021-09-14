@@ -8,11 +8,11 @@ class BitReader : DataReader
       buffer_count = 0
 
     method has_another->Logical
-      return buffer_count or source.has_another
+      return buffer_count or input.has_another
 
     method has_another( nbits:Int32 )->Logical
-      while (buffer_count < nbits and source.has_another)
-        bit_buffer = (bit_buffer :<<: 8) | source.read
+      while (buffer_count < nbits and input.has_another)
+        bit_buffer = (bit_buffer :<<: 8) | input.read
         buffer_count += 8
       endWhile
       return (buffer_count >= nbits)
@@ -48,7 +48,6 @@ endClass
 
 class BitWriter : DataWriter
   PROPERTIES
-    bytes        : Byte[]
     bit_buffer   : Int64
     buffer_count : Int32
 
