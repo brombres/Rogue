@@ -301,7 +301,7 @@ class Preprocessor
               message = parse_logical_term->String
             endIf
             if (has_parens) must_consume( TokenType.symbol_close_paren )
-            if (compare_versions(ROGUE_RELEASE_VERSION,required_version) < 0)
+            if (VersionNumber(ROGUE_RELEASE_VERSION) < required_version)
               if (message)
                 message = message.replacing( "$CURRENT", ROGUE_RELEASE_VERSION )
                 message = message.replacing( "$REQUIRED", required_version )
@@ -896,7 +896,7 @@ class Preprocessor
       local b = parse_logical_term->String
       consume_eols
       must_consume(TokenType.symbol_close_paren)
-      return compare_versions( a, b )
+      return VersionNumber(a) <> b
 
     method read_identifier->String
       local t = reader.peek

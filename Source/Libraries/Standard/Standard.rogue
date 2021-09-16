@@ -51,6 +51,7 @@ $include "Standard/Tuple.rogue"
 $include "Standard/TypeInfo.rogue"
 $include "Standard/UTF8.rogue"
 $include "Standard/Value.rogue"
+$include "Standard/VersionNumber.rogue"
 $include "Standard/WeakReference.rogue"
 $include "Standard/WebSocket.rogue"
 $include "Standard/Writer.rogue"
@@ -68,48 +69,4 @@ $endIf
 $essential String[].add(String)
 
 $essential Character[]
-
-routine compare_versions( a:String, b:String )->Int32
-  # Compares two multipart versions and returns:
-  #   -1 if a < b
-  #    0 if a = b
-  #    1 if a > b
-  #
-  # Each version can have any number of parts; mismatched numbers of parts are allowed.
-  # "Missing" parts are treated as 0.
-  #
-  # No allocations are made to perform the comparison.
-  #
-  # Examples:
-  #
-  #   compare_versions("1.0",   "1.0.0") ->  0
-  #   compare_versions("1.0",   "1.0.1") -> -1
-  #   compare_versions("1.10.0","1.2.3") ->  1
-  local max_parts = compare_verisons_count_dots(a).or_larger(compare_verisons_count_dots(b)) + 1
-  forEach (part in 0..<max_parts)
-    local delta = compare_versions_extract_part(a,part) - compare_versions_extract_part(b,part)
-    if (delta != 0) return delta.sign
-  endForEach
-  return 0  # equal
-endRoutine
-
-routine compare_verisons_count_dots( st:String )->Int32
-  local result = 0
-  if ((forEach in st) == '.') ++result
-  return result
-endRoutine
-
-routine compare_versions_extract_part( v:String, part:Int32 )->Int32
-  local cur_p = 0
-  local result = 0
-  forEach (ch in v)
-    if (ch == '.')
-      ++cur_p
-      if (cur_p > part) return result
-    elseIf (cur_p == part and ch.is_number)
-      result = result * 10 + ch.to_number
-    endIf
-  endForEach
-  return result
-endRoutine
 
