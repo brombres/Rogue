@@ -88,9 +88,11 @@ class File
               |  if (new_dir_fd >= 0) close( new_dir_fd );
               |}
               |#endif
+
       if (return_value is null)
         throw IOError("Could not get absolute path")
       endIf
+
       return fix_slashes( return_value )
 
     method before_wildcard_pattern( filepath:String )->String
@@ -124,66 +126,55 @@ class File
     method contains( filepath:String, filename:String )->Logical
       return (File.listing( filepath, filename ).count > 0)
 
-    method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
+    method copy( from_filepath:String, to_filepath:String, &if_newer, &if_different, &dry_run, &verbose )->Logical
       from_filepath = expand_path( from_filepath )
       to_filepath = expand_path( to_filepath )
 
-      # Copy always is the default or else only if newer and/or size different.
-      if (if_newer)
-        # The if_newer flag is a little convoluted to retain backwards compatibility
-        return copy_newer( from_filepath, to_filepath, &=if_size_different, &=dry_run )
-      else
-        local modified = false
-
-        if (File.is_folder(to_filepath))
-          to_filepath += '/' + File.filename(from_filepath)
-        else
-          local containing_folder = File.folder( to_filepath )
-          if (not is_folder(containing_folder))
-            if (not dry_run) File.create_folder( containing_folder )
-            modified = true
-          endIf
-        endIf
-
-        if (File.is_folder(from_filepath))
-          if (not exists(to_filepath))
-            if (not dry_run) File.create_folder( to_filepath )
-            modified = true
-          endIf
-        else
-          modified = true
-          if (not dry_run)
-            local reader = File.reader( from_filepath )
-            local writer = File.writer( to_filepath )
-            local file_buffer = Byte[]( 1024 )
-            while (reader.has_another)
-              reader.read( file_buffer.clear, 1024 )
-              writer.write( file_buffer )
-            endWhile
-            writer.close
-          endIf
-        endIf
-
-        return modified
+      if (not exists(from_filepath))
+        throw Error( "Source file for copy() does not exist: " + from_filepath )
       endIf
+
+      if (is_folder(from_filepath))
+        throw Error( "First argument must be a file; cannot copy() from folder: " + from_filepath )
+      endIf
+
+      if (is_folder(to_filepath))
+        to_filepath /= filename(from_filepath)
+      else
+        local containing_folder = folder( to_filepath )
+        if (not is_folder(containing_folder))
+          throw Error( "Cannot copy() to nonexistent folder: " + containing_folder )
+        endIf
+      endIf
+
+      contingent
+        sufficient (if_newer and is_newer_than(from_filepath,to_filepath))
+        sufficient (if_different and is_different_than(from_filepath,to_filepath))
+        necessary (not if_newer and not if_different)
+
+      satisfied
+        if (dry_run) return true
+
+        if (verbose) println "Copying $ -> $" (from_filepath,to_filepath)
+        local reader = File.reader( from_filepath )
+        local writer = File.writer( to_filepath )
+        local file_buffer = Byte[]( 1024 )
+        while (reader.has_another)
+          reader.read( file_buffer.clear, 1024 )
+          writer.write( file_buffer )
+        endWhile
+        writer.close
+
+        return true
+
+      unsatisfied
+        return false
+
+      endContingent
 
     method conventional_filepath( filepath:String )->String
       if (System.is_windows) return filepath.replacing( '/', '\\' )
       else                   return filepath
-
-    method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
-      from_filepath = expand_path( from_filepath )
-      to_filepath = expand_path( to_filepath )
-
-      if (File.is_folder(to_filepath))
-        if (filename(from_filepath) != filename(to_filepath))
-          return copy_newer( from_filepath, to_filepath + '/' + File.filename(from_filepath),
-            &=if_size_different, &=dry_run )
-        endIf
-      elseIf (File.is_newer_than(from_filepath,to_filepath))
-        return copy( from_filepath, to_filepath, &=if_size_different, &=dry_run )
-      endIf
-      return false
 
     method crc32( filepath:String )->Int32
       nativeCode
@@ -886,7 +877,7 @@ class File
       local dest_files = Files( dest_folder )
       if (not keep_unused) dest_files.add( "**" )
       local printed_header = false
-      local modified = 0
+      local change_count = 0
       forEach (src_filepath in source_files)
         local relative_filepath = source_files.relative_filepath( src_filepath )
         local dest_filepath = dest_name + relative_filepath
@@ -904,7 +895,7 @@ class File
           necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
 
         satisfied
-          ++modified
+          ++change_count
 
           if (verbose)
             if (not printed_header)
@@ -936,11 +927,11 @@ class File
             Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
           endIf
           if (not dry_run) delete( filepath )
-          ++modified
+          ++change_count
         endForEach
       endIf
 
-      return modified
+      return change_count
 
     method timestamp( filepath:String )->Real64
       filepath = expand_path( filepath )
@@ -1091,11 +1082,8 @@ class File
     method contains( filename:String )->Logical
       return File.contains( this.filepath, filename )
 
-    method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
-      return File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
-
-    method copy_newer( to_filepath:String, &if_size_different, &dry_run )->Logical
-      return File.copy_newer( this.filepath, to_filepath, if_size_different, dry_run )
+    method copy( to_filepath:String, &if_newer, &if_different, &dry_run, &verbose )->Logical
+      return File.copy( this.filepath, to_filepath, &=if_newer, &=if_different, &=dry_run, &=verbose )
 
     method conventional_filepath->String
       return File.conventional_filepath( this.filepath )
