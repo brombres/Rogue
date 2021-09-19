@@ -1838,10 +1838,8 @@ class CmdEscape : Cmd
         local cmd = scope.control_stack[i]
         if (cmd.control_type == control_type)
           while (cmd.cloned_command) cmd = cmd.cloned_command
-          if (not cmd.escape_label)
-            cmd.escape_label = Program.create_unique_id
-            cmd.escape_label_used = true
-          endIf
+          if (not cmd.escape_label) cmd.escape_label = Program.create_unique_id
+          cmd.escape_label_used = true
           target_cmd = cmd
           return this
         endIf
