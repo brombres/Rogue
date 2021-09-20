@@ -1657,7 +1657,7 @@ class String
 
     method up_to_first( st:String, &ignore_case )->String
       local i = locate( st, &=ignore_case )
-      if (i.exists) return from( 0, i.value )
+      if (i.exists) return from( 0, i.value+(st.count-1) )
       else          return this
 
     method up_to_last( ch:Character, &ignore_case )->String
@@ -1667,7 +1667,7 @@ class String
 
     method up_to_last( st:String, &ignore_case )->String
       local i = locate_last( st, &=ignore_case )
-      if (i.exists) return from( 0, i.value )
+      if (i.exists) return from( 0, i.value+(st.count-1) )
       else          return this
 
     method with_trailing( ch:Character )->String
