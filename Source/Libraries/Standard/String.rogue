@@ -1071,6 +1071,20 @@ class String
       endForEach
       return null
 
+    method longest_line->Int32
+      local longest = 0
+      local cur = 0
+
+      forEach (ch in this)
+        which (ch)
+          case '\r': nextIteration
+          case '\n': longest .= or_larger(cur); cur = 0
+          others:    ++cur
+        endWhich
+      endForEach
+
+      return longest.or_larger( cur )
+
     method matches_pattern( pattern:String, &ignore_case )->Logical
       # Returns true if this string matches the given pattern.
       #
