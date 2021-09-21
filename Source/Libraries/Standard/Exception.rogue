@@ -9,6 +9,9 @@ class Exception [essential]
     method init [essential]
       message = type_name
 
+    method description->String
+      return message
+
     method display [essential]
       local builder = StringBuilder()
       local w = Console.width.or_smaller(80)
@@ -23,7 +26,7 @@ class Exception [essential]
       println builder
 
     method to->String [essential]
-      return message
+      return description
 
     method format->String [essential]
       local st = which{ stack_trace:stack_trace->String || "No stack trace" }
