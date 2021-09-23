@@ -1,4 +1,6 @@
-class VersionNumber( version:String ) [compound]
+class VersionNumber( version:String, kludge=true:Logical ) [compound]
+  # Ignore 'kludge'; it's to keep the C++ compiler from erroring out due to an ambiguous
+  # constructor situation when using auto GC local wrappers.
   METHODS
     method count->Int32
       return version.count('.') + 1

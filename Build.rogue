@@ -1,179 +1,430 @@
-# Main file for Rogo - entry point.
-# BuildCore.rogue contains class Build with implementation
-# Define BuildLocal.rogue for custom commands and augmentation.
+# To run this build file, install Rogue from github.com/AbePralle/Rogue then cd
+# to this folder and type "rogo" at the command line.
 
-#-------------------------------------------------------------------------------
+# description()s are optional - Rogo uses introspection to determine which
+# commands are available. 'rogo help default' displays the description for
+# "default", etc.
+description( "default", "The default action is performed when no other actions are specified. Use 'rogo default' to explicitly perform the default option." )
+description( "help",    "Displays a list of all actions that can be performed by Rogo." )
+
+augment Build
+  # You can create a Local.settings file with overrides for these values, e.g.:
+  # LAUNCHER_FOLDER = "~/bin"
+  PROPERTIES
+    PROJECT           = "RogueC"
+    LAUNCHER_NAME     = "roguec"
+    LAUNCHER_FOLDER   = "/usr/local/bin"
+    ROGUEC_FLAGS      = "--gc=manual"
+    CPP_FLAGS_UNIX    = "-O3"
+    CPP_FLAGS_WINDOWS = "/Ob2ity /GF /Gy"
+endAugment
+
+routine exe_filepath->String
+  if (System.is_windows) return "Build/$.exe" (Build.LAUNCHER_NAME)
+  return "Build/$-$" (Build.PROJECT,System.os)
+endRoutine
+
+routine launcher_folder->String
+  local result = Build.LAUNCHER_FOLDER
+  result = File.expand_path( result )
+  return File.without_trailing_separator( result )
+endRoutine
+
 routine rogo_default
-#-------------------------------------------------------------------------------
-  Build.rogue
+  rogo_build
+  rogo_libs
+  rogo_install  # Uncomment to automatically install a /usr/local/bin/roguec launcher
+  rogo_run
 endRoutine
 
-#-------------------------------------------------------------------------------
-routine rogo_check_bootstrap
-#-------------------------------------------------------------------------------
-  Build.check_bootstrap
+routine rogo_build
+  local source_files = Files( "Source", "**/*.rogue" )
+  if (source_files.any_newer_than(exe_filepath))
+    local cpp_filepath = "Build/$.cpp" (Build.PROJECT)
+    if (source_files.any_newer_than(cpp_filepath))
+      compile_rogue
+    endIf
+    compile_cpp
+  endIf
 endRoutine
 
-#-------------------------------------------------------------------------------
-routine rogo_roguec( dev:Logical )
-#-------------------------------------------------------------------------------
-  Build.roguec( &=dev )
+routine rogo_debug
+  Build.ROGUEC_FLAGS     += " --debug"
+  Build.CPP_FLAGS_UNIX    = "-O0"
+  Build.CPP_FLAGS_WINDOWS = "/Od"
+  rogo_rebuild
 endRoutine
 
-#-------------------------------------------------------------------------------
-routine rogo_dev
-#-------------------------------------------------------------------------------
-  Build.roguec( &dev )
+routine compile_rogue
+  local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
+  local cpp_filepath = "Build/$.cpp" (Build.PROJECT)
+  execute "roguec $ $ --main --output=$ --target=Console,C++,$"...
+          (File.esc(src_filepath),Build.ROGUEC_FLAGS,File.esc(cpp_filepath),System.os)
 endRoutine
 
-#-------------------------------------------------------------------------------
-routine rogo_rogo
-#-------------------------------------------------------------------------------
-  Build.rogo( &force )
+routine compile_cpp
+  local cpp_filepath = "Build/$.cpp" (Build.PROJECT)
+  if (System.is_windows)
+    local libs = ""
+    local cc = "cl $ /EHsc /nologo $ /Fe$ $" (Build.CPP_FLAGS_WINDOWS,File.esc(cpp_filepath),File.esc(exe_filepath),libs)
+    #cc += " /link /LTCG"   # uncomment this if there are errors linking libraries
+    execute cc
+  else
+    local libs = ""
+    local cc = "c++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ $ -o $$"...
+      (Build.CPP_FLAGS_UNIX,File.esc(cpp_filepath),File.esc(exe_filepath),libs)
+    execute cc
+  endIf
 endRoutine
 
-#-------------------------------------------------------------------------------
-routine rogo_link
-#-------------------------------------------------------------------------------
-  Build.build_roguec_launcher
-  Build.build_rogo_launcher
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_unlink
-#-------------------------------------------------------------------------------
-  Build.delete_launchers
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_clean
-#-------------------------------------------------------------------------------
-  Build.clean
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_uninstall
-#-------------------------------------------------------------------------------
-  rogo_clean
-  rogo_unlink
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_libraries
-#-------------------------------------------------------------------------------
-  Build.sync_libraries
+routine rogo_rebuild
+  compile_rogue
+  compile_cpp
 endRoutine
 
 routine rogo_libs
-  rogo_libraries
+  local files = Files("Source/Libraries/**")
+  File.create_folder( "Build/Libraries" )
+  File.sync_from( files, "Build/Libraries", &verbose )
 endRoutine
 
-#-------------------------------------------------------------------------------
-routine rogo_remake( remake_count:Int32 )
-#-------------------------------------------------------------------------------
-  remake
-  loop (remake_count-1)
-    println "> Sleep 1 second"
-    System.sleep( 1 )
-    remake
-  endLoop
+routine rogo_run
+  execute "$ --version" (File.esc(exe_filepath))
 endRoutine
 
-routine remake
-  Build.roguec( &dev )
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_debug
-#-------------------------------------------------------------------------------
-  Build.roguec( "in debug mode", "--debug", &dev )
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_exhaustive
-#-------------------------------------------------------------------------------
-Build.roguec( "with --api=* and --threads", "--api=* --threads", &dev )
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_bootstrap
-#-------------------------------------------------------------------------------
-  Build.bootstrap
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_bootstrap_skip_build_executable
-#-------------------------------------------------------------------------------
-  Build.bootstrap( &skip_build_executable )
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_update_bootstrap( roguec_or_build="":String )
-#-------------------------------------------------------------------------------
-  which (roguec_or_build)
-    case "roguec": Build.update_bootstrap( &roguec )
-    case "build":  Build.update_bootstrap( &build )
-    others:        Build.update_bootstrap( &roguec, &build )
-  endWhich
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_revert
-#-------------------------------------------------------------------------------
-  Build.revert
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_x( remake_count:Int32 )
-#-------------------------------------------------------------------------------
-  rogo_remake( remake_count )
-endRoutine
-
-routine rogo_x2
-  rogo_remake( 2 )
-endRoutine
-
-routine rogo_x3
-  rogo_remake( 3 )
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_execute( cmd:String )
-#-------------------------------------------------------------------------------
-  print( "> " ).println( cmd )
-  local error_code = System.run( cmd )
-  if (error_code != 0)
-    throw Error( ''ERROR: "$" failed (error code $).'' (cmd,error_code) )
-  endIf
-endRoutine
-
-#-------------------------------------------------------------------------------
-routine rogo_vscode( install:String )
-#-------------------------------------------------------------------------------
-  local dest = System.home_folder + File.separator
-  dest += ".vscode" + File.separator + "extensions" + File.separator
-  dest += "rogue-0.1.1"
-  if (install == "uninstall" or install == "false")
-    # Uninstall VS Code extension
-    println "Deleting $..." (dest)
-    File.delete( dest )
+routine rogo_install
+  local exe_filepath = File.abs( exe_filepath )
+  if (System.is_windows)
+    local exe_folder = File.conventional_filepath( File.folder(exe_filepath) )
+    local path = System.environment//PATH
+    if (not path.to_lowercase.contains(exe_folder.to_lowercase))
+      println
+      println ''Add the following to your system PATH then reopen this command prompt to be able''
+      println ''to launch $ by typing "$":'' (Build.PROJECT,Build.LAUNCHER_NAME)
+      println
+      println "  ADD THIS TO YOUR PATH"
+      println "  " + exe_folder
+    endIf
   else
-    # Install VS Code extension
-    File.sync_from( Files("Syntax/VSCode/rogue","**"), dest, &verbose )
+    contingent
+      local result = Process.run( "which " + Build.LAUNCHER_NAME, &env )
+      necessary (result.success)
+      local launcher_filepath = result->String.trimmed
+      necessary launcher_filepath
+      necessary File.load_as_string( launcher_filepath ).contains( exe_filepath )
+
+    unsatisfied
+      local launcher_filepath = "$/$" (launcher_folder,Build.LAUNCHER_NAME)
+      println "Creating launcher " + launcher_filepath
+      local sudo = ""
+      loop
+        try
+          if (not File.exists(launcher_folder)) execute( "$mkdir $"(sudo,launcher_folder) )
+          File.save( "$.launcher"(Build.LAUNCHER_NAME), ''#!/bin/sh\nexec "$" "$@"\n''(exe_filepath,'$') )
+          execute( "$mv $.launcher $"(sudo,Build.LAUNCHER_NAME,launcher_filepath) )
+          execute( "$chmod a+x $"(sudo,launcher_filepath) )
+          escapeLoop
+        catch (err:Error)
+          if (sudo != "") throw err
+          sudo = "sudo "
+        endTry
+      endLoop
+    endContingent
+  endIf
+endRoutine
+
+routine rogo_uninstall
+  verbose_delete( "Build" )
+  if (not System.is_windows) verbose_delete( "$/$"(launcher_folder,Build.LAUNCHER_NAME) )
+endRoutine
+
+routine rogo_test
+  execute @|(cd Tests && rogo)
+endRoutine
+
+routine rogo_docs
+  execute "cd Source/DocGen && make"
+endRoutine
+
+routine rogo_update_bootstrap( roguec_or_build="":String )
+  execute "mkdir$ Source/RogueC/Bootstrap" (?:{System.os=="Windows":"" || " -p"})
+  execute "cp Build/RogueC.h Build/RogueC.cpp Source/RogueC/Bootstrap"
+endRoutine
+
+routine verbose_delete( filepath:String )
+  if (File.exists(filepath))
+    println "> Delete " + filepath
+    if (not File.delete(filepath))
+      println "*** Failed to delete - retrying with sudo"
+      local cmd = ''sudo rm -rf $'' (File.shell_escaped(filepath))
+      execute cmd
+    endIf
+  endIf
+endRoutine
+
+routine execute( commands:String, &suppress_error )->Logical
+  forEach (cmd in LineReader(commands))
+    print( "> " ).println( cmd )
+    if (System.run(cmd) != 0)
+      if (suppress_error) return false
+      else                throw Error( "Build failed." )
+    endIf
+  endForEach
+  return true
+endRoutine
+
+#-------------------------------------------------------------------------------
+# Introspection-based Launcher Framework
+#-------------------------------------------------------------------------------
+# Rogo is a "build your own build system" facilitator. At its core Rogo just
+# recompiles build files if needed and then runs the build executable while
+# forwarding any command line arguments. This file contains a default framework
+# which uses introspection to turn command line arguments into parameterized
+# routine calls.
+
+# Example: to handle the command "rogo abc xyz 5", define
+# "routine rogo_abc_xyz( n:Int32 )".
+
+# "rogo_default" will run in the absence of any other command line argument.
+
+# The following "comment directives" can be used in this file to control how
+# RogueC compiles it and to manage automatic dependency installation and
+# linking.
+
+# Each of the following should be on a line beginning with the characters #$
+# (preceding whitespace is fine). Sample args are given.
+
+#   ROGUEC       = roguec       # Path to roguec to compile this file with
+#   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
+#   CPP          = g++ -Wall -std=gnu++11 -fno-strict-aliasing
+#                  -Wno-invalid-offsetof   # C++ compiler path and/or invocation
+#   CPP_ARGS     = -a -b -c          # Additional C++ args
+#   LINK         = true              # Links following LIBRARIES with this Build
+#                                    # file (otherwise just installs them)
+#   LINK         = -lalpha -lbeta    # Links following LIBRARIES and includes
+#                                    # these additional flags
+#   LINK         = false             # Linking turned off for following
+#                                    # LIBRARIES - info can still be obtained
+#                                    # from $LIBRARY_FLAGS()
+#   LINK(macOS)  = ...               # Options applying only to
+#                                    # System.os=="macOS" (use with any OS and
+#                                    # any comment directive)
+#   LIBRARIES    = libalpha
+#   LIBRARIES    = libbeta(library-name)
+#   LIBRARIES    = libfreetype6-dev(freetype2)
+#   DEPENDENCIES = Library/Rogue/**/*.rogue
+#
+#   LIBRARIES    = name(package)
+#   LIBRARIES    = name(package:<package> install:<install-cmd>
+#                  link:<link-flags> which:<which-name>)
+#
+# The following macro is replaced within this file (Build.rogue) - the libraries
+# should normally also be declared in #$ LIBRARIES:
+#
+#   $LIBRARY_FLAGS(lib1,lib2)                              # sample macro
+#     ->
+#   -Ipath/to/lib1/include -Lpath/to/lib1/library -I ...   # sample replacement
+
+routine syntax( command:String, text:String )
+  Build.rogo_syntax[ command ] = text
+endRoutine
+
+routine description( command:String, text:String )
+  Build.rogo_descriptions[ command ] = text
+endRoutine
+
+routine help( command:String, description=null:String, syntax=null:String )
+  if (description) Global.description( command, description )
+  if (syntax)      Global.syntax( command, syntax )
+endRoutine
+
+try
+  Build.launch
+catch (err:Error)
+  Build.rogo_error = err
+  Build.on_error
+endTry
+
+class Build [singleton]
+  PROPERTIES
+    rogo_syntax         = StringTable<<String>>()
+    rogo_descriptions   = StringTable<<String>>()
+    rogo_prefix         = ?:{ $moduleName.count:$moduleName "::" || "" } + "rogo_" : String
+    rogo_command        = "default"
+    rogo_args           = @[]
+    rogo_error          : Error
+
+    LOCAL_SETTINGS_FILE = "Local.settings"
+
+  METHODS
+    method launch
+      rogo_args.add( forEach in System.command_line_arguments )
+      read_defs
+      on_launch
+      parse_args
+      dispatch_command
+
+    method dispatch_command
+      local m = find_command( rogo_command )
+      require m || "no such routine rogo_$()" (rogo_command)
+
+      local args = @[]
+      forEach (arg in rogo_args)
+        which (arg)
+          case "true":  args.add( true )
+          case "false": args.add( false )
+          case "null":  args.add( NullValue )
+          others:       args.add( arg )
+        endWhich
+      endForEach
+      if (m.parameter_count == 1 and args.count > 1) args = @[ args ] # Wrap args in a ValueList.
+      m( args )
+
+    method find_command( name:String )->MethodInfo
+      return <<Global>>.find_global_method( rogo_prefix + name )
+
+    method on_error
+      local w = Console.width.or_smaller( 80 )
+      Console.error.println "=" * w
+      Console.error.println rogo_error
+      Console.error.println "=" * w
+      on_exit
+      System.exit 1
+
+    method on_command_found
+      noAction
+
+    method on_command_not_found
+      local w = Console.width.or_smaller( 80 )
+      println "=" * w
+      println "ERROR: No such command '$'." (rogo_args.first)
+      println "=" * w
+      println
+      rogo_command = "help"
+      rogo_args.clear
+      on_command_found
+
+    method on_launch
+      noAction
+
+    method on_exit
+      noAction
+
+    method parse_args
+      block
+        if (rogo_args.count)
+          local parts = String[]
+          parts.add( forEach in rogo_args )
+          rogo_args.clear
+
+          while (parts.count)
+            local cmd = _join( parts )
+            if (find_command(cmd))
+              rogo_command = cmd
+              on_command_found
+              escapeBlock
+            endIf
+            rogo_args.insert( parts.remove_last )
+          endWhile
+
+          on_command_not_found
+        endIf
+
+        # Use default command
+        on_command_found
+      endBlock
+
+    method read_defs
+      read_defs( LOCAL_SETTINGS_FILE )
+
+    method read_defs( defs_filepath:String )
+      # Attempt to read defs from Local.settings
+      local overrides = String[]
+      if (File.exists(defs_filepath))
+        forEach (line in LineReader(File(defs_filepath)))
+          if (line.contains("="))
+            local name  = line.before_first('=').trimmed
+            local value = line.after_first('=').trimmed
+            if (value.begins_with('"') or value.begins_with('\''))
+              value = value.leftmost(-1).rightmost(-1)
+            endIf
+            local p = <<Build>>.find_property( name )
+            if (p)
+              overrides.add( "$ = $" (name,value) )
+              <<Build>>.set_property( this, p, Value(value) )
+            endIf
+          endIf
+        endForEach
+      endIf
+
+    method _join( value:Value )->String
+      local args = String[]
+      args.add( forEach in value )
+      return args.join( "_" )
+endClass
+
+
+routine rogo_help( command="":String )
+  command = Build._join( Build.rogo_args )
+  if (command.count)
+    local syntax = get_syntax( command )
+    local success = false
+    if (syntax)
+      println "SYNTAX"
+      println "  " + syntax
+      println
+      success = true
+    endIf
+    local description = get_description( command )
+    if (description)
+      println "DESCRIPTION"
+      forEach (line in LineReader(description.word_wrapped(76)))
+        print( "  " ).println( line )
+      endForEach
+      println
+      success = true
+    endIf
+    if (success)
+      return
+    else
+      local w = Console.width.or_smaller( 80 )
+      println "=" * w
+      println "ERROR: No such command '$'." (command)
+      println "=" * w
+      println
+    endIf
+  endIf
+
+  println "USAGE"
+  local lines = String[]
+  forEach (m in <<Global>>.global_methods)
+    if (m.name.begins_with(Build.rogo_prefix))
+      lines.add( "  " + get_syntax(m.name.after_first(Build.rogo_prefix)) )
+    endIf
+  endForEach
+  lines.sort( (a,b)=>(a<b) )
+  println (forEach in lines)
+  println
+endRoutine
+
+
+routine get_syntax( m_name:String )->String
+  if (Build.rogo_syntax.contains(m_name))
+    return "rogo " + Build.rogo_syntax[ m_name ]
+  else
+    local m = <<Global>>.find_global_method( Build.rogo_prefix + m_name )
+    if (not m) return null
+    local line = "rogo $" (m_name.replacing('_',' '))
+    line += " <$>" (m.parameter_name(forEach in 0..<m.parameter_count))
+    return line
   endIf
 endRoutine
 
 
-#-------------------------------------------------------------------------------
-routine rogo_docs
-#-------------------------------------------------------------------------------
-  Build.run( "cd Source/DocGen && make" )
+routine get_description( m_name:String )->String
+  if (Build.rogo_descriptions.contains(m_name))
+    return Build.rogo_descriptions[ m_name ]
+  else
+    return null
+  endIf
 endRoutine
-
-
-#-------------------------------------------------------------------------------
-routine rogo_test
-#-------------------------------------------------------------------------------
-  Build.run @|(cd Tests && rogo)
-endRoutine
-

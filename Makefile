@@ -1,4 +1,4 @@
-INSTALL_FOLDER=.
+INSTALL_FOLDER=/usr/local/bin
 
 ROGUEC_CPP_FLAGS = -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof
 
@@ -17,93 +17,30 @@ else
   endif
 endif
 
-BUILD_EXE = .rogo/Build-$(PLATFORM)
+BUILD_EXE  = `pwd`/Build/RogueC-$(PLATFORM)
+LINK_EXE   = $(INSTALL_FOLDER)/roguec
+CPP_SRC    = Source/RogueC/Bootstrap/RogueC.cpp
+H_SRC      = Source/RogueC/Bootstrap/RogueC.h
 
-all: bootstrap_rogue
-	rogo
+all: $(LINK_EXE)
 
-homebrew: unix
+homebrew: all
 
-unix: $(INSTALL_FOLDER)/bin/roguec libraries
+$(INSTALL_FOLDER)/roguec: $(CPP_SRC) $(H_SRC)
+	mkdir -p Build
+	mkdir -p "$(INSTALL_FOLDER)" || sudo mkdir -p "$(INSTALL_FOLDER)"
+	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="\"$(CXX) $(ROGUEC_CPP_FLAGS)\"" $(CPP_SRC) -o "$(BUILD_EXE)"
+	rm -f "$(LINK_EXE)" || sudo rm -f "$(LINK_EXE)"
+	ln -s "$(BUILD_EXE)" "$(LINK_EXE)" || sudo ln -s "$(BUILD_EXE)" "$(LINK_EXE)"
+	cp -r Source/Libraries Build
+	@echo ┌─────────────────┐
+	@echo │roguec installed!│
+	@echo └─────────────────┘
 
-$(INSTALL_FOLDER)/bin/roguec: Source/RogueC/Bootstrap/RogueC.cpp Source/RogueC/Bootstrap/RogueC.h
-	mkdir -p $(INSTALL_FOLDER)/bin
-	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) -DDEFAULT_CXX="\"$(CXX) $(ROGUEC_CPP_FLAGS)\"" \
-		Source/RogueC/Bootstrap/RogueC.cpp -o $(INSTALL_FOLDER)/bin/roguec
-
-.PHONY: libraries
-libraries:
-	cp -r Source/Libraries $(INSTALL_FOLDER)
-
-bootstrap_rogue: $(BUILD_EXE)
-	@$(BUILD_EXE) check_bootstrap
-
-bootstrap:
-	@echo -------------------------------------------------------------------------------
-	@echo "Bootstrapping Rogo Build executable from C++ source..."
-	@echo -------------------------------------------------------------------------------
-	rm -rf .rogo
-	rm -rf Programs/RogueC
-	mkdir -p .rogo
-	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) Source/RogueC/Bootstrap/Build.cpp -o $(BUILD_EXE)
-	$(BUILD_EXE) bootstrap_skip_build_executable
-
-$(BUILD_EXE):
-	@echo -------------------------------------------------------------------------------
-	@echo "Bootstrapping Rogo Build executable from C++ source..."
-	@echo -------------------------------------------------------------------------------
-	mkdir -p .rogo
-	$(CXX) -O3 $(ROGUEC_CPP_FLAGS) Source/RogueC/Bootstrap/Build.cpp -o $(BUILD_EXE)
-
--include Local.mk
-
-remake: bootstrap_rogue
-	rogo remake
-
-
-debug: bootstrap_rogue
-	rogo debug
-
-exhaustive: bootstrap_rogue
-	rogo exhaustive
-
-roguec: bootstrap_rogue
-	rogo roguec
-
-update_bootstrap: bootstrap_rogue
-	rogo update_bootstrap
-
-rogo: bootstrap_rogue
-	rogo rogo
-
-libs: bootstrap_rogue
-	@$(BUILD_EXE) check_bootstrap
-	rogo libraries
-
-x2: bootstrap_rogue
-	rogo x 2
-
-x3: bootstrap_rogue
-	rogo x 3
-
-revert: bootstrap
-	rogo revert
-
-.PHONY: clean
-clean: bootstrap_rogue
-	rogo clean
-
-uninstall: clean
-
-link: bootstrap_rogue
-
-unlink: bootstrap_rogue
-	rogo unlink
-
-docs: bootstrap_rogue
-	rogo docs
-
-.PHONY: test
-test:
-	rogo test
+uninstall:
+	rm -rf "$(LINK_EXE)" || sudo rm -rf "$(LINK_EXE)"
+	rm -rf Build
+	@echo ┌──────────────────┐
+	@echo │roguec uninstalled│
+	@echo └──────────────────┘
 
