@@ -98,6 +98,18 @@ if (not buildfiles.count)
       if (project_name.count == 0) project_name = null
     endIf
 
+    if (not File.exists(".gitignore"))
+      println "Creating default .gitignore"
+      File.save(
+        ".gitignore",
+        @|.rogo
+         |/Build
+         |.*.swp
+         |.*.swo
+         |*~
+      )
+    endIf
+
     print "Creating Build.rogue"
     if (project_name)
       project_name = project_name.replacing( " ", "" )
