@@ -344,11 +344,10 @@ class BasicSocketReader : Reader<<Byte>>
       ++@position
       return native( "$this->read_buffer[$this->buffer_pos++]" )->Byte
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       throw UnsupportedOperationError( "BasicSocketReader.seek()" )
 endClass
 
@@ -388,16 +387,16 @@ class BasicSocketWriter : Writer<<Byte>>
         if (native("errno != EAGAIN")->Logical) socket.close
       endIf
 
-    method reset->this
+    method reset
       throw UnsupportedOperationError( "BasicSocketWriter.reset()" )
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       throw UnsupportedOperationError( "BasicSocketWriter.seek()" )
 
-    method seek_end()->this
+    method seek_end()
       throw UnsupportedOperationError( "BasicSocketWriter.seek_end()" )
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       throw UnsupportedOperationError( "BasicSocketWriter.skip()" )
 
     method write( value:Byte )

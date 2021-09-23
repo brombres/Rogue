@@ -10,7 +10,7 @@ class Bezier
   METHODS
     method cloned->Bezier
       local result = Bezier()
-      result.control_points.clear.add( control_points )
+      result.control_points.[clear].add( control_points )
       result.is_modified = true
       return result
 
@@ -19,7 +19,7 @@ class Bezier
       is_modified = true
 
     method at( t:Real64 )->XY
-      work_points.clear.add( control_points )
+      work_points.[clear].add( control_points )
       while (work_points.count > 1)
         local next = work_points.remove_last
         forEach (cur at index in work_points step -1)

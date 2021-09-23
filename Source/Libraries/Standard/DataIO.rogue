@@ -108,17 +108,14 @@ class DataReader : Reader<<Byte>>
       loop (count) buffer.print( read_int32x->Character )
       return buffer
 
-    method reset->this
+    method reset
       input.reset
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       input.seek( pos )
-      return this
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       input.skip( n )
-      return this
 
 endClass
 
@@ -143,6 +140,10 @@ class DataWriter : Writer<<Byte>>
       flush
       output.close
 
+    method clear
+      if (output_bytes) output_bytes.clear
+      output.reset
+
     method flush
       output.flush
 
@@ -153,24 +154,28 @@ class DataWriter : Writer<<Byte>>
     method position->Int32
       return output.position
 
-    method reset->this
+    method reset
       output.reset
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       output.seek( pos )
-      return this
 
-    method seek_end()->this
+    method seek_end()
       output.seek_end
-      return this
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       output.skip( n )
-      return this
 
     method write( value:Byte )
       output.write( value )
+
+    method write( list:Byte[] )
+      if (output_bytes)
+        output_bytes.reserve( list.count ).data.set( position, list.data, 0, list.count )
+        skip( list.count )
+      else
+        output.write( forEach in list )
+      endIf
 
     method write_real64( value:Real64 )
       write_int64( value.integer_bits )
@@ -264,27 +269,5 @@ class DataWriter : Writer<<Byte>>
       endIf
 
 
-endClass
-
-class BufferedDataWriter : DataWriter
-  PROPERTIES
-    buffer : Byte[]
-
-  METHODS
-    method init
-      buffer = Byte[]
-      prior.init( buffer )
-
-    method init( buffer )
-      prior.init( buffer )
-
-    method clear->BufferedDataWriter
-      buffer.clear
-      output.reset
-      return this
-
-    method write( list:Byte[] )
-      buffer.reserve( list.count ).data.set( position, list.data, 0, list.count )
-      skip( list.count )
 endClass
 

@@ -27,19 +27,17 @@ class ExtendedASCIIReader : Reader<<Character>>
       ++position
       return result
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < position)
         position = 0
         byte_reader.seek( 0 )
       endIf
-      return skip( pos - position )
+      skip( pos - position )
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       forEach (1..n) read
-      return this
 endClass
 

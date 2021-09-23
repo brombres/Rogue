@@ -666,14 +666,14 @@ class WindowsProcessWriter : Writer<<Byte>>
         buffer.discard( 0, write_count )
       endIf
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       throw UnsupportedOperationError()
 
-    method seek_end()->this
+    method seek_end()
       throw UnsupportedOperationError()
 
-    method skip( n:Int32 )->this
-      return seek( position + n )
+    method skip( n:Int32 )
+      seek( position + n )
 
     method write( value:Byte )
       buffer.add( value )

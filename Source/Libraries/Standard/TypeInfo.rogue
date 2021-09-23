@@ -929,7 +929,7 @@ class DynamicCallback [aspect]
           local base_class = specialized_type.base_class
           while (base_class and base_class.instance_of(original_type))
             specialized_param_types[i] = base_class
-            builder.clear.print( base_name ).print( '(' )
+            builder.[clear].print( base_name ).print( '(' )
             forEach (cur_type at j in specialized_param_types)
               if (j > 0) builder.print(',')
               builder.print( cur_type )

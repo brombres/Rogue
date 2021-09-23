@@ -160,7 +160,7 @@ class File
         local writer = File.writer( to_filepath )
         local file_buffer = Byte[]( 1024 )
         while (reader.has_another)
-          reader.read( file_buffer.clear, 1024 )
+          reader.read( file_buffer.[clear], 1024 )
           writer.write( file_buffer )
         endWhile
         writer.close
@@ -233,7 +233,7 @@ class File
       local reader = File.reader( filepath )
       local file_buffer = Byte[]( 1024 )
       while (reader.has_another)
-        reader.read( file_buffer.clear, 1024 )
+        reader.read( file_buffer.[clear], 1024 )
         native @|RogueByte* byte_ptr = $file_buffer->data->as_bytes - 1;
                 |for (int i=$file_buffer->count+1; --i; )
                 |{
@@ -296,9 +296,6 @@ class File
               |
               |struct stat s;
               |return (stat((char*)$filepath->utf8, &s) == 0);
-
-    method expand_filepath( filepath:String )->String [deprecated]
-      return expand_path( filepath )
 
     method expand_path( filepath:String )->String
       filepath = fix_slashes( filepath )
@@ -1423,13 +1420,13 @@ class FileReader : Reader<<Byte>>
     method remaining->Int32
       return count - position
 
-    method reset->this
-      if (not fp) return this
+    method reset
+      if (not fp) return
       count = native( "(RogueInt32)ftell($this->fp)" )->Int32
-      return seek( 0 )
+      seek( 0 )
 
-    method seek( pos:Int32 )->this
-      if (not fp) return this
+    method seek( pos:Int32 )
+      if (not fp) return
 
       if (pos < 0) pos = 0
       if (pos > count) pos = count
@@ -1439,7 +1436,6 @@ class FileReader : Reader<<Byte>>
 
       buffer_position = 0
       buffer.clear
-      return this
 endClass
 
 
@@ -1497,29 +1493,25 @@ class FileWriter : Writer<<Byte>>
 
       return not error
 
-    method reset->this
-      if (not fp) return this
+    method reset
+      if (not fp) return
       flush
-      return seek( 0 )
+      seek( 0 )
 
-    method seek( pos:Int32 )->this
-      if (not fp) return this
+    method seek( pos:Int32 )
+      if (not fp) return
       flush
       if (pos < 0) pos = 0
       position = pos
 
       native "fseek( $this->fp, 0, SEEK_SET );"
 
-      return this
-
-    method seek_end()->this
-      if (not fp) return this
+    method seek_end()
+      if (not fp) return
       flush
 
       native "fseek( $this->fp, 0, SEEK_END );"
       position = native( "(RogueInt32)ftell( $this->fp )" )->Int32
-
-      return this
 
     method write( ch:Byte )
       if (not fp) return
@@ -1781,7 +1773,7 @@ class FileListing
       if (not file_exists) File._listing( folder, callback )
 
       # Process the results
-      filepath_segments.clear.add( path_segments ).add( pattern_segments )
+      filepath_segments.[ clear, add(path_segments), add(pattern_segments) ]
       pattern = filepath_segments.join( "/" )
 
       # Need special handling for omitting the folder when it starts with "./"
@@ -1823,7 +1815,7 @@ class FileListing
     method collect( filename:String )
       if (options.is_ignoring_hidden and filename.begins_with('.')) return
       if (pattern_segments.count and not File.matches_wildcard_pattern(filename,pattern_segments.first)) return
-      filepath_segments.clear.add( path_segments ).add( filename )
+      filepath_segments.[ clear, add(path_segments), add(filename) ]
       local filepath = filepath_segments.join( "/" )
       if (File.is_folder(filepath))
         if (options.keeping_folders) results.add( filepath )

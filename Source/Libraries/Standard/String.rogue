@@ -1892,15 +1892,13 @@ class StringReader : Reader<<Character>>
       ++position
       return string[ position - 1 ]
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < 0) pos = 0
       elseIf (pos > count) pos = count
       position = pos
-      return this
 endClass
 
 

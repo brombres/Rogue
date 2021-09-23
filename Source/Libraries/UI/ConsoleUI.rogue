@@ -42,7 +42,7 @@ class ConsoleUI : UI
       # Only called when e is a pointer or scroll event
       local pos = XY( e.x, e.y )
       Pointer.position = pos
-      Pointer.positions.clear.add( pos )
+      Pointer.positions.[clear].add( pos )
       handle( PointerEvent(type,pos,XY(0,0),index) )
 
     method on( e:UIResizeEvent )

@@ -30,18 +30,16 @@ class Reader<<$DataType>> [aspect]
       if (not has_another) close
       return limit
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       local delta = pos - position
       if (delta < 0) throw UnsupportedOperationError( "seek( <backwards position> )" )
-      return skip( delta )
+      skip( delta )
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       forEach (1..n) read
-      return this
 
     method to->String
       local buffer = $DataType[]

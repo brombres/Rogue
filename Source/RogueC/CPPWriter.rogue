@@ -1206,7 +1206,7 @@ augment Program
       local method_param_name_sigs = Table<<String,Int32>>()
       local method_param_names = Int32[]
       forEach (type in type_list)
-        forEach (m in type.method_list.cloned.add(type.global_method_list))
+        forEach (m in type.method_list.cloned.[ add(type.global_method_list) ])
           if (m.store_dynamically and m.is_used and not m.is_abstract)
             method_names.add( m.name )
 

@@ -17,23 +17,36 @@
   #define ROGUE_GCDEBUG_STATEMENT(_s_) ;
 #endif
 
-#if defined(_WIN32)
-#  define ROGUE_PLATFORM_WINDOWS 1
-#elif defined(__APPLE__)
-  #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
-    #define ROGUE_PLATFORM_IOS 1
-  #else
+// Handle Apple's wonky defines which used to always be defined as 0 or 1 and
+// are now only defined if the platform is active.
+#if defined(__APPLE__)
+  #if defined(TARGET_IPHONE_SIMULATOR)
+    #if TARGET_IPHONE_SIMULATOR
+      #define ROGUE_PLATFORM_IOS 1
+    #endif
+  #elif defined(TARGET_OS_IPHONE)
+    #if TARGET_OS_IPHONE
+      #define ROGUE_PLATFORM_IOS 1
+    #endif
+  #endif
+  #if !defined(ROGUE_PLATFORM_IOS)
     #define ROGUE_PLATFORM_MACOS 1
     #define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
   #endif
-#elif defined(__ANDROID__)
-#  define ROGUE_PLATFORM_ANDROID 1
-#elif defined(__linux__)
-#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-#elif defined(__CYGWIN__)
-#  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-#else
-#  define ROGUE_PLATFORM_GENERIC 1
+#endif
+
+#if !defined(ROGUE_PLATFORM_IOS) && !defined(ROGUE_PLATFORM_MACOS)
+  #if defined(_WIN32)
+  #  define ROGUE_PLATFORM_WINDOWS 1
+  #elif defined(__ANDROID__)
+  #  define ROGUE_PLATFORM_ANDROID 1
+  #elif defined(__linux__)
+  #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+  #elif defined(__CYGWIN__)
+  #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+  #else
+  #  define ROGUE_PLATFORM_GENERIC 1
+  #endif
 #endif
 
 #if defined(ROGUE_PLATFORM_WINDOWS)

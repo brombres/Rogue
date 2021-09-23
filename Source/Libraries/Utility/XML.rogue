@@ -264,7 +264,7 @@ class XMLParser
           endIf
         endForEach
 
-        nodes.clear.add( queue )
+        nodes.[clear].add( queue )
 
         if (final_pass) escapeLoop
         final_pass = true

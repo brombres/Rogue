@@ -41,12 +41,11 @@ class List<<$DataType>> : GenericList
         clear
       endIf
 
-    method apply( fn:(Function($DataType)) )->this
+    method apply( fn:(Function($DataType)) )
       forEach (item in this) fn( item )
-      return this
 
     method applying( fn:(Function($DataType)) )->$DataType[]
-      return cloned.apply( fn )
+      return cloned.[ apply(fn) ]
 
     method cloned->$DataType[]
       local result = $DataType[]( count )
@@ -55,23 +54,20 @@ class List<<$DataType>> : GenericList
       endForEach
       return result
 
-    method add( value:$DataType )->this  [preferred]
+    method add( value:$DataType ) [preferred]
       reserve(1)[count] = value
       ++count
-      return this
 
-    method add( other:$DataType[] )->this
+    method add( other:$DataType[] )
       reserve(other.count)
       forEach (value in other) add( value )
-      return this
 
     method capacity->Int32
       if (not data) return 0
       return data.count
 
-    method clear->this
+    method clear
       discard_from( 0 )
-      return this
 
     method contains( value:$DataType )->Logical
       return this.locate( value )?
@@ -119,25 +115,24 @@ class List<<$DataType>> : GenericList
         throw UnsupportedOperationError()
       endIf
 
-    method discard( i1:Int32, n=1:Int32 )->this
+    method discard( i1:Int32, n=1:Int32 )
       local i2 = i1 + n
       data.set( i1, data, i2, (count-i2) )
-      return discard_from( count-n )
+      discard_from( count-n )
 
-    method discard( discard_if:(Function($DataType)->Logical) )->this
+    method discard( discard_if:(Function($DataType)->Logical) )
       # Discards any item that passes the query function.
       use rewriter = this.rewriter
         forEach (value in rewriter)
           if (not discard_if(value)) rewriter.write( value )
         endForEach
       endUse
-      return this
 
     method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
       # Returns a copy of the list without any item that passes the query function.
-      return cloned.discard( discard_if )
+      return cloned.[ discard(discard_if) ]
 
-    method discard_from( index:Int32 )->this
+    method discard_from( index:Int32 )
       if (data)
         local n = (count - index)
         if (n > 0)
@@ -145,35 +140,32 @@ class List<<$DataType>> : GenericList
           count = index
         endIf
       endIf
-      return this
 
-    method ensure_capacity( desired_capacity:Int32 )->this
-      return reserve( desired_capacity - count )
+    method ensure_capacity( desired_capacity:Int32 )
+      reserve( desired_capacity - count )
 
-    method expand( additional_count:Int32 )->this
+    method expand( additional_count:Int32 )
       # Adds 'additional_count' items to this list, each with the default
       # value of null/0/false.
       reserve( additional_count )
       count += additional_count
-      return this
 
-    method expand_to_count( minimum_count:Int32 )->this
+    method expand_to_count( minimum_count:Int32 )
       # Expands the list if necessary to have at least 'minimum_count' elements.
       if (count < minimum_count)
         ensure_capacity( minimum_count )
         count = minimum_count
       endIf
-      return this
 
-    method expand_to_include( index:Int32 )->this
+    method expand_to_include( index:Int32 )
       # Expands the list if necessary to include the specified index.
-      return expand_to_count( index + 1 )
+      expand_to_count( index + 1 )
 
     method fill( value:$DataType )
       this[ forEach of this ] = value
 
-    method filter( keep_if:(Function($DataType)->Logical) )->this
-      return this.keep( keep_if )
+    method filter( keep_if:(Function($DataType)->Logical) )
+      this.keep( keep_if )
 
     method filtered( keep_if:(Function($DataType)->Logical) )->$DataType[]
       return this.keeping( keep_if )
@@ -219,17 +211,19 @@ class List<<$DataType>> : GenericList
         return this.data[index]
       else
         if (index < 0) throw OutOfBoundsError( index, count )
-        return expand_to_count( index+1 )[ index ]
+        expand_to_count( index+1 )
+        return this[ index ]
       endIf
 
-    method heapsort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
-      return Heapsort<<$DataType>>.sort( this, compare_fn )
+    method heapsort( compare_fn:(Function($DataType,$DataType)->Logical) )
+      Heapsort<<$DataType>>.sort( this, compare_fn )
 
-    method insert( value:$DataType, before_index=0:Int32 )->this
+    method insert( value:$DataType, before_index=0:Int32 )
       if (before_index < 0) before_index = 0
 
       if (before_index >= count)
-        return add( value )
+        add( value )
+        return
       else
         reserve( 1 )
 
@@ -238,16 +232,16 @@ class List<<$DataType>> : GenericList
         # Copy in the new value
         data[ before_index ] = value
       endIf
-      return this
 
-    method insert( other:$DataType[], before_index=0:Int32 )->this
+    method insert( other:$DataType[], before_index=0:Int32 )
       if (before_index < 0) before_index = 0
 
       local n = other.count
-      if (n == 0) return this
+      if (n == 0) return
 
       if (before_index >= count)
-        return add( other )
+        add( other )
+        return
       else
         reserve( n )
 
@@ -260,10 +254,9 @@ class List<<$DataType>> : GenericList
           ++before_index
         endForEach
       endIf
-      return this
 
-    method insertion_sort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
-      return InsertionSort<<$DataType>>.sort( this, compare_fn )
+    method insertion_sort( compare_fn:(Function($DataType,$DataType)->Logical) )
+      InsertionSort<<$DataType>>.sort( this, compare_fn )
 
     method is_empty->Logical
       return count == 0
@@ -281,16 +274,15 @@ class List<<$DataType>> : GenericList
       endForEach
       return builder->String
 
-    method keep( keep_if:(Function($DataType)->Logical) )->this
+    method keep( keep_if:(Function($DataType)->Logical) )
       use rewriter = this.rewriter
         forEach (value in rewriter)
           if (keep_if(value)) rewriter.write( value )
         endForEach
       endUse
-      return this
 
     method keeping( keep_if:(Function($DataType)->Logical) )->$DataType[]
-      return cloned.keep( keep_if )
+      return cloned.[ keep(keep_if) ]
 
     method last->$DataType
       return this.data[ count - 1 ]
@@ -302,7 +294,7 @@ class List<<$DataType>> : GenericList
 
       return null
 
-    method limit_capacity( max_capacity:Int32 )->this
+    method limit_capacity( max_capacity:Int32 )
       # If necessary, reduce the backing array to be no larger than 'max_capacity'.
       # Content will be truncated if necessary - the resulting 'count' will be
       # <= 'max_capacity'.
@@ -317,7 +309,6 @@ class List<<$DataType>> : GenericList
           data = new_data
         endIf
       endIf
-      return this
 
     method locate( value:$DataType, i1=0:Int32 )->Int32? [preferred]
       if (isReference($DataType))
@@ -421,12 +412,11 @@ class List<<$DataType>> : GenericList
       forEach (element in this) result.add( map_fn(element) )
       return result
 
-    method modify( fn:(Function($DataType)->$DataType) )->this
+    method modify( fn:(Function($DataType)->$DataType) )
       forEach (index of this) this[index] = fn(this[index])
-      return this
 
     method modified( fn:(Function($DataType)->$DataType) )->$DataType[]
-      return cloned.modify( fn )
+      return cloned.[ modify(fn) ]
 
     method operator==( other:$DataType[] )->Logical
       if (this is other) return true
@@ -474,8 +464,8 @@ class List<<$DataType>> : GenericList
 
       return c
 
-    method quicksort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
-      return Quicksort<<$DataType>>.sort( this, compare_fn )
+    method quicksort( compare_fn:(Function($DataType,$DataType)->Logical) )
+      Quicksort<<$DataType>>.sort( this, compare_fn )
 
     method random( generator=Random:Random )->$DataType
       # Returns an element at random
@@ -557,11 +547,11 @@ class List<<$DataType>> : GenericList
       endIf
       return remove_at( generator.int32(this.count) )
 
-    method resize( new_count:Int32 )->this
+    method resize( new_count:Int32 )
       if (count != new_count)
-        expand_to_count( new_count ).discard_from( new_count )
+        expand_to_count( new_count )
+        discard_from( new_count )
       endIf
-      return this
 
     method rest( result_list=null:$DataType[] )->$DataType[]
       # Returns the "rest" of this list: a list containing all of the items
@@ -578,10 +568,10 @@ class List<<$DataType>> : GenericList
 
       return result_list
 
-    method reverse->this
-      return reverse( 0, count-1 )
+    method reverse
+      reverse( 0, count-1 )
 
-    method reverse( i1:Int32, i2:Int32 )->this
+    method reverse( i1:Int32, i2:Int32 )
       if (i1 < 0) i1 = 0
       if (i2 >= count) i2 = count - 1
 
@@ -594,36 +584,31 @@ class List<<$DataType>> : GenericList
         --i2
       endWhile
 
-      return this
-
     method rewriter->ListRewriter<<$DataType>>
       return ListRewriter<<$DataType>>.acquire( this )
 
     method set( index:Int32, new_value:$DataType )
       this.data[ index ] = new_value
 
-    method set_first( new_value:$DataType )->this
+    method set_first( new_value:$DataType )
       data[ 0 ] = new_value
-      return this
 
-    method set_last( new_value:$DataType )->this
+    method set_last( new_value:$DataType )
       data[ count - 1 ] = new_value
-      return this
 
-    method set_x( index:Int32, new_value:$DataType )->this
+    method set_x( index:Int32, new_value:$DataType )
       # Expands this list to include 'index', if necessary, and then sets
       # the value at 'index' to be 'new_value'.
       if (native("(((unsigned int)$index) < (unsigned int)$count)")->Logical)
         this.data[index] = new_value
-        return this
       else
         if (index < 0) throw OutOfBoundsError( index, count )
-        expand_to_count( index+1 )[ index ] = new_value
-        return this
+        expand_to_count( index+1 )
+        this[ index ] = new_value
       endIf
 
-    method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )->this
-      if (delta == 0) return this
+    method shift( i1=0:Int32, element_count=null:Int32?, delta=0:Int32, fill=null:$DataType? )
+      if (delta == 0) return
 
       local n : Int32
       if (element_count.exists) n = element_count.value
@@ -640,21 +625,19 @@ class List<<$DataType>> : GenericList
           forEach (i in i1+delta+n..i1+n-1) data[i] = value
         endIf
       endIf
-      return this
 
-    method shuffle( generator=Random:Random )->this
+    method shuffle( generator=Random:Random )
       local n = count
       forEach (i of this) swap( i, generator.int32(n) )
-      return this
 
     method shuffled( generator=Random:Random )->$DataType[]
-      return cloned.shuffle( generator )
+      return cloned.[ shuffle(generator) ]
 
-    method sort( compare_fn:(Function($DataType,$DataType)->Logical) )->this
-      return this.quicksort( compare_fn )
+    method sort( compare_fn:(Function($DataType,$DataType)->Logical) )
+      this.quicksort( compare_fn )
 
     method sorted( compare_fn:(Function($DataType,$DataType)->Logical) )->$DataType[]
-      return cloned.sort( compare_fn )
+      return cloned.[ sort(compare_fn) ]
 
     method subset( i1:Int32 )->$DataType[]
       return subset( i1, count-i1 )
@@ -668,11 +651,10 @@ class List<<$DataType>> : GenericList
       forEach (i in i1..<i1+n) result.add( this[i] )
       return result
 
-    method swap( i1:Int32, i2:Int32 )->this
+    method swap( i1:Int32, i2:Int32 )
       local temp = data[i1]
       data[i1] = data[i2]
       data[i2] = temp
-      return this
 
     method to->String
       return "[$]" (this.join(","))
@@ -697,7 +679,8 @@ class List<<$DataType>> : GenericList
       return result
 
     method unpack( values:Value )
-      clear.reserve( values.count )
+      clear
+      reserve( values.count )
 
       if (not isAspect($DataType))
         # Can't unpack aspect values because they're abstract types
@@ -787,11 +770,10 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
       ++position
       return list[ position - 1 ]
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < 0) pos = 0
 
       if (is_limited)
@@ -801,7 +783,6 @@ class ListReader<<$DataType>> : Reader<<$DataType>>
       endIf
 
       position = pos
-      return this
 
 endClass
 
@@ -817,15 +798,13 @@ class ListWriter<<$DataType>> : Writer<<$DataType>>
     method close
       list.discard_from( position )
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < 0) pos = 0
       position = pos
       list.expand_to_count( pos )
-      return this
 
-    method seek_end()->this
+    method seek_end()
       position = list.count
-      return this
 
     method write( value:$DataType )
       if (position == list.count) list.add( value )
@@ -842,10 +821,10 @@ augment Byte[]
     method init( hex:String )
       add( hex )
 
-    method add( hex:String )->this
+    method add( hex:String )
       if (hex.count & 1)
         println "ERROR: odd number of characters in Byte[].add(hex:String)."
-        return this
+        return
       endIf
 
       local dest_i = count
@@ -856,8 +835,6 @@ augment Byte[]
         data[ dest_i ] = (hex[hex_i].to_number(16) :<<: 4) | hex[hex_i+1].to_number(16)
         ++dest_i
       endForEach
-
-      return this
 
     method has_byte_order_mark->Logical
       if (count < 3) return false
@@ -986,7 +963,7 @@ class ListRewriter<<$DataType>> : GenericListRewriter, Writer<<$DataType>>
   GLOBAL METHODS
     method acquire( list:$DataType[] )->ListRewriter<<$DataType>>
       if (pool and pool.count)
-        return (pool.remove_last as ListRewriter<<$DataType>>).reset( list )
+        return (pool.remove_last as ListRewriter<<$DataType>>).[ reset(list) ]
       else
         return ListRewriter<<$DataType>>( list )
       endIf
@@ -1021,11 +998,10 @@ class ListRewriter<<$DataType>> : GenericListRewriter, Writer<<$DataType>>
       ++read_index
       return list[ read_index - 1 ]
 
-    method reset( new_list=null:$DataType[] )->this
+    method reset( new_list=null:$DataType[] )
       if (new_list) list = new_list  # else use same as before
       read_index = 0
       write_index = 0
-      return this
 
     method write( value:$DataType )
       if (write_index == read_index)

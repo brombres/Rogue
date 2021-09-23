@@ -202,12 +202,12 @@ class StringBuilder : PrintWriter [essential]
       elseIf (value <= Character(0x7F))
         utf8.add( value )
       elseIf (value <= Character(0x7FF))
-        utf8.add( 0xC0 | (value:>>>:6) ).add( 0x80 | (value & 0x3F) )
+        utf8.[ add(0xC0 | (value:>>>:6)), add(0x80 | (value & 0x3F)) ]
       elseIf (value <= Character(0xFFFF))
-        utf8.add( 0xE0 | (value:>>>:12) ).add( 0x80 | ((value:>>>:6) & 0x3F) ).add( 0x80 | (value & 0x3F) )
+        utf8.[ add(0xE0 | (value:>>>:12)), add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
       elseIf (value <= Character(0x10FFFF))
-        utf8.add( 0xF0 | (value:>>>:18) ).add( 0x80 | ((value:>>>:12) & 0x3F) )
-        utf8.add( 0x80 | ((value:>>>:6) & 0x3F) ).add( 0x80 | (value & 0x3F) )
+        utf8.[ add(0xF0 | (value:>>>:18)), add(0x80 | ((value:>>>:12) & 0x3F)) ]
+        utf8.[ add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
       else
         utf8.add( '?' )
       endIf
