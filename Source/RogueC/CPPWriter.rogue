@@ -2104,19 +2104,41 @@ augment RogueC
       RogueC.on_compile_finished
 
       if (compile_output)
-        local compiler_name = RogueC.compiler_name
-        if (not compiler_name)
+        local invocation = RogueC.compiler_name
+        if (not invocation)
           native @|#if defined(DEFAULT_CXX)
-                  |  $compiler_name = RogueString_create_from_utf8( DEFAULT_CXX );
+                  |  $invocation = RogueString_create_from_utf8( DEFAULT_CXX );
                   |#else
-                  |  $compiler_name = RogueString_create_from_utf8( "g++ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof" );
-                  |#endif
-          if (RogueC.thread_mode == ThreadMode.PTHREADS)
-            compiler_name += " -pthread"
-          elseIf (RogueC.thread_mode == ThreadMode.CPP)
-            if (not RogueC.compile_targets["Windows"])
-              compiler_name += " -pthread"
-            endIf
+                     if (System.is_windows)
+                       invocation = "cl /EHsc /nologo"
+                     else
+                       invocation = "g++"
+                       forEach (line in LineReader(Process.run("make -p -f/dev/null")))
+                         if (line.begins_with("CXX ="))
+                           invocation = line.split("=").last.trimmed
+                           escapeForEach
+                         endIf
+                       endForEach
+                       invocation += " -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
+                     endIf
+          native @|#endif
+        endIf
+
+        # Optimization flags
+        if (RogueC.release_mode)
+          if (System.is_windows) invocation += " /Ob2ity /GF /Gy"
+          else                   invocation += " -O3"
+        else
+          if (System.is_windows) invocation += " /Od"
+          else                   invocation += " -O0"
+        endIf
+
+        # Thread flags
+        if (RogueC.thread_mode == ThreadMode.PTHREADS)
+          invocation += " -pthread"  # TODO: does this work on Windows?
+        elseIf (RogueC.thread_mode == ThreadMode.CPP)
+          if (not RogueC.compile_targets["Windows"])
+            invocation += " -pthread"
           endIf
         endIf
 
@@ -2125,7 +2147,7 @@ augment RogueC
           forEach (pkg in RogueC.pkg_config_pkgs)
             local result = Process.run("pkg-config --cflags --libs " + pkg)
             if (result.success)
-              compiler_name += " " + result.output_string.trimmed
+              invocation += " " + result.output_string.trimmed
             else
               local msg = result.error_string.trimmed
               if (msg.count == 0) msg = result.output_string.trimmed
@@ -2161,7 +2183,7 @@ augment RogueC
         native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
         block
-          local cmd = "$ $.cpp /Fe$.exe" (compiler_name,output_filepath,exe)
+          local cmd = ''$ $.cpp /Fo"$.obj" /Fe"$.exe"'' (invocation,output_filepath,exe,exe)
           if (RogueC.native_libraries.count)
             cmd += " /link"
             forEach (lib in RogueC.native_libraries)
@@ -2173,8 +2195,6 @@ augment RogueC
 
           println cmd
           if (System.run(cmd)) System.exit( 1 )
-          local obj_filename = File.filename( exe + ".obj" )
-          if (File.exists(obj_filename)) File.delete( obj_filename )
 
           if (execute_args)
             cmd = ".\\$ $" (exe,execute_args)
@@ -2188,7 +2208,7 @@ augment RogueC
         # Not Windows (macOS/Linux)
 
         block
-          local cmd = "$ $.cpp -o $" (compiler_name,output_filepath,exe)
+          local cmd = "$ $.cpp -o $" (invocation,output_filepath,exe)
           forEach (lib in RogueC.native_libraries)
             cmd += " -l" + lib
           endForEach
