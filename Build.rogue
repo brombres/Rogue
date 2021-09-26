@@ -32,12 +32,12 @@ endRoutine
 
 routine rogo_default
   rogo_build
-  rogo_libs
   rogo_install  # Uncomment to automatically install a /usr/local/bin/roguec launcher
   rogo_run
 endRoutine
 
 routine rogo_build
+  rogo_libs
   local source_files = Files( "Source", "**/*.rogue" )
   if (source_files.any_newer_than(exe_filepath))
     local cpp_filepath = "Build/$.cpp" (Build.PROJECT)
