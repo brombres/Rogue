@@ -32,7 +32,7 @@ endRoutine
 
 routine rogo_default
   rogo_build
-  rogo_install  # Uncomment to automatically install a /usr/local/bin/roguec launcher
+  #rogo_install  # Uncomment to automatically install a /usr/local/bin/roguec launcher
   rogo_run
 endRoutine
 
