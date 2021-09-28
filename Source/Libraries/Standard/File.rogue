@@ -298,6 +298,18 @@ class File
               |return (stat((char*)$filepath->utf8, &s) == 0);
 
     method expand_path( filepath:String )->String
+      if (System.is_windows)
+        local n = filepath.count('%')
+        while (n >= 2)
+          local i1 = filepath.locate('%').value
+          local i2 = filepath.locate('%',i1+1).value
+          local name  = filepath.from(i1+1,i2-1)
+          local value = which{ System.env[name] || "" }
+          filepath .= replacing_at( i1, (i2-i1)+1, value )
+          n -= 2
+        endWhile
+      endIf
+
       filepath = fix_slashes( filepath )
       if (filepath == "~" or filepath.begins_with("~/"))
         local home_folder : String
@@ -1715,8 +1727,10 @@ class FileListing
 
   METHODS
     method init( folder, pattern=null, options )
-      folder = fix( folder )
-      pattern = fix( pattern )
+      folder  = fix(folder)
+      pattern = fix(pattern)
+      if (folder)  folder  = File.expand_path( folder )
+      if (pattern) pattern = File.expand_path( pattern )
 
       if (File.exists(folder) and not File.is_folder(folder))
         # We have a single file instead of a folder
