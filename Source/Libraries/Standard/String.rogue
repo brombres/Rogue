@@ -1293,6 +1293,7 @@ class String
 
     method replacing_at( index:Int32, n:Int32, replace_with:String )->String
       use builder = StringBuilder.pool
+        builder.reserve( (count+(replace_with.count - n)).clamped_low(0) )
         forEach (i in 0..<index) builder.print this[i]
         builder.print replace_with
         forEach (i in index+n..<count) builder.print this[i]
