@@ -4,12 +4,12 @@
 
 class DataReader : Reader<<Byte>>
   PROPERTIES
-    source : Reader<<Byte>>
+    input : Reader<<Byte>>
 
   METHODS
     method init
 
-    method init( source )
+    method init( input )
 
     method init( file:File )
       init( file.reader )
@@ -18,18 +18,18 @@ class DataReader : Reader<<Byte>>
       init( ListReader<<Byte>>(list) )
 
     method has_another->Logical
-      return source.has_another
+      return input.has_another
 
     method position->Int32
-      return source.position
+      return input.position
 
     method peek->Byte
-      if (not source.has_another) return 0
-      return source.peek
+      if (not input.has_another) return 0
+      return input.peek
 
     method read->Byte
-      if (not source.has_another) return 0
-      return source.read
+      if (not input.has_another) return 0
+      return input.read
 
     method read_real64->Real64
       return read_int64.real_bits
@@ -108,74 +108,74 @@ class DataReader : Reader<<Byte>>
       loop (count) buffer.print( read_int32x->Character )
       return buffer
 
-    method reset->this
-      source.reset
-      return this
+    method reset
+      input.reset
 
-    method seek( pos:Int32 )->this
-      source.seek( pos )
-      return this
+    method seek( pos:Int32 )
+      input.seek( pos )
 
-    method skip( n:Int32 )->this
-      source.skip( n )
-      return this
+    method skip( n:Int32 )
+      input.skip( n )
 
-endClass
-
-class BufferedDataReader : DataReader
-  PROPERTIES
-    buffer : Byte[]
-
-  METHODS
-    method init
-      buffer = Byte[]
-      prior.init( buffer )
-
-    method init( buffer )
-      prior.init( buffer )
 endClass
 
 class DataWriter : Writer<<Byte>>
   PROPERTIES
-    output : Writer<<Byte>>
+    output       : Writer<<Byte>>
+    output_bytes : Byte[]  # Only non-null when used with certain constructors
 
   METHODS
+    method init
+      init( Byte[] )
+
     method init( output )
 
     method init( file:File )
       init( file.writer )
 
-    method init( list:Byte[] )
-      init( list.writer )
+    method init( output_bytes )
+      init( @output_bytes.writer )
 
     method close
       flush
       output.close
 
+    method clear
+      if (output_bytes) output_bytes.clear
+      output.reset
+
     method flush
       output.flush
+
+    method output_bytes->Byte[]
+      flush
+      return @output_bytes
 
     method position->Int32
       return output.position
 
-    method reset->this
+    method reset
       output.reset
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       output.seek( pos )
-      return this
 
-    method seek_end()->this
+    method seek_end()
       output.seek_end
-      return this
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       output.skip( n )
-      return this
 
     method write( value:Byte )
       output.write( value )
+
+    method write( list:Byte[] )
+      if (output_bytes)
+        output_bytes.reserve( list.count ).data.set( position, list.data, 0, list.count )
+        skip( list.count )
+      else
+        output.write( forEach in list )
+      endIf
 
     method write_real64( value:Real64 )
       write_int64( value.integer_bits )
@@ -247,27 +247,27 @@ class DataWriter : Writer<<Byte>>
       if (not value) value = ""
       write_int32x( value.count )
       forEach (ch in value) write_int32x( ch )
-endClass
 
-class BufferedDataWriter : DataWriter
-  PROPERTIES
-    buffer : Byte[]
+  GLOBAL METHODS
+    method int64x_byte_count( value:Int64 )->Int32
+      # See read_int64x for format notes.
+      if (value >= -64 and value < 128)
+        return 1
+      else
+        local extra_bytes = 1
+        local shift = 7
+        local min = -0x1000
+        local max =  0x0FFF
+        loop 7
+          if (value >= min and value <= max) escapeLoop
+          ++extra_bytes
+          shift += 7
+          min = min :<<: 7
+          max = (max :<<: 7) | 0xFF
+        endLoop
+        return extra_bytes + 1
+      endIf
 
-  METHODS
-    method init
-      buffer = Byte[]
-      prior.init( buffer )
 
-    method init( buffer )
-      prior.init( buffer )
-
-    method clear->BufferedDataWriter
-      buffer.clear
-      output.reset
-      return this
-
-    method write( list:Byte[] )
-      buffer.reserve( list.count ).data.set( position, list.data, 0, list.count )
-      skip( list.count )
 endClass
 

@@ -55,11 +55,10 @@ class LineReader : Reader<<String>>
       ++position
       return result
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( n:Int32 )->this
+    method seek( n:Int32 )
       if (n < 0) n = 0
 
       if (n < position)
@@ -71,8 +70,6 @@ class LineReader : Reader<<String>>
       while (n > position)
         read
       endWhile
-
-      return this
 
     method to->String[]
       local lines = String[]

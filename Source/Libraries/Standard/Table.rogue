@@ -38,33 +38,11 @@ class Table<<$KeyType,$ValueType>>
       return this
 
     method at( index:Int32 )->$ValueType
-      contingent
-        necessary (count)
+      local entry = entry_at( index )
+      if (entry) return entry.value
 
-        if (not cur_entry)
-          if (index <= count/2) cur_entry = first_entry; cur_entry_index = 0
-          else                  cur_entry = last_entry;  cur_entry_index = count - 1
-        endIf
-
-        while (cur_entry_index < index)
-          ++cur_entry_index
-          cur_entry = cur_entry.next_entry
-          necessary (cur_entry)
-        endWhile
-
-        while (cur_entry_index > index)
-          --cur_entry_index
-          cur_entry = cur_entry.previous_entry
-          necessary (cur_entry)
-        endWhile
-
-        return cur_entry.value
-
-      unsatisfied
-        local default_value : $ValueType
-        return default_value
-
-      endContingent
+      local default_value : $ValueType
+      return default_value
 
     method clear
       forEach (i of bins) bins[i] = null
@@ -103,6 +81,34 @@ class Table<<$KeyType,$ValueType>>
     method entries->TableEntriesIterator<<$KeyType,$ValueType>>
       # Returns an iterator compound.
       return TableEntriesIterator<<$KeyType,$ValueType>>( first_entry )
+
+    method entry_at( index:Int32 )->TableEntry<<$KeyType,$ValueType>>
+      contingent
+        necessary (count)
+
+        if (not cur_entry)
+          if (index <= count/2) cur_entry = first_entry; cur_entry_index = 0
+          else                  cur_entry = last_entry;  cur_entry_index = count - 1
+        endIf
+
+        while (cur_entry_index < index)
+          ++cur_entry_index
+          cur_entry = cur_entry.next_entry
+          necessary (cur_entry)
+        endWhile
+
+        while (cur_entry_index > index)
+          --cur_entry_index
+          cur_entry = cur_entry.previous_entry
+          necessary (cur_entry)
+        endWhile
+
+        return cur_entry
+
+      unsatisfied
+        return null
+
+      endContingent
 
     method is_empty->Logical
       return (count == 0)
@@ -186,7 +192,7 @@ class Table<<$KeyType,$ValueType>>
 
       return true
 
-    method package->Value
+    method to_value_package->Value
       return this->Value
 
     method print_to( buffer:StringBuilder )->StringBuilder

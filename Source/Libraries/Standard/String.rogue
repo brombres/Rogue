@@ -1071,6 +1071,20 @@ class String
       endForEach
       return null
 
+    method longest_line->Int32
+      local longest = 0
+      local cur = 0
+
+      forEach (ch in this)
+        which (ch)
+          case '\r': nextIteration
+          case '\n': longest .= or_larger(cur); cur = 0
+          others:    ++cur
+        endWhich
+      endForEach
+
+      return longest.or_larger( cur )
+
     method matches_pattern( pattern:String, &ignore_case )->Logical
       # Returns true if this string matches the given pattern.
       #
@@ -1293,6 +1307,7 @@ class String
 
     method replacing_at( index:Int32, n:Int32, replace_with:String )->String
       use builder = StringBuilder.pool
+        builder.reserve( (count+(replace_with.count - n)).clamped_low(0) )
         forEach (i in 0..<index) builder.print this[i]
         builder.print replace_with
         forEach (i in index+n..<count) builder.print this[i]
@@ -1657,7 +1672,7 @@ class String
 
     method up_to_first( st:String, &ignore_case )->String
       local i = locate( st, &=ignore_case )
-      if (i.exists) return from( 0, i.value )
+      if (i.exists) return from( 0, i.value+(st.count-1) )
       else          return this
 
     method up_to_last( ch:Character, &ignore_case )->String
@@ -1667,7 +1682,7 @@ class String
 
     method up_to_last( st:String, &ignore_case )->String
       local i = locate_last( st, &=ignore_case )
-      if (i.exists) return from( 0, i.value )
+      if (i.exists) return from( 0, i.value+(st.count-1) )
       else          return this
 
     method with_trailing( ch:Character )->String
@@ -1877,15 +1892,13 @@ class StringReader : Reader<<Character>>
       ++position
       return string[ position - 1 ]
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < 0) pos = 0
       elseIf (pos > count) pos = count
       position = pos
-      return this
 endClass
 
 

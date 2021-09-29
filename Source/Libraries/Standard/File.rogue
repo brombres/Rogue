@@ -88,9 +88,11 @@ class File
               |  if (new_dir_fd >= 0) close( new_dir_fd );
               |}
               |#endif
+
       if (return_value is null)
         throw IOError("Could not get absolute path")
       endIf
+
       return fix_slashes( return_value )
 
     method before_wildcard_pattern( filepath:String )->String
@@ -124,66 +126,55 @@ class File
     method contains( filepath:String, filename:String )->Logical
       return (File.listing( filepath, filename ).count > 0)
 
-    method copy( from_filepath:String, to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
+    method copy( from_filepath:String, to_filepath:String, &if_newer, &if_different, &dry_run, &verbose )->Logical
       from_filepath = expand_path( from_filepath )
       to_filepath = expand_path( to_filepath )
 
-      # Copy always is the default or else only if newer and/or size different.
-      if (if_newer)
-        # The if_newer flag is a little convoluted to retain backwards compatibility
-        return copy_newer( from_filepath, to_filepath, &=if_size_different, &=dry_run )
-      else
-        local modified = false
-
-        if (File.is_folder(to_filepath))
-          to_filepath += '/' + File.filename(from_filepath)
-        else
-          local containing_folder = File.folder( to_filepath )
-          if (not is_folder(containing_folder))
-            if (not dry_run) File.create_folder( containing_folder )
-            modified = true
-          endIf
-        endIf
-
-        if (File.is_folder(from_filepath))
-          if (not exists(to_filepath))
-            if (not dry_run) File.create_folder( to_filepath )
-            modified = true
-          endIf
-        else
-          modified = true
-          if (not dry_run)
-            local reader = File.reader( from_filepath )
-            local writer = File.writer( to_filepath )
-            local file_buffer = Byte[]( 1024 )
-            while (reader.has_another)
-              reader.read( file_buffer.clear, 1024 )
-              writer.write( file_buffer )
-            endWhile
-            writer.close
-          endIf
-        endIf
-
-        return modified
+      if (not exists(from_filepath))
+        throw Error( "Source file for copy() does not exist: " + from_filepath )
       endIf
+
+      if (is_folder(from_filepath))
+        throw Error( "First argument must be a file; cannot copy() from folder: " + from_filepath )
+      endIf
+
+      if (is_folder(to_filepath))
+        to_filepath /= filename(from_filepath)
+      else
+        local containing_folder = folder( to_filepath )
+        if (not is_folder(containing_folder))
+          throw Error( "Cannot copy() to nonexistent folder: " + containing_folder )
+        endIf
+      endIf
+
+      contingent
+        sufficient (if_newer and is_newer_than(from_filepath,to_filepath))
+        sufficient (if_different and is_different_than(from_filepath,to_filepath))
+        necessary (not if_newer and not if_different)
+
+      satisfied
+        if (dry_run) return true
+
+        if (verbose) println "Copying $ -> $" (from_filepath,to_filepath)
+        local reader = File.reader( from_filepath )
+        local writer = File.writer( to_filepath )
+        local file_buffer = Byte[]( 1024 )
+        while (reader.has_another)
+          reader.read( file_buffer.[clear], 1024 )
+          writer.write( file_buffer )
+        endWhile
+        writer.close
+
+        return true
+
+      unsatisfied
+        return false
+
+      endContingent
 
     method conventional_filepath( filepath:String )->String
       if (System.is_windows) return filepath.replacing( '/', '\\' )
       else                   return filepath
-
-    method copy_newer( from_filepath:String, to_filepath:String, &if_size_different, &dry_run )->Logical
-      from_filepath = expand_path( from_filepath )
-      to_filepath = expand_path( to_filepath )
-
-      if (File.is_folder(to_filepath))
-        if (filename(from_filepath) != filename(to_filepath))
-          return copy_newer( from_filepath, to_filepath + '/' + File.filename(from_filepath),
-            &=if_size_different, &=dry_run )
-        endIf
-      elseIf (File.is_newer_than(from_filepath,to_filepath))
-        return copy( from_filepath, to_filepath, &=if_size_different, &=dry_run )
-      endIf
-      return false
 
     method crc32( filepath:String )->Int32
       nativeCode
@@ -242,7 +233,7 @@ class File
       local reader = File.reader( filepath )
       local file_buffer = Byte[]( 1024 )
       while (reader.has_another)
-        reader.read( file_buffer.clear, 1024 )
+        reader.read( file_buffer.[clear], 1024 )
         native @|RogueByte* byte_ptr = $file_buffer->data->as_bytes - 1;
                 |for (int i=$file_buffer->count+1; --i; )
                 |{
@@ -306,10 +297,19 @@ class File
               |struct stat s;
               |return (stat((char*)$filepath->utf8, &s) == 0);
 
-    method expand_filepath( filepath:String )->String [deprecated]
-      return expand_path( filepath )
-
     method expand_path( filepath:String )->String
+      if (System.is_windows)
+        local n = filepath.count('%')
+        while (n >= 2)
+          local i1 = filepath.locate('%').value
+          local i2 = filepath.locate('%',i1+1).value
+          local name  = filepath.from(i1+1,i2-1)
+          local value = which{ System.env[name] || "" }
+          filepath .= replacing_at( i1, (i2-i1)+1, value )
+          n -= 2
+        endWhile
+      endIf
+
       filepath = fix_slashes( filepath )
       if (filepath == "~" or filepath.begins_with("~/"))
         local home_folder : String
@@ -840,6 +840,16 @@ class File
               |
               |return size;
 
+    method symlink( filepath:String, target:String )
+      filepath = expand_path( filepath )
+      target = expand_path( target )
+      if (System.is_windows)
+        local option = which{ File.is_folder(filepath):"/D " || "" }
+        Process.run( "mklink $$ $" (option,File.esc(filepath),File.esc(target)) )
+      else
+        Process.run( "ln -s $ $" (File.esc(target),File.esc(filepath)) )
+      endIf
+
     method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
       if (dry_run) verbose = true
       source_folder = expand_path( source_folder )
@@ -876,7 +886,7 @@ class File
       local dest_files = Files( dest_folder )
       if (not keep_unused) dest_files.add( "**" )
       local printed_header = false
-      local modified = 0
+      local change_count = 0
       forEach (src_filepath in source_files)
         local relative_filepath = source_files.relative_filepath( src_filepath )
         local dest_filepath = dest_name + relative_filepath
@@ -894,7 +904,7 @@ class File
           necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
 
         satisfied
-          ++modified
+          ++change_count
 
           if (verbose)
             if (not printed_header)
@@ -926,11 +936,11 @@ class File
             Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
           endIf
           if (not dry_run) delete( filepath )
-          ++modified
+          ++change_count
         endForEach
       endIf
 
-      return modified
+      return change_count
 
     method timestamp( filepath:String )->Real64
       filepath = expand_path( filepath )
@@ -1081,11 +1091,8 @@ class File
     method contains( filename:String )->Logical
       return File.contains( this.filepath, filename )
 
-    method copy( to_filepath:String, &if_newer, &if_size_different, &dry_run )->Logical
-      return File.copy( this.filepath, to_filepath, if_newer, if_size_different, dry_run )
-
-    method copy_newer( to_filepath:String, &if_size_different, &dry_run )->Logical
-      return File.copy_newer( this.filepath, to_filepath, if_size_different, dry_run )
+    method copy( to_filepath:String, &if_newer, &if_different, &dry_run, &verbose )->Logical
+      return File.copy( this.filepath, to_filepath, &=if_newer, &=if_different, &=dry_run, &=verbose )
 
     method conventional_filepath->String
       return File.conventional_filepath( this.filepath )
@@ -1206,6 +1213,9 @@ class File
 
     method size->Int64
       return File.size( this.filepath )
+
+    method symlink( target:String )
+      File.symlink( this.filepath, target )
 
     method sync_from( source_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
       return File.sync_from( source_folder, this.filepath, verbose, keep_unused, dry_run, &=missing_only )
@@ -1422,13 +1432,13 @@ class FileReader : Reader<<Byte>>
     method remaining->Int32
       return count - position
 
-    method reset->this
-      if (not fp) return this
+    method reset
+      if (not fp) return
       count = native( "(RogueInt32)ftell($this->fp)" )->Int32
-      return seek( 0 )
+      seek( 0 )
 
-    method seek( pos:Int32 )->this
-      if (not fp) return this
+    method seek( pos:Int32 )
+      if (not fp) return
 
       if (pos < 0) pos = 0
       if (pos > count) pos = count
@@ -1438,7 +1448,6 @@ class FileReader : Reader<<Byte>>
 
       buffer_position = 0
       buffer.clear
-      return this
 endClass
 
 
@@ -1496,29 +1505,25 @@ class FileWriter : Writer<<Byte>>
 
       return not error
 
-    method reset->this
-      if (not fp) return this
+    method reset
+      if (not fp) return
       flush
-      return seek( 0 )
+      seek( 0 )
 
-    method seek( pos:Int32 )->this
-      if (not fp) return this
+    method seek( pos:Int32 )
+      if (not fp) return
       flush
       if (pos < 0) pos = 0
       position = pos
 
       native "fseek( $this->fp, 0, SEEK_SET );"
 
-      return this
-
-    method seek_end()->this
-      if (not fp) return this
+    method seek_end()
+      if (not fp) return
       flush
 
       native "fseek( $this->fp, 0, SEEK_END );"
       position = native( "(RogueInt32)ftell( $this->fp )" )->Int32
-
-      return this
 
     method write( ch:Byte )
       if (not fp) return
@@ -1722,8 +1727,10 @@ class FileListing
 
   METHODS
     method init( folder, pattern=null, options )
-      folder = fix( folder )
-      pattern = fix( pattern )
+      folder  = fix(folder)
+      pattern = fix(pattern)
+      if (folder)  folder  = File.expand_path( folder )
+      if (pattern) pattern = File.expand_path( pattern )
 
       if (File.exists(folder) and not File.is_folder(folder))
         # We have a single file instead of a folder
@@ -1780,7 +1787,7 @@ class FileListing
       if (not file_exists) File._listing( folder, callback )
 
       # Process the results
-      filepath_segments.clear.add( path_segments ).add( pattern_segments )
+      filepath_segments.[ clear, add(path_segments), add(pattern_segments) ]
       pattern = filepath_segments.join( "/" )
 
       # Need special handling for omitting the folder when it starts with "./"
@@ -1822,7 +1829,7 @@ class FileListing
     method collect( filename:String )
       if (options.is_ignoring_hidden and filename.begins_with('.')) return
       if (pattern_segments.count and not File.matches_wildcard_pattern(filename,pattern_segments.first)) return
-      filepath_segments.clear.add( path_segments ).add( filename )
+      filepath_segments.[ clear, add(path_segments), add(filename) ]
       local filepath = filepath_segments.join( "/" )
       if (File.is_folder(filepath))
         if (options.keeping_folders) results.add( filepath )

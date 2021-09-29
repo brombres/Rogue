@@ -654,7 +654,7 @@ class Bitmap
       local new_height  = other.height
 
       # Each ARGB component needs a separate int + divisor
-      resize_row_buffer.clear.expand_to_count( new_width * 5 )
+      resize_row_buffer.[clear].expand_to_count( new_width * 5 )
 
       local src_i = 0
       local dest_i = 0

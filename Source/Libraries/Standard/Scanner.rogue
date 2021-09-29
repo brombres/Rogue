@@ -192,9 +192,9 @@ class Scanner : Reader<<Character>>
         return buffer->String
       endUse
 
-    method reset->this
+    method reset
       count = data.count
-      return seek( 0 )
+      seek( 0 )
 
     method scan_hex_sequence( buffer:StringBuilder )
       local first = true
@@ -329,7 +329,7 @@ class Scanner : Reader<<Character>>
 
       endIf
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < 0)         pos = 0
       elseIf (pos > count) pos = count
 
@@ -341,9 +341,7 @@ class Scanner : Reader<<Character>>
 
       while (position < pos) read
 
-      return this
-
-    method seek_location( new_line:Int32, new_column:Int32 )->this
+    method seek_location( new_line:Int32, new_column:Int32 )
       if (new_line < line or (new_line == line and new_column < column))
         # start over at (1,1)
         position = 0
@@ -353,8 +351,6 @@ class Scanner : Reader<<Character>>
 
       while (has_another and line < new_line)     read
       while (has_another and column < new_column) read
-
-      return this
 
     method set_location( line, column )->Scanner
       return this

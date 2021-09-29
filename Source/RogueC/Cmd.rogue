@@ -306,7 +306,8 @@ class CmdStatementList : Cmd[]
         cmd.add_to( result )
       endForEach
 
-      clear.add( result )
+      clear
+      add( result )
 
       forEach (statement in this) statement.exit_scope( scope )
 
@@ -335,11 +336,14 @@ class CmdArgs : Cmd[]
 
     method init( arg1:Cmd, arg2:Cmd )
       init
-      add( arg1 ).add( arg2 )
+      add( arg1 )
+      add( arg2 )
 
     method init( arg1:Cmd, arg2:Cmd, arg3:Cmd )
       init
-      add( arg1 ).add( arg2 ).add( arg3 )
+      add( arg1 )
+      add( arg2 )
+      add( arg3 )
 
     method cloned->CmdArgs
       # Need two cloned() overloads here because this one overrides the base class
@@ -1838,10 +1842,8 @@ class CmdEscape : Cmd
         local cmd = scope.control_stack[i]
         if (cmd.control_type == control_type)
           while (cmd.cloned_command) cmd = cmd.cloned_command
-          if (not cmd.escape_label)
-            cmd.escape_label = Program.create_unique_id
-            cmd.escape_label_used = true
-          endIf
+          if (not cmd.escape_label) cmd.escape_label = Program.create_unique_id
+          cmd.escape_label_used = true
           target_cmd = cmd
           return this
         endIf
@@ -3280,7 +3282,7 @@ class CmdElementAccess : Cmd
         return CmdWriteArrayElement( t, context, index, new_value ).resolve( scope )
       else
         local args = CmdArgs()
-        args.add( index ).add( new_value )
+        args.[ add(index), add(new_value) ]
         local result = scope.resolve_call( context_type, CmdAccess(t,context,"set",args), true )
         return result
       endIf

@@ -431,7 +431,7 @@ class Value
     method operator*( other:String )->Value
       return UndefinedValue
 
-    method package->Value
+    method to_value_package->Value
       return this
 
     method remove( value:Value )->Value
@@ -1047,9 +1047,9 @@ class ObjectValue( value:Object ) : Value
     method is_object->Logical
       return true
 
-    method package->Value
+    method to_value_package->Value
       if (value is null) return NullValue
-      return value.package
+      return value.to_value_package
 
     method operator==( other:Value )->Logical
       if (this is other) return true

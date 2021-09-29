@@ -23,7 +23,7 @@ class Object [native]
     method operator==( other:Object )->Logical
       return this is other
 
-    method package->Value [nonAPI]
+    method to_value_package->Value [nonAPI]
       local result = @{}
       local i = introspector
       forEach (p in i.type.properties)
@@ -31,7 +31,7 @@ class Object [native]
         if (p.type.is_primitive or p.type.is_compound)
           result[ name ] = i[ name ]
         else
-          result[ name ] = i[ name ].package
+          result[ name ] = i[ name ].to_value_package
         endIf
       endForEach
       return result

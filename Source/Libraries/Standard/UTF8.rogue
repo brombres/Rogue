@@ -44,20 +44,18 @@ class UTF8Reader : Reader<<Character>>
       ++position
       return result
 
-    method reset->this
+    method reset
       seek( 0 )
-      return this
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos < position)
         position = 0
         byte_reader.seek( 0 )
       endIf
-      return skip( pos - position )
+      skip( pos - position )
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       forEach (1..n) read
-      return this
 endClass
 
 
@@ -74,21 +72,20 @@ class CharacterToUTF8ByteWriter : Writer<<Character>>
     method flush
       byte_writer.flush
 
-    method reset->this
-      return seek( 0 )
+    method reset
+      seek( 0 )
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos != 0)
         throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.seek(Int32) to non-zero position" )
       endIf
       position = 0
       byte_writer.seek( 0 )
-      return this
 
-    method seek_end()->this
+    method seek_end()
       throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.seek_end()" )
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       throw UnsupportedOperationError( "CharacterToUTF8ByteWriter.skip(Int32)" )
 
     method write( value:Character )
@@ -120,21 +117,20 @@ class UTF8ByteToCharacterWriter : Writer<<Byte>>
       bytes.clear
       character_writer.flush
 
-    method reset->this
-      return seek( 0 )
+    method reset
+      seek( 0 )
 
-    method seek( pos:Int32 )->this
+    method seek( pos:Int32 )
       if (pos != 0)
         throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.seek(Int32) to non-zero position" )
       endIf
       position = 0
       character_writer.seek( 0 )
-      return this
 
-    method seek_end()->this
+    method seek_end()
       throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.seek_end()" )
 
-    method skip( n:Int32 )->this
+    method skip( n:Int32 )
       throw UnsupportedOperationError( "UTF8ByteToCharacterWriter.skip(Int32)" )
 
     method write( value:Byte )

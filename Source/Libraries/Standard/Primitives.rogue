@@ -529,6 +529,17 @@ class Int64 [primitive]
       return Real64(this-a) / Real64(b-a)
 
     method required_bit_count->Int32
+      if (this < 0)
+        if (this < 0xC000_0000_0000_0000) return 64
+        local bits = 1 : Int64
+        local threshold = -1 : Int64
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
       if (this & 0x8000_0000_0000_0000) return 64
       if (this & 0x4000_0000_0000_0000) return 63
       local bits = 1 : Int64
@@ -537,6 +548,16 @@ class Int64 [primitive]
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
+
+    method rol( nbits:Int32 )->Int64
+      if (nbits <= 0) return this
+      nbits &= 63
+      return (this :<<: nbits) | (this :>>: (64-nbits))
+
+    method ror( nbits:Int32 )->Int64
+      if (nbits <= 0) return this
+      nbits &= 63
+      return (this :>>: nbits) | (this :<<: (64-nbits))
 
     method sign->Int64
       return Int64( which{ this>0:1 || this<0:-1 || 0 } )
@@ -582,6 +603,7 @@ class Int64 [primitive]
       return Boxed<<Int64>>(this)
 
     method to->String
+      if (this >= -1 and this <= 9) return this->Int32->String
       return StringBuilder().print( this )->String
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
@@ -702,6 +724,17 @@ class Int32 [primitive]
       return Real64(this-a) / Real64(b-a)
 
     method required_bit_count->Int32
+      if (this < 0)
+        if (this < 0xC000_0000) return 32
+        local bits = 1
+        local threshold = -1
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
       if (this & 0x8000_0000) return 32
       if (this & 0x4000_0000) return 31
       local bits = 1
@@ -710,6 +743,16 @@ class Int32 [primitive]
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
+
+    method rol( nbits:Int32 )->Int32
+      if (nbits <= 0) return this
+      nbits &= 31
+      return (this :<<: nbits) | (this :>>: (32-nbits))
+
+    method ror( nbits:Int32 )->Int32
+      if (nbits <= 0) return this
+      nbits &= 31
+      return (this :>>: nbits) | (this :<<: (32-nbits))
 
     method sqrt->Int32 [macro]
       return Int32( Math.sqrt(this) )
@@ -728,6 +771,21 @@ class Int32 [primitive]
       return Boxed<<Int32>>(this)
 
     method to->String
+      if (this >= -1 and this <= 9)
+        which (this)
+          case -1: return "-1"
+          case  0: return "0"
+          case  1: return "1"
+          case  2: return "2"
+          case  3: return "3"
+          case  4: return "4"
+          case  5: return "5"
+          case  6: return "6"
+          case  7: return "7"
+          case  8: return "8"
+          case  9: return "9"
+        endWhich
+      endIf
       return "" + this
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )
@@ -899,11 +957,7 @@ class Character [primitive]
       endWhich
 
     method required_bit_count->Int32
-      if (this & 0x8000_0000) return 32
-      if (this & 0x4000_0000) return 31
-      local bits = 1
-      while ((1:<<:bits) <= this) ++bits
-      return bits
+      return this->Int32.required_bit_count
 
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
@@ -1054,6 +1108,16 @@ class Byte [primitive]
     method right_justified( spaces:Int32, fill=' ':Character )->String
       return this->String.right_justified( spaces, fill )
 
+    method rol( nbits:Int32 )->Byte
+      if (nbits <= 0) return this
+      nbits &= 7
+      return (this :<<: nbits) | (this :>>: (8-nbits))
+
+    method ror( nbits:Int32 )->Byte
+      if (nbits <= 0) return this
+      nbits &= 7
+      return (this :>>: nbits) | (this :<<: (8-nbits))
+
     method signed->Int32
       if (this <= 127) return this
       return (this - 256)
@@ -1065,6 +1129,7 @@ class Byte [primitive]
       return Boxed<<Byte>>(this)
 
     method to->String
+      if (this <= 9) return this->Int32->String
       return "" + this
 
     method to->String( digits=0:Int32, &hex, &octal, &binary )

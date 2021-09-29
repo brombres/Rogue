@@ -1,5 +1,5 @@
-$define ROGUE_RELEASE_VERSION "1.8.7"
-$define ROGUE_RELEASE_DATE "August 9, 2021"
+$define ROGUE_RELEASE_VERSION "1.9.0"
+$define ROGUE_RELEASE_DATE "September 28, 2021"
 
 $include "Version.rogue" [optional]
 
@@ -131,8 +131,9 @@ $endIf
 
     package_name      : String
 
-    debug_mode    : Logical
-    run_tests     : Logical
+    debug_mode        : Logical
+    release_mode      : Logical
+    run_tests         : Logical
     should_print_version : Logical
 
     parsers = Parser[]
@@ -321,6 +322,10 @@ $endIf
                    |    Gathers compiler flags for the given package from pkg-config and passes
                    |    them to the backend compiler.  Can be specified more than once.  Only
                    |    works with the C++ target.
+                   |
+                   |  --release
+                   |    Compiles generated C++ code with full optimization enabled. Only takes
+                   |    effect if --compile or --execute are specified.
                    |
                    |  --target=
 
@@ -755,6 +760,10 @@ $endIf
                 throw RogueError( ''Java package name expected after "--package=" (e.g. "com.developer.app").'' )
               endIf
               package_name = value
+
+            case "--release"
+              release_mode = true
+              if (value.count) throw RogueError( "Unexpected value for '--release' option." )
 
             case "--api"
               if (value.count)

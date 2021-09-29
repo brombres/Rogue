@@ -68,6 +68,9 @@ class TypeInfo
       if (result) return result
       return _create_type_info( name->String )
 
+    method iterator->TypeInfoIterator
+      return TypeInfoIterator()
+
     method _create_type_info( name:String )->TypeInfo
       local result : TypeInfo
 
@@ -926,7 +929,7 @@ class DynamicCallback [aspect]
           local base_class = specialized_type.base_class
           while (base_class and base_class.instance_of(original_type))
             specialized_param_types[i] = base_class
-            builder.clear.print( base_name ).print( '(' )
+            builder.[clear].print( base_name ).print( '(' )
             forEach (cur_type at j in specialized_param_types)
               if (j > 0) builder.print(',')
               builder.print( cur_type )
@@ -1083,4 +1086,33 @@ class MethodCallerReturning <<$R>>
       local r : $R
       native "$r = (($(r.type) (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
       return r
+endClass
+
+class TypeInfoIterator( position=0:Int32 ) [compound]
+  METHODS
+    method has_another->Logical
+      return (position < TypeInfo.type_count)
+
+    method has_another( n:Int32 )->Logical
+      return (position + n <= TypeInfo.type_count)
+
+    method peek( lookahead=0:Int32 )->TypeInfo
+      return TypeInfo[ position+lookahead ]
+
+    method read->TypeInfo [mutating]
+      ++position
+      return TypeInfo[ position-1 ]
+
+    method read_another->TypeInfo? [mutating]
+      if (position == TypeInfo.type_count) return null
+      ++position
+      return TypeInfo[ position-1 ]
+
+    method to->TypeInfo[]( result=null:TypeInfo[] )
+      return to_list( result )
+
+    method to_list( result=null:TypeInfo[] )->TypeInfo[]
+      ensure result( TypeInfo.type_count )
+      result.add( forEach in this )
+      return result
 endClass

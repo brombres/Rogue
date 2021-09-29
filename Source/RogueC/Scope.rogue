@@ -435,7 +435,7 @@ class Scope
             local fixed_args = CmdArgs()
             loop (fixed_arg_count) fixed_args.add( args.remove_first )
             fixed_args.add( CmdArgs(CmdTypedLiteralList(CmdAccess(access.t,"ValueList"),args.cloned)) )
-            args.clear.add( fixed_args )
+            args.[ clear, add(fixed_args) ]
             arg_count = args.count
             total_arg_count = arg_count + named_arg_count
           endIf

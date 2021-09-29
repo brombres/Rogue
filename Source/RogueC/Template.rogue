@@ -90,7 +90,7 @@ class Template
 
       if (augmented_tokens is tokens)
         # Use a working copy
-        augmented_tokens = Token[]( tokens.count + t_count ).add( augmented_tokens )
+        augmented_tokens = Token[]( tokens.count + t_count ).[ add(augmented_tokens) ]
       else
         augmented_tokens.reserve( t_count )
       endIf
