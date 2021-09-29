@@ -659,6 +659,7 @@ $endIf
 
     method print_version
       print( 'v' ).print( ROGUE_RELEASE_VERSION )
+      #{
       print( " (" )
 $if defined(ROGUE_RELEASE_BUILD)
         print( ROGUE_RELEASE_BUILD )
@@ -668,6 +669,7 @@ $else
         print "develop"
 $endIf
       print( ')' )
+      }#
       println
       println ROGUE_RELEASE_DATE
 
