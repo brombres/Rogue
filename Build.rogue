@@ -93,6 +93,7 @@ routine rogo_run
 endRoutine
 
 routine rogo_install
+  rogo_build
   local exe_filepath = File.abs( exe_filepath )
   if (System.is_windows)
     local exe_folder = File.conventional_filepath( File.folder(exe_filepath) )
