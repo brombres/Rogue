@@ -3420,6 +3420,9 @@ augment CmdCallDynamicMethod
     method write_cpp( writer:CPPWriter, is_statement=false:Logical )
       if (not is_statement)
         writer.print("(")
+        if (not method_info.return_type)
+          throw t.error( "$() does not return a value."(method_info.name) )
+        endIf
         if (method_info.return_type.is_reference)
           writer.print( "(" ).print( method_info.return_type ).print( ")" )
         else
