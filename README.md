@@ -3,8 +3,8 @@ An ergonomic object-oriented statically-linked high-level language that compiles
 
 About     | Current Release
 ----------|-----------------------
-Version   | 1.9.1
-Date      | 2021.09.30
+Version   | 1.9.2
+Date      | 2021.10.01
 Platforms | Windows, macOS, Linux (Ubuntu+), Cygwin
 
 # Installation
