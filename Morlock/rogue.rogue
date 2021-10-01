@@ -9,7 +9,10 @@ class RoguePackage : Package
        scan_repo_releases
 
     method install
-      prior.install
+      download
+      unpack
+      build
+      install_executable( &dest_filename="roguec" )
 
       local libs = Files( archive_folder/"Source/Libraries", "**/*.rogue" )
       File.sync_from( libs, install_folder/"Libraries" )
