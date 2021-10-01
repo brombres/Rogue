@@ -1,0 +1,20 @@
+class RoguePackage : Package
+  # Base class Package is defined here:
+  # https://github.com/AbePralle/Morlock/blob/main/Source/Package.rogue
+  PROPERTIES
+    name = "abepralle/rogue"
+
+  METHODS
+    method init
+       scan_repo_releases
+
+    method install
+      prior.install
+
+      local libs = Files( archive_folder/"Source/Libraries", "**/*.rogue" )
+      File.sync_from( libs, install_folder/"Libraries" )
+
+    method handle_uninstall
+      throw error( "Essential package $ cannot be uninstalled."(name) )
+endClass
+
