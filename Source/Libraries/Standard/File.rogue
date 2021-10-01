@@ -143,7 +143,10 @@ class File
       else
         local containing_folder = folder( to_filepath )
         if (not is_folder(containing_folder))
-          throw Error( "Cannot copy() to nonexistent folder: " + containing_folder )
+          File.create_folder( containing_folder )
+          if (not is_folder(containing_folder))
+            throw Error( "Cannot copy() to nonexistent folder: " + containing_folder )
+          endIf
         endIf
       endIf
 
