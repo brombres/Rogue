@@ -2119,18 +2119,23 @@ augment RogueC
                            escapeForEach
                          endIf
                        endForEach
-                       invocation += " -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
                      endIf
           native @|#endif
         endIf
 
         # Optimization flags
         if (RogueC.release_mode)
-          if (System.is_windows) invocation += " /Ob2ity /GF /Gy"
-          else                   invocation += " -O3"
+          if (System.is_windows)
+            invocation += " /Ob2ity /GF /Gy"
+          else
+            invocation += " -O3 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
+          endIf
         else
-          if (System.is_windows) invocation += " /Od"
-          else                   invocation += " -O0"
+          if (System.is_windows)
+            invocation += " /Od"
+          else
+            invocation += " -O0 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof"
+          endIf
         endIf
 
         # Thread flags
@@ -2165,25 +2170,26 @@ augment RogueC
 
         local exe : String
         if (RogueC.exe_filepath)
-          exe = File.fix_slashes( RogueC.exe_filepath )
-          if (exe.contains(File.separator))
+          exe = File.expand_path(RogueC.exe_filepath)
+          if (exe.contains('/'))
             local exe_folder = File.folder( exe )
             if (not File.exists(exe_folder))
               File.create_folder( exe_folder )
             elseIf (File.is_folder(exe))
-              exe += File.separator + File.filename(output_filepath)
+              exe = exe/File.filename(output_filepath)
             endIf
           elseIf (File.is_folder(exe))
-            exe += File.separator + File.filename(output_filepath)
+            exe = exe/File.filename(output_filepath)
           endIf
         else
-          exe = File.fix_slashes( output_filepath )
+          exe = output_filepath
         endIf
 
         native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
         block
-          local cmd = ''$ $.cpp /Fo"$.obj" /Fe"$.exe"'' (invocation,output_filepath,exe,exe)
+          local cmd = ''$ $ /Fo$ /Fe$''...
+            (invocation,File.esc(output_filepath+".cpp"),File.esc(exe+".obj"),File.esc(exe+".exe"))
           if (RogueC.native_libraries.count)
             cmd += " /link"
             forEach (lib in RogueC.native_libraries)
@@ -2208,7 +2214,7 @@ augment RogueC
         # Not Windows (macOS/Linux)
 
         block
-          local cmd = "$ $.cpp -o $" (invocation,output_filepath,exe)
+          local cmd = "$ $ -o $" (invocation,File.esc(output_filepath+".cpp"),File.esc(exe))
           forEach (lib in RogueC.native_libraries)
             cmd += " -l" + lib
           endForEach
