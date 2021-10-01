@@ -1383,7 +1383,7 @@ augment Program
           #NOTE: The decision of whether or not to write type info should be matched
           #      with the writing of the type_info field "gc_alloc_type".
           if (type.has_object_references)
-            writer.println "memset(bitmap, 0, bitmap_size);"
+            writer.println "memset((void*)bitmap, 0, bitmap_size);"
             _write_boehm_type_info( writer, type )
             writer.println "Rogue_types[$].gc_type_descr = GC_make_descriptor(bitmap, Rogue_types[$].object_size / sizeof(GC_word));" ...
                            (type.index, type.index)
@@ -2316,7 +2316,7 @@ augment Type
       if (is_compound)
         if (property_list.count)
           # Default Constructor
-          writer.print( this ).print( "() { memset( this, 0, sizeof(" ).print( this ).println( ") ); }" )
+          writer.print( this ).print( "() { memset( (void*)this, 0, sizeof(" ).print( this ).println( ") ); }" )
           writer.println
 
           local native_property_count = 0
@@ -2378,7 +2378,7 @@ augment Type
                 writer.println( "{" )
                 writer.indent += 2
 
-                writer.print( "memset( this, 0, sizeof(" ).print( this ).println( ") );" )
+                writer.print( "memset( (void*)this, 0, sizeof(" ).print( this ).println( ") );" )
 
                 forEach (p in property_list)
                   if (not p.is_native)
