@@ -1717,7 +1717,7 @@ struct RogueClassStringEncoding
   // PROPERTIES
   RogueInt32 value;
 
-  RogueClassStringEncoding() { memset( this, 0, sizeof(RogueClassStringEncoding) ); }
+  RogueClassStringEncoding() { memset( (void*)this, 0, sizeof(RogueClassStringEncoding) ); }
 
   RogueClassStringEncoding( RogueInt32 value ) : value(value) {}
 
@@ -1728,7 +1728,7 @@ struct RogueClassTableKeysIterator_String_Value_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_Value_*,cur);
 
-  RogueClassTableKeysIterator_String_Value_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_String_Value_) ); }
+  RogueClassTableKeysIterator_String_Value_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_String_Value_) ); }
 
   RogueClassTableKeysIterator_String_Value_( RogueClassTableEntry_String_Value_* cur ) : cur(cur) {}
 
@@ -1740,7 +1740,7 @@ struct RogueOptionalString
   ROGUE_DEF_COMPOUND_REF_PROP(RogueString*,value);
   RogueLogical exists;
 
-  RogueOptionalString() { memset( this, 0, sizeof(RogueOptionalString) ); }
+  RogueOptionalString() { memset( (void*)this, 0, sizeof(RogueOptionalString) ); }
 
   RogueOptionalString( RogueString* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1751,7 +1751,7 @@ struct RogueOptionalInt32
   RogueInt32 value;
   RogueLogical exists;
 
-  RogueOptionalInt32() { memset( this, 0, sizeof(RogueOptionalInt32) ); }
+  RogueOptionalInt32() { memset( (void*)this, 0, sizeof(RogueOptionalInt32) ); }
 
   RogueOptionalInt32( RogueInt32 value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1762,7 +1762,7 @@ struct RogueOptionalByte
   RogueByte value;
   RogueLogical exists;
 
-  RogueOptionalByte() { memset( this, 0, sizeof(RogueOptionalByte) ); }
+  RogueOptionalByte() { memset( (void*)this, 0, sizeof(RogueOptionalByte) ); }
 
   RogueOptionalByte( RogueByte value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1772,7 +1772,7 @@ struct RogueClassConsoleEventType
   // PROPERTIES
   RogueInt32 value;
 
-  RogueClassConsoleEventType() { memset( this, 0, sizeof(RogueClassConsoleEventType) ); }
+  RogueClassConsoleEventType() { memset( (void*)this, 0, sizeof(RogueClassConsoleEventType) ); }
 
   RogueClassConsoleEventType( RogueInt32 value ) : value(value) {}
 
@@ -1785,7 +1785,7 @@ struct RogueClassConsoleEvent
   RogueInt32 x;
   RogueInt32 y;
 
-  RogueClassConsoleEvent() { memset( this, 0, sizeof(RogueClassConsoleEvent) ); }
+  RogueClassConsoleEvent() { memset( (void*)this, 0, sizeof(RogueClassConsoleEvent) ); }
 
   RogueClassConsoleEvent( RogueClassConsoleEventType _type, RogueInt32 x, RogueInt32 y ) : _type(_type), x(x), y(y) {}
 
@@ -1797,7 +1797,7 @@ struct RogueClassSpan
   RogueInt32 index;
   RogueInt32 count;
 
-  RogueClassSpan() { memset( this, 0, sizeof(RogueClassSpan) ); }
+  RogueClassSpan() { memset( (void*)this, 0, sizeof(RogueClassSpan) ); }
 
   RogueClassSpan( RogueInt32 index, RogueInt32 count ) : index(index), count(count) {}
 
@@ -1809,7 +1809,7 @@ struct RogueOptionalSpan
   RogueClassSpan value;
   RogueLogical exists;
 
-  RogueOptionalSpan() { memset( this, 0, sizeof(RogueOptionalSpan) ); }
+  RogueOptionalSpan() { memset( (void*)this, 0, sizeof(RogueOptionalSpan) ); }
 
   RogueOptionalSpan( RogueClassSpan value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1821,7 +1821,7 @@ struct RogueClassStringIterator
   RogueInt32 position;
   RogueInt32 count;
 
-  RogueClassStringIterator() { memset( this, 0, sizeof(RogueClassStringIterator) ); }
+  RogueClassStringIterator() { memset( (void*)this, 0, sizeof(RogueClassStringIterator) ); }
 
   RogueClassStringIterator( RogueString* string, RogueInt32 position, RogueInt32 count ) : string(string), position(position), count(count) {}
 
@@ -1834,7 +1834,7 @@ struct RogueClassListIterator_String_
   RogueInt32 position;
   RogueInt32 limit;
 
-  RogueClassListIterator_String_() { memset( this, 0, sizeof(RogueClassListIterator_String_) ); }
+  RogueClassListIterator_String_() { memset( (void*)this, 0, sizeof(RogueClassListIterator_String_) ); }
 
   RogueClassListIterator_String_( RogueString_List* list, RogueInt32 position, RogueInt32 limit ) : list(list), position(position), limit(limit) {}
 
@@ -1845,7 +1845,7 @@ struct RogueClassThreadMode
   // PROPERTIES
   RogueInt32 value;
 
-  RogueClassThreadMode() { memset( this, 0, sizeof(RogueClassThreadMode) ); }
+  RogueClassThreadMode() { memset( (void*)this, 0, sizeof(RogueClassThreadMode) ); }
 
   RogueClassThreadMode( RogueInt32 value ) : value(value) {}
 
@@ -1857,7 +1857,7 @@ struct RogueOptionalReal64
   RogueReal64 value;
   RogueLogical exists;
 
-  RogueOptionalReal64() { memset( this, 0, sizeof(RogueOptionalReal64) ); }
+  RogueOptionalReal64() { memset( (void*)this, 0, sizeof(RogueOptionalReal64) ); }
 
   RogueOptionalReal64( RogueReal64 value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1868,7 +1868,7 @@ struct RogueClassUsesAttributes
   RogueLogical should_export;
   RogueLogical no_include;
 
-  RogueClassUsesAttributes() { memset( this, 0, sizeof(RogueClassUsesAttributes) ); }
+  RogueClassUsesAttributes() { memset( (void*)this, 0, sizeof(RogueClassUsesAttributes) ); }
 
   RogueClassUsesAttributes( RogueLogical should_export, RogueLogical no_include ) : should_export(should_export), no_include(no_include) {}
 
@@ -1881,7 +1881,7 @@ struct RogueClassIncludeAttributes
   RogueLogical is_essential;
   RogueLogical is_api;
 
-  RogueClassIncludeAttributes() { memset( this, 0, sizeof(RogueClassIncludeAttributes) ); }
+  RogueClassIncludeAttributes() { memset( (void*)this, 0, sizeof(RogueClassIncludeAttributes) ); }
 
   RogueClassIncludeAttributes( RogueLogical is_optional, RogueLogical is_essential, RogueLogical is_api ) : is_optional(is_optional), is_essential(is_essential), is_api(is_api) {}
 
@@ -1893,7 +1893,7 @@ struct RogueClassVersionNumber
   ROGUE_DEF_COMPOUND_REF_PROP(RogueString*,version);
   RogueLogical kludge;
 
-  RogueClassVersionNumber() { memset( this, 0, sizeof(RogueClassVersionNumber) ); }
+  RogueClassVersionNumber() { memset( (void*)this, 0, sizeof(RogueClassVersionNumber) ); }
 
   RogueClassVersionNumber( RogueString* version, RogueLogical kludge ) : version(version), kludge(kludge) {}
 
@@ -1904,7 +1904,7 @@ struct RogueClassFilePattern
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueString*,pattern);
 
-  RogueClassFilePattern() { memset( this, 0, sizeof(RogueClassFilePattern) ); }
+  RogueClassFilePattern() { memset( (void*)this, 0, sizeof(RogueClassFilePattern) ); }
 
   RogueClassFilePattern( RogueString* pattern ) : pattern(pattern) {}
 
@@ -1916,7 +1916,7 @@ struct RogueOptionalFilePattern
   RogueClassFilePattern value;
   RogueLogical exists;
 
-  RogueOptionalFilePattern() { memset( this, 0, sizeof(RogueOptionalFilePattern) ); }
+  RogueOptionalFilePattern() { memset( (void*)this, 0, sizeof(RogueOptionalFilePattern) ); }
 
   RogueOptionalFilePattern( RogueClassFilePattern value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1926,7 +1926,7 @@ struct RogueClassFileOptions
   // PROPERTIES
   RogueInt32 flags;
 
-  RogueClassFileOptions() { memset( this, 0, sizeof(RogueClassFileOptions) ); }
+  RogueClassFileOptions() { memset( (void*)this, 0, sizeof(RogueClassFileOptions) ); }
 
   RogueClassFileOptions( RogueInt32 flags ) : flags(flags) {}
 
@@ -1937,7 +1937,7 @@ struct RogueClassVMScopeManager
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassVM*,vm);
 
-  RogueClassVMScopeManager() { memset( this, 0, sizeof(RogueClassVMScopeManager) ); }
+  RogueClassVMScopeManager() { memset( (void*)this, 0, sizeof(RogueClassVMScopeManager) ); }
 
   RogueClassVMScopeManager( RogueClassVM* vm ) : vm(vm) {}
 
@@ -1948,7 +1948,7 @@ struct RogueClassTableKeysIterator_String_String_List_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_String_List_*,cur);
 
-  RogueClassTableKeysIterator_String_String_List_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_String_String_List_) ); }
+  RogueClassTableKeysIterator_String_String_List_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_String_String_List_) ); }
 
   RogueClassTableKeysIterator_String_String_List_( RogueClassTableEntry_String_String_List_* cur ) : cur(cur) {}
 
@@ -1960,7 +1960,7 @@ struct RogueOptionalCharacter
   RogueCharacter value;
   RogueLogical exists;
 
-  RogueOptionalCharacter() { memset( this, 0, sizeof(RogueOptionalCharacter) ); }
+  RogueOptionalCharacter() { memset( (void*)this, 0, sizeof(RogueOptionalCharacter) ); }
 
   RogueOptionalCharacter( RogueCharacter value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1971,7 +1971,7 @@ struct RogueOptionalToken
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassToken*,value);
   RogueLogical exists;
 
-  RogueOptionalToken() { memset( this, 0, sizeof(RogueOptionalToken) ); }
+  RogueOptionalToken() { memset( (void*)this, 0, sizeof(RogueOptionalToken) ); }
 
   RogueOptionalToken( RogueClassToken* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1982,7 +1982,7 @@ struct RogueOptionalProperty
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassProperty*,value);
   RogueLogical exists;
 
-  RogueOptionalProperty() { memset( this, 0, sizeof(RogueOptionalProperty) ); }
+  RogueOptionalProperty() { memset( (void*)this, 0, sizeof(RogueOptionalProperty) ); }
 
   RogueOptionalProperty( RogueClassProperty* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -1993,7 +1993,7 @@ struct RogueOptionalCmd
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassCmd*,value);
   RogueLogical exists;
 
-  RogueOptionalCmd() { memset( this, 0, sizeof(RogueOptionalCmd) ); }
+  RogueOptionalCmd() { memset( (void*)this, 0, sizeof(RogueOptionalCmd) ); }
 
   RogueOptionalCmd( RogueClassCmd* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2003,7 +2003,7 @@ struct RogueClassTableValuesIterator_String_MethodTemplateOverloads_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_MethodTemplateOverloads_*,cur);
 
-  RogueClassTableValuesIterator_String_MethodTemplateOverloads_() { memset( this, 0, sizeof(RogueClassTableValuesIterator_String_MethodTemplateOverloads_) ); }
+  RogueClassTableValuesIterator_String_MethodTemplateOverloads_() { memset( (void*)this, 0, sizeof(RogueClassTableValuesIterator_String_MethodTemplateOverloads_) ); }
 
   RogueClassTableValuesIterator_String_MethodTemplateOverloads_( RogueClassTableEntry_String_MethodTemplateOverloads_* cur ) : cur(cur) {}
 
@@ -2015,7 +2015,7 @@ struct RogueOptionalMethodTemplateOverloads
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassMethodTemplateOverloads*,value);
   RogueLogical exists;
 
-  RogueOptionalMethodTemplateOverloads() { memset( this, 0, sizeof(RogueOptionalMethodTemplateOverloads) ); }
+  RogueOptionalMethodTemplateOverloads() { memset( (void*)this, 0, sizeof(RogueOptionalMethodTemplateOverloads) ); }
 
   RogueOptionalMethodTemplateOverloads( RogueClassMethodTemplateOverloads* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2025,7 +2025,7 @@ struct RogueClassTableEntriesIterator_String_Token_List_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_Token_List_*,cur);
 
-  RogueClassTableEntriesIterator_String_Token_List_() { memset( this, 0, sizeof(RogueClassTableEntriesIterator_String_Token_List_) ); }
+  RogueClassTableEntriesIterator_String_Token_List_() { memset( (void*)this, 0, sizeof(RogueClassTableEntriesIterator_String_Token_List_) ); }
 
   RogueClassTableEntriesIterator_String_Token_List_( RogueClassTableEntry_String_Token_List_* cur ) : cur(cur) {}
 
@@ -2037,7 +2037,7 @@ struct RogueOptionalTableEntry_String_Token_List_
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_Token_List_*,value);
   RogueLogical exists;
 
-  RogueOptionalTableEntry_String_Token_List_() { memset( this, 0, sizeof(RogueOptionalTableEntry_String_Token_List_) ); }
+  RogueOptionalTableEntry_String_Token_List_() { memset( (void*)this, 0, sizeof(RogueOptionalTableEntry_String_Token_List_) ); }
 
   RogueOptionalTableEntry_String_Token_List_( RogueClassTableEntry_String_Token_List_* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2047,7 +2047,7 @@ struct RogueClassTableKeysIterator_String_Cmd_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_Cmd_*,cur);
 
-  RogueClassTableKeysIterator_String_Cmd_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_String_Cmd_) ); }
+  RogueClassTableKeysIterator_String_Cmd_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_String_Cmd_) ); }
 
   RogueClassTableKeysIterator_String_Cmd_( RogueClassTableEntry_String_Cmd_* cur ) : cur(cur) {}
 
@@ -2059,7 +2059,7 @@ struct RogueOptionalType
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassType*,value);
   RogueLogical exists;
 
-  RogueOptionalType() { memset( this, 0, sizeof(RogueOptionalType) ); }
+  RogueOptionalType() { memset( (void*)this, 0, sizeof(RogueOptionalType) ); }
 
   RogueOptionalType( RogueClassType* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2070,7 +2070,7 @@ struct RogueOptionalMethod
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassMethod*,value);
   RogueLogical exists;
 
-  RogueOptionalMethod() { memset( this, 0, sizeof(RogueOptionalMethod) ); }
+  RogueOptionalMethod() { memset( (void*)this, 0, sizeof(RogueOptionalMethod) ); }
 
   RogueOptionalMethod( RogueClassMethod* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2080,7 +2080,7 @@ struct RogueClassTableValuesIterator_String_CyProperty_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_CyProperty_*,cur);
 
-  RogueClassTableValuesIterator_String_CyProperty_() { memset( this, 0, sizeof(RogueClassTableValuesIterator_String_CyProperty_) ); }
+  RogueClassTableValuesIterator_String_CyProperty_() { memset( (void*)this, 0, sizeof(RogueClassTableValuesIterator_String_CyProperty_) ); }
 
   RogueClassTableValuesIterator_String_CyProperty_( RogueClassTableEntry_String_CyProperty_* cur ) : cur(cur) {}
 
@@ -2092,7 +2092,7 @@ struct RogueOptionalCyProperty
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassCyProperty*,value);
   RogueLogical exists;
 
-  RogueOptionalCyProperty() { memset( this, 0, sizeof(RogueOptionalCyProperty) ); }
+  RogueOptionalCyProperty() { memset( (void*)this, 0, sizeof(RogueOptionalCyProperty) ); }
 
   RogueOptionalCyProperty( RogueClassCyProperty* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2102,7 +2102,7 @@ struct RogueClassTableValuesIterator_Type_CyClass_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_Type_CyClass_*,cur);
 
-  RogueClassTableValuesIterator_Type_CyClass_() { memset( this, 0, sizeof(RogueClassTableValuesIterator_Type_CyClass_) ); }
+  RogueClassTableValuesIterator_Type_CyClass_() { memset( (void*)this, 0, sizeof(RogueClassTableValuesIterator_Type_CyClass_) ); }
 
   RogueClassTableValuesIterator_Type_CyClass_( RogueClassTableEntry_Type_CyClass_* cur ) : cur(cur) {}
 
@@ -2114,7 +2114,7 @@ struct RogueOptionalCyClass
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassCyClass*,value);
   RogueLogical exists;
 
-  RogueOptionalCyClass() { memset( this, 0, sizeof(RogueOptionalCyClass) ); }
+  RogueOptionalCyClass() { memset( (void*)this, 0, sizeof(RogueOptionalCyClass) ); }
 
   RogueOptionalCyClass( RogueClassCyClass* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2124,7 +2124,7 @@ struct RogueClassTableValuesIterator_String_CyMethod_List_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_CyMethod_List_*,cur);
 
-  RogueClassTableValuesIterator_String_CyMethod_List_() { memset( this, 0, sizeof(RogueClassTableValuesIterator_String_CyMethod_List_) ); }
+  RogueClassTableValuesIterator_String_CyMethod_List_() { memset( (void*)this, 0, sizeof(RogueClassTableValuesIterator_String_CyMethod_List_) ); }
 
   RogueClassTableValuesIterator_String_CyMethod_List_( RogueClassTableEntry_String_CyMethod_List_* cur ) : cur(cur) {}
 
@@ -2136,7 +2136,7 @@ struct RogueOptionalCyMethod_List
   ROGUE_DEF_COMPOUND_REF_PROP(RogueCyMethod_List*,value);
   RogueLogical exists;
 
-  RogueOptionalCyMethod_List() { memset( this, 0, sizeof(RogueOptionalCyMethod_List) ); }
+  RogueOptionalCyMethod_List() { memset( (void*)this, 0, sizeof(RogueOptionalCyMethod_List) ); }
 
   RogueOptionalCyMethod_List( RogueCyMethod_List* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2146,7 +2146,7 @@ struct RogueClassTableValuesIterator_Type_PyClass_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_Type_PyClass_*,cur);
 
-  RogueClassTableValuesIterator_Type_PyClass_() { memset( this, 0, sizeof(RogueClassTableValuesIterator_Type_PyClass_) ); }
+  RogueClassTableValuesIterator_Type_PyClass_() { memset( (void*)this, 0, sizeof(RogueClassTableValuesIterator_Type_PyClass_) ); }
 
   RogueClassTableValuesIterator_Type_PyClass_( RogueClassTableEntry_Type_PyClass_* cur ) : cur(cur) {}
 
@@ -2158,7 +2158,7 @@ struct RogueOptionalPyClass
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassPyClass*,value);
   RogueLogical exists;
 
-  RogueOptionalPyClass() { memset( this, 0, sizeof(RogueOptionalPyClass) ); }
+  RogueOptionalPyClass() { memset( (void*)this, 0, sizeof(RogueOptionalPyClass) ); }
 
   RogueOptionalPyClass( RogueClassPyClass* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2168,7 +2168,7 @@ struct RogueClassTableValuesIterator_String_PyMethod_List_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_PyMethod_List_*,cur);
 
-  RogueClassTableValuesIterator_String_PyMethod_List_() { memset( this, 0, sizeof(RogueClassTableValuesIterator_String_PyMethod_List_) ); }
+  RogueClassTableValuesIterator_String_PyMethod_List_() { memset( (void*)this, 0, sizeof(RogueClassTableValuesIterator_String_PyMethod_List_) ); }
 
   RogueClassTableValuesIterator_String_PyMethod_List_( RogueClassTableEntry_String_PyMethod_List_* cur ) : cur(cur) {}
 
@@ -2180,7 +2180,7 @@ struct RogueOptionalPyMethod_List
   ROGUE_DEF_COMPOUND_REF_PROP(RoguePyMethod_List*,value);
   RogueLogical exists;
 
-  RogueOptionalPyMethod_List() { memset( this, 0, sizeof(RogueOptionalPyMethod_List) ); }
+  RogueOptionalPyMethod_List() { memset( (void*)this, 0, sizeof(RogueOptionalPyMethod_List) ); }
 
   RogueOptionalPyMethod_List( RoguePyMethod_List* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2191,7 +2191,7 @@ struct RogueOptionalValue
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassValue*,value);
   RogueLogical exists;
 
-  RogueOptionalValue() { memset( this, 0, sizeof(RogueOptionalValue) ); }
+  RogueOptionalValue() { memset( (void*)this, 0, sizeof(RogueOptionalValue) ); }
 
   RogueOptionalValue( RogueClassValue* value, bool exists=true ) : value(value), exists(exists) {}
 };
@@ -2201,7 +2201,7 @@ struct RogueClassUnixConsoleMouseEventType
   // PROPERTIES
   RogueInt32 value;
 
-  RogueClassUnixConsoleMouseEventType() { memset( this, 0, sizeof(RogueClassUnixConsoleMouseEventType) ); }
+  RogueClassUnixConsoleMouseEventType() { memset( (void*)this, 0, sizeof(RogueClassUnixConsoleMouseEventType) ); }
 
   RogueClassUnixConsoleMouseEventType( RogueInt32 value ) : value(value) {}
 
@@ -2212,7 +2212,7 @@ struct RogueClassTableKeysIterator_String_Logical_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_String_Logical_*,cur);
 
-  RogueClassTableKeysIterator_String_Logical_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_String_Logical_) ); }
+  RogueClassTableKeysIterator_String_Logical_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_String_Logical_) ); }
 
   RogueClassTableKeysIterator_String_Logical_( RogueClassTableEntry_String_Logical_* cur ) : cur(cur) {}
 
@@ -2225,7 +2225,7 @@ struct RogueClassListIterator_CmdSelectCase_
   RogueInt32 position;
   RogueInt32 limit;
 
-  RogueClassListIterator_CmdSelectCase_() { memset( this, 0, sizeof(RogueClassListIterator_CmdSelectCase_) ); }
+  RogueClassListIterator_CmdSelectCase_() { memset( (void*)this, 0, sizeof(RogueClassListIterator_CmdSelectCase_) ); }
 
   RogueClassListIterator_CmdSelectCase_( RogueCmdSelectCase_List* list, RogueInt32 position, RogueInt32 limit ) : list(list), position(position), limit(limit) {}
 
@@ -2236,7 +2236,7 @@ struct RogueClassTableKeysIterator_Int32_Logical_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_Int32_Logical_*,cur);
 
-  RogueClassTableKeysIterator_Int32_Logical_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_Int32_Logical_) ); }
+  RogueClassTableKeysIterator_Int32_Logical_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_Int32_Logical_) ); }
 
   RogueClassTableKeysIterator_Int32_Logical_( RogueClassTableEntry_Int32_Logical_* cur ) : cur(cur) {}
 
@@ -2247,7 +2247,7 @@ struct RogueClassTableKeysIterator_Type_Logical_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_Type_Logical_*,cur);
 
-  RogueClassTableKeysIterator_Type_Logical_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_Type_Logical_) ); }
+  RogueClassTableKeysIterator_Type_Logical_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_Type_Logical_) ); }
 
   RogueClassTableKeysIterator_Type_Logical_( RogueClassTableEntry_Type_Logical_* cur ) : cur(cur) {}
 
@@ -2258,7 +2258,7 @@ struct RogueClassTableKeysIterator_Method_Logical_
   // PROPERTIES
   ROGUE_DEF_COMPOUND_REF_PROP(RogueClassTableEntry_Method_Logical_*,cur);
 
-  RogueClassTableKeysIterator_Method_Logical_() { memset( this, 0, sizeof(RogueClassTableKeysIterator_Method_Logical_) ); }
+  RogueClassTableKeysIterator_Method_Logical_() { memset( (void*)this, 0, sizeof(RogueClassTableKeysIterator_Method_Logical_) ); }
 
   RogueClassTableKeysIterator_Method_Logical_( RogueClassTableEntry_Method_Logical_* cur ) : cur(cur) {}
 
@@ -2271,7 +2271,7 @@ struct RogueClassDate
   RogueInt32 month;
   RogueInt32 day;
 
-  RogueClassDate() { memset( this, 0, sizeof(RogueClassDate) ); }
+  RogueClassDate() { memset( (void*)this, 0, sizeof(RogueClassDate) ); }
 
   RogueClassDate( RogueInt32 year, RogueInt32 month, RogueInt32 day ) : year(year), month(month), day(day) {}
 
@@ -2282,7 +2282,7 @@ struct RogueClassTime
   // PROPERTIES
   RogueReal64 total_seconds;
 
-  RogueClassTime() { memset( this, 0, sizeof(RogueClassTime) ); }
+  RogueClassTime() { memset( (void*)this, 0, sizeof(RogueClassTime) ); }
 
   RogueClassTime( RogueReal64 total_seconds ) : total_seconds(total_seconds) {}
 
@@ -2293,7 +2293,7 @@ struct RogueClassTimestamp
   // PROPERTIES
   RogueReal64 value;
 
-  RogueClassTimestamp() { memset( this, 0, sizeof(RogueClassTimestamp) ); }
+  RogueClassTimestamp() { memset( (void*)this, 0, sizeof(RogueClassTimestamp) ); }
 
   RogueClassTimestamp( RogueReal64 value ) : value(value) {}
 
@@ -2306,7 +2306,7 @@ struct RogueClassDateInterval
   RogueInt32 months;
   RogueInt32 days;
 
-  RogueClassDateInterval() { memset( this, 0, sizeof(RogueClassDateInterval) ); }
+  RogueClassDateInterval() { memset( (void*)this, 0, sizeof(RogueClassDateInterval) ); }
 
   RogueClassDateInterval( RogueInt32 years, RogueInt32 months, RogueInt32 days ) : years(years), months(months), days(days) {}
 
