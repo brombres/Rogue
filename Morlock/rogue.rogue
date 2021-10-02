@@ -14,7 +14,7 @@ class RoguePackage : Package
       build
       install_executable( &dest_filename="roguec" )
 
-      local libs = Files( archive_folder/"Source/Libraries", "**/*.rogue" )
+      local libs = Files( archive_folder/"Source/Libraries", "**" )
       File.sync_from( libs, install_folder/"Libraries" )
 
     method handle_uninstall
