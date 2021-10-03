@@ -3339,6 +3339,7 @@ struct RogueClassRogueC : RogueObject
   RogueLogical all_methods_callable_dynamically;
   RogueString_List* todo_keywords;
   RogueLogical omit_line_numbers;
+  RogueLogical quiet;
   RogueLogical compile_output;
   RogueString* compiler_name;
   RogueString_List* compiler_options;
