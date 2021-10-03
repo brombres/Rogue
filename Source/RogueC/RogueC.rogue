@@ -1,5 +1,5 @@
-$define ROGUE_RELEASE_VERSION "1.9.3"
-$define ROGUE_RELEASE_DATE "October 1, 2021"
+$define ROGUE_RELEASE_VERSION "1.9.4"
+$define ROGUE_RELEASE_DATE "October 2, 2021"
 
 $include "Version.rogue" [optional]
 
@@ -122,6 +122,9 @@ $endIf
 
     omit_line_numbers = false
     # If true, don't emit #line directives
+
+    quiet = false
+    # Suppress non-error output.
 
     compile_output    : Logical
     compiler_name     : String
@@ -323,6 +326,9 @@ $endIf
                    |    them to the backend compiler.  Can be specified more than once.  Only
                    |    works with the C++ target.
                    |
+                   |  --quiet
+                   |    Suppresses normal compilation output. Errors are still displayed.
+                   |
                    |  --release
                    |    Compiles generated C++ code with full optimization enabled. Only takes
                    |    effect if --compile or --execute are specified.
@@ -458,7 +464,7 @@ $endIf
       throw RogueError( ''Compile target "$" is not supported.'' (target_list) )
 
     method on_compile_finished
-      println "SUCCESS ($)" (stopwatch)
+      if (not quiet) println "SUCCESS ($)" (stopwatch)
 
     method set_include_attributes( t:Token, filepath:String, attributes:IncludeAttributes, &including_folder )
       local file = find_source_file( t, filepath, &=including_folder )
@@ -705,6 +711,9 @@ $endIf
               compile_output = true
               if (value.count == 0) throw RogueError( ''Expected a package name after "--pkg-config=".'' )
               pkg_config_pkgs.add( value )
+
+            case "--quiet"
+              quiet = true
 
             case "--execute"
               generate_main = true

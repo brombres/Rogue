@@ -184,7 +184,7 @@ augment Program
       if (RogueC.compile_targets["Cython"] or RogueC.compile_targets["Python"]) base_cpp_filepath += "_module"
 
       # .H header -------------------------------------------------------------
-      println "Writing $.h..." (base_cpp_filepath)
+      if (not RogueC.quiet) println "Writing $.h..." (base_cpp_filepath)
       local writer = CPPWriter( base_cpp_filepath + ".h" )
 
       # Header
@@ -364,7 +364,7 @@ augment Program
       # .CPP/.MM implementation ---------------------------------------------------
       local extension = "cpp"
       if (RogueC.compile_targets["ObjC"]) extension = "mm"
-      println "Writing $.$..." (base_cpp_filepath,extension)
+      if (not RogueC.quiet) println "Writing $.$..." (base_cpp_filepath,extension)
       writer = CPPWriter( "$.$" (base_cpp_filepath,extension) )
 
       local base_filename = File.filename( base_cpp_filepath )
@@ -2220,8 +2220,10 @@ augment RogueC
           endForEach
           if (RogueC.compiler_options.count) cmd += " " + " ".join(RogueC.compiler_options)
           if (execute_args) cmd += " && ./$ $" (exe,execute_args)
-          println cmd
-          println
+          if (not RogueC.quiet)
+            println cmd
+            println
+          endIf
           if (System.run(cmd)) System.exit( 1 )
         endBlock
 

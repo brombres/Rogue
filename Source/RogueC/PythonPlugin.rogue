@@ -1915,7 +1915,7 @@ augment Program
 
       if (cyclasses.count == 0) return
 
-      println "Writing $.py..." (filepath)
+      if (not RogueC.quiet) println "Writing $.py..." (filepath)
       local writer = CPPWriter( filepath + ".py" )
 
       # From this point on filepath is used to refer to the RogueC-generated
