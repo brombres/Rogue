@@ -56,6 +56,13 @@ routine rogo_debug
   rogo_rebuild
 endRoutine
 
+routine rogo_release
+  Build.ROGUEC_FLAGS     += " --release"
+  Build.CPP_FLAGS_UNIX    = "-O3"
+  Build.CPP_FLAGS_WINDOWS = "/Ob2ity /GF /Gy"
+  rogo_rebuild
+endRoutine
+
 routine compile_rogue
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local cpp_filepath = "Build/$.cpp" (Build.PROJECT)
