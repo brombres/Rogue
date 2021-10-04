@@ -35,6 +35,19 @@ class LineRebuilder : LineReader, BufferedPrintWriter<<builder>>
       close
       return false
 
+    method rebuild( filter:Function(String)->String )->String
+      forEach (line in this)
+        line = filter(line)
+        if (line)
+          println( line )
+        else
+          local result = builder->String
+          if (file) file.save( result )
+          return result
+        endIf
+      endForEach
+      return builder->String
+
     method save
       require file
       file.save( builder->String )
