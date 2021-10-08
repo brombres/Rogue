@@ -416,6 +416,93 @@ routine rogo_help( command="":String )
   println
 endRoutine
 
+routine project_has_uncommitted_changes->Logical
+  local result = Process.run( "git status --porcelain", &env )
+  if (not result.success)
+    Console.error.println result->String
+    System.exit 1
+  endIf
+
+  local lines = result->String.trimmed.split('\n').[discard($.begins_with("??"))]
+  return not lines.is_empty
+endRoutine
+
+routine current_version->String
+  local file = File( "Source/RogueC/RogueC.rogue" )
+  local content = file.load_as_string
+  return content.extract_string( ''*define ROGUE_RELEASE_VERSION "$"*'' )
+endRoutine
+
+routine rogo_commit( new_version="":String )
+  local current_version = current_version
+  local new_date = Date.today->String( &verbose )
+
+  if (new_version == "")
+    local next_version_parts = current_version.split('.')
+    next_version_parts.last = (next_version_parts.last->Int32 + 1)->String
+    local next_version = next_version_parts.join('.')
+    new_version = Console.input( "Version to publish [default: $]: "(next_version) )
+    if (new_version == "") new_version = next_version
+  endIf
+
+  if (new_version.begins_with('v',&ignore_case)) new_version .= from(1)
+
+  block file = File( "Source/RogueC/RogueC.rogue" )
+    local content = file.load_as_string
+
+    content = content.replacing_pattern(
+      ''define ROGUE_RELEASE_VERSION "$"'',
+      ''define ROGUE_RELEASE_VERSION "$"''(new_version)
+    )
+
+    content = content.replacing_pattern(
+      ''define ROGUE_RELEASE_DATE "$"'',
+      ''define ROGUE_RELEASE_DATE "$"''(new_date)
+    )
+
+    file.save( content )
+  endBlock
+
+  block file = File( "README.md" )
+    local content = file.load_as_string
+    local builder = StringBuilder( content.count*1.1 )
+    local is_version_line = false
+    forEach (line in LineReader(content))
+      if (is_version_line)
+        builder.println( "- v$ - $" (new_version,new_date) )
+        is_version_line = false
+      elseIf (line == "# Version")
+        builder.println( line )
+        is_version_line = true
+      else
+        builder.println( line )
+      endIf
+    endForEach
+    file.save( builder->String )
+  endBlock
+
+  rogo_build
+  rogo_update_bootstrap
+
+  if (project_has_uncommitted_changes)
+    execute ''git commit -am "[v$]"'' (new_version)
+  endIf
+endRoutine
+
+routine rogo_publish( new_version="":String )
+  if (new_version != "" or project_has_uncommitted_changes)
+    rogo_commit( new_version )
+  endIf
+  if (new_version == "") new_version = current_version
+
+  execute @|git push
+           |git checkout master
+           |git pull
+           |git merge develop
+           |git push
+           |git checkout develop
+  execute "gh release create v"+new_version
+endRoutine
 
 routine get_syntax( m_name:String )->String
   if (Build.rogo_syntax.contains(m_name))
