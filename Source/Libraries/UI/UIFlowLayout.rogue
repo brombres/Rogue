@@ -123,6 +123,7 @@ class UIFlowLayout : UILayout
       local max_width = container.size.x
       local line_height = 0
       local i = 0
+      local i1 = 0
       while (i < subcomponents.count)
         local component = subcomponents[i]
 
@@ -145,6 +146,8 @@ class UIFlowLayout : UILayout
           # Advance to next line
           cursor = XY( x1, cursor.y+line_height+line_spacing )
           line_height = 0
+          justify( subcomponents, i1, i-1, max_width )
+          i1 = i
           nextIteration
         endIf
 
@@ -157,10 +160,26 @@ class UIFlowLayout : UILayout
         if (component.is_br)
           cursor = XY( x1, cursor.y+line_height+line_spacing )
           line_height = 0
+          justify( subcomponents, i1, i-1, max_width )
+          i1 = i
         endIf
 
         ++i
       endWhile
+      justify( subcomponents, i1, i-1, max_width )
+
+    method justify( subcomponents:UIComponent[], i1:Int32, i2:Int32, max_width:Int32 )
+      if (i2 < i1) return
+      localize alignment
+      if (alignment.position.x == 0.0) return  # already left-justified
+
+      max_width -= subcomponents[ forEach in i1..i2 ].size.x
+      local delta = (max_width * alignment.position.x).floor
+      if (delta)
+        forEach (i in i1..i2)
+          subcomponents[i].position += XY(delta,0)
+        endForEach
+      endIf
 
 endClass
 

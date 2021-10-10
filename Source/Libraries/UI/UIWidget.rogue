@@ -14,10 +14,10 @@ class UIWidget : UIComponent
 
     method init( component:UIComponent )
       prior.init( component )
+      component.anchor = Anchor.CENTER
 
     method init( label:String )
-      init( UIText(label) )
-      alignment = Anchor.CENTER
+      init( UIContent(UIText(label)).[alignment=Anchor.CENTER] )
 
     method handle_select
       if (_on_select) _on_select()

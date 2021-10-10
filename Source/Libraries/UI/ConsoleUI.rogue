@@ -139,10 +139,7 @@ class ConsoleUITheme : UITheme [singleton]
 
     method on_draw( component:UIText )
       local text = component.text
-      local font = component.font
-      local text_size = font.measure( text )
-      local position  = Box(text_size).positioned_within( component.display_bounds, component.alignment ).position.floor
-      font.draw( text, position )
+      component.font.draw( text, component )
 endClass
 
 class ConsoleUICanvas : TextCanvas [singleton]

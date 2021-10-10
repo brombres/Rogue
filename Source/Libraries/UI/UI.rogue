@@ -31,6 +31,9 @@ $include "UIWidget.rogue"
 class UIResizeEvent( size:XY ) [compound];
 
 class UI [singleton]
+  GLOBAL PROPERTIES
+    default_theme = UITheme()
+
   PROPERTIES
     bounds : Box
     layers = UIStackLayout()
@@ -79,6 +82,9 @@ class UI [singleton]
 
     method default_font->UIFont
       return theme.default_font
+
+    method default_theme->UITheme
+      return @default_theme
 
     method description->String
       return layers->String
@@ -218,6 +224,11 @@ class UI [singleton]
 
     method set_clip( @clip )
       noAction # Override in specialized UI to have clip take effect
+
+    method theme->UITheme
+      if (@theme) return @theme
+      theme = default_theme
+      return @theme
 
     method update
       UI = this
