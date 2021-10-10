@@ -36,6 +36,8 @@ class UIWidget : UIComponent
       return (widget_state == UIWidgetState.TARGETED)
 
     method on( e:PointerEvent )
+      if (is_disabled) return
+
       local contains_e = contains( e )
       if (contains_e or has_pointer_focus or is_targeted)
         request_redraw
@@ -83,7 +85,7 @@ class UIWidget : UIComponent
 
     method set_disabled( setting:Logical )
       if (setting == is_disabled) return
-      widget_state = which{ is_disabled:UIWidgetState.DISABLED || UIWidgetState.IDLE }
+      widget_state = which{ setting:UIWidgetState.DISABLED || UIWidgetState.IDLE }
 
     method set_on_select( _on_select )
 
