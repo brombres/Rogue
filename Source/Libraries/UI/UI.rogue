@@ -73,6 +73,12 @@ class UI [singleton]
     method add( layer:UIComponent )
       layers.add( layer )
 
+    method clear
+      layers.clear
+      clear_focus
+      dirty_bounds = null
+      clip = null
+
     method clear_focus
       keyboard_focus = null
       pointer_focus = null
