@@ -200,6 +200,13 @@ class UI [singleton]
     method on_update
       noAction
 
+    method on_update_layout
+      # Called after a 'bounds' change to build or rebuild the layout.
+      noAction
+
+    method perform_layout
+      layers.update_layout( bounds )
+
     method release_focus
       release_keyboard_focus
       release_pointer_focus
@@ -252,14 +259,15 @@ class UI [singleton]
 
     method update_layout( new_bounds:Box )
       UI = this
-      if (layers.count)
-        local bounds_changed = (bounds != new_bounds)
+      local bounds_changed = (bounds != new_bounds)
+      if (bounds_changed)
         bounds = new_bounds
         if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire UI
+        on_update_layout
+      endIf
 
-        if (bounds_changed or layers.is_modified)
-          layers.update_layout( new_bounds )
-        endIf
+      if (layers.count and (bounds_changed or layers.is_modified))
+        perform_layout
       endIf
 
 endClass
