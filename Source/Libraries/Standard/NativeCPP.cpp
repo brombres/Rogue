@@ -44,10 +44,12 @@
 #endif
 
 #if defined(__APPLE__)
-  #if defined(TRUE)
-    // Prevent dyld from redefining TRUE & FALSE in an incompatible way
-    #define ENUM_DYLD_BOOL
+  // Prevent dyld from redefining TRUE & FALSE in an incompatible way
+  #if !defined(TRUE)
+    #define TRUE  1
+    #define FALSE 0
   #endif
+  #define ENUM_DYLD_BOOL
   #include <mach-o/dyld.h>
 #endif
 
