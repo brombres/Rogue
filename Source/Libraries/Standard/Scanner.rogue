@@ -82,26 +82,42 @@ class Scanner : Reader<<Character>>
       init( String(source), &=spaces_per_tab, &=preserve_crlf )
 
     method consume( ch:Character )->Logical
-      if (peek != ch) return false
+      if (position == count or data[position] != ch) return false
       read
       return true
 
     method consume( text:String )->Logical
+      if (position + text.count > count) return false
       forEach (ch at index in text)
-        if (ch != peek(index)) return false
+        if (ch != data[position+index]) return false
       endForEach
 
       # Found a match; discard the characters
+      # Must read() each one to track line & column correctly
       loop (text.count) read
 
       return true
 
+    method consume_any( ch:Character )->Logical
+      if (not consume(ch)) return false
+      while (consume(ch)) noAction
+      return true
+
     method consume_any( characters:String )->Logical
-      local ch = peek
-      forEach (possible_match in characters)
-        if (ch == possible_match) read; return true
-      endForEach
-      return false
+      local found_any = false
+      while (position < count)
+        contingent
+          local ch = data[position]
+          forEach (possible_match in characters)
+            sufficient (ch == possible_match)
+          endForEach
+          return found_any
+        satisfied
+          read
+          found_any = true
+        endContingent
+      endWhile
+      return found_any
 
     method consume_id( text:String )->Logical
       local ch = peek( text.count )
