@@ -123,6 +123,9 @@ class Scanner : Reader<<Character>>
       while (consume(' ') or consume('\t')) found = true
       return found
 
+    method location->ScannerLocation
+      return ScannerLocation( position, line, column )
+
     method has_another->Logical
       return (position < count)
 
@@ -359,8 +362,13 @@ class Scanner : Reader<<Character>>
       while (has_another and line < new_line)     read
       while (has_another and column < new_column) read
 
-    method set_location( line, column )->Scanner
-      return this
+    method set_location( line, column )
+
+    method set_location( loc:ScannerLocation )
+      position = loc.position
+      line = loc.line
+      column = loc.column
 
 endClass
 
+class ScannerLocation( position:Int32, line:Int32, column:Int32 ) [compound];
