@@ -98,6 +98,9 @@ class Scanner : Reader<<Character>>
 
       return true
 
+    method consume( pattern:ScanPattern, buffer=null:StringBuilder )->Logical
+      return pattern.scan( this, buffer )
+
     method consume_any( ch:Character )->Logical
       if (not consume(ch)) return false
       while (consume(ch)) noAction
@@ -151,6 +154,9 @@ class Scanner : Reader<<Character>>
     method next_is( ch:Character )->Logical
       if (position == count) return 0
       return (ch == data[position])
+
+    method next_is( pattern:ScanPattern )->Logical
+      return pattern.is_next( this )
 
     method next_is_hex_digit->Logical
       local ch = peek

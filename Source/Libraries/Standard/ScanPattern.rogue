@@ -1,0 +1,362 @@
+class ScanPattern
+  # A regex-like class.
+  #
+  # A Scanner can:
+  # - consume(pattern:ScanPattern,[optional-buffer:String])->Logical
+  # - next_is(pattern:ScanPattern)->Logical
+  #
+  # Special characters:
+  #   {...} - Defines a subgroup which can contain any pattern elements
+  #   [...] - Defines a set of characters, only one of which needs match
+  #   .     - Wild card, matches any character
+  #   *     - zero or more of the preceding
+  #   +     - one or more of the preceding
+  #   ?     - preceding is optional (zero or one occurrence)
+  #
+  # Example scan patterns:
+  # - Match a typical identifier or variable name:
+  #   ScanPattern( "[_a-zA-Z][_a-zA-Z0-9]*" )
+  #
+  # - Match a simple integer or real number:
+  #   ScanPattern( "[0-9]+{\\.[0-9]*}?" )
+  #
+  # local pattern = ScanPattern( scan-pattern )
+  #   # scan-pattern  = sequence [allowed-count] | set [allowed-count] | "{" scan-pattern "}"
+  #   # sequence      = [literal-character | "\" literal_character | "."] [allowed-count]
+  #   # allowed-count = ["*" | "+" | "?"]
+  #   # set           = "[" [single-character | L-H]+ "]"
+  #
+  GLOBAL METHODS
+    method create( pattern:String )->ScanPattern
+      return ScanPatternRoot( ScanPatternParser.parse(pattern) )
+
+    method escape( pattern:String, at_escape:String )->String
+      use builder = StringBuilder.pool
+        forEach (ch in pattern.to_escaped_ascii('"'))
+          if (at_escape.contains(ch)) builder.print("\\\\").print(ch)
+          else                        ch.print_escaped_ascii( builder, '"' )
+        endForEach
+        return builder->String
+      endUse
+
+  METHODS
+    method is_next( scanner:Scanner )->Logical
+      local original_location = scanner.location
+      local result = scan( scanner )
+      scanner.location = original_location
+      return result
+
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      throw UnsupportedOperationError()
+endClass
+
+class ScanPatternRoot( pattern:ScanPattern ) : ScanPattern
+  METHODS
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      # Ensure that a zero-length match doesn't return 'true'
+      local og_pos = scanner.position
+      if (not pattern.scan(scanner,builder)) return false
+      return (scanner.position != og_pos)
+
+    method to->String
+      return pattern->String
+endClass
+
+class ScanPatternList( patterns:ScanPattern[] ) : ScanPattern
+  METHODS
+    method add( pattern:ScanPattern )
+      patterns.add( pattern )
+
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      local original_location = scanner.location
+      local original_count = which{ builder:builder.count || 0 }
+
+      forEach (pattern in patterns)
+        if (not pattern.scan(scanner,builder))
+          if (builder) builder.discard_from( original_count )
+          scanner.location = original_location
+          return false
+        endIf
+      endForEach
+      return true
+
+    method to->String
+      return "{$}"(patterns.join(""))
+endClass
+
+class SinglesSetScanPattern : ScanPattern
+  PROPERTIES
+    pattern    : String
+    characters : String
+    invert     : Logical
+
+  METHODS
+    method init( pattern )
+      if (pattern[0] == '^')
+        characters = pattern.unleft(1)
+        invert = true
+      else
+        characters = pattern
+      endIf
+
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      if (not scanner.has_another) return false
+      if (invert)
+        if (characters.contains(scanner.peek)) return false
+      else
+        if (not characters.contains(scanner.peek)) return false
+      endIf
+      local ch = scanner.read
+      if (builder) builder.print ch
+      return true
+
+    method to->String
+      return "[$]" (escape(pattern,"]"))
+endClass
+
+class LowHighSetScanPattern : ScanPattern
+  PROPERTIES
+    pattern    : String
+    characters : String
+    invert     : Logical
+
+  METHODS
+    method init( pattern:String )
+      # e.g.: _A-Za-z0-9 -> __AZaz09
+      this.pattern = pattern
+
+      if (pattern[0] == '^')
+        pattern .= unleft(1)  # modifies local copy only
+        invert = true
+      endIf
+
+      local pairs = String[]
+      local n = pattern.count
+      local i = 0
+      while (i < n)
+        local ch = pattern[i]
+        if (i+2 < n and pattern[i+1]=='-')
+          # Low-High pair L-H -> LH
+          pairs.add( "$$"(ch,pattern[i+2]) )
+          i += 3
+        else
+          # Single character S -> SS
+          pairs.add( "$$"(ch,ch) )
+          ++i
+        endIf
+      endWhile
+      pairs.sort( (a,b) => (a[0] <= b[0]) )
+      characters = pairs.join("")
+
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      local ch = scanner.peek
+      if (invert)
+        forEach (low at i in characters step 2)
+          if (not scanner.has_another) return false
+          if (ch < low)
+            scanner.read
+            if (builder) builder.print ch
+            return true
+          endIf
+          # else ch >= low
+          if (ch <= characters[i+1])
+            return false
+          endIf
+        endForEach
+        scanner.read
+        if (builder) builder.print ch
+        return true
+      else
+        forEach (low at i in characters step 2)
+          if (not scanner.has_another) return false
+          if (ch < low) return false
+          # else ch >= low
+          if (ch <= characters[i+1])
+            scanner.read
+            if (builder) builder.print ch
+            return true
+          endIf
+        endForEach
+        return false
+      endIf
+
+    method to->String
+      return "[$]" (pattern)
+endClass
+
+class LiteralStringScanPattern( characters:String ) : ScanPattern
+  METHODS
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      if (not scanner.consume(characters)) return false
+      if (builder) builder.print characters
+      return true
+
+    method to->String
+      return escape( characters, "{}[]*+?." )
+endClass
+
+class ZeroOrMoreScanPattern( operand:ScanPattern ) : ScanPattern
+  METHODS
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      while (operand.scan(scanner,builder)) noAction
+      return true
+
+    method to->String
+      return "$*"(operand)
+endClass
+
+class OneOrMoreScanPattern( operand:ScanPattern ) : ScanPattern
+  METHODS
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      if (not operand.scan(scanner,builder)) return false
+      while (operand.scan(scanner,builder)) noAction
+      return true
+
+    method to->String
+      return "$+"(operand)
+endClass
+
+class OptionalScanPattern( operand:ScanPattern ) : ScanPattern
+  METHODS
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      operand.scan( scanner, builder )
+      return true
+
+    method to->String
+      return "$?"(operand)
+endClass
+
+class AnyCharacterScanPattern : ScanPattern
+  METHODS
+    method init
+
+    method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
+      if (not scanner.has_another) return false
+      local ch = scanner.read
+      if (builder) builder.print( ch )
+      return true
+
+    method to->String
+      return "."
+endClass
+
+class ScanPatternParser [singleton]
+  ENUMERATE
+    PARSE_SEQ
+    PARSE_SET
+
+  PROPERTIES
+    scanner    : Scanner
+    state      : Int32
+    stack      = ScanPattern[]
+    builder    = StringBuilder()
+    list_start = Int32[]
+
+  METHODS
+    method parse( pattern:String )->ScanPattern
+      scanner = Scanner( pattern, &preserve_crlf )
+      state = PARSE_SEQ
+      stack.clear
+      builder.clear
+      list_start.clear
+
+      while (scanner.has_another)
+
+        local ch = scanner.read
+        which (state)
+          case PARSE_SEQ
+            which (ch)
+              case '['
+                _flush
+                state = PARSE_SET
+              case '{'
+                _flush
+                list_start.add( stack.count )
+              case '}'
+                _flush
+                if (list_start.count)
+                  local i1 = list_start.remove_last
+                  local patterns = stack.subset( i1 )
+                  stack.discard_from( i1 )
+                  if (patterns.count == 1) stack.add( patterns.first )
+                  else                     stack.add( ScanPatternList(patterns) )
+                endIf
+              case '*'
+                if (builder.count > 1)
+                  # Apply only to last character of current sequence
+                  local last_ch = builder.remove_last
+                  _flush
+                  builder.print last_ch
+                endIf
+                _flush
+                if (stack.count) stack.add( ZeroOrMoreScanPattern(stack.remove_last) )
+              case '+'
+                if (builder.count > 1)
+                  # Apply only to last character of current sequence
+                  local last_ch = builder.remove_last
+                  _flush
+                  builder.print last_ch
+                endIf
+                _flush
+                if (stack.count) stack.add( OneOrMoreScanPattern(stack.remove_last) )
+              case '?'
+                if (builder.count > 1)
+                  # Apply only to last character of current sequence
+                  local last_ch = builder.remove_last
+                  _flush
+                  builder.print last_ch
+                endIf
+                _flush
+                if (stack.count) stack.add( OptionalScanPattern(stack.remove_last) )
+              case '.'
+                _flush
+                stack.add( AnyCharacterScanPattern() )
+              case '\\'
+                ch = scanner.read
+                builder.print ch
+              others
+                builder.print ch
+            endWhich
+
+          case PARSE_SET
+            which (ch)
+              case ']'
+                _flush
+                state = PARSE_SEQ
+              case '\\'
+                ch = scanner.read
+                builder.print ch
+              others
+                builder.print ch
+            endWhich
+
+        endWhich
+
+      endWhile
+
+      _flush
+      if (stack.count == 1) return stack.first
+      else                  return ScanPatternList(stack.cloned)
+
+    method _flush
+      if (builder.count)
+        which (state)
+          case PARSE_SEQ
+            stack.add( LiteralStringScanPattern(builder->String) )
+          case PARSE_SET
+            stack.add( charset_to_scan_pattern(builder->String) )
+        endWhich
+        builder.clear
+      endIf
+
+    method charset_to_scan_pattern( charset:String )->ScanPattern
+      local i = charset.locate('-',1)
+      if (i.exists and i.value < charset.count-1)
+        # This set contains at least one range
+        return LowHighSetScanPattern( charset )
+      else
+        # Single characters only
+        return SinglesSetScanPattern( charset )
+      endIf
+endClass
+
