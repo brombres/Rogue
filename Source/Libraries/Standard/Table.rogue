@@ -505,6 +505,9 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
       cur = cur.next_entry
       return result
 
+    method to->String
+      return to_list->String
+
     method to->TableEntry<<$KeyType,$ValueType>>[]( result=null:TableEntry<<$KeyType,$ValueType>>[] )
       return to_list( result )
 
@@ -544,6 +547,9 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
       cur = cur.next_entry
       return result
 
+    method to->String
+      return to_list->String
+
     method to->$KeyType[]( result=null:$KeyType[] )
       return to_list( result )
 
@@ -582,6 +588,9 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
       local result = cur.value
       cur = cur.next_entry
       return result
+
+    method to->String
+      return to_list->String
 
     method to->$ValueType[]( result=null:$ValueType[] )
       return to_list( result )

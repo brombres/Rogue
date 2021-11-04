@@ -1108,6 +1108,9 @@ class TypeInfoIterator( position=0:Int32 ) [compound]
       ++position
       return TypeInfo[ position-1 ]
 
+    method to->String
+      return to_list->String
+
     method to->TypeInfo[]( result=null:TypeInfo[] )
       return to_list( result )
 

@@ -737,6 +737,9 @@ class ListIterator<<$DataType>>( list:($DataType[]), position=0:Int32, limit=-1:
       ++position
       return list[ position-1 ]
 
+    method to->String
+      return to_list->String
+
     method to->$DataType[]( result=null:$DataType[] )
       return to_list( result )
 
