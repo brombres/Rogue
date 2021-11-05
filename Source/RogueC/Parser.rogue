@@ -2251,8 +2251,10 @@ class Parser
           local_declarations.add( v )
 
           # id(...) -> this.id(...)
-          reader.push( TokenType.symbol_dot.create_token(t) )
-          reader.push( TokenType.keyword_this.create_token(t) )
+          #reader.push( TokenType.symbol_dot.create_token(t) )
+          #reader.push( TokenType.keyword_this.create_token(t) )
+          # ^ This doesn't seem necessary plus it prevents global
+          #   routines from being localized.
 
           v.initial_value = parse_expression
         endWhile
