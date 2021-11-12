@@ -47,7 +47,7 @@ class Circle( position:XY, radius:Real64 ) [compound]
     method operator/( scale:Real64 )->Circle
       return Circle( position/scale, radius/scale )
 
-    method to->String
+    method description->String
       return "(@$, r:$)" (position,radius)
 endClass
 

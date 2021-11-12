@@ -274,7 +274,7 @@ class BigInt
       if (hex)    return this->String( 16 )
       return this->String( 10 )
 
-    method to->String
+    method description->String
       if (data.count == 1) return "$" (sign_flag * (data.first & 0x0_FFFF_FFFF))
 
       if (sign_flag == -1)

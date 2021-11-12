@@ -119,7 +119,7 @@ class Action
         return null
       endIf
 
-    method to->String
+    method description->String
       local result = describe
       if (next) result = "$ + $" (result,next->String)
       if (concurrent) result = "($) | ($)" (result,concurrent)

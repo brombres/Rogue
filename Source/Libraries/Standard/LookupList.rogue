@@ -91,7 +91,7 @@ class LookupList<<$ValueType>>
         return index
       endIf
 
-    method to->String
+    method description->String
       local builder = StringBuilder()
       builder.print( '[' )
       local first = true

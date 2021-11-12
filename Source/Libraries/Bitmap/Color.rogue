@@ -87,7 +87,7 @@ class Color( argb:Int32 ) [compound]
     method with_opacity( a:Real64 )->Color
       return (Int32((argb:>>:24) * a):<<:24) | (argb & 0xffFFff)
 
-    method to->String
+    method description->String
       return argb.to_hex_string
 
     method with_alpha( a:Real64 )->Color
@@ -152,7 +152,7 @@ class Colors( a:Color, b:Color, c:Color, d:Color, count=4:Int32 ) [compound]
     method operator!->Colors
       return Colors( !a.argb, !b.argb, !c.argb, !d.argb, count )
 
-    method to->String
+    method description->String
       which (count)
         case 1: return a->String
         case 2: return "[$,$]" (a,b)

@@ -70,6 +70,6 @@ class Anchor( position:XY ) [compound]
     method operator==( other:Anchor )->Logical
       return position == other.position
 
-    method to->String
+    method description->String
       return position->String
 endClass

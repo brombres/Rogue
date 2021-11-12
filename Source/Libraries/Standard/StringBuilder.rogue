@@ -504,7 +504,7 @@ class StringBuilder : PrintWriter [essential]
       utf8[ utf8.count ] = 0
       return native( "strtod( (char*)$utf8->data->as_bytes, 0 )" )->Real64
 
-    method to->String
+    method description->String
       return String( utf8 )
 
     method write( byte:Byte )

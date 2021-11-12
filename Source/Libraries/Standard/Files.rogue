@@ -142,7 +142,7 @@ class Files
       endForEach
       return this
 
-    method to->String
+    method description->String
       return filepaths->String[]
 
     method to->String[]

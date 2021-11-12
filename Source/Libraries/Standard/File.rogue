@@ -1244,7 +1244,7 @@ class File
     method append_writer->FileWriter
       return File.append_writer( this.filepath )
 
-    method to->String
+    method description->String
       return filepath
 endClass
 
@@ -1710,7 +1710,7 @@ class FilePattern( pattern:String ) [compound]
     method matches( st:String )->Logical
       return File.matches_wildcard_pattern( st, pattern )
 
-    method to->String
+    method description->String
       return pattern
 endClass
 

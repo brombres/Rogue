@@ -35,7 +35,7 @@ class TimeInterval( total_seconds:Real64 ) [compound]
     method operator==( other:TimeInterval )->Logical
       return (total_seconds == other.total_seconds)
 
-    method to->String
+    method description->String
       local buffer = StringBuilder()
 
       if (total_seconds < 0) buffer.print( '-' )

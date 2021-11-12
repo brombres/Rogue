@@ -112,13 +112,13 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
       local bottom_right = a.or_larger(b).or_larger(c).or_larger(d)
       return Box( top_left, bottom_right - top_left )
 
-    method to->String
+    method description->String
       return "[$ $ $ $]" (a,b,c,d)
 endClass
 
 class Quad<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
   METHODS
-    method to->String
+    method description->String
       return "[$ $ $ $]" (a,b,c,d)
 endClass
 

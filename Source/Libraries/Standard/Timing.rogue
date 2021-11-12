@@ -54,7 +54,7 @@ class Stopwatch
       start_time += delta_time
       return this
 
-    method to->String
+    method description->String
       return StringBuilder().print( elapsed, 2 ).print( " seconds" )->String
 
 endClass
@@ -125,7 +125,7 @@ class Timer
       if (time_fn) return time_fn()
       else         return System.time
 
-    method to->String
+    method description->String
       return StringBuilder().print( elapsed, 2 ).print( '/' ).print( duration, 2 ).print( " seconds" )->String
 
 endClass

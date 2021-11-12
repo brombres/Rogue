@@ -133,7 +133,7 @@ class Spreadsheet
 
       columns[ column ][ row ].value = value
 
-    method to->String
+    method description->String
       use builder = StringBuilder.pool
         forEach (row in rows)
           forEach (cell at i in row)
@@ -197,7 +197,7 @@ class Row : Header
     method set( column_index:Int32, value:Value )
       table.set( column_index, index, value )
 
-    method to->String
+    method description->String
       use builder = StringBuilder.pool
         forEach (cell at i in cells)
           if (i > 0) builder.print( ' ' )
@@ -216,7 +216,7 @@ class Column : Header
     method set( row_index:Int32, value:Value )
       table.set( index, row_index, value )
 
-    method to->String
+    method description->String
       use builder = StringBuilder.pool
         forEach (cell at i in cells)
           if (i > 0) builder.println
@@ -327,7 +327,7 @@ class Cell
     method to->Real64
       return value->Real64
 
-    method to->String
+    method description->String
       return value->String
 
 endClass

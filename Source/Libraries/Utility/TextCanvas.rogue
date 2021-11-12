@@ -496,7 +496,7 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       flush
       return @style
 
-    method to->String
+    method description->String
       flush
       local builder = StringBuilder()
       display( builder )

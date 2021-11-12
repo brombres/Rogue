@@ -88,7 +88,7 @@ class DateTime( date:Date, time:Time ) [compound]
     method to->Date
       return date
 
-    method to->String
+    method description->String
       return "$ $" (date,time)
       # Equivalent to:
       #   return "D(yyyy-mm-dd) T(hh:mm:ss)"

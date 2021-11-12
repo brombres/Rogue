@@ -44,7 +44,7 @@ class UUID
       local e = st.substring( 20, 12 )
       as_string = "$-$-$-$-$" (a,b,c,d,e)
 
-    method to->String
+    method description->String
       return as_string
 endClass
 

@@ -316,7 +316,7 @@ class XY( x:Real64, y:Real64 ) [compound]
     method sum->Real64
       return x + y
 
-    method to->String
+    method description->String
       return StringBuilder().print( "[" ).print( x, 2 ).print( "," ).print( y, 2 ).print( "]" )->String
 
     method to->Value( &integer )

@@ -60,7 +60,7 @@ class VersionNumber( version:String, kludge=true:Logical ) [compound]
       endForEach
       return result
 
-    method to->String
+    method description->String
       return version
 
 endClass

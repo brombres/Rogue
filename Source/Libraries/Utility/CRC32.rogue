@@ -35,7 +35,7 @@ class CRC32( hash=0:Int32 ) [compound]
     method to->Int32
       return hash
 
-    method to->String
+    method description->String
       return hash->String(&hex)
 
   GLOBAL PROPERTIES

@@ -850,7 +850,7 @@ class Bitmap
               |}
       return this
 
-    method to->String
+    method description->String
       return "($x$ Bitmap)" (width,height)
 
     method to_png_bytes->Byte[]

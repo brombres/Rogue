@@ -13,7 +13,7 @@ class ParseError( filepath:String, source:String, line:Int32, column:Int32, mess
       column = t.column
       source = t.source
 
-    method to->String
+    method description->String
       use builder = StringBuilder.pool
         if (filepath)
           builder.print( filepath )

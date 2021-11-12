@@ -373,7 +373,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
       return (hash_code == other.hash_code)
       # For Dates the hash code contains all necessary info so we can use it to compare safely
 
-    method to->String
+    method description->String
       return "$-$-$" (year,month.format("02"),day.format("02"))
 
     method to->String( format="yyyy-mm-dd":String, &verbose )
@@ -426,7 +426,7 @@ class DateInterval( years:Int32, months:Int32, days:Int32 ) [compound]
     method operator-( other:DateInterval )->DateInterval
       return DateInterval( years-other.years, months-other.months, days-other.days )
 
-    method to->String
+    method description->String
       local parts = String[]
       if (years)  parts.add( years.format(",") + " year".pluralized(years) )
       if (months) parts.add( months.format(",") + " month".pluralized(months) )

@@ -77,7 +77,7 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
     method rotated( angle:Radians )->Triangle
       return Triangle( a.rotated(angle), b.rotated(angle), c.rotated(angle) )
 
-    method to->String
+    method description->String
       return "($,$,$)" (a,b,c)
 
 endClass
@@ -85,6 +85,6 @@ endClass
 class Triangle<<$DataType>>( a:$DataType, b:$DataType, c:$DataType ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility
   METHODS
-    method to->String
+    method description->String
       return "($,$,$)" (a,b,c)
 endClass

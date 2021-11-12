@@ -325,7 +325,7 @@ class Table<<$KeyType,$ValueType>>
         ->Table<<$KeyType,$ValueType>>
       return cloned.sort( compare_fn )
 
-    method to->String
+    method description->String
       return print_to( StringBuilder() )->String
 
     method to->Value
@@ -466,7 +466,7 @@ class TableEntry<<$KeyType,$ValueType>>
       value = _value
       hash = _hash
 
-    method to->String
+    method description->String
       return "($:$)" (key, value)
 
     # Support tuple-like protocol for destructuring assignment
@@ -505,7 +505,7 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
       cur = cur.next_entry
       return result
 
-    method to->String
+    method description->String
       return to_list->String
 
     method to->TableEntry<<$KeyType,$ValueType>>[]( result=null:TableEntry<<$KeyType,$ValueType>>[] )
@@ -547,7 +547,7 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
       cur = cur.next_entry
       return result
 
-    method to->String
+    method description->String
       return to_list->String
 
     method to->$KeyType[]( result=null:$KeyType[] )
@@ -589,7 +589,7 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
       cur = cur.next_entry
       return result
 
-    method to->String
+    method description->String
       return to_list->String
 
     method to->$ValueType[]( result=null:$ValueType[] )

@@ -198,7 +198,7 @@ class Introspector
 
       return this
 
-    method to->String
+    method description->String
       return this->Value->String
 
     method to->Value

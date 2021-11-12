@@ -78,7 +78,7 @@ class Time( total_seconds:Real64 ) [compound]
     method removing_days->Time
       return total_seconds + days * (24*3600)
 
-    method to->String
+    method description->String
       return this->String( "hh24:mm:ss" )
 
     method to->String( format:String )

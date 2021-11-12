@@ -656,7 +656,7 @@ class List<<$DataType>> : GenericList
       data[i1] = data[i2]
       data[i2] = temp
 
-    method to->String
+    method description->String
       return "[$]" (this.join(","))
 
     method to->Value
@@ -737,7 +737,7 @@ class ListIterator<<$DataType>>( list:($DataType[]), position=0:Int32, limit=-1:
       ++position
       return list[ position-1 ]
 
-    method to->String
+    method description->String
       return to_list->String
 
     method to->$DataType[]( result=null:$DataType[] )
