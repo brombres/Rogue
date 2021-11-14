@@ -85,7 +85,6 @@ class Files
 
     method delete( &verbose )
       forEach (filepath in filepaths)
-        filepath = relative_filepath( filepath )
         if (verbose) print( "Deleting " ).println( filepath )
         File.delete( filepath )
       endForEach
