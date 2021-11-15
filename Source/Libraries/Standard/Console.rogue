@@ -313,26 +313,19 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
       local ch = b1 : Int32
 
-trace _input_bytes
       contingent
         # UTF-8
         if ((b1 & 0b1110_0000) == 0b1100_0000)
-trace
           necessary (_fill_input_buffer(1))
-trace
           ch = b1 & 0b0001_1111
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
         elseIf ((b1 & 0b1111_0000) == 0b1110_0000)
-trace
           necessary (_fill_input_buffer(2))
-trace
           ch = b1 & 0b0000_1111
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
         elseIf ((b1 & 0b1111_1000) == 0b1111_0000)
-trace
           necessary (_fill_input_buffer(3))
-trace
           ch = b1 & 0b0000_0111
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
