@@ -1,3 +1,5 @@
+uses Geometry
+
 class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
     nativeHeader
@@ -495,6 +497,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       # Console.show_cursor = true / false
       output.flush
       output.print( "\e[?25" ).print( ?:{setting:'h'||'l'} ).flush
+
+    method size->XY
+      return XY(width,height)
 
     method width->Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS

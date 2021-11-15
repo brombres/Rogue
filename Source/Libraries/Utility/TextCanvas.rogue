@@ -73,17 +73,11 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
     method crop( left:Int32, top:Int32, right:Int32, bottom:Int32 )
       expand( -left, -top, -right, -bottom )
 
-    method expand( n:Int32 )
-      expand( n, n, n, n )
-
-    method expand( left:Int32, top:Int32, right:Int32, bottom:Int32 )
-      if (left == 0 and top == 0 and right == 0 and bottom == 0) return
-      local dest = TextCanvas( width+left+right, height+top+bottom )
-      dest.draw( this, left, top )
-      buffer = dest.buffer
-      width = dest.width
-      height = dest.height
-      invalidate
+    method description->String
+      flush
+      local builder = StringBuilder()
+      display( builder )
+      return builder->String
 
     method display( output=Global:PrintWriter )
       # Prints to the standard output or a specified PrintWriter.
@@ -133,7 +127,6 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       endForEach
 
       ConsoleStyle.reset
-
 
     method display( xy:XY )
       display( xy.x, xy.y )
@@ -209,6 +202,18 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method draw( pattern:String )
       draw( Box(width,height), pattern )
+
+    method expand( n:Int32 )
+      expand( n, n, n, n )
+
+    method expand( left:Int32, top:Int32, right:Int32, bottom:Int32 )
+      if (left == 0 and top == 0 and right == 0 and bottom == 0) return
+      local dest = TextCanvas( width+left+right, height+top+bottom )
+      dest.draw( this, left, top )
+      buffer = dest.buffer
+      width = dest.width
+      height = dest.height
+      invalidate
 
     method fill( bounds:Box, ch:Character )
       fill( bounds, StyledCharacter(ch,style.current) )
@@ -492,15 +497,12 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
         endIf
       endIf
 
+    method size->XY
+      return XY(width,height)
+
     method style->CurrentCharacterStyle
       flush
       return @style
-
-    method description->String
-      flush
-      local builder = StringBuilder()
-      display( builder )
-      return builder->String
 endClass
 
 class StyledCharacter( value=' ':Character, style=CharacterStyle.NONE:CharacterStyle ) [compound]
