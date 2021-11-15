@@ -26,8 +26,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         while (byte_count)
         {
           int n = (int) write( out, utf8, byte_count );
-          if (n == -1) return;
-          byte_count -= n;
+          if (n > 0)
+          {
+            utf8 += n;
+            byte_count -= n;
+          }
         }
       }
     endNativeCode
@@ -683,7 +686,8 @@ class ConsoleStyle [singleton]
       output.flush
       output.print( "\e[" )
       output.print( code )
-      output.print( "m" ).flush
+      output.print( "m" )
+      output.flush
 
     method print( code:Int32, builder:StringBuilder )
       builder.print( "\e[" ).print( code ).print( "m" )
