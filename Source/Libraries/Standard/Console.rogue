@@ -259,10 +259,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     method _fill_event_queue_unix
       _fill_event_queue_unix_process_next
-      loop 8
-        if (_input_bytes.count) _fill_event_queue_unix_process_next
-        else                    escapeLoop
-      endLoop
 
     method _fill_event_queue_unix_process_next
       if (not _fill_input_buffer(1)) return
@@ -311,6 +307,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
             events.add ConsoleEvent( ConsoleEventType.CHARACTER, ch, 0 )
             return
           endIf
+        else
+          # Just an ESCAPE by itself
+          events.add ConsoleEvent( ConsoleEventType.CHARACTER, 27, 0 )
+          return
         endIf
       endIf
 
