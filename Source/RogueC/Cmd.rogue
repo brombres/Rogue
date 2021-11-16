@@ -2837,9 +2837,7 @@ class CmdAccess : Cmd
             if (context_type.categories)
               if ((forEach in context_type.categories).name == name) return context_type
             endIf
-          else
-            # Still parsing; assume that an enum access is returning an enum category.
-            return context_type
+          # else still parsing
           endIf
         endIf
         return null

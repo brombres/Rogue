@@ -444,10 +444,9 @@ class Type
       endIf
 
       if (is_enum)
+        add_global( t, "categories" ).type = Program.get_type_reference( t, "$[]"(name) )
         add_global( t, "names" ).type = Program.get_type_reference( t, "String[]" )
-        local g_values = add_global( t, "values" )
-        g_values.type = Program.get_type_reference( t, "Int32[]" )
-        #g_values.initial_value = CmdAccess( t, "Int32[]" )
+        add_global( t, "values" ).type = Program.get_type_reference( t, "Int32[]" )
         add_property( t, "value", Program.type_Int32 )
       endIf
 
@@ -839,6 +838,24 @@ class Type
         )) )
         m_op.organize( scope )
       endIf
+
+      block
+        # categories()->ThisType[]
+        local m_categories = add_global_method( t, "categories" )
+        m_categories.attributes.add( Attribute.is_generated )
+        m_categories.return_type = Program.get_type_reference( t, "$[]"(name) )
+        local category_list_args = CmdArgs()
+        forEach (def in categories)
+          category_list_args.add( CmdAccess(def.t,def.name) )
+        endForEach
+        local cmd_if = CmdIf( t, CmdLogicalNot(t,CmdAccess(t,"@categories")) )
+        local list_declaration = CmdAccess( t, "$[]"(name) )
+        cmd_if.statements.add( CmdAssign(t, CmdAccess(t,"categories"),
+          CmdTypedLiteralList(list_declaration,category_list_args)) )
+        m_categories.statements.add( cmd_if )
+        m_categories.statements.add( CmdReturn(t,CmdAccess(t,"@categories")) )
+        m_categories.organize( scope )
+      endBlock
 
       block
         # names()->String[]
