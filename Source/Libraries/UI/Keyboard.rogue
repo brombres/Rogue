@@ -228,6 +228,10 @@ class Keycode
           @unicode_to_keycode[ ucode ] = keycode
           unicode_to_shift_state[ ucode ] = false
         endForEach
+        @unicode_to_keycode[20] = Keycode.LEFT_ARROW
+        @unicode_to_keycode[17] = Keycode.UP_ARROW
+        @unicode_to_keycode[19] = Keycode.RIGHT_ARROW
+        @unicode_to_keycode[18] = Keycode.DOWN_ARROW
         @unicode_to_keycode['\e'] = Keycode.ESCAPE
         @unicode_to_keycode['\t'] = Keycode.TAB
         @unicode_to_keycode['\n'] = Keycode.ENTER
