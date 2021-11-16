@@ -132,19 +132,45 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       display( xy.x, xy.y )
 
     method draw( src:TextCanvas, x:Int32, y:Int32 )
+      local i1 = 0
+      local j1 = 0
       local i2 = src.width-1
       local j2 = src.height-1
+      local x2 = x + i2
+      local y2 = y + j2
 
-      forEach (j in 0..j2)
-        local cursor = XY(x,y+j)
-        local index = j*src.width
-        forEach (i in 0..i2)
-          local ch = src.buffer[ index ]
-          if (ch.value) set( cursor, ch )
-          cursor += XY(1,0)
-          ++index
+      if (x < 0) i1 += -x; x = 0
+      if (y < 0) j1 += -y; y = 0
+      if (x2 >= width)
+        local excess = (x2 - width) + 1
+        x2 -= excess
+        i2 -= excess
+      endIf
+      if (y2 >= height)
+        local excess = (y2 - height) + 1
+        y2 -= excess
+        j2 -= excess
+      endIf
+
+      if (i1 > i2 or j1 > j2) return  # completely OOB
+
+      local src_width = src.width
+      local dest_width = width
+      local src_i1  = (j1 * src_width) + i1
+      local dest_i1 = (y * dest_width) + x
+      local src_i   = (j1 * src_width) + i1
+      local dest_i  = (y * dest_width) + x
+      local src_data = src.buffer.data
+      forEach (j1..j2)
+        src_i = src_i1
+        dest_i = dest_i1
+        forEach (i1..i2)
+          buffer[dest_i] = src_data[src_i]
+          ++src_i
+          ++dest_i
         endForEach
-        println
+        src_i1 += src_width
+        dest_i1 += dest_width
       endForEach
 
     method draw( src:TextCanvas, xy:XY )
