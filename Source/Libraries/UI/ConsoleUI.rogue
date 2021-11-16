@@ -51,7 +51,7 @@ class ConsoleUI : UI
       prior.on( e )
 
     method on_update
-      loop 2048
+      loop 512
         if (Console.immediate_mode and Console.has_another_event)
           local event = Console.read_event
           which (event.type)
