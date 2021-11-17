@@ -114,6 +114,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       on_exit( function with (console=this) => console.reset_io_mode )
       @show_cursor = true
 
+    method bounds->Box
+      return Box(size)
+
     method clear( output=Global:PrintWriter )
       output.flush
       output.print( "\e[2J" ).flush
