@@ -174,7 +174,7 @@ class Real64 [primitive]
     method to->Object
       return Boxed<<Real64>>(this)
 
-    method to->String
+    method description->String
       return "" + this
 
     method to->Value
@@ -330,7 +330,7 @@ class Real32 [primitive]
     method to->Object
       return Boxed<<Real32>>(this)
 
-    method to->String
+    method description->String
       return "" + this
 
     method to->Value
@@ -602,7 +602,7 @@ class Int64 [primitive]
     method to->Object
       return Boxed<<Int64>>(this)
 
-    method to->String
+    method description->String
       if (this >= -1 and this <= 9) return this->Int32->String
       return StringBuilder().print( this )->String
 
@@ -770,7 +770,7 @@ class Int32 [primitive]
     method to->Object
       return Boxed<<Int32>>(this)
 
-    method to->String
+    method description->String
       if (this >= -1 and this <= 9)
         which (this)
           case -1: return "-1"
@@ -939,7 +939,8 @@ class Character [primitive]
         case '\e': writer.print( "\\e" )
         case '\f': writer.print( "\\f" )
         case '\n': writer.print( "\\n" )
-        case '\r': writer.print( "\\t" )
+        case '\r': writer.print( "\\r" )
+        case '\t': writer.print( "\\t" )
         case '\v': writer.print( "\\v" )
         others
           if (additional_characters_to_escape.contains(this))
@@ -968,7 +969,7 @@ class Character [primitive]
     method to->Object
       return Boxed<<Character>>(this)
 
-    method to->String
+    method description->String
       return "" + this
 
     method to->Value
@@ -1128,7 +1129,7 @@ class Byte [primitive]
     method to->Object
       return Boxed<<Byte>>(this)
 
-    method to->String
+    method description->String
       if (this <= 9) return this->Int32->String
       return "" + this
 
@@ -1198,7 +1199,7 @@ class Logical [primitive]
     method to->Object
       return Boxed<<Logical>>(this)
 
-    method to->String
+    method description->String
       return "" + this
 
     method to->Value

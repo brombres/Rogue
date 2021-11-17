@@ -43,7 +43,7 @@ class NativeArray<<$DataType>>( address:IntPtr, count:Int32 ) [compound]
       native @|$size = (RogueInt32)sizeof( $($DataType) );
       return NativeArray<<$DataType>>( address + index*size, count )
 
-    method to->String
+    method description->String
       # Not thread-safe
       return "$[$]" (<<$DataType>>.name,count)
 endClass

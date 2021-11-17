@@ -24,7 +24,7 @@ class Tokenizer
     method tokenize( reference_t:Token, filepath, data:String, column_delta=0:Int32 )->Token[]
       local characters = Character[]( data.count )
       forEach (ch in data) characters.add( ch )
-      return tokenize( Scanner(characters,2).set_location(reference_t.line,reference_t.column+column_delta) )
+      return tokenize( Scanner(characters,2).[set_location(reference_t.line,reference_t.column+column_delta)] )
 
     method tokenize( reader )->Token[]
       RogueC.scanners_by_filepath[ filepath ] = reader

@@ -52,6 +52,6 @@ class LineRebuilder : LineReader, BufferedPrintWriter<<builder>>
       require file
       file.save( builder->String )
 
-    method to->String
+    method description->String
       return builder->String
 endClass

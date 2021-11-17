@@ -277,7 +277,7 @@ class Timestamp( value=System.time:Real64 ) [compound]
     method to->Date
       return Date( year, month, day )
 
-    method to->String
+    method description->String
       return this->String( &ymd, &hms )
 
     method to->String( &ymd, &hms, &ms, &format=24:Int32, &mdy )

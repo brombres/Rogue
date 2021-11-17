@@ -1,3 +1,5 @@
+uses Geometry
+
 class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
   DEPENDENCIES
     nativeHeader
@@ -26,8 +28,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         while (byte_count)
         {
           int n = (int) write( out, utf8, byte_count );
-          if (n == -1) return;
-          byte_count -= n;
+          if (n > 0)
+          {
+            utf8 += n;
+            byte_count -= n;
+          }
         }
       }
     endNativeCode
@@ -108,6 +113,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |#endif
       on_exit( function with (console=this) => console.reset_io_mode )
       @show_cursor = true
+
+    method bounds->Box
+      return Box(size)
 
     method clear( output=Global:PrintWriter )
       output.flush
@@ -251,9 +259,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     method _fill_event_queue_unix
       _fill_event_queue_unix_process_next
-      while (_input_bytes.count)
-        _fill_event_queue_unix_process_next
-      endWhile
 
     method _fill_event_queue_unix_process_next
       if (not _fill_input_buffer(1)) return
@@ -302,6 +307,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
             events.add ConsoleEvent( ConsoleEventType.CHARACTER, ch, 0 )
             return
           endIf
+        else
+          # Just an ESCAPE by itself
+          events.add ConsoleEvent( ConsoleEventType.CHARACTER, 27, 0 )
+          return
         endIf
       endIf
 
@@ -313,26 +322,19 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
       local ch = b1 : Int32
 
-trace _input_bytes
       contingent
         # UTF-8
         if ((b1 & 0b1110_0000) == 0b1100_0000)
-trace
           necessary (_fill_input_buffer(1))
-trace
           ch = b1 & 0b0001_1111
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
         elseIf ((b1 & 0b1111_0000) == 0b1110_0000)
-trace
           necessary (_fill_input_buffer(2))
-trace
           ch = b1 & 0b0000_1111
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
         elseIf ((b1 & 0b1111_1000) == 0b1111_0000)
-trace
           necessary (_fill_input_buffer(3))
-trace
           ch = b1 & 0b0000_0111
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
           ch = (ch :<<: 6) | (_input_bytes.remove_first & 0b11_1111)
@@ -500,6 +502,9 @@ trace
       output.flush
       output.print( "\e[?25" ).print( ?:{setting:'h'||'l'} ).flush
 
+    method size->XY
+      return XY(width,height)
+
     method width->Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
@@ -586,7 +591,7 @@ class ConsoleEvent( type:ConsoleEventType, x:Int32, y:Int32 ) [compound]
     method is_scroll_down->Logical
       return (type==ConsoleEventType.SCROLL_DOWN)
 
-    method to->String
+    method description->String
       which (type)
         case ConsoleEventType.CHARACTER
           which (Int32(x))
@@ -690,7 +695,8 @@ class ConsoleStyle [singleton]
       output.flush
       output.print( "\e[" )
       output.print( code )
-      output.print( "m" ).flush
+      output.print( "m" )
+      output.flush
 
     method print( code:Int32, builder:StringBuilder )
       builder.print( "\e[" ).print( code ).print( "m" )

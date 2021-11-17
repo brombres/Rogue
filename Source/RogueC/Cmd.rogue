@@ -2837,9 +2837,7 @@ class CmdAccess : Cmd
             if (context_type.categories)
               if ((forEach in context_type.categories).name == name) return context_type
             endIf
-          else
-            # Still parsing; assume that an enum access is returning an enum category.
-            return context_type
+          # else still parsing
           endIf
         endIf
         return null
@@ -4435,6 +4433,45 @@ class CmdNegate : CmdUnary
         return CmdLiteralReal64( t, -(operand as CmdLiteralReal64).value )
       elseIf (operand instanceOf CmdLiteralInt32)
         return CmdLiteralInt32( t, -(operand as CmdLiteralInt32).value )
+      endIf
+      return this
+
+    method suffix_symbol->String
+      return ")"
+endClass
+
+
+class CmdDescribe : CmdUnary
+  METHODS
+    method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
+      if (new_t) t = new_t
+      return CmdDescribe( t, operand.cloned( clone_args, new_t ) )
+
+    method execute( vm:VM )->Value
+      return operand.execute(vm).description
+
+    method fn_name->String
+      return "%"
+
+    method implicit_type( scope:Scope )->Type
+      return Program.type_String
+
+    method prefix_symbol->String
+      return "(%"
+
+    method resolve_for_literal_operand( scope:Scope )->Cmd
+      if (operand instanceOf CmdLiteralReal64)
+        return CmdLiteralReal64( t, (operand as CmdLiteralReal64).value.description )
+      elseIf (operand instanceOf CmdLiteralInt32)
+        return CmdLiteralInt32( t, (operand as CmdLiteralInt32).value.description )
+      endIf
+      return this
+
+    method resolve_for_operand_type( scope:Scope, operand_type:Type )->Cmd
+      if (operand_type.is_reference)
+        return CmdAccess( t, CmdAccess(t,"String"), "describe", operand ).resolve( scope )
+      else
+        return CmdAccess( t, operand, "description" ).resolve( scope )
       endIf
       return this
 

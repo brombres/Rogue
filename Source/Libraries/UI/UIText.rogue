@@ -21,6 +21,10 @@ class UIText : UIComponent
         endIf
       endIf
 
+    method init( text:String, font:UIFont )
+      init( text )
+      set_font( font )
+
     method can_split_x( max_width:Int32 )->Logical
       local index = @text.locate(' ')
       if (not index) return false

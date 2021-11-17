@@ -440,7 +440,7 @@ class UIComponent : Node<<UIComponent>>
 
     method set_fixed_size( new_fixed_size:XY )
       flags = (flags & !FLAG_SIZE_MASK) | FLAG_FIXED_WIDTH | FLAG_FIXED_HEIGHT
-      size = XY( new_fixed_size.x, new_fixed_size.y )
+      size = new_fixed_size
 
     method set_fixed_width( w:Int32 )
       flags = (flags & !FLAG_WIDTH_MASK) | FLAG_FIXED_WIDTH

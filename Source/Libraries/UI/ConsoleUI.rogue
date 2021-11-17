@@ -12,6 +12,7 @@ class ConsoleUI : UI
   PROPERTIES
     mouse_position : XY?
     button_pressed = Dim<<Logical>>(2)
+    is_running     : Logical
 
   METHODS
     method init
@@ -51,7 +52,7 @@ class ConsoleUI : UI
       prior.on( e )
 
     method on_update
-      loop 2048
+      loop 512
         if (Console.immediate_mode and Console.has_another_event)
           local event = Console.read_event
           which (event.type)
@@ -106,14 +107,18 @@ class ConsoleUI : UI
       Console.clear
 
       try
-        loop
-          update( Box(0,0,Console.width,Console.height) )
+        is_running = true
+        while (is_running)
+          update( Console.bounds )
           draw
 
           # If it needs a redraw right after drawing then we're animating
           if (dirty_bounds) System.sleep( 1.0/60.0 )
           else              System.sleep( 0.1 )
-        endLoop
+        endWhile
+
+        Console.immediate_mode = false
+        Console.show_cursor = true
 
       catch (error:Error)
         Console.immediate_mode = false
@@ -139,10 +144,7 @@ class ConsoleUITheme : UITheme [singleton]
 
     method on_draw( component:UIText )
       local text = component.text
-      local font = component.font
-      local text_size = font.measure( text )
-      local position  = Box(text_size).positioned_within( component.display_bounds, component.alignment ).position.floor
-      font.draw( text, position )
+      component.font.draw( text, component )
 endClass
 
 class ConsoleUICanvas : TextCanvas [singleton]

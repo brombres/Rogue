@@ -444,10 +444,9 @@ class Type
       endIf
 
       if (is_enum)
+        add_global( t, "categories" ).type = Program.get_type_reference( t, "$[]"(name) )
         add_global( t, "names" ).type = Program.get_type_reference( t, "String[]" )
-        local g_values = add_global( t, "values" )
-        g_values.type = Program.get_type_reference( t, "Int32[]" )
-        #g_values.initial_value = CmdAccess( t, "Int32[]" )
+        add_global( t, "values" ).type = Program.get_type_reference( t, "Int32[]" )
         add_property( t, "value", Program.type_Int32 )
       endIf
 
@@ -841,6 +840,24 @@ class Type
       endIf
 
       block
+        # categories()->ThisType[]
+        local m_categories = add_global_method( t, "categories" )
+        m_categories.attributes.add( Attribute.is_generated )
+        m_categories.return_type = Program.get_type_reference( t, "$[]"(name) )
+        local category_list_args = CmdArgs()
+        forEach (def in categories)
+          category_list_args.add( CmdAccess(def.t,def.name) )
+        endForEach
+        local cmd_if = CmdIf( t, CmdLogicalNot(t,CmdAccess(t,"@categories")) )
+        local list_declaration = CmdAccess( t, "$[]"(name) )
+        cmd_if.statements.add( CmdAssign(t, CmdAccess(t,"categories"),
+          CmdTypedLiteralList(list_declaration,category_list_args)) )
+        m_categories.statements.add( cmd_if )
+        m_categories.statements.add( CmdReturn(t,CmdAccess(t,"@categories")) )
+        m_categories.organize( scope )
+      endBlock
+
+      block
         # names()->String[]
         local m_names = add_global_method( t, "names" )
         m_names.attributes.add( Attribute.is_generated )
@@ -869,6 +886,7 @@ class Type
 
       block
         # hash_code()->Int32
+        if (has_method_named("hash_code",0)) escapeBlock
         local m_hash_code = add_method( t, "hash_code" )
         m_hash_code.attributes.add( Attribute.is_generated )
         m_hash_code.return_type = Program.type_Int32
@@ -878,6 +896,7 @@ class Type
 
       block
         # to->Int32
+        if (has_method_named("to_Int32",0)) escapeBlock
         local m_to_Int32 = add_method( t, "to_Int32" )
         m_to_Int32.attributes.add( Attribute.is_generated )
         m_to_Int32.return_type = Program.type_Int32
@@ -887,6 +906,7 @@ class Type
 
       block
         # to->Logical
+        if (has_method_named("to_Logical",0)) escapeBlock
         local m_to_Logical = add_method( t, "to_Logical" )
         m_to_Logical.attributes.add( Attribute.is_generated )
         m_to_Logical.return_type = Program.type_Logical
@@ -896,6 +916,8 @@ class Type
 
       block
         # description->String
+        if (has_method_named("description",0)) escapeBlock
+
         local m_description = add_method( t, "description" )
         m_description.attributes.add( Attribute.is_generated )
         m_description.return_type = Program.type_String
@@ -921,6 +943,7 @@ class Type
 
       block
         # to->String
+        if (has_method_named("to_String",0)) escapeBlock
         local m_to_String = add_method( t, "to_String" )
         m_to_String.attributes.add( Attribute.is_generated )
         m_to_String.return_type = Program.type_String

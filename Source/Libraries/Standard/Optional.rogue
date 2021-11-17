@@ -9,7 +9,7 @@ class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
       require exists || "Non-null value expected"
       return value
 
-    method to->String
+    method description->String
       if (exists) return value->String
       else        return "null"
 

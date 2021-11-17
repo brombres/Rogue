@@ -1,0 +1,260 @@
+
+file    Bitmap/Bitmap.rogue
+000853  method description->String
+
+
+file    Bitmap/Color.rogue
+000090  method description->String
+000155  method description->String
+
+
+file    CPP/STLPriorityQueue.rogue
+000047  method description->String
+
+
+file    Geometry/Anchor.rogue
+000073  method description->String
+
+
+file    Geometry/Bezier.rogue
+000053  method description->String
+
+
+file    Geometry/Box.rogue
+000229  method description->String
+
+
+file    Geometry/Circle.rogue
+000050  method description->String
+
+
+file    Geometry/Quad.rogue
+000115  method description->String
+000121  method description->String
+
+
+file    Geometry/Triangle.rogue
+000080  method description->String
+000088  method description->String
+
+
+file    Geometry/XY.rogue
+000319  method description->String
+
+
+file    ParseKit/ParseError.rogue
+000016  method description->String
+
+
+file    ParseKit/Token.rogue
+000075  method description->String
+
+
+file    Standard/Atomics.rogue
+000093  method description->String
+000192  method description->String
+
+
+file    Standard/Boxed.rogue
+000028  method description->String
+
+
+file    Standard/Console.rogue
+000589  method description->String
+
+
+file    Standard/Date.rogue
+000376  method description->String
+000429  method description->String
+
+
+file    Standard/DateTime.rogue
+000091  method description->String
+
+
+
+file    Standard/File.rogue
+001247  method description->String
+001713  method description->String
+
+
+file    Standard/Files.rogue
+000145  method description->String
+
+
+file    Standard/Introspection.rogue
+000201  method description->String
+
+
+file    Standard/LineRebuilder.rogue
+000055  method description->String
+
+
+file    Standard/List.rogue
+000659  method description->String
+000740  method description->String
+
+
+file    Standard/LookupList.rogue
+000094  method description->String
+
+
+file    Standard/Math.rogue
+000225  method description->String
+000323  method description->String
+
+
+file    Standard/NativeData.rogue
+000046  method description->String
+
+
+file    Standard/Optional.rogue
+000012  method description->String
+
+
+file    Standard/Primitives.rogue
+000177  method description->String
+000333  method description->String
+000605  method description->String
+000773  method description->String
+000974  method description->String
+001134  method description->String
+001204  method description->String
+
+
+file    Standard/Process.rogue
+000710  method description->String
+
+
+file    Standard/Range.rogue
+000020  method description->String
+000043  method description->String
+
+
+file    Standard/ScanPattern.rogue
+000061  method description->String
+000083  method description->String
+000113  method description->String
+000183  method description->String
+000194  method description->String
+000204  method description->String
+000215  method description->String
+000225  method description->String
+000239  method description->String
+
+
+file    Standard/StackTrace.rogue
+000052  method description->String
+
+
+file    Standard/String.rogue
+001566  method description->String
+001881  method description->String
+001952  method description->String
+
+
+file    Standard/StringBuilder.rogue
+000507  method description->String
+
+
+file    Standard/Table.rogue
+000328  method description->String
+000469  method description->String
+000508  method description->String
+000550  method description->String
+000592  method description->String
+
+
+file    Standard/Time.rogue
+000081  method description->String
+
+
+file    Standard/TimeInterval.rogue
+000038  method description->String
+
+
+file    Standard/Timestamp.rogue
+000280  method description->String
+
+
+file    Standard/Timing.rogue
+000057  method description->String
+000128  method description->String
+
+
+file    Standard/Tuple.rogue
+000003  method description->String
+000027  method description->String
+000056  method description->String
+000090  method description->String
+000129  method description->String
+000173  method description->String
+000222  method description->String
+000276  method description->String
+000335  method description->String
+
+
+file    Standard/TypeInfo.rogue
+000675  method description->String
+000698  method description->String
+000767  method description->String
+001111  method description->String
+
+
+file    Standard/Value.rogue
+000616  method description->String
+000631  method description->String
+000654  method description->String
+000736  method description->String
+000888  method description->String
+001037  method description->String
+001069  method description->String
+001148  method description->String
+001401  method description->String
+001725  method description->String
+001935  method description->String
+
+
+file    Standard/VersionNumber.rogue
+000063  method description->String
+
+
+file    UI/Event.rogue
+000060  method description->String
+000127  method description->String
+000208  method description->String
+000245  method description->String
+
+
+file    Utility/Action.rogue
+000122  method description->String
+
+
+file    Utility/BigInt.rogue
+000277  method description->String
+
+
+file    Utility/CRC32.rogue
+000038  method description->String
+
+
+file    Utility/Spreadsheet.rogue
+000136  method description->String
+000200  method description->String
+000219  method description->String
+000330  method description->String
+
+
+file    Utility/TextCanvas.rogue
+000499  method description->String
+
+
+file    Utility/UUID.rogue
+000047  method description->String
+
+
+file    Utility/XML.rogue
+000137  method description->String
+000191  method description->String
+
+

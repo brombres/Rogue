@@ -433,7 +433,7 @@ routine current_version->String
   return content.extract_string( ''*define ROGUE_RELEASE_VERSION "$"*'' )
 endRoutine
 
-routine rogo_commit( new_version="":String )
+routine rogo_incv( new_version="":String )->String
   local current_version = current_version
   local new_date = Date.today->String( &verbose )
 
@@ -441,7 +441,7 @@ routine rogo_commit( new_version="":String )
     local next_version_parts = current_version.split('.')
     next_version_parts.last = (next_version_parts.last->Int32 + 1)->String
     local next_version = next_version_parts.join('.')
-    new_version = Console.input( "Version to publish [default: $]: "(next_version) )
+    new_version = Console.input( "New version [default: $]: "(next_version) )
     if (new_version == "") new_version = next_version
   endIf
 
@@ -480,6 +480,14 @@ routine rogo_commit( new_version="":String )
     endForEach
     file.save( builder->String )
   endBlock
+
+  return new_version
+
+endRoutine
+
+routine rogo_commit( new_version="":String )
+  if (new_version == "") new_version = current_version
+  new_version = rogo_incv( new_version )
 
   rogo_build
   rogo_update_bootstrap

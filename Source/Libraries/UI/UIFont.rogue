@@ -7,11 +7,18 @@ class UIFont [abstract]
 
   METHODS
     method init( name )
-    method cloned->UIFont                   [abstract]
+    method cloned->UIFont                             [abstract]
 
-    method draw( text:String, position:XY ) [abstract]
-    method height->Real64                   [abstract]
-    method measure( ch:Character )->XY      [abstract]
+    method draw( text:String, position:XY )           [abstract]
+
+    method draw( text:String, container:UIComponent )
+      local text_size = measure( text )
+      local position  = Box(text_size).positioned_within(
+          container.display_bounds, container.alignment ).position.floor
+      draw( text, position )
+
+    method height->Real64                             [abstract]
+    method measure( ch:Character )->XY                [abstract]
 
     method measure( text:String, i1=0:Int32, count=-1:Int32 )->XY
       if (count == -1) count = text.count - i1

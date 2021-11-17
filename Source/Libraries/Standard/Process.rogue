@@ -707,7 +707,7 @@ class ProcessResult
     method to->Int32
       return exit_code
 
-    method to->String
+    method description->String
       if (not output_string.count) return error_string
       if (not error_string.count)  return output_string
       return output_string + error_string

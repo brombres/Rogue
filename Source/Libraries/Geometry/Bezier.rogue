@@ -50,7 +50,7 @@ class Bezier
       control_points[ index ] = new_value
       is_modified = true
 
-    method to->String
+    method description->String
       return control_points->String
 
     method to->XY[]

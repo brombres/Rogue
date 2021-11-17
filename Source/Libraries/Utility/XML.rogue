@@ -134,7 +134,7 @@ class XML
       ensure attributes
       attributes[ name ] = value
 
-    method to->String
+    method description->String
       use builder = StringBuilder.pool
         return write( builder )->String
       endUse
@@ -188,7 +188,7 @@ endClass
 
 augment XML[]
   METHODS
-    method to->String
+    method description->String
       <replace>
       use builder = StringBuilder.pool
         return write( builder )->String

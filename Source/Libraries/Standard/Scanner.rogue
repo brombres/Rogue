@@ -82,19 +82,45 @@ class Scanner : Reader<<Character>>
       init( String(source), &=spaces_per_tab, &=preserve_crlf )
 
     method consume( ch:Character )->Logical
-      if (peek != ch) return false
+      if (position == count or data[position] != ch) return false
       read
       return true
 
     method consume( text:String )->Logical
+      if (position + text.count > count) return false
       forEach (ch at index in text)
-        if (ch != peek(index)) return false
+        if (ch != data[position+index]) return false
       endForEach
 
       # Found a match; discard the characters
+      # Must read() each one to track line & column correctly
       loop (text.count) read
 
       return true
+
+    method consume( pattern:ScanPattern, buffer=null:StringBuilder )->Logical
+      return pattern.scan( this, buffer )
+
+    method consume_any( ch:Character )->Logical
+      if (not consume(ch)) return false
+      while (consume(ch)) noAction
+      return true
+
+    method consume_any( characters:String )->Logical
+      local found_any = false
+      while (position < count)
+        contingent
+          local ch = data[position]
+          forEach (possible_match in characters)
+            sufficient (ch == possible_match)
+          endForEach
+          return found_any
+        satisfied
+          read
+          found_any = true
+        endContingent
+      endWhile
+      return found_any
 
     method consume_id( text:String )->Logical
       local ch = peek( text.count )
@@ -116,6 +142,9 @@ class Scanner : Reader<<Character>>
       while (consume(' ') or consume('\t')) found = true
       return found
 
+    method location->ScannerLocation
+      return ScannerLocation( position, line, column )
+
     method has_another->Logical
       return (position < count)
 
@@ -125,6 +154,9 @@ class Scanner : Reader<<Character>>
     method next_is( ch:Character )->Logical
       if (position == count) return 0
       return (ch == data[position])
+
+    method next_is( pattern:ScanPattern )->Logical
+      return pattern.is_next( this )
 
     method next_is_hex_digit->Logical
       local ch = peek
@@ -352,8 +384,13 @@ class Scanner : Reader<<Character>>
       while (has_another and line < new_line)     read
       while (has_another and column < new_column) read
 
-    method set_location( line, column )->Scanner
-      return this
+    method set_location( line, column )
+
+    method set_location( loc:ScannerLocation )
+      position = loc.position
+      line = loc.line
+      column = loc.column
 
 endClass
 
+class ScannerLocation( position:Int32, line:Int32, column:Int32 ) [compound];

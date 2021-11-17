@@ -226,7 +226,7 @@ class Box( position:XY, size:XY ) [compound]
     method to->Quad
       return Quad( this )
 
-    method to->String
+    method description->String
       return "[@$,$ $x$]" (x.format(".2"),y.format(".2"),width.format(".2"),height.format(".2"))
 
     method to->Value( &integer )

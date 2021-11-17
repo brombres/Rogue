@@ -72,7 +72,7 @@ class Token
       if (not number.exists) return 0.0
       return number.value.real_bits
 
-    method to->String
+    method description->String
       if (text) return text
       return type.symbol
 endClass

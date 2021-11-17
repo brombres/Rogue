@@ -17,7 +17,7 @@ class Range<<$DataType>>( current:$DataType, last:$DataType, step_size=1:$DataTy
       while (has_another) result.add( read )
       return result
 
-    method to->String
+    method description->String
       return to_list->String
 endClass
 
@@ -40,6 +40,6 @@ class RangeToLimit<<$DataType>> : Range<<$DataType>>
       while (has_another) result.add( read )
       return result
 
-    method to->String
+    method description->String
       return to_list->String
 endClass

@@ -49,7 +49,7 @@ class StackTrace [essential]
       endForEach
       return buffer
 
-    method to->String
+    method description->String
       return print( StringBuilder() )->String
 endClass
 

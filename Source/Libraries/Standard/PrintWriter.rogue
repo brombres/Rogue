@@ -4,7 +4,9 @@ class PrintWriter [aspect]
       return BufferedPrintWriter( writer )
 
   METHODS
-    method close         [abstract]
+    method close
+      flush
+
     method flush         [abstract]
 
       #method on_use->this
@@ -50,7 +52,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
 
   METHODS
     method close
-      noAction
+      flush
 
     method flush
       flush( $buffer )
@@ -147,6 +149,7 @@ class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
     method init( output )
 
     method close
+      flush
       output.close
 
     method flush( buffer:StringBuilder )

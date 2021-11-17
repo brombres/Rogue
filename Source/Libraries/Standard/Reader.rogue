@@ -6,6 +6,15 @@ class Reader<<$DataType>> [aspect]
     method close
       noAction
 
+    method description->String
+      local buffer = $DataType[]
+      while (has_another) buffer.add( read )
+      if ($DataType instanceOf Byte)
+        return String( buffer )
+      else
+        return buffer->String
+      endIf
+
     method has_another->Logical [abstract]
 
     method peek->$DataType [abstract]
@@ -41,13 +50,9 @@ class Reader<<$DataType>> [aspect]
     method skip( n:Int32 )
       forEach (1..n) read
 
-    method to->String
-      local buffer = $DataType[]
-      while (has_another) buffer.add( read )
-      if ($DataType instanceOf Byte)
-        return String( buffer )
-      else
-        return buffer->String
-      endIf
+    method to->$DataType[]
+      local result = $DataType[]()
+      result.add( forEach in this )
+      return result
 endClass
 

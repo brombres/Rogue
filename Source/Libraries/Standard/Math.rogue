@@ -222,7 +222,7 @@ class Degrees( value:Real64 ) [compound]
     method tan->Real64 [macro]
       return Math.sin( (this.value / 180.0) * pi )
 
-    method to->String
+    method description->String
       return "" + value
 
     method to->Radians [macro]
@@ -320,7 +320,7 @@ class Radians( value:Real64 ) [compound]
     method tan->Real64 [macro]
       return Math.tan( this.value )
 
-    method to->String
+    method description->String
       return "" + value
 
     method to->Degrees [macro]

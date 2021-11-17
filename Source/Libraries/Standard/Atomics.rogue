@@ -90,7 +90,7 @@ class Atomic <<$DataType>>
     method lazy_set (value : $DataType) [macro]
       native("$this->_value.store($value, std::memory_order_release);")
 
-    method to->String
+    method description->String
       return value->String
 endClass
 
@@ -189,6 +189,6 @@ class AtomicLogical
     method lazy_set (value : Logical) [macro]
       native "$this->_value.store($value, std::memory_order_release);"
 
-    method to->String
+    method description->String
       return value->String
 endClass

@@ -2251,8 +2251,10 @@ class Parser
           local_declarations.add( v )
 
           # id(...) -> this.id(...)
-          reader.push( TokenType.symbol_dot.create_token(t) )
-          reader.push( TokenType.keyword_this.create_token(t) )
+          #reader.push( TokenType.symbol_dot.create_token(t) )
+          #reader.push( TokenType.keyword_this.create_token(t) )
+          # ^ This doesn't seem necessary plus it prevents global
+          #   routines from being localized.
 
           v.initial_value = parse_expression
         endWhile
@@ -3140,6 +3142,7 @@ class Parser
         consume_eols
         return parse_power( CmdPower(t,lhs,parse_pre_unary) )
       endIf
+
       return lhs
 
     method parse_pre_unary->Cmd
@@ -3156,8 +3159,12 @@ class Parser
       elseIf (consume(TokenType.symbol_exclamation_point))
         consume_eols
         return CmdBitwiseNot( t, parse_pre_unary )
+
+      elseIf (consume(TokenType.symbol_percent))
+      # %value -> String.describe(value)
+        consume_eols
+        return CmdDescribe( t, parse_pre_unary )
       endIf
-      #return parse_member_access
       return parse_post_unary
 
     method parse_post_unary->Cmd

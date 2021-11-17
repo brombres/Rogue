@@ -57,7 +57,7 @@ class KeyEvent : Event
     method is_shift_pressed->Logical
       return (modifier_key_state & Keyboard.SHIFT_MODIFIER_FLAG)
 
-    method to->String
+    method description->String
       local buffer = StringBuilder()
       which (keycode)
          case    1: buffer.print( "[LeftArrow] " )
@@ -124,7 +124,7 @@ class TextEvent : Event
           return (text == value)
       endWhich
 
-    method to->String
+    method description->String
       return text
 endClass
 
@@ -205,7 +205,7 @@ class PointerEvent : Event
     method operator-( offset:XY )->PointerEvent
       return this + (-offset)
 
-    method to->String
+    method description->String
       local buffer = StringBuilder()
       buffer.print( "Pointer " )
       which (type)
@@ -242,7 +242,7 @@ class ScrollEvent : Event
     method cloned->ScrollEvent
       return ScrollEvent( delta, &=is_precise, &=in_progress, &=is_momentum, &=density ).[ init(this) ]
 
-    method to->String
+    method description->String
       local buffer = StringBuilder().print( "Scroll " ).print( delta )
       buffer.print( " [$x]"(density) )
       if (in_progress) buffer.print( " [in progress]" )

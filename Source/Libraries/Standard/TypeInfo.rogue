@@ -672,7 +672,7 @@ class TypeInfo
     method singleton<<$OfType>>->$OfType
       return singleton as $OfType
 
-    method to->String
+    method description->String
       return name
 endClass
 
@@ -695,7 +695,7 @@ class PropertyInfo
     method type->TypeInfo
       return TypeInfo.get( property_type_index )
 
-    method to->String
+    method description->String
       return "$:$" (name,type.name)
 endClass
 
@@ -764,7 +764,7 @@ class MethodInfo
       signature = buffer->String
       return @signature
 
-    method to->String
+    method description->String
       if (return_type) return signature + "->" + return_type.name
       return signature
 
@@ -1107,6 +1107,9 @@ class TypeInfoIterator( position=0:Int32 ) [compound]
       if (position == TypeInfo.type_count) return null
       ++position
       return TypeInfo[ position-1 ]
+
+    method description->String
+      return to_list->String
 
     method to->TypeInfo[]( result=null:TypeInfo[] )
       return to_list( result )

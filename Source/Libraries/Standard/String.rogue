@@ -70,6 +70,10 @@ class String
     method create( value:Value )->String
       return value->String
 
+    method describe( obj:Object )->String
+      if (obj) return obj.description
+      return "null"
+
     method exists( string:String )->Logical
       # Returns false if the string is null or empty; otherwise returns true.
       return (string and string.count?)
@@ -395,6 +399,9 @@ class String
 
       loop (remove_count) result.remove_last
       return result
+
+    method description->String
+      return this
 
     method ends_with( ch:Character, &ignore_case )->Logical
       if (ignore_case)
@@ -1665,6 +1672,17 @@ class String
       if (i1 == 0 and i2 == count-1) return this
       return from( i1, i2 )
 
+    method unleft( n:Int32 )->String
+      # "abc".unleft(1) -> bc
+      if (n <= 0) return this
+      else        return from( n )
+
+    method unright( n:Int32 )->String
+      # "abc".unright(1) -> ab
+      if (n <= 0) return this
+      else        return from( 0, (count - n) - 1 )
+
+
     method up_to_first( ch:Character, &ignore_case )->String
       local i = locate( ch, &=ignore_case )
       if (i.exists) return from( 0, i.value )
@@ -1860,7 +1878,7 @@ class StringIterator( string:String, position:Int32, count:Int32 ) [compound]
       ++position
       return string[ position-1 ]
 
-    method to->String
+    method description->String
       use builder=StringBuilder.pool
         builder.reserve( count - position )
         builder.print( forEach in this )
@@ -1931,7 +1949,7 @@ class Span( index:Int32, count:Int32 ) [compound]
     method limit->Int32
       return index + count
 
-    method to->String
+    method description->String
       return "@$ x$"(index,count)
 endClass
 
