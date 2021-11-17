@@ -94,6 +94,10 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
           cur_style = cur_style.apply( ch.style, output )
           output.print( ch.value )
         endLoop
+
+        # On Windows must turn off style before println or else it extends across
+        cur_style = CharacterStyle.NONE
+        ConsoleStyle.reset( output )
         output.println
       endLoop
 
@@ -158,12 +162,10 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       local dest_width = width
       local src_i1  = (j1 * src_width) + i1
       local dest_i1 = (y * dest_width) + x
-      local src_i   = (j1 * src_width) + i1
-      local dest_i  = (y * dest_width) + x
       local src_data = src.buffer.data
       forEach (j1..j2)
-        src_i = src_i1
-        dest_i = dest_i1
+        local src_i = src_i1
+        local dest_i = dest_i1
         forEach (i1..i2)
           buffer[dest_i] = src_data[src_i]
           ++src_i
