@@ -32,7 +32,7 @@ class ScanPattern
 
     method escape( pattern:String, at_escape:String )->String
       use builder = StringBuilder.pool
-        forEach (ch in pattern.to_escaped_ascii('"'))
+        forEach (ch in pattern)
           if (at_escape.contains(ch)) builder.print("\\\\").print(ch)
           else                        ch.print_escaped_ascii( builder, '"' )
         endForEach
