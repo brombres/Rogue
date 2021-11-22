@@ -2,7 +2,7 @@
 An ergonomic object-oriented statically-linked high-level language that compiles to C++.
 
 # Version
-- v1.10 - November 17, 2021
+- v1.10.1 - November 21, 2021
 - macOS, Linux, Windows
 - [MIT License](LICENSE)
 - By Abe Pralle
