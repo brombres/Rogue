@@ -424,6 +424,7 @@ routine project_has_uncommitted_changes->Logical
   endIf
 
   local lines = result->String.trimmed.split('\n').[discard($.begins_with("??"))]
+  lines.discard( $ == "" )
   return not lines.is_empty
 endRoutine
 
