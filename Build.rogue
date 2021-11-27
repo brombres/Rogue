@@ -449,7 +449,8 @@ routine rogo_incv( new_version="":String )->String
   if (new_version.begins_with('v',&ignore_case)) new_version .= from(1)
 
   block file = File( "Source/RogueC/RogueC.rogue" )
-    local content = file.load_as_string
+    local og_content = file.load_as_string
+    local content = og_content
 
     content = content.replacing_pattern(
       ''define ROGUE_RELEASE_VERSION "$"'',
@@ -461,11 +462,12 @@ routine rogo_incv( new_version="":String )->String
       ''define ROGUE_RELEASE_DATE "$"''(new_date)
     )
 
-    file.save( content )
+    if (content != og_content) file.save( content )
   endBlock
 
   block file = File( "README.md" )
-    local content = file.load_as_string
+    local og_content = file.load_as_string
+    local content = og_content
     local builder = StringBuilder( content.count*1.1 )
     local is_version_line = false
     forEach (line in LineReader(content))
@@ -479,7 +481,9 @@ routine rogo_incv( new_version="":String )->String
         builder.println( line )
       endIf
     endForEach
-    file.save( builder->String )
+
+    content = builder->String
+    if (content != og_content) file.save( content )
   endBlock
 
   return new_version
@@ -487,28 +491,30 @@ routine rogo_incv( new_version="":String )->String
 endRoutine
 
 routine rogo_commit( new_version="":String )
-  if (new_version == "") new_version = current_version
-  new_version = rogo_incv( new_version )
+  if (not String.exists(new_version)) throw Error( "Expected version number after 'rogo commit'." )
+  rogo_incv( new_version )
 
   rogo_build
-  rogo_update_bootstrap
 
   if (project_has_uncommitted_changes)
+    rogo_update_bootstrap
     execute ''git commit -am "[v$]"'' (new_version)
   endIf
 endRoutine
 
-routine rogo_publish( new_version="":String )
-  if (new_version != "" or project_has_uncommitted_changes)
-    rogo_commit( new_version )
-  endIf
+routine rogo_publish( new_version:String )
+  if (not String.exists(new_version)) throw Error( "Expected version number after 'rogo publish'." )
+  rogo_commit( new_version )
+
   if (new_version == "") new_version = current_version
 
-  execute @|git push
+  if (not Console.input("Continue publishing? ").to_lowercase.begins_with('y')) return
+
+  execute @|git push origin develop
            |git checkout master
            |git pull
            |git merge develop
-           |git push
+           |git push origin master
            |git checkout develop
   execute "gh release create v"+new_version
 endRoutine
