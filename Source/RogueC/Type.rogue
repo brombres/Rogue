@@ -1793,6 +1793,7 @@ class Type
         parser.this_method = m
         parser.parse_method_body
 
+        m.statements.dispatch( UpdateThisTypeVisitor(this,m) )
         inherit_method( m, list, lookup )
       endIf
       return m
