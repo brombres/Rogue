@@ -282,7 +282,7 @@ class Node<<$ExtendedNodeType>>
     method set( index:Int32, node:$ExtendedNodeType )
       if (index < 0)
         insert( node )
-      elseIf (index < 0)
+      elseIf (index == 0)
         set_first( node )
       elseIf (index >= count)
         add( node )

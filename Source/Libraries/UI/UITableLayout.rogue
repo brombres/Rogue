@@ -1,0 +1,235 @@
+module UI
+uses Utility/WorkList
+
+class UITableLayout : UILayout
+  PROPERTIES
+    columns       : Int32
+    rows          : Int32
+    is_adding     : Logical
+    next_empty    : Int32
+
+  METHODS
+    method init
+      init( 1, 1 )
+
+    method init( size:XY )
+      prior.init( size )
+      columns = 1
+      rows    = 1
+      add( UITableEmptyCell() )
+
+    method init( columns, rows )
+      prior.init
+      resize( columns, rows )
+
+    method add( component:UIComponent ) [override]
+      if (is_adding)
+        prior.add( component )
+      else
+        is_adding = true
+
+        if (next_empty == -1)
+          if (columns == 0)
+            resize( columns+1, rows )
+            add( component )
+            is_adding = false
+            return
+          else
+            resize( columns, rows+1 )
+          endIf
+        endIf
+
+        set( next_empty, component )
+        _advance_next_empty
+
+        is_adding = false
+      endIf
+
+    method cell( i:Int32, j:Int32 )->UIComponent
+      if (i < 0 or i >= columns) return null
+      if (j < 0 or j >= rows)    return null
+      return get( j*columns + i )
+
+    method measure_content_height( subcomponents:UIComponent[] )->Real64?
+      local total_h = 0.0
+      forEach (j in 0..<rows)
+        local h = _row_height( subcomponents, j )
+        if (not h) return null
+        total_h += h.value
+      endForEach
+      return total_h
+
+    method measure_content_width( subcomponents:UIComponent[] )->Real64?
+      local total_w = 0.0
+      forEach (i in 0..<columns)
+        local w = _column_width( subcomponents, i )
+        if (not w) return null
+        total_w += w.value
+      endForEach
+      return total_w
+
+    method set_cell( i:Int32, j:Int32, component:UIComponent )
+      local index = j * columns + i
+      set( index, component )
+      if (index == next_empty) _advance_next_empty
+
+    method resize( new_columns:Int32, new_rows:Int32 )
+      next_empty = -1
+      if (count)
+        # Remove cells or add empty cells to maintain structure
+        if (new_columns == 0 or new_rows == 0)
+          clear
+        else
+          use new_cells = WorkList<<UIComponent>>
+            forEach (j in 0..<new_rows)
+              forEach (i in 0..<new_columns)
+                local cell = cell( i, j )
+                if (cell) new_cells.add( cell )
+                else      new_cells.add( UITableEmptyCell() )
+              endForEach
+            endForEach
+            clear
+            prior.add( forEach in new_cells )
+            forEach (new_cell at i in new_cells)
+              if (new_cell instanceOf UITableEmptyCell)
+                next_empty = i
+                escapeForEach
+              endIf
+            endForEach
+          endUse
+        endIf
+      else
+        loop (new_columns*new_rows) prior.add( UITableEmptyCell() )
+        if (count) next_empty =  0
+        else       next_empty = -1
+      endIf
+      columns = new_columns
+      rows = new_rows
+      _advance_next_empty
+
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_width:Real64 )
+      local total_w = 0.0
+      local undefined_count = 0
+
+      use row_heights = WorkList<<Real64?>>
+        forEach (j in 0..<rows)
+          local h = _row_height( subcomponents, j )
+          if (h)
+            total_w += h.value
+            forEach (i in 0..<columns)
+              local cell = subcomponents[ j*columns + i ]
+              cell.update_layout_height( h.value )
+            endForEach
+            row_heights.add( h )
+          else
+            ++undefined_count
+            row_heights.add( null )
+          endIf
+        endForEach
+
+        local excess_w = container_width - total_w
+        forEach (j in 0..<rows)
+          local h = row_heights[j]
+          if (not h)
+            h = (excess_w / undefined_count).floor
+            excess_w -= h.value
+            --undefined_count
+            forEach (i in 0..<columns)
+              local cell = subcomponents[ j*columns + i ]
+              cell.update_layout_height( h.value )
+            endForEach
+          endIf
+        endForEach
+      endUse
+
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Real64 )
+      local total_w = 0.0
+      local undefined_count = 0
+
+      use column_widths = WorkList<<Real64?>>
+        forEach (i in 0..<columns)
+          local w = _column_width( subcomponents, i )
+          if (w)
+            total_w += w.value
+            forEach (j in 0..<rows)
+              local cell = subcomponents[ j*columns + i ]
+              cell.update_layout_width( w.value )
+            endForEach
+            column_widths.add( w )
+          else
+            ++undefined_count
+            column_widths.add( null )
+          endIf
+        endForEach
+
+        local excess_w = container_width - total_w
+        forEach (i in 0..<columns)
+          local w = column_widths[i]
+          if (not w)
+            w = (excess_w / undefined_count).floor
+            excess_w -= w.value
+            --undefined_count
+            forEach (j in 0..<rows)
+              local cell = subcomponents[ j*columns + i ]
+              cell.update_layout_width( w.value )
+            endForEach
+          endIf
+        endForEach
+      endUse
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+      local cursor_start = container.position
+      forEach (j in 0..<rows)
+        local cursor = cursor_start
+        local row_height = 0.0
+        forEach (i in 0..<columns)
+          local cell = subcomponents[ j*columns + i ]
+          cell.update_layout_placement( Box(cursor,cell.size) )
+          cursor += cell.size.xv
+          row_height = cell.size.y
+        endForEach
+        cursor_start += XY(0,row_height)
+      endForEach
+
+    method _advance_next_empty
+      forEach (i in next_empty..<count)
+        local cell = this[i]
+        if (cell instanceOf UITableEmptyCell)
+          next_empty = i
+          return
+        endIf
+      endForEach
+      next_empty = -1
+
+    method _column_width( subcomponents:UIComponent[], i:Int32 )->Real64?
+      local max_w : Real64?
+
+      forEach (j in 0..<rows)
+        local cell = subcomponents[ j*columns + i ]
+        local w = cell.measure_width( null )
+        if (w)
+          if (max_w) max_w = max_w.value.or_larger( w.value )
+          else       max_w = w.value
+        endIf
+      endForEach
+
+      return max_w
+
+    method _row_height( subcomponents:UIComponent[], j:Int32 )->Real64?
+      local max_h : Real64?
+
+      forEach (i in 0..<columns)
+        local cell = subcomponents[ j*columns + i ]
+        local h = cell.measure_height( null )
+        if (h)
+          if (max_h) max_h = max_h.value.or_larger( h.value )
+          else       max_h = h.value
+        endIf
+      endForEach
+
+      return max_h
+
+endClass
+
+class UITableEmptyCell : UIComponent
+endClass

@@ -34,5 +34,14 @@ class UILayout : UIComponent
     UI_FACTORY_METHODS( list,     UIList )
     UI_FACTORY_METHODS( stack,    UIStackLayout )
     UI_FACTORY_METHODS( v,        UIVerticalLayout )
+
+    method table->UITableLayout
+      return UITableLayout()
+
+    method table( columns:Int32, rows:Int32 )->UITableLayout
+      return UITableLayout(columns,rows)
+
+    method table( size:XY )->UITableLayout
+      return UITableLayout(size)
 endClass
 
