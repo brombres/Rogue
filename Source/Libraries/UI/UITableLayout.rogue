@@ -48,6 +48,21 @@ class UITableLayout : UILayout
       if (i < 0 or i >= columns.count) throw OutOfBoundsError( i, columns.count )
       return columns[i]
 
+    method draw_subcomponents( draw_bounds:Box )
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+
+        local column_count = columns.count
+        forEach (j of rows)
+          forEach (i of columns)
+            local index = j*column_count+i
+            if (span[index].min > 0)
+              subcomponents[index].draw( draw_bounds )
+            endIf
+          endForEach
+        endForEach
+      endUse
+
     method get( i:Int32, j:Int32 )->UIComponent
       local index = index_of( i, j )
       if (not index) return null
@@ -126,14 +141,26 @@ class UITableLayout : UILayout
       return rows[j]
 
     method set( i:Int32, j:Int32, component:UIComponent )
+      if (component is null) component = UITableEmptyCell()
       local index = j * columns.count + i
-      set( index, component )
+      temporarily is_adding = true
+        set( index, component )
+      endTemporarily
       if (index == next_empty) _advance_next_empty
 
     method set_span( i:Int32, j:Int32, new_span:XY )
       local index = index_of(i,j)
       require index.exists
-      span[index.value] = new_span
+      local old_span = span[index.value]
+      if (old_span.max > 1)
+        # Reset the old span shadow to contain spans of 1 before zeroing the new shadow
+        _set_span_shadow( i, j, old_span.x, old_span.y, 1 )
+      endIf
+      local w = new_span.x.floor.clamped_high( columns.count - i )
+      local h = new_span.y.floor.clamped_high( rows.count - j )
+      _set_span_shadow( i, j, w, h, 0 )
+      span[index.value] = XY(w,h)
+      _advance_next_empty
 
     method span( i:Int32, j:Int32 )->XY
       local index = index_of(i,j)
@@ -150,10 +177,6 @@ class UITableLayout : UILayout
           local h = _row_height( subcomponents, j )
           if (h)
             total_h += h.value
-            forEach (i of columns)
-              local cell = subcomponents[ j*columns.count + i ]
-              cell.update_layout_height( h.value )
-            endForEach
             row_heights.add( h )
           else
             ++undefined_count
@@ -175,11 +198,23 @@ class UITableLayout : UILayout
               remaining_h -= h.value
             endIf
             --undefined_count
-            forEach (i of columns)
-              local cell = subcomponents[ j*columns.count + i ]
-              cell.update_layout_height( h.value )
-            endForEach
+            row_heights[j] = h
           endIf
+
+          forEach (row at row_j in rows)
+            row.height = row_heights[row_j].value
+          endForEach
+        endForEach
+
+        forEach (j of rows)
+          local column_count = columns.count
+          forEach (i of columns)
+            local index = j*column_count + i
+            if (span[index].y)
+              local cell = subcomponents[ index ]
+              cell.update_layout_height( _spanned_height(i,j) )
+            endIf
+          endForEach
         endForEach
       endUse
 
@@ -193,10 +228,6 @@ class UITableLayout : UILayout
           local w = _column_width( subcomponents, i )
           if (w)
             total_w += w.value
-            forEach (j of rows)
-              local cell = subcomponents[ j*columns.count + i ]
-              cell.update_layout_width( w.value )
-            endForEach
             column_widths.add( w )
           else
             ++undefined_count
@@ -218,32 +249,46 @@ class UITableLayout : UILayout
               remaining_w -= w.value
             endIf
             --undefined_count
-            forEach (j of rows)
-              local cell = subcomponents[ j*columns.count + i ]
-              cell.update_layout_width( w.value )
-            endForEach
+            column_widths[i] = w
           endIf
+
+          forEach (column at column_i in columns)
+            column.width = column_widths[column_i].value
+          endForEach
+        endForEach
+
+        forEach (i of columns)
+          local column_count = columns.count
+          forEach (j of rows)
+            local index = j*column_count + i
+            if (span[index].x)
+              local cell = subcomponents[ index ]
+              cell.update_layout_width( _spanned_width(i,j) )
+            endIf
+          endForEach
         endForEach
       endUse
 
     method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+      local column_count = columns.count
       local cursor_start = container.position
-      forEach (j of rows)
+      forEach (row at j in rows)
         local cursor = cursor_start
-        local row_height = 0.0
-        forEach (i of columns)
-          local cell = subcomponents[ j*columns.count + i ]
-          cell.update_layout_placement( Box(cursor,cell.size) )
-          cursor += cell.size.xv
-          row_height = cell.size.y
+        forEach (column at i in columns)
+          local index = j*column_count + i
+          if (span[index].x)
+            local cell = subcomponents[ index ]
+            cell.update_layout_placement( Box(cursor,cell.size) )
+          endIf
+          cursor += XY(column.width,0)
         endForEach
-        cursor_start += XY(0,row_height)
+        cursor_start += XY(0,row.height)
       endForEach
 
     method _advance_next_empty
       forEach (i in next_empty..<count)
         local cell = this[i]
-        if (cell instanceOf UITableEmptyCell)
+        if (cell instanceOf UITableEmptyCell and span[i].x)
           next_empty = i
           return
         endIf
@@ -251,49 +296,82 @@ class UITableLayout : UILayout
       next_empty = -1
 
     method _column_width( subcomponents:UIComponent[], i:Int32 )->Real64?
-      local max_w = columns[i].width
+      local max_w = columns[i].fixed_width
       if (max_w) return max_w
 
+      local column_count = columns.count
       forEach (j of rows)
-        local cell = subcomponents[ j*columns.count + i ]
-        local w = cell.measure_width( null )
-        if (w)
-          if (max_w) max_w = max_w.value.or_larger( w.value )
-          else       max_w = w.value
+        local index = j*column_count + i
+        if (span[index].x == 1)
+          local cell = subcomponents[ index ]
+          local w = cell.measure_width( null )
+          if (w)
+            if (max_w) max_w = max_w.value.or_larger( w.value )
+            else       max_w = w.value
+          endIf
         endIf
       endForEach
 
       return max_w
 
     method _row_height( subcomponents:UIComponent[], j:Int32 )->Real64?
-      local max_h = rows[j].height
+      local max_h = rows[j].fixed_height
       if (max_h) return max_h
 
+      local column_count = columns.count
       forEach (i of columns)
-        local cell = subcomponents[ j*columns.count + i ]
-        local h = cell.measure_height( null )
-        if (h)
-          if (max_h) max_h = max_h.value.or_larger( h.value )
-          else       max_h = h.value
+        local index = j*column_count + i
+        if (span[index].y == 1)
+          local cell = subcomponents[ index ]
+          local h = cell.measure_height( null )
+          if (h)
+            if (max_h) max_h = max_h.value.or_larger( h.value )
+            else       max_h = h.value
+          endIf
         endIf
       endForEach
 
       return max_h
 
+    method _set_span_shadow( x:Int32, y:Int32, w:Int32, h:Int32, value:Int32 )
+      local cols = columns.count
+      local new_span = XY(value,value)
+      forEach (j in y..<y+h)
+        forEach (i in x..<x+w)
+          span[ j*cols+i ] = new_span
+        endForEach
+      endForEach
+
+    method _spanned_height( i:Int32, j:Int32 )->Real64
+      local spanned_rows = span[ j*columns.count+i ].y
+      local result = 0.0
+      forEach (y in 0..<spanned_rows)
+        result += rows[y].height
+      endForEach
+      return result
+
+    method _spanned_width( i:Int32, j:Int32 )->Real64
+      local spanned_columns = span[ j*columns.count+i ].x
+      local result = 0.0
+      forEach (x in 0..<spanned_columns)
+        result += columns[x].width
+      endForEach
+      return result
 endClass
 
-class UITableEmptyCell : UIComponent
-endClass
+class UITableEmptyCell : UIComponent;
 
 class UITableColumnInfo
   PROPERTIES
-    width  : Real64?
-    weight = 1.0
+    fixed_width : Real64?
+    width       : Real64   # computed
+    weight      = 1.0
 endClass
 
 class UITableRowInfo
   PROPERTIES
-    height : Real64?
-    weight = 1.0
+    fixed_height : Real64?
+    height       : Real64
+    weight       = 1.0
 endClass
 
