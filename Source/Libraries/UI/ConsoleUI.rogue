@@ -143,7 +143,7 @@ class ConsoleUITheme : UITheme [singleton]
       return @default_font
 
     method on_draw( component:UIText )
-      local text = component.text
+      local text = component.text_content
       component.font.draw( text, component )
 endClass
 

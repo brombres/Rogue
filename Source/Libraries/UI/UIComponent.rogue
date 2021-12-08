@@ -519,7 +519,7 @@ class UIComponent : Node<<UIComponent>>
     method split_x( max_width=null:Int32? )->UIComponent
       return null
 
-    method text->String
+    method text_content->String
       return null
 
     method to_inner_bounds( bounds:Box )->Box

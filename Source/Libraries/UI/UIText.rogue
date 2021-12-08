@@ -33,12 +33,6 @@ class UIText : UIComponent
     method is_br->Logical
       return @text == "\n"
 
-      #method measure_width->Real64? [override]
-      #  return size.x
-
-      #method measure_height->Real64? [override]
-      #  return size.y
-
     method on_prepare_layout [override]
       fixed_size = font.measure( @text ).floor
 
@@ -67,7 +61,7 @@ class UIText : UIComponent
         endBlock
       endIf
 
-    method text->String
+    method text_content->String
       return @text
 
     method _split_at( index:Int32 )->UIComponent

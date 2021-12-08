@@ -28,8 +28,8 @@ class UIFlowLayout : UILayout
         local component_w = component.measure_width(0).value
         local total_w = component_w
         if (adj and cursor.x > 0)
-          local a = component.text
-          local b = adj.text
+          local a = component.text_content
+          local b = adj.text_content
           contingent
             sufficient (not a or not b)
             sufficient (a.ends_with(' ') or a.ends_with('\n'))
@@ -43,7 +43,7 @@ class UIFlowLayout : UILayout
           # at the beginning of a line, split off the space so we can ignore
           # it later
           if (cursor.x == 0)
-            local text = component.text
+            local text = component.text_content
             if (text and text.count > 1 and text.begins_with(' ') and component.can_split_x(component_w))
               subcomponents.insert( component.split_after(0), i+1 )
               sufficient (true)
@@ -132,8 +132,8 @@ class UIFlowLayout : UILayout
         local total_w = component.size.x
         if (i+1 < subcomponents.count and cursor.x > x1)
           local adj = subcomponents[i+1]
-          local a = component.text
-          local b = adj.text
+          local a = component.text_content
+          local b = adj.text_content
           contingent
             sufficient (not a or not b)
             sufficient (a.ends_with(' ') or a.ends_with('\n'))
@@ -153,7 +153,7 @@ class UIFlowLayout : UILayout
 
         # Ready to place component
         component.update_layout_placement( Box(cursor,component.size) )
-        local text = component.text
+        local text = component.text_content
         if (cursor.x > x1 or not text or text != " ") cursor += component.size.xv
         line_height .= or_larger( component.size.y )
 
