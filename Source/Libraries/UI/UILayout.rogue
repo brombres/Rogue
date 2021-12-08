@@ -43,5 +43,9 @@ class UILayout : UIComponent
 
     method table( size:XY )->UITableLayout
       return UITableLayout(size)
+
+  METHODS
+    method content->UIComponent
+      return first_child
 endClass
 
