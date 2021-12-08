@@ -11,6 +11,7 @@ class UIComponent : Node<<UIComponent>>
     FLAG_WIDTH_MASK            = (FLAG_FIXED_WIDTH  | FLAG_SHRINK_TO_FIT_WIDTH)
     FLAG_HEIGHT_MASK           = (FLAG_FIXED_HEIGHT | FLAG_SHRINK_TO_FIT_HEIGHT)
     FLAG_SIZE_MASK             = (FLAG_WIDTH_MASK   | FLAG_HEIGHT_MASK)
+    FLAG_HIDDEN                = 16
 
   PROPERTIES
     position   : XY
@@ -162,6 +163,8 @@ class UIComponent : Node<<UIComponent>>
       else        return position
 
     method draw( clip_bounds:Box )
+      if (is_hidden) return
+
       local display_bounds = display_bounds
       local draw_bounds = clip_bounds & display_bounds
       if (draw_bounds)
@@ -224,6 +227,8 @@ class UIComponent : Node<<UIComponent>>
       return UIAttributes.font( this )
 
     method handle( e:KeyEvent )
+      if (is_hidden) return
+
       on( e )
       if (e.is_consumed) return
 
@@ -235,6 +240,8 @@ class UIComponent : Node<<UIComponent>>
       after( e )
 
     method handle( e:PointerEvent )
+      if (is_hidden) return
+
       on( e )
       if (e.is_consumed) return
 
@@ -246,6 +253,8 @@ class UIComponent : Node<<UIComponent>>
       after( e )
 
     method handle( e:ScrollEvent )
+      if (is_hidden) return
+
       on( e )
       if (e.is_consumed) return
 
@@ -257,6 +266,8 @@ class UIComponent : Node<<UIComponent>>
       after( e )
 
     method handle( e:TextEvent )
+      if (is_hidden) return
+
       on( e )
       if (e.is_consumed) return
 
@@ -310,6 +321,12 @@ class UIComponent : Node<<UIComponent>>
 
     method is_shrink_to_fit_width->Logical
       return (@flags & FLAG_SHRINK_TO_FIT_WIDTH)?
+
+    method is_hidden->Logical
+      return (@flags & FLAG_HIDDEN)?
+
+    method is_visible->Logical
+      return not (@flags & FLAG_HIDDEN)?
 
     method offset->XY
       return XY.zero
@@ -481,6 +498,10 @@ class UIComponent : Node<<UIComponent>>
       request_redraw  # redraw old area
       size = XY( w, size.y )
       request_layout  # includes redraw of new area
+
+    method set_is_visible( setting:Logical )
+      if (setting) flags = (flags & !FLAG_HIDDEN)
+      else         flags = (flags |  FLAG_HIDDEN)
 
     method shrink_to_fit
       shrink_to_fit_width
