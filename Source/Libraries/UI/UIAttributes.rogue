@@ -15,7 +15,7 @@ class UIAttributes [singleton]
         local anchor = component.attributes.anchor
         if (anchor) return anchor.value
       endIf
-      return Anchor.TOP_LEFT
+      return Anchor.CENTER
 
     method font( component:UIComponent )->UIFont
       if (component.attributes)
