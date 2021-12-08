@@ -41,7 +41,7 @@ class UIAttributes [singleton]
       if (component.attributes) component.attributes.set_font( value )
       else                      component.attributes = UIFontAttribute( value )
 
-    method set_weight( component:UIComponent, value:Real64 )
+    method set_weight( component:UIComponent, value:XY )
       if (component.attributes) component.attributes.set_weight( value )
       else                      component.attributes = UIWeightAttribute( value )
 
@@ -80,7 +80,7 @@ class UIAttribute
       if (next) next.set_font( value )
       else      next = UIFontAttribute( value )
 
-    method set_weight( value:Real64 )
+    method set_weight( value:XY )
       if (next) next.set_weight( value )
       else      next = UIWeightAttribute( value )
 endClass
