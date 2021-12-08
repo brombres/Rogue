@@ -419,10 +419,10 @@ class UIComponent : Node<<UIComponent>>
       is_modified = true  # class Node setter auto-propagates this up the hierarchy
 
     method set_alignment( value:Anchor )
-      attributes += UIAlignmentAttribute(value)
+      UIAttributes.set_alignment( this, value )
 
     method set_anchor( value:Anchor )
-      attributes += UIAnchorAttribute(value)
+      UIAttributes.set_anchor( this, value )
 
     method set_default_height( h:Int32 )
       if (not is_fixed_height) height = h
@@ -447,7 +447,7 @@ class UIComponent : Node<<UIComponent>>
       size = XY( w, size.y )
 
     method set_font( font:UIFont )
-      attributes += UIFontAttribute( font )
+      UIAttributes.set_font( this, font )
 
     method set_height( h:Real64 )
       if (h == size.y) return
@@ -471,10 +471,10 @@ class UIComponent : Node<<UIComponent>>
       throw UnsupportedOperationError()
 
     method set_weight( w:Real64 )
-      attributes += UIWeightAttribute(XY(w,w))
+      UIAttributes.set_weight( this, XY(w) )
 
     method set_weight( w:XY )
-      attributes += UIWeightAttribute(w)
+      UIAttributes.set_weight( this, w )
 
     method set_width( w:Real64 )
       if (w == size.x) return

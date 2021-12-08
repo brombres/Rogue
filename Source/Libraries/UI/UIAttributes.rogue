@@ -28,38 +28,26 @@ class UIAttributes [singleton]
     method weight( component:UIComponent )->XY
       if (component.attributes) return component.attributes.weight
       else                      return XY(1,1)
+
+    method set_alignment( component:UIComponent, value:Anchor )
+      if (component.attributes) component.attributes.set_alignment( value )
+      else                      component.attributes = UIAlignmentAttribute( value )
+
+    method set_anchor( component:UIComponent, value:Anchor )
+      if (component.attributes) component.attributes.set_anchor( value )
+      else                      component.attributes = UIAnchorAttribute( value )
+
+    method set_font( component:UIComponent, value:UIFont )
+      if (component.attributes) component.attributes.set_font( value )
+      else                      component.attributes = UIFontAttribute( value )
+
+    method set_weight( component:UIComponent, value:Real64 )
+      if (component.attributes) component.attributes.set_weight( value )
+      else                      component.attributes = UIWeightAttribute( value )
+
 endClass
 
 class UIAttribute
-  GLOBAL METHODS
-    method operator+( left:UIAttribute, right:UIAttribute )->UIAttribute
-      if (not left)  return right
-      if (not right) return left
-
-      # Remove any attribute of the same type if it exists
-      local new_type_name = right.type_name
-      if (left.type_name is new_type_name)
-        return left.next + right
-      else
-        local prev = null : UIAttribute
-        local cur = left
-        while (cur)
-          if (cur.type_name is new_type_name)
-            # Remove old attribute of same type
-            prev.next = cur.next
-            return prev + right
-          endIf
-          prev = cur
-          cur .= next
-        endWhile
-      endIf
-
-      local cur = left
-      while (cur.next) cur .= next
-
-      cur.next = right
-      return left
-
   PROPERTIES
     next : UIAttribute
 
@@ -79,28 +67,52 @@ class UIAttribute
     method weight->XY
       if (next) return next.weight
       return XY(1,1)
+
+    method set_alignment( value:Anchor )
+      if (next) next.set_alignment( value )
+      else      next = UIAlignmentAttribute( value )
+
+    method set_anchor( value:Anchor )
+      if (next) next.set_anchor( value )
+      else      next = UIAnchorAttribute( value )
+
+    method set_font( value:UIFont )
+      if (next) next.set_font( value )
+      else      next = UIFontAttribute( value )
+
+    method set_weight( value:Real64 )
+      if (next) next.set_weight( value )
+      else      next = UIWeightAttribute( value )
 endClass
 
 class UIAlignmentAttribute( value:Anchor ) : UIAttribute
   METHODS
     method alignment->Anchor?
       return value
+
+    method set_alignment( value )
 endClass
 
 class UIAnchorAttribute( value:Anchor ) : UIAttribute
   METHODS
     method anchor->Anchor?
       return value
+
+    method set_anchor( value )
 endClass
 
 class UIFontAttribute( value:UIFont ) : UIAttribute
   METHODS
     method font->UIFont
       return value
+
+    method set_font( value )
 endClass
 
 class UIWeightAttribute( value:XY ) : UIAttribute
   METHODS
     method weight->XY
       return value
+
+    method set_weight( value )
 endClass

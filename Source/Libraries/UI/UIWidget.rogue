@@ -12,6 +12,9 @@ class UIWidget : UIComponent
   METHODS
     method init
 
+    method init( size:XY )
+      prior.init( size )
+
     method init( component:UIComponent )
       prior.init( component )
       component.anchor = Anchor.CENTER
