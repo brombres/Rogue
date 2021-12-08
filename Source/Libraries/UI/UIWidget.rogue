@@ -17,10 +17,9 @@ class UIWidget : UIComponent
 
     method init( component:UIComponent )
       prior.init( component )
-      component.anchor = Anchor.CENTER
 
     method init( label:String )
-      init( UIContent(UIText(label)).[alignment=Anchor.CENTER] )
+      init( UILabel(label) )
 
     method handle_select
       if (_on_select) _on_select()
@@ -68,7 +67,6 @@ class UIWidget : UIComponent
         if (contains_e)
           if (widget_state == UIWidgetState.IDLE)
             widget_state = UIWidgetState.TARGETED
-            #e.consume
           endIf
         else
           if (widget_state == UIWidgetState.TARGETED or widget_state == UIWidgetState.PRESSED)
@@ -91,8 +89,4 @@ class UIWidget : UIComponent
       widget_state = which{ setting:UIWidgetState.DISABLED || UIWidgetState.IDLE }
 
     method set_on_select( _on_select )
-
-    method text->String
-      if (first_child) return first_child.text
-      else             return prior.text
 endClass
