@@ -8,8 +8,8 @@ class UILabel : UIComponent
     method init( text )
       alignment = Anchor.CENTER
 
-    method init( text:String, font:UIFont )
-      init( text )
+    method init( text, font:UIFont )
+      alignment = Anchor.CENTER
       set_font( font )
 
     method _extended_description( table:Value )

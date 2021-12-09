@@ -21,6 +21,9 @@ class UIWidget : UIComponent
     method init( label:String )
       init( UILabel(label) )
 
+    method init( label:String, font:UIFont )
+      init( UILabel(label,font) )
+
     method handle_select
       if (_on_select) _on_select()
       else            on_select
