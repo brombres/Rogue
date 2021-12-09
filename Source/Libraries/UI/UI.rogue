@@ -47,6 +47,9 @@ class UI [singleton]
     dirty_bounds   : Box?
     clip           : Box?
 
+    is_enabled     = true
+    # Disabled UI's do not update, draw, or receive events
+
   METHODS
     method init( theme )
       UI = this
@@ -101,7 +104,9 @@ class UI [singleton]
       return 16
 
     method draw
+      if (not is_enabled) return
       UI = this
+
       on_draw
 
       if (dirty_bounds)
@@ -119,6 +124,7 @@ class UI [singleton]
       return layers.find( pos )
 
     method handle( e:KeyEvent )
+      if (not is_enabled) return
       UI = this
 
       on( e )
@@ -134,6 +140,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:PointerEvent )
+      if (not is_enabled) return
       UI = this
 
       on( e )
@@ -149,6 +156,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:ScrollEvent )
+      if (not is_enabled) return
       UI = this
 
       on( e )
@@ -164,6 +172,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:TextEvent )
+      if (not is_enabled) return
       UI = this
 
       on( e )
@@ -247,6 +256,7 @@ class UI [singleton]
 
     method update
       UI = this
+      if (not is_enabled) return
       on_update
       layers.update
       after_update
@@ -260,6 +270,7 @@ class UI [singleton]
       update_layout( bounds )
 
     method update_layout( new_bounds:Box )
+      if (not is_enabled) return
       UI = this
       local bounds_changed = (bounds != new_bounds)
       if (bounds_changed)
