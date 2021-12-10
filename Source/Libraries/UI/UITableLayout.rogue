@@ -11,14 +11,18 @@ class UITableLayout : UILayout
 
   METHODS
     method init
-      init( 1, 1 )
+      prior.init
+      shrink_to_fit
+      resize( 1, 1 )
 
     method init( size:XY )
       prior.init( size )
+      shrink_to_fit
       resize( 1, 1 )
 
     method init( column_count:Int32, row_count:Int32 )
       prior.init
+      shrink_to_fit
       resize( column_count, row_count )
 
     method add( component:UIComponent ) [override]
@@ -33,6 +37,8 @@ class UITableLayout : UILayout
             add( component )
             is_adding = false
             return
+          elseIf (rows.count == 1)
+            resize( columns.count+1, rows.count )
           else
             resize( columns.count, rows.count+1 )
           endIf
@@ -43,6 +49,28 @@ class UITableLayout : UILayout
 
         is_adding = false
       endIf
+
+    method add( component:UIComponent, span:XY )
+      if (span == XY(1,1))
+        add( component )  # regular add
+        return
+
+      elseIf (next_empty == -1)
+        if (rows.count == 1 and span.y == 1)
+          # Extend new row
+          set( columns.count, 0, component, span )
+        else
+          # Make new row(s)
+          set( 0, rows.count, component, span )
+        endIf
+
+      else
+        set( next_empty%columns.count, next_empty/columns.count, component, span )
+
+      endIf
+
+    method add_row
+      resize( columns.count, rows.count+1 )
 
     method column( i:Int32 )->UITableColumnInfo
       if (i < 0 or i >= columns.count) throw OutOfBoundsError( i, columns.count )
@@ -90,6 +118,27 @@ class UITableLayout : UILayout
         total_w += w.value
       endForEach
       return total_w
+
+    method measure_height( container_height:Real64? )->Real64?
+      if (is_fixed_height) return size.y
+
+      if (not ((forEach in rows).fixed_height))
+        return prior.measure_height( container_height )
+      endIf
+      local h = 0.0
+      h += (forEach in rows).fixed_height.value
+      return h
+
+    method measure_width( container_width:Real64? )->Real64?
+      if (is_fixed_width) return size.x
+
+      if (not ((forEach in columns).fixed_width))
+        return prior.measure_width( container_width )
+      endIf
+
+      local w = 0.0
+      w += (forEach in columns).fixed_width.value
+      return w
 
     method resize( new_columns:Int32, new_rows:Int32 )
       next_empty = -1
@@ -142,11 +191,25 @@ class UITableLayout : UILayout
 
     method set( i:Int32, j:Int32, component:UIComponent )
       if (component is null) component = UITableEmptyCell()
+      if (i >= columns.count or j >= rows.count)
+        resize( columns.count.or_larger(i+1), rows.count.or_larger(j+1) )
+      endIf
+
       local index = j * columns.count + i
       temporarily is_adding = true
         set( index, component )
       endTemporarily
       if (index == next_empty) _advance_next_empty
+
+    method set( i:Int32, j:Int32, component:UIComponent, span:XY )
+      if (span == XY(1,1))
+        set( i, j, component )
+        return
+      else
+        set( i+(span.x-1), j+(span.y-1), UITableEmptyCell() )
+        set( i, j, component )
+        set_span( i, j, span )
+      endIf
 
     method set_span( i:Int32, j:Int32, new_span:XY )
       local index = index_of(i,j)
@@ -346,7 +409,7 @@ class UITableLayout : UILayout
       local spanned_rows = span[ j*columns.count+i ].y
       local result = 0.0
       forEach (y in 0..<spanned_rows)
-        result += rows[y].height
+        result += rows[j+y].height
       endForEach
       return result
 
@@ -354,7 +417,7 @@ class UITableLayout : UILayout
       local spanned_columns = span[ j*columns.count+i ].x
       local result = 0.0
       forEach (x in 0..<spanned_columns)
-        result += columns[x].width
+        result += columns[i+x].width
       endForEach
       return result
 endClass

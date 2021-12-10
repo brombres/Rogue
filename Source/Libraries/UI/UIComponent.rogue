@@ -280,6 +280,7 @@ class UIComponent : Node<<UIComponent>>
 
     method handle( e:UIResizeEvent )
       on( e )
+      UIAttributes.on_resize( this, e )
       (forEach in children).handle( e )
       after( e )
 
@@ -400,6 +401,9 @@ class UIComponent : Node<<UIComponent>>
 
     method on_release_pointer_focus
       noAction
+
+    method on_resize( callback:Function(UIComponent,UIResizeEvent) )
+      UIAttributes.set_resize_callback( this, callback )
 
     method operator+( rhs:UIComponent )->UIComponent
       return UILayout.h( this, rhs )

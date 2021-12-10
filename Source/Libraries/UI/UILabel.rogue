@@ -15,5 +15,6 @@ class UILabel : UIComponent
     method _extended_description( table:Value )
       prior._extended_description( table )
       table//text = text
+
 endClass
 
