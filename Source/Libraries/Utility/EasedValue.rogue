@@ -1,0 +1,66 @@
+uses Utility/ProgressFn
+
+class TargetValue<<$DataType>> [abstract]
+  PROPERTIES
+    target_value : $DataType
+
+  METHODS
+    method set_target_value( @target_value )->this
+      return this
+
+    method set_value( @target_value )->this
+      return this
+
+    method value->$DataType
+      return target_value
+endClass
+
+class EasedValue<<$DataType>> : TargetValue<<$DataType>>
+  PROPERTIES
+    initial_value : $DataType
+    start_time    : Real64
+    duration      : Real64
+    progress_fn   : Function(Real64)->Real64
+    duration_fn   : Function($DataType)->Real64
+
+  METHODS
+    method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
+      @target_value = initial_value
+
+    method init( initial_value, duration_fn, progress_fn=ProgressFn.QUADRATIC )
+      @target_value = initial_value
+
+    method delta->$DataType
+      return target_value - value
+
+    method progress->Real64
+      if (duration == 0 or not start_time) return 1.0
+      return ((System.time - start_time) / duration).clamped( 0, 1 )
+
+    method set_target_value( new_target_value:$DataType )->this
+      if (target_value == new_target_value) return this
+      initial_value = value
+      @target_value = new_target_value
+      start_time = System.time
+      if (duration_fn) duration = duration_fn( target_value - initial_value )
+      return this
+
+    method set_value( new_value:$DataType )->this
+      if (initial_value == new_value and target_value == new_value) return this
+      @initial_value = new_value
+      @target_value = new_value
+      start_time = 0
+      return this
+
+    method value->$DataType
+      if (duration == 0 or not start_time) return target_value
+      local t = ((System.time - start_time) / duration).clamped( 0, 1 )
+      if (t == 0) return initial_value
+      if (t == 1)
+        start_time = 0  # otherwise a duration change could start this moving again
+        return target_value
+      endIf
+      return initial_value + (target_value - initial_value) * progress_fn(t)
+
+endClass
+
