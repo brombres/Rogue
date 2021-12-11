@@ -6,8 +6,8 @@ endEnum
 
 class UIWidget : UIComponent
   PROPERTIES
-    widget_state : UIWidgetState
-    _on_select   : Function
+    widget_state       : UIWidgetState
+    on_select_callback : Function
 
   METHODS
     method init
@@ -25,8 +25,8 @@ class UIWidget : UIComponent
       init( UILabel(label,font) )
 
     method handle_select
-      if (_on_select) _on_select()
-      else            on_select
+      on_select
+      if (on_select_callback) on_select_callback()
 
     method is_disabled->Logical
       return (widget_state == UIWidgetState.DISABLED)
@@ -80,6 +80,8 @@ class UIWidget : UIComponent
 
     method on_select
 
+    method on_select( on_select_callback )
+
     method release_pointer_focus
       if (UI.pointer_focus is this)
         if (widget_state != UIWidgetState.DISABLED) widget_state = UIWidgetState.IDLE
@@ -91,5 +93,12 @@ class UIWidget : UIComponent
       if (setting == is_disabled) return
       widget_state = which{ setting:UIWidgetState.DISABLED || UIWidgetState.IDLE }
 
-    method set_on_select( _on_select )
+    method set_is_visible( setting:Logical )
+      if (not setting)
+        release_pointer_focus
+      endIf
+      prior.set_is_visible( setting )
+      if (not is_disabled) widget_state = UIWidgetState.IDLE
+
+    method set_on_select( on_select_callback )
 endClass

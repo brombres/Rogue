@@ -131,7 +131,12 @@ class UI [singleton]
       if (e.is_consumed) return
 
       if (keyboard_focus)
-        keyboard_focus.handle( e )
+        if (keyboard_focus.is_visible)
+          keyboard_focus.handle( e )
+        else
+          keyboard_focus.release_keyboard_focus
+          layers.handle( e )
+        endIf
       else
         layers.handle( e )
       endIf
@@ -147,7 +152,12 @@ class UI [singleton]
       if (e.is_consumed) return
 
       if (pointer_focus)
-        pointer_focus.handle( e )
+        if (pointer_focus.is_visible)
+          pointer_focus.handle( e )
+        else
+          pointer_focus.release_keyboard_focus
+          layers.handle( e )
+        endIf
       else
         layers.handle( e )
       endIf
