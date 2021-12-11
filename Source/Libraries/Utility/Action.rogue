@@ -209,6 +209,11 @@ endClass
 
 class ActionWait( duration ) : Action;
 
+class ActionWaitFor( condition:Function->Logical, duration=Action.INDEFINITE ) : Action
+  METHODS
+    method is_finished->Logical
+      return condition()
+endClass
 
 class ActionCall( fn:Function() ) : Action
   METHODS
