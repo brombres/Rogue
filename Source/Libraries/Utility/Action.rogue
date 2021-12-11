@@ -1,6 +1,11 @@
 $include "ProgressFn.rogue"
 
 class Action
+  DEFINITIONS
+    # Duration values
+    INSTANT    =  0  # default duration (one and done)
+    INDEFINITE = -1  # action loops until finish() called or overridden is_finished()->true
+
   GLOBAL METHODS
     method create( fn:Function() )->Action
       return ActionCall( fn )
@@ -37,7 +42,8 @@ class Action
     last_time   : Real64 # 0:not started
 
   METHODS
-    method init( duration=0, progress_fn=ProgressFn.LINEAR )
+    method init( duration=0, progress_fn=ProgressFn.LINEAR, &indefinite )
+      if (indefinite) duration = INDEFINITE
 
     method and_then( node:Action )->this
       if (node)
@@ -73,6 +79,9 @@ class Action
       if (duration < 0) duration = 0
       t = duration
 
+    method indefinite [macro]
+      this.duration = Action.INDEFINITE
+
     method insert_next( node:Action )->this
       if (node) next = node.and_then( next )
       return this
@@ -94,12 +103,6 @@ class Action
 
     method progress->Real64
       return which{ duration>0:progress_fn(t/duration) || 1.0 }
-
-    method set_duration( @duration )->this
-      return this
-
-    method set_progress_fn( @progress_fn )->this
-      return this
 
     method start_next->Action
       # Finds the successor to this node, adjusts links if necessary, and
