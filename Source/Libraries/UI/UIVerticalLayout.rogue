@@ -60,3 +60,11 @@ class UIVerticalLayout : UILayout
         cursor += component.size.yv
       endForEach
 endClass
+
+class UIGeneratedVerticalLayout : UIVerticalLayout
+  # Special subclass for operator overrides
+  METHODS
+    method operator/( rhs:UIComponent )->UIComponent [override]
+      add( rhs )
+      return this
+endClass

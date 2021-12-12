@@ -12,6 +12,7 @@ class UIComponent : Node<<UIComponent>>
     FLAG_HEIGHT_MASK           = (FLAG_FIXED_HEIGHT | FLAG_SHRINK_TO_FIT_HEIGHT)
     FLAG_SIZE_MASK             = (FLAG_WIDTH_MASK   | FLAG_HEIGHT_MASK)
     FLAG_HIDDEN                = 16
+    FLAG_DISABLE_INPUT         = 32
 
   PROPERTIES
     position   : XY
@@ -186,6 +187,10 @@ class UIComponent : Node<<UIComponent>>
         endForEach
       endUse
 
+    method enable_input( setting:Logical )
+      if (setting) flags &= !UIComponent.FLAG_DISABLE_INPUT
+      else         flags |=  UIComponent.FLAG_DISABLE_INPUT
+
     method expand_to_fill
       flags &= !(FLAG_WIDTH_MASK|FLAG_HEIGHT_MASK)  # turn off fixed and shrink flags
 
@@ -227,7 +232,7 @@ class UIComponent : Node<<UIComponent>>
       return UIAttributes.font( this )
 
     method handle( e:KeyEvent )
-      if (is_hidden) return
+      if (is_hidden or is_input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -240,7 +245,7 @@ class UIComponent : Node<<UIComponent>>
       after( e )
 
     method handle( e:PointerEvent )
-      if (is_hidden) return
+      if (is_hidden or is_input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -253,7 +258,7 @@ class UIComponent : Node<<UIComponent>>
       after( e )
 
     method handle( e:ScrollEvent )
-      if (is_hidden) return
+      if (is_hidden or is_input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -266,7 +271,7 @@ class UIComponent : Node<<UIComponent>>
       after( e )
 
     method handle( e:TextEvent )
-      if (is_hidden) return
+      if (is_hidden or is_input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -313,6 +318,12 @@ class UIComponent : Node<<UIComponent>>
 
     method is_fixed_width->Logical
       return (flags & FLAG_FIXED_WIDTH)
+
+    method is_input_enabled->Logical [macro]
+      return not (this.flags & UIComponent.FLAG_DISABLE_INPUT)
+
+    method is_input_disabled->Logical [macro]
+      return (this.flags & UIComponent.FLAG_DISABLE_INPUT)
 
     method is_modifier->Logical
       return true
@@ -406,10 +417,13 @@ class UIComponent : Node<<UIComponent>>
       UIAttributes.set_resize_callback( this, callback )
 
     method operator+( rhs:UIComponent )->UIComponent
-      return UILayout.h( this, rhs )
+      return UIGeneratedHorizontalLayout( this ).[ add(rhs) ]
 
     method operator/( rhs:UIComponent )->UIComponent
-      return UILayout.v( this, rhs )
+      return UIGeneratedVerticalLayout( this ).[ add(rhs) ]
+
+    method operator|( rhs:UIComponent )->UIComponent
+      return UIGeneratedStackLayout( this ).[ add(rhs) ]
 
     method release_keyboard_focus
       if (UI.keyboard_focus is this)

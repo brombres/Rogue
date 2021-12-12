@@ -60,3 +60,12 @@ class UIHorizontalLayout : UILayout
         cursor += component.size.xv
       endForEach
 endClass
+
+class UIGeneratedHorizontalLayout : UIHorizontalLayout
+  # Special subclass for operator overrides
+  METHODS
+    method operator+( rhs:UIComponent )->UIComponent [override]
+      add( rhs )
+      return this
+endClass
+
