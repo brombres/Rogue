@@ -886,14 +886,18 @@ class CmdWhich : CmdControlStructure
       # if all the cases are literal values and if no case contains a 'yield'.
       scope.control_stack.add( this )
 
-      expression = expression.resolve( scope )
-      if (expression.require_type.is_enum)
-        expression = CmdAccess( t, expression, "value" ).resolve( scope )
+      local enum_type       : Type
+      local expression_type : Type
+      expression = expression.resolve( scope ).require_value
+      expression_type = expression.type
+      if (expression_type.is_enum)
+        enum_type = expression_type
+        expression = CmdAccess( t, expression, "value" ).resolve( scope ).require_value
+        expression_type = expression.type
       endIf
 
       local all_literal_cases = true
 
-      local expression_type = expression.require_type
       if (expression_type is not Program.type_Int32 and expression_type is not Program.type_Character)
         if (expression_type is Program.type_Byte)
           expression = expression.cast_to(Program.type_Int32,scope).resolve( scope )
@@ -901,6 +905,8 @@ class CmdWhich : CmdControlStructure
           all_literal_cases = false  # prevent conversion to C 'switch'
         endIf
       endIf
+
+      if (enum_type) scope.implicit_types.add( enum_type )
 
       forEach (c in cases)
         c.resolve_conditions( scope )
@@ -918,6 +924,8 @@ class CmdWhich : CmdControlStructure
         case_others.conditions.resolve( scope )
         case_others.statements.resolve( scope )
       endIf
+
+      if (enum_type) scope.implicit_types.remove_last
 
       scope.control_stack.remove_last()
 
@@ -1050,6 +1058,9 @@ class CmdWhichCase : Cmd
       else
         conditions.add( CmdLiteralInt32(t,0) )
       endIf
+
+    method description->String
+      return "CmdWhichCase($,$$)"(conditions,statements,which{is_case_next:"is_case_next"||""})
 
     method resolve_conditions( scope:Scope )->CmdWhichCase
       conditions.resolve( scope )
@@ -2976,7 +2987,12 @@ class CmdAccess : Cmd
 
         if (not args)
           local def = scope.this_type.definition_lookup[ name ]
-          if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+          if (not def)
+            forEach (implicit_type in scope.implicit_types)
+              def = implicit_type.definition_lookup[ name ]
+              if (def) escapeForEach
+            endForEach
+          endIf
           if (def) return def.expression.cloned(&new_t=t).resolve( scope )
 
           p = Program.type_Global.find_property( name, used_modules )
@@ -3017,9 +3033,9 @@ class CmdAccess : Cmd
       if (not args)
         local def = context_type.definition_lookup[ name ]
         if (def)
-          local old_implicit_type = scope.set_implicit_type( context_type )
+          scope.implicit_types.add( context_type )
           local def_result = def.expression.cloned(&new_t=t).resolve( scope )
-          scope.set_implicit_type( old_implicit_type )
+          scope.implicit_types.remove_last
           return def_result
         endIf
       endIf
@@ -3064,7 +3080,12 @@ class CmdAccess : Cmd
         endIf
 
         local def = scope.this_type.definition_lookup[ name ]
-        if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+        if (not def)
+          forEach (implicit_type in scope.implicit_types)
+            def = implicit_type.definition_lookup[ name ]
+            if (def) escapeForEach
+          endForEach
+        endIf
         if (def) return def.expression.cloned(&new_t=t).resolve_assignment( scope, new_value )
 
         local p = scope.this_method.type_context.find_global( name )
@@ -3109,7 +3130,12 @@ class CmdAccess : Cmd
       endIf
 
       local def = context_type.definition_lookup[ name ]
-      if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+      if (not def)
+        forEach (implicit_type in scope.implicit_types)
+          def = implicit_type.definition_lookup[ name ]
+          if (def) escapeForEach
+        endForEach
+      endIf
       if (def) return def.expression.cloned(&new_t=t).resolve_assignment( scope, new_value )
 
       if (context_was_null and scope.this_type is not Program.type_Global)
@@ -3194,7 +3220,12 @@ class CmdAccess : Cmd
       endIf
 
       local def = context_type.definition_lookup[ name ]
-      if (not def and scope.implicit_type) def = scope.implicit_type.definition_lookup[ name ]
+      if (not def)
+        forEach (implicit_type in scope.implicit_types)
+          def = implicit_type.definition_lookup[ name ]
+          if (def) escapeForEach
+        endForEach
+      endIf
       if (def) return def.expression.cloned(&new_t=t).resolve_modify_and_assign( scope, op, new_value )
 
       if (setter_name)

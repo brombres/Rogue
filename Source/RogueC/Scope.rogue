@@ -8,7 +8,7 @@ class Scope
     this_method    : Method
     this_body      : CmdStatementList
     this_statement : Cmd
-    implicit_type  : Type
+    implicit_types = Type[]
 
     local_list = Local[]
 
@@ -44,11 +44,6 @@ class Scope
 
     method pop_local
       local_list.remove_last
-
-    method set_implicit_type( new_implicit_type:Type )->Type
-      local result = implicit_type
-      @implicit_type = new_implicit_type
-      return result
 
     method resolve_call( type_context:Type, access:CmdAccess, error_on_fail:Logical, flags=0:Int32 )->Cmd
       local is_initializer = (access.name == "init")
