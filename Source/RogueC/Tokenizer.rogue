@@ -281,7 +281,7 @@ class Tokenizer
       TokenType.symbol_exclamation_point     = define( TokenType("!") )
       TokenType.symbol_fat_arrow             = define( TokenType("=>") )
       TokenType.symbol_ge                    = define( TokenType(">=") )
-      TokenType.symbol_gt                    = define( TokenType(">") )
+      TokenType.symbol_gt                    = define( StructureTokenType(">") )
       TokenType.symbol_le                    = define( TokenType("<=") )
       TokenType.symbol_lt                    = define( TokenType("<") )
       TokenType.symbol_minus                 = define( TokenType("-") )
