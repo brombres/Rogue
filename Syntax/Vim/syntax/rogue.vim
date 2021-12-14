@@ -25,7 +25,7 @@ syn keyword rogueClassDecl   subclass endSubclass
 syn keyword rogueClassDecl   augment endAugment
 syn keyword rogueClassDecl   nativeCode nativeHeader nativeLibrary endNativeCode endNativeHeader
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
-syn keyword rogueMember      DEPENDENCIES PROPERTIES METHODS GLOBAL
+syn keyword rogueMember      DEPENDENCIES PROPERTIES METHODS GLOBAL STATES
 syn match   rogueError       "\<for\(\s\|(\)"
 syn keyword rogueConditional  if elseIf else endIf then
 syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhichIs

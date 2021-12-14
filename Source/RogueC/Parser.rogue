@@ -7,6 +7,7 @@ class Parser
     reader      : TokenReader
     filepath    : String
     this_type   : Type
+    this_state  : State
     this_method : Method
 
     local_declarations = Local[]  # repeated temporary use
@@ -871,6 +872,12 @@ class Parser
         return true
       endIf
 
+      if (consume(TokenType.keyword_STATES))
+        while (parse_state) noAction
+        return true
+      endIf
+
+
       if (next_is(TokenType.keyword_CATEGORIES))
         if (not this_type.is_enum)
           throw peek.error( "Only an 'enum' type can contain a CATEGORIES section." )
@@ -1108,6 +1115,21 @@ class Parser
       local property_type = which{ is_global:"global property" || "property" }
       throw p.initial_value.t.error(
       ''Cannot determine $ type from initial value; append an explicit type declaration such as ": Int32" '' (property_type) )
+
+    method parse_state->Logical
+      consume_eols
+      if (not consume(TokenType.symbol_gt)) return false
+
+      local t = peek
+      this_state = State( t, read_identifier )
+      this_type.states[ this_state.name ] = this_state
+      must_consume_eols
+
+      while (parse_method(&skip_add_to_type))
+        this_state.methods.add( this_method )
+      endWhile
+
+      return true
 
     method parse_method( as_global=false:Logical, default_attributes=null:Attributes, &skip_add_to_type, first_token=TokenType.keyword_method:TokenType )->Logical
       consume_eols

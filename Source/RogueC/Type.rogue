@@ -55,6 +55,8 @@ class Type
     property_lookup = Table<<String,Property>>() : Table<<String,Property>>
     enum_properties : Property[]
 
+    states = StringTable<<State>>()
+
     global_method_list                = Method[]                   : Method[]
     global_method_lookup_by_name      = Table<<String,Method[]>>() : Table<<String,Method[]>>
     global_method_lookup_by_signature = Table<<String,Method>>()   : Table<<String,Method>>
@@ -450,6 +452,41 @@ class Type
         add_property( t, "value", Program.type_Int32 )
       endIf
 
+      if (states.count)
+        # For type XYZ, create enum XYZState containing all states as enum categories
+        local enum_type_name = "$State$" (name.before_first('<'), name.from_first('<'))
+        local enum_type = Program.get_type_reference( t, enum_type_name )
+        enum_type.attributes.add( Attribute.is_compound | Attribute.is_enum )
+        add_property( t, "state", enum_type )
+
+        enum_type.base_types.add( Program.get_type_reference(t,"CompoundIntrospection<<$>>"(enum_type_name)) )
+
+        block m = enum_type.add_global_method( t, "create" )
+          m.attributes.add( Attribute.is_generated )
+          m.return_type = enum_type
+        endBlock
+
+        block m = add_method( t, "set_state" )
+          m.attributes.add( Attribute.is_generated )
+          m.add_parameter( t, "new_state", enum_type )
+          if (state_machine_has_signal("LEAVE")) m.statements.add( CmdAccess(t,"LEAVE") )
+          m.statements.add( CmdAssign(t, CmdAccess(t,"@state"), CmdAccess(t,"new_state")) )
+          if (state_machine_has_signal("ENTER")) m.statements.add( CmdAccess(t,"ENTER") )
+        endBlock
+
+        enum_type.is_defined = true
+
+        ensure enum_type.categories
+        forEach (state_name at i in states.keys)
+          local def = Definition( t, state_name )
+          def.value = i
+          def.expression = CmdLiteralInt32( t, i )
+          enum_type.categories.add( def )
+        endForEach
+        enum_type.configure( scope )
+        enum_type.organize( scope )
+      endIf
+
       local inherited_categories : Definition[]
       use rewriter = base_types.rewriter
         forEach (base_type in rewriter)
@@ -580,6 +617,15 @@ class Type
 
       configure_chain.remove_last
       return this
+
+    method state_machine_has_signal( name:String )->Logical
+      if (not states) return false
+      forEach (state in states)
+        forEach (m in state.methods)
+          if (m.name == name) return true
+        endForEach
+      endForEach
+      return false
 
     method organize_enum( scope:Scope )
       # create(Int32)
@@ -1051,6 +1097,7 @@ class Type
       Program.invoke_metacode( "$.organize_properties"(name), this )
 
       create_introspection_methods( scope )
+      create_state_methods( scope )
 
       inherit_methods( scope )
 
@@ -1584,6 +1631,52 @@ class Type
         m_type_info.statements.add( CmdReturn( t, CmdAccess( t, CmdAccess(t,"TypeInfo"), "get",
           CmdArgs(CmdLiteralString(t,name)) ) ) )
       endIf
+
+    method create_state_methods( scope:Scope )
+      if (states.is_empty) return
+
+      local state_methods = StringTable<<Method>>()
+      local state_method_whiches = StringTable<<CmdWhich>>()
+      forEach (state in states)
+        forEach (m in state.methods)
+          m.organize( scope, &!add_to_lookup )
+
+          local m2 = state_methods[ m.signature ]
+          if (not m2)
+            m2 = Method( m.t, m.type_context, m.name )
+            state_methods[ m.signature ] = m2
+            m2.attributes = m.attributes
+            m2.return_type = m.return_type
+            m2.parameters = m.parameters
+            add_method( m2 )
+            m2.organize( scope )
+          endIf
+          if (m.return_type is not m2.return_type)
+            throw m.t.error( "Inconsistent return type specified for method $."(m.signature) )
+          endIf
+
+          local cmd_which = state_method_whiches[ m.signature ]
+          if (not cmd_which)
+            cmd_which = CmdWhich( m.t, CmdAccess(m.t,"state") )
+            m2.statements.add( cmd_which )
+            state_method_whiches[ m.signature ] = cmd_which
+            ensure cmd_which.cases
+          endIf
+          if (m.statements.count)
+            local cmd_case = CmdWhichCase( m.t, CmdArgs(CmdAccess(m.t,state.name)), m.statements )
+            cmd_which.cases.add( cmd_case )
+          endIf
+        endForEach
+      endForEach
+
+      forEach (m in state_methods)
+        local cmd_which = state_method_whiches[ m.signature ]
+        if (m.return_type)
+          # Add case 'others' with the default return type
+          local cmd_others = cmd_which.add_case_others( m.t )
+          cmd_others.statements.add( CmdReturn(m.t,m.return_type.create_default_value(m.t)) )
+        endIf
+      endForEach
 
     method inherit_methods( scope=null:Scope )
       # Inherit method templates

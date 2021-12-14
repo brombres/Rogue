@@ -125,7 +125,7 @@ repository:
       match: \b(ENUMERATE|DEFINITIONS|SETTINGS|CATEGORIES)\b
 
     - name: keyword.other.rogue
-      match: \b(PROPERTIES|METHODS|ROUTINES)\b
+      match: \b(PROPERTIES|METHODS|STATES|ROUTINES)\b
 
   keywords_control:
     patterns:

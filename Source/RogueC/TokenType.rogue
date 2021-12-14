@@ -79,6 +79,7 @@ class TokenType
     keyword_PROPERTIES            : TokenType
     keyword_routine               : TokenType
     keyword_satisfied             : TokenType
+    keyword_STATES                : TokenType
     keyword_subclass              : TokenType
     keyword_temporarily           : TokenType
     keyword_unsatisfied           : TokenType

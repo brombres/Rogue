@@ -157,6 +157,7 @@ class Tokenizer
       TokenType.keyword_PROPERTIES     = define( StructureTokenType("PROPERTIES").mark_non_method )
       TokenType.keyword_routine        = define( StructureTokenType("routine").mark_non_method )
       TokenType.keyword_satisfied      = define( StructureTokenType("satisfied") )
+      TokenType.keyword_STATES         = define( StructureTokenType("STATES").mark_non_method )
       TokenType.keyword_subclass       = define( StructureTokenType("subclass") )
       TokenType.keyword_unsatisfied    = define( StructureTokenType("unsatisfied") )
       TokenType.keyword_with           = define( StructureTokenType("with") )

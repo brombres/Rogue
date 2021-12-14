@@ -8005,7 +8005,8 @@ class CmdChangeState( t, expression:Cmd ) : Cmd
       return CmdChangeState( t, expression.cloned(clone_args,new_t) )
 
     method resolve( scope:Scope )->Cmd
-      local state_type_name = scope.find_type( scope.this_type.name + "State" )
+      local state_type_name = scope.this_type.name
+      state_type_name = "$State$" (state_type_name.before_first('<'), state_type_name.from_first('<'))
       local state_type = scope.find_type( state_type_name )
 
       if (state_type)

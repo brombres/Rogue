@@ -29,7 +29,7 @@ setlocal indentkeys+=use,=endUse
 setlocal indentkeys+=which,=case,=others,=endWhich
 setlocal indentkeys+==method,=class,=endClass,=augment,=endAugment
 setlocal indentkeys+==routine,=endRoutine
-setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=CATEGORIES,=ENUMERATE,=PROPERTIES,=METHODS
+setlocal indentkeys+==CLASS,=GLOBAL,=DEFINITIONS,=CATEGORIES,=ENUMERATE,=PROPERTIES,=STATES,=METHODS
 setlocal indentkeys+=0\|
 
 function! GetPrevNonBlank(startline)
@@ -66,6 +66,19 @@ function! FindIndentOfPrevWhich(startline)
   return 0
 endfunction
 
+function! IsInSTATES(start_n)
+  let s:n = a:start_n
+  while s:n > 1
+    let s:line = getline(s:n)
+    if s:line =~# '^\s*STATES\>'
+      return 1
+    elseif s:line =~# '^\s*\<METHODS\>' || s:line =~# '^\s*\<GLOBAL METHODS\>'
+      return 0
+    endif
+    let s:n=s:n-1
+  endwhile
+  return 0
+endfunction
 
 function! FindIndentOfPrevIf(startline)
   let s:lnum = a:startline
@@ -418,32 +431,46 @@ function! GetRogueIndent( line_num )
   let s:indnt = indent( s:prev_line_num )
 
   " anything that starts with one of these keywords should go on column 0
-  if s:this_codeline =~ '\C^\s*\(class\|augment\|endClass\|endAugment\)'
+  if s:this_codeline =~# '^\s*\(class\|augment\|endClass\|endAugment\)'
     return 0
   endif
 
-  if s:this_codeline =~ '\C^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\)'
+  if s:this_codeline =~# '^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\|STATES\)'
     return 2
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(class\|augment\)\>'
+  if s:prev_codeline =~# '^\s*\(class\|augment\)\>'
     return 2
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(endClass\|endAugment\)\>'
+  if s:prev_codeline =~# '^\s*\(endClass\|endAugment\)\>'
     return 0
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\)'
+  if s:prev_codeline =~# '^\s*\(CLASS\|GLOBAL\|DEFINITIONS\|CATEGORIES\|ENUMERATE\|PROPERTIES\|METHODS\)'
     return 4
   endif
 
-  if s:this_codeline =~ '\C^\s*\(method \)'
-    return 4
+  if s:this_codeline =~# '^\s*>'
+    if (IsInSTATES(a:line_num-1))
+      return 4
+    endif
   endif
 
-  if s:prev_codeline =~ '\C^\s*\(method \)'
-    return 6
+  if s:this_codeline =~# '^\s*\(method \)'
+    if (IsInSTATES(a:line_num-1))
+      return 6
+    else
+      return 4
+    endif
+  endif
+
+  if s:prev_codeline =~# '^\s*\(method \)'
+    if (IsInSTATES(a:line_num-1))
+      return 8
+    else
+      return 6
+    endif
   endif
 
   if s:this_codeline =~ '\C^\s*\(routine \)'
