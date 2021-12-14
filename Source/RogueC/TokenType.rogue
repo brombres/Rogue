@@ -186,6 +186,7 @@ class TokenType
     symbol_backslash              : TokenType
     symbol_caret                  : TokenType
     symbol_caret_equals           : TokenType
+    symbol_change_state           : TokenType
     symbol_colon                  : TokenType
     symbol_colon_colon            : TokenType
     symbol_comma                  : TokenType

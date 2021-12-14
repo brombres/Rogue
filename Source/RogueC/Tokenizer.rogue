@@ -267,6 +267,7 @@ class Tokenizer
       TokenType.symbol_backslash             = define( TokenType("\\") )
       TokenType.symbol_caret                 = define( TokenType("^") )
       TokenType.symbol_caret_equals          = define( ModifyAndAssignTokenType("^=") )
+      TokenType.symbol_change_state          = define( TokenType("[>") )
       TokenType.symbol_colon                 = define( TokenType(":") )
       TokenType.symbol_colon_colon           = define( TokenType("::") )
       TokenType.symbol_compare               = define( TokenType("<>") )
@@ -527,6 +528,7 @@ class Tokenizer
 
       elseIf (ch == '[')
         if (consume(']')) return TokenType.symbol_empty_brackets
+        if (consume('>')) return TokenType.symbol_change_state
         return TokenType.symbol_open_bracket
 
       elseIf (ch == '\\')

@@ -641,6 +641,12 @@ class Visitor
       on_leave( cmd )
       return cmd
 
+    method visit( cmd:CmdChangeState )->Cmd
+      on_enter( cmd )
+      dispatch( cmd )
+      on_leave( cmd )
+      return cmd
+
     method on_enter( cmd:Cmd )
       throw RogueError( "$ does not overload method on_enter($)." (type_name,cmd.type_name) )
 
@@ -751,6 +757,7 @@ class Visitor
     method on_enter( cmd:CmdThisType )
     method on_enter( cmd:CmdAssignFnPtr )
     method on_enter( cmd:CmdCallFnPtr )
+    method on_enter( cmd:CmdChangeState )
 
     method on_leave( cmd:Cmd )
       throw RogueError( "$ does not overload method on_enter($)." (type_name,cmd.type_name) )
@@ -863,6 +870,7 @@ class Visitor
     method on_leave( cmd:CmdThisType )
     method on_leave( cmd:CmdAssignFnPtr )
     method on_leave( cmd:CmdCallFnPtr )
+    method on_leave( cmd:CmdChangeState )
 
     method dispatch( cmd:Cmd )
       throw RogueError( "$ does not overload method dispatch($)." (type_name,cmd.type_name) )
@@ -1352,6 +1360,9 @@ class Visitor
       cmd.context = cmd.context.dispatch( this )
       cmd.method_info.dispatch( this )
       cmd.args.dispatch( this )
+
+    method dispatch( cmd:CmdChangeState )
+      cmd.expression = cmd.expression.dispatch( this )
 
 endClass
 
