@@ -700,10 +700,10 @@ class CharacterStyle( flags:Int32 ) [compound]
   DEFINITIONS
     NONE                 = CharacterStyle(0)
 
-    FG_MASK              =       0b11111_0000_0000
-    BG_MASK              = 0b11111_00000_0000_0000
-    FG_SHIFT             = 8
-    BG_SHIFT             = 13
+    FG_MASK              = 0b000000000_111111111_000000
+    BG_MASK              = 0b111111111_000000000_000000
+    FG_SHIFT             = 6
+    BG_SHIFT             = 15
 
     BOLD                 = (1 :<<: 0)
     DIM                  = (1 :<<: 1)
@@ -712,41 +712,45 @@ class CharacterStyle( flags:Int32 ) [compound]
     INVERSE              = (1 :<<: 4)
     HIDDEN               = (1 :<<: 5)
 
-    FG_DEFAULT           = (0  :<<: 8)
-    FG_BLACK             = (1  :<<: 8)
-    FG_RED               = (2  :<<: 8)
-    FG_GREEN             = (3  :<<: 8)
-    FG_YELLOW            = (4  :<<: 8)
-    FG_BLUE              = (5  :<<: 8)
-    FG_MAGENTA           = (6  :<<: 8)
-    FG_CYAN              = (7  :<<: 8)
-    FG_LIGHT_GRAY        = (8  :<<: 8)
-    FG_DARK_GRAY         = (9  :<<: 8)
-    FG_LIGHT_RED         = (10 :<<: 8)
-    FG_LIGHT_GREEN       = (11 :<<: 8)
-    FG_LIGHT_YELLOW      = (12 :<<: 8)
-    FG_LIGHT_BLUE        = (13 :<<: 8)
-    FG_LIGHT_MAGENTA     = (14 :<<: 8)
-    FG_LIGHT_CYAN        = (15 :<<: 8)
-    FG_WHITE             = (16 :<<: 8)
+    FG_DEFAULT           = (0  :<<: 6)
+    FG_BLACK             = (1  :<<: 6)
+    FG_RED               = (2  :<<: 6)
+    FG_GREEN             = (3  :<<: 6)
+    FG_YELLOW            = (4  :<<: 6)
+    FG_BLUE              = (5  :<<: 6)
+    FG_MAGENTA           = (6  :<<: 6)
+    FG_CYAN              = (7  :<<: 6)
+    FG_LIGHT_GRAY        = (8  :<<: 6)
+    FG_DARK_GRAY         = (9  :<<: 6)
+    FG_LIGHT_RED         = (10 :<<: 6)
+    FG_LIGHT_GREEN       = (11 :<<: 6)
+    FG_LIGHT_YELLOW      = (12 :<<: 6)
+    FG_LIGHT_BLUE        = (13 :<<: 6)
+    FG_LIGHT_MAGENTA     = (14 :<<: 6)
+    FG_LIGHT_CYAN        = (15 :<<: 6)
+    FG_WHITE             = (16 :<<: 6)
+    FG_EXTENDED          = (17 :<<: 6)
+    # (17..256) :<<: 6 - extended 256 fg colors
 
-    BG_DEFAULT           = (0  :<<: 13)
-    BG_BLACK             = (1  :<<: 13)
-    BG_RED               = (2  :<<: 13)
-    BG_GREEN             = (3  :<<: 13)
-    BG_YELLOW            = (4  :<<: 13)
-    BG_BLUE              = (5  :<<: 13)
-    BG_MAGENTA           = (6  :<<: 13)
-    BG_CYAN              = (7  :<<: 13)
-    BG_LIGHT_GRAY        = (8  :<<: 13)
-    BG_DARK_GRAY         = (9  :<<: 13)
-    BG_LIGHT_RED         = (10 :<<: 13)
-    BG_LIGHT_GREEN       = (11 :<<: 13)
-    BG_LIGHT_YELLOW      = (12 :<<: 13)
-    BG_LIGHT_BLUE        = (13 :<<: 13)
-    BG_LIGHT_MAGENTA     = (14 :<<: 13)
-    BG_LIGHT_CYAN        = (15 :<<: 13)
-    BG_WHITE             = (16 :<<: 13)
+    BG_DEFAULT           = (0  :<<: 15)
+    BG_BLACK             = (1  :<<: 15)
+    BG_RED               = (2  :<<: 15)
+    BG_GREEN             = (3  :<<: 15)
+    BG_YELLOW            = (4  :<<: 15)
+    BG_BLUE              = (5  :<<: 15)
+    BG_MAGENTA           = (6  :<<: 15)
+    BG_CYAN              = (7  :<<: 15)
+    BG_LIGHT_GRAY        = (8  :<<: 15)
+    BG_DARK_GRAY         = (9  :<<: 15)
+    BG_LIGHT_RED         = (10 :<<: 15)
+    BG_LIGHT_GREEN       = (11 :<<: 15)
+    BG_LIGHT_YELLOW      = (12 :<<: 15)
+    BG_LIGHT_BLUE        = (13 :<<: 15)
+    BG_LIGHT_MAGENTA     = (14 :<<: 15)
+    BG_LIGHT_CYAN        = (15 :<<: 15)
+    BG_WHITE             = (16 :<<: 15)
+    BG_EXTENDED          = (17 :<<: 15)
+    # (17..256) :<<: 6 - extended 256 bg colors
 
   GLOBAL PROPERTIES
     fg_colors =
@@ -820,8 +824,24 @@ class CharacterStyle( flags:Int32 ) [compound]
             if (flags & HIDDEN) ConsoleStyle.hidden( output )
             else                ConsoleStyle.hidden_off( output )
           endIf
-          if (diff & FG_MASK) ConsoleStyle.print( fg_colors[(flags&FG_MASK) :>>: FG_SHIFT], output )
-          if (diff & BG_MASK) ConsoleStyle.print( bg_colors[(flags&BG_MASK) :>>: BG_SHIFT], output )
+
+          if (diff & FG_MASK)
+            local fg = (flags & FG_MASK) :>>>: FG_SHIFT
+            if (fg >= 17)
+              ConsoleStyle.print_fg_color( fg-1, output )
+            else
+              ConsoleStyle.print( fg_colors[fg], output )
+            endIf
+          endIf
+
+          if (diff & BG_MASK)
+            local bg = (flags & BG_MASK) :>>>: BG_SHIFT
+            if (bg >= 17)
+              ConsoleStyle.print_bg_color( bg-1, output )
+            else
+              ConsoleStyle.print( bg_colors[bg], output )
+            endIf
+          endIf
         endIf
       endBlock
       return new_style

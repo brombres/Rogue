@@ -701,6 +701,30 @@ class ConsoleStyle [singleton]
     method print( code:Int32, builder:StringBuilder )
       builder.print( "\e[" ).print( code ).print( "m" )
 
+    method print_bg_color( index:Int32, output=Global:PrintWriter )
+      # 256 color mode
+      output.flush
+      output.print( "\e[48;5;" )
+      output.print( index )
+      output.print( "m" )
+      output.flush
+
+    method print_bg_color( index:Int32, builder:StringBuilder )
+      # 256 color mode
+      builder.print( "\e[48;5;" ).print( index ).print( "m" )
+
+    method print_fg_color( index:Int32, output=Global:PrintWriter )
+      # 256 color mode
+      output.flush
+      output.print( "\e[38;5;" )
+      output.print( index )
+      output.print( "m" )
+      output.flush
+
+    method print_fg_color( index:Int32, builder:StringBuilder )
+      # 256 color mode
+      builder.print( "\e[38;5;" ).print( index ).print( "m" )
+
     method flush
       Global.flush
 
