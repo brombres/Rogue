@@ -28,7 +28,6 @@
 module Bitmap
   uses Geometry [export]
 
-
 $include "Bitmap/BMP.rogue"
 $include "Bitmap/Color.rogue"
 $include "Bitmap/HSB.rogue"
@@ -37,7 +36,7 @@ $include "Bitmap/PNG.rogue"
 
 class Bitmap
   GLOBAL PROPERTIES
-    resize_row_buffer = Int32[]
+    resize_row_buffer [threadLocal] = Real64[]
     line_generator    : BresenhamLineGenerator
 
   GLOBAL METHODS
@@ -681,7 +680,7 @@ class Bitmap
         dest_i += new_width
       endForEach
 
-    method resize_add_row( src_i:Int32, new_width:Int32, multiplier:Int32 )
+    method resize_add_row( src_i:Int32, new_width:Int32, multiplier:Real64 )
       local this_width = width
       local available = new_width
       local buffer = resize_row_buffer.data
@@ -689,18 +688,18 @@ class Bitmap
       native @|RogueByte* src = (RogueByte*)($pixels->data->as_int32s + $src_i);
 
       forEach (1..new_width)
-        local n = 0
-        local b = 0
-        local g = 0
-        local r = 0
-        local a = 0
+        local n = 0.0
+        local b = 0.0
+        local g = 0.0
+        local r = 0.0
+        local a = 0.0
         local need = this_width
         while (need >= available)
           if (native("(RogueInt32)src[3]")->Int32)
-            b += native("(RogueInt32)src[0]")->Int32 * available
-            g += native("(RogueInt32)src[1]")->Int32 * available
-            r += native("(RogueInt32)src[2]")->Int32 * available
-            a += native("(RogueInt32)src[3]")->Int32 * available
+            b += native("(RogueReal64)src[0]")->Real64 * available
+            g += native("(RogueReal64)src[1]")->Real64 * available
+            r += native("(RogueReal64)src[2]")->Real64 * available
+            a += native("(RogueReal64)src[3]")->Real64 * available
             n += available
           endIf
           native @|src += 4;
@@ -711,10 +710,10 @@ class Bitmap
 
         if (need)
           if (native("(RogueInt32)src[3]")->Int32)
-            b += native("(RogueInt32)src[0]")->Int32 * need
-            g += native("(RogueInt32)src[1]")->Int32 * need
-            r += native("(RogueInt32)src[2]")->Int32 * need
-            a += native("(RogueInt32)src[3]")->Int32 * need
+            b += native("(RogueReal64)src[0]")->Real64 * need
+            g += native("(RogueReal64)src[1]")->Real64 * need
+            r += native("(RogueReal64)src[2]")->Real64 * need
+            a += native("(RogueReal64)src[3]")->Real64 * need
             n += need
           endIf
 
@@ -736,17 +735,17 @@ class Bitmap
 
     method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32 )
       local row_buffer = resize_row_buffer
-      native @|RogueByte*  dest = (RogueByte*)($dest_bitmap->pixels->data->as_int32s + $dest_i);
-              |RogueInt32* buffer = $row_buffer->data->as_int32s;
-              |RogueInt32  divisor;
+      native @|RogueByte*   dest = (RogueByte*)($dest_bitmap->pixels->data->as_int32s + $dest_i);
+              |RogueReal64* buffer = $row_buffer->data->as_real64s;
+              |RogueReal64  divisor = 0.0;
 
       forEach (1..new_width)
         native @|if ((divisor = buffer[4]))
                 |{
-                |  dest[0] = buffer[0] / divisor;
-                |  dest[1] = buffer[1] / divisor;
-                |  dest[2] = buffer[2] / divisor;
-                |  dest[3] = buffer[3] / divisor;
+                |  dest[0] = (RogueByte)(buffer[0] / divisor);
+                |  dest[1] = (RogueByte)(buffer[1] / divisor);
+                |  dest[2] = (RogueByte)(buffer[2] / divisor);
+                |  dest[3] = (RogueByte)(buffer[3] / divisor);
                 |}
                 |else
                 |{
