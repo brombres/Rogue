@@ -374,6 +374,10 @@ class UIComponent : Node<<UIComponent>>
       endForEach
       return result
 
+    method dispatch_message<<$MessageType>>( message:$MessageType )
+      on_message( message )
+      (forEach in children).dispatch_message( message )
+
     method on( e:KeyEvent )
       noAction
 
@@ -384,6 +388,12 @@ class UIComponent : Node<<UIComponent>>
       noAction
 
     method on( e:TextEvent )
+      noAction
+
+    method on_message<<$MessageType>>( message:$MessageType )
+      noAction
+
+    method on_message( message:String )
       noAction
 
     method on_update

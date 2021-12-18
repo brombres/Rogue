@@ -198,6 +198,10 @@ class UI [singleton]
 
       after( e )
 
+    method dispatch_message<<$MessageType>>( message:$MessageType )
+      on_message( message )
+      layers.dispatch_message( message )
+
     method on( e:KeyEvent )
       noAction
 
@@ -211,6 +215,12 @@ class UI [singleton]
       noAction
 
     method on_draw
+      noAction
+
+    method on_message<<$MessageType>>( message:$MessageType )
+      noAction
+
+    method on_message( message:String )
       noAction
 
     method on_resize
