@@ -1,6 +1,7 @@
 module UI
 
 uses Geometry [export]
+uses Utility/Action
 
 $include "Event.rogue"
 $include "Keyboard.rogue"
@@ -47,6 +48,8 @@ class UI [singleton]
 
     is_enabled     = true
     # Disabled UI's do not update, draw, or receive events
+
+    actions : Action
 
   METHODS
     method init( theme )
@@ -265,6 +268,7 @@ class UI [singleton]
       UI = this
       if (not is_enabled) return
       on_update
+      if (actions) actions .= update
       layers.update
       after_update
 

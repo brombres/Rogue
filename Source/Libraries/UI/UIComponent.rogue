@@ -1,4 +1,5 @@
 module UI
+  uses Utility/Action
   uses Utility/Node
   uses Utility/WorkList
 
@@ -19,6 +20,7 @@ class UIComponent : Node<<UIComponent>>
     size       : XY
     flags      : Int32
     attributes : UIAttribute
+    actions    : Action
 
   METHODS
     method init
@@ -555,6 +557,7 @@ class UIComponent : Node<<UIComponent>>
 
     method update
       on_update
+      if (actions) actions .= update
       update_subcomponents
       after_update
 
