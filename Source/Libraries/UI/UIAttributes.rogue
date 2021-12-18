@@ -25,8 +25,8 @@ class UIAttributes [singleton]
       if (component.parent) return component.parent.font
       return UI.default_font
 
-    method on_resize( component:UIComponent, e:UIResizeEvent )
-      if (component.attributes) component.attributes.on_resize(component,e)
+    method on_resize( component:UIComponent )
+      if (component.attributes) component.attributes.on_resize(component)
 
     method weight( component:UIComponent )->XY
       if (component.attributes) return component.attributes.weight
@@ -44,7 +44,7 @@ class UIAttributes [singleton]
       if (component.attributes) component.attributes.set_font( value )
       else                      component.attributes = UIFontAttribute( value )
 
-    method set_resize_callback( component:UIComponent, callback:Function(UIComponent,UIResizeEvent) )
+    method set_resize_callback( component:UIComponent, callback:Function(UIComponent) )
       if (component.attributes) component.attributes.set_resize_callback( callback )
       else                      component.attributes = UIResizeCallbackAttribute( callback )
 
@@ -71,8 +71,8 @@ class UIAttribute
       if (next) return next.font
       return null
 
-    method on_resize( component:UIComponent, e:UIResizeEvent )
-      if (next) next.on_resize( component, e )
+    method on_resize( component:UIComponent )
+      if (next) next.on_resize( component )
 
     method weight->XY
       if (next) return next.weight
@@ -90,7 +90,7 @@ class UIAttribute
       if (next) next.set_font( value )
       else      next = UIFontAttribute( value )
 
-    method set_resize_callback( value:Function(UIComponent,UIResizeEvent) )
+    method set_resize_callback( value:Function(UIComponent) )
       if (next) next.set_resize_callback( value )
       else      next = UIResizeCallbackAttribute( value )
 
@@ -123,10 +123,10 @@ class UIFontAttribute( value:UIFont ) : UIAttribute
     method set_font( value )
 endClass
 
-class UIResizeCallbackAttribute( value:Function(UIComponent,UIResizeEvent) ) : UIAttribute
+class UIResizeCallbackAttribute( value:Function(UIComponent) ) : UIAttribute
   METHODS
-    method on_resize( component:UIComponent, e:UIResizeEvent )
-      if (value) value( component, e )
+    method on_resize( component:UIComponent )
+      if (value) value( component )
 
     method set_resize_callback( value )
 endClass

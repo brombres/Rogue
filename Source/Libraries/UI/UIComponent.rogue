@@ -47,9 +47,6 @@ class UIComponent : Node<<UIComponent>>
     method after( e:TextEvent )
       noAction
 
-    method after( e:UIResizeEvent )
-      noAction
-
     method after_draw
       UI.theme._dispatch_after_draw( this )
 
@@ -63,6 +60,9 @@ class UIComponent : Node<<UIComponent>>
 
     method after_prepare_layout<<$Theme>>( theme:$Theme )  [propagated]
       theme.after_prepare_layout( this )
+
+    method after_resize
+      noAction
 
     method after_update
       noAction
@@ -283,11 +283,11 @@ class UIComponent : Node<<UIComponent>>
 
       after( e )
 
-    method handle( e:UIResizeEvent )
-      on( e )
-      UIAttributes.on_resize( this, e )
-      (forEach in children).handle( e )
-      after( e )
+    method handle_resize
+      on_resize
+      UIAttributes.on_resize( this )
+      (forEach in children).handle_resize
+      after_resize
 
     method has_keyboard_focus->Logical
       return (UI.keyboard_focus is this)
@@ -384,9 +384,6 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on( e:UIResizeEvent )
-      noAction
-
     method on_update
       noAction
 
@@ -413,7 +410,10 @@ class UIComponent : Node<<UIComponent>>
     method on_release_pointer_focus
       noAction
 
-    method on_resize( callback:Function(UIComponent,UIResizeEvent) )
+    method on_resize
+      noAction
+
+    method on_resize( callback:Function(UIComponent) )
       UIAttributes.set_resize_callback( this, callback )
 
     method operator+( rhs:UIComponent )->UIComponent

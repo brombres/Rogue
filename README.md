@@ -9,26 +9,9 @@ An ergonomic object-oriented statically-linked high-level language that compiles
 
 # Installation
 
-## Morlock (Recommended)
+Install [Morlock](https://morlock.sh).
 
-Installing [Morlock](https://morlock.sh) will also install Rogue and [Rogo](https://github.com/AbePralle/Rogo).
-
-## Manual Installation
-
-### macOS and Linux
-
-    make install
-
-### Windows
-1. Install Git and Visual Studio 2019 with C++ support.
-
-2. Use a Visual Studio "Developer Command Prompt" for the following and for working with Rogue in general.
-
-3. Clone this repo and:
-
-        make
-
-4. Add the absolute path of the subfolder `Build\RogueC` to the system PATH as directed by the output of the `make.bat` script.
+Installing Morlock will also install Rogue and [Rogo](https://github.com/AbePralle/Rogo).
 
 # Syntax Highlighting
 

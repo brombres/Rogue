@@ -30,8 +30,6 @@ $include "UITheme.rogue"
 $include "UIVerticalLayout.rogue"
 $include "UIWidget.rogue"
 
-class UIResizeEvent( size:XY ) [compound];
-
 class UI [singleton]
   GLOBAL PROPERTIES
     default_theme = UITheme()
@@ -66,7 +64,7 @@ class UI [singleton]
     method after( e:TextEvent )
       noAction
 
-    method after( e:UIResizeEvent )
+    method after_resize
       noAction
 
     method after_draw
@@ -209,9 +207,6 @@ class UI [singleton]
     method on( e:TextEvent )
       noAction
 
-    method on( e:UIResizeEvent )
-      noAction
-
     method on_draw
       noAction
 
@@ -251,13 +246,15 @@ class UI [singleton]
       if (new_bounds == bounds) return
       @bounds = new_bounds
       request_layout
-      local e = UIResizeEvent( new_bounds.size )
-      on( e )
-      layers.handle( e )
-      after( e )
+      on_resize
+      layers.handle_resize
+      after_resize
 
     method set_clip( @clip )
       noAction # Override in specialized UI to have clip take effect
+
+    method size->XY
+      return bounds.size
 
     method theme->UITheme
       if (@theme) return @theme

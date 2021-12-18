@@ -647,6 +647,21 @@ class Bitmap
 
     method resize_to( other:Bitmap )
       # Uses a custom algorithm inspired by Bresenham's line drawing algorithm.
+      #
+      # Here's the essential idea of this algorithm. Say we want to resize a set
+      # of 10 pixels to be 7 pixels:
+      #
+      # 10 pixels
+      # 0 0 9 9 0 0 9 9 0 0
+      #
+      # Mathmatically make 7 copies of each of 10 pixels = 10 groups of 7
+      # 0000000 0000000 9999999 9999999 0000000 0000000 9999999 9999999 0000000 0000000
+      #
+      # Regroup as 7 groups of 10
+      # 0000000000 0000999999 9999999900 0000000000 0099999999 9999990000 0000000000
+      #
+      # Average out into 7 single pixels
+      # 0 5 7 0 7 5 0
       local this_width  = this.width
       local this_height = this.height
       local new_width   = other.width
