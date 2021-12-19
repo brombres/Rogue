@@ -49,6 +49,9 @@ class UI [singleton]
     is_enabled     = true
     # Disabled UI's do not update, draw, or receive events
 
+    is_visible     = true
+    # Invisible UI's update but do not draw or receive events
+
     actions : Action
 
   METHODS
@@ -105,7 +108,7 @@ class UI [singleton]
       return 16
 
     method draw
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on_draw
@@ -125,7 +128,7 @@ class UI [singleton]
       return layers.find( pos )
 
     method handle( e:KeyEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -146,7 +149,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:PointerEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -167,7 +170,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:ScrollEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -183,7 +186,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:TextEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
