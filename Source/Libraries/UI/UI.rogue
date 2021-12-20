@@ -82,6 +82,9 @@ class UI [singleton]
     method add( layer:UIComponent )
       layers.add( layer )
 
+    method apply( fn:Function(UIComponent)->Logical )->Logical
+      return layers.apply( fn )
+
     method clear
       layers.clear
       clear_focus
