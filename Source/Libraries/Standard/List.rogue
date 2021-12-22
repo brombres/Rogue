@@ -1008,7 +1008,7 @@ class ListRewriter<<$DataType>> : GenericListRewriter, Writer<<$DataType>>
   GLOBAL METHODS
     method acquire( list:$DataType[] )->ListRewriter<<$DataType>>
       if (pool and pool.count)
-        return (pool.remove_last as ListRewriter<<$DataType>>).[ reset(list) ]
+        return pool.remove_last->(as ListRewriter<<$DataType>>).[ reset(list) ]
       else
         return ListRewriter<<$DataType>>( list )
       endIf

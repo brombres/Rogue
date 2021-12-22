@@ -68,7 +68,7 @@ class Introspector
         others
           # Must be a compound
           local boxed_type = TypeInfo[ "Boxed<<$>>"(property_info.type.name) ]
-          local boxed = boxed_type.create_object as Boxed
+          local boxed = boxed_type.create_object->(as Boxed)
           local dest_addr = boxed.address
           local size = boxed.size
           native @|memcpy(
@@ -83,7 +83,7 @@ class Introspector
       return (context instanceOf Boxed)
 
     method inner->Introspector
-      local boxed = context as Boxed
+      local boxed = context->(as Boxed)
       if (boxed) return boxed.inner_introspector
       return null
 
@@ -151,13 +151,13 @@ class Introspector
 
     method set( new_value:Value )->this
       if (new_value.is_table)
-        forEach (key in (new_value as ValueTable).keys)
+        forEach (key in new_value->(as ValueTable).keys)
           set( key, new_value[key] )
         endForEach
         return this
       endIf
 
-      local boxed = new_value->Object as Boxed
+      local boxed = new_value->Object->(as Boxed)
       if (boxed and type is boxed.type)
         local boxed_address = boxed.address
         local size = boxed.size
@@ -234,7 +234,7 @@ class Introspector
           # Must be a compound
           local boxed_name = "Boxed<<$>>" (type.name)
           local boxed_type = TypeInfo[ boxed_name ]
-          local boxed = boxed_type.create_object as Boxed
+          local boxed = boxed_type.create_object->(as Boxed)
           local dest_addr = boxed.address
           local size = boxed.size
           native @|memcpy( (void*)(intptr_t)$dest_addr, (void*)(intptr_t)$address, $size );
@@ -258,7 +258,7 @@ endClass
 class BoxedIntrospector<<$ValueType>> : Introspector
   METHODS
     method init( context )
-      local boxed = context as Boxed
+      local boxed = context->(as Boxed)
       address = boxed.address
       type = <<$ValueType>>
 
@@ -279,7 +279,7 @@ class BoxedIntrospector<<$ValueType>> : Introspector
       return this
 
     method to->$ValueType
-      return (context as Boxed<<$ValueType>>).value
+      return context->(as Boxed<<$ValueType>>).value
 
 endClass
 

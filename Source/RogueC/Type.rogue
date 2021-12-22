@@ -651,7 +651,7 @@ class Type
           if (def.expression not instanceOf CmdLiteralInt32)
             throw def.t.error( "Assigned value must resolve to a literal Int32." )
           endIf
-          cur_value = (def.expression as CmdLiteralInt32).value
+          cur_value = (def.expression->(as CmdLiteralInt32)).value
           def.value = cur_value
         else
           def.value = cur_value

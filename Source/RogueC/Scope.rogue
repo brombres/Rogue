@@ -145,13 +145,13 @@ class Scope
           if (m.name.begins_with("operator") and not m.can_operate_on_literal_null)
             local mesg : String
             if (m.name == "operator==")
-              mesg = ''Dangerous == comparison with literal null. Either write "x is null", add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous == comparison with literal null. Either write "x is null", add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null->(as $))" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             elseIf (m.name == "operator!=")
-              mesg = ''Dangerous != comparison with literal null. Either write "x is not null", add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous != comparison with literal null. Either write "x is not null", add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null->(as $))" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             elseIf (m.name == "operator<>")
-              mesg = ''Dangerous comparison with literal null. Either write "x is null" (or "x is not null"), add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous comparison with literal null. Either write "x is null" (or "x is not null"), add the [canOperateOnLiteralNull] attribute to $.$, or cast "(null->(as $))" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             else
-              mesg = ''Dangerous operation on literal null. Either add the [canOperateOnLiteralNull] attribute to $.$ or cast "(null as $)" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
+              mesg = ''Dangerous operation on literal null. Either add the [canOperateOnLiteralNull] attribute to $.$ or cast "(null->(as $))" to bypass this check.'' (m.type_context,m.signature,m.parameters[i].type)
             endIf
             throw arg.t.error( mesg )
           endIf
@@ -178,7 +178,7 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local cmd_return = statement as CmdReturn
+            local cmd_return = statement->(as CmdReturn)
             if (cmd_return)
               if (not cmd_return.value) nextIteration
               statement = cmd_return.value
@@ -221,7 +221,7 @@ class Scope
           local macro_args = MacroArgs( context, m, args )
           local inline_statements = CmdStatementList()
           forEach (statement in m.statements)
-            local cmd_return = statement as CmdReturn
+            local cmd_return = statement->(as CmdReturn)
             if (cmd_return)
               if (not cmd_return.value) nextIteration
               statement = cmd_return.value
@@ -536,7 +536,7 @@ class Scope
                 local arg = args[index]
                 if (arg.is_generic_function)
                   if (not first_generic_fn_t) first_generic_fn_t = arg.t
-                  local fn = arg as CmdCreateFunction
+                  local fn = arg->(as CmdCreateFunction)
                   local param_type = m.parameters[index].type
                   necessary (param_type.name.begins_with("(Function"))
 
@@ -566,7 +566,7 @@ class Scope
             forEach (index of args)
               local arg = args[index]
               if (arg.is_generic_function and index < m.parameters.count)
-                local fn = (arg as CmdCreateFunction).cloned( null as CloneArgs )
+                local fn = (arg->(as CmdCreateFunction)).cloned(null->(as CloneArgs))
                 fn.is_generic = false
                 args[index] = fn
                 local callback_type = m.parameters[index].type
@@ -907,7 +907,7 @@ class CandidateMethods
               buffer.println "  <ref> is not null"
             else
               buffer.println
-              buffer.println "Write 'null as TypeName' to qualify the type of a null reference."
+              buffer.println "Write 'null->(as TypeName)' to qualify the type of a null reference."
             endIf
           endIf
 

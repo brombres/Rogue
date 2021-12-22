@@ -27,8 +27,8 @@ class Value
 
     method create( value:Object )->Value
       if (value is null) return NullValue
-      if (value instanceOf Value) return value as Value
-      if (value instanceOf String) return StringValue( value as String )
+      if (value instanceOf Value) return value->(as Value)
+      if (value instanceOf String) return StringValue( value->(as String) )
       return ObjectValue( value )
 
     method create( value:String )->Value
@@ -558,7 +558,7 @@ class Value
       return VarArgs().[ add(this) ]
 
     method to<<$AsType>>()->$AsType [macro]
-      return (this->Object as $AsType)
+      return this->Object->(as $AsType)
 
     method to_json( flags:Int32 )->String
       return to_json( StringBuilder(), flags )->String
@@ -1393,7 +1393,7 @@ class ValueList : Value
       return this
 
     method sorted( compare_fn:(Function(a:Value,b:Value)->Logical) )->ValueList
-      return cloned.sort( compare_fn ) as ValueList
+      return cloned.sort( compare_fn )->(as ValueList)
 
     method to->Logical
       return true
@@ -1492,7 +1492,7 @@ class VarArgs : ValueList
       return this
 
     method sorted( compare_fn:(Function(a:Value,b:Value)->Logical) )->this
-      return cloned.sort( compare_fn ) as VarArgs
+      return cloned.sort( compare_fn )->(as VarArgs)
 
 endClass
 
@@ -1595,7 +1595,7 @@ class ValueTable : Value
     method ensure_list( key:String )->ValueList
       # Ensures that this table contains a list with the given key, creating
       # it if necessary, and returns that list.
-      local list = this[ key ] as ValueList
+      local list = this[ key ]->(as ValueList)
       if (list) return list
       list = @[]
       this[ key ] = list
@@ -1604,7 +1604,7 @@ class ValueTable : Value
     method ensure_table( key:String )->ValueTable
       # Ensures that this table contains a table with the given key, creating
       # it if necessary, and returns that table.
-      local table = this[ key ] as ValueTable
+      local table = this[ key ]->(as ValueTable)
       if (table) return table
       table = @{}
       this[ key ] = table

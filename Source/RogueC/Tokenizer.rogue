@@ -879,7 +879,7 @@ class Tokenizer
 
       if (tokens.count and tokens.last.type is TokenType.eol)
         # Store comments in preceding EOL, if any.
-        (tokens.last as EOLToken).comment += comment
+        (tokens.last->(as EOLToken)).comment += comment
       endIf
 
       return true

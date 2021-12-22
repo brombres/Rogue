@@ -51,12 +51,12 @@ class Visitor [api]
           local obj = type.property<<Object>>( cmd, obj_info )
           if (obj)
             if (obj instanceOf Cmd)
-              local result = visit( obj as Cmd )
+              local result = visit( obj->(as Cmd) )
               if (result is not obj) type.set_property<<Object>>( cmd, obj_info, result )
             elseIf (obj instanceOf CmdStatements)
-              visit( obj as CmdStatements )
+              visit( obj->(as CmdStatements) )
             elseIf (obj instanceOf CmdArgs)
-              visit( obj as CmdArgs )
+              visit( obj->(as CmdArgs) )
             endIf
           endIf
         endIf

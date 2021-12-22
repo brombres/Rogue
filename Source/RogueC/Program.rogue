@@ -618,7 +618,7 @@ class Program [essential singleton]
 
     method validate
       # Perform miscellaneous program structure validation
-      forEach (type in type_list) type.validate
+      (forEach in type_list).validate
 
       # Warn on use of deprecated classes and methods
       local deprecated_types : Set<<Type>>

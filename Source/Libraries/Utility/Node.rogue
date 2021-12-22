@@ -37,7 +37,7 @@ class Node<<$ExtendedNodeType>>
     method apply( fn:Function($ExtendedNodeType)->Logical )->Logical
       # Recursively traverse this node and all its children, calling fn(node) on each.
       # If fn(node) ever returns false then the traversal will abort.
-      if (not fn(this as $ExtendedNodeType)) return false
+      if not fn(this->(as $ExtendedNodeType)) return false
       if (not (forEach in this).apply(fn)) return false
       return true
 
@@ -109,7 +109,7 @@ class Node<<$ExtendedNodeType>>
         @next = null
         is_modified = true
       endIf
-      return this as $ExtendedNodeType
+      return this->(as $ExtendedNodeType)
 
 
     method dispatch_handle<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
@@ -158,11 +158,11 @@ class Node<<$ExtendedNodeType>>
 
       ++count
       local cur = new_child
-      cur.@parent = this as $ExtendedNodeType
+      cur.@parent = this->(as $ExtendedNodeType)
       while (cur is not last_new_child)
         ++count
         cur = cur.next
-        cur.@parent = this as $ExtendedNodeType
+        cur.@parent = this->(as $ExtendedNodeType)
       endWhile
 
       this.is_modified = true
@@ -175,7 +175,7 @@ class Node<<$ExtendedNodeType>>
       endWhile
 
     method insert_next( new_sibling:$ExtendedNodeType )
-      local cur = this as $ExtendedNodeType
+      local cur = this->(as $ExtendedNodeType)
       local original_next = next
       local mod_count = 0
       while (new_sibling)
@@ -200,13 +200,13 @@ class Node<<$ExtendedNodeType>>
       endLoop
 
     method iterator->NodeIterator<<$ExtendedNodeType>>
-      return NodeIterator<<$ExtendedNodeType>>( this as $ExtendedNodeType )
+      return NodeIterator<<$ExtendedNodeType>>( this->(as $ExtendedNodeType) )
 
     method node_name->String
       return type_name
 
     method last_sibling->$ExtendedNodeType
-      local cur = this as $ExtendedNodeType
+      local cur = this->(as $ExtendedNodeType)
       while (cur.next) cur = cur.next
       return cur
 
@@ -276,7 +276,7 @@ class Node<<$ExtendedNodeType>>
 
     method set_parent( new_parent:$ExtendedNodeType )
       if (new_parent)
-        new_parent.add( this as $ExtendedNodeType )
+        new_parent.add( this->(as $ExtendedNodeType) )
       endIf
 
     method set( index:Int32, node:$ExtendedNodeType )
@@ -297,10 +297,10 @@ class Node<<$ExtendedNodeType>>
       local tail = next
       if (parent)
         detach
-        return (this as $ExtendedNodeType,parent.remove_children)
+        return (this->(as $ExtendedNodeType), parent.remove_children)
       else
         @next = null
-        return (this as $ExtendedNodeType,tail)
+        return (this->(as $ExtendedNodeType), tail)
       endIf
 
 endClass

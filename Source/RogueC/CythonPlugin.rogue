@@ -106,35 +106,35 @@ class CyMethod
       forEach (param in m.parameters)
         local default = param.initial_value
         local negate = default and default instanceOf CmdNegate
-        if (negate) default = (default as CmdNegate).operand
+        if (negate) default = (default->(as CmdNegate)).operand
         local negatable = false
         if default is null
           defaults.add "_NO_DEFAULT"
         elseIf default instanceOf CmdLiteralReal64
-          defaults.add((default as CmdLiteralReal64).value)
+          defaults.add((default->(as CmdLiteralReal64)).value)
           negatable = true
         #elseIf default instanceOf CmdLiteralReal32
-        #  defaults.add (default as CmdLiteralReal32).value
+        #  defaults.add (default->(as CmdLiteralReal32)).value
         #  negatable = true
         elseIf default instanceOf CmdLiteralString
-          defaults.add(''"""'' + (default as CmdLiteralString.value) + ''"""'') # Probably needs some special escaping
+          defaults.add(''"""'' + (default->(as CmdLiteralString).value) + ''"""'') # Probably needs some special escaping
         elseIf default instanceOf CmdLiteralInt32
-          defaults.add((default as CmdLiteralInt32).value)
+          defaults.add((default->(as CmdLiteralInt32)).value)
           negatable = true
         elseIf default instanceOf CmdLiteralInt64
-          defaults.add((default as CmdLiteralInt64).value)
+          defaults.add((default->(as CmdLiteralInt64)).value)
           negatable = true
         elseIf default instanceOf CmdLiteralLogical
-          defaults.add(which{(default as CmdLiteralLogical).value: "True" || "False"})
+          defaults.add(which{(default->(as CmdLiteralLogical)).value: "True" || "False"})
         elseIf default instanceOf CmdLiteralNull
           defaults.add("None") # Probably doesn't actually work right yet...
         elseIf default instanceOf CmdLiteralCharacter
-          defaults.add((default as CmdLiteralCharacter).value->Int32)
+          defaults.add((default->(as CmdLiteralCharacter)).value->Int32)
         elseIf default instanceOf CmdAccess
-          local cmd = (default as CmdAccess).resolve(Scope(context,m), true)
-          if cmd instanceOf CmdReadProperty and (cmd as CmdReadProperty).property_info.type_context == Program.type_Global
+          local cmd = (default->(as CmdAccess)).resolve(Scope(context,m), true)
+          if cmd instanceOf CmdReadProperty and (cmd->(as CmdReadProperty)).property_info.type_context == Program.type_Global
             #TODO: Do this for all singletons and/or other types of Access?
-            local rp = (cmd as CmdReadProperty)
+            local rp = (cmd->(as CmdReadProperty))
             defaults.add "_PYROGUE_ACCESS"
             prologue.add "if $ is _PYROGUE_ACCESS: $ = Global.singleton.$" (param.name, param.name, rp.property_info.name)
             #TODO: With a little work, these could be negatable...
@@ -418,11 +418,11 @@ augment Program
     cy_plugin : Plugin
   METHODS
     method cy_on_header_end (code:Object)
-      local writer = code as CPPWriter
+      local writer = code->(as CPPWriter)
       if (writer is null) return
 
       # Declare (extern) for each delegate thunk function pointer
-      cy_write_delegate_thunk_pointers(code as CPPWriter, &prefix="extern ", &suffix=";")
+      cy_write_delegate_thunk_pointers(code->(as CPPWriter), &prefix="extern ", &suffix=";")
 
       writer.println @|extern void (*PyRogue_XDECREF)(void*);
                       |extern void (*PyRogue_XINCREF)(void*);
@@ -438,14 +438,14 @@ augment Program
                       |extern void PyRogue_handle_rogue_exception ();
 
     method cy_on_code_end (code:Object)
-      local writer = code as CPPWriter
+      local writer = code->(as CPPWriter)
       if (writer is null) return
 
       if (not cy_first_code_file) return
       cy_first_code_file = false
 
       # Write out function pointers for all of the delegate thunks
-      cy_write_delegate_thunk_pointers(code as CPPWriter, &suffix=";")
+      cy_write_delegate_thunk_pointers(code->(as CPPWriter), &suffix=";")
 
       writer.println @|void (*PyRogue_XDECREF)(void*);
                       |void (*PyRogue_XINCREF)(void*);

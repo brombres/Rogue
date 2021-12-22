@@ -27,7 +27,7 @@ class ConsoleUI : UI
       endIf
 
     method default_font->ConsoleUIFont
-      return prior.default_font as ConsoleUIFont
+      return prior.default_font->(as ConsoleUIFont)
 
     method draw
       prior.draw

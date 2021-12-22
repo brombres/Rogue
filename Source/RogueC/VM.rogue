@@ -80,7 +80,7 @@ class VM
 
     method object_count( obj:Object )->Int32
       if (obj is null) return 0
-      if (obj as ObjectValue) obj = (obj as Value)->Object
+      if (obj->(as ObjectValue)) obj = (obj->(as Value))->Object
       local type = obj.type_info
       local m = type.find_method( "count()" )
       if (m) return m.returns<<Int32>>.call( obj )
