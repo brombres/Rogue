@@ -216,7 +216,7 @@ class OneOrMoreScanPattern( operand:ScanPattern ) : ScanPattern
       return "$+"(operand)
 endClass
 
-class OptionalScanPattern( operand:ScanPattern ) : ScanPattern
+class ZeroOrOneScanPattern( operand:ScanPattern ) : ScanPattern
   METHODS
     method scan( scanner:Scanner, builder=null:StringBuilder )->Logical
       operand.scan( scanner, builder )
@@ -307,7 +307,7 @@ class ScanPatternParser [singleton]
                   builder.print last_ch
                 endIf
                 _flush
-                if (stack.count) stack.add( OptionalScanPattern(stack.remove_last) )
+                if (stack.count) stack.add( ZeroOrOneScanPattern(stack.remove_last) )
               case '.'
                 _flush
                 stack.add( AnyCharacterScanPattern() )
