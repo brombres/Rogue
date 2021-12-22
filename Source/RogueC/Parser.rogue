@@ -1,6 +1,7 @@
 class Parser
   GLOBAL PROPERTIES
     old_style_function_warnings = Set<<String>>()
+    deprecation_warnings = Set<<String>>()
     is_parsing_metacode : Logical
 
   PROPERTIES
@@ -3247,8 +3248,17 @@ class Parser
         return parse_member_access( access )
 
       elseIf (consume(TokenType.symbol_arrow))
-        # Conversion operation e.g. value->Int32
+        # Conversion cast (cast-to):  value->String
+        # Reinterpret cast (cast-as): value->(as String)
         consume_eols
+        if (consume(TokenType.symbol_open_paren))
+          # cast-as
+          must_consume( TokenType.keyword_as )
+          local as_type = parse_type
+          must_consume( TokenType.symbol_close_paren )
+          return parse_member_access( CmdAs(t,context,as_type) )
+        endIf
+
         local to_type = parse_type
 
         if (next_is(TokenType.symbol_open_paren))
@@ -3291,9 +3301,16 @@ class Parser
         is_dynamically_specialized, specializing_signature )
 
       elseIf (consume(TokenType.keyword_as))
-        # Recast operation e.g. actor as Hero
+        # Deprecated cast-as operation e.g. actor as Hero
         consume_eols
         local as_type = parse_type
+
+        local filename = File.filename( t.filepath )
+        if (not deprecation_warnings.contains("$:$"(filename,t.line)))
+          deprecation_warnings.add( "$:$"(filename,t.line) )
+          println ''[DEPRECATION] "$" line $: Replace '(expression as $)' with 'expression->(as $)'.'' ...
+            (filename,t.line,as_type,as_type)
+        endIf
         return parse_member_access( CmdAs(t,context,as_type) )
 
         # **NOTE** any new token types handled should also be checked for in parse_context_block().
