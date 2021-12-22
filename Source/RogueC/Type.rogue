@@ -453,38 +453,15 @@ class Type
       endIf
 
       if (states.count)
-        # For type XYZ, create enum XYZState containing all states as enum categories
-        local enum_type_name = "$State$" (name.before_first('<'), name.from_first('<'))
-        local enum_type = Program.get_type_reference( t, enum_type_name )
-        enum_type.attributes.add( Attribute.is_compound | Attribute.is_enum )
-        add_property( t, "state", enum_type )
-
-        enum_type.base_types.add( Program.get_type_reference(t,"CompoundIntrospection<<$>>"(enum_type_name)) )
-
-        block m = enum_type.add_global_method( t, "create" )
-          m.attributes.add( Attribute.is_generated )
-          m.return_type = enum_type
-        endBlock
+        add_property( t, "state", Program.type_Int32 )
 
         block m = add_method( t, "set_state" )
           m.attributes.add( Attribute.is_generated )
-          m.add_parameter( t, "new_state", enum_type )
+          m.add_parameter( t, "new_state", Program.type_Int32 )
           if (state_machine_has_signal("LEAVE")) m.statements.add( CmdAccess(t,"LEAVE") )
           m.statements.add( CmdAssign(t, CmdAccess(t,"@state"), CmdAccess(t,"new_state")) )
           if (state_machine_has_signal("ENTER")) m.statements.add( CmdAccess(t,"ENTER") )
         endBlock
-
-        enum_type.is_defined = true
-
-        ensure enum_type.categories
-        forEach (state_name at i in states.keys)
-          local def = Definition( t, state_name )
-          def.value = i
-          def.expression = CmdLiteralInt32( t, i )
-          enum_type.categories.add( def )
-        endForEach
-        enum_type.configure( scope )
-        enum_type.organize( scope )
       endIf
 
       local inherited_categories : Definition[]
@@ -623,6 +600,7 @@ class Type
       forEach (state in states)
         forEach (m in state.methods)
           if (m.name == name) return true
+          if (m.signature and m.signature == name) return true
         endForEach
       endForEach
       return false
@@ -1097,6 +1075,8 @@ class Type
       Program.invoke_metacode( "$.organize_properties"(name), this )
 
       create_introspection_methods( scope )
+
+      create_state_definitions
       create_state_methods( scope )
 
       inherit_methods( scope )
@@ -1553,6 +1533,19 @@ class Type
         inherit_definitions( base_type )
       endForEach
 
+    method create_state_definitions
+      local n_states = 0
+      if ((forEach in definition_list).is_state) ++n_states
+
+      forEach (state_name in states.keys)
+        if (definition_lookup.contains(state_name)) nextIteration
+
+        local def = Definition( t, state_name, CmdLiteralInt32(t,n_states) ).[is_state = true]
+        ++n_states
+        definition_list.add( def )
+        definition_lookup[ def.name ] = def
+      endForEach
+
     method inherit_properties( list:Property[], lookup:Table<<String,Property>> )
       forEach (base_type in base_types)
         forEach (base_p in base_type.property_list)
@@ -1670,11 +1663,28 @@ class Type
       endForEach
 
       forEach (m in state_methods)
+        local cmd_prior_call : Cmd
+        if (base_class and base_class.state_machine_has_signal(m.signature))
+          local args = CmdArgs()
+          forEach (p in m.parameters)
+            args.add( CmdAccess(m.t,p.original_name) )
+          endForEach
+          cmd_prior_call = CmdCallPriorMethod( t, m.name, args,null )
+        endIf
+
         local cmd_which = state_method_whiches[ m.signature ]
         if (m.return_type)
-          # Add case 'others' with the default return type
+          # Add case 'others' with the default return type or return prior.method_name(...) if extended
           local cmd_others = cmd_which.add_case_others( m.t )
-          cmd_others.statements.add( CmdReturn(m.t,m.return_type.create_default_value(m.t)) )
+          if (cmd_prior_call)
+            cmd_others.statements.add( CmdReturn(m.t,cmd_prior_call) )
+          else
+            cmd_others.statements.add( CmdReturn(m.t,m.return_type.create_default_value(m.t)) )
+          endIf
+        elseIf (cmd_prior_call)
+          # Return prior.method_name(...) if extended
+          local cmd_others = cmd_which.add_case_others( m.t )
+          cmd_others.statements.add( cmd_prior_call )
         endIf
       endForEach
 

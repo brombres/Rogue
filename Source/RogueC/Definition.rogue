@@ -8,6 +8,8 @@ class Definition
     args           : CmdArgs
     value          : Int32
 
+    is_state       : Logical
+
   METHODS
     method init( t, name, expression=null )
 
@@ -16,6 +18,7 @@ class Definition
       result.value = value
       if (expression) result.expression = expression.cloned
       if (args)       result.args = args.cloned
+      result.is_state = is_state
       return result
 
     method to->String

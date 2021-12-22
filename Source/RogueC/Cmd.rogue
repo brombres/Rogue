@@ -7996,8 +7996,7 @@ class CmdContextBlock : Cmd
 endClass
 
 class CmdChangeState( t, expression:Cmd ) : Cmd
-  # Generally '[> X]' is shorthand for 'state = X' where X has implicit context "ContextTypeState",
-  # e.g.  '[> X]' -> 'state = ContextTypeState.X'.
+  # Generally '[> X]' is shorthand for 'state = X'
   # 'X' can be any expression although that feature is unlikely to be used often.
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->CmdChangeState
@@ -8005,19 +8004,7 @@ class CmdChangeState( t, expression:Cmd ) : Cmd
       return CmdChangeState( t, expression.cloned(clone_args,new_t) )
 
     method resolve( scope:Scope )->Cmd
-      local state_type_name = scope.this_type.name
-      state_type_name = "$State$" (state_type_name.before_first('<'), state_type_name.from_first('<'))
-      local state_type = scope.find_type( state_type_name )
-
-      if (state_type)
-        state_type.organize(scope,t)
-        scope.implicit_types.add( state_type )
-      endIf
-
-      local result = CmdAssign( t, CmdAccess(t,"state"), expression ).resolve( scope )
-
-      if (state_type) scope.implicit_types.remove_last
-      return result
+      return CmdAssign( t, CmdAccess(t,"state"), expression ).resolve( scope )
 
     method type->Type
       return null
