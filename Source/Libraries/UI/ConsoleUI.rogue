@@ -46,10 +46,10 @@ class ConsoleUI : UI
       Pointer.positions.[clear].add( pos )
       handle( PointerEvent(type,pos,XY(0,0),index) )
 
-    method on( e:UIResizeEvent )
+    method on_resize
       Console.clear
-      ConsoleUICanvas.resize( e.size.x, e.size.y )
-      prior.on( e )
+      ConsoleUICanvas.resize( UI.size.x, UI.size.y )
+      prior.on_resize
 
     method on_update
       loop 512
