@@ -155,7 +155,7 @@ routine rogo_docs
   execute "cd Source/DocGen && make"
 endRoutine
 
-routine rogo_update_bootstrap( roguec_or_build="":String )
+routine rogo_update_bootstrap
   execute "mkdir$ Source/RogueC/Bootstrap" (?:{System.os=="Windows":"" || " -p"})
   execute "cp Build/RogueC.h Build/RogueC.cpp Source/RogueC/Bootstrap"
 endRoutine
