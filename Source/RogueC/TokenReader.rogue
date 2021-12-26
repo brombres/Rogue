@@ -291,6 +291,7 @@ class PreprocessorTokenReader : Reader<<Token>>
 
     method push( _tokens:Token[] )
       local i = _tokens.count
+      stack.reserve( _tokens.count )
       while (i > 0)
         --i
         stack.add( _tokens[i] )

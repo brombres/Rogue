@@ -44,48 +44,51 @@ class Parser
     method init( t:Token, filepath, data:String, column_delta=0:Int32 )
       init( Preprocessor(this).process(Tokenizer().tokenize(t,filepath,data,column_delta)), &skip_reprocess )
 
-    method init( tokens:Token[], &skip_reprocess, &preprocess )
+    method init( tokens:Token[], &skip_reprocess, &preprocess, &skip_config )
       if (preprocess)             tokens = Preprocessor(this).process( tokens )
       elseIf (not skip_reprocess) tokens = Preprocessor( this ).reprocess( tokens )
       reader = TokenReader( tokens )
-      is_api_file = RogueC.all_api
-      is_essential_file = RogueC.all_essential
 
-      if (filepath and filepath.ends_with(".rogue"))
-        if (not is_api_file)
-          is_api_file = RogueC.api_files.contains( filepath )
+      if (not skip_config)
+        is_api_file = RogueC.all_api
+        is_essential_file = RogueC.all_essential
+
+        if (filepath and filepath.ends_with(".rogue"))
           if (not is_api_file)
-            forEach (pattern in RogueC.api_file_patterns)
-              if (File.matches_wildcard_pattern(filepath,pattern))
-                is_api_file = true
-                escapeForEach
-              endIf
-            endForEach
+            is_api_file = RogueC.api_files.contains( filepath )
+            if (not is_api_file)
+              forEach (pattern in RogueC.api_file_patterns)
+                if (File.matches_wildcard_pattern(filepath,pattern))
+                  is_api_file = true
+                  escapeForEach
+                endIf
+              endForEach
+            endIf
           endIf
-        endIf
-        if (not is_essential_file)
-          is_essential_file = RogueC.essential_files.contains( filepath )
           if (not is_essential_file)
-            forEach (pattern in RogueC.essential_files)
-              if (File.matches_wildcard_pattern(filepath,pattern))
-                is_essential_file = true
-                escapeForEach
-              endIf
-            endForEach
+            is_essential_file = RogueC.essential_files.contains( filepath )
+            if (not is_essential_file)
+              forEach (pattern in RogueC.essential_files)
+                if (File.matches_wildcard_pattern(filepath,pattern))
+                  is_essential_file = true
+                  escapeForEach
+                endIf
+              endForEach
+            endIf
           endIf
         endIf
-      endIf
 
-      is_api_module = is_api_file
-      is_essential_module = is_essential_file
+        is_api_module = is_api_file
+        is_essential_module = is_essential_file
 
-      local exported_modules = Program.exported_modules( null )
-      if (exported_modules)
-        forEach (exported_module in exported_modules)
-          if (used_modules is null or not used_modules.contains(exported_module))
-            used_modules = UsedModule( exported_module, used_modules )
-          endIf
-        endForEach
+        local exported_modules = Program.exported_modules( null )
+        if (exported_modules)
+          forEach (exported_module in exported_modules)
+            if (used_modules is null or not used_modules.contains(exported_module))
+              used_modules = UsedModule( exported_module, used_modules )
+            endIf
+          endForEach
+        endIf
       endIf
 
     method consume( type:TokenType )->Logical
