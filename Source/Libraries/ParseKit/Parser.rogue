@@ -17,7 +17,7 @@ class Parser
     method add( rule:ParseRule )->ParseRule
       rules[ rule.name ] = rule
       prev_rule = rule
-      rule.parser = this as ParserType
+      rule.parser = this->(as ParserType)
 
       # Assign rule "xyz" to parse property "parse_xyz" if it exits
       local p = type_info.find_property( "parse_" + rule.name )

@@ -12,17 +12,14 @@ class UITableLayout : UILayout
   METHODS
     method init
       prior.init
-      shrink_to_fit
       resize( 1, 1 )
 
     method init( size:XY )
       prior.init( size )
-      shrink_to_fit
       resize( 1, 1 )
 
     method init( column_count:Int32, row_count:Int32 )
       prior.init
-      shrink_to_fit
       resize( column_count, row_count )
 
     method add( component:UIComponent ) [override]

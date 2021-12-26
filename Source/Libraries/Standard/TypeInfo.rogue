@@ -216,7 +216,7 @@ class TypeInfo
       return obj
 
     method create_object<<$AsType>>->$AsType
-      return create_object as $AsType
+      return create_object->(as $AsType)
 
     method global_property( property_name:String )->Value
       return global_property( find_global_property(property_name) )
@@ -269,7 +269,7 @@ class TypeInfo
 
       local i = property_info.index
       if (isReference($PropertyType))
-        return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object as $PropertyType
+        return native( "*((RogueObject**)(Rogue_types[$index].global_property_pointers[$i]))" )->Object->(as $PropertyType)
       else
         return native( "*(($($PropertyType)*)(Rogue_types[$index].global_property_pointers[$i]))" )->$PropertyType
       endIf
@@ -670,7 +670,7 @@ class TypeInfo
       return native("RogueType_singleton(&Rogue_types[$index])")->Object
 
     method singleton<<$OfType>>->$OfType
-      return singleton as $OfType
+      return singleton->(as $OfType)
 
     method description->String
       return name

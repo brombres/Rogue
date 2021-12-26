@@ -219,8 +219,8 @@ class MethodInferencer
       return rev_map.contains(param_name)
 
     method try_inference (type:Type, inferred_type:Type)->Logical
-      if ( (type.t as StringDataToken) is not null )
-        local placeholder = (type.t as StringDataToken).value
+      if ((type.t->(as StringDataToken)) is not null )
+        local placeholder = (type.t->(as StringDataToken)).value
 
         if ( placeholder == type.name )
           return _add_inferred(rev_map[type.t], inferred_type)

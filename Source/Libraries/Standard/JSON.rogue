@@ -24,12 +24,12 @@ class JSON
       endTry
 
     method parse_list( json:String, &suppress_error=true )->ValueList
-      local list = parse(json,&=suppress_error) as ValueList
+      local list = parse(json,&=suppress_error)->(as ValueList)
       if (list) return list
       return ValueList()
 
     method parse_table( json:String, &suppress_error=true )->ValueTable
-      local table = parse(json,&=suppress_error) as ValueTable
+      local table = parse(json,&=suppress_error)->(as ValueTable)
       if (table) return table
       return ValueTable()
 

@@ -1,6 +1,7 @@
 module UI
 
 uses Geometry [export]
+uses Utility/Action
 
 $include "Event.rogue"
 $include "Keyboard.rogue"
@@ -30,8 +31,6 @@ $include "UITheme.rogue"
 $include "UIVerticalLayout.rogue"
 $include "UIWidget.rogue"
 
-class UIResizeEvent( size:XY ) [compound];
-
 class UI [singleton]
   GLOBAL PROPERTIES
     default_theme = UITheme()
@@ -50,6 +49,11 @@ class UI [singleton]
     is_enabled     = true
     # Disabled UI's do not update, draw, or receive events
 
+    is_visible     = true
+    # Invisible UI's update but do not draw or receive events
+
+    actions : Action
+
   METHODS
     method init( theme )
       UI = this
@@ -66,7 +70,7 @@ class UI [singleton]
     method after( e:TextEvent )
       noAction
 
-    method after( e:UIResizeEvent )
+    method after_resize
       noAction
 
     method after_draw
@@ -77,6 +81,9 @@ class UI [singleton]
 
     method add( layer:UIComponent )
       layers.add( layer )
+
+    method apply( fn:Function(UIComponent)->Logical )->Logical
+      return layers.apply( fn )
 
     method clear
       layers.clear
@@ -104,7 +111,7 @@ class UI [singleton]
       return 16
 
     method draw
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on_draw
@@ -124,7 +131,7 @@ class UI [singleton]
       return layers.find( pos )
 
     method handle( e:KeyEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -145,7 +152,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:PointerEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -166,7 +173,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:ScrollEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -182,7 +189,7 @@ class UI [singleton]
       after( e )
 
     method handle( e:TextEvent )
-      if (not is_enabled) return
+      if (not is_enabled or not is_visible) return
       UI = this
 
       on( e )
@@ -197,6 +204,10 @@ class UI [singleton]
 
       after( e )
 
+    method dispatch_message<<$MessageType>>( message:$MessageType )
+      on_message( message )
+      layers.dispatch_message( message )
+
     method on( e:KeyEvent )
       noAction
 
@@ -209,10 +220,13 @@ class UI [singleton]
     method on( e:TextEvent )
       noAction
 
-    method on( e:UIResizeEvent )
+    method on_draw
       noAction
 
-    method on_draw
+    method on_message<<$MessageType>>( message:$MessageType )
+      noAction
+
+    method on_message( message:String )
       noAction
 
     method on_resize
@@ -251,13 +265,15 @@ class UI [singleton]
       if (new_bounds == bounds) return
       @bounds = new_bounds
       request_layout
-      local e = UIResizeEvent( new_bounds.size )
-      on( e )
-      layers.handle( e )
-      after( e )
+      on_resize
+      layers.handle_resize
+      after_resize
 
     method set_clip( @clip )
       noAction # Override in specialized UI to have clip take effect
+
+    method size->XY
+      return bounds.size
 
     method theme->UITheme
       if (@theme) return @theme
@@ -268,6 +284,7 @@ class UI [singleton]
       UI = this
       if (not is_enabled) return
       on_update
+      if (actions) actions .= update
       layers.update
       after_update
 

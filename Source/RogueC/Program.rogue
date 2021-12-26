@@ -618,7 +618,21 @@ class Program [essential singleton]
 
     method validate
       # Perform miscellaneous program structure validation
-      forEach (type in type_list) type.validate
+      (forEach in type_list).validate
+
+      forEach (type in type_list)
+        contingent
+          necessary (type.name.begins_with("Optional"))
+          necessary (not type.name.begins_with("Optional<<"))
+          necessary (type.name > "Optional")
+          local base_name = type.name.after_first("Optional")
+          necessary (Program.type_lookup.contains("$?"(base_name)))
+          throw type.t.error(
+            "Illegal type name '$' - generated C++ name will be "(type.name) +
+            "indistinguishable from C++ name for type '$?'."(base_name)
+          )
+        endContingent
+      endForEach
 
       # Warn on use of deprecated classes and methods
       local deprecated_types : Set<<Type>>

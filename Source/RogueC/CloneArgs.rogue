@@ -46,7 +46,7 @@ class MacroArgs : CloneArgs
 
       local dup = arg.cloned
       if (access.args)
-        local new_access = dup as CmdAccess
+        local new_access = dup->(as CmdAccess)
         if (new_access)
           if (new_access.args)
             throw access.t.error( "Illegal arguments on inline code." )

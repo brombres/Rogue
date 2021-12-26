@@ -102,7 +102,7 @@ class Method
         # prior to the cloned() above and we need to copy the statements.
         # If it's null then we've already cloned the statement list when we cloned()d
         # the method above.
-        m.statements = aspect_statements.cloned( null as CloneArgs )
+        m.statements = aspect_statements.cloned(null->(as CloneArgs))
       endIf
 
       m.signature = null

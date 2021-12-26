@@ -132,35 +132,35 @@ class PyMethod
       forEach (param in m.parameters)
         local default = param.initial_value
         local negate = default and default instanceOf CmdNegate
-        if (negate) default = (default as CmdNegate).operand
+        if (negate) default = (default->(as CmdNegate)).operand
         local negatable = false
         if default is null
           defaults.add "_NO_DEFAULT"
         elseIf default instanceOf CmdLiteralReal64
-          defaults.add((default as CmdLiteralReal64).value)
+          defaults.add((default->(as CmdLiteralReal64)).value)
           negatable = true
         #elseIf default instanceOf CmdLiteralReal32
-        #  defaults.add (default as CmdLiteralReal32).value
+        #  defaults.add (default->(as CmdLiteralReal32)).value
         #  negatable = true
         elseIf default instanceOf CmdLiteralString
-          defaults.add(''"""'' + (default as CmdLiteralString.value) + ''"""'') # Probably needs some special escaping
+          defaults.add(''"""'' + (default->(as CmdLiteralString).value) + ''"""'') # Probably needs some special escaping
         elseIf default instanceOf CmdLiteralInt32
-          defaults.add((default as CmdLiteralInt32).value)
+          defaults.add((default->(as CmdLiteralInt32)).value)
           negatable = true
         elseIf default instanceOf CmdLiteralInt64
-          defaults.add((default as CmdLiteralInt64).value)
+          defaults.add((default->(as CmdLiteralInt64)).value)
           negatable = true
         elseIf default instanceOf CmdLiteralLogical
-          defaults.add(which{(default as CmdLiteralLogical).value: "True" || "False"})
+          defaults.add(which{(default->(as CmdLiteralLogical)).value: "True" || "False"})
         elseIf default instanceOf CmdLiteralNull
           defaults.add("None") # Probably doesn't actually work right yet...
         elseIf default instanceOf CmdLiteralCharacter
-          defaults.add((default as CmdLiteralCharacter).value->Int32)
+          defaults.add((default->(as CmdLiteralCharacter)).value->Int32)
         elseIf default instanceOf CmdAccess
-          local cmd = (default as CmdAccess).resolve(Scope(context,m), true)
-          if cmd instanceOf CmdReadProperty and (cmd as CmdReadProperty).property_info.type_context == Program.type_Global
+          local cmd = (default->(as CmdAccess)).resolve(Scope(context,m), true)
+          if cmd instanceOf CmdReadProperty and (cmd->(as CmdReadProperty)).property_info.type_context == Program.type_Global
             #TODO: Do this for all singletons and/or other types of Access?
-            local rp = (cmd as CmdReadProperty)
+            local rp = (cmd->(as CmdReadProperty))
             defaults.add "_PYROGUE_ACCESS"
             prologue.add "if $ is _PYROGUE_ACCESS: $ = Global.singleton.$" (param.name, param.name, rp.property_info.name)
             #TODO: With a little work, these could be negatable...
@@ -461,7 +461,7 @@ augment Program
     py_plugin : Plugin
   METHODS
     method py_on_header_end (code:Object)
-      local writer = code as CPPWriter
+      local writer = code->(as CPPWriter)
       if (writer is null) return
 
       writer.println @|// Stuff from Rogue Python plugin
@@ -511,7 +511,7 @@ augment Program
                       |#define PyRogueDelegateContextPtr PyRogueDelegateContext*
 
     method py_on_code_end (code:Object)
-      local writer = code as CPPWriter
+      local writer = code->(as CPPWriter)
       if (writer is null) return
 
       if (not py_first_code_file) return

@@ -261,8 +261,8 @@ class PosixProcess : Process
                 |}
 
         if (output_reader)
-          (output_reader as PosixProcessReader).fd_reader.close
-          (error_reader as PosixProcessReader).fd_reader.close
+          (output_reader->(as PosixProcessReader)).fd_reader.close
+          (error_reader->(as PosixProcessReader)).fd_reader.close
         endIf
 
         native @|posix_spawn_file_actions_destroy( &$this->actions );
@@ -296,8 +296,8 @@ class PosixProcess : Process
       # changed (specifically, might have gone to -1).
       local fd0 = -1 : Int
       local fd1 = -1 : Int
-      if (output_reader) fd0 = (output_reader as PosixProcessReader).fd_reader.fd
-      if (error_reader)  fd1 =  (error_reader as PosixProcessReader).fd_reader.fd
+      if (output_reader) fd0 = output_reader->(as PosixProcessReader).fd_reader.fd
+      if (error_reader)  fd1 =  error_reader->(as PosixProcessReader).fd_reader.fd
 
       # Bail out if there's nobody to poll
       if (fd0 == -1 and fd1 == -1) return false
@@ -318,13 +318,13 @@ class PosixProcess : Process
           local reader = ?:{which_fd == 0: output_reader || error_reader}
 
           if (has_input)
-            (reader as PosixProcessReader).fd_reader.buffer_more
+            reader->(as PosixProcessReader).fd_reader.buffer_more
             keep_going = true
           endIf
 
           # Anything besides readable is "bad" (it's most likely the other end hanging up)
-          #if (not has_input and has_other) (reader as PosixProcessReader).fd_reader.close
-          #if ((reader as PosixProcessReader).fd_reader.is_open) keep_going = true
+          #if (not has_input and has_other) reader->(as PosixProcessReader).fd_reader.close
+          #if (reader->(as PosixProcessReader).fd_reader.is_open) keep_going = true
         endForEach
         return keep_going # If anyone wants to keep going, we keep going
       elseIf ((status == -1) and native("errno == EINTR")->Logical)
@@ -412,9 +412,9 @@ class WindowsProcess : Process
 
       arg_string = args.join(" ").cloned
 
-      local output_reader = this.output_reader as WindowsProcessReader
-      local error_reader  = this.error_reader as WindowsProcessReader
-      local input_writer  = this.input_writer as WindowsProcessWriter
+      local output_reader = this.output_reader->(as WindowsProcessReader)
+      local error_reader  = this.error_reader->(as WindowsProcessReader)
+      local input_writer  = this.input_writer->(as WindowsProcessWriter)
 
       native @|$this->startup_info.cb = sizeof( STARTUPINFO );
               |$this->startup_info.hStdOutput = $output_reader->output_writer;
@@ -473,7 +473,7 @@ class WindowsProcess : Process
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
 
       while (not is_finished)
-        (input_writer as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
+        input_writer->(as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
 
         native @|WaitForSingleObject( $this->process_info.hProcess, 250 );
       endWhile
@@ -502,11 +502,11 @@ class WindowsProcess : Process
     method update_io->Logical
       # Returns true if we should keep updating
       local any_updates = false
-      if ((output_reader as WindowsProcessReader).fill_buffer) any_updates = true
-      if ((error_reader as WindowsProcessReader).fill_buffer) any_updates = true
-      local before_count = (input_writer as WindowsProcessWriter).buffer.count
+      if (output_reader->(as WindowsProcessReader).fill_buffer) any_updates = true
+      if (error_reader->(as WindowsProcessReader).fill_buffer) any_updates = true
+      local before_count = input_writer->(as WindowsProcessWriter).buffer.count
       input_writer.flush
-      if ((input_writer as WindowsProcessWriter).buffer.count != before_count) any_updates = true
+      if (input_writer->(as WindowsProcessWriter).buffer.count != before_count) any_updates = true
 
       return any_updates
 

@@ -507,7 +507,8 @@ class Preprocessor
           endIf
         endIf
 
-        if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or t_type is TokenType.keyword_enum or ...
+        if (t_type is TokenType.keyword_class or t_type is TokenType.keyword_routine or ...
+            t_type is TokenType.keyword_enum or ...
             (t_type is TokenType.keyword_global and not Parser.is_parsing_metacode))
           # Register this class/enum/routine/global module::id
           if (reader.peek.type is TokenType.identifier)
@@ -537,6 +538,15 @@ class Preprocessor
               tokens.add( t )
             endIf
             nextIteration
+          endIf
+
+        elseIf (t_type is TokenType.keyword_augment)
+          if (reader.peek.type is not TokenType.identifier)
+            # Batch augment
+            if (keep_tokens)
+              expand_batch_augment
+              nextIteration
+            endIf
           endIf
         endIf
 
@@ -583,6 +593,52 @@ class Preprocessor
           endForEach
         endUse
       endIf
+
+    method expand_batch_augment
+      local tokens = Token[]
+      consume_eols
+      must_consume TokenType.keyword_METHODS
+      consume_eols
+      while (reader.has_another and reader.next_is(TokenType.keyword_method))
+        local t = reader.read  # ('method')
+        tokens.add( TokenType.keyword_augment.create_token(t) )  # augment
+        collect_type_name_tokens( tokens )                       # TypeName<<...>>[]
+        must_consume( TokenType.symbol_dot ) # ('.')
+
+        tokens.add( TokenType.eol.create_token(t) )              # EOL
+        tokens.add( TokenType.keyword_METHODS.create_token(t) )  # METHODS
+        tokens.add( TokenType.eol.create_token(t) )              # EOL
+        tokens.add( t )                                          # method
+
+        while (reader.has_another and not reader.next_is(TokenType.keyword_method) and ...
+               not reader.next_is(TokenType.keyword_endAugment))
+          tokens.add( reader.read )
+        endWhile
+
+        t = tokens.last
+        tokens.add( TokenType.keyword_endAugment.create_token(t) ) # endAugment
+        tokens.add( TokenType.eol.create_token(t) )                # EOL
+
+      endWhile
+      reader.must_consume( TokenType.keyword_endAugment )
+      reader.push( tokens )
+
+    method collect_type_name_tokens( tokens:Token[] )
+      # TypeName<<...>>[] / (Function(...)->(...)) / tuple / etc.
+      local open_paren_count = 0
+      while (reader.has_another and (open_paren_count or not (next_is(TokenType.symbol_dot) or ...
+          next_is(TokenType.symbol_colon) or next_is(TokenType.eol))))
+        local t = reader.read
+        if (t.type is TokenType.symbol_open_bracket)         ++open_paren_count
+        elseIf (t.type is TokenType.symbol_open_paren)       ++open_paren_count
+        elseIf (t.type is TokenType.symbol_open_specialize)  ++open_paren_count
+        elseIf (t.type is TokenType.symbol_open_brace)       ++open_paren_count
+        elseIf (t.type is TokenType.symbol_close_bracket)    --open_paren_count
+        elseIf (t.type is TokenType.symbol_close_paren)      --open_paren_count
+        elseIf (t.type is TokenType.symbol_close_specialize) --open_paren_count
+        elseIf (t.type is TokenType.symbol_close_brace)      --open_paren_count
+        tokens.add( t )
+      endWhile
 
     method add_logical( t:Token, value:Logical )
       if (value)
@@ -909,7 +965,8 @@ class Preprocessor
       use rewriter = tokens.rewriter
         while (rewriter.has_another)
           local t = rewriter.read
-          while (t.type is TokenType.literal_string and rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
+          while (t.type is TokenType.literal_string and ...
+              rewriter.has_another and rewriter.peek.type is TokenType.literal_string)
             t = t.type.create_token( t, t->String + rewriter.read->String )
           endWhile
           rewriter.write( t )

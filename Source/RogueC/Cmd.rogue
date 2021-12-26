@@ -71,7 +71,7 @@ class Cmd
       endIf
 
       if (target_type.instance_of(this_type))
-        throw t.error( 'No $.to->$() conversion method exists - use "<expression> as $" instead.' (this_type,target_type,target_type) )
+        throw t.error( 'No $.to->$() conversion method exists - use "<expression>->(as $)" instead.' (this_type,target_type,target_type) )
       endIf
 
       #{
@@ -396,7 +396,7 @@ class CmdLocalDeclaration : CmdStatement
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         local new_value = local_info.initial_value
         if (new_value) new_value = new_value.cloned( clone_args, new_t )
@@ -505,7 +505,7 @@ class CmdReturn : CmdStatement
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         return task_args.create_return( t, clone(value,clone_args,new_t) )
       else
@@ -611,7 +611,7 @@ class CmdBlock : CmdControlStructure
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args and this.contains_yield)
         forEach (statement in statements)
           task_args.add( statement.cloned(task_args) )
@@ -760,7 +760,7 @@ class CmdIf : CmdControlStructure
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args and this.contains_yield)
         local next_section = task_args.create_section
         local end_section = task_args.create_section
@@ -941,7 +941,7 @@ class CmdWhich : CmdControlStructure
       local var_name       : String
       local expression_var : Local
       if (expression instanceOf CmdReadLocal)
-        expression_var = (expression as CmdReadLocal).local_info
+        expression_var = expression->(as CmdReadLocal).local_info
         var_name = expression_var.name
       else
         var_name = Program.create_unique_id
@@ -1066,7 +1066,7 @@ class CmdWhichCase : Cmd
       conditions.resolve( scope )
       forEach (condition at index in conditions)
         if (condition.require_type.is_enum)
-          local cmd_create_compound = condition as CmdCreateCompound
+          local cmd_create_compound = condition->(as CmdCreateCompound)
           if (cmd_create_compound)
             conditions[ index ] = cmd_create_compound.args.first
           else
@@ -1097,7 +1097,7 @@ class CmdContingent : CmdControlStructure
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args and this.contains_yield)
         satisfied_section = task_args.create_section
         unsatisfied_section = task_args.create_section
@@ -1182,8 +1182,8 @@ class CmdContingent : CmdControlStructure
 
     method set_control_logic( original:CmdControlStructure )->Cmd
       prior.set_control_logic( original )
-      satisfied_label   = (original as CmdContingent).satisfied_label
-      unsatisfied_label = (original as CmdContingent).unsatisfied_label
+      satisfied_label   = original->(as CmdContingent).satisfied_label
+      unsatisfied_label = original->(as CmdContingent).unsatisfied_label
       return this
 
 endClass
@@ -1209,7 +1209,7 @@ class CmdGenericLoop : CmdControlStructure
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args and this.contains_yield)
         # Control variable initialization
         if (control_statements)
@@ -1344,7 +1344,7 @@ class CmdForEach : CmdControlStructure
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       local result = CmdForEach( t, control_var_name, index_var_name, collection.cloned(clone_args,new_t), clone(step_cmd,clone_args,new_t), null, &=is_foreach_of )
-      result.control_var_tuple = clone( control_var_tuple, clone_args, new_t ) as CmdTuple
+      result.control_var_tuple = clone( control_var_tuple, clone_args, new_t )->(as CmdTuple)
       result.first_cmd = clone( first_cmd, clone_args, new_t )
       result.last_cmd = clone( last_cmd, clone_args, new_t )
       result.set_control_logic( this )
@@ -1453,7 +1453,7 @@ class CmdForEach : CmdControlStructure
       local step_size = 1
       if (step_cmd)
         step_cmd = step_cmd.resolve( scope )
-        local literal_integer_cmd = step_cmd as CmdLiteralInt32
+        local literal_integer_cmd = step_cmd->(as CmdLiteralInt32)
         if (literal_integer_cmd)
           step_size = literal_integer_cmd.value
         else
@@ -1748,7 +1748,7 @@ class CmdThrow : Cmd
       return CmdThrow( t, expression.cloned( clone_args, new_t ), is_resolved )
 
     method execute( vm:VM )->Value
-      local ex = expression.execute( vm )->Object as Exception
+      local ex = expression.execute( vm )->Object->(as Exception)
       if (ex is null)
         throw expression.t.error( "Thrown value must be instanceOf Exception." )
       endIf
@@ -1832,7 +1832,7 @@ class CmdEscape : Cmd
       if (new_t) t = new_t
       if (target_cmd)
         if (target_cmd.task_escape_section)
-          local task_args = (clone_args as TaskArgs)
+          local task_args = clone_args->(as TaskArgs)
           return task_args.create_escape( t, target_cmd.task_escape_section )
         else
           local new_target = target_cmd
@@ -1876,7 +1876,7 @@ class CmdNextIteration : Cmd
       if (new_t) t = new_t
       if (target_cmd)
         if (target_cmd.task_upkeep_section)
-          local task_args = (clone_args as TaskArgs)
+          local task_args = clone_args->(as TaskArgs)
           return task_args.create_escape( t, target_cmd.task_upkeep_section )
         else
           local new_target = target_cmd
@@ -1919,7 +1919,7 @@ class CmdNecessary : Cmd
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       if (target_cmd.unsatisfied_section)
-        local task_args = (clone_args as TaskArgs)
+        local task_args = clone_args->(as TaskArgs)
         local cmd_jump = task_args.create_escape( t, target_cmd.unsatisfied_section )
         if (condition)
           return CmdIf( t, CmdLogicalNot(t,condition.cloned(task_args)), CmdStatementList(cmd_jump) )
@@ -1929,7 +1929,7 @@ class CmdNecessary : Cmd
       else
         local new_target = target_cmd : CmdControlStructure
         while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdNecessary( t, clone(condition,clone_args,new_t), new_target as CmdContingent )
+        return CmdNecessary(t, clone(condition,clone_args,new_t), new_target->(as CmdContingent))
       endIf
 
     method execute( vm:VM )->Value
@@ -1945,7 +1945,7 @@ class CmdNecessary : Cmd
         local cmd = scope.control_stack[i]
         if (cmd.control_type == CmdControlStructure.type_contingent)
           while (cmd.cloned_command) cmd = cmd.cloned_command
-          local cmd_contingent = cmd as CmdContingent
+          local cmd_contingent = cmd->(as CmdContingent)
           if (not cmd_contingent.unsatisfied_label) cmd_contingent.unsatisfied_label = Program.create_unique_id
           target_cmd = cmd_contingent
           return this
@@ -1968,7 +1968,7 @@ class CmdSufficient : Cmd
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
       if (target_cmd.satisfied_section)
-        local task_args = (clone_args as TaskArgs)
+        local task_args = clone_args->(as TaskArgs)
         local cmd_jump = task_args.create_escape( t, target_cmd.satisfied_section )
         if (condition)
           return CmdIf( t, condition.cloned(task_args), CmdStatementList(cmd_jump) )
@@ -1978,7 +1978,7 @@ class CmdSufficient : Cmd
       else
         local new_target = target_cmd : CmdControlStructure
         while (new_target.cloned_command) new_target = new_target.cloned_command
-        return CmdSufficient( t, clone(condition,clone_args,new_t), new_target as CmdContingent )
+        return CmdSufficient(t, clone(condition,clone_args,new_t), new_target->(as CmdContingent))
       endIf
 
     method execute( vm:VM )->Value
@@ -1994,7 +1994,7 @@ class CmdSufficient : Cmd
         local cmd = scope.control_stack[i]
         if (cmd.control_type == CmdControlStructure.type_contingent)
           while (cmd.cloned_command) cmd = cmd.cloned_command
-          local cmd_contingent = cmd as CmdContingent
+          local cmd_contingent = cmd->(as CmdContingent)
           if (not cmd_contingent.satisfied_label) cmd_contingent.satisfied_label = Program.create_unique_id
           target_cmd = cmd_contingent
           return this
@@ -2577,7 +2577,7 @@ class CmdAccess : Cmd
         forEach (named_arg in named_args) result.named_args.add( named_arg.cloned )
       endIf
 
-      local macro_args = (clone_args as MacroArgs)
+      local macro_args = clone_args->(as MacroArgs)
       if (macro_args)
         return macro_args.inline_access( result )
       endIf
@@ -2924,7 +2924,7 @@ class CmdAccess : Cmd
 
           if (new_type.is_compound)
             local cmd = scope.resolve_call( new_type, CmdAccess(t,"create",args,named_args), true )
-            local cmd_call = cmd as CmdCall
+            local cmd_call = cmd->(as CmdCall)
             if (cmd_call and cmd_call.method_info.is_generated)
               # Calling the core compound creation routine
               return CmdCreateCompound( t, new_type, cmd_call.args ).resolve( scope )
@@ -3489,10 +3489,10 @@ class CmdThisContext : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local macro_args = (clone_args as MacroArgs)
+      local macro_args = clone_args->(as MacroArgs)
       if (macro_args) return macro_args.inline_this
 
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         return task_args.cmd_read_context(t)
       else
@@ -3530,10 +3530,10 @@ class CmdLiteralThis : CmdThisContext
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local macro_args = (clone_args as MacroArgs)
+      local macro_args = clone_args->(as MacroArgs)
       if (macro_args) return macro_args.inline_this
 
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         return task_args.cmd_read_context(t)
       else
@@ -3641,11 +3641,11 @@ class CmdReadLocal : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local macro_args = (clone_args as MacroArgs)
+      local macro_args = clone_args->(as MacroArgs)
       if (macro_args)
         return macro_args.inline_read_local( this )
       else
-        local task_args = (clone_args as TaskArgs)
+        local task_args = clone_args->(as TaskArgs)
         if (task_args)
           return task_args.cmd_read(t,local_info)
         endIf
@@ -3693,11 +3693,11 @@ class CmdWriteLocal : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local macro_args = (clone_args as MacroArgs)
+      local macro_args = clone_args->(as MacroArgs)
       if (macro_args)
         return macro_args.inline_write_local( this )
       else
-        local task_args = (clone_args as TaskArgs)
+        local task_args = clone_args->(as TaskArgs)
         if (task_args)
           return task_args.cmd_write( t,local_info, new_value.cloned( clone_args, new_t ) )
         endIf
@@ -4225,7 +4225,7 @@ class CmdTuple : Cmd
 
         local element_type = elements[i].type
         if (element_type is Program.type_null)
-          throw el.t.error( "Ambiguous 'null' in tuple creation. Specify a datatype with 'null as String' etc." )
+          throw el.t.error("Ambiguous 'null' in tuple creation. Specify a datatype with 'null->(as String)' etc.")
         endIf
         type_string += element_type.name
       endForEach
@@ -4244,11 +4244,11 @@ class CmdTuple : Cmd
         local type = _get_element_type(rht, el_index)
         if (el instanceOf CmdTuple)
           # synthesizing for nested destructuring
-          (el as CmdTuple)._create_variables(scope, type)
+          (el->(as CmdTuple))._create_variables(scope, type)
           nextIteration
         endIf
         require(el instanceOf CmdAccess)
-        local part_var = Local( t, (el as CmdAccess).name, type )
+        local part_var = Local(t, (el->(as CmdAccess)).name, type )
         local part_decl = CmdLocalDeclaration(t,part_var)
         scope.this_body.add( part_decl.resolve(scope) )
       endForEach
@@ -4425,11 +4425,11 @@ class CmdLogicalNot : CmdUnary
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal64)
-        return CmdLiteralLogical( t, not ((operand as CmdLiteralReal64).value) )
+        return CmdLiteralLogical(t, not ((operand->(as CmdLiteralReal64)).value) )
       elseIf (operand instanceOf CmdLiteralInt32)
-        return CmdLiteralLogical( t, not ((operand as CmdLiteralInt32).value) )
+        return CmdLiteralLogical(t, not ((operand->(as CmdLiteralInt32)).value) )
       elseIf (operand instanceOf CmdLiteralLogical)
-        return CmdLiteralLogical( t, not ((operand as CmdLiteralLogical).value) )
+        return CmdLiteralLogical(t, not ((operand->(as CmdLiteralLogical)).value) )
       else
         operand = operand.require_logical( scope )
       endIf
@@ -4461,9 +4461,9 @@ class CmdNegate : CmdUnary
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal64)
-        return CmdLiteralReal64( t, -(operand as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, -(operand->(as CmdLiteralReal64)).value )
       elseIf (operand instanceOf CmdLiteralInt32)
-        return CmdLiteralInt32( t, -(operand as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, -(operand->(as CmdLiteralInt32)).value )
       endIf
       return this
 
@@ -4492,9 +4492,9 @@ class CmdDescribe : CmdUnary
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralReal64)
-        return CmdLiteralReal64( t, (operand as CmdLiteralReal64).value.description )
+        return CmdLiteralReal64(t, (operand->(as CmdLiteralReal64)).value.description )
       elseIf (operand instanceOf CmdLiteralInt32)
-        return CmdLiteralInt32( t, (operand as CmdLiteralInt32).value.description )
+        return CmdLiteralInt32(t, (operand->(as CmdLiteralInt32)).value.description )
       endIf
       return this
 
@@ -4631,9 +4631,9 @@ class CmdAdd : CmdBinary
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralReal64( t, (left as CmdLiteralReal64).value + (right as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, (left->(as CmdLiteralReal64)).value + (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value + (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value + (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4675,9 +4675,9 @@ class CmdSubtract : CmdBinary
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralReal64( t, (left as CmdLiteralReal64).value - (right as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, (left->(as CmdLiteralReal64)).value - (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value - (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value - (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4700,9 +4700,9 @@ class CmdMultiply : CmdBinary
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralReal64( t, (left as CmdLiteralReal64).value * (right as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, (left->(as CmdLiteralReal64)).value * (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value * (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value * (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4726,9 +4726,9 @@ class CmdDivide : CmdBinary
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralReal64( t, (left as CmdLiteralReal64).value / (right as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, (left->(as CmdLiteralReal64)).value / (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value / (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value / (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4752,9 +4752,9 @@ class CmdMod : CmdBinary
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralReal64( t, (left as CmdLiteralReal64).value % (right as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, (left->(as CmdLiteralReal64)).value % (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value % (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value % (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4766,7 +4766,7 @@ class CmdMod : CmdBinary
       local result = prior.resolve( scope )
       if (result.is_literal) return result
 
-      local cmd_mod = result as CmdMod
+      local cmd_mod = result->(as CmdMod)
       if (not cmd_mod) return result
 
       return CmdAccess( t, CmdAccess(t,"Math"), "mod", CmdArgs(cmd_mod.left,cmd_mod.right) ).resolve( scope )
@@ -4787,9 +4787,9 @@ class CmdPower : CmdBinary
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralReal64( t, (left as CmdLiteralReal64).value ^ (right as CmdLiteralReal64).value )
+        return CmdLiteralReal64(t, (left->(as CmdLiteralReal64)).value ^ (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value ^ (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value ^ (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4817,8 +4817,8 @@ class CmdBinaryLogical : CmdBinary
         return CmdLiteralLogical(
             t,
             combine_literal_operands(
-                (left as CmdLiteralLogical).value,
-                (right as CmdLiteralLogical).value
+                left->(as CmdLiteralLogical).value,
+                right->(as CmdLiteralLogical).value
               )
           )
       endIf
@@ -4932,9 +4932,9 @@ class CmdCompareEQ : CmdComparison
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralLogical( t, (left as CmdLiteralReal64).value == (right as CmdLiteralReal64).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralReal64)).value == (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralLogical( t, (left as CmdLiteralInt32).value == (right as CmdLiteralInt32).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralInt32)).value == (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -4968,9 +4968,9 @@ class CmdCompareNE : CmdComparison
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralLogical( t, (left as CmdLiteralReal64).value != (right as CmdLiteralReal64).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralReal64)).value != (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralLogical( t, (left as CmdLiteralInt32).value != (right as CmdLiteralInt32).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralInt32)).value != (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5004,9 +5004,9 @@ class CmdCompareLT : CmdComparison
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralLogical( t, (left as CmdLiteralReal64).value < (right as CmdLiteralReal64).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralReal64)).value < (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralLogical( t, (left as CmdLiteralInt32).value < (right as CmdLiteralInt32).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralInt32)).value < (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5043,9 +5043,9 @@ class CmdCompareLE : CmdComparison
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralLogical( t, (left as CmdLiteralReal64).value <= (right as CmdLiteralReal64).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralReal64)).value <= (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralLogical( t, (left as CmdLiteralInt32).value <= (right as CmdLiteralInt32).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralInt32)).value <= (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5112,9 +5112,9 @@ class CmdCompareGT : CmdComparison
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralLogical( t, (left as CmdLiteralReal64).value > (right as CmdLiteralReal64).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralReal64)).value > (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralLogical( t, (left as CmdLiteralInt32).value > (right as CmdLiteralInt32).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralInt32)).value > (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5152,9 +5152,9 @@ class CmdCompareGE : CmdComparison
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Real64)
-        return CmdLiteralLogical( t, (left as CmdLiteralReal64).value >= (right as CmdLiteralReal64).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralReal64)).value >= (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralLogical( t, (left as CmdLiteralInt32).value >= (right as CmdLiteralInt32).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralInt32)).value >= (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5223,9 +5223,9 @@ class CmdCompare : CmdComparison
     method combine_literal_operands( common_type:Type )->Cmd
       #{
       if (common_type is Program.type_Real64)
-        return CmdLiteralInt32( t, (left as CmdLiteralReal64).value <> (right as CmdLiteralReal64).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralReal64)).value <> (right->(as CmdLiteralReal64)).value )
       elseIf (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value <> (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value <> (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5382,9 +5382,9 @@ class CmdBitwiseAnd : CmdBitwiseFlip
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value & (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value & (right->(as CmdLiteralInt32)).value )
       elseIf (common_type is Program.type_Logical)
-        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value and (right as CmdLiteralLogical).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralLogical)).value and (right->(as CmdLiteralLogical)).value )
       else
         return this
       endIf
@@ -5407,9 +5407,9 @@ class CmdBitwiseOr : CmdBitwiseFlip
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value | (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value | (right->(as CmdLiteralInt32)).value )
       elseIf (common_type is Program.type_Logical)
-        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value or (right as CmdLiteralLogical).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralLogical)).value or (right->(as CmdLiteralLogical)).value )
       else
         return this
       endIf
@@ -5432,9 +5432,9 @@ class CmdBitwiseXor : CmdBitwiseFlip
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value ~ (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value ~ (right->(as CmdLiteralInt32)).value )
       elseIf (common_type is Program.type_Logical)
-        return CmdLiteralLogical( t, (left as CmdLiteralLogical).value xor (right as CmdLiteralLogical).value )
+        return CmdLiteralLogical(t, (left->(as CmdLiteralLogical)).value xor (right->(as CmdLiteralLogical)).value )
       else
         return this
       endIf
@@ -5457,7 +5457,7 @@ class CmdBitwiseShiftLeft : CmdBitwiseOp
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value :<<: (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value :<<: (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5480,7 +5480,7 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value :<<: (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value :<<: (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5493,7 +5493,7 @@ class CmdBitwiseShiftRight : CmdBitwiseOp
 
     method resolve( scope:Scope )->Cmd
       local result = prior.resolve( scope )
-      local cmd_shift = result as CmdBitwiseShiftRight
+      local cmd_shift = result->(as CmdBitwiseShiftRight)
       if (not cmd_shift) return result
 
       return CmdAccess( t, CmdAccess(t,"Math"), "shift_right", CmdArgs(cmd_shift.left,cmd_shift.right) ).resolve( scope )
@@ -5510,7 +5510,7 @@ class CmdBitwiseShiftRightX : CmdBitwiseOp
 
     method combine_literal_operands( common_type:Type )->Cmd
       if (common_type is Program.type_Int32)
-        return CmdLiteralInt32( t, (left as CmdLiteralInt32).value :<<: (right as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, (left->(as CmdLiteralInt32)).value :<<: (right->(as CmdLiteralInt32)).value )
       else
         return this
       endIf
@@ -5543,7 +5543,7 @@ class CmdBitwiseNot : CmdUnary
 
     method resolve( scope:Scope )->Cmd
       local result = prior.resolve( scope )
-      local cmd_not = result as CmdBitwiseNot
+      local cmd_not = result->(as CmdBitwiseNot)
       if (not cmd_not) return result
 
       if (cmd_not.require_type is Program.type_Logical)
@@ -5554,7 +5554,7 @@ class CmdBitwiseNot : CmdUnary
 
     method resolve_for_literal_operand( scope:Scope )->Cmd
       if (operand instanceOf CmdLiteralInt32)
-        return CmdLiteralInt32( t, !(operand as CmdLiteralInt32).value )
+        return CmdLiteralInt32(t, !(operand->(as CmdLiteralInt32)).value )
       endIf
 
       return this
@@ -5599,7 +5599,7 @@ class CmdStepLocal : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         return CmdStep( t, CmdAccess(t, task_args.cmd_read_this(t), task_args.convert_local_name(local_info)), delta )
       else
@@ -5806,7 +5806,7 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         return CmdModifyAndAssign( t, CmdAccess(t,CmdThisContext(t,task_args.task_type),"$_$"(local_info.name,local_info.index)), op, new_value.cloned(task_args) )
       else
@@ -5859,7 +5859,7 @@ class CmdModifyAndAssignLocal : CmdResolvedModifyAndAssign
           return CmdWriteLocal( t, local_info, CmdMod(t,CmdReadLocal(t,local_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
-          local access = new_value as CmdAccess
+          local access = new_value->(as CmdAccess)
           if (not access) throw new_value.t.error( "Property or method name expected." )
           if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
           access.context = CmdReadLocal( t, local_info )
@@ -5930,7 +5930,7 @@ class CmdModifyAndAssignGlobal : CmdResolvedModifyAndAssign
           return CmdWriteGlobal( t, global_info, CmdMod(t,CmdReadGlobal(t,global_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
-          local access = new_value as CmdAccess
+          local access = new_value->(as CmdAccess)
           if (not access) throw new_value.t.error( "Property or method name expected." )
           if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
           access.context = CmdReadGlobal( t, global_info )
@@ -5999,7 +5999,7 @@ class CmdModifyAndAssignProperty : CmdResolvedModifyAndAssign
           return CmdWriteProperty( t, context, property_info, CmdMod(t,CmdReadProperty(t,clone(context),property_info),new_value) ).resolve( scope )
 
         case TokenType.symbol_dot_equals
-          local access = new_value as CmdAccess
+          local access = new_value->(as CmdAccess)
           if (not access) throw new_value.t.error( "Property or method name expected." )
           if (access.context) throw access.t.error( "Property or method name expected - '.=' cannot be used with a chain of references." )
           access.context = CmdReadProperty( t, clone(context), property_info )
@@ -6172,7 +6172,7 @@ class CmdConvertToType : CmdTypeOperator
 
     method resolve( scope:Scope )->Cmd
       operand = operand.resolve( scope )
-      if ((operand instanceOf CmdCallMethod) and (operand as CmdCallMethod)._is_call_via_methodinfo)
+      if ((operand instanceOf CmdCallMethod) and (operand->(as CmdCallMethod))._is_call_via_methodinfo)
         noAction
       else
         operand = operand.require_value
@@ -6550,7 +6550,7 @@ class CmdAwait : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         throw t.error( "[INTERNAL] CmdAwait should have been converted to other commands before being adapted to a task." )
       else
@@ -6602,7 +6602,7 @@ class CmdYield : Cmd
 
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->Cmd
       if (new_t) t = new_t
-      local task_args = (clone_args as TaskArgs)
+      local task_args = clone_args->(as TaskArgs)
       if (task_args)
         task_args.add_yield( t, clone(return_value,clone_args,new_t) )
         return null
@@ -7202,7 +7202,7 @@ class CmdTypedLiteralList : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdTypedLiteralList
       if (new_t) t = new_t
-      return CmdTypedLiteralList( context.cloned(clone_args,new_t) as CmdAccess, elements.cloned( clone_args, new_t ) )
+      return CmdTypedLiteralList(context.cloned(clone_args,new_t)->(as CmdAccess), elements.cloned( clone_args, new_t))
 
     method add( element:Cmd )->CmdTypedLiteralList
       elements.add( element )
@@ -7295,7 +7295,7 @@ class CmdTypedLiteralTable : Cmd
 
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdTypedLiteralTable
       if (new_t) t = new_t
-      return CmdTypedLiteralTable( context.cloned(clone_args,new_t) as CmdAccess,
+      return CmdTypedLiteralTable( context.cloned(clone_args,new_t)->(as CmdAccess),
           keys.cloned( clone_args, new_t ), values.cloned( clone_args, new_t ) )
 
     method add( key:Cmd, value:Cmd )->CmdTypedLiteralTable
@@ -7357,7 +7357,7 @@ class CmdTypedLiteralTable : Cmd
         scope.this_body.add( init_block )
 
         forEach (key at index in keys)
-          local access_key = key as CmdAccess
+          local access_key = key->(as CmdAccess)
           if (access_key and access_key.context is null and access_key.args is null and access_key.name.begins_with('@'))
             local item = CmdAssign( t, CmdAccess(t,CmdAccess(t,context_var),access_key.name), values[index] )
             init_block.statements.add( item )
@@ -7390,7 +7390,7 @@ class CmdSelect : Cmd
     method cloned( clone_args:CloneArgs, new_t=null:Token )->CmdSelect
       if (new_t) t = new_t
       local result = CmdSelect( t, local_info, clone(expression,clone_args,new_t), CmdSelectCase[](cases.count) )
-      if (local_declaration) result.local_declaration = local_declaration.cloned( clone_args, new_t ) as CmdLocalDeclaration
+      if (local_declaration) result.local_declaration = local_declaration.cloned( clone_args, new_t )->(as CmdLocalDeclaration)
       forEach (c in cases) result.cases.add( c.cloned( clone_args, new_t ) )
       return result
 
@@ -7996,8 +7996,7 @@ class CmdContextBlock : Cmd
 endClass
 
 class CmdChangeState( t, expression:Cmd ) : Cmd
-  # Generally '[> X]' is shorthand for 'state = X' where X has implicit context "ContextTypeState",
-  # e.g.  '[> X]' -> 'state = ContextTypeState.X'.
+  # Generally '[> X]' is shorthand for 'state = X'
   # 'X' can be any expression although that feature is unlikely to be used often.
   METHODS
     method cloned( clone_args=null:CloneArgs, new_t=null:Token )->CmdChangeState
@@ -8005,19 +8004,7 @@ class CmdChangeState( t, expression:Cmd ) : Cmd
       return CmdChangeState( t, expression.cloned(clone_args,new_t) )
 
     method resolve( scope:Scope )->Cmd
-      local state_type_name = scope.this_type.name
-      state_type_name = "$State$" (state_type_name.before_first('<'), state_type_name.from_first('<'))
-      local state_type = scope.find_type( state_type_name )
-
-      if (state_type)
-        state_type.organize(scope,t)
-        scope.implicit_types.add( state_type )
-      endIf
-
-      local result = CmdAssign( t, CmdAccess(t,"state"), expression ).resolve( scope )
-
-      if (state_type) scope.implicit_types.remove_last
-      return result
+      return CmdAssign( t, CmdAccess(t,"state"), expression ).resolve( scope )
 
     method type->Type
       return null

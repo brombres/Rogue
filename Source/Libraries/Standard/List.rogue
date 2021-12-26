@@ -1,3 +1,5 @@
+uses Utility/WorkList
+
 class GenericList [abstract]
 endClass
 
@@ -587,6 +589,46 @@ class List<<$DataType>> : GenericList
     method rewriter->ListRewriter<<$DataType>>
       return ListRewriter<<$DataType>>.acquire( this )
 
+    method rotate_left( w:Int32, h:Int32 )
+      # Treats this list as a 2D WxH set of data and rotates it 90º counter-clockwise.
+      # The data must then be accessed using HxW.
+      local total_count = w * h
+      require count == total_count
+
+      use new_data = WorkList<<$DataType>>
+        new_data.reserve( total_count )
+        local row_start = (w - 1)
+        loop w
+          local pos = row_start
+          loop (h)
+            new_data.add( data[pos] )
+            pos += w
+          endLoop
+          --row_start
+        endLoop
+        data.set( 0, new_data.data, 0, total_count )
+      endUse
+
+    method rotate_right( w:Int32, h:Int32 )
+      # Treats this list as a 2D WxH set of data and rotates it 90º clockwise.
+      # The data must then be accessed using HxW.
+      local total_count = w * h
+      require count == total_count
+
+      use new_data = WorkList<<$DataType>>
+        new_data.reserve( total_count )
+        local row_start = (h - 1) * w
+        loop w
+          local pos = row_start
+          loop h
+            new_data.add( data[pos] )
+            pos -= w
+          endLoop
+          ++row_start
+        endLoop
+        data.set( 0, new_data.data, 0, total_count )
+      endUse
+
     method set( index:Int32, new_value:$DataType )
       this.data[ index ] = new_value
 
@@ -966,7 +1008,7 @@ class ListRewriter<<$DataType>> : GenericListRewriter, Writer<<$DataType>>
   GLOBAL METHODS
     method acquire( list:$DataType[] )->ListRewriter<<$DataType>>
       if (pool and pool.count)
-        return (pool.remove_last as ListRewriter<<$DataType>>).[ reset(list) ]
+        return pool.remove_last->(as ListRewriter<<$DataType>>).[ reset(list) ]
       else
         return ListRewriter<<$DataType>>( list )
       endIf

@@ -1,4 +1,5 @@
 module UI
+  uses Utility/Action
   uses Utility/Node
   uses Utility/WorkList
 
@@ -19,6 +20,7 @@ class UIComponent : Node<<UIComponent>>
     size       : XY
     flags      : Int32
     attributes : UIAttribute
+    actions    : Action
 
   METHODS
     method init
@@ -47,9 +49,6 @@ class UIComponent : Node<<UIComponent>>
     method after( e:TextEvent )
       noAction
 
-    method after( e:UIResizeEvent )
-      noAction
-
     method after_draw
       UI.theme._dispatch_after_draw( this )
 
@@ -63,6 +62,9 @@ class UIComponent : Node<<UIComponent>>
 
     method after_prepare_layout<<$Theme>>( theme:$Theme )  [propagated]
       theme.after_prepare_layout( this )
+
+    method after_resize
+      noAction
 
     method after_update
       noAction
@@ -283,11 +285,11 @@ class UIComponent : Node<<UIComponent>>
 
       after( e )
 
-    method handle( e:UIResizeEvent )
-      on( e )
-      UIAttributes.on_resize( this, e )
-      (forEach in children).handle( e )
-      after( e )
+    method handle_resize
+      on_resize
+      UIAttributes.on_resize( this )
+      (forEach in children).handle_resize
+      after_resize
 
     method has_keyboard_focus->Logical
       return (UI.keyboard_focus is this)
@@ -372,6 +374,10 @@ class UIComponent : Node<<UIComponent>>
       endForEach
       return result
 
+    method dispatch_message<<$MessageType>>( message:$MessageType )
+      on_message( message )
+      (forEach in children).dispatch_message( message )
+
     method on( e:KeyEvent )
       noAction
 
@@ -384,7 +390,10 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on( e:UIResizeEvent )
+    method on_message<<$MessageType>>( message:$MessageType )
+      noAction
+
+    method on_message( message:String )
       noAction
 
     method on_update
@@ -413,7 +422,10 @@ class UIComponent : Node<<UIComponent>>
     method on_release_pointer_focus
       noAction
 
-    method on_resize( callback:Function(UIComponent,UIResizeEvent) )
+    method on_resize
+      noAction
+
+    method on_resize( callback:Function(UIComponent) )
       UIAttributes.set_resize_callback( this, callback )
 
     method operator+( rhs:UIComponent )->UIComponent
@@ -555,6 +567,7 @@ class UIComponent : Node<<UIComponent>>
 
     method update
       on_update
+      if (actions) actions .= update
       update_subcomponents
       after_update
 

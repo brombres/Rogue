@@ -72,7 +72,7 @@ class Tokenizer
     tokens           : Token[]
     spaces_per_tab   = 2
     buffer           = StringBuilder()
-    specialized_this = this as TokenizerType
+    specialized_this = this->(as TokenizerType)
 
   METHODS
     method init_object
