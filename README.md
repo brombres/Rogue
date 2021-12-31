@@ -1,5 +1,7 @@
+![Rogue Logo](Media/Logo/Rogue-Badge-WhiteOnBlack.png)
+
 # Rogue
-An ergonomic object-oriented statically-linked high-level language that compiles to C++.
+An ergonomic object-oriented high-level language that compiles to C++.
 
 # Version
 - v1.12 - December 26, 2021
@@ -19,7 +21,7 @@ Installing Morlock will also install Rogue and [Rogo](https://github.com/AbePral
 
 Rogue comes with a work-in-progress VS Code extension which can be found in the `Syntax/VSCode` folder.
 
-## VIM
+## Vim
 
 Rogue comes with syntax and indent modules for Vim; they are located in the Syntax/Vim folder.
 
