@@ -710,13 +710,11 @@ class Bitmap
         local a = 0.0
         local need = this_width
         while (need >= available)
-          if (native("(RogueInt32)src[3]")->Int32)
-            b += native("(RogueReal64)src[0]")->Real64 * available
-            g += native("(RogueReal64)src[1]")->Real64 * available
-            r += native("(RogueReal64)src[2]")->Real64 * available
-            a += native("(RogueReal64)src[3]")->Real64 * available
-            n += available
-          endIf
+          b += native("(RogueReal64)src[0]")->Real64 * available
+          g += native("(RogueReal64)src[1]")->Real64 * available
+          r += native("(RogueReal64)src[2]")->Real64 * available
+          a += native("(RogueReal64)src[3]")->Real64 * available
+          n += available
           native @|src += 4;
 
           need -= available
@@ -724,13 +722,11 @@ class Bitmap
         endWhile
 
         if (need)
-          if (native("(RogueInt32)src[3]")->Int32)
-            b += native("(RogueReal64)src[0]")->Real64 * need
-            g += native("(RogueReal64)src[1]")->Real64 * need
-            r += native("(RogueReal64)src[2]")->Real64 * need
-            a += native("(RogueReal64)src[3]")->Real64 * need
-            n += need
-          endIf
+          b += native("(RogueReal64)src[0]")->Real64 * need
+          g += native("(RogueReal64)src[1]")->Real64 * need
+          r += native("(RogueReal64)src[2]")->Real64 * need
+          a += native("(RogueReal64)src[3]")->Real64 * need
+          n += need
 
           available -= need
           if (available == 0)
