@@ -604,6 +604,9 @@ endClass
 class StringTable<<$ValueType>> : Table<<String,$ValueType>>
   # Adds support for StringBuilder and Character[] keys.
   METHODS
+    method cloned->StringTable<<$ValueType>>
+      return StringTable<<$ValueType>>( this )
+
     method contains( key:StringBuilder )->Logical
       return find_key( key )?
 
