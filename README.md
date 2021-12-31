@@ -1,4 +1,4 @@
-![Rogue Logo](Media/Logo/Rogue-Badge-WhiteOnBlack.png)
+![Rogue Logo](Media/Logo/Rogue-Badge.png)
 
 # Rogue
 An ergonomic object-oriented high-level language that compiles to C++.
