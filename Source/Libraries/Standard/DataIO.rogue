@@ -31,11 +31,44 @@ class DataReader : Reader<<Byte>>
       if (not input.has_another) return 0
       return input.read
 
-    method read_real64->Real64
-      return read_int64.real_bits
+    method read_byte->Byte [macro]
+      return this.read
 
-    method read_real32->Real32
-      return read_int32.real_bits
+    method read_bytes->Byte[]
+      return read_bytes( Byte[] )
+
+    method read_bytes( buffer:Byte[] )->Byte[]
+      local count = read_int32x
+      buffer.reserve( count )
+      loop (count) buffer.add( read_byte )
+      return buffer
+
+    method read_int16->Int32
+      # Reads 2 bytes in high-low order, e.g. [99,AA] -> 99AA
+      local result = read->Int32 :<<: 8
+      return result | read
+
+    method read_int16_low_high->Int32
+      # Reads 2 bytes in low-high order, e.g. [99,AA] -> AA99
+      local result = read->Int32
+      return result | (Int32(read) :<<: 8)
+
+    method read_int32->Int32
+      # Reads 4 bytes in high-low order, e.g. [88,99,AA,BB] -> 8899AABB
+      local result = read->Int32 :<<: 24
+      result |= Int32(read) :<<: 16
+      result |= Int32(read) :<<: 8
+      return result | Int32(read)
+
+    method read_int32_low_high->Int32
+      # Reads 4 bytes in low-high order, e.g. [88,99,AA,BB] -> BBAA9988
+      local result = read->Int32
+      result |= (Int32(read) :<<: 8)
+      result |= (Int32(read) :<<: 16)
+      return result | (Int32(read) :<<: 24)
+
+    method read_int32x->Int32
+      return read_int64x->Int32
 
     method read_int64->Int64
       local result = read_int32 : Int64
@@ -75,29 +108,14 @@ class DataReader : Reader<<Byte>>
 
       return result
 
-    method read_int32->Int32
-      local result = read : Int32
-      result = (result:<<:8) | read
-      result = (result:<<:8) | read
-      return (result:<<:8) | read
-
-    method read_int32x->Int32
-      return read_int64x->Int32
-
-    method read_byte->Byte [macro]
-      return this.read
-
-    method read_bytes->Byte[]
-      return read_bytes( Byte[] )
-
-    method read_bytes( buffer:Byte[] )->Byte[]
-      local count = read_int32x
-      buffer.reserve( count )
-      loop (count) buffer.add( read_byte )
-      return buffer
-
     method read_logical->Logical
       return (read != 0)
+
+    method read_real64->Real64
+      return read_int64.real_bits
+
+    method read_real32->Real32
+      return read_int32.real_bits
 
     method read_string->String
       return read_string( StringBuilder() )->String
@@ -177,11 +195,51 @@ class DataWriter : Writer<<Byte>>
         output.write( forEach in list )
       endIf
 
-    method write_real64( value:Real64 )
-      write_int64( value.integer_bits )
+    method write_byte( value:Byte ) [macro]
+      this.write( value )
 
-    method write_real32( value:Real32 )
-      write_int32( value.integer_bits )
+    method write_bytes( data:Byte[], index=0:Int32, count=null:Int32? )
+      if (index > data.count)
+        write_int32x( 0 )
+        return
+      endIf
+
+      if (index < 0)
+        if (count.exists) count = count.value + index  # reduce count
+        index = 0
+      endIf
+
+      if (count.exists) count = count.value.clamped( 0, data.count-index )
+      else              count = data.count - index
+      write_int32x( count.value )
+      loop (count.value) write_byte( data[index] ); ++index
+
+    method write_int16( value:Int32 )
+      # Write 2 bytes in high-low order, e.g. 0x1234 -> [12,34]
+      write( value:>>>:8 )
+      write( value )
+
+    method write_int16_low_high( value:Int32 )
+      # Writes 2 bytes in low-high order, e.g. 0x1234 -> [34,12]
+      write( value )
+      write( value:>>>:8 )
+
+    method write_int32( value:Int32 )
+      # Writes 4 bytes in high-low order, e.g. 0x12345678 -> [12,34,56,78]
+      write( value:>>>:24 )
+      write( value:>>>:16 )
+      write( value:>>>:8 )
+      write( value )
+
+    method write_int32_low_high( value:Int32 )
+      # Writes 4 bytes in low-high order, e.g. 0x12345678 -> [78,56,34,12]
+      write( value )
+      write( value:>>>:8 )
+      write( value:>>>:16 )
+      write( value:>>>:24 )
+
+    method write_int32x( value:Int32 )
+      write_int64x( value->Int64 )
 
     method write_int64( value:Int64 )
       write_int32( value:>>>:32 )
@@ -212,36 +270,14 @@ class DataWriter : Writer<<Byte>>
         write( (value:>>>:shift) & 0b0111_1111 )
       endIf
 
-    method write_int32( value:Int32 )
-      write( value:>>>:24 )
-      write( value:>>>:16 )
-      write( value:>>>:8 )
-      write( value )
-
-    method write_int32x( value:Int32 )
-      write_int64x( value->Int64 )
-
-    method write_byte( value:Byte ) [macro]
-      this.write( value )
-
-    method write_bytes( data:Byte[], index=0:Int32, count=null:Int32? )
-      if (index > data.count)
-        write_int32x( 0 )
-        return
-      endIf
-
-      if (index < 0)
-        if (count.exists) count = count.value + index  # reduce count
-        index = 0
-      endIf
-
-      if (count.exists) count = count.value.clamped( 0, data.count-index )
-      else              count = data.count - index
-      write_int32x( count.value )
-      loop (count.value) write_byte( data[index] ); ++index
-
     method write_logical( value:Logical )
       write( which{value:1 || 0} )
+
+    method write_real32( value:Real32 )
+      write_int32( value.integer_bits )
+
+    method write_real64( value:Real64 )
+      write_int64( value.integer_bits )
 
     method write_string( value:String )
       if (not value) value = ""
