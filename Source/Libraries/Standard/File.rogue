@@ -853,13 +853,15 @@ class File
         Process.run( "ln -s $ $" (File.esc(target),File.esc(filepath)) )
       endIf
 
-    method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
+    method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only,
+        &exclude:Function(String)->Logical )->Int32
       if (dry_run) verbose = true
       source_folder = expand_path( source_folder )
       dest_folder = expand_path( dest_folder )
-      return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run, &=missing_only )
+      return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run, &=missing_only, &=exclude )
 
-    method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
+    method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only,
+        &exclude:Function(String)->Logical )->Int32
       if (dry_run) verbose = true
       dest_folder = File.fix_slashes( dest_folder )
       dest_folder = expand_path( dest_folder )
@@ -907,22 +909,24 @@ class File
           necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
 
         satisfied
-          ++change_count
+          if (not exclude or not exclude(dest_filepath))
+            ++change_count
 
-          if (verbose)
-            if (not printed_header)
-              printed_header = true
-              local src = source_files.base_folder
-              if (src.count) src = src.leftmost( -1 )
-              else           src = "."
-              local dest = dest_folder.leftmost( -1 )
-              Console.println( "Copying $ -> $" (src,dest) )
+            if (verbose)
+              if (not printed_header)
+                printed_header = true
+                local src = source_files.base_folder
+                if (src.count) src = src.leftmost( -1 )
+                else           src = "."
+                local dest = dest_folder.leftmost( -1 )
+                Console.println( "Copying $ -> $" (src,dest) )
+              endIf
+              Console.print( "  " ).println( relative_filepath )
             endIf
-            Console.print( "  " ).println( relative_filepath )
-          endIf
 
-          if (not dry_run)
-            File.copy( src_filepath, dest_filepath )
+            if (not dry_run)
+              File.copy( src_filepath, dest_filepath )
+            endIf
           endIf
 
         endContingent
@@ -931,15 +935,17 @@ class File
       if (not keep_unused)
         printed_header = false
         forEach (filepath in dest_files)
-          if (verbose)
-            if (not printed_header)
-              printed_header = true
-              Console.println( "Deleting unused files in " + dest_files.base_folder )
+          if (not exclude or not exclude(filepath))
+            if (verbose)
+              if (not printed_header)
+                printed_header = true
+                Console.println( "Deleting unused files in " + dest_files.base_folder )
+              endIf
+              Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
             endIf
-            Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
+            if (not dry_run) delete( filepath )
+            ++change_count
           endIf
-          if (not dry_run) delete( filepath )
-          ++change_count
         endForEach
       endIf
 
