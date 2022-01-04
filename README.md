@@ -4,7 +4,7 @@
 An ergonomic object-oriented high-level language that compiles to C++.
 
 # Version
-- v1.12.1 - December 30, 2021
+- v1.12.2 - January 3, 2022
 - macOS, Linux, Windows
 - [MIT License](LICENSE)
 - By Abe Pralle
