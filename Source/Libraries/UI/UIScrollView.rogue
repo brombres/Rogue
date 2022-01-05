@@ -2,8 +2,8 @@ module UI
 
 class UIScrollView : UILayout
   PROPERTIES
-    offset     : XY
-    controller : UIScrollViewController
+    content_offset : XY
+    controller     : UIScrollViewController
 
   METHODS
     method init
@@ -38,8 +38,8 @@ class UIScrollView : UILayout
     method handle( e:PointerEvent )
       if (controller) controller.on( e )
 
-    method offset->XY [override]
-      return @offset
+    method content_offset->XY [override]
+      return @content_offset
 
     method on( e:ScrollEvent )
       if (controller) controller.on( e )
@@ -69,18 +69,18 @@ class UIScrollView : UILayout
     method scroll_to( vertical_offset:Real64 )
       scroll_to( XY(0,vertical_offset) )
 
-    method scroll_to( offset:XY )
-      if (controller) controller.scroll_to( offset )
+    method scroll_to( content_offset:XY )
+      if (controller) controller.scroll_to( content_offset )
 
     method scroll_to_bottom
       if (controller) controller.scroll_to_bottom
-      else            offset = bottom_offset
+      else            content_offset = bottom_offset
 
     method scroll_to_top
       if (controller) controller.scroll_to_top
-      else            offset = top_offset
+      else            content_offset = top_offset
 
-    method set_offset( @offset )
+    method set_content_offset( @content_offset )
 
     method top_offset->Real64
       return 0
