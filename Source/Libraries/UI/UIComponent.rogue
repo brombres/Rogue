@@ -78,6 +78,9 @@ class UIComponent : Node<<UIComponent>>
     method bounds->Box
       return Box( position, size )
 
+    method broadcast_message( message:Value )
+      UI.broadcast_message( message )
+
     method capture_keyboard_focus->Logical
       if (UI.keyboard_focus and UI.keyboard_focus is not this) return false
       UI.keyboard_focus = this
@@ -149,6 +152,10 @@ class UIComponent : Node<<UIComponent>>
       if (next) next.dispatch( e )
       if (e.is_consumed) return
       handle( e )
+
+    method dispatch_message( message:Value )
+      on_message( message )
+      (forEach in children).dispatch_message( message )
 
     method dispatch_on_update_layout
       on_update_layout
@@ -377,10 +384,6 @@ class UIComponent : Node<<UIComponent>>
       endForEach
       return result
 
-    method dispatch_message<<$MessageType>>( message:$MessageType )
-      on_message( message )
-      (forEach in children).dispatch_message( message )
-
     method on( e:KeyEvent )
       noAction
 
@@ -393,10 +396,7 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on_message<<$MessageType>>( message:$MessageType )
-      noAction
-
-    method on_message( message:String )
+    method on_message( message:Value )
       noAction
 
     method on_update

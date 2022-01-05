@@ -94,9 +94,8 @@ class UIWidget : UIComponent
       widget_state = which{ setting:UIWidgetState.DISABLED || UIWidgetState.IDLE }
 
     method set_is_visible( setting:Logical )
-      if (not setting)
-        release_pointer_focus
-      endIf
+      if (setting == is_visible) return
+      if (not setting) release_pointer_focus
       prior.set_is_visible( setting )
       if (not is_disabled) widget_state = UIWidgetState.IDLE
 
