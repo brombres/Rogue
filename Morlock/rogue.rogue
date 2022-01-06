@@ -12,7 +12,7 @@ class RoguePackage : Package
       forEach (folder in File.listing(".",&folders,&ignore_hidden))
         if (System.is_windows)
           if (File.exists(folder/"make.bat"))
-            execute "cd $ && make.bat" (File.esc(folder))
+            execute "cd $ && make.bat build" (File.esc(folder))
             archive_folder = folder
             return
           endIf
