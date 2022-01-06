@@ -434,6 +434,10 @@ routine current_version->String
   return content.extract_string( ''*define ROGUE_RELEASE_VERSION "$"*'' )
 endRoutine
 
+routine rogo_link
+  execute "morlock link $ $" (File.esc(exe_filepath),Build.LAUNCHER_NAME)
+endRoutine
+
 routine rogo_incv( new_version="":String )->String
   local current_version = current_version
   local new_date = Date.today->String( &verbose )
