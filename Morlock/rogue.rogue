@@ -8,6 +8,32 @@ class RoguePackage : Package
     method init
        scan_repo_releases
 
+    method build
+      forEach (folder in File.listing(".",&folders,&ignore_hidden))
+        if (System.is_windows)
+          if (File.exists(folder/"make.bat"))
+            execute "cd $ && make.bat" (File.esc(folder))
+            archive_folder = folder
+            return
+          endIf
+        else
+          if (File.exists(folder/"Makefile"))
+            execute "cd $ && make build" (File.esc(folder))
+            archive_folder = folder
+            return
+          endIf
+        endIf
+      endForEach
+
+      if (not is_unpacked)
+        # Most likely the script just didn't call unpack() yet.
+        unpack
+        is_unpacked = true
+        build
+      else
+        throw error( "Unable to determine how to build $ after unpacking it."(url) )
+      endIf
+
     method install
       download
       unpack
