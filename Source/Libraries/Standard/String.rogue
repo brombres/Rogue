@@ -1752,6 +1752,12 @@ class String
 
       if (len == 0) return buffer
 
+      if (width <= 0)
+        # Print with no wrapping
+        buffer.print( this )
+        return buffer
+      endIf
+
       local w = width
       local initial_indent = 0
       forEach (ch in this)

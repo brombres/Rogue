@@ -291,5 +291,22 @@ class InjectCmdBeforeReturnVisitor( cmd:Cmd ) : Visitor
         cmd_block.statements.add( cmd_return )
       endIf
       return cmd_block
+
+    method visit( cmd_throw:CmdThrow )->Cmd
+      # Transform:
+      #   throw x
+      # Into:
+      #   block
+      #     local temp = x
+      #     cmd
+      #     throw temp
+      #   endBlock
+      local t = cmd_throw.t
+      local cmd_block = CmdBlock( t )
+      local v_temp = Local( t, Program.create_unique_id, null, cmd_throw.expression )
+      cmd_block.statements.add( CmdLocalDeclaration(t,v_temp) )
+      cmd_block.statements.add( cmd.cloned )
+      cmd_block.statements.add( CmdThrow(cmd_throw.t,CmdAccess(t,v_temp)) )
+      return cmd_block
 endClass
 

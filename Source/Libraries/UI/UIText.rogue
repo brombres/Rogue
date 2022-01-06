@@ -11,10 +11,10 @@ class UIText : UIComponent
         if (i)
           block i = i.value
             if (i == 0)
-              insert_next( UIText(@text.from(1)) )
+              insert_next( create_text(@text.from(1)) )
               @text = "\n"
             else
-              insert_next( UIText(@text.from(i)) )
+              insert_next( create_text(@text.from(i)) )
               @text .= leftmost( i )
             endIf
           endBlock
@@ -29,6 +29,9 @@ class UIText : UIComponent
       local index = @text.locate(' ')
       if (not index) return false
       return font.measure( @text, 0, index.value+1 ).x <= max_width
+
+    method create_text( text:String )->UIComponent
+      return UIText( text )
 
     method is_br->Logical
       return @text == "\n"
@@ -65,7 +68,7 @@ class UIText : UIComponent
       return @text
 
     method _split_at( index:Int32 )->UIComponent
-      local right = UIText( @text.substring(index) )
+      local right = create_text( @text.substring(index) )
       @text .= leftmost( index )
       insert_next( right )
       on_prepare_layout

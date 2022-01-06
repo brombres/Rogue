@@ -244,7 +244,7 @@ class ConsoleUITitleFrame : ConsoleUIFrame
     method init( title, content )
 
     method init( title:String, content=null:UIComponent )
-      init( UIText(title).[anchor=Anchor.CENTER,font=ConsoleUI.inverse_font], content )
+      init( UILabel(title).[anchor=Anchor.CENTER,font=ConsoleUI.inverse_font], content )
 
     method on_prepare_layout
       if (count) return

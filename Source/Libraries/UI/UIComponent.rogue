@@ -78,6 +78,9 @@ class UIComponent : Node<<UIComponent>>
     method bounds->Box
       return Box( position, size )
 
+    method broadcast_message( message:Value )
+      UI.broadcast_message( message )
+
     method capture_keyboard_focus->Logical
       if (UI.keyboard_focus and UI.keyboard_focus is not this) return false
       UI.keyboard_focus = this
@@ -119,9 +122,9 @@ class UIComponent : Node<<UIComponent>>
       return false
 
     method content_position->XY
-      # Same as display_position except incorporates this component's content offset()
-      if (parent) return (position - offset) + parent.content_position
-      else        return (position - offset)
+      # Same as display_position except incorporates this component's content content_offset()
+      if (parent) return (position - content_offset) + parent.content_position + display_offset
+      else        return (position - content_offset) + display_offset
 
     method description->String
       return _description.to_json
@@ -150,6 +153,10 @@ class UIComponent : Node<<UIComponent>>
       if (e.is_consumed) return
       handle( e )
 
+    method dispatch_message( message:Value )
+      on_message( message )
+      (forEach in children).dispatch_message( message )
+
     method dispatch_on_update_layout
       on_update_layout
       (forEach in children).dispatch_on_update_layout
@@ -161,14 +168,17 @@ class UIComponent : Node<<UIComponent>>
     method display_bounds->Box
       return Box( display_position, size )
 
+    method display_offset->XY
+      return UIAttributes.display_offset( this )
+
     method display_position->XY
-      if (parent) return position + parent.content_position
-      else        return position
+      if (parent) return position + parent.content_position + display_offset
+      else        return position + display_offset
 
     method draw( clip_bounds:Box )
       if (is_hidden) return
 
-      local display_bounds = display_bounds
+      localize display_bounds
       local draw_bounds = clip_bounds & display_bounds
       if (draw_bounds)
         temporarily UI.clip = draw_bounds.value
@@ -342,7 +352,7 @@ class UIComponent : Node<<UIComponent>>
     method is_visible->Logical
       return not (@flags & FLAG_HIDDEN)?
 
-    method offset->XY
+    method content_offset->XY
       return XY.zero
 
     method prepare_layout
@@ -374,10 +384,6 @@ class UIComponent : Node<<UIComponent>>
       endForEach
       return result
 
-    method dispatch_message<<$MessageType>>( message:$MessageType )
-      on_message( message )
-      (forEach in children).dispatch_message( message )
-
     method on( e:KeyEvent )
       noAction
 
@@ -390,10 +396,7 @@ class UIComponent : Node<<UIComponent>>
     method on( e:TextEvent )
       noAction
 
-    method on_message<<$MessageType>>( message:$MessageType )
-      noAction
-
-    method on_message( message:String )
+    method on_message( message:Value )
       noAction
 
     method on_update
@@ -426,7 +429,7 @@ class UIComponent : Node<<UIComponent>>
       noAction
 
     method on_resize( callback:Function(UIComponent) )
-      UIAttributes.set_resize_callback( this, callback )
+      UIAttributes.set_on_resize( this, callback )
 
     method operator+( rhs:UIComponent )->UIComponent
       return UIGeneratedHorizontalLayout( this ).[ add(rhs) ]
@@ -481,6 +484,9 @@ class UIComponent : Node<<UIComponent>>
     method set_default_width( w:Int32 )
       if (not is_fixed_width) width = w
 
+    method set_display_offset( value:XY )
+      UIAttributes.set_display_offset( this, value )
+
     method set_fixed_height( h:Int32 )
       flags = (flags & !FLAG_HEIGHT_MASK) | FLAG_FIXED_HEIGHT
       size = XY( size.x, h )
@@ -514,7 +520,7 @@ class UIComponent : Node<<UIComponent>>
         endWhile
       endIf
 
-    method set_offset( offset:XY )
+    method set_content_offset( content_offset:XY )
       throw UnsupportedOperationError()
 
     method set_weight( w:Real64 )

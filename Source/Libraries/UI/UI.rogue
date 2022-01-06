@@ -85,6 +85,9 @@ class UI [singleton]
     method apply( fn:Function(UIComponent)->Logical )->Logical
       return layers.apply( fn )
 
+    method broadcast_message( message:Value )
+      dispatch_message( message )
+
     method clear
       layers.clear
       clear_focus
@@ -106,6 +109,10 @@ class UI [singleton]
 
     method description->String
       return layers->String
+
+    method dispatch_message( message:Value )
+      on_message( message )
+      layers.dispatch_message( message )
 
     method drag_threshold->Real64
       return 16
@@ -204,10 +211,6 @@ class UI [singleton]
 
       after( e )
 
-    method dispatch_message<<$MessageType>>( message:$MessageType )
-      on_message( message )
-      layers.dispatch_message( message )
-
     method on( e:KeyEvent )
       noAction
 
@@ -223,10 +226,7 @@ class UI [singleton]
     method on_draw
       noAction
 
-    method on_message<<$MessageType>>( message:$MessageType )
-      noAction
-
-    method on_message( message:String )
+    method on_message( message:Value )
       noAction
 
     method on_resize

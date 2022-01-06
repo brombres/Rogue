@@ -14,7 +14,7 @@ class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
       prior.add( cur_group )
 
     method init( text:String )
-      init( UIText(text) )
+      init( create_text(text) )
 
     method add( component:UIComponent ) [override]
       flush
@@ -26,11 +26,14 @@ class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
         prior.add( cur_group )
       endIf
 
+    method create_text( text:String )->UIComponent
+      return UIText( text )
+
     method flush( buffer:StringBuilder )
       if (buffer.count)
         local text = buffer->String
         buffer.clear
-        cur_group.add( UIText(text) )
+        cur_group.add( create_text(text) )
       endIf
 
     method prepare_layout
