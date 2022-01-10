@@ -126,9 +126,10 @@ class UI [singleton]
       if (dirty_bounds)
         dirty_bounds = dirty_bounds.value & bounds
         if (dirty_bounds)
-          clip = dirty_bounds
-          dirty_bounds = null
-          layers.draw( clip.value )
+          temporarily clip = dirty_bounds
+            dirty_bounds = null
+            layers.draw( clip.value )
+          endTemporarily
         endIf
       endIf
 
