@@ -25,7 +25,7 @@ class UIScrollView : UILayout
 
     method bottom_offset->Real64
       # Result will be positive or zero.
-      return (content_height - size.y).clamped_low(0)
+      return (size.y - content_height).clamped_high(0)
 
     method content_height->Real64
       local first = first_drawable_child

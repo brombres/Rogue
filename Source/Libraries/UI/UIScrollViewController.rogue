@@ -99,7 +99,7 @@ class StandardUIScrollViewController : UIScrollViewController
         if (is_dragging)
           drag_delta = (e.position - drag_pos).yv
           drag_pos = e.position
-          scroll( drag_delta * XY(0,-1) )
+          scroll( drag_delta )
           e.consume
           return
         elseIf (is_pressed)
@@ -156,10 +156,10 @@ class StandardUIScrollViewController : UIScrollViewController
       endIf
 
       if (Pointer.position and view.display_bounds.contains(Pointer.position.value))
-        scroll( scroll_rate.add(e).yv * XY(0,-1), &clamp=not e.is_precise )
+        scroll( scroll_rate.add(e).yv, &clamp=not e.is_precise )
         if (e.in_progress)
           if (e.is_momentum)
-            if (view.@content_offset.y < view.top_offset or view.@content_offset.y > view.bottom_offset)
+            if (view.@content_offset.y > view.top_offset or view.@content_offset.y < view.bottom_offset)
               allow_momentum_scroll = false  # ran OOB
             endIf
           else
@@ -177,7 +177,7 @@ class StandardUIScrollViewController : UIScrollViewController
 
     method on_prepare_layout
       if (not tracks_bottom)
-        tracks_bottom = (content_offset.y >= view.bottom_offset)
+        tracks_bottom = (content_offset.y <= view.bottom_offset)
       endIf
 
     method on_update
@@ -201,7 +201,7 @@ class StandardUIScrollViewController : UIScrollViewController
           if (not view.is_modified)
             content_offset = XY( content_offset.x, top_offset )
             is_scrolling_to_top = false
-            tracks_bottom = (content_offset.y >= view.bottom_offset)
+            tracks_bottom = (content_offset.y <= view.bottom_offset)
           endIf
         endIf
 
@@ -213,7 +213,7 @@ class StandardUIScrollViewController : UIScrollViewController
           if (not view.is_modified)
             content_offset = target
             scrolling_to = null
-            tracks_bottom = (content_offset.y >= view.bottom_offset)
+            tracks_bottom = (content_offset.y <= view.bottom_offset)
           endIf
         endIf
       endIf
@@ -225,7 +225,7 @@ class StandardUIScrollViewController : UIScrollViewController
 
       elseIf (not active_scroll)
         if (not velocity.is_zero)
-          content_offset   += velocity
+          content_offset += velocity
           velocity *= decay
           if (velocity.x.abs < 0.1) velocity .= yv
           if (velocity.y.abs < 0.1) velocity .= xv
@@ -234,14 +234,14 @@ class StandardUIScrollViewController : UIScrollViewController
         if (clamp_to_bounds)
           local bottom_offset = view.bottom_offset
           local _offset = view.@content_offset
-          if (_offset.y < 0)
-            if (_offset.y > 1)
+          if (_offset.y > 0)
+            if (_offset.abs.y < 1)
               content_offset = _offset.xv
             else
               content_offset = _offset * XY(1,0.8)
               decay = XY(0,0.5)
             endIf
-          elseIf (_offset.y > bottom_offset)
+          elseIf (_offset.y < bottom_offset)
             local delta = (_offset.y - bottom_offset)
             if (delta.abs < 1)
               content_offset = XY( _offset.x, bottom_offset )
@@ -258,14 +258,14 @@ class StandardUIScrollViewController : UIScrollViewController
 
       localize content_offset
       local target = content_offset + delta.yv
-      if (target.y <= 0 and delta.y < 0)
+      if (target.y >= 0 and delta.y > 0)
         local excess_p = ((-4*target.y) / view.size.y.or_larger(1)).clamped_high(1)
         local in_bounds_portion = delta * (1.0 - excess_p)
         local oob_portion = delta * excess_p
         local oob_limiter = (1.0 - excess_p) ^ 8
         set_content_offset( content_offset + in_bounds_portion + oob_portion*oob_limiter, &=clamp )
         return
-      elseIf (target.y >= view.bottom_offset and delta.y > 0)
+      elseIf (target.y <= view.bottom_offset and delta.y < 0)
         local excess_p  = ((4*(target.y - view.bottom_offset)) / view.size.y.or_larger(1)).clamped_high(1)
         local in_bounds_portion = delta * (1.0 - excess_p)
         local oob_portion = delta * excess_p
@@ -295,8 +295,8 @@ class StandardUIScrollViewController : UIScrollViewController
 
       local bottom_offset = view.bottom_offset
       local _offset = new_offset.floor
-      if (clamp) _offset = _offset.clamped_low( XY.zero ).clamped_high( XY(0,bottom_offset) )
-      tracks_bottom = (_offset.y >= bottom_offset)
+      if (clamp) _offset = _offset.clamped_high( XY.zero ).clamped_low( XY(0,bottom_offset) )
+      tracks_bottom = (_offset.y <= bottom_offset)
       view.content_offset = _offset
       view.request_redraw
 

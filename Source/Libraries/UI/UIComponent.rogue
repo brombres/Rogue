@@ -123,8 +123,8 @@ class UIComponent : Node<<UIComponent>>
 
     method content_position->XY
       # Same as display_position except incorporates this component's content content_offset()
-      if (parent) return (position - content_offset) + parent.content_position + display_offset
-      else        return (position - content_offset) + display_offset
+      if (parent) return (position + content_offset) + parent.content_position + display_offset
+      else        return (position + content_offset) + display_offset
 
     method description->String
       return _description.to_json
