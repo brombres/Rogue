@@ -122,9 +122,8 @@ class UIComponent : Node<<UIComponent>>
       return false
 
     method content_position->XY
-      # Same as display_position except incorporates this component's content content_offset()
-      if (parent) return (position + content_offset) + parent.content_position + display_offset
-      else        return (position + content_offset) + display_offset
+      if (parent) return position + parent.content_position + display_offset
+      else        return position + display_offset
 
     method description->String
       return _description.to_json
@@ -353,7 +352,8 @@ class UIComponent : Node<<UIComponent>>
       return not (@flags & FLAG_HIDDEN)?
 
     method content_offset->XY
-      return XY.zero
+      if (first_child) return first_child.display_offset
+      else             return XY.zero
 
     method prepare_layout
       local og_size = size
@@ -521,7 +521,7 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
     method set_content_offset( content_offset:XY )
-      throw UnsupportedOperationError()
+      if (first_child) first_child.display_offset = content_offset
 
     method set_weight( w:Real64 )
       UIAttributes.set_weight( this, XY(w) )

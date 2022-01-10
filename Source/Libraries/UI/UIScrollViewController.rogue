@@ -18,7 +18,7 @@ class UIScrollViewController
       noAction
 
     method content_offset->XY
-      return view.@content_offset
+      return view.content_offset
 
     method on( e:PointerEvent )
       noAction
@@ -159,7 +159,7 @@ class StandardUIScrollViewController : UIScrollViewController
         scroll( scroll_rate.add(e).yv, &clamp=not e.is_precise )
         if (e.in_progress)
           if (e.is_momentum)
-            if (view.@content_offset.y > view.top_offset or view.@content_offset.y < view.bottom_offset)
+            if (view.content_offset.y > view.top_offset or view.content_offset.y < view.bottom_offset)
               allow_momentum_scroll = false  # ran OOB
             endIf
           else
@@ -233,7 +233,7 @@ class StandardUIScrollViewController : UIScrollViewController
 
         if (clamp_to_bounds)
           local bottom_offset = view.bottom_offset
-          local _offset = view.@content_offset
+          local _offset = view.content_offset
           if (_offset.y > 0)
             if (_offset.abs.y < 1)
               content_offset = _offset.xv

@@ -2,7 +2,6 @@ module UI
 
 class UIScrollView : UILayout
   PROPERTIES
-    content_offset : XY
     controller     : UIScrollViewController
 
   METHODS
@@ -37,9 +36,6 @@ class UIScrollView : UILayout
 
     method handle( e:PointerEvent )
       if (controller) controller.on( e )
-
-    method content_offset->XY [override]
-      return @content_offset
 
     method on( e:ScrollEvent )
       if (controller) controller.on( e )
@@ -79,8 +75,6 @@ class UIScrollView : UILayout
     method scroll_to_top
       if (controller) controller.scroll_to_top
       else            content_offset = top_offset
-
-    method set_content_offset( @content_offset )
 
     method top_offset->Real64
       return 0
