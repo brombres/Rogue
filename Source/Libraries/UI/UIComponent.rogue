@@ -14,6 +14,7 @@ class UIComponent : Node<<UIComponent>>
     FLAG_SIZE_MASK             = (FLAG_WIDTH_MASK   | FLAG_HEIGHT_MASK)
     FLAG_HIDDEN                = 16
     FLAG_DISABLE_INPUT         = 32
+    FLAG_DISABLE_CLIP          = 64
 
   PROPERTIES
     position   : XY
@@ -180,7 +181,9 @@ class UIComponent : Node<<UIComponent>>
       localize display_bounds
       local draw_bounds = clip_bounds & display_bounds
       if (draw_bounds)
-        temporarily UI.clip = draw_bounds.value
+        local draw_clip : Box?
+        if (not is_clip_disabled) draw_clip = draw_bounds
+        temporarily UI.clip = draw_clip
           on_draw
           local inner_bounds = clip_bounds & to_inner_bounds(display_bounds)
           if (inner_bounds)
@@ -197,6 +200,10 @@ class UIComponent : Node<<UIComponent>>
           component.draw( draw_bounds )
         endForEach
       endUse
+
+    method enable_clip( setting:Logical )
+      if (setting) flags &= !UIComponent.FLAG_DISABLE_CLIP
+      else         flags |=  UIComponent.FLAG_DISABLE_CLIP
 
     method enable_input( setting:Logical )
       if (setting) flags &= !UIComponent.FLAG_DISABLE_INPUT
@@ -329,6 +336,11 @@ class UIComponent : Node<<UIComponent>>
 
     method is_fixed_width->Logical
       return (flags & FLAG_FIXED_WIDTH)
+
+    method is_clip_disabled->Logical
+      if (this.flags & UIComponent.FLAG_DISABLE_CLIP) return true
+      if (parent) return parent.is_clip_disabled
+      return false
 
     method is_input_enabled->Logical [macro]
       return not (this.flags & UIComponent.FLAG_DISABLE_INPUT)
