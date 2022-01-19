@@ -3,6 +3,12 @@ uses UI
 $macro UI_ATTRIBUTE(name,Type,default_value,ComponentType)
   augment
     METHODS
+      method UIComponent.name->Type
+        return UIAttributes.name( this )
+
+      method UIComponent.$join(set_,name)( value:Type )
+        UIAttributes.$join(set_,name)( this, value )
+
       method UIAttributes.name( component:UIComponent )->Type
         if (component.attributes) return component.attributes.name
         else                      return default_value
@@ -32,6 +38,12 @@ $endMacro
 $macro UI_INHERITED_ATTRIBUTE(name,Type,default_value,ComponentType)
   augment
     METHODS
+      method UIComponent.name->Type
+        return UIAttributes.name( this )
+
+      method UIComponent.$join(set_,name)( value:Type )
+        UIAttributes.$join(set_,name)( this, value )
+
       method UIAttributes.name( component:UIComponent )->Type
         if (component.attributes)
           local result = component.attributes.name
@@ -65,6 +77,9 @@ $endMacro
 $macro UI_FN_ATTRIBUTE(name,Type,ComponentType)
   augment
     METHODS
+      method UIComponent.name( callback:Type )
+        UIAttributes.$join(set_,name)( this, callback )
+
       method UIAttributes.name( component:UIComponent )
         if (component.attributes) component.attributes.name(component)
 
@@ -88,14 +103,6 @@ $macro UI_FN_ATTRIBUTE(name,Type,ComponentType)
       method $join(set_,name)( fn )
   endClass
 $endMacro
-
-
-UI_INHERITED_ATTRIBUTE( alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute )
-UI_ATTRIBUTE( anchor, Anchor, Anchor.CENTER, UIAnchorAttribute )
-UI_ATTRIBUTE( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
-UI_INHERITED_ATTRIBUTE( font, UIFont, UI.default_font, UIFontAttribute )
-UI_FN_ATTRIBUTE( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
-UI_ATTRIBUTE( weight, XY, XY(1,1), UIWeightAttribute )
 
 class UIAttributes [singleton]
   METHODS

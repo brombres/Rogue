@@ -3,6 +3,21 @@ module UI
   uses Utility/Node
   uses Utility/WorkList
 
+# Make sure the UI_ATTRIBUTE macro gets included first
+$include "UI/UIAttributes.rogue"
+
+# The following attribute macros inject appropriate code into UIComponent and UIAttributes.
+# For example, given UI_ATTRIBUTE(anchor,...) we can set component.anchor = Anchor.XYZ and
+# fetch component.anchor->Anchor.
+UI_INHERITED_ATTRIBUTE( alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute )
+# 'alignment' affects text within this component and subcomponents. Unlike 'anchor',
+# 'alignment' is inherited by child components until a new alignment is set.
+UI_ATTRIBUTE( anchor, Anchor, Anchor.CENTER, UIAnchorAttribute )
+UI_ATTRIBUTE( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
+UI_INHERITED_ATTRIBUTE( font, UIFont, UI.default_font, UIFontAttribute )
+UI_FN_ATTRIBUTE( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
+UI_ATTRIBUTE( weight, XY, XY(1,1), UIWeightAttribute )
+
 class UIComponent : Node<<UIComponent>>
   DEFINITIONS
     FLAG_FIXED_WIDTH           = 1
@@ -31,12 +46,6 @@ class UIComponent : Node<<UIComponent>>
 
     method init( size )
       fixed_size = size
-
-    method alignment->Anchor
-      # 'alignment' affects text within this component and subcomponents. Unlike
-      # 'anchor', 'alignment' is propagated to child components until a new alignment
-      # is set.
-      return UIAttributes.alignment( this )
 
     method after( e:KeyEvent )
       noAction
@@ -72,9 +81,6 @@ class UIComponent : Node<<UIComponent>>
 
     method after_update_layout
       noAction
-
-    method anchor->Anchor
-      return UIAttributes.anchor( this )
 
     method bounds->Box
       return Box( position, size )
@@ -168,9 +174,6 @@ class UIComponent : Node<<UIComponent>>
     method display_bounds->Box
       return Box( display_position, size )
 
-    method display_offset->XY
-      return UIAttributes.display_offset( this )
-
     method display_position->XY
       if (parent) return position + parent.content_position + display_offset
       else        return position + display_offset
@@ -245,9 +248,6 @@ class UIComponent : Node<<UIComponent>>
         if (result) return result
       endForEach
       return null
-
-    method font->UIFont
-      return UIAttributes.font( this )
 
     method handle( e:KeyEvent )
       if (is_hidden or is_input_disabled) return
@@ -440,9 +440,6 @@ class UIComponent : Node<<UIComponent>>
     method on_resize
       noAction
 
-    method on_resize( callback:Function(UIComponent) )
-      UIAttributes.set_on_resize( this, callback )
-
     method operator+( rhs:UIComponent )->UIComponent
       return UIGeneratedHorizontalLayout( this ).[ add(rhs) ]
 
@@ -480,12 +477,6 @@ class UIComponent : Node<<UIComponent>>
     method request_layout
       is_modified = true  # class Node setter auto-propagates this up the hierarchy
 
-    method set_alignment( value:Anchor )
-      UIAttributes.set_alignment( this, value )
-
-    method set_anchor( value:Anchor )
-      UIAttributes.set_anchor( this, value )
-
     method set_default_height( h:Int32 )
       if (not is_fixed_height) height = h
 
@@ -495,9 +486,6 @@ class UIComponent : Node<<UIComponent>>
 
     method set_default_width( w:Int32 )
       if (not is_fixed_width) width = w
-
-    method set_display_offset( value:XY )
-      UIAttributes.set_display_offset( this, value )
 
     method set_fixed_height( h:Int32 )
       flags = (flags & !FLAG_HEIGHT_MASK) | FLAG_FIXED_HEIGHT
@@ -510,9 +498,6 @@ class UIComponent : Node<<UIComponent>>
     method set_fixed_width( w:Int32 )
       flags = (flags & !FLAG_WIDTH_MASK) | FLAG_FIXED_WIDTH
       size = XY( w, size.y )
-
-    method set_font( font:UIFont )
-      UIAttributes.set_font( this, font )
 
     method set_height( h:Real64 )
       if (h == size.y) return
@@ -537,9 +522,6 @@ class UIComponent : Node<<UIComponent>>
 
     method set_weight( w:Real64 )
       UIAttributes.set_weight( this, XY(w) )
-
-    method set_weight( w:XY )
-      UIAttributes.set_weight( this, w )
 
     method set_width( w:Real64 )
       if (w == size.x) return
@@ -671,9 +653,6 @@ class UIComponent : Node<<UIComponent>>
 
     method update_subcomponents
       (forEach in children).update
-
-    method weight->XY
-      return UIAttributes.weight( this )
 
     method width->Real64 [macro]
       return this.size.x
