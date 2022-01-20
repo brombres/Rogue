@@ -1,0 +1,163 @@
+# "Wiring" is a way to create groups of objects that need to reference one another
+# outside of their immediate hierarchy.
+#
+# 1. '$include' or 'use' the Wiring library:
+#
+#    uses Utility/Wiring
+#
+# 2. Define a class to reference an arbitrary group of objects:
+#
+#    class Widgets( alpha:Alpha, beta:Beta, gamma:Gamma );
+#
+# 3. Have each object wire itself or other objects up with calls to
+#    'wiring<<Type>>.property_name = x' or similar.
+#
+#    class Alpha
+#      PROPERTIES
+#        beta = Beta()
+#
+#      METHODS
+#        method init
+#          local wiring = wiring<<Widgets>>
+#          wiring.alpha = this
+#          wiring.beta  = beta
+#
+#    class Gamma
+#      METHODS
+#        method init
+#          wiring<<Widgets>>.gamma = this
+#
+# 4. Now any object can access any of the others in the wiring group:
+#
+#    method on_select
+#      ++wiring<<Widgets>>.beta.value
+#
+
+routine wiring<<$Type>>->$Type
+  return WiringManager.wiring<<$Type>>
+endRoutine
+
+class WiringManager [singleton]
+  PROPERTIES
+    wires = StringTable<<Object>>()
+
+  METHODS
+    method wiring<<$Type>>->$Type
+      local name = $string($Type)
+      local entry = wires.find( name )
+      if (entry) return entry.value->(as $Type)
+
+      local result = $Type()
+      wires[ name ] = result
+      return result
+endClass
+
+# EXAMPLE
+#
+# uses Utility/Wiring
+#
+# local ui = UI()
+# while (ui.update) noAction
+#
+# # SAMPLE RUN
+# #
+# # The dimmer is at 5
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > 9
+# # The dimmer is at 9
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > i
+# # The dimmer is at 10
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > i
+# # The dimmer is at 10
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > d
+# # The dimmer is at 9
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > d
+# # The dimmer is at 8
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > d
+# # The dimmer is at 7
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > -5
+# # The dimmer is at 0
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > i
+# # The dimmer is at 1
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > d
+# # The dimmer is at 0
+# # Enter new value, (i)ncrement, (d)ecrement, or (q)uit
+# # > q
+#
+# class DimmerWiring
+#   PROPERTIES
+#     field     : Field
+#     dimmer    : Dimmer
+# endClass
+#
+# class Field
+#   PROPERTIES
+#     value : Int32
+#
+#   METHODS
+#     method init
+#       wiring<<DimmerWiring>>.field = this
+#
+#     method description->String
+#       return %value
+#
+#     method set_value( @value )
+#       wiring<<DimmerWiring>>.dimmer.setting = value
+# endClass
+#
+# class Button( on_select:Function(Dimmer) )
+#   METHODS
+#     method press
+#       on_select( wiring<<DimmerWiring>>.dimmer )
+# endClass
+#
+# class Dimmer
+#   PROPERTIES
+#     setting = 0
+#
+#   METHODS
+#     method set_setting( value:Int32 )
+#       if (value != @setting)
+#         @setting = value.clamped( 0, 10 )
+#         wiring.field.value = setting
+#       endIf
+#
+#     method wiring->DimmerWiring
+#       return wiring<<DimmerWiring>>
+# endClass
+#
+# class UI
+#   PROPERTIES
+#     field       = Field()
+#     b_increment = Button( (dimmer) => ++dimmer.setting )
+#     b_decrement = Button( (dimmer) => --dimmer.setting )
+#
+#   METHODS
+#     method init
+#       wiring<<DimmerWiring>>.dimmer = Dimmer()
+#       field.value = 5
+#
+#     method description->String
+#       return "The dimmer is at $" (field)
+#
+#     method update->Logical
+#       println %this
+#       println "Enter new value, (i)ncrement, (d)ecrement, or (q)uit"
+#       local input = Console.input( "> " )
+#       which (input)
+#         case "d": --field.value
+#         case "i": ++field.value
+#         case "q": return false
+#         others:   field.value = input->Int32
+#       endWhich
+#       return true
+# endClass
+
