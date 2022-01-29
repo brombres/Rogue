@@ -75,7 +75,7 @@ class DataReader : Reader<<Byte>>
       return (result :<<: 32) | read_int32->Int64(&unsigned)
 
     method read_int64x->Int64
-      # Reads a variable-length encoded value that is stored in 1..9 bytes.
+      # Reads a variable-length encoded value that is stored in 1..10 bytes.
       # Encoded values are treated as signed.
       #
       # - If the first two bits are not "10" then the first byte is cast to
@@ -100,7 +100,7 @@ class DataReader : Reader<<Byte>>
       local result = (b & 0b0011_1111) : Int64   #  0..63  (unsigned)
       if (result >= 32) result -= 64             # -64..63 (signed)
 
-      loop
+      loop 9  # up to 9 more bytes
         local next = read
         result = (result :<<: 7) | (next & 0b0111_1111)
         if (not (next & 0b1000_0000)) escapeLoop
@@ -254,7 +254,7 @@ class DataWriter : Writer<<Byte>>
         local shift = 7
         local min = -0x1000
         local max =  0x0FFF
-        loop 7
+        loop 8
           if (value >= min and value <= max) escapeLoop
           ++extra_bytes
           shift += 7
