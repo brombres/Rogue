@@ -22,7 +22,6 @@ $include "Standard/JSON.rogue"
 $include "Standard/LineReader.rogue"
 $include "Standard/LineRebuilder.rogue"
 $include "Standard/List.rogue"
-$include "Standard/LookupList.rogue"
 $include "Standard/NativeData.rogue"
 $include "Standard/Object.rogue"
 $include "Standard/Optional.rogue"
@@ -53,7 +52,6 @@ $include "Standard/UTF8.rogue"
 $include "Standard/Value.rogue"
 $include "Standard/VersionNumber.rogue"
 $include "Standard/WeakReference.rogue"
-$include "Standard/WebSocket.rogue"
 $include "Standard/Writer.rogue"
 
 uses Math [export]
@@ -61,10 +59,6 @@ uses Math [export]
 $if (THREAD_MODE != "NONE")
 $include "Standard/Thread.rogue"
 $include "Standard/ThreadWorker.rogue"
-$endIf
-
-$if (THREAD_MODE != "NONE") or target("Web")
-$include "Standard/Sockets.rogue"
 $endIf
 
 # Ensure String[] exists so that command line arguments may be set by native code.

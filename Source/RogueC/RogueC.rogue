@@ -21,6 +21,8 @@ $essential Logical.*
 $essential Date.*
 $essential Time.*
 
+uses Utility/LookupList
+
 $include "Attributes.rogue"
 $include "CPPWriter.rogue"
 $include "CythonPlugin.rogue"
