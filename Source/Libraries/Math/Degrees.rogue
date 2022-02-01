@@ -1,0 +1,106 @@
+class Degrees( value:Real64 ) [compound]
+  GLOBAL METHODS
+    method create( degrees:Radians )->Degrees
+      return Degrees( (degrees.value / pi) * 180.0 )
+
+  METHODS
+    method clamped( min:Degrees, max:Degrees )->Degrees
+      local delta_min_max = min.delta_to( max ).value
+      local delta_this_min = this.delta_to( min ).value
+      local delta_this_max = this.delta_to( max ).value
+      if (delta_min_max > 0)
+        if (delta_this_min <= 0 and delta_this_max >= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      else
+        if (delta_this_min >= 0 and delta_this_max <= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      endIf
+
+    method cos->Real64 [macro]
+      return Math.cos( (this.value / 180.0) * pi )
+
+    method delta_to( other:Degrees )->Degrees
+      # Returns the smallest number of degrees necessary to get from this
+      # angle to the specified other angle.  For example, Degrees(270).delta_to(Degrees(0))
+      # yields Degrees(90), since turning 90 degrees will get you to 0 degrees
+      # "faster" than turning -270 degrees.
+      local diff = other.value - this.value
+      diff %= 360
+      if (diff > 180) diff = -(360 - diff)
+      return Degrees(diff)
+
+    method floor->Degrees
+      return Degrees( value.floor )
+
+    method operator-()->Degrees [macro]
+      return Degrees( -this.value )
+
+    method operator+( degrees:Real64 )->Degrees [macro]
+      return Degrees( this.value + degrees )
+
+    method operator-( degrees:Real64 )->Degrees [macro]
+      return Degrees( this.value - degrees )
+
+    method operator*( degrees:Real64 )->Degrees [macro]
+      return Degrees( this.value * degrees )
+
+    method operator/( degrees:Real64 )->Degrees [macro]
+      return Degrees( this.value / degrees )
+
+    method operator%( degrees:Real64 )->Degrees [macro]
+      return Degrees( this.value % degrees )
+
+    method operator^( degrees:Real64 )->Degrees [macro]
+      return Degrees( this.value ^ degrees )
+
+    method operator+( other:Degrees )->Degrees [macro]
+      return Degrees( this.value + other.value )
+
+    method operator-( other:Degrees )->Degrees [macro]
+      return Degrees( this.value - other.value )
+
+    method operator*( other:Degrees )->Degrees [macro]
+      return Degrees( this.value * other.value )
+
+    method operator/( other:Degrees )->Degrees [macro]
+      return Degrees( this.value / other.value )
+
+    method operator%( other:Degrees )->Degrees [macro]
+      return Degrees( this.value % other.value )
+
+    method operator^( other:Degrees )->Degrees [macro]
+      return Degrees( this.value ^ other.value )
+
+    method operator==( other_value:Real64 )->Logical [macro]
+      return this.value == other_value
+
+    method operator<( other_value:Real64 )->Logical [macro]
+      return this.value < other_value
+
+    method operator==( other:Degrees )->Logical [macro]
+      return this.value == other.value
+
+    method operator<( other:Degrees )->Logical [macro]
+      return this.value < other.value
+
+    method sin->Real64 [macro]
+      return Math.sin( (this.value / 180.0) * pi )
+
+    method tan->Real64 [macro]
+      return Math.sin( (this.value / 180.0) * pi )
+
+    method description->String
+      return "" + value
+
+    method to->Radians [macro]
+      return Radians( this )
+endClass
+
+augment Random
+  METHODS
+    method degrees->Degrees
+      return Degrees( real64 * 360 )
+endAugment
+
