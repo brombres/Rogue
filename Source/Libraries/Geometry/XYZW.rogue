@@ -1,0 +1,41 @@
+module Geometry
+
+class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
+  GLOBAL METHODS
+    method create->XYZW
+      return XYZW( 0, 0, 0, 1 )
+
+    method create( xy:XY, z=0:Real64, w=1:Real64 )->XYZW
+      return XYZW( xy.x, xy.y, z, w )
+
+    method create( xyz:XYZ, w=1:Real64 )->XYZW
+      return XYZW( xyz.x, xyz.y, xyz.z, w )
+
+  METHODS
+    method operator==( other:XYZW )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
+
+    method to->String
+      return "[$,$,$,$]" (x,y,z,w)
+
+    method to->XY
+      return XY(x,y)
+
+    method to->XYZ
+      return XYZ(x,y,z)
+endClass
+
+augment Random
+  METHODS
+    method xyzw->XYZW:
+      # Creates a XYZW compound with randomized (x,y,z,w) values,
+      # each in the range (0.0,1.0) exclusive.
+      return XYZW( real64, real64, real64, real64 )
+
+    method xyzw( low:Real64, high:Real64 )->XYZW
+      # Returns a XYZW compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y,z,w) values.
+      return XYZW((real64 * (high-low)) + low,(real64 * (high-low)) + low,(real64 * (high-low)) + low,(real64 * (high-low)) + low)
+endAugment
+

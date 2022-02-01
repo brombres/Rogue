@@ -395,5 +395,3 @@ augment Random
       # for each of the (x,y) values.
       return XY((real64 * (high-low)) + low,(real64 * (high-low)) + low)
 endAugment
-
-

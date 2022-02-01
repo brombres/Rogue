@@ -1,0 +1,89 @@
+module Geometry
+
+class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
+  GLOBAL METHODS
+    method create->XYZ
+      return XYZ( 0, 0, 0 )
+
+    method create( xy:XY, z=0:Real64 )->XYZ
+      return XYZ( xy.x, xy.y, z )
+
+  METHODS
+    method cross( other:XYZ )->XYZ
+      return XYZ(
+          y*other.z - (z*other.y),
+          z*other.x - (x*other.z),
+          x*other.y - (y*other.x)
+      )
+
+    method dot( other:XYZ )->Real64
+      return x*other.x + y*other.y + z*other.z
+
+    method magnitude->Real64
+      return Math.sqrt( x*x + y*y + z*z )
+
+    method normalized->XYZ
+      return this / magnitude
+
+    method operator==( other:XYZ )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z)
+
+    method operator+( other:XYZ )->XYZ
+      return XYZ( x+other.x, y+other.y, z+other.z )
+
+    method operator+( value:Real64 )->XYZ
+      return XYZ( x+value, y+value, z+value )
+
+    method operator-()->XYZ
+      return XYZ( -x, -y, -z )
+
+    method operator-( other:XYZ )->XYZ
+      return XYZ( x-other.x, y-other.y, z-other.z )
+
+    method operator-( value:Real64 )->XYZ
+      return XYZ( x-value, y-value, z-value )
+
+    method operator*( other:XYZ )->XYZ
+      return XYZ( x*other.x, y*other.y, z*other.z )
+
+    method operator*( value:Real64 )->XYZ
+      return XYZ( x*value, y*value, z*value )
+
+    method operator/( other:XYZ )->XYZ
+      return XYZ( x/other.x, y/other.y, z/other.z )
+
+    method operator/( value:Real64 )->XYZ
+      return XYZ( x/value, y/value, z/value )
+
+    method operator%( other:XYZ )->XYZ
+      return XYZ( x%other.x, y%other.y, z%other.z )
+
+    method operator%( value:Real64 )->XYZ
+      return XYZ( x%value, y%value, z%value )
+
+    method operator^( other:XYZ )->XYZ
+      return XYZ( x^other.x, y^other.y, z^other.z )
+
+    method operator^( value:Real64 )->XYZ
+      return XYZ( x^value, y^value, z^value )
+
+    method to->String
+      return "[$,$,$]" (x,y,z)
+
+    method to->XY [essential]
+      return XY(x,y)
+endClass
+
+augment Random
+  METHODS
+    method xyz->XYZ:
+      # Creates a XYZ compound with randomized (x,y,z) values,
+      # each in the range (0.0,1.0) exclusive.
+      return XYZ( real64, real64, real64 )
+
+    method xyz( low:Real64, high:Real64 )->XYZ
+      # Returns a XYZ compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y,z) values.
+      return XYZ((real64 * (high-low)) + low,(real64 * (high-low)) + low,(real64 * (high-low)) + low)
+endAugment

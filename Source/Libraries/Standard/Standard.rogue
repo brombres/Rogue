@@ -23,7 +23,6 @@ $include "Standard/LineReader.rogue"
 $include "Standard/LineRebuilder.rogue"
 $include "Standard/List.rogue"
 $include "Standard/LookupList.rogue"
-$include "Standard/Math.rogue"
 $include "Standard/NativeData.rogue"
 $include "Standard/Object.rogue"
 $include "Standard/Optional.rogue"
@@ -56,6 +55,8 @@ $include "Standard/VersionNumber.rogue"
 $include "Standard/WeakReference.rogue"
 $include "Standard/WebSocket.rogue"
 $include "Standard/Writer.rogue"
+
+uses Math [export]
 
 $if (THREAD_MODE != "NONE")
 $include "Standard/Thread.rogue"
