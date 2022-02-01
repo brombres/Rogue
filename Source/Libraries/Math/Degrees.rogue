@@ -3,6 +3,9 @@ class Degrees( value:Real64 ) [compound]
     method create( degrees:Radians )->Degrees
       return Degrees( (degrees.value / pi) * 180.0 )
 
+    method operator?( degrees:Degrees )->Logical
+      return degrees.value?
+
   METHODS
     method clamped( min:Degrees, max:Degrees )->Degrees
       local delta_min_max = min.delta_to( max ).value

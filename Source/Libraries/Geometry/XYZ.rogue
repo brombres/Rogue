@@ -1,6 +1,6 @@
 module Geometry
 
-class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
+class XYZ( x:Real64, y:Real64, z=0:Real64 ) [compound]
   GLOBAL METHODS
     method create->XYZ
       return XYZ( 0, 0, 0 )
@@ -22,8 +22,14 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
     method magnitude->Real64
       return Math.sqrt( x*x + y*y + z*z )
 
+    method magnitude_squared->Real64
+      return x*x + y*y + z*z
+
     method normalized->XYZ
-      return this / magnitude
+      local sum_of_squares = x*x + y*y + z*z
+      if ((1.0 - sum_of_squares).abs <= 0.0001) return this # already normalized
+      local m = Math.sqrt( sum_of_squares )
+      return XYZ( x/m, y/m, z/m )
 
     method operator==( other:XYZ )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z)
@@ -72,6 +78,38 @@ class XYZ( x:Real64, y:Real64, z=1:Real64 ) [compound]
 
     method to->XY [essential]
       return XY(x,y)
+endClass
+
+class DegreesXYZ( x:Degrees, y:Degrees, z:Degrees ) [compound]
+  GLOBAL METHODS
+    method create( x:Real64, y:Real64, z:Real64 )->DegreesXYZ
+      return DegreesXYZ( Degrees(x), Degrees(y), Degrees(z) )
+
+  METHODS
+    method description->String
+      return this->XYZ.description
+
+    method to->RadiansXYZ
+      return RadiansXYZ( x->Radians, y->Radians, z->Radians )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
+endClass
+
+class RadiansXYZ( x:Radians, y:Radians, z:Radians ) [compound]
+  GLOBAL METHODS
+    method create( x:Real64, y:Real64, z:Real64 )->RadiansXYZ
+      return RadiansXYZ( Radians(x), Radians(y), Radians(z) )
+
+  METHODS
+    method description->String
+      return this->XYZ.description
+
+    method to->DegreesXYZ
+      return DegreesXYZ( x->Degrees, y->Degrees, z->Degrees )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
 endClass
 
 augment Random

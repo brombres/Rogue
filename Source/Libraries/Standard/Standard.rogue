@@ -55,6 +55,7 @@ $include "Standard/WeakReference.rogue"
 $include "Standard/Writer.rogue"
 
 uses Math [export]
+uses Utility/LookupList
 
 $if (THREAD_MODE != "NONE")
 $include "Standard/Thread.rogue"

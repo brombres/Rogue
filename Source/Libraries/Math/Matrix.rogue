@@ -1,4 +1,6 @@
-uses Geometry
+module Matrix
+
+uses Geometry [export]
 
 class Matrix( ...
     r1c1:Real64, r2c1:Real64, r3c1:Real64, r4c1:Real64,
@@ -35,33 +37,76 @@ class Matrix( ...
 
       return m
 
-    method rotate( degrees:XYZ )->Matrix
-      return rotate_x( Degrees(degrees.x) ) * rotate_y( Degrees(degrees.y) ) * rotate_z( Degrees(degrees.z) )
+    method rotate( degrees:DegreesXYZ )->Matrix
+      return rotate( degrees->RadiansXYZ )
 
-    method rotate_x( angle:Degrees )->Matrix
+    method rotate( radians:RadiansXYZ )->Matrix
+      if (radians.x)
+        local result = rotate_x( radians.x )
+        if (radians.y) result *= rotate_y( radians.y )
+        if (radians.z) result *= rotate_z( radians.z )
+        return result
+      elseIf (radians.y)
+        local result = rotate_y( radians.y )
+        if (radians.z) result *= rotate_z( radians.z )
+        return result
+      elseIf (radians.z)
+        return rotate_z( radians.z )
+      else
+        return identity
+      endIf
+
+    method rotate( theta:Degrees, axis:XYZ )->Matrix
+      return rotate( theta->Radians, axis )
+
+    method rotate( theta:Radians, axis:XYZ )->Matrix
+      axis .= normalized
+      local ct = theta.cos
+      local st = theta.sin
+      local ci = 1.0 - ct
+      local x = axis.x
+      local y = axis.y
+      local z = axis.z
+      return Matrix(
+            ct + x * x * ci, y * x * ci + z * st, z * x * ci - y * st, 0,
+        x * y * ci - z * st,     ct + y * y * ci, z * y * ci + x * st, 0,
+        x * z * ci + y * st, y * z * ci - x * st,     ct + z * z * ci, 0,
+                          0,                   0,                   0, 1
+      )
+
+    method rotate_x( theta:Degrees )->Matrix
+      return rotate_x( theta->Radians )
+
+    method rotate_x( theta:Radians )->Matrix
       local m = identity
-      local sin0 = angle.sin
-      local cos0 = angle.cos
+      local sin0 = theta.sin
+      local cos0 = theta.cos
       m.r2c2 =  cos0
       m.r2c3 = -sin0
       m.r3c2 =  sin0
       m.r3c3 =  cos0
       return m
 
-    method rotate_y( angle:Degrees )->Matrix
+    method rotate_y( theta:Degrees )->Matrix
+      return rotate_y( theta->Radians )
+
+    method rotate_y( theta:Radians )->Matrix
       local m = identity
-      local sin0 = angle.sin
-      local cos0 = angle.cos
+      local sin0 = theta.sin
+      local cos0 = theta.cos
       m.r1c1 =  cos0
       m.r1c3 =  sin0
       m.r3c1 = -sin0
       m.r3c3 =  cos0
       return m
 
-    method rotate_z( angle:Degrees )->Matrix
+    method rotate_z( theta:Degrees )->Matrix
+      return rotate_z( theta->Radians )
+
+    method rotate_z( theta:Radians )->Matrix
       local m = identity
-      local sin0 = angle.sin
-      local cos0 = angle.cos
+      local sin0 = theta.sin
+      local cos0 = theta.cos
       m.r1c1 =  cos0
       m.r1c2 = -sin0
       m.r2c1 =  sin0
