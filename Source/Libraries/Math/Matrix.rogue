@@ -51,9 +51,6 @@ class Matrix( ...
 
       return m
 
-    method rotate( degrees:DegreesXYZ )->Matrix
-      return rotate( degrees->RadiansXYZ )
-
     method rotate( radians:RadiansXYZ )->Matrix
       if (radians.x)
         local result = rotate_x( radians.x )
@@ -70,9 +67,6 @@ class Matrix( ...
         return identity
       endIf
 
-    method rotate( theta:Degrees, axis:XYZ )->Matrix
-      return rotate( theta->Radians, axis )
-
     method rotate( theta:Radians, axis:XYZ )->Matrix
       axis .= normalized
       local ct = theta.cos
@@ -88,9 +82,6 @@ class Matrix( ...
                           0,                   0,                   0, 1
       )
 
-    method rotate_x( theta:Degrees )->Matrix
-      return rotate_x( theta->Radians )
-
     method rotate_x( theta:Radians )->Matrix
       local m = identity
       local sin0 = theta.sin
@@ -101,9 +92,6 @@ class Matrix( ...
       m.r3c3 =  cos0
       return m
 
-    method rotate_y( theta:Degrees )->Matrix
-      return rotate_y( theta->Radians )
-
     method rotate_y( theta:Radians )->Matrix
       local m = identity
       local sin0 = theta.sin
@@ -113,9 +101,6 @@ class Matrix( ...
       m.r3c1 = -sin0
       m.r3c3 =  cos0
       return m
-
-    method rotate_z( theta:Degrees )->Matrix
-      return rotate_z( theta->Radians )
 
     method rotate_z( theta:Radians )->Matrix
       local m = identity
