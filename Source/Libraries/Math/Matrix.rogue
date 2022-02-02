@@ -21,6 +21,20 @@ class Matrix( ...
       m.r4c4 = 1
       return m
 
+    method perspective( fov_y:Radians, aspect_ratio:Real64, z_near:Real64, z_far:Real64 )->Matrix
+      # Returns a right-handed projection matrix (OpenGL is also right-hand).
+      # Adapted from Xcode "Game" template project.
+      local ys = 1.0 / (fov_y * 0.5).tan
+      local xs = ys / aspect_ratio
+      local zs = z_far / (z_near - z_far)
+      local m = Matrix()
+      m.r1c1 = xs
+      m.r2c2 = ys
+      m.r3c3 = zs
+      m.r3c4 = zs * z_near
+      m.r4c3 = -1
+      return m
+
     method projection( left:Real64, top:Real64, right:Real64, bottom:Real64, near:Real64, far:Real64 )->Matrix
       # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
       local m = identity
