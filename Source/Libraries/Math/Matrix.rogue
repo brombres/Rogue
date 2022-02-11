@@ -112,27 +112,28 @@ class Matrix( ...
       m.r2c2 =  cos0
       return m
 
-    method transform( delta:XY, k:Real64 )->Matrix
-      return transform( XYZ(delta,1), XYZ(k,k,1) )
+    method transform_2dx( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
+      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box
+      # in 2DX space - everything is in 2D except for the Z coordinate that is applied
+      # at the end to move the image closer to (z > 0) or farther away from (z < 0) the camera.
 
-    method transform( delta:XYZ, k:Real64 )->Matrix
-      return transform( delta, XYZ(k,k,1) )
-
-    method transform( delta:XY, k:XY )->Matrix
-      return transform( XYZ(delta,1), XYZ(k,1) )
-
-    method transform( delta:XYZ, k:XYZ )->Matrix
-      local m = Matrix()
-      m.r1c1 = k.x
-      m.r2c2 = k.y
-      m.r3c3 = k.z
-      m.r4c4 = 1
-
-      m.r1c4 = delta.x
-      m.r2c4 = delta.y
-      m.r3c4 = delta.z
-
-      return m
+      #local m = translate( position )
+      #m *= rotate_z( rotation )
+      #m *= scale( XYZ(size,1) )
+      #m *= translate( XYZ(-anchor.position,0) )
+      #return m
+      local cos0 = rotation.cos
+      local sin0 = rotation.sin
+      local a    = -anchor.position
+      return Matrix(
+        (cos0*size.x),  (sin0*size.x), 0, 0,  # column 1
+        (-sin0*size.y), (cos0*size.y), 0, 0,  # column 2
+        0,              0,             1, 0,  # column 3
+        ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
+          ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
+          position.z,
+          1
+      )
 
     method translate( delta:XY )->Matrix
       local m = identity
@@ -184,180 +185,180 @@ class Matrix( ...
              0,      0,      0,      1
       )
 
-    METHODS
-      method count->Int32 [macro]
-        return 16
+  METHODS
+    method count->Int32 [macro]
+      return 16
 
-      method get( index:Int32 )->Real64 [macro]
-        return native( "(&$this.r1c1)[ $index ]" )->Real64
+    method get( index:Int32 )->Real64 [macro]
+      return native( "(&$this.r1c1)[ $index ]" )->Real64
 
-      method operator*( other:Matrix )->Matrix
-        local result = Matrix()
+    method operator*( other:Matrix )->Matrix
+      local result = Matrix()
 
-        result[0] = this[0]  * other[0] +
-                    this[4]  * other[1] +
-                    this[8]  * other[2] +
-                    this[12] * other[3]
+      result[0] = this[0]  * other[0] +
+                  this[4]  * other[1] +
+                  this[8]  * other[2] +
+                  this[12] * other[3]
 
-        result[1] = this[1]  * other[0] +
-                    this[5]  * other[1] +
-                    this[9]  * other[2] +
-                    this[13] * other[3]
+      result[1] = this[1]  * other[0] +
+                  this[5]  * other[1] +
+                  this[9]  * other[2] +
+                  this[13] * other[3]
 
-        result[2] = this[2]  * other[0] +
-                    this[6]  * other[1] +
-                    this[10] * other[2] +
-                    this[14] * other[3]
+      result[2] = this[2]  * other[0] +
+                  this[6]  * other[1] +
+                  this[10] * other[2] +
+                  this[14] * other[3]
 
-        result[3] = this[3]  * other[0] +
-                    this[7]  * other[1] +
-                    this[11] * other[2] +
-                    this[15] * other[3]
+      result[3] = this[3]  * other[0] +
+                  this[7]  * other[1] +
+                  this[11] * other[2] +
+                  this[15] * other[3]
 
-        result[4] = this[0]  * other[4] +
-                    this[4]  * other[5] +
-                    this[8]  * other[6] +
-                    this[12] * other[7]
+      result[4] = this[0]  * other[4] +
+                  this[4]  * other[5] +
+                  this[8]  * other[6] +
+                  this[12] * other[7]
 
-        result[5] = this[1]  * other[4] +
-                    this[5]  * other[5] +
-                    this[9]  * other[6] +
-                    this[13] * other[7]
+      result[5] = this[1]  * other[4] +
+                  this[5]  * other[5] +
+                  this[9]  * other[6] +
+                  this[13] * other[7]
 
-        result[6] = this[2]  * other[4] +
-                    this[6]  * other[5] +
-                    this[10] * other[6] +
-                    this[14] * other[7]
+      result[6] = this[2]  * other[4] +
+                  this[6]  * other[5] +
+                  this[10] * other[6] +
+                  this[14] * other[7]
 
-        result[7] = this[3]  * other[4] +
-                    this[7]  * other[5] +
-                    this[11] * other[6] +
-                    this[15] * other[7]
+      result[7] = this[3]  * other[4] +
+                  this[7]  * other[5] +
+                  this[11] * other[6] +
+                  this[15] * other[7]
 
-        result[8] = this[0]  * other[8]  +
-                    this[4]  * other[9]  +
-                    this[8]  * other[10] +
-                    this[12] * other[11]
+      result[8] = this[0]  * other[8]  +
+                  this[4]  * other[9]  +
+                  this[8]  * other[10] +
+                  this[12] * other[11]
 
-        result[9] = this[1]  * other[8]  +
-                    this[5]  * other[9]  +
-                    this[9]  * other[10] +
-                    this[13] * other[11]
+      result[9] = this[1]  * other[8]  +
+                  this[5]  * other[9]  +
+                  this[9]  * other[10] +
+                  this[13] * other[11]
 
-        result[10] = this[2]  * other[8]  +
-                     this[6]  * other[9]  +
-                     this[10] * other[10] +
-                     this[14] * other[11]
+      result[10] = this[2]  * other[8]  +
+                   this[6]  * other[9]  +
+                   this[10] * other[10] +
+                   this[14] * other[11]
 
-        result[11] = this[3]  * other[8]  +
-                     this[7]  * other[9]  +
-                     this[11] * other[10] +
-                     this[15] * other[11]
+      result[11] = this[3]  * other[8]  +
+                   this[7]  * other[9]  +
+                   this[11] * other[10] +
+                   this[15] * other[11]
 
-        result[12] = this[0]  * other[12] +
-                     this[4]  * other[13] +
-                     this[8]  * other[14] +
-                     this[12] * other[15]
+      result[12] = this[0]  * other[12] +
+                   this[4]  * other[13] +
+                   this[8]  * other[14] +
+                   this[12] * other[15]
 
-        result[13] = this[1]  * other[12] +
-                     this[5]  * other[13] +
-                     this[9]  * other[14] +
-                     this[13] * other[15]
+      result[13] = this[1]  * other[12] +
+                   this[5]  * other[13] +
+                   this[9]  * other[14] +
+                   this[13] * other[15]
 
-        result[14] = this[2]  * other[12] +
-                     this[6]  * other[13] +
-                     this[10] * other[14] +
-                     this[14] * other[15]
+      result[14] = this[2]  * other[12] +
+                   this[6]  * other[13] +
+                   this[10] * other[14] +
+                   this[14] * other[15]
 
-        result[15] = this[3]  * other[12] +
-                     this[7]  * other[13] +
-                     this[11] * other[14] +
-                     this[15] * other[15]
+      result[15] = this[3]  * other[12] +
+                   this[7]  * other[13] +
+                   this[11] * other[14] +
+                   this[15] * other[15]
 
-        return result
+      return result
 
-      method operator*( v:XY )->XY
-        return XY(
-          this[0]   * v.x +
-          this[4]   * v.y +
-          this[12],
+    method operator*( v:XY )->XY
+      return XY(
+        this[0]   * v.x +
+        this[4]   * v.y +
+        this[12],
 
-          this[1]   * v.x +
-          this[5]   * v.y +
-          this[13]
-        )
+        this[1]   * v.x +
+        this[5]   * v.y +
+        this[13]
+      )
 
-      method operator*( v:XYZ )->XYZW
-        return XYZW(
-          this[0]   * v.x +
-          this[4]   * v.y +
-          this[8]   * v.z +
-          this[12],
+    method operator*( v:XYZ )->XYZW
+      return XYZW(
+        this[0]   * v.x +
+        this[4]   * v.y +
+        this[8]   * v.z +
+        this[12],
 
-          this[1]   * v.x +
-          this[5]   * v.y +
-          this[9]   * v.z +
-          this[13],
+        this[1]   * v.x +
+        this[5]   * v.y +
+        this[9]   * v.z +
+        this[13],
 
-          this[2]   * v.x +
-          this[6]   * v.y +
-          this[10]  * v.z +
-          this[14],
+        this[2]   * v.x +
+        this[6]   * v.y +
+        this[10]  * v.z +
+        this[14],
 
-          this[3]   * v.x +
-          this[7]   * v.y +
-          this[11]  * v.z +
-          this[15]
-        )
+        this[3]   * v.x +
+        this[7]   * v.y +
+        this[11]  * v.z +
+        this[15]
+      )
 
-      method operator*( v:XYZW )->XYZW
-        return XYZW(
-          this[0]   * v.x +
-          this[4]   * v.y +
-          this[8]   * v.z +
-          this[12]  * v.w,
+    method operator*( v:XYZW )->XYZW
+      return XYZW(
+        this[0]   * v.x +
+        this[4]   * v.y +
+        this[8]   * v.z +
+        this[12]  * v.w,
 
-          this[1]   * v.x +
-          this[5]   * v.y +
-          this[9]   * v.z +
-          this[13]  * v.w,
+        this[1]   * v.x +
+        this[5]   * v.y +
+        this[9]   * v.z +
+        this[13]  * v.w,
 
-          this[2]   * v.x +
-          this[6]   * v.y +
-          this[10]  * v.z +
-          this[14]  * v.w,
+        this[2]   * v.x +
+        this[6]   * v.y +
+        this[10]  * v.z +
+        this[14]  * v.w,
 
-          this[3]   * v.x +
-          this[7]   * v.y +
-          this[11]  * v.z +
-          this[15]  * v.w
-        )
+        this[3]   * v.x +
+        this[7]   * v.y +
+        this[11]  * v.z +
+        this[15]  * v.w
+      )
 
-      method set( index:Int32, value:Real64 ) [macro]
-        native( "(&$this.r1c1)[ $index ] = $value;" )
+    method set( index:Int32, value:Real64 ) [macro]
+      native( "(&$this.r1c1)[ $index ] = $value;" )
 
-      method to->String
-        local min_whole_digits = 0
-        local min_decimal_digits = 0
-        forEach (value in this)
-          local whole_digits = value.whole_digit_count
-          local decimal_digits = value.decimal_digit_count
-          min_whole_digits = Math.max( min_whole_digits, whole_digits )
-          min_decimal_digits = Math.max( min_decimal_digits, decimal_digits )
+    method to->String
+      local min_whole_digits = 0
+      local min_decimal_digits = 0
+      forEach (value in this)
+        local whole_digits = value.whole_digit_count
+        local decimal_digits = value.decimal_digit_count
+        min_whole_digits = Math.max( min_whole_digits, whole_digits )
+        min_decimal_digits = Math.max( min_decimal_digits, decimal_digits )
+      endForEach
+      min_decimal_digits = Math.min( min_decimal_digits, 4 )
+
+      local buffer = StringBuilder()
+      forEach (j in 0..3)
+        forEach (i in 0..3)
+          if (i > 0) buffer.print " "
+          local value = this[ i*4 + j ]
+          forEach (1..min_whole_digits-value.whole_digit_count) buffer.print( ' ' )
+          buffer.print( value, min_decimal_digits )
         endForEach
-        min_decimal_digits = Math.min( min_decimal_digits, 4 )
-
-        local buffer = StringBuilder()
-        forEach (j in 0..3)
-          forEach (i in 0..3)
-            if (i > 0) buffer.print " "
-            local value = this[ i*4 + j ]
-            forEach (1..min_whole_digits-value.whole_digit_count) buffer.print( ' ' )
-            buffer.print( value, min_decimal_digits )
-          endForEach
-          buffer.println
-        endForEach
-        return buffer->String
+        buffer.println
+      endForEach
+      return buffer->String
 
 endClass
 
