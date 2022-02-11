@@ -35,7 +35,7 @@ class Matrix( ...
       m.r4c3 = -1
       return m
 
-    method projection( left:Real64, top:Real64, right:Real64, bottom:Real64, near:Real64, far:Real64 )->Matrix
+    method perspective( left:Real64, top:Real64, right:Real64, bottom:Real64, near:Real64, far:Real64 )->Matrix
       # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
       local m = identity
 
