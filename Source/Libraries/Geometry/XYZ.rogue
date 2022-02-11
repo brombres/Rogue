@@ -5,7 +5,10 @@ class XYZ( x:Real64, y:Real64, z=0:Real64 ) [compound]
     method create->XYZ
       return XYZ( 0, 0, 0 )
 
-    method create( xy:XY, z=0:Real64 )->XYZ
+    method create( xy:XY )->XYZ
+      return XYZ( xy.x, xy.y, 0 )
+
+    method create( xy:XY, z:Real64 )->XYZ
       return XYZ( xy.x, xy.y, z )
 
   METHODS

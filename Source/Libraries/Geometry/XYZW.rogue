@@ -5,10 +5,19 @@ class XYZW( x:Real64, y:Real64, z:Real64, w:Real64 ) [compound]
     method create->XYZW
       return XYZW( 0, 0, 0, 1 )
 
-    method create( xy:XY, z=0:Real64, w=1:Real64 )->XYZW
+    method create( xy:XY )->XYZW
+      return XYZW( xy.x, xy.y, 0, 1 )
+
+    method create( xy:XY, z:Real64 )->XYZW
+      return XYZW( xy.x, xy.y, z, 1 )
+
+    method create( xy:XY, z:Real64, w:Real64 )->XYZW
       return XYZW( xy.x, xy.y, z, w )
 
-    method create( xyz:XYZ, w=1:Real64 )->XYZW
+    method create( xyz:XYZ )->XYZW
+      return XYZW( xyz.x, xyz.y, xyz.z, 1 )
+
+    method create( xyz:XYZ, w:Real64 )->XYZW
       return XYZW( xyz.x, xyz.y, xyz.z, w )
 
   METHODS
