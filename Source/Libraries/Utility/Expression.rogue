@@ -5,7 +5,7 @@
 #
 # BASIC EXAMPLE
 #   uses Utility/Expression
-#   
+#
 #   println "Expression Evaluator"
 #   loop
 #     local expr = Expression.parse( Console.input("> ") )
@@ -17,26 +17,26 @@
 #   # Adds 'random' as a keyword that evaluates to a different random number
 #   # each time.
 #   uses Utility/Expression
-#   
+#
 #   println "Expression Evaluator"
 #   loop
 #     local expr = Expression.parse( Console.input("> "), Global=>id_lookup )
 #     println "  = " + expr
 #     println "  = " + expr()
 #   endLoop
-#   
+#
 #   routine id_lookup( id:String )->Expression
 #     which (id)
 #       case "random": return RandomNumber()
 #       others:        return null
 #     endWhich
 #   endRoutine
-#   
+#
 #   class RandomNumber : Expression
 #     METHODS
 #       method description->String
 #         return "random"
-#   
+#
 #       method call->Value
 #         return Random.real64
 #   endClass
@@ -44,31 +44,6 @@
 # HISTORY
 #   2021-04-27 - Created by Abe Pralle
 #===============================================================================
-uses Utility/Expression
-
-println "Expression Evaluator"
-loop
-  # Passing an ID lookup function is optional.
-  local expr = Expression.parse( Console.input("> "), Global=>id_lookup )
-  println "  = " + expr
-  println "  = " + expr()
-endLoop
-
-routine id_lookup( id:String )->Expression
-  which (id)
-    case "random": return RandomNumber()
-    others:        return null
-  endWhich
-endRoutine
-
-class RandomNumber : Expression
-  METHODS
-    method description->String
-      return "random"
-
-    method call->Value
-      return Random.real64
-endClass
 module Expression
 
 class ExpressionParser [singleton]
@@ -182,7 +157,7 @@ class ExpressionParser [singleton]
           return true
         endIf
       endForEach
-      
+
       if (next_is_identifier)
         # Tokens use StringValue for symbols and ObjectValue(String) for identifiers
         tokens.add( ObjectValue(scan_identifier) )
