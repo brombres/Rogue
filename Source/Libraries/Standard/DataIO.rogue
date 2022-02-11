@@ -159,6 +159,7 @@ class DataWriter : Writer<<Byte>>
       output.close
 
     method clear
+      position = 0
       if (output_bytes) output_bytes.clear
       output.reset
 
@@ -173,7 +174,9 @@ class DataWriter : Writer<<Byte>>
       return output.position
 
     method reset
+      position = 0
       output.reset
+      if (output_bytes) output_bytes.clear
 
     method seek( pos:Int32 )
       output.seek( pos )
