@@ -112,7 +112,28 @@ class Matrix( ...
       m.r2c2 =  cos0
       return m
 
-    method transform_2dx( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
+    method transform( size:XY, anchor:Anchor )->Matrix
+      # Performs a partial 2D transform for size and anchor. The typical full
+      # tranform set for a [0,0 1x1] box in the order they'd be pushed on
+      # a transform stack:
+      #
+      #   translate( position )
+      #   rotate_z( rotation )
+      #   scale( size )                   # peformed by this method
+      #   translate( -anchor.position )   # peformed by this method
+      #
+      # Use transform(position,size,anchor,rotation) to perform all transforms at once
+      # in 2DX space. Use this method combined with other transforms if other transformations
+      # are needed, such as rotation around the x or y axis.
+      local a = -anchor.position
+      return Matrix(
+        size.x, 0, 0, 0,
+        0, size.y, 0, 0,
+        0, 0, 1, 0,
+        (size.x * a.x), (size.y * a.y), 0, 1
+      )
+
+    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
       # Returns a transformation matrix that will position a [0,0 1x1] coordinate box
       # in 2DX space - everything is in 2D except for the Z coordinate that is applied
       # at the end to move the image closer to (z > 0) or farther away from (z < 0) the camera.
