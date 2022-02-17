@@ -66,20 +66,19 @@ class File
               |
               |  do
               |  {
-              |    if (original_dir_fd >= 0 && new_dir_fd >= 0)
+              |    if (original_dir_fd < 0 || new_dir_fd < 0) break;
+              |
+              |    int r = fchdir( new_dir_fd );
+              |    if ( r != 0 ) break;
+              |    char* r2 = getcwd( c_filepath, PATH_MAX );
+              |    if ( r2 == 0 ) break;
+              |    if ( !is_folder )
               |    {
-              |      int r = fchdir( new_dir_fd );
-              |      if ( r != 0 ) break;
-              |      char * r2 = getcwd( c_filepath, PATH_MAX );
-              |      if ( r2 == 0 ) break;
-              |      if ( !is_folder )
-              |      {
-              |        strcat( c_filepath, "/" );
-              |        strcat( c_filepath, filename );
-              |      }
-              |      r = fchdir( original_dir_fd );
-              |      if ( r != 0 ) break;
+              |      strcat( c_filepath, "/" );
+              |      strcat( c_filepath, filename );
               |    }
+              |    r = fchdir( original_dir_fd );
+              |    if ( r != 0 ) break;
               |
               |    $return_value = RogueString_create_from_utf8( c_filepath, -1 );
               |  } while (false);
@@ -90,7 +89,7 @@ class File
               |#endif
 
       if (return_value is null)
-        throw IOError("Could not get absolute path")
+        throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
       endIf
 
       return fix_slashes( return_value )
