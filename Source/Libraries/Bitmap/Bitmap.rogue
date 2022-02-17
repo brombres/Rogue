@@ -28,11 +28,15 @@
 module Bitmap
   uses Geometry [export]
 
-$include "Bitmap/BMP.rogue"
 $include "Bitmap/Color.rogue"
 $include "Bitmap/HSB.rogue"
-$include "Bitmap/JPEG.rogue"
-$include "Bitmap/PNG.rogue"
+
+$if not defined(CUSTOM_BITMAP_IO)
+  $include "Bitmap/BMP.rogue"
+  $include "Bitmap/JPEG.rogue"
+  $include "Bitmap/PNG.rogue"
+$endIf
+
 
 class Bitmap
   GLOBAL PROPERTIES
@@ -42,6 +46,39 @@ class Bitmap
   GLOBAL METHODS
     method create( width:Int32, height:Int32 )->Bitmap
       return Bitmap( width, height, Color(0) )
+
+    method create( file:File )->Bitmap
+      return Bitmap( Byte[](file) )
+
+    method create( bytes:Byte[] )->Bitmap
+      local result = decode( bytes )
+      if (result) return result
+      result = Bitmap(1,1)
+      result.error = true
+      return result
+
+$if not defined(CUSTOM_BITMAP_IO)
+    method decode( bytes:Byte[] )->Bitmap
+      if (bytes.count < 4) return null
+
+      if (bytes[0] == 0x89 and bytes[1] == 'P' and bytes[2] == 'N' and bytes[3] == 'G')
+        local decoder = PNGDecoder()
+        return decoder.decode( bytes, null )
+
+      elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
+        local decoder = JPEGDecoder()
+        return decoder.decode( bytes, null )
+
+      elseIf (bytes[0] == 'B' and bytes[1] == 'M')
+        local decoder = BMPDecoder()
+        return decoder.decode( bytes, null )
+
+      else
+        return null
+
+      endIf
+$endIf
+
 
   PROPERTIES
     width                  : Int32
@@ -57,26 +94,6 @@ class Bitmap
 
     method init( width, height, color:Color ) [essential]
       init( width, height, Color[]( width*height, color ) )
-
-    method init( file:File )
-      if (file and file.filepath)
-        filepath = file.filepath
-        init( file.load_as_bytes )
-      else
-        if (not file)
-          println "Attempting to load Bitmap with null file reference."
-        else
-          println "Attempting to load Bitmap with null filepath."
-        endIf
-        init( XY(1,1) )
-        error = true
-      endIf
-
-    method init( bytes:Byte[] )
-      if (not decode(bytes))
-        init( XY(1,1) )
-        error = true
-      endIf
 
     method init( _size:XY, pixels )
       init( _size.x, _size.y, pixels )
@@ -519,25 +536,6 @@ class Bitmap
 
       return this
 
-    method decode( bytes:Byte[] )->Logical
-      if (bytes.count < 4) return false
-
-      if (bytes[0] == 0x89 and bytes[1] == 'P' and bytes[2] == 'N' and bytes[3] == 'G')
-        local decoder = PNGDecoder()
-        return decoder.decode( bytes, this )?
-
-      elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
-        local decoder = JPEGDecoder()
-        return decoder.decode( bytes, this )?
-
-      elseIf (bytes[0] == 'B' and bytes[1] == 'M')
-        local decoder = BMPDecoder()
-        return decoder.decode( bytes, this )?
-
-      endIf
-
-      return false
-
     method get( x:Int32, y:Int32 )->Color
       if (x < 0 or y < 0 or x >= width or y >= height)
         return Color(0)
@@ -611,24 +609,23 @@ class Bitmap
       fill( Triangle(quad.a,quad.b,quad.c), color )
       fill( Triangle(quad.a,quad.c,quad.d), color )
 
-    method premultiply_alpha->this
+    method premultiply_alpha
       # Multiplies the R,G,B components of each color by their current
       # alpha value - so Color(255,192,0,127) becomes Color(127,95,0,127).
-      if (not is_premultiplied_alpha)
-        is_premultiplied_alpha = true
-        forEach (i of pixels)
-          local argb = pixels[i].argb
-          local a = argb :>>>: 24 & 255
-          local r = argb :>>>: 16 & 255
-          local g = argb :>>>: 8 & 255
-          local b = argb & 255
-          r = (r * a) / 255
-          g = (g * a) / 255
-          b = (b * a) / 255
-          pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
-        endForEach
-      endIf
-      return this
+      if (is_premultiplied_alpha) return
+
+      is_premultiplied_alpha = true
+      forEach (i of pixels)
+        local argb = pixels[i].argb
+        local a = argb :>>>: 24 & 255
+        local r = argb :>>>: 16 & 255
+        local g = argb :>>>: 8 & 255
+        local b = argb & 255
+        r = (r * a) / 255
+        g = (g * a) / 255
+        b = (b * a) / 255
+        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+      endForEach
 
     method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
       crop( new_width, new_height, anchor, &=pad_color )
@@ -863,11 +860,13 @@ class Bitmap
     method description->String
       return "($x$ Bitmap)" (width,height)
 
+$if not defined(CUSTOM_BITMAP_IO)
     method to_png_bytes->Byte[]
       return PNGEncoder().encode( this )
 
     method to_jpeg_bytes( quality=75:Int32 )->Byte[]
       return JPEGEncoder().encode( this, null, quality )
+$endIf
 
 endClass
 

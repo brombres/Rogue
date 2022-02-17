@@ -1,7 +1,7 @@
 module Bitmap
   uses Geometry
 
-  # See Bitmap.rogue for assistance with linking to libpng.
+# See Bitmap.rogue for assistance with linking to libpng.
 
 class PNGDecoder
   DEPENDENCIES
@@ -279,4 +279,3 @@ class PNGEncoder
 
       return encoded_bytes
 endClass
-
