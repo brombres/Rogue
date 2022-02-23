@@ -57,6 +57,34 @@ class Bitmap
       result.error = true
       return result
 
+    method encode_data( bytes:Byte[], width=0:Int32 )->Bitmap
+      # Creates a bitmap that uses the raw bytes as pixel values so that a chunk of
+      # data can be saved as a PNG or other lossless format. Use decode_data[] to
+      # reverse the process.
+      #
+      # Every three bytes is stored as an R,G,B value with an alpha of 255 (1.0).
+      # We can't reliably use the alpha byte as storage because various graphics
+      # routines will fuss with alpha values in one way or another. Examples include
+      # premultiplying RGBxA upon loading and using 7-bit alpha instead of 8-bit alpha.
+      local byte_count = bytes.count
+      if (width == 0) width = Math.sqrt( byte_count/3 ).or_larger(16)
+      local height = (byte_count + ((width*3)-1)) / (width*3)
+
+      local bitmap = Bitmap( width, height, 0 )
+      bitmap.pixels.clear
+      forEach (i of bytes step 3)
+        local b1 = bytes[i]->Int32
+        local b2 = which{ i+1<byte_count:bytes[i+1] || 0 }->Int32
+        local b3 = which{ i+2<byte_count:bytes[i+2] || 0 }->Int32
+        bitmap.pixels.add( Color(b1,b2,b3) )
+      endForEach
+
+      loop (width*height - bitmap.pixels.count)
+        bitmap.pixels.add( Color(0) )
+      endLoop
+
+      return bitmap
+
 $if not defined(CUSTOM_BITMAP_IO)
     method decode( bytes:Byte[] )->Bitmap
       if (bytes.count < 4) return null
@@ -264,6 +292,29 @@ $endIf
       blit( reframed, bounds.position )
 
       return reframed
+
+    method decode_data( start_x=0:Int32, start_y=0:Int32, byte_count=-1:Int32, bytes=Byte[]:Byte[] )->Byte[]
+      # See encode_data()
+      local i1 = (start_y * width + start_x)
+      local total_count = width * height
+      if (byte_count == -1) byte_count = (total_count - i1) * 3
+
+      bytes.reserve( byte_count )
+      local limit = i1 + byte_count/3
+      forEach (i in i1..<limit)
+        local color = pixels[i]
+        bytes.add( color.red_byte )
+        bytes.add( color.green_byte )
+        bytes.add( color.blue_byte )
+      endForEach
+
+      if (bytes.count < byte_count)
+        local color = pixels[limit]
+        bytes.add( color.red_byte )
+        if (bytes.count < byte_count) bytes.add( color.green_byte )
+      endIf
+
+      return bytes
 
     method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
