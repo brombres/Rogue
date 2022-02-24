@@ -660,6 +660,30 @@ $endIf
       fill( Triangle(quad.a,quad.b,quad.c), color )
       fill( Triangle(quad.a,quad.c,quad.d), color )
 
+    method operator+( rhs:Bitmap )->Bitmap
+      # Join two bitmaps side by side - this on the left and rhs on the right.
+      # If necessary the shorter bitmap will be aspect-resized to match the height of the
+      # taller bitmap before joining.
+      local max_height = height.or_larger( rhs.height )
+      local lhs = this.resized_to_height( max_height )
+      rhs .= resized_to_height( max_height )
+      local result = Bitmap( lhs.width + rhs.width, max_height )
+      lhs.blit( result,         0, 0 )
+      rhs.blit( result, lhs.width, 0 )
+      return result
+
+    method operator/( bottom:Bitmap )->Bitmap
+      # Stack two bitmaps vertically - this bitmap on the top.
+      # If necessary the narrower bitmap will be aspect-resized to match the width of the
+      # wider bitmap before stacking.
+      local max_width = width.or_larger( bottom.width )
+      local top = this.resized_to_width( max_width )
+      bottom .= resized_to_width( max_width )
+      local result = Bitmap( max_width, top.height + bottom.height )
+      top.blit( result,    0,          0 )
+      bottom.blit( result, 0, top.height )
+      return result
+
     method premultiply_alpha
       # Multiplies the R,G,B components of each color by their current
       # alpha value - so Color(255,192,0,127) becomes Color(127,95,0,127).
@@ -829,6 +853,22 @@ $endIf
       local result = Bitmap( new_size )
       resize_to( result )
       return result
+
+    method resized_to_height( new_height:Int32 )->Bitmap
+      # Returns a bitmap that has been resized to the specified height.
+      # The aspect ratio is preserved. This bitmap is returned if no
+      # resizing is required; otherwise a new bitmap is returned.
+      if (height == new_height) return this
+      local new_width = Int32( width * (new_height / Real64(height)) )
+      return resized( new_width, new_height )
+
+    method resized_to_width( new_width:Int32 )->Bitmap
+      # Returns a bitmap that has been resized to the specified width.
+      # The aspect ratio is preserved. This bitmap is returned if no
+      # resizing is required; otherwise a new bitmap is returned.
+      if (width == new_width) return this
+      local new_height = Int32( height * (new_width / Real64(width)) )
+      return resized( new_width, new_height )
 
     method rotate_180
       flip( &h, &v )
