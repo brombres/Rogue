@@ -1,0 +1,179 @@
+module Bitmap
+
+class BitmapFont
+  PROPERTIES
+    bitmap     : Bitmap  # Font strip + data
+    height     : Int32
+    characters = BitmapFontCharacterInfo[](128)
+    kerning    = Int32[][0]
+      # Format; kerning[] is indexed into from the "prev_ch" BitmapFontCharacterInfo.
+      #
+      #   [count_x,next1,offset1,next2,offset2,..., count_y,next1,offset1,...]
+      #
+      # Conceptual Equivalent:
+      #   local prev_ch = ... : Character
+      #   local cur_ch = ...  : Character
+      #   if (kerning and kerning.contains(prev_ch) and kerning[prev_ch].contains(cur_ch))
+      #     cursor_x += kerning[prev_ch][cur_ch]
+      #   endIf
+      #
+      # This kerning data structure:
+      #   local prev_ch = ... : BitmapFontCharacterInfo
+      #   local cur_ch = ...  : BitmapFontCharacterInfo
+      #   local i = prev_ch.kerning_index
+      #   if (i)
+      #     local n = kerning[i]
+      #     ++i
+      #     loop n
+      #       if (kerning[i] == prev_ch.character)
+      #         cursor_x += kerning[i+1]
+      #         escapeLoop
+      #       endIf
+      #       i += 2
+      #     endLoop
+      #   endIf
+      #
+
+  METHODS
+    method init( file:File )
+      init( Bitmap(file) )
+
+    method init( bitmap )
+      local color = bitmap.pixels.last
+      height = (Int32(color.red_byte):<<:16) | (Int32(color.green_byte):<<:8) | Int32(color.blue_byte)
+
+      local reader = DataReader( bitmap.decode_data(0,height) )
+      local version = reader.read_int32x
+      require version == 1
+
+      local character_count = reader.read_int32x
+      loop character_count
+        local ch            = reader.read_int32x->Character
+        local offset_x      = reader.read_int32x
+        local advance_x     = reader.read_int32x
+        local kerning_index = reader.read_int32x
+        local x = reader.read_int32x
+        local y = reader.read_int32x
+        local w = reader.read_int32x
+        local h = reader.read_int32x
+        add( BitmapFontCharacterInfo(ch, offset_x, advance_x, kerning_index, Box(x,y,w,h)) )
+      endLoop
+
+      local n = reader.read_int32x
+      kerning.[clear].reserve( n )
+      loop (n) kerning.add( reader.read_int32x )
+
+    method add( info:BitmapFontCharacterInfo )
+      characters.expand_to_include( info.character )
+      characters[info.character] = info
+
+    method bitmap( ch:Character )->Bitmap
+      if (ch >= characters.count) return null
+      local info = characters[ch]
+      if (info.character == ch) return this.bitmap( info )
+      return null
+
+    method bitmap( ch:BitmapFontCharacterInfo )->Bitmap
+      return Bitmap( @bitmap, ch.bounds )
+
+    method draw( text:String, position:XY, dest_bitmap:Bitmap, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+      draw( text, position.x, position.y, dest_bitmap, blit_fn )
+
+    method draw( text:StringBuilder, position:XY, dest_bitmap:Bitmap, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+      draw( text, position.x, position.y, dest_bitmap, blit_fn )
+
+    method draw( text:String, x1:Real64, y:Real64, dest_bitmap:Bitmap, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+      use builder = StringBuilder.pool
+        builder.reserve( text.count )
+        builder.print( text )
+        draw( builder, x1, y, dest_bitmap, blit_fn )
+      endUse
+
+    method draw( text:StringBuilder, x1:Real64, y:Real64, dest_bitmap:Bitmap, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+      local prev_info : BitmapFontCharacterInfo?
+      local x = x1
+      forEach (ch in text)
+        if (ch == '\n')
+          x = x1
+          y += height
+        else
+          local info = this[ch]
+          if (info)
+            if (prev_info)
+              local ki = prev_info.value.kerning_index
+              if (ki)
+                local n = kerning[ki]
+                ++ki
+                loop (n)
+                  if (kerning[ki] == ch)
+                    x += kerning[ki+1]
+                    escapeLoop
+                  endIf
+                  ki += 2
+                endLoop
+              endIf
+            endIf
+            this.bitmap.blit( info.value.bounds, dest_bitmap, x+info.value.offset_x, y, blit_fn )
+            x += info.value.advance_x
+          endIf
+          prev_info = info
+        endIf
+      endForEach
+
+    method get( ch:Character )->BitmapFontCharacterInfo?
+      if (ch >= characters.count)
+        return null
+      else
+        return characters[ ch ]
+      endIf
+
+    method measure( text:String )->XY
+      use builder = StringBuilder.pool
+        builder.print( text )
+        return measure( builder )
+      endUse
+
+    method measure( text:StringBuilder )->XY
+      local w = 0
+      local max_w = 0
+      local h = 0
+      local prev_info : BitmapFontCharacterInfo?
+      forEach (ch in text)
+        if (ch == '\n')
+          max_w .= or_larger( w )
+          w = 0
+          h += height
+        else
+          local info = this[ch]
+          if (info)
+            if (prev_info)
+              local ki = prev_info.value.kerning_index
+              if (ki)
+                local n = kerning[ki]
+                ++ki
+                loop (n)
+                  if (kerning[ki] == ch)
+                    w += kerning[ki+1]
+                    escapeLoop
+                  endIf
+                  ki += 2
+                endLoop
+              endIf
+            endIf
+            w += info.value.advance_x
+          endIf
+          prev_info = info
+        endIf
+      endForEach
+
+      max_w .= or_larger( w )
+      h += height
+
+      return XY( max_w, h )
+
+endClass
+
+class BitmapFontCharacterInfo( character:Character, offset_x:Int32, advance_x:Int32, kerning_index:Int32, bounds:Box ) [compound]
+  # kerning
+  #   Advance mappings for this as the previous character.
+endClass

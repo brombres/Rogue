@@ -80,6 +80,12 @@ class FreeTypeFace
     height     : Int32  # requested pixel height
     ft_height  : Int32  # height we send FT to get height
     max_offset : Int32  # zero or negative
+    characters : FreeTypeCharacter[]
+    kerning    : Table<<Character,Table<<Character,Int32>>>>
+      # if (kerning and kerning.contains(prev_ch) and kerning[prev_ch].contains(cur_ch))
+      #   cursor += kerning[prev_ch][cur_ch]
+      # endIf
+
     native "FT_Face ft_face;"
 
   METHODS
@@ -108,7 +114,7 @@ class FreeTypeFace
       render( result )
       return result
 
-    method render( characters:FreeTypeCharacter[] )
+    method render( characters )
       _ensure_strict_height_limit( characters )
 
       forEach (ch in characters)
@@ -119,7 +125,7 @@ class FreeTypeFace
           else
             local w         = native( "(RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
             local h         = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
-            local offset_x  = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_left" )->Int32
+            local offset_x  = native( "(RogueInt32)$this->ft_face->glyph->bitmap_left" )->Int32
             local offset_y  = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
             local advance_x = native( "(RogueInt32)$this->ft_face->glyph->advance.x" )->Int32 :>>>: 6
 
@@ -162,13 +168,76 @@ class FreeTypeFace
                     |FT_Get_Kerning( $this->ft_face, glyph_index_1, glyph_index_2, FT_KERNING_DEFAULT, &delta );
                     |$kern_x = delta.x >> 6;
             if (kern_x)
-              ensure info_1.kerning
-              ensure info_1.kerning[ info_1.character ]
-              info_1.kerning[ info_1.character ][ info_2.character ] = kern_x
+              ensure kerning
+              ensure kerning[ info_1.character ]
+              kerning[ info_1.character ][ info_2.character ] = kern_x
             endIf
           endForEach
         endForEach
       endIf
+
+    method to->BitmapFont
+      require characters
+
+      # Collect data
+      local writer = DataWriter()
+      writer.write_int32x( 1 )  # version 1
+      writer.write_int32x( characters.count )
+
+      local total_w = 0
+      local cursor_x = 0
+      local kerning_list = Int32[][0]
+      local info = BitmapFontCharacterInfo[]
+      forEach (ch in characters)
+        local w = ch.bitmap.width
+        local h = ch.bitmap.height
+        total_w += w
+        local kerning_index = 0
+        if (kerning and kerning.contains(ch.character))
+          kerning_index = kerning_list.count
+          local alts = kerning[ch.character]
+          kerning_list.add( alts.count )
+          forEach (entry in alts.entries)
+            kerning_list.add( entry.key )
+            kerning_list.add( entry.value )
+          endForEach
+        endIf
+
+        info.add( BitmapFontCharacterInfo(ch.character,ch.offset_x,ch.advance_x,kerning_index,Box(cursor_x,0,w,h)) )
+        writer.write_int32x( ch.character )
+        writer.write_int32x( ch.offset_x )
+        writer.write_int32x( ch.advance_x )
+        writer.write_int32x( kerning_index )
+        writer.write_int32x( cursor_x )
+        writer.write_int32x( 0 )
+        writer.write_int32x( w )
+        writer.write_int32x( h )
+
+        #ch.bitmap.blit( strip, cursor_x, 0 )
+        cursor_x += ch.bitmap.width
+      endForEach
+
+      writer.write_int32x( kerning_list.count )
+      writer.write_int32x( forEach in kerning_list )
+
+      # Build font strip
+      local strip = Bitmap(total_w,height,0)
+      cursor_x = 0
+      forEach (ch in characters)
+        ch.bitmap.blit( strip, cursor_x, 0 )
+        cursor_x += ch.bitmap.width
+      endForEach
+
+      writer.write_int32( 0 )  # ensure enough room for the height
+
+      local coded = Bitmap.encode_data( writer.output_bytes, strip.width )
+
+      # Set the bottom-right pixel to be the 24-bit pixel height of the font
+      coded.pixels.last = Color( (height:>>:16)&255, (height:>>:8)&255, height&255 )
+
+      strip /= coded
+
+      return BitmapFont( strip )
 
     method _ensure_strict_height_limit( characters:FreeTypeCharacter[] )
       loop
@@ -225,19 +294,22 @@ endClass
 class FreeTypeCharacter
   # Drawing algorithm:
   #
-  # local cursor = XY(...)
+  # local cursor_x, cursor_y : Int32
   # local prev_ch : Character
   # forEach (ch in text)
   #   local info = character_info[ch]
   #   if (info)
   #     cursor_x += info.offset_x
   #     if (prev_ch)
-  #       local kerning = info.kerning[ prev_ch ]
-  #       if (kerning and kerning.contains(ch))
-  #         cursor_x += kerning[ch]
+  #       if (kerning)
+  #         local k1 = kerning.find(prev_ch)
+  #         if (k1)
+  #           local k2 = kerning.find(ch)
+  #           if (k2) cursor_x += k2.value
+  #         endIf
   #       endIf
   #     endIf
-  #     info.bitmap.draw( cursor, Anchor.TOP_LEFT )
+  #     info.bitmap.blit( destination_bitmap, cursor_x+info.offset_x, cursor_y )
   #     cursor_x += info.advance_x
   #     prev_ch = ch
   #   endIf
@@ -247,7 +319,6 @@ class FreeTypeCharacter
     bitmap    : Bitmap
     offset_x  : Int32
     advance_x : Int32
-    kerning   : Table<<Character,Table<<Character,Int32>>>>
 
   METHODS
     method init( character )

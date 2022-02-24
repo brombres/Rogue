@@ -28,6 +28,7 @@
 module Bitmap
   uses Geometry [export]
 
+$include "Bitmap/BitmapFont.rogue"
 $include "Bitmap/Color.rogue"
 $include "Bitmap/HSB.rogue"
 
