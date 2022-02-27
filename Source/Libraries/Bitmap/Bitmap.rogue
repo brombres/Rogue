@@ -317,6 +317,9 @@ $endIf
 
       return bytes
 
+    method description->String
+      return "($x$ Bitmap)" (width,height)
+
     method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
@@ -949,9 +952,6 @@ $endIf
               |}
       return this
 
-    method description->String
-      return "($x$ Bitmap)" (width,height)
-
 $if not defined(CUSTOM_BITMAP_IO)
     method to_png_bytes->Byte[]
       return PNGEncoder().encode( this )
@@ -959,6 +959,26 @@ $if not defined(CUSTOM_BITMAP_IO)
     method to_jpeg_bytes( quality=75:Int32 )->Byte[]
       return JPEGEncoder().encode( this, null, quality )
 $endIf
+
+    method unmultiply_alpha
+      # Performs the reverse of premultiply_alpha(). Due to integer division,
+      # component values may not be exactly the same as before.
+      if (not is_premultiplied_alpha) return
+
+      is_premultiplied_alpha = false
+      forEach (i of pixels)
+        local argb = pixels[i].argb
+        local a = argb :>>>: 24 & 255
+        local r = argb :>>>: 16 & 255
+        local g = argb :>>>: 8 & 255
+        local b = argb & 255
+        if (a)
+          r = (r * 255) / a
+          g = (g * 255) / a
+          b = (b * 255) / a
+        endIf
+        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+      endForEach
 
 endClass
 
