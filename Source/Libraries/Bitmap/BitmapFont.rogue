@@ -96,6 +96,7 @@ class BitmapFont
         if (ch == '\n')
           x = x1
           y += height
+          prev_info = null
         else
           local info = this[ch]
           if (info)
@@ -143,6 +144,7 @@ class BitmapFont
           max_w .= or_larger( w )
           w = 0
           h += height
+          prev_info = null
         else
           local info = this[ch]
           if (info)
