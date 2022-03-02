@@ -1,0 +1,10 @@
+$macro BOSS_ATTRIBUTE( name, value )
+  METHODS
+    method name->Logical
+      return (attributes & (value))
+
+    method $join(set_,name)( setting:Logical )
+      if (setting) attributes |= (value)
+      else         attributes &= !(value)
+$endMacro
+

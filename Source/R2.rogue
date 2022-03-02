@@ -1,0 +1,71 @@
+module R2
+
+$include "Macros.rogue"
+
+$include "Candidates.rogue"
+$include "Collector.rogue"
+$include "CmdTypes.rogue"
+$include "CGenerator.rogue"
+$include "CWriter.rogue"
+$include "Module.rogue"
+$include "Organizer.rogue"
+$include "Parser.rogue"
+$include "Program.rogue"
+$include "Resolver.rogue"
+$include "Scanner.rogue"
+$include "Type.rogue"
+uses R2
+uses Utility/CommandLineParser
+
+try
+  R2( System.command_line_arguments )
+
+catch (error:CompileError)
+  Console.error.println error
+  System.exit 1
+catch (error:Error)
+  Console.error.println error
+  Console.error.println error.stack_trace
+  System.exit 1
+endTry
+
+class R2
+  PROPERTIES
+    command : Value
+
+  METHODS
+    method init( args:String[] )
+      command = parse_args( args )
+
+      if (command//options//help or command//args.count == 0)
+        print_usage
+        System.exit 0
+      endIf
+
+      #register_native_code
+
+      parse_files
+
+    method parse_files
+      Program.include( forEach in command//args )
+      Program.resolve
+
+    method parse_args( args:String[] )->Value
+      local command = CommandLineParser().
+      [
+        #option( "--flag",     &alias="-f" )
+        option( "--help",     &aliases=["-h","-?"] )
+        #option( "--setting=", &alias="-s" )
+      ].parse( args )
+      return command
+
+    method print_usage
+      println @|USAGE
+               |  r2 [OPTIONS] <filepath>
+               |
+               |OPTIONS
+               |  --help, -h, -?
+               |    Show this help text.
+
+endClass
+

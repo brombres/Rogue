@@ -1,0 +1,72 @@
+module R2
+
+class Collector : Visitor
+  METHODS
+    method on( cmd:AST )->Cmd
+      visit( forEach in cmd.elements )
+      return null
+
+    method on( cmd:Cmd )->Cmd
+      throw cmd.t.error( "[INTERNAL] Unexpected $ in Collector."(cmd.type_name) )
+
+    method on( cmd:ClassDef )->Cmd
+      local existing = Program.current_module.types[ cmd.name ]
+      if (existing)
+        if (not existing.definition)
+          # Type was created via a register() call
+          existing.t = cmd.t
+          cmd->Type( existing )
+          return null
+        endIf
+
+        local qualified_name : String
+        if (Program.current_module is Program.default_module)
+          qualified_name = cmd.name
+        else
+          qualified_name = "$::$"(Program.current_module.name,cmd.name)
+        endIf
+        throw cmd.t.error( "Class $ is already defined."(qualified_name) )
+      endIf
+
+      cmd->Type  # The new Type links itself up
+      return null
+
+    method on( cmd:DefineModule )->Cmd
+      if (Program.current_module.is_dynamic)
+        local cur_name = Program.current_module.name
+        if (cur_name != cmd.name)
+          throw cmd.t.error( "Code from imported module '$' cannot switch module contexts."(cur_name) )
+        endIf
+      else
+        Program.set_current_module( cmd.t, cmd.name )
+      endIf
+      return null
+
+    method on( cmd:Include )->Cmd
+      Program.include( cmd.t, cmd.filepath )
+      return null
+
+    method on( cmd:RoutineDef )->Cmd
+      local m = Program.current_module
+      ensure m.routines_by_name[ cmd.name ]
+      m.routines_by_name[ cmd.name ].add( cmd->Routine.[module_context=m] )
+      return null
+
+    method on( cmd:Statements )->Cmd
+      Program.current_module.global_statements.add( cmd )
+      return null
+
+    method on( cmd:UsesModule )->Cmd
+      use builder = StringBuilder.pool
+        forEach (segment at i in cmd.path)
+          if (i > 0) builder.print '/'
+          builder.print segment->String
+        endForEach
+        local filepath = builder->String
+        local m = Program.get_module( cmd.t, cmd.path.last->String )
+        Program.current_module.uses_module( m, &is_exported=cmd.is_exported )
+        Program.include( filepath, m )
+      endUse
+      return null
+endClass
+

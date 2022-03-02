@@ -1,0 +1,214 @@
+module R2
+
+augment Cmd
+  GLOBAL METHODS
+    method common_type( a:Type, b:Type )->Type
+      if (a is b) return a
+      if (not a or not b) return null
+      if (a.is_primitive and b.is_primitive)
+        local type = Program.type_Value
+        if (a is type or b is type) return type
+        type = Program.type_String
+        if (a is type or b is type) return type
+        type = Program.type_Real64
+        if (a is type or b is type) return type
+        return Program.type_Int32  # any mismatched pair Logical/Character/Int32 -> Int32
+      else
+        return Program.type_String # Placeholder/TODO
+      endIf
+
+  METHODS
+    method cmd_cast_to( target_type:Type )->Cmd
+      local cur_type = require_type
+      if (cur_type is target_type) return this
+      return target_type.cmd_cast( this )
+
+      #{
+    method organize_element
+      throw t.error( "[INTERNAL] $.organize_element() is undefined." (type_name) )
+      }#
+
+    method is_type_context->Logical
+      return false
+
+    method require_type->Type
+      local result = type
+      if (result) return result
+      throw t.error( "Value expected ($)."(this) )  # FIXME
+
+    method require_value->Cmd
+      require_type
+      return this
+
+    method to->Type
+      throw t.error( "[INTERNAL] $.to->Type is undefined." (type_name) )
+
+    method type->Type
+      return null
+endAugment
+
+# cmd_cast()
+augment
+  METHODS
+    method Type.cmd_cast( cmd:Cmd )->Cmd
+      return CastToObject( cmd.t, cmd, this )
+
+    method TypeCharacter.cmd_cast( cmd:Cmd )->Cmd
+      return CastToInt32(cmd.t,cmd)
+
+    method TypeInt32.cmd_cast( cmd:Cmd )->Cmd
+      return CastToInt32(cmd.t,cmd)
+
+    method TypeLogical.cmd_cast( cmd:Cmd )->Cmd
+      return CastToInt32(cmd.t,cmd)
+
+    method TypeReal64.cmd_cast( cmd:Cmd )->Cmd
+      return CastToReal64(cmd.t,cmd)
+
+    method TypeString.cmd_cast( cmd:Cmd )->Cmd
+      return CastToString(cmd.t,cmd)
+
+    method TypeValue.cmd_cast( cmd:Cmd )->Cmd
+      return CastToValue(cmd.t,cmd)
+endAugment
+
+# cmd_default_value()
+augment
+  METHODS
+    method Type.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralNull( cmd_t, this )
+
+    method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralCharacter( cmd_t, 0 )
+
+    method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralInt32( cmd_t, 0 )
+
+    method TypeLogical.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralLogical( cmd_t, false )
+
+    method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralReal64( cmd_t, 0 )
+
+    method TypeString.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralString( cmd_t, null )
+
+    method TypeValue.cmd_default_value( cmd_t:Token )->Cmd
+      return LiteralValueUndefined( cmd_t )
+endAugment
+
+
+# type()
+augment
+  METHODS
+    method Access.type->Type
+      return Program.find_type(name)
+
+    method Unary.type->Type
+      return operand.type
+
+    method Binary.type->Type
+      return common_type( left.type, right.type )
+
+    method CallProcedure.type->Type
+      return procedure.return_type
+
+    method CastReal64ToInt32.type->Type
+      return Program.type_Int32
+
+    method CastToInt32.type->Type
+      return Program.type_Int32
+
+    method CastToObject.type->Type
+      return Program.type_Object
+
+    method CastToReal64.type->Type
+      return Program.type_Real64
+
+    method CastToString.type->Type
+      return Program.type_String
+
+    method CastToValue.type->Type
+      return Program.type_Value
+
+    method CastValueToXY.type->Type
+      return Program.type_XY
+
+    method Compare.type->Type
+      return Program.type_Logical
+
+    method CreateObject.type->Type
+      return of_type
+
+    method CreateXY0.type->Type
+      return Program.type_XY
+
+    method CreateXY1.type->Type
+      return Program.type_XY
+
+    method CreateXY2.type->Type
+      return Program.type_XY
+
+    method Description.type->Type
+      return Program.type_String
+
+    method EmptyList.type->Type
+      return Program.type_Value
+
+    method GetLocal.type->Type
+      return info.@type
+
+    method GetProperty.type->Type
+      return info.@type
+
+    method GetThisProperty.type->Type
+      return info.@type
+
+    method ImportModule.type->Type
+      return Program.type_Value
+
+    method IndexAccess.type->Type
+      return context.type
+
+    method LiteralCharacter.type->Type
+      return Program.type_Character
+
+    method LiteralInt32.type->Type
+      return Program.type_Int32
+
+    method LiteralLogical.type->Type
+      return Program.type_Logical
+
+    method LiteralNull.type->Type
+      return @type
+
+    method LiteralPi.type->Type
+      return Program.type_Real64
+
+    method LiteralReal64.type->Type
+      return Program.type_Real64
+
+    method LiteralString.type->Type
+      return Program.type_String
+
+    method LiteralValueList.type->Type
+      return Program.type_Value
+
+    method LiteralValueUndefined.type->Type
+      return Program.type_Value
+
+    method Property.type->Type
+      return @type
+
+    method StackTopInt32.type->Type
+      return Program.type_Int32
+
+    method TypeRef.to->Type
+      return Type( t, name )
+
+    method XYGetX.type->Type
+      return Program.type_Real64
+
+    method XYGetY.type->Type
+      return Program.type_Real64
+endAugment

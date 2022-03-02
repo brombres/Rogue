@@ -1,0 +1,104 @@
+module R2
+
+class Module
+  BOSS_ATTRIBUTE( is_dynamic,   1 )
+  BOSS_ATTRIBUTE( is_organized, 2 )
+  BOSS_ATTRIBUTE( is_resolved,  4 )
+  BOSS_ATTRIBUTE( is_visiting,  8 )
+
+  PROPERTIES
+    t    : Token
+    name : String
+
+    used_modules          = UsedModule[]
+    types                 = StringTable<<Type>>()
+    global_statements     : Statements
+    routines_by_name      = StringTable<<Routine[]>>()
+    routines_by_signature = StringTable<<Routine>>()
+
+    attributes : Int32
+
+  METHODS
+    method init( t, name, &dynamic )
+      global_statements = Statements(t)
+      is_dynamic = dynamic
+      Program.all_modules.add( this )
+      if (not is_dynamic) Program.modules_by_name[ name ] = this
+
+    method collect_routines( m_name:String, list:Procedure[], &is_limited )
+      if (is_visiting) return
+
+      local matching = routines_by_name[ m_name ]
+      if (matching) list.add( forEach in matching )
+
+      temporarily is_visiting = true
+        forEach (used_m in used_modules)
+          if (not is_limited or used_m.is_exported)
+            used_m.m.collect_routines( m_name, list, &=is_limited )
+          endIf
+        endForEach
+      endTemporarily
+
+    method description->String
+      return name
+
+    method find_type( name:String, &extended_search )->Type
+      if (is_visiting) return null
+
+      local result = types[ name ]
+      if (result) return result
+
+      temporarily is_visiting = true
+        forEach (used_m in used_modules)
+          if (extended_search or used_m.is_exported)
+            result = used_m.m.find_type( name, &!extended_search )
+            if (result) escapeForEach
+          endIf
+        endForEach
+      endTemporarily
+
+      return result
+
+    method must_find_type( t:Token, name:String )->Type
+      local result = find_type( name )
+      if (result) return result
+      throw t.error( "No such type '$'." (name) )
+
+    method organize
+      if (is_organized) return
+      is_organized = true
+
+      local organizer = Organizer( this )
+      organizer.visit( forEach in types )
+      organizer.visit( null, forEach in (forEach in routines_by_name) )
+
+    method resolve
+      if (is_resolved) return
+      is_resolved = true
+      organize
+
+      local resolver = Resolver( this )
+      resolver.visit( forEach in types )
+      resolver.visit( null, forEach in (forEach in routines_by_name) )
+
+    method type( name:String )->Type
+      local result = find_type( name )
+      if (result) return result
+      return Type( t, name )
+
+    method uses_module( m:Module, &is_exported )
+      if (m is this) return # happens when this is the default module
+      forEach (existing_m in used_modules)
+        if (existing_m.m is m) return
+      endForEach
+      used_modules.add( UsedModule(m,&=is_exported) )
+
+    method write_launch_commands( writer:CWriter )
+      CGenerator(this,writer).visit( forEach in global_statements )
+
+
+endClass
+
+class UsedModule( m:Module, is_exported:Logical ) [compound]
+endClass
+

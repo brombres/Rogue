@@ -1,0 +1,10 @@
+module R2
+
+class CWriter : BufferedPrintWriter
+  PROPERTIES
+
+  METHODS
+    method init( file:File )
+      prior.init( file.writer )
+endClass
+

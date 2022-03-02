@@ -1,0 +1,1232 @@
+================================================================================
+# R2.froley
+================================================================================
+
+--------------------------------------------------------------------------------
+tokens
+--------------------------------------------------------------------------------
+EOL(end of line)            [content]
+CHARACTER      character    [content]
+BINARY_INTEGER integer      [content]
+OCTAL_INTEGER  integer      [content]
+HEX_INTEGER    integer      [content]
+INTEGER        integer      [content]
+REAL_NUMBER    real         [content]
+STRING         string       [content]
+IDENTIFIER     identifier   [content]
+
+----------------------------------------------------------------------
+tokens Keywords
+----------------------------------------------------------------------
+KEYWORD_AND          and
+KEYWORD_AUGMENT      augment
+KEYWORD_BLOCK        block
+KEYWORD_CLASS        class       [structural]
+KEYWORD_MODULE       module
+KEYWORD_ELSE         else        [structural]
+KEYWORD_ELSE_IF      elseIf
+KEYWORD_END_BLOCK    endBlock    [structural]
+KEYWORD_END_CLASS    endClass    [structural]
+KEYWORD_END_FOR_EACH endForEach  [structural]
+KEYWORD_END_IF       endIf       [structural]
+KEYWORD_END_LOOP     endLoop     [structural]
+KEYWORD_END_ROUTINE  endRoutine  [structural]
+KEYWORD_END_WHILE    endWhile    [structural]
+KEYWORD_EXPORT       export
+KEYWORD_FALSE        false
+KEYWORD_FOR_EACH     forEach
+KEYWORD_GLOBAL       global
+KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
+KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
+KEYWORD_IF           if
+KEYWORD_IMPORT       import
+KEYWORD_INCLUDE      include
+KEYWORD_LOCAL        local
+KEYWORD_LOOP         loop
+KEYWORD_METHOD       method      [structural]
+KEYWORD_METHODS      METHODS     [structural]
+KEYWORD_NO_ACTION    noAction
+KEYWORD_NOT          not
+KEYWORD_NULL         null
+KEYWORD_OR           or
+KEYWORD_PI           pi
+KEYWORD_PRINT        print
+KEYWORD_PRINTLN      println
+KEYWORD_PROPERTIES   PROPERTIES  [structural]
+KEYWORD_RETURN       return
+KEYWORD_ROUTINE      routine     [structural]
+KEYWORD_THIS_CALL    thisCall
+KEYWORD_TRUE         true
+KEYWORD_UNDEFINED    undefined
+KEYWORD_USES         uses
+KEYWORD_WHILE        while
+KEYWORD_XOR          xor
+
+----------------------------------------------------------------------
+tokens Symbols
+----------------------------------------------------------------------
+SYMBOL_AMPERSAND             &
+SYMBOL_ARROW                 ->
+SYMBOL_ASTERISK              *
+SYMBOL_AT                    @
+SYMBOL_BANG                  !
+SYMBOL_CARET                 ^
+SYMBOL_CLOSE_CURLY           }   [structural]
+SYMBOL_CLOSE_SQUARE          ]   [structural]
+SYMBOL_CLOSE_PAREN           )   [structural]
+SYMBOL_COLON                 :   [structural]
+SYMBOL_COLON_COLON           ::
+SYMBOL_COMMA                 ,   [structural]
+SYMBOL_DOLLAR                $
+SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
+SYMBOL_EMPTY_SQUARE_BRACKETS []
+SYMBOL_EQ                    ==
+SYMBOL_EQUALS                =
+SYMBOL_GE                    >=
+SYMBOL_GT                    >
+SYMBOL_GT_GT                 >>
+SYMBOL_LE                    <=
+SYMBOL_LEFT_SHIFT            :<<:
+SYMBOL_LEFT_SHIFT_EQUALS     :<<:=
+SYMBOL_LITERAL_OPEN_SQUARE   @[
+SYMBOL_LT                    <
+SYMBOL_LT_LT                 <<
+SYMBOL_MINUS                 -
+SYMBOL_MINUS_MINUS           --
+SYMBOL_NE                    !=
+SYMBOL_OPEN_CURLY            {
+SYMBOL_OPEN_SQUARE           [
+SYMBOL_OPEN_PAREN            (
+SYMBOL_PERCENT               %
+SYMBOL_PERIOD                .
+SYMBOL_PLUS                  +
+SYMBOL_PLUS_PLUS             ++
+SYMBOL_QUESTION              ?
+SYMBOL_QUESTION_COLON        ?:
+SYMBOL_RIGHT_SHIFT           :>>:
+SYMBOL_RIGHT_SHIFT_EQUALS    :>>:=
+SYMBOL_RIGHT_SHIFT_X         :>>>:
+SYMBOL_RIGHT_SHIFT_X_EQUALS  :>>>:=
+SYMBOL_SEMICOLON             ;
+SYMBOL_SLASH                 /
+SYMBOL_TILDE                 ~
+SYMBOL_VERTICAL_BAR          |
+
+SYMBOL_PLUS_EQUALS           +=
+SYMBOL_MINUS_EQUALS          -=
+SYMBOL_TIMES_EQUALS          *=
+SYMBOL_DIVIDE_EQUALS         /=
+SYMBOL_MOD_EQUALS            %=
+SYMBOL_AND_EQUALS            &=
+SYMBOL_OR_EQUALS             |=
+
+----------------------------------------------------------------------
+scanner
+----------------------------------------------------------------------
+- main
+  consume [ \r\t]*                 # whitespace
+  markPosition
+  scan_comment
+
+  if (not hasAnother)
+    create EOL
+    halt
+  endIf
+
+  match input
+    produceAny Symbols
+    case '\n': produce EOL
+    case '"':  tokenize_string
+    case "'":  tokenize_character_or_string
+    case "''": tokenize_two_quote_string
+    case "@|": tokenize_verbatim_string
+  endMatch
+
+  scan_id_or_keyword
+  scan_number
+
+  syntaxError
+
+- scan_comment
+  if (consume('#'))
+    if (consume('{'))
+      count = 1
+      while (hasAnother)
+        ch = read
+        if (ch == '\n')
+          create EOL
+        elseIf (ch == '#')
+          if (consume('{')) ++count
+        elseIf (ch == '}')
+          if (consume('#'))
+            --count
+            if (count == 0) restart
+          endIf
+        endIf
+      endWhile
+      syntaxError "Unterminated multi-line comment."
+    else
+      # Single line comment
+      if scan [^\n]*
+        consume '\n'
+        produce EOL
+      endIf
+    endIf
+
+  elseIf (consume({"----"[-]*}) or consume({"===="[=]*}))
+    # HR comments
+    scan [^\n]*
+    consume '\n'
+    produce EOL
+
+  else
+    return
+
+  endIf
+
+- scan_id_or_keyword
+  if (not scan([_a-zA-Z][_a-zA-Z0-9]*)) return
+
+  match buffer
+    produceAny Keywords
+    case "GLOBAL"
+      # "GLOBAL PROPERTIES" / "GLOBAL METHODS"
+      if (consume [ ]+)
+        collect ' '
+        if (scan([_a-zA-Z][_a-zA-Z0-9]*))
+          match buffer
+            case "GLOBAL PROPERTIES" -> KEYWORD_GLOBAL_PROPERTIES
+            case "GLOBAL METHODS"    -> KEYWORD_GLOBAL_METHODS
+            others
+              syntaxError "Expected 'GLOBAL PROPERTIES' or 'GLOBAL METHODS'."
+          endMatch
+        endIf
+      endIf
+    others
+      produce IDENTIFIER
+  endMatch
+
+- scan_number
+  if (not nextIs([0-9]) or nextIs([.][0-9])) return
+
+  match input
+    case "0b"
+      base = 2
+      scan_binary_integer
+      produce BINARY_INTEGER
+    case "0c"
+      base = 8
+      scan_octal_integer
+      produce OCTAL_INTEGER
+    case "0x"
+      base = 16
+      scan_hex_integer
+      produce HEX_INTEGER
+    others
+      scan_integer
+      if (not scan('.')) produce INTEGER
+      scan_integer
+      if (scan([eE]))
+        scan [+-]
+        if (not scan([0-9]+)) syntaxError "Integer exponent expected."
+      endIf
+      produce REAL_NUMBER
+  endMatch
+
+- scan_integer
+  while (scan([0-9]+))
+    if (not consume([_]+)) return
+  endWhile
+  return
+
+- scan_binary_integer
+  while (scan([01]+))
+    if (not consume([_]+)) return
+  endWhile
+  return
+
+- scan_octal_integer
+  while (scan([0-7]+))
+    if (not consume([_]+)) return
+  endWhile
+  return
+
+- scan_hex_integer
+  while (scan([0-9A-Fa-f]+))
+    if (not consume([_]+)) return
+  endWhile
+  return
+
+- tokenize_string
+  while (hasAnother and not nextIs('"'))
+    scan_character
+  endWhile
+  mustConsume '"'
+  produce STRING
+
+- tokenize_character_or_string
+  if (consume('\'')) produce STRING
+  scan_character
+  if (consume('\'')) produce CHARACTER
+  while (hasAnother and not nextIs('\''))
+    scan_character
+  endWhile
+  mustConsume('\'')
+  produce STRING
+
+- tokenize_two_quote_string
+  while (hasAnother and not nextIs("''"))
+    scan_character
+  endWhile
+  mustConsume "''"
+  produce STRING
+
+- scan_character
+  if (not hasAnother) syntaxError "Unterminated string - unexpected end of file."
+  ch = read
+  if (ch == '\n')
+    syntaxError "Unterminated string - unexpected end of line."
+  endIf
+  if (ch != '\\')
+    collect ch
+    return
+  endIf
+
+  if (consume('b')) collect Character(8); return
+  if (consume('e')) collect Character(27); return
+  if (consume('f')) collect Character(12); return
+  if (consume('n')) collect '\n'; return
+  if (consume('r')) collect '\r'; return
+  if (consume('t')) collect '\t'; return
+  if (consume('v')) collect Character(11); return
+  if (consume('0')) collect Character(0); return
+  if (consume('/')) collect '/'; return
+  if (consume('?')) collect '?'; return
+  if (consume('\''))collect '\''; return
+  if (consume('\\'))collect '\\'; return
+  if (consume('"')) collect '"'; return
+  if (consume('x'))
+    hex2 = 0
+    read_hex2
+    collect Character(hex2)
+    return
+  endIf
+  if (consume('u'))
+    read_hex4
+    collect Character(hex4)
+    return
+  endIf
+  if (consume('['))
+    hex_digit = 0
+    read_hex_digit
+    value = hex_digit
+    digits = 1
+    while (digits < 6 and nextIs([0-9a-fA-F]))
+      read_hex_digit
+      value = value * 16 + hex_digit
+      ++digits
+    endWhile
+    mustConsume ']'
+    collect Character(value)
+    return
+  endIf
+  buffer = ""
+  collect "Invalid escape sequence '\\" ch
+  collect "'. Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\? \\/ \\' \\\\ \\\" \\xHH \\uHHHH \\[H*]."
+  syntaxError buffer
+
+- read_hex4
+  read_hex2
+  hex4 = hex2 * 256
+  read_hex2
+  hex4 = hex4 + hex2
+  return
+
+- read_hex2
+  read_hex_digit
+  hex2 = hex_digit * 16
+  read_hex_digit
+  hex2 = hex2 + hex_digit
+  return
+
+- read_hex_digit
+  if (not nextIs([0-9a-fA-F])) syntaxError "Hex digit expected (0-9, a-f, or A-F)."
+  ch = read
+  if (ch >= 'a' and ch <= 'f')
+    hex_digit = (ch - Integer('a')) + 10
+  elseIf (ch >= 'A' and ch <= 'F')
+    hex_digit = (ch - Integer('A')) + 10
+  else
+    hex_digit = ch - Integer('0')
+  endIf
+  return
+
+- tokenize_verbatim_string
+  while (hasAnother)
+    scan [^\n]*
+    consume '\n'
+    consume [ ]*
+    if (not consume('|')) produce STRING
+  endWhile
+  produce STRING
+
+
+----------------------------------------------------------------------
+parser
+----------------------------------------------------------------------
+- ast
+  elements
+  produce AST(elements)
+
+- elements
+  beginList
+    while (hasAnother) element
+  produceList
+
+- consume_eols
+  while (consume(EOL)) noAction
+
+- must_consume_eols
+  if (not consume(EOL)) syntaxError "End of line expected."
+  while (consume(EOL)) noAction
+
+- consume_eols_and_semicolons
+  while (consume(EOL) or consume(';')) noAction
+
+- element
+  consume_eols
+  if (not hasAnother) return
+
+  on "class" class: return
+
+  on "include" string -> Include(filepath:String)
+
+  on "module"
+    if (nextIs(IDENTIFIER)) identifier
+    else                    createNull
+    produce DefineModule(name:String)
+  endOn
+
+  on "routine"
+    identifier
+    procedure_parameters
+    procedure_return_type
+    attribute_names
+    if (consume(':'))
+      single_line_statements
+    else
+      multi_line_statements
+      mustConsume "endRoutine"
+    endIf
+    produce RoutineDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+  endOn
+
+  on "uses" module_path uses_attributes-> UsesModule(path,attribute_names)
+
+  if (nextHasAttribute(structural))
+    syntaxError
+  endIf
+
+  procedure_body
+
+- procedure_parameters
+  beginList
+    if (not consume('(')) produceList
+    if (consume(')')) produceList
+    procedure_parameter
+    while (consume(',')) procedure_parameter
+    mustConsume ')'
+  produceList
+
+- procedure_parameter
+  consume_eols
+  on IDENTIFIER optional_initial_value optional_type -> LocalDef(name=content,initial_value,type_ref)
+  #on '&' identifier optional_initial_value optional_type -> FlagParameter(name:String,initial_value,type_ref):Parameter
+  mustConsume IDENTIFIER  # generate error message
+
+- optional_initial_value
+  if (consume('=')) consume_eols; expression
+  else              createNull
+
+- procedure_return_type
+  if (not consume('->')) produceNull
+  type
+
+- type
+  type_name
+  produce TypeRef(name:String)
+
+- type_name
+  identifier
+  on "[]": create Join(a:String,b="[]")
+
+- optional_type
+  if (consume(':')) type
+  else              createNull
+
+- procedure_body
+  multi_line_statements
+
+
+- identifier
+  on IDENTIFIER -> Identifier(name=content)
+  syntaxError "Identifier expected."
+
+- string
+  on STRING -> LiteralString(value=content):Literal
+  syntaxError "Literal string expected."
+
+- class
+  type
+  constructor_properties
+  base_types
+  attribute_names
+  class_sections
+  mustConsume "endClass"
+  produce ClassDef( name, constructor_properties, base_types, attribute_names, sections )
+
+- constructor_properties
+  if (not nextIs('(')) produceNull
+  procedure_parameters
+
+- base_types
+  beginList
+    if (not consume(':')) produceList
+    type
+    while (consume(','))
+      consume_eols
+      type
+    endWhile
+  produceList
+
+- attribute_names
+  beginList
+    if (not consume('[')) produceList
+    if (consume(']')) produceList
+    while (hasAnother and not nextIs(']'))
+      identifier
+      if (consume(',')) consume_eols
+      else              consume_eols; consume(',')
+    endWhile
+    mustConsume ']'
+  produceList
+
+- class_sections
+  beginList
+  if (not consume(';'))
+    while (not nextIs("endClass")) class_section
+  endIf
+  produceList
+
+- class_section
+  consume_eols
+  on "METHODS"
+    consume_eols
+    while (nextIs("method"))
+      method
+      consume_eols
+    endWhile
+    return
+  elseOn "GLOBAL METHODS"
+    consume_eols
+    while (nextIs("method"))
+      global_method
+      consume_eols
+    endWhile
+    return
+#{
+  elseOn "GLOBAL PROPERTIES"
+    consume_eols
+    while (not nextHasAttribute(structural))
+      global_properties
+    endWhile
+    return
+}#
+  elseOn "PROPERTIES"
+    consume_eols
+    while (not nextHasAttribute(structural))
+      properties
+      consume_eols
+    endWhile
+    return
+  endOn
+  if (not nextIs("endClass")) syntaxError
+
+
+#{
+
+  on "module", module_name, EOL -> ModuleDeclaration(name )
+
+  if (not nextHasAttribute(structural)) multi_line_statements; return
+  syntaxError
+
+- consume_eols
+  while (consume(EOL)) noAction
+
+- consume_end_commands
+  while (consume(EOL) or consume(';')) noAction
+
+- consume_semicolons
+  while (consume(';')) noAction
+}#
+
+- forEach_loop
+  on "forEach"
+    if consume('(')
+      consume_eols
+      forEach_control
+      consume_eols
+      mustConsume(')')
+    else
+      forEach_control
+    endIf
+    if (consume(EOL))
+      multi_line_statements
+      mustConsume "endForEach"
+    else
+      single_line_statements
+    endIf
+    produce ForEach(control:ForEachControl,statements)
+  endOn
+
+- forEach_control
+  identifier
+  forEach_optional_at
+  if (consume(@"in"))
+    forEach_collection
+    produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+  elseIf (consume(@"of"))
+    forEach_collection
+    produce ForEachOfControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+  else
+    syntaxError "Expected 'in' or 'of'."
+  endIf
+
+- forEach_optional_at
+  if (not consume(@"at")) produceNull
+  identifier
+  produce ForEachAt(name:String)
+
+- forEach_collection
+  savePosition
+  createNull  # collection_name
+  expression  # collection
+  if (nextIs('='))
+    restorePosition  # whoops
+    identifier       # collection_name
+    mustConsume('=')
+    expression       # collection
+  else
+    discardPosition
+  endIf
+
+  if (consume(@"from")) expression
+  else                  createNull
+
+  if (consume(@"step")) expression
+  else                  createNull
+
+  produce ForEachCollection(name:String,data,starting_index,step_size)
+
+- if_statement
+  on "if"
+    expression
+    if (consume(EOL))
+      # Multi-line 'if'
+      multi_line_statements
+      if_statement_multi_line_elseIf_else
+      mustConsume 'endIf'
+    else
+      # Single-line 'if'
+      single_line_statements
+      if_statement_single_line_elseIf_else
+    endIf
+    produce If(condition,statements,cmd_else:If)
+  endOn
+
+- if_statement_multi_line_elseIf_else
+  savePosition
+  on 'elseIf'
+    expression
+    if (consume(EOL))
+      # This elseIf is multi-line; good to keep going
+      discardPosition
+      multi_line_statements
+      if_statement_multi_line_elseIf_else
+      produce If(condition,statements,cmd_else:If)
+    else
+      # This single-line elseIf is outside the scope of the 'if' we're currently parsing.
+      restorePosition
+      produceNull
+    endIf
+  elseOn 'else'
+    if (consume(EOL))
+      # This else is multi-line; good to keep going
+      discardPosition
+      createNull
+      multi_line_statements
+      createNull
+      produce If(condition,statements,cmd_else:If)
+    else
+      # This single-line else is outside the scope of the 'if' we're currently parsing.
+      restorePosition
+      produceNull
+    endIf
+  elseOnOthers
+    produceNull
+  endOn
+
+- if_statement_single_line_elseIf_else
+  savePosition
+  on 'elseIf'
+    expression
+    if (consume(EOL))
+      # This elseIf is multi-line and outside our scope
+      restorePosition
+      produceNull
+    else
+      # This elseIf is single line; keep going
+      discardPosition
+      single_line_statements
+      if_statement_single_line_elseIf_else
+      produce If(condition,statements,cmd_else:If)
+    endIf
+  elseOn 'else'
+    if (consume(EOL))
+      # This else is multi-line and outside our scope
+      restorePosition
+      produceNull
+    else
+      # This else is single line; keep going
+      discardPosition
+      createNull
+      single_line_statements
+      createNull
+      produce If(condition,statements,cmd_else:If)
+    endIf
+  elseOnOthers
+    produceNull
+  endOn
+
+- method
+  on "method" signature procedure_body ->
+    MethodDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+
+- global_method
+  on "method" signature procedure_body ->
+    GlobalMethodDef(name:String,parameters,return_type_ref,attribute_names,statements):MethodDef
+
+- signature
+  identifier
+  procedure_parameters
+  procedure_return_type
+  attribute_names
+
+- native_global_method
+  identifier
+  native_parameter_types
+  procedure_return_type
+  attribute_names
+  beginList
+  createList Statements
+  produce GlobalMethodDef(name:String,parameters,return_type_ref,attribute_names,statements):MethodDef
+
+- native_method
+  identifier
+  native_parameter_types
+  procedure_return_type
+  attribute_names
+  beginList
+  createList Statements
+  produce MethodDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+
+- native_routine
+  identifier
+  native_parameter_types
+  procedure_return_type
+  attribute_names
+  beginList
+  createList Statements
+  produce RoutineDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+
+- native_parameter_types
+  beginList
+    if (not consume('(')) produceList
+    if (consume(')')) produceList
+    native_parameter_type
+    while (consume(',')) native_parameter_type
+    mustConsume ')'
+  produceList
+
+- native_parameter_type
+  createNull
+  createNull
+  type
+  produce LocalDef(name:String,initial_value,type_ref)
+
+#{
+- module_name [binary]
+  on "::" -> Scope
+
+- module_segment
+  identifier
+
+- global_properties
+  consume_eols
+  onPeek IDENTIFIER, local_declarations, mustConsume(EOL) -> GlobalProperties( declarations, type )
+}#
+
+- properties
+  beginList
+    consume_eols
+    property_declaration
+    while (consume(','))
+      consume_eols
+      property_declaration
+    endWhile
+  createList
+  optional_type
+  produce PropertyDeclarations( declarations, type_ref )
+
+- property_declaration
+  on IDENTIFIER
+    optional_initial_value
+    createNull
+    produce PropertyDef( name=content, initial_value, type_ref )
+  endOn
+  mustConsume IDENTIFIER  # throws error
+
+- multi_line_statements
+  consume_eols_and_semicolons
+  if (not hasAnother) syntaxError
+  beginList
+  while (hasAnother and not nextHasAttribute(structural))
+    control_structure
+    consume_eols_and_semicolons
+  endWhile
+  produceList Statements
+
+- single_line_statements
+  beginList
+
+  if (consume(EOL)) produceList Statements
+  statement
+  while (consume(';'))
+    statement
+  endWhile
+  must_consume_eols
+
+  produceList Statements
+
+- control_structure
+  on "local"       local_declarations: return
+  onPeek "block"   block:              return
+  onPeek "forEach" forEach_loop:       return
+  onPeek "if"      if_statement:       return
+  onPeek "loop"    loop:               return
+  onPeek "while"   while_loop:         return
+  #on "global", local_declarations -> GlobalDeclarations( declarations, type )
+  statement
+
+- args
+  beginList
+
+  if consume '('
+    consume_eols
+    if (consume(')')) produceList
+    consume_eols
+    while (hasAnother and not nextHasAttribute(structural))
+      arg
+      consume_eols
+      consume ','
+      consume_eols
+    endWhile
+    mustConsume ')'
+  else
+    while (hasAnother and not nextHasAttribute(structural) and not nextIs(EOL))
+      arg
+      if (consume ',') consume_eols
+    endWhile
+  endIf
+
+  produceList Args
+
+- arg
+  expression
+
+- statement
+  on "noAction": return
+  on "print"     args -> Print(args)
+  on "println"   args -> Println(args)
+  on "return"    optional_expression -> Return(result)
+
+  on "++" expression -> Increment(operand):Unary
+  on "--" expression -> Decrement(operand):Unary
+
+  expression
+
+  on "++" -> Increment(operand):Unary
+  on "--" -> Decrement(operand):Unary
+
+  on "=" expression -> Assign(target,new_value)
+
+  on "+=" expression -> AddAndAssign(target,operand):OpAndAssign
+#{
+  on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
+  on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
+  on "/=", expression -> DivideAndAssign(target,operand):OpAndAssign
+  on "%=", expression -> ModAndAssign(target,operand):OpAndAssign
+  on "&=", expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
+}#
+  on "|=", expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
+  on ":<<:="  expression -> LeftShiftAndAssign(target,operand):OpAndAssign
+  on ":>>:="  expression -> RightShiftAndAssign(target,operand):OpAndAssign
+  on ":>>>:=" expression -> RightShiftXAndAssign(target,operand):OpAndAssign
+
+- local_declarations
+  beginList
+    consume_eols
+    local_declaration
+    while (consume(','))
+      consume_eols
+      local_declaration
+    endWhile
+  createList
+  optional_type
+
+  produce LocalDeclarations( declarations, type_ref )
+
+- local_declaration
+  on IDENTIFIER
+    optional_initial_value
+    createNull
+    produce LocalDef( name=content, initial_value, type_ref )
+  endOn
+  mustConsume IDENTIFIER  # throws error
+
+- block
+  on "block"
+    multi_line_statements
+    mustConsume "endBlock"
+  endOn
+  produce Block(statements)
+
+- loop
+  on "loop"
+    on EOL
+      createNull # loop_count
+      multi_line_statements
+      mustConsume "endLoop"
+    elseOnOthers
+      expression
+      if (consume(EOL)) multi_line_statements; mustConsume "endLoop"
+      else              single_line_statements
+    endOn
+    produce Loop(loop_count,statements)
+  endOn
+
+- while_loop
+  on "while"
+    expression
+    if (consume(EOL)) multi_line_statements; mustConsume "endWhile"
+    else              single_line_statements
+    produce While(condition,statements)
+  endOn
+
+- module_path
+  beginList
+    identifier
+    while (consume('/'))
+      identifier
+    endWhile
+  produceList
+
+- uses_attributes
+  on '['
+    beginList
+      while (hasAnother and not nextIs(']'))
+        uses_attribute
+        consume ','
+      endWhile
+      mustConsume(']')
+    produceList
+  elseOnOthers
+    produceNull
+  endOn
+
+- uses_attribute
+  on "export" -> Attribute(name=content)
+  syntaxError "Illegal attribute for 'uses'. Expected 'export'."
+
+#- import_module_by_path_or_filepath
+#  on STRING
+#    produce ImportModuleByFilepath(filepath=content)
+#  endOn
+#
+#  beginList
+#    identifier
+#    while (consume('/'))
+#      identifier
+#    endWhile
+#  createList
+#
+#  produce ImportModuleByPath(segments)
+
+- access_args
+  if (not nextIs('(')) produceNull
+  args
+
+- optional_expression
+  if (nextIs(EOL)) produceNull
+  expression
+
+- expression
+  logical_xor
+
+- logical_xor [binary]
+  on "xor" -> LogicalXor
+
+- logical_or [binary]
+  on "or" -> LogicalOr
+
+- logical_and [binary]
+  on "and" -> LogicalAnd
+
+- comparison [binary]
+  on "==" -> CompareEQ
+  on "!=" -> CompareNE
+  on "<"  -> CompareLT
+  on ">"  -> CompareGT
+  on "<=" -> CompareLE
+  on ">=" -> CompareGE
+
+- bitwise_xor [binary]
+  on '~' -> BitwiseXor
+
+- bitwise_or  [binary]
+  on '|' -> BitwiseOr
+
+- bitwise_and [binary]
+  on '&' -> BitwiseAnd
+
+- bitwise_shift [binary]
+  on ":<<:"  -> LeftShift
+  on ":>>:"  -> RightShift
+  on ":>>>:" -> RightShiftX
+
+- add_subtract [binary]
+  on "+" -> Add
+  on "-" -> Subtract
+
+- multiply_divide_mod [binary]
+  on "*" -> Multiply
+  on "/" -> Divide
+  on "%" -> Mod
+
+- pre_unary [preUnary]
+  on "-"   -> Negate
+  on "not" -> LogicalNot
+
+- access
+  term
+  access_inner
+
+- access_inner
+  on '.'
+    identifier
+    access_args
+    create ContextAccess(context,name:String,args)
+    access_inner
+  elseOn '['
+    expression
+    mustConsume(']')
+    create IndexAccess(context,index)
+    access_inner
+  endOn
+
+- term
+  on STRING         -> LiteralString(value=content):Literal
+  on INTEGER        -> LiteralInt32(value=content:Integer)
+  on HEX_INTEGER    -> LiteralInt32(content=content:String,base="16":Integer)
+  on BINARY_INTEGER -> LiteralInt32(content=content:String,base="2":Integer)
+  on OCTAL_INTEGER  -> LiteralInt32(content=content:String,base="8":Integer)
+  on REAL_NUMBER    -> LiteralReal64(value=content:Real)
+  on CHARACTER      -> LiteralCharacter(value=content:Character)
+  onPeek IDENTIFIER
+    type_name
+    access_args
+    produce Access( name:String, args )
+  endOn
+  on "true"               -> LiteralLogical(value="true":Logical)
+  on "false"              -> LiteralLogical(value="false":Logical)
+  on "pi"                 -> LiteralPi
+  on '(', expression, ')':   return
+  onPeek "[" literal_list -> LiteralValueList(args)
+  on "[]"                 -> EmptyList
+
+  on "import"
+    if (consume('('))
+      string
+      mustConsume ')'
+    else
+      string
+    endIf
+    produce ImportModule(filepath:String)
+  endOn
+
+  syntaxError
+
+- literal_list
+  on '['
+    beginList
+    if (consume(']')) produceList  # Empty list
+    consume_eols
+    expression
+    consume_eols
+    while (not nextIs(']'))
+      if (consume(',')) consume_eols
+      expression
+      consume_eols
+    endWhile
+    mustConsume( ']' )
+    produceList Args
+  endOn
+
+- additional_node_types
+  create AddAndAssignLocal(info:Local,operand):OpAndAssign
+  create AddAndAssignLocalInt32(info:Local,operand):OpAndAssign
+  create AddAndAssignProperty(context,info:Property,operand):OpAndAssign
+  create AddAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
+  create AddAndAssignThisProperty(info:Property,operand):OpAndAssign
+  create AddAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
+  create AddInt32(left,right):Binary
+  create AddObject(left,right):Binary
+  create AddReal64(left,right):Binary
+  create AddString(left,right):Binary
+  create AddValue(left,right):Binary
+  create BitwiseAndInt32(left,right):Binary
+  create BitwiseAndValue(left,right):Binary
+  create BitwiseOrAndAssignLocal(info:Local,operand):OpAndAssign
+  create BitwiseOrAndAssignLocalInt32(info:Local,operand):OpAndAssign
+  create BitwiseOrAndAssignProperty(context,info:Property,operand):OpAndAssign
+  create BitwiseOrAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
+  create BitwiseOrAndAssignThisProperty(info:Property,operand):OpAndAssign
+  create BitwiseOrAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
+  create BitwiseOrInt32(left,right):Binary
+  create BitwiseOrValue(left,right):Binary
+  create BitwiseXorInt32(left,right):Binary
+  create BitwiseXorValue(left,right):Binary
+  create CastInt32ToObject(operand):Unary
+  create CastInt32ToReal64(operand):Unary
+  create CastInt32ToString(operand):Unary
+  create CastInt32ToValue(operand):Unary
+  create CastObjectToInt32(operand):Unary
+  create CastObjectToReal64(operand):Unary
+  create CastObjectToString(operand):Unary
+  create CastReal64ToInt32(operand):Unary
+  create CastReal64ToObject(operand):Unary
+  create CastReal64ToString(operand):Unary
+  create CastStringToInt32(operand):Unary
+  create CastStringToObject(operand):Unary
+  create CastStringToReal64(operand):Unary
+  create CastToInt32(operand):Unary
+  create CastToObject(operand):Unary
+  create CastToReal64(operand):Unary
+  create CastToString(operand):Unary
+  create CastToValue(operand):Unary
+  create CastValueToCharacter(operand):Unary
+  create CastValueToInt32(operand):Unary
+  create CastValueToLogical(operand):Unary
+  create CastValueToReal64(operand):Unary
+  create CastValueToXY(operand):Unary
+  create CallMethod(context,procedure:Procedure,args):CallProcedure
+  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
+  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
+  create CallNative
+  create CallThisMethod(procedure:Procedure,args):CallProcedure
+  create CallProcedure(args)
+  create CallRoutine(args):CallProcedure
+  create Compare(left,right):Binary
+  create CompareEQReal64(left,right):Compare
+  create CompareNEReal64(left,right):Compare
+  create CompareLTReal64(left,right):Compare
+  create CompareGTReal64(left,right):Compare
+  create CompareLEReal64(left,right):Compare
+  create CompareGEReal64(left,right):Compare
+  create CreateObject(of_type:Type,m_init:Procedure,args)
+  create CreateXY0
+  create CreateXY1(value)
+  create CreateXY2(x,y)
+  create DecrementLocal(info:Local)
+  create DecrementLocalInt32(info:Local)
+  create DecrementThisProperty(info:Property)
+  create DecrementThisPropertyInt32(info:Property)
+  create Description(operand):Unary
+  create DivideInt32(left,right):Binary
+  create DivideObject(left,right):Binary
+  create DivideReal64(left,right):Binary
+  create DivideString(left,right):Binary
+  create DivideValue(left,right):Binary
+  create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
+  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
+  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
+  create GetLocal(info:Local)
+  create GetProperty(context,info:Property)
+  create GetSingleton(type:Type)
+  create GetThisProperty(info:Property)
+  create IncrementLocal(info:Local)
+  create IncrementLocalInt32(info:Local)
+  create IncrementThisProperty(info:Property)
+  create IncrementThisPropertyInt32(info:Property)
+  create Join(a:String,b:String)
+  create LeftShiftInt32(left,right):Binary
+  create LeftShiftObject(left,right):Binary
+  create LeftShiftValue(left,right):Binary
+  create Literal
+  create LiteralNull(type:Type):Literal
+  create LiteralValueUndefined:Literal
+  create Local(name:String,initial_value)
+  create LocalDeclaration( info:Local )
+  create Method(type_context:Type,name:String,statements):Procedure
+  create ModInt32(left,right):Binary
+  create ModObject(left,right):Binary
+  create ModReal64(left,right):Binary
+  create ModValue(left,right):Binary
+  create MultiplyInt32(left,right):Binary
+  create MultiplyObject(left,right):Binary
+  create MultiplyReal64(left,right):Binary
+  create MultiplyString(left,right):Binary
+  create MultiplyValue(left,right):Binary
+  create NegateInt32(operand):Unary
+  create NegateReal64(operand):Unary
+  create NegateValue(operand):Unary
+  create OpAndAssign(target,operand)
+  create Procedure(module_context:Module,name:String,statements)
+  create ProcedureDef(name:String,parameters,return_type_ref,attribute_names,statements)
+  create Property( type_context:Type, name:String, initial_value, type:Type )
+  create PushResult(operand):Unary
+  create ReturnResult(result)
+  create RightShiftInt32(left,right):Binary
+  create RightShiftValue(left,right):Binary
+  create RightShiftXInt32(left,right):Binary
+  create RightShiftXValue(left,right):Binary
+  create Routine(module_context:Module,name:String,statements):Procedure
+  create SetLocal(info:Local,new_value)
+  create SetThisProperty(info:Property,new_value)
+  create StackTopInt32
+  create SubtractInt32(left,right):Binary
+  create SubtractObject(left,right):Binary
+  create SubtractReal64(left,right):Binary
+  create SubtractString(left,right):Binary
+  create SubtractValue(left,right):Binary
+  create TypeContext(type:Type)
+  create TypeRef(name:String)
+  create ValueAsInt32(operand):Unary
+  create XYGetX(context)
+  create XYGetY(context)
+
+--------------------------------------------------------------------------------
+nativeTypes
+--------------------------------------------------------------------------------
+Module
+Type

@@ -1,0 +1,1010 @@
+module R2
+uses Utility/WorkList
+
+class Resolver : Visitor
+  PROPERTIES
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+    locals         = Local[]
+
+    current_statements_rewriter : ListRewriter<<Cmd>>
+
+  METHODS
+    method init( this_module )
+
+    method visit( this_type )
+      if (this_type.is_resolved) return
+      this_type.is_resolved = true
+      this_type.organize
+
+      visit( this_type, forEach in this_type.methods )
+
+      if (this_type.properties.count)
+        local m_init_object = this_type.methods_by_signature[ "init_object()" ]
+        if (not m_init_object)
+          m_init_object = Method( this_type.t, this_type, "init_object" )
+          forEach (p in this_type.properties step -1)
+            if (p.initial_value)
+              m_init_object.statements.insert( Assign(p.t,Access(p.t,p.name),p.initial_value) )
+            endIf
+          endForEach
+
+          this_type.add( m_init_object )
+          visit( this_type, m_init_object )
+          this_type.m_init_object = m_init_object
+        endIf
+      endIf
+
+    method visit( this_type, this_procedure )
+      this_procedure.organize
+      if (not this_procedure.is_resolved)
+        this_procedure.is_resolved = true
+        visit( this_procedure )
+        locals.clear
+      endIf
+
+    method add_local( t:Token, name:String, initial_value=null:Cmd, type=null:Type )->Local
+      require this_procedure
+      local v = Local( t, name, initial_value, type )
+      collect( v )
+      return v
+
+    method auto_local( t:Token, base_name:String, initial_value=null:Cmd, type=null:Type )->Local
+      require this_procedure
+      local name = ".auto_$_$"(base_name,this_procedure.locals.count)
+      return add_local( t, name, initial_value, type )
+
+    method collect( v:Local, proc=this_procedure:Procedure )
+      if (v.fp_offset == -1)
+        v.fp_offset = proc.locals.count + which{ proc.is_global:0 || 1 }
+        v.is_parameter = v.fp_offset < proc.parameters.count
+        proc.locals.add( v )
+      endIf
+
+    method find_local( name:String )->Local
+      forEach (v in locals step -1)
+        if (v.name == name) return v
+      endForEach
+      return null
+
+    method on( cmd:Access )->Cmd
+      cmd.args = visit( cmd.args )
+      return resolve_access( cmd.t, null, cmd.name, cmd.args )
+
+    method on_validate( cmd:Add )->Cmd
+      return validate( cmd.left.type.cmd_add(cmd.t, cmd.left, cmd.right) )
+
+    method on( cmd:AddAndAssign )->Cmd
+      local operand = visit( cmd.operand ).require_value
+      return validate( cmd.target.resolve_add_and_assign(cmd.t,operand,this) )
+
+    method on_validate( cmd:AddAndAssignLocal )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
+        return validate( AddAndAssignLocalInt32(cmd.t,cmd.info,operand) )
+      endIf
+      throw cmd.t.error( "[INTERNAL] AddAndAssignLocal doesn't handle $."(type) )
+
+    method on_validate( cmd:AddAndAssignProperty )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
+        return validate( AddAndAssignPropertyInt32(cmd.t,cmd.context,cmd.info,operand) )
+      endIf
+      throw cmd.t.error( "[INTERNAL] AddAndAssignThisProperty doesn't handle $."(type) )
+
+    method on_validate( cmd:AddAndAssignThisProperty )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
+        return validate( AddAndAssignThisPropertyInt32(cmd.t,cmd.info,operand) )
+      endIf
+      throw cmd.t.error( "[INTERNAL] AddAndAssignThisProperty doesn't handle $."(type) )
+
+    method on_visit( cmd:Args )
+      visit_children( cmd )
+      (forEach in cmd).require_value
+
+    method on( cmd:Assign )->Cmd
+      local new_value = visit( cmd.new_value ).require_value
+      return cmd.target.resolve_assignment( cmd.t, new_value, this )
+
+    method on_visit( cmd:Binary )
+      visit_children( cmd )
+      local left = cmd.left
+      local right = cmd.right
+      local left_type = left.require_type
+      local right_type = right.require_type
+      local result_type = Cmd.common_type( left_type, right_type )
+      if (left_type is not result_type) cmd.left = validate( result_type.cmd_cast(left) )
+      if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
+      # on_validate() will be called after this method returns
+
+    method on_validate( cmd:BitwiseAnd )->Cmd
+      return validate( cmd.left.type.cmd_bitwise_and(cmd.t, cmd.left, cmd.right) )
+
+    method on_validate( cmd:BitwiseOr )->Cmd
+      return validate( cmd.left.type.cmd_bitwise_or(cmd.t, cmd.left, cmd.right) )
+
+    method on( cmd:BitwiseOrAndAssign )->Cmd
+      local operand = visit( cmd.operand ).require_value
+      return validate( cmd.target.resolve_bitwise_or_and_assign(cmd.t,operand,this) )
+
+    method on_validate( cmd:BitwiseOrAndAssignLocal )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
+        return validate( BitwiseOrAndAssignLocalInt32(cmd.t,cmd.info,operand) )
+      endIf
+      throw cmd.t.error( "[INTERNAL] BitwiseOrAndAssignLocal doesn't handle $."(type) )
+
+    method on_validate( cmd:BitwiseOrAndAssignProperty )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
+        return validate( BitwiseOrAndAssignPropertyInt32(cmd.t,cmd.context,cmd.info,operand) )
+      endIf
+      throw cmd.t.error( "[INTERNAL] BitwiseOrAndAssignThisProperty doesn't handle $."(type) )
+
+    method on_validate( cmd:BitwiseOrAndAssignThisProperty )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
+        return validate( BitwiseOrAndAssignThisPropertyInt32(cmd.t,cmd.info,operand) )
+      endIf
+      throw cmd.t.error( "[INTERNAL] BitwiseOrAndAssignThisProperty doesn't handle $."(type) )
+
+    method on_validate( cmd:BitwiseXor )->Cmd
+      return validate( cmd.left.type.cmd_bitwise_xor(cmd.t, cmd.left, cmd.right) )
+
+    method on_validate( cmd:CastToInt32 )->Cmd
+      local type = cmd.operand.require_type
+      if (type is Program.type_Int32)   return cmd.operand
+      if (type is Program.type_Real64)  return validate( CastReal64ToInt32(cmd.t, cmd.operand) )
+      if (type is Program.type_Logical or type is Program.type_Character)
+        return validate( ValueAsInt32(cmd.t,cmd.operand) )
+      endIf
+      if (type is Program.type_Value)  return validate( CastValueToInt32(cmd.t, cmd.operand) )
+      throw cmd.t.error( "Cannot convert type $ to Int32."(type) )
+
+    method on_validate( cmd:CastToReal64 )->Cmd
+      local type = cmd.operand.require_type
+      if (type is Program.type_Real64) return cmd.operand
+      if (type is Program.type_Logical or type is Program.type_Character or type is Program.type_Int32)
+        return validate( CastInt32ToReal64(cmd.t, cmd.operand) )
+      endIf
+      throw cmd.t.error( "Cannot convert type $ to Real64."(type) )
+
+      #{
+    method on_validate( cmd:CastToValue )->Cmd
+      visit_children( cmd )
+      local from_type = cmd.operand.require_type
+      whichIs (from_type)
+        others: throw
+      endWhichIs
+      }#
+
+    method on_validate( cmd:CompareEQ )->Cmd
+      #local type = cmd.left.type
+      return validate( CompareEQReal64(cmd.t,cmd.left,cmd.right) )
+
+    method on_validate( cmd:CompareNE )->Cmd
+      return validate( CompareNEReal64(cmd.t,cmd.left,cmd.right) )
+
+    method on_validate( cmd:CompareLT )->Cmd
+      return validate( CompareLTReal64(cmd.t,cmd.left,cmd.right) )
+
+    method on_validate( cmd:CompareGT )->Cmd
+      return validate( CompareGTReal64(cmd.t,cmd.left,cmd.right) )
+
+    method on_validate( cmd:CompareLE )->Cmd
+      return validate( CompareLEReal64(cmd.t,cmd.left,cmd.right) )
+
+    method on_validate( cmd:CompareGE )->Cmd
+      return validate( CompareGEReal64(cmd.t,cmd.left,cmd.right) )
+
+    method on( cmd:ContextAccess )->Cmd
+      visit( cmd.args )
+      return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
+
+    method on( cmd:Decrement )->Cmd
+      return cmd.operand.resolve_decrement( cmd.t, this )
+
+    method on_validate( cmd:DecrementLocal )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        return validate( DecrementLocalInt32(cmd.t,cmd.info) )
+      else
+        throw cmd.t.error( "[INTERNAL] Unhandled DecrementLocal for type $."(type) )
+      endIf
+
+    method on_validate( cmd:DecrementThisProperty )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        return validate( DecrementThisPropertyInt32(cmd.t,cmd.info) )
+      else
+        throw cmd.t.error( "[INTERNAL] Unhandled DecrementThisProperty for type $."(type) )
+      endIf
+
+    method on_validate( cmd:Description )->Cmd
+      local call_description = resolve_access( cmd.t, cmd.operand, "description", null, &suppress_error )
+      if (call_description) return call_description
+      return cmd
+
+    method on_validate( cmd:Divide )->Cmd
+      return validate( cmd.left.type.cmd_divide(cmd.t, cmd.left, cmd.right) )
+
+    method on( cmd:ForEachIn )->Cmd
+      #ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
+      resolve( cmd.index_v )
+      resolve( cmd.collection_v )
+
+      local collection_type = cmd.collection_v.type
+      collection_type.organize
+
+      local t = cmd.collection_v.t
+      local cmd_count = ContextAccess(
+        t,
+        Access( t, cmd.collection_v.name ),
+        "count"
+      )
+
+      local m_get = collection_type.methods_by_signature[ "get(Int32)" ]
+      require m_get
+      if (not m_get.return_type) throw m_get.t.error( "Return value expected for use with forEach." )
+      cmd.control_v.type = m_get.return_type
+      resolve( cmd.control_v )
+
+      local cmd_get = ContextAccess(
+        t,
+        Access( t, cmd.collection_v.name ),
+        "get",
+        Args( cmd.collection_v.t, Access(cmd.index_v.t,cmd.index_v.name) )
+      )
+
+      return visit(
+        ForEachInIndexedCollection(
+          cmd.t,
+          cmd.control_v,
+          cmd.index_v,
+          cmd.collection_v,
+          cmd_count,
+          cmd_get,
+          cmd.step_size,
+          cmd.statements
+        )
+      )
+
+    method on_visit_children( cmd:ForEachInIndexedCollection ) [override]
+      locals.add( cmd.control_v )
+      locals.add( cmd.index_v )
+      locals.add( cmd.collection_v )
+
+      prior.on_visit_children( cmd )
+      cmd.control_v.type = cmd.cmd_get.require_type
+
+      loop (3) locals.remove_last
+
+    method on_visit( cmd:If )
+      visit_children( cmd )
+      if (cmd.condition) cmd.condition.require_value
+
+    method on( cmd:IndexAccess )->Cmd
+      return visit( ContextAccess(cmd.t, cmd.context, "get", CmdList(cmd.t,cmd.index)) )
+
+    method on( cmd:Increment )->Cmd
+      return cmd.operand.resolve_increment( cmd.t, this )
+
+    method on_validate( cmd:IncrementLocal )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        return validate( IncrementLocalInt32(cmd.t,cmd.info) )
+      else
+        throw cmd.t.error( "[INTERNAL] Unhandled IncrementLocal for type $."(type) )
+      endIf
+
+    method on_validate( cmd:IncrementThisProperty )->Cmd
+      local type = cmd.info.type
+      if (type is Program.type_Int32)
+        return validate( IncrementThisPropertyInt32(cmd.t,cmd.info) )
+      else
+        throw cmd.t.error( "[INTERNAL] Unhandled IncrementThisProperty for type $."(type) )
+      endIf
+
+    method on_validate( cmd:LeftShift )->Cmd
+      return validate( cmd.left.type.cmd_left_shift(cmd.t, cmd.left, cmd.right) )
+
+    method on_validate( cmd:Local )->Cmd
+      if (not cmd.type)
+        if (cmd.initial_value)
+          cmd.type = cmd.initial_value.type
+          if (not cmd.type)
+            cmd.initial_value = visit( cmd.initial_value )
+            cmd.type = cmd.initial_value.require_type
+          endIf
+        endIf
+      endIf
+      return cmd
+
+    method on_visit( cmd:LocalDeclaration )
+      local info = cmd.info
+      if (not info.is_parameter)
+        if (info.type)
+          if (not info.initial_value) info.initial_value = info.type.cmd_default_value( info.t )
+          info.initial_value = validate( visit(info.initial_value).cmd_cast_to( info.@type ) )
+        elseIf (not info.@type)
+          if (not info.initial_value)
+            throw info.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
+          endIf
+          info.initial_value = visit( info.initial_value )
+          info.type = info.initial_value.require_type
+        else
+          info.initial_value = visit( info.initial_value )
+        endIf
+      endIf
+      locals.add( info )
+
+    method on_visit( cmd:Loop )
+      visit_children( cmd )
+      if (cmd.loop_count)
+        cmd.loop_count = validate( cmd.loop_count.cmd_cast_to(Program.type_Int32) )
+      endIf
+
+    method on_validate( cmd:Mod )->Cmd
+      return validate( cmd.left.type.cmd_mod(cmd.t, cmd.left, cmd.right) )
+
+    method on_validate( cmd:Multiply )->Cmd
+      return validate( cmd.left.type.cmd_multiply(cmd.t, cmd.left, cmd.right) )
+
+    method on_visit( cmd:Method )
+      forEach (v in cmd.parameters step -1)
+        block v = v->(as Local)
+          if (v.is_auto_store)
+            local p = this_type.must_find_property( cmd.t, v.name )
+            cmd.statements.insert( visit( SetThisProperty(cmd.t, p, GetLocal(cmd.t,v)) ) )
+          endIf
+        endBlock
+      endForEach
+      on_visit( cmd->(as Procedure) )
+
+    method on_validate( cmd:Negate )->Cmd
+      return validate( cmd.operand.type.cmd_negate(cmd.t, cmd.operand) )
+
+    method on_visit( cmd:Procedure )
+      visit_children( cmd )
+
+      cmd.local_stack_slots = cmd.locals.count
+      if (cmd.parameters) cmd.local_stack_slots -= cmd.parameters.count
+      assert cmd.local_stack_slots >= 0
+
+    method on_visit_children( cmd:Procedure )
+      locals.add( (forEach in cmd.parameters)->(as Local) )
+      prior.on_visit_children( cmd )
+      loop (cmd.parameters.count)
+        assert locals.count
+        locals.remove_last
+      endLoop
+
+    method on_visit( cmd:Print )
+      visit_children( cmd )
+
+      forEach (arg in rewriter=cmd.args.list.rewriter)
+        arg = validate( Description(arg.t,arg) ).require_value
+        if (arg) rewriter.write( arg )
+      endForEach
+
+      if (cmd.args.count == 0) throw cmd.t.error( "One or more arguments expected." )
+
+    method on_visit( cmd:Println )
+      visit_children( cmd )
+
+      forEach (arg in rewriter=cmd.args.list.rewriter)
+        arg = validate( Description(arg.t,arg) ).require_value
+        if (arg) rewriter.write( arg )
+      endForEach
+
+    method on( cmd:Return )->Cmd
+      if (cmd.result) return visit( ReturnResult(cmd.t,cmd.result) )
+      return cmd
+
+    method on_visit( cmd:ReturnResult )
+      visit_children( cmd )
+      cmd.result.require_value
+
+    method on_validate( cmd:RightShift )->Cmd
+      return validate( cmd.left.type.cmd_right_shift(cmd.t, cmd.left, cmd.right) )
+
+    method on_validate( cmd:RightShiftX )->Cmd
+      return validate( cmd.left.type.cmd_right_shift_x(cmd.t, cmd.left, cmd.right) )
+
+    method on_visit( cmd:Statements )
+      temporarily current_statements_rewriter = cmd.list.rewriter
+        forEach (element in current_statements_rewriter)
+          local visited_element = visit( element )
+          if (visited_element) current_statements_rewriter.write( visited_element )
+        endForEach
+      endTemporarily
+
+    method on_validate( cmd:Subtract )->Cmd
+      return validate( cmd.left.type.cmd_subtract(cmd.t, cmd.left, cmd.right) )
+
+    method on_visit( cmd:Unary )
+      cmd.operand = visit( cmd.operand ).require_value
+
+    method on_visit( cmd:While )
+      visit_children( cmd )
+      cmd.condition.require_value
+
+    method resolve( v:Local )
+      if (v.initial_value)
+        v.initial_value = visit( v.initial_value ).require_value
+        if (not v.type) v.type = v.initial_value.type
+      endIf
+
+    method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
+      local is_global = false
+      local type_context : Type
+
+      if (context)
+        context = visit( context )
+        is_global = context.is_type_context
+        type_context = context.require_type
+
+        if (not args)
+          if (type_context is Program.type_Value)
+            if (name == "x" or name == "y")
+              context = validate( CastValueToXY(t,context) )
+              type_context = Program.type_XY
+            endIf
+          endIf
+
+          if (type_context is Program.type_XY)
+            if (name == "x") return validate( XYGetX(t, context) )
+            if (name == "y") return validate( XYGetY(t, context) )
+          endIf
+        endIf
+
+      else
+        local type = this_module.find_type( name, &extended_search )
+        if (type and not args)
+          if (type.is_singleton)
+            return GetSingleton(t,type)
+          else
+            if (type.name.ends_with(']'))
+              #which (type.name)
+              #others
+              return resolve_access( t, null, type.name, CmdList(t) )
+              #endWhich
+            else
+              return TypeContext(t,type)
+            endIf
+          endIf
+        endIf
+
+        type_context = this_type
+        if (args)
+          # Call or constructor
+          if (type)
+            if (name == "XY")
+              forEach (arg at i in args)
+                args[i] = validate( arg.cmd_cast_to(Program.type_Real64) )
+              endForEach
+              which (args.count)
+                case 0: return validate( CreateXY0(t) )
+                case 1: return validate( CreateXY1(t,args[0]) )
+                case 2: return validate( CreateXY2(t,args[0],args[1]) )
+                others: throw t.error( "0, 1, or 2 arguments expected for XY() constructor." )
+              endWhich
+            endIf
+            return validate( cmd_create_object(t,type,args) )
+          endIf
+        else
+          local v = find_local( name )
+          if (v) return validate( GetLocal(t,v) )
+        endIf
+      endIf
+
+      local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+
+      if (match)
+        if (not args and match.min_args == 0) args = CmdList(t)
+        cast_args_to_parameter_types( args, match )
+        return validate( match.cmd_call(context,args) )
+      endIf
+
+      if (not is_global)
+        # TODO: update to allow global properties
+        if (not args and type_context)
+          local p = type_context.find_property( name )
+          if (p)
+            if (context) return validate( GetProperty(t,context,p) )
+            else         return validate( GetThisProperty(t,p) )
+          endIf
+        endIf
+      endIf
+
+      if (suppress_error) return null
+      find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+      return null  # never reached
+
+
+    method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd
+      local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )
+      if (m_init)
+        if (not args and m_init.min_args == 0) args = CmdList(t)
+        cast_args_to_parameter_types( args, m_init )
+        return CreateObject( t, type_context, m_init, args )
+      else
+        local mesg : String
+        use Candidates
+          type_context.collect_methods( "create", Candidates.list )
+          type_context.collect_methods( "init", Candidates.list )
+
+          if (args.count == 0 and Candidates.count == 0)
+            # No constructors available and no constructor required.
+            return CreateObject( t, type_context, null, null )
+          endIf
+
+          mesg = "No exact match for object constructor $("(type_context)
+          forEach (arg at i in args)
+            if (i > 0) mesg += ','
+            mesg += arg.require_type
+          endForEach
+          mesg += "). Candidates:\n\n"
+          if (Candidates.count)
+            forEach (m in Candidates)
+              mesg += "  $$" (type_context,m.signature.from_first('('))
+            endForEach
+          else
+            mesg += "  $()"(type_context)
+          endIf
+        endUse
+        throw t.error( mesg )
+      endIf
+
+    method cast_args_to_parameter_types( args:Cmd, proc:Procedure )
+      # And fill in default values
+      if (not args) return
+
+      while (args.count < proc.parameters.count)
+        args.add( proc.parameters[args.count].initial_value.cloned )
+      endWhile
+
+      forEach (arg at i in args)
+        args[i] = validate( arg.cmd_cast_to(proc.parameters[i].type) )
+      endForEach
+
+    method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
+        &require_global, &suppress_error )->Procedure
+      # 'context' is only passed for error description purposes.
+      visit( args )  # resolve args to determine types
+
+      local error_message : String
+      use Candidates
+        if (type_context)
+          type_context.collect_methods( name, Candidates.list, &=require_global )
+        else
+          this_module.collect_routines( name, Candidates.list )
+        endIf
+        (forEach in Candidates).resolve
+        local result = refine_candidates( type_context, args )
+        if (result or suppress_error) return result
+
+        # Throw an error
+        local sig = name
+        if (args)
+          sig += '('
+          forEach (arg at i in args)
+            if (i > 0) sig += ','
+            sig += arg.require_type
+          endForEach
+          sig += ')'
+        endIf
+
+        local mesg : String
+        if (args)
+          which (Candidates.count)
+            case 0
+              mesg = "No such "
+              if (require_global) mesg += "global "
+              if (context)        mesg += "method "
+              elseIf (this_type)  mesg += "method or routine "
+              else                mesg += "routine "
+
+              if (context)        mesg += context.type + "."
+              elseIf (this_type)  mesg += this_type + "."
+
+              mesg += sig + '.'
+
+            case 1
+              mesg = "Call to "
+              if (context)       mesg += context.type + "."
+              elseIf (this_type) mesg += this_type + "."
+
+              mesg += sig
+              mesg += " has arguments that are incompatible with the best candidate:\n\n"
+              mesg += "  " + Candidates[0].context_signature
+
+            others
+              mesg = "Ambiguous call to "
+              if (require_global) mesg += "global "
+              if (context)        mesg += context.type + "."
+              elseIf (this_type)  mesg += this_type + "."
+
+              mesg += sig
+              mesg += ". Candidates:\n\n"
+              forEach (m in Candidates)
+                mesg += "  " + m.context_signature
+              endForEach
+
+          endWhich
+
+        else
+          local g = which{ require_global:"global " || "" }
+          if (context)
+            if (args) mesg = "No such $method '$' exists in type '$'." (g,sig,context.type)
+            else      mesg = "No such $property or method '$' exists in type '$'." (g,sig,context.type)
+          elseIf (this_type)
+            if (args) mesg = "No such $method or routine '$'."(g,sig)
+            else      mesg = "No such $variable, method, or routine '$'."(g,sig)
+          else
+            if (args) mesg = "No such $routine '$'."(g,sig)
+            else      mesg = "No such $variable or routine '$'."(g,sig)
+          endIf
+
+        endIf
+
+        error_message = mesg
+      endUse
+
+      throw t.error( error_message )
+
+    method refine_candidates( type_context:Type, args:Cmd )->Procedure
+      local arg_count = which{ args:args.count || 0 }
+      forEach (m in Candidates)
+        if (m.accepts_arg_count(arg_count)) Candidates.keep m
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      if (not Candidates.refine) return null
+
+      return null
+endClass
+
+augment Procedure
+  PROPERTIES
+    local_stack_slots : Int32  # in addition to args already on stack
+
+  METHODS
+    method find_local( name:String )->Local
+      forEach (v in locals step -1)
+        if (v.name == name) return v
+      endForEach
+      return null
+endAugment
+
+# Add
+augment
+  METHODS
+    method Type.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be added."(name) )
+
+    method TypeInt32.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return AddInt32( t, lhs, rhs )
+
+    method TypeReal64.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return AddReal64( t, lhs, rhs )
+
+    method TypeString.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return AddString( t, lhs, rhs )
+
+    method TypeValue.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return AddValue( t, lhs, rhs )
+
+endAugment
+
+# AddAndAssign
+augment
+  METHODS
+    method Cmd.resolve_add_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal target for '+='." )
+
+    method Access.resolve_add_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        local v = resolver.find_local( name )
+        if (v) return resolver.validate( AddAndAssignLocal(t,v,operand) )
+
+        local p = resolver.this_type.find_property( name )
+        if (p) return resolver.validate( AddAndAssignThisProperty(t,p,operand) )
+      endIf
+      throw t.error( "Illegal target for '+='." )
+
+    method ContextAccess.resolve_add_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        context = resolver.visit( context )
+        local p = context.require_type.find_property( name )
+        if (p) return resolver.validate( AddAndAssignProperty(t,context,p,operand) )
+      endIf
+      throw t.error( "Illegal target for '+='." )
+
+endAugment
+
+# Assignment
+augment
+  METHODS
+    method Cmd.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal target for assignment." )
+
+    method Access.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        local v = resolver.find_local( name )
+        if (v) return resolver.validate( SetLocal(t,v,new_value) )
+
+        local p = resolver.this_type.find_property( name )
+        if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
+      endIf
+      throw t.error( "Illegal target for assignment." )
+
+    method IndexAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      return resolver.visit( ContextAccess(t, context, "set", CmdList(t,index,new_value)) )
+endAugment
+
+# BitwiseAnd
+augment
+  METHODS
+    method Type.cmd_bitwise_and( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be bitwise-AND'd."(name) )
+
+    method TypeInt32.cmd_bitwise_and( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return BitwiseAndInt32( t, lhs, rhs )
+
+    method TypeValue.cmd_bitwise_and( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return BitwiseAndValue( t, lhs, rhs )
+
+endAugment
+
+# BitwiseOr
+augment
+  METHODS
+    method Type.cmd_bitwise_or( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be bitwise-OR'd."(name) )
+
+    method TypeInt32.cmd_bitwise_or( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return BitwiseOrInt32( t, lhs, rhs )
+
+    method TypeValue.cmd_bitwise_or( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return BitwiseOrValue( t, lhs, rhs )
+
+endAugment
+
+# BitwiseOrAndAssign
+augment
+  METHODS
+    method Cmd.resolve_bitwise_or_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal target for '|='." )
+
+    method Access.resolve_bitwise_or_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        local v = resolver.find_local( name )
+        if (v) return resolver.validate( BitwiseOrAndAssignLocal(t,v,operand) )
+
+        local p = resolver.this_type.find_property( name )
+        if (p) return resolver.validate( BitwiseOrAndAssignThisProperty(t,p,operand) )
+      endIf
+      throw t.error( "Illegal target for '|='." )
+
+    method ContextAccess.resolve_bitwise_or_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        context = resolver.visit( context )
+        local p = context.require_type.find_property( name )
+        if (p) return resolver.validate( BitwiseOrAndAssignProperty(t,context,p,operand) )
+      endIf
+      throw t.error( "Illegal target for '|='." )
+
+endAugment
+
+# BitwiseXor
+augment
+  METHODS
+    method Type.cmd_bitwise_xor( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be bitwise-XOR'd."(name) )
+
+    method TypeInt32.cmd_bitwise_xor( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return BitwiseXorInt32( t, lhs, rhs )
+
+    method TypeValue.cmd_bitwise_xor( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return BitwiseXorValue( t, lhs, rhs )
+
+endAugment
+
+
+# Call
+augment
+  METHODS
+    method Cmd.cmd_call( context:Cmd, args:Cmd )->Cmd
+      throw t.error( "[INTERNAL] $.cmd_call() is undefined."(type_name) )
+
+    method Method.cmd_call( context:Cmd, args:Cmd )->Cmd
+      if (context and not context.is_type_context)
+        if (is_global) return CallGlobalMethodWithContext( t, context, this, args )
+        else           return CallMethod( t, context, this, args )
+      else
+        if (is_global) return CallGlobalMethod( t, this, args )
+        else           return CallThisMethod( t, this, args )
+      endIf
+
+    method Routine.cmd_call( context:Cmd, args:Cmd )->Cmd
+      return CallRoutine( t, this, args )
+endAugment
+
+# Divide
+augment
+  METHODS
+    method Type.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be divided."(name) )
+
+    method TypeInt32.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return DivideInt32( t, lhs, rhs )
+
+    method TypeReal64.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return DivideReal64( t, lhs, rhs )
+
+    method TypeString.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return DivideString( t, lhs, rhs )
+
+    method TypeValue.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return DivideValue( t, lhs, rhs )
+
+endAugment
+
+# Decrement
+augment
+  METHODS
+    method Cmd.resolve_decrement( t:Token, resolver:Resolver )->Cmd
+      throw t.error( "Illegal target for decrement." )
+
+    method Access.resolve_decrement( t:Token, resolver:Resolver )->Cmd
+      if (not args)
+        local v = resolver.find_local( name )
+        if (v) return resolver.validate( DecrementLocal(t,v) )
+
+        local p = resolver.this_type.find_property( name )
+        if (p) return resolver.validate( DecrementThisProperty(t,p) )
+      endIf
+      throw t.error( "Illegal target for decrement." )
+endAugment
+
+# Increment
+augment
+  METHODS
+    method Cmd.resolve_increment( t:Token, resolver:Resolver )->Cmd
+      throw t.error( "Illegal target for increment." )
+
+    method Access.resolve_increment( t:Token, resolver:Resolver )->Cmd
+      if (not args)
+        local v = resolver.find_local( name )
+        if (v) return resolver.validate( IncrementLocal(t,v) )
+
+        local p = resolver.this_type.find_property( name )
+        if (p) return resolver.validate( IncrementThisProperty(t,p) )
+      endIf
+      throw t.error( "Illegal target for increment." )
+
+      #method Access.resolve_increment( t:Token, resolver:Resolver )->Cmd
+      #return CallRoutine( t, this, args )
+endAugment
+
+# LeftShift
+augment
+  METHODS
+    method Type.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be bit-shifted."(name) )
+
+    method TypeInt32.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return LeftShiftInt32( t, lhs, rhs )
+
+    method TypeValue.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return LeftShiftValue( t, lhs, rhs )
+
+endAugment
+
+# Mod
+augment
+  METHODS
+    method Type.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be mod'd."(name) )
+
+    method TypeInt32.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return ModInt32( t, lhs, rhs )
+
+    method TypeReal64.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return ModReal64( t, lhs, rhs )
+
+    method TypeValue.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return ModValue( t, lhs, rhs )
+
+endAugment
+
+# Multiply
+augment
+  METHODS
+    method Type.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be multiplied."(name) )
+
+    method TypeInt32.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return MultiplyInt32( t, lhs, rhs )
+
+    method TypeReal64.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return MultiplyReal64( t, lhs, rhs )
+
+    method TypeString.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return MultiplyString( t, lhs, rhs )
+
+    method TypeValue.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return MultiplyValue( t, lhs, rhs )
+
+endAugment
+
+# Negate
+augment
+  METHODS
+    method Type.cmd_negate( t:Token, operand:Cmd )->Cmd
+      throw t.error( "Values of type $ cannot be negated."(name) )
+
+    method TypeInt32.cmd_negate( t:Token, operand:Cmd )->Cmd
+      return NegateInt32( t, operand )
+
+    method TypeReal64.cmd_negate( t:Token, operand:Cmd )->Cmd
+      return NegateReal64( t, operand )
+
+    method TypeValue.cmd_negate( t:Token, operand:Cmd )->Cmd
+      return NegateValue( t, operand )
+
+endAugment
+
+# RightShift
+augment
+  METHODS
+    method Type.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be bit-shifted."(name) )
+
+    method TypeInt32.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return RightShiftInt32( t, lhs, rhs )
+
+    method TypeValue.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return RightShiftValue( t, lhs, rhs )
+
+endAugment
+
+# RightShiftX
+augment
+  METHODS
+    method Type.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be bit-shifted."(name) )
+
+    method TypeInt32.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return RightShiftXInt32( t, lhs, rhs )
+
+    method TypeValue.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return RightShiftXValue( t, lhs, rhs )
+
+endAugment
+
+# Subtract
+augment
+  METHODS
+    method Type.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      throw t.error( "Values of type $ cannot be subtracted."(name) )
+
+    method TypeInt32.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return SubtractInt32( t, lhs, rhs )
+
+    method TypeReal64.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return SubtractReal64( t, lhs, rhs )
+
+    method TypeString.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
+      return SubtractString( t, lhs, rhs )
+
+endAugment
+

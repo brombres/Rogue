@@ -1,0 +1,166 @@
+module R2
+
+class Program [singleton]
+  PROPERTIES
+    t              : Token
+
+    is_configured  = false
+
+    type_Logical   : Type
+    type_Character : Type
+    type_Int32     : Type
+    type_Real64    : Type
+    type_String    : Type
+    type_Value     : Type
+
+    type_Object    : Type
+    type_Global    : Type
+    type_XY        : Type
+
+    parsed_files   = StringTable<<AST>>()
+
+    default_module  : Module
+    global_module   : Module
+    current_module  : Module
+    all_modules     = Module[]
+    modules_by_name = StringTable<<Module>>()
+
+  METHODS
+    method init
+      Program = this # update singleton reference
+
+      t = Token( TokenType.EOI, "R2" )
+
+      default_module = Module( t, "Default" )
+      global_module  = Module( t, "Global" )
+      default_module.uses_module( global_module )
+
+      current_module = global_module
+      type_Logical   = TypeLogical(t)
+      type_Character = TypeCharacter(t)
+      type_Int32     = TypeInt32(t)
+      type_Real64    = TypeReal64(t)
+      type_String    = TypeString(t)
+      type_Value     = TypeValue(t)
+      type_Object    = Type( t, "Object" )
+      type_Global    = Type( t, "Global" )
+      type_XY        = Type( t, "XY" ).[ is_built_in=true ]
+
+      current_module = default_module
+
+    method get_module( name:String )->Module
+      return modules_by_name[ name ]
+
+    method get_module( t:Token, name:String )->Module
+      if (name is null)
+        return default_module
+      elseIf (modules_by_name.contains(name))
+        return modules_by_name[ name ]
+      else
+        return Module( t, name )  # Module adds itself to lookup tables.
+      endIf
+
+    method find_type( name:String )->Type
+      if (name.contains("::"))
+        local m = get_module( name.before_first("::") )
+        return m.find_type( name.after_first("::") )
+      else
+        local type = default_module.find_type( name, &extended_search )
+        if (type) return type
+        return null
+      endIf
+
+    method include( filepath:String, module_context=Program.default_module:Module )
+      include( t, filepath, module_context )
+
+    method include( t:Token, filepath:String, module_context=Program.default_module:Module )
+      filepath .= with_trailing( ".r2" )
+
+      local is_static = not module_context.is_dynamic
+      if (is_static and parsed_files.contains(filepath)) return
+
+      if (not File.exists(filepath))
+        throw t.error( "No such file '$'."(filepath) )
+      endIf
+
+      filepath = File.abs( filepath )
+      if (is_static and parsed_files.contains(filepath)) return
+
+      # placeholders to avoid recursive includes
+      if (is_static) parsed_files[ filepath ] = null
+
+      temporarily current_module = module_context
+        local tokens = Scanner( File(filepath) ).tokenize
+        preprocess( tokens )
+
+        local ast = Parser(tokens).parse->(as AST)
+        if (is_static) parsed_files[ filepath ] = ast
+        if (ast)
+          Collector().visit( ast )
+        endIf
+      endTemporarily
+
+    #method launch
+      #resolve
+      #{
+      forEach (m in all_modules)
+        m.execute
+        if (execution_status == EXE_ERROR)
+          if (not execution_error) execution_error = t.error( "[INTERNAL] Unknown error." )
+          throw execution_error
+        endIf
+      endForEach
+      require stack.is_empty
+      require fp == 0
+      }#
+
+    method preprocess( tokens:Token[] )
+      noAction
+
+    method resolve
+      (forEach in all_modules).resolve
+
+      local c_writer = CWriter( File("Test.c") )
+      c_writer.println "// Test.c"
+      c_writer.println "#include <stdio.h>"
+
+      c_writer.println @|void on_launch()
+                        |{
+      c_writer.indent += 2
+      (forEach in all_modules).write_launch_commands( c_writer )
+      c_writer.indent -= 2
+      c_writer.println @|}
+                        |
+                        |int main( int argc, char* argv[] )
+                        |{
+      c_writer.indent += 2
+
+      c_writer.println @|on_launch();
+                        |return 0;
+
+      c_writer.indent -= 2
+      c_writer.println @|}
+
+      c_writer.close
+
+    method set_current_module( @current_module )
+
+    method set_current_module( t:Token, name:String )
+      if (name is null)
+        @current_module = default_module
+      elseIf (modules_by_name.contains(name))
+        @current_module = modules_by_name[ name ]
+      else
+        @current_module = Module( t, name )
+      endIf
+
+    method type( name:String )->Type
+      if (name.contains("::"))
+        local m = get_module( name.before_first("::") )
+        return m.type( name.after_first("::") )
+      else
+        return default_module.type( name )
+      endIf
+
+endClass
+

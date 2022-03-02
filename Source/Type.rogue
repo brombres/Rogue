@@ -1,0 +1,120 @@
+module R2
+
+class Type
+  BOSS_ATTRIBUTE( is_organized, 1 )
+  BOSS_ATTRIBUTE( is_resolved,  2 )
+  BOSS_ATTRIBUTE( is_primitive, 4 )
+  BOSS_ATTRIBUTE( is_built_in,  8 )
+  BOSS_ATTRIBUTE( is_singleton, 16 )
+
+  GLOBAL METHODS
+    method create( t:Token, name:String )->Type
+      local entry = Program.current_module.types.find( name )
+      if (entry) return entry.value
+
+      if (Program.current_module is not Program.global_module)
+        entry = Program.global_module.types.find( name )
+        if (entry) return entry.value
+      endIf
+
+      return Type( t, name, &!is_primitive )
+
+  PROPERTIES
+    module_context : Module
+    t              : Token
+    name           : String
+    attributes     : Int32
+
+    definition     : ClassDef
+    augments       : CmdList
+
+    properties           = StringTable<<Property>>()
+
+    methods              = Method[]
+    methods_by_name      = StringTable<<Method[]>>()
+    methods_by_signature = StringTable<<Method>>()
+    m_init_object        : Method
+
+  METHODS
+    method init( t, name, is_primitive:Logical )
+      this.is_primitive = is_primitive
+      module_context = Program.current_module
+      augments = CmdList(t)
+      Program.current_module.types[ name ] = this
+
+    method add( m:Method )
+      methods.add( m )
+      ensure methods_by_name[ m.name ]
+      methods_by_name[ m.name ].add( m )
+
+    method add_property( t:Token, name:String, type:Type )->Property
+      local p = Property( t, this, name, null, type )
+      properties[ name ] = p
+      return p
+
+    method add_property( name:String, type:String )->Property
+      return add_property( t, name, Program.type(type) )
+
+    method collect_methods( m_name:String, list:Procedure[], &require_global )
+      local matching = methods_by_name[ m_name ]
+      if (matching)
+        forEach (m in matching)
+          if (not require_global or m.is_global) list.add( m )
+        endForEach
+      endIf
+
+    method description->String
+      return name
+
+    method find_property( name:String )->Property
+      return properties[name]
+
+    method is_reference->Logical
+      return (not is_primitive)
+
+    method must_find_property( t:Token, name:String )->Property
+      local result = properties[name]
+      if (result) return result
+      throw t.error( "No such property $.$"(this.name,name) )
+
+endClass
+
+class TypePrimitive : Type
+endClass
+
+class TypeLogical : TypePrimitive
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Logical", &is_primitive )
+endClass
+
+class TypeCharacter : TypePrimitive
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Character", &is_primitive )
+endClass
+
+class TypeInt32 : TypePrimitive
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Int32", &is_primitive )
+endClass
+
+class TypeReal64 : TypePrimitive
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Real64", &is_primitive )
+endClass
+
+class TypeString : TypePrimitive
+  METHODS
+    method init( t:Token )
+      prior.init( t, "String", &is_primitive )
+endClass
+
+class TypeValue : TypePrimitive
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Value", &is_primitive )
+endClass
+

@@ -1,0 +1,52 @@
+module R2
+
+class CGenerator : Visitor
+  PROPERTIES
+    writer         : CWriter
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+
+  METHODS
+    method init( this_module, writer )
+
+    method on_visit( cmd:Cmd )
+      throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
+
+    method on_visit( cmd:CmdList )
+      visit_children( cmd )
+
+    method on_visit( cmd:LocalDeclarations )
+      visit_children( cmd )
+
+    #method on_visit( cmd:LocalDef )
+
+    method on_visit( cmd:Statements )
+      forEach (statement in cmd)
+        visit( statement )
+        writer.println( ';' )
+      endForEach
+
+    method on_visit( cmd:Println )
+      if (cmd.args)
+        forEach (arg in cmd.args)
+          arg.write_print( writer )
+          writer.println( ';' )
+        endForEach
+      endIf
+      writer.print ''putchar( '\\n' )''
+endClass
+
+# write_print()
+augment
+  METHODS
+    method Cmd.write_print( writer:CWriter )
+      throw UnsupportedOperationError("$.write_print()"(type_name))
+
+    method LiteralInt32.write_print( writer:CWriter )
+      writer.print ''printf( "%d", $ )'' (value)
+
+    method LiteralString.write_print( writer:CWriter )
+      writer.print ''printf( "$" )'' (value.to_escaped_ascii(''"''))
+endAugment
+
