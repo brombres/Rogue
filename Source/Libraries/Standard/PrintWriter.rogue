@@ -59,6 +59,9 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
 
     method flush( buffer:StringBuilder ) [abstract]
 
+    method indent->Int32
+      return $buffer.indent
+
     method print( value:Byte )->this
       $buffer.print( value )
       return this
@@ -139,6 +142,9 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
 
     method println( value:String )->this
       return print( value ).println
+
+    method set_indent( new_indent:Int32 )
+      $buffer.indent = new_indent
 endClass
 
 class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
