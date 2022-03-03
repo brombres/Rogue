@@ -123,7 +123,50 @@ SYMBOL_OR_EQUALS             |=
 ----------------------------------------------------------------------
 scanner
 ----------------------------------------------------------------------
-- main
+# Entry points:
+# - preprocess
+# - tokenize
+- preprocess
+  while hasAnother
+    preprocess_another
+  endWhile
+  halt
+
+- preprocess_another
+  buffer = ""
+  if scan '$'
+    if scan "include"
+      while (scan ' ') noAction
+      print buffer
+      markPosition
+      buffer = ""
+      scan_meta_filepath
+      create STRING
+      call include_filepath
+      return
+    endIf
+    print '$'
+  endIf
+  print read
+  return
+
+- scan_meta_filepath
+  savePosition
+  if consume("''")
+    scan_two_quote_string
+  elseIf consume('\'')
+    scan_single_quote_string
+  elseIf consume('"')
+    scan_string
+  elseIf scan([_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*)
+    noAction
+  else
+    syntaxError "Filename expected."
+  endIf
+  call print_characters_from_saved_position
+  return
+
+- tokenize
   consume [ \r\t]*                 # whitespace
   markPosition
   scan_comment
@@ -258,11 +301,15 @@ scanner
   return
 
 - tokenize_string
+  scan_string
+  produce STRING
+
+- scan_string
   while (hasAnother and not nextIs('"'))
     scan_character
   endWhile
   mustConsume '"'
-  produce STRING
+  return
 
 - tokenize_character_or_string
   if (consume('\'')) produce STRING
@@ -274,12 +321,23 @@ scanner
   mustConsume('\'')
   produce STRING
 
+- scan_single_quote_string
+  while (hasAnother and not nextIs('\''))
+    scan_character
+  endWhile
+  mustConsume '\''
+  return
+
 - tokenize_two_quote_string
+  scan_two_quote_string
+  produce STRING
+
+- scan_two_quote_string
   while (hasAnother and not nextIs("''"))
     scan_character
   endWhile
   mustConsume "''"
-  produce STRING
+  return
 
 - scan_character
   if (not hasAnother) syntaxError "Unterminated string - unexpected end of file."

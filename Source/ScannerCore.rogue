@@ -9,22 +9,28 @@ $include "TokenType.rogue"
 
 class ScannerCore [abstract]
   DEFINITIONS
-    ip_main = 0
-    ip_scan_comment = 1
-    ip_scan_id_or_keyword = 2
-    ip_scan_number = 3
-    ip_scan_integer = 4
-    ip_scan_binary_integer = 5
-    ip_scan_octal_integer = 6
-    ip_scan_hex_integer = 7
-    ip_tokenize_string = 8
-    ip_tokenize_character_or_string = 9
-    ip_tokenize_two_quote_string = 10
-    ip_scan_character = 11
-    ip_read_hex4 = 12
-    ip_read_hex2 = 13
-    ip_read_hex_digit = 14
-    ip_tokenize_verbatim_string = 15
+    ip_preprocess = 0
+    ip_preprocess_another = 1
+    ip_scan_meta_filepath = 2
+    ip_tokenize = 3
+    ip_scan_comment = 4
+    ip_scan_id_or_keyword = 5
+    ip_scan_number = 6
+    ip_scan_integer = 7
+    ip_scan_binary_integer = 8
+    ip_scan_octal_integer = 9
+    ip_scan_hex_integer = 10
+    ip_tokenize_string = 11
+    ip_scan_string = 12
+    ip_tokenize_character_or_string = 13
+    ip_scan_single_quote_string = 14
+    ip_tokenize_two_quote_string = 15
+    ip_scan_two_quote_string = 16
+    ip_scan_character = 17
+    ip_read_hex4 = 18
+    ip_read_hex2 = 19
+    ip_read_hex_digit = 20
+    ip_tokenize_verbatim_string = 21
 
   PROPERTIES
     _filepath     : String
@@ -41,6 +47,8 @@ class ScannerCore [abstract]
     halt          = false
 
     _position_stack = Int32[]
+    _line_stack     = Int32[]
+    _column_stack   = Int32[]
 
     # GENERATED PROPERTIES
     count     : Int32
@@ -51,23 +59,24 @@ class ScannerCore [abstract]
     hex_digit : Int32
     value     : Int32
     digits    : Int32
-    _scan_pattern_0 = ScanPattern( "[ \r\t]*" )
-    _scan_pattern_1 = ScanPattern( "[^\n]*" )
-    _scan_pattern_2 = ScanPattern( "{----[-]*}" )
-    _scan_pattern_3 = ScanPattern( "{====[=]*}" )
-    _scan_pattern_4 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
-    _scan_pattern_5 = ScanPattern( "[ ]+" )
-    _scan_pattern_6 = ScanPattern( "[0-9]" )
-    _scan_pattern_7 = ScanPattern( "{[.][0-9]}" )
-    _scan_pattern_8 = ScanPattern( "[eE]" )
-    _scan_pattern_9 = ScanPattern( "[+-]" )
-    _scan_pattern_10 = ScanPattern( "[0-9]+" )
-    _scan_pattern_11 = ScanPattern( "[_]+" )
-    _scan_pattern_12 = ScanPattern( "[01]+" )
-    _scan_pattern_13 = ScanPattern( "[0-7]+" )
-    _scan_pattern_14 = ScanPattern( "[0-9A-Fa-f]+" )
-    _scan_pattern_15 = ScanPattern( "[0-9a-fA-F]" )
-    _scan_pattern_16 = ScanPattern( "[ ]*" )
+    _scan_pattern_0 = ScanPattern( "{[_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*}" )
+    _scan_pattern_1 = ScanPattern( "[ \r\t]*" )
+    _scan_pattern_2 = ScanPattern( "[^\n]*" )
+    _scan_pattern_3 = ScanPattern( "{----[-]*}" )
+    _scan_pattern_4 = ScanPattern( "{====[=]*}" )
+    _scan_pattern_5 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
+    _scan_pattern_6 = ScanPattern( "[ ]+" )
+    _scan_pattern_7 = ScanPattern( "[0-9]" )
+    _scan_pattern_8 = ScanPattern( "{[.][0-9]}" )
+    _scan_pattern_9 = ScanPattern( "[eE]" )
+    _scan_pattern_10 = ScanPattern( "[+-]" )
+    _scan_pattern_11 = ScanPattern( "[0-9]+" )
+    _scan_pattern_12 = ScanPattern( "[_]+" )
+    _scan_pattern_13 = ScanPattern( "[01]+" )
+    _scan_pattern_14 = ScanPattern( "[0-7]+" )
+    _scan_pattern_15 = ScanPattern( "[0-9A-Fa-f]+" )
+    _scan_pattern_16 = ScanPattern( "[0-9a-fA-F]" )
+    _scan_pattern_17 = ScanPattern( "[ ]*" )
     _scan_table_0 = ScanTable("gX7/HQo8Ij4nQEBGJlAtVipkIWpecH1yXXQpdjp4LIEqJIEsfIEuW4E4PYE+PoFEPIFOe4FYKIFaJYFcLoFiK4FkP4FuO4F0L4F2foF8AAABAAIBJ0QDAAgCfExbTgQAHAAFAT1UOAAfAz5eLWA9YgYAIAA0AAcBPWg1AAkBPW4hAAoACwAMAA0ADgM6gQA8gQI+gRAPAP8BPIEG/wE6gQoaAT2BDhsA/wE+gRT/AjqBGj6BICsBPYEeLAD/ATqBJC0BPYEoLgAQABEAMgJ8gTQ9gTYSADkAIwFdgTwTABUBPYFCFAAXAj2BSj6BTBYAGAAdAj2BVDyBVhkAHgAiACQAJQE9gWA3ACYAJwIrgWo9gWwoADMAKQE6gXIqAC8AMAE9gXo2ADEA")
     _scan_table_1 = ScanTable("hnYAFEcqYYEIYoEqY4E8bYFOZYF4ZoM2Z4NgaYN2bIQoTYRCboRcb4UKcIUQUIUucoVUdIYCdYYsd4ZaeIZs/wFMLv8BTzL/AUI2/wFBOv8BTD4BASBC/wJQSE1u/wFSTP8BT1D/AVBU/wFFWP8BUlz/AVRg/wFJZP8BRWj/AVNsFAD/AUVy/wFUdv8BSHr/AU9+/wFEgQL/AVOBBhUA/wJugQ51gRT/AWSBEgIA/wFngRj/AW2BHP8BZYEg/wFugST/AXSBKAMA/wFsgS7/AW+BMv8BY4E2/wFrgToEAP8BbIFA/wFhgUT/AXOBSP8Bc4FMBQD/Am+BVGWBZv8BZIFY/wF1gVz/AWyBYP8BZYFkBgD/AXSBav8BaIFu/wFvgXL/AWSBdhsA/wNsggBughJ4gyT/AXOCBP8BZYIIBwFJggz/AWaCEAgA/wFkghb/B0KCJkOCOEaCSkmCZEyCalKCeFeDEv8BbIIq/wFvgi7/AWOCMv8Ba4I2CQD/AWyCPP8BYYJA/wFzgkT/AXOCSAoA/wFvgk7/AXKCUv8BRYJW/wFhglr/AWOCXv8BaIJiCwD/AWaCaAwA/wFvgm7/AW+Ccv8BcIJ2DQD/AW+CfP8BdYMA/wF0gwT/AWmDCP8BboMM/wFlgxAOAP8BaIMW/wFpgxr/AWyDHv8BZYMiDwD/AXCDKP8Bb4Ms/wFygzD/AXSDNBAA/wJhgzxvg0r/AWyDQP8Bc4NE/wFlg0gRAP8BcoNO/wFFg1L/AWGDVv8BY4Na/wFog14SAP8BbINk/wFvg2j/AWKDbP8BYYNw/wFsg3QTAP8DZoN+bYQAboQSFgD/AXCEBP8Bb4QI/wFyhAz/AXSEEBcA/wFjhBb/AWyEGv8BdYQe/wFkhCL/AWWEJhgA/wFvhCz/AmOEMm+EPP8BYYQ2/wFshDoZAP8BcIRAGgD/AUWERv8BVIRK/wFIhE7/AU+EUv8BRIRW/wFThFocAP8Cb4RidYUA/wJBhGh0hH7/AWOEbP8BdIRw/wFphHT/AW+EeP8BboR8HQAeAP8BbIUE/wFshQgfAP8BcoUOIAD/AmmFFnKFGCEA/wFphRz/AW6FIP8BdIUkIgFshSj/AW6FLCMA/wFShTL/AU+FNv8BUIU6/wFFhT7/AVKFQv8BVIVG/wFJhUr/AUWFTv8BU4VSJAD/AmWFWm+FbP8BdIVe/wF1hWL/AXKFZv8BboVqJQD/AXWFcP8BdIV0/wFphXj/AW6FfP8BZYYAJgD/AmiGCHKGIv8BaYYM/wFzhhD/AUOGFP8BYYYY/wFshhz/AWyGICcA/wF1hib/AWWGKigA/wJuhjJzhlD/AWSGNv8BZYY6/wFmhj7/AWmGQv8BboZG/wFlhkr/AWSGTikA/wFlhlT/AXOGWCoA/wFohl7/AWmGYv8BbIZm/wFlhmorAP8Bb4Zw/wFyhnQsAA==")
     _scan_table_2 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
@@ -84,6 +93,10 @@ class ScannerCore [abstract]
 
     method init( _filepath, _scanner )
       noAction
+
+    method include_filepath [abstract]
+
+    method print_characters_from_saved_position [abstract]
 
     method execute( ip:Int32 )
       _clear_state
@@ -151,6 +164,19 @@ class ScannerCore [abstract]
       print( output ).flush
       output.clear
 
+    method _restore_position
+      if (_position_stack.is_empty)
+        _throw_syntax_error( "restorePosition without prior savePosition." )
+      endIf
+      _scanner.position = _position_stack.remove_last
+      _scanner.line     = _line_stack.remove_last
+      _scanner.column   = _column_stack.remove_last
+
+    method _save_position
+      _position_stack.add( _scanner.position )
+      _line_stack.add( _scanner.line )
+      _column_stack.add( _scanner.column )
+
     method _scan( ch:Character )->Logical
       if (not _scanner.consume(ch)) return false
       buffer.print ch
@@ -187,8 +213,51 @@ class ScannerCore [abstract]
       loop
         ++ip
         which (ip-1)
-          case ip_main
-            _scan_pattern_0.scan(_scanner)
+          case ip_preprocess
+            while (_scanner.has_another)
+              if (not _execute(ip_preprocess_another)) return false
+            endWhile
+            halt = true
+            return false
+          case ip_preprocess_another
+            buffer.clear.print ""
+            if (_scan('$'))
+              if (_scan("include"))
+                while (_scan(' '))
+                endWhile
+                output.print(buffer)
+                line   = _scanner.line
+                column = _scanner.column
+                buffer.clear.print ""
+                if (not _execute(ip_scan_meta_filepath)) return false
+                _add( TokenType.STRING )
+                this.ip = ip
+                include_filepath
+                ip = this.ip
+                return true
+              endIf
+              output.print('$')
+            endIf
+            output.print(_scanner.read)
+            return true
+          case ip_scan_meta_filepath
+            _save_position
+            if (_scanner.consume("''"))
+              if (not _execute(ip_scan_two_quote_string)) return false
+            elseIf (_scanner.consume('\''))
+              if (not _execute(ip_scan_single_quote_string)) return false
+            elseIf (_scanner.consume('"'))
+              if (not _execute(ip_scan_string)) return false
+            elseIf (_scan_pattern_0.scan(_scanner,buffer))
+            else
+              _throw_syntax_error("Filename expected.")
+            endIf
+            this.ip = ip
+            print_characters_from_saved_position
+            ip = this.ip
+            return true
+          case ip_tokenize
+            _scan_pattern_1.scan(_scanner)
             line   = _scanner.line
             column = _scanner.column
             if (not _execute(ip_scan_comment)) return false
@@ -410,14 +479,14 @@ class ScannerCore [abstract]
                 endWhile
                 _throw_syntax_error("Unterminated multi-line comment.")
               else
-                if (_scan_pattern_1.scan(_scanner,buffer))
+                if (_scan_pattern_2.scan(_scanner,buffer))
                   _scanner.consume('\n')
                   _add( TokenType.EOL )
                   return false
                 endIf
               endIf
-            elseIf ((_scan_pattern_2.scan(_scanner) or _scan_pattern_3.scan(_scanner)))
-              _scan_pattern_1.scan(_scanner,buffer)
+            elseIf ((_scan_pattern_3.scan(_scanner) or _scan_pattern_4.scan(_scanner)))
+              _scan_pattern_2.scan(_scanner,buffer)
               _scanner.consume('\n')
               _add( TokenType.EOL )
               return false
@@ -425,7 +494,7 @@ class ScannerCore [abstract]
               return true
             endIf
           case ip_scan_id_or_keyword
-            if ((not _scan_pattern_4.scan(_scanner,buffer)))
+            if ((not _scan_pattern_5.scan(_scanner,buffer)))
               return true
             endIf
             _scan_table_1.reset
@@ -433,9 +502,9 @@ class ScannerCore [abstract]
               necessary (_scan_table_1.accept(forEach in buffer))
               which (_scan_table_1.product)
                 case 1
-                  if (_scan_pattern_5.scan(_scanner))
+                  if (_scan_pattern_6.scan(_scanner))
                     buffer.print(' ')
-                    if (_scan_pattern_4.scan(_scanner,buffer))
+                    if (_scan_pattern_5.scan(_scanner,buffer))
                       _scan_table_2.reset
                       contingent
                         necessary (_scan_table_2.accept(forEach in buffer))
@@ -591,7 +660,7 @@ class ScannerCore [abstract]
               return false
             endContingent
           case ip_scan_number
-            if (((not _scan_pattern_6.is_next(_scanner)) or _scan_pattern_7.is_next(_scanner)))
+            if (((not _scan_pattern_7.is_next(_scanner)) or _scan_pattern_8.is_next(_scanner)))
               return true
             endIf
             _scan_table_3.reset
@@ -632,9 +701,9 @@ class ScannerCore [abstract]
                 return false
               endIf
               if (not _execute(ip_scan_integer)) return false
-              if (_scan_pattern_8.scan(_scanner,buffer))
-                _scan_pattern_9.scan(_scanner,buffer)
-                if ((not _scan_pattern_10.scan(_scanner,buffer)))
+              if (_scan_pattern_9.scan(_scanner,buffer))
+                _scan_pattern_10.scan(_scanner,buffer)
+                if ((not _scan_pattern_11.scan(_scanner,buffer)))
                   _throw_syntax_error("Integer exponent expected.")
                 endIf
               endIf
@@ -642,40 +711,43 @@ class ScannerCore [abstract]
               return false
             endContingent
           case ip_scan_integer
-            while (_scan_pattern_10.scan(_scanner,buffer))
-              if ((not _scan_pattern_11.scan(_scanner)))
+            while (_scan_pattern_11.scan(_scanner,buffer))
+              if ((not _scan_pattern_12.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_scan_binary_integer
-            while (_scan_pattern_12.scan(_scanner,buffer))
-              if ((not _scan_pattern_11.scan(_scanner)))
+            while (_scan_pattern_13.scan(_scanner,buffer))
+              if ((not _scan_pattern_12.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_scan_octal_integer
-            while (_scan_pattern_13.scan(_scanner,buffer))
-              if ((not _scan_pattern_11.scan(_scanner)))
+            while (_scan_pattern_14.scan(_scanner,buffer))
+              if ((not _scan_pattern_12.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_scan_hex_integer
-            while (_scan_pattern_14.scan(_scanner,buffer))
-              if ((not _scan_pattern_11.scan(_scanner)))
+            while (_scan_pattern_15.scan(_scanner,buffer))
+              if ((not _scan_pattern_12.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_tokenize_string
+            if (not _execute(ip_scan_string)) return false
+            _add( TokenType.STRING )
+            return false
+          case ip_scan_string
             while ((_scanner.has_another and (not _scanner.next_is('"'))))
               if (not _execute(ip_scan_character)) return false
             endWhile
             _must_consume( '"' )
-            _add( TokenType.STRING )
-            return false
+            return true
           case ip_tokenize_character_or_string
             if (_scanner.consume('\''))
               _add( TokenType.STRING )
@@ -692,13 +764,22 @@ class ScannerCore [abstract]
             _must_consume( '\'' )
             _add( TokenType.STRING )
             return false
+          case ip_scan_single_quote_string
+            while ((_scanner.has_another and (not _scanner.next_is('\''))))
+              if (not _execute(ip_scan_character)) return false
+            endWhile
+            _must_consume( '\'' )
+            return true
           case ip_tokenize_two_quote_string
+            if (not _execute(ip_scan_two_quote_string)) return false
+            _add( TokenType.STRING )
+            return false
+          case ip_scan_two_quote_string
             while ((_scanner.has_another and (not _next_is("''"))))
               if (not _execute(ip_scan_character)) return false
             endWhile
             _must_consume( "''" )
-            _add( TokenType.STRING )
-            return false
+            return true
           case ip_scan_character
             if ((not _scanner.has_another))
               _throw_syntax_error("Unterminated string - unexpected end of file.")
@@ -779,7 +860,7 @@ class ScannerCore [abstract]
               if (not _execute(ip_read_hex_digit)) return false
               value = hex_digit
               digits = 1
-              while (((digits<6) and _scan_pattern_15.is_next(_scanner)))
+              while (((digits<6) and _scan_pattern_16.is_next(_scanner)))
                 if (not _execute(ip_read_hex_digit)) return false
                 value = ((value * 16) + hex_digit)
                 ++digits
@@ -805,7 +886,7 @@ class ScannerCore [abstract]
             hex2 = (hex2 + hex_digit)
             return true
           case ip_read_hex_digit
-            if ((not _scan_pattern_15.is_next(_scanner)))
+            if ((not _scan_pattern_16.is_next(_scanner)))
               _throw_syntax_error("Hex digit expected (0-9, a-f, or A-F).")
             endIf
             ch = _scanner.read
@@ -819,9 +900,9 @@ class ScannerCore [abstract]
             return true
           case ip_tokenize_verbatim_string
             while (_scanner.has_another)
-              _scan_pattern_1.scan(_scanner,buffer)
+              _scan_pattern_2.scan(_scanner,buffer)
               _scanner.consume('\n')
-              _scan_pattern_16.scan(_scanner)
+              _scan_pattern_17.scan(_scanner)
               if ((not _scanner.consume('|')))
                 _add( TokenType.STRING )
                 return false

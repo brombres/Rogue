@@ -48,7 +48,7 @@ class R2
 
     method parse_files
       Program.include( forEach in command//args )
-      Program.resolve
+      #Program.resolve
 
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().
