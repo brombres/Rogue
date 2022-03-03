@@ -11,7 +11,7 @@ class Scanner : ScannerCore
 
     method preprocess
       execute( ip_preprocess )
-      @trace output
+      init( _filepath, output->String )
 
     method print_characters_from_saved_position
       local current_pos = _scanner.position

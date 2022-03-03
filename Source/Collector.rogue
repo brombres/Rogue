@@ -57,6 +57,9 @@ class Collector : Visitor
       return null
 
     method on( cmd:UsesModule )->Cmd
+      trace "TODO"
+      return cmd
+      #{
       use builder = StringBuilder.pool
         forEach (segment at i in cmd.path)
           if (i > 0) builder.print '/'
@@ -68,5 +71,6 @@ class Collector : Visitor
         Program.include( filepath, m )
       endUse
       return null
+      }#
 endClass
 

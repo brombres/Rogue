@@ -12,25 +12,27 @@ class ScannerCore [abstract]
     ip_preprocess = 0
     ip_preprocess_another = 1
     ip_scan_meta_filepath = 2
-    ip_tokenize = 3
-    ip_scan_comment = 4
-    ip_scan_id_or_keyword = 5
-    ip_scan_number = 6
-    ip_scan_integer = 7
-    ip_scan_binary_integer = 8
-    ip_scan_octal_integer = 9
-    ip_scan_hex_integer = 10
-    ip_tokenize_string = 11
-    ip_scan_string = 12
-    ip_tokenize_character_or_string = 13
-    ip_scan_single_quote_string = 14
-    ip_tokenize_two_quote_string = 15
-    ip_scan_two_quote_string = 16
-    ip_scan_character = 17
-    ip_read_hex4 = 18
-    ip_read_hex2 = 19
-    ip_read_hex_digit = 20
-    ip_tokenize_verbatim_string = 21
+    ip_scan_id = 3
+    ip_tokenize = 4
+    ip_scan_comment = 5
+    ip_scan_id_or_keyword = 6
+    ip_scan_number = 7
+    ip_scan_integer = 8
+    ip_scan_binary_integer = 9
+    ip_scan_octal_integer = 10
+    ip_scan_hex_integer = 11
+    ip_tokenize_string = 12
+    ip_scan_string = 13
+    ip_tokenize_character_or_string = 14
+    ip_scan_single_quote_string = 15
+    ip_tokenize_two_quote_string = 16
+    ip_scan_two_quote_string = 17
+    ip_scan_character = 18
+    ip_read_hex4 = 19
+    ip_read_hex2 = 20
+    ip_read_hex_digit = 21
+    ip_tokenize_verbatim_string = 22
+    ip_scan_verbatim_string = 23
 
   PROPERTIES
     _filepath     : String
@@ -51,36 +53,40 @@ class ScannerCore [abstract]
     _column_stack   = Int32[]
 
     # GENERATED PROPERTIES
-    count     : Int32
-    ch        : Character
-    base      : Int32
-    hex2      : Int32
-    hex4      : Int32
-    hex_digit : Int32
-    value     : Int32
-    digits    : Int32
-    _scan_pattern_0 = ScanPattern( "{[_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*}" )
-    _scan_pattern_1 = ScanPattern( "[ \r\t]*" )
-    _scan_pattern_2 = ScanPattern( "[^\n]*" )
-    _scan_pattern_3 = ScanPattern( "{----[-]*}" )
-    _scan_pattern_4 = ScanPattern( "{====[=]*}" )
-    _scan_pattern_5 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
-    _scan_pattern_6 = ScanPattern( "[ ]+" )
-    _scan_pattern_7 = ScanPattern( "[0-9]" )
-    _scan_pattern_8 = ScanPattern( "{[.][0-9]}" )
-    _scan_pattern_9 = ScanPattern( "[eE]" )
-    _scan_pattern_10 = ScanPattern( "[+-]" )
-    _scan_pattern_11 = ScanPattern( "[0-9]+" )
-    _scan_pattern_12 = ScanPattern( "[_]+" )
-    _scan_pattern_13 = ScanPattern( "[01]+" )
-    _scan_pattern_14 = ScanPattern( "[0-7]+" )
-    _scan_pattern_15 = ScanPattern( "[0-9A-Fa-f]+" )
-    _scan_pattern_16 = ScanPattern( "[0-9a-fA-F]" )
-    _scan_pattern_17 = ScanPattern( "[ ]*" )
-    _scan_table_0 = ScanTable("gX7/HQo8Ij4nQEBGJlAtVipkIWpecH1yXXQpdjp4LIEqJIEsfIEuW4E4PYE+PoFEPIFOe4FYKIFaJYFcLoFiK4FkP4FuO4F0L4F2foF8AAABAAIBJ0QDAAgCfExbTgQAHAAFAT1UOAAfAz5eLWA9YgYAIAA0AAcBPWg1AAkBPW4hAAoACwAMAA0ADgM6gQA8gQI+gRAPAP8BPIEG/wE6gQoaAT2BDhsA/wE+gRT/AjqBGj6BICsBPYEeLAD/ATqBJC0BPYEoLgAQABEAMgJ8gTQ9gTYSADkAIwFdgTwTABUBPYFCFAAXAj2BSj6BTBYAGAAdAj2BVDyBVhkAHgAiACQAJQE9gWA3ACYAJwIrgWo9gWwoADMAKQE6gXIqAC8AMAE9gXo2ADEA")
-    _scan_table_1 = ScanTable("hnYAFEcqYYEIYoEqY4E8bYFOZYF4ZoM2Z4NgaYN2bIQoTYRCboRcb4UKcIUQUIUucoVUdIYCdYYsd4ZaeIZs/wFMLv8BTzL/AUI2/wFBOv8BTD4BASBC/wJQSE1u/wFSTP8BT1D/AVBU/wFFWP8BUlz/AVRg/wFJZP8BRWj/AVNsFAD/AUVy/wFUdv8BSHr/AU9+/wFEgQL/AVOBBhUA/wJugQ51gRT/AWSBEgIA/wFngRj/AW2BHP8BZYEg/wFugST/AXSBKAMA/wFsgS7/AW+BMv8BY4E2/wFrgToEAP8BbIFA/wFhgUT/AXOBSP8Bc4FMBQD/Am+BVGWBZv8BZIFY/wF1gVz/AWyBYP8BZYFkBgD/AXSBav8BaIFu/wFvgXL/AWSBdhsA/wNsggBughJ4gyT/AXOCBP8BZYIIBwFJggz/AWaCEAgA/wFkghb/B0KCJkOCOEaCSkmCZEyCalKCeFeDEv8BbIIq/wFvgi7/AWOCMv8Ba4I2CQD/AWyCPP8BYYJA/wFzgkT/AXOCSAoA/wFvgk7/AXKCUv8BRYJW/wFhglr/AWOCXv8BaIJiCwD/AWaCaAwA/wFvgm7/AW+Ccv8BcIJ2DQD/AW+CfP8BdYMA/wF0gwT/AWmDCP8BboMM/wFlgxAOAP8BaIMW/wFpgxr/AWyDHv8BZYMiDwD/AXCDKP8Bb4Ms/wFygzD/AXSDNBAA/wJhgzxvg0r/AWyDQP8Bc4NE/wFlg0gRAP8BcoNO/wFFg1L/AWGDVv8BY4Na/wFog14SAP8BbINk/wFvg2j/AWKDbP8BYYNw/wFsg3QTAP8DZoN+bYQAboQSFgD/AXCEBP8Bb4QI/wFyhAz/AXSEEBcA/wFjhBb/AWyEGv8BdYQe/wFkhCL/AWWEJhgA/wFvhCz/AmOEMm+EPP8BYYQ2/wFshDoZAP8BcIRAGgD/AUWERv8BVIRK/wFIhE7/AU+EUv8BRIRW/wFThFocAP8Cb4RidYUA/wJBhGh0hH7/AWOEbP8BdIRw/wFphHT/AW+EeP8BboR8HQAeAP8BbIUE/wFshQgfAP8BcoUOIAD/AmmFFnKFGCEA/wFphRz/AW6FIP8BdIUkIgFshSj/AW6FLCMA/wFShTL/AU+FNv8BUIU6/wFFhT7/AVKFQv8BVIVG/wFJhUr/AUWFTv8BU4VSJAD/AmWFWm+FbP8BdIVe/wF1hWL/AXKFZv8BboVqJQD/AXWFcP8BdIV0/wFphXj/AW6FfP8BZYYAJgD/AmiGCHKGIv8BaYYM/wFzhhD/AUOGFP8BYYYY/wFshhz/AWyGICcA/wF1hib/AWWGKigA/wJuhjJzhlD/AWSGNv8BZYY6/wFmhj7/AWmGQv8BboZG/wFlhkr/AWSGTikA/wFlhlT/AXOGWCoA/wFohl7/AWmGYv8BbIZm/wFlhmorAP8Bb4Zw/wFyhnQsAA==")
-    _scan_table_2 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
-    _scan_table_3 = ScanTable("EgABMAT/A2IMYw54EAEAAgADAA==")
+    define_name : String
+    count       : Int32
+    ch          : Character
+    base        : Int32
+    hex2        : Int32
+    hex4        : Int32
+    hex_digit   : Int32
+    value       : Int32
+    digits      : Int32
+    _scan_pattern_0 = ScanPattern( "[ \t]*" )
+    _scan_pattern_1 = ScanPattern( "[^\n]*" )
+    _scan_pattern_2 = ScanPattern( "{[_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*}" )
+    _scan_pattern_3 = ScanPattern( "[ \r\t]*" )
+    _scan_pattern_4 = ScanPattern( "{----[-]*}" )
+    _scan_pattern_5 = ScanPattern( "{====[=]*}" )
+    _scan_pattern_6 = ScanPattern( "{[_a-zA-Z][_a-zA-Z0-9]*}" )
+    _scan_pattern_7 = ScanPattern( "[ ]+" )
+    _scan_pattern_8 = ScanPattern( "[0-9]" )
+    _scan_pattern_9 = ScanPattern( "{[.][0-9]}" )
+    _scan_pattern_10 = ScanPattern( "[eE]" )
+    _scan_pattern_11 = ScanPattern( "[+-]" )
+    _scan_pattern_12 = ScanPattern( "[0-9]+" )
+    _scan_pattern_13 = ScanPattern( "[_]+" )
+    _scan_pattern_14 = ScanPattern( "[01]+" )
+    _scan_pattern_15 = ScanPattern( "[0-7]+" )
+    _scan_pattern_16 = ScanPattern( "[0-9A-Fa-f]+" )
+    _scan_pattern_17 = ScanPattern( "[0-9a-fA-F]" )
+    _scan_pattern_18 = ScanPattern( "[ ]*" )
+    _scan_table_0 = ScanTable("TgAEJAoiQCdCQEj/AmQQaSb/AWUU/wFmGP8BaRz/AW4g/wFlJAEA/wFuKv8BYy7/AWwy/wF1Nv8BZDr/AWU+AgADAAQBJ0YFAP8BfEwGAA==")
+    _scan_table_1 = ScanTable("FgADIggnCkAQAQACAScOAwD/AXwUBAA=")
+    _scan_table_2 = ScanTable("gjL/HSQ8CnIidCd2QHwmgQYtgQwqgRohgSBegSZ9gShdgSopgSw6gS4sgWB8gWJbgWw9gXI+gXg8ggJ7ggwogg4lghAughYrghg/giI7gigvgip+gjATAmRCaVj/AWVG/wFmSv8BaU7/AW5S/wFlVgAA/wFuXP8BY2D/AWxk/wF1aP8BZGz/AWVwAQACAAMABAEnegUACgJ8gQJbgQQGAB4ABwE9gQo6ACEDPoEULYEWPYEYCAAiADYACQE9gR43AAsBPYEkIwAMAA0ADgAPABADOoE2PIE4PoFGEQD/ATyBPP8BOoFAHAE9gUQdAP8BPoFK/wI6gVA+gVYtAT2BVC4A/wE6gVovAT2BXjAAEgA0AnyBaD2BahQAOwAlAV2BcBUAFwE9gXYWABkCPYF+PoIAGAAaAB8CPYIIPIIKGwAgACQAJgAnAT2CFDkAKAApAiuCHj2CICoANQArATqCJiwAMQAyAT2CLjgAMwA=")
+    _scan_table_3 = ScanTable("hnYAFEcqYYEIYoEqY4E8bYFOZYF4ZoM2Z4NgaYN2bIQoTYRCboRcb4UKcIUQUIUucoVUdIYCdYYsd4ZaeIZs/wFMLv8BTzL/AUI2/wFBOv8BTD4BASBC/wJQSE1u/wFSTP8BT1D/AVBU/wFFWP8BUlz/AVRg/wFJZP8BRWj/AVNsFAD/AUVy/wFUdv8BSHr/AU9+/wFEgQL/AVOBBhUA/wJugQ51gRT/AWSBEgIA/wFngRj/AW2BHP8BZYEg/wFugST/AXSBKAMA/wFsgS7/AW+BMv8BY4E2/wFrgToEAP8BbIFA/wFhgUT/AXOBSP8Bc4FMBQD/Am+BVGWBZv8BZIFY/wF1gVz/AWyBYP8BZYFkBgD/AXSBav8BaIFu/wFvgXL/AWSBdhsA/wNsggBughJ4gyT/AXOCBP8BZYIIBwFJggz/AWaCEAgA/wFkghb/B0KCJkOCOEaCSkmCZEyCalKCeFeDEv8BbIIq/wFvgi7/AWOCMv8Ba4I2CQD/AWyCPP8BYYJA/wFzgkT/AXOCSAoA/wFvgk7/AXKCUv8BRYJW/wFhglr/AWOCXv8BaIJiCwD/AWaCaAwA/wFvgm7/AW+Ccv8BcIJ2DQD/AW+CfP8BdYMA/wF0gwT/AWmDCP8BboMM/wFlgxAOAP8BaIMW/wFpgxr/AWyDHv8BZYMiDwD/AXCDKP8Bb4Ms/wFygzD/AXSDNBAA/wJhgzxvg0r/AWyDQP8Bc4NE/wFlg0gRAP8BcoNO/wFFg1L/AWGDVv8BY4Na/wFog14SAP8BbINk/wFvg2j/AWKDbP8BYYNw/wFsg3QTAP8DZoN+bYQAboQSFgD/AXCEBP8Bb4QI/wFyhAz/AXSEEBcA/wFjhBb/AWyEGv8BdYQe/wFkhCL/AWWEJhgA/wFvhCz/AmOEMm+EPP8BYYQ2/wFshDoZAP8BcIRAGgD/AUWERv8BVIRK/wFIhE7/AU+EUv8BRIRW/wFThFocAP8Cb4RidYUA/wJBhGh0hH7/AWOEbP8BdIRw/wFphHT/AW+EeP8BboR8HQAeAP8BbIUE/wFshQgfAP8BcoUOIAD/AmmFFnKFGCEA/wFphRz/AW6FIP8BdIUkIgFshSj/AW6FLCMA/wFShTL/AU+FNv8BUIU6/wFFhT7/AVKFQv8BVIVG/wFJhUr/AUWFTv8BU4VSJAD/AmWFWm+FbP8BdIVe/wF1hWL/AXKFZv8BboVqJQD/AXWFcP8BdIV0/wFphXj/AW6FfP8BZYYAJgD/AmiGCHKGIv8BaYYM/wFzhhD/AUOGFP8BYYYY/wFshhz/AWyGICcA/wF1hib/AWWGKigA/wJuhjJzhlD/AWSGNv8BZYY6/wFmhj7/AWmGQv8BboZG/wFlhkr/AWSGTikA/wFlhlT/AXOGWCoA/wFohl7/AWmGYv8BbIZm/wFlhmorAP8Bb4Zw/wFyhnQsAA==")
+    _scan_table_4 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
+    _scan_table_5 = ScanTable("EgABMAT/A2IMYw54EAEAAgADAA==")
 
   METHODS
     method init( file:File )
@@ -219,53 +225,10 @@ class ScannerCore [abstract]
             endWhile
             halt = true
             return false
+            return true
           case ip_preprocess_another
             buffer.clear.print ""
-            if (_scan('$'))
-              if (_scan("include"))
-                while (_scan(' '))
-                endWhile
-                output.print(buffer)
-                line   = _scanner.line
-                column = _scanner.column
-                buffer.clear.print ""
-                if (not _execute(ip_scan_meta_filepath)) return false
-                _add( TokenType.STRING )
-                this.ip = ip
-                include_filepath
-                ip = this.ip
-                return true
-              endIf
-              output.print('$')
-            endIf
-            output.print(_scanner.read)
-            return true
-          case ip_scan_meta_filepath
             _save_position
-            if (_scanner.consume("''"))
-              if (not _execute(ip_scan_two_quote_string)) return false
-            elseIf (_scanner.consume('\''))
-              if (not _execute(ip_scan_single_quote_string)) return false
-            elseIf (_scanner.consume('"'))
-              if (not _execute(ip_scan_string)) return false
-            elseIf (_scan_pattern_0.scan(_scanner,buffer))
-            else
-              _throw_syntax_error("Filename expected.")
-            endIf
-            this.ip = ip
-            print_characters_from_saved_position
-            ip = this.ip
-            return true
-          case ip_tokenize
-            _scan_pattern_1.scan(_scanner)
-            line   = _scanner.line
-            column = _scanner.column
-            if (not _execute(ip_scan_comment)) return false
-            if ((not _scanner.has_another))
-              _add( TokenType.EOL )
-              halt = true
-              return false
-            endIf
             _scan_table_0.reset
             contingent
               block n=1
@@ -279,174 +242,281 @@ class ScannerCore [abstract]
                 loop (_scan_table_0.match_count) _scanner.read
               endBlock
               which (_scan_table_0.product)
+                case 1
+                  _scan_pattern_0.scan(_scanner)
+                  if (not _execute(ip_scan_id)) return false
+                  define_name = buffer
+                  output.print("DEFINE ").print(define_name).println
+                  _on_output_line
+                  buffer.clear.print ""
+                  _scan_pattern_0.scan(_scanner)
+                  _scan_pattern_1.scan(_scanner,buffer)
+                  output.print("AS ").print(buffer).println
+                  _on_output_line
+                case 2
+                  _scan_pattern_0.scan(_scanner)
+                  line   = _scanner.line
+                  column = _scanner.column
+                  if (not _execute(ip_scan_meta_filepath)) return false
+                  _add( TokenType.STRING )
+                  this.ip = ip
+                  include_filepath
+                  ip = this.ip
+                case 3
+                  if (not _execute(ip_scan_string)) return false
+                case 4
+                  if (not _execute(ip_scan_single_quote_string)) return false
+                case 5
+                  if (not _execute(ip_scan_two_quote_string)) return false
+                case 6
+                  if (not _execute(ip_scan_verbatim_string)) return false
+                others
+                  necessary (false)
+              endWhich
+            unsatisfied
+              _scanner.read
+            endContingent
+            this.ip = ip
+            print_characters_from_saved_position
+            ip = this.ip
+            return true
+          case ip_scan_meta_filepath
+            _scan_pattern_0.scan(_scanner)
+            _scan_table_1.reset
+            contingent
+              block n=1
+                while (_scanner.has_another(n))
+                  if (not _scan_table_1.accept(_scanner.peek(n-1)))
+                    escapeWhile
+                  endIf
+                  ++n
+                endWhile
+                necessary (_scan_table_1.has_product)
+                loop (_scan_table_1.match_count) _scanner.read
+              endBlock
+              which (_scan_table_1.product)
+                case 1
+                  if (not _execute(ip_scan_string)) return false
+                case 2
+                  if (not _execute(ip_scan_single_quote_string)) return false
+                case 3
+                  if (not _execute(ip_scan_two_quote_string)) return false
+                case 4
+                  if (not _execute(ip_scan_verbatim_string)) return false
+                others
+                  necessary (false)
+              endWhich
+            unsatisfied
+              if ((not _scan_pattern_2.scan(_scanner,buffer)))
+                _throw_syntax_error("Filename expected.")
+              endIf
+            endContingent
+            return true
+          case ip_scan_id
+            _scan_pattern_0.scan(_scanner)
+            if ((not _scan_pattern_2.scan(_scanner,buffer)))
+              _throw_syntax_error("Identifier expected.")
+            endIf
+            return true
+          case ip_tokenize
+            _scan_pattern_3.scan(_scanner)
+            line   = _scanner.line
+            column = _scanner.column
+            if (not _execute(ip_scan_comment)) return false
+            if ((not _scanner.has_another))
+              _add( TokenType.EOL )
+              halt = true
+              return false
+            endIf
+            _scan_table_2.reset
+            contingent
+              block n=1
+                while (_scanner.has_another(n))
+                  if (not _scan_table_2.accept(_scanner.peek(n-1)))
+                    escapeWhile
+                  endIf
+                  ++n
+                endWhile
+                necessary (_scan_table_2.has_product)
+                loop (_scan_table_2.match_count) _scanner.read
+              endBlock
+              which (_scan_table_2.product)
                 case 0
-                  _add( TokenType.EOL )
+                  _scan_pattern_0.scan(_scanner)
+                  if (not _execute(ip_scan_id)) return false
+                  _scan_pattern_1.scan(_scanner,buffer)
                   return false
                 case 1
-                  if (not _execute(ip_tokenize_string)) return false
+                  if (not _execute(ip_scan_meta_filepath)) return false
+                  return false
                 case 2
-                  if (not _execute(ip_tokenize_character_or_string)) return false
+                  _add( TokenType.EOL )
+                  return false
                 case 3
-                  if (not _execute(ip_tokenize_two_quote_string)) return false
+                  if (not _execute(ip_tokenize_string)) return false
                 case 4
-                  if (not _execute(ip_tokenize_verbatim_string)) return false
+                  if (not _execute(ip_tokenize_character_or_string)) return false
                 case 5
+                  if (not _execute(ip_tokenize_two_quote_string)) return false
+                case 6
+                  if (not _execute(ip_tokenize_verbatim_string)) return false
+                case 7
                   _add( TokenType.SYMBOL_AMPERSAND )
                   return false
-                case 6
+                case 8
                   _add( TokenType.SYMBOL_ARROW )
                   return false
-                case 7
+                case 9
                   _add( TokenType.SYMBOL_ASTERISK )
                   return false
-                case 8
+                case 10
                   _add( TokenType.SYMBOL_AT )
                   return false
-                case 9
+                case 11
                   _add( TokenType.SYMBOL_BANG )
                   return false
-                case 10
+                case 12
                   _add( TokenType.SYMBOL_CARET )
                   return false
-                case 11
+                case 13
                   _add( TokenType.SYMBOL_CLOSE_CURLY )
                   return false
-                case 12
+                case 14
                   _add( TokenType.SYMBOL_CLOSE_SQUARE )
                   return false
-                case 13
+                case 15
                   _add( TokenType.SYMBOL_CLOSE_PAREN )
                   return false
-                case 14
+                case 16
                   _add( TokenType.SYMBOL_COLON )
                   return false
-                case 15
+                case 17
                   _add( TokenType.SYMBOL_COLON_COLON )
                   return false
-                case 16
+                case 18
                   _add( TokenType.SYMBOL_COMMA )
                   return false
-                case 17
+                case 19
                   _add( TokenType.SYMBOL_DOLLAR )
                   return false
-                case 18
+                case 20
                   _add( TokenType.SYMBOL_DOUBLE_VERTICAL_BAR )
                   return false
-                case 19
+                case 21
                   _add( TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS )
                   return false
-                case 20
+                case 22
                   _add( TokenType.SYMBOL_EQ )
                   return false
-                case 21
+                case 23
                   _add( TokenType.SYMBOL_EQUALS )
                   return false
-                case 22
+                case 24
                   _add( TokenType.SYMBOL_GE )
                   return false
-                case 23
+                case 25
                   _add( TokenType.SYMBOL_GT )
                   return false
-                case 24
+                case 26
                   _add( TokenType.SYMBOL_GT_GT )
                   return false
-                case 25
+                case 27
                   _add( TokenType.SYMBOL_LE )
                   return false
-                case 26
+                case 28
                   _add( TokenType.SYMBOL_LEFT_SHIFT )
                   return false
-                case 27
+                case 29
                   _add( TokenType.SYMBOL_LEFT_SHIFT_EQUALS )
                   return false
-                case 28
+                case 30
                   _add( TokenType.SYMBOL_LITERAL_OPEN_SQUARE )
                   return false
-                case 29
+                case 31
                   _add( TokenType.SYMBOL_LT )
                   return false
-                case 30
+                case 32
                   _add( TokenType.SYMBOL_LT_LT )
                   return false
-                case 31
+                case 33
                   _add( TokenType.SYMBOL_MINUS )
                   return false
-                case 32
+                case 34
                   _add( TokenType.SYMBOL_MINUS_MINUS )
                   return false
-                case 33
+                case 35
                   _add( TokenType.SYMBOL_NE )
                   return false
-                case 34
+                case 36
                   _add( TokenType.SYMBOL_OPEN_CURLY )
                   return false
-                case 35
+                case 37
                   _add( TokenType.SYMBOL_OPEN_SQUARE )
                   return false
-                case 36
+                case 38
                   _add( TokenType.SYMBOL_OPEN_PAREN )
                   return false
-                case 37
+                case 39
                   _add( TokenType.SYMBOL_PERCENT )
                   return false
-                case 38
+                case 40
                   _add( TokenType.SYMBOL_PERIOD )
                   return false
-                case 39
+                case 41
                   _add( TokenType.SYMBOL_PLUS )
                   return false
-                case 40
+                case 42
                   _add( TokenType.SYMBOL_PLUS_PLUS )
                   return false
-                case 41
+                case 43
                   _add( TokenType.SYMBOL_QUESTION )
                   return false
-                case 42
+                case 44
                   _add( TokenType.SYMBOL_QUESTION_COLON )
                   return false
-                case 43
+                case 45
                   _add( TokenType.SYMBOL_RIGHT_SHIFT )
                   return false
-                case 44
+                case 46
                   _add( TokenType.SYMBOL_RIGHT_SHIFT_EQUALS )
                   return false
-                case 45
+                case 47
                   _add( TokenType.SYMBOL_RIGHT_SHIFT_X )
                   return false
-                case 46
+                case 48
                   _add( TokenType.SYMBOL_RIGHT_SHIFT_X_EQUALS )
                   return false
-                case 47
+                case 49
                   _add( TokenType.SYMBOL_SEMICOLON )
                   return false
-                case 48
+                case 50
                   _add( TokenType.SYMBOL_SLASH )
                   return false
-                case 49
+                case 51
                   _add( TokenType.SYMBOL_TILDE )
                   return false
-                case 50
+                case 52
                   _add( TokenType.SYMBOL_VERTICAL_BAR )
                   return false
-                case 51
+                case 53
                   _add( TokenType.SYMBOL_PLUS_EQUALS )
                   return false
-                case 52
+                case 54
                   _add( TokenType.SYMBOL_MINUS_EQUALS )
                   return false
-                case 53
+                case 55
                   _add( TokenType.SYMBOL_TIMES_EQUALS )
                   return false
-                case 54
+                case 56
                   _add( TokenType.SYMBOL_DIVIDE_EQUALS )
                   return false
-                case 55
+                case 57
                   _add( TokenType.SYMBOL_MOD_EQUALS )
                   return false
-                case 56
+                case 58
                   _add( TokenType.SYMBOL_AND_EQUALS )
                   return false
-                case 57
+                case 59
                   _add( TokenType.SYMBOL_OR_EQUALS )
                   return false
                 others
@@ -456,6 +526,7 @@ class ScannerCore [abstract]
             if (not _execute(ip_scan_id_or_keyword)) return false
             if (not _execute(ip_scan_number)) return false
             _throw_syntax_error
+            return true
           case ip_scan_comment
             if (_scanner.consume('#'))
               if (_scanner.consume('{'))
@@ -479,36 +550,37 @@ class ScannerCore [abstract]
                 endWhile
                 _throw_syntax_error("Unterminated multi-line comment.")
               else
-                if (_scan_pattern_2.scan(_scanner,buffer))
+                if (_scan_pattern_1.scan(_scanner,buffer))
                   _scanner.consume('\n')
                   _add( TokenType.EOL )
                   return false
                 endIf
               endIf
-            elseIf ((_scan_pattern_3.scan(_scanner) or _scan_pattern_4.scan(_scanner)))
-              _scan_pattern_2.scan(_scanner,buffer)
+            elseIf ((_scan_pattern_4.scan(_scanner) or _scan_pattern_5.scan(_scanner)))
+              _scan_pattern_1.scan(_scanner,buffer)
               _scanner.consume('\n')
               _add( TokenType.EOL )
               return false
             else
               return true
             endIf
+            return true
           case ip_scan_id_or_keyword
-            if ((not _scan_pattern_5.scan(_scanner,buffer)))
+            if ((not _scan_pattern_6.scan(_scanner,buffer)))
               return true
             endIf
-            _scan_table_1.reset
+            _scan_table_3.reset
             contingent
-              necessary (_scan_table_1.accept(forEach in buffer))
-              which (_scan_table_1.product)
+              necessary (_scan_table_3.accept(forEach in buffer))
+              which (_scan_table_3.product)
                 case 1
-                  if (_scan_pattern_6.scan(_scanner))
+                  if (_scan_pattern_7.scan(_scanner))
                     buffer.print(' ')
-                    if (_scan_pattern_5.scan(_scanner,buffer))
-                      _scan_table_2.reset
+                    if (_scan_pattern_6.scan(_scanner,buffer))
+                      _scan_table_4.reset
                       contingent
-                        necessary (_scan_table_2.accept(forEach in buffer))
-                        which (_scan_table_2.product)
+                        necessary (_scan_table_4.accept(forEach in buffer))
+                        which (_scan_table_4.product)
                           case 1
                             _add( TokenType.KEYWORD_GLOBAL_PROPERTIES )
                             return false
@@ -659,23 +731,24 @@ class ScannerCore [abstract]
               _add( TokenType.IDENTIFIER )
               return false
             endContingent
+            return true
           case ip_scan_number
-            if (((not _scan_pattern_7.is_next(_scanner)) or _scan_pattern_8.is_next(_scanner)))
+            if (((not _scan_pattern_8.is_next(_scanner)) or _scan_pattern_9.is_next(_scanner)))
               return true
             endIf
-            _scan_table_3.reset
+            _scan_table_5.reset
             contingent
               block n=1
                 while (_scanner.has_another(n))
-                  if (not _scan_table_3.accept(_scanner.peek(n-1)))
+                  if (not _scan_table_5.accept(_scanner.peek(n-1)))
                     escapeWhile
                   endIf
                   ++n
                 endWhile
-                necessary (_scan_table_3.has_product)
-                loop (_scan_table_3.match_count) _scanner.read
+                necessary (_scan_table_5.has_product)
+                loop (_scan_table_5.match_count) _scanner.read
               endBlock
-              which (_scan_table_3.product)
+              which (_scan_table_5.product)
                 case 1
                   base = 2
                   if (not _execute(ip_scan_binary_integer)) return false
@@ -701,39 +774,40 @@ class ScannerCore [abstract]
                 return false
               endIf
               if (not _execute(ip_scan_integer)) return false
-              if (_scan_pattern_9.scan(_scanner,buffer))
-                _scan_pattern_10.scan(_scanner,buffer)
-                if ((not _scan_pattern_11.scan(_scanner,buffer)))
+              if (_scan_pattern_10.scan(_scanner,buffer))
+                _scan_pattern_11.scan(_scanner,buffer)
+                if ((not _scan_pattern_12.scan(_scanner,buffer)))
                   _throw_syntax_error("Integer exponent expected.")
                 endIf
               endIf
               _add( TokenType.REAL_NUMBER )
               return false
             endContingent
+            return true
           case ip_scan_integer
-            while (_scan_pattern_11.scan(_scanner,buffer))
-              if ((not _scan_pattern_12.scan(_scanner)))
+            while (_scan_pattern_12.scan(_scanner,buffer))
+              if ((not _scan_pattern_13.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_scan_binary_integer
-            while (_scan_pattern_13.scan(_scanner,buffer))
-              if ((not _scan_pattern_12.scan(_scanner)))
+            while (_scan_pattern_14.scan(_scanner,buffer))
+              if ((not _scan_pattern_13.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_scan_octal_integer
-            while (_scan_pattern_14.scan(_scanner,buffer))
-              if ((not _scan_pattern_12.scan(_scanner)))
+            while (_scan_pattern_15.scan(_scanner,buffer))
+              if ((not _scan_pattern_13.scan(_scanner)))
                 return true
               endIf
             endWhile
             return true
           case ip_scan_hex_integer
-            while (_scan_pattern_15.scan(_scanner,buffer))
-              if ((not _scan_pattern_12.scan(_scanner)))
+            while (_scan_pattern_16.scan(_scanner,buffer))
+              if ((not _scan_pattern_13.scan(_scanner)))
                 return true
               endIf
             endWhile
@@ -860,7 +934,7 @@ class ScannerCore [abstract]
               if (not _execute(ip_read_hex_digit)) return false
               value = hex_digit
               digits = 1
-              while (((digits<6) and _scan_pattern_16.is_next(_scanner)))
+              while (((digits<6) and _scan_pattern_17.is_next(_scanner)))
                 if (not _execute(ip_read_hex_digit)) return false
                 value = ((value * 16) + hex_digit)
                 ++digits
@@ -873,6 +947,7 @@ class ScannerCore [abstract]
             buffer.print("Invalid escape sequence '\\").print(ch)
             buffer.print("'. Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\? \\/ \\' \\\\ \\\" \\xHH \\uHHHH \\[H*].")
             _throw_syntax_error(buffer)
+            return true
           case ip_read_hex4
             if (not _execute(ip_read_hex2)) return false
             hex4 = (hex2 * 256)
@@ -886,7 +961,7 @@ class ScannerCore [abstract]
             hex2 = (hex2 + hex_digit)
             return true
           case ip_read_hex_digit
-            if ((not _scan_pattern_16.is_next(_scanner)))
+            if ((not _scan_pattern_17.is_next(_scanner)))
               _throw_syntax_error("Hex digit expected (0-9, a-f, or A-F).")
             endIf
             ch = _scanner.read
@@ -899,17 +974,19 @@ class ScannerCore [abstract]
             endIf
             return true
           case ip_tokenize_verbatim_string
-            while (_scanner.has_another)
-              _scan_pattern_2.scan(_scanner,buffer)
-              _scanner.consume('\n')
-              _scan_pattern_17.scan(_scanner)
-              if ((not _scanner.consume('|')))
-                _add( TokenType.STRING )
-                return false
-              endIf
-            endWhile
+            if (not _execute(ip_scan_verbatim_string)) return false
             _add( TokenType.STRING )
             return false
+          case ip_scan_verbatim_string
+            while (_scanner.has_another)
+              _scan_pattern_1.scan(_scanner,buffer)
+              _scanner.consume('\n')
+              _scan_pattern_18.scan(_scanner)
+              if ((not _scanner.consume('|')))
+                return true
+              endIf
+            endWhile
+            return true
           others
             halt = true
             return false
