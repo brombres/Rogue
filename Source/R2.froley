@@ -65,10 +65,14 @@ KEYWORD_XOR          xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
+META_DEFINE  $define   [meta]
+META_INCLUDE $include  [meta]
+
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
 SYMBOL_ASTERISK              *
 SYMBOL_AT                    @
+SYMBOL_BACKSLASH             \
 SYMBOL_BANG                  !
 SYMBOL_CARET                 ^
 SYMBOL_CLOSE_CURLY           }   [structural]
@@ -123,64 +127,7 @@ SYMBOL_OR_EQUALS             |=
 ----------------------------------------------------------------------
 scanner
 ----------------------------------------------------------------------
-# Entry points:
-# - preprocess
-# - tokenize
-- preprocess
-  while hasAnother
-    preprocess_another
-  endWhile
-  halt
-
-- preprocess_another
-  buffer = ""
-
-  savePosition
-  match input
-    case "$define"
-      consume [ \t]*
-      scan_id
-      define_name = buffer
-println "DEFINE " define_name
-      buffer = ""
-      consume [ \t]*
-      scan [^\n]*
-      println "AS " buffer
-
-    case "$include"
-      consume [ \t]*
-      markPosition
-      scan_meta_filepath
-      create STRING
-      call include_filepath
-    case '"':  scan_string
-    case "'":  scan_single_quote_string
-    case "''": scan_two_quote_string
-    case "@|": scan_verbatim_string
-    others:    read
-  endMatch
-  call print_characters_from_saved_position
-
-- scan_meta_filepath
-  consume [ \t]*
-  match input
-    case '"':  scan_string
-    case "'":  scan_single_quote_string
-    case "''": scan_two_quote_string
-    case "@|": scan_verbatim_string
-    others
-      if not scan([_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*)
-        syntaxError "Filename expected."
-      endIf
-  endMatch
-
-- scan_id
-  consume [ \t]*
-  if not scan [_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*
-    syntaxError "Identifier expected."
-  endIf
-
-- tokenize
+- tokenize_another
   consume [ \r\t]*                 # whitespace
   markPosition
   scan_comment
@@ -191,14 +138,6 @@ println "DEFINE " define_name
   endIf
 
   match input
-    case "$define"
-      consume [ \t]*
-      scan_id
-      scan [^\n]*
-      restart
-    case "$include"
-      scan_meta_filepath
-      restart
     produceAny Symbols
     case '\n': produce EOL
     case '"':  tokenize_string
@@ -211,6 +150,12 @@ println "DEFINE " define_name
   scan_number
 
   syntaxError
+
+- scan_id
+  consume [ \t]*
+  if not scan [_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*
+    syntaxError "Identifier expected."
+  endIf
 
 - scan_comment
   if (consume('#'))
@@ -1175,6 +1120,54 @@ parser
     mustConsume( ']' )
     produceList Args
   endOn
+
+- preprocess
+  while (hasAnother)
+    process_another
+  endWhile
+  produceNull
+
+- process_another
+  on "$define"
+    call mark_token
+    on IDENTIFIER
+      buffer = ""
+      call collect_token_string
+      while (hasAnother and not nextIs(EOL))
+        call collect_next_token
+      endWhile
+      call create_definition
+    elseOnOthers
+      syntaxError "Identifier expected."
+    endOn
+
+  elseOn "$include"
+    call mark_token
+    buffer = ""
+    on STRING
+      call collect_token_string
+    elseOnOthers
+      while (hasAnother and not nextIs('[') and not nextIs(EOL))
+        on IDENTIFIER:      call collect_token_string
+        elseOn INTEGER:     call collect_token_string
+        elseOn REAL_NUMBER: call collect_token_string
+        elseOn '~':         call collect_token_string
+        elseOn '/':         call collect_token_string
+        elseOn ':':         call collect_token_string
+        elseOn '.':         call collect_token_string
+        elseOn '\\':        call collect_token_string
+        elseOnOthers:       syntaxError "Unsupported filepath character. Put the $include filepath in quotes."
+      endWhile
+    endOn
+    call include_filepath
+    return
+
+  elseOn IDENTIFIER
+    call insert_definition
+    return
+
+  endOn
+  call rewrite_token
 
 - additional_node_types
   create AddAndAssignLocal(info:Local,operand):OpAndAssign

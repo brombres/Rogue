@@ -7,6 +7,7 @@ enum TokenType( symbol:String, attributes=0:Int32 )
   DEFINITIONS
     ATTRIBUTE_CONTENT = 1
     ATTRIBUTE_STRUCTURAL = 2
+    ATTRIBUTE_META = 4
 
   CATEGORIES
     EOL("end of line",1)
@@ -61,10 +62,13 @@ enum TokenType( symbol:String, attributes=0:Int32 )
     KEYWORD_USES("uses")
     KEYWORD_WHILE("while")
     KEYWORD_XOR("xor")
+    META_DEFINE("$define",4)
+    META_INCLUDE("$include",4)
     SYMBOL_AMPERSAND("&")
     SYMBOL_ARROW("->")
     SYMBOL_ASTERISK("*")
     SYMBOL_AT("@")
+    SYMBOL_BACKSLASH("\\")
     SYMBOL_BANG("!")
     SYMBOL_CARET("^")
     SYMBOL_CLOSE_CURLY("}",2)

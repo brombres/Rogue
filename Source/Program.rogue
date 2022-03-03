@@ -17,8 +17,8 @@ class Program [singleton]
     type_Global    : Type
     type_XY        : Type
 
-    preprocessed   = StringTable<<Scanner>>()
     parsed_files   = StringTable<<AST>>()
+    definitions    = StringTable<<Token[]>>()
 
     default_module  : Module
     global_module   : Module
@@ -80,25 +80,18 @@ class Program [singleton]
         throw t.error( "No such file '$'."(filepath) )
       endIf
 
-      if (preprocessed.contains(filepath)) return
+      if (parsed_files.contains(filepath)) return
+      parsed_files[filepath] = null # placeholder to prevent recursive inclusion
 
-      local scanner = Scanner( File(filepath) )
-      preprocessed[filepath] = scanner
-      scanner.preprocess
-
-    method parse_included_files
-      forEach (scanner in preprocessed)
-        temporarily current_module = Program.default_module
-          local tokens = scanner.tokenize( Scanner.ip_tokenize )
-
-          local ast = Parser(tokens).parse->(as AST)
-          parsed_files[ scanner._filepath ] = ast
-          if (ast)
-            Collector().visit( ast )
-          endIf
-        endTemporarily
-      endForEach
-
+      temporarily current_module = Program.default_module
+        local tokens = Scanner( File(filepath) ).tokenize
+        Parser( tokens ).preprocess
+        local ast = Parser(tokens).parse->(as AST)
+        parsed_files[ filepath ] = ast
+        if (ast)
+          Collector().visit( ast )
+        endIf
+      endTemporarily
 
       #{
       local is_static = not module_context.is_dynamic

@@ -5,17 +5,5 @@ $include "ScannerCore.rogue"
 
 class Scanner : ScannerCore
   METHODS
-    method include_filepath
-      local t = tokens.remove_last
-      Program.include( t, t.content )
-
-    method preprocess
-      execute( ip_preprocess )
-      init( _filepath, output->String )
-
-    method print_characters_from_saved_position
-      local current_pos = _scanner.position
-      _restore_position
-      while (_scanner.position < current_pos) output.print( _scanner.read )
 endClass
 
