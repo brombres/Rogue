@@ -42,14 +42,9 @@ class R2
         System.exit 0
       endIf
 
-      #register_native_code
-
-      parse_files
-
-    method parse_files
       Program.include( forEach in command//args )
       Program.resolve
-      Program.generate_c
+      #Program.generate_c
 
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().

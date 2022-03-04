@@ -93,20 +93,6 @@ class Program [singleton]
         endIf
       endTemporarily
 
-    #method launch
-      #resolve
-      #{
-      forEach (m in all_modules)
-        m.execute
-        if (execution_status == EXE_ERROR)
-          if (not execution_error) execution_error = t.error( "[INTERNAL] Unknown error." )
-          throw execution_error
-        endIf
-      endForEach
-      require stack.is_empty
-      require fp == 0
-      }#
-
     method resolve
       (forEach in all_modules).organize
 

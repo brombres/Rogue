@@ -1,11 +1,11 @@
 module R2
 
 class Type
-  BOSS_ATTRIBUTE( is_organized, 1 )
-  BOSS_ATTRIBUTE( is_resolved,  2 )
-  BOSS_ATTRIBUTE( is_primitive, 4 )
-  BOSS_ATTRIBUTE( is_built_in,  8 )
-  BOSS_ATTRIBUTE( is_singleton, 16 )
+  ROGUE_ATTRIBUTE( is_organized, 1 )
+  ROGUE_ATTRIBUTE( is_resolved,  2 )
+  ROGUE_ATTRIBUTE( is_primitive, 4 )
+  ROGUE_ATTRIBUTE( is_built_in,  8 )
+  ROGUE_ATTRIBUTE( is_singleton, 16 )
 
   GLOBAL METHODS
     method create( t:Token, name:String )->Type

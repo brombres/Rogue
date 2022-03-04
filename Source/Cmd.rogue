@@ -555,9 +555,9 @@ class Println : Cmd
 endClass
 
 class Procedure : Cmd
-  BOSS_ATTRIBUTE( is_organized, 1 )
-  BOSS_ATTRIBUTE( is_resolved,  2 )
-  BOSS_ATTRIBUTE( is_global,    4 )  # routine or global method
+  ROGUE_ATTRIBUTE( is_organized, 1 )
+  ROGUE_ATTRIBUTE( is_resolved,  2 )
+  ROGUE_ATTRIBUTE( is_global,    4 )  # routine or global method
 
   PROPERTIES
     module_context   : Module
@@ -614,7 +614,7 @@ class Procedure : Cmd
 endClass
 
 class ProcedureDef : Cmd
-  BOSS_ATTRIBUTE( is_resolved, 1 )
+  ROGUE_ATTRIBUTE( is_resolved, 1 )
 
   PROPERTIES
     name             : String
@@ -818,8 +818,8 @@ endClass
 
 
 class Local : Cmd
-  BOSS_ATTRIBUTE( is_parameter,  1 )
-  BOSS_ATTRIBUTE( is_auto_store, 2 )
+  ROGUE_ATTRIBUTE( is_parameter,  1 )
+  ROGUE_ATTRIBUTE( is_auto_store, 2 )
 
   PROPERTIES
     name          : String

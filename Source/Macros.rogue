@@ -1,4 +1,4 @@
-$macro BOSS_ATTRIBUTE( name, value )
+$macro ROGUE_ATTRIBUTE( name, value )
   METHODS
     method name->Logical
       return (attributes & (value))

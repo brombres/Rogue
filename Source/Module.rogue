@@ -1,10 +1,10 @@
 module R2
 
 class Module
-  BOSS_ATTRIBUTE( is_dynamic,   1 )
-  BOSS_ATTRIBUTE( is_organized, 2 )
-  BOSS_ATTRIBUTE( is_resolved,  4 )
-  BOSS_ATTRIBUTE( is_visiting,  8 )
+  ROGUE_ATTRIBUTE( is_dynamic,   1 )
+  ROGUE_ATTRIBUTE( is_organized, 2 )
+  ROGUE_ATTRIBUTE( is_resolved,  4 )
+  ROGUE_ATTRIBUTE( is_visiting,  8 )
 
   PROPERTIES
     t    : Token
