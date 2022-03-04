@@ -123,108 +123,12 @@ class Program [singleton]
 
 
     method generate_c
-      local h_writer = CWriter( File("Test.h") )
-      h_writer.println "// Test.h"
-      h_writer.println ...
-        @|
-         |// Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
-         |// are now only defined if the platform is active.
-         |#if defined(__APPLE__)
-         |  #if defined(TARGET_IPHONE_SIMULATOR)
-         |    #if TARGET_IPHONE_SIMULATOR
-         |      #define ROGUE_PLATFORM_IOS 1
-         |    #endif
-         |  #endif
-         |
-         |  #if !defined(ROGUE_PLATFORM_IOS)
-         |    #if defined(TARGET_OS_IPHONE)
-         |      #if TARGET_OS_IPHONE
-         |        #define ROGUE_PLATFORM_IOS 1
-         |      #endif
-         |    #endif
-         |  #endif
-         |
-         |  #if !defined(ROGUE_PLATFORM_IOS)
-         |    #define ROGUE_PLATFORM_MACOS 1
-         |    #define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-         |  #endif
-         |#endif
-         |
-         |#if !defined(ROGUE_PLATFORM_IOS) && !defined(ROGUE_PLATFORM_MACOS)
-         |  #if defined(_WIN32)
-         |  #  define ROGUE_PLATFORM_WINDOWS 1
-         |  #elif defined(__ANDROID__)
-         |  #  define ROGUE_PLATFORM_ANDROID 1
-         |  #elif defined(__linux__)
-         |  #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-         |  #elif defined(__CYGWIN__)
-         |  #  define ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-         |  #else
-         |  #  define ROGUE_PLATFORM_GENERIC 1
-         |  #endif
-         |#endif
-         |
-         |#if defined(ROGUE_PLATFORM_WINDOWS)
-         |#  define NOGDI
-         |#  pragma warning(disable: 4297) /* unexpected throw warnings */
-         |#  include <windows.h>
-         |#  include <signal.h>
-         |#else
-         |#  include <stdint.h>
-         |#endif
-         |
-         |//#include <stdlib.h>
-         |//#include <string.h>
-         |
-         |//-----------------------------------------------------------------------------
-         |//  Logging
-         |//-----------------------------------------------------------------------------
-         |#ifdef __ANDROID__
-         |  #include <android/log.h>
-         |  #define ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "Rogue", __VA_ARGS__ )
-         |  #define ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "Rogue", __VA_ARGS__ )
-         |#else
-         |  #define ROGUE_LOG(...)       printf( __VA_ARGS__ )
-         |  #define ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
-         |#endif
-         |
-         |//-----------------------------------------------------------------------------
-         |//  Primitive Types
-         |//-----------------------------------------------------------------------------
-         |#if defined(ROGUE_PLATFORM_WINDOWS)
-         |  typedef double           RogueReal64;
-         |  typedef float            RogueReal32;
-         |  typedef __int64          RogueInt64;
-         |  typedef __int32          RogueInt32;
-         |  typedef __int32          RogueCharacter;
-         |  typedef unsigned __int16 RogueWord;
-         |  typedef unsigned char    RogueByte;
-         |  typedef int              RogueLogical;
-         |  typedef unsigned __int64 RogueUInt64;
-         |  typedef unsigned __int32 RogueUInt32;
-         |#else
-         |  typedef double           RogueReal64;
-         |  typedef float            RogueReal32;
-         |  typedef int64_t          RogueInt64;
-         |  typedef int32_t          RogueInt32;
-         |  typedef int32_t          RogueCharacter;
-         |  typedef uint16_t         RogueWord;
-         |  typedef uint8_t          RogueByte;
-         |  typedef int              RogueLogical;
-         |  typedef uint64_t         RogueUInt64;
-         |  typedef uint32_t         RogueUInt32;
-         |#endif
-         |
+      local h_writer = CWriter( File("Test.h"), &header )
 
       (forEach in all_modules).write_c_header( h_writer )
       h_writer.close
 
-
       local c_writer = CWriter( File("Test.c") )
-      c_writer.println  "// Test.c"
-      c_writer.println ''#include "Test.h"''
-      c_writer.println  "#include <stdio.h>"
-      c_writer.println
 
       (forEach in all_modules).write_c_code( c_writer )
       c_writer.println @|
