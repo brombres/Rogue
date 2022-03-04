@@ -1,5 +1,60 @@
 module R2
 
+augment
+  METHODS
+    method Module.write_c_routine_header( r:Routine, writer:CWriter )
+      if (r.return_type)
+        writer.print( r.return_type.c_name ).print( ' ' )
+      else
+        writer.print( "void " )
+      endIf
+      writer.print( r.name )
+      writer.print( "(" )
+      writer.print( ")" )
+
+    method Module.write_c_header( writer:CWriter )
+      forEach (r in routines_by_signature)
+        write_c_routine_header( r, writer )
+        writer.println ";"
+      endForEach
+
+    method Module.write_c_code( writer:CWriter )
+      forEach (r in routines_by_signature)
+        write_c_routine_header( r, writer )
+        writer.println
+        writer.println( "{" )
+        writer.indent += 2
+
+        CGenerator( this, writer ).visit( r.statements )
+
+        writer.indent -= 2
+        writer.println( "}" )
+      endForEach
+
+    method Program.generate_c
+      local h_writer = CWriter( File("Test.h"), &header )
+
+      (forEach in all_modules).write_c_header( h_writer )
+      h_writer.close
+
+      local c_writer = CWriter( File("Test.c") )
+
+      (forEach in all_modules).write_c_code( c_writer )
+      c_writer.println @|
+                        |int main( int argc, char* argv[] )
+                        |{
+      c_writer.indent += 2
+
+      c_writer.println @|on_launch();
+                        |return 0;
+
+      c_writer.indent -= 2
+      c_writer.println @|}
+
+      c_writer.close
+
+endAugment
+
 class CGenerator : Visitor
   PROPERTIES
     writer         : CWriter

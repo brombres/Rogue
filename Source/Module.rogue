@@ -112,36 +112,6 @@ class Module
       endForEach
       used_modules.add( UsedModule(m,&=is_exported) )
 
-    method write_c_routine_header( r:Routine, writer:CWriter )
-      if (r.return_type)
-        writer.print( r.return_type.c_name ).print( ' ' )
-      else
-        writer.print( "void " )
-      endIf
-      writer.print( r.name )
-      writer.print( "(" )
-      writer.print( ")" )
-
-    method write_c_header( writer:CWriter )
-      forEach (r in routines_by_signature)
-        write_c_routine_header( r, writer )
-        writer.println ";"
-      endForEach
-
-    method write_c_code( writer:CWriter )
-      forEach (r in routines_by_signature)
-        write_c_routine_header( r, writer )
-        writer.println
-        writer.println( "{" )
-        writer.indent += 2
-
-        CGenerator( this, writer ).visit( r.statements )
-
-        writer.indent -= 2
-        writer.println( "}" )
-      endForEach
-
-
 endClass
 
 class UsedModule( m:Module, is_exported:Logical ) [compound]
