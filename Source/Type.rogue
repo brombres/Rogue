@@ -55,6 +55,9 @@ class Type
     method add_property( name:String, type:String )->Property
       return add_property( t, name, Program.type(type) )
 
+    method c_name->String
+      return name
+
     method collect_methods( m_name:String, list:Procedure[], &require_global )
       local matching = methods_by_name[ m_name ]
       if (matching)
@@ -86,35 +89,53 @@ class TypeLogical : TypePrimitive
   METHODS
     method init( t:Token )
       prior.init( t, "Logical", &is_primitive )
+
+    method c_name->String
+      return "RogueLogical"
 endClass
 
 class TypeCharacter : TypePrimitive
   METHODS
     method init( t:Token )
       prior.init( t, "Character", &is_primitive )
+
+    method c_name->String
+      return "RogueCharacter"
 endClass
 
 class TypeInt32 : TypePrimitive
   METHODS
     method init( t:Token )
       prior.init( t, "Int32", &is_primitive )
+
+    method c_name->String
+      return "RogueInt32"
 endClass
 
 class TypeReal64 : TypePrimitive
   METHODS
     method init( t:Token )
       prior.init( t, "Real64", &is_primitive )
+
+    method c_name->String
+      return "RogueReal64"
 endClass
 
 class TypeString : TypePrimitive
   METHODS
     method init( t:Token )
       prior.init( t, "String", &is_primitive )
+
+    method c_name->String
+      return "RogueString"
 endClass
 
 class TypeValue : TypePrimitive
   METHODS
     method init( t:Token )
       prior.init( t, "Value", &is_primitive )
+
+    method c_name->String
+      return "RogueValue"
 endClass
 

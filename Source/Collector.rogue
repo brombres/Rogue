@@ -53,7 +53,7 @@ class Collector : Visitor
       return null
 
     method on( cmd:Statements )->Cmd
-      Program.current_module.global_statements.add( cmd )
+      Program.current_module.global_statements.add( forEach in cmd )
       return null
 
     method on( cmd:UsesModule )->Cmd

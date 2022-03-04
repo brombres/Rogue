@@ -25,6 +25,14 @@ class Module
       Program.all_modules.add( this )
       if (not is_dynamic) Program.modules_by_name[ name ] = this
 
+    method add_routine( r:Routine )
+      ensure routines_by_name[ r.name ]
+      routines_by_name[ r.name ].add( r )
+
+    method collect_global_statements( statements:Cmd )
+      statements.add( forEach in global_statements )
+      global_statements.clear
+
     method collect_routines( m_name:String, list:Procedure[], &is_limited )
       if (is_visiting) return
 
@@ -41,6 +49,17 @@ class Module
 
     method description->String
       return name
+
+    method find_routine( name:String, parameter_count:Int32 )->Routine
+      local routines = routines_by_name[ name ]
+      if (not name) return null
+      forEach (r in routines)
+        if (r.parameters.count == parameter_count) return r
+      endForEach
+      return null
+
+    method find_routine( signature:String )->Routine
+      return routines_by_signature[ signature ]
 
     method find_type( name:String, &extended_search )->Type
       if (is_visiting) return null
@@ -93,8 +112,34 @@ class Module
       endForEach
       used_modules.add( UsedModule(m,&=is_exported) )
 
-    method write_launch_commands( writer:CWriter )
-      CGenerator(this,writer).visit( forEach in global_statements )
+    method write_c_routine_header( r:Routine, writer:CWriter )
+      if (r.return_type)
+        writer.print( r.return_type.c_name ).print( ' ' )
+      else
+        writer.print( "void " )
+      endIf
+      writer.print( r.name )
+      writer.print( "(" )
+      writer.print( ")" )
+
+    method write_c_header( writer:CWriter )
+      forEach (r in routines_by_signature)
+        write_c_routine_header( r, writer )
+        writer.println ";"
+      endForEach
+
+    method write_c_code( writer:CWriter )
+      forEach (r in routines_by_signature)
+        write_c_routine_header( r, writer )
+        writer.println
+        writer.println( "{" )
+        writer.indent += 2
+
+        CGenerator( this, writer ).visit( r.statements )
+
+        writer.indent -= 2
+        writer.println( "}" )
+      endForEach
 
 
 endClass

@@ -231,6 +231,7 @@ class Resolver : Visitor
     method on_validate( cmd:Description )->Cmd
       local call_description = resolve_access( cmd.t, cmd.operand, "description", null, &suppress_error )
       if (call_description) return call_description
+      if (cmd.operand instanceOf LiteralString) return cmd.operand
       return cmd
 
     method on_validate( cmd:Divide )->Cmd
