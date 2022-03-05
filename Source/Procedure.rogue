@@ -1,0 +1,47 @@
+module R2
+
+class Procedure : Cmd
+  PROPERTIES
+    module_context : Module
+    name           : String
+    signature      : String
+    parameters     : Cmd
+    return_type    : Type
+    attributes     : Attributes
+    statements     : Cmd
+
+  METHODS
+    method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,
+                 attributes=null:Attributes, statements=null:Statements )
+      init( t, Program.current_module, name, parameters, return_type, attributes, statements )
+
+    method init( t, module_context, name, parameters=null, return_type=null,
+                 attributes=null, statements=null )
+      if (not parameters) parameters = CmdList(t)
+      if (not attributes) attributes = Attributes( t )
+      if (not statements) statements = Statements( t )
+
+    method init( existing:Procedure )
+      prior.init( existing )
+      name = existing.name
+      if (existing.parameters)  parameters  = existing.parameters.cloned
+      if (existing.return_type) return_type = existing.return_type.cloned
+      if (existing.attributes)  attributes  = existing.attributes.cloned
+      if (existing.statements)  statements  = existing.statements.cloned
+      signature = existing.signature
+
+    method description->String
+      return "Procedure($,$,$,$,$)" (%name,%parameters,%return_type,%attributes,%statements)
+
+    method organize
+      if (not signature)
+        use builder = StringBuilder.pool
+          builder.print name
+          builder.print '('
+          builder.print ')'
+          signature = builder->String
+        endUse
+      endIf
+
+endClass
+

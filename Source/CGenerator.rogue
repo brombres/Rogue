@@ -2,6 +2,9 @@ module R2
 
 augment
   METHODS
+    method Type.c_name->String
+      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
+
     method Module.write_c_routine_header( r:Routine, writer:CWriter )
       if (r.return_type)
         writer.print( r.return_type.c_name ).print( ' ' )
@@ -12,14 +15,14 @@ augment
       writer.print( "(" )
       writer.print( ")" )
 
-    method Module.write_c_header( writer:CWriter )
-      forEach (r in routines_by_signature)
+    method Module.generate_c_header( writer:CWriter )
+      forEach (r in routines)
         write_c_routine_header( r, writer )
         writer.println ";"
       endForEach
 
-    method Module.write_c_code( writer:CWriter )
-      forEach (r in routines_by_signature)
+    method Module.generate_c_code( writer:CWriter )
+      forEach (r in routines)
         write_c_routine_header( r, writer )
         writer.println
         writer.println( "{" )
@@ -34,12 +37,12 @@ augment
     method Program.generate_c
       local h_writer = CWriter( File("Test.h"), &header )
 
-      (forEach in all_modules).write_c_header( h_writer )
+      (forEach in modules).generate_c_header( h_writer )
       h_writer.close
 
       local c_writer = CWriter( File("Test.c") )
 
-      (forEach in all_modules).write_c_code( c_writer )
+      (forEach in modules).generate_c_code( c_writer )
       c_writer.println @|
                         |int main( int argc, char* argv[] )
                         |{
@@ -71,8 +74,8 @@ class CGenerator : Visitor
     method on_visit( cmd:CmdList )
       visit_children( cmd )
 
-    method on_visit( cmd:LocalDeclarations )
-      visit_children( cmd )
+    #method on_visit( cmd:LocalDeclarations )
+    #  visit_children( cmd )
 
     #method on_visit( cmd:LocalDef )
 
@@ -82,14 +85,11 @@ class CGenerator : Visitor
         writer.println( ';' )
       endForEach
 
-    method on_visit( cmd:Println )
-      if (cmd.args)
-        forEach (arg in cmd.args)
-          arg.write_print( writer )
-          writer.println( ';' )
-        endForEach
-      endIf
-      writer.print ''putchar( '\\n' )''
+    method on_visit( cmd:PrintString )
+      writer.print( ''printf( "$" )''(cmd.operand->String.to_escaped_ascii('"')) )
+
+    method on_visit( cmd:PrintNewline )
+      writer.print( ''printf( "\\n" )'' )
 endClass
 
 # write_print()

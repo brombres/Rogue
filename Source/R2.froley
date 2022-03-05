@@ -403,10 +403,6 @@ scanner
 ----------------------------------------------------------------------
 parser
 ----------------------------------------------------------------------
-- ast
-  elements
-  produce AST(elements)
-
 - elements
   beginList
     while (hasAnother) element
@@ -426,6 +422,7 @@ parser
   consume_eols
   if (not hasAnother) return
 
+#{
   on "class" class: return
 
   on "include" string -> Include(filepath:String)
@@ -435,28 +432,32 @@ parser
     else                    createNull
     produce DefineModule(name:String)
   endOn
+}#
 
   on "routine"
     identifier
     procedure_parameters
     procedure_return_type
-    attribute_names
+    attributes
     if (consume(':'))
       single_line_statements
     else
       multi_line_statements
       mustConsume "endRoutine"
     endIf
-    produce RoutineDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+    produce Routine(name:String,parameters,return_type:Type,attributes:Attributes,statements:Statements):Procedure
   endOn
 
-  on "uses" module_path uses_attributes-> UsesModule(path,attribute_names)
+  #on "uses" module_path uses_attributes-> UsesModule(path,attributes)
 
   if (nextHasAttribute(structural))
     syntaxError
   endIf
 
   procedure_body
+
+- procedure_body
+  multi_line_statements
 
 - procedure_parameters
   beginList
@@ -483,7 +484,7 @@ parser
 
 - type
   type_name
-  produce TypeRef(name:String)
+  produce TypeRef(name:String):Type
 
 - type_name
   identifier
@@ -493,14 +494,11 @@ parser
   if (consume(':')) type
   else              createNull
 
-- procedure_body
-  multi_line_statements
-
-
 - identifier
   on IDENTIFIER -> Identifier(name=content)
   syntaxError "Identifier expected."
 
+#{
 - string
   on STRING -> LiteralString(value=content):Literal
   syntaxError "Literal string expected."
@@ -509,10 +507,10 @@ parser
   type
   constructor_properties
   base_types
-  attribute_names
+  attributes
   class_sections
   mustConsume "endClass"
-  produce ClassDef( name, constructor_properties, base_types, attribute_names, sections )
+  produce ClassDef( name, constructor_properties, base_types, attributes:Attributes, sections )
 
 - constructor_properties
   if (not nextIs('(')) produceNull
@@ -527,8 +525,9 @@ parser
       type
     endWhile
   produceList
+}#
 
-- attribute_names
+- attributes
   beginList
     if (not consume('[')) produceList
     if (consume(']')) produceList
@@ -538,8 +537,9 @@ parser
       else              consume_eols; consume(',')
     endWhile
     mustConsume ']'
-  produceList
+  produceList Attributes
 
+#{
 - class_sections
   beginList
   if (not consume(';'))
@@ -563,14 +563,6 @@ parser
       consume_eols
     endWhile
     return
-#{
-  elseOn "GLOBAL PROPERTIES"
-    consume_eols
-    while (not nextHasAttribute(structural))
-      global_properties
-    endWhile
-    return
-}#
   elseOn "PROPERTIES"
     consume_eols
     while (not nextHasAttribute(structural))
@@ -581,23 +573,6 @@ parser
   endOn
   if (not nextIs("endClass")) syntaxError
 
-
-#{
-
-  on "module", module_name, EOL -> ModuleDeclaration(name )
-
-  if (not nextHasAttribute(structural)) multi_line_statements; return
-  syntaxError
-
-- consume_eols
-  while (consume(EOL)) noAction
-
-- consume_end_commands
-  while (consume(EOL) or consume(';')) noAction
-
-- consume_semicolons
-  while (consume(';')) noAction
-}#
 
 - forEach_loop
   on "forEach"
@@ -739,44 +714,44 @@ parser
 
 - method
   on "method" signature procedure_body ->
-    MethodDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+    MethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):ProcedureDef
 
 - global_method
   on "method" signature procedure_body ->
-    GlobalMethodDef(name:String,parameters,return_type_ref,attribute_names,statements):MethodDef
+    GlobalMethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):MethodDef
 
 - signature
   identifier
   procedure_parameters
   procedure_return_type
-  attribute_names
+  attributes
 
 - native_global_method
   identifier
   native_parameter_types
   procedure_return_type
-  attribute_names
+  attributes
   beginList
   createList Statements
-  produce GlobalMethodDef(name:String,parameters,return_type_ref,attribute_names,statements):MethodDef
+  produce GlobalMethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):MethodDef
 
 - native_method
   identifier
   native_parameter_types
   procedure_return_type
-  attribute_names
+  attributes
   beginList
   createList Statements
-  produce MethodDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+  produce MethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):ProcedureDef
 
 - native_routine
   identifier
   native_parameter_types
   procedure_return_type
-  attribute_names
+  attributes
   beginList
   createList Statements
-  produce RoutineDef(name:String,parameters,return_type_ref,attribute_names,statements):ProcedureDef
+  produce RoutineDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):ProcedureDef
 
 - native_parameter_types
   beginList
@@ -792,18 +767,6 @@ parser
   createNull
   type
   produce LocalDef(name:String,initial_value,type_ref)
-
-#{
-- module_name [binary]
-  on "::" -> Scope
-
-- module_segment
-  identifier
-
-- global_properties
-  consume_eols
-  onPeek IDENTIFIER, local_declarations, mustConsume(EOL) -> GlobalProperties( declarations, type )
-}#
 
 - properties
   beginList
@@ -824,6 +787,7 @@ parser
     produce PropertyDef( name=content, initial_value, type_ref )
   endOn
   mustConsume IDENTIFIER  # throws error
+}#
 
 - multi_line_statements
   consume_eols_and_semicolons
@@ -848,13 +812,14 @@ parser
   produceList Statements
 
 - control_structure
-  on "local"       local_declarations: return
+#{
+  on     "local"   local_declarations: return
   onPeek "block"   block:              return
   onPeek "forEach" forEach_loop:       return
   onPeek "if"      if_statement:       return
   onPeek "loop"    loop:               return
   onPeek "while"   while_loop:         return
-  #on "global", local_declarations -> GlobalDeclarations( declarations, type )
+}#
   statement
 
 - args
@@ -884,29 +849,28 @@ parser
   expression
 
 - statement
-  on "noAction": return
+  #on "noAction": return
   on "print"     args -> Print(args)
   on "println"   args -> Println(args)
-  on "return"    optional_expression -> Return(result)
+  #on "return"    optional_expression -> Return(result)
 
-  on "++" expression -> Increment(operand):Unary
-  on "--" expression -> Decrement(operand):Unary
+  #on "++" expression -> Increment(operand):Unary
+  #on "--" expression -> Decrement(operand):Unary
 
   expression
 
+#{
   on "++" -> Increment(operand):Unary
   on "--" -> Decrement(operand):Unary
 
   on "=" expression -> Assign(target,new_value)
 
   on "+=" expression -> AddAndAssign(target,operand):OpAndAssign
-#{
-  on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
-  on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
-  on "/=", expression -> DivideAndAssign(target,operand):OpAndAssign
-  on "%=", expression -> ModAndAssign(target,operand):OpAndAssign
-  on "&=", expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
-}#
+  #on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
+  #on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
+  #on "/=", expression -> DivideAndAssign(target,operand):OpAndAssign
+  #on "%=", expression -> ModAndAssign(target,operand):OpAndAssign
+  #on "&=", expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
   on "|=", expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
   on ":<<:="  expression -> LeftShiftAndAssign(target,operand):OpAndAssign
   on ":>>:="  expression -> RightShiftAndAssign(target,operand):OpAndAssign
@@ -1000,6 +964,7 @@ parser
 #  createList
 #
 #  produce ImportModuleByPath(segments)
+}#
 
 - access_args
   if (not nextIs('(')) produceNull
@@ -1081,6 +1046,7 @@ parser
   on OCTAL_INTEGER  -> LiteralInt32(content=content:String,base="8":Integer)
   on REAL_NUMBER    -> LiteralReal64(value=content:Real)
   on CHARACTER      -> LiteralCharacter(value=content:Character)
+#{
   onPeek IDENTIFIER
     type_name
     access_args
@@ -1120,6 +1086,7 @@ parser
     mustConsume( ']' )
     produceList Args
   endOn
+}#
 
 - preprocess
   while (hasAnother)
@@ -1170,140 +1137,142 @@ parser
   call rewrite_token
 
 - additional_node_types
-  create AddAndAssignLocal(info:Local,operand):OpAndAssign
-  create AddAndAssignLocalInt32(info:Local,operand):OpAndAssign
-  create AddAndAssignProperty(context,info:Property,operand):OpAndAssign
-  create AddAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
-  create AddAndAssignThisProperty(info:Property,operand):OpAndAssign
-  create AddAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
-  create AddInt32(left,right):Binary
-  create AddObject(left,right):Binary
-  create AddReal64(left,right):Binary
-  create AddString(left,right):Binary
-  create AddValue(left,right):Binary
-  create BitwiseAndInt32(left,right):Binary
-  create BitwiseAndValue(left,right):Binary
-  create BitwiseOrAndAssignLocal(info:Local,operand):OpAndAssign
-  create BitwiseOrAndAssignLocalInt32(info:Local,operand):OpAndAssign
-  create BitwiseOrAndAssignProperty(context,info:Property,operand):OpAndAssign
-  create BitwiseOrAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
-  create BitwiseOrAndAssignThisProperty(info:Property,operand):OpAndAssign
-  create BitwiseOrAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
-  create BitwiseOrInt32(left,right):Binary
-  create BitwiseOrValue(left,right):Binary
-  create BitwiseXorInt32(left,right):Binary
-  create BitwiseXorValue(left,right):Binary
-  create CastInt32ToObject(operand):Unary
-  create CastInt32ToReal64(operand):Unary
-  create CastInt32ToString(operand):Unary
-  create CastInt32ToValue(operand):Unary
-  create CastObjectToInt32(operand):Unary
-  create CastObjectToReal64(operand):Unary
-  create CastObjectToString(operand):Unary
-  create CastReal64ToInt32(operand):Unary
-  create CastReal64ToObject(operand):Unary
-  create CastReal64ToString(operand):Unary
-  create CastStringToInt32(operand):Unary
-  create CastStringToObject(operand):Unary
-  create CastStringToReal64(operand):Unary
-  create CastToInt32(operand):Unary
-  create CastToObject(operand):Unary
-  create CastToReal64(operand):Unary
-  create CastToString(operand):Unary
-  create CastToValue(operand):Unary
-  create CastValueToCharacter(operand):Unary
-  create CastValueToInt32(operand):Unary
-  create CastValueToLogical(operand):Unary
-  create CastValueToReal64(operand):Unary
-  create CastValueToXY(operand):Unary
-  create CallMethod(context,procedure:Procedure,args):CallProcedure
-  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
-  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
-  create CallNative
-  create CallThisMethod(procedure:Procedure,args):CallProcedure
-  create CallProcedure(args)
-  create CallRoutine(args):CallProcedure
-  create Compare(left,right):Binary
-  create CompareEQReal64(left,right):Compare
-  create CompareNEReal64(left,right):Compare
-  create CompareLTReal64(left,right):Compare
-  create CompareGTReal64(left,right):Compare
-  create CompareLEReal64(left,right):Compare
-  create CompareGEReal64(left,right):Compare
-  create CreateObject(of_type:Type,m_init:Procedure,args)
-  create CreateXY0
-  create CreateXY1(value)
-  create CreateXY2(x,y)
-  create DecrementLocal(info:Local)
-  create DecrementLocalInt32(info:Local)
-  create DecrementThisProperty(info:Property)
-  create DecrementThisPropertyInt32(info:Property)
-  create Description(operand):Unary
-  create DivideInt32(left,right):Binary
-  create DivideObject(left,right):Binary
-  create DivideReal64(left,right):Binary
-  create DivideString(left,right):Binary
-  create DivideValue(left,right):Binary
-  create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
-  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
-  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
-  create GetLocal(info:Local)
-  create GetProperty(context,info:Property)
-  create GetSingleton(type:Type)
-  create GetThisProperty(info:Property)
-  create IncrementLocal(info:Local)
-  create IncrementLocalInt32(info:Local)
-  create IncrementThisProperty(info:Property)
-  create IncrementThisPropertyInt32(info:Property)
-  create Join(a:String,b:String)
-  create LeftShiftInt32(left,right):Binary
-  create LeftShiftObject(left,right):Binary
-  create LeftShiftValue(left,right):Binary
+  #  create AddAndAssignLocal(info:Local,operand):OpAndAssign
+  #  create AddAndAssignLocalInt32(info:Local,operand):OpAndAssign
+  #  create AddAndAssignProperty(context,info:Property,operand):OpAndAssign
+  #  create AddAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
+  #  create AddAndAssignThisProperty(info:Property,operand):OpAndAssign
+  #  create AddAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
+  #  create AddInt32(left,right):Binary
+  #  create AddObject(left,right):Binary
+  #  create AddReal64(left,right):Binary
+  #  create AddString(left,right):Binary
+  #  create AddValue(left,right):Binary
+  #  create BitwiseAndInt32(left,right):Binary
+  #  create BitwiseAndValue(left,right):Binary
+  #  create BitwiseOrAndAssignLocal(info:Local,operand):OpAndAssign
+  #  create BitwiseOrAndAssignLocalInt32(info:Local,operand):OpAndAssign
+  #  create BitwiseOrAndAssignProperty(context,info:Property,operand):OpAndAssign
+  #  create BitwiseOrAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
+  #  create BitwiseOrAndAssignThisProperty(info:Property,operand):OpAndAssign
+  #  create BitwiseOrAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
+  #  create BitwiseOrInt32(left,right):Binary
+  #  create BitwiseOrValue(left,right):Binary
+  #  create BitwiseXorInt32(left,right):Binary
+  #  create BitwiseXorValue(left,right):Binary
+  #  create CastInt32ToObject(operand):Unary
+  #  create CastInt32ToReal64(operand):Unary
+  #  create CastInt32ToString(operand):Unary
+  #  create CastInt32ToValue(operand):Unary
+  #  create CastObjectToInt32(operand):Unary
+  #  create CastObjectToReal64(operand):Unary
+  #  create CastObjectToString(operand):Unary
+  #  create CastReal64ToInt32(operand):Unary
+  #  create CastReal64ToObject(operand):Unary
+  #  create CastReal64ToString(operand):Unary
+  #  create CastStringToInt32(operand):Unary
+  #  create CastStringToObject(operand):Unary
+  #  create CastStringToReal64(operand):Unary
+  #  create CastToInt32(operand):Unary
+  #  create CastToObject(operand):Unary
+  #  create CastToReal64(operand):Unary
+  #  create CastToString(operand):Unary
+  #  create CastToValue(operand):Unary
+  #  create CastValueToCharacter(operand):Unary
+  #  create CastValueToInt32(operand):Unary
+  #  create CastValueToLogical(operand):Unary
+  #  create CastValueToReal64(operand):Unary
+  #  create CastValueToXY(operand):Unary
+  #  create CallMethod(context,procedure:Procedure,args):CallProcedure
+  #  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
+  #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
+  #  create CallNative
+  #  create CallThisMethod(procedure:Procedure,args):CallProcedure
+  #  create CallProcedure(args)
+  #  create CallRoutine(args):CallProcedure
+  #  create Compare(left,right):Binary
+  #  create CompareEQReal64(left,right):Compare
+  #  create CompareNEReal64(left,right):Compare
+  #  create CompareLTReal64(left,right):Compare
+  #  create CompareGTReal64(left,right):Compare
+  #  create CompareLEReal64(left,right):Compare
+  #  create CompareGEReal64(left,right):Compare
+  #  create CreateObject(of_type:Type,m_init:Procedure,args)
+  #  create CreateXY0
+  #  create CreateXY1(value)
+  #  create CreateXY2(x,y)
+  #  create DecrementLocal(info:Local)
+  #  create DecrementLocalInt32(info:Local)
+  #  create DecrementThisProperty(info:Property)
+  #  create DecrementThisPropertyInt32(info:Property)
+  #  create Description(operand):Unary
+  #  create DivideInt32(left,right):Binary
+  #  create DivideObject(left,right):Binary
+  #  create DivideReal64(left,right):Binary
+  #  create DivideString(left,right):Binary
+  #  create DivideValue(left,right):Binary
+  #  create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
+  #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
+  #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
+  #  create GetLocal(info:Local)
+  #  create GetProperty(context,info:Property)
+  #  create GetSingleton(type:Type)
+  #  create GetThisProperty(info:Property)
+  #  create IncrementLocal(info:Local)
+  #  create IncrementLocalInt32(info:Local)
+  #  create IncrementThisProperty(info:Property)
+  #  create IncrementThisPropertyInt32(info:Property)
+  #  create Join(a:String,b:String)
+  #  create LeftShiftInt32(left,right):Binary
+  #  create LeftShiftObject(left,right):Binary
+  #  create LeftShiftValue(left,right):Binary
   create Literal
-  create LiteralNull(type:Type):Literal
-  create LiteralValueUndefined:Literal
-  create Local(name:String,initial_value)
-  create LocalDeclaration( info:Local )
-  create Method(type_context:Type,name:String,statements):Procedure
-  create ModInt32(left,right):Binary
-  create ModObject(left,right):Binary
-  create ModReal64(left,right):Binary
-  create ModValue(left,right):Binary
-  create MultiplyInt32(left,right):Binary
-  create MultiplyObject(left,right):Binary
-  create MultiplyReal64(left,right):Binary
-  create MultiplyString(left,right):Binary
-  create MultiplyValue(left,right):Binary
-  create NegateInt32(operand):Unary
-  create NegateReal64(operand):Unary
-  create NegateValue(operand):Unary
-  create OpAndAssign(target,operand)
-  create Procedure(module_context:Module,name:String,statements)
-  create ProcedureDef(name:String,parameters,return_type_ref,attribute_names,statements)
-  create Property( type_context:Type, name:String, initial_value, type:Type )
-  create PushResult(operand):Unary
-  create ReturnResult(result)
-  create RightShiftInt32(left,right):Binary
-  create RightShiftValue(left,right):Binary
-  create RightShiftXInt32(left,right):Binary
-  create RightShiftXValue(left,right):Binary
-  create Routine(module_context:Module,name:String,statements):Procedure
-  create SetLocal(info:Local,new_value)
-  create SetThisProperty(info:Property,new_value)
-  create StackTopInt32
-  create SubtractInt32(left,right):Binary
-  create SubtractObject(left,right):Binary
-  create SubtractReal64(left,right):Binary
-  create SubtractString(left,right):Binary
-  create SubtractValue(left,right):Binary
-  create TypeContext(type:Type)
-  create TypeRef(name:String)
-  create ValueAsInt32(operand):Unary
-  create XYGetX(context)
-  create XYGetY(context)
+  #  create LiteralNull(type:Type):Literal
+  #  create LiteralValueUndefined:Literal
+  #  create Local(name:String,initial_value)
+  #  create LocalDeclaration( info:Local )
+  #  create Method(type_context:Type,name:String,statements):Procedure
+  #  create ModInt32(left,right):Binary
+  #  create ModObject(left,right):Binary
+  #  create ModReal64(left,right):Binary
+  #  create ModValue(left,right):Binary
+  #  create MultiplyInt32(left,right):Binary
+  #  create MultiplyObject(left,right):Binary
+  #  create MultiplyReal64(left,right):Binary
+  #  create MultiplyString(left,right):Binary
+  #  create MultiplyValue(left,right):Binary
+  #  create NegateInt32(operand):Unary
+  #  create NegateReal64(operand):Unary
+  #  create NegateValue(operand):Unary
+  #  create OpAndAssign(target,operand)
+  create PrintNewline
+  create PrintString(operand):Unary
+  create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,statements:Statements)
+  #  create ProcedureDef(name:String,parameters,return_type_ref,attributes,statements)
+  #  create Property( type_context:Type, name:String, initial_value, type:Type )
+  #  create PushResult(operand):Unary
+  #  create ReturnResult(result)
+  #  create RightShiftInt32(left,right):Binary
+  #  create RightShiftValue(left,right):Binary
+  #  create RightShiftXInt32(left,right):Binary
+  #  create RightShiftXValue(left,right):Binary
+  #  create Routine(module_context:Module,name:String,statements):Procedure
+  #  create SetLocal(info:Local,new_value)
+  #  create SetThisProperty(info:Property,new_value)
+  #  create StackTopInt32
+  #  create SubtractInt32(left,right):Binary
+  #  create SubtractObject(left,right):Binary
+  #  create SubtractReal64(left,right):Binary
+  #  create SubtractString(left,right):Binary
+  #  create SubtractValue(left,right):Binary
+  create Type(name:String)
+  #  create TypeContext(type:Type)
+  #  create ValueAsInt32(operand):Unary
+  #  create XYGetX(context)
+  #  create XYGetY(context)
 
 --------------------------------------------------------------------------------
 nativeTypes
 --------------------------------------------------------------------------------
-Module
-Type
+#Module
+#Type

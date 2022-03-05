@@ -1,30 +1,33 @@
 module R2
 
 class Module
-  ROGUE_ATTRIBUTE( is_dynamic,   1 )
-  ROGUE_ATTRIBUTE( is_organized, 2 )
-  ROGUE_ATTRIBUTE( is_resolved,  4 )
-  ROGUE_ATTRIBUTE( is_visiting,  8 )
+  #{
+  ROGUE_ATTRIBUTE( is_resolved,  2 )
+  ROGUE_ATTRIBUTE( is_visiting,  4 )
+  }#
 
   PROPERTIES
     t    : Token
     name : String
 
+    #{
     used_modules          = UsedModule[]
     types                 = StringTable<<Type>>()
-    global_statements     : Statements
-    routines_by_name      = StringTable<<Routine[]>>()
+    }#
+    global_statements : Statements
+    routines          = StringTable<<Routine>>()
+    #{
     routines_by_signature = StringTable<<Routine>>()
 
     attributes : Int32
+    }#
 
   METHODS
-    method init( t, name, &dynamic )
-      global_statements = Statements(t)
-      is_dynamic = dynamic
-      Program.all_modules.add( this )
-      if (not is_dynamic) Program.modules_by_name[ name ] = this
+    method init( t, name )
+      Program.modules[ name ] = this
+      ensure global_statements(t)
 
+      #{
     method add_routine( r:Routine )
       ensure routines_by_name[ r.name ]
       routines_by_name[ r.name ].add( r )
@@ -58,9 +61,6 @@ class Module
       endForEach
       return null
 
-    method find_routine( signature:String )->Routine
-      return routines_by_signature[ signature ]
-
     method find_type( name:String, &extended_search )->Type
       if (is_visiting) return null
 
@@ -82,24 +82,26 @@ class Module
       local result = find_type( name )
       if (result) return result
       throw t.error( "No such type '$'." (name) )
+      }#
 
     method organize
-      if (is_organized) return
-      is_organized = true
+      local r = routines[ "on_launch()" ]
+      if (not r)
+        r = Routine( t, this, "on_launch", &statements=global_statements )
+        r.organize
+        routines[ r.signature ] = r
+      endIf
 
-      local organizer = Organizer( this )
-      organizer.visit( forEach in types )
-      organizer.visit( null, forEach in (forEach in routines_by_name) )
+      #local organizer = Organizer( this )
+      #organizer.visit( forEach in types )
+      #organizer.visit( null, forEach in (forEach in routines_by_name) )
 
     method resolve
-      if (is_resolved) return
-      is_resolved = true
-      organize
-
       local resolver = Resolver( this )
-      resolver.visit( forEach in types )
-      resolver.visit( null, forEach in (forEach in routines_by_name) )
+      #resolver.visit( forEach in types )
+      resolver.visit( null, forEach in routines )
 
+      #{
     method type( name:String )->Type
       local result = find_type( name )
       if (result) return result
@@ -111,6 +113,7 @@ class Module
         if (existing_m.m is m) return
       endForEach
       used_modules.add( UsedModule(m,&=is_exported) )
+      }#
 
 endClass
 

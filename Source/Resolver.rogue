@@ -6,13 +6,14 @@ class Resolver : Visitor
     this_module    : Module
     this_type      : Type
     this_procedure : Procedure
-    locals         = Local[]
+    #locals         = Local[]
 
     current_statements_rewriter : ListRewriter<<Cmd>>
 
   METHODS
     method init( this_module )
 
+    #{
     method visit( this_type )
       if (this_type.is_resolved) return
       this_type.is_resolved = true
@@ -35,15 +36,20 @@ class Resolver : Visitor
           this_type.m_init_object = m_init_object
         endIf
       endIf
+    }#
 
     method visit( this_type, this_procedure )
-      this_procedure.organize
+      #{
       if (not this_procedure.is_resolved)
         this_procedure.is_resolved = true
+        }#
         visit( this_procedure )
+        #{
         locals.clear
       endIf
+      }#
 
+      #{
     method add_local( t:Token, name:String, initial_value=null:Cmd, type=null:Type )->Local
       require this_procedure
       local v = Local( t, name, initial_value, type )
@@ -387,25 +393,48 @@ class Resolver : Visitor
         assert locals.count
         locals.remove_last
       endLoop
+      }#
 
-    method on_visit( cmd:Print )
-      visit_children( cmd )
+    method on( cmd:Print )->Cmd
+      which (cmd.args.count)
+        case 0: throw cmd.t.error( "One or more arguments expected." )
+        case 1:
+          local arg = cmd.args.first
+          return visit( arg.require_type.cmd_print(arg) )
+        others
+          local result = Statements( cmd.t )
+          result.add( Print(cmd.t,forEach in cmd.args) )
+          return visit( result )
+      endWhich
 
+      #{
       forEach (arg in rewriter=cmd.args.list.rewriter)
         arg = validate( Description(arg.t,arg) ).require_value
         if (arg) rewriter.write( arg )
       endForEach
 
       if (cmd.args.count == 0) throw cmd.t.error( "One or more arguments expected." )
+      }#
 
-    method on_visit( cmd:Println )
-      visit_children( cmd )
+    method on( cmd:Println )->Cmd
+      which (cmd.args.count)
+        case 0
+          return PrintNewline( cmd.t )
+        others
+          local result = Statements( cmd.t )
+          result.add( Print(cmd.t,Args(cmd.t,forEach in cmd.args)) )
+          result.add( PrintNewline(cmd.t) )
+          return visit( result )
+      endWhich
 
+      #{
       forEach (arg in rewriter=cmd.args.list.rewriter)
         arg = validate( Description(arg.t,arg) ).require_value
         if (arg) rewriter.write( arg )
       endForEach
+      }#
 
+      #{
     method on( cmd:Return )->Cmd
       if (cmd.result) return visit( ReturnResult(cmd.t,cmd.result) )
       return cmd
@@ -671,8 +700,10 @@ class Resolver : Visitor
       if (not Candidates.refine) return null
 
       return null
+}#
 endClass
 
+#{
 augment Procedure
   PROPERTIES
     local_stack_slots : Int32  # in addition to args already on stack
@@ -963,7 +994,16 @@ augment
       return NegateValue( t, operand )
 
 endAugment
+}#
 
+# Print
+augment
+  METHODS
+    method Cmd.cmd_print( t:Token, operand:Cmd )->Cmd
+      throw t.error( "Values of type $ cannot be printed"(type_name) )
+endAugment
+
+#{
 # RightShift
 augment
   METHODS
@@ -1008,4 +1048,4 @@ augment
       return SubtractString( t, lhs, rhs )
 
 endAugment
-
+}#

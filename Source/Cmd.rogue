@@ -149,9 +149,6 @@ class CmdList : Cmd
 
     method set( index:Int32, value:Cmd )
       @list[index] = value
-
-    method set_count( new_count:Int32 )
-      @list.count = new_count
 endClass
 
 class Unary( t, operand:Cmd ) : Cmd
@@ -175,37 +172,48 @@ class Binary( t, left:Cmd, right:Cmd ) : Cmd
       return "Binary($,$)"(%left,%right)
 endClass
 
-class AST : Cmd
-  PROPERTIES
-    elements : Cmd
-
+class Args : CmdList
   METHODS
-    method init( t, elements )
-
-    method init( existing:AST )
-      prior.init( existing )
-      if (existing.elements) elements = existing.elements.cloned
-
     method description->String
-      return "AST($)" (%elements)
-
+      return "Args" + list_description
 endClass
 
-class Access : Cmd
+class Statements : CmdList
+  METHODS
+    method description->String
+      return "Statements" + list_description
+endClass
+
+
+class Print : Cmd
   PROPERTIES
-    name : String
     args : Cmd
 
   METHODS
-    method init( t, name, args=null )
+    method init( t, args )
 
-    method init( existing:Access )
+    method init( existing:Print )
       prior.init( existing )
-      name = existing.name
       if (existing.args) args = existing.args.cloned
 
     method description->String
-      return "Access($,$)" (%name,%args)
+      return "Print($)" (%args)
+
+endClass
+
+class Println : Cmd
+  PROPERTIES
+    args : Cmd
+
+  METHODS
+    method init( t, args )
+
+    method init( existing:Println )
+      prior.init( existing )
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "Println($)" (%args)
 
 endClass
 
@@ -216,167 +224,93 @@ class Add : Binary
 
 endClass
 
-class AddInt32 : Binary
+class BitwiseAnd : Binary
   METHODS
     method description->String
-      return "AddInt32($,$)" (%left,%right)
+      return "BitwiseAnd($,$)" (%left,%right)
 
 endClass
 
-class AddObject : Binary
+class BitwiseOr : Binary
   METHODS
     method description->String
-      return "AddObject($,$)" (%left,%right)
+      return "BitwiseOr($,$)" (%left,%right)
 
 endClass
 
-class AddReal64 : Binary
+class BitwiseXor : Binary
   METHODS
     method description->String
-      return "AddReal64($,$)" (%left,%right)
+      return "BitwiseXor($,$)" (%left,%right)
 
 endClass
 
-class AddString : Binary
+class CompareEQ : Binary
   METHODS
     method description->String
-      return "AddString($,$)" (%left,%right)
+      return "CompareEQ($,$)" (%left,%right)
 
 endClass
 
-class Args : CmdList
+class CompareGE : Binary
   METHODS
     method description->String
-      return "Args" + list_description
-endClass
-
-class CastInt32ToObject : Unary
-  METHODS
-    method description->String
-      return "CastInt32ToObject($)" (%operand)
+      return "CompareGE($,$)" (%left,%right)
 
 endClass
 
-class CastInt32ToReal64 : Unary
+class CompareGT : Binary
   METHODS
     method description->String
-      return "CastInt32ToReal64($)" (%operand)
+      return "CompareGT($,$)" (%left,%right)
 
 endClass
 
-class CastInt32ToString : Unary
+class CompareLE : Binary
   METHODS
     method description->String
-      return "CastInt32ToString($)" (%operand)
+      return "CompareLE($,$)" (%left,%right)
 
 endClass
 
-class CastObjectToInt32 : Unary
+class CompareLT : Binary
   METHODS
     method description->String
-      return "CastObjectToInt32($)" (%operand)
+      return "CompareLT($,$)" (%left,%right)
 
 endClass
 
-class CastObjectToReal64 : Unary
+class CompareNE : Binary
   METHODS
     method description->String
-      return "CastObjectToReal64($)" (%operand)
+      return "CompareNE($,$)" (%left,%right)
 
 endClass
 
-class CastObjectToString : Unary
-  METHODS
-    method description->String
-      return "CastObjectToString($)" (%operand)
-
-endClass
-
-class CastReal64ToInt32 : Unary
-  METHODS
-    method description->String
-      return "CastReal64ToInt32($)" (%operand)
-
-endClass
-
-class CastReal64ToObject : Unary
-  METHODS
-    method description->String
-      return "CastReal64ToObject($)" (%operand)
-
-endClass
-
-class CastReal64ToString : Unary
-  METHODS
-    method description->String
-      return "CastReal64ToString($)" (%operand)
-
-endClass
-
-class CastStringToInt32 : Unary
-  METHODS
-    method description->String
-      return "CastStringToInt32($)" (%operand)
-
-endClass
-
-class CastStringToObject : Unary
-  METHODS
-    method description->String
-      return "CastStringToObject($)" (%operand)
-
-endClass
-
-class CastStringToReal64 : Unary
-  METHODS
-    method description->String
-      return "CastStringToReal64($)" (%operand)
-
-endClass
-
-class CastToInt32 : Unary
-  METHODS
-    method description->String
-      return "CastToInt32($)" (%operand)
-
-endClass
-
-class CastToObject : Unary
+class ContextAccess : Cmd
   PROPERTIES
-    of_type : Type
+    context : Cmd
+    name    : String
+    args    : Cmd
 
   METHODS
-    method init( t, operand )
+    method init( t, context, name, args )
 
-    method init( t, operand, of_type )
-
-    method init( existing:CastToObject )
+    method init( existing:ContextAccess )
       prior.init( existing )
-      of_type = existing.of_type
+      if (existing.context) context = existing.context.cloned
+      name = existing.name
+      if (existing.args) args = existing.args.cloned
 
     method description->String
-      return "CastToObject($)" (%operand)
+      return "ContextAccess($,$,$)" (%context,%name,%args)
 
 endClass
 
-class CastToReal64 : Unary
+class Divide : Binary
   METHODS
     method description->String
-      return "CastToReal64($)" (%operand)
-
-endClass
-
-class CastToString : Unary
-  METHODS
-    method description->String
-      return "CastToString($)" (%operand)
-
-endClass
-
-class Description : Unary
-  METHODS
-    method description->String
-      return "Description($)" (%operand)
+      return "Divide($,$)" (%left,%right)
 
 endClass
 
@@ -395,12 +329,36 @@ class Identifier : Cmd
       return "Identifier($)" (%name)
 
     method to->Character
-      if (name is null or name.count == 0) return Character(0)
-      return name[0]
+      return Cmd.to_character(name)
 
     method to->Int32:  return name
     method to->Logical: return name?
     method to->String: return name
+
+endClass
+
+class IndexAccess : Cmd
+  PROPERTIES
+    context : Cmd
+    index   : Cmd
+
+  METHODS
+    method init( t, context, index )
+
+    method init( existing:IndexAccess )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.index) index = existing.index.cloned
+
+    method description->String
+      return "IndexAccess($,$)" (%context,%index)
+
+endClass
+
+class LeftShift : Binary
+  METHODS
+    method description->String
+      return "LeftShift($,$)" (%left,%right)
 
 endClass
 
@@ -432,50 +390,24 @@ endClass
 
 class LiteralInt32 : Cmd
   PROPERTIES
-    value : Int32
+    value   : Int32
+    content : String
+    base    : Int32
 
   METHODS
     method init( t, value )
 
-    method init( t, content:String, base:Int32 )
-      value = content->Int32( base )
+    method init( t, content, base )
 
     method init( existing:LiteralInt32 )
       prior.init( existing )
       value = existing.value
+      content = existing.content
+      base = existing.base
 
     method description->String
-      return "LiteralInt32($)" (%value)
+      return "LiteralInt32($,$,$)" (%value,%content,%base)
 
-    method to->Int32:     return value
-    method to->String:    return value
-
-endClass
-
-class LiteralLogical : Cmd
-  PROPERTIES
-    value : Logical
-
-  METHODS
-    method init( t, value )
-
-    method init( existing:LiteralLogical )
-      prior.init( existing )
-      value = existing.value
-
-    method description->String
-      return "LiteralLogical($)" (%value)
-
-    method to->Int32:   return which{value:1 || 0}
-    method to->Logical: return value
-    method to->String:  return which{value:"true" || "false"}
-
-endClass
-
-class LiteralPi : Cmd
-  METHODS
-    method description->String
-      return "LiteralPi"
 endClass
 
 class LiteralReal64 : Cmd
@@ -513,1488 +445,11 @@ class LiteralString : Literal
       return "LiteralString($)" (%value)
 
     method to->Character
-      if (value is null or value.count == 0) return Character(0)
-      return value[0]
+      return Cmd.to_character(value)
 
     method to->Int32:  return value
     method to->Logical: return value?
     method to->String: return value
-
-endClass
-
-class Print : Cmd
-  PROPERTIES
-    args : Cmd
-
-  METHODS
-    method init( t, args )
-
-    method init( existing:Print )
-      prior.init( existing )
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "Print($)" (%args)
-
-endClass
-
-class Println : Cmd
-  PROPERTIES
-    args : Cmd
-
-  METHODS
-    method init( t, args )
-
-    method init( existing:Println )
-      prior.init( existing )
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "Println($)" (%args)
-
-endClass
-
-class Procedure : Cmd
-  ROGUE_ATTRIBUTE( is_organized, 1 )
-  ROGUE_ATTRIBUTE( is_resolved,  2 )
-  ROGUE_ATTRIBUTE( is_global,    4 )  # routine or global method
-
-  PROPERTIES
-    module_context   : Module
-    type_context     : Type
-    name             : String
-    signature        : String
-    parameters       : Local[]
-    return_type      : Type
-    attributes       : Int32
-    statements       : Cmd
-
-    locals           = Local[]
-
-    min_args         : Int32
-    max_args         : Int32
-
-  METHODS
-    method init( t, module_context, name, statements=null )
-      parameters = Local[]
-      locals     = Local[]
-      if (not statements) statements = Statements( t )
-
-    method init( existing:Procedure )
-      prior.init( existing )
-      type_context = existing.type_context
-      name = existing.name
-      signature = existing.signature
-      parameters = existing.parameters.cloned
-      attributes = existing.attributes
-      statements = existing.statements.cloned
-      locals = existing.locals.cloned
-      min_args = existing.min_args
-      max_args = existing.max_args
-
-    method accepts_arg_count( n:Int32 )->Logical
-      return (n >= min_args and n <= max_args)
-
-    method description->String
-      return which{ signature || name }
-
-    method context_signature->String
-      if (not type_context) return signature
-      return "$.$" (type_context,signature)
-
-    method organize
-      if (is_organized) return
-      Organizer( module_context ).visit( type_context, this )
-
-    method resolve
-      if (is_resolved) return
-      organize
-      Resolver( module_context ).visit( type_context, this )
-
-endClass
-
-class ProcedureDef : Cmd
-  ROGUE_ATTRIBUTE( is_resolved, 1 )
-
-  PROPERTIES
-    name             : String
-    parameters       : Cmd
-    return_type_ref  : Cmd
-    attributes       : Int32
-    attribute_names  : Cmd
-    statements       : Cmd
-
-  METHODS
-    method init( t, name, parameters, return_type_ref, attribute_names, statements )
-
-    method init( existing:ProcedureDef )
-      prior.init( existing )
-      name = existing.name
-      if (existing.parameters) parameters = existing.parameters.cloned
-      if (existing.attribute_names) attribute_names = existing.attribute_names.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method accepts_arg_count( n:Int32 )->Logical
-      local min = which{ parameters:parameters.count || 0 }
-      local max = min
-      return (n >= min and n <= max)
-
-    method description->String
-      return name
-
-endClass
-
-class Routine : Procedure
-  METHODS
-    method init( t:Token, module_context:Module, name:String, statements=null:Cmd )
-      prior.init( t, module_context, name, statements )
-      is_global = true
-
-    method init( existing:Procedure )
-      prior.init( existing )
-      is_global = true
-endClass
-
-class RoutineDef : ProcedureDef
-  METHODS
-    method to->Routine
-      local result = Routine( t, Program.current_module, name, statements )
-      result.parameters.add( (forEach in parameters)->(as LocalDef)->Local )
-      if (return_type_ref) result.return_type = return_type_ref->Type
-      if (attribute_names)
-        #forEach (attribute in attribute_names)
-          # TOOD
-        #endForEach
-      endIf
-      return result
-endClass
-
-class Statements : CmdList
-  METHODS
-    method description->String
-      return "Statements" + list_description
-endClass
-
-class Subtract : Binary
-  METHODS
-    method description->String
-      return "Subtract($,$)" (%left,%right)
-
-endClass
-
-class SubtractInt32 : Binary
-  METHODS
-    method description->String
-      return "SubtractInt32($,$)" (%left,%right)
-
-endClass
-
-class SubtractObject : Binary
-  METHODS
-    method description->String
-      return "SubtractObject($,$)" (%left,%right)
-
-endClass
-
-class SubtractReal64 : Binary
-  METHODS
-    method description->String
-      return "SubtractReal64($,$)" (%left,%right)
-
-endClass
-
-class SubtractString : Binary
-  METHODS
-    method description->String
-      return "SubtractString($,$)" (%left,%right)
-
-endClass
-
-class DefineModule : Cmd
-  PROPERTIES
-    name : String
-
-  METHODS
-    method init( t, name )
-
-    method init( existing:DefineModule )
-      prior.init( existing )
-      name = existing.name
-
-    method description->String
-      return "DefineModule($)" (%name)
-
-    method to->Character
-      if (name is null or name.count == 0) return Character(0)
-      return name[0]
-
-    method to->Int32:  return name
-    method to->Logical: return name?
-    method to->String: return name
-
-endClass
-
-class TypeRef : Cmd
-  PROPERTIES
-    name : String
-
-  METHODS
-    method init( t, name )
-
-    method init( existing:TypeRef )
-      prior.init( existing )
-      name = existing.name
-
-    method description->String
-      return "TypeRef($)" (%name)
-
-    method to->Character
-      return Cmd.to_character(name)
-
-    method to->Int32:  return name
-    method to->Logical: return name?
-    method to->String: return name
-endClass
-
-class GlobalMethodDef : MethodDef
-  METHODS
-    method to->Method( type_context:Type )
-      local m = Method( t, type_context, name, statements )
-      m.parameters.add( (forEach in parameters)->(as LocalDef)->Local )
-      m.is_global = true
-      if (return_type_ref) m.return_type = return_type_ref->Type
-      if (attribute_names)
-        #forEach (attribute in attribute_names)
-          # TOOD
-        #endForEach
-      endIf
-      type_context.add( m )
-      return m
-endClass
-
-class CallRoutine : CallProcedure
-  METHODS
-    method init( t, args )
-
-    method init( t, procedure, args )
-
-    method init( existing:CallRoutine )
-      prior.init( existing )
-      procedure = existing.procedure
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "CallRoutine($)" (%args)
-endClass
-
-
-class CastToValue : Unary
-  METHODS
-    method description->String
-      return "CastToValue($)" (%operand)
-
-endClass
-
-class AddValue : Binary
-  METHODS
-    method description->String
-      return "AddValue($,$)" (%left,%right)
-
-endClass
-
-class SubtractValue : Binary
-  METHODS
-    method description->String
-      return "SubtractValue($,$)" (%left,%right)
-
-endClass
-
-class FlagParameter : Parameter
-  METHODS
-    method description->String
-      return "FlagParameter($,$,$)" (%name,%initial_value,%type_ref)
-
-endClass
-
-
-class Local : Cmd
-  ROGUE_ATTRIBUTE( is_parameter,  1 )
-  ROGUE_ATTRIBUTE( is_auto_store, 2 )
-
-  PROPERTIES
-    name          : String
-    initial_value : Cmd
-    type          : Type
-    attributes    : Int32
-    fp_offset     = -1
-
-  METHODS
-    method init( t, name, initial_value )
-      init( t, name, initial_value, null )
-
-    method init( t, name, initial_value, type )
-
-    method init( existing:Local )
-      prior.init( existing )
-      name = existing.name
-      if (existing.initial_value) initial_value = existing.initial_value.cloned
-      type = existing.@type
-      attributes = existing.attributes
-      fp_offset = existing.fp_offset
-
-    method description->String
-      return "Local($,$,$)" (%name,%initial_value,%type)
-
-    method type->Type
-      return @type
-endClass
-
-class LocalDef : Cmd
-  PROPERTIES
-    name          : String
-    initial_value : Cmd
-    type_ref      : Cmd
-
-  METHODS
-    method init( t, name, initial_value, type_ref )
-
-    method init( existing:LocalDef )
-      prior.init( existing )
-      name = existing.name
-      if (existing.initial_value) initial_value = existing.initial_value.cloned
-      if (existing.type_ref) type_ref = existing.type_ref.cloned
-
-    method description->String
-      return "LocalDef($,$,$)" (%name,%initial_value,%type_ref)
-
-    method to->Local
-      local type : Type
-      if (type_ref) type = type_ref->Type
-      return Local( t, name, initial_value, type )
-endClass
-
-class PushNumber : Unary
-  METHODS
-    method description->String
-      return "PushNumber($)" (%operand)
-
-endClass
-
-class PushObject : Unary
-  METHODS
-    method description->String
-      return "PushObject($)" (%operand)
-
-endClass
-
-class PushResult : Unary
-  METHODS
-    method description->String
-      return "PushResult($)" (%operand)
-
-endClass
-
-class CallProcedure : Cmd
-  PROPERTIES
-    procedure : Procedure
-    args      : Cmd
-
-  METHODS
-    method init( t, args )
-
-    method init( t, procedure, args )
-
-    method init( existing:CallProcedure )
-      prior.init( existing )
-      procedure = existing.procedure
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "CallProcedure($)" (%args)
-
-endClass
-
-class CastInt32ToValue : Unary
-  METHODS
-    method description->String
-      return "CastInt32ToValue($)" (%operand)
-
-endClass
-
-class GetLocal : Cmd
-  PROPERTIES
-    info      : Local
-    fp_offset : Int32
-
-  METHODS
-    method init( t, info )
-      fp_offset = info.fp_offset
-
-    method init( existing:GetLocal )
-      t = existing.t
-      info = existing.info
-      fp_offset = existing.fp_offset
-
-    method description->String
-      return "GetLocal($,$)"(info.name,fp_offset)
-endClass
-
-class Return : Cmd
-  PROPERTIES
-    result : Cmd
-
-  METHODS
-    method init( t, result )
-
-    method init( existing:Return )
-      prior.init( existing )
-      if (existing.result) result = existing.result.cloned
-
-    method description->String
-      return "Return($)" (%result)
-
-endClass
-
-class ReturnResult : Cmd
-  PROPERTIES
-    result : Cmd
-
-  METHODS
-    method init( t, result )
-
-    method init( existing:ReturnResult )
-      prior.init( existing )
-      if (existing.result) result = existing.result.cloned
-
-    method description->String
-      return "ReturnResult($)" (%result)
-
-endClass
-
-class Attribute : Cmd
-  PROPERTIES
-    name : String
-
-  METHODS
-    method init( t, name )
-
-    method init( existing:Attribute )
-      prior.init( existing )
-      name = existing.name
-
-    method description->String
-      return "Attribute($)" (%name)
-
-    method to->Character
-      return Cmd.to_character(name)
-
-    method to->Int32:  return name
-    method to->Logical: return name?
-    method to->String: return name
-
-endClass
-
-class UsesModule : Cmd
-  PROPERTIES
-    path       : Cmd
-    attribute_names : Cmd
-
-  METHODS
-    method init( t, path, attribute_names )
-
-    method init( existing:UsesModule )
-      prior.init( existing )
-      if (existing.path) path = existing.path.cloned
-      if (existing.attribute_names) attribute_names = existing.attribute_names.cloned
-
-    method description->String
-      return "UsesModule($,$)" (%path,%attribute_names)
-
-    method is_exported->Logical
-      if (not attribute_names) return false
-      if ((forEach in attribute_names)->String == "export") return true
-      return false
-
-endClass
-
-class ImportModule : Cmd
-  PROPERTIES
-    filepath : String
-
-  METHODS
-    method init( t, filepath )
-
-    method init( existing:ImportModule )
-      prior.init( existing )
-      filepath = existing.filepath
-
-    method description->String
-      return "ImportModule($)" (%filepath)
-
-    method to->Character
-      return Cmd.to_character(filepath)
-
-    method to->Int32:  return filepath
-    method to->Logical: return filepath?
-    method to->String: return filepath
-
-endClass
-
-class Include : Cmd
-  PROPERTIES
-    filepath : String
-
-  METHODS
-    method init( t, filepath )
-
-    method init( existing:Include )
-      prior.init( existing )
-      filepath = existing.filepath
-
-    method description->String
-      return "Include($)" (%filepath)
-
-    method to->Character
-      return Cmd.to_character(filepath)
-
-    method to->Int32:  return filepath
-    method to->Logical: return filepath?
-    method to->String: return filepath
-
-endClass
-
-class ClassDef : Cmd
-  PROPERTIES
-    name                   : Cmd
-    constructor_properties : Cmd
-    base_types             : Cmd
-    attribute_names        : Cmd
-    sections               : Cmd
-
-  METHODS
-    method init( t, name, constructor_properties, base_types, attribute_names, sections )
-
-    method init( existing:ClassDef )
-      prior.init( existing )
-      if (existing.name) name = existing.name.cloned
-      if (existing.constructor_properties) constructor_properties = existing.constructor_properties.cloned
-      if (existing.base_types) base_types = existing.base_types.cloned
-      if (existing.attribute_names) attribute_names = existing.attribute_names.cloned
-      if (existing.sections) sections = existing.sections.cloned
-
-    method description->String
-      return "ClassDef($,$,$,$,$)" (%name,%constructor_properties,%base_types,%attribute_names,%sections)
-
-    method to->Type
-      local type = Type( t, name, &!is_primitive )
-      return this->Type( type )
-
-    method to->Type( type:Type )
-      type.definition = this
-      if (attribute_names)
-        forEach (attribute in attribute_names)
-          local name = attribute->String
-          which (name)
-            case "singleton"
-              type.is_singleton = true
-            others
-              throw attribute.t.error( "Unrecognized attribute [$]."(name) )
-          endWhich
-        endForEach
-      endIf
-      return type
-
-endClass
-
-class LocalDeclarations : Cmd
-  PROPERTIES
-    declarations : Cmd
-    type_ref     : Cmd
-
-  METHODS
-    method init( t, declarations, type_ref )
-
-    method init( existing:LocalDeclarations )
-      prior.init( existing )
-      if (existing.declarations) declarations = existing.declarations.cloned
-      if (existing.type_ref) type_ref = existing.type_ref.cloned
-
-    method description->String
-      return "LocalDeclarations($,$)" (%declarations,%type_ref)
-
-endClass
-
-class LiteralValueUndefined : Literal
-  METHODS
-    method description->String
-      return "LiteralValueUndefined"
-endClass
-
-class LiteralNull : Literal
-  PROPERTIES
-    type : Type
-
-  METHODS
-    method init( t, type )
-
-    method init( existing:LiteralNull )
-      prior.init( existing )
-      type = existing.type
-
-    method description->String
-      return "LiteralNull($)" (%type)
-
-    method type->Type
-      return @type
-
-endClass
-
-class Property : Cmd
-  PROPERTIES
-    type_context  : Type
-    name          : String
-    initial_value : Cmd
-    type          : Type
-    index         : Int32
-
-  METHODS
-    method init( t, type_context, name, initial_value, type )
-
-    method init( existing:Property )
-      prior.init( existing )
-      type_context = existing.type_context
-      name = existing.name
-      if (existing.initial_value) initial_value = existing.initial_value.cloned
-      type = existing.type
-
-    method description->String
-      return "Property($,$,$,$)" (%type_context,%name,%initial_value,%type)
-
-endClass
-
-class Method : Procedure
-  METHODS
-    method init( t, type_context, name, statements=null )
-      module_context = type_context.module_context
-      parameters = Local[]
-      locals     = Local[]
-      if (not statements) statements = Statements( t )
-
-    method init( existing:Procedure )
-      prior.init( existing )
-
-    method description->String
-      return which{ signature || name }
-
-endClass
-
-class MethodDef : ProcedureDef
-  METHODS
-    method to->Method( type_context:Type )
-      local m = Method( t, type_context, name, statements )
-      m.parameters.add( (forEach in parameters)->(as LocalDef)->Local )
-      if (return_type_ref) m.return_type = return_type_ref->Type
-      if (attribute_names)
-        #forEach (attribute in attribute_names)
-          # TOOD
-        #endForEach
-      endIf
-      type_context.add( m )
-      return m
-
-endClass
-
-class CreateObject : Cmd
-  PROPERTIES
-    of_type : Type
-    m_init  : Procedure
-    args    : Cmd
-
-  METHODS
-    method init( t, of_type, m_init=null, args=null )
-
-    method init( existing:CreateObject )
-      prior.init( existing )
-      of_type = existing.of_type
-      m_init = existing.m_init
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "CreateObject($,$)" (%of_type,%m_init)
-
-    method to->Type
-      return of_type
-
-endClass
-
-class SetThisProperty : Cmd
-  PROPERTIES
-    info      : Property
-    new_value : Cmd
-    index     : Int32
-
-  METHODS
-    method init( t, info, new_value )
-      index = info.index
-
-    method init( existing:SetThisProperty )
-      prior.init( existing )
-      info = existing.info
-      index = existing.index
-      if (existing.new_value) new_value = existing.new_value.cloned
-
-    method description->String
-      return "SetThisProperty($,$)" (%index,%new_value)
-
-endClass
-
-class ContextAccess : Cmd
-  PROPERTIES
-    context : Cmd
-    name    : String
-    args    : Cmd
-
-  METHODS
-    method init( t, context, name, args=null )
-
-    method init( existing:ContextAccess )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      name = existing.name
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "ContextAccess($,$,$)" (%context,%name,%args)
-
-endClass
-
-
-class GetProperty : Cmd
-  PROPERTIES
-    context : Cmd
-    info    : Property
-    index   : Int32
-
-  METHODS
-    method init( t, context, info )
-      index = info.index
-
-    method init( existing:GetProperty )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.info) info = existing.info.cloned
-      index = existing.index
-
-    method description->String
-      return "GetProperty($,$)" (%context,%info)
-
-endClass
-
-class GetThisProperty : Cmd
-  PROPERTIES
-    info  : Property
-    index : Int32
-
-  METHODS
-    method init( t, info )
-      index = info.index
-
-    method init( existing:GetThisProperty )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-      index = existing.index
-
-    method description->String
-      return "GetThisProperty($,$)" (info.name,index)
-
-endClass
-
-class Negate : Unary
-  METHODS
-    method description->String
-      return "Negate($)" (%operand)
-
-endClass
-
-class IncrementLocal : Cmd
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:IncrementLocal )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "IncrementLocal($)" (%info)
-
-endClass
-
-class Decrement : Unary
-  METHODS
-    method description->String
-      return "Decrement($)" (%operand)
-
-endClass
-
-class Increment : Unary
-  METHODS
-    method description->String
-      return "Increment($)" (%operand)
-
-endClass
-
-class IncrementLocalInt32 : Cmd
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:IncrementLocalInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "IncrementLocalInt32($)" (%info)
-
-endClass
-
-class IncrementThisProperty : Cmd
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:IncrementThisProperty )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "IncrementThisProperty($)" (%info)
-
-endClass
-
-class CallMethod : CallProcedure
-  PROPERTIES
-    context   : Cmd
-    procedure : Procedure
-
-  METHODS
-    method init( t, context, procedure, args )
-
-    method init( existing:CallMethod )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.procedure) procedure = existing.procedure.cloned
-
-    method description->String
-      return "CallMethod($,$,$)" (%context,%procedure,%args)
-
-endClass
-
-class CallThisMethod : CallProcedure
-  PROPERTIES
-    procedure : Procedure
-
-  METHODS
-    method init( t, procedure, args )
-
-    method init( existing:CallThisMethod )
-      prior.init( existing )
-      if (existing.procedure) procedure = existing.procedure.cloned
-
-    method description->String
-      return "CallThisMethod($,$)" (%procedure,%args)
-
-endClass
-
-class IncrementThisPropertyInt32 : Cmd
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:IncrementThisPropertyInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "IncrementThisPropertyInt32($)" (%info)
-
-endClass
-
-class Assign : Cmd
-  PROPERTIES
-    target    : Cmd
-    new_value : Cmd
-
-  METHODS
-    method init( t, target, new_value )
-
-    method init( existing:Assign )
-      prior.init( existing )
-      if (existing.target) target = existing.target.cloned
-      if (existing.new_value) new_value = existing.new_value.cloned
-
-    method description->String
-      return "Assign($,$)" (%target,%new_value)
-
-endClass
-
-class SetLocal : Cmd
-  PROPERTIES
-    info      : Local
-    new_value : Cmd
-
-  METHODS
-    method init( t, info, new_value )
-
-    method init( existing:SetLocal )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-      if (existing.new_value) new_value = existing.new_value.cloned
-
-    method description->String
-      return "SetLocal($,$)" (%info,%new_value)
-
-endClass
-
-class AddAndAssign : OpAndAssign
-  METHODS
-    method description->String
-      return "AddAndAssign($,$)" (%target,%operand)
-
-endClass
-
-class OpAndAssign : Cmd
-  PROPERTIES
-    target  : Cmd
-    operand : Cmd
-
-  METHODS
-    method init( t, target, operand )
-
-    method init( existing:OpAndAssign )
-      prior.init( existing )
-      if (existing.target) target = existing.target.cloned
-      if (existing.operand) operand = existing.operand.cloned
-
-    method description->String
-      return "OpAndAssign($,$)" (%target,%operand)
-
-endClass
-
-class AddAndAssignLocal : OpAndAssign
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:AddAndAssignLocal )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "AddAndAssignLocal($,$)" (%info,%operand)
-
-endClass
-
-class AddAndAssignThisProperty : OpAndAssign
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:AddAndAssignThisProperty )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "AddAndAssignThisProperty($,$)" (%info,%operand)
-
-endClass
-
-class AddAndAssignThisPropertyInt32 : OpAndAssign
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:AddAndAssignThisPropertyInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "AddAndAssignThisPropertyInt32($,$)" (%info,%operand)
-
-endClass
-
-class AddAndAssignLocalInt32 : OpAndAssign
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:AddAndAssignLocalInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "AddAndAssignLocalInt32($,$)" (%info,%operand)
-
-endClass
-
-class AddAndAssignProperty : OpAndAssign
-  PROPERTIES
-    context : Cmd
-    info    : Property
-
-  METHODS
-    method init( t, context, info, operand )
-
-    method init( existing:AddAndAssignProperty )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "AddAndAssignProperty($,$,$)" (%context,%info,%operand)
-
-endClass
-
-class AddAndAssignPropertyInt32 : OpAndAssign
-  PROPERTIES
-    context : Cmd
-    info    : Property
-
-  METHODS
-    method init( t, context, info, operand )
-
-    method init( existing:AddAndAssignPropertyInt32 )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "AddAndAssignPropertyInt32($,$,$)" (%context,%info,%operand)
-
-endClass
-
-class CompareEQ : Compare
-  METHODS
-    method description->String
-      return "CompareEQ($,$)" (%left,%right)
-
-endClass
-
-class CompareGE : Compare
-  METHODS
-    method description->String
-      return "CompareGE($,$)" (%left,%right)
-
-endClass
-
-class CompareGT : Compare
-  METHODS
-    method description->String
-      return "CompareGT($,$)" (%left,%right)
-
-endClass
-
-class CompareLE : Compare
-  METHODS
-    method description->String
-      return "CompareLE($,$)" (%left,%right)
-
-endClass
-
-class CompareLT : Compare
-  METHODS
-    method description->String
-      return "CompareLT($,$)" (%left,%right)
-
-endClass
-
-class CompareNE : Compare
-  METHODS
-    method description->String
-      return "CompareNE($,$)" (%left,%right)
-
-endClass
-
-class Compare : Binary
-  METHODS
-    method description->String
-      return "Compare($,$)" (%left,%right)
-
-endClass
-
-class CompareEQReal64 : Compare
-  METHODS
-    method description->String
-      return "CompareEQReal64($,$)" (%left,%right)
-
-endClass
-
-class CompareGEReal64 : Compare
-  METHODS
-    method description->String
-      return "CompareGEReal64($,$)" (%left,%right)
-
-endClass
-
-class CompareGTReal64 : Compare
-  METHODS
-    method description->String
-      return "CompareGTReal64($,$)" (%left,%right)
-
-endClass
-
-class CompareLEReal64 : Compare
-  METHODS
-    method description->String
-      return "CompareLEReal64($,$)" (%left,%right)
-
-endClass
-
-class CompareLTReal64 : Compare
-  METHODS
-    method description->String
-      return "CompareLTReal64($,$)" (%left,%right)
-
-endClass
-
-class CompareNEReal64 : Compare
-  METHODS
-    method description->String
-      return "CompareNEReal64($,$)" (%left,%right)
-
-endClass
-
-class While : Cmd
-  PROPERTIES
-    condition  : Cmd
-    statements : Cmd
-
-  METHODS
-    method init( t, condition, statements )
-
-    method init( existing:While )
-      prior.init( existing )
-      if (existing.condition) condition = existing.condition.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "While($,$)" (%condition,%statements)
-
-endClass
-
-class If : Cmd
-  PROPERTIES
-    condition  : Cmd # is null for 'else' block
-    statements : Cmd
-    cmd_else   : If  # dual purpose elseIf/else
-
-  METHODS
-    method init( t, condition, statements, cmd_else )
-
-    method init( existing:If )
-      prior.init( existing )
-      if (existing.condition) condition = existing.condition.cloned
-      if (existing.statements) statements = existing.statements.cloned
-      if (existing.cmd_else) cmd_else = existing.cmd_else.cloned
-
-    method description->String
-      return "If($,$,$)" (%condition,%statements,%cmd_else)
-
-endClass
-
-class CallNative : Cmd
-  PROPERTIES
-
-  METHODS
-    method init( t )
-
-    method init( existing:CallNative )
-      t = existing.t
-
-    method description->String
-      return "CallNative"
-endClass
-
-
-class TypeContext : Cmd
-  PROPERTIES
-    type : Type
-
-  METHODS
-    method init( t, type )
-
-    method init( existing:TypeContext )
-      prior.init( existing )
-      type = existing.type
-
-    method description->String
-      return "TypeContext($)" (%type)
-
-    method is_type_context->Logical
-      return true
-
-    method type->Type
-      return @type
-
-endClass
-
-class CallGlobalMethod : CallProcedure
-  PROPERTIES
-    procedure : Procedure
-
-  METHODS
-    method init( t, procedure, args )
-
-    method init( existing:CallGlobalMethod )
-      prior.init( existing )
-      if (existing.procedure) procedure = existing.procedure.cloned
-
-    method description->String
-      return "CallGlobalMethod($,$)" (%procedure,%args)
-
-endClass
-
-class CallGlobalMethodWithContext : CallProcedure
-  PROPERTIES
-    context   : Cmd
-    procedure : Procedure
-
-  METHODS
-    method init( t, context, procedure, args )
-
-    method init( existing:CallGlobalMethodWithContext )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.procedure) procedure = existing.procedure.cloned
-
-    method description->String
-      return "CallGlobalMethodWithContext($,$,$)" (%context,%procedure,%args)
-
-endClass
-
-class GetSingleton : Cmd
-  PROPERTIES
-    type : Type
-
-  METHODS
-    method init( t, type )
-
-    method init( existing:GetSingleton )
-      prior.init( existing )
-      type = existing.type
-
-    method description->String
-      return "GetSingleton($)" (%type)
-
-    method type->Type
-      return @type
-
-endClass
-
-class PropertyDeclarations : Cmd
-  PROPERTIES
-    declarations : Cmd
-    type_ref     : Cmd
-
-  METHODS
-    method init( t, declarations, type_ref )
-
-    method init( existing:PropertyDeclarations )
-      prior.init( existing )
-      if (existing.declarations) declarations = existing.declarations.cloned
-      if (existing.type_ref) type_ref = existing.type_ref.cloned
-
-    method description->String
-      return "PropertyDeclarations($,$)" (%declarations,%type_ref)
-
-endClass
-
-class PropertyDef : Cmd
-  PROPERTIES
-    name          : String
-    initial_value : Cmd
-    type_ref      : Cmd
-
-  METHODS
-    method init( t, name, initial_value, type_ref )
-
-    method init( existing:PropertyDef )
-      prior.init( existing )
-      name = existing.name
-      if (existing.initial_value) initial_value = existing.initial_value.cloned
-      if (existing.type_ref) type_ref = existing.type_ref.cloned
-
-    method description->String
-      return "PropertyDef($,$,$)" (%name,%initial_value,%type_ref)
-
-    method to->Property( type_context:Type )
-      local type : Type
-      if (type_ref) type = type_ref->Type
-      return Property( t, type_context, name, initial_value, type )
-
-endClass
-
-class EmptyList : Cmd
-  METHODS
-    method description->String
-      return "EmptyList"
-endClass
-
-class Join : Cmd
-  PROPERTIES
-    a : String
-    b : String
-
-  METHODS
-    method init( t, a, b )
-
-    method init( existing:Join )
-      prior.init( existing )
-      a = existing.a
-      b = existing.b
-
-    method description->String
-      return "Join($,$)" (%a,%b)
-
-    method to->String
-      return a + b
-
-endClass
-
-class IndexAccess : Cmd
-  PROPERTIES
-    context : Cmd
-    index   : Cmd
-
-  METHODS
-    method init( t, context, index )
-
-    method init( existing:IndexAccess )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.index) index = existing.index.cloned
-
-    method description->String
-      return "IndexAccess($,$)" (%context,%index)
-
-endClass
-
-class Divide : Binary
-  METHODS
-    method description->String
-      return "Divide($,$)" (%left,%right)
-
-endClass
-
-class Multiply : Binary
-  METHODS
-    method description->String
-      return "Multiply($,$)" (%left,%right)
-
-endClass
-
-class MultiplyInt32 : Binary
-  METHODS
-    method description->String
-      return "MultiplyInt32($,$)" (%left,%right)
-
-endClass
-
-class MultiplyObject : Binary
-  METHODS
-    method description->String
-      return "MultiplyObject($,$)" (%left,%right)
-
-endClass
-
-class MultiplyReal64 : Binary
-  METHODS
-    method description->String
-      return "MultiplyReal64($,$)" (%left,%right)
-
-endClass
-
-class MultiplyString : Binary
-  METHODS
-    method description->String
-      return "MultiplyString($,$)" (%left,%right)
-
-endClass
-
-class MultiplyValue : Binary
-  METHODS
-    method description->String
-      return "MultiplyValue($,$)" (%left,%right)
-
-endClass
-
-class LocalDeclaration : Cmd
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info )
-
-    method init( info )
-      init( info.t, info )
-
-    method init( existing:LocalDeclaration )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "LocalDeclaration($)" (%info)
-
-endClass
-
-class DivideInt32 : Binary
-  METHODS
-    method description->String
-      return "DivideInt32($,$)" (%left,%right)
-
-endClass
-
-class DivideObject : Binary
-  METHODS
-    method description->String
-      return "DivideObject($,$)" (%left,%right)
-
-endClass
-
-class DivideReal64 : Binary
-  METHODS
-    method description->String
-      return "DivideReal64($,$)" (%left,%right)
-
-endClass
-
-class DivideString : Binary
-  METHODS
-    method description->String
-      return "DivideString($,$)" (%left,%right)
-
-endClass
-
-class DivideValue : Binary
-  METHODS
-    method description->String
-      return "DivideValue($,$)" (%left,%right)
 
 endClass
 
@@ -2033,66 +488,17 @@ class Mod : Binary
 
 endClass
 
-class ModInt32 : Binary
+class Multiply : Binary
   METHODS
     method description->String
-      return "ModInt32($,$)" (%left,%right)
+      return "Multiply($,$)" (%left,%right)
 
 endClass
 
-class ModObject : Binary
+class Negate : Unary
   METHODS
     method description->String
-      return "ModObject($,$)" (%left,%right)
-
-endClass
-
-class ModReal64 : Binary
-  METHODS
-    method description->String
-      return "ModReal64($,$)" (%left,%right)
-
-endClass
-
-class ModValue : Binary
-  METHODS
-    method description->String
-      return "ModValue($,$)" (%left,%right)
-
-endClass
-
-class BitwiseAnd : Binary
-  METHODS
-    method description->String
-      return "BitwiseAnd($,$)" (%left,%right)
-
-endClass
-
-class BitwiseOr : Binary
-  METHODS
-    method description->String
-      return "BitwiseOr($,$)" (%left,%right)
-
-endClass
-
-class BitwiseXor : Binary
-  METHODS
-    method description->String
-      return "BitwiseXor($,$)" (%left,%right)
-
-endClass
-
-class LeftShift : Binary
-  METHODS
-    method description->String
-      return "LeftShift($,$)" (%left,%right)
-
-endClass
-
-class LeftShiftAndAssign : OpAndAssign
-  METHODS
-    method description->String
-      return "LeftShiftAndAssign($,$)" (%target,%operand)
+      return "Negate($)" (%operand)
 
 endClass
 
@@ -2103,13 +509,6 @@ class RightShift : Binary
 
 endClass
 
-class RightShiftAndAssign : OpAndAssign
-  METHODS
-    method description->String
-      return "RightShiftAndAssign($,$)" (%target,%operand)
-
-endClass
-
 class RightShiftX : Binary
   METHODS
     method description->String
@@ -2117,612 +516,67 @@ class RightShiftX : Binary
 
 endClass
 
-class RightShiftXAndAssign : OpAndAssign
+class Subtract : Binary
   METHODS
     method description->String
-      return "RightShiftXAndAssign($,$)" (%target,%operand)
+      return "Subtract($,$)" (%left,%right)
 
 endClass
 
-class LeftShiftInt32 : Binary
-  METHODS
-    method description->String
-      return "LeftShiftInt32($,$)" (%left,%right)
-
-endClass
-
-class LeftShiftObject : Binary
-  METHODS
-    method description->String
-      return "LeftShiftObject($,$)" (%left,%right)
-
-endClass
-
-class LeftShiftValue : Binary
-  METHODS
-    method description->String
-      return "LeftShiftValue($,$)" (%left,%right)
-
-endClass
-
-class RightShiftInt32 : Binary
-  METHODS
-    method description->String
-      return "RightShiftInt32($,$)" (%left,%right)
-
-endClass
-
-class RightShiftValue : Binary
-  METHODS
-    method description->String
-      return "RightShiftValue($,$)" (%left,%right)
-
-endClass
-
-class RightShiftXInt32 : Binary
-  METHODS
-    method description->String
-      return "RightShiftXInt32($,$)" (%left,%right)
-
-endClass
-
-class RightShiftXValue : Binary
-  METHODS
-    method description->String
-      return "RightShiftXValue($,$)" (%left,%right)
-
-endClass
-
-class NegateInt32 : Unary
-  METHODS
-    method description->String
-      return "NegateInt32($)" (%operand)
-
-endClass
-
-class NegateReal64 : Unary
-  METHODS
-    method description->String
-      return "NegateReal64($)" (%operand)
-
-endClass
-
-class NegateValue : Unary
-  METHODS
-    method description->String
-      return "NegateValue($)" (%operand)
-
-endClass
-
-class BitwiseAndInt32 : Binary
-  METHODS
-    method description->String
-      return "BitwiseAndInt32($,$)" (%left,%right)
-
-endClass
-
-class BitwiseAndValue : Binary
-  METHODS
-    method description->String
-      return "BitwiseAndValue($,$)" (%left,%right)
-
-endClass
-
-class BitwiseOrInt32 : Binary
-  METHODS
-    method description->String
-      return "BitwiseOrInt32($,$)" (%left,%right)
-
-endClass
-
-class BitwiseOrValue : Binary
-  METHODS
-    method description->String
-      return "BitwiseOrValue($,$)" (%left,%right)
-
-endClass
-
-class BitwiseXorInt32 : Binary
-  METHODS
-    method description->String
-      return "BitwiseXorInt32($,$)" (%left,%right)
-
-endClass
-
-class BitwiseXorValue : Binary
-  METHODS
-    method description->String
-      return "BitwiseXorValue($,$)" (%left,%right)
-
-endClass
-
-class Loop : Cmd
+class Join : Cmd
   PROPERTIES
-    loop_count : Cmd
-    statements : Cmd
+    a : String
+    b : String
 
   METHODS
-    method init( t, loop_count, statements )
+    method init( t, a, b )
 
-    method init( existing:Loop )
+    method init( existing:Join )
       prior.init( existing )
-      if (existing.loop_count) loop_count = existing.loop_count.cloned
-      if (existing.statements) statements = existing.statements.cloned
+      a = existing.a
+      b = existing.b
 
     method description->String
-      return "Loop($,$)" (%loop_count,%statements)
+      return "Join($,$)" (%a,%b)
 
 endClass
 
-class LiteralValueList : Cmd
+class LocalDef : Cmd
   PROPERTIES
-    args : Cmd
+    name          : String
+    initial_value : Cmd
+    type_ref      : Cmd
 
   METHODS
-    method init( t, args )
+    method init( t, name, initial_value, type_ref )
 
-    method init( existing:LiteralValueList )
-      prior.init( existing )
-      if (existing.args) args = existing.args.cloned
-
-    method description->String
-      return "LiteralValueList($)" (%args)
-
-endClass
-
-class CreateXY0 : Cmd
-  METHODS
-    method description->String
-      return "CreateXY0"
-endClass
-
-class CreateXY1 : Cmd
-  PROPERTIES
-    value : Cmd
-
-  METHODS
-    method init( t, value )
-
-    method init( existing:CreateXY1 )
-      prior.init( existing )
-      if (existing.value) value = existing.value.cloned
-
-    method description->String
-      return "CreateXY1($)" (%value)
-
-endClass
-
-class CreateXY2 : Cmd
-  PROPERTIES
-    x : Cmd
-    y : Cmd
-
-  METHODS
-    method init( t, x, y )
-
-    method init( existing:CreateXY2 )
-      prior.init( existing )
-      if (existing.x) x = existing.x.cloned
-      if (existing.y) y = existing.y.cloned
-
-    method description->String
-      return "CreateXY2($,$)" (%x,%y)
-
-endClass
-
-class XYGetX : Cmd
-  PROPERTIES
-    context : Cmd
-
-  METHODS
-    method init( t, context )
-
-    method init( existing:XYGetX )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-
-    method description->String
-      return "XYGetX($)" (%context)
-
-endClass
-
-class XYGetY : Cmd
-  PROPERTIES
-    context : Cmd
-
-  METHODS
-    method init( t, context )
-
-    method init( existing:XYGetY )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-
-    method description->String
-      return "XYGetY($)" (%context)
-
-endClass
-
-class CastValueToXY : Unary
-  METHODS
-    method description->String
-      return "CastValueToXY($)" (%operand)
-
-endClass
-
-class CastValueToCharacter : Unary
-  METHODS
-    method description->String
-      return "CastValueToCharacter($)" (%operand)
-
-endClass
-
-class CastValueToInt32 : Unary
-  METHODS
-    method description->String
-      return "CastValueToInt32($)" (%operand)
-
-endClass
-
-class CastValueToLogical : Unary
-  METHODS
-    method description->String
-      return "CastValueToLogical($)" (%operand)
-
-endClass
-
-class CastValueToReal64 : Unary
-  METHODS
-    method description->String
-      return "CastValueToReal64($)" (%operand)
-
-endClass
-
-
-class ValueAsInt32 : Unary
-  METHODS
-    method description->String
-      return "ValueAsInt32($)" (%operand)
-
-endClass
-
-class DecrementLocal : Cmd
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:DecrementLocal )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "DecrementLocal($)" (%info)
-
-endClass
-
-class DecrementLocalInt32 : Cmd
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:DecrementLocalInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "DecrementLocalInt32($)" (%info)
-
-endClass
-
-class DecrementThisProperty : Cmd
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:DecrementThisProperty )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "DecrementThisProperty($)" (%info)
-
-endClass
-
-class DecrementThisPropertyInt32 : Cmd
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info )
-
-    method init( existing:DecrementThisPropertyInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "DecrementThisPropertyInt32($)" (%info)
-
-endClass
-
-class BitwiseOrAndAssignLocal : OpAndAssign
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:BitwiseOrAndAssignLocal )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "BitwiseOrAndAssignLocal($,$)" (%info,%operand)
-
-endClass
-
-class BitwiseOrAndAssignLocalInt32 : OpAndAssign
-  PROPERTIES
-    info : Local
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:BitwiseOrAndAssignLocalInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "BitwiseOrAndAssignLocalInt32($,$)" (%info,%operand)
-
-endClass
-
-class BitwiseOrAndAssignProperty : OpAndAssign
-  PROPERTIES
-    context : Cmd
-    info    : Property
-
-  METHODS
-    method init( t, context, info, operand )
-
-    method init( existing:BitwiseOrAndAssignProperty )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "BitwiseOrAndAssignProperty($,$,$)" (%context,%info,%operand)
-
-endClass
-
-class BitwiseOrAndAssignPropertyInt32 : OpAndAssign
-  PROPERTIES
-    context : Cmd
-    info    : Property
-
-  METHODS
-    method init( t, context, info, operand )
-
-    method init( existing:BitwiseOrAndAssignPropertyInt32 )
-      prior.init( existing )
-      if (existing.context) context = existing.context.cloned
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "BitwiseOrAndAssignPropertyInt32($,$,$)" (%context,%info,%operand)
-
-endClass
-
-class BitwiseOrAndAssignThisProperty : OpAndAssign
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:BitwiseOrAndAssignThisProperty )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "BitwiseOrAndAssignThisProperty($,$)" (%info,%operand)
-
-endClass
-
-class BitwiseOrAndAssignThisPropertyInt32 : OpAndAssign
-  PROPERTIES
-    info : Property
-
-  METHODS
-    method init( t, info, operand )
-
-    method init( existing:BitwiseOrAndAssignThisPropertyInt32 )
-      prior.init( existing )
-      if (existing.info) info = existing.info.cloned
-
-    method description->String
-      return "BitwiseOrAndAssignThisPropertyInt32($,$)" (%info,%operand)
-
-endClass
-
-class BitwiseOrAndAssign : OpAndAssign
-  METHODS
-    method description->String
-      return "BitwiseOrAndAssign($,$)" (%target,%operand)
-
-endClass
-
-class ForEach : Cmd
-  PROPERTIES
-    control    : ForEachControl
-    statements : Cmd
-
-  METHODS
-    method init( t, control, statements )
-
-    method init( existing:ForEach )
-      prior.init( existing )
-      if (existing.control) control = existing.control.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "ForEach($,$)" (%control,%statements)
-
-endClass
-
-class ForEachAt : Cmd
-  PROPERTIES
-    name : String
-
-  METHODS
-    method init( t, name )
-
-    method init( existing:ForEachAt )
+    method init( existing:LocalDef )
       prior.init( existing )
       name = existing.name
+      if (existing.initial_value) initial_value = existing.initial_value.cloned
+      if (existing.type_ref) type_ref = existing.type_ref.cloned
 
     method description->String
-      return "ForEachAt($)" (%name)
-
-    method to->Character
-      return Cmd.to_character(name)
-
-    method to->Int32:  return name
-    method to->Logical: return name?
-    method to->String: return name
+      return "LocalDef($,$,$)" (%name,%initial_value,%type_ref)
 
 endClass
 
-class ForEachCollection : Cmd
-  PROPERTIES
-    name           : String
-    data           : Cmd
-    starting_index : Cmd
-    step_size      : Cmd
-
+class TypeRef : Type
   METHODS
-    method init( t, name, data, starting_index, step_size )
-
-    method init( existing:ForEachCollection )
-      prior.init( existing )
-      name = existing.name
-      if (existing.data) data = existing.data.cloned
-      if (existing.starting_index) starting_index = existing.starting_index.cloned
-      if (existing.step_size) step_size = existing.step_size.cloned
-
     method description->String
-      return "ForEachCollection($,$,$,$)" (%name,%data,%starting_index,%step_size)
+      return "TypeRef($)" (%name)
 
 endClass
 
-class ForEachControl : Cmd
-  PROPERTIES
-    name        : String
-    optional_at : ForEachAt
-    collection  : ForEachCollection
-
+class PrintString : Unary
   METHODS
-    method init( t, name, optional_at, collection )
-
-    method init( existing:ForEachControl )
-      prior.init( existing )
-      name = existing.name
-      if (existing.optional_at) optional_at = existing.optional_at.cloned
-      if (existing.collection) collection = existing.collection.cloned
-
     method description->String
-      return "ForEachControl($,$,$)" (%name,%optional_at,%collection)
+      return "PrintString($)" (%operand)
 
 endClass
 
-class ForEachInControl : ForEachControl
+class PrintNewline : Cmd
   METHODS
     method description->String
-      return "ForEachInControl($,$,$)" (%name,%optional_at,%collection)
-
-endClass
-
-class ForEachOfControl : ForEachControl
-  METHODS
-    method description->String
-      return "ForEachOfControl($,$,$)" (%name,%optional_at,%collection)
-
-endClass
-
-class Block : Cmd
-  PROPERTIES
-    statements : Cmd
-
-  METHODS
-    method init( t, statements )
-
-    method init( existing:Block )
-      prior.init( existing )
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "Block($)" (%statements)
-
-endClass
-
-class ForEachIn : Cmd
-  PROPERTIES
-    control_v    : Local
-    index_v      : Local
-    collection_v : Local
-    step_size    : Cmd
-    statements   : Cmd
-
-  METHODS
-    method init( t, control_v, index_v, collection_v, step_size, statements )
-
-    method init( existing:ForEachIn )
-      prior.init( existing )
-      if (existing.control_v) control_v = existing.control_v.cloned
-      if (existing.index_v) index_v = existing.index_v.cloned
-      if (existing.collection_v) collection_v = existing.collection_v.cloned
-      if (existing.step_size) step_size = existing.step_size.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "ForEachIn($,$,$,$,$)" (%control_v,%index_v,%collection_v,%step_size,%statements)
-
-endClass
-
-class ForEachInIndexedCollection : Cmd
-  PROPERTIES
-    control_v    : Local
-    index_v      : Local
-    collection_v : Local
-    cmd_count    : Cmd
-    cmd_get      : Cmd
-    step_size    : Cmd
-    statements   : Cmd
-
-  METHODS
-    method init( t, control_v, index_v, collection_v, cmd_count, cmd_get, step_size, statements )
-
-    method init( existing:ForEachInIndexedCollection )
-      prior.init( existing )
-      if (existing.control_v) control_v = existing.control_v.cloned
-      if (existing.index_v) index_v = existing.index_v.cloned
-      if (existing.collection_v) collection_v = existing.collection_v.cloned
-      if (existing.cmd_count) cmd_count = existing.cmd_count.cloned
-      if (existing.cmd_get) cmd_get = existing.cmd_get.cloned
-      if (existing.step_size) step_size = existing.step_size.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "ForEachInIndexedCollection($,$,$,$,$,$,$)" (%control_v,%index_v,%collection_v,%cmd_count,%cmd_get,%step_size,%statements)
-
-endClass
-
-class StackTopInt32 : Cmd
-  METHODS
-    method description->String
-      return "StackTopInt32"
+      return "PrintNewline"
 endClass

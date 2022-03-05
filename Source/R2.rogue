@@ -2,16 +2,19 @@ module R2
 
 $include "Macros.rogue"
 
-$include "Candidates.rogue"
+$include "Attributes.rogue"
+#$include "Candidates.rogue"
 $include "Collector.rogue"
-$include "CmdTypes.rogue"
+$include "CmdType.rogue"
 $include "CGenerator.rogue"
 $include "CWriter.rogue"
 $include "Module.rogue"
-$include "Organizer.rogue"
+#$include "Organizer.rogue"
 $include "Parser.rogue"
+$include "Procedure.rogue"
 $include "Program.rogue"
 $include "Resolver.rogue"
+$include "Routine.rogue"
 $include "Scanner.rogue"
 $include "Type.rogue"
 uses R2
@@ -44,7 +47,7 @@ class R2
 
       Program.include( forEach in command//args )
       Program.resolve
-      #Program.generate_c
+      Program.generate_c
 
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().

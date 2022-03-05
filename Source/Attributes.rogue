@@ -1,0 +1,26 @@
+module R2
+
+class Attribute
+  DEFINITIONS
+    GENERATED = 1
+endClass
+
+class Attributes : CmdList
+  ROGUE_ATTRIBUTE( is_generated, Attribute.GENERATED )
+
+  PROPERTIES
+    attributes : Int32
+
+  METHODS
+    method init( t )
+
+    method init( t, attributes )
+
+    method init( other:Attributes )
+      t = other.t
+      attributes = other.attributes
+
+    method description->String
+      return "Attributes" + list_description
+endClass
+

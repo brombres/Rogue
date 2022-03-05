@@ -29,6 +29,7 @@ routine rogo_default
 endRoutine
 
 routine rogo_run
+  #execute "$ Test.r2" (File.esc(exe_filepath))
   execute "$ Test.r2 && gcc Test.c -o test && ./test" (File.esc(exe_filepath))
 endRoutine
 

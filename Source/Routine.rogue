@@ -1,0 +1,9 @@
+module R2
+
+class Routine : Procedure
+  METHODS
+    method description->String
+      return "Routine($,$,$,$,$)" (%name,%parameters,%return_type,%attributes,%statements)
+
+endClass
+

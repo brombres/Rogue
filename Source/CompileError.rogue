@@ -12,6 +12,7 @@ class CompileError( message:String, filepath=null:String, source=null:String, li
 
     method description->String
       local w = Console.width.or_smaller(80)
+      if (w <= 0) w = 80
       local builder = StringBuilder()
       builder.println( "=" * w )
       builder.print( "ERROR" )

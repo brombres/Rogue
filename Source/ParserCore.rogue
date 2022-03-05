@@ -10,12 +10,12 @@ $include "Visitor.rogue"
 
 class ParserCore [abstract]
   DEFINITIONS
-    ip_ast = 0
-    ip_elements = 1
-    ip_consume_eols = 2
-    ip_must_consume_eols = 3
-    ip_consume_eols_and_semicolons = 4
-    ip_element = 5
+    ip_elements = 0
+    ip_consume_eols = 1
+    ip_must_consume_eols = 2
+    ip_consume_eols_and_semicolons = 3
+    ip_element = 4
+    ip_procedure_body = 5
     ip_procedure_parameters = 6
     ip_procedure_parameter = 7
     ip_optional_initial_value = 8
@@ -23,77 +23,44 @@ class ParserCore [abstract]
     ip_type = 10
     ip_type_name = 11
     ip_optional_type = 12
-    ip_procedure_body = 13
-    ip_identifier = 14
-    ip_string = 15
-    ip_class = 16
-    ip_constructor_properties = 17
-    ip_base_types = 18
-    ip_attribute_names = 19
-    ip_class_sections = 20
-    ip_class_section = 21
-    ip_forEach_loop = 22
-    ip_forEach_control = 23
-    ip_forEach_optional_at = 24
-    ip_forEach_collection = 25
-    ip_if_statement = 26
-    ip_if_statement_multi_line_elseIf_else = 27
-    ip_if_statement_single_line_elseIf_else = 28
-    ip_method = 29
-    ip_global_method = 30
-    ip_signature = 31
-    ip_native_global_method = 32
-    ip_native_method = 33
-    ip_native_routine = 34
-    ip_native_parameter_types = 35
-    ip_native_parameter_type = 36
-    ip_properties = 37
-    ip_property_declaration = 38
-    ip_multi_line_statements = 39
-    ip_single_line_statements = 40
-    ip_control_structure = 41
-    ip_args = 42
-    ip_arg = 43
-    ip_statement = 44
-    ip_local_declarations = 45
-    ip_local_declaration = 46
-    ip_block = 47
-    ip_loop = 48
-    ip_while_loop = 49
-    ip_module_path = 50
-    ip_uses_attributes = 51
-    ip_uses_attribute = 52
-    ip_access_args = 53
-    ip_optional_expression = 54
-    ip_expression = 55
-    ip_logical_xor = 56
-    ip_logical_xor__inner = 57
-    ip_logical_or = 58
-    ip_logical_or__inner = 59
-    ip_logical_and = 60
-    ip_logical_and__inner = 61
-    ip_comparison = 62
-    ip_comparison__inner = 63
-    ip_bitwise_xor = 64
-    ip_bitwise_xor__inner = 65
-    ip_bitwise_or = 66
-    ip_bitwise_or__inner = 67
-    ip_bitwise_and = 68
-    ip_bitwise_and__inner = 69
-    ip_bitwise_shift = 70
-    ip_bitwise_shift__inner = 71
-    ip_add_subtract = 72
-    ip_add_subtract__inner = 73
-    ip_multiply_divide_mod = 74
-    ip_multiply_divide_mod__inner = 75
-    ip_pre_unary = 76
-    ip_access = 77
-    ip_access_inner = 78
-    ip_term = 79
-    ip_literal_list = 80
-    ip_preprocess = 81
-    ip_process_another = 82
-    ip_additional_node_types = 83
+    ip_identifier = 13
+    ip_attributes = 14
+    ip_multi_line_statements = 15
+    ip_single_line_statements = 16
+    ip_control_structure = 17
+    ip_args = 18
+    ip_arg = 19
+    ip_statement = 20
+    ip_access_args = 21
+    ip_optional_expression = 22
+    ip_expression = 23
+    ip_logical_xor = 24
+    ip_logical_xor__inner = 25
+    ip_logical_or = 26
+    ip_logical_or__inner = 27
+    ip_logical_and = 28
+    ip_logical_and__inner = 29
+    ip_comparison = 30
+    ip_comparison__inner = 31
+    ip_bitwise_xor = 32
+    ip_bitwise_xor__inner = 33
+    ip_bitwise_or = 34
+    ip_bitwise_or__inner = 35
+    ip_bitwise_and = 36
+    ip_bitwise_and__inner = 37
+    ip_bitwise_shift = 38
+    ip_bitwise_shift__inner = 39
+    ip_add_subtract = 40
+    ip_add_subtract__inner = 41
+    ip_multiply_divide_mod = 42
+    ip_multiply_divide_mod__inner = 43
+    ip_pre_unary = 44
+    ip_access = 45
+    ip_access_inner = 46
+    ip_term = 47
+    ip_preprocess = 48
+    ip_process_another = 49
+    ip_additional_node_types = 50
 
   PROPERTIES
     _tokens          : Token[]
@@ -333,11 +300,6 @@ class ParserCore [abstract]
       loop
         ++ip
         which (ip-1)
-          case ip_ast
-            _execute(ip_elements)
-            _pop_frame
-            _push( AST(_cur_t,_node_arg(-1)), 1 )
-            return
           case ip_elements
             _begin_list
             while ((_position < _limit))
@@ -367,33 +329,6 @@ class ParserCore [abstract]
             if ((not (_position < _limit)))
               return
             endIf
-            if (_next_t.type == TokenType.KEYWORD_CLASS)
-              temporarily _cur_t = _on_t
-                _execute(ip_class)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_INCLUDE)
-              temporarily _cur_t = _on_t
-                _execute(ip_string)
-                _pop_frame
-                _push( Include(_cur_t,_string_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_MODULE)
-              temporarily _cur_t = _on_t
-                if ((_next_t.type == TokenType.IDENTIFIER))
-                  _execute(ip_identifier)
-                  _pop_frame
-                else
-                  _push( null, 0 )
-                endIf
-                _push( DefineModule(_cur_t,_string_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
             if (_next_t.type == TokenType.KEYWORD_ROUTINE)
               temporarily _cur_t = _on_t
                 _execute(ip_identifier)
@@ -402,7 +337,7 @@ class ParserCore [abstract]
                 _pop_frame
                 _execute(ip_procedure_return_type)
                 _pop_frame
-                _execute(ip_attribute_names)
+                _execute(ip_attributes)
                 _pop_frame
                 if (_consume(TokenType.SYMBOL_COLON))
                   _execute(ip_single_line_statements)
@@ -412,17 +347,7 @@ class ParserCore [abstract]
                   _pop_frame
                   if (not _consume(TokenType.KEYWORD_END_ROUTINE)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_ROUTINE )
                 endIf
-                _push( RoutineDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_USES)
-              temporarily _cur_t = _on_t
-                _execute(ip_module_path)
-                _pop_frame
-                _execute(ip_uses_attributes)
-                _pop_frame
-                _push( UsesModule(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                _push( Routine(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as Statements)), 5 )
                 return
               endTemporarily
             endIf
@@ -430,6 +355,10 @@ class ParserCore [abstract]
               _throw_syntax_error
             endIf
             _execute(ip_procedure_body)
+            _pop_frame
+            return
+          case ip_procedure_body
+            _execute(ip_multi_line_statements)
             _pop_frame
             return
           case ip_procedure_parameters
@@ -506,10 +435,6 @@ class ParserCore [abstract]
               _push( null, 0 )
             endIf
             return
-          case ip_procedure_body
-            _execute(ip_multi_line_statements)
-            _pop_frame
-            return
           case ip_identifier
             if (_next_t.type == TokenType.IDENTIFIER)
               temporarily _cur_t = _on_t
@@ -519,54 +444,7 @@ class ParserCore [abstract]
             endIf
             _throw_syntax_error("Identifier expected.")
             return
-          case ip_string
-            if (_next_t.type == TokenType.STRING)
-              temporarily _cur_t = _on_t
-                _push( LiteralString(_cur_t,_cur_t.content), 0 )
-                return
-              endTemporarily
-            endIf
-            _throw_syntax_error("Literal string expected.")
-            return
-          case ip_class
-            _execute(ip_type)
-            _pop_frame
-            _execute(ip_constructor_properties)
-            _pop_frame
-            _execute(ip_base_types)
-            _pop_frame
-            _execute(ip_attribute_names)
-            _pop_frame
-            _execute(ip_class_sections)
-            _pop_frame
-            if (not _consume(TokenType.KEYWORD_END_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_CLASS )
-            _push( ClassDef(_cur_t,_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-            return
-          case ip_constructor_properties
-            if ((not (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)))
-              _push( null, 0 )
-              return
-            endIf
-            _execute(ip_procedure_parameters)
-            _pop_frame
-            return
-          case ip_base_types
-            _begin_list
-            if ((not _consume(TokenType.SYMBOL_COLON)))
-              _push_list( CmdList(_list_t) )
-              return
-            endIf
-            _execute(ip_type)
-            _pop_frame
-            while (_consume(TokenType.SYMBOL_COMMA))
-              _execute(ip_consume_eols)
-              _pop_frame
-              _execute(ip_type)
-              _pop_frame
-            endWhile
-            _push_list( CmdList(_list_t) )
-            return
-          case ip_attribute_names
+          case ip_attributes
             _begin_list
             if ((not _consume(TokenType.SYMBOL_OPEN_SQUARE)))
               _push_list( CmdList(_list_t) )
@@ -589,378 +467,7 @@ class ParserCore [abstract]
               endIf
             endWhile
             if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
-            _push_list( CmdList(_list_t) )
-            return
-          case ip_class_sections
-            _begin_list
-            if ((not _consume(TokenType.SYMBOL_SEMICOLON)))
-              while ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
-                _execute(ip_class_section)
-                _pop_frame
-              endWhile
-            endIf
-            _push_list( CmdList(_list_t) )
-            return
-          case ip_class_section
-            _execute(ip_consume_eols)
-            _pop_frame
-            if (_next_t.type == TokenType.KEYWORD_METHODS)
-              temporarily _cur_t = _on_t
-                _execute(ip_consume_eols)
-                _pop_frame
-                while ((_next_t.type == TokenType.KEYWORD_METHOD))
-                  _execute(ip_method)
-                  _pop_frame
-                  _execute(ip_consume_eols)
-                  _pop_frame
-                endWhile
-                return
-              endTemporarily
-            elseIf (_next_t.type == TokenType.KEYWORD_GLOBAL_METHODS)
-              temporarily _cur_t = _on_t
-                _execute(ip_consume_eols)
-                _pop_frame
-                while ((_next_t.type == TokenType.KEYWORD_METHOD))
-                  _execute(ip_global_method)
-                  _pop_frame
-                  _execute(ip_consume_eols)
-                  _pop_frame
-                endWhile
-                return
-              endTemporarily
-            elseIf (_next_t.type == TokenType.KEYWORD_PROPERTIES)
-              temporarily _cur_t = _on_t
-                _execute(ip_consume_eols)
-                _pop_frame
-                while ((not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?))
-                  _execute(ip_properties)
-                  _pop_frame
-                  _execute(ip_consume_eols)
-                  _pop_frame
-                endWhile
-                return
-              endTemporarily
-            endIf
-            if ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
-              _throw_syntax_error
-            endIf
-            return
-          case ip_forEach_loop
-            if (_next_t.type == TokenType.KEYWORD_FOR_EACH)
-              temporarily _cur_t = _on_t
-                if (_consume(TokenType.SYMBOL_OPEN_PAREN))
-                  _execute(ip_consume_eols)
-                  _pop_frame
-                  _execute(ip_forEach_control)
-                  _pop_frame
-                  _execute(ip_consume_eols)
-                  _pop_frame
-                  if (not _consume(TokenType.SYMBOL_CLOSE_PAREN)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_PAREN )
-                else
-                  _execute(ip_forEach_control)
-                  _pop_frame
-                endIf
-                if (_consume(TokenType.EOL))
-                  _execute(ip_multi_line_statements)
-                  _pop_frame
-                  if (not _consume(TokenType.KEYWORD_END_FOR_EACH)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_FOR_EACH )
-                else
-                  _execute(ip_single_line_statements)
-                  _pop_frame
-                endIf
-                _push( ForEach(_cur_t,_node_arg(-2)->(as ForEachControl),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_forEach_control
-            _execute(ip_identifier)
-            _pop_frame
-            _execute(ip_forEach_optional_at)
-            _pop_frame
-            if (_consume_content("in"))
-              _execute(ip_forEach_collection)
-              _pop_frame
-              _push( ForEachInControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
-              return
-            elseIf (_consume_content("of"))
-              _execute(ip_forEach_collection)
-              _pop_frame
-              _push( ForEachOfControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
-              return
-            else
-              _throw_syntax_error("Expected 'in' or 'of'.")
-            endIf
-            return
-          case ip_forEach_optional_at
-            if ((not _consume_content("at")))
-              _push( null, 0 )
-              return
-            endIf
-            _execute(ip_identifier)
-            _pop_frame
-            _push( ForEachAt(_cur_t,_string_arg(-1)), 1 )
-            return
-          case ip_forEach_collection
-            _save_position
-            _push( null, 0 )
-            _execute(ip_expression)
-            _pop_frame
-            if ((_next_t.type == TokenType.SYMBOL_EQUALS))
-              _restore_position
-              _execute(ip_identifier)
-              _pop_frame
-              if (not _consume(TokenType.SYMBOL_EQUALS)) _throw_syntax_error( &expected=TokenType.SYMBOL_EQUALS )
-              _execute(ip_expression)
-              _pop_frame
-            else
-              _discard_position
-            endIf
-            if (_consume_content("from"))
-              _execute(ip_expression)
-              _pop_frame
-            else
-              _push( null, 0 )
-            endIf
-            if (_consume_content("step"))
-              _execute(ip_expression)
-              _pop_frame
-            else
-              _push( null, 0 )
-            endIf
-            _push( ForEachCollection(_cur_t,_string_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 4 )
-            return
-          case ip_if_statement
-            if (_next_t.type == TokenType.KEYWORD_IF)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (_consume(TokenType.EOL))
-                  _execute(ip_multi_line_statements)
-                  _pop_frame
-                  _execute(ip_if_statement_multi_line_elseIf_else)
-                  _pop_frame
-                  if (not _consume(TokenType.KEYWORD_END_IF)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_IF )
-                else
-                  _execute(ip_single_line_statements)
-                  _pop_frame
-                  _execute(ip_if_statement_single_line_elseIf_else)
-                  _pop_frame
-                endIf
-                _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_if_statement_multi_line_elseIf_else
-            _save_position
-            if (_next_t.type == TokenType.KEYWORD_ELSE_IF)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (_consume(TokenType.EOL))
-                  _discard_position
-                  _execute(ip_multi_line_statements)
-                  _pop_frame
-                  _execute(ip_if_statement_multi_line_elseIf_else)
-                  _pop_frame
-                  _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
-                  return
-                else
-                  _restore_position
-                  _push( null, 0 )
-                  return
-                endIf
-              endTemporarily
-            elseIf (_next_t.type == TokenType.KEYWORD_ELSE)
-              temporarily _cur_t = _on_t
-                if (_consume(TokenType.EOL))
-                  _discard_position
-                  _push( null, 0 )
-                  _execute(ip_multi_line_statements)
-                  _pop_frame
-                  _push( null, 0 )
-                  _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
-                  return
-                else
-                  _restore_position
-                  _push( null, 0 )
-                  return
-                endIf
-              endTemporarily
-            else
-              _push( null, 0 )
-              return
-            endIf
-            return
-          case ip_if_statement_single_line_elseIf_else
-            _save_position
-            if (_next_t.type == TokenType.KEYWORD_ELSE_IF)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (_consume(TokenType.EOL))
-                  _restore_position
-                  _push( null, 0 )
-                  return
-                else
-                  _discard_position
-                  _execute(ip_single_line_statements)
-                  _pop_frame
-                  _execute(ip_if_statement_single_line_elseIf_else)
-                  _pop_frame
-                  _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
-                  return
-                endIf
-              endTemporarily
-            elseIf (_next_t.type == TokenType.KEYWORD_ELSE)
-              temporarily _cur_t = _on_t
-                if (_consume(TokenType.EOL))
-                  _restore_position
-                  _push( null, 0 )
-                  return
-                else
-                  _discard_position
-                  _push( null, 0 )
-                  _execute(ip_single_line_statements)
-                  _pop_frame
-                  _push( null, 0 )
-                  _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
-                  return
-                endIf
-              endTemporarily
-            else
-              _push( null, 0 )
-              return
-            endIf
-            return
-          case ip_method
-            if (_next_t.type == TokenType.KEYWORD_METHOD)
-              temporarily _cur_t = _on_t
-                _execute(ip_signature)
-                _pop_frame
-                _execute(ip_procedure_body)
-                _pop_frame
-                _push( MethodDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_global_method
-            if (_next_t.type == TokenType.KEYWORD_METHOD)
-              temporarily _cur_t = _on_t
-                _execute(ip_signature)
-                _pop_frame
-                _execute(ip_procedure_body)
-                _pop_frame
-                _push( GlobalMethodDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_signature
-            _execute(ip_identifier)
-            _pop_frame
-            _execute(ip_procedure_parameters)
-            _pop_frame
-            _execute(ip_procedure_return_type)
-            _pop_frame
-            _execute(ip_attribute_names)
-            _pop_frame
-            return
-          case ip_native_global_method
-            _execute(ip_identifier)
-            _pop_frame
-            _execute(ip_native_parameter_types)
-            _pop_frame
-            _execute(ip_procedure_return_type)
-            _pop_frame
-            _execute(ip_attribute_names)
-            _pop_frame
-            _begin_list
-            _push_list( Statements(_list_t) )
-            _push( GlobalMethodDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-            return
-          case ip_native_method
-            _execute(ip_identifier)
-            _pop_frame
-            _execute(ip_native_parameter_types)
-            _pop_frame
-            _execute(ip_procedure_return_type)
-            _pop_frame
-            _execute(ip_attribute_names)
-            _pop_frame
-            _begin_list
-            _push_list( Statements(_list_t) )
-            _push( MethodDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-            return
-          case ip_native_routine
-            _execute(ip_identifier)
-            _pop_frame
-            _execute(ip_native_parameter_types)
-            _pop_frame
-            _execute(ip_procedure_return_type)
-            _pop_frame
-            _execute(ip_attribute_names)
-            _pop_frame
-            _begin_list
-            _push_list( Statements(_list_t) )
-            _push( RoutineDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-            return
-          case ip_native_parameter_types
-            _begin_list
-            if ((not _consume(TokenType.SYMBOL_OPEN_PAREN)))
-              _push_list( CmdList(_list_t) )
-              return
-            endIf
-            if (_consume(TokenType.SYMBOL_CLOSE_PAREN))
-              _push_list( CmdList(_list_t) )
-              return
-            endIf
-            _execute(ip_native_parameter_type)
-            _pop_frame
-            while (_consume(TokenType.SYMBOL_COMMA))
-              _execute(ip_native_parameter_type)
-              _pop_frame
-            endWhile
-            if (not _consume(TokenType.SYMBOL_CLOSE_PAREN)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_PAREN )
-            _push_list( CmdList(_list_t) )
-            return
-          case ip_native_parameter_type
-            _push( null, 0 )
-            _push( null, 0 )
-            _execute(ip_type)
-            _pop_frame
-            _push( LocalDef(_cur_t,_string_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
-            return
-          case ip_properties
-            _begin_list
-            _execute(ip_consume_eols)
-            _pop_frame
-            _execute(ip_property_declaration)
-            _pop_frame
-            while (_consume(TokenType.SYMBOL_COMMA))
-              _execute(ip_consume_eols)
-              _pop_frame
-              _execute(ip_property_declaration)
-              _pop_frame
-            endWhile
-            _push_list( CmdList(_list_t) )
-            _execute(ip_optional_type)
-            _pop_frame
-            _push( PropertyDeclarations(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            return
-          case ip_property_declaration
-            if (_next_t.type == TokenType.IDENTIFIER)
-              temporarily _cur_t = _on_t
-                _execute(ip_optional_initial_value)
-                _pop_frame
-                _push( null, 0 )
-                _push( PropertyDef(_cur_t,_cur_t.content,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (not _consume(TokenType.IDENTIFIER)) _throw_syntax_error( &expected=TokenType.IDENTIFIER )
+            _push_list( Attributes(_list_t) )
             return
           case ip_multi_line_statements
             _execute(ip_consume_eols_and_semicolons)
@@ -994,48 +501,6 @@ class ParserCore [abstract]
             _push_list( Statements(_list_t) )
             return
           case ip_control_structure
-            if (_next_t.type == TokenType.KEYWORD_LOCAL)
-              temporarily _cur_t = _on_t
-                _execute(ip_local_declarations)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_BLOCK)
-              temporarily _cur_t = _next_t
-                _execute(ip_block)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_FOR_EACH)
-              temporarily _cur_t = _next_t
-                _execute(ip_forEach_loop)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_IF)
-              temporarily _cur_t = _next_t
-                _execute(ip_if_statement)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_LOOP)
-              temporarily _cur_t = _next_t
-                _execute(ip_loop)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_WHILE)
-              temporarily _cur_t = _next_t
-                _execute(ip_while_loop)
-                _pop_frame
-                return
-              endTemporarily
-            endIf
             _execute(ip_statement)
             _pop_frame
             return
@@ -1077,11 +542,6 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_statement
-            if (_next_t.type == TokenType.KEYWORD_NO_ACTION)
-              temporarily _cur_t = _on_t
-                return
-              endTemporarily
-            endIf
             if (_next_t.type == TokenType.KEYWORD_PRINT)
               temporarily _cur_t = _on_t
                 _execute(ip_args)
@@ -1098,212 +558,8 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
-            if (_next_t.type == TokenType.KEYWORD_RETURN)
-              temporarily _cur_t = _on_t
-                _execute(ip_optional_expression)
-                _pop_frame
-                _push( Return(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( Increment(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( Decrement(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
             _execute(ip_expression)
             _pop_frame
-            if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
-              temporarily _cur_t = _on_t
-                _push( Increment(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
-              temporarily _cur_t = _on_t
-                _push( Decrement(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( Assign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_PLUS_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( AddAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_OR_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( BitwiseOrAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_LEFT_SHIFT_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( LeftShiftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_RIGHT_SHIFT_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( RightShiftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_RIGHT_SHIFT_X_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                _push( RightShiftXAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_local_declarations
-            _begin_list
-            _execute(ip_consume_eols)
-            _pop_frame
-            _execute(ip_local_declaration)
-            _pop_frame
-            while (_consume(TokenType.SYMBOL_COMMA))
-              _execute(ip_consume_eols)
-              _pop_frame
-              _execute(ip_local_declaration)
-              _pop_frame
-            endWhile
-            _push_list( CmdList(_list_t) )
-            _execute(ip_optional_type)
-            _pop_frame
-            _push( LocalDeclarations(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            return
-          case ip_local_declaration
-            if (_next_t.type == TokenType.IDENTIFIER)
-              temporarily _cur_t = _on_t
-                _execute(ip_optional_initial_value)
-                _pop_frame
-                _push( null, 0 )
-                _push( LocalDef(_cur_t,_cur_t.content,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (not _consume(TokenType.IDENTIFIER)) _throw_syntax_error( &expected=TokenType.IDENTIFIER )
-            return
-          case ip_block
-            if (_next_t.type == TokenType.KEYWORD_BLOCK)
-              temporarily _cur_t = _on_t
-                _execute(ip_multi_line_statements)
-                _pop_frame
-                if (not _consume(TokenType.KEYWORD_END_BLOCK)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_BLOCK )
-              endTemporarily
-            endIf
-            _push( Block(_cur_t,_node_arg(-1)), 1 )
-            return
-          case ip_loop
-            if (_next_t.type == TokenType.KEYWORD_LOOP)
-              temporarily _cur_t = _on_t
-                if (_next_t.type == TokenType.EOL)
-                  temporarily _cur_t = _on_t
-                    _push( null, 0 )
-                    _execute(ip_multi_line_statements)
-                    _pop_frame
-                    if (not _consume(TokenType.KEYWORD_END_LOOP)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_LOOP )
-                  endTemporarily
-                else
-                  _execute(ip_expression)
-                  _pop_frame
-                  if (_consume(TokenType.EOL))
-                    _execute(ip_multi_line_statements)
-                    _pop_frame
-                    if (not _consume(TokenType.KEYWORD_END_LOOP)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_LOOP )
-                  else
-                    _execute(ip_single_line_statements)
-                    _pop_frame
-                  endIf
-                endIf
-                _push( Loop(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_while_loop
-            if (_next_t.type == TokenType.KEYWORD_WHILE)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (_consume(TokenType.EOL))
-                  _execute(ip_multi_line_statements)
-                  _pop_frame
-                  if (not _consume(TokenType.KEYWORD_END_WHILE)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_WHILE )
-                else
-                  _execute(ip_single_line_statements)
-                  _pop_frame
-                endIf
-                _push( While(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            return
-          case ip_module_path
-            _begin_list
-            _execute(ip_identifier)
-            _pop_frame
-            while (_consume(TokenType.SYMBOL_SLASH))
-              _execute(ip_identifier)
-              _pop_frame
-            endWhile
-            _push_list( CmdList(_list_t) )
-            return
-          case ip_uses_attributes
-            if (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
-              temporarily _cur_t = _on_t
-                _begin_list
-                while (((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_CLOSE_SQUARE))))
-                  _execute(ip_uses_attribute)
-                  _pop_frame
-                  _consume(TokenType.SYMBOL_COMMA)
-                endWhile
-                if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
-                _push_list( CmdList(_list_t) )
-                return
-              endTemporarily
-            else
-              _push( null, 0 )
-              return
-            endIf
-          case ip_uses_attribute
-            if (_next_t.type == TokenType.KEYWORD_EXPORT)
-              temporarily _cur_t = _on_t
-                _push( Attribute(_cur_t,_cur_t.content), 0 )
-                return
-              endTemporarily
-            endIf
-            _throw_syntax_error("Illegal attribute for 'uses'. Expected 'export'.")
             return
           case ip_access_args
             if ((not (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)))
@@ -1718,101 +974,6 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
-            if (_next_t.type == TokenType.IDENTIFIER)
-              temporarily _cur_t = _next_t
-                _execute(ip_type_name)
-                _pop_frame
-                _execute(ip_access_args)
-                _pop_frame
-                _push( Access(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_TRUE)
-              temporarily _cur_t = _on_t
-                _push( LiteralLogical(_cur_t,_string_to_Logical("true")), 0 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_FALSE)
-              temporarily _cur_t = _on_t
-                _push( LiteralLogical(_cur_t,_string_to_Logical("false")), 0 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_PI)
-              temporarily _cur_t = _on_t
-                _push( LiteralPi(_cur_t), 0 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not _consume(TokenType.SYMBOL_CLOSE_PAREN)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_PAREN )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
-              temporarily _cur_t = _next_t
-                _execute(ip_literal_list)
-                _pop_frame
-                _push( LiteralValueList(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS)
-              temporarily _cur_t = _on_t
-                _push( EmptyList(_cur_t), 0 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.KEYWORD_IMPORT)
-              temporarily _cur_t = _on_t
-                if (_consume(TokenType.SYMBOL_OPEN_PAREN))
-                  _execute(ip_string)
-                  _pop_frame
-                  if (not _consume(TokenType.SYMBOL_CLOSE_PAREN)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_PAREN )
-                else
-                  _execute(ip_string)
-                  _pop_frame
-                endIf
-                _push( ImportModule(_cur_t,_string_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            _throw_syntax_error
-            return
-          case ip_literal_list
-            if (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
-              temporarily _cur_t = _on_t
-                _begin_list
-                if (_consume(TokenType.SYMBOL_CLOSE_SQUARE))
-                  _push_list( CmdList(_list_t) )
-                  return
-                endIf
-                _execute(ip_consume_eols)
-                _pop_frame
-                _execute(ip_expression)
-                _pop_frame
-                _execute(ip_consume_eols)
-                _pop_frame
-                while ((not (_next_t.type == TokenType.SYMBOL_CLOSE_SQUARE)))
-                  if (_consume(TokenType.SYMBOL_COMMA))
-                    _execute(ip_consume_eols)
-                    _pop_frame
-                  endIf
-                  _execute(ip_expression)
-                  _pop_frame
-                  _execute(ip_consume_eols)
-                  _pop_frame
-                endWhile
-                if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
-                _push_list( Args(_list_t) )
-                return
-              endTemporarily
-            endIf
             return
           case ip_preprocess
             while ((_position < _limit))
@@ -1931,137 +1092,11 @@ class ParserCore [abstract]
             ip = this.ip
             return
           case ip_additional_node_types
-            _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            _push( AddAndAssignLocalInt32(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            _push( AddAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
-            _push( AddAndAssignPropertyInt32(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
-            _push( AddAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
-            _push( AddAndAssignThisPropertyInt32(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
-            _push( AddInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( AddObject(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( AddReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( AddString(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( AddValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( BitwiseAndInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( BitwiseAndValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( BitwiseOrAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            _push( BitwiseOrAndAssignLocalInt32(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            _push( BitwiseOrAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
-            _push( BitwiseOrAndAssignPropertyInt32(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
-            _push( BitwiseOrAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
-            _push( BitwiseOrAndAssignThisPropertyInt32(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
-            _push( BitwiseOrInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( BitwiseOrValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( BitwiseXorInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( BitwiseXorValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CastInt32ToObject(_cur_t,_node_arg(-1)), 1 )
-            _push( CastInt32ToReal64(_cur_t,_node_arg(-1)), 1 )
-            _push( CastInt32ToString(_cur_t,_node_arg(-1)), 1 )
-            _push( CastInt32ToValue(_cur_t,_node_arg(-1)), 1 )
-            _push( CastObjectToInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( CastObjectToReal64(_cur_t,_node_arg(-1)), 1 )
-            _push( CastObjectToString(_cur_t,_node_arg(-1)), 1 )
-            _push( CastReal64ToInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( CastReal64ToObject(_cur_t,_node_arg(-1)), 1 )
-            _push( CastReal64ToString(_cur_t,_node_arg(-1)), 1 )
-            _push( CastStringToInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( CastStringToObject(_cur_t,_node_arg(-1)), 1 )
-            _push( CastStringToReal64(_cur_t,_node_arg(-1)), 1 )
-            _push( CastToInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( CastToObject(_cur_t,_node_arg(-1)), 1 )
-            _push( CastToReal64(_cur_t,_node_arg(-1)), 1 )
-            _push( CastToString(_cur_t,_node_arg(-1)), 1 )
-            _push( CastToValue(_cur_t,_node_arg(-1)), 1 )
-            _push( CastValueToCharacter(_cur_t,_node_arg(-1)), 1 )
-            _push( CastValueToInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( CastValueToLogical(_cur_t,_node_arg(-1)), 1 )
-            _push( CastValueToReal64(_cur_t,_node_arg(-1)), 1 )
-            _push( CastValueToXY(_cur_t,_node_arg(-1)), 1 )
-            _push( CallMethod(_cur_t,_node_arg(-3),_node_arg(-2)->(as Procedure),_node_arg(-1)), 3 )
-            _push( CallGlobalMethod(_cur_t,_node_arg(-2)->(as Procedure),_node_arg(-1)), 2 )
-            _push( CallGlobalMethodWithContext(_cur_t,_node_arg(-3),_node_arg(-2)->(as Procedure),_node_arg(-1)), 3 )
-            _push( CallNative(_cur_t), 0 )
-            _push( CallThisMethod(_cur_t,_node_arg(-2)->(as Procedure),_node_arg(-1)), 2 )
-            _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
-            _push( CallRoutine(_cur_t,_node_arg(-1)), 1 )
-            _push( Compare(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CompareEQReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CompareNEReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CompareLTReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CompareGTReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CompareLEReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CompareGEReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( CreateObject(_cur_t,_node_arg(-3)->(as Type),_node_arg(-2)->(as Procedure),_node_arg(-1)), 3 )
-            _push( CreateXY0(_cur_t), 0 )
-            _push( CreateXY1(_cur_t,_node_arg(-1)), 1 )
-            _push( CreateXY2(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( DecrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
-            _push( DecrementLocalInt32(_cur_t,_node_arg(-1)->(as Local)), 1 )
-            _push( DecrementThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
-            _push( DecrementThisPropertyInt32(_cur_t,_node_arg(-1)->(as Property)), 1 )
-            _push( Description(_cur_t,_node_arg(-1)), 1 )
-            _push( DivideInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( DivideObject(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( DivideReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( DivideString(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( DivideValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
-            _push( ForEachIn(_cur_t,_node_arg(-5)->(as Local),_node_arg(-4)->(as Local),_node_arg(-3)->(as Local),_node_arg(-2),_node_arg(-1)), 5 )
-            _push( ForEachInIndexedCollection(_cur_t,_node_arg(-7)->(as Local),_node_arg(-6)->(as Local),_node_arg(-5)->(as Local),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 7 )
-            _push( GetLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
-            _push( GetProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
-            _push( GetSingleton(_cur_t,_node_arg(-1)->(as Type)), 1 )
-            _push( GetThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
-            _push( IncrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
-            _push( IncrementLocalInt32(_cur_t,_node_arg(-1)->(as Local)), 1 )
-            _push( IncrementThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
-            _push( IncrementThisPropertyInt32(_cur_t,_node_arg(-1)->(as Property)), 1 )
-            _push( Join(_cur_t,_string_arg(-2),_string_arg(-1)), 2 )
-            _push( LeftShiftInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( LeftShiftObject(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( LeftShiftValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             _push( Literal(_cur_t), 0 )
-            _push( LiteralNull(_cur_t,_node_arg(-1)->(as Type)), 1 )
-            _push( LiteralValueUndefined(_cur_t), 0 )
-            _push( Local(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
-            _push( LocalDeclaration(_cur_t,_node_arg(-1)->(as Local)), 1 )
-            _push( Method(_cur_t,_node_arg(-3)->(as Type),_string_arg(-2),_node_arg(-1)), 3 )
-            _push( ModInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( ModObject(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( ModReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( ModValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( MultiplyInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( MultiplyObject(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( MultiplyReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( MultiplyString(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( MultiplyValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( NegateInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( NegateReal64(_cur_t,_node_arg(-1)), 1 )
-            _push( NegateValue(_cur_t,_node_arg(-1)), 1 )
-            _push( OpAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( Procedure(_cur_t,_node_arg(-3)->(as Module),_string_arg(-2),_node_arg(-1)), 3 )
-            _push( ProcedureDef(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
-            _push( Property(_cur_t,_node_arg(-4)->(as Type),_string_arg(-3),_node_arg(-2),_node_arg(-1)->(as Type)), 4 )
-            _push( PushResult(_cur_t,_node_arg(-1)), 1 )
-            _push( ReturnResult(_cur_t,_node_arg(-1)), 1 )
-            _push( RightShiftInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( RightShiftValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( RightShiftXInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( RightShiftXValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( Routine(_cur_t,_node_arg(-3)->(as Module),_string_arg(-2),_node_arg(-1)), 3 )
-            _push( SetLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            _push( SetThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
-            _push( StackTopInt32(_cur_t), 0 )
-            _push( SubtractInt32(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( SubtractObject(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( SubtractReal64(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( SubtractString(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( SubtractValue(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            _push( TypeContext(_cur_t,_node_arg(-1)->(as Type)), 1 )
-            _push( TypeRef(_cur_t,_string_arg(-1)), 1 )
-            _push( ValueAsInt32(_cur_t,_node_arg(-1)), 1 )
-            _push( XYGetX(_cur_t,_node_arg(-1)), 1 )
-            _push( XYGetY(_cur_t,_node_arg(-1)), 1 )
+            _push( PrintNewline(_cur_t), 0 )
+            _push( PrintString(_cur_t,_node_arg(-1)), 1 )
+            _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as Statements)), 5 )
+            _push( Type(_cur_t,_string_arg(-1)), 1 )
             return
           others
             return

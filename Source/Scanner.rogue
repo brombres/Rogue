@@ -6,4 +6,3 @@ $include "ScannerCore.rogue"
 class Scanner : ScannerCore
   METHODS
 endClass
-

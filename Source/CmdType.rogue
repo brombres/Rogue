@@ -1,6 +1,7 @@
 module R2
 
 augment Cmd
+  #{
   GLOBAL METHODS
     method common_type( a:Type, b:Type )->Type
       if (a is b) return a
@@ -16,20 +17,18 @@ augment Cmd
       else
         return Program.type_String # Placeholder/TODO
       endIf
+      }#
 
   METHODS
+    #{
     method cmd_cast_to( target_type:Type )->Cmd
       local cur_type = require_type
       if (cur_type is target_type) return this
       return target_type.cmd_cast( this )
 
-      #{
-    method organize_element
-      throw t.error( "[INTERNAL] $.organize_element() is undefined." (type_name) )
-      }#
-
     method is_type_context->Logical
       return false
+      }#
 
     method require_type->Type
       local result = type
@@ -42,11 +41,9 @@ augment Cmd
 
     method to->Type
       throw t.error( "[INTERNAL] $.to->Type is undefined." (type_name) )
-
-    method type->Type
-      return null
 endAugment
 
+#{
 # cmd_cast()
 augment
   METHODS
@@ -96,11 +93,25 @@ augment
     method TypeValue.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralValueUndefined( cmd_t )
 endAugment
+}#
 
+# cmd_print()
+augment
+  METHODS
+    method Cmd.cmd_print( operand:Cmd )->Cmd
+      throw operand.t.error( "[INTERNAL] $.cmd_print() is undefined." (type_name) )
+
+    method TypeString.cmd_print( operand:Cmd )->Cmd
+      return PrintString( operand.t, operand )
+endAugment
 
 # type()
 augment
   METHODS
+    method Cmd.type->Type
+      return null
+
+      #{
     method Access.type->Type
       return Program.find_type(name)
 
@@ -187,10 +198,12 @@ augment
 
     method LiteralReal64.type->Type
       return Program.type_Real64
+      }#
 
     method LiteralString.type->Type
       return Program.type_String
 
+      #{
     method LiteralValueList.type->Type
       return Program.type_Value
 
@@ -211,4 +224,5 @@ augment
 
     method XYGetY.type->Type
       return Program.type_Real64
+      }#
 endAugment
