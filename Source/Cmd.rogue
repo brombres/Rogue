@@ -580,3 +580,20 @@ class PrintNewline : Cmd
     method description->String
       return "PrintNewline"
 endClass
+
+class Block : Cmd
+  PROPERTIES
+    statements : Cmd
+
+  METHODS
+    method init( t, statements=null )
+      if (not statements) statements = Statements(t)
+
+    method init( existing:Block )
+      prior.init( existing )
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "Block($)" (%statements)
+
+endClass

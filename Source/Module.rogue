@@ -87,10 +87,11 @@ class Module
     method organize
       local r = routines[ "on_launch()" ]
       if (not r)
-        r = Routine( t, this, "on_launch", &statements=global_statements )
+        r = Routine( t, this, "on_launch" )
         r.organize
         routines[ r.signature ] = r
       endIf
+      r.statements.add( forEach in global_statements )
 
       #local organizer = Organizer( this )
       #organizer.visit( forEach in types )

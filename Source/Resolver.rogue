@@ -39,15 +39,10 @@ class Resolver : Visitor
     }#
 
     method visit( this_type, this_procedure )
-      #{
-      if (not this_procedure.is_resolved)
-        this_procedure.is_resolved = true
-        }#
-        visit( this_procedure )
-        #{
-        locals.clear
-      endIf
-      }#
+      if (not this_procedure.is_resolved) return
+      this_procedure.is_resolved = true
+      visit( this_procedure )
+      #locals.clear
 
       #{
     method add_local( t:Token, name:String, initial_value=null:Cmd, type=null:Type )->Local

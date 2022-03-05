@@ -85,6 +85,22 @@ class Visitor<<$ReturnType>>
         visit( forEach in cmd.list )
       endIf
 
+    method on_visit_children( cmd:Statements )
+      if ($ReturnType instanceOf Cmd)
+        forEach (element in writer=cmd.list.rewriter)
+          local visited_element = visit( element )
+          if (visited_element)
+            if (visited_element.count)
+              writer.write( forEach in visited_element )
+            else
+              writer.write( visited_element )
+            endIf
+          endIf
+        endForEach
+      else
+        visit( forEach in cmd.list )
+      endIf
+
 
     method on_visit_children( cmd:Binary )
       if ($ReturnType instanceOf Cmd)
@@ -153,6 +169,13 @@ class Visitor<<$ReturnType>>
         visit( cmd.parameters )
         visit( cmd.return_type )
         visit( cmd.attributes )
+        visit( cmd.statements )
+      endIf
+
+    method on_visit_children( cmd:Block )
+      if ($ReturnType instanceOf Cmd)
+        cmd.statements = visit(cmd.statements)
+      else
         visit( cmd.statements )
       endIf
 

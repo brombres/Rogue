@@ -812,9 +812,9 @@ parser
   produceList Statements
 
 - control_structure
-#{
-  on     "local"   local_declarations: return
+  #on     "local"   local_declarations: return
   onPeek "block"   block:              return
+#{
   onPeek "forEach" forEach_loop:       return
   onPeek "if"      if_statement:       return
   onPeek "loop"    loop:               return
@@ -896,6 +896,7 @@ parser
     produce LocalDef( name=content, initial_value, type_ref )
   endOn
   mustConsume IDENTIFIER  # throws error
+}#
 
 - block
   on "block"
@@ -904,6 +905,7 @@ parser
   endOn
   produce Block(statements)
 
+#{
 - loop
   on "loop"
     on EOL

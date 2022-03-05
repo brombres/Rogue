@@ -2,6 +2,12 @@ module R2
 
 augment
   METHODS
+    method Block.needs_semicolon->Logical
+      return false
+
+    method Cmd.needs_semicolon->Logical
+      return true
+
     method Type.c_name->String
       throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
 
@@ -35,6 +41,32 @@ augment
       endForEach
 
     method Program.generate_c
+      # Combine on_launch from all modules into default module on_launch
+      local r_on_launch = default_module.routines[ "on_launch()" ]
+      assert r_on_launch
+      if (r_on_launch.statements.count)
+        local cmd_block = Block( r_on_launch.t )
+        cmd_block.statements.add( forEach in r_on_launch.statements )
+        r_on_launch.statements.clear
+        r_on_launch.statements.add( cmd_block )
+      endIf
+
+      forEach (m in modules)
+        if (m is not default_module)
+          local r = m.routines[ "on_launch()" ]
+          if (r)
+            m.routines.remove( r )
+            if (r.statements.count)
+              local cmd_block = Block( r.t )
+              cmd_block.statements.add( forEach in r.statements )
+              r_on_launch.statements.add( cmd_block )
+            endIf
+          endIf
+        endIf
+      endForEach
+
+      r_on_launch.resolve
+
       local h_writer = CWriter( File("Test.h"), &header )
 
       (forEach in modules).generate_c_header( h_writer )
@@ -74,6 +106,13 @@ class CGenerator : Visitor
     method on_visit( cmd:CmdList )
       visit_children( cmd )
 
+    method on_visit( cmd:Block )
+      writer.println '{'
+      writer.indent += 2
+      visit_children( cmd )
+      writer.indent -= 2
+      writer.println '}'
+
     #method on_visit( cmd:LocalDeclarations )
     #  visit_children( cmd )
 
@@ -82,14 +121,14 @@ class CGenerator : Visitor
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
         visit( statement )
-        writer.println( ';' )
+        if (statement.needs_semicolon) writer.println( ';' )
       endForEach
 
     method on_visit( cmd:PrintString )
       writer.print( ''printf( "$" )''(cmd.operand->String.to_escaped_ascii('"')) )
 
     method on_visit( cmd:PrintNewline )
-      writer.print( ''printf( "\\n" )'' )
+      writer.print( ''putchar( '\\n' )'' )
 endClass
 
 # write_print()
