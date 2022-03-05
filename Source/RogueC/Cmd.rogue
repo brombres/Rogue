@@ -20,7 +20,7 @@ class Cmd
       return cast_to( require_type, target_type, scope, allow_implicit_narrowing, is_conversion )
 
     method cast_to( this_type:Type, target_type:Type, scope:Scope, &allow_implicit_narrowing, &is_conversion )->Cmd
-      if (this_type is target_type) return this
+      if (this_type is target_type and not is_conversion) return this
 
       this_type.organize(scope, t)
       target_type.organize(scope, t)
@@ -50,6 +50,8 @@ class Cmd
       endIf
 
       if (is_conversion)
+        if (this_type is target_type) return this
+
         if (this_type.instance_of(target_type) or (target_type.instance_of(this_type) and allow_implicit_narrowing))
           return CmdCastToType( t, this, target_type )
         endIf
