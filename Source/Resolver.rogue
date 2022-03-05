@@ -39,7 +39,7 @@ class Resolver : Visitor
     }#
 
     method visit( this_type, this_procedure )
-      if (not this_procedure.is_resolved) return
+      if (this_procedure.is_resolved) return
       this_procedure.is_resolved = true
       visit( this_procedure )
       #locals.clear

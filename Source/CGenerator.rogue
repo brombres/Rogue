@@ -1,5 +1,14 @@
 module R2
 
+augment Procedure
+  PROPERTIES
+    c_name : String
+
+  METHODS
+    method c_name->String
+      throw UnsupportedOperationError()
+endAugment
+
 augment
   METHODS
     method Block.needs_semicolon->Logical
@@ -8,8 +17,9 @@ augment
     method Cmd.needs_semicolon->Logical
       return true
 
-    method Type.c_name->String
-      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
+    method Module.c_name->String
+      if (this is Program.default_module) return "Rogue"
+      return name
 
     method Module.write_c_routine_header( r:Routine, writer:CWriter )
       if (r.return_type)
@@ -17,7 +27,7 @@ augment
       else
         writer.print( "void " )
       endIf
-      writer.print( r.name )
+      writer.print( r.c_name )
       writer.print( "(" )
       writer.print( ")" )
 
@@ -40,33 +50,22 @@ augment
         writer.println( "}" )
       endForEach
 
-    method Program.generate_c
-      # Combine on_launch from all modules into default module on_launch
-      local r_on_launch = default_module.routines[ "on_launch()" ]
-      assert r_on_launch
-      if (r_on_launch.statements.count)
-        local cmd_block = Block( r_on_launch.t )
-        cmd_block.statements.add( forEach in r_on_launch.statements )
-        r_on_launch.statements.clear
-        r_on_launch.statements.add( cmd_block )
+    method Module.generate_c_launch_commands( writer:CWriter )
+      local r = routines[ "on_launch()" ]
+      if (r and r.statements.count)
+        writer.print( r.c_name ).println( "();" )
       endIf
 
-      forEach (m in modules)
-        if (m is not default_module)
-          local r = m.routines[ "on_launch()" ]
-          if (r)
-            m.routines.remove( r )
-            if (r.statements.count)
-              local cmd_block = Block( r.t )
-              cmd_block.statements.add( forEach in r.statements )
-              r_on_launch.statements.add( cmd_block )
-            endIf
-          endIf
-        endIf
-      endForEach
+    method Routine.c_name->String
+      if (@c_name) return @c_name
+      use builder = StringBuilder.pool
+        builder.print( module_context.c_name ).print( '_' ).print( name )
+        # TODO: parameter types
+        c_name = builder
+        return @c_name
+      endUse
 
-      r_on_launch.resolve
-
+    method Program.generate_c
       local h_writer = CWriter( File("Test.h"), &header )
 
       (forEach in modules).generate_c_header( h_writer )
@@ -80,13 +79,18 @@ augment
                         |{
       c_writer.indent += 2
 
-      c_writer.println @|on_launch();
-                        |return 0;
+      (forEach in modules).generate_c_launch_commands( c_writer )
+
+      c_writer.println @|return 0;
 
       c_writer.indent -= 2
       c_writer.println @|}
 
       c_writer.close
+
+    method Type.c_name->String
+      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
+
 
 endAugment
 
