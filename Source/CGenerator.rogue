@@ -39,15 +39,7 @@ augment
 
     method Module.generate_c_code( writer:CWriter )
       forEach (r in routines)
-        write_c_routine_header( r, writer )
-        writer.println
-        writer.println( "{" )
-        writer.indent += 2
-
-        CGenerator( this, writer ).visit( r.statements )
-
-        writer.indent -= 2
-        writer.println( "}" )
+        CGenerator( this, writer ).visit( r )
       endForEach
 
     method Module.generate_c_launch_commands( writer:CWriter )
@@ -89,8 +81,11 @@ augment
       c_writer.close
 
     method Type.c_name->String
-      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
+      if (@c_name) return @c_name
+      @c_name = "$$" (module_context.c_name,name)
+      return @c_name
 
+      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
 
 endAugment
 
@@ -117,10 +112,39 @@ class CGenerator : Visitor
       writer.indent -= 2
       writer.println '}'
 
+    method on_visit( cmd:GetLocal )
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:LiteralInt32 )
+      writer.print( cmd.value )
+
+    method on_visit( cmd:LiteralString )
+      writer.print( cmd.value.to_escaped_ascii("\"") )
+
     #method on_visit( cmd:LocalDeclarations )
     #  visit_children( cmd )
 
     #method on_visit( cmd:LocalDef )
+
+    method on_visit( cmd:Routine )
+      forEach (v at i in cmd.locals) v.c_name = v.name + "_" + i
+      this_module.write_c_routine_header( cmd, writer )
+      writer.println
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (v in cmd.local_declarations)
+        writer.print( v.type.c_name ).print( ' ' )
+        writer.print( v.c_name )
+        writer.println( ';' )
+      endForEach
+      visit_children( cmd )
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method on_visit( cmd:SetLocal )
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
 
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
@@ -128,11 +152,18 @@ class CGenerator : Visitor
         if (statement.needs_semicolon) writer.println( ';' )
       endForEach
 
-    method on_visit( cmd:PrintString )
-      writer.print( ''printf( "$" )''(cmd.operand->String.to_escaped_ascii('"')) )
+    method on_visit( cmd:PrintInt32 )
+      writer.print ''printf( "%d", (int)''
+      visit( cmd.operand )
+      writer.print '' )''
 
     method on_visit( cmd:PrintNewline )
       writer.print( ''putchar( '\\n' )'' )
+
+    method on_visit( cmd:PrintString )
+      writer.print ''printf( "''
+      visit( cmd.operand )
+      writer.print ''" )''
 endClass
 
 # write_print()

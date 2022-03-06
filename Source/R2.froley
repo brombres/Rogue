@@ -470,8 +470,8 @@ parser
 
 - procedure_parameter
   consume_eols
-  on IDENTIFIER optional_initial_value optional_type -> LocalDef(name=content,initial_value,type_ref)
-  #on '&' identifier optional_initial_value optional_type -> FlagParameter(name:String,initial_value,type_ref):Parameter
+  on IDENTIFIER optional_initial_value optional_type -> Local(name=content,initial_value,type:Type)
+  #on '&' identifier optional_initial_value optional_type -> FlagParameter(name:String,initial_value,type:Type):Parameter
   mustConsume IDENTIFIER  # generate error message
 
 - optional_initial_value
@@ -714,11 +714,11 @@ parser
 
 - method
   on "method" signature procedure_body ->
-    MethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):ProcedureDef
+    MethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
 
 - global_method
   on "method" signature procedure_body ->
-    GlobalMethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):MethodDef
+    GlobalMethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):MethodDef
 
 - signature
   identifier
@@ -733,7 +733,7 @@ parser
   attributes
   beginList
   createList Statements
-  produce GlobalMethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):MethodDef
+  produce GlobalMethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):MethodDef
 
 - native_method
   identifier
@@ -742,7 +742,7 @@ parser
   attributes
   beginList
   createList Statements
-  produce MethodDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):ProcedureDef
+  produce MethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
 
 - native_routine
   identifier
@@ -751,7 +751,7 @@ parser
   attributes
   beginList
   createList Statements
-  produce RoutineDef(name:String,parameters,return_type_ref,attributes:Attributes,statements):ProcedureDef
+  produce RoutineDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
 
 - native_parameter_types
   beginList
@@ -766,7 +766,7 @@ parser
   createNull
   createNull
   type
-  produce LocalDef(name:String,initial_value,type_ref)
+  produce Local(name:String,initial_value,type:Type)
 
 - properties
   beginList
@@ -778,13 +778,13 @@ parser
     endWhile
   createList
   optional_type
-  produce PropertyDeclarations( declarations, type_ref )
+  produce PropertyDeclarations( declarations, type:Type )
 
 - property_declaration
   on IDENTIFIER
     optional_initial_value
     createNull
-    produce PropertyDef( name=content, initial_value, type_ref )
+    produce PropertyDef( name=content, initial_value, type:Type )
   endOn
   mustConsume IDENTIFIER  # throws error
 }#
@@ -812,7 +812,7 @@ parser
   produceList Statements
 
 - control_structure
-  #on     "local"   local_declarations: return
+  on     "local"   local_declarations: return
   onPeek "block"   block:              return
 #{
   onPeek "forEach" forEach_loop:       return
@@ -862,9 +862,11 @@ parser
 #{
   on "++" -> Increment(operand):Unary
   on "--" -> Decrement(operand):Unary
+}#
 
   on "=" expression -> Assign(target,new_value)
 
+#{
   on "+=" expression -> AddAndAssign(target,operand):OpAndAssign
   #on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
   #on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
@@ -875,6 +877,7 @@ parser
   on ":<<:="  expression -> LeftShiftAndAssign(target,operand):OpAndAssign
   on ":>>:="  expression -> RightShiftAndAssign(target,operand):OpAndAssign
   on ":>>>:=" expression -> RightShiftXAndAssign(target,operand):OpAndAssign
+}#
 
 - local_declarations
   beginList
@@ -887,16 +890,15 @@ parser
   createList
   optional_type
 
-  produce LocalDeclarations( declarations, type_ref )
+  produce LocalDeclarations( declarations, type:Type )
 
 - local_declaration
   on IDENTIFIER
     optional_initial_value
     createNull
-    produce LocalDef( name=content, initial_value, type_ref )
+    produce Local( name=content, initial_value, type:Type )
   endOn
   mustConsume IDENTIFIER  # throws error
-}#
 
 - block
   on "block"
@@ -1048,12 +1050,12 @@ parser
   on OCTAL_INTEGER  -> LiteralInt32(content=content:String,base="8":Integer)
   on REAL_NUMBER    -> LiteralReal64(value=content:Real)
   on CHARACTER      -> LiteralCharacter(value=content:Character)
-#{
   onPeek IDENTIFIER
     type_name
     access_args
     produce Access( name:String, args )
   endOn
+#{
   on "true"               -> LiteralLogical(value="true":Logical)
   on "false"              -> LiteralLogical(value="false":Logical)
   on "pi"                 -> LiteralPi
@@ -1216,7 +1218,7 @@ parser
   #  create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
   #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
-  #  create GetLocal(info:Local)
+  create GetLocal(info:Local)
   #  create GetProperty(context,info:Property)
   #  create GetSingleton(type:Type)
   #  create GetThisProperty(info:Property)
@@ -1232,7 +1234,8 @@ parser
   #  create LiteralNull(type:Type):Literal
   #  create LiteralValueUndefined:Literal
   #  create Local(name:String,initial_value)
-  #  create LocalDeclaration( info:Local )
+  #create LocalDeclaration( info:Local )
+  create LocalScope
   #  create Method(type_context:Type,name:String,statements):Procedure
   #  create ModInt32(left,right):Binary
   #  create ModObject(left,right):Binary
@@ -1247,10 +1250,11 @@ parser
   #  create NegateReal64(operand):Unary
   #  create NegateValue(operand):Unary
   #  create OpAndAssign(target,operand)
+  create PrintInt32(operand):Unary
   create PrintNewline
   create PrintString(operand):Unary
-  create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,statements:Statements)
-  #  create ProcedureDef(name:String,parameters,return_type_ref,attributes,statements)
+  create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,statements:Statements):LocalScope
+  #  create ProcedureDef(name:String,parameters,return_type:Type,attributes,statements)
   #  create Property( type_context:Type, name:String, initial_value, type:Type )
   #  create PushResult(operand):Unary
   #  create ReturnResult(result)
@@ -1259,7 +1263,7 @@ parser
   #  create RightShiftXInt32(left,right):Binary
   #  create RightShiftXValue(left,right):Binary
   #  create Routine(module_context:Module,name:String,statements):Procedure
-  #  create SetLocal(info:Local,new_value)
+  create SetLocal(info:Local,new_value)
   #  create SetThisProperty(info:Property,new_value)
   #  create StackTopInt32
   #  create SubtractInt32(left,right):Binary

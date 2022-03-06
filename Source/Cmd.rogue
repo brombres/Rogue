@@ -391,22 +391,19 @@ endClass
 class LiteralInt32 : Cmd
   PROPERTIES
     value   : Int32
-    content : String
-    base    : Int32
 
   METHODS
     method init( t, value )
 
-    method init( t, content, base )
+    method init( t, content:String, base:Int32 )
+      value = content->Int32( &=base )
 
     method init( existing:LiteralInt32 )
       prior.init( existing )
       value = existing.value
-      content = existing.content
-      base = existing.base
 
     method description->String
-      return "LiteralInt32($,$,$)" (%value,%content,%base)
+      return "LiteralInt32($)" (%value)
 
 endClass
 
@@ -541,26 +538,6 @@ class Join : Cmd
 
 endClass
 
-class LocalDef : Cmd
-  PROPERTIES
-    name          : String
-    initial_value : Cmd
-    type_ref      : Cmd
-
-  METHODS
-    method init( t, name, initial_value, type_ref )
-
-    method init( existing:LocalDef )
-      prior.init( existing )
-      name = existing.name
-      if (existing.initial_value) initial_value = existing.initial_value.cloned
-      if (existing.type_ref) type_ref = existing.type_ref.cloned
-
-    method description->String
-      return "LocalDef($,$,$)" (%name,%initial_value,%type_ref)
-
-endClass
-
 class TypeRef : Type
   METHODS
     method description->String
@@ -581,7 +558,7 @@ class PrintNewline : Cmd
       return "PrintNewline"
 endClass
 
-class Block : Cmd
+class Block : LocalScope
   PROPERTIES
     statements : Cmd
 
@@ -595,5 +572,130 @@ class Block : Cmd
 
     method description->String
       return "Block($)" (%statements)
+
+endClass
+
+class Local : Cmd
+  PROPERTIES
+    name          : String
+    c_name        : String
+    initial_value : Cmd
+    type          : Type
+
+  METHODS
+    method init( t, name, initial_value, type )
+
+    method init( existing:Local )
+      prior.init( existing )
+      name = existing.name
+      if (existing.initial_value) initial_value = existing.initial_value.cloned
+      if (existing.type) type = existing.type.cloned
+
+    method description->String
+      return "Local($,$,$)" (%name,%initial_value,%type)
+
+endClass
+
+class LocalDeclarations : Cmd
+  PROPERTIES
+    declarations : Cmd
+    type         : Type
+
+  METHODS
+    method init( t, declarations, type )
+
+    method init( existing:LocalDeclarations )
+      prior.init( existing )
+      if (existing.declarations) declarations = existing.declarations.cloned
+      if (existing.type) type = existing.type.cloned
+
+    method description->String
+      return "LocalDeclarations($,$)" (%declarations,%type)
+
+endClass
+
+class Access : Cmd
+  PROPERTIES
+    name : String
+    args : Cmd
+
+  METHODS
+    method init( t, name, args=null )
+
+    method init( existing:Access )
+      prior.init( existing )
+      name = existing.name
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "Access($,$)" (%name,%args)
+
+endClass
+
+class Assign : Cmd
+  PROPERTIES
+    target    : Cmd
+    new_value : Cmd
+
+  METHODS
+    method init( t, target, new_value )
+
+    method init( existing:Assign )
+      prior.init( existing )
+      if (existing.target) target = existing.target.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "Assign($,$)" (%target,%new_value)
+
+endClass
+
+class LocalScope : Cmd
+  PROPERTIES
+    local_declarations = Local[]
+
+  METHODS
+    method description->String
+      return "LocalScope"
+endClass
+
+class SetLocal : Cmd
+  PROPERTIES
+    info      : Local
+    new_value : Cmd
+
+  METHODS
+    method init( t, info, new_value )
+
+    method init( existing:SetLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "SetLocal($,$)" (%info,%new_value)
+
+endClass
+
+class GetLocal : Cmd
+  PROPERTIES
+    info : Local
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:GetLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "GetLocal($)" (%info)
+
+endClass
+
+class PrintInt32 : Unary
+  METHODS
+    method description->String
+      return "PrintInt32($)" (%operand)
 
 endClass

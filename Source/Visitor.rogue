@@ -90,7 +90,7 @@ class Visitor<<$ReturnType>>
         forEach (element in writer=cmd.list.rewriter)
           local visited_element = visit( element )
           if (visited_element)
-            if (visited_element.count)
+            if (visited_element instanceOf Statements)
               writer.write( forEach in visited_element )
             else
               writer.write( visited_element )
@@ -150,15 +150,6 @@ class Visitor<<$ReturnType>>
         visit( cmd.index )
       endIf
 
-    method on_visit_children( cmd:LocalDef )
-      if ($ReturnType instanceOf Cmd)
-        cmd.initial_value = visit(cmd.initial_value)
-        cmd.type_ref = visit(cmd.type_ref)
-      else
-        visit( cmd.initial_value )
-        visit( cmd.type_ref )
-      endIf
-
     method on_visit_children( cmd:Procedure )
       if ($ReturnType instanceOf Cmd)
         cmd.parameters = visit(cmd.parameters)
@@ -177,6 +168,56 @@ class Visitor<<$ReturnType>>
         cmd.statements = visit(cmd.statements)
       else
         visit( cmd.statements )
+      endIf
+
+    method on_visit_children( cmd:Local )
+      if ($ReturnType instanceOf Cmd)
+        cmd.initial_value = visit(cmd.initial_value)
+        cmd.type = visit(cmd.type)->(as Type)
+      else
+        visit( cmd.initial_value )
+        visit( cmd.type )
+      endIf
+
+    method on_visit_children( cmd:LocalDeclarations )
+      if ($ReturnType instanceOf Cmd)
+        cmd.declarations = visit(cmd.declarations)
+        cmd.type = visit(cmd.type)->(as Type)
+      else
+        visit( cmd.declarations )
+        visit( cmd.type )
+      endIf
+
+    method on_visit_children( cmd:Access )
+      if ($ReturnType instanceOf Cmd)
+        cmd.args = visit(cmd.args)
+      else
+        visit( cmd.args )
+      endIf
+
+    method on_visit_children( cmd:Assign )
+      if ($ReturnType instanceOf Cmd)
+        cmd.target = visit(cmd.target)
+        cmd.new_value = visit(cmd.new_value)
+      else
+        visit( cmd.target )
+        visit( cmd.new_value )
+      endIf
+
+    method on_visit_children( cmd:SetLocal )
+      if ($ReturnType instanceOf Cmd)
+        cmd.info = visit(cmd.info)->(as Local)
+        cmd.new_value = visit(cmd.new_value)
+      else
+        visit( cmd.info )
+        visit( cmd.new_value )
+      endIf
+
+    method on_visit_children( cmd:GetLocal )
+      if ($ReturnType instanceOf Cmd)
+        cmd.info = visit(cmd.info)->(as Local)
+      else
+        visit( cmd.info )
       endIf
 
 endClass

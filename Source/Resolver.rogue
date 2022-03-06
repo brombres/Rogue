@@ -6,7 +6,9 @@ class Resolver : Visitor
     this_module    : Module
     this_type      : Type
     this_procedure : Procedure
-    #locals         = Local[]
+
+    locals         = Local[]  # visible locals
+    scope          = LocalScope[]
 
     current_statements_rewriter : ListRewriter<<Cmd>>
 
@@ -41,8 +43,9 @@ class Resolver : Visitor
     method visit( this_type, this_procedure )
       if (this_procedure.is_resolved) return
       this_procedure.is_resolved = true
+      locals.clear
+      scope.clear
       visit( this_procedure )
-      #locals.clear
 
       #{
     method add_local( t:Token, name:String, initial_value=null:Cmd, type=null:Type )->Local
@@ -62,6 +65,7 @@ class Resolver : Visitor
         v.is_parameter = v.fp_offset < proc.parameters.count
         proc.locals.add( v )
       endIf
+      }#
 
     method find_local( name:String )->Local
       forEach (v in locals step -1)
@@ -73,6 +77,7 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
 
+      #{
     method on_validate( cmd:Add )->Cmd
       return validate( cmd.left.type.cmd_add(cmd.t, cmd.left, cmd.right) )
 
@@ -107,11 +112,13 @@ class Resolver : Visitor
     method on_visit( cmd:Args )
       visit_children( cmd )
       (forEach in cmd).require_value
+      }#
 
     method on( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
 
+      #{
     method on_visit( cmd:Binary )
       visit_children( cmd )
       local left = cmd.left
@@ -329,25 +336,51 @@ class Resolver : Visitor
         endIf
       endIf
       return cmd
+}#
 
-    method on_visit( cmd:LocalDeclaration )
-      local info = cmd.info
-      if (not info.is_parameter)
-        if (info.type)
-          if (not info.initial_value) info.initial_value = info.type.cmd_default_value( info.t )
-          info.initial_value = validate( visit(info.initial_value).cmd_cast_to( info.@type ) )
-        elseIf (not info.@type)
-          if (not info.initial_value)
-            throw info.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
-          endIf
-          info.initial_value = visit( info.initial_value )
-          info.type = info.initial_value.require_type
-        else
-          info.initial_value = visit( info.initial_value )
-        endIf
+    method on( cmd:LocalDeclarations )->Cmd
+      if (cmd.@type)
+        # local a, b=x, c : Type
+        #   ->
+        # local a:Type, b=x:Type, c:Type
+        local type = cmd.@type->Type
+        cmd.type = type
+        (forEach in cmd.declarations)->(as Local).type = type
+      else
+        # Infer any missing types.
+        forEach (v in cmd.declarations)
+          block v = v->(as Local)
+            if (v.initial_value)
+              v.initial_value = visit( v.initial_value ).require_value
+              if (v.@type) v.initial_value = visit( v.initial_value.cmd_cast_to(v.@type) )
+              else         v.type = v.initial_value.type
+            elseIf (not v.@type)
+              throw v.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
+            endIf
+          endBlock
+        endForEach
       endIf
-      locals.add( info )
 
+      forEach (decl in cmd.declarations)
+        local v = decl->(as Local)
+        this_procedure.locals.add( v )
+        scope.last.local_declarations.add( v )
+        locals.add( v )
+      endForEach
+
+      local result : Statements
+      local is_multiple_declaration = (cmd.declarations.count > 1)
+      if (is_multiple_declaration) result = Statements( cmd.t )
+      forEach (decl in cmd.declarations)
+        local v = decl->(as Local)
+        local cmd_assign = visit( Assign(v.t, Access(v.t,v.name), v.initial_value) )
+        if (is_multiple_declaration) result.add( cmd_assign )
+        else                         return cmd_assign
+      endForEach
+
+      return null
+
+#{
     method on_visit( cmd:Loop )
       visit_children( cmd )
       if (cmd.loop_count)
@@ -373,14 +406,22 @@ class Resolver : Visitor
 
     method on_validate( cmd:Negate )->Cmd
       return validate( cmd.operand.type.cmd_negate(cmd.t, cmd.operand) )
+      }#
 
     method on_visit( cmd:Procedure )
+      push_local_scope( cmd )
       visit_children( cmd )
+      pop_local_scope
 
-      cmd.local_stack_slots = cmd.locals.count
-      if (cmd.parameters) cmd.local_stack_slots -= cmd.parameters.count
-      assert cmd.local_stack_slots >= 0
+    method pop_local_scope
+      local cmd = scope.remove_last
+      locals.discard_from( locals.count - cmd.local_declarations.count )
 
+    method push_local_scope( cmd:LocalScope )
+      scope.add( cmd )
+      locals.add( forEach in cmd.local_declarations )
+
+      #{
     method on_visit_children( cmd:Procedure )
       locals.add( (forEach in cmd.parameters)->(as Local) )
       prior.on_visit_children( cmd )
@@ -394,7 +435,7 @@ class Resolver : Visitor
       which (cmd.args.count)
         case 0: throw cmd.t.error( "One or more arguments expected." )
         case 1:
-          local arg = cmd.args.first
+          local arg = visit( cmd.args.first )
           return visit( arg.require_type.cmd_print(arg) )
         others
           local result = Statements( cmd.t )
@@ -443,7 +484,9 @@ class Resolver : Visitor
 
     method on_validate( cmd:RightShiftX )->Cmd
       return validate( cmd.left.type.cmd_right_shift_x(cmd.t, cmd.left, cmd.right) )
+}#
 
+#{
     method on_visit( cmd:Statements )
       temporarily current_statements_rewriter = cmd.list.rewriter
         forEach (element in current_statements_rewriter)
@@ -451,7 +494,9 @@ class Resolver : Visitor
           if (visited_element) current_statements_rewriter.write( visited_element )
         endForEach
       endTemporarily
+      }#
 
+#{
     method on_validate( cmd:Subtract )->Cmd
       return validate( cmd.left.type.cmd_subtract(cmd.t, cmd.left, cmd.right) )
 
@@ -467,8 +512,15 @@ class Resolver : Visitor
         v.initial_value = visit( v.initial_value ).require_value
         if (not v.type) v.type = v.initial_value.type
       endIf
+}#
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
+      if (not args)
+        local v = find_local( name )
+        if (v) return validate( GetLocal(t,v) )
+      endIf
+
+      #{
       local is_global = false
       local type_context : Type
 
@@ -477,19 +529,19 @@ class Resolver : Visitor
         is_global = context.is_type_context
         type_context = context.require_type
 
-        if (not args)
-          if (type_context is Program.type_Value)
-            if (name == "x" or name == "y")
-              context = validate( CastValueToXY(t,context) )
-              type_context = Program.type_XY
-            endIf
-          endIf
+        #if (not args)
+        #  if (type_context is Program.type_Value)
+        #    if (name == "x" or name == "y")
+        #      context = validate( CastValueToXY(t,context) )
+        #      type_context = Program.type_XY
+        #    endIf
+        #  endIf
 
-          if (type_context is Program.type_XY)
-            if (name == "x") return validate( XYGetX(t, context) )
-            if (name == "y") return validate( XYGetY(t, context) )
-          endIf
-        endIf
+        #  if (type_context is Program.type_XY)
+        #    if (name == "x") return validate( XYGetX(t, context) )
+        #    if (name == "y") return validate( XYGetY(t, context) )
+        #  endIf
+        #endIf
 
       else
         local type = this_module.find_type( name, &extended_search )
@@ -498,10 +550,7 @@ class Resolver : Visitor
             return GetSingleton(t,type)
           else
             if (type.name.ends_with(']'))
-              #which (type.name)
-              #others
               return resolve_access( t, null, type.name, CmdList(t) )
-              #endWhich
             else
               return TypeContext(t,type)
             endIf
@@ -549,12 +598,15 @@ class Resolver : Visitor
           endIf
         endIf
       endIf
+      }#
 
       if (suppress_error) return null
-      find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
-      return null  # never reached
+throw t.error( "No such local: " + name )
+      #find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+      #return null  # never reached
 
 
+      #{
     method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd
       local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )
       if (m_init)
@@ -756,6 +808,7 @@ augment
       throw t.error( "Illegal target for '+='." )
 
 endAugment
+}#
 
 # Assignment
 augment
@@ -768,8 +821,8 @@ augment
         local v = resolver.find_local( name )
         if (v) return resolver.validate( SetLocal(t,v,new_value) )
 
-        local p = resolver.this_type.find_property( name )
-        if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
+        #local p = resolver.this_type.find_property( name )
+        #if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
       endIf
       throw t.error( "Illegal target for assignment." )
 
@@ -777,6 +830,21 @@ augment
       return resolver.visit( ContextAccess(t, context, "set", CmdList(t,index,new_value)) )
 endAugment
 
+# cmd_print()
+augment
+  METHODS
+    method Cmd.cmd_print( operand:Cmd )->Cmd
+      throw operand.t.error( "[INTERNAL] $.cmd_print() is undefined." (type_name) )
+
+    method TypeInt32.cmd_print( operand:Cmd )->Cmd
+      return PrintInt32( operand.t, operand )
+
+    method TypeString.cmd_print( operand:Cmd )->Cmd
+      return PrintString( operand.t, operand )
+endAugment
+
+
+#{
 # BitwiseAnd
 augment
   METHODS

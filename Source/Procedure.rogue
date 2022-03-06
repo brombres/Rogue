@@ -1,6 +1,6 @@
 module R2
 
-class Procedure : Cmd
+class Procedure : LocalScope
   PROPERTIES
     module_context : Module
     name           : String
@@ -10,6 +10,8 @@ class Procedure : Cmd
     attributes     : Attributes
     statements     : Cmd
     is_resolved    = false
+
+    locals         = Local[]
 
   METHODS
     method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,

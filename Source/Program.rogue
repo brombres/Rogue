@@ -10,13 +10,29 @@ class Program [singleton]
     default_module : Module
     current_module : Module
 
-    type_String    = TypeString( t )
+    type_Logical   : Type
+    type_Byte      : Type
+    type_Character : Type
+    type_Int32     : Type
+    type_Int64     : Type
+    type_Real32    : Type
+    type_Real64    : Type
+    type_String    : Type
 
   METHODS
     method init
       Program = this  # update singleton reference
       default_module = get_module( t, "Default" )
       current_module = default_module
+
+      type_Logical   = TypeLogical( t )
+      type_Byte      = TypeByte( t )
+      type_Character = TypeCharacter( t )
+      type_Int32     = TypeInt32( t )
+      type_Int64     = TypeInt64( t )
+      type_Real32    = TypeReal32( t )
+      type_Real64    = TypeReal64( t )
+      type_String    = TypeString( t )
 
     method description->String
       return "Program"

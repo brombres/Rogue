@@ -9,15 +9,20 @@ class Type : Cmd
   ROGUE_ATTRIBUTE( is_object,    Type.OBJECT )
 
   PROPERTIES
-    name       : String
-    attributes : Int32
+    module_context = Program.current_module : Module
+    name           : String
+    c_name         : String
+    attributes     : Int32
 
   METHODS
-    method init( t, name, attributes=0 )
+    method init( t, name, attributes=Type.OBJECT )
 
     method init( existing:Type )
       prior.init( existing )
       name = existing.name
+
+    method cloned->this
+      return this
 
     method description->String
       return "Type($)" (%name)
@@ -34,12 +39,53 @@ class Type : Cmd
 
 endClass
 
-class TypeString : Type
+class BuiltInType : Type;
+
+class TypeLogical : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "String" )
+      prior.init( t, "Logical", Type.PRIMITIVE )
+endClass
 
-    method init( existing:Type )
-      prior.init( existing )
+class TypeByte : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Byte", Type.PRIMITIVE )
+endClass
+
+class TypeCharacter : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Character", Type.PRIMITIVE )
+endClass
+
+class TypeInt32 : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Int32", Type.PRIMITIVE )
+endClass
+
+class TypeInt64 : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Int64", Type.PRIMITIVE )
+endClass
+
+class TypeReal32 : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Real32", Type.PRIMITIVE )
+endClass
+
+class TypeReal64 : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "Real64", Type.PRIMITIVE )
+endClass
+
+class TypeString : BuiltInType
+  METHODS
+    method init( t:Token )
+      prior.init( t, "String", Type.OBJECT )
 endClass
 
