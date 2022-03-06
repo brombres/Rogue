@@ -65,9 +65,9 @@ class CWriter : BufferedPrintWriter
            |//#include <stdlib.h>
            |//#include <string.h>
            |
-           |//-----------------------------------------------------------------------------
-           |//  Logging
-           |//-----------------------------------------------------------------------------
+           |//------------------------------------------------------------------------------
+           |// Logging
+           |//------------------------------------------------------------------------------
            |#ifdef __ANDROID__
            |  #include <android/log.h>
            |  #define ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "Rogue", __VA_ARGS__ )
@@ -77,9 +77,9 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
            |#endif
            |
-           |//-----------------------------------------------------------------------------
-           |//  Primitive Types
-           |//-----------------------------------------------------------------------------
+           |//------------------------------------------------------------------------------
+           |// Primitive Types
+           |//------------------------------------------------------------------------------
            |#if defined(ROGUE_PLATFORM_WINDOWS)
            |  typedef double           RogueReal64;
            |  typedef float            RogueReal32;
@@ -103,6 +103,7 @@ class CWriter : BufferedPrintWriter
            |  typedef uint64_t         RogueUInt64;
            |  typedef uint32_t         RogueUInt32;
            |#endif
+           |
 
       else
         # Writing .c file

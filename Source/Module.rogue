@@ -12,8 +12,8 @@ class Module
 
     #{
     used_modules          = UsedModule[]
-    types                 = StringTable<<Type>>()
     }#
+    types             = StringTable<<Type>>()
     global_statements : Statements
     routines          = StringTable<<Routine>>()
     #{

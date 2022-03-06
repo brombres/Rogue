@@ -17,6 +17,8 @@ class Program [singleton]
     type_Int64     : Type
     type_Real32    : Type
     type_Real64    : Type
+
+    type_Object    : Type
     type_String    : Type
 
   METHODS
@@ -32,6 +34,7 @@ class Program [singleton]
       type_Int64     = TypeInt64( t )
       type_Real32    = TypeReal32( t )
       type_Real64    = TypeReal64( t )
+      type_Object    = Type( t, "Object" )
       type_String    = TypeString( t )
 
     method description->String

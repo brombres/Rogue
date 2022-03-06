@@ -31,6 +31,55 @@ augment
       writer.print( "(" )
       writer.print( ")" )
 
+    method Module.generate_c_class_structs( writer:CWriter )
+      forEach (type in types)
+        if (not type.is_primitive)
+          if (type is Program.type_String)
+            writer.println ...
+              @|struct RogueString
+               |{
+               |  RogueType*   type;
+               |  RogueInt32   ref_count;
+               |  RogueInt32   byte_count;       // in UTF-8 bytes
+               |  RogueInt32   character_count;  // in whole characters
+               |  RogueInt32   cursor_offset;    // in bytes
+               |  RogueInt32   cursor_index;     // in characters
+               |  RogueInt32   hash_code;
+               |  RogueLogical must_free;
+               |  char*        utf8;
+               |  char         buffer[78];
+               |};
+               |
+          else
+            writer.print   "struct "
+            writer.print   type.c_name
+            writer.println
+            writer.println '{'
+            writer.indent  += 2
+            writer.println "RogueType* type;"
+            writer.println "RogueInt32 ref_count;"
+            writer.indent  -= 2
+            writer.println "};"
+            writer.println
+          endIf
+        endIf
+      endForEach
+      writer.println
+
+    method Module.generate_c_class_typedefs( writer:CWriter )
+      writer.println "typedef struct RogueType RogueType;"
+
+      forEach (type in types)
+        if (not type.is_primitive)
+          writer.print   "typedef struct "
+          writer.print   type.c_name
+          writer.print   ' '
+          writer.print   type.c_name
+          writer.println ";"
+        endIf
+      endForEach
+      writer.println
+
     method Module.generate_c_header( writer:CWriter )
       forEach (r in routines)
         write_c_routine_header( r, writer )
@@ -59,6 +108,13 @@ augment
 
     method Program.generate_c
       local h_writer = CWriter( File("Test.h"), &header )
+
+      h_writer.println ...
+        @|//------------------------------------------------------------------------------
+         |// Classes
+         |//------------------------------------------------------------------------------
+      (forEach in modules).generate_c_class_typedefs( h_writer )
+      (forEach in modules).generate_c_class_structs( h_writer )
 
       (forEach in modules).generate_c_header( h_writer )
       h_writer.close

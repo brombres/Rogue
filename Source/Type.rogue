@@ -9,17 +9,22 @@ class Type : Cmd
   ROGUE_ATTRIBUTE( is_object,    Type.OBJECT )
 
   PROPERTIES
-    module_context = Program.current_module : Module
+    module_context : Module
     name           : String
     c_name         : String
     attributes     : Int32
 
   METHODS
     method init( t, name, attributes=Type.OBJECT )
+      module_context = Program.current_module
+      module_context.types[ name ] = this
 
     method init( existing:Type )
       prior.init( existing )
-      name = existing.name
+      name   = existing.name
+      c_name = existing.@c_name
+      attributes = existing.attributes
+      module_context = existing.module_context
 
     method cloned->this
       return this
