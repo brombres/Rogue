@@ -35,7 +35,7 @@ class Program [singleton]
       type_Int64     = TypeInt64( t )
       type_Real32    = TypeReal32( t )
       type_Real64    = TypeReal64( t )
-      type_Object    = Type( t, "Object" )
+      type_Object    = Type( t, "Object", Type.OBJECT )
       type_String    = TypeString( t )
 
     method add_include_search_path( path:String )

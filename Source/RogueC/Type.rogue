@@ -15,7 +15,7 @@ class Type : Cmd
     attributes     : Int32
 
   METHODS
-    method init( t, name, attributes=Type.OBJECT )
+    method init( t, name, attributes=0 )
       module_context = Program.current_module
       module_context.types[ name ] = this
 

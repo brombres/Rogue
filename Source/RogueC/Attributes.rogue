@@ -3,10 +3,14 @@ module R2
 class Attribute
   DEFINITIONS
     GENERATED = 1
+    PRIMITIVE = (1:<<:1)
+    OBJECT    = (1:<<:2)
 endClass
 
 class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_generated, Attribute.GENERATED )
+  ROGUE_ATTRIBUTE( is_primitive, Attribute.PRIMITIVE )
+  ROGUE_ATTRIBUTE( is_object,    Attribute.OBJECT )
 
   PROPERTIES
     attributes : Int32
@@ -20,7 +24,20 @@ class Attributes : CmdList
       t = other.t
       attributes = other.attributes
 
+    method add( flags:Int32 )->Int32
+      attributes |= flags
+
+    method contains( flags:Int32 )->Logical
+      return (attributes & flags)?
+
+    method contains( value:String )->Logical
+      if ((forEach in this) == value) return true
+      return false
+
     method description->String
       return "Attributes" + list_description
+
+    method is_reference->Logical
+      return (attributes & (Attribute.OBJECT))?
 endClass
 
