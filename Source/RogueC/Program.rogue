@@ -2,9 +2,10 @@ module R2
 
 class Program [singleton]
   PROPERTIES
-    t              = Token( TokenType.EOI, "Rogue" )
-    included_files = Set<<String>>()
-    definitions    = StringTable<<Token[]>>()
+    t                    = Token( TokenType.EOI, "Rogue" )
+    include_search_paths = String[]
+    included_files       = Set<<String>>()
+    definitions          = StringTable<<Token[]>>()
 
     modules        = StringTable<<Module>>()
     default_module : Module
@@ -37,6 +38,11 @@ class Program [singleton]
       type_Object    = Type( t, "Object" )
       type_String    = TypeString( t )
 
+    method add_include_search_path( path:String )
+      if (not include_search_paths.contains(path))
+        include_search_paths.add( path )
+      endIf
+
     method description->String
       return "Program"
 
@@ -48,14 +54,36 @@ class Program [singleton]
       modules[ name ] = m
       return m
 
+    method find_include( t:Token, filepath:String )->String
+      if (File.exists(filepath))
+        if (File.is_folder(filepath))
+          local fpath = "$/$.r2" (filepath,File.filename(filepath))
+          if (File.exists(fpath)) return File.abs(fpath)
+          throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
+        else
+          return File.abs(filepath)
+        endIf
+      elseIf (File.exists(filepath.with_trailing(".r2")))
+        filepath .= with_trailing( ".r2" )
+        return File.abs(filepath)
+      else
+        return null
+      endIf
+
     method include( filepath:String )
       include( t, filepath )
 
     method include( t:Token, filepath:String )
-      filepath = File.abs( filepath.with_trailing( ".r2" ) )
-      if (not File.exists(filepath))
-        throw t.error( "No such file '$'."(filepath) )
+      local found = find_include( t, filepath )
+      if (not found)
+        forEach (path in include_search_paths)
+          found = find_include( t, path/filepath )
+          if (found) escapeForEach
+        endForEach
       endIf
+
+      if (found) filepath = found
+      else       throw t.error( "Include not found: $"(filepath) )
 
       if (included_files.contains(filepath)) return
       included_files.add( filepath )

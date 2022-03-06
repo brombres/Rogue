@@ -422,11 +422,9 @@ parser
   consume_eols
   if (not hasAnother) return
 
-#{
   on "class" class: return
 
-  on "include" string -> Include(filepath:String)
-
+#{
   on "module"
     if (nextIs(IDENTIFIER)) identifier
     else                    createNull
@@ -498,7 +496,6 @@ parser
   on IDENTIFIER -> Identifier(name=content)
   syntaxError "Identifier expected."
 
-#{
 - string
   on STRING -> LiteralString(value=content):Literal
   syntaxError "Literal string expected."
@@ -510,7 +507,7 @@ parser
   attributes
   class_sections
   mustConsume "endClass"
-  produce ClassDef( name, constructor_properties, base_types, attributes:Attributes, sections )
+  produce Class( name, constructor_properties, base_types, attributes:Attributes, sections )
 
 - constructor_properties
   if (not nextIs('(')) produceNull
@@ -525,7 +522,6 @@ parser
       type
     endWhile
   produceList
-}#
 
 - attributes
   beginList
@@ -539,7 +535,6 @@ parser
     mustConsume ']'
   produceList Attributes
 
-#{
 - class_sections
   beginList
   if (not consume(';'))
@@ -549,6 +544,7 @@ parser
 
 - class_section
   consume_eols
+#{
   on "METHODS"
     consume_eols
     while (nextIs("method"))
@@ -571,9 +567,11 @@ parser
     endWhile
     return
   endOn
+}#
   if (not nextIs("endClass")) syntaxError
 
 
+#{
 - forEach_loop
   on "forEach"
     if consume('(')

@@ -30,7 +30,7 @@ endRoutine
 
 routine rogo_run
   #execute "$ Test.r2" (File.esc(exe_filepath))
-  execute "$ Test.r2 && gcc Test.c -o test && ./test" (File.esc(exe_filepath))
+  execute "$ Test.r2 --libraries=Source/Libraries && gcc Test.c -o test && ./test" (File.esc(exe_filepath))
 endRoutine
 
 routine rogo_link
@@ -51,7 +51,7 @@ endRoutine
 routine rogo_build
   localize exe_filepath
 
-  if (File.is_newer_than("Source/$.froley"(Build.PROJECT),exe_filepath))
+  if (File.is_newer_than("Source/RogueC/$.froley"(Build.PROJECT),exe_filepath))
     rogo_froley
   endIf
 
@@ -66,8 +66,8 @@ routine rogo_build
 endRoutine
 
 routine rogo_froley
-  local froley_src = File( "Source/$.froley"(Build.PROJECT) )
-  execute "froley --main $ Source"(froley_src.esc)
+  local froley_src = File( "Source/RogueC/$.froley"(Build.PROJECT) )
+  execute "froley --main $ Source/RogueC"(froley_src.esc)
 endRoutine
 
 routine rogo_clean
@@ -86,7 +86,7 @@ routine rogo_rebuild
 endRoutine
 
 routine compile_rogue
-  local src_filepath = "Source/$.rogue" (Build.PROJECT)
+  local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS
   if (flags != "") flags += " "

@@ -24,46 +24,52 @@ class ParserCore [abstract]
     ip_type_name = 11
     ip_optional_type = 12
     ip_identifier = 13
-    ip_attributes = 14
-    ip_multi_line_statements = 15
-    ip_single_line_statements = 16
-    ip_control_structure = 17
-    ip_args = 18
-    ip_arg = 19
-    ip_statement = 20
-    ip_local_declarations = 21
-    ip_local_declaration = 22
-    ip_block = 23
-    ip_access_args = 24
-    ip_optional_expression = 25
-    ip_expression = 26
-    ip_logical_xor = 27
-    ip_logical_xor__inner = 28
-    ip_logical_or = 29
-    ip_logical_or__inner = 30
-    ip_logical_and = 31
-    ip_logical_and__inner = 32
-    ip_comparison = 33
-    ip_comparison__inner = 34
-    ip_bitwise_xor = 35
-    ip_bitwise_xor__inner = 36
-    ip_bitwise_or = 37
-    ip_bitwise_or__inner = 38
-    ip_bitwise_and = 39
-    ip_bitwise_and__inner = 40
-    ip_bitwise_shift = 41
-    ip_bitwise_shift__inner = 42
-    ip_add_subtract = 43
-    ip_add_subtract__inner = 44
-    ip_multiply_divide_mod = 45
-    ip_multiply_divide_mod__inner = 46
-    ip_pre_unary = 47
-    ip_access = 48
-    ip_access_inner = 49
-    ip_term = 50
-    ip_preprocess = 51
-    ip_process_another = 52
-    ip_additional_node_types = 53
+    ip_string = 14
+    ip_class = 15
+    ip_constructor_properties = 16
+    ip_base_types = 17
+    ip_attributes = 18
+    ip_class_sections = 19
+    ip_class_section = 20
+    ip_multi_line_statements = 21
+    ip_single_line_statements = 22
+    ip_control_structure = 23
+    ip_args = 24
+    ip_arg = 25
+    ip_statement = 26
+    ip_local_declarations = 27
+    ip_local_declaration = 28
+    ip_block = 29
+    ip_access_args = 30
+    ip_optional_expression = 31
+    ip_expression = 32
+    ip_logical_xor = 33
+    ip_logical_xor__inner = 34
+    ip_logical_or = 35
+    ip_logical_or__inner = 36
+    ip_logical_and = 37
+    ip_logical_and__inner = 38
+    ip_comparison = 39
+    ip_comparison__inner = 40
+    ip_bitwise_xor = 41
+    ip_bitwise_xor__inner = 42
+    ip_bitwise_or = 43
+    ip_bitwise_or__inner = 44
+    ip_bitwise_and = 45
+    ip_bitwise_and__inner = 46
+    ip_bitwise_shift = 47
+    ip_bitwise_shift__inner = 48
+    ip_add_subtract = 49
+    ip_add_subtract__inner = 50
+    ip_multiply_divide_mod = 51
+    ip_multiply_divide_mod__inner = 52
+    ip_pre_unary = 53
+    ip_access = 54
+    ip_access_inner = 55
+    ip_term = 56
+    ip_preprocess = 57
+    ip_process_another = 58
+    ip_additional_node_types = 59
 
   PROPERTIES
     _tokens          : Token[]
@@ -332,6 +338,13 @@ class ParserCore [abstract]
             if ((not (_position < _limit)))
               return
             endIf
+            if (_next_t.type == TokenType.KEYWORD_CLASS)
+              temporarily _cur_t = _on_t
+                _execute(ip_class)
+                _pop_frame
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_ROUTINE)
               temporarily _cur_t = _on_t
                 _execute(ip_identifier)
@@ -447,6 +460,53 @@ class ParserCore [abstract]
             endIf
             _throw_syntax_error("Identifier expected.")
             return
+          case ip_string
+            if (_next_t.type == TokenType.STRING)
+              temporarily _cur_t = _on_t
+                _push( LiteralString(_cur_t,_cur_t.content), 0 )
+                return
+              endTemporarily
+            endIf
+            _throw_syntax_error("Literal string expected.")
+            return
+          case ip_class
+            _execute(ip_type)
+            _pop_frame
+            _execute(ip_constructor_properties)
+            _pop_frame
+            _execute(ip_base_types)
+            _pop_frame
+            _execute(ip_attributes)
+            _pop_frame
+            _execute(ip_class_sections)
+            _pop_frame
+            if (not _consume(TokenType.KEYWORD_END_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_CLASS )
+            _push( Class(_cur_t,_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2)->(as Attributes),_node_arg(-1)), 5 )
+            return
+          case ip_constructor_properties
+            if ((not (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)))
+              _push( null, 0 )
+              return
+            endIf
+            _execute(ip_procedure_parameters)
+            _pop_frame
+            return
+          case ip_base_types
+            _begin_list
+            if ((not _consume(TokenType.SYMBOL_COLON)))
+              _push_list( CmdList(_list_t) )
+              return
+            endIf
+            _execute(ip_type)
+            _pop_frame
+            while (_consume(TokenType.SYMBOL_COMMA))
+              _execute(ip_consume_eols)
+              _pop_frame
+              _execute(ip_type)
+              _pop_frame
+            endWhile
+            _push_list( CmdList(_list_t) )
+            return
           case ip_attributes
             _begin_list
             if ((not _consume(TokenType.SYMBOL_OPEN_SQUARE)))
@@ -471,6 +531,23 @@ class ParserCore [abstract]
             endWhile
             if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
             _push_list( Attributes(_list_t) )
+            return
+          case ip_class_sections
+            _begin_list
+            if ((not _consume(TokenType.SYMBOL_SEMICOLON)))
+              while ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
+                _execute(ip_class_section)
+                _pop_frame
+              endWhile
+            endIf
+            _push_list( CmdList(_list_t) )
+            return
+          case ip_class_section
+            _execute(ip_consume_eols)
+            _pop_frame
+            if ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
+              _throw_syntax_error
+            endIf
             return
           case ip_multi_line_statements
             _execute(ip_consume_eols_and_semicolons)

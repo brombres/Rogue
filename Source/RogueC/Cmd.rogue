@@ -699,3 +699,27 @@ class PrintInt32 : Unary
       return "PrintInt32($)" (%operand)
 
 endClass
+
+class Class : Cmd
+  PROPERTIES
+    name                   : Cmd
+    constructor_properties : Cmd
+    base_types             : Cmd
+    attributes             : Attributes
+    sections               : Cmd
+
+  METHODS
+    method init( t, name, constructor_properties, base_types, attributes, sections )
+
+    method init( existing:Class )
+      prior.init( existing )
+      if (existing.name) name = existing.name.cloned
+      if (existing.constructor_properties) constructor_properties = existing.constructor_properties.cloned
+      if (existing.base_types) base_types = existing.base_types.cloned
+      if (existing.attributes) attributes = existing.attributes.cloned
+      if (existing.sections) sections = existing.sections.cloned
+
+    method description->String
+      return "Class($,$,$,$,$)" (%name,%constructor_properties,%base_types,%attributes,%sections)
+
+endClass

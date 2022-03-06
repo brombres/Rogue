@@ -45,6 +45,17 @@ class R2
         System.exit 0
       endIf
 
+      if (command//options//libraries)
+        local paths = String[]
+        forEach (lib in command//options//libraries)
+          local path = lib->String.replacing(';',',')
+          if (not System.is_windows) path .= replacing(':',',')
+          paths.add( forEach in path->String.split(',') )
+        endForEach
+        command//options//libraries = paths
+        Program.add_include_search_path( forEach in paths )
+      endIf
+
       Program.include( forEach in command//args )
       Program.resolve
       Program.generate_c
@@ -52,8 +63,9 @@ class R2
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().
       [
-        #option( "--flag",     &alias="-f" )
-        option( "--help",     &aliases=["-h","-?"] )
+        #option( "--flag",      &alias="-f" )
+        option( "--help",       &aliases=["-h","-?"] )
+        option( "--libraries=", &alias="-L", &multi )
         #option( "--setting=", &alias="-s" )
       ].parse( args )
       return command
