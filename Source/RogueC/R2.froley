@@ -14,6 +14,8 @@ INTEGER        integer       [content]
 REAL_NUMBER    real          [content]
 STRING         string        [content]
 IDENTIFIER     identifier    [content]
+SYMBOL_DOLLAR  $
+PLACEHOLDER    $placeholder  [content]
 
 ----------------------------------------------------------------------
 tokens Keywords
@@ -81,20 +83,19 @@ SYMBOL_CLOSE_PAREN           )   [structural]
 SYMBOL_COLON                 :   [structural]
 SYMBOL_COLON_COLON           ::
 SYMBOL_COMMA                 ,   [structural]
-SYMBOL_DOLLAR                $
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
 SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_GE                    >=
 SYMBOL_GT                    >
-SYMBOL_GT_GT                 >>
+SYMBOL_GTGT                  >>  [structural]
 SYMBOL_LE                    <=
 SYMBOL_LEFT_SHIFT            :<<:
 SYMBOL_LEFT_SHIFT_EQUALS     :<<:=
 SYMBOL_LITERAL_OPEN_SQUARE   @[
 SYMBOL_LT                    <
-SYMBOL_LT_LT                 <<
+SYMBOL_LTLT                  <<
 SYMBOL_MINUS                 -
 SYMBOL_MINUS_MINUS           --
 SYMBOL_NE                    !=
@@ -146,16 +147,15 @@ scanner
     case "@|": tokenize_verbatim_string
   endMatch
 
+  if (scan('$'))
+    if (scan([_a-zA-Z0-9]*)) produce PLACEHOLDER
+    produce SYMBOL_DOLLAR
+  endIf
+
   scan_id_or_keyword
   scan_number
 
   syntaxError
-
-- scan_id
-  consume [ \t]*
-  if not scan [_a-zA-Z/.\\~][_a-zA-Z0-9/.\\~]*
-    syntaxError "Identifier expected."
-  endIf
 
 - scan_comment
   if (consume('#'))
@@ -422,7 +422,13 @@ parser
   consume_eols
   if (not hasAnother) return
 
-  on "class" class: return
+  on "class"
+    savePosition
+    class
+    call on_parsed_class
+    discardPosition
+    return
+  endOn
 
 #{
   on "module"
@@ -501,13 +507,32 @@ parser
   syntaxError "Literal string expected."
 
 - class
-  type
+  identifier
+  template_parameters
   constructor_properties
   base_types
   attributes
   class_sections
   mustConsume "endClass"
   produce Class( name, constructor_properties, base_types, attributes:Attributes, sections )
+
+- placeholder
+  on PLACEHOLDER -> Placeholder(name=content)
+  syntaxError "'$Placeholder' name expected."
+
+- template_parameters
+  on "<<"
+    beginList
+      if (not consume(">>"))
+        placeholder
+        while (consume(','))
+          placeholder
+        endWhile
+        mustConsume ">>"
+      endIf
+    produceList
+  endOn
+  produceNull
 
 - constructor_properties
   if (not nextIs('(')) produceNull

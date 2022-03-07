@@ -16,6 +16,7 @@ $include "Program.rogue"
 $include "Resolver.rogue"
 $include "Routine.rogue"
 $include "Scanner.rogue"
+$include "Template.rogue"
 $include "Type.rogue"
 uses R2
 uses Utility/CommandLineParser

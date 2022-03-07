@@ -72,6 +72,27 @@ class Parser : ParserCore
     method include_filepath
       Program.include( marked_token, buffer->String )
 
+    method on_parsed_class
+      local i1 = _saved_positions.last.position - 1
+      local i2 = _position - 1
+      if (disable_output)
+        local tokens = Token[]( (i2-i1)+1 )
+        tokens.add( _tokens[forEach in i1..i2] )
+        local name = tokens[1]
+        local placeholders = Token[]
+        if (i2 >= i1 + 4 and tokens[2].type == TokenType.SYMBOL_LTLT)
+          forEach (t in tokens from 3)
+            if (t.type == TokenType.SYMBOL_GTGT) escapeForEach
+            if (t.type == TokenType.PLACEHOLDER) placeholders.add( t )
+          endForEach
+        endIf
+        local extended_name = "$<<$>>"(name,placeholders.count)
+        if (Program.templates[extended_name])
+          throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
+        endIf
+        Program.templates[extended_name] = Template( name, placeholders, tokens )
+      endIf
+
     method rewrite_token
       processed_tokens.add( _read )
 

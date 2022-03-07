@@ -1,0 +1,11 @@
+module R2
+
+class Template
+  PROPERTIES
+    name         : String
+    placeholders : Token[]
+    tokens       = Token[]
+
+  METHODS
+    method init( name, placeholders, tokens )
+endClass

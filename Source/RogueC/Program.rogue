@@ -4,8 +4,9 @@ class Program [singleton]
   PROPERTIES
     t                    = Token( TokenType.EOI, "Rogue" )
     include_search_paths = String[]
-    included_files       = Set<<String>>()
+    included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()
+    templates            = StringTable<<Template>>()
 
     modules        = StringTable<<Module>>()
     default_module : Module
@@ -86,16 +87,20 @@ class Program [singleton]
       else       throw t.error( "Include not found: $"(filepath) )
 
       if (included_files.contains(filepath)) return
-      included_files.add( filepath )
+      included_files[ filepath ] = null # placeholder
 
       temporarily current_module = Program.default_module
         local tokens = Scanner( File(filepath) ).tokenize
         Parser( tokens ).preprocess
-        local elements = Parser(tokens).parse
-        if (elements)
-          local collector = Collector()
-          collector.visit( forEach in elements )
-        endIf
+        included_files[filepath] = tokens
+
+        # First parser pass collects class templates but does not build an AST
+        Parser(tokens).[disable_output=1].parse
+        #local elements = Parser(tokens).[disable_output=1].parse
+        #if (elements)
+        #  local collector = Collector()
+        #  collector.visit( forEach in elements )
+        #endIf
       endTemporarily
 
     method resolve

@@ -723,3 +723,26 @@ class Class : Cmd
       return "Class($,$,$,$,$)" (%name,%constructor_properties,%base_types,%attributes,%sections)
 
 endClass
+
+class Placeholder : Cmd
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( t, name )
+
+    method init( existing:Placeholder )
+      prior.init( existing )
+      name = existing.name
+
+    method description->String
+      return "Placeholder($)" (%name)
+
+    method to->Character
+      return Cmd.to_character(name)
+
+    method to->Int32:  return name
+    method to->Logical: return name?
+    method to->String: return name
+
+endClass
