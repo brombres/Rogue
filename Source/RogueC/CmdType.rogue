@@ -210,10 +210,13 @@ augment
     method LocalDeclarations.type->Type
       return @type
 
-      #{
     method Property.type->Type
       return @type
 
+    method PropertyDeclarations.type->Type
+      return @type
+
+      #{
     method StackTopInt32.type->Type
       return Program.type_Int32
 

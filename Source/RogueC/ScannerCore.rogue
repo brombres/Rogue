@@ -76,7 +76,7 @@ class ScannerCore [abstract]
     _scan_pattern_16 = ScanPattern( "[0-9a-fA-F]" )
     _scan_pattern_17 = ScanPattern( "[ ]*" )
     _scan_table_0 = ScanTable("gjb/Hgo+IkAnQkBIJFImgQgtgQ4qgRxcgSIhgSRegSp9gSxdgS4pgTA6gTIsgWR8gWZbgXA9gXY+gXw8ggZ7ghAoghIlghQughorghw/giY7giwvgi5+gjQAAAEAAgEnRgMACgJ8TltQBAAeAP8CZFhpbv8BZVz/AWZg/wFpZP8Bbmj/AWVsBQD/AW5y/wFjdv8BbHr/AXV+/wFkgQL/AWWBBgYABwE9gQw6ACEDPoEWLYEYPYEaCAAiADYACQE9gSA3AAsADAE9gSgjAA0ADgAPABAAEQM6gTo8gTw+gUoSAP8BPIFA/wE6gUQcAT2BSB0A/wE+gU7/AjqBVD6BWi0BPYFYLgD/ATqBXi8BPYFiMAATADQCfIFsPYFuFAA7ACUBXYF0FQAXAT2BehYAGQI9ggI+ggQYABoAHwI9ggw8gg4bACAAJAAmACcBPYIYOQAoACkCK4IiPYIkKgA1ACsBOoIqLAAxADIBPYIyOAAzAA==")
-    _scan_table_1 = ScanTable("hnYAFEcqYYEIYoEqY4E8bYFOZYF4ZoM2Z4NgaYN2bIQoTYRCboRcb4UKcIUQUIUucoVUdIYCdYYsd4ZaeIZs/wFMLv8BTzL/AUI2/wFBOv8BTD4BASBC/wJQSE1u/wFSTP8BT1D/AVBU/wFFWP8BUlz/AVRg/wFJZP8BRWj/AVNsFAD/AUVy/wFUdv8BSHr/AU9+/wFEgQL/AVOBBhUA/wJugQ51gRT/AWSBEgIA/wFngRj/AW2BHP8BZYEg/wFugST/AXSBKAMA/wFsgS7/AW+BMv8BY4E2/wFrgToEAP8BbIFA/wFhgUT/AXOBSP8Bc4FMBQD/Am+BVGWBZv8BZIFY/wF1gVz/AWyBYP8BZYFkBgD/AXSBav8BaIFu/wFvgXL/AWSBdhsA/wNsggBughJ4gyT/AXOCBP8BZYIIBwFJggz/AWaCEAgA/wFkghb/B0KCJkOCOEaCSkmCZEyCalKCeFeDEv8BbIIq/wFvgi7/AWOCMv8Ba4I2CQD/AWyCPP8BYYJA/wFzgkT/AXOCSAoA/wFvgk7/AXKCUv8BRYJW/wFhglr/AWOCXv8BaIJiCwD/AWaCaAwA/wFvgm7/AW+Ccv8BcIJ2DQD/AW+CfP8BdYMA/wF0gwT/AWmDCP8BboMM/wFlgxAOAP8BaIMW/wFpgxr/AWyDHv8BZYMiDwD/AXCDKP8Bb4Ms/wFygzD/AXSDNBAA/wJhgzxvg0r/AWyDQP8Bc4NE/wFlg0gRAP8BcoNO/wFFg1L/AWGDVv8BY4Na/wFog14SAP8BbINk/wFvg2j/AWKDbP8BYYNw/wFsg3QTAP8DZoN+bYQAboQSFgD/AXCEBP8Bb4QI/wFyhAz/AXSEEBcA/wFjhBb/AWyEGv8BdYQe/wFkhCL/AWWEJhgA/wFvhCz/AmOEMm+EPP8BYYQ2/wFshDoZAP8BcIRAGgD/AUWERv8BVIRK/wFIhE7/AU+EUv8BRIRW/wFThFocAP8Cb4RidYUA/wJBhGh0hH7/AWOEbP8BdIRw/wFphHT/AW+EeP8BboR8HQAeAP8BbIUE/wFshQgfAP8BcoUOIAD/AmmFFnKFGCEA/wFphRz/AW6FIP8BdIUkIgFshSj/AW6FLCMA/wFShTL/AU+FNv8BUIU6/wFFhT7/AVKFQv8BVIVG/wFJhUr/AUWFTv8BU4VSJAD/AmWFWm+FbP8BdIVe/wF1hWL/AXKFZv8BboVqJQD/AXWFcP8BdIV0/wFphXj/AW6FfP8BZYYAJgD/AmiGCHKGIv8BaYYM/wFzhhD/AUOGFP8BYYYY/wFshhz/AWyGICcA/wF1hib/AWWGKigA/wJuhjJzhlD/AWSGNv8BZYY6/wFmhj7/AWmGQv8BboZG/wFlhkr/AWSGTikA/wFlhlT/AXOGWCoA/wFohl7/AWmGYv8BbIZm/wFlhmorAP8Bb4Zw/wFyhnQsAA==")
+    _scan_table_1 = ScanTable("h04AFUcsYYEKYoEsY4E+bYFQZYF6ZoM4Z4NiaYN4bIQqTYREToReboR0b4VicIVoUIYGcoYsdIZadYcEd4cyeIdE/wFMMP8BTzT/AUI4/wFBPP8BTEABASBE/wJQSk1w/wFSTv8BT1L/AVBW/wFFWv8BUl7/AVRi/wFJZv8BRWr/AVNuFAD/AUV0/wFUeP8BSHz/AU+BAP8BRIEE/wFTgQgVAP8CboEQdYEW/wFkgRQCAP8BZ4Ea/wFtgR7/AWWBIv8BboEm/wF0gSoDAP8BbIEw/wFvgTT/AWOBOP8Ba4E8BAD/AWyBQv8BYYFG/wFzgUr/AXOBTgUA/wJvgVZlgWj/AWSBWv8BdYFe/wFsgWL/AWWBZgYA/wF0gWz/AWiBcP8Bb4F0/wFkgXgbAP8DbIICboIUeIMm/wFzggb/AWWCCgcBSYIO/wFmghIIAP8BZIIY/wdCgihDgjpGgkxJgmZMgmxSgnpXgxT/AWyCLP8Bb4Iw/wFjgjT/AWuCOAkA/wFsgj7/AWGCQv8Bc4JG/wFzgkoKAP8Bb4JQ/wFyglT/AUWCWP8BYYJc/wFjgmD/AWiCZAsA/wFmgmoMAP8Bb4Jw/wFvgnT/AXCCeA0A/wFvgn7/AXWDAv8BdIMG/wFpgwr/AW6DDv8BZYMSDgD/AWiDGP8BaYMc/wFsgyD/AWWDJA8A/wFwgyr/AW+DLv8BcoMy/wF0gzYQAP8CYYM+b4NM/wFsg0L/AXODRv8BZYNKEQD/AXKDUP8BRYNU/wFhg1j/AWODXP8BaINgEgD/AWyDZv8Bb4Nq/wFig27/AWGDcv8BbIN2EwD/A2aEAG2EAm6EFBYA/wFwhAb/AW+ECv8BcoQO/wF0hBIXAP8BY4QY/wFshBz/AXWEIP8BZIQk/wFlhCgYAP8Bb4Qu/wJjhDRvhD7/AWGEOP8BbIQ8GQD/AXCEQhoA/wFFhEj/AVSETP8BSIRQ/wFPhFT/AUSEWP8BU4RcHAD/AUGEYv8BVIRm/wFJhGr/AVaEbv8BRYRyHQD/A2GEfG+FOnWFWP8BdIUA/wFphQT/AXaFCP8BZYUM/wFDhRAeAkiFFkOFLP8BZYUa/wFhhR7/AWSFIv8BZYUm/wFyhSofAP8Bb4Uw/wFkhTT/AWWFOCAA/wJBhUB0hVb/AWOFRP8BdIVI/wFphUz/AW+FUP8BboVUIQAiAP8BbIVc/wFshWAjAP8BcoVmJAD/AmmFbnKFcCUA/wFphXT/AW6FeP8BdIV8JgFshgD/AW6GBCcA/wFShgr/AU+GDv8BUIYS/wFFhhb/AVKGGv8BVIYe/wFJhiL/AUWGJv8BU4YqKAD/AmWGMm+GRP8BdIY2/wF1hjr/AXKGPv8BboZCKQD/AXWGSP8BdIZM/wFphlD/AW6GVP8BZYZYKgD/AmiGYHKGev8BaYZk/wFzhmj/AUOGbP8BYYZw/wFshnT/AWyGeCsA/wF1hn7/AWWHAiwA/wJuhwpzhyj/AWSHDv8BZYcS/wFmhxb/AWmHGv8Bboce/wFlhyL/AWSHJi0A/wFlhyz/AXOHMC4A/wFohzb/AWmHOv8BbIc+/wFlh0IvAP8Bb4dI/wFyh0wwAA==")
     _scan_table_2 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
     _scan_table_3 = ScanTable("EgABMAT/A2IMYw54EAEAAgADAA==")
 
@@ -572,51 +572,63 @@ class ScannerCore [abstract]
                   _add( TokenType.KEYWORD_METHODS )
                   return false
                 case 29
-                  _add( TokenType.KEYWORD_NO_ACTION )
+                  _add( TokenType.KEYWORD_NATIVE )
                   return false
                 case 30
-                  _add( TokenType.KEYWORD_NOT )
+                  _add( TokenType.KEYWORD_NATIVE_C )
                   return false
                 case 31
-                  _add( TokenType.KEYWORD_NULL )
+                  _add( TokenType.KEYWORD_NATIVE_C_HEADER )
                   return false
                 case 32
-                  _add( TokenType.KEYWORD_OR )
+                  _add( TokenType.KEYWORD_NATIVE_C_CODE )
                   return false
                 case 33
-                  _add( TokenType.KEYWORD_PI )
+                  _add( TokenType.KEYWORD_NO_ACTION )
                   return false
                 case 34
-                  _add( TokenType.KEYWORD_PRINT )
+                  _add( TokenType.KEYWORD_NOT )
                   return false
                 case 35
-                  _add( TokenType.KEYWORD_PRINTLN )
+                  _add( TokenType.KEYWORD_NULL )
                   return false
                 case 36
-                  _add( TokenType.KEYWORD_PROPERTIES )
+                  _add( TokenType.KEYWORD_OR )
                   return false
                 case 37
-                  _add( TokenType.KEYWORD_RETURN )
+                  _add( TokenType.KEYWORD_PI )
                   return false
                 case 38
-                  _add( TokenType.KEYWORD_ROUTINE )
+                  _add( TokenType.KEYWORD_PRINT )
                   return false
                 case 39
-                  _add( TokenType.KEYWORD_THIS_CALL )
+                  _add( TokenType.KEYWORD_PRINTLN )
                   return false
                 case 40
-                  _add( TokenType.KEYWORD_TRUE )
+                  _add( TokenType.KEYWORD_PROPERTIES )
                   return false
                 case 41
-                  _add( TokenType.KEYWORD_UNDEFINED )
+                  _add( TokenType.KEYWORD_RETURN )
                   return false
                 case 42
-                  _add( TokenType.KEYWORD_USES )
+                  _add( TokenType.KEYWORD_ROUTINE )
                   return false
                 case 43
-                  _add( TokenType.KEYWORD_WHILE )
+                  _add( TokenType.KEYWORD_THIS_CALL )
                   return false
                 case 44
+                  _add( TokenType.KEYWORD_TRUE )
+                  return false
+                case 45
+                  _add( TokenType.KEYWORD_UNDEFINED )
+                  return false
+                case 46
+                  _add( TokenType.KEYWORD_USES )
+                  return false
+                case 47
+                  _add( TokenType.KEYWORD_WHILE )
+                  return false
+                case 48
                   _add( TokenType.KEYWORD_XOR )
                   return false
                 others
@@ -880,6 +892,7 @@ class ScannerCore [abstract]
               if ((not _scanner.consume('|')))
                 return true
               endIf
+              buffer.print('\n')
             endWhile
             return true
           others

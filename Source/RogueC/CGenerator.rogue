@@ -34,37 +34,26 @@ augment
     method Module.generate_c_class_structs( writer:CWriter )
       forEach (type in types)
         if (not type.is_primitive)
-          if (type is Program.type_String)
-            writer.println ...
-              @|struct RogueString
-               |{
-               |  RogueType*   type;
-               |  RogueInt32   ref_count;
-               |  RogueInt32   byte_count;       // in UTF-8 bytes
-               |  RogueInt32   character_count;  // in whole characters
-               |  RogueInt32   cursor_offset;    // in bytes
-               |  RogueInt32   cursor_index;     // in characters
-               |  RogueInt32   hash_code;
-               |  RogueLogical must_free;
-               |  char*        utf8;
-               |  char         buffer[78];
-               |};
-               |
-          else
-            writer.print   "struct "
-            writer.print   type.c_name
-            writer.println
-            writer.println '{'
-            writer.indent  += 2
-            writer.println "RogueType* type;"
-            writer.println "RogueInt32 ref_count;"
-            writer.indent  -= 2
-            writer.println "};"
-            writer.println
-          endIf
+          writer.print   "struct "
+          writer.print   type.c_name
+          writer.println
+          writer.println '{'
+          writer.indent  += 2
+          writer.println "RogueType* type;"
+          writer.println "RogueInt32 ref_count;"
+          forEach (p in type.properties)
+            writer.print   p.type.c_name
+            writer.print   ' '
+            writer.print   p.c_name
+            writer.println ';'
+          endForEach
+          writer.println (forEach in type.native_properties)
+          writer.indent  -= 2
+          writer.println "};"
+          writer.println
         endIf
+        writer.println( forEach in type.native_header )
       endForEach
-      writer.println
 
     method Module.generate_c_class_typedefs( writer:CWriter )
       writer.println "typedef struct RogueType RogueType;"
@@ -87,6 +76,13 @@ augment
       endForEach
 
     method Module.generate_c_code( writer:CWriter )
+      forEach (type in types)
+        forEach (code in type.native_code)
+          writer.println code->String
+          writer.println
+        endForEach
+      endForEach
+
       forEach (r in routines)
         CGenerator( this, writer ).visit( r )
       endForEach
@@ -96,6 +92,9 @@ augment
       if (r and r.statements.count)
         writer.print( r.c_name ).println( "();" )
       endIf
+
+    method Property.c_name->String
+      return name
 
     method Routine.c_name->String
       if (@c_name) return @c_name

@@ -237,4 +237,22 @@ class Visitor<<$ReturnType>>
         visit( cmd.sections )
       endIf
 
+    method on_visit_children( cmd:PropertyDeclarations )
+      if ($ReturnType instanceOf Cmd)
+        cmd.declarations = visit(cmd.declarations)
+        cmd.type = visit(cmd.type)->(as Type)
+      else
+        visit( cmd.declarations )
+        visit( cmd.type )
+      endIf
+
+    method on_visit_children( cmd:Property )
+      if ($ReturnType instanceOf Cmd)
+        cmd.initial_value = visit(cmd.initial_value)
+        cmd.type = visit(cmd.type)->(as Type)
+      else
+        visit( cmd.initial_value )
+        visit( cmd.type )
+      endIf
+
 endClass

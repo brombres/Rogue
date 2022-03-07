@@ -12,5 +12,5 @@ class Template
     method generate( type_args:Type[], type:Type )
       type.is_defined = true
       local class_def = Parser( tokens ).parse( Parser.ip_class )
-      @trace class_def
+      Organizer( type.module_context ).visit( type, class_def )
 endClass

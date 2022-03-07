@@ -33,45 +33,49 @@ class ParserCore [abstract]
     ip_attributes = 20
     ip_class_sections = 21
     ip_class_section = 22
-    ip_multi_line_statements = 23
-    ip_single_line_statements = 24
-    ip_control_structure = 25
-    ip_args = 26
-    ip_arg = 27
-    ip_statement = 28
-    ip_local_declarations = 29
-    ip_local_declaration = 30
-    ip_block = 31
-    ip_access_args = 32
-    ip_optional_expression = 33
-    ip_expression = 34
-    ip_logical_xor = 35
-    ip_logical_xor__inner = 36
-    ip_logical_or = 37
-    ip_logical_or__inner = 38
-    ip_logical_and = 39
-    ip_logical_and__inner = 40
-    ip_comparison = 41
-    ip_comparison__inner = 42
-    ip_bitwise_xor = 43
-    ip_bitwise_xor__inner = 44
-    ip_bitwise_or = 45
-    ip_bitwise_or__inner = 46
-    ip_bitwise_and = 47
-    ip_bitwise_and__inner = 48
-    ip_bitwise_shift = 49
-    ip_bitwise_shift__inner = 50
-    ip_add_subtract = 51
-    ip_add_subtract__inner = 52
-    ip_multiply_divide_mod = 53
-    ip_multiply_divide_mod__inner = 54
-    ip_pre_unary = 55
-    ip_access = 56
-    ip_access_inner = 57
-    ip_term = 58
-    ip_preprocess = 59
-    ip_process_another = 60
-    ip_additional_node_types = 61
+    ip_native_code_blocks = 23
+    ip_native_code_block = 24
+    ip_properties = 25
+    ip_property_declaration = 26
+    ip_multi_line_statements = 27
+    ip_single_line_statements = 28
+    ip_control_structure = 29
+    ip_args = 30
+    ip_arg = 31
+    ip_statement = 32
+    ip_local_declarations = 33
+    ip_local_declaration = 34
+    ip_block = 35
+    ip_access_args = 36
+    ip_optional_expression = 37
+    ip_expression = 38
+    ip_logical_xor = 39
+    ip_logical_xor__inner = 40
+    ip_logical_or = 41
+    ip_logical_or__inner = 42
+    ip_logical_and = 43
+    ip_logical_and__inner = 44
+    ip_comparison = 45
+    ip_comparison__inner = 46
+    ip_bitwise_xor = 47
+    ip_bitwise_xor__inner = 48
+    ip_bitwise_or = 49
+    ip_bitwise_or__inner = 50
+    ip_bitwise_and = 51
+    ip_bitwise_and__inner = 52
+    ip_bitwise_shift = 53
+    ip_bitwise_shift__inner = 54
+    ip_add_subtract = 55
+    ip_add_subtract__inner = 56
+    ip_multiply_divide_mod = 57
+    ip_multiply_divide_mod__inner = 58
+    ip_pre_unary = 59
+    ip_access = 60
+    ip_access_inner = 61
+    ip_term = 62
+    ip_preprocess = 63
+    ip_process_another = 64
+    ip_additional_node_types = 65
 
   PROPERTIES
     _tokens          : Token[]
@@ -591,9 +595,100 @@ class ParserCore [abstract]
           case ip_class_section
             _execute(ip_consume_eols)
             _pop_frame
+            if (_next_t.type == TokenType.KEYWORD_PROPERTIES)
+              temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
+                while ((not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?))
+                  _execute(ip_properties)
+                  _pop_frame
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                endWhile
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_NATIVE)
+              temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
+                while ((not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?))
+                  _execute(ip_native_code_blocks)
+                  _pop_frame
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                endWhile
+                return
+              endTemporarily
+            endIf
             if ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
               _throw_syntax_error
             endIf
+            return
+          case ip_native_code_blocks
+            _execute(ip_consume_eols)
+            _pop_frame
+            while ((not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?))
+              _execute(ip_native_code_block)
+              _pop_frame
+              _execute(ip_consume_eols)
+              _pop_frame
+            endWhile
+            return
+          case ip_native_code_block
+            if (_next_t.type == TokenType.KEYWORD_NATIVE_C_HEADER)
+              temporarily _cur_t = _on_t
+                _execute(ip_string)
+                _pop_frame
+                if (not disable_output) _push( NativeCHeader(_cur_t,_string_arg(-1)), 1 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_NATIVE_C_CODE)
+              temporarily _cur_t = _on_t
+                _execute(ip_string)
+                _pop_frame
+                if (not disable_output) _push( NativeCCode(_cur_t,_string_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
+            _throw_syntax_error("Expected 'nativeCHeader' or 'nativeCCode'.")
+            return
+          case ip_properties
+            _begin_list
+            _execute(ip_consume_eols)
+            _pop_frame
+            _execute(ip_property_declaration)
+            _pop_frame
+            while (_consume(TokenType.SYMBOL_COMMA))
+              _execute(ip_consume_eols)
+              _pop_frame
+              _execute(ip_property_declaration)
+              _pop_frame
+            endWhile
+            if (not disable_output) _push_list( CmdList(_list_t) )
+            _execute(ip_optional_type)
+            _pop_frame
+            _execute(ip_attributes)
+            _pop_frame
+            if (not disable_output) _push( PropertyDeclarations(_cur_t,_node_arg(-3),_node_arg(-2)->(as Type),_node_arg(-1)->(as Attributes)), 3 )
+            return
+          case ip_property_declaration
+            if (_next_t.type == TokenType.IDENTIFIER)
+              temporarily _cur_t = _on_t
+                _execute(ip_optional_initial_value)
+                _pop_frame
+                if (not disable_output) _push( null, 0 )
+                if (not disable_output) _push( Property(_cur_t,_cur_t.content,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_NATIVE_C)
+              temporarily _cur_t = _on_t
+                _execute(ip_string)
+                _pop_frame
+                if (not disable_output) _push( NativeCProperty(_cur_t,_string_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
+            if (not _consume(TokenType.IDENTIFIER)) _throw_syntax_error( &expected=TokenType.IDENTIFIER )
             return
           case ip_multi_line_statements
             _execute(ip_consume_eols_and_semicolons)
@@ -1292,6 +1387,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( GetLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
             if (not disable_output) _push( Literal(_cur_t), 0 )
             if (not disable_output) _push( LocalScope(_cur_t), 0 )
+            if (not disable_output) _push( NativeProperty(_cur_t,_string_arg(-1)), 1 )
             if (not disable_output) _push( PrintInt32(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintNewline(_cur_t), 0 )
             if (not disable_output) _push( PrintString(_cur_t,_node_arg(-1)), 1 )

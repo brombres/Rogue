@@ -741,3 +741,125 @@ class Placeholder : Cmd
     method to->String: return name
 
 endClass
+
+class PropertyDeclarations : Cmd
+  PROPERTIES
+    declarations : Cmd
+    type         : Type
+    attributes   : Attributes
+
+  METHODS
+    method init( t, declarations, type, attributes )
+
+    method init( existing:PropertyDeclarations )
+      prior.init( existing )
+      if (existing.declarations) declarations = existing.declarations.cloned
+      if (existing.type) type = existing.type.cloned
+
+    method description->String
+      return "PropertyDeclarations($,$)" (%declarations,%type)
+
+endClass
+
+class Property : Cmd
+  DEFINITIONS
+    IS_NATIVE = 1
+
+    ROGUE_ATTRIBUTE( is_native, IS_NATIVE )
+
+  PROPERTIES
+    name          : String
+    initial_value : Cmd
+    type          : Type
+    attributes    : Int32
+
+  METHODS
+    method init( t, name, initial_value, type )
+
+    method init( existing:Property )
+      prior.init( existing )
+      name = existing.name
+      if (existing.initial_value) initial_value = existing.initial_value.cloned
+      if (existing.type) type = existing.type.cloned
+      attributes = existing.attributes
+
+    method description->String
+      return "Property($,$,$)" (%name,%initial_value,%type)
+
+endClass
+
+class NativeCProperty : NativeProperty
+  METHODS
+    method description->String
+      return "NativeCProperty($)" (%expression)
+
+endClass
+
+class NativeProperty : Cmd
+  PROPERTIES
+    expression : String
+
+  METHODS
+    method init( t, expression )
+
+    method init( existing:NativeProperty )
+      prior.init( existing )
+      expression = existing.expression
+
+    method description->String
+      return "NativeProperty($)" (%expression)
+
+    method to->Character
+      return Cmd.to_character(expression)
+
+    method to->Int32:  return expression
+    method to->Logical: return expression?
+    method to->String: return expression
+
+endClass
+
+class NativeCCode : Cmd
+  PROPERTIES
+    content : String
+
+  METHODS
+    method init( t, content )
+
+    method init( existing:NativeCCode )
+      prior.init( existing )
+      content = existing.content
+
+    method description->String
+      return "NativeCCode($)" (%content)
+
+    method to->Character
+      return Cmd.to_character(content)
+
+    method to->Int32:  return content
+    method to->Logical: return content?
+    method to->String: return content
+
+endClass
+
+class NativeCHeader : Cmd
+  PROPERTIES
+    content : String
+
+  METHODS
+    method init( t, content )
+
+    method init( existing:NativeCHeader )
+      prior.init( existing )
+      content = existing.content
+
+    method description->String
+      return "NativeCHeader($)" (%content)
+
+    method to->Character
+      return Cmd.to_character(content)
+
+    method to->Int32:  return content
+    method to->Logical: return content?
+    method to->String: return content
+
+endClass

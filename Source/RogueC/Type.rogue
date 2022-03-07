@@ -11,10 +11,14 @@ class Type : Cmd
     ROGUE_ATTRIBUTE( is_defined,   Type.DEFINED )
 
   PROPERTIES
-    module_context : Module
-    name           : String
-    c_name         : String
-    attributes     : Int32
+    module_context    : Module
+    name              : String
+    c_name            : String
+    attributes        : Int32
+    properties        = StringTable<<Property>>()
+    native_properties = String[]
+    native_header     = NativeCHeader[]
+    native_code       = NativeCCode[]
 
   GLOBAL METHODS
     method create( t:Token, name:String )->Type
@@ -41,6 +45,7 @@ class Type : Cmd
       return this
 
     method ensure_definition
+      if (is_defined) return
       local template = Program.templates[ "$<<0>>"(name) ]
       if (template)
         template.generate( null, this )

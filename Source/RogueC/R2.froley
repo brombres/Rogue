@@ -47,6 +47,10 @@ KEYWORD_LOCAL        local
 KEYWORD_LOOP         loop
 KEYWORD_METHOD       method      [structural]
 KEYWORD_METHODS      METHODS     [structural]
+KEYWORD_NATIVE       NATIVE      [structural]
+KEYWORD_NATIVE_C     nativeC
+KEYWORD_NATIVE_C_HEADER nativeCHeader
+KEYWORD_NATIVE_C_CODE   nativeCCode
 KEYWORD_NO_ACTION    noAction
 KEYWORD_NOT          not
 KEYWORD_NULL         null
@@ -396,6 +400,7 @@ scanner
     consume '\n'
     consume [ ]*
     if (not consume('|')) return
+    collect '\n'
   endWhile
   return
 
@@ -591,17 +596,40 @@ parser
       consume_eols
     endWhile
     return
-  elseOn "PROPERTIES"
+}#
+  on "PROPERTIES"
     consume_eols
     while (not nextHasAttribute(structural))
       properties
       consume_eols
     endWhile
     return
+  elseOn "NATIVE"
+    consume_eols
+    while (not nextHasAttribute(structural))
+      native_code_blocks
+      consume_eols
+    endWhile
+    return
   endOn
-}#
   if (not nextIs("endClass")) syntaxError
 
+- native_code_blocks
+  consume_eols
+  while (not nextHasAttribute(structural))
+    native_code_block
+    consume_eols
+  endWhile
+
+- native_code_block
+  on "nativeCHeader"
+    string
+    produce NativeCHeader( content:String )
+  elseOn "nativeCCode"
+    string
+    produce NativeCCode( content:String )
+  endOn
+  syntaxError "Expected 'nativeCHeader' or 'nativeCCode'."
 
 #{
 - forEach_loop
@@ -797,6 +825,7 @@ parser
   createNull
   type
   produce Local(name:String,initial_value,type:Type)
+}#
 
 - properties
   beginList
@@ -808,16 +837,19 @@ parser
     endWhile
   createList
   optional_type
-  produce PropertyDeclarations( declarations, type:Type )
+  attributes
+  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes )
 
 - property_declaration
   on IDENTIFIER
     optional_initial_value
     createNull
-    produce PropertyDef( name=content, initial_value, type:Type )
+    produce Property( name=content, initial_value, type:Type )
+  elseOn "nativeC"
+    string
+    produce NativeCProperty( expression:String ):NativeProperty
   endOn
   mustConsume IDENTIFIER  # throws error
-}#
 
 - multi_line_statements
   consume_eols_and_semicolons
@@ -1276,6 +1308,7 @@ parser
   #  create MultiplyReal64(left,right):Binary
   #  create MultiplyString(left,right):Binary
   #  create MultiplyValue(left,right):Binary
+  create NativeProperty( expression:String )
   #  create NegateInt32(operand):Unary
   #  create NegateReal64(operand):Unary
   #  create NegateValue(operand):Unary

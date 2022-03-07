@@ -31,7 +31,7 @@ class Attributes : CmdList
       return (attributes & flags)?
 
     method contains( value:String )->Logical
-      if ((forEach in this) == value) return true
+      if ((forEach in this)->String == value) return true
       return false
 
     method description->String

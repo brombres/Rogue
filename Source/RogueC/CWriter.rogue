@@ -62,8 +62,8 @@ class CWriter : BufferedPrintWriter
            |#  include <stdint.h>
            |#endif
            |
-           |//#include <stdlib.h>
-           |//#include <string.h>
+           |#include <stdlib.h>
+           |#include <string.h>
            |
            |//------------------------------------------------------------------------------
            |// Logging
@@ -104,6 +104,16 @@ class CWriter : BufferedPrintWriter
            |  typedef uint32_t         RogueUInt32;
            |#endif
            |
+           |//------------------------------------------------------------------------------
+           |// Classes
+           |//------------------------------------------------------------------------------
+           |#if !defined(ROGUE_MALLOC)
+           |  #define ROGUE_MALLOC malloc
+           |#endif
+           |
+           |#define ROGUE_CREATE_OBJECT( Type, name ) \
+           |    Type* name = ROGUE_MALLOC( sizeof(Type) ); \
+           |    memset( name, 0, sizeof(Type) )
 
       else
         # Writing .c file
