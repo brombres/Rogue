@@ -538,13 +538,6 @@ class Join : Cmd
 
 endClass
 
-class TypeRef : Type
-  METHODS
-    method description->String
-      return "TypeRef($)" (%name)
-
-endClass
-
 class PrintString : Unary
   METHODS
     method description->String
@@ -703,17 +696,19 @@ endClass
 class Class : Cmd
   PROPERTIES
     name                   : Cmd
+    template_parameters    : Cmd
     constructor_properties : Cmd
     base_types             : Cmd
     attributes             : Attributes
     sections               : Cmd
 
   METHODS
-    method init( t, name, constructor_properties, base_types, attributes, sections )
+    method init( t, name, template_parameters, constructor_properties, base_types, attributes, sections )
 
     method init( existing:Class )
       prior.init( existing )
       if (existing.name) name = existing.name.cloned
+      if (existing.template_parameters) template_parameters = existing.template_parameters.cloned
       if (existing.constructor_properties) constructor_properties = existing.constructor_properties.cloned
       if (existing.base_types) base_types = existing.base_types.cloned
       if (existing.attributes) attributes = existing.attributes.cloned

@@ -95,15 +95,24 @@ class Program [singleton]
         included_files[filepath] = tokens
 
         # First parser pass collects class templates but does not build an AST
-        Parser(tokens).[disable_output=1].parse
-        #local elements = Parser(tokens).[disable_output=1].parse
-        #if (elements)
-        #  local collector = Collector()
-        #  collector.visit( forEach in elements )
-        #endIf
+        Parser(tokens).[collecting_templates=true,disable_output=1].parse
       endTemporarily
 
     method resolve
+      # We've collected all class templates.
+      (forEach in (forEach in modules).types).ensure_definition
+
+      # Reparse the tokens for each file.
+      forEach (file_tokens in included_files)
+        temporarily current_module = Program.default_module
+          local elements = Parser(file_tokens).parse
+          if (elements)
+            local collector = Collector()
+            collector.visit( forEach in elements )
+          endIf
+        endTemporarily
+      endForEach
+
       (forEach in modules).organize
       (forEach in modules).resolve
 

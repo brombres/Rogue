@@ -422,13 +422,15 @@ parser
   consume_eols
   if (not hasAnother) return
 
-  on "class"
+  if (nextIs("class"))
     savePosition
+    ++disable_output
     class
     call on_parsed_class
+    --disable_output
     discardPosition
     return
-  endOn
+  endIf
 
 #{
   on "module"
@@ -488,7 +490,7 @@ parser
 
 - type
   type_name
-  produce TypeRef(name:String):Type
+  produce Type(name:String)
 
 - type_name
   identifier
@@ -507,14 +509,19 @@ parser
   syntaxError "Literal string expected."
 
 - class
+  mustConsume "class"
   identifier
   template_parameters
   constructor_properties
   base_types
   attributes
-  class_sections
-  mustConsume "endClass"
-  produce Class( name, constructor_properties, base_types, attributes:Attributes, sections )
+  if (consume(';'))
+    createNull
+  else
+    class_sections
+    mustConsume "endClass"
+  endIf
+  produce Class( name, template_parameters, constructor_properties, base_types, attributes:Attributes, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)

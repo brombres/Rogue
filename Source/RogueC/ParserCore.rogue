@@ -344,17 +344,17 @@ class ParserCore [abstract]
             if ((not (_position < _limit)))
               return
             endIf
-            if (_next_t.type == TokenType.KEYWORD_CLASS)
-              temporarily _cur_t = _on_t
-                _save_position
-                _execute(ip_class)
-                _pop_frame
-                this.ip = ip
-                on_parsed_class
-                ip = this.ip
-                _discard_position
-                return
-              endTemporarily
+            if ((_next_t.type == TokenType.KEYWORD_CLASS))
+              _save_position
+              ++disable_output
+              _execute(ip_class)
+              _pop_frame
+              this.ip = ip
+              on_parsed_class
+              ip = this.ip
+              --disable_output
+              _discard_position
+              return
             endIf
             if (_next_t.type == TokenType.KEYWORD_ROUTINE)
               temporarily _cur_t = _on_t
@@ -443,7 +443,7 @@ class ParserCore [abstract]
           case ip_type
             _execute(ip_type_name)
             _pop_frame
-            if (not disable_output) _push( TypeRef(_cur_t,_string_arg(-1)), 1 )
+            if (not disable_output) _push( Type(_cur_t,_string_arg(-1)), 1 )
             return
           case ip_type_name
             _execute(ip_identifier)
@@ -481,6 +481,7 @@ class ParserCore [abstract]
             _throw_syntax_error("Literal string expected.")
             return
           case ip_class
+            if (not _consume(TokenType.KEYWORD_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_CLASS )
             _execute(ip_identifier)
             _pop_frame
             _execute(ip_template_parameters)
@@ -491,10 +492,14 @@ class ParserCore [abstract]
             _pop_frame
             _execute(ip_attributes)
             _pop_frame
-            _execute(ip_class_sections)
-            _pop_frame
-            if (not _consume(TokenType.KEYWORD_END_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_CLASS )
-            if (not disable_output) _push( Class(_cur_t,_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2)->(as Attributes),_node_arg(-1)), 5 )
+            if (_consume(TokenType.SYMBOL_SEMICOLON))
+              if (not disable_output) _push( null, 0 )
+            else
+              _execute(ip_class_sections)
+              _pop_frame
+              if (not _consume(TokenType.KEYWORD_END_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_CLASS )
+            endIf
+            if (not disable_output) _push( Class(_cur_t,_node_arg(-6),_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2)->(as Attributes),_node_arg(-1)), 6 )
             return
           case ip_placeholder
             if (_next_t.type == TokenType.PLACEHOLDER)

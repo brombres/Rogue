@@ -8,4 +8,9 @@ class Template
 
   METHODS
     method init( name, placeholders, tokens )
+
+    method generate( type_args:Type[], type:Type )
+      type.is_defined = true
+      local class_def = Parser( tokens ).parse( Parser.ip_class )
+      @trace class_def
 endClass

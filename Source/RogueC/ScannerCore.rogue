@@ -87,7 +87,7 @@ class ScannerCore [abstract]
       column = 1
 
     method init( filepath:String, content:String, line=1, column=1 )
-      init( filepath, ::Scanner(content) )
+      init( filepath, ::Scanner(content).[line=line, column=column] )
 
     method init( _filepath, _scanner )
       noAction

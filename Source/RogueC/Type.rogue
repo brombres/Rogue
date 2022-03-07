@@ -3,10 +3,12 @@ module R2
 class Type : Cmd
   DEFINITIONS
     PRIMITIVE = 1
-    OBJECT    = 2
+    OBJECT    = (1:<<:1)
+    DEFINED   = (1:<<:2)
 
-  ROGUE_ATTRIBUTE( is_primitive, Type.PRIMITIVE )
-  ROGUE_ATTRIBUTE( is_object,    Type.OBJECT )
+    ROGUE_ATTRIBUTE( is_primitive, Type.PRIMITIVE )
+    ROGUE_ATTRIBUTE( is_object,    Type.OBJECT )
+    ROGUE_ATTRIBUTE( is_defined,   Type.DEFINED )
 
   PROPERTIES
     module_context : Module
@@ -14,8 +16,17 @@ class Type : Cmd
     c_name         : String
     attributes     : Int32
 
+  GLOBAL METHODS
+    method create( t:Token, name:String )->Type
+      local type = Program.current_module.find_type( name, &extended_search )
+      if (type) return type
+
+      type = Type( t, name, 0 )
+      type.ensure_definition
+      return type
+
   METHODS
-    method init( t, name, attributes=0 )
+    method init( t, name, attributes )
       module_context = Program.current_module
       module_context.types[ name ] = this
 
@@ -28,6 +39,14 @@ class Type : Cmd
 
     method cloned->this
       return this
+
+    method ensure_definition
+      local template = Program.templates[ "$<<0>>"(name) ]
+      if (template)
+        template.generate( null, this )
+      else
+        throw t.error( "Reference to undefined class '$'."(name) )
+      endIf
 
     method description->String
       return "Type($)" (%name)

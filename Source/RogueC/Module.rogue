@@ -1,26 +1,22 @@
 module R2
 
 class Module
-  #{
-  ROGUE_ATTRIBUTE( is_resolved,  2 )
-  ROGUE_ATTRIBUTE( is_visiting,  4 )
-  }#
+  ROGUE_ATTRIBUTE( is_visiting, 1 )
+  #ROGUE_ATTRIBUTE( is_resolved,  2 )
 
   PROPERTIES
     t    : Token
     name : String
 
-    #{
-    used_modules          = UsedModule[]
-    }#
+    used_modules      = UsedModule[]
     types             = StringTable<<Type>>()
     global_statements : Statements
     routines          = StringTable<<Routine>>()
     #{
     routines_by_signature = StringTable<<Routine>>()
+    }#
 
     attributes : Int32
-    }#
 
   METHODS
     method init( t, name )
@@ -60,6 +56,7 @@ class Module
         if (r.parameters.count == parameter_count) return r
       endForEach
       return null
+      }#
 
     method find_type( name:String, &extended_search )->Type
       if (is_visiting) return null
@@ -78,6 +75,7 @@ class Module
 
       return result
 
+      #{
     method must_find_type( t:Token, name:String )->Type
       local result = find_type( name )
       if (result) return result
