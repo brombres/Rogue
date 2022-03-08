@@ -29,8 +29,8 @@ routine rogo_default
 endRoutine
 
 routine rogo_run
-  #execute "$ Test.r2" (File.esc(exe_filepath))
-  execute "$ Test.r2 --libraries=Source/Libraries && gcc Test.c -o test && ./test" (File.esc(exe_filepath))
+  #execute "$ Test.rogue" (File.esc(exe_filepath))
+  execute "$ Test.rogue --libraries=Source/Libraries && gcc Test.c -o test && ./test" (File.esc(exe_filepath))
 endRoutine
 
 routine rogo_link
@@ -67,7 +67,7 @@ endRoutine
 
 routine rogo_froley
   local froley_src = File( "Source/RogueC/$.froley"(Build.PROJECT) )
-  execute "froley --main $ Source/RogueC"(froley_src.esc)
+  execute "froley $ Source/RogueC"(froley_src.esc)
 endRoutine
 
 routine rogo_clean

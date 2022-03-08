@@ -1,4 +1,4 @@
-module R2
+module Rogue
 uses Utility/WorkList
 
 class Resolver : Visitor

@@ -1,4 +1,4 @@
-module R2
+module Rogue
 
 $include "Macros.rogue"
 
@@ -19,11 +19,11 @@ $include "Routine.rogue"
 $include "Scanner.rogue"
 $include "Template.rogue"
 $include "Type.rogue"
-uses R2
+uses Rogue
 uses Utility/CommandLineParser
 
 try
-  R2( System.command_line_arguments )
+  RogueC( System.command_line_arguments )
 
 catch (error:CompileError)
   Console.error.println error
@@ -34,7 +34,7 @@ catch (error:Error)
   System.exit 1
 endTry
 
-class R2
+class RogueC
   PROPERTIES
     command : Value
 
@@ -74,7 +74,7 @@ class R2
 
     method print_usage
       println @|USAGE
-               |  r2 [OPTIONS] <filepath>
+               |  rogue [OPTIONS] <filepath>
                |
                |OPTIONS
                |  --help, -h, -?

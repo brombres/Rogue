@@ -1,4 +1,4 @@
-module R2
+module Rogue
 
 class Program [singleton]
   PROPERTIES
@@ -61,14 +61,14 @@ class Program [singleton]
     method find_include( t:Token, filepath:String )->String
       if (File.exists(filepath))
         if (File.is_folder(filepath))
-          local fpath = "$/$.r2" (filepath,File.filename(filepath))
+          local fpath = "$/$.rogue" (filepath,File.filename(filepath))
           if (File.exists(fpath)) return File.abs(fpath)
           throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
         else
           return File.abs(filepath)
         endIf
-      elseIf (File.exists(filepath.with_trailing(".r2")))
-        filepath .= with_trailing( ".r2" )
+      elseIf (File.exists(filepath.with_trailing(".rogue")))
+        filepath .= with_trailing( ".rogue" )
         return File.abs(filepath)
       else
         return null

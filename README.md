@@ -1,2 +1,2 @@
-# R2
+# Rogue
 Rogue language version 2

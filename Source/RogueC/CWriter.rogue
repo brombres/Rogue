@@ -1,4 +1,4 @@
-module R2
+module Rogue
 
 class CWriter : BufferedPrintWriter
   PROPERTIES
