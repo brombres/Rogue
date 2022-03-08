@@ -12,9 +12,6 @@ class Module
     types             = StringTable<<Type>>()
     global_statements : Statements
     routines          = StringTable<<Routine>>()
-    #{
-    routines_by_signature = StringTable<<Routine>>()
-    }#
 
     attributes : Int32
 

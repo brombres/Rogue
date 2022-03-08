@@ -9,6 +9,20 @@ augment Procedure
       throw UnsupportedOperationError()
 endAugment
 
+augment Type
+  PROPERTIES
+    c_name : String
+
+  METHODS
+    method c_name->String
+      if (@c_name) return @c_name
+      @c_name = "$$" (module_context.c_name,name)
+      return @c_name
+
+      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
+
+endAugment
+
 augment
   METHODS
     method Block.needs_semicolon->Logical
@@ -69,23 +83,52 @@ augment
       endForEach
       writer.println
 
+      forEach (type in types)
+        writer.print "extern RogueType Type"
+        writer.print type.c_name
+        writer.println ";"
+      endForEach
+      writer.println
+
     method Module.generate_c_header( writer:CWriter )
       forEach (r in routines)
         write_c_routine_header( r, writer )
         writer.println ";"
       endForEach
+      writer.println
+
+      forEach (str in Program.unique_strings)
+        writer.print   "extern RogueString* "
+        writer.print   str
+        writer.println ';'
+      endForEach
 
     method Module.generate_c_code( writer:CWriter )
+      forEach (type in types)
+        writer.print   "RogueType Type"
+        writer.print   type.c_name
+        writer.print   '' = { "''
+        writer.print   type.module_context.name
+        writer.print   ''", "''
+        writer.print   type.name
+        writer.print   ''", sizeof(''
+        writer.print   type.c_name
+        writer.println '') };''
+      endForEach
+      writer.println
+
       forEach (type in types)
         forEach (code in type.native_code)
           writer.println code->String
           writer.println
         endForEach
       endForEach
+      writer.println
 
       forEach (r in routines)
         CGenerator( this, writer ).visit( r )
       endForEach
+      writer.println
 
     method Module.generate_c_launch_commands( writer:CWriter )
       local r = routines[ "on_launch()" ]
@@ -110,7 +153,7 @@ augment
 
       h_writer.println ...
         @|//------------------------------------------------------------------------------
-         |// Classes
+         |// Generated
          |//------------------------------------------------------------------------------
       (forEach in modules).generate_c_class_typedefs( h_writer )
       (forEach in modules).generate_c_class_structs( h_writer )
@@ -121,26 +164,38 @@ augment
       local c_writer = CWriter( File("Test.c") )
 
       (forEach in modules).generate_c_code( c_writer )
+
+      forEach (str in Program.unique_strings)
+        c_writer.print   "RogueString* "
+        c_writer.print   str
+        c_writer.println ';'
+      endForEach
+
       c_writer.println @|
-                        |int main( int argc, char* argv[] )
+                        |void Rogue_launch()
                         |{
       c_writer.indent += 2
-
+      Program.generate_c_string_literals( c_writer )
       (forEach in modules).generate_c_launch_commands( c_writer )
-
-      c_writer.println @|return 0;
-
       c_writer.indent -= 2
+      c_writer.println @|}
+                        |
+                        |int main( int argc, char* argv[] )
+                        |{
+                        |  Rogue_launch();
+                        |  return 0;
       c_writer.println @|}
 
       c_writer.close
 
-    method Type.c_name->String
-      if (@c_name) return @c_name
-      @c_name = "$$" (module_context.c_name,name)
-      return @c_name
-
-      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
+    method Program.generate_c_string_literals( writer:CWriter )
+      forEach (entry in Program.unique_strings.entries)
+        writer.print   entry.value
+        writer.print   '' = RogueString_create( "''
+        writer.print   entry.key.to_escaped_ascii("\"")
+        writer.println ''", -1 );''
+      endForEach
+      writer.println
 
 endAugment
 

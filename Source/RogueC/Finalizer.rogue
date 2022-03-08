@@ -1,0 +1,45 @@
+module R2
+
+class Finalizer : Visitor
+  PROPERTIES
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+
+  METHODS
+    method visit( program:Program )
+      visit( forEach in program.modules )
+
+    method visit( this_module )
+      visit( forEach in this_module.routines )
+      #forEach (type in m.types)
+      #endForEach
+
+    method on_visit( cmd:LiteralString )
+      local str = cmd.value
+      if (not Program.unique_strings.contains(str))
+        use builder = StringBuilder.pool
+          builder.print( "str_" )
+          forEach (i in 0..<str.count.or_smaller(20))
+            local ch = str[i]
+            if (ch.is_letter or ch.is_number) builder.print( ch )
+            else builder.print( '_' )
+          endForEach
+          local c_name = builder->String
+          if (Program.c_name_strings.contains(c_name))
+            local n = 1
+            while (Program.c_name_strings.contains(c_name))
+              local c_name_2 = c_name + "_" + n
+              if (not Program.c_name_strings.contains(c_name_2))
+                c_name = c_name_2
+                escapeWhile
+              endIf
+              ++n
+            endWhile
+          endIf
+          Program.unique_strings[ str ] = c_name;
+          Program.c_name_strings[ c_name ] = str;
+        endUse
+      endIf
+
+endClass

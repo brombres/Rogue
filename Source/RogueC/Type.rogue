@@ -13,7 +13,6 @@ class Type : Cmd
   PROPERTIES
     module_context    : Module
     name              : String
-    c_name            : String
     attributes        : Int32
     properties        = StringTable<<Property>>()
     native_properties = String[]

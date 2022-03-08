@@ -6,16 +6,20 @@ class String
     cursor_index    : Int32  # in characters
     hash_code       : Int32
     must_free       : Logical
-    nativeC  "char* utf8;"
+    nativeC  "const char* utf8;"
     nativeC  "char  buffer[78];"
 
   NATIVE
-    nativeCHeader @|RogueString* RogueString__create( const char* cstring, int count );
+    nativeCHeader @|RogueString* RogueString_create( const char* cstring, int count );
 
-    nativeCCode  @|RogueString* RogueString__create( const char* cstring, int count )
+    nativeCCode  @|RogueString* RogueString_create( const char* cstring, int count )
                   |{
                   |  if (count == -1) count = (int) strlen(cstring);
-                  |  ROGUE_CREATE_OBJECT( RogueString, result );
+                  |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
+                  |  result->utf8 = cstring;
+                  |  result->byte_count      = count;
+                  |  result->character_count = count;
+                  |  printf( "Created %s of size %d\n", result->type->name, result->type->size );
                   |  return result;
                   |}
 endClass

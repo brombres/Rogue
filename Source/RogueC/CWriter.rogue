@@ -111,9 +111,21 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_MALLOC malloc
            |#endif
            |
-           |#define ROGUE_CREATE_OBJECT( Type, name ) \
-           |    Type* name = ROGUE_MALLOC( sizeof(Type) ); \
-           |    memset( name, 0, sizeof(Type) )
+           |#define ROGUE_CREATE_OBJECT( TypeName ) \
+           |    (TypeName*) Rogue_create_object( &Type##TypeName )
+           |
+           |typedef struct RogueType RogueType;
+           |
+           |struct RogueType
+           |{
+           |  const char* module_name;
+           |  const char* name;
+           |  RogueInt32 size;
+           |};
+           |
+           |void* Rogue_create_object( void* type );
+           |void  Rogue_launch();
+           |
 
       else
         # Writing .c file
@@ -121,6 +133,17 @@ class CWriter : BufferedPrintWriter
         println
         println ''#include "Test.h"''
         println  "#include <stdio.h>"
+        println
+        println ...
+          @|void* Rogue_create_object( void* _type )
+           |{
+           |  RogueType*  type = (RogueType*) _type;
+           |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
+           |  memset( obj, 0, type->size );
+           |  obj->type = type;
+           |  obj->ref_count = 1;
+           |  return obj;
+           |}
         println
 
       endIf

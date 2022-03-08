@@ -172,10 +172,8 @@ class Visitor<<$ReturnType>>
 
     method on_visit_children( cmd:Local )
       if ($ReturnType instanceOf Cmd)
-        cmd.initial_value = visit(cmd.initial_value)
         cmd.type = visit(cmd.type)->(as Type)
       else
-        visit( cmd.initial_value )
         visit( cmd.type )
       endIf
 

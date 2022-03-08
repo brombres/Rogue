@@ -23,6 +23,9 @@ class Program [singleton]
     type_Object    : Type
     type_String    : Type
 
+    unique_strings = StringTable<<String>>()
+    c_name_strings = StringTable<<String>>()
+
   METHODS
     method init
       Program = this  # update singleton reference
@@ -115,5 +118,6 @@ class Program [singleton]
 
       (forEach in modules).organize
       (forEach in modules).resolve
+      Finalizer().visit( this )
 
 endClass
