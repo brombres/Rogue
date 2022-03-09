@@ -11,6 +11,7 @@ class String
 
   NATIVE
     nativeCHeader @|RogueString* RogueString_create( const char* cstring, int count, int must_free );
+                   |const char*  RogueString_to_c_string( void* st );
 
     nativeCCode  @|RogueString* RogueString_create( const char* cstring, int count, int must_free )
                   |{
@@ -21,6 +22,12 @@ class String
                   |  result->character_count = count;
                   |  result->must_free = must_free;
                   |  return result;
+                  |}
+                  |
+                  |const char* RogueString_to_c_string( void* st )
+                  |{
+                  |  if ( !st ) { return "null"; }
+                  |  return ((RogueString*)st)->utf8;
                   |}
 endClass
 

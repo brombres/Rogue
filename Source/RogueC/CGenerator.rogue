@@ -286,9 +286,9 @@ class CGenerator : Visitor
       writer.print( ''putchar( '\\n' )'' )
 
     method on_visit( cmd:PrintString )
-      writer.print ''printf( "''
+      writer.print ''printf( "%s", RogueString_to_c_string(''
       visit( cmd.operand )
-      writer.print ''" )''
+      writer.print ") )"
 endClass
 
 # write_print()
