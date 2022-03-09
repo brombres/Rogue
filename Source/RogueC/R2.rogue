@@ -59,6 +59,7 @@ class RogueC
       endIf
 
       Program.include( forEach in command//args )
+      Program.include( "Standard" )
       Program.resolve
       Program.generate_c
 
