@@ -11,15 +11,20 @@ endAugment
 
 augment Type
   PROPERTIES
-    c_name : String
+    c_name : String   # e.g. RogueString
+    c_type : String   # e.g. RogueString*
 
   METHODS
+    method c_type->String
+      if (@c_type) return @c_type
+      @c_type = c_name
+      if (is_reference) @c_type += "*"
+      return @c_type
+
     method c_name->String
       if (@c_name) return @c_name
       @c_name = "$$" (module_context.c_name,name)
       return @c_name
-
-      throw t.error( "[INTERNAL] $.c_name() is undefined." (type_name) )
 
 endAugment
 
@@ -191,9 +196,9 @@ augment
     method Program.generate_c_string_literals( writer:CWriter )
       forEach (entry in Program.unique_strings.entries)
         writer.print   entry.value
-        writer.print   '' = RogueString_create( "''
-        writer.print   entry.key.to_escaped_ascii("\"")
-        writer.println ''", -1 );''
+        writer.print   " = RogueString_create( "
+        writer.print_literal_c_string( entry.key )
+        writer.println ", -1, 0 );"
       endForEach
       writer.println
 
@@ -229,7 +234,7 @@ class CGenerator : Visitor
       writer.print( cmd.value )
 
     method on_visit( cmd:LiteralString )
-      writer.print( cmd.value.to_escaped_ascii("\"") )
+      writer.print( Program.unique_strings[cmd.value] )
 
     #method on_visit( cmd:LocalDeclarations )
     #  visit_children( cmd )
@@ -243,8 +248,10 @@ class CGenerator : Visitor
       writer.println( "{" )
       writer.indent += 2
       forEach (v in cmd.local_declarations)
-        writer.print( v.type.c_name ).print( ' ' )
+        writer.print( v.type.c_type ).print( ' ' )
         writer.print( v.c_name )
+        writer.print( " = " )
+        if (v.type.is_reference) writer.print "0"
         writer.println( ';' )
       endForEach
       visit_children( cmd )
@@ -252,9 +259,17 @@ class CGenerator : Visitor
       writer.println( "}" )
 
     method on_visit( cmd:SetLocal )
-      writer.print( cmd.info.c_name )
-      writer.print( " = " )
-      visit( cmd.new_value )
+      if (cmd.info.type.is_reference)
+        writer.print "Rogue_set_ref( &"
+        writer.print cmd.info.c_name
+        writer.print ", "
+        visit( cmd.new_value )
+        writer.print " )"
+      else
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
 
     method on_visit( cmd:Statements )
       forEach (statement in cmd)

@@ -111,6 +111,10 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_MALLOC malloc
            |#endif
            |
+           |#if !defined(ROGUE_FREE)
+           |  #define ROGUE_FREE free
+           |#endif
+           |
            |#define ROGUE_CREATE_OBJECT( TypeName ) \
            |    (TypeName*) Rogue_create_object( &Type##TypeName )
            |
@@ -124,8 +128,12 @@ class CWriter : BufferedPrintWriter
            |};
            |
            |void* Rogue_create_object( void* type );
-           |void  Rogue_launch();
+           |void  Rogue_delete_object( void* obj );
+           |void* Rogue_release( void* obj );
+           |void  Rogue_set_ref( void* ref, void* new_obj );
+           |void* Rogue_retain( void* obj );
            |
+           |void  Rogue_launch();
 
       else
         # Writing .c file
@@ -144,13 +152,124 @@ class CWriter : BufferedPrintWriter
            |  obj->ref_count = 1;
            |  return obj;
            |}
+           |
+           |void Rogue_delete_object( void* obj )
+           |{
+           |  // TODO: release embedded compounds
+           |  printf( "Destroying %s\n", ((RogueObject*)obj)->type->name );
+           |  ROGUE_FREE( obj );
+           |}
+           |
+           |void* Rogue_release( void* obj )
+           |{
+           |  if (obj && ! --((RogueObject*)obj)->ref_count ) Rogue_delete_object( obj );
+           |  return 0;
+           |}
+           |
+           |void  Rogue_set_ref( void* ref, void* new_obj )
+           |{
+           |  RogueObject* old_obj = *((RogueObject**)ref);
+           |  if (old_obj && ! --old_obj->ref_count) Rogue_delete_object( old_obj );
+           |  if (new_obj) ++((RogueObject*)new_obj)->ref_count;
+           |  *((void**)ref) = new_obj;
+           |}
+           |
+           |void* Rogue_retain( void* obj )
+           |{
+           |  if ( !obj ) return 0;
+           |  ++((RogueObject*)obj)->ref_count;
+           |  return obj;
+           |}
         println
 
       endIf
 
-
-    method close
-      if (is_header) println @|#endif // TEST_H
+    method close if (is_header) println @|#endif // TEST_H
       prior.close
+
+    method print_hex_pair( value:Int32 )
+      print "\\x"
+      print ((value :>>>: 4).to_digit)
+      print ((value & 15).to_digit)
+
+    method print_literal_c_character( ch:Character, in_string:Logical )
+      if (ch >= 32 and ch <= 126)
+        which (ch)
+          case '"'
+            if (in_string) print( "\\\"" )
+            else           print( "\"" )
+          case '\''
+            if (in_string) print( "'" )
+            else           print( "\\'" )
+          case '\\'
+            print( "\\\\" )
+          others
+            print( ch )
+        endWhich
+      else
+        which (ch)
+          case 10
+            print "\\n"
+          others
+            # Must print as separate string to avoid C \x ambiguity.  For instance,
+            # "This is \x9CCool" is interpreeted as "This is \x9CC" followed by "ool",
+            # so we have to generate "This is ""\x9C""Cool".
+            print( "\"\"" )  # end of string so far and beginning of hex escape string
+            if (ch <= 0x7F)
+              print_hex_pair( ch )
+            elseIf (ch <= 0x7FF)
+              print_hex_pair(0xC0 | ((ch :>>>: 6) & 0x1F))
+              print_hex_pair(0x80 | (ch & 0x3F))
+            elseIf (ch <= 0xFFFF)
+              print_hex_pair( 0xE0 | ((ch :>>>: 12) & 0xF) )
+              print_hex_pair( 0x80 | ((ch :>>>: 6) & 0x3F) )
+              print_hex_pair( 0x80 | (ch & 0x3F) )
+            else
+              print_hex_pair( 0xF0 | ((ch :>>>: 18) & 0x7) )
+              print_hex_pair( 0x80 | ((ch :>>>: 12) & 0x3F) )
+              print_hex_pair( 0x80 | ((ch :>>>: 6) & 0x3F) )
+              print_hex_pair( 0x80 | (ch & 0x3F) )
+            endIf
+            print( "\"\"" )  # end of hex escape string and continuation of original string
+        endWhich
+      endIf
+
+    method print_literal_c_string( st:String, &omit_quotes )
+      if (st is null)
+        print( "0" )
+        return
+      endIf
+
+      if (not omit_quotes) print '"'
+
+      local stage = 0
+      # 0: \ -> 1 ignore next
+      #    ? -> 2 first question mark
+      # 1: -> 0
+      # 2: ? -> print \ -> 0
+      #    else  0
+
+      local next_split = buffer.count + 16000
+      forEach (ch in st)
+        which (stage)
+          case 0
+            if (buffer.count >= next_split)
+              if (not omit_quotes) println( "\"" ); print( "\"" )
+              next_split = buffer.count + 16000
+            endIf
+
+            if (ch == '\\')    stage = 1
+            elseIf (ch == '?') stage = 2
+          case 1
+            stage = 0
+          case 2
+            if (ch == '?') print( '\\' )  # Escape the second question mark in a row to avoid accidental trigraphs
+            stage = 0
+        endWhich
+        print_literal_c_character( ch, true )
+      endForEach
+
+      if (not omit_quotes) print '"'
+
 endClass
 

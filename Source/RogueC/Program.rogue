@@ -2,7 +2,7 @@ module Rogue
 
 class Program [singleton]
   PROPERTIES
-    t                    = Token( TokenType.EOI, "Rogue" )
+    t                    = Token( TokenType.EOI, "R2" )
     include_search_paths = String[]
     included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()

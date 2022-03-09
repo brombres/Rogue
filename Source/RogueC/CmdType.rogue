@@ -37,8 +37,6 @@ augment Cmd
       require_type
       return this
 
-    method to->Type
-      throw t.error( "[INTERNAL] $.to->Type is undefined." (type_name) )
 endAugment
 
 # cmd_cast()

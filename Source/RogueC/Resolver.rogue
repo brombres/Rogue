@@ -373,9 +373,11 @@ class Resolver : Visitor
       if (is_multiple_declaration) result = Statements( cmd.t )
       forEach (decl in cmd.declarations)
         local v = decl->(as Local)
-        local cmd_assign = visit( Assign(v.t, Access(v.t,v.name), v.initial_value) )
-        if (is_multiple_declaration) result.add( cmd_assign )
-        else                         return cmd_assign
+        if (v.initial_value)
+          local cmd_assign = visit( Assign(v.t, Access(v.t,v.name), v.initial_value) )
+          if (is_multiple_declaration) result.add( cmd_assign )
+          else                         return cmd_assign
+        endIf
       endForEach
 
       return null
