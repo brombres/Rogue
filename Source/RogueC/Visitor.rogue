@@ -310,7 +310,7 @@ class Visitor<<$ReturnType>>
         visit( cmd.cleanup )
       endIf
 
-    method on_visit_children( cmd:GeneralLoop )
+    method on_visit_children( cmd:Iterator )
       if ($ReturnType instanceOf Cmd)
         cmd.initialization = visit(cmd.initialization)
         cmd.precontrol = visit(cmd.precontrol)

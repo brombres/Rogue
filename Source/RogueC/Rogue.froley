@@ -1302,7 +1302,7 @@ parser
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
   #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
-  create GeneralLoop(initialization,precontrol,control,postcontrol,statements,upkeep,cleanup):Conditional
+  create Iterator(initialization,precontrol,control,postcontrol,statements,upkeep,cleanup):Conditional
   create GetLocal(info:Local)
   #  create GetProperty(context,info:Property)
   #  create GetSingleton(type:Type)

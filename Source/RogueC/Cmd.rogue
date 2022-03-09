@@ -1052,18 +1052,18 @@ class ControlStructure : Cmd
 
 endClass
 
-class GeneralLoop : Conditional
+class Iterator : Conditional
   PROPERTIES
     upkeep : Cmd
 
   METHODS
     method init( t, initialization, precontrol, control, postcontrol, statements, upkeep, cleanup )
 
-    method init( existing:GeneralLoop )
+    method init( existing:Iterator )
       prior.init( existing )
       if (existing.upkeep) upkeep = existing.upkeep.cloned
 
     method description->String
-      return "GeneralLoop($,$,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%upkeep,%cleanup)
+      return "Iterator($,$,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%upkeep,%cleanup)
 
 endClass
