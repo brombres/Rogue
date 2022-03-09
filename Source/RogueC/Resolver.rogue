@@ -7,8 +7,10 @@ class Resolver : Visitor
     this_type      : Type
     this_procedure : Procedure
 
-    locals         = Local[]  # visible locals
-    scope          = LocalScope[]
+    visible_locals    = Local[]
+    visible_locals_fp = Int32[]
+    control_stack     = ControlStructure[]
+    control_stack_fp  = Int32[]
 
     current_statements_rewriter : ListRewriter<<Cmd>>
 
@@ -43,8 +45,6 @@ class Resolver : Visitor
     method visit( this_type, this_procedure )
       if (this_procedure.is_resolved) return
       this_procedure.is_resolved = true
-      locals.clear
-      scope.clear
       visit( this_procedure )
 
       #{
@@ -68,7 +68,7 @@ class Resolver : Visitor
       }#
 
     method find_local( name:String )->Local
-      forEach (v in locals step -1)
+      forEach (v in visible_locals step -1)
         if (v.name == name) return v
       endForEach
       return null
@@ -364,8 +364,8 @@ class Resolver : Visitor
       forEach (decl in cmd.declarations)
         local v = decl->(as Local)
         this_procedure.locals.add( v )
-        scope.last.local_declarations.add( v )
-        locals.add( v )
+        control_stack.last.locals.add( v )
+        visible_locals.add( v )
       endForEach
 
       local result : Statements
@@ -381,6 +381,12 @@ class Resolver : Visitor
       endForEach
 
       return null
+
+    method on( cmd:LocalScope )->Cmd
+      push_scope( cmd )
+      visit_content( cmd )
+      pop_scope
+      return cmd
 
 #{
     method on_visit( cmd:Loop )
@@ -411,17 +417,20 @@ class Resolver : Visitor
       }#
 
     method on_visit( cmd:Procedure )
-      push_local_scope( cmd )
+      # TODO: add parameters to visible_locals
       visit_children( cmd )
-      pop_local_scope
+      #push_scope( cmd )
+      #pop_scope
 
-    method pop_local_scope
-      local cmd = scope.remove_last
-      locals.discard_from( locals.count - cmd.local_declarations.count )
+    method pop_scope
+      control_stack.discard_from( control_stack_fp.remove_last )
+      visible_locals.discard_from( visible_locals_fp.remove_last )
 
-    method push_local_scope( cmd:LocalScope )
-      scope.add( cmd )
-      locals.add( forEach in cmd.local_declarations )
+    method push_scope( cmd:ControlStructure )
+      visible_locals_fp.add( visible_locals.count )
+      control_stack_fp.add( control_stack.count )
+      control_stack.add( cmd )
+      visible_locals.add( forEach in cmd.locals )
 
       #{
     method on_visit_children( cmd:Procedure )

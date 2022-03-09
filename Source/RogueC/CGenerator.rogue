@@ -227,6 +227,23 @@ class CGenerator : Visitor
       writer.indent -= 2
       writer.println '}'
 
+    method on_visit( cmd:ControlStructure )
+      writer.println( "{" )
+      writer.indent += 2
+      forEach (v in cmd.locals)
+        writer.print( v.type.c_type ).print( ' ' )
+        writer.print( v.c_name )
+        writer.print( " = " )
+        writer.print "0"
+        #if (v.type.is_reference)     writer.print "0"
+        #elseIf (v.type.is_primitive) writer.print "0"
+        #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
+        writer.println( ';' )
+      endForEach
+      visit_children( cmd )
+      writer.indent -= 2
+      writer.println( "}" )
+
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 
@@ -245,21 +262,7 @@ class CGenerator : Visitor
       forEach (v at i in cmd.locals) v.c_name = v.name + "_" + i
       this_module.write_c_routine_header( cmd, writer )
       writer.println
-      writer.println( "{" )
-      writer.indent += 2
-      forEach (v in cmd.local_declarations)
-        writer.print( v.type.c_type ).print( ' ' )
-        writer.print( v.c_name )
-        writer.print( " = " )
-        writer.print "0"
-        #if (v.type.is_reference)     writer.print "0"
-        #elseIf (v.type.is_primitive) writer.print "0"
-        #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
-        writer.println( ';' )
-      endForEach
       visit_children( cmd )
-      writer.indent -= 2
-      writer.println( "}" )
 
     method on_visit( cmd:SetLocal )
       if (cmd.info.type.is_reference)

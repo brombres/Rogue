@@ -75,8 +75,8 @@ class ScannerCore [abstract]
     _scan_pattern_15 = ScanPattern( "[0-9A-Fa-f]+" )
     _scan_pattern_16 = ScanPattern( "[0-9a-fA-F]" )
     _scan_pattern_17 = ScanPattern( "[ ]*" )
-    _scan_table_0 = ScanTable("gjb/Hgo+IkAnQkBIJFImgQgtgQ4qgRxcgSIhgSRegSp9gSxdgS4pgTA6gTIsgWR8gWZbgXA9gXY+gXw8ggZ7ghAoghIlghQughorghw/giY7giwvgi5+gjQAAAEAAgEnRgMACgJ8TltQBAAeAP8CZFhpbv8BZVz/AWZg/wFpZP8Bbmj/AWVsBQD/AW5y/wFjdv8BbHr/AXV+/wFkgQL/AWWBBgYABwE9gQw6ACEDPoEWLYEYPYEaCAAiADYACQE9gSA3AAsADAE9gSgjAA0ADgAPABAAEQM6gTo8gTw+gUoSAP8BPIFA/wE6gUQcAT2BSB0A/wE+gU7/AjqBVD6BWi0BPYFYLgD/ATqBXi8BPYFiMAATADQCfIFsPYFuFAA7ACUBXYF0FQAXAT2BehYAGQI9ggI+ggQYABoAHwI9ggw8gg4bACAAJAAmACcBPYIYOQAoACkCK4IiPYIkKgA1ACsBOoIqLAAxADIBPYIyOAAzAA==")
-    _scan_table_1 = ScanTable("h04AFUcsYYEKYoEsY4E+bYFQZYF6ZoM4Z4NiaYN4bIQqTYREToReboR0b4VicIVoUIYGcoYsdIZadYcEd4cyeIdE/wFMMP8BTzT/AUI4/wFBPP8BTEABASBE/wJQSk1w/wFSTv8BT1L/AVBW/wFFWv8BUl7/AVRi/wFJZv8BRWr/AVNuFAD/AUV0/wFUeP8BSHz/AU+BAP8BRIEE/wFTgQgVAP8CboEQdYEW/wFkgRQCAP8BZ4Ea/wFtgR7/AWWBIv8BboEm/wF0gSoDAP8BbIEw/wFvgTT/AWOBOP8Ba4E8BAD/AWyBQv8BYYFG/wFzgUr/AXOBTgUA/wJvgVZlgWj/AWSBWv8BdYFe/wFsgWL/AWWBZgYA/wF0gWz/AWiBcP8Bb4F0/wFkgXgbAP8DbIICboIUeIMm/wFzggb/AWWCCgcBSYIO/wFmghIIAP8BZIIY/wdCgihDgjpGgkxJgmZMgmxSgnpXgxT/AWyCLP8Bb4Iw/wFjgjT/AWuCOAkA/wFsgj7/AWGCQv8Bc4JG/wFzgkoKAP8Bb4JQ/wFyglT/AUWCWP8BYYJc/wFjgmD/AWiCZAsA/wFmgmoMAP8Bb4Jw/wFvgnT/AXCCeA0A/wFvgn7/AXWDAv8BdIMG/wFpgwr/AW6DDv8BZYMSDgD/AWiDGP8BaYMc/wFsgyD/AWWDJA8A/wFwgyr/AW+DLv8BcoMy/wF0gzYQAP8CYYM+b4NM/wFsg0L/AXODRv8BZYNKEQD/AXKDUP8BRYNU/wFhg1j/AWODXP8BaINgEgD/AWyDZv8Bb4Nq/wFig27/AWGDcv8BbIN2EwD/A2aEAG2EAm6EFBYA/wFwhAb/AW+ECv8BcoQO/wF0hBIXAP8BY4QY/wFshBz/AXWEIP8BZIQk/wFlhCgYAP8Bb4Qu/wJjhDRvhD7/AWGEOP8BbIQ8GQD/AXCEQhoA/wFFhEj/AVSETP8BSIRQ/wFPhFT/AUSEWP8BU4RcHAD/AUGEYv8BVIRm/wFJhGr/AVaEbv8BRYRyHQD/A2GEfG+FOnWFWP8BdIUA/wFphQT/AXaFCP8BZYUM/wFDhRAeAkiFFkOFLP8BZYUa/wFhhR7/AWSFIv8BZYUm/wFyhSofAP8Bb4Uw/wFkhTT/AWWFOCAA/wJBhUB0hVb/AWOFRP8BdIVI/wFphUz/AW+FUP8BboVUIQAiAP8BbIVc/wFshWAjAP8BcoVmJAD/AmmFbnKFcCUA/wFphXT/AW6FeP8BdIV8JgFshgD/AW6GBCcA/wFShgr/AU+GDv8BUIYS/wFFhhb/AVKGGv8BVIYe/wFJhiL/AUWGJv8BU4YqKAD/AmWGMm+GRP8BdIY2/wF1hjr/AXKGPv8BboZCKQD/AXWGSP8BdIZM/wFphlD/AW6GVP8BZYZYKgD/AmiGYHKGev8BaYZk/wFzhmj/AUOGbP8BYYZw/wFshnT/AWyGeCsA/wF1hn7/AWWHAiwA/wJuhwpzhyj/AWSHDv8BZYcS/wFmhxb/AWmHGv8Bboce/wFlhyL/AWSHJi0A/wFlhyz/AXOHMC4A/wFohzb/AWmHOv8BbIc+/wFlh0IvAP8Bb4dI/wFyh0wwAA==")
+    _scan_table_0 = ScanTable("gkL/Hgo+IkAnQkBIJFImgQgtgQ4qgRxcgSIhgSRegSp9gSxdgS4pgTA6gTIsgWQugWZ8gXRbgX49ggQ+ggo8ghR7gh4ogiAlgiIrgig/gjI7gjgvgjp+gkAAAAEAAgEnRgMACgJ8TltQBAAhAP8CZFhpbv8BZVz/AWZg/wFpZP8Bbmj/AWVsBQD/AW5y/wFjdv8BbHr/AXV+/wFkgQL/AWWBBgYABwE9gQw9ACQDPoEWLYEYPYEaCAAlADkACQE9gSA6AAsADAE9gSgmAA0ADgAPABAAEQM6gTo8gTw+gUoSAP8BPIFA/wE6gUQfAT2BSCAA/wE+gU7/AjqBVD6BWjABPYFYMQD/ATqBXjIBPYFiMwATACsBLoFqFAI8gXA+gXIVABYANwJ8gXo9gXwXAD4AKAFdggIYABoBPYIIGQAcAj2CED6CEhsAHQAiAj2CGjyCHB4AIwAnACkAKgE9giY8ACwCK4IuPYIwLQA4AC4BOoI2LwA0ADUBPYI+OwA2AA==")
+    _scan_table_1 = ScanTable("h2YAFkcuYYEMYoEuY4FAZIFSZYFoZoMmZ4NQaYNmbIQYbYQyTYRcToR2boUMb4V6cIYAUIYecoZEdIZydYccd4dKeIdc/wFMMv8BTzb/AUI6/wFBPv8BTEIBASBG/wJQTE1y/wFSUP8BT1T/AVBY/wFFXP8BUmD/AVRk/wFJaP8BRWz/AVNwFAD/AUV2/wFUev8BSH7/AU+BAv8BRIEG/wFTgQoVAP8CboESdYEY/wFkgRYCAP8BZ4Ec/wFtgSD/AWWBJP8BboEo/wF0gSwDAP8BbIEy/wFvgTb/AWOBOv8Ba4E+BAD/AWyBRP8BYYFI/wFzgUz/AXOBUAUA/wFvgVb/AXeBWv8BboFe/wFUgWL/AW+BZgYA/wNsgXBuggJ4gxT/AXOBdP8BZYF4BwFJgXz/AWaCAAgA/wFkggb/B0KCFkOCKEaCOkmCVEyCWlKCaFeDAv8BbIIa/wFvgh7/AWOCIv8Ba4ImCQD/AWyCLP8BYYIw/wFzgjT/AXOCOAoA/wFvgj7/AXKCQv8BRYJG/wFhgkr/AWOCTv8BaIJSCwD/AWaCWAwA/wFvgl7/AW+CYv8BcIJmDQD/AW+CbP8BdYJw/wF0gnT/AWmCeP8BboJ8/wFlgwAOAP8BaIMG/wFpgwr/AWyDDv8BZYMSDwD/AXCDGP8Bb4Mc/wFygyD/AXSDJBAA/wJhgyxvgzr/AWyDMP8Bc4M0/wFlgzgRAP8BcoM+/wFFg0L/AWGDRv8BY4NK/wFog04SAP8BbINU/wFvg1j/AWKDXP8BYYNg/wFsg2QTAP8DZoNubYNwboQCFgD/AXCDdP8Bb4N4/wFyg3z/AXSEABcA/wFjhAb/AWyECv8BdYQO/wFkhBL/AWWEFhgA/wFvhBz/AmOEIm+ELP8BYYQm/wFshCoZAP8BcIQwGgD/AmWEOG+ESv8BdIQ8/wFohED/AW+ERP8BZIRIGwD/AWSETv8BdYRS/wFshFb/AWWEWh0A/wFFhGD/AVSEZP8BSIRo/wFPhGz/AUSEcP8BU4R0HAD/AUGEev8BVIR+/wFJhQL/AVaFBv8BRYUKHgD/A2GFFG+FUnWFcP8BdIUY/wFphRz/AXaFIP8BZYUk/wFDhSgfAkiFLkOFRP8BZYUy/wFhhTb/AWSFOv8BZYU+/wFyhUIgAP8Bb4VI/wFkhUz/AWWFUCEA/wJBhVh0hW7/AWOFXP8BdIVg/wFphWT/AW+FaP8BboVsIgAjAP8BbIV0/wFshXgkAP8BcoV+JQD/AmmGBnKGCCYA/wFphgz/AW6GEP8BdIYUJwFshhj/AW6GHCgA/wFShiL/AU+GJv8BUIYq/wFFhi7/AVKGMv8BVIY2/wFJhjr/AUWGPv8BU4ZCKQD/AmWGSm+GXP8BdIZO/wF1hlL/AXKGVv8BboZaKgD/AXWGYP8BdIZk/wFphmj/AW6GbP8BZYZwKwD/AmiGeHKHEv8BaYZ8/wFzhwD/AUOHBP8BYYcI/wFshwz/AWyHECwA/wF1hxb/AWWHGi0A/wJuhyJzh0D/AWSHJv8BZYcq/wFmhy7/AWmHMv8Bboc2/wFlhzr/AWSHPi4A/wFlh0T/AXOHSC8A/wFoh07/AWmHUv8BbIdW/wFlh1owAP8Bb4dg/wFyh2QxAA==")
     _scan_table_2 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
     _scan_table_3 = ScanTable("EgABMAT/A2IMYw54EAEAAgADAA==")
 
@@ -287,123 +287,132 @@ class ScannerCore [abstract]
                   _add( TokenType.SYMBOL_COMMA )
                   return false
                 case 20
-                  _add( TokenType.SYMBOL_DOUBLE_VERTICAL_BAR )
+                  _add( TokenType.SYMBOL_DOTDOT )
                   return false
                 case 21
-                  _add( TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS )
+                  _add( TokenType.SYMBOL_DOTDOTLT )
                   return false
                 case 22
-                  _add( TokenType.SYMBOL_EQ )
+                  _add( TokenType.SYMBOL_DOTDOTGT )
                   return false
                 case 23
-                  _add( TokenType.SYMBOL_EQUALS )
+                  _add( TokenType.SYMBOL_DOUBLE_VERTICAL_BAR )
                   return false
                 case 24
-                  _add( TokenType.SYMBOL_GE )
+                  _add( TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS )
                   return false
                 case 25
-                  _add( TokenType.SYMBOL_GT )
+                  _add( TokenType.SYMBOL_EQ )
                   return false
                 case 26
-                  _add( TokenType.SYMBOL_GTGT )
+                  _add( TokenType.SYMBOL_EQUALS )
                   return false
                 case 27
-                  _add( TokenType.SYMBOL_LE )
+                  _add( TokenType.SYMBOL_GE )
                   return false
                 case 28
-                  _add( TokenType.SYMBOL_LEFT_SHIFT )
+                  _add( TokenType.SYMBOL_GT )
                   return false
                 case 29
-                  _add( TokenType.SYMBOL_LEFT_SHIFT_EQUALS )
+                  _add( TokenType.SYMBOL_GTGT )
                   return false
                 case 30
-                  _add( TokenType.SYMBOL_LITERAL_OPEN_SQUARE )
+                  _add( TokenType.SYMBOL_LE )
                   return false
                 case 31
-                  _add( TokenType.SYMBOL_LT )
+                  _add( TokenType.SYMBOL_LEFT_SHIFT )
                   return false
                 case 32
-                  _add( TokenType.SYMBOL_LTLT )
+                  _add( TokenType.SYMBOL_LEFT_SHIFT_EQUALS )
                   return false
                 case 33
-                  _add( TokenType.SYMBOL_MINUS )
+                  _add( TokenType.SYMBOL_LITERAL_OPEN_SQUARE )
                   return false
                 case 34
-                  _add( TokenType.SYMBOL_MINUS_MINUS )
+                  _add( TokenType.SYMBOL_LT )
                   return false
                 case 35
-                  _add( TokenType.SYMBOL_NE )
+                  _add( TokenType.SYMBOL_LTLT )
                   return false
                 case 36
-                  _add( TokenType.SYMBOL_OPEN_CURLY )
+                  _add( TokenType.SYMBOL_MINUS )
                   return false
                 case 37
-                  _add( TokenType.SYMBOL_OPEN_SQUARE )
+                  _add( TokenType.SYMBOL_MINUS_MINUS )
                   return false
                 case 38
-                  _add( TokenType.SYMBOL_OPEN_PAREN )
+                  _add( TokenType.SYMBOL_NE )
                   return false
                 case 39
-                  _add( TokenType.SYMBOL_PERCENT )
+                  _add( TokenType.SYMBOL_OPEN_CURLY )
                   return false
                 case 40
-                  _add( TokenType.SYMBOL_PERIOD )
+                  _add( TokenType.SYMBOL_OPEN_SQUARE )
                   return false
                 case 41
-                  _add( TokenType.SYMBOL_PLUS )
+                  _add( TokenType.SYMBOL_OPEN_PAREN )
                   return false
                 case 42
-                  _add( TokenType.SYMBOL_PLUS_PLUS )
+                  _add( TokenType.SYMBOL_PERCENT )
                   return false
                 case 43
-                  _add( TokenType.SYMBOL_QUESTION )
+                  _add( TokenType.SYMBOL_PERIOD )
                   return false
                 case 44
-                  _add( TokenType.SYMBOL_QUESTION_COLON )
+                  _add( TokenType.SYMBOL_PLUS )
                   return false
                 case 45
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT )
+                  _add( TokenType.SYMBOL_PLUS_PLUS )
                   return false
                 case 46
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT_EQUALS )
+                  _add( TokenType.SYMBOL_QUESTION )
                   return false
                 case 47
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X )
+                  _add( TokenType.SYMBOL_QUESTION_COLON )
                   return false
                 case 48
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X_EQUALS )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT )
                   return false
                 case 49
-                  _add( TokenType.SYMBOL_SEMICOLON )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT_EQUALS )
                   return false
                 case 50
-                  _add( TokenType.SYMBOL_SLASH )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X )
                   return false
                 case 51
-                  _add( TokenType.SYMBOL_TILDE )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X_EQUALS )
                   return false
                 case 52
-                  _add( TokenType.SYMBOL_VERTICAL_BAR )
+                  _add( TokenType.SYMBOL_SEMICOLON )
                   return false
                 case 53
-                  _add( TokenType.SYMBOL_PLUS_EQUALS )
+                  _add( TokenType.SYMBOL_SLASH )
                   return false
                 case 54
-                  _add( TokenType.SYMBOL_MINUS_EQUALS )
+                  _add( TokenType.SYMBOL_TILDE )
                   return false
                 case 55
-                  _add( TokenType.SYMBOL_TIMES_EQUALS )
+                  _add( TokenType.SYMBOL_VERTICAL_BAR )
                   return false
                 case 56
-                  _add( TokenType.SYMBOL_DIVIDE_EQUALS )
+                  _add( TokenType.SYMBOL_PLUS_EQUALS )
                   return false
                 case 57
-                  _add( TokenType.SYMBOL_MOD_EQUALS )
+                  _add( TokenType.SYMBOL_MINUS_EQUALS )
                   return false
                 case 58
-                  _add( TokenType.SYMBOL_AND_EQUALS )
+                  _add( TokenType.SYMBOL_TIMES_EQUALS )
                   return false
                 case 59
+                  _add( TokenType.SYMBOL_DIVIDE_EQUALS )
+                  return false
+                case 60
+                  _add( TokenType.SYMBOL_MOD_EQUALS )
+                  return false
+                case 61
+                  _add( TokenType.SYMBOL_AND_EQUALS )
+                  return false
+                case 62
                   _add( TokenType.SYMBOL_OR_EQUALS )
                   return false
                 others
@@ -503,7 +512,7 @@ class ScannerCore [abstract]
                   _add( TokenType.KEYWORD_CLASS )
                   return false
                 case 6
-                  _add( TokenType.KEYWORD_MODULE )
+                  _add( TokenType.KEYWORD_DOWN_TO )
                   return false
                 case 7
                   _add( TokenType.KEYWORD_ELSE )
@@ -572,63 +581,66 @@ class ScannerCore [abstract]
                   _add( TokenType.KEYWORD_METHODS )
                   return false
                 case 29
-                  _add( TokenType.KEYWORD_NATIVE )
+                  _add( TokenType.KEYWORD_MODULE )
                   return false
                 case 30
-                  _add( TokenType.KEYWORD_NATIVE_C )
+                  _add( TokenType.KEYWORD_NATIVE )
                   return false
                 case 31
-                  _add( TokenType.KEYWORD_NATIVE_C_HEADER )
+                  _add( TokenType.KEYWORD_NATIVE_C )
                   return false
                 case 32
-                  _add( TokenType.KEYWORD_NATIVE_C_CODE )
+                  _add( TokenType.KEYWORD_NATIVE_C_HEADER )
                   return false
                 case 33
-                  _add( TokenType.KEYWORD_NO_ACTION )
+                  _add( TokenType.KEYWORD_NATIVE_C_CODE )
                   return false
                 case 34
-                  _add( TokenType.KEYWORD_NOT )
+                  _add( TokenType.KEYWORD_NO_ACTION )
                   return false
                 case 35
-                  _add( TokenType.KEYWORD_NULL )
+                  _add( TokenType.KEYWORD_NOT )
                   return false
                 case 36
-                  _add( TokenType.KEYWORD_OR )
+                  _add( TokenType.KEYWORD_NULL )
                   return false
                 case 37
-                  _add( TokenType.KEYWORD_PI )
+                  _add( TokenType.KEYWORD_OR )
                   return false
                 case 38
-                  _add( TokenType.KEYWORD_PRINT )
+                  _add( TokenType.KEYWORD_PI )
                   return false
                 case 39
-                  _add( TokenType.KEYWORD_PRINTLN )
+                  _add( TokenType.KEYWORD_PRINT )
                   return false
                 case 40
-                  _add( TokenType.KEYWORD_PROPERTIES )
+                  _add( TokenType.KEYWORD_PRINTLN )
                   return false
                 case 41
-                  _add( TokenType.KEYWORD_RETURN )
+                  _add( TokenType.KEYWORD_PROPERTIES )
                   return false
                 case 42
-                  _add( TokenType.KEYWORD_ROUTINE )
+                  _add( TokenType.KEYWORD_RETURN )
                   return false
                 case 43
-                  _add( TokenType.KEYWORD_THIS_CALL )
+                  _add( TokenType.KEYWORD_ROUTINE )
                   return false
                 case 44
-                  _add( TokenType.KEYWORD_TRUE )
+                  _add( TokenType.KEYWORD_THIS_CALL )
                   return false
                 case 45
-                  _add( TokenType.KEYWORD_UNDEFINED )
+                  _add( TokenType.KEYWORD_TRUE )
                   return false
                 case 46
-                  _add( TokenType.KEYWORD_USES )
+                  _add( TokenType.KEYWORD_UNDEFINED )
                   return false
                 case 47
-                  _add( TokenType.KEYWORD_WHILE )
+                  _add( TokenType.KEYWORD_USES )
                   return false
                 case 48
+                  _add( TokenType.KEYWORD_WHILE )
+                  return false
+                case 49
                   _add( TokenType.KEYWORD_XOR )
                   return false
                 others
@@ -676,7 +688,7 @@ class ScannerCore [abstract]
               endWhich
             unsatisfied
               if (not _execute(ip_scan_integer)) return false
-              if ((not _scan('.')))
+              if ((_next_is("..") or (not _scan('.'))))
                 _add( TokenType.INTEGER )
                 return false
               endIf

@@ -104,4 +104,7 @@ class Parser : ParserCore
     method _read->Token
       if (inserted_tokens.count) return inserted_tokens.remove_last
       return prior._read
+
+    method print_peek
+      @trace _cur_t, _next_t
 endClass

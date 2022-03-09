@@ -155,19 +155,12 @@ class Visitor<<$ReturnType>>
         cmd.parameters = visit(cmd.parameters)
         cmd.return_type = visit(cmd.return_type)->(as Type)
         cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.statements = visit(cmd.statements)
+        cmd.body = visit(cmd.body)
       else
         visit( cmd.parameters )
         visit( cmd.return_type )
         visit( cmd.attributes )
-        visit( cmd.statements )
-      endIf
-
-    method on_visit_children( cmd:Block )
-      if ($ReturnType instanceOf Cmd)
-        cmd.statements = visit(cmd.statements)
-      else
-        visit( cmd.statements )
+        visit( cmd.body )
       endIf
 
     method on_visit_children( cmd:Local )
@@ -251,6 +244,89 @@ class Visitor<<$ReturnType>>
       else
         visit( cmd.initial_value )
         visit( cmd.type )
+      endIf
+
+    method on_visit_children( cmd:ForEachCollection )
+      if ($ReturnType instanceOf Cmd)
+        cmd.data = visit(cmd.data)
+        cmd.starting_index = visit(cmd.starting_index)
+        cmd.step_size = visit(cmd.step_size)
+      else
+        visit( cmd.data )
+        visit( cmd.starting_index )
+        visit( cmd.step_size )
+      endIf
+
+    method on_visit_children( cmd:ForEachControl )
+      if ($ReturnType instanceOf Cmd)
+        cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
+        cmd.collection = visit(cmd.collection)->(as ForEachCollection)
+      else
+        visit( cmd.optional_at )
+        visit( cmd.collection )
+      endIf
+
+    method on_visit_children( cmd:Block )
+      if ($ReturnType instanceOf Cmd)
+        cmd.statements = visit(cmd.statements)
+      else
+        visit( cmd.statements )
+      endIf
+
+    method on_visit_children( cmd:Conditional )
+      if ($ReturnType instanceOf Cmd)
+        cmd.initialization = visit(cmd.initialization)
+        cmd.precontrol = visit(cmd.precontrol)
+        cmd.control = visit(cmd.control)
+        cmd.postcontrol = visit(cmd.postcontrol)
+        cmd.statements = visit(cmd.statements)
+        cmd.cleanup = visit(cmd.cleanup)
+      else
+        visit( cmd.initialization )
+        visit( cmd.precontrol )
+        visit( cmd.control )
+        visit( cmd.postcontrol )
+        visit( cmd.statements )
+        visit( cmd.cleanup )
+      endIf
+
+    method on_visit_children( cmd:ForEach )
+      if ($ReturnType instanceOf Cmd)
+        cmd.control = visit(cmd.control)->(as ForEachControl)
+        cmd.statements = visit(cmd.statements)
+      else
+        visit( cmd.control )
+        visit( cmd.statements )
+      endIf
+
+    method on_visit_children( cmd:ControlStructure )
+      if ($ReturnType instanceOf Cmd)
+        cmd.initialization = visit(cmd.initialization)
+        cmd.statements = visit(cmd.statements)
+        cmd.cleanup = visit(cmd.cleanup)
+      else
+        visit( cmd.initialization )
+        visit( cmd.statements )
+        visit( cmd.cleanup )
+      endIf
+
+    method on_visit_children( cmd:GeneralLoop )
+      if ($ReturnType instanceOf Cmd)
+        cmd.initialization = visit(cmd.initialization)
+        cmd.precontrol = visit(cmd.precontrol)
+        cmd.control = visit(cmd.control)
+        cmd.postcontrol = visit(cmd.postcontrol)
+        cmd.statements = visit(cmd.statements)
+        cmd.upkeep = visit(cmd.upkeep)
+        cmd.cleanup = visit(cmd.cleanup)
+      else
+        visit( cmd.initialization )
+        visit( cmd.precontrol )
+        visit( cmd.control )
+        visit( cmd.postcontrol )
+        visit( cmd.statements )
+        visit( cmd.upkeep )
+        visit( cmd.cleanup )
       endIf
 
 endClass
