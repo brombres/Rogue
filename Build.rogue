@@ -51,7 +51,7 @@ endRoutine
 routine rogo_build
   localize exe_filepath
 
-  if (File.is_newer_than("Source/RogueC/$.froley"(Build.PROJECT),exe_filepath))
+  if (File.is_newer_than("Source/RogueC/Rogue.froley",exe_filepath))
     rogo_froley
   endIf
 
@@ -66,7 +66,7 @@ routine rogo_build
 endRoutine
 
 routine rogo_froley
-  local froley_src = File( "Source/RogueC/$.froley"(Build.PROJECT) )
+  local froley_src = File( "Source/RogueC/Rogue.froley" )
   execute "froley $ Source/RogueC"(froley_src.esc)
 endRoutine
 
