@@ -53,7 +53,7 @@ class Type : Cmd
       endIf
 
     method description->String
-      return "Type($)" (%name)
+      return "$" (%name)
 
     method is_reference->Logical
       return (attributes & OBJECT)?
