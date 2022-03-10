@@ -128,7 +128,6 @@ class Resolver : Visitor
     method on( cmd:Block )->Cmd
       return visit( ControlStructure(cmd.t, cmd.statements, ControlType.BLOCK) )
 
-      #{
     method on_visit( cmd:Binary )
       visit_children( cmd )
       local left = cmd.left
@@ -140,6 +139,7 @@ class Resolver : Visitor
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
 
+      #{
     method on_validate( cmd:BitwiseAnd )->Cmd
       return validate( cmd.left.type.cmd_bitwise_and(cmd.t, cmd.left, cmd.right) )
 
@@ -204,6 +204,7 @@ class Resolver : Visitor
       endWhichIs
       }#
 
+      #{
     method on_validate( cmd:CompareEQ )->Cmd
       #local type = cmd.left.type
       return validate( CompareEQReal64(cmd.t,cmd.left,cmd.right) )
@@ -222,6 +223,7 @@ class Resolver : Visitor
 
     method on_validate( cmd:CompareGE )->Cmd
       return validate( CompareGEReal64(cmd.t,cmd.left,cmd.right) )
+      }#
 
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
@@ -864,6 +866,9 @@ augment
     method Cmd.cmd_print( operand:Cmd )->Cmd
       throw operand.t.error( "[INTERNAL] $.cmd_print() is undefined." (type_name) )
 
+    method TypeLogical.cmd_print( operand:Cmd )->Cmd
+      return PrintLogical( operand.t, operand )
+
     method TypeInt32.cmd_print( operand:Cmd )->Cmd
       return PrintInt32( operand.t, operand )
 
@@ -1018,11 +1023,16 @@ augment
 
     method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
-      @trace this
-      local v_iterator = Local( cmd_control.t, resolver.autoname("i"), null, type )
+      local v_iterator_name = which{ cmd_control.name || resolver.autoname("i") }
+      local v_iterator = Local( cmd_control.t, v_iterator_name, null, type )
       cmd_iterator.locals.add( v_iterator )
       resolver.this_procedure.locals.add( v_iterator )
       resolver.visible_locals.add( v_iterator )
+
+      cmd_iterator.initialization.add( SetLocal(t,v_iterator,left) )
+      cmd_iterator.control = CompareLE( t, Access(t,v_iterator_name), right )
+      cmd_iterator.upkeep.add( Preincrement( t, Access(t,v_iterator_name) ) )
+
 endAugment
 
 #{

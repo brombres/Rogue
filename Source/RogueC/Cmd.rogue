@@ -245,35 +245,42 @@ class BitwiseXor : Binary
 
 endClass
 
-class CompareEQ : Binary
+class Compare : Binary
+  METHODS
+    method description->String
+      return "Compare($,$)" (%left,%right)
+
+endClass
+
+class CompareEQ : Compare
   METHODS
     method description->String
       return "CompareEQ($,$)" (%left,%right)
 
 endClass
 
-class CompareGE : Binary
+class CompareGE : Compare
   METHODS
     method description->String
       return "CompareGE($,$)" (%left,%right)
 
 endClass
 
-class CompareGT : Binary
+class CompareGT : Compare
   METHODS
     method description->String
       return "CompareGT($,$)" (%left,%right)
 
 endClass
 
-class CompareLE : Binary
+class CompareLE : Compare
   METHODS
     method description->String
       return "CompareLE($,$)" (%left,%right)
 
 endClass
 
-class CompareLT : Binary
+class CompareLT : Compare
   METHODS
     method description->String
       return "CompareLT($,$)" (%left,%right)
@@ -887,7 +894,7 @@ class Conditional : ControlStructure
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      init( t, Statements(t), Statements(t), Statements(t), Statements(t),
+      init( t, Statements(t), Statements(t), null, Statements(t),
             Statements(t), Statements(t), control_type )
 
     method init( t:Token, initialization, precontrol, control, postcontrol, statements, cleanup, control_type=ControlType.UNDEFINED:ControlType )
@@ -910,7 +917,7 @@ class Iterator : Conditional
 
   METHODS
     method init( t, statements:Cmd, control_type:ControlType )
-      init( t, Statements(t), Statements(t), Statements(t), Statements(t),
+      init( t, Statements(t), Statements(t), null, Statements(t),
             statements, Statements(t), Statements(t), control_type )
 
     method init( t, initialization, precontrol, control, postcontrol, statements, upkeep, cleanup, control_type=ControlType.UNDEFINED:ControlType )
@@ -1073,3 +1080,39 @@ class Block : Cmd
 
 endClass
 
+
+class PrintLogical : Unary
+  METHODS
+    method description->String
+      return "PrintLogical($)" (%operand)
+
+endClass
+
+
+class Postdecrement : Unary
+  METHODS
+    method description->String
+      return "Postdecrement($)" (%operand)
+
+endClass
+
+class Postincrement : Unary
+  METHODS
+    method description->String
+      return "Postincrement($)" (%operand)
+
+endClass
+
+class Predecrement : Unary
+  METHODS
+    method description->String
+      return "Predecrement($)" (%operand)
+
+endClass
+
+class Preincrement : Unary
+  METHODS
+    method description->String
+      return "Preincrement($)" (%operand)
+
+endClass

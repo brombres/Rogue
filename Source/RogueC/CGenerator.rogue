@@ -227,9 +227,52 @@ class CGenerator : Visitor
       writer.indent -= 2
       writer.println '}'
 
-    method on_visit( cmd:ControlStructure )
+    method on_visit( cmd:CompareEQ )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " == "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_visit( cmd:CompareNE )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " != "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_visit( cmd:CompareLT )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " < "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_visit( cmd:CompareGT )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " > "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_visit( cmd:CompareLE )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " <= "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_visit( cmd:CompareGE )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " >= "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_enter( cmd:ControlStructure )
       writer.println( "{" )
       writer.indent += 2
+
       forEach (v in cmd.locals)
         writer.print( v.type.c_type ).print( ' ' )
         writer.print( v.c_name )
@@ -240,12 +283,35 @@ class CGenerator : Visitor
         #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
         writer.println( ';' )
       endForEach
-      visit_children( cmd )
+
+      visit( cmd.initialization )
+
+    method on_leave( cmd:ControlStructure )
+      visit( cmd.cleanup )
       writer.indent -= 2
       writer.println( "}" )
 
+    method on_visit( cmd:ControlStructure )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:Iterator )
+      on_enter( cmd )
+      writer.println "do"
+      writer.println "{"
+      writer.indent += 2
+      visit( cmd.statements )
+      visit( cmd.upkeep )
+      writer.indent -= 2
+      writer.println "}"
+      writer.print   "while ("
+      visit( cmd.control )
+      writer.println ");"
+      on_leave( cmd )
 
     method on_visit( cmd:LiteralInt32 )
       writer.print( cmd.value )
@@ -257,6 +323,10 @@ class CGenerator : Visitor
     #  visit_children( cmd )
 
     #method on_visit( cmd:LocalDef )
+
+    method on_visit( cmd:Preincrement )
+      writer.print "++"
+      visit_children( cmd )
 
     method on_visit( cmd:Routine )
       forEach (v at i in cmd.locals) v.c_name = v.name + "_" + i
@@ -287,6 +357,11 @@ class CGenerator : Visitor
       writer.print ''printf( "%d", (int)''
       visit( cmd.operand )
       writer.print '' )''
+
+    method on_visit( cmd:PrintLogical )
+      writer.print ''printf( "%s", (''
+      visit( cmd.operand )
+      writer.print '') ? "true" : "false" )''
 
     method on_visit( cmd:PrintNewline )
       writer.print( ''putchar( '\\n' )'' )

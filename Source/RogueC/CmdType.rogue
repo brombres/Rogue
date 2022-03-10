@@ -133,10 +133,12 @@ augment
 
     method CastValueToXY.type->Type
       return Program.type_XY
+      }#
 
     method Compare.type->Type
       return Program.type_Logical
 
+      #{
     method CreateObject.type->Type
       return of_type
 
