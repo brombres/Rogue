@@ -626,15 +626,6 @@ class Assign : Cmd
 
 endClass
 
-#class LocalScope : Cmd
-#  PROPERTIES
-#    local_declarations = Local[]
-#
-#  METHODS
-#    method description->String
-#      return "LocalScope"
-#endClass
-
 class SetLocal : Cmd
   PROPERTIES
     info      : Local
@@ -847,6 +838,111 @@ class NativeCHeader : Cmd
 
 endClass
 
+class ControlStructure : Cmd
+  PROPERTIES
+    locals         = Local[]  # local to the scope of the control structure
+    initialization : Cmd
+    statements     : Cmd
+    cleanup        : Cmd
+    control_type   : ControlType
+
+  METHODS
+    method init( t:Token, control_type:ControlType )
+      init( t, Statements(t), Statements(t), Statements(t), control_type )
+
+    method init( t:Token, statements:Cmd, control_type:ControlType )
+      init( t, statements, Statements(t), Statements(t), control_type )
+
+    method init( t, initialization, statements, cleanup, control_type=ControlType.UNDEFINED )
+
+    method init( existing:ControlStructure )
+      prior.init( existing )
+      if (existing.locals) locals = existing.locals.cloned
+      if (existing.initialization) initialization = existing.initialization.cloned
+      if (existing.statements) statements = existing.statements.cloned
+      if (existing.cleanup) cleanup = existing.cleanup.cloned
+
+    method description->String
+      return "ControlStructure($,$,$)" (%initialization,%statements,%cleanup)
+
+endClass
+
+class LocalScope : ControlStructure
+  METHODS
+    method init( t:Token )
+      prior.init( t, ControlType.LOCAL_SCOPE )
+
+    method init( existing:LocalScope )
+      prior.init( existing )
+
+    method description->String
+      return "LocalScope"
+endClass
+
+class Conditional : ControlStructure
+  PROPERTIES
+    precontrol  : Cmd
+    control     : Cmd
+    postcontrol : Cmd
+
+  METHODS
+    method init( t:Token, control_type:ControlType )
+      init( t, Statements(t), Statements(t), Statements(t), Statements(t),
+            Statements(t), Statements(t), control_type )
+
+    method init( t:Token, initialization, precontrol, control, postcontrol, statements, cleanup, control_type=ControlType.UNDEFINED:ControlType )
+      prior.init( t, initialization, statements, cleanup, control_type )
+
+    method init( existing:Conditional )
+      prior.init( existing )
+      if (existing.precontrol) precontrol = existing.precontrol.cloned
+      if (existing.control) control = existing.control.cloned
+      if (existing.postcontrol) postcontrol = existing.postcontrol.cloned
+
+    method description->String
+      return "Conditional($,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%cleanup)
+
+endClass
+
+class Iterator : Conditional
+  PROPERTIES
+    upkeep : Cmd
+
+  METHODS
+    method init( t, statements:Cmd, control_type:ControlType )
+      init( t, Statements(t), Statements(t), Statements(t), Statements(t),
+            statements, Statements(t), Statements(t), control_type )
+
+    method init( t, initialization, precontrol, control, postcontrol, statements, upkeep, cleanup, control_type=ControlType.UNDEFINED:ControlType )
+      prior.init( t, initialization, precontrol, control, postcontrol, statements, cleanup, control_type )
+
+    method init( existing:Iterator )
+      prior.init( existing )
+      if (existing.upkeep) upkeep = existing.upkeep.cloned
+
+    method description->String
+      return "Iterator($,$,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%upkeep,%cleanup)
+
+endClass
+
+class ForEach : Cmd
+  PROPERTIES
+    control    : ForEachControl
+    statements : Cmd
+
+  METHODS
+    method init( t, control, statements )
+
+    method init( existing:ForEach )
+      prior.init( existing )
+      if (existing.control) control = existing.control.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "ForEach($,$)" (%control,%statements)
+
+endClass
+
 class ForEachAt : Cmd
   PROPERTIES
     name : String
@@ -977,94 +1073,3 @@ class Block : Cmd
 
 endClass
 
-class Conditional : ControlStructure
-  PROPERTIES
-    precontrol  : Cmd
-    control     : Cmd
-    postcontrol : Cmd
-
-  METHODS
-    method init( t, initialization, precontrol, control, postcontrol, statements, cleanup )
-      prior.init( t )
-      precontrol  = Statements(t)
-      control     = Statements(t)
-      postcontrol = Statements(t)
-
-    method init( existing:Conditional )
-      prior.init( existing )
-      if (existing.precontrol) precontrol = existing.precontrol.cloned
-      if (existing.control) control = existing.control.cloned
-      if (existing.postcontrol) postcontrol = existing.postcontrol.cloned
-
-    method description->String
-      return "Conditional($,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%cleanup)
-
-endClass
-
-class ForEach : Cmd
-  PROPERTIES
-    control    : ForEachControl
-    statements : Cmd
-
-  METHODS
-    method init( t, control, statements )
-
-    method init( existing:ForEach )
-      prior.init( existing )
-      if (existing.control) control = existing.control.cloned
-      if (existing.statements) statements = existing.statements.cloned
-
-    method description->String
-      return "ForEach($,$)" (%control,%statements)
-
-endClass
-
-class LocalScope : ControlStructure
-  METHODS
-    method description->String
-      return "LocalScope"
-endClass
-
-class ControlStructure : Cmd
-  PROPERTIES
-    locals         = Local[]  # local to the scope of the control structure
-    initialization : Cmd
-    statements     : Cmd
-    cleanup        : Cmd
-
-  METHODS
-    method init( t )
-      init( t, Statements(t), Statements(t), Statements(t) )
-
-    method init( t, statements:Cmd )
-      init( t, statements, Statements(t), Statements(t) )
-
-    method init( t, initialization, statements, cleanup )
-
-    method init( existing:ControlStructure )
-      prior.init( existing )
-      if (existing.locals) locals = existing.locals.cloned
-      if (existing.initialization) initialization = existing.initialization.cloned
-      if (existing.statements) statements = existing.statements.cloned
-      if (existing.cleanup) cleanup = existing.cleanup.cloned
-
-    method description->String
-      return "ControlStructure($,$,$)" (%initialization,%statements,%cleanup)
-
-endClass
-
-class Iterator : Conditional
-  PROPERTIES
-    upkeep : Cmd
-
-  METHODS
-    method init( t, initialization, precontrol, control, postcontrol, statements, upkeep, cleanup )
-
-    method init( existing:Iterator )
-      prior.init( existing )
-      if (existing.upkeep) upkeep = existing.upkeep.cloned
-
-    method description->String
-      return "Iterator($,$,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%upkeep,%cleanup)
-
-endClass

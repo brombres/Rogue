@@ -119,7 +119,7 @@ class Resolver : Visitor
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
 
     method on( cmd:Block )->Cmd
-      return visit( ControlStructure(cmd.t, cmd.statements) )
+      return visit( ControlStructure(cmd.t, cmd.statements, ControlType.BLOCK) )
 
       #{
     method on_visit( cmd:Binary )
@@ -247,7 +247,12 @@ class Resolver : Visitor
 
     method on_validate( cmd:Divide )->Cmd
       return validate( cmd.left.type.cmd_divide(cmd.t, cmd.left, cmd.right) )
+    }#
 
+    #method on( cmd:ForEach )->Cmd
+      #local iterator = Iterator( t, statements )
+
+    #{
     method on( cmd:ForEachIn )->Cmd
       #ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
       resolve( cmd.index_v )

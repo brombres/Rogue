@@ -1,0 +1,8 @@
+module Rogue
+
+enum ControlType
+  UNDEFINED
+  LOCAL_SCOPE
+  BLOCK
+  FOR_EACH
+endEnum
