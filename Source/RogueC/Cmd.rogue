@@ -1034,9 +1034,10 @@ class ControlStructure : Cmd
 
   METHODS
     method init( t )
-      initialization = Statements(t)
-      statements     = Statements(t)
-      cleanup        = Statements(t)
+      init( t, Statements(t), Statements(t), Statements(t) )
+
+    method init( t, statements:Cmd )
+      init( t, statements, Statements(t), Statements(t) )
 
     method init( t, initialization, statements, cleanup )
 

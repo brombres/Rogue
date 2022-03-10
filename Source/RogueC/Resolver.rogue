@@ -118,6 +118,9 @@ class Resolver : Visitor
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
 
+    method on( cmd:Block )->Cmd
+      return visit( ControlStructure(cmd.t, cmd.statements) )
+
       #{
     method on_visit( cmd:Binary )
       visit_children( cmd )
@@ -382,7 +385,7 @@ class Resolver : Visitor
 
       return null
 
-    method on( cmd:LocalScope )->Cmd
+    method on( cmd:ControlStructure )->Cmd
       push_scope( cmd )
       visit_content( cmd )
       pop_scope

@@ -30,11 +30,11 @@ endAugment
 
 augment
   METHODS
-    method Block.needs_semicolon->Logical
-      return false
-
     method Cmd.needs_semicolon->Logical
       return true
+
+    method ControlStructure.needs_semicolon->Logical
+      return false
 
     method Module.c_name->String
       if (this is Program.default_module) return "Rogue"
