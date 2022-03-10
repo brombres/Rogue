@@ -14,8 +14,15 @@ class Resolver : Visitor
 
     current_statements_rewriter : ListRewriter<<Cmd>>
 
+    autoname_index = 0
+
   METHODS
     method init( this_module )
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
 
     #{
     method visit( this_type )
@@ -249,8 +256,10 @@ class Resolver : Visitor
       return validate( cmd.left.type.cmd_divide(cmd.t, cmd.left, cmd.right) )
     }#
 
-    #method on( cmd:ForEach )->Cmd
-      #local iterator = Iterator( t, statements )
+    method on( cmd:ForEach )->Cmd
+      local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
+      cmd.control.resolve_foreach( this, cmd, iterator )
+      return visit( iterator )
 
     #{
     method on( cmd:ForEachIn )->Cmd
@@ -988,7 +997,35 @@ augment
       endIf
       throw t.error( "Illegal target for decrement." )
 endAugment
+}#
 
+# ForEach
+augment
+  METHODS
+    method ForEachControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
+      throw UnsupportedOperationError()
+
+    method ForEachInControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
+      collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
+
+    method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+                                  cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      throw UnsupportedOperationError()
+
+    method Range.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+                                  cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      throw UnsupportedOperationError()
+
+    method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+                                      cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      @trace this
+      local v_iterator = Local( cmd_control.t, resolver.autoname("i"), null, type )
+      cmd_iterator.locals.add( v_iterator )
+      resolver.this_procedure.locals.add( v_iterator )
+      resolver.visible_locals.add( v_iterator )
+endAugment
+
+#{
 # Increment
 augment
   METHODS

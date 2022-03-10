@@ -1,15 +1,14 @@
 module Rogue
 
 augment Cmd
-  #{
   GLOBAL METHODS
     method common_type( a:Type, b:Type )->Type
       if (a is b) return a
       if (not a or not b) return null
       if (a.is_primitive and b.is_primitive)
-        local type = Program.type_Value
-        if (a is type or b is type) return type
-        type = Program.type_String
+        #local type = Program.type_Value
+        #if (a is type or b is type) return type
+        local type = Program.type_String
         if (a is type or b is type) return type
         type = Program.type_Real64
         if (a is type or b is type) return type
@@ -17,7 +16,6 @@ augment Cmd
       else
         return Program.type_String # Placeholder/TODO
       endIf
-      }#
 
   METHODS
     method cmd_cast_to( target_type:Type )->Cmd
@@ -103,6 +101,7 @@ augment
       #{
     method Access.type->Type
       return Program.find_type(name)
+      }#
 
     method Unary.type->Type
       return operand.type
@@ -110,6 +109,7 @@ augment
     method Binary.type->Type
       return common_type( left.type, right.type )
 
+      #{
     method CallProcedure.type->Type
       return procedure.return_type
 
