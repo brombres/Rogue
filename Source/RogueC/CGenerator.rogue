@@ -306,6 +306,24 @@ class CGenerator : Visitor
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 
+    method on_visit( cmd:If )
+      on_enter( cmd )
+      if (cmd.condition)
+        writer.print   "if ("
+        visit( cmd.condition )
+        writer.println ")"
+      endIf
+      writer.println "{"
+      writer.indent += 2
+      visit( cmd.statements )
+      writer.indent -= 2
+      writer.println "}"
+      if (cmd.cmd_else)
+        writer.println "else "
+        visit( cmd.cmd_else )
+      endIf
+      on_leave( cmd )
+
     method on_visit( cmd:Iterator )
       on_enter( cmd )
       local control_label = autoname("loop_condition")
@@ -319,6 +337,7 @@ class CGenerator : Visitor
       visit( cmd.upkeep )
       writer.print   control_label
       writer.println ":;"
+      visit( cmd.control )
       writer.indent -= 2
       writer.println "}"
       writer.print   "while ("
