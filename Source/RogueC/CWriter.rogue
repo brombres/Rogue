@@ -134,6 +134,12 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_retain( void* obj );
            |
            |void  Rogue_launch();
+           |
+           |//------------------------------------------------------------------------------
+           |// Runtime
+           |//------------------------------------------------------------------------------
+           |extern int Rogue_exception;  // set to 1 on exception; exception handler clears
+           |
 
       else
         # Writing .c file
@@ -180,6 +186,11 @@ class CWriter : BufferedPrintWriter
            |  ++((RogueObject*)obj)->ref_count;
            |  return obj;
            |}
+           |
+           |//------------------------------------------------------------------------------
+           |// Runtime
+           |//------------------------------------------------------------------------------
+           |int Rogue_exception = 0;
         println
 
       endIf

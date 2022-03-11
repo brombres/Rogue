@@ -21,7 +21,7 @@ class Visitor<<$ReturnType>>
       #   'cmd' to keep this subtree or else return a different Cmd node to
       #   replace this subtree.
       visit_content( cmd )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         return validate( cmd )
       else
         validate( cmd )
@@ -35,7 +35,7 @@ class Visitor<<$ReturnType>>
       visit_children( cmd )
 
     method on_validate( cmd:Cmd )->$ReturnType
-      if ($ReturnType instanceOf Cmd) return cmd
+      if ($ReturnType isType Cmd) return cmd
       else                            return $ReturnType.meta.default_value
 
     method visit( cmd:Cmd )->$ReturnType [propagated]
@@ -46,7 +46,7 @@ class Visitor<<$ReturnType>>
       #     cmd.left  = visit(cmd.left)
       #     cmd.right = visit(cmd.right)
       #     return cmd
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         if (cmd is null) return null
       else
         if (cmd is null) return $ReturnType.meta.default_value
@@ -64,7 +64,7 @@ class Visitor<<$ReturnType>>
       return cmd
 
     method validate( cmd:Cmd )->$ReturnType [propagated]
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         if (cmd is null) return null
       else
         if (cmd is null) return $ReturnType.meta.default_value
@@ -76,7 +76,7 @@ class Visitor<<$ReturnType>>
       noAction
 
     method on_visit_children( cmd:CmdList )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         forEach (element in writer=cmd.list.rewriter)
           local visited_element = visit( element )
           if (visited_element) writer.write( visited_element )
@@ -86,7 +86,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Statements )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         forEach (element in writer=cmd.list.rewriter)
           local visited_element = visit( element )
           if (visited_element)
@@ -103,7 +103,7 @@ class Visitor<<$ReturnType>>
 
 
     method on_visit_children( cmd:Binary )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.left = visit(cmd.left)
         cmd.right = visit(cmd.right)
       else
@@ -112,28 +112,28 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Unary )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.operand = visit(cmd.operand)
       else
         visit( cmd.operand )
       endIf
 
     method on_visit_children( cmd:Print )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.args = visit(cmd.args)
       else
         visit( cmd.args )
       endIf
 
     method on_visit_children( cmd:Println )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.args = visit(cmd.args)
       else
         visit( cmd.args )
       endIf
 
     method on_visit_children( cmd:ContextAccess )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.context = visit(cmd.context)
         cmd.args = visit(cmd.args)
       else
@@ -142,7 +142,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:IndexAccess )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.context = visit(cmd.context)
         cmd.index = visit(cmd.index)
       else
@@ -151,7 +151,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Procedure )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.parameters = visit(cmd.parameters)
         cmd.return_type = visit(cmd.return_type)->(as Type)
         cmd.attributes = visit(cmd.attributes)->(as Attributes)
@@ -164,14 +164,14 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Local )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.type = visit(cmd.type)->(as Type)
       else
         visit( cmd.type )
       endIf
 
     method on_visit_children( cmd:LocalDeclarations )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.declarations = visit(cmd.declarations)
         cmd.type = visit(cmd.type)->(as Type)
       else
@@ -180,14 +180,14 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Access )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.args = visit(cmd.args)
       else
         visit( cmd.args )
       endIf
 
     method on_visit_children( cmd:Assign )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.target = visit(cmd.target)
         cmd.new_value = visit(cmd.new_value)
       else
@@ -196,7 +196,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:SetLocal )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.info = visit(cmd.info)->(as Local)
         cmd.new_value = visit(cmd.new_value)
       else
@@ -205,14 +205,14 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:GetLocal )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.info = visit(cmd.info)->(as Local)
       else
         visit( cmd.info )
       endIf
 
     method on_visit_children( cmd:Class )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.name = visit(cmd.name)
         cmd.template_parameters = visit(cmd.template_parameters)
         cmd.constructor_properties = visit(cmd.constructor_properties)
@@ -229,7 +229,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:PropertyDeclarations )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.declarations = visit(cmd.declarations)
         cmd.type = visit(cmd.type)->(as Type)
       else
@@ -238,7 +238,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Property )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.initial_value = visit(cmd.initial_value)
         cmd.type = visit(cmd.type)->(as Type)
       else
@@ -247,7 +247,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:ForEachCollection )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.data = visit(cmd.data)
         cmd.starting_index = visit(cmd.starting_index)
         cmd.step_size = visit(cmd.step_size)
@@ -258,7 +258,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:ForEachControl )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
         cmd.collection = visit(cmd.collection)->(as ForEachCollection)
       else
@@ -267,14 +267,14 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Block )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.statements = visit(cmd.statements)
       else
         visit( cmd.statements )
       endIf
 
     method on_visit_children( cmd:Conditional )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.initialization = visit(cmd.initialization)
         cmd.condition = visit(cmd.condition)
         cmd.statements = visit(cmd.statements)
@@ -285,7 +285,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:ForEach )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.condition = visit(cmd.condition)->(as ForEachControl)
         cmd.statements = visit(cmd.statements)
       else
@@ -294,7 +294,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:ControlStructure )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.initialization = visit(cmd.initialization)
         cmd.statements = visit(cmd.statements)
       else
@@ -303,7 +303,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:Iterator )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.initialization = visit(cmd.initialization)
         cmd.control = visit(cmd.control)
         cmd.condition = visit(cmd.condition)
@@ -318,7 +318,7 @@ class Visitor<<$ReturnType>>
       endIf
 
     method on_visit_children( cmd:If )
-      if ($ReturnType instanceOf Cmd)
+      if ($ReturnType isType Cmd)
         cmd.condition = visit(cmd.condition)
         cmd.statements = visit(cmd.statements)
         cmd.cmd_else = visit(cmd.cmd_else)->(as If)

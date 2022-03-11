@@ -228,6 +228,15 @@ class CGenerator : Visitor
     method on_visit( cmd:CmdList )
       visit_children( cmd )
 
+    method print_parenthesized( cmd:Cmd )
+      if (cmd.is_operator)
+        writer.print "("
+        visit( cmd )
+        writer.print ")"
+      else
+        visit( cmd )
+      endIf
+
     method on_visit( cmd:Block )
       writer.println '{'
       writer.indent += 2
@@ -236,46 +245,34 @@ class CGenerator : Visitor
       writer.println '}'
 
     method on_visit( cmd:CompareEQ )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " == "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:CompareNE )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " != "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:CompareLT )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " < "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:CompareGT )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " > "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:CompareLE )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " <= "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:CompareGE )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " >= "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_enter( cmd:ControlStructure )
       writer.println( "{" )

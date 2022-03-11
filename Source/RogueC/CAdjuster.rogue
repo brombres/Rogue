@@ -1,12 +1,14 @@
 module Rogue
 
-class CValidator : Visitor
+class CAdjuster : Visitor
   PROPERTIES
     writer         : CWriter
     this_module    : Module
     this_type      : Type
     this_procedure : Procedure
     autoname_index = 0
+
+    statement_injector : ListRewriter<<Cmd>>
 
   METHODS
     method init( this_module )
@@ -26,12 +28,20 @@ class CValidator : Visitor
       autoname_index = 0
       visit_children( cmd )
 
+    method on_visit( cmd:Statements )
+      temporarily statement_injector = cmd.list.rewriter
+        forEach (statement in statement_injector)
+          statement = visit( statement )
+          if (statement) statement_injector.write( statement )
+        endForEach
+      endTemporarily
+
 endClass
 
 augment
   METHODS
     method Module.validate_c
-      local validator = CValidator( this )
+      local validator = CAdjuster( this )
       forEach (type in types)
         validator.visit( type )
       endForEach

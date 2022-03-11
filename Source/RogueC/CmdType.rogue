@@ -92,6 +92,19 @@ augment
 endAugment
 }#
 
+# is_operator
+augment
+  METHODS
+    method Cmd.is_operator->Logical
+      return false
+
+    method Binary.is_operator->Logical
+      return true
+
+    method Unary.is_operator->Logical
+      return true
+endAugment
+
 # type()
 augment
   METHODS
