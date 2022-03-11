@@ -116,9 +116,6 @@ augment
       return Program.find_type(name)
       }#
 
-    method Unary.type->Type
-      return operand.type
-
     method Binary.type->Type
       return common_type( left.type, right.type )
 
@@ -223,6 +220,9 @@ augment
     method LocalDeclarations.type->Type
       return @type
 
+    method PrintValue.type->Type
+      return null
+
     method Property.type->Type
       return @type
 
@@ -235,7 +235,12 @@ augment
 
     method TypeRef.to->Type
       return Type( t, name )
+    }#
 
+    method Unary.type->Type
+      return operand.type
+
+    #{
     method XYGetX.type->Type
       return Program.type_Real64
 

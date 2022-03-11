@@ -545,7 +545,7 @@ class Join : Cmd
 
 endClass
 
-class PrintString : Unary
+class PrintString : PrintValue
   METHODS
     method description->String
       return "PrintString($)" (%operand)
@@ -667,7 +667,7 @@ class GetLocal : Cmd
 
 endClass
 
-class PrintInt32 : Unary
+class PrintInt32 : PrintValue
   METHODS
     method description->String
       return "PrintInt32($)" (%operand)
@@ -1077,7 +1077,7 @@ class Block : Cmd
 endClass
 
 
-class PrintLogical : Unary
+class PrintLogical : PrintValue
   METHODS
     method description->String
       return "PrintLogical($)" (%operand)
@@ -1127,5 +1127,19 @@ class If : Conditional
 
     method description->String
       return "If($,$,$)" (%condition,%statements,%cmd_else)
+
+endClass
+
+class DiscardResult : Unary
+  METHODS
+    method description->String
+      return "DiscardResult($)" (%operand)
+
+endClass
+
+class PrintValue : Unary
+  METHODS
+    method description->String
+      return "PrintValue($)" (%operand)
 
 endClass

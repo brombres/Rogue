@@ -517,15 +517,16 @@ class Resolver : Visitor
       return validate( cmd.left.type.cmd_right_shift_x(cmd.t, cmd.left, cmd.right) )
 }#
 
-#{
     method on_visit( cmd:Statements )
       temporarily current_statements_rewriter = cmd.list.rewriter
-        forEach (element in current_statements_rewriter)
-          local visited_element = visit( element )
-          if (visited_element) current_statements_rewriter.write( visited_element )
+        forEach (statement in current_statements_rewriter)
+          statement = visit( statement )
+          if (statement)
+            if (statement.type) statement = DiscardResult( statement.t, statement )
+            current_statements_rewriter.write( statement )
+          endIf
         endForEach
       endTemporarily
-      }#
 
 #{
     method on_validate( cmd:Subtract )->Cmd

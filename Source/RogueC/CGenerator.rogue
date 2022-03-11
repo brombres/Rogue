@@ -300,6 +300,10 @@ class CGenerator : Visitor
       visit( cmd.statements )
       on_leave( cmd )
 
+    method on_visit( cmd:DiscardResult )
+      writer.print "/* discard */ "
+      visit_children( cmd )
+
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 

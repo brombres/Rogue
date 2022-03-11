@@ -1300,6 +1300,7 @@ parser
   #  create DecrementThisProperty(info:Property)
   #  create DecrementThisPropertyInt32(info:Property)
   #  create Description(operand):Unary
+  create DiscardResult(operand):Unary
   #  create DivideInt32(left,right):Binary
   #  create DivideObject(left,right):Binary
   #  create DivideReal64(left,right):Binary
@@ -1342,10 +1343,11 @@ parser
   #  create NegateReal64(operand):Unary
   #  create NegateValue(operand):Unary
   #  create OpAndAssign(target,operand)
-  create PrintInt32(operand):Unary
-  create PrintLogical(operand):Unary
+  create PrintInt32(operand):PrintValue
+  create PrintLogical(operand):PrintValue
   create PrintNewline
-  create PrintString(operand):Unary
+  create PrintString(operand):PrintValue
+  create PrintValue(operand):Unary
   create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,body)
   #  create ProcedureDef(name:String,parameters,return_type:Type,attributes,statements)
   #  create Property( type_context:Type, name:String, initial_value, type:Type )
