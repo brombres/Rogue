@@ -651,7 +651,7 @@ parser
     else
       single_line_statements
     endIf
-    produce ForEach(control:ForEachControl,statements)
+    produce ForEach(condition:ForEachControl,statements)
   endOn
 
 - forEach_control
@@ -707,7 +707,6 @@ parser
 
   produce ForEachCollection(name:String,data,starting_index,step_size)
 
-#{
 - if_statement
   on "if"
     expression
@@ -721,7 +720,7 @@ parser
       single_line_statements
       if_statement_single_line_elseIf_else
     endIf
-    produce If(condition,statements,cmd_else:If)
+    produce If(condition,statements,cmd_else:If):Conditional
   endOn
 
 - if_statement_multi_line_elseIf_else
@@ -733,7 +732,7 @@ parser
       discardPosition
       multi_line_statements
       if_statement_multi_line_elseIf_else
-      produce If(condition,statements,cmd_else:If)
+      produce If(condition,statements,cmd_else:If):Conditional
     else
       # This single-line elseIf is outside the scope of the 'if' we're currently parsing.
       restorePosition
@@ -746,7 +745,7 @@ parser
       createNull
       multi_line_statements
       createNull
-      produce If(condition,statements,cmd_else:If)
+      produce If(condition,statements,cmd_else:If):Conditional
     else
       # This single-line else is outside the scope of the 'if' we're currently parsing.
       restorePosition
@@ -769,7 +768,7 @@ parser
       discardPosition
       single_line_statements
       if_statement_single_line_elseIf_else
-      produce If(condition,statements,cmd_else:If)
+      produce If(condition,statements,cmd_else:If):Conditional
     endIf
   elseOn 'else'
     if (consume(EOL))
@@ -782,12 +781,13 @@ parser
       createNull
       single_line_statements
       createNull
-      produce If(condition,statements,cmd_else:If)
+      produce If(condition,statements,cmd_else:If):Conditional
     endIf
   elseOnOthers
     produceNull
   endOn
 
+#{
 - method
   on "method" signature procedure_body ->
     MethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
@@ -895,8 +895,8 @@ parser
   on     "local"   local_declarations: return
   onPeek "block"   block:              return
   onPeek "forEach" forEach_loop:       return
-#{
   onPeek "if"      if_statement:       return
+#{
   onPeek "loop"    loop:               return
   onPeek "while"   while_loop:         return
 }#
@@ -1143,7 +1143,9 @@ parser
   on "true"               -> LiteralLogical(value="true":Logical)
   on "false"              -> LiteralLogical(value="false":Logical)
   on "pi"                 -> LiteralPi
+}#
   on '(', expression, ')':   return
+#{
   onPeek "[" literal_list -> LiteralValueList(args)
   on "[]"                 -> EmptyList
 
@@ -1287,8 +1289,8 @@ parser
   #  create CompareGTReal64(left,right):Compare
   #  create CompareLEReal64(left,right):Compare
   #  create CompareGEReal64(left,right):Compare
-  create Conditional(initialization,precontrol,control,postcontrol,statements,cleanup):ControlStructure
-  create ControlStructure(initialization,statements,cleanup)
+  create Conditional(initialization,condition,statements):ControlStructure
+  create ControlStructure(initialization,statements)
   #  create CreateObject(of_type:Type,m_init:Procedure,args)
   #  create CreateXY0
   #  create CreateXY1(value)
@@ -1306,7 +1308,7 @@ parser
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
   #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
-  create Iterator(initialization,precontrol,control,postcontrol,statements,upkeep,cleanup):Conditional
+  create Iterator(initialization,control,condition,statements,upkeep):Conditional
   create GetLocal(info:Local)
   #  create GetProperty(context,info:Property)
   #  create GetSingleton(type:Type)

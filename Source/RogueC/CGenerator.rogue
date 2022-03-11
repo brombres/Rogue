@@ -154,6 +154,8 @@ augment
       endUse
 
     method Program.generate_c
+      (forEach in modules).validate_c
+
       local h_writer = CWriter( File("Test.h"), &header )
 
       h_writer.println ...
@@ -210,9 +212,15 @@ class CGenerator : Visitor
     this_module    : Module
     this_type      : Type
     this_procedure : Procedure
+    autoname_index = 0
 
   METHODS
     method init( this_module, writer )
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
 
     method on_visit( cmd:Cmd )
       throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
@@ -287,7 +295,6 @@ class CGenerator : Visitor
       visit( cmd.initialization )
 
     method on_leave( cmd:ControlStructure )
-      visit( cmd.cleanup )
       writer.indent -= 2
       writer.println( "}" )
 
@@ -301,15 +308,21 @@ class CGenerator : Visitor
 
     method on_visit( cmd:Iterator )
       on_enter( cmd )
+      local control_label = autoname("loop_condition")
+      writer.print   "goto "
+      writer.print   control_label
+      writer.println ";"
       writer.println "do"
       writer.println "{"
       writer.indent += 2
       visit( cmd.statements )
       visit( cmd.upkeep )
+      writer.print   control_label
+      writer.println ":;"
       writer.indent -= 2
       writer.println "}"
       writer.print   "while ("
-      visit( cmd.control )
+      visit( cmd.condition )
       writer.println ");"
       on_leave( cmd )
 
@@ -324,11 +337,32 @@ class CGenerator : Visitor
 
     #method on_visit( cmd:LocalDef )
 
+    method on_visit( cmd:LogicalAnd )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " && "
+      visit( cmd.right )
+      writer.print ")"
+
+    method on_visit( cmd:LogicalNot )
+      writer.print "!("
+      visit( cmd.operand )
+      writer.print ")"
+
+    method on_visit( cmd:LogicalOr )
+      writer.print "("
+      visit( cmd.left )
+      writer.print " || "
+      visit( cmd.right )
+      writer.print ")"
+
     method on_visit( cmd:Preincrement )
       writer.print "++"
       visit_children( cmd )
 
     method on_visit( cmd:Routine )
+      this_procedure = cmd
+      autoname_index = 0
       forEach (v at i in cmd.locals) v.c_name = v.name + "_" + i
       this_module.write_c_routine_header( cmd, writer )
       writer.println

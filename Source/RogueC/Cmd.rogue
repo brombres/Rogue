@@ -850,27 +850,25 @@ class ControlStructure : Cmd
     locals         = Local[]  # local to the scope of the control structure
     initialization : Cmd
     statements     : Cmd
-    cleanup        : Cmd
     control_type   : ControlType
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      init( t, Statements(t), Statements(t), Statements(t), control_type )
+      init( t, Statements(t), Statements(t), control_type )
 
     method init( t:Token, statements:Cmd, control_type:ControlType )
-      init( t, statements, Statements(t), Statements(t), control_type )
+      init( t, statements, Statements(t), control_type )
 
-    method init( t, initialization, statements, cleanup, control_type=ControlType.UNDEFINED )
+    method init( t, initialization, statements, control_type=ControlType.UNDEFINED )
 
     method init( existing:ControlStructure )
       prior.init( existing )
       if (existing.locals) locals = existing.locals.cloned
       if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
-      if (existing.cleanup) cleanup = existing.cleanup.cloned
 
     method description->String
-      return "ControlStructure($,$,$)" (%initialization,%statements,%cleanup)
+      return "ControlStructure($,$)" (%initialization,%statements)
 
 endClass
 
@@ -888,65 +886,63 @@ endClass
 
 class Conditional : ControlStructure
   PROPERTIES
-    precontrol  : Cmd
-    control     : Cmd
-    postcontrol : Cmd
+    condition : Cmd
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      init( t, Statements(t), Statements(t), null, Statements(t),
-            Statements(t), Statements(t), control_type )
+      init( t, Statements(t), null, Statements(t), control_type )
 
-    method init( t:Token, initialization, precontrol, control, postcontrol, statements, cleanup, control_type=ControlType.UNDEFINED:ControlType )
-      prior.init( t, initialization, statements, cleanup, control_type )
+    method init( t:Token, initialization, condition, statements,
+        control_type=ControlType.UNDEFINED:ControlType )
+      prior.init( t, initialization, statements, control_type )
 
     method init( existing:Conditional )
       prior.init( existing )
-      if (existing.precontrol) precontrol = existing.precontrol.cloned
-      if (existing.control) control = existing.control.cloned
-      if (existing.postcontrol) postcontrol = existing.postcontrol.cloned
+      if (existing.condition) condition = existing.condition.cloned
 
     method description->String
-      return "Conditional($,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%cleanup)
+      return "Conditional($,$,$)" (%initialization,%condition,%statements)
 
 endClass
 
 class Iterator : Conditional
   PROPERTIES
-    upkeep : Cmd
+    control : Cmd
+    upkeep  : Cmd
 
   METHODS
-    method init( t, statements:Cmd, control_type:ControlType )
-      init( t, Statements(t), Statements(t), null, Statements(t),
-            statements, Statements(t), Statements(t), control_type )
+    method init( t:Token, statements:Cmd, control_type:ControlType )
+      init( t, Statements(t), Statements(t), null, Statements(t), statements, control_type )
 
-    method init( t, initialization, precontrol, control, postcontrol, statements, upkeep, cleanup, control_type=ControlType.UNDEFINED:ControlType )
-      prior.init( t, initialization, precontrol, control, postcontrol, statements, cleanup, control_type )
+    method init( t:Token, initialization:Cmd, control, condition:Cmd, statements:Cmd, upkeep,
+                 control_type=ControlType.UNDEFINED:ControlType )
+      prior.init( t, initialization, condition, statements, control_type )
 
     method init( existing:Iterator )
       prior.init( existing )
-      if (existing.upkeep) upkeep = existing.upkeep.cloned
+      if (existing.control) control = existing.control.cloned
+      if (existing.upkeep)  upkeep  = existing.upkeep.cloned
 
     method description->String
-      return "Iterator($,$,$,$,$,$,$)" (%initialization,%precontrol,%control,%postcontrol,%statements,%upkeep,%cleanup)
+      return "Iterator($,$,$,$,$)" (%initialization,%control,%condition,%statements,%upkeep)
 
 endClass
 
 class ForEach : Cmd
   PROPERTIES
-    control    : ForEachControl
+    condition    : ForEachControl
     statements : Cmd
 
   METHODS
-    method init( t, control, statements )
+    method init( t, condition, statements )
 
     method init( existing:ForEach )
       prior.init( existing )
-      if (existing.control) control = existing.control.cloned
+      if (existing.condition) condition = existing.condition.cloned
       if (existing.statements) statements = existing.statements.cloned
 
     method description->String
-      return "ForEach($,$)" (%control,%statements)
+      return "ForEach($,$)" (%condition,%statements)
 
 endClass
 
@@ -1114,5 +1110,22 @@ class Preincrement : Unary
   METHODS
     method description->String
       return "Preincrement($)" (%operand)
+
+endClass
+
+
+class If : Conditional
+  PROPERTIES
+    cmd_else : If
+
+  METHODS
+    method init( t, condition, statements, cmd_else )
+
+    method init( existing:If )
+      prior.init( existing )
+      if (existing.cmd_else) cmd_else = existing.cmd_else.cloned
+
+    method description->String
+      return "If($,$,$)" (%condition,%statements,%cmd_else)
 
 endClass

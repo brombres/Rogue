@@ -52,6 +52,7 @@ class Resolver : Visitor
     method visit( this_type, this_procedure )
       if (this_procedure.is_resolved) return
       this_procedure.is_resolved = true
+      autoname_index = 0
       visit( this_procedure )
 
       #{
@@ -260,7 +261,7 @@ class Resolver : Visitor
 
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
-      cmd.control.resolve_foreach( this, cmd, iterator )
+      cmd.condition.resolve_foreach( this, cmd, iterator )
       return visit( iterator )
 
     #{
@@ -1030,7 +1031,7 @@ augment
       resolver.visible_locals.add( v_iterator )
 
       cmd_iterator.initialization.add( SetLocal(t,v_iterator,left) )
-      cmd_iterator.control = CompareLE( t, Access(t,v_iterator_name), right )
+      cmd_iterator.condition = CompareLE( t, Access(t,v_iterator_name), right )
       cmd_iterator.upkeep.add( Preincrement( t, Access(t,v_iterator_name) ) )
 
 endAugment

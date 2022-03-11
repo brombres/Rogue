@@ -1,0 +1,42 @@
+module Rogue
+
+class CValidator : Visitor
+  PROPERTIES
+    writer         : CWriter
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+    autoname_index = 0
+
+  METHODS
+    method init( this_module )
+
+    method visit( this_type )
+      this_procedure = null
+      # TODO
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
+
+    method on_visit( cmd:Routine )
+      this_type = null
+      this_procedure = cmd
+      autoname_index = 0
+      visit_children( cmd )
+
+endClass
+
+augment
+  METHODS
+    method Module.validate_c
+      local validator = CValidator( this )
+      forEach (type in types)
+        validator.visit( type )
+      endForEach
+
+      forEach (r in routines)
+        validator.visit( r )
+      endForEach
+endAugment
