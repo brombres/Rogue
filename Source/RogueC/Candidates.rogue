@@ -1,0 +1,49 @@
+module Rogue
+
+class Candidates [singleton]
+  PROPERTIES
+    work_list_alpha = WorkList<<Procedure>>()
+    work_list_beta  = WorkList<<Procedure>>()
+
+    list    : Procedure[]
+    matches : Procedure[]
+
+  METHODS
+    method add( candidate:Procedure )
+      list.add( candidate )
+
+    method count->Int32
+      return list.count
+
+    method description->String
+      return %list
+
+    method found_match->Logical
+      return matches.count == 1
+
+    method get( index:Int32 )->Procedure
+      return list[index]
+
+    method keep( match:Procedure )
+      matches.add( match )
+
+    method match->Procedure
+      if (matches.count == 1) return matches.first
+      return null
+
+    method on_use->this
+      list    = work_list_alpha.on_use
+      matches = work_list_beta.on_use
+      return this
+
+    method on_end_use
+      work_list_alpha.on_end_use
+      work_list_beta.on_end_use
+
+    method refine->Logical
+      if (matches.is_empty) return false
+      list.[ clear ].add( matches )
+      matches.clear
+      return true
+endClass
+

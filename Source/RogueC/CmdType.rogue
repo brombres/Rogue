@@ -119,10 +119,10 @@ augment
     method Binary.type->Type
       return common_type( left.type, right.type )
 
-      #{
     method CallProcedure.type->Type
-      return procedure.return_type
+      return info.return_type
 
+      #{
     method CastReal64ToInt32.type->Type
       return Program.type_Int32
 

@@ -1,6 +1,6 @@
 module Rogue
 
-class CAdjuster : Visitor
+class CSpecializer : Visitor
   PROPERTIES
     writer         : CWriter
     this_module    : Module
@@ -22,10 +22,17 @@ class CAdjuster : Visitor
       ++autoname_index
       return result
 
-    method on_visit( cmd:Routine )
+    method on_visit( cmd:Procedure )
       this_type = null
       this_procedure = cmd
       autoname_index = 0
+
+      forEach (p at i in cmd.parameters)
+        block p = p->(as Local)
+          p.c_name = "$_$" (p.name,i)
+        endBlock
+      endForEach
+
       visit_children( cmd )
 
     method on_visit( cmd:Statements )
@@ -40,13 +47,13 @@ endClass
 
 augment
   METHODS
-    method Module.validate_c
-      local validator = CAdjuster( this )
+    method Module.specialize_c
+      local specializer = CSpecializer( this )
       forEach (type in types)
-        validator.visit( type )
+        specializer.visit( type )
       endForEach
 
       forEach (r in routines)
-        validator.visit( r )
+        specializer.visit( r )
       endForEach
 endAugment

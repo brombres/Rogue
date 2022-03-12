@@ -28,17 +28,19 @@ class Module
     method collect_global_statements( statements:Cmd )
       statements.add( forEach in global_statements )
       global_statements.clear
+      }#
 
-    method collect_routines( m_name:String, list:Procedure[], &is_limited )
+    method collect_routines( r_name:String, list:Procedure[], &is_limited )
       if (is_visiting) return
 
-      local matching = routines_by_name[ m_name ]
-      if (matching) list.add( forEach in matching )
+      forEach (r in routines)
+        if (r.name == r_name) list.add( r )
+      endForEach
 
       temporarily is_visiting = true
         forEach (used_m in used_modules)
           if (not is_limited or used_m.is_exported)
-            used_m.m.collect_routines( m_name, list, &=is_limited )
+            used_m.m.collect_routines( r_name, list, &=is_limited )
           endIf
         endForEach
       endTemporarily
@@ -46,6 +48,7 @@ class Module
     method description->String
       return name
 
+      #{
     method find_routine( name:String, parameter_count:Int32 )->Routine
       local routines = routines_by_name[ name ]
       if (not name) return null

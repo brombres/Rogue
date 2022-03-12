@@ -155,7 +155,7 @@ class Visitor<<$ReturnType>>
         cmd.parameters = visit(cmd.parameters)
         cmd.return_type = visit(cmd.return_type)->(as Type)
         cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.body = visit(cmd.body)
+        cmd.body = visit(cmd.body)->(as LocalScope)
       else
         visit( cmd.parameters )
         visit( cmd.return_type )
@@ -326,6 +326,33 @@ class Visitor<<$ReturnType>>
         visit( cmd.condition )
         visit( cmd.statements )
         visit( cmd.cmd_else )
+      endIf
+
+    method on_visit_children( cmd:Return )
+      if ($ReturnType isType Cmd)
+        cmd.result = visit(cmd.result)
+      else
+        visit( cmd.result )
+      endIf
+
+    method on_visit_children( cmd:Routine )
+      if ($ReturnType isType Cmd)
+        cmd.parameters = visit(cmd.parameters)
+        cmd.return_type = visit(cmd.return_type)->(as Type)
+        cmd.attributes = visit(cmd.attributes)->(as Attributes)
+        cmd.statements = visit(cmd.statements)
+      else
+        visit( cmd.parameters )
+        visit( cmd.return_type )
+        visit( cmd.attributes )
+        visit( cmd.statements )
+      endIf
+
+    method on_visit_children( cmd:CallProcedure )
+      if ($ReturnType isType Cmd)
+        cmd.args = visit(cmd.args)
+      else
+        visit( cmd.args )
       endIf
 
 endClass

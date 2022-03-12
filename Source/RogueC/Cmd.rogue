@@ -857,7 +857,7 @@ class ControlStructure : Cmd
       init( t, Statements(t), Statements(t), control_type )
 
     method init( t:Token, statements:Cmd, control_type:ControlType )
-      init( t, statements, Statements(t), control_type )
+      init( t, Statements(t), statements, control_type )
 
     method init( t, initialization, statements, control_type=ControlType.UNDEFINED )
 
@@ -877,11 +877,14 @@ class LocalScope : ControlStructure
     method init( t:Token )
       prior.init( t, ControlType.LOCAL_SCOPE )
 
+    method init( t:Token, statements:Cmd )
+      prior.init( t, statements, ControlType.LOCAL_SCOPE )
+
     method init( existing:LocalScope )
       prior.init( existing )
 
     method description->String
-      return "LocalScope"
+      return "LocalScope($,$)"(%initialization,%statements)
 endClass
 
 class Conditional : ControlStructure
@@ -1141,5 +1144,47 @@ class PrintValue : Unary
   METHODS
     method description->String
       return "PrintValue($)" (%operand)
+
+endClass
+
+class Return : Cmd
+  PROPERTIES
+    result : Cmd
+
+  METHODS
+    method init( t, result )
+
+    method init( existing:Return )
+      prior.init( existing )
+      if (existing.result) result = existing.result.cloned
+
+    method description->String
+      return "Return($)" (%result)
+
+endClass
+
+class CallProcedure : Cmd
+  PROPERTIES
+    info : Procedure
+    args : Cmd
+
+  METHODS
+    method init( t, args )
+
+    method init( t, info, args )
+
+    method init( existing:CallProcedure )
+      prior.init( existing )
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "CallProcedure($)" (%args)
+
+endClass
+
+class CallRoutine : CallProcedure
+  METHODS
+    method description->String
+      return "CallRoutine($)" (%args)
 
 endClass

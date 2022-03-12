@@ -437,10 +437,14 @@ class Resolver : Visitor
       }#
 
     method on_visit( cmd:Procedure )
-      # TODO: add parameters to visible_locals
+      visible_locals_fp.add( visible_locals.count )
+      forEach (p in cmd.parameters)
+        visible_locals.add( p->(as Local) )
+      endForEach
+
       visit_children( cmd )
-      #push_scope( cmd )
-      #pop_scope
+
+      visible_locals.discard_from( visible_locals_fp.remove_last )
 
     method pop_scope
       control_stack.discard_from( control_stack_fp.remove_last )
@@ -547,14 +551,17 @@ class Resolver : Visitor
 }#
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      if (not args)
-        local v = find_local( name )
-        if (v) return validate( GetLocal(t,v) )
-      endIf
+      #if (not args)
+      #  local v = find_local( name )
+      #  if (v) return validate( GetLocal(t,v) )
+      #endIf
+
+      require not context  # temp
+
+      local type_context : Type
+      local is_global = false
 
       #{
-      local is_global = false
-      local type_context : Type
 
       if (context)
         context = visit( context )
@@ -588,9 +595,11 @@ class Resolver : Visitor
             endIf
           endIf
         endIf
+        }#
 
-        type_context = this_type
+        type_context = this_type  # may be null
         if (args)
+          #{
           # Call or constructor
           if (type)
             if (name == "XY")
@@ -606,11 +615,12 @@ class Resolver : Visitor
             endIf
             return validate( cmd_create_object(t,type,args) )
           endIf
+          }#
         else
           local v = find_local( name )
           if (v) return validate( GetLocal(t,v) )
         endIf
-      endIf
+      #endIf
 
       local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
 
@@ -620,22 +630,21 @@ class Resolver : Visitor
         return validate( match.cmd_call(context,args) )
       endIf
 
-      if (not is_global)
-        # TODO: update to allow global properties
-        if (not args and type_context)
-          local p = type_context.find_property( name )
-          if (p)
-            if (context) return validate( GetProperty(t,context,p) )
-            else         return validate( GetThisProperty(t,p) )
-          endIf
-        endIf
-      endIf
-      }#
+      #if (not is_global)
+      #  # TODO: update to allow global properties
+      #  if (not args and type_context)
+      #    local p = type_context.find_property( name )
+      #    if (p)
+      #      if (context) return validate( GetProperty(t,context,p) )
+      #      else         return validate( GetThisProperty(t,p) )
+      #    endIf
+      #  endIf
+      #endIf
 
       if (suppress_error) return null
-throw t.error( "No such local: " + name )
-      #find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
-      #return null  # never reached
+
+      find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+      return null  # never reached
 
 
       #{
@@ -672,13 +681,14 @@ throw t.error( "No such local: " + name )
         endUse
         throw t.error( mesg )
       endIf
+      }#
 
     method cast_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
       if (not args) return
 
       while (args.count < proc.parameters.count)
-        args.add( proc.parameters[args.count].initial_value.cloned )
+        args.add( proc.parameters[args.count]->(as Local).initial_value.cloned )
       endWhile
 
       forEach (arg at i in args)
@@ -693,11 +703,11 @@ throw t.error( "No such local: " + name )
       local error_message : String
       use Candidates
         if (type_context)
-          type_context.collect_methods( name, Candidates.list, &=require_global )
+          require not type_context
+          #type_context.collect_methods( name, Candidates.list, &=require_global )
         else
           this_module.collect_routines( name, Candidates.list )
         endIf
-        (forEach in Candidates).resolve
         local result = refine_candidates( type_context, args )
         if (result or suppress_error) return result
 
@@ -779,7 +789,6 @@ throw t.error( "No such local: " + name )
       if (not Candidates.refine) return null
 
       return null
-}#
 endClass
 
 #{
@@ -947,7 +956,7 @@ augment
       return BitwiseXorValue( t, lhs, rhs )
 
 endAugment
-
+}#
 
 # Call
 augment
@@ -955,6 +964,7 @@ augment
     method Cmd.cmd_call( context:Cmd, args:Cmd )->Cmd
       throw t.error( "[INTERNAL] $.cmd_call() is undefined."(type_name) )
 
+      #{
     method Method.cmd_call( context:Cmd, args:Cmd )->Cmd
       if (context and not context.is_type_context)
         if (is_global) return CallGlobalMethodWithContext( t, context, this, args )
@@ -963,11 +973,13 @@ augment
         if (is_global) return CallGlobalMethod( t, this, args )
         else           return CallThisMethod( t, this, args )
       endIf
+      }#
 
     method Routine.cmd_call( context:Cmd, args:Cmd )->Cmd
       return CallRoutine( t, this, args )
 endAugment
 
+#{
 # Divide
 augment
   METHODS

@@ -48,6 +48,14 @@ augment
       endIf
       writer.print( r.c_name )
       writer.print( "(" )
+      forEach (p at i in r.parameters)
+        block p = p->(as Local)
+          if (i) writer.print ','
+          writer.print( p.type.c_name )
+          writer.print ' '
+          writer.print( p.c_name )
+        endBlock
+      endForEach
       writer.print( ")" )
 
     method Module.generate_c_class_structs( writer:CWriter )
@@ -154,7 +162,7 @@ augment
       endUse
 
     method Program.generate_c
-      (forEach in modules).validate_c
+      (forEach in modules).specialize_c
 
       local h_writer = CWriter( File("Test.h"), &header )
 
@@ -225,6 +233,10 @@ class CGenerator : Visitor
     method on_visit( cmd:Cmd )
       throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
 
+    method on_visit( cmd:Access )
+      #println StackTrace()
+      throw cmd.t.error("[INTERNAL] CGenerator: unresolved Access '$'."(cmd.name))
+
     method on_visit( cmd:CmdList )
       visit_children( cmd )
 
@@ -243,6 +255,17 @@ class CGenerator : Visitor
       visit_children( cmd )
       writer.indent -= 2
       writer.println '}'
+
+    method on_visit( cmd:CallRoutine )
+      writer.print( cmd.info.c_name )
+      writer.print '('
+      if (cmd.args)
+        forEach (arg at i in cmd.args)
+          if (i) writer.print ','
+          visit( arg )
+        endForEach
+      endIf
+      writer.print ')'
 
     method on_visit( cmd:CompareEQ )
       print_parenthesized( cmd.left )
@@ -358,27 +381,34 @@ class CGenerator : Visitor
     #method on_visit( cmd:LocalDef )
 
     method on_visit( cmd:LogicalAnd )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " && "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:LogicalNot )
-      writer.print "!("
-      visit( cmd.operand )
-      writer.print ")"
+      writer.print "!"
+      print_parenthesized( cmd.operand )
 
     method on_visit( cmd:LogicalOr )
-      writer.print "("
-      visit( cmd.left )
+      print_parenthesized( cmd.left )
       writer.print " || "
-      visit( cmd.right )
-      writer.print ")"
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Multiply )
+      print_parenthesized( cmd.left )
+      writer.print " * "
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:Preincrement )
       writer.print "++"
-      visit_children( cmd )
+      visit( cmd.operand )
+
+    method on_visit( cmd:Return )
+      writer.print "return"
+      if (cmd.result)
+        writer.print ' '
+        visit( cmd.result )
+      endIf
 
     method on_visit( cmd:Routine )
       this_procedure = cmd
@@ -386,7 +416,7 @@ class CGenerator : Visitor
       forEach (v at i in cmd.locals) v.c_name = v.name + "_" + i
       this_module.write_c_routine_header( cmd, writer )
       writer.println
-      visit_children( cmd )
+      visit( cmd.body )
 
     method on_visit( cmd:SetLocal )
       if (cmd.info.type.is_reference)
@@ -406,6 +436,11 @@ class CGenerator : Visitor
         visit( statement )
         if (statement.needs_semicolon) writer.println( ';' )
       endForEach
+
+    method on_visit( cmd:Subtract )
+      print_parenthesized( cmd.left )
+      writer.print " - "
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:PrintInt32 )
       writer.print ''printf( "%d", (int)''

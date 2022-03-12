@@ -42,13 +42,12 @@ class Collector : Visitor
     method on( cmd:Include )->Cmd
       Program.include( cmd.t, cmd.filepath )
       return null
-
-    method on( cmd:RoutineDef )->Cmd
-      local m = Program.current_module
-      ensure m.routines_by_name[ cmd.name ]
-      m.routines_by_name[ cmd.name ].add( cmd->Routine.[module_context=m] )
-      return null
       }#
+
+    method on( cmd:Routine )->Cmd
+      cmd.organize
+      Program.current_module.routines[ cmd.signature ] = cmd
+      return null
 
     method on( cmd:Statements )->Cmd
       Program.current_module.global_statements.add( forEach in cmd )
