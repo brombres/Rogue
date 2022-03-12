@@ -5,12 +5,14 @@ class Attribute
     GENERATED = 1
     PRIMITIVE = (1:<<:1)
     OBJECT    = (1:<<:2)
+    EXPORT    = (1:<<:3)
 endClass
 
 class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_generated, Attribute.GENERATED )
   ROGUE_ATTRIBUTE( is_primitive, Attribute.PRIMITIVE )
   ROGUE_ATTRIBUTE( is_object,    Attribute.OBJECT )
+  ROGUE_ATTRIBUTE( is_exported,  Attribute.EXPORT )
 
   PROPERTIES
     attributes : Int32
@@ -24,7 +26,10 @@ class Attributes : CmdList
       t = other.t
       attributes = other.attributes
 
-    method add( flags:Int32 )->Int32
+    method add( cmd:Cmd )
+      attributes |= cmd.attribute_flags
+
+    method add( flags:Int32 )
       attributes |= flags
 
     method contains( flags:Int32 )->Logical
@@ -40,4 +45,13 @@ class Attributes : CmdList
     method is_reference->Logical
       return (attributes & (Attribute.OBJECT))?
 endClass
+
+augment
+  METHODS
+    method Cmd.attribute_flags->Int32
+      return 0
+
+    method AttributeExport.attribute_flags->Int32
+      return Attribute.EXPORT
+endAugment
 

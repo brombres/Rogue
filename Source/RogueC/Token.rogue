@@ -7,6 +7,9 @@ class Token( type:TokenType, filepath=null:String, source=null:String,
     method cloned( new_type:TokenType )->Token
       return Token( new_type, filepath, source, line, column, content )
 
+    method cloned( new_type:TokenType, new_content:String )->Token
+      return Token( new_type, filepath, source, line, column, new_content )
+
     method error( message:String )->CompileError
       return CompileError( message, filepath, source, line, column )
 

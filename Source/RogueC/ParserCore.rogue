@@ -25,66 +25,72 @@ class ParserCore [abstract]
     ip_optional_type = 12
     ip_identifier = 13
     ip_string = 14
-    ip_class = 15
-    ip_placeholder = 16
-    ip_template_parameters = 17
-    ip_constructor_properties = 18
-    ip_base_types = 19
-    ip_attributes = 20
-    ip_class_sections = 21
-    ip_class_section = 22
-    ip_native_code_blocks = 23
-    ip_native_code_block = 24
-    ip_forEach_loop = 25
-    ip_forEach_control = 26
-    ip_forEach_optional_at = 27
-    ip_forEach_collection = 28
-    ip_if_statement = 29
-    ip_if_statement_multi_line_elseIf_else = 30
-    ip_if_statement_single_line_elseIf_else = 31
-    ip_properties = 32
-    ip_property_declaration = 33
-    ip_multi_line_statements = 34
-    ip_single_line_statements = 35
-    ip_control_structure = 36
-    ip_args = 37
-    ip_arg = 38
-    ip_statement = 39
-    ip_local_declarations = 40
-    ip_local_declaration = 41
-    ip_block = 42
-    ip_access_args = 43
-    ip_optional_expression = 44
-    ip_expression = 45
-    ip_logical_xor = 46
-    ip_logical_xor__inner = 47
-    ip_logical_or = 48
-    ip_logical_or__inner = 49
-    ip_logical_and = 50
-    ip_logical_and__inner = 51
-    ip_comparison = 52
-    ip_comparison__inner = 53
-    ip_bitwise_xor = 54
-    ip_bitwise_xor__inner = 55
-    ip_bitwise_or = 56
-    ip_bitwise_or__inner = 57
-    ip_bitwise_and = 58
-    ip_bitwise_and__inner = 59
-    ip_bitwise_shift = 60
-    ip_bitwise_shift__inner = 61
-    ip_add_subtract = 62
-    ip_add_subtract__inner = 63
-    ip_multiply_divide_mod = 64
-    ip_multiply_divide_mod__inner = 65
-    ip_pre_unary = 66
-    ip_post_unary = 67
-    ip_post_unary__inner = 68
-    ip_access = 69
-    ip_access_inner = 70
-    ip_term = 71
-    ip_preprocess = 72
-    ip_process_another = 73
-    ip_additional_node_types = 74
+    ip_module_attributes = 15
+    ip_module_attribute = 16
+    ip_class = 17
+    ip_placeholder = 18
+    ip_template_parameters = 19
+    ip_constructor_properties = 20
+    ip_base_types = 21
+    ip_attributes = 22
+    ip_class_sections = 23
+    ip_class_section = 24
+    ip_native_code_blocks = 25
+    ip_native_code_block = 26
+    ip_forEach_loop = 27
+    ip_forEach_control = 28
+    ip_forEach_optional_at = 29
+    ip_forEach_collection = 30
+    ip_if_statement = 31
+    ip_if_statement_multi_line_elseIf_else = 32
+    ip_if_statement_single_line_elseIf_else = 33
+    ip_properties = 34
+    ip_property_declaration = 35
+    ip_multi_line_statements = 36
+    ip_single_line_statements = 37
+    ip_control_structure = 38
+    ip_args = 39
+    ip_arg = 40
+    ip_statement = 41
+    ip_local_declarations = 42
+    ip_local_declaration = 43
+    ip_block = 44
+    ip_module_path = 45
+    ip_uses_attributes = 46
+    ip_uses_attribute = 47
+    ip_access_args = 48
+    ip_optional_expression = 49
+    ip_expression = 50
+    ip_logical_xor = 51
+    ip_logical_xor__inner = 52
+    ip_logical_or = 53
+    ip_logical_or__inner = 54
+    ip_logical_and = 55
+    ip_logical_and__inner = 56
+    ip_comparison = 57
+    ip_comparison__inner = 58
+    ip_bitwise_xor = 59
+    ip_bitwise_xor__inner = 60
+    ip_bitwise_or = 61
+    ip_bitwise_or__inner = 62
+    ip_bitwise_and = 63
+    ip_bitwise_and__inner = 64
+    ip_bitwise_shift = 65
+    ip_bitwise_shift__inner = 66
+    ip_add_subtract = 67
+    ip_add_subtract__inner = 68
+    ip_multiply_divide_mod = 69
+    ip_multiply_divide_mod__inner = 70
+    ip_pre_unary = 71
+    ip_post_unary = 72
+    ip_post_unary__inner = 73
+    ip_access = 74
+    ip_access_inner = 75
+    ip_term = 76
+    ip_preprocess = 77
+    ip_process_another = 78
+    ip_collect_meta_filepath = 79
+    ip_additional_node_types = 80
 
   PROPERTIES
     _tokens          : Token[]
@@ -125,6 +131,8 @@ class ParserCore [abstract]
 
     method on_parsed_class [abstract]
 
+    method uses_attribute_no_include [abstract]
+
     method mark_token [abstract]
 
     method collect_token_string [abstract]
@@ -134,6 +142,10 @@ class ParserCore [abstract]
     method create_definition [abstract]
 
     method include_filepath [abstract]
+
+    method rewrite_cur_token [abstract]
+
+    method uses_filepath [abstract]
 
     method insert_definition [abstract]
 
@@ -369,6 +381,20 @@ class ParserCore [abstract]
               _discard_position
               return
             endIf
+            if (_next_t.type == TokenType.KEYWORD_MODULE)
+              temporarily _cur_t = _on_t
+                if ((_next_t.type == TokenType.IDENTIFIER))
+                  _execute(ip_identifier)
+                  _pop_frame
+                else
+                  if (not disable_output) _push( null, 0 )
+                endIf
+                _execute(ip_module_attributes)
+                _pop_frame
+                if (not disable_output) _push( DefineModule(_cur_t,_string_arg(-2),_node_arg(-1)->(as Attributes)), 2 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_ROUTINE)
               temporarily _cur_t = _on_t
                 _execute(ip_identifier)
@@ -389,6 +415,16 @@ class ParserCore [abstract]
                 endIf
                 if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
                 if (not disable_output) _push( Routine(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_USES)
+              temporarily _cur_t = _on_t
+                _execute(ip_string)
+                _pop_frame
+                _execute(ip_uses_attributes)
+                _pop_frame
+                if (not disable_output) _push( UsesModule(_cur_t,_node_arg(-2),_node_arg(-1)->(as Attributes)), 2 )
                 return
               endTemporarily
             endIf
@@ -493,6 +529,23 @@ class ParserCore [abstract]
               endTemporarily
             endIf
             _throw_syntax_error("Literal string expected.")
+            return
+          case ip_module_attributes
+            _begin_list
+            if (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
+              temporarily _cur_t = _on_t
+                while (((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_CLOSE_SQUARE))))
+                  _execute(ip_module_attribute)
+                  _pop_frame
+                  _consume(TokenType.SYMBOL_COMMA)
+                endWhile
+                if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
+              endTemporarily
+            endIf
+            if (not disable_output) _push_list( Attributes(_list_t) )
+            return
+          case ip_module_attribute
+            _throw_syntax_error("Illegal attribute for 'module'. Expected (TBD).")
             return
           case ip_class
             if (not _consume(TokenType.KEYWORD_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_CLASS )
@@ -1117,6 +1170,45 @@ class ParserCore [abstract]
             endIf
             if (not disable_output) _push( Block(_cur_t,_node_arg(-1)), 1 )
             return
+          case ip_module_path
+            _begin_list
+            _execute(ip_identifier)
+            _pop_frame
+            while (_consume(TokenType.SYMBOL_SLASH))
+              _execute(ip_identifier)
+              _pop_frame
+            endWhile
+            if (not disable_output) _push_list( CmdList(_list_t) )
+            return
+          case ip_uses_attributes
+            _begin_list
+            if (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
+              temporarily _cur_t = _on_t
+                while (((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_CLOSE_SQUARE))))
+                  _execute(ip_uses_attribute)
+                  _pop_frame
+                  _consume(TokenType.SYMBOL_COMMA)
+                endWhile
+                if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
+              endTemporarily
+            endIf
+            if (not disable_output) _push_list( Attributes(_list_t) )
+            return
+          case ip_uses_attribute
+            if (_next_t.type == TokenType.KEYWORD_EXPORT)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( AttributeExport(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_consume_content("noInclude"))
+              this.ip = ip
+              uses_attribute_no_include
+              ip = this.ip
+              return
+            endIf
+            _throw_syntax_error("Illegal attribute for 'uses'. Expected any of [export noInclude].")
+            return
           case ip_access_args
             if ((not (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)))
               if (not disable_output) _push( null, 0 )
@@ -1438,12 +1530,12 @@ class ParserCore [abstract]
             endIf
             return
           case ip_pre_unary
-            if (_next_t.type == TokenType.SYMBOL_MINUS)
+            if (_next_t.type == TokenType.SYMBOL_BANG)
               temporarily _cur_t = _on_t
                 _consume_eols
                 _execute(ip_pre_unary)
                 _pop_frame
-                if (not disable_output) _push( Negate(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( BitwiseNot(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -1453,6 +1545,15 @@ class ParserCore [abstract]
                 _execute(ip_pre_unary)
                 _pop_frame
                 if (not disable_output) _push( LogicalNot(_cur_t,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_MINUS)
+              temporarily _cur_t = _on_t
+                _consume_eols
+                _execute(ip_pre_unary)
+                _pop_frame
+                if (not disable_output) _push( Negate(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -1582,6 +1683,24 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_TRUE)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( LiteralLogical(_cur_t,_string_to_Logical("true")), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_FALSE)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( LiteralLogical(_cur_t,_string_to_Logical("false")), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_PI)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( LiteralPi(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
@@ -1626,73 +1745,26 @@ class ParserCore [abstract]
               endTemporarily
             elseIf (_next_t.type == TokenType.META_INCLUDE)
               temporarily _cur_t = _on_t
-                this.ip = ip
-                mark_token
-                ip = this.ip
-                buffer.clear.print ""
-                if (_next_t.type == TokenType.STRING)
-                  temporarily _cur_t = _on_t
-                    this.ip = ip
-                    collect_token_string
-                    ip = this.ip
-                  endTemporarily
-                else
-                  while ((((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE))) and (not (_next_t.type == TokenType.EOL))))
-                    if (_next_t.type == TokenType.IDENTIFIER)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.INTEGER)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.REAL_NUMBER)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.SYMBOL_TILDE)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.SYMBOL_SLASH)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.SYMBOL_COLON)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.SYMBOL_PERIOD)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    elseIf (_next_t.type == TokenType.SYMBOL_BACKSLASH)
-                      temporarily _cur_t = _on_t
-                        this.ip = ip
-                        collect_token_string
-                        ip = this.ip
-                      endTemporarily
-                    else
-                      _throw_syntax_error("Unsupported filepath character. Put the $include filepath in quotes.")
-                    endIf
-                  endWhile
-                endIf
+                _execute(ip_collect_meta_filepath)
+                _pop_frame
                 this.ip = ip
                 include_filepath
+                ip = this.ip
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_USES)
+              temporarily _cur_t = _on_t
+                this.ip = ip
+                rewrite_cur_token
+                ip = this.ip
+                _execute(ip_collect_meta_filepath)
+                _pop_frame
+                _save_position
+                _execute(ip_uses_attributes)
+                _pop_frame
+                _restore_position
+                this.ip = ip
+                uses_filepath
                 ip = this.ip
                 return
               endTemporarily
@@ -1708,7 +1780,81 @@ class ParserCore [abstract]
             rewrite_token
             ip = this.ip
             return
+          case ip_collect_meta_filepath
+            this.ip = ip
+            mark_token
+            ip = this.ip
+            buffer.clear.print ""
+            if (_next_t.type == TokenType.STRING)
+              temporarily _cur_t = _on_t
+                this.ip = ip
+                collect_token_string
+                ip = this.ip
+              endTemporarily
+            else
+              while ((((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE))) and (not (_next_t.type == TokenType.EOL))))
+                if (_next_t.type == TokenType.IDENTIFIER)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.INTEGER)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.REAL_NUMBER)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.SYMBOL_TILDE)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.SYMBOL_SLASH)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.SYMBOL_COLON)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.SYMBOL_PERIOD)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                elseIf (_next_t.type == TokenType.SYMBOL_BACKSLASH)
+                  temporarily _cur_t = _on_t
+                    this.ip = ip
+                    collect_token_string
+                    ip = this.ip
+                  endTemporarily
+                else
+                  _throw_syntax_error("Unsupported filepath character. Put the filepath in quotes.")
+                endIf
+              endWhile
+            endIf
+            return
           case ip_additional_node_types
+            if (not disable_output) _push( CastToByte(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CastToCharacter(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CastToInt32(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CastToInt64(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CastToLogical(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CastToReal32(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CastToReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallRoutine(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( Compare(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
@@ -1724,6 +1870,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( PrintInt32(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintLogical(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintNewline(_cur_t), 0 )
+            if (not disable_output) _push( PrintReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintString(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintValue(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )

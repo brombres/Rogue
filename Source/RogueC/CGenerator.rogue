@@ -37,7 +37,6 @@ augment
       return false
 
     method Module.c_name->String
-      if (this is Program.default_module) return "Rogue"
       return name
 
     method Module.write_c_routine_header( r:Routine, writer:CWriter )
@@ -140,8 +139,8 @@ augment
 
       forEach (r in routines)
         CGenerator( this, writer ).visit( r )
+        writer.println
       endForEach
-      writer.println
 
     method Module.generate_c_launch_commands( writer:CWriter )
       local r = routines[ "on_launch()" ]

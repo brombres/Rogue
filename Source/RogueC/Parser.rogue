@@ -11,6 +11,7 @@ class Parser : ParserCore
     token_buffer     = Token[]
     inserted_tokens  = Token[]
     collecting_templates = false
+    _attribute_no_include = false
 
   METHODS
     method preprocess
@@ -66,12 +67,25 @@ class Parser : ParserCore
 
     method mark_token
       marked_token = _cur_t
+      _attribute_no_include = false
 
     method has_another->Logical
       return _position < _limit or inserted_tokens.count
 
     method include_filepath
       Program.include( marked_token, buffer->String )
+
+    method uses_attribute_no_include
+      _attribute_no_include = true
+
+    method uses_filepath
+      # First pass $include's the given file
+      local filepath = buffer->String
+      if (filepath == "") throw marked_token.error( "Module path expected." )
+      processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
+      if (not _attribute_no_include)
+        Program.include( marked_token, filepath )
+      endIf
 
     method on_parsed_class
       if (not collecting_templates) return
@@ -93,6 +107,9 @@ class Parser : ParserCore
         throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
       endIf
       Program.templates[extended_name] = Template( name, placeholders, tokens )
+
+    method rewrite_cur_token
+      processed_tokens.add( _cur_t )
 
     method rewrite_token
       processed_tokens.add( _read )

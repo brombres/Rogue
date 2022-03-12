@@ -1286,3 +1286,44 @@ class PrintReal64 : PrintValue
 
 endClass
 
+class UsesModule : Cmd
+  PROPERTIES
+    path       : Cmd
+    attributes : Attributes
+
+  METHODS
+    method init( t, path, attributes )
+
+    method init( existing:UsesModule )
+      prior.init( existing )
+      if (existing.path) path = existing.path.cloned
+      if (existing.attributes) attributes = existing.attributes.cloned
+
+    method description->String
+      return "UsesModule($,$)" (%path,%attributes)
+
+endClass
+
+class AttributeExport : Cmd
+  METHODS
+    method description->String
+      return "AttributeExport"
+endClass
+
+class DefineModule : Cmd
+  PROPERTIES
+    name       : String
+    attributes : Attributes
+
+  METHODS
+    method init( t, name, attributes )
+
+    method init( existing:DefineModule )
+      prior.init( existing )
+      name = existing.name
+      if (existing.attributes) attributes = existing.attributes.cloned
+
+    method description->String
+      return "DefineModule($,$)" (%name,%attributes)
+
+endClass

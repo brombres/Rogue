@@ -105,14 +105,16 @@ class Module
       local result = find_type( name )
       if (result) return result
       return Type( t, name )
+      }#
 
     method uses_module( m:Module, &is_exported )
-      if (m is this) return # happens when this is the default module
+      if (m is this) return
+      # happens when this is the default module since all modules implicitly "use" default module
+
       forEach (existing_m in used_modules)
-        if (existing_m.m is m) return
+        if (existing_m.m is m) return # already added
       endForEach
       used_modules.add( UsedModule(m,&=is_exported) )
-      }#
 
 endClass
 

@@ -29,7 +29,7 @@ class Program [singleton]
   METHODS
     method init
       Program = this  # update singleton reference
-      default_module = get_module( t, "Default" )
+      default_module = get_module( t, "Rogue" )
       current_module = default_module
 
       type_Logical   = TypeLogical( t )

@@ -27,18 +27,13 @@ class Collector : Visitor
 
       cmd->Type  # The new Type links itself up
       return null
+      }#
 
     method on( cmd:DefineModule )->Cmd
-      if (Program.current_module.is_dynamic)
-        local cur_name = Program.current_module.name
-        if (cur_name != cmd.name)
-          throw cmd.t.error( "Code from imported module '$' cannot switch module contexts."(cur_name) )
-        endIf
-      else
-        Program.set_current_module( cmd.t, cmd.name )
-      endIf
+      Program.current_module = Program.get_module( cmd.t, cmd.name )
       return null
 
+      #{
     method on( cmd:Include )->Cmd
       Program.include( cmd.t, cmd.filepath )
       return null
@@ -53,23 +48,9 @@ class Collector : Visitor
       Program.current_module.global_statements.add( forEach in cmd )
       return null
 
-      #{
     method on( cmd:UsesModule )->Cmd
-      trace "TODO"
-      return cmd
-      #{
-      use builder = StringBuilder.pool
-        forEach (segment at i in cmd.path)
-          if (i > 0) builder.print '/'
-          builder.print segment->String
-        endForEach
-        local filepath = builder->String
-        local m = Program.get_module( cmd.t, cmd.path.last->String )
-        Program.current_module.uses_module( m, &is_exported=cmd.is_exported )
-        Program.include( filepath, m )
-      endUse
+      local m = Program.get_module( cmd.t, File.filename(cmd.path) )
+      Program.current_module.uses_module( m, &is_exported=cmd.attributes.is_exported )
       return null
-      }#
-    }#
 endClass
 
