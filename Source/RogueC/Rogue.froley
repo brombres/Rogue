@@ -1101,8 +1101,9 @@ parser
   on "%" -> Mod
 
 - pre_unary [preUnary]
-  on "-"   -> Negate
+  on "!"   -> BitwiseNot
   on "not" -> LogicalNot
+  on "-"   -> Negate
   on "++"  -> Preincrement
   on "--"  -> Predecrement
 
@@ -1140,11 +1141,9 @@ parser
     access_args
     produce Access( name:String, args )
   endOn
-#{
   on "true"               -> LiteralLogical(value="true":Logical)
   on "false"              -> LiteralLogical(value="false":Logical)
   on "pi"                 -> LiteralPi
-}#
   on '(', expression, ')':   return
 #{
   onPeek "[" literal_list -> LiteralValueList(args)
@@ -1230,52 +1229,13 @@ parser
   call rewrite_token
 
 - additional_node_types
-  #  create AddAndAssignLocal(info:Local,operand):OpAndAssign
-  #  create AddAndAssignLocalInt32(info:Local,operand):OpAndAssign
-  #  create AddAndAssignProperty(context,info:Property,operand):OpAndAssign
-  #  create AddAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
-  #  create AddAndAssignThisProperty(info:Property,operand):OpAndAssign
-  #  create AddAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
-  #  create AddInt32(left,right):Binary
-  #  create AddObject(left,right):Binary
-  #  create AddReal64(left,right):Binary
-  #  create AddString(left,right):Binary
-  #  create AddValue(left,right):Binary
-  #  create BitwiseAndInt32(left,right):Binary
-  #  create BitwiseAndValue(left,right):Binary
-  #  create BitwiseOrAndAssignLocal(info:Local,operand):OpAndAssign
-  #  create BitwiseOrAndAssignLocalInt32(info:Local,operand):OpAndAssign
-  #  create BitwiseOrAndAssignProperty(context,info:Property,operand):OpAndAssign
-  #  create BitwiseOrAndAssignPropertyInt32(context,info:Property,operand):OpAndAssign
-  #  create BitwiseOrAndAssignThisProperty(info:Property,operand):OpAndAssign
-  #  create BitwiseOrAndAssignThisPropertyInt32(info:Property,operand):OpAndAssign
-  #  create BitwiseOrInt32(left,right):Binary
-  #  create BitwiseOrValue(left,right):Binary
-  #  create BitwiseXorInt32(left,right):Binary
-  #  create BitwiseXorValue(left,right):Binary
-  #  create CastInt32ToObject(operand):Unary
-  #  create CastInt32ToReal64(operand):Unary
-  #  create CastInt32ToString(operand):Unary
-  #  create CastInt32ToValue(operand):Unary
-  #  create CastObjectToInt32(operand):Unary
-  #  create CastObjectToReal64(operand):Unary
-  #  create CastObjectToString(operand):Unary
-  #  create CastReal64ToInt32(operand):Unary
-  #  create CastReal64ToObject(operand):Unary
-  #  create CastReal64ToString(operand):Unary
-  #  create CastStringToInt32(operand):Unary
-  #  create CastStringToObject(operand):Unary
-  #  create CastStringToReal64(operand):Unary
-  #  create CastToInt32(operand):Unary
-  #  create CastToObject(operand):Unary
-  #  create CastToReal64(operand):Unary
-  #  create CastToString(operand):Unary
-  #  create CastToValue(operand):Unary
-  #  create CastValueToCharacter(operand):Unary
-  #  create CastValueToInt32(operand):Unary
-  #  create CastValueToLogical(operand):Unary
-  #  create CastValueToReal64(operand):Unary
-  #  create CastValueToXY(operand):Unary
+  create CastToByte(operand):Unary
+  create CastToCharacter(operand):Unary
+  create CastToInt32(operand):Unary
+  create CastToInt64(operand):Unary
+  create CastToLogical(operand):Unary
+  create CastToReal32(operand):Unary
+  create CastToReal64(operand):Unary
   #  create CallMethod(context,procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
@@ -1347,8 +1307,9 @@ parser
   create PrintInt32(operand):PrintValue
   create PrintLogical(operand):PrintValue
   create PrintNewline
+  create PrintReal64(operand):PrintValue
   create PrintString(operand):PrintValue
-  create PrintValue(operand):Unary
+  create PrintValue(operand)
   create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope)
   #  create ProcedureDef(name:String,parameters,return_type:Type,attributes,statements)
   #  create Property( type_context:Type, name:String, initial_value, type:Type )

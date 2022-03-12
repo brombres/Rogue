@@ -135,7 +135,7 @@ class Resolver : Visitor
       local right = cmd.right
       local left_type = left.require_type
       local right_type = right.require_type
-      local result_type = Cmd.common_type( left_type, right_type )
+      local result_type = Cmd.common_op_type( left_type, right_type )
       if (left_type is not result_type) cmd.left = validate( result_type.cmd_cast(left) )
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
@@ -535,10 +535,17 @@ class Resolver : Visitor
 #{
     method on_validate( cmd:Subtract )->Cmd
       return validate( cmd.left.type.cmd_subtract(cmd.t, cmd.left, cmd.right) )
+      }#
 
     method on_visit( cmd:Unary )
-      cmd.operand = visit( cmd.operand ).require_value
+      cmd.operand = visit( cmd.operand )
+      local type = cmd.require_type
+      if (type.is_primitive)
+        local op_type = Cmd.common_op_type( type, Program.type_Int32 )
+        if (type is not op_type) cmd.operand = validate( cmd.cmd_cast_to(op_type) )
+      endIf
 
+      #{
     method on_visit( cmd:While )
       visit_children( cmd )
       cmd.condition.require_value
@@ -882,6 +889,9 @@ augment
 
     method TypeInt32.cmd_print( operand:Cmd )->Cmd
       return PrintInt32( operand.t, operand )
+
+    method TypeReal64.cmd_print( operand:Cmd )->Cmd
+      return PrintReal64( operand.t, operand )
 
     method TypeString.cmd_print( operand:Cmd )->Cmd
       return PrintString( operand.t, operand )

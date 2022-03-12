@@ -1140,8 +1140,16 @@ class DiscardResult : Unary
 
 endClass
 
-class PrintValue : Unary
+class PrintValue : Cmd
+  PROPERTIES
+    operand : Cmd
+
   METHODS
+    method init( t, operand )
+
+    method init( existing:PrintValue )
+      operand = existing.operand.cloned
+
     method description->String
       return "PrintValue($)" (%operand)
 
@@ -1188,3 +1196,93 @@ class CallRoutine : CallProcedure
       return "CallRoutine($)" (%args)
 
 endClass
+
+class BitwiseNot : Unary
+  METHODS
+    method description->String
+      return "BitwiseNot($)" (%operand)
+
+endClass
+
+class LiteralLogical : Cmd
+  PROPERTIES
+    value : Logical
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralLogical )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralLogical($)" (%value)
+
+    method to->Int32:   return which{value:1 || 0}
+    method to->Logical: return value
+    method to->String:  return which{value:"true" || "false"}
+
+endClass
+
+class LiteralPi : Cmd
+  METHODS
+    method description->String
+      return "LiteralPi"
+endClass
+
+class CastToByte : Unary
+  METHODS
+    method description->String
+      return "CastToByte($)" (%operand)
+
+endClass
+
+class CastToCharacter : Unary
+  METHODS
+    method description->String
+      return "CastToCharacter($)" (%operand)
+
+endClass
+
+class CastToInt32 : Unary
+  METHODS
+    method description->String
+      return "CastToInt32($)" (%operand)
+
+endClass
+
+class CastToInt64 : Unary
+  METHODS
+    method description->String
+      return "CastToInt64($)" (%operand)
+
+endClass
+
+class CastToLogical : Unary
+  METHODS
+    method description->String
+      return "CastToLogical($)" (%operand)
+
+endClass
+
+class CastToReal32 : Unary
+  METHODS
+    method description->String
+      return "CastToReal32($)" (%operand)
+
+endClass
+
+class CastToReal64 : Unary
+  METHODS
+    method description->String
+      return "CastToReal64($)" (%operand)
+
+endClass
+
+class PrintReal64 : PrintValue
+  METHODS
+    method description->String
+      return "PrintReal64($)" (%operand)
+
+endClass
+

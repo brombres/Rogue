@@ -249,6 +249,25 @@ class CGenerator : Visitor
         visit( cmd )
       endIf
 
+    method on_visit( cmd:BitwiseAnd )
+      print_parenthesized( cmd.left )
+      writer.print " & "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseNot )
+      writer.print "~"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:BitwiseOr )
+      print_parenthesized( cmd.left )
+      writer.print " | "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseXor )
+      print_parenthesized( cmd.left )
+      writer.print " ^ "
+      print_parenthesized( cmd.right )
+
     method on_visit( cmd:Block )
       writer.println '{'
       writer.indent += 2
@@ -266,6 +285,34 @@ class CGenerator : Visitor
         endForEach
       endIf
       writer.print ')'
+
+    method on_visit( cmd:CastToByte )
+      writer.print "(RogueByte)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CastToCharacter )
+      writer.print "(RogueCharacter)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CastToInt32 )
+      writer.print "(RogueInt32)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CastToInt64 )
+      writer.print "(RogueInt64)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CastToLogical )
+      writer.print "(RogueLogical)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CastToReal32 )
+      writer.print "(RogueReal32)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CastToReal64 )
+      writer.print "(RogueReal64)"
+      print_parenthesized( cmd.operand )
 
     method on_visit( cmd:CompareEQ )
       print_parenthesized( cmd.left )
@@ -372,6 +419,12 @@ class CGenerator : Visitor
     method on_visit( cmd:LiteralInt32 )
       writer.print( cmd.value )
 
+    method on_visit( cmd:LiteralLogical )
+      writer.print which{ cmd.value:1 || 0 }
+
+    method on_visit( cmd:LiteralPi )
+      writer.print pi
+
     method on_visit( cmd:LiteralString )
       writer.print( Program.unique_strings[cmd.value] )
 
@@ -394,10 +447,24 @@ class CGenerator : Visitor
       writer.print " || "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:Mod )
+      if (cmd.type is Program.type_Real64)    writer.print "Rogue_mod_Real64"
+      elseIf (cmd.type is Program.type_Int64) writer.print "Rogue_mod_Int64"
+      else                                    writer.print "Rogue_mod_Int32"
+      writer.print '('
+      visit( cmd.left )
+      writer.print ','
+      visit( cmd.right )
+      writer.print ')'
+
     method on_visit( cmd:Multiply )
       print_parenthesized( cmd.left )
       writer.print " * "
       print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Negate )
+      writer.print '-'
+      print_parenthesized( cmd.operand )
 
     method on_visit( cmd:Preincrement )
       writer.print "++"
@@ -454,6 +521,11 @@ class CGenerator : Visitor
 
     method on_visit( cmd:PrintNewline )
       writer.print( ''putchar( '\\n' )'' )
+
+    method on_visit( cmd:PrintReal64 )
+      writer.print ''printf( "%lf", ''
+      visit( cmd.operand )
+      writer.print '' )''
 
     method on_visit( cmd:PrintString )
       writer.print ''printf( "%s", RogueString_to_c_string(''

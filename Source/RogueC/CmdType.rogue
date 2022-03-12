@@ -12,9 +12,21 @@ augment Cmd
         if (a is type or b is type) return type
         type = Program.type_Real64
         if (a is type or b is type) return type
-        return Program.type_Int32  # any mismatched pair Logical/Character/Int32 -> Int32
+        return Program.type_Int32  # any mismatched pair Logical/Byte/Character/Int32 -> Int32
       else
         return Program.type_String # Placeholder/TODO
+      endIf
+
+    method common_op_type( a:Type, b:Type )->Type
+      local type = common_type( a, b )
+      if (not type.is_primitive) return type
+
+      if (type is Program.type_Real64 or type is Program.type_Real32)
+        return Program.type_Real64
+      elseIf (type is Program.type_Int64)
+        return Program.type_Int64
+      else
+        return Program.type_Int32
       endIf
 
   METHODS
@@ -42,27 +54,28 @@ augment
   METHODS
     method Type.cmd_cast( cmd:Cmd )->Cmd
       throw UnsupportedOperationError()
-      #{
-      return CastToObject( cmd.t, cmd, this )
+
+    method TypeByte.cmd_cast( cmd:Cmd )->Cmd
+      return CastToByte(cmd.t,cmd)
 
     method TypeCharacter.cmd_cast( cmd:Cmd )->Cmd
-      return CastToInt32(cmd.t,cmd)
+      return CastToCharacter(cmd.t,cmd)
 
     method TypeInt32.cmd_cast( cmd:Cmd )->Cmd
       return CastToInt32(cmd.t,cmd)
 
+    method TypeInt64.cmd_cast( cmd:Cmd )->Cmd
+      return CastToInt64(cmd.t,cmd)
+
     method TypeLogical.cmd_cast( cmd:Cmd )->Cmd
-      return CastToInt32(cmd.t,cmd)
+      return CastToLogical(cmd.t,cmd)
+
+    method TypeReal32.cmd_cast( cmd:Cmd )->Cmd
+      return CastToReal32(cmd.t,cmd)
 
     method TypeReal64.cmd_cast( cmd:Cmd )->Cmd
       return CastToReal64(cmd.t,cmd)
 
-    method TypeString.cmd_cast( cmd:Cmd )->Cmd
-      return CastToString(cmd.t,cmd)
-
-    method TypeValue.cmd_cast( cmd:Cmd )->Cmd
-      return CastToValue(cmd.t,cmd)
-      }#
 endAugment
 
 #{
