@@ -7,7 +7,7 @@ BuildLocal.rogue
 *.o
 .DS_Store
 *~
-/Test.r2
+/Test.rogue
 /test
 /Test.c
 /Test.h

@@ -30,7 +30,7 @@ endRoutine
 
 routine rogo_run
   #execute "$ Test.rogue" (File.esc(exe_filepath))
-  execute "$ Test.rogue --libraries=Source/Libraries && gcc Test.c -o test && ./test" (File.esc(exe_filepath))
+  execute "$ Test.rogue --libraries=Source/Libraries && gcc -Wall Test.c -o test && ./test" (File.esc(exe_filepath))
 endRoutine
 
 routine rogo_link

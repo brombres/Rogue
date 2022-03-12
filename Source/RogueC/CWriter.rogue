@@ -135,6 +135,8 @@ class CWriter : BufferedPrintWriter
            |
            |void  Rogue_launch();
            |
+           |#define ROGUE_STRING_INTERNAL_BUFFER_SIZE 68
+           |
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
