@@ -968,6 +968,14 @@ parser
   on "println"   args -> Println(args)
   on "return"    optional_expression -> Return(result)
 
+  onPeek "nativeCHeader"
+    native_code_block
+    return
+  elseOnPeek "nativeCCode"
+    native_code_block
+    return
+  endOn
+
   on "++" expression -> Preincrement(operand):Unary
   on "--" expression -> Predecrement(operand):Unary
 
@@ -1194,8 +1202,27 @@ parser
     produce ImportModule(filepath:String)
   endOn
 }#
+  on "nativeC"
+    native_c_code
+    return
+  endOn
 
   syntaxError
+
+- native_c_code
+  if consume("(")
+    string
+    mustConsume ")"
+  else
+    string
+  endIf
+  if consume("->")
+    type
+    produce NativeExpression(content:String,result_type)
+  else
+    produce NativeStatement(content:String)
+  endIf
+
 
 #{
 - literal_list

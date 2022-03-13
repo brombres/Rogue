@@ -15,6 +15,9 @@ class Module
 
     attributes : Int32
 
+    native_headers = String[]
+    native_code    = String[]
+
   METHODS
     method init( t, name )
       Program.modules[ name ] = this

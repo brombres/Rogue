@@ -1349,3 +1349,44 @@ class ModuleQualifiedID : Cmd
       return "$::$"(context->String,name)
 
 endClass
+
+class NativeExpression : Cmd
+  PROPERTIES
+    content     : String
+    result_type : Cmd
+
+  METHODS
+    method init( t, content, result_type )
+
+    method init( existing:NativeExpression )
+      prior.init( existing )
+      content = existing.content
+      if (existing.result_type) result_type = existing.result_type.cloned
+
+    method description->String
+      return "NativeExpression($,$)" (%content,%result_type)
+
+endClass
+
+class NativeStatement : Cmd
+  PROPERTIES
+    content : String
+
+  METHODS
+    method init( t, content )
+
+    method init( existing:NativeStatement )
+      prior.init( existing )
+      content = existing.content
+
+    method description->String
+      return "NativeStatement($)" (%content)
+
+    method to->Character
+      return Cmd.to_character(content)
+
+    method to->Int32:  return content
+    method to->Logical: return content?
+    method to->String: return content
+
+endClass

@@ -105,6 +105,11 @@ augment
       writer.println
 
     method Module.generate_c_header( writer:CWriter )
+      if (native_headers.count)
+        writer.println forEach in native_headers
+        writer.println
+      endIf
+
       forEach (r in routines)
         write_c_routine_header( r, writer )
         writer.println ";"
@@ -112,6 +117,11 @@ augment
       writer.println
 
     method Module.generate_c_code( writer:CWriter )
+      if (native_code.count)
+        writer.println forEach in native_code
+        writer.println
+      endIf
+
       if (types.count)
         forEach (type in types)
           writer.print   "RogueType Type"
@@ -145,6 +155,9 @@ augment
       if (r and r.statements.count)
         writer.print( r.c_name ).println( "();" )
       endIf
+
+    method NativeStatement.needs_semicolon->Logical
+      return false
 
     method Property.c_name->String
       return name
@@ -466,6 +479,13 @@ class CGenerator : Visitor
       writer.print " * "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:NativeExpression )
+      print_native_code( cmd.content )
+
+    method on_visit( cmd:NativeStatement )
+      print_native_code( cmd.content )
+      writer.println
+
     method on_visit( cmd:Negate )
       writer.print '-'
       print_parenthesized( cmd.operand )
@@ -535,6 +555,9 @@ class CGenerator : Visitor
       writer.print ''printf( "%s", RogueString_to_c_string(''
       visit( cmd.operand )
       writer.print ") )"
+
+    method print_native_code( code:String )
+      writer.print code
 endClass
 
 # write_print()

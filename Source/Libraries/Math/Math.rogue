@@ -1,3 +1,9 @@
 module Math
 
-println "Math Module"
+#{
+class Math
+  GLOBAL METHODS
+    method sqrt( n:Real64 )->Real64
+
+endClass
+}#

@@ -233,6 +233,9 @@ augment
     method LocalDeclarations.type->Type
       return @type
 
+    method NativeExpression.type->Type
+      return result_type->(as Type)
+
     method PrintValue.type->Type
       return null
 

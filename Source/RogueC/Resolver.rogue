@@ -431,7 +431,17 @@ class Resolver : Visitor
         endBlock
       endForEach
       on_visit( cmd->(as Procedure) )
+      }#
 
+    method on( cmd:NativeCHeader )->Cmd
+      this_module.native_headers.add( cmd.content )
+      return null
+
+    method on( cmd:NativeCCode )->Cmd
+      this_module.native_code.add( cmd.content )
+      return null
+
+      #{
     method on_validate( cmd:Negate )->Cmd
       return validate( cmd.operand.type.cmd_negate(cmd.t, cmd.operand) )
       }#
