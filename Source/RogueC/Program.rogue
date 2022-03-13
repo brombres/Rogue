@@ -77,7 +77,7 @@ class Program [singleton]
     method include( filepath:String )
       include( t, filepath )
 
-    method include( t:Token, filepath:String )
+    method include( t:Token, filepath:String, &is_optional )
       local found = find_include( t, filepath )
       if (not found)
         forEach (path in include_search_paths)
@@ -86,8 +86,9 @@ class Program [singleton]
         endForEach
       endIf
 
-      if (found) filepath = found
-      else       throw t.error( "Include not found: $"(filepath) )
+      if (found)           filepath = found
+      elseIf (is_optional) return
+      else                 throw t.error( "Include not found: $"(filepath) )
 
       if (included_files.contains(filepath)) return
       included_files[ filepath ] = null # placeholder

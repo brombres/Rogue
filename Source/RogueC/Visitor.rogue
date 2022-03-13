@@ -378,4 +378,11 @@ class Visitor<<$ReturnType>>
         visit( cmd.attributes )
       endIf
 
+    method on_visit_children( cmd:ModuleQualifiedID )
+      if ($ReturnType isType Cmd)
+        cmd.context = visit(cmd.context)
+      else
+        visit( cmd.context )
+      endIf
+
 endClass

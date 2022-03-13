@@ -6,7 +6,7 @@ class String
     cursor_offset   : Int32  # in bytes
     cursor_index    : Int32  # in characters
     hash_code       : Int32
-    is_locked       : Logical  # 1=immutable
+    is_immutable       : Logical  # 1=immutable
     must_free       : Logical
     nativeC  "char* utf8;"  # always includes null pointer
     nativeC  "char  buffer[ROGUE_STRING_INTERNAL_BUFFER_SIZE];"
@@ -29,7 +29,7 @@ class String
                   |  result->utf8 = (char*) cstring;
                   |  result->byte_count      = byte_count;
                   |  result->character_count = character_count;
-                  |  result->is_locked = 1;
+                  |  result->is_immutable = 1;
                   |  result->must_free = must_free;
                   |  result->hash_code = RogueString_compute_hash_code( result, 0 );
                   |  //printf("sizeof(RogueString): %d\n",(int)sizeof(RogueString));
@@ -69,7 +69,7 @@ class String
                   |  }
                   |  utf8[ utf8_byte_count ] = 0;
                   |
-                  |  result->is_locked = 1;
+                  |  result->is_immutable = 1;
                   |  result->byte_count      = utf8_byte_count;
                   |  result->character_count = byte_count;
                   |  result->hash_code = RogueString_compute_hash_code( result, 0 );

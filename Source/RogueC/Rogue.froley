@@ -47,7 +47,7 @@ KEYWORD_LOCAL        local
 KEYWORD_LOOP         loop
 KEYWORD_METHOD       method      [structural]
 KEYWORD_METHODS      METHODS     [structural]
-KEYWORD_MODULE       module
+KEYWORD_MODULE       module      [structural]
 KEYWORD_NATIVE       NATIVE      [structural]
 KEYWORD_NATIVE_C     nativeC
 KEYWORD_NATIVE_C_HEADER nativeCHeader
@@ -65,7 +65,7 @@ KEYWORD_ROUTINE      routine     [structural]
 KEYWORD_THIS_CALL    thisCall
 KEYWORD_TRUE         true
 KEYWORD_UNDEFINED    undefined
-KEYWORD_USES         uses
+KEYWORD_USES         uses        [structural]
 KEYWORD_WHILE        while
 KEYWORD_XOR          xor
 
@@ -502,8 +502,27 @@ parser
   produce Type(name:String)
 
 - type_name
-  identifier
-  on "[]": create Join(a:String,b="[]")
+  #identifier
+  #on "[]": create Join(a:String,b="[]")
+  savePosition
+  on "::"
+    create Identifier(name="\"Rogue\"":String)
+    identifier
+    create ModuleQualifiedID(context,name:String)
+    discardPosition
+  elseOnOthers
+    restorePosition
+    identifier
+  endOn
+
+  while nextIs("::")
+    on "::"
+      identifier
+      create ModuleQualifiedID(context,name:String)
+    endOn
+  endWhile
+
+  #while (consume("[]")) noAction TODO
 
 - optional_type
   if (consume(':')) type

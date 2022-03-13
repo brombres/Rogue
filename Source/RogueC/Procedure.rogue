@@ -19,7 +19,7 @@ class Procedure : Cmd
   METHODS
     method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )
-      init( t, Program.current_module, name, parameters, return_type, attributes, body )
+      init( t, null, name, parameters, return_type, attributes, body )
 
     method init( t, module_context, name, parameters=null, return_type=null,
         attributes=null, body=null )
@@ -49,6 +49,8 @@ class Procedure : Cmd
 
     method organize
       if (not signature)
+        if (not module_context) module_context = Program.current_module
+
         use builder = StringBuilder.pool
           builder.print name
           builder.print '('

@@ -230,6 +230,12 @@ class Resolver : Visitor
       visit( cmd.args )
       return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
 
+    method on( cmd:ControlStructure )->Cmd
+      push_scope( cmd )
+      visit_content( cmd )
+      pop_scope
+      return cmd
+
     method on( cmd:Decrement )->Cmd
       return cmd.operand.resolve_decrement( cmd.t, this )
 
@@ -402,12 +408,6 @@ class Resolver : Visitor
 
       return null
 
-    method on( cmd:ControlStructure )->Cmd
-      push_scope( cmd )
-      visit_content( cmd )
-      pop_scope
-      return cmd
-
 #{
     method on_visit( cmd:Loop )
       visit_children( cmd )
@@ -558,99 +558,106 @@ class Resolver : Visitor
 }#
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      #if (not args)
-      #  local v = find_local( name )
-      #  if (v) return validate( GetLocal(t,v) )
-      #endIf
-
       require not context  # temp
 
-      local type_context : Type
-      local is_global = false
+      local m = this_module
+      if (name.contains("::"))
+        local m_name = name.before_last("::")
+        m = Program.modules[ m_name ]
+        if (not m) throw t.error( "No such module '$'."(m_name) )
+        name .= after_last("::")
+      endIf
 
-      #{
+      temporarily this_module = m
 
-      if (context)
-        context = visit( context )
-        is_global = context.is_type_context
-        type_context = context.require_type
+        local type_context : Type
+        local is_global = false
 
-        #if (not args)
-        #  if (type_context is Program.type_Value)
-        #    if (name == "x" or name == "y")
-        #      context = validate( CastValueToXY(t,context) )
-        #      type_context = Program.type_XY
+        #{
+
+        if (context)
+          context = visit( context )
+          is_global = context.is_type_context
+          type_context = context.require_type
+
+          #if (not args)
+          #  if (type_context is Program.type_Value)
+          #    if (name == "x" or name == "y")
+          #      context = validate( CastValueToXY(t,context) )
+          #      type_context = Program.type_XY
+          #    endIf
+          #  endIf
+
+          #  if (type_context is Program.type_XY)
+          #    if (name == "x") return validate( XYGetX(t, context) )
+          #    if (name == "y") return validate( XYGetY(t, context) )
+          #  endIf
+          #endIf
+
+        else
+          local type = this_module.find_type( name, &extended_search )
+          if (type and not args)
+            if (type.is_singleton)
+              return GetSingleton(t,type)
+            else
+              if (type.name.ends_with(']'))
+                return resolve_access( t, null, type.name, CmdList(t) )
+              else
+                return TypeContext(t,type)
+              endIf
+            endIf
+          endIf
+          }#
+
+          type_context = this_type  # may be null
+          if (args)
+            #{
+            # Call or constructor
+            if (type)
+              if (name == "XY")
+                forEach (arg at i in args)
+                  args[i] = validate( arg.cmd_cast_to(Program.type_Real64) )
+                endForEach
+                which (args.count)
+                  case 0: return validate( CreateXY0(t) )
+                  case 1: return validate( CreateXY1(t,args[0]) )
+                  case 2: return validate( CreateXY2(t,args[0],args[1]) )
+                  others: throw t.error( "0, 1, or 2 arguments expected for XY() constructor." )
+                endWhich
+              endIf
+              return validate( cmd_create_object(t,type,args) )
+            endIf
+            }#
+          else
+            local v = find_local( name )
+            if (v) return validate( GetLocal(t,v) )
+          endIf
+        #endIf
+
+        local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+
+        if (match)
+          if (not args and match.min_args == 0) args = CmdList(t)
+          cast_args_to_parameter_types( args, match )
+          return validate( match.cmd_call(context,args) )
+        endIf
+
+        #if (not is_global)
+        #  # TODO: update to allow global properties
+        #  if (not args and type_context)
+        #    local p = type_context.find_property( name )
+        #    if (p)
+        #      if (context) return validate( GetProperty(t,context,p) )
+        #      else         return validate( GetThisProperty(t,p) )
         #    endIf
-        #  endIf
-
-        #  if (type_context is Program.type_XY)
-        #    if (name == "x") return validate( XYGetX(t, context) )
-        #    if (name == "y") return validate( XYGetY(t, context) )
         #  endIf
         #endIf
 
-      else
-        local type = this_module.find_type( name, &extended_search )
-        if (type and not args)
-          if (type.is_singleton)
-            return GetSingleton(t,type)
-          else
-            if (type.name.ends_with(']'))
-              return resolve_access( t, null, type.name, CmdList(t) )
-            else
-              return TypeContext(t,type)
-            endIf
-          endIf
-        endIf
-        }#
+        if (suppress_error) return null->(as Cmd)
 
-        type_context = this_type  # may be null
-        if (args)
-          #{
-          # Call or constructor
-          if (type)
-            if (name == "XY")
-              forEach (arg at i in args)
-                args[i] = validate( arg.cmd_cast_to(Program.type_Real64) )
-              endForEach
-              which (args.count)
-                case 0: return validate( CreateXY0(t) )
-                case 1: return validate( CreateXY1(t,args[0]) )
-                case 2: return validate( CreateXY2(t,args[0],args[1]) )
-                others: throw t.error( "0, 1, or 2 arguments expected for XY() constructor." )
-              endWhich
-            endIf
-            return validate( cmd_create_object(t,type,args) )
-          endIf
-          }#
-        else
-          local v = find_local( name )
-          if (v) return validate( GetLocal(t,v) )
-        endIf
-      #endIf
+        find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
 
-      local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
-
-      if (match)
-        if (not args and match.min_args == 0) args = CmdList(t)
-        cast_args_to_parameter_types( args, match )
-        return validate( match.cmd_call(context,args) )
-      endIf
-
-      #if (not is_global)
-      #  # TODO: update to allow global properties
-      #  if (not args and type_context)
-      #    local p = type_context.find_property( name )
-      #    if (p)
-      #      if (context) return validate( GetProperty(t,context,p) )
-      #      else         return validate( GetThisProperty(t,p) )
-      #    endIf
-      #  endIf
-      #endIf
-
-      if (suppress_error) return null
-
-      find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+      endTemporarily
       return null  # never reached
 
 
@@ -710,7 +717,7 @@ class Resolver : Visitor
       local error_message : String
       use Candidates
         if (type_context)
-          require not type_context
+          require not type_context # TEMPORARY
           #type_context.collect_methods( name, Candidates.list, &=require_global )
         else
           this_module.collect_routines( name, Candidates.list )
@@ -789,8 +796,18 @@ class Resolver : Visitor
 
     method refine_candidates( type_context:Type, args:Cmd )->Procedure
       local arg_count = which{ args:args.count || 0 }
+
+      # Filter out incorrect number of args
       forEach (m in Candidates)
         if (m.accepts_arg_count(arg_count)) Candidates.keep m
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      if (not Candidates.refine) return null
+
+      # Filter out candidates that don't have the same module context as the first candidate
+      local priority_module_context = Candidates[0].module_context
+      forEach (m in Candidates)
+        if (m.module_context is priority_module_context) Candidates.keep m
       endForEach
       if (Candidates.found_match) return Candidates.match
       if (not Candidates.refine) return null

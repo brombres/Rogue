@@ -496,13 +496,29 @@ class ParserCore [abstract]
             if (not disable_output) _push( Type(_cur_t,_string_arg(-1)), 1 )
             return
           case ip_type_name
-            _execute(ip_identifier)
-            _pop_frame
-            if (_next_t.type == TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS)
+            _save_position
+            if (_next_t.type == TokenType.SYMBOL_COLON_COLON)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( Join(_cur_t,_string_arg(-1),"[]"), 1 )
+                if (not disable_output) _push( Identifier(_cur_t,"\"Rogue\""), 0 )
+                _execute(ip_identifier)
+                _pop_frame
+                if (not disable_output) _push( ModuleQualifiedID(_cur_t,_node_arg(-2),_string_arg(-1)), 2 )
+                _discard_position
               endTemporarily
+            else
+              _restore_position
+              _execute(ip_identifier)
+              _pop_frame
             endIf
+            while ((_next_t.type == TokenType.SYMBOL_COLON_COLON))
+              if (_next_t.type == TokenType.SYMBOL_COLON_COLON)
+                temporarily _cur_t = _on_t
+                  _execute(ip_identifier)
+                  _pop_frame
+                  if (not disable_output) _push( ModuleQualifiedID(_cur_t,_node_arg(-2),_string_arg(-1)), 2 )
+                endTemporarily
+              endIf
+            endWhile
             return
           case ip_optional_type
             if (_consume(TokenType.SYMBOL_COLON))

@@ -30,7 +30,8 @@ class Collector : Visitor
       }#
 
     method on( cmd:DefineModule )->Cmd
-      Program.current_module = Program.get_module( cmd.t, cmd.name )
+      if (cmd.name) Program.current_module = Program.get_module( cmd.t, cmd.name )
+      else          Program.current_module = Program.default_module
       return null
 
       #{

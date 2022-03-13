@@ -69,6 +69,19 @@ class Parser : ParserCore
       marked_token = _cur_t
       _attribute_no_include = false
 
+      #    method create_identifier_from_saved_position
+      #      local i2 = _position - 1
+      #      local i1 = _saved_positions.last.position
+      #      _restore_position
+      #
+      #      if (disable_output) return
+      #
+      #      local t = _tokens[i1]
+      #      buffer.clear
+      #      buffer.print( _tokens[forEach in i1..i2]->String )
+      #trace buffer
+      #      _push( Identifier(t,buffer), 0 )
+
     method has_another->Logical
       return _position < _limit or inserted_tokens.count
 
@@ -84,7 +97,7 @@ class Parser : ParserCore
       if (filepath == "") throw marked_token.error( "Module path expected." )
       processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
       if (not _attribute_no_include)
-        Program.include( marked_token, filepath )
+        Program.include( marked_token, filepath, &is_optional )
       endIf
 
     method on_parsed_class

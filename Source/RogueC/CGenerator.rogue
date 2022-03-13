@@ -41,10 +41,12 @@ augment
 
     method Module.write_c_routine_header( r:Routine, writer:CWriter )
       if (r.return_type)
-        writer.print( r.return_type.c_name ).print( ' ' )
+        writer.print( r.return_type.c_name )
+        if (r.return_type.is_reference) writer.print '*'
       else
-        writer.print( "void " )
+        writer.print "void"
       endIf
+      writer.print ' '
       writer.print( r.c_name )
       writer.print( "(" )
       forEach (p at i in r.parameters)
@@ -109,33 +111,29 @@ augment
       endForEach
       writer.println
 
-      forEach (str in Program.unique_strings)
-        writer.print   "extern RogueString* "
-        writer.print   str
-        writer.println ';'
-      endForEach
-
     method Module.generate_c_code( writer:CWriter )
-      forEach (type in types)
-        writer.print   "RogueType Type"
-        writer.print   type.c_name
-        writer.print   '' = { "''
-        writer.print   type.module_context.name
-        writer.print   ''", "''
-        writer.print   type.name
-        writer.print   ''", sizeof(''
-        writer.print   type.c_name
-        writer.println '') };''
-      endForEach
-      writer.println
-
-      forEach (type in types)
-        forEach (code in type.native_code)
-          writer.println code->String
-          writer.println
+      if (types.count)
+        forEach (type in types)
+          writer.print   "RogueType Type"
+          writer.print   type.c_name
+          writer.print   '' = { "''
+          writer.print   type.module_context.name
+          writer.print   ''", "''
+          writer.print   type.name
+          writer.print   ''", sizeof(''
+          writer.print   type.c_name
+          writer.println '') };''
         endForEach
-      endForEach
-      writer.println
+        writer.println
+
+        forEach (type in types)
+          forEach (code in type.native_code)
+            writer.println code->String
+            writer.println
+          endForEach
+        endForEach
+        writer.println
+      endIf
 
       forEach (r in routines)
         CGenerator( this, writer ).visit( r )
@@ -154,7 +152,7 @@ augment
     method Routine.c_name->String
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
-        builder.print( module_context.c_name ).print( '_' ).print( name )
+        builder.print( module_context.c_name ).print( "__" ).print( name )
         # TODO: parameter types
         c_name = builder
         return @c_name
@@ -173,6 +171,13 @@ augment
       (forEach in modules).generate_c_class_structs( h_writer )
 
       (forEach in modules).generate_c_header( h_writer )
+
+      forEach (str in Program.unique_strings)
+        h_writer.print   "extern RogueString* "
+        h_writer.print   str
+        h_writer.println ';'
+      endForEach
+
       h_writer.close
 
       local c_writer = CWriter( File("Test.c") )

@@ -1327,3 +1327,25 @@ class DefineModule : Cmd
       return "DefineModule($,$)" (%name,%attributes)
 
 endClass
+
+
+class ModuleQualifiedID : Cmd
+  PROPERTIES
+    context : Cmd
+    name    : String
+
+  METHODS
+    method init( t, context, name )
+
+    method init( existing:ModuleQualifiedID )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      name = existing.name
+
+    method description->String
+      return "ModuleQualifiedID($,$)" (%context,%name)
+
+    method to->String
+      return "$::$"(context->String,name)
+
+endClass

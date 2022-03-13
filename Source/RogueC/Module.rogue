@@ -32,7 +32,6 @@ class Module
 
     method collect_routines( r_name:String, list:Procedure[], &is_limited )
       if (is_visiting) return
-
       forEach (r in routines)
         if (r.name == r_name) list.add( r )
       endForEach
@@ -40,7 +39,7 @@ class Module
       temporarily is_visiting = true
         forEach (used_m in used_modules)
           if (not is_limited or used_m.is_exported)
-            used_m.m.collect_routines( r_name, list, &=is_limited )
+            used_m.m.collect_routines( r_name, list, &is_limited )
           endIf
         endForEach
       endTemporarily
