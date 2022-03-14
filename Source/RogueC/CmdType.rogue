@@ -136,6 +136,12 @@ augment
       return Program.find_type(name)
       }#
 
+    method AddAndAssign.type->Type
+      return target.type
+
+    method AddAndAssignLocal.type->Type
+      return info.type
+
     method Binary.type->Type
       return common_type( left.type, right.type )
 

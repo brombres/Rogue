@@ -126,6 +126,9 @@ class Resolver : Visitor
       this_module.native_code.add( cmd.content )
       return null
 
+    method on( cmd:AddAndAssign )->Cmd
+      return validate( cmd.target.resolve_add_and_assign(visit(cmd.operand).require_value,this) )
+
     method on_visit( cmd:Procedure )
       visible_locals_fp.add( visible_locals.count )
       forEach (p in cmd.parameters)
@@ -525,33 +528,27 @@ augment
       return AddValue( t, lhs, rhs )
 
 endAugment
+}#
 
 # AddAndAssign
 augment
   METHODS
-    method Cmd.resolve_add_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal target for '+='." )
+    method Cmd.resolve_add_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target." )
 
-    method Access.resolve_add_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
-      if (not args)
-        local v = resolver.find_local( name )
-        if (v) return resolver.validate( AddAndAssignLocal(t,v,operand) )
+    method Access.resolve_add_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) prior.resolve_add_and_assign( operand, resolver )
+      operand = resolver.visit( operand )
+      local operand_type = operand.require_type
 
-        local p = resolver.this_type.find_property( name )
-        if (p) return resolver.validate( AddAndAssignThisProperty(t,p,operand) )
+      local v = resolver.find_local( name )
+      if (v)
+        if (operand_type is not v.type) operand = resolver.validate(operand.cmd_cast_to(v.type))
+        return resolver.validate( AddAndAssignLocal(t,v,operand) )
       endIf
-      throw t.error( "Illegal target for '+='." )
 
-    method ContextAccess.resolve_add_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
-      if (not args)
-        context = resolver.visit( context )
-        local p = context.require_type.find_property( name )
-        if (p) return resolver.validate( AddAndAssignProperty(t,context,p,operand) )
-      endIf
-      throw t.error( "Illegal target for '+='." )
-
+      throw t.error( "[TODO] Unimplemented assignment target." )
 endAugment
-}#
 
 # Assignment
 augment
@@ -756,7 +753,12 @@ augment
 
       cmd_iterator.initialization.add( SetLocal(t,v_iterator,left) )
       cmd_iterator.condition = CompareLE( t, Access(t,v_iterator_name), right )
-      cmd_iterator.upkeep.add( Preincrement( t, Access(t,v_iterator_name) ) )
+
+      if (cmd_collection.step_size)
+        cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator_name), cmd_collection.step_size) )
+      else
+        cmd_iterator.upkeep.add( Preincrement(t, Access(t,v_iterator_name)) )
+      endIf
 
 endAugment
 

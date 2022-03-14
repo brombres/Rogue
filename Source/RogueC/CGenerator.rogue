@@ -282,6 +282,13 @@ class CGenerator : Visitor
       #println StackTrace()
       throw cmd.t.error("[INTERNAL] CGenerator: unresolved Access '$'."(cmd.name))
 
+    method on_visit( cmd:AddAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " += "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
     method on_visit( cmd:CmdList )
       visit_children( cmd )
 

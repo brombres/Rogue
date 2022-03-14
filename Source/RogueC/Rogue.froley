@@ -995,19 +995,6 @@ parser
 
   on "=" expression -> Assign(target,new_value)
 
-#{
-  on "+=" expression -> AddAndAssign(target,operand):OpAndAssign
-  #on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
-  #on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
-  #on "/=", expression -> DivideAndAssign(target,operand):OpAndAssign
-  #on "%=", expression -> ModAndAssign(target,operand):OpAndAssign
-  #on "&=", expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
-  on "|=", expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
-  on ":<<:="  expression -> LeftShiftAndAssign(target,operand):OpAndAssign
-  on ":>>:="  expression -> RightShiftAndAssign(target,operand):OpAndAssign
-  on ":>>>:=" expression -> RightShiftXAndAssign(target,operand):OpAndAssign
-}#
-
 - local_declarations
   beginList
     consume_eols
@@ -1110,6 +1097,21 @@ parser
   expression
 
 - expression
+  op_and_assign
+
+- op_and_assign
+  on "+=" expression -> AddAndAssign(target,operand):OpAndAssign
+#{
+  #on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
+  #on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
+  #on "/=", expression -> DivideAndAssign(target,operand):OpAndAssign
+  #on "%=", expression -> ModAndAssign(target,operand):OpAndAssign
+  #on "&=", expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
+  on "|=", expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
+  on ":<<:="  expression -> LeftShiftAndAssign(target,operand):OpAndAssign
+  on ":>>:="  expression -> RightShiftAndAssign(target,operand):OpAndAssign
+  on ":>>>:=" expression -> RightShiftXAndAssign(target,operand):OpAndAssign
+}#
   logical_xor
 
 - logical_xor [binary]
@@ -1312,6 +1314,7 @@ parser
   endOn
 
 - additional_node_types
+  create AddAndAssignLocal(info:Local,operand)
   create CastToByte(operand):Unary
   create CastToCharacter(operand):Unary
   create CastToInt32(operand):Unary
@@ -1387,7 +1390,7 @@ parser
   #  create NegateInt32(operand):Unary
   #  create NegateReal64(operand):Unary
   #  create NegateValue(operand):Unary
-  #  create OpAndAssign(target,operand)
+  create OpAndAssign(target,operand)
   create PrintInt32(operand):PrintValue
   create PrintLogical(operand):PrintValue
   create PrintNewline

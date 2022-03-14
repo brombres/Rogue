@@ -1458,3 +1458,46 @@ class CallGlobalMethod : CallProcedure
       return "CallGlobalMethod($)" (%args)
 
 endClass
+
+class AddAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "AddAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class AddAndAssignLocal : Cmd
+  PROPERTIES
+    info    : Local
+    operand : Cmd
+
+  METHODS
+    method init( t, info, operand )
+
+    method init( existing:AddAndAssignLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "AddAndAssignLocal($,$)" (%info,%operand)
+
+endClass
+
+class OpAndAssign : Cmd
+  PROPERTIES
+    target  : Cmd
+    operand : Cmd
+
+  METHODS
+    method init( t, target, operand )
+
+    method init( existing:OpAndAssign )
+      prior.init( existing )
+      if (existing.target) target = existing.target.cloned
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "OpAndAssign($,$)" (%target,%operand)
+
+endClass

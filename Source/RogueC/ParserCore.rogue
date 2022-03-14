@@ -62,37 +62,38 @@ class ParserCore [abstract]
     ip_access_args = 49
     ip_optional_expression = 50
     ip_expression = 51
-    ip_logical_xor = 52
-    ip_logical_xor__inner = 53
-    ip_logical_or = 54
-    ip_logical_or__inner = 55
-    ip_logical_and = 56
-    ip_logical_and__inner = 57
-    ip_comparison = 58
-    ip_comparison__inner = 59
-    ip_bitwise_xor = 60
-    ip_bitwise_xor__inner = 61
-    ip_bitwise_or = 62
-    ip_bitwise_or__inner = 63
-    ip_bitwise_and = 64
-    ip_bitwise_and__inner = 65
-    ip_bitwise_shift = 66
-    ip_bitwise_shift__inner = 67
-    ip_add_subtract = 68
-    ip_add_subtract__inner = 69
-    ip_multiply_divide_mod = 70
-    ip_multiply_divide_mod__inner = 71
-    ip_pre_unary = 72
-    ip_post_unary = 73
-    ip_post_unary__inner = 74
-    ip_access = 75
-    ip_access_inner = 76
-    ip_term = 77
-    ip_native_code = 78
-    ip_preprocess = 79
-    ip_process_another = 80
-    ip_collect_meta_filepath = 81
-    ip_additional_node_types = 82
+    ip_op_and_assign = 52
+    ip_logical_xor = 53
+    ip_logical_xor__inner = 54
+    ip_logical_or = 55
+    ip_logical_or__inner = 56
+    ip_logical_and = 57
+    ip_logical_and__inner = 58
+    ip_comparison = 59
+    ip_comparison__inner = 60
+    ip_bitwise_xor = 61
+    ip_bitwise_xor__inner = 62
+    ip_bitwise_or = 63
+    ip_bitwise_or__inner = 64
+    ip_bitwise_and = 65
+    ip_bitwise_and__inner = 66
+    ip_bitwise_shift = 67
+    ip_bitwise_shift__inner = 68
+    ip_add_subtract = 69
+    ip_add_subtract__inner = 70
+    ip_multiply_divide_mod = 71
+    ip_multiply_divide_mod__inner = 72
+    ip_pre_unary = 73
+    ip_post_unary = 74
+    ip_post_unary__inner = 75
+    ip_access = 76
+    ip_access_inner = 77
+    ip_term = 78
+    ip_native_code = 79
+    ip_preprocess = 80
+    ip_process_another = 81
+    ip_collect_meta_filepath = 82
+    ip_additional_node_types = 83
 
   PROPERTIES
     _tokens          : Token[]
@@ -1310,6 +1311,18 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_expression
+            _execute(ip_op_and_assign)
+            _pop_frame
+            return
+          case ip_op_and_assign
+            if (_next_t.type == TokenType.SYMBOL_PLUS_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( AddAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
             _execute(ip_logical_xor)
             _pop_frame
             return
@@ -1957,6 +1970,7 @@ class ParserCore [abstract]
             endIf
             return
           case ip_additional_node_types
+            if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( CastToByte(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CastToCharacter(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CastToInt32(_cur_t,_node_arg(-1)), 1 )
@@ -1979,6 +1993,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( LocalScope(_cur_t), 0 )
             if (not disable_output) _push( Method(_cur_t,_node_arg(-6)->(as Type),_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 6 )
             if (not disable_output) _push( NativeProperty(_cur_t,_string_arg(-1)), 1 )
+            if (not disable_output) _push( OpAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( PrintInt32(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintLogical(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintNewline(_cur_t), 0 )
