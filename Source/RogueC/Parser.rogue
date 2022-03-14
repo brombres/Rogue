@@ -115,11 +115,39 @@ class Parser : ParserCore
           if (t.type == TokenType.PLACEHOLDER) placeholders.add( t )
         endForEach
       endIf
+
+      local m = Program.current_module
       local extended_name = "$<<$>>"(name,placeholders.count)
-      if (Program.templates[extended_name])
+      if (m.templates[extended_name])
         throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
       endIf
-      Program.templates[extended_name] = Template( name, placeholders, tokens )
+      m.templates[extended_name] = Template( name, placeholders, tokens )
+
+    method parse_module_id
+      # Doing this natively because we need to also switch context to the parsed module
+      # so that we can store class templates in the appropriate module.
+      local t = _next_t
+      buffer.clear
+      if (_consume(TokenType.SYMBOL_COLON_COLON))
+        buffer.print "Rogue::" # default module
+      elseIf (t.type != TokenType.IDENTIFIER)
+        if (not disable_output) _push( null, 0 )
+        Program.current_module = Program.default_module
+        return
+      endIf
+
+      if (_next_t.type != TokenType.IDENTIFIER) _throw_syntax_error( "Identifier expected." )
+      buffer.print _read.content
+
+      while (_consume(TokenType.SYMBOL_COLON_COLON))
+        buffer.print "::"
+        if (_next_t.type != TokenType.IDENTIFIER) _throw_syntax_error( "Identifier expected." )
+        buffer.print _read.content
+      endWhile
+
+      local module_id = buffer->String
+      if (not disable_output) _push( Identifier(t,module_id), 0 )
+      Program.current_module = Program.get_module( t, module_id )
 
     method rewrite_cur_token
       processed_tokens.add( _cur_t )
@@ -135,6 +163,7 @@ class Parser : ParserCore
       if (inserted_tokens.count) return inserted_tokens.remove_last
       return prior._read
 
-    method print_peek
-      @trace _cur_t, _next_t
+    method print_stack
+      @trace _list_starts
+      @trace _cmd_stack
 endClass

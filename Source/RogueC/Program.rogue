@@ -6,7 +6,6 @@ class Program [singleton]
     include_search_paths = String[]
     included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()
-    templates            = StringTable<<Template>>()
 
     modules        = StringTable<<Module>>()
     default_module : Module
@@ -103,6 +102,8 @@ class Program [singleton]
       endTemporarily
 
     method resolve
+      (forEach in modules).collect_used_modules
+
       # We've collected all class templates.
       (forEach in (forEach in modules).types).ensure_definition
 

@@ -15,6 +15,8 @@ class Type : Cmd
     name              : String
     attributes        : Int32
     properties        = StringTable<<Property>>()
+    #global_methods    = StringTable<<Method>>()
+    #methods           = StringTable<<Method>>()
     native_properties = String[]
     native_header     = NativeCHeader[]
     native_code       = NativeCCode[]
@@ -23,14 +25,15 @@ class Type : Cmd
     method create( t:Token, name:String )->Type
       local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
-
       type = Type( t, name, 0 )
       type.ensure_definition
       return type
 
   METHODS
     method init( t, name, attributes )
-      module_context = Program.current_module
+      init( t, Program.current_module, name, attributes )
+
+    method init( t, module_context, name, attributes )
       module_context.types[ name ] = this
 
     method init( existing:Type )
@@ -43,9 +46,25 @@ class Type : Cmd
     method cloned->this
       return this
 
+    method collect_methods( m_name:String, list:Procedure[], &require_global )
+      #{
+      local matching = methods[ m_name ]
+      if (matching)
+        forEach (m in matching)
+          if (not require_global or m.is_global) list.add( m )
+        endForEach
+      endIf
+      }#
+
     method ensure_definition
       if (is_defined) return
-      local template = Program.templates[ "$<<0>>"(name) ]
+
+      if (is_primitive)
+        is_defined = true # KLUDGE
+        return
+      endIf
+
+      local template = module_context.templates[ "$<<0>>"(name) ]
       if (template)
         template.generate( null, this )
       else

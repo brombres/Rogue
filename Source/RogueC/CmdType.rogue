@@ -161,10 +161,10 @@ augment
     method Compare.type->Type
       return Program.type_Logical
 
-      #{
     method CreateObject.type->Type
       return of_type
 
+      #{
     method CreateXY0.type->Type
       return Program.type_XY
 

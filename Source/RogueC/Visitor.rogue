@@ -51,6 +51,7 @@ class Visitor<<$ReturnType>>
       else
         if (cmd is null) return $ReturnType.meta.default_value
       endIf
+      #@trace cmd.type_name
       return cmd.dispatch<<ThisType,$ReturnType>>( this )
 
     method visit_children( cmd:Cmd )->Cmd [propagated]
@@ -340,12 +341,12 @@ class Visitor<<$ReturnType>>
         cmd.parameters = visit(cmd.parameters)
         cmd.return_type = visit(cmd.return_type)->(as Type)
         cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.statements = visit(cmd.statements)
+        cmd.body = visit(cmd.body)->(as LocalScope)
       else
         visit( cmd.parameters )
         visit( cmd.return_type )
         visit( cmd.attributes )
-        visit( cmd.statements )
+        visit( cmd.body )
       endIf
 
     method on_visit_children( cmd:CallProcedure )
@@ -390,6 +391,30 @@ class Visitor<<$ReturnType>>
         cmd.result_type = visit(cmd.result_type)
       else
         visit( cmd.result_type )
+      endIf
+
+    method on_visit_children( cmd:CreateObject )
+      if ($ReturnType isType Cmd)
+        cmd.of_type = visit(cmd.of_type)->(as Type)
+        cmd.args = visit(cmd.args)
+      else
+        visit( cmd.of_type )
+        visit( cmd.args )
+      endIf
+
+    method on_visit_children( cmd:Method )
+      if ($ReturnType isType Cmd)
+        cmd.type_context = visit(cmd.type_context)->(as Type)
+        cmd.parameters = visit(cmd.parameters)
+        cmd.return_type = visit(cmd.return_type)->(as Type)
+        cmd.attributes = visit(cmd.attributes)->(as Attributes)
+        cmd.body = visit(cmd.body)->(as LocalScope)
+      else
+        visit( cmd.type_context )
+        visit( cmd.parameters )
+        visit( cmd.return_type )
+        visit( cmd.attributes )
+        visit( cmd.body )
       endIf
 
 endClass

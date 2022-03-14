@@ -32,6 +32,9 @@ class Collector : Visitor
     method on( cmd:DefineModule )->Cmd
       if (cmd.name) Program.current_module = Program.get_module( cmd.t, cmd.name )
       else          Program.current_module = Program.default_module
+
+      # TODO: copy cmd.attributes into module
+
       return null
 
       #{

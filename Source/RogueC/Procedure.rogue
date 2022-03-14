@@ -45,7 +45,7 @@ class Procedure : Cmd
       return "$::$"(module_context,signature)
 
     method description->String
-      return "Procedure($,$,$,$,$)" (%name,%parameters,%return_type,%attributes,%body)
+      return which{ signature || name }
 
     method organize
       if (not signature)

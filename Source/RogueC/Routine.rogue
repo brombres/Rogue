@@ -2,8 +2,5 @@ module Rogue
 
 class Routine : Procedure
   METHODS
-    method description->String
-      return "Routine($,$,$,$,$)" (%name,%parameters,%return_type,%attributes,%body)
-
 endClass
 

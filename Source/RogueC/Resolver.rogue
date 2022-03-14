@@ -19,11 +19,6 @@ class Resolver : Visitor
   METHODS
     method init( this_module )
 
-    method autoname( base:String )->String
-      local result = "_auto_$_$"(base,autoname_index)
-      ++autoname_index
-      return result
-
     #{
     method visit( this_type )
       if (this_type.is_resolved) return
@@ -74,6 +69,11 @@ class Resolver : Visitor
         proc.locals.add( v )
       endIf
       }#
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
 
     method find_local( name:String )->Local
       forEach (v in visible_locals step -1)
@@ -177,7 +177,12 @@ class Resolver : Visitor
 
     method on_validate( cmd:BitwiseXor )->Cmd
       return validate( cmd.left.type.cmd_bitwise_xor(cmd.t, cmd.left, cmd.right) )
+    }#
 
+    #method on_visit( cmd:CreateObject )
+    #visit_children( cmd )
+
+    #{
     method on_validate( cmd:CastToInt32 )->Cmd
       local type = cmd.operand.require_type
       if (type is Program.type_Int32)   return cmd.operand
@@ -195,6 +200,7 @@ class Resolver : Visitor
         return validate( CastInt32ToReal64(cmd.t, cmd.operand) )
       endIf
       throw cmd.t.error( "Cannot convert type $ to Real64."(type) )
+      }#
 
       #{
     method on_validate( cmd:CastToValue )->Cmd
@@ -236,6 +242,7 @@ class Resolver : Visitor
       pop_scope
       return cmd
 
+      #{
     method on( cmd:Decrement )->Cmd
       return cmd.operand.resolve_decrement( cmd.t, this )
 
@@ -390,6 +397,7 @@ class Resolver : Visitor
       forEach (decl in cmd.declarations)
         local v = decl->(as Local)
         this_procedure.locals.add( v )
+        assert control_stack.count
         control_stack.last.locals.add( v )
         visible_locals.add( v )
       endForEach
@@ -605,7 +613,9 @@ class Resolver : Visitor
           #endIf
 
         else
+          }#
           local type = this_module.find_type( name, &extended_search )
+          #{
           if (type and not args)
             if (type.is_singleton)
               return GetSingleton(t,type)
@@ -621,9 +631,9 @@ class Resolver : Visitor
 
           type_context = this_type  # may be null
           if (args)
-            #{
             # Call or constructor
             if (type)
+              #{
               if (name == "XY")
                 forEach (arg at i in args)
                   args[i] = validate( arg.cmd_cast_to(Program.type_Real64) )
@@ -635,9 +645,9 @@ class Resolver : Visitor
                   others: throw t.error( "0, 1, or 2 arguments expected for XY() constructor." )
                 endWhich
               endIf
+              }#
               return validate( cmd_create_object(t,type,args) )
             endIf
-            }#
           else
             local v = find_local( name )
             if (v) return validate( GetLocal(t,v) )
@@ -671,9 +681,8 @@ class Resolver : Visitor
       return null  # never reached
 
 
-      #{
     method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd
-      local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )
+      local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )->(as Method)
       if (m_init)
         if (not args and m_init.min_args == 0) args = CmdList(t)
         cast_args_to_parameter_types( args, m_init )
@@ -705,7 +714,6 @@ class Resolver : Visitor
         endUse
         throw t.error( mesg )
       endIf
-      }#
 
     method cast_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
@@ -727,8 +735,7 @@ class Resolver : Visitor
       local error_message : String
       use Candidates
         if (type_context)
-          require not type_context # TEMPORARY
-          #type_context.collect_methods( name, Candidates.list, &=require_global )
+          type_context.collect_methods( name, Candidates.list, &=require_global )
         else
           this_module.collect_routines( name, Candidates.list )
         endIf

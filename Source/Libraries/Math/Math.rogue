@@ -1,9 +1,7 @@
 module Math
 
-#{
 class Math
   GLOBAL METHODS
     method sqrt( n:Real64 )->Real64
-
+      return nativeC("sqrt($n)")->Real64
 endClass
-}#
