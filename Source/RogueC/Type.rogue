@@ -22,8 +22,8 @@ class Type : Cmd
     global_methods    = StringTable<<GlobalMethod>>()
     #methods           = StringTable<<Method>>()
     native_properties = String[]
-    native_header     = NativeCHeader[]
-    native_code       = NativeCCode[]
+    native_header     = NativeHeader[]
+    native_code       = NativeCode[]
 
   GLOBAL METHODS
     method create( t:Token, name:String )->Type

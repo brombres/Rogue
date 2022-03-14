@@ -20,54 +20,54 @@ PLACEHOLDER    $placeholder  [content]
 ----------------------------------------------------------------------
 tokens Keywords
 ----------------------------------------------------------------------
-KEYWORD_AND          and
-KEYWORD_AUGMENT      augment
-KEYWORD_BLOCK        block
-KEYWORD_CLASS        class       [structural]
-KEYWORD_DOWN_TO      downTo
-KEYWORD_ELSE         else        [structural]
-KEYWORD_ELSE_IF      elseIf
-KEYWORD_END_BLOCK    endBlock    [structural]
-KEYWORD_END_CLASS    endClass    [structural]
-KEYWORD_END_FOR_EACH endForEach  [structural]
-KEYWORD_END_IF       endIf       [structural]
-KEYWORD_END_LOOP     endLoop     [structural]
-KEYWORD_END_ROUTINE  endRoutine  [structural]
-KEYWORD_END_WHILE    endWhile    [structural]
-KEYWORD_EXPORT       export
-KEYWORD_FALSE        false
-KEYWORD_FOR_EACH     forEach
-KEYWORD_GLOBAL       global
+KEYWORD_AND            and
+KEYWORD_AUGMENT        augment
+KEYWORD_BLOCK          block
+KEYWORD_CLASS          class       [structural]
+KEYWORD_DOWN_TO        downTo
+KEYWORD_ELSE           else        [structural]
+KEYWORD_ELSE_IF        elseIf
+KEYWORD_END_BLOCK      endBlock    [structural]
+KEYWORD_END_CLASS      endClass    [structural]
+KEYWORD_END_FOR_EACH   endForEach  [structural]
+KEYWORD_END_IF         endIf       [structural]
+KEYWORD_END_LOOP       endLoop     [structural]
+KEYWORD_END_ROUTINE    endRoutine  [structural]
+KEYWORD_END_WHILE      endWhile    [structural]
+KEYWORD_EXPORT         export
+KEYWORD_FALSE          false
+KEYWORD_FOR_EACH       forEach
+KEYWORD_GLOBAL         global
 KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
-KEYWORD_IF           if
-KEYWORD_IMPORT       import
-KEYWORD_INCLUDE      include
-KEYWORD_LOCAL        local
-KEYWORD_LOOP         loop
-KEYWORD_METHOD       method      [structural]
-KEYWORD_METHODS      METHODS     [structural]
-KEYWORD_MODULE       module      [structural]
-KEYWORD_NATIVE       NATIVE      [structural]
-KEYWORD_NATIVE_C     nativeC
-KEYWORD_NATIVE_C_HEADER nativeCHeader
-KEYWORD_NATIVE_C_CODE   nativeCCode
-KEYWORD_NO_ACTION    noAction
-KEYWORD_NOT          not
-KEYWORD_NULL         null
-KEYWORD_OR           or
-KEYWORD_PI           pi
-KEYWORD_PRINT        print
-KEYWORD_PRINTLN      println
-KEYWORD_PROPERTIES   PROPERTIES  [structural]
-KEYWORD_RETURN       return
-KEYWORD_ROUTINE      routine     [structural]
-KEYWORD_THIS_CALL    thisCall
-KEYWORD_TRUE         true
-KEYWORD_UNDEFINED    undefined
-KEYWORD_USES         uses        [structural]
-KEYWORD_WHILE        while
-KEYWORD_XOR          xor
+KEYWORD_IF             if
+KEYWORD_IMPORT         import
+KEYWORD_INCLUDE        include
+KEYWORD_LOCAL          local
+KEYWORD_LOOP           loop
+KEYWORD_METHOD         method      [structural]
+KEYWORD_METHODS        METHODS     [structural]
+KEYWORD_MODULE         module      [structural]
+KEYWORD_NATIVE_SECTION NATIVE      [structural]
+KEYWORD_NATIVE         native
+KEYWORD_NATIVE_HEADER  nativeHeader
+KEYWORD_NATIVE_CODE    nativeCode
+KEYWORD_NO_ACTION      noAction
+KEYWORD_NOT            not
+KEYWORD_NULL           null
+KEYWORD_OR             or
+KEYWORD_PI             pi
+KEYWORD_PRINT          print
+KEYWORD_PRINTLN        println
+KEYWORD_PROPERTIES     PROPERTIES  [structural]
+KEYWORD_RETURN         return
+KEYWORD_ROUTINE        routine     [structural]
+KEYWORD_THIS_CALL      thisCall
+KEYWORD_TRUE           true
+KEYWORD_UNDEFINED      undefined
+KEYWORD_USES           uses        [structural]
+KEYWORD_WHILE          while
+KEYWORD_XOR            xor
 
 ----------------------------------------------------------------------
 tokens Symbols
@@ -659,14 +659,14 @@ parser
   endWhile
 
 - native_code_block
-  on "nativeCHeader"
+  on "nativeHeader"
     string
-    produce NativeCHeader( content:String )
-  elseOn "nativeCCode"
+    produce NativeHeader( content:String )
+  elseOn "nativeCode"
     string
-    produce NativeCCode( content:String )
+    produce NativeCode( content:String )
   endOn
-  syntaxError "Expected 'nativeCHeader' or 'nativeCCode'."
+  syntaxError "Expected 'nativeHeader' or 'nativeCode'."
 
 - forEach_loop
   on "forEach"
@@ -906,7 +906,7 @@ parser
     optional_initial_value
     createNull
     produce Property( name=content, initial_value, type:Type )
-  elseOn "nativeC"
+  elseOn "native"
     string
     produce NativeCProperty( expression:String ):NativeProperty
   endOn
@@ -977,10 +977,10 @@ parser
   on "println"   args -> Println(args)
   on "return"    optional_expression -> Return(result)
 
-  onPeek "nativeCHeader"
+  onPeek "nativeHeader"
     native_code_block
     return
-  elseOnPeek "nativeCCode"
+  elseOnPeek "nativeCode"
     native_code_block
     return
   endOn
@@ -1211,14 +1211,14 @@ parser
     produce ImportModule(filepath:String)
   endOn
 }#
-  on "nativeC"
-    native_c_code
+  on "native"
+    native_code
     return
   endOn
 
   syntaxError
 
-- native_c_code
+- native_code
   if consume("(")
     string
     mustConsume ")"

@@ -22,11 +22,11 @@ class Organizer : Visitor
       cmd.type_context.global_methods[ cmd.signature ] = cmd
       return cmd
 
-    method on( cmd:NativeCCode )->Cmd
+    method on( cmd:NativeCode )->Cmd
       this_type.native_code.add( cmd )
       return null
 
-    method on( cmd:NativeCHeader )->Cmd
+    method on( cmd:NativeHeader )->Cmd
       this_type.native_header.add( cmd )
       return null
 

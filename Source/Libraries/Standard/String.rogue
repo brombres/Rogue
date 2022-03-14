@@ -8,18 +8,18 @@ class String
     hash_code       : Int32
     is_immutable       : Logical  # 1=immutable
     must_free       : Logical
-    nativeC  "char* utf8;"  # always includes null pointer
-    nativeC  "char  buffer[ROGUE_STRING_INTERNAL_BUFFER_SIZE];"
+    native  "char* utf8;"  # always includes null pointer
+    native  "char  buffer[ROGUE_STRING_INTERNAL_BUFFER_SIZE];"
 
   NATIVE
-    nativeCHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
+    nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
                    |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int must_free );
                    |RogueString* RogueString_create_with_byte_capacity( RogueInt32 byte_capacity );
                    |RogueInt32   RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash );
                    |const char*  RogueString_to_c_string( RogueString* st );
                    |RogueInt32   RogueString_utf8_character_count( const char* cstring, int byte_count );
 
-    nativeCCode  @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free )
+    nativeCode  @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free )
                   |{
                   |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                   |  RogueInt32 character_count = RogueString_utf8_character_count( cstring, byte_count );

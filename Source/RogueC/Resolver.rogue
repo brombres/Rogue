@@ -118,11 +118,11 @@ class Resolver : Visitor
 
       return null
 
-    method on( cmd:NativeCHeader )->Cmd
+    method on( cmd:NativeHeader )->Cmd
       this_module.native_headers.add( cmd.content )
       return null
 
-    method on( cmd:NativeCCode )->Cmd
+    method on( cmd:NativeCode )->Cmd
       this_module.native_code.add( cmd.content )
       return null
 

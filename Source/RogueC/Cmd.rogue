@@ -798,19 +798,19 @@ class NativeProperty : Cmd
 
 endClass
 
-class NativeCCode : Cmd
+class NativeCode : Cmd
   PROPERTIES
     content : String
 
   METHODS
     method init( t, content )
 
-    method init( existing:NativeCCode )
+    method init( existing:NativeCode )
       prior.init( existing )
       content = existing.content
 
     method description->String
-      return "NativeCCode($)" (%content)
+      return "NativeCode($)" (%content)
 
     method to->Character
       return Cmd.to_character(content)
@@ -821,19 +821,19 @@ class NativeCCode : Cmd
 
 endClass
 
-class NativeCHeader : Cmd
+class NativeHeader : Cmd
   PROPERTIES
     content : String
 
   METHODS
     method init( t, content )
 
-    method init( existing:NativeCHeader )
+    method init( existing:NativeHeader )
       prior.init( existing )
       content = existing.content
 
     method description->String
-      return "NativeCHeader($)" (%content)
+      return "NativeHeader($)" (%content)
 
     method to->Character
       return Cmd.to_character(content)
