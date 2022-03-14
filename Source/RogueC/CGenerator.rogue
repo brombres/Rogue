@@ -1,33 +1,5 @@
 module Rogue
 
-augment Procedure
-  PROPERTIES
-    c_name : String
-
-  METHODS
-    method c_name->String
-      throw UnsupportedOperationError()
-endAugment
-
-augment Type
-  PROPERTIES
-    c_name : String   # e.g. RogueString
-    c_type : String   # e.g. RogueString*
-
-  METHODS
-    method c_type->String
-      if (@c_type) return @c_type
-      @c_type = c_name
-      if (is_reference) @c_type += "*"
-      return @c_type
-
-    method c_name->String
-      if (@c_name) return @c_name
-      @c_name = "$$" (module_context.c_name,name)
-      return @c_name
-
-endAugment
-
 augment
   METHODS
     method Cmd.needs_semicolon->Logical
@@ -35,6 +7,15 @@ augment
 
     method ControlStructure.needs_semicolon->Logical
       return false
+
+    method GlobalMethod.c_name->String
+      if (@c_name) return @c_name
+      use builder = StringBuilder.pool
+        builder.print( module_context.c_name ).print( "__" ).print( name )
+        # TODO: parameter types
+        c_name = builder
+        return @c_name
+      endUse
 
     method Module.c_name->String
       return name
@@ -116,6 +97,8 @@ augment
       endForEach
       writer.println
 
+      (forEach in types).generate_c_header( writer )
+
     method Module.generate_c_code( writer:CWriter )
       if (native_code.count)
         writer.println forEach in native_code
@@ -143,6 +126,8 @@ augment
           endForEach
         endForEach
         writer.println
+
+        (forEach in types).generate_c_code( writer )
       endIf
 
       forEach (r in routines)
@@ -229,6 +214,37 @@ augment
       endForEach
       writer.println
 
+    method Type.generate_c_header( writer:CWriter )
+      forEach (m in global_methods)
+        write_c_global_method_header( m, writer )
+        writer.println ';'
+      endForEach
+
+    method Type.generate_c_code( writer:CWriter )
+      forEach (m in global_methods)
+        CGenerator( this, writer ).visit( m )
+      endForEach
+
+    method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
+      if (m.return_type)
+        writer.print( m.return_type.c_name )
+        if (m.return_type.is_reference) writer.print '*'
+      else
+        writer.print "void"
+      endIf
+      writer.print ' '
+      writer.print( m.c_name )
+      writer.print( "(" )
+      forEach (p at i in m.parameters)
+        block p = p->(as Local)
+          if (i) writer.print ','
+          writer.print( p.type.c_name )
+          writer.print ' '
+          writer.print( p.c_name )
+        endBlock
+      endForEach
+      writer.print( ")" )
+
 endAugment
 
 class CGenerator : Visitor
@@ -239,13 +255,25 @@ class CGenerator : Visitor
     this_procedure : Procedure
     autoname_index = 0
 
+    visible_locals    = Local[]
+    visible_locals_fp = Int32[]
+
   METHODS
     method init( this_module, writer )
+
+    method init( this_type, writer )
+      this_module = this_type.module_context
 
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
       ++autoname_index
       return result
+
+    method find_local( name:String )->Local
+      forEach (v in visible_locals step -1)
+        if (v.name == name) return v
+      endForEach
+      return null
 
     method on_visit( cmd:Cmd )
       throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
@@ -291,6 +319,17 @@ class CGenerator : Visitor
       visit_children( cmd )
       writer.indent -= 2
       writer.println '}'
+
+    method on_visit( cmd:CallGlobalMethod )
+      writer.print( cmd.info.c_name )
+      writer.print '('
+      if (cmd.args)
+        forEach (arg at i in cmd.args)
+          if (i) writer.print ','
+          visit( arg )
+        endForEach
+      endIf
+      writer.print ')'
 
     method on_visit( cmd:CallRoutine )
       writer.print( cmd.info.c_name )
@@ -376,9 +415,12 @@ class CGenerator : Visitor
         writer.println( ';' )
       endForEach
 
+      push_scope( cmd )
+
       visit( cmd.initialization )
 
     method on_leave( cmd:ControlStructure )
+      pop_scope
       writer.indent -= 2
       writer.println( "}" )
 
@@ -399,6 +441,13 @@ class CGenerator : Visitor
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GlobalMethod )
+      this_procedure = cmd
+      autoname_index = 0
+      this_type.write_c_global_method_header( cmd, writer )
+      writer.println
+      visit( cmd.body )
 
     method on_visit( cmd:If )
       on_enter( cmd )
@@ -500,6 +549,17 @@ class CGenerator : Visitor
       writer.print "++"
       visit( cmd.operand )
 
+    method on( cmd:Procedure )->Cmd
+      visible_locals_fp.add( visible_locals.count )
+      forEach (p in cmd.parameters)
+        visible_locals.add( p->(as Local) )
+      endForEach
+
+      visit_content( cmd )
+
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+      return cmd
+
     method on_visit( cmd:Return )
       writer.print "return"
       if (cmd.result)
@@ -510,7 +570,6 @@ class CGenerator : Visitor
     method on_visit( cmd:Routine )
       this_procedure = cmd
       autoname_index = 0
-      forEach (v at i in cmd.locals) v.c_name = v.name + "_" + i
       this_module.write_c_routine_header( cmd, writer )
       writer.println
       visit( cmd.body )
@@ -562,7 +621,21 @@ class CGenerator : Visitor
       visit( cmd.operand )
       writer.print ") )"
 
+    method pop_scope
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+
+    method push_scope( cmd:ControlStructure )
+      visible_locals_fp.add( visible_locals.count )
+      visible_locals.add( forEach in cmd.locals )
+
     method print_native_code( code:String )
+      local replacements = StringTable<<String>>()
+      forEach (v in visible_locals) replacements["$"+v.name] = v.c_name
+      replacements[ "$this" ] = "THIS"
+      replacements.sort( (a,b) => a.key.count >= b.key.count )
+      forEach (replacement in replacements.entries)
+        code .= replacing( replacement.key, replacement.value )
+      endForEach
       writer.print code
 endClass
 

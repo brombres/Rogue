@@ -1324,6 +1324,7 @@ parser
   #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
   #  create CallNative
   #  create CallThisMethod(procedure:Procedure,args):CallProcedure
+  create CallGlobalMethod(args):CallProcedure
   create CallProcedure(args)
   create CallRoutine(args):CallProcedure
   create Compare(left,right):Binary
@@ -1412,7 +1413,7 @@ parser
   #  create SubtractString(left,right):Binary
   #  create SubtractValue(left,right):Binary
   create Type(name:String)
-  #  create TypeContext(type:Type)
+  create TypeContext(type:Type)
   #  create ValueAsInt32(operand):Unary
   #  create XYGetX(context)
   #  create XYGetY(context)

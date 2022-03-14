@@ -417,4 +417,11 @@ class Visitor<<$ReturnType>>
         visit( cmd.body )
       endIf
 
+    method on_visit_children( cmd:TypeContext )
+      if ($ReturnType isType Cmd)
+        cmd.type = visit(cmd.type)->(as Type)
+      else
+        visit( cmd.type )
+      endIf
+
 endClass

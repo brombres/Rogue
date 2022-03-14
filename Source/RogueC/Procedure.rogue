@@ -85,6 +85,7 @@ class Procedure : Cmd
     method resolve
       if (is_resolved) return
       is_resolved = true
+      organize
       Resolver( module_context ).visit( null, this )
 
 endClass

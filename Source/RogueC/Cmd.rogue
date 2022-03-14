@@ -561,7 +561,6 @@ endClass
 class Local : Cmd
   PROPERTIES
     name          : String
-    c_name        : String
     initial_value : Cmd
     type          : Type
 
@@ -1392,6 +1391,9 @@ class NativeStatement : Cmd
 endClass
 
 class GlobalMethod : Procedure
+  PROPERTIES
+    type_context : Type
+
   METHODS
     method description->String
       return "GlobalMethod($,$,$,$,$)" (%name,%parameters,%return_type,%attributes,%body)
@@ -1431,5 +1433,28 @@ class Method : Procedure
     method init( existing:Method )
       prior.init( existing )
       if (existing.type_context) type_context = existing.type_context.cloned
+
+endClass
+
+class TypeContext : Cmd
+  PROPERTIES
+    type : Type
+
+  METHODS
+    method init( t, type )
+
+    method init( existing:TypeContext )
+      prior.init( existing )
+      if (existing.type) type = existing.type.cloned
+
+    method description->String
+      return "TypeContext($)" (%type)
+
+endClass
+
+class CallGlobalMethod : CallProcedure
+  METHODS
+    method description->String
+      return "CallGlobalMethod($)" (%args)
 
 endClass

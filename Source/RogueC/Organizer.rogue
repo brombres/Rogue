@@ -12,111 +12,15 @@ class Organizer : Visitor
     method init( this_module )
 
     method visit( this_type, class_def:Cmd )
+      # Called when instantiating a template
       visit( class_def )
 
-      #{
-    method add_local( t:Token, name:String, initial_value=null:Cmd, type=null:Type )->Local
-      require this_procedure
-      local v = Local( t, name, initial_value, type )
-      collect( v )
-      return v
-
-    method auto_local( t:Token, base_name:String, initial_value=null:Cmd, type=null:Type )->Local
-      require this_procedure
-      local name = ".auto_$_$"(base_name,this_procedure.locals.count)
-      return add_local( t, name, initial_value, type )
-
-    method visit( type:Type )
-      if (type.is_organized) return
-      type.is_organized = true
-
-      this_type = type
-
-      if (type.definition)
-        local constructor_properties = type.definition.constructor_properties
-        if (constructor_properties)
-          local m_init = Method( constructor_properties.t, type, "init" )
-          type.add( m_init )
-
-          forEach (p in constructor_properties)
-            local v = p->(as LocalDef)->Local
-            v.is_parameter = true
-            v.is_auto_store = true
-            m_init.parameters.add( v )
-            collect( v, m_init )
-            if (v.@type)
-              type.properties[ v.name ] = Property( v.t, type, v.name, v.initial_value, v.@type )
-            endIf
-          endForEach
-        endIf
-
-        visit( type.definition )
-      endIf
-
-      if (type.augments)
-        visit( type.augments )
-      endIf
-
-      # Assign property indices
-      forEach (p at i in this_type.properties)
-        p.index = i
-      endForEach
-
-    method visit( this_type, this_procedure )
-      visit( this_procedure )
-
-    method on( cmd:ForEach )->Cmd
-      return validate( cmd.condition.organize_foreach(cmd,this) )
-
-    method on_visit( cmd:LocalDeclaration )
-      collect( cmd.info )
-      visit_children( cmd )
-
-    method on( cmd:LocalDeclarations )->Cmd
-      if (cmd.type)
-        local var_type = cmd.type->Type
-        forEach (v in cmd.declarations)
-          block v = v->(as LocalDef)->Local
-            v.type = var_type
-            local decl = LocalDeclaration( cmd.t, v )
-            current_statements_rewriter.write( visit(decl) )
-          endBlock
-        endForEach
-      else
-        forEach (v in cmd.declarations)
-          block v = v->(as LocalDef)->Local
-            local decl = LocalDeclaration( cmd.t, v )
-            current_statements_rewriter.write( visit(decl) )
-          endBlock
-        endForEach
-      endIf
-      return null
-
-    method on_visit( cmd:Method )
-      if (cmd.is_organized) return
-      cmd.is_organized = true
-
-      temporarily this_procedure = cmd
-        on_visit( cmd->(as Procedure) )
-        visit_children( cmd )
-
-        local sig = cmd.signature
-        if (cmd.type_context.methods_by_signature.contains(sig))
-          throw cmd.t.error( "Type $ already defines method $."(cmd.type_context.name,sig) )
-        endIf
-        cmd.type_context.methods_by_signature[ sig ] = cmd
-      endTemporarily
-
-    method on( cmd:MethodDef )->Cmd
-      return visit( cmd->Method(this_type) )
-
-    method collect( v:Local, proc=this_procedure:Procedure )
-      if (v.fp_offset == -1)
-        v.fp_offset = proc.locals.count + which{ proc.is_global:0 || 1 }
-        v.is_parameter = v.fp_offset < proc.parameters.count
-        proc.locals.add( v )
-      endIf
-    }#
+    method on( cmd:GlobalMethod )->Cmd
+      cmd.module_context = this_module
+      cmd.type_context = this_type
+      cmd.organize
+      cmd.type_context.global_methods[ cmd.signature ] = cmd
+      return cmd
 
     method on( cmd:NativeCCode )->Cmd
       this_type.native_code.add( cmd )
@@ -125,49 +29,6 @@ class Organizer : Visitor
     method on( cmd:NativeCHeader )->Cmd
       this_type.native_header.add( cmd )
       return null
-
-    #{
-    method on_visit( cmd:Procedure )
-      cmd.max_args = cmd.parameters.count
-      cmd.min_args = cmd.max_args
-      forEach (param in cmd.parameters step -1)
-        if (param.initial_value)
-          # default arg value given
-          --cmd.min_args
-        else
-          escapeForEach
-        endIf
-      endForEach
-
-      forEach (param in cmd.parameters)
-        collect( param )
-        if (not param.type)
-          if (this_type)
-            local p = this_type.find_property( param.name )
-            if (not p)
-              throw param.t.error(
-                ''No property named "$" for auto-store parameter; add proprty or parameter ':Type'.''(param.name)
-              )
-            endIf
-            param.type = p.type
-            param.is_auto_store = true
-          else
-            throw param.t.error( "Missing parameter ':Type'." )
-          endIf
-        endIf
-      endForEach
-
-      use builder = StringBuilder.pool
-        builder.print cmd.name
-        builder.print '('
-        forEach (param at i in cmd.parameters)
-          if (i > 0) builder.print ','
-          builder.print param.type.name
-        endForEach
-        builder.print ')'
-        cmd.signature = builder->String
-      endUse
-      }#
 
     method on( cmd:PropertyDeclarations )->Cmd
       local type = cmd.type
@@ -219,70 +80,4 @@ class Organizer : Visitor
       endIf
       this_type.properties[ p.name ] = p
 
-      #{
-    method on_visit( cmd:Routine )
-      if (cmd.is_organized) return
-      cmd.is_organized = true
-
-      temporarily this_procedure = cmd
-        on_visit( cmd->(as Procedure) )
-        visit_children( cmd )
-
-        local sig = cmd.signature
-        if (this_module.routines_by_signature.contains(sig))
-          throw cmd.t.error( "Module $ already defines routine $."(this_module.name,sig) )
-        endIf
-        this_module.routines_by_signature[ sig ] = cmd
-      endTemporarily
-
-    method on_visit( cmd:Statements )
-      temporarily current_statements_rewriter = cmd.list.rewriter
-        forEach (element in current_statements_rewriter)
-          local visited_element = visit( element )
-          if (visited_element) current_statements_rewriter.write( visited_element )
-        endForEach
-      endTemporarily
-      }#
 endClass
-
-#{
-augment
-  METHODS
-    method ForEachControl.organize_foreach( cmd_foreach:ForEach, organizer:Organizer )->Cmd
-      throw UnsupportedOperationError()
-
-    method ForEachInControl.organize_foreach( cmd_foreach:ForEach, organizer:Organizer )->Cmd
-      local control_v = organizer.add_local( t, name )
-
-      local starting_index = collection.starting_index
-      if (not starting_index) starting_index = LiteralInt32( collection.t, 0 )
-      local index_v : Local
-      if (optional_at) index_v = organizer.add_local( optional_at.t, optional_at.name, starting_index )
-      else             index_v = organizer.auto_local( t, "index", starting_index )
-
-      local step_size = collection.step_size
-      if (not step_size) step_size = LiteralInt32( collection.t, 1 )
-
-      local collection_v : Local
-      if (collection.name)
-        collection_v = organizer.add_local( collection.t, collection.name, collection.data )
-      else
-        collection_v = organizer.auto_local( collection.t, "collection", collection.data )
-      endIf
-
-      return ForEachIn( cmd_foreach.t, control_v, index_v, collection_v, step_size, cmd_foreach.statements )
-
-    method ForEachOfControl.organize_foreach( cmd_foreach:ForEach, organizer:Organizer )->Cmd
-      if (optional_at) throw optional_at.t.error( "'at' cannot be used with forEach-of." )
-      throw UnsupportedOperationError()
-
-    method Type.organize
-      if (is_organized) return
-      Organizer( module_context ).visit( this )
-
-    method Type.resolve
-      if (is_resolved) return
-      Resolver( module_context ).visit( this )
-endAugment
-
-}#

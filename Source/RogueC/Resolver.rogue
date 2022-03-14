@@ -19,56 +19,11 @@ class Resolver : Visitor
   METHODS
     method init( this_module )
 
-    #{
-    method visit( this_type )
-      if (this_type.is_resolved) return
-      this_type.is_resolved = true
-      this_type.organize
-
-      visit( this_type, forEach in this_type.methods )
-
-      if (this_type.properties.count)
-        local m_init_object = this_type.methods_by_signature[ "init_object()" ]
-        if (not m_init_object)
-          m_init_object = Method( this_type.t, this_type, "init_object" )
-          forEach (p in this_type.properties step -1)
-            if (p.initial_value)
-              m_init_object.statements.insert( Assign(p.t,Access(p.t,p.name),p.initial_value) )
-            endIf
-          endForEach
-
-          this_type.add( m_init_object )
-          visit( this_type, m_init_object )
-          this_type.m_init_object = m_init_object
-        endIf
-      endIf
-    }#
-
     method visit( this_type, this_procedure )
       if (this_procedure.is_resolved) return
       this_procedure.is_resolved = true
       autoname_index = 0
       visit( this_procedure )
-
-      #{
-    method add_local( t:Token, name:String, initial_value=null:Cmd, type=null:Type )->Local
-      require this_procedure
-      local v = Local( t, name, initial_value, type )
-      collect( v )
-      return v
-
-    method auto_local( t:Token, base_name:String, initial_value=null:Cmd, type=null:Type )->Local
-      require this_procedure
-      local name = ".auto_$_$"(base_name,this_procedure.locals.count)
-      return add_local( t, name, initial_value, type )
-
-    method collect( v:Local, proc=this_procedure:Procedure )
-      if (v.fp_offset == -1)
-        v.fp_offset = proc.locals.count + which{ proc.is_global:0 || 1 }
-        v.is_parameter = v.fp_offset < proc.parameters.count
-        proc.locals.add( v )
-      endIf
-      }#
 
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
@@ -84,43 +39,6 @@ class Resolver : Visitor
     method on( cmd:Access )->Cmd
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
-
-      #{
-    method on_validate( cmd:Add )->Cmd
-      return validate( cmd.left.type.cmd_add(cmd.t, cmd.left, cmd.right) )
-
-    method on( cmd:AddAndAssign )->Cmd
-      local operand = visit( cmd.operand ).require_value
-      return validate( cmd.target.resolve_add_and_assign(cmd.t,operand,this) )
-
-    method on_validate( cmd:AddAndAssignLocal )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
-        return validate( AddAndAssignLocalInt32(cmd.t,cmd.info,operand) )
-      endIf
-      throw cmd.t.error( "[INTERNAL] AddAndAssignLocal doesn't handle $."(type) )
-
-    method on_validate( cmd:AddAndAssignProperty )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
-        return validate( AddAndAssignPropertyInt32(cmd.t,cmd.context,cmd.info,operand) )
-      endIf
-      throw cmd.t.error( "[INTERNAL] AddAndAssignThisProperty doesn't handle $."(type) )
-
-    method on_validate( cmd:AddAndAssignThisProperty )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
-        return validate( AddAndAssignThisPropertyInt32(cmd.t,cmd.info,operand) )
-      endIf
-      throw cmd.t.error( "[INTERNAL] AddAndAssignThisProperty doesn't handle $."(type) )
-
-    method on_visit( cmd:Args )
-      visit_children( cmd )
-      (forEach in cmd).require_value
-      }#
 
     method on( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
@@ -140,98 +58,6 @@ class Resolver : Visitor
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
 
-      #{
-    method on_validate( cmd:BitwiseAnd )->Cmd
-      return validate( cmd.left.type.cmd_bitwise_and(cmd.t, cmd.left, cmd.right) )
-
-    method on_validate( cmd:BitwiseOr )->Cmd
-      return validate( cmd.left.type.cmd_bitwise_or(cmd.t, cmd.left, cmd.right) )
-
-    method on( cmd:BitwiseOrAndAssign )->Cmd
-      local operand = visit( cmd.operand ).require_value
-      return validate( cmd.target.resolve_bitwise_or_and_assign(cmd.t,operand,this) )
-
-    method on_validate( cmd:BitwiseOrAndAssignLocal )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
-        return validate( BitwiseOrAndAssignLocalInt32(cmd.t,cmd.info,operand) )
-      endIf
-      throw cmd.t.error( "[INTERNAL] BitwiseOrAndAssignLocal doesn't handle $."(type) )
-
-    method on_validate( cmd:BitwiseOrAndAssignProperty )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
-        return validate( BitwiseOrAndAssignPropertyInt32(cmd.t,cmd.context,cmd.info,operand) )
-      endIf
-      throw cmd.t.error( "[INTERNAL] BitwiseOrAndAssignThisProperty doesn't handle $."(type) )
-
-    method on_validate( cmd:BitwiseOrAndAssignThisProperty )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        local operand = validate( (cmd.operand.cmd_cast_to(type)) )
-        return validate( BitwiseOrAndAssignThisPropertyInt32(cmd.t,cmd.info,operand) )
-      endIf
-      throw cmd.t.error( "[INTERNAL] BitwiseOrAndAssignThisProperty doesn't handle $."(type) )
-
-    method on_validate( cmd:BitwiseXor )->Cmd
-      return validate( cmd.left.type.cmd_bitwise_xor(cmd.t, cmd.left, cmd.right) )
-    }#
-
-    #method on_visit( cmd:CreateObject )
-    #visit_children( cmd )
-
-    #{
-    method on_validate( cmd:CastToInt32 )->Cmd
-      local type = cmd.operand.require_type
-      if (type is Program.type_Int32)   return cmd.operand
-      if (type is Program.type_Real64)  return validate( CastReal64ToInt32(cmd.t, cmd.operand) )
-      if (type is Program.type_Logical or type is Program.type_Character)
-        return validate( ValueAsInt32(cmd.t,cmd.operand) )
-      endIf
-      if (type is Program.type_Value)  return validate( CastValueToInt32(cmd.t, cmd.operand) )
-      throw cmd.t.error( "Cannot convert type $ to Int32."(type) )
-
-    method on_validate( cmd:CastToReal64 )->Cmd
-      local type = cmd.operand.require_type
-      if (type is Program.type_Real64) return cmd.operand
-      if (type is Program.type_Logical or type is Program.type_Character or type is Program.type_Int32)
-        return validate( CastInt32ToReal64(cmd.t, cmd.operand) )
-      endIf
-      throw cmd.t.error( "Cannot convert type $ to Real64."(type) )
-      }#
-
-      #{
-    method on_validate( cmd:CastToValue )->Cmd
-      visit_children( cmd )
-      local from_type = cmd.operand.require_type
-      whichIs (from_type)
-        others: throw
-      endWhichIs
-      }#
-
-      #{
-    method on_validate( cmd:CompareEQ )->Cmd
-      #local type = cmd.left.type
-      return validate( CompareEQReal64(cmd.t,cmd.left,cmd.right) )
-
-    method on_validate( cmd:CompareNE )->Cmd
-      return validate( CompareNEReal64(cmd.t,cmd.left,cmd.right) )
-
-    method on_validate( cmd:CompareLT )->Cmd
-      return validate( CompareLTReal64(cmd.t,cmd.left,cmd.right) )
-
-    method on_validate( cmd:CompareGT )->Cmd
-      return validate( CompareGTReal64(cmd.t,cmd.left,cmd.right) )
-
-    method on_validate( cmd:CompareLE )->Cmd
-      return validate( CompareLEReal64(cmd.t,cmd.left,cmd.right) )
-
-    method on_validate( cmd:CompareGE )->Cmd
-      return validate( CompareGEReal64(cmd.t,cmd.left,cmd.right) )
-      }#
-
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -242,134 +68,10 @@ class Resolver : Visitor
       pop_scope
       return cmd
 
-      #{
-    method on( cmd:Decrement )->Cmd
-      return cmd.operand.resolve_decrement( cmd.t, this )
-
-    method on_validate( cmd:DecrementLocal )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        return validate( DecrementLocalInt32(cmd.t,cmd.info) )
-      else
-        throw cmd.t.error( "[INTERNAL] Unhandled DecrementLocal for type $."(type) )
-      endIf
-
-    method on_validate( cmd:DecrementThisProperty )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        return validate( DecrementThisPropertyInt32(cmd.t,cmd.info) )
-      else
-        throw cmd.t.error( "[INTERNAL] Unhandled DecrementThisProperty for type $."(type) )
-      endIf
-
-    method on_validate( cmd:Description )->Cmd
-      local call_description = resolve_access( cmd.t, cmd.operand, "description", null, &suppress_error )
-      if (call_description) return call_description
-      if (cmd.operand instanceOf LiteralString) return cmd.operand
-      return cmd
-
-    method on_validate( cmd:Divide )->Cmd
-      return validate( cmd.left.type.cmd_divide(cmd.t, cmd.left, cmd.right) )
-    }#
-
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
       cmd.condition.resolve_foreach( this, cmd, iterator )
       return visit( iterator )
-
-    #{
-    method on( cmd:ForEachIn )->Cmd
-      #ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
-      resolve( cmd.index_v )
-      resolve( cmd.collection_v )
-
-      local collection_type = cmd.collection_v.type
-      collection_type.organize
-
-      local t = cmd.collection_v.t
-      local cmd_count = ContextAccess(
-        t,
-        Access( t, cmd.collection_v.name ),
-        "count"
-      )
-
-      local m_get = collection_type.methods_by_signature[ "get(Int32)" ]
-      require m_get
-      if (not m_get.return_type) throw m_get.t.error( "Return value expected for use with forEach." )
-      cmd.control_v.type = m_get.return_type
-      resolve( cmd.control_v )
-
-      local cmd_get = ContextAccess(
-        t,
-        Access( t, cmd.collection_v.name ),
-        "get",
-        Args( cmd.collection_v.t, Access(cmd.index_v.t,cmd.index_v.name) )
-      )
-
-      return visit(
-        ForEachInIndexedCollection(
-          cmd.t,
-          cmd.control_v,
-          cmd.index_v,
-          cmd.collection_v,
-          cmd_count,
-          cmd_get,
-          cmd.step_size,
-          cmd.statements
-        )
-      )
-
-    method on_visit_children( cmd:ForEachInIndexedCollection ) [override]
-      locals.add( cmd.control_v )
-      locals.add( cmd.index_v )
-      locals.add( cmd.collection_v )
-
-      prior.on_visit_children( cmd )
-      cmd.control_v.type = cmd.cmd_get.require_type
-
-      loop (3) locals.remove_last
-
-    method on_visit( cmd:If )
-      visit_children( cmd )
-      if (cmd.condition) cmd.condition.require_value
-
-    method on( cmd:IndexAccess )->Cmd
-      return visit( ContextAccess(cmd.t, cmd.context, "get", CmdList(cmd.t,cmd.index)) )
-
-    method on( cmd:Increment )->Cmd
-      return cmd.operand.resolve_increment( cmd.t, this )
-
-    method on_validate( cmd:IncrementLocal )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        return validate( IncrementLocalInt32(cmd.t,cmd.info) )
-      else
-        throw cmd.t.error( "[INTERNAL] Unhandled IncrementLocal for type $."(type) )
-      endIf
-
-    method on_validate( cmd:IncrementThisProperty )->Cmd
-      local type = cmd.info.type
-      if (type is Program.type_Int32)
-        return validate( IncrementThisPropertyInt32(cmd.t,cmd.info) )
-      else
-        throw cmd.t.error( "[INTERNAL] Unhandled IncrementThisProperty for type $."(type) )
-      endIf
-
-    method on_validate( cmd:LeftShift )->Cmd
-      return validate( cmd.left.type.cmd_left_shift(cmd.t, cmd.left, cmd.right) )
-
-    method on_validate( cmd:Local )->Cmd
-      if (not cmd.type)
-        if (cmd.initial_value)
-          cmd.type = cmd.initial_value.type
-          if (not cmd.type)
-            cmd.initial_value = visit( cmd.initial_value )
-            cmd.type = cmd.initial_value.require_type
-          endIf
-        endIf
-      endIf
-      return cmd
-}#
 
     method on( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
@@ -416,31 +118,6 @@ class Resolver : Visitor
 
       return null
 
-#{
-    method on_visit( cmd:Loop )
-      visit_children( cmd )
-      if (cmd.loop_count)
-        cmd.loop_count = validate( cmd.loop_count.cmd_cast_to(Program.type_Int32) )
-      endIf
-
-    method on_validate( cmd:Mod )->Cmd
-      return validate( cmd.left.type.cmd_mod(cmd.t, cmd.left, cmd.right) )
-
-    method on_validate( cmd:Multiply )->Cmd
-      return validate( cmd.left.type.cmd_multiply(cmd.t, cmd.left, cmd.right) )
-
-    method on_visit( cmd:Method )
-      forEach (v in cmd.parameters step -1)
-        block v = v->(as Local)
-          if (v.is_auto_store)
-            local p = this_type.must_find_property( cmd.t, v.name )
-            cmd.statements.insert( visit( SetThisProperty(cmd.t, p, GetLocal(cmd.t,v)) ) )
-          endIf
-        endBlock
-      endForEach
-      on_visit( cmd->(as Procedure) )
-      }#
-
     method on( cmd:NativeCHeader )->Cmd
       this_module.native_headers.add( cmd.content )
       return null
@@ -448,11 +125,6 @@ class Resolver : Visitor
     method on( cmd:NativeCCode )->Cmd
       this_module.native_code.add( cmd.content )
       return null
-
-      #{
-    method on_validate( cmd:Negate )->Cmd
-      return validate( cmd.operand.type.cmd_negate(cmd.t, cmd.operand) )
-      }#
 
     method on_visit( cmd:Procedure )
       visible_locals_fp.add( visible_locals.count )
@@ -473,16 +145,6 @@ class Resolver : Visitor
       control_stack_fp.add( control_stack.count )
       control_stack.add( cmd )
       visible_locals.add( forEach in cmd.locals )
-
-      #{
-    method on_visit_children( cmd:Procedure )
-      locals.add( (forEach in cmd.parameters)->(as Local) )
-      prior.on_visit_children( cmd )
-      loop (cmd.parameters.count)
-        assert locals.count
-        locals.remove_last
-      endLoop
-      }#
 
     method on( cmd:Print )->Cmd
       which (cmd.args.count)
@@ -576,8 +238,6 @@ class Resolver : Visitor
 }#
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      require not context  # temp
-
       local m = this_module
       if (name.contains("::"))
         local m_name = name.before_last("::")
@@ -590,8 +250,6 @@ class Resolver : Visitor
 
         local type_context : Type
         local is_global = false
-
-        #{
 
         if (context)
           context = visit( context )
@@ -613,21 +271,22 @@ class Resolver : Visitor
           #endIf
 
         else
-          }#
           local type = this_module.find_type( name, &extended_search )
-          #{
           if (type and not args)
+            #{
             if (type.is_singleton)
               return GetSingleton(t,type)
             else
               if (type.name.ends_with(']'))
                 return resolve_access( t, null, type.name, CmdList(t) )
               else
+            }#
                 return TypeContext(t,type)
+            #{
               endIf
             endIf
+            }#
           endIf
-          }#
 
           type_context = this_type  # may be null
           if (args)
@@ -652,7 +311,7 @@ class Resolver : Visitor
             local v = find_local( name )
             if (v) return validate( GetLocal(t,v) )
           endIf
-        #endIf
+        endIf
 
         local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
 
@@ -717,6 +376,8 @@ class Resolver : Visitor
 
     method cast_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
+      proc.resolve
+
       if (not args) return
 
       while (args.count < proc.parameters.count)
@@ -1008,6 +669,9 @@ augment
     method Cmd.cmd_call( context:Cmd, args:Cmd )->Cmd
       throw t.error( "[INTERNAL] $.cmd_call() is undefined."(type_name) )
 
+    method GlobalMethod.cmd_call( context:Cmd, args:Cmd )->Cmd
+      return CallGlobalMethod( t, this, args )
+
       #{
     method Method.cmd_call( context:Cmd, args:Cmd )->Cmd
       if (context and not context.is_type_context)
@@ -1081,6 +745,9 @@ augment
 
     method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      resolver.visit( cmd_control )
+      resolver.visit( cmd_collection )
+
       local v_iterator_name = which{ cmd_control.name || resolver.autoname("i") }
       local v_iterator = Local( cmd_control.t, v_iterator_name, null, type )
       cmd_iterator.locals.add( v_iterator )

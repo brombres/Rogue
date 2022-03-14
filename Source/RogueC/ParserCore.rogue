@@ -1964,6 +1964,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( CastToLogical(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CastToReal32(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CastToReal64(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallRoutine(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( Compare(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
@@ -1988,6 +1989,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( Range(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( SetLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( Type(_cur_t,_string_arg(-1)), 1 )
+            if (not disable_output) _push( TypeContext(_cur_t,_node_arg(-1)->(as Type)), 1 )
             return
           others
             return

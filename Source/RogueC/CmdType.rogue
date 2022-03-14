@@ -118,6 +118,13 @@ augment
       return true
 endAugment
 
+# is_type_context
+augment
+  METHODS
+    method TypeContext.is_type_context->Logical
+      return true
+endAugment
+
 # type()
 augment
   METHODS
@@ -248,7 +255,12 @@ augment
       #{
     method StackTopInt32.type->Type
       return Program.type_Int32
+      }#
 
+    method TypeContext.type->Type
+      return @type
+
+      #{
     method TypeRef.to->Type
       return Type( t, name )
     }#

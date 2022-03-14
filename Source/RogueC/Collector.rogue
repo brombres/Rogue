@@ -5,30 +5,6 @@ class Collector : Visitor
     method on( cmd:Cmd )->Cmd
       throw cmd.t.error( "[INTERNAL] Unexpected $ in Collector."(cmd.type_name) )
 
-      #{
-    method on( cmd:ClassDef )->Cmd
-      local existing = Program.current_module.types[ cmd.name ]
-      if (existing)
-        if (not existing.definition)
-          # Type was created via a register() call
-          existing.t = cmd.t
-          cmd->Type( existing )
-          return null
-        endIf
-
-        local qualified_name : String
-        if (Program.current_module is Program.default_module)
-          qualified_name = cmd.name
-        else
-          qualified_name = "$::$"(Program.current_module.name,cmd.name)
-        endIf
-        throw cmd.t.error( "Class $ is already defined."(qualified_name) )
-      endIf
-
-      cmd->Type  # The new Type links itself up
-      return null
-      }#
-
     method on( cmd:DefineModule )->Cmd
       if (cmd.name) Program.current_module = Program.get_module( cmd.t, cmd.name )
       else          Program.current_module = Program.default_module
@@ -36,12 +12,6 @@ class Collector : Visitor
       # TODO: copy cmd.attributes into module
 
       return null
-
-      #{
-    method on( cmd:Include )->Cmd
-      Program.include( cmd.t, cmd.filepath )
-      return null
-      }#
 
     method on( cmd:Routine )->Cmd
       cmd.organize

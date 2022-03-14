@@ -1,5 +1,22 @@
 module Rogue
 
+augment
+  METHODS
+    method Module.specialize_c
+      local specializer = CSpecializer( this )
+      forEach (type in types)
+        type.specialize_c( specializer )
+      endForEach
+
+      forEach (r in routines)
+        specializer.visit( null, r )
+      endForEach
+
+    method Type.specialize_c( specializer:CSpecializer )
+      specializer.visit( this )  # does not visit children
+      specializer.visit( forEach in global_methods )
+endAugment
+
 class CSpecializer : Visitor
   PROPERTIES
     writer         : CWriter
@@ -17,14 +34,15 @@ class CSpecializer : Visitor
       this_procedure = null
       # TODO
 
+    method visit( this_type, this_procedure )
+      visit( this_procedure )
+
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
       ++autoname_index
       return result
 
     method on_visit( cmd:Procedure )
-      this_type = null
-      this_procedure = cmd
       autoname_index = 0
 
       forEach (p at i in cmd.parameters)
@@ -32,6 +50,9 @@ class CSpecializer : Visitor
           p.c_name = "$_$" (p.name,i)
         endBlock
       endForEach
+
+      local di = cmd.parameters.count
+      forEach (v at i in cmd.locals) v.c_name = "$_$"(v.name,i+di)
 
       visit_children( cmd )
 
@@ -45,15 +66,36 @@ class CSpecializer : Visitor
 
 endClass
 
-augment
-  METHODS
-    method Module.specialize_c
-      local specializer = CSpecializer( this )
-      forEach (type in types)
-        specializer.visit( type )
-      endForEach
-
-      forEach (r in routines)
-        specializer.visit( r )
-      endForEach
+augment Local
+  PROPERTIES
+    c_name : String
 endAugment
+
+augment Procedure
+  PROPERTIES
+    c_name : String
+
+  METHODS
+    method c_name->String
+      throw UnsupportedOperationError()
+endAugment
+
+augment Type
+  PROPERTIES
+    c_name : String   # e.g. RogueString
+    c_type : String   # e.g. RogueString*
+
+  METHODS
+    method c_type->String
+      if (@c_type) return @c_type
+      @c_type = c_name
+      if (is_reference) @c_type += "*"
+      return @c_type
+
+    method c_name->String
+      if (@c_name) return @c_name
+      @c_name = "$$" (module_context.c_name,name)
+      return @c_name
+
+endAugment
+
