@@ -1,20 +1,7 @@
 module Rogue
 
 class Finalizer : Visitor
-  PROPERTIES
-    this_module    : Module
-    this_type      : Type
-    this_procedure : Procedure
-
   METHODS
-    method visit( program:Program )
-      visit( forEach in program.modules )
-
-    method visit( this_module )
-      visit( forEach in this_module.routines )
-      #forEach (type in m.types)
-      #endForEach
-
     method on_visit( cmd:LiteralString )
       local str = cmd.value
       if (not Program.unique_strings.contains(str))

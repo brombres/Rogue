@@ -1,42 +1,13 @@
 module Rogue
 
-augment
-  METHODS
-    method Module.specialize_c
-      local specializer = CSpecializer( this )
-      forEach (type in types)
-        type.specialize_c( specializer )
-      endForEach
-
-      forEach (r in routines)
-        specializer.visit( null, r )
-      endForEach
-
-    method Type.specialize_c( specializer:CSpecializer )
-      specializer.visit( this )  # does not visit children
-      specializer.visit( forEach in global_methods )
-endAugment
-
 class CSpecializer : Visitor
   PROPERTIES
     writer         : CWriter
-    this_module    : Module
-    this_type      : Type
-    this_procedure : Procedure
     autoname_index = 0
 
     statement_injector : ListRewriter<<Cmd>>
 
   METHODS
-    method init( this_module )
-
-    method visit( this_type )
-      this_procedure = null
-      # TODO
-
-    method visit( this_type, this_procedure )
-      visit( this_procedure )
-
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
       ++autoname_index

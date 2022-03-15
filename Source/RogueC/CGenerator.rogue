@@ -130,10 +130,7 @@ augment
         (forEach in types).generate_c_code( writer )
       endIf
 
-      forEach (r in routines)
-        CGenerator( this, writer ).visit( r )
-        writer.println
-      endForEach
+      CGenerator(writer).visit_routines( this )
 
     method Module.generate_c_launch_commands( writer:CWriter )
       local r = routines[ "on_launch()" ]
@@ -157,7 +154,7 @@ augment
       endUse
 
     method Program.generate_c
-      (forEach in modules).specialize_c
+      apply( CSpecializer() )
 
       local h_writer = CWriter( File("Test.h"), &header )
 
@@ -221,9 +218,7 @@ augment
       endForEach
 
     method Type.generate_c_code( writer:CWriter )
-      forEach (m in global_methods)
-        CGenerator( this, writer ).visit( m )
-      endForEach
+      CGenerator( writer ).visit_global_methods( this )
 
     method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
       if (m.return_type)
@@ -250,19 +245,13 @@ endAugment
 class CGenerator : Visitor
   PROPERTIES
     writer         : CWriter
-    this_module    : Module
-    this_type      : Type
-    this_procedure : Procedure
     autoname_index = 0
 
     visible_locals    = Local[]
     visible_locals_fp = Int32[]
 
   METHODS
-    method init( this_module, writer )
-
-    method init( this_type, writer )
-      this_module = this_type.module_context
+    method init( writer )
 
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
@@ -505,7 +494,9 @@ class CGenerator : Visitor
       writer.print pi
 
     method on_visit( cmd:LiteralString )
-      writer.print( Program.unique_strings[cmd.value] )
+      local c_id = Program.unique_strings[cmd.value]
+      assert c_id
+      writer.print( c_id )
 
     #method on_visit( cmd:LocalDeclarations )
     #  visit_children( cmd )
@@ -552,6 +543,9 @@ class CGenerator : Visitor
       writer.print '-'
       print_parenthesized( cmd.operand )
 
+    method on_visit( cmd:NullReference )
+      writer.print '0'
+
     method on_visit( cmd:Preincrement )
       writer.print "++"
       visit( cmd.operand )
@@ -580,6 +574,7 @@ class CGenerator : Visitor
       this_module.write_c_routine_header( cmd, writer )
       writer.println
       visit( cmd.body )
+      writer.println
 
     method on_visit( cmd:SetLocal )
       if (cmd.info.type.is_reference)

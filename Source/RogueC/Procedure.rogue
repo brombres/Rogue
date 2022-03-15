@@ -82,11 +82,12 @@ class Procedure : Cmd
         endForEach
       endIf
 
-    method resolve
+    method resolve( resolver=null:Resolver )
       if (is_resolved) return
       is_resolved = true
+      ensure resolver
       organize
-      Resolver( module_context ).visit( null, this )
+      resolver.visit( module_context, this )
 
 endClass
 

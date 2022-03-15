@@ -6,6 +6,11 @@ class Visitor : Visitor<<Cmd>>
 endClass
 
 class Visitor<<$ReturnType>>
+  PROPERTIES
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+
   METHODS
     method on( cmd:Cmd )->$ReturnType
       # Default per-node call sequence for regular 'Visitor' AKA 'Visitor<<Cmd>>':
@@ -63,6 +68,49 @@ class Visitor<<$ReturnType>>
       # Primarily for internal use - see on(Cmd) for usage.
       cmd.dispatch_on_visit<<ThisType>>( this )
       return cmd
+
+    method visit( m:Module )
+      visit_routines( m )
+      visit_types( m )
+
+    method visit_routines( m:Module )
+      temporarily this_module = m
+        forEach(r in m.routines.values)
+          temporarily this_procedure = r
+            visit( r )
+          endTemporarily
+        endForEach
+      endTemporarily
+
+    method visit_types( m:Module )
+      temporarily this_module = m
+        forEach (type in m.types.values)
+          visit_type( type )
+        endForEach
+      endTemporarily
+
+    method visit_type( type:Type )
+      temporarily this_type = type
+        on_visit_type( type )
+      endTemporarily
+
+    method on_visit_type( type:Type )
+      visit_global_methods( type )
+      visit_methods( type )
+
+    method visit_global_methods( type:Type )
+      forEach (m in type.global_methods.values)
+        temporarily this_procedure = m
+          visit( m )
+        endTemporarily
+      endForEach
+
+    method visit_methods( type:Type )
+      forEach (m in type.methods.values)
+        temporarily this_procedure = m
+          visit( m )
+        endTemporarily
+      endForEach
 
     method validate( cmd:Cmd )->$ReturnType [propagated]
       if ($ReturnType isType Cmd)

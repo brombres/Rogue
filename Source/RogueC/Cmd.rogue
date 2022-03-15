@@ -1395,9 +1395,6 @@ class GlobalMethod : Procedure
     type_context : Type
 
   METHODS
-    method description->String
-      return "GlobalMethod($,$,$,$,$)" (%name,%parameters,%return_type,%attributes,%body)
-
 endClass
 
 class CreateObject : Cmd

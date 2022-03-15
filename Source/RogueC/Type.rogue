@@ -20,7 +20,7 @@ class Type : Cmd
     attributes        : Int32
     properties        = StringTable<<Property>>()
     global_methods    = StringTable<<GlobalMethod>>()
-    #methods           = StringTable<<Method>>()
+    methods           = StringTable<<Method>>()
     native_properties = String[]
     native_header     = NativeHeader[]
     native_code       = NativeCode[]

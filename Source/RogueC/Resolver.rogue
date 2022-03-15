@@ -3,10 +3,6 @@ uses Utility/WorkList
 
 class Resolver : Visitor
   PROPERTIES
-    this_module    : Module
-    this_type      : Type
-    this_procedure : Procedure
-
     visible_locals    = Local[]
     visible_locals_fp = Int32[]
     control_stack     = ControlStructure[]
@@ -17,13 +13,10 @@ class Resolver : Visitor
     autoname_index = 0
 
   METHODS
-    method init( this_module )
-
-    method visit( this_type, this_procedure )
-      if (this_procedure.is_resolved) return
-      this_procedure.is_resolved = true
-      autoname_index = 0
-      visit( this_procedure )
+    method visit( m:Module, proc:Procedure )
+      temporarily this_module=m, this_procedure=proc
+        visit( proc )
+      endTemporarily
 
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
@@ -130,6 +123,7 @@ class Resolver : Visitor
       return validate( cmd.target.resolve_add_and_assign(visit(cmd.operand).require_value,this) )
 
     method on_visit( cmd:Procedure )
+      autoname_index = 0
       visible_locals_fp.add( visible_locals.count )
       forEach (p in cmd.parameters)
         visible_locals.add( p->(as Local) )
@@ -344,38 +338,45 @@ class Resolver : Visitor
 
 
     method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd
+      local m_create = find_procedure( t, type_context, null, "create", args, &require_global, &suppress_error )->(as GlobalMethod)
+      if (m_create)
+        if (not args) args = CmdList(t)
+        cast_args_to_parameter_types( args, m_create )
+        return CallGlobalMethod( t, m_create, args )
+      endIf
+
       local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )->(as Method)
       if (m_init)
-        if (not args and m_init.min_args == 0) args = CmdList(t)
+        if (not args) args = CmdList(t)
         cast_args_to_parameter_types( args, m_init )
         return CreateObject( t, type_context, m_init, args )
-      else
-        local mesg : String
-        use Candidates
-          type_context.collect_methods( "create", Candidates.list )
-          type_context.collect_methods( "init", Candidates.list )
-
-          if (args.count == 0 and Candidates.count == 0)
-            # No constructors available and no constructor required.
-            return CreateObject( t, type_context, null, null )
-          endIf
-
-          mesg = "No exact match for object constructor $("(type_context)
-          forEach (arg at i in args)
-            if (i > 0) mesg += ','
-            mesg += arg.require_type
-          endForEach
-          mesg += "). Candidates:\n\n"
-          if (Candidates.count)
-            forEach (m in Candidates)
-              mesg += "  $$" (type_context,m.signature.from_first('('))
-            endForEach
-          else
-            mesg += "  $()"(type_context)
-          endIf
-        endUse
-        throw t.error( mesg )
       endIf
+
+      local mesg : String
+      use Candidates
+        type_context.collect_methods( "create", Candidates.list )
+        type_context.collect_methods( "init", Candidates.list )
+
+        if (args.count == 0 and Candidates.count == 0)
+          # No constructors available and no constructor required.
+          return CreateObject( t, type_context, null, null )
+        endIf
+
+        mesg = "No exact match for object constructor $("(type_context)
+        forEach (arg at i in args)
+          if (i > 0) mesg += ','
+          mesg += arg.require_type
+        endForEach
+        mesg += "). Candidates:\n\n"
+        if (Candidates.count)
+          forEach (m in Candidates)
+            mesg += "  $$" (type_context,m.signature.from_first('('))
+          endForEach
+        else
+          mesg += "  $()"(type_context)
+        endIf
+      endUse
+      throw t.error( mesg )
 
     method cast_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
@@ -404,7 +405,8 @@ class Resolver : Visitor
           this_module.collect_routines( name, Candidates.list )
         endIf
         local result = refine_candidates( type_context, args )
-        if (result or suppress_error) return result
+        if (result)         return result.[resolve]
+        if (suppress_error) return null
 
         # Throw an error
         local sig = name
