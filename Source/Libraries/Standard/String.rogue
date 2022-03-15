@@ -6,10 +6,15 @@ class String
     cursor_offset   : Int32  # in bytes
     cursor_index    : Int32  # in characters
     hash_code       : Int32
-    is_immutable       : Logical  # 1=immutable
+    is_immutable    : Logical
     must_free       : Logical
     native  "char* utf8;"  # always includes null pointer
     native  "char  buffer[ROGUE_STRING_INTERNAL_BUFFER_SIZE];"
+
+  GLOBAL METHODS
+    method create->String
+      println "Creating string"
+      return null
 
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );

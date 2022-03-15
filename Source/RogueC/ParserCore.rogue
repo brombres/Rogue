@@ -1792,6 +1792,12 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_NULL)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( NullReference(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_PI)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( LiteralPi(_cur_t), 0 )

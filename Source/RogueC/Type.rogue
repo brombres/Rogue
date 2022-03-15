@@ -34,11 +34,11 @@ class Type : Cmd
       return type
 
   METHODS
-    method init( t, name, attributes )
-      init( t, Program.current_module, name, attributes )
+    method init( t, name, attributes, &unlisted )
+      init( t, Program.current_module, name, attributes, &=unlisted )
 
-    method init( t, module_context, name, attributes )
-      module_context.types[ name ] = this
+    method init( t, module_context, name, attributes, &unlisted )
+      if (not unlisted) module_context.types[ name ] = this
 
     method init( existing:Type )
       prior.init( existing )

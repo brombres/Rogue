@@ -1501,3 +1501,12 @@ class OpAndAssign : Cmd
       return "OpAndAssign($,$)" (%target,%operand)
 
 endClass
+
+class NullReference : Cmd
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method description->String
+      return "NullReference"
+endClass

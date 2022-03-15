@@ -1197,6 +1197,7 @@ parser
   endOn
   on "true"               -> LiteralLogical(value="true":Logical)
   on "false"              -> LiteralLogical(value="false":Logical)
+  on "null"               -> NullReference
   on "pi"                 -> LiteralPi
   on '(', expression, ')':   return
 #{

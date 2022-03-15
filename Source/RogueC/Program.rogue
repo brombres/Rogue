@@ -19,6 +19,7 @@ class Program [singleton]
     type_Real32    : Type
     type_Real64    : Type
 
+    type_null      : Type
     type_Object    : Type
     type_String    : Type
 
@@ -38,6 +39,8 @@ class Program [singleton]
       type_Int64     = TypeInt64( t )
       type_Real32    = TypeReal32( t )
       type_Real64    = TypeReal64( t )
+
+      type_null      = Type( t, "null", Type.OBJECT, &unlisted )
       type_Object    = Type( t, "Object", Type.OBJECT )
       type_String    = TypeString( t )
 
