@@ -8,18 +8,6 @@ augment
     method ControlStructure.needs_semicolon->Logical
       return false
 
-    method GlobalMethod.c_name->String
-      if (@c_name) return @c_name
-      use builder = StringBuilder.pool
-        builder.print( module_context.c_name ).print( "__" ).print( name )
-        # TODO: parameter types
-        c_name = builder
-        return @c_name
-      endUse
-
-    method Module.c_name->String
-      return name
-
     method Module.write_c_routine_header( r:Routine, writer:CWriter )
       if (r.return_type)
         writer.print( r.return_type.c_name )
@@ -141,18 +129,6 @@ augment
     method NativeStatement.needs_semicolon->Logical
       return false
 
-    method Property.c_name->String
-      return name
-
-    method Routine.c_name->String
-      if (@c_name) return @c_name
-      use builder = StringBuilder.pool
-        builder.print( module_context.c_name ).print( "__" ).print( name )
-        # TODO: parameter types
-        c_name = builder
-        return @c_name
-      endUse
-
     method Program.generate_c
       apply( CSpecializer() )
 
@@ -203,13 +179,15 @@ augment
       c_writer.close
 
     method Program.generate_c_string_literals( writer:CWriter )
-      forEach (entry in Program.unique_strings.entries)
-        writer.print   entry.value
-        writer.print   " = RogueString_create( "
-        writer.print_literal_c_string( entry.key )
-        writer.println ", -1, 0 );"
-      endForEach
-      writer.println
+      if (Program.unique_strings.count)
+        forEach (entry in Program.unique_strings.entries)
+          writer.print   entry.value
+          writer.print   " = RogueString_create( "
+          writer.print_literal_c_string( entry.key )
+          writer.println ", -1, 0 );"
+        endForEach
+        writer.println
+      endIf
 
     method Type.generate_c_header( writer:CWriter )
       forEach (m in global_methods)
@@ -444,6 +422,7 @@ class CGenerator : Visitor
       this_type.write_c_global_method_header( cmd, writer )
       writer.println
       visit( cmd.body )
+      writer.println
 
     method on_visit( cmd:If )
       on_enter( cmd )
