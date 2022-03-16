@@ -47,6 +47,14 @@ class Type : Cmd
       attributes = existing.attributes
       module_context = existing.module_context
 
+    method add( m:GlobalMethod )
+      global_methods[ m.signature ] = m
+      # TODO: check for existing methods
+
+    method add( m:Method )
+      methods[ m.signature ] = m
+      # TODO: check for existing methods
+
     method cloned->this
       return this
 
@@ -92,6 +100,9 @@ class Type : Cmd
       if (is_organized) return
       is_organized = true
       ensure_definition
+
+      # TODO: organize base types, validate hierarchy
+      # TODO: inherit base class methods
 
     method resolve
       if (is_resolved) return

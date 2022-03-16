@@ -15,7 +15,12 @@ class Organizer : Visitor
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.organize
-      cmd.type_context.global_methods[ cmd.signature ] = cmd
+      return cmd
+
+    method on( cmd:Method )->Cmd
+      cmd.module_context = this_module
+      cmd.type_context = this_type
+      cmd.organize
       return cmd
 
     method on( cmd:NativeCode )->Cmd

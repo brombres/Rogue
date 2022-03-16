@@ -1390,13 +1390,6 @@ class NativeStatement : Cmd
 
 endClass
 
-class GlobalMethod : Procedure
-  PROPERTIES
-    type_context : Type
-
-  METHODS
-endClass
-
 class CreateObject : Cmd
   PROPERTIES
     of_type : Type
@@ -1417,19 +1410,6 @@ class CreateObject : Cmd
 
     method description->String
       return "CreateObject($,$)" (%of_type,%args)
-
-endClass
-
-class Method : Procedure
-  PROPERTIES
-    type_context : Type
-
-  METHODS
-    method init( t, type_context, name, parameters, return_type, attributes, body )
-
-    method init( existing:Method )
-      prior.init( existing )
-      if (existing.type_context) type_context = existing.type_context.cloned
 
 endClass
 
@@ -1506,4 +1486,38 @@ class NullReference : Cmd
   METHODS
     method description->String
       return "NullReference"
+endClass
+
+class Routine : Procedure
+  METHODS
+    method organize
+      if (is_organized) return
+      prior.organize
+      module_context.add( this )
+endClass
+
+class GlobalMethod : Procedure
+  PROPERTIES
+    type_context : Type
+
+  METHODS
+    method organize
+      if (is_organized) return
+      prior.organize
+      type_context.add( this )
+
+endClass
+
+class Method : Procedure
+  PROPERTIES
+    type_context : Type
+
+  METHODS
+    method organize
+      if (is_organized) return
+      prior.organize
+
+      # TODO: inherit
+      type_context.add( this )
+
 endClass

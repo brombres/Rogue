@@ -57,8 +57,6 @@ KEYWORD_NOT            not
 KEYWORD_NULL           null
 KEYWORD_OR             or
 KEYWORD_PI             pi
-KEYWORD_PRINT          print
-KEYWORD_PRINTLN        println
 KEYWORD_PROPERTIES     PROPERTIES  [structural]
 KEYWORD_RETURN         return
 KEYWORD_ROUTINE        routine     [structural]
@@ -618,19 +616,17 @@ parser
 
 - class_section
   consume_eols
-#{
-  on "METHODS"
-    consume_eols
-    while (nextIs("method"))
-      method
-      consume_eols
-    endWhile
-    return
-}#
   on "GLOBAL METHODS"
     consume_eols
     while (nextIs("method"))
       global_method
+      consume_eols
+    endWhile
+    return
+  elseOn "METHODS"
+    consume_eols
+    while (nextIs("method"))
+      method
       consume_eols
     endWhile
     return
@@ -820,11 +816,17 @@ parser
     produceNull
   endOn
 
-#{
 - method
-  on "method" signature procedure_body ->
-    MethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
-}#
+  on "method"
+    identifier
+    procedure_parameters
+    procedure_return_type
+    attributes
+    consume(':')
+    multi_line_statements
+    create LocalScope(statements):ControlStructure
+    produce Method(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+  endOn
 
 - global_method
   on "method"
@@ -973,8 +975,8 @@ parser
 
 - statement
   #on "noAction": return
-  on "print"     args -> Print(args)
-  on "println"   args -> Println(args)
+  on @"print"     args -> Print(args)
+  on @"println"   args -> Println(args)
   on "return"    optional_expression -> Return(result)
 
   onPeek "nativeHeader"
@@ -1377,7 +1379,6 @@ parser
   #  create Local(name:String,initial_value)
   #create LocalDeclaration( info:Local )
   create LocalScope:ControlStructure
-  create Method(type_context:Type,name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
   #  create ModInt32(left,right):Binary
   #  create ModObject(left,right):Binary
   #  create ModReal64(left,right):Binary

@@ -24,6 +24,9 @@ class Module
       Program.modules[ name ] = this
       ensure global_statements(t)
 
+    method add( r:Routine )
+      routines[ r.signature ] = r
+
     method collect_routines( r_name:String, list:Procedure[], &is_limited )
       if (is_collecting_routines) return
       forEach (r in routines)

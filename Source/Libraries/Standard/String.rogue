@@ -15,6 +15,10 @@ class String
     method create->String
       return native( "RogueString_create_with_byte_capacity(64)" )->String
 
+  METHODS
+    method print( value:String )
+      println "TODO: print(" value ")"
+
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
                    |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int must_free );

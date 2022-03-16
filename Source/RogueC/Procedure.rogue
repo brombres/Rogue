@@ -10,6 +10,8 @@ class Procedure : Cmd
     attributes     : Attributes
     body           : LocalScope   # LocalScope(statements)
     statements     : Cmd   # the Statements contained in the body's LocalScope
+
+    is_organized   = false
     is_resolved    = false
 
     min_args       : Int32
@@ -48,9 +50,12 @@ class Procedure : Cmd
       return which{ signature || name }
 
     method organize
-      if (not signature)
-        if (not module_context) module_context = Program.current_module
+      if (is_organized) return
+      is_organized = true
 
+      if (not module_context) module_context = Program.current_module
+
+      if (not signature)
         use builder = StringBuilder.pool
           builder.print name
           builder.print '('
@@ -83,10 +88,12 @@ class Procedure : Cmd
       endIf
 
     method resolve( resolver=null:Resolver )
+      if (not is_organized) organize
+
       if (is_resolved) return
       is_resolved = true
       ensure resolver
-      organize
+
       resolver.visit( module_context, this )
 
 endClass

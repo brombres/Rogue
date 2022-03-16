@@ -1,6 +1,0 @@
-module Rogue
-
-class Routine : Procedure
-  METHODS
-endClass
-
