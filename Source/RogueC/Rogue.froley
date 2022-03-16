@@ -781,6 +781,7 @@ parser
       produceNull
     endIf
   elseOnOthers
+    discardPosition
     produceNull
   endOn
 
@@ -813,6 +814,7 @@ parser
       produce If(condition,statements,cmd_else:If):Conditional
     endIf
   elseOnOthers
+    discardPosition
     produceNull
   endOn
 
@@ -977,7 +979,7 @@ parser
   #on "noAction": return
   on @"print"     args -> Print(args)
   on @"println"   args -> Println(args)
-  on "return"    optional_expression -> Return(result)
+  on "return"     optional_expression -> Return(result)
 
   onPeek "nativeHeader"
     native_code_block
@@ -1329,10 +1331,11 @@ parser
   #  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
   #  create CallNative
-  #  create CallThisMethod(procedure:Procedure,args):CallProcedure
   create CallGlobalMethod(args):CallProcedure
+  create CallMethod(context,args):CallProcedure
   create CallProcedure(args)
   create CallRoutine(args):CallProcedure
+  create CallThisMethod(args):CallProcedure
   create Compare(left,right):Binary
   #  create CompareEQReal64(left,right):Compare
   #  create CompareNEReal64(left,right):Compare
@@ -1362,7 +1365,8 @@ parser
   #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
   create Iterator(initialization,control,condition,statements,upkeep):Conditional
   create GetLocal(info:Local)
-  #  create GetProperty(context,info:Property)
+  create GetProperty(context,info:Property)
+  create GetThisProperty(info:Property)
   #  create GetSingleton(type:Type)
   #  create GetThisProperty(info:Property)
   #  create IncrementLocal(info:Local)
@@ -1401,7 +1405,6 @@ parser
   create PrintValue(operand)
   create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope)
   #  create ProcedureDef(name:String,parameters,return_type:Type,attributes,statements)
-  #  create Property( type_context:Type, name:String, initial_value, type:Type )
   #  create PushResult(operand):Unary
   #  create ReturnResult(result)
   create Range(left,right):Binary

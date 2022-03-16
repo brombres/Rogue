@@ -33,6 +33,9 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
 
+    method on( cmd:AddAndAssign )->Cmd
+      return validate( cmd.target.resolve_add_and_assign(visit(cmd.operand).require_value,this) )
+
     method on( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
@@ -65,6 +68,11 @@ class Resolver : Visitor
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
       cmd.condition.resolve_foreach( this, cmd, iterator )
       return visit( iterator )
+
+    method on_visit( cmd:GlobalMethod )
+      temporarily this_type = cmd.type_context
+        on_visit( cmd->(as Procedure) )
+      endTemporarily
 
     method on( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
@@ -111,6 +119,11 @@ class Resolver : Visitor
 
       return null
 
+    method on_visit( cmd:Method )
+      temporarily this_type = cmd.type_context
+        on_visit( cmd->(as Procedure) )
+      endTemporarily
+
     method on( cmd:NativeHeader )->Cmd
       this_module.native_headers.add( cmd.content )
       return null
@@ -118,9 +131,6 @@ class Resolver : Visitor
     method on( cmd:NativeCode )->Cmd
       this_module.native_code.add( cmd.content )
       return null
-
-    method on( cmd:AddAndAssign )->Cmd
-      return validate( cmd.target.resolve_add_and_assign(visit(cmd.operand).require_value,this) )
 
     method on_visit( cmd:Procedure )
       autoname_index = 0
@@ -286,6 +296,8 @@ class Resolver : Visitor
           endIf
 
           type_context = this_type  # may be null
+if (name == "count" and not this_type) println StackTrace()
+
           if (args)
             # Call or constructor
             if (type)
@@ -318,16 +330,16 @@ class Resolver : Visitor
           return validate( match.cmd_call(context,args) )
         endIf
 
-        #if (not is_global)
-        #  # TODO: update to allow global properties
-        #  if (not args and type_context)
-        #    local p = type_context.find_property( name )
-        #    if (p)
-        #      if (context) return validate( GetProperty(t,context,p) )
-        #      else         return validate( GetThisProperty(t,p) )
-        #    endIf
-        #  endIf
-        #endIf
+        if (not is_global)
+          # TODO: update to allow global properties
+          if (type_context and not args)
+            local p = type_context.properties[ name ]
+            if (p)
+              if (context) return validate( GetProperty(t,context,p) )
+              else         return validate( GetThisProperty(t,p) )
+            endIf
+          endIf
+        endIf
 
         if (suppress_error) return null->(as Cmd)
 
@@ -671,16 +683,12 @@ augment
     method GlobalMethod.cmd_call( context:Cmd, args:Cmd )->Cmd
       return CallGlobalMethod( t, this, args )
 
-      #{
     method Method.cmd_call( context:Cmd, args:Cmd )->Cmd
-      if (context and not context.is_type_context)
-        if (is_global) return CallGlobalMethodWithContext( t, context, this, args )
-        else           return CallMethod( t, context, this, args )
+      if (context)
+        return CallMethod( t, context, this, args )
       else
-        if (is_global) return CallGlobalMethod( t, this, args )
-        else           return CallThisMethod( t, this, args )
+        return CallThisMethod( t, this, args )
       endIf
-      }#
 
     method Routine.cmd_call( context:Cmd, args:Cmd )->Cmd
       return CallRoutine( t, this, args )

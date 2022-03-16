@@ -1,8 +1,8 @@
 class String
   PROPERTIES
+    count           : Int32  # in whole characters
     byte_capacity   : Int32  # in bytes; will be >= byte_count+1 (+1 accommodates null terminator)
     byte_count      : Int32  # in UTF-8 bytes, not including null terminator
-    character_count : Int32  # in whole characters
     cursor_offset   : Int32  # in bytes
     cursor_index    : Int32  # in characters
     hash_code       : Int32
@@ -17,7 +17,9 @@ class String
 
   METHODS
     method print( value:String )
-      println "TODO: print(" value ")"
+      if (is_immutable) return
+      println "value.count: " value.count
+      println "this.count: " count
 
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
@@ -35,8 +37,8 @@ class String
                   |
                   |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
                   |  result->utf8 = (char*) cstring;
-                  |  result->byte_count      = byte_count;
-                  |  result->character_count = character_count;
+                  |  result->byte_count   = byte_count;
+                  |  result->count        = character_count;
                   |  result->is_immutable = 1;
                   |  result->must_free = must_free;
                   |  result->hash_code = RogueString_compute_hash_code( result, 0 );
@@ -79,7 +81,7 @@ class String
                   |
                   |  result->is_immutable = 1;
                   |  result->byte_count      = utf8_byte_count;
-                  |  result->character_count = byte_count;
+                  |  result->count           = byte_count;
                   |  result->hash_code = RogueString_compute_hash_code( result, 0 );
                   |  return result;
                   |}

@@ -20,8 +20,9 @@ augment
       writer.print( "(" )
       forEach (p at i in r.parameters)
         block p = p->(as Local)
-          if (i) writer.print ','
+          if (i) writer.print ", "
           writer.print( p.type.c_name )
+          if (p.type.is_reference) writer.print '*'
           writer.print ' '
           writer.print( p.c_name )
         endBlock
@@ -195,8 +196,15 @@ augment
         writer.println ';'
       endForEach
 
+      forEach (m in methods)
+        write_c_method_header( m, writer )
+        writer.println ';'
+      endForEach
+
     method Type.generate_c_code( writer:CWriter )
-      CGenerator( writer ).visit_global_methods( this )
+      local cgen = CGenerator( writer )
+      cgen.visit_global_methods( this )
+      cgen.visit_methods( this )
 
     method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
       if (m.return_type)
@@ -210,13 +218,38 @@ augment
       writer.print( "(" )
       forEach (p at i in m.parameters)
         block p = p->(as Local)
-          if (i) writer.print ','
+          if (i) writer.print ", "
           writer.print( p.type.c_name )
+          if (p.type.is_reference) writer.print '*'
           writer.print ' '
           writer.print( p.c_name )
         endBlock
       endForEach
       writer.print( ")" )
+
+    method Type.write_c_method_header( m:Method, writer:CWriter )
+      if (m.return_type)
+        writer.print( m.return_type.c_name )
+        if (m.return_type.is_reference) writer.print '*'
+      else
+        writer.print "void"
+      endIf
+      writer.print ' '
+      writer.print( m.c_name )
+      writer.print( "( " )
+      writer.print m.type_context.c_name
+      if (m.type_context.is_reference) writer.print '*'
+      writer.print " THIS"
+      forEach (p at i in m.parameters)
+        block p = p->(as Local)
+          writer.print ", "
+          writer.print( p.type.c_name )
+          if (p.type.is_reference) writer.print '*'
+          writer.print ' '
+          writer.print( p.c_name )
+        endBlock
+      endForEach
+      writer.print( " )" )
 
 endAugment
 
@@ -296,25 +329,52 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallGlobalMethod )
       writer.print( cmd.info.c_name )
-      writer.print '('
+      if (cmd.args)
+        writer.print "( "
+        forEach (arg at i in cmd.args)
+          if (i) writer.print ", "
+          visit( arg )
+        endForEach
+        writer.print " )"
+      else
+        writer.print "()"
+      endIf
+
+    method on_visit( cmd:CallMethod )
+      writer.print( cmd.info.c_name )
+      writer.print "( "
+      visit( cmd.context )
       if (cmd.args)
         forEach (arg at i in cmd.args)
-          if (i) writer.print ','
+          writer.print ", "
           visit( arg )
         endForEach
       endIf
-      writer.print ')'
+      writer.print " )"
+
+    method on_visit( cmd:CallThisMethod )
+      writer.print( cmd.info.c_name )
+      writer.print "( THIS,"
+      if (cmd.args)
+        forEach (arg at i in cmd.args)
+          writer.print ", "
+          visit( arg )
+        endForEach
+      endIf
+      writer.print " )"
 
     method on_visit( cmd:CallRoutine )
       writer.print( cmd.info.c_name )
-      writer.print '('
       if (cmd.args)
+        writer.print "( "
         forEach (arg at i in cmd.args)
-          if (i) writer.print ','
+          if (i) writer.print ", "
           visit( arg )
         endForEach
+        writer.print " )"
+      else
+        writer.print "()"
       endIf
-      writer.print ')'
 
     method on_visit( cmd:CastToByte )
       writer.print "(RogueByte)"
@@ -424,6 +484,19 @@ class CGenerator : Visitor
       visit( cmd.body )
       writer.println
 
+    method on_visit( cmd:GetProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GetThisProperty )
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
     method on_visit( cmd:If )
       on_enter( cmd )
       if (cmd.condition)
@@ -495,6 +568,14 @@ class CGenerator : Visitor
       print_parenthesized( cmd.left )
       writer.print " || "
       print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Method )
+      this_procedure = cmd
+      autoname_index = 0
+      this_type.write_c_method_header( cmd, writer )
+      writer.println
+      visit( cmd.body )
+      writer.println
 
     method on_visit( cmd:Mod )
       if (cmd.type is Program.type_Real64)    writer.print "Rogue_mod_Real64"

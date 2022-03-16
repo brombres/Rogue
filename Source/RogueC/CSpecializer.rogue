@@ -87,6 +87,21 @@ augment
         return @c_name
       endUse
 
+    method Method.c_name->String
+      if (@c_name) return @c_name
+      use builder = StringBuilder.pool
+        builder.print( type_context.c_name ).print( "__" )
+        builder.print( name )
+        if (parameters.count)
+          builder.print '_'
+          forEach (p in parameters)
+            builder.print( "_" ).print( p.type.c_name )
+          endForEach
+        endIf
+        c_name = builder
+        return @c_name
+      endUse
+
     method Module.c_name->String
       return name
 

@@ -99,18 +99,22 @@ class Visitor<<$ReturnType>>
       visit_methods( type )
 
     method visit_global_methods( type:Type )
-      forEach (m in type.global_methods.values)
-        temporarily this_procedure = m
-          visit( m )
-        endTemporarily
-      endForEach
+      temporarily this_type = type
+        forEach (m in type.global_methods.values)
+          temporarily this_procedure = m
+            visit( m )
+          endTemporarily
+        endForEach
+      endTemporarily
 
     method visit_methods( type:Type )
-      forEach (m in type.methods.values)
-        temporarily this_procedure = m
-          visit( m )
-        endTemporarily
-      endForEach
+      temporarily this_type = type
+        forEach (m in type.methods.values)
+          temporarily this_procedure = m
+            visit( m )
+          endTemporarily
+        endForEach
+      endTemporarily
 
     method validate( cmd:Cmd )->$ReturnType [propagated]
       if ($ReturnType isType Cmd)
@@ -488,6 +492,31 @@ class Visitor<<$ReturnType>>
       else
         visit( cmd.target )
         visit( cmd.operand )
+      endIf
+
+    method on_visit_children( cmd:CallMethod )
+      if ($ReturnType isType Cmd)
+        cmd.context = visit(cmd.context)
+        cmd.args = visit(cmd.args)
+      else
+        visit( cmd.context )
+        visit( cmd.args )
+      endIf
+
+    method on_visit_children( cmd:GetProperty )
+      if ($ReturnType isType Cmd)
+        cmd.context = visit(cmd.context)
+        cmd.info = visit(cmd.info)->(as Property)
+      else
+        visit( cmd.context )
+        visit( cmd.info )
+      endIf
+
+    method on_visit_children( cmd:GetThisProperty )
+      if ($ReturnType isType Cmd)
+        cmd.info = visit(cmd.info)->(as Property)
+      else
+        visit( cmd.info )
       endIf
 
 endClass

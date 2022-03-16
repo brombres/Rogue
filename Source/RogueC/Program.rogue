@@ -112,10 +112,10 @@ class Program [singleton]
       endTemporarily
 
     method resolve
-      (forEach in modules).collect_used_modules
+      (forEach in modules.values).collect_used_modules
 
       # We've collected all class templates.
-      (forEach in (forEach in modules).types).ensure_definition
+      (forEach in (forEach in modules.values).types).ensure_definition
 
       # Reparse the tokens for each file.
       forEach (file_tokens in included_files)

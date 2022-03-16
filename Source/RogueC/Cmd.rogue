@@ -1521,3 +1521,69 @@ class Method : Procedure
       type_context.add( this )
 
 endClass
+
+class CallMethod : CallProcedure
+  PROPERTIES
+    context : Cmd
+
+  METHODS
+    method init( t, context, args )
+
+    method init( t, context, info, args )
+
+    method init( existing:CallMethod )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+
+    method description->String
+      return "CallMethod($,$)" (%context,%args)
+
+endClass
+
+class CallThisMethod : CallProcedure
+  METHODS
+    method init( t, args )
+
+    method init( t, info, args )
+
+    method init( existing:CallThisMethod )
+      prior.init( existing )
+
+    method description->String
+      return "CallThisMethod($)" (%args)
+
+endClass
+
+class GetProperty : Cmd
+  PROPERTIES
+    context : Cmd
+    info    : Property
+
+  METHODS
+    method init( t, context, info )
+
+    method init( existing:GetProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "GetProperty($,$)" (%context,%info)
+
+endClass
+
+class GetThisProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:GetThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "GetThisProperty($)" (%info)
+
+endClass

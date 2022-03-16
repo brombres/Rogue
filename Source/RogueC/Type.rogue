@@ -63,14 +63,11 @@ class Type : Cmd
         if (m.name == m_name) list.add( m )
       endForEach
 
-      #{
-      local matching = methods[ m_name ]
-      if (matching)
-        forEach (m in matching)
-          if (not require_global or m.is_global) list.add( m )
+      if (not require_global)
+        forEach (m in methods)
+          if (m.name == m_name) list.add( m )
         endForEach
       endIf
-      }#
 
     method ensure_definition
       if (is_defined) return
@@ -84,7 +81,7 @@ class Type : Cmd
       if (template)
         template.generate( null, this )
       else
-        throw t.error( "Reference to undefined class '$'."(name) )
+        throw t.error( "Reference to undefined class '$::$'."(module_context,name) )
       endIf
 
     method description->String
