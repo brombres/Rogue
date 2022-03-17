@@ -549,6 +549,9 @@ class CGenerator : Visitor
     method on_visit( cmd:LiteralLogical )
       writer.print which{ cmd.value:1 || 0 }
 
+    method on_visit( cmd:LiteralNull )
+      writer.print 0
+
     method on_visit( cmd:LiteralPi )
       writer.print pi
 
@@ -609,9 +612,6 @@ class CGenerator : Visitor
     method on_visit( cmd:Negate )
       writer.print '-'
       print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:NullReference )
-      writer.print '0'
 
     method on_visit( cmd:Preincrement )
       writer.print "++"

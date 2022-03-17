@@ -1479,13 +1479,13 @@ class OpAndAssign : Cmd
 
 endClass
 
-class NullReference : Cmd
+class LiteralNull : Cmd
   PROPERTIES
     of_type : Type
 
   METHODS
     method description->String
-      return "NullReference"
+      return "LiteralNull"
 endClass
 
 class Routine : Procedure

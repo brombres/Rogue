@@ -81,7 +81,7 @@ endAugment
 # cmd_cast_to
 augment
   METHODS
-    method NullReference.cmd_cast_to( target_type:Type )->Cmd
+    method LiteralNull.cmd_cast_to( target_type:Type )->Cmd
       of_type = target_type
       return this
 endAugment
@@ -257,7 +257,7 @@ augment
     method NativeExpression.type->Type
       return result_type->(as Type)
 
-    method NullReference.type->Type
+    method LiteralNull.type->Type
       if (of_type) return of_type
       return Program.type_null
 
