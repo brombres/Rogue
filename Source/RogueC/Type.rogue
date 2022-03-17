@@ -18,6 +18,7 @@ class Type : Cmd
     module_context    : Module
     name              : String
     attributes        : Int32
+    global_properties = StringTable<<Property>>()
     properties        = StringTable<<Property>>()
     global_methods    = StringTable<<GlobalMethod>>()
     methods           = StringTable<<Method>>()

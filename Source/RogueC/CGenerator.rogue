@@ -666,6 +666,37 @@ class CGenerator : Visitor
         visit( cmd.new_value )
       endIf
 
+    method on_visit( cmd:SetProperty )
+      if (cmd.info.type.is_reference)
+        writer.print "Rogue_set_ref( &("
+        visit( cmd.context )
+        writer.print "->"
+        writer.print cmd.info.c_name
+        writer.print "), "
+        visit( cmd.new_value )
+        writer.print " )"
+      else
+        visit( cmd.context )
+        writer.print "->"
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
+
+    method on_visit( cmd:SetThisProperty )
+      if (cmd.info.type.is_reference)
+        writer.print "Rogue_set_ref( &(THIS->"
+        writer.print cmd.info.c_name
+        writer.print "), "
+        visit( cmd.new_value )
+        writer.print " )"
+      else
+        writer.print( "THIS->" )
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
+
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
         visit( statement )

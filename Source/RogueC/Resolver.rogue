@@ -597,8 +597,28 @@ augment
         local v = resolver.find_local( name )
         if (v) return resolver.validate( SetLocal(t,v,new_value) )
 
-        #local p = resolver.this_type.find_property( name )
-        #if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
+        if (resolver.this_type)
+          local p = resolver.this_type.properties[ name ]
+          if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
+        endIf
+
+        if (resolver.this_type)
+          throw t.error( "No such local or property '$' or setter set_$() in current context."(name,name) )
+        else
+          throw t.error( "No such local '$' in current context."(name) )
+        endIf
+      endIf
+      throw t.error( "Illegal target for assignment." )
+
+    method ContextAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        context = resolver.visit( context )
+        local context_type = context.require_type
+
+        local p = context_type.properties[ name ]
+        if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
+
+        throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type.name) )
       endIf
       throw t.error( "Illegal target for assignment." )
 

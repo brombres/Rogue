@@ -1588,6 +1588,44 @@ class GetThisProperty : Cmd
 
 endClass
 
+class SetProperty : Cmd
+  PROPERTIES
+    context   : Cmd
+    info      : Property
+    new_value : Cmd
+
+  METHODS
+    method init( t, context, info, new_value )
+
+    method init( existing:SetProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "SetProperty($,$,$)" (%context,%info,%new_value)
+
+endClass
+
+class SetThisProperty : Cmd
+  PROPERTIES
+    info      : Property
+    new_value : Cmd
+
+  METHODS
+    method init( t, info, new_value )
+
+    method init( existing:SetThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "SetThisProperty($,$)" (%info,%new_value)
+
+endClass
+
 class Is : Binary
   METHODS
     method description->String

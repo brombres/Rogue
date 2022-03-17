@@ -1426,6 +1426,8 @@ parser
   #  create RightShiftXInt32(left,right):Binary
   #  create RightShiftXValue(left,right):Binary
   create SetLocal(info:Local,new_value)
+  create SetProperty(context,info:Property,new_value)
+  create SetThisProperty(info:Property,new_value)
   #  create SetThisProperty(info:Property,new_value)
   #  create StackTopInt32
   #  create SubtractInt32(left,right):Binary
