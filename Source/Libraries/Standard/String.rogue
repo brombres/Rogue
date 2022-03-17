@@ -25,10 +25,11 @@ class String
       endIf
 
       reserve( value.byte_count )
-      native @|memcpy( $this->utf8+$byte_count, $value->utf8, $value->byte_count );
-              |$hash_code = RogueString_compute_hash_code( $value, $hash_code );
-              |$byte_count += $value->byte_count;
-              |$this->utf8[$count += $value->count] = 0;
+      native ...
+        @|memcpy( $this->utf8+$byte_count, $value->utf8, $value->byte_count );
+         |$hash_code = RogueString_compute_hash_code( $value, $hash_code );
+         |$byte_count += $value->byte_count;
+         |$this->utf8[$count += $value->count] = 0;
 
     method reserve( additional_bytes:Int32 )
       local required_capacity = byte_count + additional_bytes
@@ -37,10 +38,11 @@ class String
       local doubled = byte_capacity + byte_capacity
       if (doubled > required_capacity) required_capacity = doubled
 
-      native @|char* old_data = THIS->utf8;
-              |THIS->utf8 = ROGUE_MALLOC( $required_capacity );
-              |memcpy( THIS->utf8, old_data, $byte_count+1 );
-              |if ($must_free) ROGUE_FREE(old_data);
+      native ...
+        @|char* old_data = THIS->utf8;
+         |THIS->utf8 = ROGUE_MALLOC( $required_capacity );
+         |memcpy( THIS->utf8, old_data, $byte_count+1 );
+         |if ($must_free) ROGUE_FREE(old_data);
 
       must_free = true
       byte_capacity = required_capacity

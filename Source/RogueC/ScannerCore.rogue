@@ -217,6 +217,12 @@ class ScannerCore [abstract]
               halt = true
               return false
             endIf
+            if (_scanner.consume("..."))
+              while ((_scanner.has_another and (not _scanner.consume('\n'))))
+                _scanner.read
+              endWhile
+              return false
+            endIf
             _scan_table_0.reset
             contingent
               block n=1

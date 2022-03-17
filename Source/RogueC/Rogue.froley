@@ -145,6 +145,11 @@ scanner
     halt
   endIf
 
+  if (consume("..."))
+    while (hasAnother and not consume('\n')) read
+    restart
+  endIf
+
   match input
     produceAny Symbols
     case '\n': produce EOL
