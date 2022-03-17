@@ -1587,3 +1587,17 @@ class GetThisProperty : Cmd
       return "GetThisProperty($)" (%info)
 
 endClass
+
+class Is : Binary
+  METHODS
+    method description->String
+      return "Is($,$)" (%left,%right)
+
+endClass
+
+class IsNot : Binary
+  METHODS
+    method description->String
+      return "IsNot($,$)" (%left,%right)
+
+endClass

@@ -43,6 +43,7 @@ KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
 KEYWORD_IF             if
 KEYWORD_IMPORT         import
 KEYWORD_INCLUDE        include
+KEYWORD_IS             is
 KEYWORD_LOCAL          local
 KEYWORD_LOOP           loop
 KEYWORD_METHOD         method      [structural]
@@ -1134,6 +1135,18 @@ parser
   on ">"  -> CompareGT
   on "<=" -> CompareLE
   on ">=" -> CompareGE
+
+- reference_comparison
+  bitwise_xor
+  on "is"
+    if (consume("not"))
+      reference_comparison
+      produce IsNot(left,right):Binary
+    else
+      reference_comparison
+      produce Is(left,right):Binary
+    endIf
+  endOn
 
 - bitwise_xor [binary]
   on '~' -> BitwiseXor

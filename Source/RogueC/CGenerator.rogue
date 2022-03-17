@@ -522,6 +522,16 @@ class CGenerator : Visitor
       endIf
       on_leave( cmd )
 
+    method on_visit( cmd:Is )
+      print_parenthesized( cmd.left )
+      writer.print " == "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:IsNot )
+      print_parenthesized( cmd.left )
+      writer.print " != "
+      print_parenthesized( cmd.right )
+
     method on_visit( cmd:Iterator )
       on_enter( cmd )
       local control_label = autoname("loop_condition")
