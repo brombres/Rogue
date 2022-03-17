@@ -690,15 +690,43 @@ class CGenerator : Visitor
       visible_locals_fp.add( visible_locals.count )
       visible_locals.add( forEach in cmd.locals )
 
-    method print_native_code( code:String )
-      local replacements = StringTable<<String>>()
-      forEach (v in visible_locals) replacements["$"+v.name] = v.c_name
-      replacements[ "$this" ] = "THIS"
-      replacements.sort( (a,b) => a.key.count >= b.key.count )
-      forEach (replacement in replacements.entries)
-        code .= replacing( replacement.key, replacement.value )
-      endForEach
+    method print_native_code( t:Token, code:String )
+      local i1 = code.locate('$')
+      while (i1)
+        local i2 = i1.value
+        while (i2+1 < code.count)
+          local ch = code[i2+1]
+          if (not (ch.is_letter or ch.is_number or ch == '_')) escapeWhile
+          ++i2
+        endWhile
+
+        local marker = code.from(i1.value+1,i2)
+        code = code.leftmost(i1.value) + native_replacement(t,marker) + code.from(i2+1)
+        i1 = code.locate( '$', i1 )
+      endWhile
+
       writer.print code
+
+    method native_replacement( t:Token, name:String )->String
+      forEach (v in visible_locals)
+        if (name == v.name) return v.c_name
+      endForEach
+
+      if (this_type)
+        if (this_procedure instanceOf Method)
+          if (name == "this") return "THIS"
+
+          forEach (p in this_type.properties)
+            if (name == p.name) return "THIS->" + p.c_name
+          endForEach
+        endIf
+
+        forEach (p in this_type.global_properties)
+          if (name == p.name) return p.c_name
+        endForEach
+      endIf
+
+      throw t.error( "No such value '$' exists in current scope."(name) )
 endClass
 
 # write_print()
