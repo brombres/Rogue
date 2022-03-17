@@ -336,7 +336,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallGlobalMethod )
       writer.print( cmd.info.c_name )
-      if (cmd.args)
+      if (cmd.args.count)
         writer.print "( "
         forEach (arg at i in cmd.args)
           if (i) writer.print ", "
@@ -351,18 +351,16 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
       writer.print "( "
       visit( cmd.context )
-      if (cmd.args)
-        forEach (arg at i in cmd.args)
-          writer.print ", "
-          visit( arg )
-        endForEach
-      endIf
+      forEach (arg at i in cmd.args)
+        writer.print ", "
+        visit( arg )
+      endForEach
       writer.print " )"
 
     method on_visit( cmd:CallThisMethod )
       writer.print( cmd.info.c_name )
-      writer.print "( THIS,"
-      if (cmd.args)
+      writer.print "( THIS"
+      if (cmd.args.count)
         forEach (arg at i in cmd.args)
           writer.print ", "
           visit( arg )
@@ -372,7 +370,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallRoutine )
       writer.print( cmd.info.c_name )
-      if (cmd.args)
+      if (cmd.args.count)
         writer.print "( "
         forEach (arg at i in cmd.args)
           if (i) writer.print ", "
@@ -441,29 +439,32 @@ class CGenerator : Visitor
       writer.print " >= "
       print_parenthesized( cmd.right )
 
-    method on_enter( cmd:ControlStructure )
-      writer.println( "{" )
-      writer.indent += 2
+    method on_enter( cmd:ControlStructure, &force )
+      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
+        writer.println( "{" )
+        writer.indent += 2
 
-      forEach (v in cmd.locals)
-        writer.print( v.type.c_type ).print( ' ' )
-        writer.print( v.c_name )
-        writer.print( " = " )
-        writer.print "0"
-        #if (v.type.is_reference)     writer.print "0"
-        #elseIf (v.type.is_primitive) writer.print "0"
-        #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
-        writer.println( ';' )
-      endForEach
+        forEach (v in cmd.locals)
+          writer.print( v.type.c_type ).print( ' ' )
+          writer.print( v.c_name )
+          writer.print( " = " )
+          writer.print "0"
+          #if (v.type.is_reference)     writer.print "0"
+          #elseIf (v.type.is_primitive) writer.print "0"
+          #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
+          writer.println( ';' )
+        endForEach
 
-      push_scope( cmd )
+        push_scope( cmd )
+        visit( cmd.initialization )
+      endIf
 
-      visit( cmd.initialization )
-
-    method on_leave( cmd:ControlStructure )
-      pop_scope
-      writer.indent -= 2
-      writer.println( "}" )
+    method on_leave( cmd:ControlStructure, &force )
+      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
+        pop_scope
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
 
     method on_visit( cmd:ControlStructure )
       on_enter( cmd )
@@ -488,7 +489,9 @@ class CGenerator : Visitor
       autoname_index = 0
       this_type.write_c_global_method_header( cmd, writer )
       writer.println
-      visit( cmd.body )
+      on_enter( cmd.body, &force )
+      visit( cmd.statements )
+      on_leave( cmd.body, &force )
       writer.println
 
     method on_visit( cmd:GetProperty )
@@ -594,7 +597,9 @@ class CGenerator : Visitor
       autoname_index = 0
       this_type.write_c_method_header( cmd, writer )
       writer.println
-      visit( cmd.body )
+      on_enter( cmd.body, &force )
+      visit( cmd.statements )
+      on_leave( cmd.body, &force )
       writer.println
 
     method on_visit( cmd:Mod )
@@ -613,10 +618,10 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
 
     method on_visit( cmd:NativeExpression )
-      print_native_code( cmd.content )
+      print_native_code( cmd.t, cmd.content )
 
     method on_visit( cmd:NativeStatement )
-      print_native_code( cmd.content )
+      print_native_code( cmd.t, cmd.content )
       writer.println
 
     method on_visit( cmd:Negate )
@@ -650,7 +655,9 @@ class CGenerator : Visitor
       autoname_index = 0
       this_module.write_c_routine_header( cmd, writer )
       writer.println
-      visit( cmd.body )
+      on_enter( cmd.body, &force )
+      visit( cmd.statements )
+      on_leave( cmd.body, &force )
       writer.println
 
     method on_visit( cmd:SetLocal )
