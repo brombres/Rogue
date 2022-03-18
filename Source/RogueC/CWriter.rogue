@@ -182,14 +182,20 @@ class CWriter : BufferedPrintWriter
            |
            |void* Rogue_release( void* obj )
            |{
-           |  if (obj && ! --((RogueObject*)obj)->ref_count ) RogueDeadlist_add(obj);
+           |  if (obj && ! --((RogueObject*)obj)->ref_count )
+           |  {
+           |    if ( !(((RogueObject*)obj)->deadlisted) ) RogueDeadlist_add(obj);
+           |  }
            |  return 0;
            |}
            |
            |void  Rogue_set_ref( void* ref, void* new_obj )
            |{
            |  RogueObject* old_obj = *((RogueObject**)ref);
-           |  if (old_obj && ! --old_obj->ref_count) RogueDeadlist_add(old_obj);
+           |  if (old_obj && ! --old_obj->ref_count)
+           |  {
+           |    if ( !(((RogueObject*)old_obj)->deadlisted) ) RogueDeadlist_add(old_obj);
+           |  }
            |  if (new_obj) ++((RogueObject*)new_obj)->ref_count;
            |  *((void**)ref) = new_obj;
            |}
@@ -226,6 +232,7 @@ class CWriter : BufferedPrintWriter
            |    RogueDeadlist_capacity = double_capacity;
            |  }
            |  RogueDeadlist_data[RogueDeadlist_count++] = obj;
+           |  ((RogueObject*)obj)->deadlisted = 1; // flag to ensure no duplicates get added
            |  return obj;
            |}
            |
@@ -236,15 +243,14 @@ class CWriter : BufferedPrintWriter
            |
            |  RogueDeadlist_count = fp;
            |
-           |  // Rewrite deadlist frame to remove survivors and duplicates
+           |  // Rewrite deadlist frame to remove survivors
            |  int read_i, write_i;
            |  for ( read_i=write_i=0; read_i<n; ++read_i )
            |  {
            |    RogueObject* obj = (RogueObject*) RogueDeadlist_data[fp+read_i];
-           |    if ( !(obj->ref_count) )
+           |    if ( !obj->ref_count )
            |    {
            |      RogueDeadlist_data[fp + write_i++] = obj;
-           |      obj->ref_count = -1;  // marker to detect duplicates
            |    }
            |  }
            |  n = write_i;
