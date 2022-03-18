@@ -1,23 +1,10 @@
 module Rogue
 
 class Type : Cmd
-  DEFINITIONS
-    PRIMITIVE = 1
-    OBJECT    = (1:<<:1)
-    DEFINED   = (1:<<:2)
-    ORGANIZED = (1:<<:3)
-    RESOLVED  = (1:<<:4)
-
-    ROGUE_ATTRIBUTE( is_primitive, Type.PRIMITIVE )
-    ROGUE_ATTRIBUTE( is_object,    Type.OBJECT )
-    ROGUE_ATTRIBUTE( is_defined,   Type.DEFINED )
-    ROGUE_ATTRIBUTE( is_organized, Type.ORGANIZED )
-    ROGUE_ATTRIBUTE( is_resolved,  Type.RESOLVED )
-
   PROPERTIES
     module_context    : Module
     name              : String
-    attributes        : Int32
+    attributes        : Attributes
     global_properties = StringTable<<Property>>()
     properties        = StringTable<<Property>>()
     global_methods    = StringTable<<GlobalMethod>>()
@@ -35,11 +22,12 @@ class Type : Cmd
       return type
 
   METHODS
-    method init( t, name, attributes, &unlisted )
+    method init( t, name, attributes:Int32, &unlisted )
       init( t, Program.current_module, name, attributes, &=unlisted )
 
-    method init( t, module_context, name, attributes, &unlisted )
+    method init( t, module_context, name, attributes:Int32, &unlisted )
       if (not unlisted) module_context.types[ name ] = this
+      this.attributes = Attributes( t, attributes )
 
     method init( existing:Type )
       prior.init( existing )
@@ -71,10 +59,10 @@ class Type : Cmd
       endIf
 
     method ensure_definition
-      if (is_defined) return
+      if (attributes.is_defined) return
 
       if (is_primitive)
-        is_defined = true # KLUDGE
+        attributes.is_defined = true # KLUDGE
         return
       endIf
 
@@ -88,24 +76,28 @@ class Type : Cmd
     method description->String
       return "$" (%name)
 
-    method is_reference->Logical
-      return (attributes & OBJECT)?
+    method is_primitive->Logical
+      return attributes.is_primitive
 
-    method to->Character
-      return Cmd.to_character(name)
+    method is_reference->Logical
+      return attributes.is_reference
 
     method organize
-      if (is_organized) return
-      is_organized = true
+      if (attributes.is_organized) return
+      attributes.is_organized = true
       ensure_definition
 
       # TODO: organize base types, validate hierarchy
       # TODO: inherit base class methods
 
     method resolve
-      if (is_resolved) return
-      is_resolved = true
+      if (attributes.is_resolved) return
+      attributes.is_resolved = true
       organize
+
+    method to->Character
+      return Cmd.to_character(name)
+
 
     method to->Int32:  return name
     method to->Logical: return name?
@@ -118,48 +110,48 @@ class BuiltInType : Type;
 class TypeLogical : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Logical", Type.PRIMITIVE )
+      prior.init( t, "Logical", Attribute.PRIMITIVE )
 endClass
 
 class TypeByte : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Byte", Type.PRIMITIVE )
+      prior.init( t, "Byte", Attribute.PRIMITIVE )
 endClass
 
 class TypeCharacter : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Character", Type.PRIMITIVE )
+      prior.init( t, "Character", Attribute.PRIMITIVE )
 endClass
 
 class TypeInt32 : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Int32", Type.PRIMITIVE )
+      prior.init( t, "Int32", Attribute.PRIMITIVE )
 endClass
 
 class TypeInt64 : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Int64", Type.PRIMITIVE )
+      prior.init( t, "Int64", Attribute.PRIMITIVE )
 endClass
 
 class TypeReal32 : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Real32", Type.PRIMITIVE )
+      prior.init( t, "Real32", Attribute.PRIMITIVE )
 endClass
 
 class TypeReal64 : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "Real64", Type.PRIMITIVE )
+      prior.init( t, "Real64", Attribute.PRIMITIVE )
 endClass
 
 class TypeString : BuiltInType
   METHODS
     method init( t:Token )
-      prior.init( t, "String", Type.OBJECT )
+      prior.init( t, "String", Attribute.OBJECT )
 endClass
 

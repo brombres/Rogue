@@ -1404,7 +1404,7 @@ parser
   create GetLocal(info:Local)
   create GetProperty(context,info:Property)
   create GetThisProperty(info:Property)
-  #  create GetSingleton(type:Type)
+  create GetSingleton(type:Type)
   #  create GetThisProperty(info:Property)
   #  create IncrementLocal(info:Local)
   #  create IncrementLocalInt32(info:Local)
@@ -1436,6 +1436,7 @@ parser
   create OpAndAssign(target,operand)
   create PrintCharacter(operand):PrintValue
   create PrintInt32(operand):PrintValue
+  create PrintInt64(operand):PrintValue
   create PrintLogical(operand):PrintValue
   create PrintNewline
   create PrintReal64(operand):PrintValue

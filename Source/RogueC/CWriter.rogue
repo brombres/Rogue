@@ -122,7 +122,10 @@ class CWriter : BufferedPrintWriter
            |#endif
            |
            |#define ROGUE_CREATE_OBJECT( TypeName ) \
-           |    (TypeName*) Rogue_create_object( &Type##TypeName )
+           |    ((TypeName*)RogueDeadlist_add(Rogue_create_object(&Type##TypeName)))
+           |
+           |#define ROGUE_SINGLETON( TypeName ) \
+           |    ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
            |
            |typedef struct RogueType RogueType;
            |
@@ -135,6 +138,7 @@ class CWriter : BufferedPrintWriter
            |
            |void* Rogue_create_object( void* type );
            |void  Rogue_delete_object( void* obj );
+           |void* Rogue_singleton( void* type, void* singleton_ref );
            |void* Rogue_release( void* obj );
            |void  Rogue_set_ref( void* ref, void* new_obj );
            |void* Rogue_retain( void* obj );
@@ -175,7 +179,7 @@ class CWriter : BufferedPrintWriter
            |  memset( obj, 0, type->size );
            |  obj->type = type;
            |  // Note: ref_count is 0
-           |  return RogueDeadlist_add(obj);
+           |  return obj;
            |}
            |
            |void Rogue_delete_object( void* obj )
@@ -183,6 +187,15 @@ class CWriter : BufferedPrintWriter
            |  // TODO: dereference properties
            |  printf( "Destroying %s\n", ((RogueObject*)obj)->type->name );
            |  ROGUE_FREE( obj );
+           |}
+           |
+           |void* Rogue_singleton( void* _type, void* singleton_ref )
+           |{
+           |  if (*((RogueObject**)singleton_ref)) return *((RogueObject**)singleton_ref);
+           |  RogueType* type = (RogueType*) _type;
+           |  RogueObject* obj = Rogue_create_object( type );
+           |  Rogue_set_ref( singleton_ref, obj );
+           |  return obj;
            |}
            |
            |void* Rogue_release( void* obj )

@@ -97,6 +97,15 @@ augment
 
       if (types.count)
         forEach (type in types)
+          if (type.attributes.is_singleton)
+            writer.print   type.c_name
+            if (type.is_reference) writer.print '*'
+            writer.print   ' '
+            writer.print   type.c_name
+            writer.println "_singleton = 0;"
+            writer.println
+          endIf
+
           writer.print   "RogueType Type"
           writer.print   type.c_name
           writer.print   '' = { "''
@@ -192,6 +201,15 @@ augment
       endIf
 
     method Type.generate_c_header( writer:CWriter )
+      if (attributes.is_singleton)
+        writer.print   "extern "
+        writer.print   c_name
+        if (is_reference) writer.print '*'
+        writer.print   ' '
+        writer.print   c_name
+        writer.println "_singleton;"
+      endIf
+
       forEach (m in global_methods)
         write_c_global_method_header( m, writer )
         writer.println ';'
@@ -509,6 +527,11 @@ class CGenerator : Visitor
       else                               writer.print "."
       writer.print( cmd.info.c_name )
 
+    method on_visit( cmd:GetSingleton )
+      writer.print "ROGUE_SINGLETON("
+      writer.print cmd.type.c_name
+      writer.print ")"
+
     method on_visit( cmd:GetThisProperty )
       writer.print "THIS"
       assert this_type
@@ -738,6 +761,11 @@ class CGenerator : Visitor
 
     method on_visit( cmd:PrintInt32 )
       writer.print ''printf( "%d", (int)''
+      visit( cmd.operand )
+      writer.print '' )''
+
+    method on_visit( cmd:PrintInt64 )
+      writer.print ''printf( "%lld", (RogueInt64)''
       visit( cmd.operand )
       writer.print '' )''
 

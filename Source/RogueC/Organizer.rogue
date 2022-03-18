@@ -11,6 +11,11 @@ class Organizer : Visitor
       # Called when instantiating a template
       visit( class_def )
 
+    method on_visit( cmd:Class )
+      cmd.attributes.attributes |= this_type.attributes.attributes
+      this_type.attributes = cmd.attributes
+      visit_children( cmd )
+
     method on( cmd:GlobalMethod )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type

@@ -302,19 +302,17 @@ class Resolver : Visitor
         else
           local type = this_module.find_type( name, &extended_search )
           if (type and not args)
-            #{
-            if (type.is_singleton)
+            if (type.attributes.is_singleton)
               return GetSingleton(t,type)
             else
+            #{
               if (type.name.ends_with(']'))
                 return resolve_access( t, null, type.name, CmdList(t) )
               else
             }#
                 return TypeContext(t,type)
-            #{
-              endIf
+              #endIf
             endIf
-            }#
           endIf
 
           type_context = this_type  # may be null
@@ -637,6 +635,9 @@ augment
 
     method TypeInt32.cmd_print( operand:Cmd )->Cmd
       return PrintInt32( operand.t, operand )
+
+    method TypeInt64.cmd_print( operand:Cmd )->Cmd
+      return PrintInt64( operand.t, operand )
 
     method TypeLogical.cmd_print( operand:Cmd )->Cmd
       return PrintLogical( operand.t, operand )

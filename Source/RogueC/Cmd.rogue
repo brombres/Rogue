@@ -1658,3 +1658,26 @@ class AttributeSingleton : Cmd
     method description->String
       return "AttributeSingleton"
 endClass
+
+class PrintInt64 : PrintValue
+  METHODS
+    method description->String
+      return "PrintInt64($)" (%operand)
+
+endClass
+
+class GetSingleton : Cmd
+  PROPERTIES
+    type : Type
+
+  METHODS
+    method init( t, type )
+
+    method init( existing:GetSingleton )
+      prior.init( existing )
+      if (existing.type) type = existing.type.cloned
+
+    method description->String
+      return "GetSingleton($)" (%type)
+
+endClass

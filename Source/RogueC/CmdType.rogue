@@ -208,6 +208,9 @@ augment
     method GetProperty.type->Type
       return info.@type
 
+    method GetSingleton.type->Type
+      return @type
+
     method GetThisProperty.type->Type
       return info.@type
 

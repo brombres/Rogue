@@ -2,7 +2,6 @@
 #  Random
 -------------------------------------------------------------------------------
 class Random [singleton]
-#{
   # This random number generator produces evenly distributed
   # pseudo-random values.
   #
@@ -50,10 +49,9 @@ class Random [singleton]
   PROPERTIES
     state : Int64
 
+    #{
   METHODS
     method init
-      # Since this is a singleton we need a default constructor
-      # if we want anything to happen.
       reset( (System.time * 1000)->Int64 )
 
     method init( seed:Int64 )
@@ -66,7 +64,9 @@ class Random [singleton]
 
     method reset( state )
       _advance_state
+      }#
 
+#{
     method chance( p:Real64 )->Logical
       # Has a proportional chance 'p' to return true (0 < p < 1.0).
       # Example:
