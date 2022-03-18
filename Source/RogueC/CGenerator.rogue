@@ -458,6 +458,13 @@ class CGenerator : Visitor
       writer.print " >= "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:Divide )
+      writer.print '('
+      print_parenthesized( cmd.left )
+      writer.print " / "
+      print_parenthesized( cmd.right )
+      writer.print ')'
+
     method on_enter( proc:Procedure )
       on_enter( proc.body, &force )
       writer.println "int _deadlist_fp = RogueDeadlist_count;"
