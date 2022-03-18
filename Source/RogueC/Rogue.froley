@@ -552,7 +552,26 @@ parser
 
 - module_attribute
   #on "export" -> AttributeExport
-  syntaxError "Illegal attribute for 'module'. Expected (TBD)."
+  syntaxError "Illegal module attribute. Expected any of [TBD]."
+
+- class_attributes
+  beginList
+    on '['
+      while (hasAnother and not nextIs(']'))
+        class_attribute
+        consume ','
+      endWhile
+      mustConsume(']')
+    endOn
+  produceList Attributes
+
+- class_attribute
+  on @"singleton" -> AttributeSingleton
+  if (consume @"essential")
+    call class_attribute_essential
+    produce AttributeEssential
+  endIf
+  syntaxError "Illegal class attribute. Expected any of [essential singleton]."
 
 - class
   mustConsume "class"
@@ -560,7 +579,7 @@ parser
   template_parameters
   constructor_properties
   base_types
-  attributes
+  class_attributes
   if (consume(';'))
     createNull
   else
@@ -1082,7 +1101,7 @@ parser
     call uses_attribute_no_include
     return
   endIf
-  syntaxError "Illegal attribute for 'uses'. Expected any of [export noInclude]."
+  syntaxError "Illegal 'uses' attribute. Expected any of [export noInclude]."
 
 #- import_module_by_path_or_filepath
 #  on STRING
@@ -1415,6 +1434,7 @@ parser
   #  create NegateReal64(operand):Unary
   #  create NegateValue(operand):Unary
   create OpAndAssign(target,operand)
+  create PrintCharacter(operand):PrintValue
   create PrintInt32(operand):PrintValue
   create PrintLogical(operand):PrintValue
   create PrintNewline

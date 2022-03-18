@@ -1639,3 +1639,22 @@ class IsNot : Binary
       return "IsNot($,$)" (%left,%right)
 
 endClass
+
+class PrintCharacter : PrintValue
+  METHODS
+    method description->String
+      return "PrintCharacter($)" (%operand)
+
+endClass
+
+class AttributeEssential : Cmd
+  METHODS
+    method description->String
+      return "AttributeEssential"
+endClass
+
+class AttributeSingleton : Cmd
+  METHODS
+    method description->String
+      return "AttributeSingleton"
+endClass

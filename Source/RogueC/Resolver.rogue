@@ -632,11 +632,14 @@ augment
     method Cmd.cmd_print( operand:Cmd )->Cmd
       throw operand.t.error( "[INTERNAL] $.cmd_print() is undefined." (type_name) )
 
-    method TypeLogical.cmd_print( operand:Cmd )->Cmd
-      return PrintLogical( operand.t, operand )
+    method TypeCharacter.cmd_print( operand:Cmd )->Cmd
+      return PrintCharacter( operand.t, operand )
 
     method TypeInt32.cmd_print( operand:Cmd )->Cmd
       return PrintInt32( operand.t, operand )
+
+    method TypeLogical.cmd_print( operand:Cmd )->Cmd
+      return PrintLogical( operand.t, operand )
 
     method TypeReal64.cmd_print( operand:Cmd )->Cmd
       return PrintReal64( operand.t, operand )

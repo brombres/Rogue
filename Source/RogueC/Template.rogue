@@ -5,9 +5,12 @@ class Template
     name         : String
     placeholders : Token[]
     tokens       = Token[]
+    attributes   : Attributes
 
   METHODS
-    method init( name, placeholders, tokens )
+    method init( name, placeholders, tokens, attributes:Int32 )
+      this.attributes = Attributes( tokens.first )
+      this.attributes.attributes = attributes
 
     method description->String
       return name

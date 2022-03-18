@@ -6,6 +6,8 @@ class Attribute
     PRIMITIVE = (1:<<:1)
     OBJECT    = (1:<<:2)
     EXPORT    = (1:<<:3)
+    ESSENTIAL = (1:<<:4)
+    SINGLETON = (1:<<:5)
 endClass
 
 class Attributes : CmdList
@@ -13,6 +15,8 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_primitive, Attribute.PRIMITIVE )
   ROGUE_ATTRIBUTE( is_object,    Attribute.OBJECT )
   ROGUE_ATTRIBUTE( is_exported,  Attribute.EXPORT )
+  ROGUE_ATTRIBUTE( is_essential, Attribute.ESSENTIAL )
+  ROGUE_ATTRIBUTE( is_singleton, Attribute.SINGLETON )
 
   PROPERTIES
     attributes : Int32
@@ -51,7 +55,13 @@ augment
     method Cmd.attribute_flags->Int32
       return 0
 
+    method AttributeEssential.attribute_flags->Int32
+      return Attribute.ESSENTIAL
+
     method AttributeExport.attribute_flags->Int32
       return Attribute.EXPORT
+
+    method AttributeSingleton.attribute_flags->Int32
+      return Attribute.SINGLETON
 endAugment
 

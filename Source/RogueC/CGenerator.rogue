@@ -565,6 +565,21 @@ class CGenerator : Visitor
       writer.println ");"
       on_leave( cmd )
 
+    method on_visit( cmd:LiteralCharacter )
+      if (cmd.value >= 32)
+        writer.print '\''
+        which (cmd.value)
+          case '\\': writer.print '\\'
+          case '\'': writer.print '\\'
+        endWhich
+        writer.print( cmd.value )
+        writer.print '\''
+      else
+        writer.print "((RogueCharacter)"
+        writer.print cmd.value->Int32
+        writer.print ")"
+      endIf
+
     method on_visit( cmd:LiteralInt32 )
       writer.print( cmd.value )
 
@@ -715,6 +730,11 @@ class CGenerator : Visitor
       print_parenthesized( cmd.left )
       writer.print " - "
       print_parenthesized( cmd.right )
+
+    method on_visit( cmd:PrintCharacter )
+      writer.print ''printf( "%c", (char)''
+      visit( cmd.operand )
+      writer.print '' )''
 
     method on_visit( cmd:PrintInt32 )
       writer.print ''printf( "%d", (int)''

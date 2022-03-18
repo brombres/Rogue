@@ -10,8 +10,9 @@ class Parser : ParserCore
     marked_token     : Token
     token_buffer     = Token[]
     inserted_tokens  = Token[]
-    collecting_templates = false
+    collecting_templates  = false
     _attribute_no_include = false
+    _attribute_essential  = false
 
   METHODS
     method preprocess
@@ -19,6 +20,9 @@ class Parser : ParserCore
       parse( ip_preprocess )
       _tokens.clear
       _tokens.add( processed_tokens )
+
+    method class_attribute_essential
+      _attribute_essential = true
 
     method create_definition
       local def_name = buffer->String
@@ -88,6 +92,10 @@ class Parser : ParserCore
       endIf
 
     method on_parsed_class
+      local attributes = 0
+      if (_attribute_essential) attributes |= Attribute.ESSENTIAL
+      _attribute_essential = false
+
       if (not collecting_templates) return
 
       local i1 = _saved_positions.last.position
@@ -109,7 +117,8 @@ class Parser : ParserCore
       if (m.templates[extended_name])
         throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
       endIf
-      m.templates[extended_name] = Template( name, placeholders, tokens )
+
+      m.templates[extended_name] = Template( name, placeholders, tokens, attributes )
 
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module
