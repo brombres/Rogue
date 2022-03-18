@@ -49,7 +49,6 @@ class Random [singleton]
   PROPERTIES
     state : Int64
 
-    #{
   METHODS
     method init
       reset( (System.time * 1000)->Int64 )
@@ -57,14 +56,14 @@ class Random [singleton]
     method init( seed:Int64 )
       reset( seed )
 
-    method _advance_state()->Int64
-      # Calculates the internal 'next_random' raw integer.
+    method _advance_state->Int64
+      # Calculates the next raw random integer.
       state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
       return state
 
-    method reset( state )
+    method reset( _state:Int64 )
+      state = _state
       _advance_state
-      }#
 
 #{
     method chance( p:Real64 )->Logical
@@ -84,11 +83,13 @@ class Random [singleton]
       local u1 = 1.0 - this.real64
       local u2 = 1.0 - this.real64
       return (-2.0 * Math.log(u1)).sqrt * Radians(pi * 2 * u2).sin
+}#
 
     method real64->Real64
-      # Calculates the internal 'next_random' raw integer.
+      # Returns a random number 0 < r < 1.0
       return (_advance_state->Real64 + 1.0) / 281474976710657.0
 
+#{
     method real64( low:Real64, high:Real64 )->Real64
       # Returns an evenly distributed random real number in
       # the range (low,high) exclusive (does not include low or high).
