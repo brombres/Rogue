@@ -114,7 +114,15 @@ augment
           writer.print   type.name
           writer.print   ''", sizeof(''
           writer.print   type.c_name
-          writer.println '') };''
+          writer.print   ''), ''
+          local default_constructor = type.methods["init()"]
+          if (default_constructor)
+            writer.print   ''(RogueFn_init)''
+            writer.print   default_constructor.c_name
+          else
+            writer.print   "0"
+          endIf
+          writer.println '' };''
         endForEach
         writer.println
 

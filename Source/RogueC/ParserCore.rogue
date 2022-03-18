@@ -1806,6 +1806,14 @@ class ParserCore [abstract]
                 _execute(ip_access_inner)
                 _pop_frame
               endTemporarily
+            elseIf (_next_t.type == TokenType.SYMBOL_ARROW)
+              temporarily _cur_t = _on_t
+                _execute(ip_type)
+                _pop_frame
+                if (not disable_output) _push( ConvertToType(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+                _execute(ip_access_inner)
+                _pop_frame
+              endTemporarily
             elseIf (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
@@ -1826,25 +1834,25 @@ class ParserCore [abstract]
             endIf
             if (_next_t.type == TokenType.INTEGER)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( LiteralInt32(_cur_t,_string_to_Integer(_cur_t.content)), 0 )
+                if (not disable_output) _push( LiteralInteger(_cur_t,_cur_t.content,_string_to_Integer("10")), 0 )
                 return
               endTemporarily
             endIf
             if (_next_t.type == TokenType.HEX_INTEGER)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( LiteralInt32(_cur_t,_cur_t.content,_string_to_Integer("16")), 0 )
+                if (not disable_output) _push( LiteralInteger(_cur_t,_cur_t.content,_string_to_Integer("16")), 0 )
                 return
               endTemporarily
             endIf
             if (_next_t.type == TokenType.BINARY_INTEGER)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( LiteralInt32(_cur_t,_cur_t.content,_string_to_Integer("2")), 0 )
+                if (not disable_output) _push( LiteralInteger(_cur_t,_cur_t.content,_string_to_Integer("2")), 0 )
                 return
               endTemporarily
             endIf
             if (_next_t.type == TokenType.OCTAL_INTEGER)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( LiteralInt32(_cur_t,_cur_t.content,_string_to_Integer("8")), 0 )
+                if (not disable_output) _push( LiteralInteger(_cur_t,_cur_t.content,_string_to_Integer("8")), 0 )
                 return
               endTemporarily
             endIf
@@ -2067,13 +2075,14 @@ class ParserCore [abstract]
             return
           case ip_additional_node_types
             if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            if (not disable_output) _push( CastToByte(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CastToCharacter(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CastToInt32(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CastToInt64(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CastToLogical(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CastToReal32(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CastToReal64(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( Convert(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToByte(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToCharacter(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToInt32(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToInt64(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToLogical(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToReal32(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
@@ -2083,7 +2092,6 @@ class ParserCore [abstract]
             if (not disable_output) _push( Conditional(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
             if (not disable_output) _push( ControlStructure(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)), 2 )
-            if (not disable_output) _push( DiscardResult(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             if (not disable_output) _push( Iterator(_cur_t,_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
             if (not disable_output) _push( GetLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
@@ -2091,6 +2099,8 @@ class ParserCore [abstract]
             if (not disable_output) _push( GetThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
             if (not disable_output) _push( GetSingleton(_cur_t,_node_arg(-1)->(as Type)), 1 )
             if (not disable_output) _push( Literal(_cur_t), 0 )
+            if (not disable_output) _push( LiteralInt32(_cur_t,_integer_arg(-1)), 1 )
+            if (not disable_output) _push( LiteralInt64(_cur_t,_integer_arg(-1)), 1 )
             if (not disable_output) _push( LocalScope(_cur_t), 0 )
             if (not disable_output) _push( NativeProperty(_cur_t,_string_arg(-1)), 1 )
             if (not disable_output) _push( OpAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
