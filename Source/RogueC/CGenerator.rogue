@@ -478,7 +478,6 @@ class CGenerator : Visitor
       writer.print ")"
 
     method on_visit( cmd:DiscardResult )
-      writer.print "/* discard */ "
       visit_children( cmd )
 
     method on_visit( cmd:GetLocal )
@@ -661,17 +660,9 @@ class CGenerator : Visitor
       writer.println
 
     method on_visit( cmd:SetLocal )
-      if (cmd.info.type.is_reference)
-        writer.print "Rogue_set_ref( &"
-        writer.print cmd.info.c_name
-        writer.print ", "
-        visit( cmd.new_value )
-        writer.print " )"
-      else
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
 
     method on_visit( cmd:SetProperty )
       if (cmd.info.type.is_reference)
