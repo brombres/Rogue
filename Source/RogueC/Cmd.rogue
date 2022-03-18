@@ -1261,52 +1261,59 @@ class LiteralPi : Cmd
       return "LiteralPi"
 endClass
 
-class CastToByte : Unary
+class Convert : Unary
   METHODS
     method description->String
-      return "CastToByte($)" (%operand)
+      return "Convert($)" (%operand)
 
 endClass
 
-class CastToCharacter : Unary
+class ConvertToByte : Convert
   METHODS
     method description->String
-      return "CastToCharacter($)" (%operand)
+      return "ConvertToByte($)" (%operand)
 
 endClass
 
-class CastToInt32 : Unary
+class ConvertToCharacter : Convert
   METHODS
     method description->String
-      return "CastToInt32($)" (%operand)
+      return "ConvertToCharacter($)" (%operand)
 
 endClass
 
-class CastToInt64 : Unary
+class ConvertToInt32 : Convert
   METHODS
     method description->String
-      return "CastToInt64($)" (%operand)
+      return "ConvertToInt32($)" (%operand)
 
 endClass
 
-class CastToLogical : Unary
+class ConvertToInt64 : Convert
   METHODS
     method description->String
-      return "CastToLogical($)" (%operand)
+      return "ConvertToInt64($)" (%operand)
 
 endClass
 
-class CastToReal32 : Unary
+class ConvertToLogical : Convert
   METHODS
     method description->String
-      return "CastToReal32($)" (%operand)
+      return "ConvertToLogical($)" (%operand)
 
 endClass
 
-class CastToReal64 : Unary
+class ConvertToReal32 : Convert
   METHODS
     method description->String
-      return "CastToReal64($)" (%operand)
+      return "ConvertToReal32($)" (%operand)
+
+endClass
+
+class ConvertToReal64 : Convert
+  METHODS
+    method description->String
+      return "ConvertToReal64($)" (%operand)
 
 endClass
 
@@ -1582,7 +1589,7 @@ class CallThisMethod : CallProcedure
       prior.init( existing )
 
     method description->String
-      return "CallThisMethod($)" (%args)
+      return "CallThisMethod($,$)" (info.name,%args)
 
 endClass
 
@@ -1713,3 +1720,22 @@ class GetSingleton : Cmd
       return "GetSingleton($)" (%type)
 
 endClass
+
+class ConvertToType : Cmd
+  PROPERTIES
+    operand : Cmd
+    to_type : Type
+
+  METHODS
+    method init( t, operand, to_type )
+
+    method init( existing:ConvertToType )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.to_type) to_type = existing.to_type.cloned
+
+    method description->String
+      return "ConvertToType($,$)" (%operand,%to_type)
+
+endClass
+

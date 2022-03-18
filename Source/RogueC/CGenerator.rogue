@@ -400,31 +400,31 @@ class CGenerator : Visitor
         writer.print "()"
       endIf
 
-    method on_visit( cmd:CastToByte )
+    method on_visit( cmd:ConvertToByte )
       writer.print "(RogueByte)"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:CastToCharacter )
+    method on_visit( cmd:ConvertToCharacter )
       writer.print "(RogueCharacter)"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:CastToInt32 )
+    method on_visit( cmd:ConvertToInt32 )
       writer.print "(RogueInt32)"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:CastToInt64 )
+    method on_visit( cmd:ConvertToInt64 )
       writer.print "(RogueInt64)"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:CastToLogical )
+    method on_visit( cmd:ConvertToLogical )
       writer.print "(RogueLogical)"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:CastToReal32 )
+    method on_visit( cmd:ConvertToReal32 )
       writer.print "(RogueReal32)"
       print_parenthesized( cmd.operand )
 
-    method on_visit( cmd:CastToReal64 )
+    method on_visit( cmd:ConvertToReal64 )
       writer.print "(RogueReal64)"
       print_parenthesized( cmd.operand )
 

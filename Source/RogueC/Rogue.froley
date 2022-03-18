@@ -1216,6 +1216,10 @@ parser
     access_args
     create ContextAccess(context,name:String,args)
     access_inner
+  elseOn "->"
+    type
+    create ConvertToType(operand,to_type:Type)
+    access_inner
   elseOn '['
     expression
     mustConsume(']')
@@ -1357,13 +1361,14 @@ parser
 
 - additional_node_types
   create AddAndAssignLocal(info:Local,operand)
-  create CastToByte(operand):Unary
-  create CastToCharacter(operand):Unary
-  create CastToInt32(operand):Unary
-  create CastToInt64(operand):Unary
-  create CastToLogical(operand):Unary
-  create CastToReal32(operand):Unary
-  create CastToReal64(operand):Unary
+  create Convert(operand):Unary
+  create ConvertToByte(operand):Convert
+  create ConvertToCharacter(operand):Convert
+  create ConvertToInt32(operand):Convert
+  create ConvertToInt64(operand):Convert
+  create ConvertToLogical(operand):Convert
+  create ConvertToReal32(operand):Convert
+  create ConvertToReal64(operand):Convert
   #  create CallMethod(context,procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure

@@ -64,6 +64,22 @@ class Resolver : Visitor
       pop_scope
       return cmd
 
+    method on_visit( cmd:Convert )
+      visit_children( cmd )
+
+    method on( cmd:ConvertToType )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local operand_type = cmd.operand.require_type
+
+      local cmd_call = resolve_access( cmd.t, cmd.operand, "to_$"(cmd.to_type.name), Args(cmd.t), &suppress_error )
+      if (cmd_call) return cmd_call
+
+      if (operand_type.is_primitive and cmd.to_type.is_primitive)
+        return cmd.operand.cmd_convert_to( cmd.to_type )
+      endIf
+
+      throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
+
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
       cmd.condition.resolve_foreach( this, cmd, iterator )
@@ -110,7 +126,7 @@ class Resolver : Visitor
           block v = v->(as Local)
             if (v.initial_value)
               v.initial_value = visit( v.initial_value ).require_value
-              if (v.@type) v.initial_value = visit( v.initial_value.cmd_cast_to(v.@type) )
+              if (v.@type) v.initial_value = visit( v.initial_value.cmd_convert_to(v.@type) )
               else         v.type = v.initial_value.type
             elseIf (not v.@type)
               throw v.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
@@ -235,7 +251,7 @@ class Resolver : Visitor
         forEach (statement in current_statements_rewriter)
           statement = visit( statement )
           if (statement)
-            if (statement.type) statement = DiscardResult( statement.t, statement )
+            #if (statement.type) statement = DiscardResult( statement.t, statement )
             current_statements_rewriter.write( statement )
           endIf
         endForEach
@@ -251,7 +267,7 @@ class Resolver : Visitor
       local type = cmd.require_type
       if (type.is_primitive)
         local op_type = Cmd.common_op_type( type, Program.type_Int32 )
-        if (type is not op_type) cmd.operand = validate( cmd.cmd_cast_to(op_type) )
+        if (type is not op_type) cmd.operand = validate( cmd.cmd_convert_to(op_type) )
       endIf
 
       #{
@@ -316,7 +332,6 @@ class Resolver : Visitor
           endIf
 
           type_context = this_type  # may be null
-if (name == "count" and not this_type) println StackTrace()
 
           if (args)
             # Call or constructor
@@ -324,7 +339,7 @@ if (name == "count" and not this_type) println StackTrace()
               #{
               if (name == "XY")
                 forEach (arg at i in args)
-                  args[i] = validate( arg.cmd_cast_to(Program.type_Real64) )
+                  args[i] = validate( arg.cmd_convert_to(Program.type_Real64) )
                 endForEach
                 which (args.count)
                   case 0: return validate( CreateXY0(t) )
@@ -421,7 +436,7 @@ if (name == "count" and not this_type) println StackTrace()
       endWhile
 
       forEach (arg at i in args)
-        args[i] = validate( arg.cmd_cast_to(proc.parameters[i].type) )
+        args[i] = validate( arg.cmd_convert_to(proc.parameters[i].type) )
       endForEach
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
@@ -577,7 +592,7 @@ augment
 
       local v = resolver.find_local( name )
       if (v)
-        if (operand_type is not v.type) operand = resolver.validate(operand.cmd_cast_to(v.type))
+        if (operand_type is not v.type) operand = resolver.validate(operand.cmd_convert_to(v.type))
         return resolver.validate( AddAndAssignLocal(t,v,operand) )
       endIf
 

@@ -30,7 +30,7 @@ augment Cmd
       endIf
 
   METHODS
-    method cmd_cast_to( target_type:Type )->Cmd
+    method cmd_convert_to( target_type:Type )->Cmd
       local cur_type = require_type
       if (cur_type is target_type) return this
       return target_type.cmd_cast( this )
@@ -41,6 +41,7 @@ augment Cmd
     method require_type->Type
       local result = type
       if (result) return result
+      println StackTrace()
       throw t.error( "Value expected ($)."(this) )  # FIXME
 
     method require_value->Cmd
@@ -56,32 +57,32 @@ augment
       throw UnsupportedOperationError()
 
     method TypeByte.cmd_cast( cmd:Cmd )->Cmd
-      return CastToByte(cmd.t,cmd)
+      return ConvertToByte(cmd.t,cmd)
 
     method TypeCharacter.cmd_cast( cmd:Cmd )->Cmd
-      return CastToCharacter(cmd.t,cmd)
+      return ConvertToCharacter(cmd.t,cmd)
 
     method TypeInt32.cmd_cast( cmd:Cmd )->Cmd
-      return CastToInt32(cmd.t,cmd)
+      return ConvertToInt32(cmd.t,cmd)
 
     method TypeInt64.cmd_cast( cmd:Cmd )->Cmd
-      return CastToInt64(cmd.t,cmd)
+      return ConvertToInt64(cmd.t,cmd)
 
     method TypeLogical.cmd_cast( cmd:Cmd )->Cmd
-      return CastToLogical(cmd.t,cmd)
+      return ConvertToLogical(cmd.t,cmd)
 
     method TypeReal32.cmd_cast( cmd:Cmd )->Cmd
-      return CastToReal32(cmd.t,cmd)
+      return ConvertToReal32(cmd.t,cmd)
 
     method TypeReal64.cmd_cast( cmd:Cmd )->Cmd
-      return CastToReal64(cmd.t,cmd)
+      return ConvertToReal64(cmd.t,cmd)
 
 endAugment
 
-# cmd_cast_to
+# cmd_convert_to
 augment
   METHODS
-    method LiteralNull.cmd_cast_to( target_type:Type )->Cmd
+    method LiteralNull.cmd_convert_to( target_type:Type )->Cmd
       of_type = target_type
       return this
 endAugment
@@ -159,20 +160,37 @@ augment
       #{
     method CastReal64ToInt32.type->Type
       return Program.type_Int32
+      }#
 
-    method CastToInt32.type->Type
+    method ConvertToByte.type->Type
+      return Program.type_Byte
+
+    method ConvertToCharacter.type->Type
+      return Program.type_Character
+
+    method ConvertToInt32.type->Type
       return Program.type_Int32
 
-    method CastToObject.type->Type
-      return Program.type_Object
+    method ConvertToInt64.type->Type
+      return Program.type_Int64
 
-    method CastToReal64.type->Type
+    method ConvertToLogical.type->Type
+      return Program.type_Logical
+
+    #method ConvertToObject.type->Type
+    #  return Program.type_Object
+
+    method ConvertToReal32.type->Type
+      return Program.type_Real32
+
+    method ConvertToReal64.type->Type
       return Program.type_Real64
 
-    method CastToString.type->Type
+      #{
+    method ConvertToString.type->Type
       return Program.type_String
 
-    method CastToValue.type->Type
+    method ConvertToValue.type->Type
       return Program.type_Value
 
     method CastValueToXY.type->Type
@@ -181,6 +199,9 @@ augment
 
     method Compare.type->Type
       return Program.type_Logical
+
+    method ConvertToType.type->Type
+      return to_type
 
     method CreateObject.type->Type
       return of_type
@@ -197,7 +218,9 @@ augment
 
     method Description.type->Type
       return Program.type_String
+    }#
 
+    #{
     method EmptyList.type->Type
       return Program.type_Value
       }#
