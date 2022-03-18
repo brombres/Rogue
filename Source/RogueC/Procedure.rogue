@@ -63,7 +63,21 @@ class Procedure : Cmd
             block p = p->(as Local)
               assert p
               if (i) builder.print ','
-              if (not p.type) throw p.t.error( "Missing parameter type (e.g. $:SomeType)."(p.name) )
+              if (not p.type)
+                if (this instanceOf Method)
+                  local prop = this->(as Method).type_context.properties[p.name]
+                  if (prop)
+                    p.name = "_auto_store_" + p.name
+                    p.type = prop.type
+                    statements.insert( Assign(p.t,Access(p.t,prop.name),Access(p.t,p.name)) )
+                  else
+                    throw p.t.error( "No corresponding property for auto-store parameter '$'."(p.name) )
+                  endIf
+                else
+                  throw p.t.error( "Missing parameter type (e.g. $:SomeType)."(p.name) )
+                endIf
+              endIf
+              assert p.type
               builder.print( p.type.name )
             endBlock
           endForEach
