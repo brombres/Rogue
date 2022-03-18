@@ -1225,10 +1225,10 @@ parser
 
 - term
   on STRING         -> LiteralString(value=content):Literal
-  on INTEGER        -> LiteralInt32(value=content:Integer)
-  on HEX_INTEGER    -> LiteralInt32(content=content:String,base="16":Integer)
-  on BINARY_INTEGER -> LiteralInt32(content=content:String,base="2":Integer)
-  on OCTAL_INTEGER  -> LiteralInt32(content=content:String,base="8":Integer)
+  on INTEGER        -> LiteralInteger(content=content:String,base="10":Integer)
+  on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer)
+  on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer)
+  on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer)
   on REAL_NUMBER    -> LiteralReal64(value=content:Real)
   on CHARACTER      -> LiteralCharacter(value=content:Character)
   onPeek IDENTIFIER
@@ -1391,7 +1391,6 @@ parser
   #  create DecrementThisProperty(info:Property)
   #  create DecrementThisPropertyInt32(info:Property)
   #  create Description(operand):Unary
-  create DiscardResult(operand):Unary
   #  create DivideInt32(left,right):Binary
   #  create DivideObject(left,right):Binary
   #  create DivideReal64(left,right):Binary
@@ -1415,6 +1414,8 @@ parser
   #  create LeftShiftObject(left,right):Binary
   #  create LeftShiftValue(left,right):Binary
   create Literal
+  create LiteralInt32(value:Integer):LiteralInteger
+  create LiteralInt64(value:Integer):LiteralInteger
   #  create LiteralNull(type:Type):Literal
   #  create LiteralValueUndefined:Literal
   #  create Local(name:String,initial_value)

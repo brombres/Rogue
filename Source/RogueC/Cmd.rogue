@@ -395,15 +395,38 @@ class LiteralCharacter : Cmd
 
 endClass
 
-class LiteralInt32 : Cmd
+class LiteralInteger : Cmd
+  GLOBAL METHODS
+    method create( t:Token, content:String, base:Int32 )->LiteralInteger
+      contingent
+        sufficient (base == 2 and content.count <= 32)
+        if (base == 8)
+          sufficient (content.count <= 10 or (content.count == 11 and content[0] <= '3'))
+        endIf
+        sufficient (base == 16 and content.count <= 8)
+
+        return LiteralInt64( t, content->Int64(&=base) )
+
+      satisfied
+        return LiteralInt32( t, content->Int32(&=base) )
+
+      endContingent
+
+  METHODS
+    method init( existing:LiteralInteger )
+      prior.init( existing )
+
+    method description->String
+      return "LiteralInteger()"
+
+endClass
+
+class LiteralInt32 : LiteralInteger
   PROPERTIES
     value   : Int32
 
   METHODS
     method init( t, value )
-
-    method init( t, content:String, base:Int32 )
-      value = content->Int32( &=base )
 
     method init( existing:LiteralInt32 )
       prior.init( existing )
@@ -411,6 +434,22 @@ class LiteralInt32 : Cmd
 
     method description->String
       return "LiteralInt32($)" (%value)
+
+endClass
+
+class LiteralInt64 : LiteralInteger
+  PROPERTIES
+    value   : Int64
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralInt64 )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralInt64($)" (%value)
 
 endClass
 
@@ -1129,13 +1168,6 @@ class If : Conditional
 
     method description->String
       return "If($,$,$)" (%condition,%statements,%cmd_else)
-
-endClass
-
-class DiscardResult : Unary
-  METHODS
-    method description->String
-      return "DiscardResult($)" (%operand)
 
 endClass
 

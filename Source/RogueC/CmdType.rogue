@@ -228,6 +228,9 @@ augment
     method LiteralInt32.type->Type
       return Program.type_Int32
 
+    method LiteralInt64.type->Type
+      return Program.type_Int64
+
     method LiteralLogical.type->Type
       return Program.type_Logical
 
