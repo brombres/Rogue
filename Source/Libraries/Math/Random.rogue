@@ -1,3 +1,5 @@
+module Math
+
 -------------------------------------------------------------------------------
 #  Random
 -------------------------------------------------------------------------------
@@ -51,7 +53,7 @@ class Random [singleton]
 
   METHODS
     method init
-      reset( (System.time * 1000)->Int64 )
+      reset( (Rogue::System.time * 1000)->Int64 )
 
     method init( seed:Int64 )
       reset( seed )
@@ -65,13 +67,13 @@ class Random [singleton]
       state = _state
       _advance_state
 
-#{
     method chance( p:Real64 )->Logical
       # Has a proportional chance 'p' to return true (0 < p < 1.0).
       # Example:
       #   Random.chance(0.75)  # returns true 75% of the time statistically speaking.
       return (real64 < p)
 
+#{
     method gaussian->Real64
       # Returns a random number from a normal distribution of avg=0, stddev=1
       # 68.2% chance of being between -1..1
