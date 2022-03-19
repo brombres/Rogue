@@ -1429,7 +1429,7 @@ class NativeStatement : Cmd
 
 endClass
 
-class CreateObject : Cmd
+class UnresolvedCreateObject : Cmd
   PROPERTIES
     of_type : Type
     m_init  : Method
@@ -1442,13 +1442,13 @@ class CreateObject : Cmd
     method init( t, of_type, args )
       # Froley constructor
 
-    method init( existing:CreateObject )
+    method init( existing:UnresolvedCreateObject )
       prior.init( existing )
       if (existing.of_type) of_type = existing.of_type.cloned
       if (existing.args) args = existing.args.cloned
 
     method description->String
-      return "CreateObject($,$)" (%of_type,%args)
+      return "UnresolvedCreateObject($,$)" (%of_type,%args)
 
 endClass
 
@@ -1739,3 +1739,28 @@ class ConvertToType : Cmd
 
 endClass
 
+
+class CreateObject : Cmd
+  PROPERTIES
+    of_type : Type
+    m_init  : Procedure
+    args    : Cmd
+    info    : Local
+
+  METHODS
+    method init( t, of_type, m_init, args, info )
+      # Real constructor
+
+    method init( t, of_type, args, info )
+      # Froley constructor
+
+    method init( existing:CreateObject )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      if (existing.args) args = existing.args.cloned
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "CreateObject($,$,$)" (%of_type,%args,%info)
+
+endClass

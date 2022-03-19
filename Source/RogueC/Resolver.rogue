@@ -8,7 +8,7 @@ class Resolver : Visitor
     control_stack     = ControlStructure[]
     control_stack_fp  = Int32[]
 
-    current_statements_rewriter : ListRewriter<<Cmd>>
+    current_statements : ListRewriter<<Cmd>>
 
     autoname_index = 0
 
@@ -17,6 +17,15 @@ class Resolver : Visitor
       temporarily this_module=m, this_procedure=proc
         visit( proc )
       endTemporarily
+
+    method add_local( v:Local )
+      this_procedure.locals.add( v )
+      assert control_stack.count
+      control_stack.last.locals.add( v )
+      visible_locals.add( v )
+
+    method auto_local( t:Token, base:String, type:Type )->Local
+      return Local( t, autoname(base), null, type )
 
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
@@ -80,6 +89,12 @@ class Resolver : Visitor
 
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
 
+    method on_validate( cmd:UnresolvedCreateObject )->Cmd
+      local v = auto_local( cmd.t, "obj", cmd.of_type )
+      add_local( v )
+      current_statements.write( CreateObject(cmd.t,cmd.of_type,cmd.args,v) )
+      return validate( GetLocal(cmd.t,v) )
+
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
       cmd.condition.resolve_foreach( this, cmd, iterator )
@@ -137,10 +152,7 @@ class Resolver : Visitor
 
       forEach (decl in cmd.declarations)
         local v = decl->(as Local)
-        this_procedure.locals.add( v )
-        assert control_stack.count
-        control_stack.last.locals.add( v )
-        visible_locals.add( v )
+        add_local( v )
       endForEach
 
       local result : Statements
@@ -247,12 +259,12 @@ class Resolver : Visitor
 }#
 
     method on_visit( cmd:Statements )
-      temporarily current_statements_rewriter = cmd.list.rewriter
-        forEach (statement in current_statements_rewriter)
+      temporarily current_statements = cmd.list.rewriter
+        forEach (statement in current_statements)
           statement = visit( statement )
           if (statement)
             #if (statement.type) statement = DiscardResult( statement.t, statement )
-            current_statements_rewriter.write( statement )
+            current_statements.write( statement )
           endIf
         endForEach
       endTemporarily
@@ -396,7 +408,7 @@ class Resolver : Visitor
       if (m_init)
         if (not args) args = CmdList(t)
         cast_args_to_parameter_types( args, m_init )
-        return CreateObject( t, type_context, m_init, args )
+        return UnresolvedCreateObject( t, type_context, m_init, args )
       endIf
 
       local mesg : String
@@ -406,7 +418,7 @@ class Resolver : Visitor
 
         if (args.count == 0 and Candidates.count == 0)
           # No constructors available and no constructor required.
-          return CreateObject( t, type_context, null, null )
+          return UnresolvedCreateObject( t, type_context, null, null )
         endIf
 
         mesg = "No exact match for object constructor $("(type_context)

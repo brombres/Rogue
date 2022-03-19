@@ -320,6 +320,9 @@ augment
     method Unary.type->Type
       return operand.type
 
+    method UnresolvedCreateObject.type->Type
+      return of_type
+
     #{
     method XYGetX.type->Type
       return Program.type_Real64

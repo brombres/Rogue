@@ -541,6 +541,8 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CreateObject )
       assert not cmd.m_init and not cmd.args
+      writer.print cmd.info.c_name
+      writer.print " = "
       writer.print "ROGUE_CREATE_OBJECT("
       writer.print cmd.of_type.c_name
       writer.print ")"
