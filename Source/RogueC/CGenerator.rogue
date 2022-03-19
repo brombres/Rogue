@@ -39,7 +39,6 @@ augment
           writer.indent  += 2
           writer.println "RogueType* type;"
           writer.println "RogueInt32 ref_count;"
-          writer.println "RogueInt32 deadlisted;"
           forEach (p in type.properties)
             writer.print   p.type.c_name
             if (p.type.is_reference) writer.print '*'
@@ -474,9 +473,8 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
       writer.print ')'
 
-    method on_enter( proc:Procedure, needs_deadlist:Logical )
+    method on_enter( proc:Procedure )
       on_enter( proc.body, &force )
-      if (needs_deadlist) writer.println "ROGUE_BEGIN_DEADLIST_FRAME;"
 
     method on_enter( cmd:ControlStructure, &force )
       if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
@@ -498,13 +496,21 @@ class CGenerator : Visitor
         visit( cmd.initialization )
       endIf
 
-    method on_leave( proc:Procedure, needs_deadlist:Logical )
-      if (needs_deadlist) writer.println "ROGUE_END_DEADLIST_FRAME;"
+    method on_leave( proc:Procedure )
       on_leave( proc.body, &force )
       writer.println
 
     method on_leave( cmd:ControlStructure, &force )
       if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
+        forEach (v in cmd.locals)
+          if (v.type.is_reference)
+            writer.print "ROGUE_RELEASE_REF( &"
+            writer.print v.c_name
+            writer.print( " )" )
+            writer.println( ';' )
+          endIf
+        endForEach
+
         pop_scope
         writer.indent -= 2
         writer.println( "}" )
@@ -530,10 +536,9 @@ class CGenerator : Visitor
       this_type.write_c_global_method_header( cmd, writer )
       writer.println
 
-      local needs_deadlist = NeedsDeadlistFrame.visit( cmd )
-      on_enter( cmd, &=needs_deadlist )
+      on_enter( cmd )
       visit( cmd.statements )
-      on_leave( cmd, &=needs_deadlist )
+      on_leave( cmd )
 
       writer.println
 
@@ -667,10 +672,9 @@ class CGenerator : Visitor
       this_type.write_c_method_header( cmd, writer )
       writer.println
 
-      local needs_deadlist = NeedsDeadlistFrame.visit( cmd )
-      on_enter( cmd, &=needs_deadlist )
+      on_enter( cmd )
       visit( cmd.statements )
-      on_leave( cmd, &=needs_deadlist )
+      on_leave( cmd )
 
       writer.println
 
@@ -728,21 +732,28 @@ class CGenerator : Visitor
       this_module.write_c_routine_header( cmd, writer )
       writer.println
 
-      local needs_deadlist = NeedsDeadlistFrame.visit( cmd )
-      on_enter( cmd, &=needs_deadlist )
+      on_enter( cmd )
       visit( cmd.statements )
-      on_leave( cmd, &=needs_deadlist )
+      on_leave( cmd )
 
       writer.println
 
     method on_visit( cmd:SetLocal )
-      writer.print( cmd.info.c_name )
-      writer.print( " = " )
-      visit( cmd.new_value )
+      if (cmd.info.type.is_reference)
+        writer.print "ROGUE_SET_REF( &"
+        writer.print cmd.info.c_name
+        writer.print ", "
+        visit( cmd.new_value )
+        writer.print " )"
+      else
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
 
     method on_visit( cmd:SetProperty )
       if (cmd.info.type.is_reference)
-        writer.print "Rogue_set_ref( &("
+        writer.print "ROGUE_SET_REF( &("
         visit( cmd.context )
         writer.print "->"
         writer.print cmd.info.c_name
@@ -759,7 +770,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:SetThisProperty )
       if (cmd.info.type.is_reference)
-        writer.print "Rogue_set_ref( &(THIS->"
+        writer.print "ROGUE_SET_REF( &(THIS->"
         writer.print cmd.info.c_name
         writer.print "), "
         visit( cmd.new_value )

@@ -121,14 +121,15 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_FREE free
            |#endif
            |
-           |#define ROGUE_BEGIN_DEADLIST_FRAME int _deadlist_fp = RogueDeadlist_count
-           |#define ROGUE_END_DEADLIST_FRAME if (RogueDeadlist_count > _deadlist_fp) RogueDeadlist_purge( _deadlist_fp )
-           |
            |#define ROGUE_CREATE_OBJECT( TypeName ) \
-           |    ((TypeName*)RogueDeadlist_add(Rogue_create_object(&Type##TypeName)))
+           |    ((TypeName*)Rogue_create_object(&Type##TypeName))
            |
            |#define ROGUE_SINGLETON( TypeName ) \
            |    ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
+           |
+           |#define ROGUE_RELEASE_REF( ref )  Rogue_release_ref( ref )
+           |#define ROGUE_RETAIN_REF( ref )   Rogue_retain_ref( ref )
+           |#define ROGUE_SET_REF( ref, obj ) Rogue_set_ref( ref, obj )
            |
            |typedef struct RogueType RogueType;
            |typedef void (*RogueFn_init)(void*);
@@ -144,9 +145,9 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_create_object( void* type );
            |void  Rogue_delete_object( void* obj );
            |void* Rogue_singleton( void* type, void* singleton_ref );
-           |void* Rogue_release( void* obj );
+           |void  Rogue_release_ref( void* ref );
            |void  Rogue_set_ref( void* ref, void* new_obj );
-           |void* Rogue_retain( void* obj );
+           |void  Rogue_retain_ref( void* ref );
            |
            |void  Rogue_launch();
            |
@@ -156,13 +157,6 @@ class CWriter : BufferedPrintWriter
            |// Runtime
            |//------------------------------------------------------------------------------
            |extern int    Rogue_exception;  // set to 1 on exception; exception handler clears
-           |
-           |extern int    RogueDeadlist_count;
-           |extern int    RogueDeadlist_capacity;
-           |extern void** RogueDeadlist_data;
-           |
-           |void*         RogueDeadlist_add( void* obj );
-           |void          RogueDeadlist_purge( int fp );
            |
            |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
            |RogueInt64  Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
@@ -204,85 +198,35 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
-           |void* Rogue_release( void* obj )
+           |void Rogue_release_ref( void* ref )
            |{
-           |  if (obj && ! --((RogueObject*)obj)->ref_count )
+           |  RogueObject* obj = *((RogueObject**)ref);
+           |  if (obj && ! --(obj->ref_count))
            |  {
-           |    if ( !(((RogueObject*)obj)->deadlisted) ) RogueDeadlist_add(obj);
+           |    Rogue_delete_object( obj );
+           |    *((RogueObject**)ref) = 0;
            |  }
-           |  return 0;
            |}
            |
-           |void  Rogue_set_ref( void* ref, void* new_obj )
+           |void Rogue_set_ref( void* ref, void* new_obj )
            |{
            |  RogueObject* old_obj = *((RogueObject**)ref);
-           |  if (old_obj && ! --old_obj->ref_count)
-           |  {
-           |    if ( !(((RogueObject*)old_obj)->deadlisted) ) RogueDeadlist_add(old_obj);
-           |  }
+           |  if (old_obj && ! --old_obj->ref_count) Rogue_delete_object( old_obj );
            |  if (new_obj) ++((RogueObject*)new_obj)->ref_count;
            |  *((void**)ref) = new_obj;
            |}
            |
-           |void* Rogue_retain( void* obj )
+           |void Rogue_retain_ref( void* ref )
            |{
-           |  if ( !obj ) return 0;
-           |  ++((RogueObject*)obj)->ref_count;
-           |  return obj;
+           |  RogueObject* obj = *((RogueObject**)ref);
+           |  if ( !obj ) return;
+           |  ++(obj->ref_count);
            |}
            |
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
            |int Rogue_exception = 0;
-           |
-           |int    RogueDeadlist_count = 0;
-           |int    RogueDeadlist_capacity = 0;
-           |void** RogueDeadlist_data = 0;
-           |
-           |void* RogueDeadlist_add( void* obj )
-           |{
-           |  if ( !obj ) return 0;
-           |  if (RogueDeadlist_count == RogueDeadlist_capacity)
-           |  {
-           |    int    double_capacity = RogueDeadlist_capacity ? (RogueDeadlist_capacity*2) : 1024;
-           |    void** new_data = ROGUE_MALLOC( sizeof(void*) * double_capacity );
-           |    if (RogueDeadlist_data)
-           |    {
-           |      memcpy( new_data, RogueDeadlist_data, sizeof(void*)*RogueDeadlist_capacity );
-           |      ROGUE_FREE( RogueDeadlist_data );
-           |    }
-           |    RogueDeadlist_data = new_data;
-           |    RogueDeadlist_capacity = double_capacity;
-           |  }
-           |  RogueDeadlist_data[RogueDeadlist_count++] = obj;
-           |  ((RogueObject*)obj)->deadlisted = 1; // flag to ensure no duplicates get added
-           |  return obj;
-           |}
-           |
-           |void RogueDeadlist_purge( int fp )
-           |{
-           |  int n = RogueDeadlist_count - fp;
-           |  if ( !n ) return;
-           |
-           |  RogueDeadlist_count = fp;
-           |
-           |  // Rewrite deadlist frame to remove survivors
-           |  int read_i, write_i;
-           |  for ( read_i=write_i=0; read_i<n; ++read_i )
-           |  {
-           |    RogueObject* obj = (RogueObject*) RogueDeadlist_data[fp+read_i];
-           |    if (obj->ref_count) obj->deadlisted = 0;
-           |    else                RogueDeadlist_data[fp + write_i++] = obj;
-           |  }
-           |  n = write_i;
-           |
-           |  // Delete remaining objects
-           |  while (--n >= 0)
-           |  {
-           |    Rogue_delete_object( RogueDeadlist_data[fp+n] );
-           |  }
-           |}
            |
            |RogueInt32 Rogue_mod_Int32( RogueInt32 a, RogueInt32 b )
            |{
