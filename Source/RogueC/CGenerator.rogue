@@ -476,6 +476,15 @@ class CGenerator : Visitor
     method on_enter( proc:Procedure )
       on_enter( proc.body, &force )
 
+      forEach (p in proc.parameters)
+        if (p.type.is_reference)
+          writer.print "ROGUE_RETAIN_REF( &"
+          writer.print p->(as Local).c_name
+          writer.print( " )" )
+          writer.println( ';' )
+        endIf
+      endForEach
+
     method on_enter( cmd:ControlStructure, &force )
       if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
         writer.println( "{" )
@@ -497,6 +506,15 @@ class CGenerator : Visitor
       endIf
 
     method on_leave( proc:Procedure )
+      forEach (p in proc.parameters)
+        if (p.type.is_reference)
+          writer.print "ROGUE_RELEASE_REF( &"
+          writer.print p->(as Local).c_name
+          writer.print( " )" )
+          writer.println( ';' )
+        endIf
+      endForEach
+
       on_leave( proc.body, &force )
       writer.println
 
@@ -673,7 +691,16 @@ class CGenerator : Visitor
       writer.println
 
       on_enter( cmd )
+
+      if (cmd.type_context.is_reference)
+        writer.println "ROGUE_RETAIN_REF( &THIS );"
+      endIf
+
       visit( cmd.statements )
+
+      if (cmd.type_context.is_reference)
+        writer.println "ROGUE_RELEASE_REF( &THIS );"
+      endIf
       on_leave( cmd )
 
       writer.println

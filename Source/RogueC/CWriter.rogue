@@ -177,7 +177,7 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->type = type;
-           |  // Note: ref_count is 0
+           |  obj->ref_count = 1;
            |  return obj;
            |}
            |
