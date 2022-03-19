@@ -474,9 +474,9 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
       writer.print ')'
 
-    method on_enter( proc:Procedure )
+    method on_enter( proc:Procedure, needs_deadlist:Logical )
       on_enter( proc.body, &force )
-      writer.println "ROGUE_BEGIN_DEADLIST_FRAME;"
+      if (needs_deadlist) writer.println "ROGUE_BEGIN_DEADLIST_FRAME;"
 
     method on_enter( cmd:ControlStructure, &force )
       if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
@@ -498,8 +498,8 @@ class CGenerator : Visitor
         visit( cmd.initialization )
       endIf
 
-    method on_leave( proc:Procedure )
-      writer.println "ROGUE_END_DEADLIST_FRAME;"
+    method on_leave( proc:Procedure, needs_deadlist:Logical )
+      if (needs_deadlist) writer.println "ROGUE_END_DEADLIST_FRAME;"
       on_leave( proc.body, &force )
       writer.println
 
@@ -529,9 +529,12 @@ class CGenerator : Visitor
       autoname_index = 0
       this_type.write_c_global_method_header( cmd, writer )
       writer.println
-      on_enter( cmd )
+
+      local needs_deadlist = NeedsDeadlistFrame.visit( cmd )
+      on_enter( cmd, &=needs_deadlist )
       visit( cmd.statements )
-      on_leave( cmd )
+      on_leave( cmd, &=needs_deadlist )
+
       writer.println
 
     method on_visit( cmd:GetProperty )
@@ -663,9 +666,12 @@ class CGenerator : Visitor
       autoname_index = 0
       this_type.write_c_method_header( cmd, writer )
       writer.println
-      on_enter( cmd )
+
+      local needs_deadlist = NeedsDeadlistFrame.visit( cmd )
+      on_enter( cmd, &=needs_deadlist )
       visit( cmd.statements )
-      on_leave( cmd )
+      on_leave( cmd, &=needs_deadlist )
+
       writer.println
 
     method on_visit( cmd:Mod )
@@ -721,9 +727,12 @@ class CGenerator : Visitor
       autoname_index = 0
       this_module.write_c_routine_header( cmd, writer )
       writer.println
-      on_enter( cmd )
+
+      local needs_deadlist = NeedsDeadlistFrame.visit( cmd )
+      on_enter( cmd, &=needs_deadlist )
       visit( cmd.statements )
-      on_leave( cmd )
+      on_leave( cmd, &=needs_deadlist )
+
       writer.println
 
     method on_visit( cmd:SetLocal )
