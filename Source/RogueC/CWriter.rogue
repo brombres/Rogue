@@ -131,6 +131,9 @@ class CWriter : BufferedPrintWriter
            |#define ROGUE_RETAIN_REF( ref )   Rogue_retain_ref( ref )
            |#define ROGUE_SET_REF( ref, obj ) Rogue_set_ref( ref, obj )
            |
+           |#define ROGUE_RELEASE( obj )  Rogue_release( obj )
+           |#define ROGUE_RETAIN( obj )   Rogue_retain( obj )
+           |
            |typedef struct RogueType RogueType;
            |typedef void (*RogueFn_init)(void*);
            |
@@ -145,9 +148,11 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_create_object( void* type );
            |void  Rogue_delete_object( void* obj );
            |void* Rogue_singleton( void* type, void* singleton_ref );
+           |void* Rogue_release( void* obj );
            |void  Rogue_release_ref( void* ref );
-           |void  Rogue_set_ref( void* ref, void* new_obj );
+           |void* Rogue_retain( void* obj );
            |void  Rogue_retain_ref( void* ref );
+           |void  Rogue_set_ref( void* ref, void* new_obj );
            |
            |void  Rogue_launch();
            |
@@ -198,6 +203,12 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
+           |void* Rogue_release( void* obj )
+           |{
+           |  if (obj && ! --(((RogueObject*)obj)->ref_count)) Rogue_delete_object( obj );
+           |  return 0;
+           |}
+           |
            |void Rogue_release_ref( void* ref )
            |{
            |  RogueObject* obj = *((RogueObject**)ref);
@@ -208,12 +219,10 @@ class CWriter : BufferedPrintWriter
            |  }
            |}
            |
-           |void Rogue_set_ref( void* ref, void* new_obj )
+           |void* Rogue_retain( void* obj )
            |{
-           |  RogueObject* old_obj = *((RogueObject**)ref);
-           |  if (old_obj && ! --old_obj->ref_count) Rogue_delete_object( old_obj );
-           |  if (new_obj) ++((RogueObject*)new_obj)->ref_count;
-           |  *((void**)ref) = new_obj;
+           |  if (obj) ++(((RogueObject*)obj)->ref_count);
+           |  return obj;
            |}
            |
            |void Rogue_retain_ref( void* ref )
@@ -221,6 +230,14 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = *((RogueObject**)ref);
            |  if ( !obj ) return;
            |  ++(obj->ref_count);
+           |}
+           |
+           |void Rogue_set_ref( void* ref, void* new_obj )
+           |{
+           |  RogueObject* old_obj = *((RogueObject**)ref);
+           |  if (old_obj && ! --old_obj->ref_count) Rogue_delete_object( old_obj );
+           |  if (new_obj) ++((RogueObject*)new_obj)->ref_count;
+           |  *((void**)ref) = new_obj;
            |}
            |
            |//------------------------------------------------------------------------------

@@ -60,6 +60,7 @@ class RogueC
         Program.add_include_search_path( forEach in paths )
       endIf
 
+      Program.using_arc = true
       Program.include( forEach in command//args )
       Program.include( "Standard" )
       Program.resolve

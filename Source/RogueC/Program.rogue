@@ -7,6 +7,8 @@ class Program [singleton]
     included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()
 
+    using_arc      = true  # Automatic Reference Counting
+
     modules        = StringTable<<Module>>()
     default_module : Module
     current_module : Module
@@ -24,7 +26,6 @@ class Program [singleton]
     type_String    : Type
 
     unique_strings = StringTable<<String>>()
-    c_name_strings = StringTable<<String>>()
 
   METHODS
     method init
@@ -130,6 +131,6 @@ class Program [singleton]
 
       (forEach in modules).organize
       apply( Resolver() )
-      apply( Finalizer() )
+      #apply( Finalizer() )
 
 endClass

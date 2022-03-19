@@ -620,15 +620,19 @@ class Local : Cmd
     name          : String
     initial_value : Cmd
     type          : Type
+    attributes    : Attributes
 
   METHODS
     method init( t, name, initial_value, type )
+      ensure attributes(t)
+      attributes.is_anchored = true
 
     method init( existing:Local )
       prior.init( existing )
       name = existing.name
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
+      attributes = existing.attributes.cloned
 
     method description->String
       return "Local($,$,$)" (%name,%initial_value,%type)
@@ -691,15 +695,18 @@ endClass
 
 class SetLocal : Cmd
   PROPERTIES
-    info      : Local
-    new_value : Cmd
+    info                  : Local
+    new_value             : Cmd
+    is_initial_assignment : Logical
 
   METHODS
-    method init( t, info, new_value )
+    method init( t, info, new_value, &initial_assignment )
+      is_initial_assignment = initial_assignment
+      info.attributes.is_anchored = initial_assignment
 
     method init( existing:SetLocal )
       prior.init( existing )
-      if (existing.info) info = existing.info.cloned
+      info = existing.info
       if (existing.new_value) new_value = existing.new_value.cloned
 
     method description->String
@@ -1570,6 +1577,19 @@ class Method : Procedure
     type_context : Type
 
   METHODS
+    method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,
+        attributes=null:Attributes, body=null:LocalScope )
+      init( t, null, name, parameters, return_type, attributes, body )
+
+    method init( t:Token, module_context:Module, name:String, parameters=null:Cmd, return_type=null:Type,
+        attributes=null:Attributes, body=null:LocalScope )
+      prior.init( t, module_context, name, parameters, return_type, attributes, body )
+      this.attributes.is_method = true
+
+    method init( existing:Method )
+      prior.init( existing )
+      type_context = existing.type_context
+
     method organize
       if (is_organized) return
       prior.organize

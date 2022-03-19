@@ -63,6 +63,29 @@ class Resolver : Visitor
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
 
+    method on_validate( cmd:CallMethod )->Cmd
+      # Anchor the object context if necessary
+      local context = cmd.context
+      if (context.type.is_reference and not context.is_anchored)
+        local v = auto_local( context.t, "anchored_context", context.type )
+        add_local( v )
+        current_statements.write( SetLocal(context.t,v,context,&initial_assignment) )
+        cmd.context = GetLocal(context.t,v)
+      endIf
+      return on_validate( cmd->(as CallProcedure) )
+
+    method on_validate( cmd:CallProcedure )->Cmd
+      # Anchor any args that need it
+      forEach (arg at i in cmd.args)
+        if (arg.type.is_reference and not arg.is_anchored)
+          local v = auto_local( arg.t, "anchored_arg_"+i, arg.type )
+          add_local( v )
+          current_statements.write( SetLocal(arg.t,v,arg,&initial_assignment) )
+          cmd.args[i] = GetLocal(arg.t,v)
+        endIf
+      endForEach
+      return cmd
+
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -184,9 +207,13 @@ class Resolver : Visitor
 
     method on_visit( cmd:Procedure )
       autoname_index = 0
+
       visible_locals_fp.add( visible_locals.count )
       forEach (p in cmd.parameters)
-        visible_locals.add( p->(as Local) )
+        block p = p->(as Local)
+          p.attributes.is_anchored = true  # assumption
+          visible_locals.add( p )
+        endBlock
       endForEach
 
       visit_children( cmd )

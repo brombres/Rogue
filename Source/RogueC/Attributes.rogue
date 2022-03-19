@@ -11,6 +11,8 @@ class Attribute
     DEFINED   = (1:<<:6)
     ORGANIZED = (1:<<:7)
     RESOLVED  = (1:<<:8)
+    ANCHORED  = (1:<<:9) # holds a reference that has been ref-counted elsewhere in the stack
+    METHOD    = (1:<<:10) # object method (not global method or routine)
 endClass
 
 class Attributes : CmdList
@@ -23,6 +25,8 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_defined,   Attribute.DEFINED )
   ROGUE_ATTRIBUTE( is_organized, Attribute.ORGANIZED )
   ROGUE_ATTRIBUTE( is_resolved,  Attribute.RESOLVED )
+  ROGUE_ATTRIBUTE( is_anchored,  Attribute.ANCHORED )
+  ROGUE_ATTRIBUTE( is_method,    Attribute.METHOD )
 
   PROPERTIES
     attributes : Int32

@@ -208,6 +208,9 @@ augment
         writer.println
       endIf
 
+    method Statements.needs_semicolon->Logical
+      return false
+
     method Type.generate_c_header( writer:CWriter )
       if (attributes.is_singleton)
         writer.print   "extern "
@@ -477,7 +480,7 @@ class CGenerator : Visitor
       on_enter( proc.body, &force )
 
       forEach (p in proc.parameters)
-        if (p.type.is_reference)
+        if (p.type.is_reference and not p.is_anchored)
           writer.print "ROGUE_RETAIN_REF( &"
           writer.print p->(as Local).c_name
           writer.print( " )" )
@@ -507,7 +510,7 @@ class CGenerator : Visitor
 
     method on_leave( proc:Procedure )
       forEach (p in proc.parameters)
-        if (p.type.is_reference)
+        if (p.type.is_reference and not p.is_anchored)
           writer.print "ROGUE_RELEASE_REF( &"
           writer.print p->(as Local).c_name
           writer.print( " )" )
@@ -694,15 +697,8 @@ class CGenerator : Visitor
 
       on_enter( cmd )
 
-      if (cmd.type_context.is_reference)
-        writer.println "ROGUE_RETAIN_REF( &THIS );"
-      endIf
-
       visit( cmd.statements )
 
-      if (cmd.type_context.is_reference)
-        writer.println "ROGUE_RELEASE_REF( &THIS );"
-      endIf
       on_leave( cmd )
 
       writer.println
@@ -769,11 +765,18 @@ class CGenerator : Visitor
 
     method on_visit( cmd:SetLocal )
       if (cmd.info.type.is_reference)
-        writer.print "ROGUE_SET_REF( &"
-        writer.print cmd.info.c_name
-        writer.print ", "
-        visit( cmd.new_value )
-        writer.print " )"
+        if (cmd.is_initial_assignment)
+          writer.print cmd.info.c_name
+          writer.print " = ROGUE_RETAIN("
+          visit( cmd.new_value )
+          writer.print ")"
+        else
+          writer.print "ROGUE_SET_REF( &"
+          writer.print cmd.info.c_name
+          writer.print ", "
+          visit( cmd.new_value )
+          writer.print " )"
+        endIf
       else
         writer.print( cmd.info.c_name )
         writer.print( " = " )

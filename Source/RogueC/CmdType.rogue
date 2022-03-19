@@ -114,6 +114,22 @@ augment
 endAugment
 }#
 
+# is_anchored
+augment
+  METHODS
+    method Cmd.is_anchored->Logical
+      return false
+
+    method GetLocal.is_anchored->Logical
+      return info.is_anchored
+
+    method LiteralString.is_anchored->Logical
+      return true
+
+    method Local.is_anchored->Logical
+      return attributes.is_anchored
+endAugment
+
 # is_operator
 augment
   METHODS

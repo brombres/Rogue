@@ -49,6 +49,9 @@ class Procedure : Cmd
     method description->String
       return which{ signature || name }
 
+    method is_method->Logical
+      return attributes.is_method
+
     method organize
       if (is_organized) return
       is_organized = true
