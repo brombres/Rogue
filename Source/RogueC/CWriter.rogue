@@ -121,6 +121,9 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_FREE free
            |#endif
            |
+           |#define ROGUE_BEGIN_DEADLIST_FRAME int _deadlist_fp = RogueDeadlist_count
+           |#define ROGUE_END_DEADLIST_FRAME if (RogueDeadlist_count > _deadlist_fp) RogueDeadlist_purge( _deadlist_fp )
+           |
            |#define ROGUE_CREATE_OBJECT( TypeName ) \
            |    ((TypeName*)RogueDeadlist_add(Rogue_create_object(&Type##TypeName)))
            |
@@ -269,10 +272,8 @@ class CWriter : BufferedPrintWriter
            |  for ( read_i=write_i=0; read_i<n; ++read_i )
            |  {
            |    RogueObject* obj = (RogueObject*) RogueDeadlist_data[fp+read_i];
-           |    if ( !obj->ref_count )
-           |    {
-           |      RogueDeadlist_data[fp + write_i++] = obj;
-           |    }
+           |    if (obj->ref_count) obj->deadlisted = 0;
+           |    else                RogueDeadlist_data[fp + write_i++] = obj;
            |  }
            |  n = write_i;
            |

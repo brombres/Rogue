@@ -42,6 +42,7 @@ augment
           writer.println "RogueInt32 deadlisted;"
           forEach (p in type.properties)
             writer.print   p.type.c_name
+            if (p.type.is_reference) writer.print '*'
             writer.print   ' '
             writer.print   p.c_name
             writer.println ';'
@@ -475,7 +476,7 @@ class CGenerator : Visitor
 
     method on_enter( proc:Procedure )
       on_enter( proc.body, &force )
-      writer.println "int _deadlist_fp = RogueDeadlist_count;"
+      writer.println "ROGUE_BEGIN_DEADLIST_FRAME;"
 
     method on_enter( cmd:ControlStructure, &force )
       if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
@@ -498,7 +499,7 @@ class CGenerator : Visitor
       endIf
 
     method on_leave( proc:Procedure )
-      writer.println "if (RogueDeadlist_count > _deadlist_fp) RogueDeadlist_purge( _deadlist_fp );"
+      writer.println "ROGUE_END_DEADLIST_FRAME;"
       on_leave( proc.body, &force )
       writer.println
 
@@ -519,9 +520,6 @@ class CGenerator : Visitor
       writer.print "ROGUE_CREATE_OBJECT("
       writer.print cmd.of_type.c_name
       writer.print ")"
-
-    method on_visit( cmd:DiscardResult )
-      visit_children( cmd )
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )

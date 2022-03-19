@@ -244,6 +244,11 @@ augment
     method IndexAccess.type->Type
       return context.type
 }#
+    method Is.type->Type
+      return Program.type_Logical
+
+    method IsNot.type->Type
+      return Program.type_Logical
 
     method LiteralCharacter.type->Type
       return Program.type_Character
