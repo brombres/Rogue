@@ -24,6 +24,7 @@ KEYWORD_AND            and
 KEYWORD_AUGMENT        augment
 KEYWORD_BLOCK          block
 KEYWORD_CLASS          class       [structural]
+KEYWORD_DEFINITIONS    DEFINITIONS [structural]
 KEYWORD_DOWN_TO        downTo
 KEYWORD_ELSE           else        [structural]
 KEYWORD_ELSE_IF        elseIf
@@ -669,6 +670,13 @@ parser
       consume_eols
     endWhile
     return
+  elseOn "DEFINITIONS"
+    consume_eols
+    while (not nextHasAttribute(structural))
+      definition
+      consume_eols
+    endWhile
+    return
   endOn
   if (not nextIs("endClass")) syntaxError
 
@@ -688,6 +696,15 @@ parser
     produce NativeCode( content:String )
   endOn
   syntaxError "Expected 'nativeHeader' or 'nativeCode'."
+
+- definition
+  on IDENTIFIER
+    mustConsume '='
+    expression
+    produce Definition(name=content,value)
+  endOn
+  mustConsume IDENTIFIER  # generate error
+
 
 - forEach_loop
   on "forEach"

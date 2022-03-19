@@ -16,6 +16,14 @@ class Organizer : Visitor
       this_type.attributes = cmd.attributes
       visit_children( cmd )
 
+    method on( cmd:Definition )->Cmd
+      assert this_type
+      if (this_type.definitions.contains(cmd.name))
+        throw cmd.t.error( "'$.$' is already defined."(this_type,cmd.name) )
+      endIf
+      this_type.definitions[ cmd.name ] = cmd.value
+      return null
+
     method on( cmd:GlobalMethod )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type

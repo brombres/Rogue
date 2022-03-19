@@ -151,6 +151,24 @@ class CmdList : Cmd
       @list[index] = value
 endClass
 
+class TokenList : Cmd
+  PROPERTIES
+    list : Token[]
+
+  METHODS
+    method init( t )
+      list = Token[]
+
+    method init( t, list )
+
+    method init( existing:TokenList )
+      prior.init( existing )
+      list = existing.list.cloned
+
+    method to->Token[]
+      return list
+endClass
+
 class Unary( t, operand:Cmd ) : Cmd
   METHODS
     method init( existing:Unary )
@@ -1762,5 +1780,23 @@ class CreateObject : Cmd
 
     method description->String
       return "CreateObject($,$,$)" (%of_type,%args,%info)
+
+endClass
+
+class Definition : Cmd
+  PROPERTIES
+    name  : String
+    value : Cmd
+
+  METHODS
+    method init( t, name, value )
+
+    method init( existing:Definition )
+      prior.init( existing )
+      name = existing.name
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "Definition($,$)" (%name,%value)
 
 endClass

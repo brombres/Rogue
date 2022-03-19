@@ -1,6 +1,9 @@
 module Math
 
 class Math
+  DEFINITIONS
+    E = 2.718281828459045
+
   GLOBAL METHODS
     method sqrt( n:Real64 )->Real64
       return native("sqrt($n)")->Real64

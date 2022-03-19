@@ -39,65 +39,66 @@ class ParserCore [abstract]
     ip_class_section = 26
     ip_native_code_blocks = 27
     ip_native_code_block = 28
-    ip_forEach_loop = 29
-    ip_forEach_control = 30
-    ip_forEach_optional_at = 31
-    ip_forEach_collection = 32
-    ip_if_statement = 33
-    ip_if_statement_multi_line_elseIf_else = 34
-    ip_if_statement_single_line_elseIf_else = 35
-    ip_method = 36
-    ip_global_method = 37
-    ip_properties = 38
-    ip_property_declaration = 39
-    ip_multi_line_statements = 40
-    ip_single_line_statements = 41
-    ip_control_structure = 42
-    ip_args = 43
-    ip_arg = 44
-    ip_statement = 45
-    ip_local_declarations = 46
-    ip_local_declaration = 47
-    ip_block = 48
-    ip_module_path = 49
-    ip_uses_attributes = 50
-    ip_uses_attribute = 51
-    ip_access_args = 52
-    ip_optional_expression = 53
-    ip_expression = 54
-    ip_op_and_assign = 55
-    ip_logical_xor = 56
-    ip_logical_xor__inner = 57
-    ip_logical_or = 58
-    ip_logical_or__inner = 59
-    ip_logical_and = 60
-    ip_logical_and__inner = 61
-    ip_comparison = 62
-    ip_comparison__inner = 63
-    ip_reference_comparison = 64
-    ip_bitwise_xor = 65
-    ip_bitwise_xor__inner = 66
-    ip_bitwise_or = 67
-    ip_bitwise_or__inner = 68
-    ip_bitwise_and = 69
-    ip_bitwise_and__inner = 70
-    ip_bitwise_shift = 71
-    ip_bitwise_shift__inner = 72
-    ip_add_subtract = 73
-    ip_add_subtract__inner = 74
-    ip_multiply_divide_mod = 75
-    ip_multiply_divide_mod__inner = 76
-    ip_pre_unary = 77
-    ip_post_unary = 78
-    ip_post_unary__inner = 79
-    ip_access = 80
-    ip_access_inner = 81
-    ip_term = 82
-    ip_native_code = 83
-    ip_preprocess = 84
-    ip_process_another = 85
-    ip_collect_meta_filepath = 86
-    ip_additional_node_types = 87
+    ip_definition = 29
+    ip_forEach_loop = 30
+    ip_forEach_control = 31
+    ip_forEach_optional_at = 32
+    ip_forEach_collection = 33
+    ip_if_statement = 34
+    ip_if_statement_multi_line_elseIf_else = 35
+    ip_if_statement_single_line_elseIf_else = 36
+    ip_method = 37
+    ip_global_method = 38
+    ip_properties = 39
+    ip_property_declaration = 40
+    ip_multi_line_statements = 41
+    ip_single_line_statements = 42
+    ip_control_structure = 43
+    ip_args = 44
+    ip_arg = 45
+    ip_statement = 46
+    ip_local_declarations = 47
+    ip_local_declaration = 48
+    ip_block = 49
+    ip_module_path = 50
+    ip_uses_attributes = 51
+    ip_uses_attribute = 52
+    ip_access_args = 53
+    ip_optional_expression = 54
+    ip_expression = 55
+    ip_op_and_assign = 56
+    ip_logical_xor = 57
+    ip_logical_xor__inner = 58
+    ip_logical_or = 59
+    ip_logical_or__inner = 60
+    ip_logical_and = 61
+    ip_logical_and__inner = 62
+    ip_comparison = 63
+    ip_comparison__inner = 64
+    ip_reference_comparison = 65
+    ip_bitwise_xor = 66
+    ip_bitwise_xor__inner = 67
+    ip_bitwise_or = 68
+    ip_bitwise_or__inner = 69
+    ip_bitwise_and = 70
+    ip_bitwise_and__inner = 71
+    ip_bitwise_shift = 72
+    ip_bitwise_shift__inner = 73
+    ip_add_subtract = 74
+    ip_add_subtract__inner = 75
+    ip_multiply_divide_mod = 76
+    ip_multiply_divide_mod__inner = 77
+    ip_pre_unary = 78
+    ip_post_unary = 79
+    ip_post_unary__inner = 80
+    ip_access = 81
+    ip_access_inner = 82
+    ip_term = 83
+    ip_native_code = 84
+    ip_preprocess = 85
+    ip_process_another = 86
+    ip_collect_meta_filepath = 87
+    ip_additional_node_types = 88
 
   PROPERTIES
     _tokens          : Token[]
@@ -774,6 +775,18 @@ class ParserCore [abstract]
                 endWhile
                 return
               endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_DEFINITIONS)
+              temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
+                while ((not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?))
+                  _execute(ip_definition)
+                  _pop_frame
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                endWhile
+                return
+              endTemporarily
             endIf
             if ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
               _throw_syntax_error
@@ -806,6 +819,18 @@ class ParserCore [abstract]
               endTemporarily
             endIf
             _throw_syntax_error("Expected 'nativeHeader' or 'nativeCode'.")
+            return
+          case ip_definition
+            if (_next_t.type == TokenType.IDENTIFIER)
+              temporarily _cur_t = _on_t
+                if (not _consume(TokenType.SYMBOL_EQUALS)) _throw_syntax_error( &expected=TokenType.SYMBOL_EQUALS )
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( Definition(_cur_t,_cur_t.content,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
+            if (not _consume(TokenType.IDENTIFIER)) _throw_syntax_error( &expected=TokenType.IDENTIFIER )
             return
           case ip_forEach_loop
             if (_next_t.type == TokenType.KEYWORD_FOR_EACH)

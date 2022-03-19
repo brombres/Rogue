@@ -5,6 +5,7 @@ class Type : Cmd
     module_context    : Module
     name              : String
     attributes        : Attributes
+    definitions       = StringTable<<Cmd>>()
     global_properties = StringTable<<Property>>()
     properties        = StringTable<<Property>>()
     global_methods    = StringTable<<GlobalMethod>>()
