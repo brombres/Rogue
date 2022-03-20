@@ -49,6 +49,8 @@ class CSpecializer : Visitor
     method on_visit( cmd:Procedure )
       autoname_index = 0
 
+      cmd.c_result_name = autoname("result")
+
       forEach (p at i in cmd.parameters)
         block p = p->(as Local)
           p.c_name = "$_$" (p.name,i)
@@ -91,7 +93,8 @@ endAugment
 
 augment Procedure
   PROPERTIES
-    c_name              : String
+    c_name        : String
+    c_result_name : String
 
   METHODS
     method c_name->String

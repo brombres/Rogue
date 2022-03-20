@@ -197,6 +197,14 @@ class CGenerator : Visitor
     method on_enter( proc:Procedure )
       on_enter( proc.body, &is_procedure )
 
+      if (proc.return_type)
+        writer.print proc.return_type.c_name
+        if (proc.return_type.is_reference) writer.print '*'
+        writer.print   ' '
+        writer.print   proc.c_result_name
+        writer.println " = 0;"
+      endIf
+
       forEach (p in proc.parameters)
         if (p.type.is_reference and not p.is_anchored)
           writer.print "ROGUE_RETAIN_REF( &"
@@ -227,11 +235,9 @@ class CGenerator : Visitor
       endIf
 
     method on_leave( proc:Procedure )
-      if (proc.attributes.control_escapes)
-        if (proc.has_cleanup_code)
-          writer.print proc.body.c_escape_label_name
-          writer.println ":;"
-        endIf
+      if (proc.attributes.control_escapes and proc.has_cleanup_code)
+        writer.print proc.body.c_escape_label_name
+        writer.println ":;"
       endIf
 
       forEach (p in proc.parameters)
@@ -263,6 +269,33 @@ class CGenerator : Visitor
         endForEach
 
         pop_scope
+        block
+          forEach (scope at i in control_stack step -1)
+            if (scope.has_cleanup_code)
+              writer.print "if (Rogue_execution_status) goto "
+              writer.print scope.c_escape_label_name
+              writer.println ";"
+              escapeBlock
+            endIf
+          endForEach
+
+          if (not is_procedure)
+            writer.print "return"
+            if (this_procedure.return_type)
+              writer.print ' '
+              writer.print this_procedure.c_result_name
+            endIf
+            writer.println ';'
+          endIf
+        endBlock
+
+        if (this_procedure.return_type)
+          writer.print "return"
+          writer.print ' '
+          writer.print this_procedure.c_result_name
+          writer.println ';'
+        endIf
+
         writer.indent -= 2
         writer.println( "}" )
       endIf
@@ -597,6 +630,7 @@ class CGenerator : Visitor
           writer.print "goto "
           writer.print scope.c_escape_label_name
           writer.print ";"
+          escapeForEach
         endIf
       endForEach
 
