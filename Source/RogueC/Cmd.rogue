@@ -910,10 +910,11 @@ endClass
 
 class ControlStructure : Cmd
   PROPERTIES
-    locals         = Local[]  # local to the scope of the control structure
-    initialization : Cmd
-    statements     : Cmd
-    control_type   : ControlType
+    locals          = Local[]  # local to the scope of the control structure
+    initialization  : Cmd
+    statements      : Cmd
+    control_type    : ControlType
+    control_escapes : Logical
 
   METHODS
     method init( t:Token, control_type:ControlType )
@@ -1781,25 +1782,18 @@ endClass
 class CreateObject : Cmd
   PROPERTIES
     of_type : Type
-    m_init  : Procedure
-    args    : Cmd
-    info    : Local
+    info    : Local  # local ref to store the new object
 
   METHODS
-    method init( t, of_type, m_init, args, info )
-      # Real constructor
-
-    method init( t, of_type, args, info )
-      # Froley constructor
+    method init( t, of_type, info )
 
     method init( existing:CreateObject )
       prior.init( existing )
       if (existing.of_type) of_type = existing.of_type.cloned
-      if (existing.args) args = existing.args.cloned
-      if (existing.info) info = existing.info.cloned
+      if (existing.info)    info = existing.info.cloned
 
     method description->String
-      return "CreateObject($,$,$)" (%of_type,%args,%info)
+      return "CreateObject($,$)" (%of_type,%info)
 
 endClass
 
@@ -1818,5 +1812,21 @@ class Definition : Cmd
 
     method description->String
       return "Definition($,$)" (%name,%value)
+
+endClass
+
+class Throw : Cmd
+  PROPERTIES
+    exception : Cmd
+
+  METHODS
+    method init( t, exception )
+
+    method init( existing:Throw )
+      prior.init( existing )
+      if (existing.exception) exception = existing.exception.cloned
+
+    method description->String
+      return "Throw($)" (%exception)
 
 endClass

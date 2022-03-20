@@ -157,11 +157,17 @@ class CWriter : BufferedPrintWriter
            |void  Rogue_launch();
            |
            |#define ROGUE_STRING_INTERNAL_BUFFER_SIZE 68
+           |#define ROGUE_EXE_CONTINUE  0
+           |#define ROGUE_EXE_RETURN    1
+           |#define ROGUE_EXE_EXCEPTION 2
+           |
+           |struct RogueObject;
            |
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |extern int    Rogue_exception;  // set to 1 on exception; exception handler clears
+           |extern int                 Rogue_execution_status; // 1=return, 2=exception
+           |extern struct RogueObject* Rogue_exception;
            |
            |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
            |RogueInt64  Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
@@ -243,7 +249,8 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |int Rogue_exception = 0;
+           |int          Rogue_execution_status = 0;
+           |RogueObject* Rogue_exception = 0;
            |
            |RogueInt32 Rogue_mod_Int32( RogueInt32 a, RogueInt32 b )
            |{

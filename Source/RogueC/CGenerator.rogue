@@ -1,5 +1,666 @@
 module Rogue
 
+class CGenerator : Visitor
+  PROPERTIES
+    writer         : CWriter
+    autoname_index = 0
+
+    visible_locals    = Local[]
+    visible_locals_fp = Int32[]
+    control_stack     = ControlStructure[]
+
+  METHODS
+    method init( writer )
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
+
+    method find_local( name:String )->Local
+      forEach (v in visible_locals step -1)
+        if (v.name == name) return v
+      endForEach
+      return null
+
+    method on_visit( cmd:Cmd )
+      throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
+
+    method on_visit( cmd:Access )
+      #println StackTrace()
+      throw cmd.t.error("[INTERNAL] CGenerator: unresolved Access '$'."(cmd.name))
+
+    method on_visit( cmd:Add )
+      writer.print '('
+      print_parenthesized( cmd.left )
+      writer.print " + "
+      print_parenthesized( cmd.right )
+      writer.print ')'
+
+    method on_visit( cmd:AddAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " += "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:CmdList )
+      visit_children( cmd )
+
+    method print_parenthesized( cmd:Cmd )
+      if (cmd.is_operator)
+        writer.print "("
+        visit( cmd )
+        writer.print ")"
+      else
+        visit( cmd )
+      endIf
+
+    method on_visit( cmd:BitwiseAnd )
+      print_parenthesized( cmd.left )
+      writer.print " & "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseNot )
+      writer.print "~"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:BitwiseOr )
+      print_parenthesized( cmd.left )
+      writer.print " | "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseXor )
+      print_parenthesized( cmd.left )
+      writer.print " ^ "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Block )
+      writer.println '{'
+      writer.indent += 2
+      visit_children( cmd )
+      writer.indent -= 2
+      writer.println '}'
+
+    method on_visit( cmd:CallGlobalMethod )
+      writer.print( cmd.info.c_name )
+      if (cmd.args.count)
+        writer.print "( "
+        forEach (arg at i in cmd.args)
+          if (i) writer.print ", "
+          visit( arg )
+        endForEach
+        writer.print " )"
+      else
+        writer.print "()"
+      endIf
+
+    method on_visit( cmd:CallMethod )
+      writer.print( cmd.info.c_name )
+      writer.print "( "
+      visit( cmd.context )
+      forEach (arg at i in cmd.args)
+        writer.print ", "
+        visit( arg )
+      endForEach
+      writer.print " )"
+
+    method on_visit( cmd:CallThisMethod )
+      writer.print( cmd.info.c_name )
+      writer.print "( THIS"
+      if (cmd.args.count)
+        forEach (arg at i in cmd.args)
+          writer.print ", "
+          visit( arg )
+        endForEach
+      endIf
+      writer.print " )"
+
+    method on_visit( cmd:CallRoutine )
+      writer.print( cmd.info.c_name )
+      if (cmd.args.count)
+        writer.print "( "
+        forEach (arg at i in cmd.args)
+          if (i) writer.print ", "
+          visit( arg )
+        endForEach
+        writer.print " )"
+      else
+        writer.print "()"
+      endIf
+
+    method on_visit( cmd:ConvertToByte )
+      writer.print "(RogueByte)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:ConvertToCharacter )
+      writer.print "(RogueCharacter)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:ConvertToInt32 )
+      writer.print "(RogueInt32)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:ConvertToInt64 )
+      writer.print "(RogueInt64)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:ConvertToLogical )
+      writer.print "(RogueLogical)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:ConvertToReal32 )
+      writer.print "(RogueReal32)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:ConvertToReal64 )
+      writer.print "(RogueReal64)"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:CompareEQ )
+      print_parenthesized( cmd.left )
+      writer.print " == "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareNE )
+      print_parenthesized( cmd.left )
+      writer.print " != "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareLT )
+      print_parenthesized( cmd.left )
+      writer.print " < "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareGT )
+      print_parenthesized( cmd.left )
+      writer.print " > "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareLE )
+      print_parenthesized( cmd.left )
+      writer.print " <= "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareGE )
+      print_parenthesized( cmd.left )
+      writer.print " >= "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Divide )
+      writer.print '('
+      print_parenthesized( cmd.left )
+      writer.print " / "
+      print_parenthesized( cmd.right )
+      writer.print ')'
+
+    method on_enter( proc:Procedure )
+      on_enter( proc.body, &is_procedure )
+
+      forEach (p in proc.parameters)
+        if (p.type.is_reference and not p.is_anchored)
+          writer.print "ROGUE_RETAIN_REF( &"
+          writer.print p->(as Local).c_name
+          writer.print( " )" )
+          writer.println( ';' )
+        endIf
+      endForEach
+
+    method on_enter( cmd:ControlStructure, &is_procedure )
+      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or is_procedure)
+        writer.println( "{" )
+        writer.indent += 2
+
+        forEach (v in cmd.locals)
+          writer.print( v.type.c_type ).print( ' ' )
+          writer.print( v.c_name )
+          writer.print( " = " )
+          writer.print "0"
+          #if (v.type.is_reference)     writer.print "0"
+          #elseIf (v.type.is_primitive) writer.print "0"
+          #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
+          writer.println( ';' )
+        endForEach
+
+        push_scope( cmd )
+        visit( cmd.initialization )
+      endIf
+
+    method on_leave( proc:Procedure )
+      if (proc.attributes.control_escapes)
+        if (proc.has_cleanup_code)
+          writer.print proc.body.c_escape_label_name
+          writer.println ":;"
+        endIf
+      endIf
+
+      forEach (p in proc.parameters)
+        if (p.type.is_reference and not p.is_anchored)
+          writer.print "ROGUE_RELEASE_REF( &"
+          writer.print p->(as Local).c_name
+          writer.print( " )" )
+          writer.println( ';' )
+        endIf
+      endForEach
+
+      on_leave( proc.body, &is_procedure )
+      writer.println
+
+    method on_leave( cmd:ControlStructure, &is_procedure )
+      if (not is_procedure and cmd.control_escapes and cmd.has_cleanup_code)
+        writer.print cmd.c_escape_label_name
+        writer.println ":;"
+      endIf
+
+      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or is_procedure)
+        forEach (v in cmd.locals)
+          if (v.type.is_reference)
+            writer.print "ROGUE_RELEASE_REF( &"
+            writer.print v.c_name
+            writer.print( " )" )
+            writer.println( ';' )
+          endIf
+        endForEach
+
+        pop_scope
+        writer.indent -= 2
+        writer.println( "}" )
+      endIf
+
+    method on_visit( cmd:ControlStructure )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
+    method on_visit( cmd:CreateObject )
+      writer.print cmd.info.c_name
+      writer.print " = "
+      writer.print "ROGUE_CREATE_OBJECT("
+      writer.print cmd.of_type.c_name
+      writer.print ")"
+
+    method on_visit( cmd:GetLocal )
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GlobalMethod )
+      this_procedure = cmd
+      autoname_index = 0
+      this_type.write_c_global_method_header( cmd, writer )
+      writer.println
+
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
+      writer.println
+
+    method on_visit( cmd:GetProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GetSingleton )
+      writer.print "ROGUE_SINGLETON("
+      writer.print cmd.type.c_name
+      writer.print ")"
+
+    method on_visit( cmd:GetThisProperty )
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:If )
+      on_enter( cmd )
+      if (cmd.condition)
+        writer.print   "if ("
+        visit( cmd.condition )
+        writer.println ")"
+      endIf
+      writer.println "{"
+      writer.indent += 2
+      visit( cmd.statements )
+      writer.indent -= 2
+      writer.println "}"
+      if (cmd.cmd_else)
+        writer.println "else "
+        visit( cmd.cmd_else )
+      endIf
+      on_leave( cmd )
+
+    method on_visit( cmd:Is )
+      print_parenthesized( cmd.left )
+      writer.print " == "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:IsNot )
+      print_parenthesized( cmd.left )
+      writer.print " != "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Iterator )
+      on_enter( cmd )
+      local control_label = autoname("loop_condition")
+      writer.print   "goto "
+      writer.print   control_label
+      writer.println ";"
+      writer.println "do"
+      writer.println "{"
+      writer.indent += 2
+      visit( cmd.statements )
+      visit( cmd.upkeep )
+      writer.print   control_label
+      writer.println ":;"
+      visit( cmd.control )
+      writer.indent -= 2
+      writer.println "}"
+      writer.print   "while ("
+      visit( cmd.condition )
+      writer.println ");"
+      on_leave( cmd )
+
+    method on_visit( cmd:LiteralCharacter )
+      if (cmd.value >= 32)
+        writer.print '\''
+        which (cmd.value)
+          case '\\': writer.print '\\'
+          case '\'': writer.print '\\'
+        endWhich
+        writer.print( cmd.value )
+        writer.print '\''
+      else
+        writer.print "((RogueCharacter)"
+        writer.print cmd.value->Int32
+        writer.print ")"
+      endIf
+
+    method on_visit( cmd:LiteralInt32 )
+      writer.print( cmd.value )
+
+    method on_visit( cmd:LiteralInt64 )
+      writer.print cmd.value
+
+    method on_visit( cmd:LiteralLogical )
+      writer.print which{ cmd.value:1 || 0 }
+
+    method on_visit( cmd:LiteralNull )
+      writer.print 0
+
+    method on_visit( cmd:LiteralPi )
+      writer.print pi
+
+    method on_visit( cmd:LiteralReal64 )
+      writer.print cmd.value
+
+    method on_visit( cmd:LiteralString )
+      local c_id = Program.unique_strings[cmd.value]
+      assert c_id
+      writer.print( c_id )
+
+    #method on_visit( cmd:LocalDeclarations )
+    #  visit_children( cmd )
+
+    #method on_visit( cmd:LocalDef )
+
+    method on_visit( cmd:LogicalAnd )
+      print_parenthesized( cmd.left )
+      writer.print " && "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:LogicalNot )
+      writer.print "!"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:LogicalOr )
+      print_parenthesized( cmd.left )
+      writer.print " || "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Method )
+      this_procedure = cmd
+      autoname_index = 0
+      this_type.write_c_method_header( cmd, writer )
+      writer.println
+
+      on_enter( cmd )
+
+      visit( cmd.statements )
+
+      on_leave( cmd )
+
+      writer.println
+
+    method on_visit( cmd:Mod )
+      if (cmd.type is Program.type_Real64)    writer.print "Rogue_mod_Real64"
+      elseIf (cmd.type is Program.type_Int64) writer.print "Rogue_mod_Int64"
+      else                                    writer.print "Rogue_mod_Int32"
+      writer.print '('
+      visit( cmd.left )
+      writer.print ','
+      visit( cmd.right )
+      writer.print ')'
+
+    method on_visit( cmd:Multiply )
+      print_parenthesized( cmd.left )
+      writer.print " * "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:NativeExpression )
+      print_native_code( cmd.t, cmd.content )
+
+    method on_visit( cmd:NativeStatement )
+      print_native_code( cmd.t, cmd.content )
+      writer.println
+
+    method on_visit( cmd:Negate )
+      writer.print '-'
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:Preincrement )
+      writer.print "++"
+      visit( cmd.operand )
+
+    method on_visit( cmd:PrintCharacter )
+      writer.print ''printf( "%c", (char)''
+      visit( cmd.operand )
+      writer.print '' )''
+
+    method on_visit( cmd:PrintInt32 )
+      writer.print ''printf( "%d", (int)''
+      visit( cmd.operand )
+      writer.print '' )''
+
+    method on_visit( cmd:PrintInt64 )
+      writer.print ''printf( "%lld", (RogueInt64)''
+      visit( cmd.operand )
+      writer.print '' )''
+
+    method on_visit( cmd:PrintLogical )
+      writer.print ''printf( "%s", (''
+      visit( cmd.operand )
+      writer.print '') ? "true" : "false" )''
+
+    method on_visit( cmd:PrintNewline )
+      writer.print( ''putchar( '\\n' )'' )
+
+    method on_visit( cmd:PrintReal64 )
+      writer.print ''printf( "%lf", ''
+      visit( cmd.operand )
+      writer.print '' )''
+
+    method on_visit( cmd:PrintString )
+      writer.print ''printf( "%s", RogueString_to_c_string(''
+      visit( cmd.operand )
+      writer.print ") )"
+
+    method on( cmd:Procedure )->Cmd
+      visible_locals_fp.add( visible_locals.count )
+      forEach (p in cmd.parameters)
+        visible_locals.add( p->(as Local) )
+      endForEach
+
+      visit_content( cmd )
+
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+      return cmd
+
+    method on_visit( cmd:Return )
+      writer.print "return"
+      if (cmd.result)
+        writer.print ' '
+        visit( cmd.result )
+      endIf
+
+    method on_visit( cmd:Routine )
+      this_procedure = cmd
+      autoname_index = 0
+      this_module.write_c_routine_header( cmd, writer )
+      writer.println
+
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
+      writer.println
+
+    method on_visit( cmd:SetLocal )
+      if (cmd.info.type.is_reference)
+        if (cmd.is_initial_assignment)
+          writer.print cmd.info.c_name
+          writer.print " = ROGUE_RETAIN("
+          visit( cmd.new_value )
+          writer.print ")"
+        else
+          writer.print "ROGUE_SET_REF( &"
+          writer.print cmd.info.c_name
+          writer.print ", "
+          visit( cmd.new_value )
+          writer.print " )"
+        endIf
+      else
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
+
+    method on_visit( cmd:SetProperty )
+      if (cmd.info.type.is_reference)
+        writer.print "ROGUE_SET_REF( &("
+        visit( cmd.context )
+        writer.print "->"
+        writer.print cmd.info.c_name
+        writer.print "), "
+        visit( cmd.new_value )
+        writer.print " )"
+      else
+        visit( cmd.context )
+        writer.print "->"
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
+
+    method on_visit( cmd:SetThisProperty )
+      if (cmd.info.type.is_reference)
+        writer.print "ROGUE_SET_REF( &(THIS->"
+        writer.print cmd.info.c_name
+        writer.print "), "
+        visit( cmd.new_value )
+        writer.print " )"
+      else
+        writer.print( "THIS->" )
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
+
+    method on_visit( cmd:Statements )
+      forEach (statement in cmd)
+        visit( statement )
+        if (statement.needs_semicolon) writer.println( ';' )
+      endForEach
+
+    method on_visit( cmd:Subtract )
+      print_parenthesized( cmd.left )
+      writer.print " - "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Throw )
+      writer.print   "Rogue_exception = (RogueObject*) ROGUE_RETAIN("
+      visit( cmd.exception )
+      writer.println ");"
+      writer.println "Rogue_execution_status = ROGUE_EXE_EXCEPTION;"
+      forEach (scope at i in control_stack step -1)
+        if (i == 0 or scope.has_cleanup_code)
+          writer.print "goto "
+          writer.print scope.c_escape_label_name
+          writer.print ";"
+        endIf
+      endForEach
+
+    method pop_scope
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+      control_stack.remove_last
+
+    method push_scope( cmd:ControlStructure )
+      control_stack.add( cmd )
+      visible_locals_fp.add( visible_locals.count )
+      visible_locals.add( forEach in cmd.locals )
+
+    method print_native_code( t:Token, code:String )
+      local i1 = code.locate('$')
+      while (i1)
+        local i2 = i1.value
+        while (i2+1 < code.count)
+          local ch = code[i2+1]
+          if (not (ch.is_letter or ch.is_number or ch == '_')) escapeWhile
+          ++i2
+        endWhile
+
+        local marker = code.from(i1.value+1,i2)
+        code = code.leftmost(i1.value) + native_replacement(t,marker) + code.from(i2+1)
+        i1 = code.locate( '$', i1 )
+      endWhile
+
+      writer.print code
+
+    method native_replacement( t:Token, name:String )->String
+      forEach (v in visible_locals)
+        if (name == v.name) return v.c_name
+      endForEach
+
+      if (this_type)
+        if (this_procedure instanceOf Method)
+          if (name == "this") return "THIS"
+
+          forEach (p in this_type.properties)
+            if (name == p.name) return "THIS->" + p.c_name
+          endForEach
+        endIf
+
+        forEach (p in this_type.global_properties)
+          if (name == p.name) return p.c_name
+        endForEach
+      endIf
+
+      throw t.error( "No such value '$' exists in current scope."(name) )
+endClass
+
+# write_print()
+augment
+  METHODS
+    method Cmd.write_print( writer:CWriter )
+      throw UnsupportedOperationError("$.write_print()"(type_name))
+
+    method LiteralInt32.write_print( writer:CWriter )
+      writer.print ''printf( "%d", $ )'' (value)
+
+    method LiteralString.write_print( writer:CWriter )
+      writer.print ''printf( "$" )'' (value.to_escaped_ascii(''"''))
+endAugment
+
 augment
   METHODS
     method Cmd.needs_semicolon->Logical
@@ -281,639 +942,5 @@ augment
       endForEach
       writer.print( " )" )
 
-endAugment
-
-class CGenerator : Visitor
-  PROPERTIES
-    writer         : CWriter
-    autoname_index = 0
-
-    visible_locals    = Local[]
-    visible_locals_fp = Int32[]
-
-  METHODS
-    method init( writer )
-
-    method autoname( base:String )->String
-      local result = "_auto_$_$"(base,autoname_index)
-      ++autoname_index
-      return result
-
-    method find_local( name:String )->Local
-      forEach (v in visible_locals step -1)
-        if (v.name == name) return v
-      endForEach
-      return null
-
-    method on_visit( cmd:Cmd )
-      throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
-
-    method on_visit( cmd:Access )
-      #println StackTrace()
-      throw cmd.t.error("[INTERNAL] CGenerator: unresolved Access '$'."(cmd.name))
-
-    method on_visit( cmd:Add )
-      writer.print '('
-      print_parenthesized( cmd.left )
-      writer.print " + "
-      print_parenthesized( cmd.right )
-      writer.print ')'
-
-    method on_visit( cmd:AddAndAssignLocal )
-      writer.print '('
-      writer.print cmd.info.c_name
-      writer.print " += "
-      print_parenthesized( cmd.operand )
-      writer.print ')'
-
-    method on_visit( cmd:CmdList )
-      visit_children( cmd )
-
-    method print_parenthesized( cmd:Cmd )
-      if (cmd.is_operator)
-        writer.print "("
-        visit( cmd )
-        writer.print ")"
-      else
-        visit( cmd )
-      endIf
-
-    method on_visit( cmd:BitwiseAnd )
-      print_parenthesized( cmd.left )
-      writer.print " & "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:BitwiseNot )
-      writer.print "~"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:BitwiseOr )
-      print_parenthesized( cmd.left )
-      writer.print " | "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:BitwiseXor )
-      print_parenthesized( cmd.left )
-      writer.print " ^ "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:Block )
-      writer.println '{'
-      writer.indent += 2
-      visit_children( cmd )
-      writer.indent -= 2
-      writer.println '}'
-
-    method on_visit( cmd:CallGlobalMethod )
-      writer.print( cmd.info.c_name )
-      if (cmd.args.count)
-        writer.print "( "
-        forEach (arg at i in cmd.args)
-          if (i) writer.print ", "
-          visit( arg )
-        endForEach
-        writer.print " )"
-      else
-        writer.print "()"
-      endIf
-
-    method on_visit( cmd:CallMethod )
-      writer.print( cmd.info.c_name )
-      writer.print "( "
-      visit( cmd.context )
-      forEach (arg at i in cmd.args)
-        writer.print ", "
-        visit( arg )
-      endForEach
-      writer.print " )"
-
-    method on_visit( cmd:CallThisMethod )
-      writer.print( cmd.info.c_name )
-      writer.print "( THIS"
-      if (cmd.args.count)
-        forEach (arg at i in cmd.args)
-          writer.print ", "
-          visit( arg )
-        endForEach
-      endIf
-      writer.print " )"
-
-    method on_visit( cmd:CallRoutine )
-      writer.print( cmd.info.c_name )
-      if (cmd.args.count)
-        writer.print "( "
-        forEach (arg at i in cmd.args)
-          if (i) writer.print ", "
-          visit( arg )
-        endForEach
-        writer.print " )"
-      else
-        writer.print "()"
-      endIf
-
-    method on_visit( cmd:ConvertToByte )
-      writer.print "(RogueByte)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:ConvertToCharacter )
-      writer.print "(RogueCharacter)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:ConvertToInt32 )
-      writer.print "(RogueInt32)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:ConvertToInt64 )
-      writer.print "(RogueInt64)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:ConvertToLogical )
-      writer.print "(RogueLogical)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:ConvertToReal32 )
-      writer.print "(RogueReal32)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:ConvertToReal64 )
-      writer.print "(RogueReal64)"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:CompareEQ )
-      print_parenthesized( cmd.left )
-      writer.print " == "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:CompareNE )
-      print_parenthesized( cmd.left )
-      writer.print " != "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:CompareLT )
-      print_parenthesized( cmd.left )
-      writer.print " < "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:CompareGT )
-      print_parenthesized( cmd.left )
-      writer.print " > "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:CompareLE )
-      print_parenthesized( cmd.left )
-      writer.print " <= "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:CompareGE )
-      print_parenthesized( cmd.left )
-      writer.print " >= "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:Divide )
-      writer.print '('
-      print_parenthesized( cmd.left )
-      writer.print " / "
-      print_parenthesized( cmd.right )
-      writer.print ')'
-
-    method on_enter( proc:Procedure )
-      on_enter( proc.body, &force )
-
-      forEach (p in proc.parameters)
-        if (p.type.is_reference and not p.is_anchored)
-          writer.print "ROGUE_RETAIN_REF( &"
-          writer.print p->(as Local).c_name
-          writer.print( " )" )
-          writer.println( ';' )
-        endIf
-      endForEach
-
-    method on_enter( cmd:ControlStructure, &force )
-      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
-        writer.println( "{" )
-        writer.indent += 2
-
-        forEach (v in cmd.locals)
-          writer.print( v.type.c_type ).print( ' ' )
-          writer.print( v.c_name )
-          writer.print( " = " )
-          writer.print "0"
-          #if (v.type.is_reference)     writer.print "0"
-          #elseIf (v.type.is_primitive) writer.print "0"
-          #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
-          writer.println( ';' )
-        endForEach
-
-        push_scope( cmd )
-        visit( cmd.initialization )
-      endIf
-
-    method on_leave( proc:Procedure )
-      forEach (p in proc.parameters)
-        if (p.type.is_reference and not p.is_anchored)
-          writer.print "ROGUE_RELEASE_REF( &"
-          writer.print p->(as Local).c_name
-          writer.print( " )" )
-          writer.println( ';' )
-        endIf
-      endForEach
-
-      on_leave( proc.body, &force )
-      writer.println
-
-    method on_leave( cmd:ControlStructure, &force )
-      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or force)
-        forEach (v in cmd.locals)
-          if (v.type.is_reference)
-            writer.print "ROGUE_RELEASE_REF( &"
-            writer.print v.c_name
-            writer.print( " )" )
-            writer.println( ';' )
-          endIf
-        endForEach
-
-        pop_scope
-        writer.indent -= 2
-        writer.println( "}" )
-      endIf
-
-    method on_visit( cmd:ControlStructure )
-      on_enter( cmd )
-      visit( cmd.statements )
-      on_leave( cmd )
-
-    method on_visit( cmd:CreateObject )
-      assert not cmd.m_init and not cmd.args
-      writer.print cmd.info.c_name
-      writer.print " = "
-      writer.print "ROGUE_CREATE_OBJECT("
-      writer.print cmd.of_type.c_name
-      writer.print ")"
-
-    method on_visit( cmd:GetLocal )
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:GlobalMethod )
-      this_procedure = cmd
-      autoname_index = 0
-      this_type.write_c_global_method_header( cmd, writer )
-      writer.println
-
-      on_enter( cmd )
-      visit( cmd.statements )
-      on_leave( cmd )
-
-      writer.println
-
-    method on_visit( cmd:GetProperty )
-      visit( cmd.context )
-      if (cmd.context.type.is_reference) writer.print "->"
-      else                               writer.print "."
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:GetSingleton )
-      writer.print "ROGUE_SINGLETON("
-      writer.print cmd.type.c_name
-      writer.print ")"
-
-    method on_visit( cmd:GetThisProperty )
-      writer.print "THIS"
-      assert this_type
-      if (this_type.is_reference) writer.print "->"
-      else                        writer.print "."
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:If )
-      on_enter( cmd )
-      if (cmd.condition)
-        writer.print   "if ("
-        visit( cmd.condition )
-        writer.println ")"
-      endIf
-      writer.println "{"
-      writer.indent += 2
-      visit( cmd.statements )
-      writer.indent -= 2
-      writer.println "}"
-      if (cmd.cmd_else)
-        writer.println "else "
-        visit( cmd.cmd_else )
-      endIf
-      on_leave( cmd )
-
-    method on_visit( cmd:Is )
-      print_parenthesized( cmd.left )
-      writer.print " == "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:IsNot )
-      print_parenthesized( cmd.left )
-      writer.print " != "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:Iterator )
-      on_enter( cmd )
-      local control_label = autoname("loop_condition")
-      writer.print   "goto "
-      writer.print   control_label
-      writer.println ";"
-      writer.println "do"
-      writer.println "{"
-      writer.indent += 2
-      visit( cmd.statements )
-      visit( cmd.upkeep )
-      writer.print   control_label
-      writer.println ":;"
-      visit( cmd.control )
-      writer.indent -= 2
-      writer.println "}"
-      writer.print   "while ("
-      visit( cmd.condition )
-      writer.println ");"
-      on_leave( cmd )
-
-    method on_visit( cmd:LiteralCharacter )
-      if (cmd.value >= 32)
-        writer.print '\''
-        which (cmd.value)
-          case '\\': writer.print '\\'
-          case '\'': writer.print '\\'
-        endWhich
-        writer.print( cmd.value )
-        writer.print '\''
-      else
-        writer.print "((RogueCharacter)"
-        writer.print cmd.value->Int32
-        writer.print ")"
-      endIf
-
-    method on_visit( cmd:LiteralInt32 )
-      writer.print( cmd.value )
-
-    method on_visit( cmd:LiteralInt64 )
-      writer.print cmd.value
-
-    method on_visit( cmd:LiteralLogical )
-      writer.print which{ cmd.value:1 || 0 }
-
-    method on_visit( cmd:LiteralNull )
-      writer.print 0
-
-    method on_visit( cmd:LiteralPi )
-      writer.print pi
-
-    method on_visit( cmd:LiteralReal64 )
-      writer.print cmd.value
-
-    method on_visit( cmd:LiteralString )
-      local c_id = Program.unique_strings[cmd.value]
-      assert c_id
-      writer.print( c_id )
-
-    #method on_visit( cmd:LocalDeclarations )
-    #  visit_children( cmd )
-
-    #method on_visit( cmd:LocalDef )
-
-    method on_visit( cmd:LogicalAnd )
-      print_parenthesized( cmd.left )
-      writer.print " && "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:LogicalNot )
-      writer.print "!"
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:LogicalOr )
-      print_parenthesized( cmd.left )
-      writer.print " || "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:Method )
-      this_procedure = cmd
-      autoname_index = 0
-      this_type.write_c_method_header( cmd, writer )
-      writer.println
-
-      on_enter( cmd )
-
-      visit( cmd.statements )
-
-      on_leave( cmd )
-
-      writer.println
-
-    method on_visit( cmd:Mod )
-      if (cmd.type is Program.type_Real64)    writer.print "Rogue_mod_Real64"
-      elseIf (cmd.type is Program.type_Int64) writer.print "Rogue_mod_Int64"
-      else                                    writer.print "Rogue_mod_Int32"
-      writer.print '('
-      visit( cmd.left )
-      writer.print ','
-      visit( cmd.right )
-      writer.print ')'
-
-    method on_visit( cmd:Multiply )
-      print_parenthesized( cmd.left )
-      writer.print " * "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:NativeExpression )
-      print_native_code( cmd.t, cmd.content )
-
-    method on_visit( cmd:NativeStatement )
-      print_native_code( cmd.t, cmd.content )
-      writer.println
-
-    method on_visit( cmd:Negate )
-      writer.print '-'
-      print_parenthesized( cmd.operand )
-
-    method on_visit( cmd:Preincrement )
-      writer.print "++"
-      visit( cmd.operand )
-
-    method on( cmd:Procedure )->Cmd
-      visible_locals_fp.add( visible_locals.count )
-      forEach (p in cmd.parameters)
-        visible_locals.add( p->(as Local) )
-      endForEach
-
-      visit_content( cmd )
-
-      visible_locals.discard_from( visible_locals_fp.remove_last )
-      return cmd
-
-    method on_visit( cmd:Return )
-      writer.print "return"
-      if (cmd.result)
-        writer.print ' '
-        visit( cmd.result )
-      endIf
-
-    method on_visit( cmd:Routine )
-      this_procedure = cmd
-      autoname_index = 0
-      this_module.write_c_routine_header( cmd, writer )
-      writer.println
-
-      on_enter( cmd )
-      visit( cmd.statements )
-      on_leave( cmd )
-
-      writer.println
-
-    method on_visit( cmd:SetLocal )
-      if (cmd.info.type.is_reference)
-        if (cmd.is_initial_assignment)
-          writer.print cmd.info.c_name
-          writer.print " = ROGUE_RETAIN("
-          visit( cmd.new_value )
-          writer.print ")"
-        else
-          writer.print "ROGUE_SET_REF( &"
-          writer.print cmd.info.c_name
-          writer.print ", "
-          visit( cmd.new_value )
-          writer.print " )"
-        endIf
-      else
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
-
-    method on_visit( cmd:SetProperty )
-      if (cmd.info.type.is_reference)
-        writer.print "ROGUE_SET_REF( &("
-        visit( cmd.context )
-        writer.print "->"
-        writer.print cmd.info.c_name
-        writer.print "), "
-        visit( cmd.new_value )
-        writer.print " )"
-      else
-        visit( cmd.context )
-        writer.print "->"
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
-
-    method on_visit( cmd:SetThisProperty )
-      if (cmd.info.type.is_reference)
-        writer.print "ROGUE_SET_REF( &(THIS->"
-        writer.print cmd.info.c_name
-        writer.print "), "
-        visit( cmd.new_value )
-        writer.print " )"
-      else
-        writer.print( "THIS->" )
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
-
-    method on_visit( cmd:Statements )
-      forEach (statement in cmd)
-        visit( statement )
-        if (statement.needs_semicolon) writer.println( ';' )
-      endForEach
-
-    method on_visit( cmd:Subtract )
-      print_parenthesized( cmd.left )
-      writer.print " - "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:PrintCharacter )
-      writer.print ''printf( "%c", (char)''
-      visit( cmd.operand )
-      writer.print '' )''
-
-    method on_visit( cmd:PrintInt32 )
-      writer.print ''printf( "%d", (int)''
-      visit( cmd.operand )
-      writer.print '' )''
-
-    method on_visit( cmd:PrintInt64 )
-      writer.print ''printf( "%lld", (RogueInt64)''
-      visit( cmd.operand )
-      writer.print '' )''
-
-    method on_visit( cmd:PrintLogical )
-      writer.print ''printf( "%s", (''
-      visit( cmd.operand )
-      writer.print '') ? "true" : "false" )''
-
-    method on_visit( cmd:PrintNewline )
-      writer.print( ''putchar( '\\n' )'' )
-
-    method on_visit( cmd:PrintReal64 )
-      writer.print ''printf( "%lf", ''
-      visit( cmd.operand )
-      writer.print '' )''
-
-    method on_visit( cmd:PrintString )
-      writer.print ''printf( "%s", RogueString_to_c_string(''
-      visit( cmd.operand )
-      writer.print ") )"
-
-    method pop_scope
-      visible_locals.discard_from( visible_locals_fp.remove_last )
-
-    method push_scope( cmd:ControlStructure )
-      visible_locals_fp.add( visible_locals.count )
-      visible_locals.add( forEach in cmd.locals )
-
-    method print_native_code( t:Token, code:String )
-      local i1 = code.locate('$')
-      while (i1)
-        local i2 = i1.value
-        while (i2+1 < code.count)
-          local ch = code[i2+1]
-          if (not (ch.is_letter or ch.is_number or ch == '_')) escapeWhile
-          ++i2
-        endWhile
-
-        local marker = code.from(i1.value+1,i2)
-        code = code.leftmost(i1.value) + native_replacement(t,marker) + code.from(i2+1)
-        i1 = code.locate( '$', i1 )
-      endWhile
-
-      writer.print code
-
-    method native_replacement( t:Token, name:String )->String
-      forEach (v in visible_locals)
-        if (name == v.name) return v.c_name
-      endForEach
-
-      if (this_type)
-        if (this_procedure instanceOf Method)
-          if (name == "this") return "THIS"
-
-          forEach (p in this_type.properties)
-            if (name == p.name) return "THIS->" + p.c_name
-          endForEach
-        endIf
-
-        forEach (p in this_type.global_properties)
-          if (name == p.name) return p.c_name
-        endForEach
-      endIf
-
-      throw t.error( "No such value '$' exists in current scope."(name) )
-endClass
-
-# write_print()
-augment
-  METHODS
-    method Cmd.write_print( writer:CWriter )
-      throw UnsupportedOperationError("$.write_print()"(type_name))
-
-    method LiteralInt32.write_print( writer:CWriter )
-      writer.print ''printf( "%d", $ )'' (value)
-
-    method LiteralString.write_print( writer:CWriter )
-      writer.print ''printf( "$" )'' (value.to_escaped_ascii(''"''))
 endAugment
 

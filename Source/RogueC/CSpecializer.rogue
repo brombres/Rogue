@@ -13,6 +13,12 @@ class CSpecializer : Visitor
       ++autoname_index
       return result
 
+    method on_visit( cmd:ControlStructure )
+      if (cmd.control_escapes)
+        cmd.c_escape_label_name = autoname( "escape" )
+      endIf
+      visit_children( cmd )
+
     method on_visit( cmd:LiteralString )
       local str = cmd.value
       if (not Program.unique_strings.contains(str))
@@ -64,6 +70,20 @@ class CSpecializer : Visitor
 
 endClass
 
+augment ControlStructure
+  PROPERTIES
+    c_escape_label_name : String
+
+  METHODS
+    method has_cleanup_code->Logical
+      forEach (v in locals)
+        if (v.type.is_reference)
+          return true
+        endIf
+      endForEach
+      return false
+endAugment
+
 augment Local
   PROPERTIES
     c_name : String
@@ -71,11 +91,20 @@ endAugment
 
 augment Procedure
   PROPERTIES
-    c_name : String
+    c_name              : String
 
   METHODS
     method c_name->String
       throw UnsupportedOperationError()
+
+    method has_cleanup_code->Logical
+      forEach (p in parameters)
+        if (p.type.is_reference and not p.is_anchored)
+          return true
+        endIf
+      endForEach
+
+      return body.has_cleanup_code
 endAugment
 
 augment Program

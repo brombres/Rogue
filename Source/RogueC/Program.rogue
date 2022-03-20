@@ -24,6 +24,7 @@ class Program [singleton]
     type_null      : Type
     type_Object    : Type
     type_String    : Type
+    type_Exception : Type
 
     unique_strings = StringTable<<String>>()
 
@@ -44,6 +45,7 @@ class Program [singleton]
       type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
       type_Object    = Type( t, "Object", Attribute.OBJECT )
       type_String    = TypeString( t )
+      type_Exception = Type( t, "Exception", Attribute.OBJECT )
 
     method add_include_search_path( path:String )
       if (not include_search_paths.contains(path))

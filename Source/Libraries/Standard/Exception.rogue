@@ -1,0 +1,8 @@
+class Exception
+  PROPERTIES
+    message : String
+
+  METHODS
+    method init( message )
+endClass
+

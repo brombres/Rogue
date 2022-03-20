@@ -77,6 +77,11 @@ class Type : Cmd
     method description->String
       return "$" (%name)
 
+    method instance_of( base_class:Type )->Logical
+      if (this is base_class) return true
+      # TODO: add support for class hierarchy
+      return false
+
     method is_primitive->Logical
       return attributes.is_primitive
 

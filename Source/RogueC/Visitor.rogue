@@ -558,11 +558,9 @@ class Visitor<<$ReturnType>>
     method on_visit_children( cmd:CreateObject )
       if ($ReturnType isType Cmd)
         cmd.of_type = visit(cmd.of_type)->(as Type)
-        cmd.args = visit(cmd.args)
         cmd.info = visit(cmd.info)->(as Local)
       else
         visit( cmd.of_type )
-        visit( cmd.args )
         visit( cmd.info )
       endIf
 
@@ -571,6 +569,13 @@ class Visitor<<$ReturnType>>
         cmd.value = visit(cmd.value)
       else
         visit( cmd.value )
+      endIf
+
+    method on_visit_children( cmd:Throw )
+      if ($ReturnType isType Cmd)
+        cmd.exception = visit(cmd.exception)
+      else
+        visit( cmd.exception )
       endIf
 
 endClass
