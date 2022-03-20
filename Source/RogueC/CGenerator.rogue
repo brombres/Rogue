@@ -17,6 +17,29 @@ class CGenerator : Visitor
       ++autoname_index
       return result
 
+    method escape_label->String
+      forEach (scope in control_stack step -1)
+        if (scope.has_cleanup_code or scope.control_escapes)
+          scope.control_escapes = true
+          return scope.c_escape_label_name(this)
+        endIf
+      endForEach
+      return null
+
+    method escape_needs_jump( statement:Cmd )->Logical
+      local current_scope = control_stack.last
+      if (current_scope.has_cleanup_code and current_scope.statements.last is statement)
+        return false
+      endIf
+
+      forEach (scope in control_stack step -1)
+        if (scope.has_cleanup_code or scope.control_escapes)
+          return true
+        endIf
+      endForEach
+
+      return false
+
     method find_local( name:String )->Local
       forEach (v in visible_locals step -1)
         if (v.name == name) return v
@@ -194,30 +217,31 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
       writer.print ')'
 
-    method on_enter( proc:Procedure )
-      on_enter( proc.body, &is_procedure )
+    method on_enter( cmd:ControlStructure, &is_procedure, &optional )
+      push_scope( cmd )
 
-      if (proc.return_type)
-        writer.print proc.return_type.c_name
-        if (proc.return_type.is_reference) writer.print '*'
-        writer.print   ' '
-        writer.print   proc.c_result_name
-        writer.println " = 0;"
-      endIf
-
-      forEach (p in proc.parameters)
-        if (p.type.is_reference and not p.is_anchored)
-          writer.print "ROGUE_RETAIN_REF( &"
-          writer.print p->(as Local).c_name
-          writer.print( " )" )
-          writer.println( ';' )
-        endIf
-      endForEach
-
-    method on_enter( cmd:ControlStructure, &is_procedure )
-      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or is_procedure)
+      if (cmd.locals.count or is_procedure or not optional)
         writer.println( "{" )
         writer.indent += 2
+
+        if (is_procedure)
+          if (this_procedure.return_type and this_procedure.attributes.has_return)
+            writer.print this_procedure.return_type.c_name
+            if (this_procedure.return_type.is_reference) writer.print '*'
+            writer.print   ' '
+            writer.print   this_procedure.c_result_name
+            writer.println " = 0;"
+          endIf
+
+          forEach (p in this_procedure.parameters)
+            if (p.type.is_reference and not p.is_anchored)
+              writer.print "ROGUE_RETAIN_REF( &"
+              writer.print p->(as Local).c_name
+              writer.print( " )" )
+              writer.println( ';' )
+            endIf
+          endForEach
+        endIf
 
         forEach (v in cmd.locals)
           writer.print( v.type.c_type ).print( ' ' )
@@ -230,35 +254,28 @@ class CGenerator : Visitor
           writer.println( ';' )
         endForEach
 
-        push_scope( cmd )
-        visit( cmd.initialization )
       endIf
 
-    method on_leave( proc:Procedure )
-      if (proc.attributes.control_escapes and proc.has_cleanup_code)
-        writer.print proc.body.c_escape_label_name
+    method on_leave( cmd:ControlStructure, &is_procedure, &optional )
+      if (cmd.control_escapes)
+        writer.print cmd.c_escape_label_name(this)
         writer.println ":;"
       endIf
 
-      forEach (p in proc.parameters)
-        if (p.type.is_reference and not p.is_anchored)
-          writer.print "ROGUE_RELEASE_REF( &"
-          writer.print p->(as Local).c_name
-          writer.print( " )" )
-          writer.println( ';' )
+      pop_scope
+
+      if (cmd.locals.count or is_procedure or not optional)
+        if (is_procedure)
+          forEach (p in this_procedure.parameters)
+            if (p.type.is_reference and not p.is_anchored)
+              writer.print "ROGUE_RELEASE_REF( &"
+              writer.print p->(as Local).c_name
+              writer.print( " )" )
+              writer.println( ';' )
+            endIf
+          endForEach
         endIf
-      endForEach
 
-      on_leave( proc.body, &is_procedure )
-      writer.println
-
-    method on_leave( cmd:ControlStructure, &is_procedure )
-      if (not is_procedure and cmd.control_escapes and cmd.has_cleanup_code)
-        writer.print cmd.c_escape_label_name
-        writer.println ":;"
-      endIf
-
-      if (cmd.locals.count or (cmd.initialization and cmd.initialization.count) or is_procedure)
         forEach (v in cmd.locals)
           if (v.type.is_reference)
             writer.print "ROGUE_RELEASE_REF( &"
@@ -268,32 +285,27 @@ class CGenerator : Visitor
           endIf
         endForEach
 
-        pop_scope
-        block
-          forEach (scope at i in control_stack step -1)
-            if (scope.has_cleanup_code)
-              writer.print "if (Rogue_execution_status) goto "
-              writer.print scope.c_escape_label_name
-              writer.println ";"
-              escapeBlock
+        if (is_procedure)
+          if (this_procedure.return_type and this_procedure.attributes.has_return)
+            if (this_procedure.attributes.throws_exception)
+              writer.println "if (Rogue_execution_status == ROGUE_EXE_RETURN) Rogue_execution_status = ROGUE_EXE_CONTINUE;"
+            else
+              writer.println "Rogue_execution_status = ROGUE_EXE_CONTINUE;"
             endIf
-          endForEach
-
-          if (not is_procedure)
-            writer.print "return"
-            if (this_procedure.return_type)
-              writer.print ' '
-              writer.print this_procedure.c_result_name
-            endIf
+            writer.print "return "
+            writer.print this_procedure.c_result_name
             writer.println ';'
           endIf
-        endBlock
 
-        if (this_procedure.return_type)
-          writer.print "return"
-          writer.print ' '
-          writer.print this_procedure.c_result_name
-          writer.println ';'
+        else
+          if (cmd.control_escapes)
+            localize escape_label
+            if (escape_label)
+              writer.print "if (Rogue_execution_status) goto "
+              writer.print escape_label
+              writer.println ";"
+            endIf
+          endIf
         endIf
 
         writer.indent -= 2
@@ -316,14 +328,12 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
 
     method on_visit( cmd:GlobalMethod )
-      this_procedure = cmd
-      autoname_index = 0
       this_type.write_c_global_method_header( cmd, writer )
       writer.println
 
-      on_enter( cmd )
+      on_enter( cmd.body, &is_procedure )
       visit( cmd.statements )
-      on_leave( cmd )
+      on_leave( cmd.body, &is_procedure )
 
       writer.println
 
@@ -346,22 +356,20 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
 
     method on_visit( cmd:If )
-      on_enter( cmd )
+      on_enter( cmd, &optional )
       if (cmd.condition)
         writer.print   "if ("
         visit( cmd.condition )
         writer.println ")"
       endIf
-      writer.println "{"
-      writer.indent += 2
+
       visit( cmd.statements )
-      writer.indent -= 2
-      writer.println "}"
+
       if (cmd.cmd_else)
         writer.println "else "
         visit( cmd.cmd_else )
       endIf
-      on_leave( cmd )
+      on_leave( cmd, &optional )
 
     method on_visit( cmd:Is )
       print_parenthesized( cmd.left )
@@ -452,16 +460,12 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
 
     method on_visit( cmd:Method )
-      this_procedure = cmd
-      autoname_index = 0
       this_type.write_c_method_header( cmd, writer )
       writer.println
 
-      on_enter( cmd )
-
+      on_enter( cmd.body, &is_procedure )
       visit( cmd.statements )
-
-      on_leave( cmd )
+      on_leave( cmd.body, &is_procedure )
 
       writer.println
 
@@ -529,6 +533,9 @@ class CGenerator : Visitor
       writer.print ") )"
 
     method on( cmd:Procedure )->Cmd
+      this_procedure = cmd
+      autoname_index = 0
+
       visible_locals_fp.add( visible_locals.count )
       forEach (p in cmd.parameters)
         visible_locals.add( p->(as Local) )
@@ -540,21 +547,40 @@ class CGenerator : Visitor
       return cmd
 
     method on_visit( cmd:Return )
-      writer.print "return"
       if (cmd.result)
-        writer.print ' '
-        visit( cmd.result )
+        writer.print this_procedure.c_result_name
+        writer.print " = "
+        if (this_procedure.return_type.is_reference)
+          writer.print   "ROGUE_RETAIN("
+          visit( cmd.result )
+          writer.println ");"
+        else
+          visit( cmd.result )
+          writer.println ";"
+        endIf
+      endIf
+
+      if (escape_needs_jump(cmd))
+        writer.println "Rogue_execution_status = ROGUE_EXE_RETURN;"
+        writer.print   "goto "
+        writer.print   escape_label
+        writer.println ";"
+      elseIf (control_stack.count > 1)
+        writer.print "return"
+        if (this_procedure.return_type)
+          writer.print ' '
+          writer.print this_procedure.c_result_name
+        endIf
+        writer.println ";"
       endIf
 
     method on_visit( cmd:Routine )
-      this_procedure = cmd
-      autoname_index = 0
       this_module.write_c_routine_header( cmd, writer )
       writer.println
 
-      on_enter( cmd )
+      on_enter( cmd.body, &is_procedure )
       visit( cmd.statements )
-      on_leave( cmd )
+      on_leave( cmd.body, &is_procedure )
 
       writer.println
 
@@ -628,7 +654,7 @@ class CGenerator : Visitor
       forEach (scope at i in control_stack step -1)
         if (i == 0 or scope.has_cleanup_code)
           writer.print "goto "
-          writer.print scope.c_escape_label_name
+          writer.print scope.c_escape_label_name(this)
           writer.print ";"
           escapeForEach
         endIf
@@ -701,6 +727,9 @@ augment
       return true
 
     method ControlStructure.needs_semicolon->Logical
+      return false
+
+    method Return.needs_semicolon->Logical
       return false
 
     method Module.write_c_routine_header( r:Routine, writer:CWriter )

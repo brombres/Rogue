@@ -911,28 +911,23 @@ endClass
 class ControlStructure : Cmd
   PROPERTIES
     locals          = Local[]  # local to the scope of the control structure
-    initialization  : Cmd
     statements      : Cmd
     control_type    : ControlType
     control_escapes : Logical
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      init( t, Statements(t), Statements(t), control_type )
+      init( t, Statements(t), control_type )
 
-    method init( t:Token, statements:Cmd, control_type:ControlType )
-      init( t, Statements(t), statements, control_type )
-
-    method init( t, initialization, statements, control_type=ControlType.UNDEFINED )
+    method init( t, statements, control_type=ControlType.UNDEFINED )
 
     method init( existing:ControlStructure )
       prior.init( existing )
       if (existing.locals) locals = existing.locals.cloned
-      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
 
     method description->String
-      return "ControlStructure($,$)" (%initialization,%statements)
+      return "ControlStructure($)" (%statements)
 
 endClass
 
@@ -948,7 +943,7 @@ class LocalScope : ControlStructure
       prior.init( existing )
 
     method description->String
-      return "LocalScope($,$)"(%initialization,%statements)
+      return "LocalScope($)"(%statements)
 endClass
 
 class Conditional : ControlStructure
@@ -957,25 +952,26 @@ class Conditional : ControlStructure
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      init( t, Statements(t), null, Statements(t), control_type )
+      init( t, null, Statements(t), control_type )
 
-    method init( t:Token, initialization, condition, statements,
+    method init( t:Token, condition, statements,
         control_type=ControlType.UNDEFINED:ControlType )
-      prior.init( t, initialization, statements, control_type )
+      prior.init( t, statements, control_type )
 
     method init( existing:Conditional )
       prior.init( existing )
       if (existing.condition) condition = existing.condition.cloned
 
     method description->String
-      return "Conditional($,$,$)" (%initialization,%condition,%statements)
+      return "Conditional($,$)" (%condition,%statements)
 
 endClass
 
 class Iterator : Conditional
   PROPERTIES
-    control : Cmd
-    upkeep  : Cmd
+    initialization : Cmd
+    control        : Cmd
+    upkeep         : Cmd
 
   METHODS
     method init( t:Token, statements:Cmd, control_type:ControlType )
@@ -983,10 +979,11 @@ class Iterator : Conditional
 
     method init( t:Token, initialization:Cmd, control, condition:Cmd, statements:Cmd, upkeep,
                  control_type=ControlType.UNDEFINED:ControlType )
-      prior.init( t, initialization, condition, statements, control_type )
+      prior.init( t, condition, statements, control_type )
 
     method init( existing:Iterator )
       prior.init( existing )
+      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.control) control = existing.control.cloned
       if (existing.upkeep)  upkeep  = existing.upkeep.cloned
 

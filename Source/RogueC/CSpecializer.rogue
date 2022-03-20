@@ -14,9 +14,6 @@ class CSpecializer : Visitor
       return result
 
     method on_visit( cmd:ControlStructure )
-      if (cmd.control_escapes)
-        cmd.c_escape_label_name = autoname( "escape" )
-      endIf
       visit_children( cmd )
 
     method on_visit( cmd:LiteralString )
@@ -49,7 +46,7 @@ class CSpecializer : Visitor
     method on_visit( cmd:Procedure )
       autoname_index = 0
 
-      cmd.c_result_name = autoname("result")
+      cmd.c_result_name = "_auto_result"
 
       forEach (p at i in cmd.parameters)
         block p = p->(as Local)
@@ -77,6 +74,12 @@ augment ControlStructure
     c_escape_label_name : String
 
   METHODS
+    method c_escape_label_name( cgen:CGenerator )->String
+      if (not @c_escape_label_name)
+        @c_escape_label_name = cgen.autoname("escape")
+      endIf
+      return @c_escape_label_name
+
     method has_cleanup_code->Logical
       forEach (v in locals)
         if (v.type.is_reference)

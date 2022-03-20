@@ -270,11 +270,22 @@ class Resolver : Visitor
       endForEach
       }#
 
-      #{
     method on( cmd:Return )->Cmd
-      if (cmd.result) return visit( ReturnResult(cmd.t,cmd.result) )
+      this_procedure.attributes.has_return = true
+
+      if (cmd.result)
+        if (not this_procedure.return_type)
+          throw cmd.t.error( "Unexpected return value - $ does not declare a return type."(this_procedure) )
+        endIf
+        cmd.result = visit( cmd.result ).require_value
+      else
+        if (this_procedure.return_type)
+          throw cmd.t.error( "$ return value expected."(this_procedure.return_type) )
+        endIf
+      endIf
       return cmd
 
+      #{
     method on_visit( cmd:ReturnResult )
       visit_children( cmd )
       cmd.result.require_value
@@ -303,8 +314,7 @@ class Resolver : Visitor
       }#
 
     method on( cmd:Throw )->Cmd
-      this_procedure.attributes.control_escapes = true
-      (forEach in control_stack).control_escapes = true
+      this_procedure.attributes.throws_exception = true
 
       cmd.exception = visit( cmd.exception )
       if (not cmd.exception.require_type.instance_of(Program.type_Exception))

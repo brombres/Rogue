@@ -328,11 +328,9 @@ class Visitor<<$ReturnType>>
 
     method on_visit_children( cmd:Conditional )
       if ($ReturnType isType Cmd)
-        cmd.initialization = visit(cmd.initialization)
         cmd.condition = visit(cmd.condition)
         cmd.statements = visit(cmd.statements)
       else
-        visit( cmd.initialization )
         visit( cmd.condition )
         visit( cmd.statements )
       endIf
@@ -348,10 +346,8 @@ class Visitor<<$ReturnType>>
 
     method on_visit_children( cmd:ControlStructure )
       if ($ReturnType isType Cmd)
-        cmd.initialization = visit(cmd.initialization)
         cmd.statements = visit(cmd.statements)
       else
-        visit( cmd.initialization )
         visit( cmd.statements )
       endIf
 
