@@ -27,13 +27,13 @@ class Organizer : Visitor
     method on( cmd:GlobalMethod )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type
-      cmd.organize
+      cmd.organize( this )
       return cmd
 
     method on( cmd:Method )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type
-      cmd.organize
+      cmd.organize( this )
       return cmd
 
     method on( cmd:NativeCode )->Cmd
@@ -70,6 +70,10 @@ class Organizer : Visitor
         endForEach
       endIf
       return null
+
+    method on_visit( cmd:Throw )
+      this_procedure.attributes.throws_exception = true
+      visit_children( cmd )
 
     method collect( t:Token, p:Property )
       assert this_type

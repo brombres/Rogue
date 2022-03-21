@@ -314,8 +314,6 @@ class Resolver : Visitor
       }#
 
     method on( cmd:Throw )->Cmd
-      this_procedure.attributes.throws_exception = true
-
       cmd.exception = visit( cmd.exception )
       if (not cmd.exception.require_type.instance_of(Program.type_Exception))
         throw cmd.exception.t.error( "Thrown value must be instanceOf type Exception." )

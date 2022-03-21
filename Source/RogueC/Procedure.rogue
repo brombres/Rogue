@@ -52,7 +52,7 @@ class Procedure : Cmd
     method is_method->Logical
       return attributes.is_method
 
-    method organize
+    method organize( organizer=null:Organizer )
       if (is_organized) return
       is_organized = true
 
@@ -103,6 +103,10 @@ class Procedure : Cmd
           endBlock
         endForEach
       endIf
+
+      temporarily organizer.this_procedure = this
+        organizer.visit_children( this )
+      endTemporarily
 
     method resolve( resolver=null:Resolver )
       if (not is_organized) organize

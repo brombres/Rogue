@@ -1552,9 +1552,12 @@ endClass
 
 class Routine : Procedure
   METHODS
-    method organize
+    method organize( organizer=null:Organizer )
       if (is_organized) return
-      prior.organize
+
+      ensure organizer( module_context )
+      prior.organize( organizer )
+
       module_context.add( this )
 endClass
 
@@ -1563,9 +1566,12 @@ class GlobalMethod : Procedure
     type_context : Type
 
   METHODS
-    method organize
+    method organize( organizer=null:Organizer )
       if (is_organized) return
-      prior.organize
+
+      ensure organizer( module_context )
+      prior.organize( organizer )
+
       type_context.add( this )
 
 endClass
@@ -1588,9 +1594,13 @@ class Method : Procedure
       prior.init( existing )
       type_context = existing.type_context
 
-    method organize
+    method organize( organizer=null:Organizer )
       if (is_organized) return
-      prior.organize
+
+      ensure organizer( module_context )
+      temporarily organizer.this_type = type_context
+        prior.organize( organizer )
+      endTemporarily
 
       # TODO: inherit
       type_context.add( this )
