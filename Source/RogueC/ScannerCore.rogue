@@ -44,9 +44,10 @@ class ScannerCore [abstract]
     ip            : Int32
     halt          = false
 
-    _position_stack = Int32[]
-    _line_stack     = Int32[]
-    _column_stack   = Int32[]
+    _position_stack  = Int32[]
+    _line_stack      = Int32[]
+    _column_stack    = Int32[]
+    _token_pos_stack = Int32[]
 
     # GENERATED PROPERTIES
     count     : Int32
@@ -124,6 +125,15 @@ class ScannerCore [abstract]
       elseIf (c >= 32 and c != 127) return "'$'" (c)
       else                          return "'$'" (c.to_escaped_ascii)
 
+    method _discard_position
+      if (_position_stack.is_empty)
+        _throw_syntax_error( "discardPosition without prior savePosition." )
+      endIf
+      _position_stack.remove_last
+      _line_stack.remove_last
+      _column_stack.remove_last
+      _token_pos_stack.remove_last
+
     method _is_next( text:String )->Logical
       local location = _scanner.location
       local result = _scanner.consume( text )
@@ -165,11 +175,13 @@ class ScannerCore [abstract]
       _scanner.position = _position_stack.remove_last
       _scanner.line     = _line_stack.remove_last
       _scanner.column   = _column_stack.remove_last
+      tokens.discard_from( _token_pos_stack.remove_last )
 
     method _save_position
       _position_stack.add( _scanner.position )
       _line_stack.add( _scanner.line )
       _column_stack.add( _scanner.column )
+      _token_pos_stack.add( tokens.count )
 
     method _scan( ch:Character )->Logical
       if (not _scanner.consume(ch)) return false
@@ -659,7 +671,6 @@ class ScannerCore [abstract]
               _add( TokenType.IDENTIFIER )
               return false
             endContingent
-            return true
           case ip_scan_number
             if (((not _scan_pattern_7.is_next(_scanner)) or _scan_pattern_8.is_next(_scanner)))
               return true
@@ -711,7 +722,6 @@ class ScannerCore [abstract]
               _add( TokenType.REAL_NUMBER )
               return false
             endContingent
-            return true
           case ip_scan_integer
             while (_scan_pattern_11.scan(_scanner,buffer))
               if ((not _scan_pattern_12.scan(_scanner)))

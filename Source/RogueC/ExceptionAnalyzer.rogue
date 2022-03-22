@@ -1,0 +1,43 @@
+module Rogue
+
+class ExceptionAnalyzer : InspectionVisitor<<Logical>> [singleton]
+  PROPERTIES
+    this_procedure : Procedure
+
+  METHODS
+    method propagate_exception_status( this_procedure, called_procedure:Procedure )
+      if (this_procedure.attributes.throws_exception) return
+
+      if (called_procedure.attributes.throws_exception)
+        this_procedure.attributes.throws_exception = true
+        return
+      endIf
+
+      is_halting = false
+      visit( called_procedure )
+
+      if (called_procedure.attributes.throws_exception)
+        this_procedure.attributes.throws_exception = true
+      endIf
+
+    method on( cmd:Procedure )->Logical
+      if (cmd.attributes.is_visiting) return false
+      temporarily this_procedure = cmd
+        temporarily this_procedure.attributes.is_visiting = true
+          return prior.on( cmd )
+        endTemporarily
+      endTemporarily
+
+    method on_enter( cmd:CallProcedure )
+      contingent
+        sufficient (cmd.info.attributes.throws_exception)
+        visit( cmd.info )
+        sufficient (cmd.info.attributes.throws_exception)
+        return
+
+      satisfied
+        this_procedure.attributes.throws_exception = true
+        halt
+      endContingent
+
+endClass

@@ -3,6 +3,7 @@ module Rogue
 
 class Visitor : Visitor<<Cmd>>
   # Standard tree-rebuilding visitor.
+
 endClass
 
 class Visitor<<$ReturnType>>

@@ -204,6 +204,16 @@ class ParserCore [abstract]
         _next_t = _peek
       endWhile
 
+    method _create_token_list
+      if (_saved_positions.is_empty)
+        throw _peek.error( "[INTERNAL] createTokenList/produceTokenlist without prior savePosition." )
+      endIf
+      local i1 = _saved_positions.remove_last.position
+      local limit = _position
+      local list = Token[]( limit - i1 )
+      forEach (i in i1..<limit) list.add( _tokens[i] )
+      _push( TokenList(_tokens[i1],list), 0 )
+
     method _describe( type:TokenType )->String
       if (type.symbol[0].is_letter) return type.symbol
       return "'$'" (type.symbol)
@@ -263,7 +273,7 @@ class ParserCore [abstract]
       _token_stack.push_frame
 
     method _push( cmd:Cmd, node_arg_count:Int32 )
-      _cmd_stack.discard_from( _cmd_stack.count - node_arg_count )
+      if (node_arg_count) _cmd_stack.discard_from( _cmd_stack.count - node_arg_count )
       _cmd_stack.add( cmd )
 
     method _push_list( list:Cmd )
@@ -1018,7 +1028,6 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
-            return
           case ip_if_statement_single_line_elseIf_else
             _save_position
             if (_next_t.type == TokenType.KEYWORD_ELSE_IF)
@@ -1064,7 +1073,6 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
-            return
           case ip_wrap_in_local_scope
             if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
             return

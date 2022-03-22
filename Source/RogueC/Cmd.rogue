@@ -32,6 +32,9 @@ class Cmd( t:Token )
     method dispatch<<$VisitorType,$ReturnType>>( visitor:$VisitorType )->$ReturnType [propagated]
       return visitor.on( this )
 
+    method dispatch_on_enter<<$VisitorType>>( visitor:$VisitorType ) [propagated]
+      visitor.on_enter( this )
+
     method dispatch_on_visit<<$VisitorType>>( visitor:$VisitorType ) [propagated]
       visitor.on_visit( this )
 
@@ -153,20 +156,19 @@ endClass
 
 class TokenList : Cmd
   PROPERTIES
-    list : Token[]
+    tokens : Token[]
 
   METHODS
     method init( t )
-      list = Token[]
+      tokens = Token[]
 
-    method init( t, list )
+    method init( t, tokens )
 
     method init( existing:TokenList )
-      prior.init( existing )
-      list = existing.list.cloned
+      tokens = existing.tokens.cloned
 
     method to->Token[]
-      return list
+      return tokens
 endClass
 
 class Unary( t, operand:Cmd ) : Cmd

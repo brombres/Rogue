@@ -83,6 +83,9 @@ class Resolver : Visitor
           cmd.args[i] = GetLocal(arg.t,v)
         endIf
       endForEach
+
+      ExceptionAnalyzer.propagate_exception_status( this_procedure, cmd.info )
+
       return cmd
 
     method on( cmd:ContextAccess )->Cmd

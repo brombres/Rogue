@@ -1,0 +1,347 @@
+# Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
+module Rogue
+
+class InspectionVisitor<<$ReturnType>>
+  PROPERTIES
+    is_halting     : Logical
+    default_result = $ReturnType.meta.default_value : $ReturnType
+
+  METHODS
+    method on( cmd:Cmd )->$ReturnType
+      # Default per-node InspectionVisitor call sequence.
+      #
+      #   CALL                        OVERLOADABLE METHOD
+      #   --------------------        ------------------------
+      #   visit(cmd)->$ReturnType  -> on(cmd:CmdType)->$ReturnType
+      #     enter(cmd) ->               on_enter(cmd:CmdType)
+      enter( cmd )
+      return default_result
+
+    method on( cmd:CmdList )->Logical
+      local result = default_result
+      forEach (statement in cmd.list)
+        result = visit(statement)
+        if (is_halting) return result
+      endForEach
+      return result
+
+    method on_enter( cmd:Cmd )
+      # By default this method is called from the default on(CmdType) before
+      # children are visited.
+
+    method visit( cmd:Cmd )->$ReturnType [propagated]
+      if (cmd is null or is_halting) return default_result
+      return cmd.dispatch<<ThisType,$ReturnType>>( this )
+
+    method enter( cmd:Cmd ) [propagated]
+      cmd.dispatch_on_enter<<ThisType>>( this )
+
+    method halt
+      is_halting = true
+
+    method on( cmd:Access )->$ReturnType
+      local result = default_result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:AddAndAssignLocal )->$ReturnType
+      local result = default_result
+      result = visit(cmd.info)
+      if (is_halting) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:Assign )->$ReturnType
+      local result = default_result
+      result = visit(cmd.target)
+      if (is_halting) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on( cmd:Binary )->$ReturnType
+      local result = default_result
+      result = visit(cmd.left)
+      if (is_halting) return result
+      result = visit(cmd.right)
+      return result
+
+    method on( cmd:Block )->$ReturnType
+      local result = default_result
+      result = visit(cmd.statements)
+      return result
+
+    method on( cmd:CallMethod )->$ReturnType
+      local result = default_result
+      result = visit(cmd.context)
+      if (is_halting) return result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:CallProcedure )->$ReturnType
+      local result = default_result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:Class )->$ReturnType
+      local result = default_result
+      result = visit(cmd.name)
+      if (is_halting) return result
+      result = visit(cmd.template_parameters)
+      if (is_halting) return result
+      result = visit(cmd.constructor_properties)
+      if (is_halting) return result
+      result = visit(cmd.base_types)
+      if (is_halting) return result
+      result = visit(cmd.attributes)
+      if (is_halting) return result
+      result = visit(cmd.sections)
+      return result
+
+    method on( cmd:Conditional )->$ReturnType
+      local result = default_result
+      result = visit(cmd.condition)
+      if (is_halting) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on( cmd:ContextAccess )->$ReturnType
+      local result = default_result
+      result = visit(cmd.context)
+      if (is_halting) return result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:ControlStructure )->$ReturnType
+      local result = default_result
+      result = visit(cmd.statements)
+      return result
+
+    method on( cmd:ConvertToType )->$ReturnType
+      local result = default_result
+      result = visit(cmd.operand)
+      if (is_halting) return result
+      result = visit(cmd.to_type)
+      return result
+
+    method on( cmd:CreateObject )->$ReturnType
+      local result = default_result
+      result = visit(cmd.of_type)
+      if (is_halting) return result
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:DefineModule )->$ReturnType
+      local result = default_result
+      result = visit(cmd.attributes)
+      return result
+
+    method on( cmd:Definition )->$ReturnType
+      local result = default_result
+      result = visit(cmd.value)
+      return result
+
+    method on( cmd:ForEach )->$ReturnType
+      local result = default_result
+      result = visit(cmd.condition)
+      if (is_halting) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on( cmd:ForEachCollection )->$ReturnType
+      local result = default_result
+      result = visit(cmd.data)
+      if (is_halting) return result
+      result = visit(cmd.starting_index)
+      if (is_halting) return result
+      result = visit(cmd.step_size)
+      return result
+
+    method on( cmd:ForEachControl )->$ReturnType
+      local result = default_result
+      result = visit(cmd.optional_at)
+      if (is_halting) return result
+      result = visit(cmd.collection)
+      return result
+
+    method on( cmd:GetLocal )->$ReturnType
+      local result = default_result
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:GetProperty )->$ReturnType
+      local result = default_result
+      result = visit(cmd.context)
+      if (is_halting) return result
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:GetSingleton )->$ReturnType
+      local result = default_result
+      result = visit(cmd.type)
+      return result
+
+    method on( cmd:GetThisProperty )->$ReturnType
+      local result = default_result
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:If )->$ReturnType
+      local result = default_result
+      result = visit(cmd.condition)
+      if (is_halting) return result
+      result = visit(cmd.statements)
+      if (is_halting) return result
+      result = visit(cmd.cmd_else)
+      return result
+
+    method on( cmd:IndexAccess )->$ReturnType
+      local result = default_result
+      result = visit(cmd.context)
+      if (is_halting) return result
+      result = visit(cmd.index)
+      return result
+
+    method on( cmd:Iterator )->$ReturnType
+      local result = default_result
+      result = visit(cmd.initialization)
+      if (is_halting) return result
+      result = visit(cmd.control)
+      if (is_halting) return result
+      result = visit(cmd.condition)
+      if (is_halting) return result
+      result = visit(cmd.statements)
+      if (is_halting) return result
+      result = visit(cmd.upkeep)
+      return result
+
+    method on( cmd:Local )->$ReturnType
+      local result = default_result
+      result = visit(cmd.initial_value)
+      if (is_halting) return result
+      result = visit(cmd.type)
+      return result
+
+    method on( cmd:LocalDeclarations )->$ReturnType
+      local result = default_result
+      result = visit(cmd.declarations)
+      if (is_halting) return result
+      result = visit(cmd.type)
+      return result
+
+    method on( cmd:ModuleQualifiedID )->$ReturnType
+      local result = default_result
+      result = visit(cmd.context)
+      return result
+
+    method on( cmd:NativeExpression )->$ReturnType
+      local result = default_result
+      result = visit(cmd.result_type)
+      return result
+
+    method on( cmd:OpAndAssign )->$ReturnType
+      local result = default_result
+      result = visit(cmd.target)
+      if (is_halting) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:Print )->$ReturnType
+      local result = default_result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:PrintValue )->$ReturnType
+      local result = default_result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:Println )->$ReturnType
+      local result = default_result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:Procedure )->$ReturnType
+      local result = default_result
+      result = visit(cmd.parameters)
+      if (is_halting) return result
+      result = visit(cmd.return_type)
+      if (is_halting) return result
+      result = visit(cmd.attributes)
+      if (is_halting) return result
+      result = visit(cmd.body)
+      return result
+
+    method on( cmd:Property )->$ReturnType
+      local result = default_result
+      result = visit(cmd.initial_value)
+      if (is_halting) return result
+      result = visit(cmd.type)
+      return result
+
+    method on( cmd:PropertyDeclarations )->$ReturnType
+      local result = default_result
+      result = visit(cmd.declarations)
+      if (is_halting) return result
+      result = visit(cmd.type)
+      if (is_halting) return result
+      result = visit(cmd.attributes)
+      return result
+
+    method on( cmd:Return )->$ReturnType
+      local result = default_result
+      result = visit(cmd.result)
+      return result
+
+    method on( cmd:SetLocal )->$ReturnType
+      local result = default_result
+      result = visit(cmd.info)
+      if (is_halting) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on( cmd:SetProperty )->$ReturnType
+      local result = default_result
+      result = visit(cmd.context)
+      if (is_halting) return result
+      result = visit(cmd.info)
+      if (is_halting) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on( cmd:SetThisProperty )->$ReturnType
+      local result = default_result
+      result = visit(cmd.info)
+      if (is_halting) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on( cmd:Throw )->$ReturnType
+      local result = default_result
+      result = visit(cmd.exception)
+      return result
+
+    method on( cmd:TypeContext )->$ReturnType
+      local result = default_result
+      result = visit(cmd.type)
+      return result
+
+    method on( cmd:Unary )->$ReturnType
+      local result = default_result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:UnresolvedCreateObject )->$ReturnType
+      local result = default_result
+      result = visit(cmd.of_type)
+      if (is_halting) return result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:UsesModule )->$ReturnType
+      local result = default_result
+      result = visit(cmd.path)
+      if (is_halting) return result
+      result = visit(cmd.attributes)
+      return result
+
+endClass
