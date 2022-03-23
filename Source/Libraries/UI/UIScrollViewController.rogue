@@ -45,7 +45,7 @@ class UIScrollViewController
       content_offset = view.top_offset
 
     method set_content_offset( new_offset:XY )
-      view.content_offset = new_offset
+      view.content_offset = new_offset.floor
 
 endClass
 
@@ -259,18 +259,22 @@ class StandardUIScrollViewController : UIScrollViewController
       localize content_offset
       local target = content_offset + delta.yv
       if (target.y >= 0 and delta.y > 0)
-        local excess_p = ((-4*target.y) / view.size.y.or_larger(1)).clamped_high(1)
+        # Scrolling up
+        local excess_p = ((4*target.y) / view.size.y.or_larger(1)).clamped_high(1)
         local in_bounds_portion = delta * (1.0 - excess_p)
         local oob_portion = delta * excess_p
         local oob_limiter = (1.0 - excess_p) ^ 8
-        set_content_offset( content_offset + in_bounds_portion + oob_portion*oob_limiter, &=clamp )
+        local new_content_offset = content_offset + in_bounds_portion + oob_portion*oob_limiter
+        set_content_offset( new_content_offset, &=clamp )
         return
       elseIf (target.y <= view.bottom_offset and delta.y < 0)
-        local excess_p  = ((4*(target.y - view.bottom_offset)) / view.size.y.or_larger(1)).clamped_high(1)
+        # Scrolling down
+        local excess_p  = ((-4*(target.y - view.bottom_offset)) / view.size.y.or_larger(1)).clamped_high(1)
         local in_bounds_portion = delta * (1.0 - excess_p)
         local oob_portion = delta * excess_p
         local oob_limiter = (1.0 - excess_p) ^ 8
-        set_content_offset( content_offset + in_bounds_portion + oob_portion*oob_limiter, &=clamp )
+        local new_content_offset = content_offset + in_bounds_portion + oob_portion*oob_limiter
+        set_content_offset( new_content_offset, &=clamp )
         return
       endIf
 

@@ -13,6 +13,9 @@ class UIScrollView : UILayout
       controller = create_controller
       prior.init( content )
 
+    method init( content:UIComponent, controller )
+      prior.init( content )
+
     method after_prepare_layout
       if (controller) controller.after_prepare_layout
 
@@ -44,13 +47,28 @@ class UIScrollView : UILayout
       # UIScrollView consumes any original press event in preparation for dragging.
       # If a release comes without turning into a drag, this pair of press/release events
       # should be dispatched to the appropriate subcomponent.
+
       local subcomponent = find( e_press.position )
-      if (subcomponent)
-        subcomponent.handle( e_press )
-        subcomponent.handle( e_release )
-        return
+      # Any subcomponents that could respond to this event?
+
+      if (first_child and subcomponent)
+        first_child.dispatch( e_press )
+        # This may capture pointer focus
+
+        if (UI.pointer_focus)
+          if (UI.pointer_focus.is_visible and UI.pointer_focus.is_input_enabled)
+            UI.pointer_focus.handle( e_release )
+          else
+            UI.pointer_focus.release_pointer_focus
+            first_child.dispatch( e_release )
+          endIf
+        else
+          first_child.dispatch( e_release )
+        endIf
+
       else
         on_select_background( e_press.position )
+
       endIf
 
     method on_select_background( position:XY )
