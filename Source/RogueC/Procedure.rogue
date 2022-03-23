@@ -18,6 +18,9 @@ class Procedure : Cmd
 
     locals         = Local[]
 
+    throws         : Exception
+    # Most general type of exception that this procedure throws (or null)
+
   METHODS
     method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )

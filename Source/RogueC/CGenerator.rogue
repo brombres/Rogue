@@ -287,7 +287,7 @@ class CGenerator : Visitor
 
         if (is_procedure)
           if (this_procedure.return_type and this_procedure.attributes.has_return)
-            if (this_procedure.attributes.throws_exception)
+            if (this_procedure.throws)
               writer.println "if (Rogue_execution_status == ROGUE_EXE_RETURN) Rogue_execution_status = ROGUE_EXE_CONTINUE;"
             else
               writer.println "Rogue_execution_status = ROGUE_EXE_CONTINUE;"

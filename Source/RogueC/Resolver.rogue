@@ -84,7 +84,7 @@ class Resolver : Visitor
         endIf
       endForEach
 
-      ExceptionAnalyzer.propagate_exception_status( this_procedure, cmd.info )
+      #ExceptionAnalyzer.propagate_exception_status( this_procedure, cmd.info )
 
       return cmd
 

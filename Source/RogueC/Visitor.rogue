@@ -1,11 +1,6 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
 module Rogue
 
-class Visitor : Visitor<<Cmd>>
-  # Standard tree-rebuilding visitor.
-
-endClass
-
 class Visitor<<$ReturnType>>
   PROPERTIES
     this_module    : Module
@@ -575,4 +570,17 @@ class Visitor<<$ReturnType>>
         visit( cmd.exception )
       endIf
 
+    method on_visit_children( cmd:Try )
+        cmd.statements = visit(cmd.statements)
+        cmd.catches = visit(cmd.catches)
+
+    method on_visit_children( cmd:Catch )
+        cmd.exception_type = visit(cmd.exception_type)->(as Type)
+        cmd.statements = visit(cmd.statements)
+
 endClass
+
+class Visitor : Visitor<<Cmd>>
+  # Standard tree-rebuilding visitor.
+endClass
+

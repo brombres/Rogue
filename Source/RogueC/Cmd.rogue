@@ -1839,3 +1839,37 @@ class Throw : Cmd
       return "Throw($)" (%exception)
 
 endClass
+
+class Catch : ControlStructure
+  PROPERTIES
+    var_name       : String
+    exception_type : Type
+
+  METHODS
+    method init( t, var_name, exception_type, statements )
+
+    method init( existing:Catch )
+      prior.init( existing )
+      var_name = existing.var_name
+      if (existing.exception_type) exception_type = existing.exception_type.cloned
+
+    method description->String
+      return "Catch($,$,$)" (%var_name,%exception_type,%statements)
+
+endClass
+
+class Try : ControlStructure
+  PROPERTIES
+    catches : Cmd
+
+  METHODS
+    method init( t, statements, catches )
+
+    method init( existing:Try )
+      prior.init( existing )
+      if (existing.catches) catches = existing.catches.cloned
+
+    method description->String
+      return "Try($,$)" (%statements,%catches)
+
+endClass

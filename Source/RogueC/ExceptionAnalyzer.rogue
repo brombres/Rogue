@@ -41,3 +41,10 @@ class ExceptionAnalyzer : InspectionVisitor<<Logical>> [singleton]
       endContingent
 
 endClass
+
+augment
+  METHODS
+    method ControlStructure.catches_exception( of_type:Type )->Logical
+      return false
+endAugment
+

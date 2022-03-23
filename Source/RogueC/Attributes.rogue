@@ -13,9 +13,8 @@ class Attribute
     RESOLVED         = (1:<<:8)
     ANCHORED         = (1:<<:9)  # holds a reference that has been ref-counted elsewhere in the stack
     METHOD           = (1:<<:10) # object method (not global method or routine)
-    THROWS_EXCEPTION = (1:<<:11)
-    HAS_RETURN       = (1:<<:12)
-    VISITING         = (1:<<:13)
+    HAS_RETURN       = (1:<<:11)
+    VISITING         = (1:<<:12)
 endClass
 
 class Attributes : CmdList
@@ -30,7 +29,6 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_resolved,      Attribute.RESOLVED )
   ROGUE_ATTRIBUTE( is_anchored,      Attribute.ANCHORED )
   ROGUE_ATTRIBUTE( is_method,        Attribute.METHOD )
-  ROGUE_ATTRIBUTE( throws_exception, Attribute.THROWS_EXCEPTION )
   ROGUE_ATTRIBUTE( has_return,       Attribute.HAS_RETURN )
   ROGUE_ATTRIBUTE( is_visiting,      Attribute.VISITING )
 

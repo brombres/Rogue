@@ -72,7 +72,7 @@ class Organizer : Visitor
       return null
 
     method on_visit( cmd:Throw )
-      this_procedure.attributes.throws_exception = true
+      #this_procedure.attributes.throws_exception = true
       visit_children( cmd )
 
     method collect( t:Token, p:Property )

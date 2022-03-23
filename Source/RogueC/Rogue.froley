@@ -23,6 +23,7 @@ tokens Keywords
 KEYWORD_AND            and
 KEYWORD_AUGMENT        augment
 KEYWORD_BLOCK          block
+KEYWORD_CATCH          catch       [structural]
 KEYWORD_CLASS          class       [structural]
 KEYWORD_DEFINITIONS    DEFINITIONS [structural]
 KEYWORD_DOWN_TO        downTo
@@ -34,6 +35,7 @@ KEYWORD_END_FOR_EACH   endForEach  [structural]
 KEYWORD_END_IF         endIf       [structural]
 KEYWORD_END_LOOP       endLoop     [structural]
 KEYWORD_END_ROUTINE    endRoutine  [structural]
+KEYWORD_END_TRY        endTry      [structural]
 KEYWORD_END_WHILE      endWhile    [structural]
 KEYWORD_EXPORT         export
 KEYWORD_FALSE          false
@@ -65,6 +67,7 @@ KEYWORD_ROUTINE        routine     [structural]
 KEYWORD_THIS_CALL      thisCall
 KEYWORD_THROW          throw
 KEYWORD_TRUE           true
+KEYWORD_TRY            try
 KEYWORD_UNDEFINED      undefined
 KEYWORD_USES           uses        [structural]
 KEYWORD_WHILE          while
@@ -1002,6 +1005,7 @@ parser
   onPeek "loop"    loop:               return
   onPeek "while"   while_loop:         return
 }#
+  onPeek "try"     try_catch:          return
   statement
 
 - args
@@ -1106,6 +1110,42 @@ parser
     produce While(condition,statements)
   endOn
 }#
+
+- try_catch
+  on "try"
+    multi_line_statements
+    catches
+    mustConsume "endTry"
+    produce Try(statements,catches):ControlStructure
+  endOn
+
+- catches
+  beginList
+    while (nextIs("catch"))
+      on "catch"
+        if (consume('('))
+          catch_clause
+          mustConsume ')'
+        else
+          catch_clause
+        endIf
+        multi_line_statements
+        create Catch(var_name:String,exception_type:Type,statements):ControlStructure
+      endOn
+    endWhile
+  produceList
+
+- catch_clause
+  savePosition
+  identifier
+  if (consume(':'))
+    discardPosition
+    type
+  else
+    restorePosition
+    createNull
+    type
+  endIf
 
 - module_path
   beginList

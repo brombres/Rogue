@@ -61,45 +61,48 @@ class ParserCore [abstract]
     ip_local_declarations = 48
     ip_local_declaration = 49
     ip_block = 50
-    ip_module_path = 51
-    ip_uses_attributes = 52
-    ip_uses_attribute = 53
-    ip_access_args = 54
-    ip_optional_expression = 55
-    ip_expression = 56
-    ip_op_and_assign = 57
-    ip_logical_xor = 58
-    ip_logical_xor__inner = 59
-    ip_logical_or = 60
-    ip_logical_or__inner = 61
-    ip_logical_and = 62
-    ip_logical_and__inner = 63
-    ip_comparison = 64
-    ip_comparison__inner = 65
-    ip_reference_comparison = 66
-    ip_bitwise_xor = 67
-    ip_bitwise_xor__inner = 68
-    ip_bitwise_or = 69
-    ip_bitwise_or__inner = 70
-    ip_bitwise_and = 71
-    ip_bitwise_and__inner = 72
-    ip_bitwise_shift = 73
-    ip_bitwise_shift__inner = 74
-    ip_add_subtract = 75
-    ip_add_subtract__inner = 76
-    ip_multiply_divide_mod = 77
-    ip_multiply_divide_mod__inner = 78
-    ip_pre_unary = 79
-    ip_post_unary = 80
-    ip_post_unary__inner = 81
-    ip_access = 82
-    ip_access_inner = 83
-    ip_term = 84
-    ip_native_code = 85
-    ip_preprocess = 86
-    ip_process_another = 87
-    ip_collect_meta_filepath = 88
-    ip_additional_node_types = 89
+    ip_try_catch = 51
+    ip_catches = 52
+    ip_catch_clause = 53
+    ip_module_path = 54
+    ip_uses_attributes = 55
+    ip_uses_attribute = 56
+    ip_access_args = 57
+    ip_optional_expression = 58
+    ip_expression = 59
+    ip_op_and_assign = 60
+    ip_logical_xor = 61
+    ip_logical_xor__inner = 62
+    ip_logical_or = 63
+    ip_logical_or__inner = 64
+    ip_logical_and = 65
+    ip_logical_and__inner = 66
+    ip_comparison = 67
+    ip_comparison__inner = 68
+    ip_reference_comparison = 69
+    ip_bitwise_xor = 70
+    ip_bitwise_xor__inner = 71
+    ip_bitwise_or = 72
+    ip_bitwise_or__inner = 73
+    ip_bitwise_and = 74
+    ip_bitwise_and__inner = 75
+    ip_bitwise_shift = 76
+    ip_bitwise_shift__inner = 77
+    ip_add_subtract = 78
+    ip_add_subtract__inner = 79
+    ip_multiply_divide_mod = 80
+    ip_multiply_divide_mod__inner = 81
+    ip_pre_unary = 82
+    ip_post_unary = 83
+    ip_post_unary__inner = 84
+    ip_access = 85
+    ip_access_inner = 86
+    ip_term = 87
+    ip_native_code = 88
+    ip_preprocess = 89
+    ip_process_another = 90
+    ip_collect_meta_filepath = 91
+    ip_additional_node_types = 92
 
   PROPERTIES
     _tokens          : Token[]
@@ -1218,6 +1221,13 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_TRY)
+              temporarily _cur_t = _next_t
+                _execute(ip_try_catch)
+                _pop_frame
+                return
+              endTemporarily
+            endIf
             _execute(ip_statement)
             _pop_frame
             return
@@ -1384,6 +1394,56 @@ class ParserCore [abstract]
               endTemporarily
             endIf
             if (not disable_output) _push( Block(_cur_t,_node_arg(-1)), 1 )
+            return
+          case ip_try_catch
+            if (_next_t.type == TokenType.KEYWORD_TRY)
+              temporarily _cur_t = _on_t
+                _execute(ip_multi_line_statements)
+                _pop_frame
+                _execute(ip_catches)
+                _pop_frame
+                if (not _consume(TokenType.KEYWORD_END_TRY)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_TRY )
+                if (not disable_output) _push( Try(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            return
+          case ip_catches
+            _begin_list
+            while ((_next_t.type == TokenType.KEYWORD_CATCH))
+              if (_next_t.type == TokenType.KEYWORD_CATCH)
+                temporarily _cur_t = _on_t
+                  if (_consume(TokenType.SYMBOL_OPEN_PAREN))
+                    _execute(ip_catch_clause)
+                    _pop_frame
+                    if (not _consume(TokenType.SYMBOL_CLOSE_PAREN)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_PAREN )
+                  else
+                    _execute(ip_catch_clause)
+                    _pop_frame
+                  endIf
+                  _execute(ip_multi_line_statements)
+                  _pop_frame
+                  if (not disable_output) _push( Catch(_cur_t,_string_arg(-3),_node_arg(-2)->(as Type),_node_arg(-1)), 3 )
+                endTemporarily
+              endIf
+            endWhile
+            if (disable_output)     _discard_list
+            else                    _push_list( CmdList(_list_t) )
+            return
+          case ip_catch_clause
+            _save_position
+            _execute(ip_identifier)
+            _pop_frame
+            if (_consume(TokenType.SYMBOL_COLON))
+              _discard_position
+              _execute(ip_type)
+              _pop_frame
+            else
+              _restore_position
+              if (not disable_output) _push( null, 0 )
+              _execute(ip_type)
+              _pop_frame
+            endIf
             return
           case ip_module_path
             _begin_list

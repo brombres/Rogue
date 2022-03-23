@@ -344,4 +344,18 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.attributes)
       return result
 
+    method on( cmd:Catch )->$ReturnType
+      local result = default_result
+      result = visit(cmd.exception_type)
+      if (is_halting) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on( cmd:Try )->$ReturnType
+      local result = default_result
+      result = visit(cmd.statements)
+      if (is_halting) return result
+      result = visit(cmd.catches)
+      return result
+
 endClass
