@@ -5,4 +5,5 @@ enum ControlType
   LOCAL_SCOPE
   BLOCK
   FOR_EACH
+  IF
 endEnum

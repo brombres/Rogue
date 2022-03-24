@@ -256,6 +256,8 @@ class CGenerator : Visitor
 
       endIf
 
+      visit( cmd.initialization )
+
     method on_leave( cmd:ControlStructure, &is_procedure, &optional )
       if (cmd.control_escapes)
         writer.print cmd.c_escape_label_name(this)

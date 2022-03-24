@@ -901,20 +901,26 @@ endClass
 class ControlStructure : Cmd
   PROPERTIES
     locals           = Local[]  # local to the scope of the control structure
+    initialization   : Cmd
     statements       : Cmd
     control_type     : ControlType
     control_escapes  : Logical
     throws_exception : Logical
 
   METHODS
-    method init( t:Token, control_type:ControlType )
-      init( t, Statements(t), control_type )
+    method init( t, control_type )
+      initialization = Statements(t)
+      statements     = Statements(t)
 
     method init( t, statements, control_type=ControlType.UNDEFINED )
+      initialization = Statements(t)
+
+    method init( t, initialization, statements, control_type=ControlType.UNDEFINED )
 
     method init( existing:ControlStructure )
       prior.init( existing )
       if (existing.locals) locals = existing.locals.cloned
+      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
 
     method description->String
@@ -928,7 +934,7 @@ class LocalScope : ControlStructure
       prior.init( t, ControlType.LOCAL_SCOPE )
 
     method init( t:Token, statements:Cmd )
-      prior.init( t, statements, ControlType.LOCAL_SCOPE )
+      prior.init( t, Statements(t), statements, ControlType.LOCAL_SCOPE )
 
     method init( existing:LocalScope )
       prior.init( existing )
@@ -943,14 +949,14 @@ class Conditional : ControlStructure
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      init( t, null, Statements(t), control_type )
+      prior.init( t, Statements(t), control_type )
 
-    method init( t:Token, condition, statements,
-        control_type=ControlType.UNDEFINED:ControlType )
+    method init( t:Token, condition, statements:Cmd, control_type=ControlType.UNDEFINED:ControlType )
       prior.init( t, statements, control_type )
 
     method init( existing:Conditional )
       prior.init( existing )
+      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.condition) condition = existing.condition.cloned
 
     method description->String
@@ -1115,12 +1121,13 @@ class RangeUpToLessThan : Range
 
 endClass
 
-class Block : Cmd
+class Block : ControlStructure
   PROPERTIES
     statements : Cmd
 
   METHODS
-    method init( t, statements )
+    method init( t, statements:Cmd )
+      prior.init( t, Statements(t), statements )
 
     method init( existing:Block )
       prior.init( existing )
@@ -1174,7 +1181,8 @@ class If : Conditional
     cmd_else : If
 
   METHODS
-    method init( t, condition, statements, cmd_else )
+    method init( t, condition, statements:Cmd, cmd_else )
+      prior.init( t, condition, statements, ControlType.IF )
 
     method init( existing:If )
       prior.init( existing )
@@ -1836,7 +1844,8 @@ class Catch : ControlStructure
     exception_type : Type
 
   METHODS
-    method init( t, var_name, exception_type, statements )
+    method init( t, var_name, exception_type, statements:Cmd )
+      prior.init( t, Statements(t), statements )
 
     method init( existing:Catch )
       prior.init( existing )
@@ -1854,6 +1863,7 @@ class Try : ControlStructure
 
   METHODS
     method init( t, statements, catches )
+      prior.init( t, Statements(t), statements )
 
     method init( existing:Try )
       prior.init( existing )

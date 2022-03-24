@@ -1085,7 +1085,7 @@ parser
     multi_line_statements
     mustConsume "endBlock"
   endOn
-  produce Block(statements)
+  produce Block(statements):ControlStructure
 
 #{
 - loop
@@ -1457,7 +1457,7 @@ parser
   #  create CompareLEReal64(left,right):Compare
   #  create CompareGEReal64(left,right):Compare
   create Conditional(condition,statements):ControlStructure
-  create ControlStructure(statements)
+  create ControlStructure(initialization,statements)
   create CreateObject(of_type:Type,info:Local)
   #  create CreateXY0
   #  create CreateXY1(value)

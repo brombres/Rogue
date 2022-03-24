@@ -18,7 +18,7 @@ class Procedure : Cmd
 
     locals         = Local[]
 
-    throws         : Exception
+    throws         : Type
     # Most general type of exception that this procedure throws (or null)
 
   METHODS

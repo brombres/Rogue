@@ -68,7 +68,7 @@ class Resolver : Visitor
       if (context.type.is_reference and not context.is_anchored)
         local v = auto_local( context.t, "anchored_context", context.type )
         add_local( v )
-        current_statements.write( SetLocal(context.t,v,context,&initial_assignment) )
+        insert( SetLocal(context.t,v,context,&initial_assignment) )
         cmd.context = GetLocal(context.t,v)
       endIf
       return on_validate( cmd->(as CallProcedure) )
@@ -79,7 +79,7 @@ class Resolver : Visitor
         if (arg.type.is_reference and not arg.is_anchored)
           local v = auto_local( arg.t, "anchored_arg_"+i, arg.type )
           add_local( v )
-          current_statements.write( SetLocal(arg.t,v,arg,&initial_assignment) )
+          insert( SetLocal(arg.t,v,arg,&initial_assignment) )
           cmd.args[i] = GetLocal(arg.t,v)
         endIf
       endForEach
@@ -117,9 +117,9 @@ class Resolver : Visitor
     method on_validate( cmd:UnresolvedCreateObject )->Cmd
       local v = auto_local( cmd.t, "obj", cmd.of_type )
       add_local( v )
-      current_statements.write( CreateObject(cmd.t,cmd.of_type,v) )
+      insert( CreateObject(cmd.t,cmd.of_type,v) )
       if (cmd.m_init)
-        current_statements.write( validate(CallMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
+        insert( validate(CallMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
       endIf
       return validate( GetLocal(cmd.t,v) )
 
@@ -322,7 +322,7 @@ class Resolver : Visitor
       if (not exception_type.instance_of(Program.type_Exception) or exception_type is Program.type_null)
         throw cmd.exception.t.error( "Thrown value must be instanceOf type Exception." )
       endIf
-      #back_propagate_thrown_exception( exception_type )
+      back_propagate_thrown_exception( exception_type )
       return cmd
 
     method on_visit( cmd:Unary )
@@ -345,13 +345,16 @@ class Resolver : Visitor
       endIf
 }#
 
-#{
     method back_propagate_thrown_exception( type:Type )
       forEach (control_structure in control_stack step -1)
-        control_structure.throws_exception
-        if (control_structure.catches(type)) return
+        control_structure.throws_exception = true
+        if (control_structure.catches_exception(type)) return
       endForEach
-      }#
+      this_procedure.throws = type
+
+    method insert( cmd:Cmd )
+      trace control_stack.last.type_name
+      control_stack.last.initialization.add( cmd )
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m = this_module
