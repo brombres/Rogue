@@ -14,7 +14,7 @@ class Module
     types             = StringTable<<Type>>()
     routines          = StringTable<<Routine>>()
 
-    attributes : Int32
+    flags : Int32
 
     native_headers = String[]
     native_code    = String[]

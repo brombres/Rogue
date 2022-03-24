@@ -1403,7 +1403,7 @@ class ParserCore [abstract]
                 _execute(ip_catches)
                 _pop_frame
                 if (not _consume(TokenType.KEYWORD_END_TRY)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_TRY )
-                if (not disable_output) _push( Try(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( Try(_cur_t,_node_arg(-2),_node_arg(-1)->(as Catches)), 2 )
                 return
               endTemporarily
             endIf
@@ -1428,7 +1428,7 @@ class ParserCore [abstract]
               endIf
             endWhile
             if (disable_output)     _discard_list
-            else                    _push_list( CmdList(_list_t) )
+            else                    _push_list( Catches(_list_t) )
             return
           case ip_catch_clause
             _save_position

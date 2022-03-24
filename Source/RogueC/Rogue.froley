@@ -1116,7 +1116,7 @@ parser
     multi_line_statements
     catches
     mustConsume "endTry"
-    produce Try(statements,catches):ControlStructure
+    produce Try(statements,catches:Catches):ControlStructure
   endOn
 
 - catches
@@ -1133,7 +1133,7 @@ parser
         create Catch(var_name:String,exception_type:Type,statements):ControlStructure
       endOn
     endWhile
-  produceList
+  produceList Catches
 
 - catch_clause
   savePosition

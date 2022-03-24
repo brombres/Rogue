@@ -10,7 +10,7 @@ class Template
   METHODS
     method init( name, placeholders, tokens, attributes:Int32 )
       this.attributes = Attributes( tokens.first )
-      this.attributes.attributes = attributes
+      this.attributes.flags = attributes
 
     method description->String
       return name

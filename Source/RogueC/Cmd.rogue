@@ -59,9 +59,6 @@ class Cmd( t:Token )
     method last->Cmd
       throw UnsupportedOperationError()
 
-    method list->Cmd[]
-      throw UnsupportedOperationError()
-
     method remove_first->Cmd
       throw UnsupportedOperationError()
 
@@ -130,9 +127,6 @@ class CmdList : Cmd
     method last->Cmd
       return @list.last
 
-    method list->Cmd[]
-      return @list
-
     method list_description->String
       use builder = StringBuilder.pool
         builder.print '['
@@ -165,6 +159,7 @@ class TokenList : Cmd
     method init( t, tokens )
 
     method init( existing:TokenList )
+      prior.init( existing )
       tokens = existing.tokens.cloned
 
     method to->Token[]
@@ -808,16 +803,10 @@ class PropertyDeclarations : Cmd
 endClass
 
 class Property : Cmd
-  DEFINITIONS
-    IS_NATIVE = 1
-
-    ROGUE_ATTRIBUTE( is_native, IS_NATIVE )
-
   PROPERTIES
     name          : String
     initial_value : Cmd
     type          : Type
-    attributes    : Int32
 
   METHODS
     method init( t, name, initial_value, type )
@@ -827,7 +816,6 @@ class Property : Cmd
       name = existing.name
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
-      attributes = existing.attributes
 
     method description->String
       return "Property($,$,$)" (%name,%initial_value,%type)
@@ -912,10 +900,11 @@ endClass
 
 class ControlStructure : Cmd
   PROPERTIES
-    locals          = Local[]  # local to the scope of the control structure
-    statements      : Cmd
-    control_type    : ControlType
-    control_escapes : Logical
+    locals           = Local[]  # local to the scope of the control structure
+    statements       : Cmd
+    control_type     : ControlType
+    control_escapes  : Logical
+    throws_exception : Logical
 
   METHODS
     method init( t:Token, control_type:ControlType )
@@ -1204,6 +1193,7 @@ class PrintValue : Cmd
     method init( t, operand )
 
     method init( existing:PrintValue )
+      prior.init( existing )
       operand = existing.operand.cloned
 
     method description->String
@@ -1860,16 +1850,26 @@ endClass
 
 class Try : ControlStructure
   PROPERTIES
-    catches : Cmd
+    catches : Catches
 
   METHODS
     method init( t, statements, catches )
 
     method init( existing:Try )
       prior.init( existing )
-      if (existing.catches) catches = existing.catches.cloned
+      if (existing.catches) catches = existing.catches.cloned->(as Catches)
 
     method description->String
       return "Try($,$)" (%statements,%catches)
 
 endClass
+
+class Catches : CmdList
+  METHODS
+    method description->String
+      return "Catches" + list_description
+
+    method get( index:Int32 )->Catch
+      return list[index]->(as Catch)
+endClass
+

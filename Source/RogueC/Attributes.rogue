@@ -33,25 +33,25 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_visiting,      Attribute.VISITING )
 
   PROPERTIES
-    attributes : Int32
+    flags : Int32
 
   METHODS
     method init( t )
 
-    method init( t, attributes )
+    method init( t, flags )
 
     method init( other:Attributes )
       t = other.t
-      attributes = other.attributes
+      flags = other.flags
 
     method add( cmd:Cmd )
-      attributes |= cmd.attribute_flags
+      flags |= cmd.attribute_flags
 
     method add( flags:Int32 )
-      attributes |= flags
+      flags |= flags
 
     method contains( flags:Int32 )->Logical
-      return (attributes & flags)?
+      return (flags & flags)?
 
     method contains( value:String )->Logical
       if ((forEach in this)->String == value) return true
@@ -61,7 +61,7 @@ class Attributes : CmdList
       return "Attributes" + list_description
 
     method is_reference->Logical
-      return (attributes & (Attribute.OBJECT))?
+      return (flags & (Attribute.OBJECT))?
 endClass
 
 augment

@@ -318,9 +318,11 @@ class Resolver : Visitor
 
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
-      if (not cmd.exception.require_type.instance_of(Program.type_Exception))
+      local exception_type = cmd.exception.require_type
+      if (not exception_type.instance_of(Program.type_Exception) or exception_type is Program.type_null)
         throw cmd.exception.t.error( "Thrown value must be instanceOf type Exception." )
       endIf
+      #back_propagate_thrown_exception( exception_type )
       return cmd
 
     method on_visit( cmd:Unary )
@@ -342,6 +344,14 @@ class Resolver : Visitor
         if (not v.type) v.type = v.initial_value.type
       endIf
 }#
+
+#{
+    method back_propagate_thrown_exception( type:Type )
+      forEach (control_structure in control_stack step -1)
+        control_structure.throws_exception
+        if (control_structure.catches(type)) return
+      endForEach
+      }#
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m = this_module
