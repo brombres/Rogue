@@ -1,33 +1,30 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
 module Rogue
 
-class Visitor<<$ReturnType>>
+class Visitor
+  # Tree-rebuilding visitor.
+  #
+  # Default per-node call sequence:
+  #
+  #   CALL                       OVERLOADABLE METHOD
+  #   --------------------       -----------------------------------------
+  #   visit(cmd)->Cmd         -> on(cmd:CmdType)->Cmd
+  #     visit_content(cmd)    ->   on_visit(cmd:CmdType)
+  #       visit_children(cmd) ->     on_visit_children(cmd:CmdType)
+  #     validate(cmd)->Cmd    ->   on_validate(cmd:CmdType)->Cmd
+  #
+  # For visit() and validate() the AST is rebuilt with the return value the
+  # call, so return 'cmd' to keep that subtree or else return a different Cmd
+  # node to replace the subtree.
   PROPERTIES
     this_module    : Module
     this_type      : Type
     this_procedure : Procedure
 
   METHODS
-    method on( cmd:Cmd )->$ReturnType
-      # Default per-node call sequence for regular 'Visitor' AKA 'Visitor<<Cmd>>':
-      #   CALL                  OVERLOADABLE METHOD
-      #   --------------------  -----------------------------------------
-      #   visit(cmd)            -> on(cmd:CmdType)->Cmd (or ->ResultType)
-      #   visit_content(cmd)       -> on_visit(cmd:CmdType)
-      #     visit_children(cmd)       -> on_visit_children(cmd:CmdType)
-      #                            on_validate(cmd:CmdType)->Cmd/ResultType
-      #
-      # For a regular 'Visitor' AKA 'Visitor<<Cmd>>':
-      # - The AST is rebuilt with the return value of this call, so return
-      #   'cmd' to keep this subtree or else return a different Cmd node to
-      #   replace this subtree.
+    method on( cmd:Cmd )->Cmd
       visit_content( cmd )
-      if ($ReturnType isType Cmd)
-        return validate( cmd )
-      else
-        validate( cmd )
-        return $ReturnType.meta.default_value
-      endIf
+      return validate( cmd )
 
     method on_visit( cmd:Cmd )
       # Called from on(CmdType). If you overload this method with an extended
@@ -35,11 +32,10 @@ class Visitor<<$ReturnType>>
       # when you call visit_children(cmd).
       visit_children( cmd )
 
-    method on_validate( cmd:Cmd )->$ReturnType
-      if ($ReturnType isType Cmd) return cmd
-      else                            return $ReturnType.meta.default_value
+    method on_validate( cmd:Cmd )->Cmd
+      return cmd
 
-    method visit( cmd:Cmd )->$ReturnType [propagated]
+    method visit( cmd:Cmd )->Cmd [propagated]
       # Call to invoke the appropriate on/on_visit() for the given Cmd type.
       #
       # For example:
@@ -47,13 +43,8 @@ class Visitor<<$ReturnType>>
       #     cmd.left  = visit(cmd.left)
       #     cmd.right = visit(cmd.right)
       #     return cmd
-      if ($ReturnType isType Cmd)
-        if (cmd is null) return null
-      else
-        if (cmd is null) return $ReturnType.meta.default_value
-      endIf
-      #@trace cmd.type_name
-      return cmd.dispatch<<ThisType,$ReturnType>>( this )
+      if (cmd is null) return null
+      return cmd.dispatch<<ThisType>>( this )
 
     method visit_children( cmd:Cmd )->Cmd [propagated]
       # Call from 'on()' or 'on_visit()' handler to visit subtrees.
@@ -112,463 +103,217 @@ class Visitor<<$ReturnType>>
         endForEach
       endTemporarily
 
-    method validate( cmd:Cmd )->$ReturnType [propagated]
-      if ($ReturnType isType Cmd)
-        if (cmd is null) return null
-      else
-        if (cmd is null) return $ReturnType.meta.default_value
-      endIf
-      return cmd.dispatch_on_validate<<ThisType,$ReturnType>>( this )
+    method validate( cmd:Cmd )->Cmd [propagated]
+      if (cmd is null) return null
+      return cmd.dispatch_on_validate<<ThisType>>( this )
 
     method on_visit_children( cmd:Cmd )
       # Overloaded automatically by the Froley compiler
       noAction
 
     method on_visit_children( cmd:CmdList )
-      if ($ReturnType isType Cmd)
-        forEach (element in writer=cmd.list.rewriter)
-          local visited_element = visit( element )
-          if (visited_element) writer.write( visited_element )
-        endForEach
-      else
-        visit( forEach in cmd.list )
-      endIf
+      forEach (element in writer=cmd.list.rewriter)
+        local visited_element = visit( element )
+        if (visited_element) writer.write( visited_element )
+      endForEach
 
     method on_visit_children( cmd:Statements )
-      if ($ReturnType isType Cmd)
-        forEach (element in writer=cmd.list.rewriter)
-          local visited_element = visit( element )
-          if (visited_element)
-            if (visited_element instanceOf Statements)
-              writer.write( forEach in visited_element )
-            else
-              writer.write( visited_element )
-            endIf
+      forEach (element in writer=cmd.list.rewriter)
+        local visited_element = visit( element )
+        if (visited_element)
+          if (visited_element instanceOf Statements)
+            writer.write( forEach in visited_element )
+          else
+            writer.write( visited_element )
           endIf
-        endForEach
-      else
-        visit( forEach in cmd.list )
-      endIf
+        endIf
+      endForEach
 
 
     method on_visit_children( cmd:Binary )
-      if ($ReturnType isType Cmd)
-        cmd.left = visit(cmd.left)
-        cmd.right = visit(cmd.right)
-      else
-        visit( cmd.left )
-        visit( cmd.right )
-      endIf
+      cmd.left = visit(cmd.left)
+      cmd.right = visit(cmd.right)
 
     method on_visit_children( cmd:Unary )
-      if ($ReturnType isType Cmd)
-        cmd.operand = visit(cmd.operand)
-      else
-        visit( cmd.operand )
-      endIf
+      cmd.operand = visit(cmd.operand)
 
     method on_visit_children( cmd:Print )
-      if ($ReturnType isType Cmd)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.args )
-      endIf
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:Println )
-      if ($ReturnType isType Cmd)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.args )
-      endIf
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:ContextAccess )
-      if ($ReturnType isType Cmd)
-        cmd.context = visit(cmd.context)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.context )
-        visit( cmd.args )
-      endIf
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:IndexAccess )
-      if ($ReturnType isType Cmd)
-        cmd.context = visit(cmd.context)
-        cmd.index = visit(cmd.index)
-      else
-        visit( cmd.context )
-        visit( cmd.index )
-      endIf
+      cmd.context = visit(cmd.context)
+      cmd.index = visit(cmd.index)
 
     method on_visit_children( cmd:Procedure )
-      if ($ReturnType isType Cmd)
-        cmd.parameters = visit(cmd.parameters)
-        cmd.return_type = visit(cmd.return_type)->(as Type)
-        cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.body = visit(cmd.body)->(as LocalScope)
-      else
-        visit( cmd.parameters )
-        visit( cmd.return_type )
-        visit( cmd.attributes )
-        visit( cmd.body )
-      endIf
+      cmd.parameters = visit(cmd.parameters)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.body = visit(cmd.body)->(as LocalScope)
 
     method on_visit_children( cmd:Local )
-      if ($ReturnType isType Cmd)
-        cmd.type = visit(cmd.type)->(as Type)
-      else
-        visit( cmd.type )
-      endIf
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_children( cmd:LocalDeclarations )
-      if ($ReturnType isType Cmd)
-        cmd.declarations = visit(cmd.declarations)
-        cmd.type = visit(cmd.type)->(as Type)
-      else
-        visit( cmd.declarations )
-        visit( cmd.type )
-      endIf
+      cmd.declarations = visit(cmd.declarations)
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_children( cmd:Access )
-      if ($ReturnType isType Cmd)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.args )
-      endIf
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:Assign )
-      if ($ReturnType isType Cmd)
-        cmd.target = visit(cmd.target)
-        cmd.new_value = visit(cmd.new_value)
-      else
-        visit( cmd.target )
-        visit( cmd.new_value )
-      endIf
+      cmd.target = visit(cmd.target)
+      cmd.new_value = visit(cmd.new_value)
 
     method on_visit_children( cmd:SetLocal )
-      if ($ReturnType isType Cmd)
-        cmd.info = visit(cmd.info)->(as Local)
-        cmd.new_value = visit(cmd.new_value)
-      else
-        visit( cmd.info )
-        visit( cmd.new_value )
-      endIf
+      cmd.info = visit(cmd.info)->(as Local)
+      cmd.new_value = visit(cmd.new_value)
 
     method on_visit_children( cmd:GetLocal )
-      if ($ReturnType isType Cmd)
-        cmd.info = visit(cmd.info)->(as Local)
-      else
-        visit( cmd.info )
-      endIf
+      cmd.info = visit(cmd.info)->(as Local)
 
     method on_visit_children( cmd:Class )
-      if ($ReturnType isType Cmd)
-        cmd.name = visit(cmd.name)
-        cmd.template_parameters = visit(cmd.template_parameters)
-        cmd.constructor_properties = visit(cmd.constructor_properties)
-        cmd.base_types = visit(cmd.base_types)
-        cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.sections = visit(cmd.sections)
-      else
-        visit( cmd.name )
-        visit( cmd.template_parameters )
-        visit( cmd.constructor_properties )
-        visit( cmd.base_types )
-        visit( cmd.attributes )
-        visit( cmd.sections )
-      endIf
+      cmd.name = visit(cmd.name)
+      cmd.template_parameters = visit(cmd.template_parameters)
+      cmd.constructor_properties = visit(cmd.constructor_properties)
+      cmd.base_types = visit(cmd.base_types)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.sections = visit(cmd.sections)
 
     method on_visit_children( cmd:PropertyDeclarations )
-      if ($ReturnType isType Cmd)
-        cmd.declarations = visit(cmd.declarations)
-        cmd.type = visit(cmd.type)->(as Type)
-      else
-        visit( cmd.declarations )
-        visit( cmd.type )
-      endIf
+      cmd.declarations = visit(cmd.declarations)
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_children( cmd:Property )
-      if ($ReturnType isType Cmd)
-        cmd.initial_value = visit(cmd.initial_value)
-        cmd.type = visit(cmd.type)->(as Type)
-      else
-        visit( cmd.initial_value )
-        visit( cmd.type )
-      endIf
+      cmd.initial_value = visit(cmd.initial_value)
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_children( cmd:ForEachCollection )
-      if ($ReturnType isType Cmd)
-        cmd.data = visit(cmd.data)
-        cmd.starting_index = visit(cmd.starting_index)
-        cmd.step_size = visit(cmd.step_size)
-      else
-        visit( cmd.data )
-        visit( cmd.starting_index )
-        visit( cmd.step_size )
-      endIf
+      cmd.data = visit(cmd.data)
+      cmd.starting_index = visit(cmd.starting_index)
+      cmd.step_size = visit(cmd.step_size)
 
     method on_visit_children( cmd:ForEachControl )
-      if ($ReturnType isType Cmd)
-        cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
-        cmd.collection = visit(cmd.collection)->(as ForEachCollection)
-      else
-        visit( cmd.optional_at )
-        visit( cmd.collection )
-      endIf
+      cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
+      cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
     method on_visit_children( cmd:Block )
-      if ($ReturnType isType Cmd)
-        cmd.statements = visit(cmd.statements)
-      else
-        visit( cmd.statements )
-      endIf
+      cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Conditional )
-      if ($ReturnType isType Cmd)
-        cmd.condition = visit(cmd.condition)
-        cmd.statements = visit(cmd.statements)
-      else
-        visit( cmd.condition )
-        visit( cmd.statements )
-      endIf
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:ForEach )
-      if ($ReturnType isType Cmd)
-        cmd.condition = visit(cmd.condition)->(as ForEachControl)
-        cmd.statements = visit(cmd.statements)
-      else
-        visit( cmd.condition )
-        visit( cmd.statements )
-      endIf
+      cmd.condition = visit(cmd.condition)->(as ForEachControl)
+      cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:ControlStructure )
-      if ($ReturnType isType Cmd)
-        cmd.statements = visit(cmd.statements)
-      else
-        visit( cmd.statements )
-      endIf
+      cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Iterator )
-      if ($ReturnType isType Cmd)
-        cmd.initialization = visit(cmd.initialization)
-        cmd.control = visit(cmd.control)
-        cmd.condition = visit(cmd.condition)
-        cmd.statements = visit(cmd.statements)
-        cmd.upkeep = visit(cmd.upkeep)
-      else
-        visit( cmd.initialization )
-        visit( cmd.control )
-        visit( cmd.condition )
-        visit( cmd.statements )
-        visit( cmd.upkeep )
-      endIf
+      cmd.initialization = visit(cmd.initialization)
+      cmd.control = visit(cmd.control)
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
+      cmd.upkeep = visit(cmd.upkeep)
 
     method on_visit_children( cmd:If )
-      if ($ReturnType isType Cmd)
-        cmd.condition = visit(cmd.condition)
-        cmd.statements = visit(cmd.statements)
-        cmd.cmd_else = visit(cmd.cmd_else)->(as If)
-      else
-        visit( cmd.condition )
-        visit( cmd.statements )
-        visit( cmd.cmd_else )
-      endIf
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Return )
-      if ($ReturnType isType Cmd)
-        cmd.result = visit(cmd.result)
-      else
-        visit( cmd.result )
-      endIf
+      cmd.result = visit(cmd.result)
 
     method on_visit_children( cmd:Routine )
-      if ($ReturnType isType Cmd)
-        cmd.parameters = visit(cmd.parameters)
-        cmd.return_type = visit(cmd.return_type)->(as Type)
-        cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.body = visit(cmd.body)->(as LocalScope)
-      else
-        visit( cmd.parameters )
-        visit( cmd.return_type )
-        visit( cmd.attributes )
-        visit( cmd.body )
-      endIf
+      cmd.parameters = visit(cmd.parameters)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.body = visit(cmd.body)->(as LocalScope)
 
     method on_visit_children( cmd:CallProcedure )
-      if ($ReturnType isType Cmd)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.args )
-      endIf
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:PrintValue )
-      if ($ReturnType isType Cmd)
-        cmd.operand = visit(cmd.operand)
-      else
-        visit( cmd.operand )
-      endIf
+      cmd.operand = visit(cmd.operand)
 
     method on_visit_children( cmd:UsesModule )
-      if ($ReturnType isType Cmd)
-        cmd.path = visit(cmd.path)
-        cmd.attributes = visit(cmd.attributes)->(as Attributes)
-      else
-        visit( cmd.path )
-        visit( cmd.attributes )
-      endIf
+      cmd.path = visit(cmd.path)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
 
     method on_visit_children( cmd:DefineModule )
-      if ($ReturnType isType Cmd)
-        cmd.attributes = visit(cmd.attributes)->(as Attributes)
-      else
-        visit( cmd.attributes )
-      endIf
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
 
     method on_visit_children( cmd:ModuleQualifiedID )
-      if ($ReturnType isType Cmd)
-        cmd.context = visit(cmd.context)
-      else
-        visit( cmd.context )
-      endIf
+      cmd.context = visit(cmd.context)
 
     method on_visit_children( cmd:NativeExpression )
-      if ($ReturnType isType Cmd)
-        cmd.result_type = visit(cmd.result_type)
-      else
-        visit( cmd.result_type )
-      endIf
+      cmd.result_type = visit(cmd.result_type)
 
     method on_visit_children( cmd:UnresolvedCreateObject )
-      if ($ReturnType isType Cmd)
-        cmd.of_type = visit(cmd.of_type)->(as Type)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.of_type )
-        visit( cmd.args )
-      endIf
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:Method )
-      if ($ReturnType isType Cmd)
-        cmd.type_context = visit(cmd.type_context)->(as Type)
-        cmd.parameters = visit(cmd.parameters)
-        cmd.return_type = visit(cmd.return_type)->(as Type)
-        cmd.attributes = visit(cmd.attributes)->(as Attributes)
-        cmd.body = visit(cmd.body)->(as LocalScope)
-      else
-        visit( cmd.type_context )
-        visit( cmd.parameters )
-        visit( cmd.return_type )
-        visit( cmd.attributes )
-        visit( cmd.body )
-      endIf
+      cmd.type_context = visit(cmd.type_context)->(as Type)
+      cmd.parameters = visit(cmd.parameters)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.body = visit(cmd.body)->(as LocalScope)
 
     method on_visit_children( cmd:TypeContext )
-      if ($ReturnType isType Cmd)
-        cmd.type = visit(cmd.type)->(as Type)
-      else
-        visit( cmd.type )
-      endIf
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_children( cmd:AddAndAssignLocal )
-      if ($ReturnType isType Cmd)
-        cmd.info = visit(cmd.info)->(as Local)
-        cmd.operand = visit(cmd.operand)
-      else
-        visit( cmd.info )
-        visit( cmd.operand )
-      endIf
+      cmd.info = visit(cmd.info)->(as Local)
+      cmd.operand = visit(cmd.operand)
 
     method on_visit_children( cmd:OpAndAssign )
-      if ($ReturnType isType Cmd)
-        cmd.target = visit(cmd.target)
-        cmd.operand = visit(cmd.operand)
-      else
-        visit( cmd.target )
-        visit( cmd.operand )
-      endIf
+      cmd.target = visit(cmd.target)
+      cmd.operand = visit(cmd.operand)
 
     method on_visit_children( cmd:CallMethod )
-      if ($ReturnType isType Cmd)
-        cmd.context = visit(cmd.context)
-        cmd.args = visit(cmd.args)
-      else
-        visit( cmd.context )
-        visit( cmd.args )
-      endIf
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
 
     method on_visit_children( cmd:GetProperty )
-      if ($ReturnType isType Cmd)
-        cmd.context = visit(cmd.context)
-        cmd.info = visit(cmd.info)->(as Property)
-      else
-        visit( cmd.context )
-        visit( cmd.info )
-      endIf
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
 
     method on_visit_children( cmd:GetThisProperty )
-      if ($ReturnType isType Cmd)
-        cmd.info = visit(cmd.info)->(as Property)
-      else
-        visit( cmd.info )
-      endIf
+      cmd.info = visit(cmd.info)->(as Property)
 
     method on_visit_children( cmd:SetProperty )
-      if ($ReturnType isType Cmd)
-        cmd.context = visit(cmd.context)
-        cmd.info = visit(cmd.info)->(as Property)
-        cmd.new_value = visit(cmd.new_value)
-      else
-        visit( cmd.context )
-        visit( cmd.info )
-        visit( cmd.new_value )
-      endIf
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.new_value = visit(cmd.new_value)
 
     method on_visit_children( cmd:SetThisProperty )
-      if ($ReturnType isType Cmd)
-        cmd.info = visit(cmd.info)->(as Property)
-        cmd.new_value = visit(cmd.new_value)
-      else
-        visit( cmd.info )
-        visit( cmd.new_value )
-      endIf
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.new_value = visit(cmd.new_value)
 
     method on_visit_children( cmd:GetSingleton )
-      if ($ReturnType isType Cmd)
-        cmd.type = visit(cmd.type)->(as Type)
-      else
-        visit( cmd.type )
-      endIf
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_visit_children( cmd:ConvertToType )
-      if ($ReturnType isType Cmd)
-        cmd.operand = visit(cmd.operand)
-        cmd.to_type = visit(cmd.to_type)->(as Type)
-      else
-        visit( cmd.operand )
-        visit( cmd.to_type )
-      endIf
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
 
     method on_visit_children( cmd:CreateObject )
-      if ($ReturnType isType Cmd)
-        cmd.of_type = visit(cmd.of_type)->(as Type)
-        cmd.info = visit(cmd.info)->(as Local)
-      else
-        visit( cmd.of_type )
-        visit( cmd.info )
-      endIf
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.info = visit(cmd.info)->(as Local)
 
     method on_visit_children( cmd:Definition )
-      if ($ReturnType isType Cmd)
-        cmd.value = visit(cmd.value)
-      else
-        visit( cmd.value )
-      endIf
+      cmd.value = visit(cmd.value)
 
     method on_visit_children( cmd:Throw )
-      if ($ReturnType isType Cmd)
-        cmd.exception = visit(cmd.exception)
-      else
-        visit( cmd.exception )
-      endIf
+      cmd.exception = visit(cmd.exception)
 
     method on_visit_children( cmd:Try )
         cmd.statements = visit(cmd.statements)
@@ -578,9 +323,5 @@ class Visitor<<$ReturnType>>
         cmd.exception_type = visit(cmd.exception_type)->(as Type)
         cmd.statements = visit(cmd.statements)
 
-endClass
-
-class Visitor : Visitor<<Cmd>>
-  # Standard tree-rebuilding visitor.
 endClass
 
