@@ -8,6 +8,7 @@ class Resolver : Visitor
     control_stack     = ControlStructure[]
 
     current_statements : ListRewriter<<Cmd>>
+    insert_in_init     = false
 
     autoname_index = 0
 
@@ -114,6 +115,7 @@ class Resolver : Visitor
 
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
 
+      #{
     method on_validate( cmd:UnresolvedCreateObject )->Cmd
       local v = auto_local( cmd.t, "obj", cmd.of_type )
       add_local( v )
@@ -122,6 +124,7 @@ class Resolver : Visitor
         insert( validate(CallMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
       endIf
       return validate( GetLocal(cmd.t,v) )
+      }#
 
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
@@ -132,6 +135,15 @@ class Resolver : Visitor
       temporarily this_type = cmd.type_context
         on_visit( cmd->(as Procedure) )
       endTemporarily
+
+    method on_visit( cmd:If )->Cmd
+      push_scope( cmd )
+      temporarily insert_in_init = true
+        cmd.condition = visit( cmd.condition )
+      endTemporarily
+      cmd.statements = visit( cmd.statements )
+      pop_scope
+      return cmd
 
     method on_visit( cmd:Is )->Cmd
       cmd.left = visit( cmd.left )
@@ -196,6 +208,18 @@ class Resolver : Visitor
       endForEach
 
       return null
+
+    method on_validate( cmd:LogicalAnd )->Cmd
+      if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
+        local t = cmd.t
+        local v = auto_local( t, "and", cmd.left.type )
+        add_local( v )
+        insert( SetLocal(t,v,cmd.left) )
+        local statements = LocalScope( t, Statements(t,SetLocal(t,v,cmd.right)) )
+        insert( If(t, GetLocal(t,v), statements, null) )
+        return GetLocal(t,v)
+      endIf
+      return cmd
 
     method on_visit( cmd:Method )
       temporarily this_type = cmd.type_context
@@ -353,8 +377,11 @@ class Resolver : Visitor
       this_procedure.throws = type
 
     method insert( cmd:Cmd )
-      trace control_stack.last.type_name
-      control_stack.last.initialization.add( cmd )
+      if (insert_in_init)
+        control_stack.last.initialization.add( cmd )
+      else
+        current_statements.write( cmd )
+      endIf
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m = this_module

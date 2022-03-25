@@ -326,6 +326,11 @@ class CGenerator : Visitor
       writer.print cmd.of_type.c_name
       writer.print ")"
 
+method on_visit( cmd:UnresolvedCreateObject ) # FIXME remove
+  writer.print "ROGUE_CREATE_OBJECT("
+  writer.print cmd.of_type.c_name
+  writer.print ")"
+
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 

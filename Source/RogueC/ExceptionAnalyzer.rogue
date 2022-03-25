@@ -48,3 +48,35 @@ augment
       return false
 endAugment
 
+augment
+  METHODS
+    method Cmd.has_unanchored_reference->Logical
+      return false
+
+    method CallProcedure.has_unanchored_reference->Logical
+      if (not info.return_type) return false
+      return info.return_type.is_reference
+
+    method UnresolvedCreateObject.has_unanchored_reference->Logical
+      return true
+endAugment
+
+augment
+  METHODS
+    method Cmd.needs_decomposition->Logical
+      return has_unanchored_reference or throws_exception
+endAugment
+
+augment
+  METHODS
+    method Cmd.throws_exception->Logical
+      return false
+
+    method CallProcedure.throws_exception->Logical
+      return info.throws?
+
+    method Throw.throws_exception->Logical
+      return true
+
+endAugment
+
