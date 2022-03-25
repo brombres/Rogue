@@ -5,16 +5,44 @@ class CSpecializer : Visitor
     writer         : CWriter
     autoname_index = 0
 
-    statement_injector : ListRewriter<<Cmd>>
+    current_statements : ListRewriter<<Cmd>>
+    insert_in_init     : Logical
+    control_stack      = ControlStructure[]
 
   METHODS
+    method add_local( t:Token, base:String, type:Type )->Local
+      local v = Local( t, autoname(base), null, type )
+      v.c_name = "$_$" (v.name,this_procedure.locals.count)
+      this_procedure.locals.add( v )
+      assert control_stack.count
+      control_stack.last.locals.add( v )
+      return v
+
     method autoname( base:String )->String
       local result = "_auto_$_$"(base,autoname_index)
       ++autoname_index
       return result
 
-    method on_visit( cmd:ControlStructure )
-      visit_children( cmd )
+    method insert( cmd:Cmd )
+      if (insert_in_init)
+        control_stack.last.initialization.add( cmd )
+      else
+        current_statements.write( cmd )
+      endIf
+
+    method on( cmd:ControlStructure )->Cmd
+      control_stack.add( cmd )
+      visit_content( cmd )
+      control_stack.remove_last
+      return cmd
+
+    method on_visit( cmd:If )
+      control_stack.add( cmd )
+      temporarily insert_in_init = true
+        cmd.condition = visit( cmd.condition )
+      endTemporarily
+      cmd.statements = visit( cmd.statements )
+      control_stack.remove_last
 
     method on_visit( cmd:LiteralString )
       local str = cmd.value
@@ -43,6 +71,30 @@ class CSpecializer : Visitor
         endUse
       endIf
 
+    method on( cmd:LogicalAnd )->Cmd
+      if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
+        local t = cmd.t
+        local v = add_local( t, "and", cmd.left.type )
+        cmd.left = visit( cmd.left )
+        insert( SetLocal(t,v,cmd.left) )
+        local statements = LocalScope( t, Statements(t,SetLocal(t,v,cmd.right)) )
+        insert( visit( If(t, GetLocal(t,v), statements, null) ) )
+        return GetLocal(t,v)
+      endIf
+      return cmd
+
+    method on( cmd:LogicalOr )->Cmd
+      if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
+        local t = cmd.t
+        local v = add_local( t, "or", cmd.left.type )
+        cmd.left = visit( cmd.left )
+        insert( SetLocal(t,v,cmd.left) )
+        local statements = LocalScope( t, Statements(t,SetLocal(t,v,cmd.right)) )
+        insert( visit( If(t, LogicalNot(t,GetLocal(t,v)), statements, null) ) )
+        return GetLocal(t,v)
+      endIf
+      return cmd
+
     method on_visit( cmd:Procedure )
       autoname_index = 0
 
@@ -60,10 +112,10 @@ class CSpecializer : Visitor
       visit_children( cmd )
 
     method on_visit( cmd:Statements )
-      temporarily statement_injector = cmd.list.rewriter
-        forEach (statement in statement_injector)
+      temporarily current_statements = cmd.list.rewriter
+        forEach (statement in current_statements)
           statement = visit( statement )
-          if (statement) statement_injector.write( statement )
+          if (statement) current_statements.write( statement )
         endForEach
       endTemporarily
 

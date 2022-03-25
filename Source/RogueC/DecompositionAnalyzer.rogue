@@ -1,0 +1,21 @@
+module Rogue
+
+class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
+  METHODS
+    method on( cmd:CallProcedure )->Logical
+      if (cmd.info.throws?) return true          # call throws exception
+      return cmd.info.return_type.is_reference   # unanchored reference?
+
+    method on( cmd:UnresolvedCreateObject )->Logical
+      return true # unanchored reference
+endClass
+
+augment
+  METHODS
+    method Cmd.catches_exception( of_type:Type )->Logical
+      return false
+
+    method Cmd.needs_decomposition->Logical
+      return DecompositionAnalyzer.visit( this )
+endAugment
+

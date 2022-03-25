@@ -448,7 +448,6 @@ class ScannerCore [abstract]
             if (not _execute(ip_scan_id_or_keyword)) return false
             if (not _execute(ip_scan_number)) return false
             _throw_syntax_error
-            return true
           case ip_scan_comment
             if (_scanner.consume('#'))
               if (_scanner.consume('{'))
