@@ -1,6 +1,9 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
 module Rogue
 
+class InspectonVisitor : InspectionVisitor<<Logical>>
+endClass
+
 class InspectionVisitor<<$ReturnType>>
   METHODS
     method on( cmd:Cmd )->$ReturnType
@@ -14,15 +17,14 @@ class InspectionVisitor<<$ReturnType>>
       return $ReturnType.meta.default_value
 
     method on( cmd:CmdList )->Logical
-      local result : $ReturnType
       forEach (statement in cmd.list)
-        result = visit(statement)
+        local result = visit(statement)
         if (result?) return result
       endForEach
-      return result
+      return $ReturnType.meta.default_value
 
     method on_enter( cmd:Cmd )
-      # By default this method is called from the default on(CmdType) before
+      # This method is called from the default on(CmdType) before
       # children are visited.
 
     method visit( cmd:Cmd )->$ReturnType [propagated]
