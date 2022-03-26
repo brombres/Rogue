@@ -122,7 +122,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.to_type)
       return result
 
-    method on( cmd:CreateObject )->$ReturnType
+    method on( cmd:CreateObjectAndSetLocal )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.of_type)
       if (result?) return result
@@ -336,7 +336,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
-    method on( cmd:UnresolvedCreateObject )->$ReturnType
+    method on( cmd:CreateObject )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.of_type)
       if (result?) return result

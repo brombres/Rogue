@@ -63,32 +63,6 @@ class Resolver : Visitor
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
 
-    method on_validate( cmd:CallMethod )->Cmd
-      # Anchor the object context if necessary
-      local context = cmd.context
-      if (context.type.is_reference and not context.is_anchored)
-        local v = auto_local( context.t, "anchored_context", context.type )
-        add_local( v )
-        insert( SetLocal(context.t,v,context,&initial_assignment) )
-        cmd.context = GetLocal(context.t,v)
-      endIf
-      return on_validate( cmd->(as CallProcedure) )
-
-    method on_validate( cmd:CallProcedure )->Cmd
-      # Anchor any args that need it
-      forEach (arg at i in cmd.args)
-        if (arg.type.is_reference and not arg.is_anchored)
-          local v = auto_local( arg.t, "anchored_arg_"+i, arg.type )
-          add_local( v )
-          insert( SetLocal(arg.t,v,arg,&initial_assignment) )
-          cmd.args[i] = GetLocal(arg.t,v)
-        endIf
-      endForEach
-
-      #DecompositionAnalyzer.propagate_exception_status( this_procedure, cmd.info )
-
-      return cmd
-
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -114,17 +88,6 @@ class Resolver : Visitor
       endIf
 
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
-
-      #{
-    method on_validate( cmd:UnresolvedCreateObject )->Cmd
-      local v = auto_local( cmd.t, "obj", cmd.of_type )
-      add_local( v )
-      insert( CreateObject(cmd.t,cmd.of_type,v) )
-      if (cmd.m_init)
-        insert( validate(CallMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
-      endIf
-      return validate( GetLocal(cmd.t,v) )
-      }#
 
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
@@ -490,7 +453,7 @@ class Resolver : Visitor
       if (m_init)
         if (not args) args = CmdList(t)
         cast_args_to_parameter_types( args, m_init )
-        return UnresolvedCreateObject( t, type_context, m_init, args )
+        return CreateObject( t, type_context, m_init, args )
       endIf
 
       local mesg : String
@@ -500,7 +463,7 @@ class Resolver : Visitor
 
         if (args.count == 0 and Candidates.count == 0)
           # No constructors available and no constructor required.
-          return UnresolvedCreateObject( t, type_context, null, args )
+          return CreateObject( t, type_context, null, args )
         endIf
 
         mesg = "No exact match for object constructor $("(type_context)

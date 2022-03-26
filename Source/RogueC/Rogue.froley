@@ -1541,7 +1541,7 @@ parser
   #  create SubtractValue(left,right):Binary
   create Type(name:String)
   create TypeContext(type:Type)
-  create UnresolvedCreateObject(of_type:Type,args)
+  create CreateObject(of_type:Type,args)
   #  create ValueAsInt32(operand):Unary
   #  create XYGetX(context)
   #  create XYGetY(context)

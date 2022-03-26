@@ -6,7 +6,7 @@ class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
       if (cmd.info.throws?) return true          # call throws exception
       return cmd.info.return_type.is_reference   # unanchored reference?
 
-    method on( cmd:UnresolvedCreateObject )->Logical
+    method on( cmd:CreateObject )->Logical
       return true # unanchored reference
 endClass
 

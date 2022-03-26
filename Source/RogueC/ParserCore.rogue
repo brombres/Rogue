@@ -2241,7 +2241,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( SetThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             if (not disable_output) _push( Type(_cur_t,_string_arg(-1)), 1 )
             if (not disable_output) _push( TypeContext(_cur_t,_node_arg(-1)->(as Type)), 1 )
-            if (not disable_output) _push( UnresolvedCreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)), 2 )
+            if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)), 2 )
             return
           others
             return

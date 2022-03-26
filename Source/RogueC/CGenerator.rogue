@@ -325,14 +325,14 @@ class CGenerator : Visitor
       visit( cmd.statements )
       on_leave( cmd )
 
-    method on_visit( cmd:CreateObject )
+    method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
       writer.print " = "
       writer.print "ROGUE_CREATE_OBJECT("
       writer.print cmd.of_type.c_name
       writer.print ")"
 
-method on_visit( cmd:UnresolvedCreateObject ) # FIXME remove
+method on_visit( cmd:CreateObject ) # FIXME remove
   writer.print "ROGUE_CREATE_OBJECT("
   writer.print cmd.of_type.c_name
   writer.print ")"

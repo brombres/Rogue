@@ -219,7 +219,7 @@ augment
     method ConvertToType.type->Type
       return to_type
 
-    method CreateObject.type->Type
+    method CreateObjectAndSetLocal.type->Type
       return of_type
 
       #{
@@ -336,7 +336,7 @@ augment
     method Unary.type->Type
       return operand.type
 
-    method UnresolvedCreateObject.type->Type
+    method CreateObject.type->Type
       return of_type
 
     #{

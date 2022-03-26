@@ -30,11 +30,40 @@ class CSpecializer : Visitor
         current_statements.write( cmd )
       endIf
 
+    method on( cmd:CallMethod )->Cmd
+      # Anchor the object context if necessary
+      local context = cmd.context
+      if (context.type.is_reference and not context.is_anchored)
+        local v = add_local( context.t, "anchored_context", context.type )
+        insert( SetLocal(context.t,v,context,&initial_assignment) )
+        cmd.context = GetLocal(context.t,v)
+      endIf
+      return on( cmd->(as CallProcedure) )
+
+    method on( cmd:CallProcedure )->Cmd
+      # Anchor any args that need it
+      forEach (arg at i in cmd.args)
+        if (arg.type.is_reference and not arg.is_anchored)
+          local v = add_local( arg.t, "anchored_arg_"+i, arg.type )
+          insert( SetLocal(arg.t,v,arg,&initial_assignment) )
+          cmd.args[i] = GetLocal(arg.t,v)
+        endIf
+      endForEach
+      return cmd
+
     method on( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
       visit_content( cmd )
       control_stack.remove_last
       return cmd
+
+    method on( cmd:CreateObject )->Cmd
+      local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
+      insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
+      if (cmd.m_init)
+        insert( validate(CallMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
+      endIf
+      return GetLocal(cmd.t,v)
 
     method on_visit( cmd:If )
       control_stack.add( cmd )
@@ -200,6 +229,12 @@ augment ControlStructure
         endIf
       endForEach
       return false
+endAugment
+
+augment CreateObjectAndSetLocal
+  METHODS
+    method intermediate_v->Local
+      return info
 endAugment
 
 augment Local
