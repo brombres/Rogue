@@ -819,6 +819,8 @@ class ParserCore [abstract]
           case ip_native_code_block
             if (_next_t.type == TokenType.KEYWORD_NATIVE_HEADER)
               temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
                 _execute(ip_string)
                 _pop_frame
                 if (not disable_output) _push( NativeHeader(_cur_t,_string_arg(-1)), 1 )
@@ -826,6 +828,8 @@ class ParserCore [abstract]
               endTemporarily
             elseIf (_next_t.type == TokenType.KEYWORD_NATIVE_CODE)
               temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
                 _execute(ip_string)
                 _pop_frame
                 if (not disable_output) _push( NativeCode(_cur_t,_string_arg(-1)), 1 )
@@ -2215,7 +2219,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)->(as Local)), 2 )
             if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
-            if (not disable_output) _push( Iterator(_cur_t,_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
+            if (not disable_output) _push( Iterator(_cur_t,_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 4 )
             if (not disable_output) _push( GetLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
             if (not disable_output) _push( GetProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
             if (not disable_output) _push( GetThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
@@ -2240,6 +2244,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( SetLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( SetProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
             if (not disable_output) _push( SetThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( Stepper(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( Type(_cur_t,_string_arg(-1)), 1 )
             if (not disable_output) _push( TypeContext(_cur_t,_node_arg(-1)->(as Type)), 1 )
             if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)), 2 )

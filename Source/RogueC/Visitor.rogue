@@ -327,5 +327,11 @@ class Visitor
         cmd.exception_type = visit(cmd.exception_type)->(as Type)
         cmd.statements = visit(cmd.statements)
 
+    method on_visit_children( cmd:Convert )
+        cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:Stepper )
+        cmd.operand = visit(cmd.operand)
+
 endClass
 

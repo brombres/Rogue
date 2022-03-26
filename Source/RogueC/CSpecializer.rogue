@@ -93,6 +93,17 @@ class CSpecializer : Visitor
       cmd.statements = visit( cmd.statements )
       control_stack.remove_last
 
+    method on_visit( cmd:Iterator )
+      control_stack.add( cmd )
+      temporarily insert_in_init = true
+        cmd.condition = visit( cmd.condition )
+      endTemporarily
+      cmd.initialization = visit( cmd.initialization )
+      cmd.statements = visit( cmd.statements )
+      cmd.upkeep = visit( cmd.upkeep )
+      cmd.control = visit( cmd.control )
+      control_stack.remove_last
+
     method on_visit( cmd:LiteralString )
       local str = cmd.value
       if (not Program.unique_strings.contains(str))

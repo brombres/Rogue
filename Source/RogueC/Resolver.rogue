@@ -63,6 +63,12 @@ class Resolver : Visitor
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
 
+    method on_validate( cmd:CallProcedure )->Cmd
+      if (cmd.info.throws)
+        back_propagate_thrown_exception( cmd.info.throws )
+      endIf
+      return cmd
+
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -89,6 +95,12 @@ class Resolver : Visitor
 
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
 
+    method on_validate( cmd:CreateObject )->Cmd
+      if (cmd.m_init and cmd.m_init.throws)
+        back_propagate_thrown_exception( cmd.m_init.throws )
+      endIf
+      return cmd
+
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
       cmd.condition.resolve_foreach( this, cmd, iterator )
@@ -105,6 +117,7 @@ class Resolver : Visitor
         cmd.condition = visit( cmd.condition )
       endTemporarily
       cmd.statements = visit( cmd.statements )
+      if (cmd.cmd_else) cmd.cmd_else = visit( cmd.cmd_else )->(as If)
       pop_scope
 
     method on( cmd:Is )->Cmd
@@ -128,6 +141,17 @@ class Resolver : Visitor
       else
         return cmd
       endIf
+
+    method on_visit( cmd:Iterator )
+      push_scope( cmd )
+      temporarily insert_in_init = true
+        cmd.condition = visit( cmd.condition )
+      endTemporarily
+      cmd.initialization = visit( cmd.initialization )
+      cmd.statements = visit( cmd.statements )
+      cmd.upkeep = visit( cmd.upkeep )
+      cmd.control = visit( cmd.control )
+      pop_scope
 
     method on( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
@@ -870,8 +894,11 @@ augment
 
     method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
-      resolver.visit( cmd_control )
-      resolver.visit( cmd_collection )
+      resolver.push_scope( cmd_iterator )
+      temporarily resolver.insert_in_init = true
+        resolver.visit( cmd_control )
+        resolver.visit( cmd_collection )
+      endTemporarily
 
       local v_iterator_name = which{ cmd_control.name || resolver.autoname("i") }
       local v_iterator = Local( cmd_control.t, v_iterator_name, null, type )
@@ -887,6 +914,8 @@ augment
       else
         cmd_iterator.upkeep.add( Preincrement(t, Access(t,v_iterator_name)) )
       endIf
+
+      resolver.pop_scope
 
 endAugment
 

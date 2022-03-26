@@ -693,9 +693,11 @@ parser
 
 - native_code_block
   on "nativeHeader"
+    consume_eols
     string
     produce NativeHeader( content:String )
   elseOn "nativeCode"
+    consume_eols
     string
     produce NativeCode( content:String )
   endOn
@@ -1049,13 +1051,13 @@ parser
     return
   endOn
 
-  on "++" expression -> Preincrement(operand):Unary
-  on "--" expression -> Predecrement(operand):Unary
+  on "++" expression -> Preincrement(operand):Stepper
+  on "--" expression -> Predecrement(operand):Stepper
 
   expression
 
-  on "++" -> Postincrement(operand):Unary
-  on "--" -> Postdecrement(operand):Unary
+  on "++" -> Postincrement(operand):Stepper
+  on "--" -> Postdecrement(operand):Stepper
 
   on "=" expression -> Assign(target,new_value)
 
@@ -1432,7 +1434,7 @@ parser
 
 - additional_node_types
   create AddAndAssignLocal(info:Local,operand)
-  create Convert(operand):Unary
+  create Convert(operand)
   create ConvertToByte(operand):Convert
   create ConvertToCharacter(operand):Convert
   create ConvertToInt32(operand):Convert
@@ -1476,7 +1478,7 @@ parser
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
   #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
-  create Iterator(initialization,control,condition,statements,upkeep):Conditional
+  create Iterator(control,condition,statements,upkeep):Conditional
   create GetLocal(info:Local)
   create GetProperty(context,info:Property)
   create GetThisProperty(info:Property)
@@ -1535,6 +1537,7 @@ parser
   create SetThisProperty(info:Property,new_value)
   #  create SetThisProperty(info:Property,new_value)
   #  create StackTopInt32
+  create Stepper(operand)
   #  create SubtractInt32(left,right):Binary
   #  create SubtractObject(left,right):Binary
   #  create SubtractReal64(left,right):Binary

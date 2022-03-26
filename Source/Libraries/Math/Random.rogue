@@ -137,9 +137,9 @@ class Random [singleton]
     method byte->Byte
       # Returns a random byte between 0 and 255.
       return Byte(real64 * 256)
+}#
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.
       return (real64 > 0.5)
-}#
 endClass

@@ -47,7 +47,7 @@ class CGenerator : Visitor
       return null
 
     method on_visit( cmd:Cmd )
-      throw UnsupportedOperationError("CGenerator.on_visit($)"(cmd.type_name))
+      throw UnsupportedOperationError("CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
 
     method on_visit( cmd:Access )
       #println StackTrace()
@@ -332,10 +332,10 @@ class CGenerator : Visitor
       writer.print cmd.of_type.c_name
       writer.print ")"
 
-method on_visit( cmd:CreateObject ) # FIXME remove
-  writer.print "ROGUE_CREATE_OBJECT("
-  writer.print cmd.of_type.c_name
-  writer.print ")"
+      #method on_visit( cmd:CreateObject )
+      #  writer.print "ROGUE_CREATE_OBJECT("
+      #  writer.print cmd.of_type.c_name
+      #  writer.print ")"
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
@@ -734,7 +734,7 @@ endClass
 augment
   METHODS
     method Cmd.write_print( writer:CWriter )
-      throw UnsupportedOperationError("$.write_print()"(type_name))
+      throw UnsupportedOperationError("[INTERNAL] $.write_print() [$]"(type_name,this))
 
     method LiteralInt32.write_print( writer:CWriter )
       writer.print ''printf( "%d", $ )'' (value)

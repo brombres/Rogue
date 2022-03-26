@@ -956,7 +956,6 @@ class Conditional : ControlStructure
 
     method init( existing:Conditional )
       prior.init( existing )
-      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.condition) condition = existing.condition.cloned
 
     method description->String
@@ -966,21 +965,19 @@ endClass
 
 class Iterator : Conditional
   PROPERTIES
-    initialization : Cmd
     control        : Cmd
     upkeep         : Cmd
 
   METHODS
     method init( t:Token, statements:Cmd, control_type:ControlType )
-      init( t, Statements(t), Statements(t), null, Statements(t), statements, control_type )
+      init( t, Statements(t), null, statements, Statements(t), control_type )
 
-    method init( t:Token, initialization:Cmd, control, condition:Cmd, statements:Cmd, upkeep,
+    method init( t:Token, control, condition:Cmd, statements:Cmd, upkeep,
                  control_type=ControlType.UNDEFINED:ControlType )
-      prior.init( t, condition, statements, control_type )
+     prior.init( t, condition, statements, control_type )
 
     method init( existing:Iterator )
       prior.init( existing )
-      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.control) control = existing.control.cloned
       if (existing.upkeep)  upkeep  = existing.upkeep.cloned
 
@@ -1146,29 +1143,44 @@ class PrintLogical : PrintValue
 
 endClass
 
+class Stepper : Cmd
+  PROPERTIES
+    operand : Cmd
 
-class Postdecrement : Unary
+  METHODS
+    method init( t, operand )
+
+    method init( existing:Stepper )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "Stepper($)" (%operand)
+
+endClass
+
+class Postdecrement : Stepper
   METHODS
     method description->String
       return "Postdecrement($)" (%operand)
 
 endClass
 
-class Postincrement : Unary
+class Postincrement : Stepper
   METHODS
     method description->String
       return "Postincrement($)" (%operand)
 
 endClass
 
-class Predecrement : Unary
+class Predecrement : Stepper
   METHODS
     method description->String
       return "Predecrement($)" (%operand)
 
 endClass
 
-class Preincrement : Unary
+class Preincrement : Stepper
   METHODS
     method description->String
       return "Preincrement($)" (%operand)
@@ -1247,7 +1259,7 @@ endClass
 class CallRoutine : CallProcedure
   METHODS
     method description->String
-      return "CallRoutine($)" (%args)
+      return "CallRoutine($,$)" (%info,%args)
 
 endClass
 
@@ -1284,8 +1296,11 @@ class LiteralPi : Cmd
       return "LiteralPi"
 endClass
 
-class Convert : Unary
+class Convert( t, operand:Cmd ) : Cmd
   METHODS
+    method init( existing:Convert )
+      if (existing.operand) operand = existing.operand.cloned
+
     method description->String
       return "Convert($)" (%operand)
 
@@ -1494,7 +1509,7 @@ endClass
 class CallGlobalMethod : CallProcedure
   METHODS
     method description->String
-      return "CallGlobalMethod($)" (%args)
+      return "CallGlobalMethod($,$,$)" (info->(as GlobalMethod).type_context,%info,%args)
 
 endClass
 
@@ -1621,7 +1636,7 @@ class CallMethod : CallProcedure
       if (existing.context) context = existing.context.cloned
 
     method description->String
-      return "CallMethod($,$)" (%context,%args)
+      return "CallMethod($,$,$)" (%context,%info,%args)
 
 endClass
 

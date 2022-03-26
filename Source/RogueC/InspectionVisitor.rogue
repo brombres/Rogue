@@ -350,4 +350,14 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.attributes)
       return result
 
+    method on( cmd:Convert )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:Stepper )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
 endClass
