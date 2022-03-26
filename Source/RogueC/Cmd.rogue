@@ -1910,3 +1910,10 @@ class ReturnOnException : Cmd
     method description->String
       return "ReturnOnException"
 endClass
+
+class Power : Binary
+  METHODS
+    method description->String
+      return "Power($,$)" (%left,%right)
+
+endClass

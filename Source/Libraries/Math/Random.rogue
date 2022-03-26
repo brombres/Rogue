@@ -7,41 +7,13 @@ class Random [singleton]
   # This random number generator produces evenly distributed
   # pseudo-random values.
   #
-  # Use any the following methods:
-  #
-  #   Random.real64().Real64:
-  #     Returns a real number n where 0.0 < n < 1.0.
-  #
-  #   Random.real64(low,high).Real64:
-  #     Returns a real number n where low < n < high.
-  #
-  #   Random.int64().Int64
-  #     Returns a number between 0 and 0xFFFFFFFFffffffff (-1).
-  #
-  #   Random.int64(limit).Int64
-  #     Returns an integer n where 0 <= n < limit.
-  #
-  #   Random.int64(low,high).Int64
-  #     Returns an integer n where low <= n <= high.
-  #
-  #   Random.int32().Int32
-  #     Returns a number between 0 and 0xffffffff (-1).
-  #
-  #   Random.int32(limit).Int32
-  #     Returns an integer n where 0 <= n < limit.
-  #
-  #   Random.int32(low,high).Int32
-  #     Returns an integer n where low <= n <= high.
-  #
-  #   random.logical().Logical:
-  #     Returns either "true" or "false" with a 50/50 chance.
-  #
   # You may create a Random object with a 'seed' value; generators
   # created with the same seed always return the same sequence of random
-  # numbers.
+  # numbers. If a seed is not specified then the current System.time
+  # (times 1000) is used.
   #
   # Underneath, the Random operates on a 48-bit integer using the linear
-  # congruence formula with most of the "drand48" parameters:
+  # congruence formula with the "drand48" parameters:
   #
   #   next = (a * prev + c) mod (2^48)
   #
@@ -58,11 +30,6 @@ class Random [singleton]
     method init( seed:Int64 )
       reset( seed )
 
-    method _advance_state->Int64
-      # Calculates the next raw random integer.
-      state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
-      return state
-
     method reset( _state:Int64 )
       state = _state
       _advance_state
@@ -73,7 +40,6 @@ class Random [singleton]
       #   Random.chance(0.75)  # returns true 75% of the time statistically speaking.
       return (real64 < p)
 
-#{
     method gaussian->Real64
       # Returns a random number from a normal distribution of avg=0, stddev=1
       # 68.2% chance of being between -1..1
@@ -82,19 +48,16 @@ class Random [singleton]
       # 99.994% chance of being -4..4
       # Real number precision limits the results to [-8.5,8.5]
       # From: https://stackoverflow.com/a/218600/135791
-      local u1 = 1.0 - this.real64
-      local u2 = 1.0 - this.real64
-      return (-2.0 * Math.log(u1)).sqrt * Radians(pi * 2 * u2).sin
-}#
+      local u1 = 1.0 - real64
+      local u2 = 1.0 - real64
+      return Math.sqrt(-2.0 * Math.log(u1)) * Math.sin(pi * 2 * u2)
 
     method real64->Real64
-      # Returns a random number 0 < r < 1.0
+      # Returns a random number 0 < n < 1.0
       return (_advance_state->Real64 + 1.0) / 281474976710657.0
 
-#{
     method real64( low:Real64, high:Real64 )->Real64
-      # Returns an evenly distributed random real number in
-      # the range (low,high) exclusive (does not include low or high).
+      # Returns a random number low < n < high
       return (real64 * (high-low)) + low
 
     method int64->Int64
@@ -102,19 +65,6 @@ class Random [singleton]
       # the range [0,2^63-1] inclusive.
       local result = int32->Int64 :<<: 32
       return (result | (int32->Int64 & 0x0FFFFffff))
-
-    method int64( limit:Int64 )->Int64
-      # Returns an evenly distributed random integer in
-      # the range [0,limit) - includes 0 but does not include limit.
-      #
-      # Example:
-      #   println( Random.int64(100) )  #prints a number 0..99
-      if (limit == 0) return 0
-      return int64 % limit
-
-    method int64( low:Int64, high:Int64 )->Int64
-      # Returns a random integer between low and high, inclusive.
-      return int64( (high-low)+1 ) + low
 
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
@@ -136,10 +86,15 @@ class Random [singleton]
 
     method byte->Byte
       # Returns a random byte between 0 and 255.
-      return Byte(real64 * 256)
-}#
+      return (real64 * 256)->Byte
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.
       return (real64 > 0.5)
+
+    method _advance_state->Int64
+      # Calculates the next raw random integer.
+      state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
+      return state
+
 endClass

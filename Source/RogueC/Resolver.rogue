@@ -726,6 +726,9 @@ augment
     method Cmd.cmd_print( operand:Cmd )->Cmd
       throw operand.t.error( "[INTERNAL] $.cmd_print() is undefined." (type_name) )
 
+    method TypeByte.cmd_print( operand:Cmd )->Cmd
+      return PrintInt32( operand.t, ConvertToInt32(t,operand) )
+
     method TypeCharacter.cmd_print( operand:Cmd )->Cmd
       return PrintCharacter( operand.t, operand )
 

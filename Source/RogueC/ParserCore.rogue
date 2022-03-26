@@ -92,17 +92,19 @@ class ParserCore [abstract]
     ip_add_subtract__inner = 79
     ip_multiply_divide_mod = 80
     ip_multiply_divide_mod__inner = 81
-    ip_pre_unary = 82
-    ip_post_unary = 83
-    ip_post_unary__inner = 84
-    ip_access = 85
-    ip_access_inner = 86
-    ip_term = 87
-    ip_native_code = 88
-    ip_preprocess = 89
-    ip_process_another = 90
-    ip_collect_meta_filepath = 91
-    ip_additional_node_types = 92
+    ip_power = 82
+    ip_power__inner = 83
+    ip_pre_unary = 84
+    ip_post_unary = 85
+    ip_post_unary__inner = 86
+    ip_access = 87
+    ip_access_inner = 88
+    ip_term = 89
+    ip_native_code = 90
+    ip_preprocess = 91
+    ip_process_another = 92
+    ip_collect_meta_filepath = 93
+    ip_additional_node_types = 94
 
   PROPERTIES
     _tokens          : Token[]
@@ -1801,7 +1803,7 @@ class ParserCore [abstract]
             endIf
             return
           case ip_multiply_divide_mod
-            _execute(ip_pre_unary)
+            _execute(ip_power)
             _pop_frame
             _execute(ip_multiply_divide_mod__inner)
             _pop_frame
@@ -1810,7 +1812,7 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.SYMBOL_ASTERISK)
               temporarily _cur_t = _on_t
                 _consume_eols
-                _execute(ip_pre_unary)
+                _execute(ip_power)
                 _pop_frame
                 if (not disable_output) _push( Multiply(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_multiply_divide_mod__inner)
@@ -1821,7 +1823,7 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.SYMBOL_SLASH)
               temporarily _cur_t = _on_t
                 _consume_eols
-                _execute(ip_pre_unary)
+                _execute(ip_power)
                 _pop_frame
                 if (not disable_output) _push( Divide(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_multiply_divide_mod__inner)
@@ -1832,10 +1834,29 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.SYMBOL_PERCENT)
               temporarily _cur_t = _on_t
                 _consume_eols
-                _execute(ip_pre_unary)
+                _execute(ip_power)
                 _pop_frame
                 if (not disable_output) _push( Mod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_multiply_divide_mod__inner)
+                _pop_frame
+                return
+              endTemporarily
+            endIf
+            return
+          case ip_power
+            _execute(ip_pre_unary)
+            _pop_frame
+            _execute(ip_power__inner)
+            _pop_frame
+            return
+          case ip_power__inner
+            if (_next_t.type == TokenType.SYMBOL_CARET)
+              temporarily _cur_t = _on_t
+                _consume_eols
+                _execute(ip_pre_unary)
+                _pop_frame
+                if (not disable_output) _push( Power(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                _execute(ip_power__inner)
                 _pop_frame
                 return
               endTemporarily

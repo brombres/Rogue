@@ -1268,6 +1268,9 @@ parser
   on "/" -> Divide
   on "%" -> Mod
 
+- power [binary]
+  on "^" -> Power
+
 - pre_unary [preUnary]
   on "!"   -> BitwiseNot
   on "not" -> LogicalNot
