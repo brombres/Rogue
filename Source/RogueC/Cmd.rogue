@@ -1883,3 +1883,9 @@ class Catches : CmdList
       return list[index]->(as Catch)
 endClass
 
+
+class DummyInitialValue : Cmd [singleton]
+  METHODS
+    method description->String
+      return "DummyInitialValue"
+endClass

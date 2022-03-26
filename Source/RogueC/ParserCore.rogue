@@ -2213,6 +2213,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( Conditional(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( ControlStructure(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)->(as Local)), 2 )
+            if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             if (not disable_output) _push( Iterator(_cur_t,_node_arg(-5),_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 5 )
             if (not disable_output) _push( GetLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )

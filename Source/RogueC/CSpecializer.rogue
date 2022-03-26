@@ -10,8 +10,8 @@ class CSpecializer : Visitor
     control_stack      = ControlStructure[]
 
   METHODS
-    method add_local( t:Token, base:String, type:Type )->Local
-      local v = Local( t, autoname(base), null, type )
+    method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
+      local v = Local( t, autoname(base), initial_value, type )
       v.c_name = "$_$" (v.name,this_procedure.locals.count)
       this_procedure.locals.add( v )
       assert control_stack.count
@@ -74,23 +74,75 @@ class CSpecializer : Visitor
     method on( cmd:LogicalAnd )->Cmd
       if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
         local t = cmd.t
-        local v = add_local( t, "and", cmd.left.type )
-        cmd.left = visit( cmd.left )
-        insert( SetLocal(t,v,cmd.left) )
-        local statements = LocalScope( t, Statements(t,SetLocal(t,v,cmd.right)) )
-        insert( visit( If(t, GetLocal(t,v), statements, null) ) )
+
+        local left = cmd.left
+        left.intermediate_v = cmd.intermediate_v
+        cmd.left = visit( left )
+        local v = left.intermediate_v
+        if (not v)
+          v = cmd.intermediate_v
+          if (v)
+            insert( SetLocal(t,v,cmd.left) )
+          else
+            v = add_local( t, "and", cmd.left.type, DummyInitialValue )
+            insert( SetLocal(t,v,cmd.left,&initial_assignment) )
+          endIf
+        endIf
+        cmd.intermediate_v = v
+        cmd.right.intermediate_v = v
+
+        local statements = Statements( t, SetLocal(t,v,cmd.right) )
+        insert( visit( If(t, GetLocal(t,v), LocalScope(t,statements), null) ) )
+
+        contingent
+          necessary statements.count
+          local cmd_set_local = statements.last->(as SetLocal)
+          necessary (cmd_set_local)
+          local cmd_get_local = cmd_set_local.new_value->(as GetLocal)
+          necessary (cmd_get_local)
+          necessary (cmd_set_local.info is cmd_get_local.info)
+          statements.remove_last
+        endContingent
+
         return GetLocal(t,v)
       endIf
       return cmd
 
     method on( cmd:LogicalOr )->Cmd
-      if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
+      local decompose_left  = cmd.left.needs_decomposition
+      local decompose_right = cmd.right.needs_decomposition
+      if (decompose_left or decompose_right)
         local t = cmd.t
-        local v = add_local( t, "or", cmd.left.type )
-        cmd.left = visit( cmd.left )
-        insert( SetLocal(t,v,cmd.left) )
-        local statements = LocalScope( t, Statements(t,SetLocal(t,v,cmd.right)) )
-        insert( visit( If(t, LogicalNot(t,GetLocal(t,v)), statements, null) ) )
+
+        local left = cmd.left
+        left.intermediate_v = cmd.intermediate_v
+        cmd.left = visit( left )
+        local v = left.intermediate_v
+        if (not v)
+          v = cmd.intermediate_v
+          if (v)
+            insert( SetLocal(t,v,cmd.left) )
+          else
+            v = add_local( t, "or", cmd.left.type, DummyInitialValue )
+            insert( SetLocal(t,v,cmd.left,&initial_assignment) )
+          endIf
+        endIf
+        cmd.intermediate_v = v
+        cmd.right.intermediate_v = v
+
+        local statements = Statements( t, SetLocal(t,v,cmd.right) )
+        insert( visit( If(t, LogicalNot(t,GetLocal(t,v)), LocalScope(t,statements), null) ) )
+
+        contingent
+          necessary statements.count
+          local cmd_set_local = statements.last->(as SetLocal)
+          necessary (cmd_set_local)
+          local cmd_get_local = cmd_set_local.new_value->(as GetLocal)
+          necessary (cmd_get_local)
+          necessary (cmd_set_local.info is cmd_get_local.info)
+          statements.remove_last
+        endContingent
+
         return GetLocal(t,v)
       endIf
       return cmd
@@ -121,6 +173,15 @@ class CSpecializer : Visitor
 
 endClass
 
+augment Cmd
+  METHODS
+    method intermediate_v->Local
+      return null
+
+    method set_intermediate_v( v:Local )
+      noAction
+endAugment
+
 augment ControlStructure
   PROPERTIES
     c_escape_label_name : String
@@ -144,6 +205,28 @@ endAugment
 augment Local
   PROPERTIES
     c_name : String
+endAugment
+
+augment LogicalAnd
+  PROPERTIES
+    intermediate_v : Local
+
+  METHODS
+    method intermediate_v->Local
+      return @intermediate_v
+
+    method set_intermediate_v( @intermediate_v )
+endAugment
+
+augment LogicalOr
+  PROPERTIES
+    intermediate_v : Local
+
+  METHODS
+    method intermediate_v->Local
+      return @intermediate_v
+
+    method set_intermediate_v( @intermediate_v )
 endAugment
 
 augment Procedure

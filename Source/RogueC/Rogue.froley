@@ -1472,6 +1472,7 @@ parser
   #  create DivideReal64(left,right):Binary
   #  create DivideString(left,right):Binary
   #  create DivideValue(left,right):Binary
+  create DummyInitialValue
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
   #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)

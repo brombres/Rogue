@@ -234,6 +234,10 @@ class CGenerator : Visitor
           endIf
 
           forEach (p in this_procedure.parameters)
+            # All reference args passed to a procedure must be anchored.
+            # All reference parameters are likewise anchored by default, but
+            # if their value is changed over the course of the method then
+            # the parameter is unanchored and must be retained & released.
             if (p.type.is_reference and not p.is_anchored)
               writer.print "ROGUE_RETAIN_REF( &"
               writer.print p->(as Local).c_name
@@ -246,11 +250,13 @@ class CGenerator : Visitor
         forEach (v in cmd.locals)
           writer.print( v.type.c_type ).print( ' ' )
           writer.print( v.c_name )
-          writer.print( " = " )
-          writer.print "0"
-          #if (v.type.is_reference)     writer.print "0"
-          #elseIf (v.type.is_primitive) writer.print "0"
-          #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
+          if (not v.initial_value)
+            writer.print( " = " )
+            writer.print "0"
+            #if (v.type.is_reference)     writer.print "0"
+            #elseIf (v.type.is_primitive) writer.print "0"
+            #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
+          endIf
           writer.println( ';' )
         endForEach
 
