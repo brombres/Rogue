@@ -251,7 +251,11 @@ scanner
       produce HEX_INTEGER
     others
       scan_integer
-      if (nextIs("..") or not scan('.')) produce INTEGER
+      if (nextIs('.'))
+        ch = peek(1)
+        if (ch >= 'a' and ch <= 'z' or ch >= 'A' and ch <= 'Z' or ch == '_' or ch == '.') produce INTEGER
+      endIf
+      if (not scan('.')) produce INTEGER
       scan_integer
       if (scan([eE]))
         scan [+-]
@@ -575,8 +579,10 @@ parser
   if (consume @"essential")
     call class_attribute_essential
     produce AttributeEssential
+  elseIf (consume @"primitive")
+    produce AttributePrimitive
   endIf
-  syntaxError "Illegal class attribute. Expected any of [essential singleton]."
+  syntaxError "Illegal class attribute. Expected one or more of [essential primitive singleton]."
 
 - class
   mustConsume "class"

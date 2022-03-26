@@ -23,6 +23,14 @@ class CSpecializer : Visitor
       ++autoname_index
       return result
 
+    method track_escape
+      forEach (scope in control_stack step -1)
+        if (scope.has_cleanup_code)
+          this_procedure.attributes.requires_cleanup = true
+          return
+        endIf
+      endForEach
+
     method insert( cmd:Cmd )
       if (insert_in_init)
         control_stack.last.initialization.add( cmd )
@@ -59,9 +67,13 @@ class CSpecializer : Visitor
         if (is_ref or cmd.info.return_type?)
           local v = add_local( cmd.t, "call", cmd.info.return_type, DummyInitialValue )
           insert( SetLocal(cmd.t,v,cmd,&initial_assignment) )
-          if (throws) insert( ReturnOnException(cmd.t) )
+          if (throws)
+            track_escape
+            insert( ReturnOnException(cmd.t) )
+          endIf
           return GetLocal( cmd.t, v )
         else
+          track_escape
           insert( cmd )
           return ReturnOnException( cmd.t )
         endIf
@@ -223,6 +235,10 @@ class CSpecializer : Visitor
 
       visit_children( cmd )
 
+    method on_visit( cmd:Return )
+      track_escape
+      visit_children( cmd )
+
     method on_visit( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
         forEach (statement in current_statements)
@@ -231,6 +247,9 @@ class CSpecializer : Visitor
         endForEach
       endTemporarily
 
+    method on_visit( cmd:Throw )
+      track_escape
+      visit_children( cmd )
 endClass
 
 augment Cmd

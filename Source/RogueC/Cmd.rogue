@@ -414,16 +414,23 @@ class LiteralInteger : Cmd
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
       contingent
-        sufficient (base == 2 and content.count <= 32)
-        if (base == 8)
-          sufficient (content.count <= 10 or (content.count == 11 and content[0] <= '3'))
+        if (base == 10)
+          sufficient (content.count > 10)
+          local n64 = content->Int64(&=base)
+          sufficient (n64 != n64->Int32->Int64)
+          return LiteralInt32( t, n64->Int32 )
         endIf
-        sufficient (base == 16 and content.count <= 8)
 
-        return LiteralInt64( t, content->Int64(&=base) )
+        sufficient (base == 2 and content.count > 32)
+        if (base == 8)
+          sufficient (content.count > 11 or (content.count == 11 and content[0] > '3'))
+        endIf
+        sufficient (base == 16 and content.count > 8)
+
+        return LiteralInt32( t, content->Int32(&=base) )
 
       satisfied
-        return LiteralInt32( t, content->Int32(&=base) )
+        return LiteralInt64( t, content->Int64(&=base) )
 
       endContingent
 
@@ -1916,4 +1923,10 @@ class Power : Binary
     method description->String
       return "Power($,$)" (%left,%right)
 
+endClass
+
+class AttributePrimitive : Cmd
+  METHODS
+    method description->String
+      return "AttributePrimitive"
 endClass

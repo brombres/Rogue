@@ -1,7 +1,13 @@
-class Real64;
-class Real32;
-class Int64;
-class Int32;
-class Character;
-class Byte;
-class Logical;
+class Real64 [primitive];
+class Real32 [primitive];
+class Int64 [primitive];
+
+class Int32 [primitive]
+  METHODS
+    method sqrt->Int32
+      return native("sqrt($this)")->Int32
+endClass
+
+class Character [primitive];
+class Byte [primitive];
+class Logical [primitive];

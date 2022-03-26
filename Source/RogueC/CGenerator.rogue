@@ -242,7 +242,8 @@ class CGenerator : Visitor
         writer.indent += 2
 
         if (is_procedure)
-          if (this_procedure.return_type and this_procedure.attributes.has_return)
+          if (this_procedure.return_type and this_procedure.attributes.has_return and
+              this_procedure.attributes.requires_cleanup)
             writer.print this_procedure.return_type.c_name
             if (this_procedure.return_type.is_reference) writer.print '*'
             writer.print   ' '
@@ -311,10 +312,11 @@ class CGenerator : Visitor
         endForEach
 
         if (is_procedure)
-          if (this_procedure.return_type and this_procedure.attributes.has_return)
+          if (this_procedure.return_type and this_procedure.attributes.has_return and
+              this_procedure.attributes.requires_cleanup)
             if (this_procedure.throws)
               writer.println "if (Rogue_execution_status == ROGUE_EXE_RETURN) Rogue_execution_status = ROGUE_EXE_CONTINUE;"
-            else
+            elseIf (cmd.control_escapes)
               writer.println "Rogue_execution_status = ROGUE_EXE_CONTINUE;"
             endIf
             writer.print "return "
@@ -592,6 +594,22 @@ class CGenerator : Visitor
       return cmd
 
     method on_visit( cmd:Return )
+      if (not this_procedure.attributes.requires_cleanup)
+        writer.print "return"
+        if (cmd.result)
+          writer.print ' '
+          if (this_procedure.return_type.is_reference)
+            writer.print   "ROGUE_RETAIN("
+            visit( cmd.result )
+            writer.print ')'
+          else
+            visit( cmd.result )
+          endIf
+        endIf
+        writer.println ";"
+        return
+      endIf
+
       if (cmd.result)
         writer.print this_procedure.c_result_name
         writer.print " = "

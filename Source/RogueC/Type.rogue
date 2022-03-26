@@ -62,11 +62,6 @@ class Type : Cmd
     method ensure_definition
       if (attributes.is_defined) return
 
-      if (is_primitive)
-        attributes.is_defined = true # KLUDGE
-        return
-      endIf
-
       local template = module_context.templates[ "$<<0>>"(name) ]
       if (template)
         template.generate( null, this )

@@ -15,6 +15,7 @@ class Attribute
     METHOD           = (1:<<:10) # object method (not global method or routine)
     HAS_RETURN       = (1:<<:11)
     VISITING         = (1:<<:12)
+    REQUIRES_CLEANUP = (1:<<:13)
 endClass
 
 class Attributes : CmdList
@@ -31,6 +32,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_method,        Attribute.METHOD )
   ROGUE_ATTRIBUTE( has_return,       Attribute.HAS_RETURN )
   ROGUE_ATTRIBUTE( is_visiting,      Attribute.VISITING )
+  ROGUE_ATTRIBUTE( requires_cleanup, Attribute.REQUIRES_CLEANUP )
 
   PROPERTIES
     flags : Int32
@@ -74,6 +76,9 @@ augment
 
     method AttributeExport.attribute_flags->Int32
       return Attribute.EXPORT
+
+    method AttributePrimitive.attribute_flags->Int32
+      return Attribute.PRIMITIVE
 
     method AttributeSingleton.attribute_flags->Int32
       return Attribute.SINGLETON

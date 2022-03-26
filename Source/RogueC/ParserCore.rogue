@@ -622,8 +622,11 @@ class ParserCore [abstract]
               ip = this.ip
               if (not disable_output) _push( AttributeEssential(_cur_t), 0 )
               return
+            elseIf (_consume_content("primitive"))
+              if (not disable_output) _push( AttributePrimitive(_cur_t), 0 )
+              return
             endIf
-            _throw_syntax_error("Illegal class attribute. Expected any of [essential singleton].")
+            _throw_syntax_error("Illegal class attribute. Expected one or more of [essential primitive singleton].")
             return
           case ip_class
             if (not _consume(TokenType.KEYWORD_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_CLASS )

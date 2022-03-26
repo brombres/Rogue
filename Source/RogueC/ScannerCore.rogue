@@ -716,7 +716,14 @@ class ScannerCore [abstract]
               endWhich
             unsatisfied
               if (not _execute(ip_scan_integer)) return false
-              if ((_next_is("..") or (not _scan('.'))))
+              if (_scanner.next_is('.'))
+                ch = _scanner.peek (1)
+                if ((((((ch>='a') and (ch<='z')) or ((ch>='A') and (ch<='Z'))) or (ch=='_')) or (ch=='.')))
+                  _add( TokenType.INTEGER )
+                  return false
+                endIf
+              endIf
+              if ((not _scan('.')))
                 _add( TokenType.INTEGER )
                 return false
               endIf
