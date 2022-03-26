@@ -1889,3 +1889,9 @@ class DummyInitialValue : Cmd [singleton]
     method description->String
       return "DummyInitialValue"
 endClass
+
+class ReturnOnException : Cmd
+  METHODS
+    method description->String
+      return "ReturnOnException"
+endClass

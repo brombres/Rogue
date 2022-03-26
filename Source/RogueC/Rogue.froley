@@ -1525,6 +1525,7 @@ parser
   #  create PushResult(operand):Unary
   #  create ReturnResult(result)
   create Range(left,right):Binary
+  create ReturnOnException
   #  create RightShiftInt32(left,right):Binary
   #  create RightShiftValue(left,right):Binary
   #  create RightShiftXInt32(left,right):Binary

@@ -41,6 +41,8 @@ class CSpecializer : Visitor
       return on( cmd->(as CallProcedure) )
 
     method on( cmd:CallProcedure )->Cmd
+      visit_children( cmd )
+
       # Anchor any args that need it
       forEach (arg at i in cmd.args)
         if (arg.type.is_reference and not arg.is_anchored)
@@ -49,7 +51,23 @@ class CSpecializer : Visitor
           cmd.args[i] = GetLocal(arg.t,v)
         endIf
       endForEach
-      return cmd
+
+      local throws = cmd.info.throws?
+      local is_ref = cmd.info.return_type? and cmd.info.return_type.is_reference
+      if (throws or is_ref)
+        # Decompose call
+        if (is_ref or cmd.info.return_type?)
+          local v = add_local( cmd.t, "call", cmd.info.return_type, DummyInitialValue )
+          insert( SetLocal(cmd.t,v,cmd,&initial_assignment) )
+          if (throws) insert( ReturnOnException(cmd.t) )
+          return GetLocal( cmd.t, v )
+        else
+          insert( cmd )
+          return ReturnOnException( cmd.t )
+        endIf
+      else
+        return cmd
+      endIf
 
     method on( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
@@ -58,6 +76,8 @@ class CSpecializer : Visitor
       return cmd
 
     method on( cmd:CreateObject )->Cmd
+      visit_children( cmd )
+
       local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
       insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
       if (cmd.m_init)

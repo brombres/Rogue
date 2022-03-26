@@ -2236,6 +2236,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( PrintValue(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
             if (not disable_output) _push( Range(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+            if (not disable_output) _push( ReturnOnException(_cur_t), 0 )
             if (not disable_output) _push( SetLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( SetProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
             if (not disable_output) _push( SetThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )

@@ -577,15 +577,25 @@ method on_visit( cmd:CreateObject ) # FIXME remove
         writer.println "Rogue_execution_status = ROGUE_EXE_RETURN;"
         writer.print   "goto "
         writer.print   escape_label
-        writer.println ";"
+        writer.println ';'
       elseIf (control_stack.count > 1)
         writer.print "return"
         if (this_procedure.return_type)
           writer.print ' '
           writer.print this_procedure.c_result_name
         endIf
-        writer.println ";"
+        writer.println ';'
       endIf
+
+    method on_visit( cmd:ReturnOnException )
+      if (escape_needs_jump(cmd))
+        writer.print "if (Rogue_execution_status) goto "
+        writer.print escape_label
+      else
+        writer.print "if (Rogue_execution_status) return"
+        if (this_procedure.return_type) writer.print " 0"
+      endIf
+      writer.println ';'
 
     method on_visit( cmd:Routine )
       this_module.write_c_routine_header( cmd, writer )
@@ -660,20 +670,17 @@ method on_visit( cmd:CreateObject ) # FIXME remove
       print_parenthesized( cmd.right )
 
     method on_visit( cmd:Throw )
-      #{
       writer.print   "Rogue_exception = (RogueObject*) ROGUE_RETAIN("
       visit( cmd.exception )
       writer.println ");"
       writer.println "Rogue_execution_status = ROGUE_EXE_EXCEPTION;"
-      forEach (scope at i in control_stack step -1)
-        if (i == 0 or scope.has_cleanup_code)
-          writer.print "goto "
-          writer.print scope.c_escape_label_name(this)
-          writer.print ";"
-          escapeForEach
-        endIf
-      endForEach
-      }#
+      if (escape_needs_jump(cmd))
+        writer.print "goto "
+        writer.print escape_label
+      else
+        writer.print "return"
+        if (this_procedure.return_type) writer.print " 0"
+      endIf
 
     method pop_scope
       visible_locals.discard_from( visible_locals_fp.remove_last )
@@ -745,6 +752,9 @@ augment
       return false
 
     method Return.needs_semicolon->Logical
+      return false
+
+    method ReturnOnException.needs_semicolon->Logical
       return false
 
     method Module.write_c_routine_header( r:Routine, writer:CWriter )
