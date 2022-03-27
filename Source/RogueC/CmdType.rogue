@@ -12,6 +12,8 @@ augment Cmd
         if (a is type or b is type) return type
         type = Program.type_Real64
         if (a is type or b is type) return type
+        type = Program.type_Int64
+        if (a is type or b is type) return type
         return Program.type_Int32  # any mismatched pair Logical/Byte/Character/Int32 -> Int32
       else
         return Program.type_String # Placeholder/TODO

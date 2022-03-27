@@ -18,6 +18,10 @@ class Resolver : Visitor
         visit( proc )
       endTemporarily
 
+    method visit_type( type:Type )
+      type.organize
+      prior.visit_type( type )
+
     method add_local( v:Local )
       this_procedure.locals.add( v )
       assert control_stack.count
@@ -741,6 +745,9 @@ augment
 
     method TypeLogical.cmd_print( operand:Cmd )->Cmd
       return PrintLogical( operand.t, operand )
+
+    method TypeReal32.cmd_print( operand:Cmd )->Cmd
+      return PrintReal64( operand.t, ConvertToReal64(t,operand) )
 
     method TypeReal64.cmd_print( operand:Cmd )->Cmd
       return PrintReal64( operand.t, operand )

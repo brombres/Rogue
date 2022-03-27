@@ -87,7 +87,7 @@ class Visitor
 
     method visit_global_methods( type:Type )
       temporarily this_type = type
-        forEach (m in type.global_methods.values)
+        forEach (m in type.global_methods)
           temporarily this_procedure = m
             visit( m )
           endTemporarily
@@ -96,7 +96,7 @@ class Visitor
 
     method visit_methods( type:Type )
       temporarily this_type = type
-        forEach (m in type.methods.values)
+        forEach (m in type.methods)
           temporarily this_procedure = m
             visit( m )
           endTemporarily

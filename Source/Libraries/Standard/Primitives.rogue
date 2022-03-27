@@ -21,12 +21,10 @@ class Int32 [primitive]
       if (this >= 0) return this
       else           return -this
 
-      #{
     method real_bits->Real32
-      $if (target("C++"))
-        native "return *((RogueReal32*)&$this);"
-      $endIf
+      return native("*((RogueReal32*)&$this)")->Real32
 
+      #{
     method clamped( low:Int32, high:Int32 )->Int32
       if (this < low)  return low
       if (this > high) return high

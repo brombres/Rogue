@@ -19,4 +19,5 @@ class Template
       local class_def = Parser( tokens ).parse( Parser.ip_class )
       Organizer( type.module_context ).visit( type, class_def )
       type.attributes.is_defined = true
+      Program.is_modified = true
 endClass

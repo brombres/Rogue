@@ -28,6 +28,8 @@ class Program [singleton]
 
     unique_strings = StringTable<<String>>()
 
+    is_modified    : Logical
+
   METHODS
     method init
       Program = this  # update singleton reference
@@ -53,11 +55,17 @@ class Program [singleton]
       endIf
 
     method apply( visitor:Visitor )
-      forEach (m in modules.values)
-        temporarily visitor.this_module = m
-          visitor.visit( m )
-        endTemporarily
-      endForEach
+      is_modified = true
+
+      while (is_modified)
+        is_modified = false
+
+        forEach (m in modules.values)
+          temporarily visitor.this_module = m
+            visitor.visit( m )
+          endTemporarily
+        endForEach
+      endWhile
 
     method description->String
       return "Program"
