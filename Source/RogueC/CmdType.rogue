@@ -41,7 +41,6 @@ augment Cmd
     method require_type->Type
       local result = type
       if (result) return result
-      println StackTrace()
       throw t.error( "Value expected ($)."(this) )  # FIXME
 
     method require_value->Cmd
@@ -128,6 +127,9 @@ augment
 
     method Local.is_anchored->Logical
       return attributes.is_anchored
+
+    method This.is_anchored->Logical
+      return true
 endAugment
 
 # is_operator
@@ -219,6 +221,9 @@ augment
     method ConvertToType.type->Type
       return to_type
 
+    method CreateObject.type->Type
+      return of_type
+
     method CreateObjectAndSetLocal.type->Type
       return of_type
 
@@ -307,6 +312,9 @@ augment
     method NativeExpression.type->Type
       return result_type->(as Type)
 
+    method Negate.type->Type
+      return operand.type
+
     method LiteralNull.type->Type
       if (of_type) return of_type
       return Program.type_null
@@ -325,6 +333,9 @@ augment
       return Program.type_Int32
       }#
 
+    method This.type->Type
+      return this_type
+
     method TypeContext.type->Type
       return @type
 
@@ -335,9 +346,6 @@ augment
 
     method Unary.type->Type
       return operand.type
-
-    method CreateObject.type->Type
-      return of_type
 
     #{
     method XYGetX.type->Type

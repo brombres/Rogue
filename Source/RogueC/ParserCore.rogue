@@ -2051,6 +2051,12 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_THIS)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( This(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)
               temporarily _cur_t = _on_t
                 _execute(ip_expression)

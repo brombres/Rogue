@@ -78,6 +78,12 @@ class Organizer : Visitor
       endIf
       return null
 
+    method on_visit( cmd:This )
+      if (not this_procedure.is_method)
+        throw cmd.t.error( "'this' can only be referenced in an object method." )
+      endIf
+      cmd.this_type = this_type
+
     method collect( t:Token, p:Property )
       assert this_type
 

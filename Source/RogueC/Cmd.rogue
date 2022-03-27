@@ -1930,3 +1930,12 @@ class AttributePrimitive : Cmd
     method description->String
       return "AttributePrimitive"
 endClass
+
+class This : Cmd
+  PROPERTIES
+    this_type : Type
+
+  METHODS
+    method description->String
+      return "This"
+endClass

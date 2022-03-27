@@ -3,9 +3,192 @@ class Real32 [primitive];
 class Int64 [primitive];
 
 class Int32 [primitive]
+  GLOBAL METHODS
+    method create( value:Int32 )->Int32
+      return value
+
+    #method from_value( value:Value )->Int32
+      #return value->Int32
+
+    method maximum->Int32 [macro]
+      return 2147483647
+
+    method minimum->Int32 [macro]
+      return 0x8000_0000
+
   METHODS
+    method abs->Int32
+      if (this >= 0) return this
+      else           return -this
+
+      #{
+    method real_bits->Real32
+      $if (target("C++"))
+        native "return *((RogueReal32*)&$this);"
+      $endIf
+
+    method clamped( low:Int32, high:Int32 )->Int32
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:Int32 )->Int32
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:Int32 )->Int32
+      if (this > high) return high
+      return this
+
+    method digit_count->Int32
+      use buffer = StringBuilder.pool
+        return buffer.print( this ).count
+      endUse
+
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt, 32 )
+
+    method hash_code->Int32
+      return this
+
+    method introspector->Introspector
+      return BoxedIntrospector<<Int32>>( this->Object )
+
+    method is_power_of_two->Logical
+      return ((this & (this-1)) == 0)
+
+    method left_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.left_justified( spaces, fill )
+
+    method or_larger( other:Int32 )->Int32
+      return which{ this>=other:this || other }
+
+    method or_smaller( other:Int32 )->Int32
+      return which{ this<=other:this || other }
+
+    method progress( a:Int32, b:Int32 )->Real64
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   2.progress(1,5) -> 0.25
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      return Real64(this-a) / Real64(b-a)
+
+    method required_bit_count->Int32
+      if (this < 0)
+        if (this < 0xC000_0000) return 32
+        local bits = 1
+        local threshold = -1
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
+      if (this & 0x8000_0000) return 32
+      if (this & 0x4000_0000) return 31
+      local bits = 1
+      while ((1:<<:bits) <= this) ++bits
+      return bits
+
+    method right_justified( spaces:Int32, fill=' ':Character )->String
+      return this->String.right_justified( spaces, fill )
+
+    method rol( nbits:Int32 )->Int32
+      if (nbits <= 0) return this
+      nbits &= 31
+      return (this :<<: nbits) | (this :>>: (32-nbits))
+
+    method ror( nbits:Int32 )->Int32
+      if (nbits <= 0) return this
+      nbits &= 31
+      return (this :>>: nbits) | (this :<<: (32-nbits))
+
     method sqrt->Int32
       return native("sqrt($this)")->Int32
+
+    method th->String
+      return this->Int64.th
+
+    method to->Int64 [macro]
+      return native "((RogueInt64)$this)"
+
+    method to->Int64( unsigned:Logical )
+      if (unsigned) return this & 0x0FFFFffff
+      else          return this->Int64
+
+    method to->Object
+      return Boxed<<Int32>>(this)
+
+    method description->String
+      if (this >= -1 and this <= 9)
+        which (this)
+          case -1: return "-1"
+          case  0: return "0"
+          case  1: return "1"
+          case  2: return "2"
+          case  3: return "3"
+          case  4: return "4"
+          case  5: return "5"
+          case  6: return "6"
+          case  7: return "7"
+          case  8: return "8"
+          case  9: return "9"
+        endWhich
+      endIf
+      return "" + this
+
+    method to->String( digits=0:Int32, &hex, &octal, &binary )
+      if (hex)    return to_hex_string( which{digits||8} )
+      if (octal)  return to_octal_string( which{digits||11} )
+      if (binary) return to_binary_string( which{digits||32} )
+      return this
+
+    method to->Value
+      return Value( this )
+
+    method to_digit( &base64 )->Character
+      if (base64)
+        if (this >= 0  and this <= 25) return (this + 'A')->Character
+        if (this >= 26 and this <= 51) return ((this-26) + 'a')->Character
+        if (this >= 52 and this <= 61) return ((this-52) + '0')->Character
+        if (this == 62) return '+'
+        if (this == 63) return '/'
+        return '='
+      else
+        if (this >= 0 and this <= 9)   return (this + '0')->Character
+        if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
+        return '0'
+      endIf
+
+    method to_binary_string( digits=32:Int32 )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 2, digits, StringBuilder() )->String
+
+    method to_hex_character->Character
+      if (this < 0 or this > 35) return '0'
+      if (this <= 9) return Character( '0' + this )
+      return Character( 'A' + (this-10) )
+
+    method to_hex_string( digits=8:Int32 )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 16, digits, StringBuilder() )->String
+
+    method to_octal_string( digits=11:Int32 )->String
+      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 8, digits, StringBuilder() )->String
+
+    method to_power_of_two->Int32
+      if (this & 0xC0000000 or not this) return this
+      local p2 = 1
+      while (p2 < this) p2 = p2 :<<: 1
+      return p2
+
+    method sign->Int32
+      return which{ this>0:1 || this<0:-1 || 0 }
+
+      unitTest assert( 5.sign  == 1 )
+      unitTest assert( 0.sign  == 0 )
+      unitTest assert( -5.sign == -1 )
+      }#
 endClass
 
 class Character [primitive];

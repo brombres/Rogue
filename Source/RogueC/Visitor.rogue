@@ -227,8 +227,9 @@ class Visitor
       cmd.upkeep = visit(cmd.upkeep)
 
     method on_visit_children( cmd:If )
-      cmd.condition = visit(cmd.condition)
-      cmd.statements = visit(cmd.statements)
+        cmd.condition = visit(cmd.condition)
+        cmd.statements = visit(cmd.statements)
+        cmd.cmd_else = visit(cmd.cmd_else)->(as If)
 
     method on_visit_children( cmd:Return )
       cmd.result = visit(cmd.result)

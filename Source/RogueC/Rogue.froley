@@ -64,7 +64,7 @@ KEYWORD_PI             pi
 KEYWORD_PROPERTIES     PROPERTIES  [structural]
 KEYWORD_RETURN         return
 KEYWORD_ROUTINE        routine     [structural]
-KEYWORD_THIS_CALL      thisCall
+KEYWORD_THIS           this
 KEYWORD_THROW          throw
 KEYWORD_TRUE           true
 KEYWORD_TRY            try
@@ -1326,6 +1326,7 @@ parser
   on "false"              -> LiteralLogical(value="false":Logical)
   on "null"               -> LiteralNull
   on "pi"                 -> LiteralPi
+  on "this"               -> This
   on '(', expression, ')':   return
 #{
   onPeek "[" literal_list -> LiteralValueList(args)

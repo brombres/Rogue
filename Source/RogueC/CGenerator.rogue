@@ -719,6 +719,9 @@ class CGenerator : Visitor
       writer.print " - "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:This )
+      writer.print "THIS"
+
     method on_visit( cmd:Throw )
       writer.print   "Rogue_exception = (RogueObject*) ROGUE_RETAIN("
       visit( cmd.exception )
