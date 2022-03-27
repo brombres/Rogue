@@ -1,6 +1,30 @@
-class Real64 [primitive];
+class Real64 [primitive]
+  GLOBAL METHODS
+    method create( value:Real64 )->Real64
+      return value
+
+  METHODS
+    method integer_bits->Int64
+      return native("*((RogueInt64*)&$this)")->Int64
+endClass
+
 class Real32 [primitive];
-class Int64 [primitive];
+
+class Int64 [primitive]
+  GLOBAL METHODS
+    method create( value:Int64 )->Int64
+      return value
+
+    method maximum->Int64
+      return 0x7FFF_FFFF_FFFF_FFFF
+
+    method minimum->Int64
+      return 0x8000_0000_0000_0000
+
+  METHODS
+    method real_bits->Real64
+      return native("*((RogueReal64*)&$this)")->Real64
+endClass
 
 class Int32 [primitive]
   GLOBAL METHODS
@@ -10,10 +34,10 @@ class Int32 [primitive]
     #method from_value( value:Value )->Int32
       #return value->Int32
 
-    method maximum->Int32 [macro]
+    method maximum->Int32
       return 2147483647
 
-    method minimum->Int32 [macro]
+    method minimum->Int32
       return 0x8000_0000
 
   METHODS
@@ -24,7 +48,6 @@ class Int32 [primitive]
     method real_bits->Real32
       return native("*((RogueReal32*)&$this)")->Real32
 
-      #{
     method clamped( low:Int32, high:Int32 )->Int32
       if (this < low)  return low
       if (this > high) return high
@@ -38,6 +61,7 @@ class Int32 [primitive]
       if (this > high) return high
       return this
 
+      #{
     method digit_count->Int32
       use buffer = StringBuilder.pool
         return buffer.print( this ).count

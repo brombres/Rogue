@@ -49,10 +49,6 @@ class Math
     method tan( n:Real64 )->Real64
       return native('tan($n)')->Real64
 
-    method abs( n:Real64 )->Real64
-      if (n >= 0) return  n
-      else        return -n
-
       #{
     method abs( n:Int64 )->Int64
       if (n >= 0) return  n
