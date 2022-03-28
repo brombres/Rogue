@@ -447,10 +447,16 @@ parser
   if (nextIs("class"))
     savePosition
     ++disable_output
+
+    consume("class")
+    identifier
+    template_parameters
     class
     call on_parsed_class
+
     --disable_output
     discardPosition
+
     return
   endIf
 
@@ -509,9 +515,40 @@ parser
   if (not consume('->')) produceNull
   type
 
+- id_or_type
+  type_name
+  if (not nextIs("<<")) return
+  type_args
+  produce Type(name:String,type_args:TemplateArgs)
+
 - type
   type_name
-  produce Type(name:String)
+  if (nextIs("<<")) type_args
+  else              createNull
+  produce Type(name:String,type_args:TemplateArgs)
+
+- type_args
+  consume("<<")
+  beginList
+    consume_eols
+    if (not consume(">>"))
+      template_arg_tokens
+      consume_eols
+      while (consume(','))
+        consume_eols
+        template_arg_tokens
+        consume_eols
+      endWhile
+      mustConsume(">>")
+    endIf
+  createList TemplateArgs
+
+- template_arg_tokens
+  savePosition
+  while (hasAnother and not nextIs(',') and not nextIs(">>"))
+    read
+  endWhile
+  produceTokenList
 
 - type_name
   #identifier
@@ -541,7 +578,11 @@ parser
   else              createNull
 
 - identifier
-  on IDENTIFIER -> Identifier(name=content)
+  on IDENTIFIER  -> Identifier(name=content)
+  if (nextIs(PLACEHOLDER))
+    if (not disable_output) syntaxError
+    on PLACEHOLDER -> Identifier(name=content)
+  endIf
   syntaxError "Identifier expected."
 
 - string
@@ -585,9 +626,6 @@ parser
   syntaxError "Illegal class attribute. Expected one or more of [essential primitive singleton]."
 
 - class
-  mustConsume "class"
-  identifier
-  template_parameters
   constructor_properties
   base_types
   class_attributes
@@ -597,7 +635,7 @@ parser
     class_sections
     mustConsume "endClass"
   endIf
-  produce Class( name, template_parameters, constructor_properties, base_types, attributes:Attributes, sections )
+  produce Class( constructor_properties, base_types, attributes:Attributes, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
@@ -1318,7 +1356,7 @@ parser
   on REAL_NUMBER    -> LiteralReal64(value=content:Real)
   on CHARACTER      -> LiteralCharacter(value=content:Character)
   onPeek IDENTIFIER
-    type_name
+    id_or_type
     access_args
     produce Access( name:String, args )
   endOn
@@ -1553,7 +1591,6 @@ parser
   #  create SubtractReal64(left,right):Binary
   #  create SubtractString(left,right):Binary
   #  create SubtractValue(left,right):Binary
-  create Type(name:String)
   create TypeContext(type:Type)
   create CreateObject(of_type:Type,args)
   #  create ValueAsInt32(operand):Unary

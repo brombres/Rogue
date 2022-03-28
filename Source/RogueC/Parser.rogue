@@ -102,14 +102,22 @@ class Parser : ParserCore
       local i2 = _position - 1
       local tokens = Token[]( (i2-i1)+1 )
       tokens.add( _tokens[forEach in i1..i2] )
+
       assert tokens.count
+      local class_t = tokens.first
+
       local name = tokens[1]
       local placeholders = Token[]
       if (i2 >= i1 + 4 and tokens[2].type == TokenType.SYMBOL_LTLT)
-        forEach (t in tokens from 3)
-          if (t.type == TokenType.SYMBOL_GTGT) escapeForEach
+        forEach (t at i in tokens from 3)
+          if (t.type == TokenType.SYMBOL_GTGT)
+            tokens.discard( 0, i+1 )  # remove "class Name<<...>>>"
+            escapeForEach
+          endIf
           if (t.type == TokenType.PLACEHOLDER) placeholders.add( t )
         endForEach
+      else
+        tokens.discard( 0, 2 )   # remove "class Name"
       endIf
 
       local m = Program.current_module
@@ -118,7 +126,7 @@ class Parser : ParserCore
         throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
       endIf
 
-      m.templates[extended_name] = Template( name, placeholders, tokens, attributes )
+      m.templates[extended_name] = Template( class_t, name, placeholders, tokens, attributes )
 
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module

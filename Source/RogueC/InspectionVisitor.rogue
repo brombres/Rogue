@@ -81,10 +81,6 @@ class InspectionVisitor<<$ReturnType>>
 
     method on( cmd:Class )->$ReturnType
       local result : $ReturnType
-      result = visit(cmd.name)
-      if (result?) return result
-      result = visit(cmd.template_parameters)
-      if (result?) return result
       result = visit(cmd.constructor_properties)
       if (result?) return result
       result = visit(cmd.base_types)
@@ -358,6 +354,11 @@ class InspectionVisitor<<$ReturnType>>
     method on( cmd:Stepper )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.operand)
+      return result
+
+    method on( cmd:Type )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_args)
       return result
 
 endClass

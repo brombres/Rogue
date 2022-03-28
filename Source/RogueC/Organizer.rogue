@@ -15,6 +15,9 @@ class Organizer : Visitor
     method on_visit( cmd:Class )
       cmd.attributes.flags |= this_type.attributes.flags
       this_type.attributes = cmd.attributes
+      if (not this_type.is_primitive and not this_type.is_compound)
+        this_type.attributes.is_object = true
+      endIf
       visit_children( cmd )
 
     method on( cmd:ControlStructure )->Cmd

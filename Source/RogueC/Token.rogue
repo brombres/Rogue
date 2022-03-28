@@ -14,6 +14,7 @@ class Token( type:TokenType, filepath=null:String, source=null:String,
       return CompileError( message, filepath, source, line, column )
 
     method to->String
+      if (type == TokenType.EOL) return "EOL"
       if (content) return content
       return type.symbol.to_escaped_ascii
 endClass

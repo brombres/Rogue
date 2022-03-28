@@ -13,20 +13,37 @@ class Type : Cmd
     native_properties = String[]
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
+    type_args         : TemplateArgs
 
   GLOBAL METHODS
-    method create( t:Token, name:String )->Type
+    method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
+      if (type_args)
+        if (type_args.count)
+          use builder = StringBuilder.pool
+            builder.print name
+            builder.print "<<"
+            forEach (type at i in type_args)
+              if (i) builder.print ','
+              builder.print type->String
+            endForEach
+            builder.print ">>"
+            name = builder->String
+          endUse
+        else
+          type_args = null
+        endIf
+      endIf
       local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
-      type = Type( t, name, 0 )
+      type = Type( t, name, 0, type_args )
       type.ensure_definition
       return type
 
   METHODS
-    method init( t, name, attributes:Int32, &unlisted )
-      init( t, Program.current_module, name, attributes, &=unlisted )
+    method init( t, name, attributes:Int32, type_args=null:TemplateArgs, &unlisted )
+      init( t, Program.current_module, name, attributes, type_args, &=unlisted )
 
-    method init( t, module_context, name, attributes:Int32, &unlisted )
+    method init( t, module_context, name, attributes:Int32, type_args=null, &unlisted )
       if (not unlisted) module_context.types[ name ] = this
       this.attributes = Attributes( t, attributes )
 
@@ -62,9 +79,11 @@ class Type : Cmd
     method ensure_definition
       if (attributes.is_defined) return
 
-      local template = module_context.templates[ "$<<0>>"(name) ]
+      local type_arg_count = which{ type_args:type_args.count || 0 }
+      local template_name = "$<<$>>"(name.before_first('<'),type_arg_count)
+      local template = module_context.templates[template_name]
       if (template)
-        template.generate( null, this )
+        template.generate( type_args, this )
       else
         throw t.error( "Reference to undefined class '$::$'."(module_context,name) )
       endIf
@@ -76,6 +95,9 @@ class Type : Cmd
       if (this is base_class) return true
       # TODO: add support for class hierarchy
       return false
+
+    method is_compound->Logical
+      return attributes.is_compound
 
     method is_primitive->Logical
       return attributes.is_primitive
@@ -102,6 +124,7 @@ class Type : Cmd
 
     method to->Int32:  return name
     method to->Logical: return name?
+
     method to->String: return name
 
 endClass

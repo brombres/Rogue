@@ -2,21 +2,47 @@ module Rogue
 
 class Template
   PROPERTIES
+    t            : Token
     name         : String
     placeholders : Token[]
     tokens       = Token[]
     attributes   : Attributes
 
   METHODS
-    method init( name, placeholders, tokens, attributes:Int32 )
-      this.attributes = Attributes( tokens.first )
+    method init( t, name, placeholders, tokens, attributes:Int32 )
+      this.attributes = Attributes( t )
       this.attributes.flags = attributes
 
     method description->String
       return name
 
-    method generate( type_args:Type[], type:Type )
-      local class_def = Parser( tokens ).parse( Parser.ip_class )
+    method generate( type_args:TemplateArgs, type:Type )
+      local template_tokens = tokens
+
+      if (type_args)
+        assert placeholders.count == type_args.count
+        template_tokens = Token[]( tokens.count * 1.1 )
+
+        local replacements = Table<<String,Token[]>>()
+        forEach (placeholder at i in placeholders)
+          replacements[placeholder] = type_args[i].tokens
+        endForEach
+
+        forEach (t in tokens)
+          if (t.type == TokenType.PLACEHOLDER)
+            local replacement = replacements[t.content]
+            if (replacement)
+              template_tokens.add( forEach in replacement )
+            else
+              throw t.error( "Invalid template placeholder '$'."(t.content) )
+            endIf
+          else
+            template_tokens.add( t )
+          endIf
+        endForEach
+      endIf
+
+      local class_def = Parser( template_tokens ).parse( Parser.ip_class )
       Organizer( type.module_context ).visit( type, class_def )
       type.attributes.is_defined = true
       Program.is_modified = true

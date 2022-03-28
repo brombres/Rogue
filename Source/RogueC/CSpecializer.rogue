@@ -336,6 +336,43 @@ endAugment
 augment Program
   PROPERTIES
     c_name_strings = StringTable<<String>>()
+    unique_c_names = Set<<String>>()
+
+  METHODS
+    method to_c_name( name:String )->String
+      use builder = StringBuilder.pool
+        local iterator = name.iterator
+        while (iterator.has_another)
+          local ch = iterator.read
+          if (ch.is_letter or ch.is_number)
+            builder.print ch
+          elseIf (ch == '>')
+            if (iterator.peek == '>') iterator.read
+            else                      builder.print "GT"
+          elseIf (ch == '<')
+            if (iterator.peek == '<') builder.print '_'; iterator.read
+            else                      builder.print "GT"
+          else
+            builder.print '_'
+          endIf
+        endWhile
+        return builder->String
+      endUse
+
+    method unique_c_name( c_name:String )->String
+      if (unique_c_names.contains(c_name))
+        local i = 2
+        local cni = c_name + i
+        while (unique_c_names.contains(cni))
+          ++i
+          cni = c_name + i
+        endWhile
+        unique_c_names.add( cni )
+        return cni
+      else
+        unique_c_names.add( c_name )
+        return c_name
+      endIf
 endAugment
 
 augment Type
@@ -352,7 +389,7 @@ augment Type
 
     method c_name->String
       if (@c_name) return @c_name
-      @c_name = "$$" (module_context.c_name,name)
+      @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
       return @c_name
 
 endAugment
@@ -363,7 +400,7 @@ augment
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
         builder.print( type_context.c_name ).print( "__" )
-        builder.print( name )
+        builder.print( Program.to_c_name(name) )
         if (parameters.count)
           builder.print '_'
           forEach (p in parameters)

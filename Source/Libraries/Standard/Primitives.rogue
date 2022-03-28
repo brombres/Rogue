@@ -216,3 +216,27 @@ endClass
 class Character [primitive];
 class Byte [primitive];
 class Logical [primitive];
+
+class PrimitiveFunctions<<$DataType>>
+  METHODS
+    method test->$DataType
+      return 5
+
+    #{
+    method clamped( low:$DataType, high:$DataType )->$DataType
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:$DataType )->$DataType
+      if (this < low) return low
+      return this
+      }#
+
+      #{
+    method clamped_high( high:$DataType )->$DataType
+      if (this > high) return high
+      return this
+      }#
+endClass
+

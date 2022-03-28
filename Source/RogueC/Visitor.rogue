@@ -179,8 +179,6 @@ class Visitor
       cmd.info = visit(cmd.info)->(as Local)
 
     method on_visit_children( cmd:Class )
-      cmd.name = visit(cmd.name)
-      cmd.template_parameters = visit(cmd.template_parameters)
       cmd.constructor_properties = visit(cmd.constructor_properties)
       cmd.base_types = visit(cmd.base_types)
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
@@ -319,20 +317,23 @@ class Visitor
       cmd.exception = visit(cmd.exception)
 
     method on_visit_children( cmd:Try )
-        cmd.initialization = visit(cmd.initialization)
-        cmd.statements = visit(cmd.statements)
-        cmd.catches = visit(cmd.catches)->(as Catches)
+      cmd.initialization = visit(cmd.initialization)
+      cmd.statements = visit(cmd.statements)
+      cmd.catches = visit(cmd.catches)->(as Catches)
 
     method on_visit_children( cmd:Catch )
-        cmd.initialization = visit(cmd.initialization)
-        cmd.exception_type = visit(cmd.exception_type)->(as Type)
-        cmd.statements = visit(cmd.statements)
+      cmd.initialization = visit(cmd.initialization)
+      cmd.exception_type = visit(cmd.exception_type)->(as Type)
+      cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Convert )
-        cmd.operand = visit(cmd.operand)
+      cmd.operand = visit(cmd.operand)
 
     method on_visit_children( cmd:Stepper )
-        cmd.operand = visit(cmd.operand)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:Type )
+      cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
 
 endClass
 
