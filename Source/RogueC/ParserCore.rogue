@@ -449,7 +449,7 @@ class ParserCore [abstract]
                   if (not _consume(TokenType.KEYWORD_END_ROUTINE)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_ROUTINE )
                 endIf
                 if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
-                if (not disable_output) _push( Routine(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+                if (not disable_output) _push( Routine(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
                 return
               endTemporarily
             endIf
@@ -493,7 +493,7 @@ class ParserCore [abstract]
             endWhile
             if (not _consume(TokenType.SYMBOL_CLOSE_PAREN)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_PAREN )
             if (disable_output)     _discard_list
-            else                    _push_list( CmdList(_list_t) )
+            else                    _push_list( Parameters(_list_t) )
             return
           case ip_procedure_parameter
             _execute(ip_consume_eols)
@@ -690,8 +690,11 @@ class ParserCore [abstract]
             elseIf (_consume_content("primitive"))
               if (not disable_output) _push( AttributePrimitive(_cur_t), 0 )
               return
+            elseIf (_consume_content("aspect"))
+              if (not disable_output) _push( AttributeAspect(_cur_t), 0 )
+              return
             endIf
-            _throw_syntax_error("Illegal class attribute. Expected one or more of [essential primitive singleton].")
+            _throw_syntax_error("Illegal class attribute. Expected one or more of [aspect essential primitive singleton].")
             return
           case ip_class
             _execute(ip_constructor_properties)
@@ -707,7 +710,7 @@ class ParserCore [abstract]
               _pop_frame
               if (not _consume(TokenType.KEYWORD_END_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_CLASS )
             endIf
-            if (not disable_output) _push( Class(_cur_t,_node_arg(-4),_node_arg(-3),_node_arg(-2)->(as Attributes),_node_arg(-1)), 4 )
+            if (not disable_output) _push( Class(_cur_t,_node_arg(-4)->(as Parameters),_node_arg(-3),_node_arg(-2)->(as Attributes),_node_arg(-1)), 4 )
             return
           case ip_placeholder
             if (_next_t.type == TokenType.PLACEHOLDER)
@@ -1163,7 +1166,7 @@ class ParserCore [abstract]
                 _execute(ip_multi_line_statements)
                 _pop_frame
                 if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
-                if (not disable_output) _push( Method(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+                if (not disable_output) _push( Method(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
                 return
               endTemporarily
             endIf
@@ -1183,7 +1186,7 @@ class ParserCore [abstract]
                 _execute(ip_multi_line_statements)
                 _pop_frame
                 if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
-                if (not disable_output) _push( GlobalMethod(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+                if (not disable_output) _push( GlobalMethod(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
                 return
               endTemporarily
             endIf
@@ -2328,7 +2331,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( PrintReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintString(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( PrintValue(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+            if (not disable_output) _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
             if (not disable_output) _push( Range(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( ReturnOnException(_cur_t), 0 )
             if (not disable_output) _push( SetLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )

@@ -5,7 +5,7 @@ class Procedure : Cmd
     module_context : Module
     name           : String
     signature      : String
-    parameters     : Cmd
+    parameters     : Parameters
     return_type    : Type
     attributes     : Attributes
     body           : LocalScope   # LocalScope(statements)
@@ -22,13 +22,13 @@ class Procedure : Cmd
     # Most general type of exception that this procedure throws (or null)
 
   METHODS
-    method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,
+    method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )
       init( t, null, name, parameters, return_type, attributes, body )
 
     method init( t, module_context, name, parameters=null, return_type=null,
         attributes=null, body=null )
-      if (not parameters) parameters = CmdList(t)
+      if (not parameters) parameters = Parameters(t)
       if (not attributes) attributes = Attributes( t )
       if (not body)       body = LocalScope(t)
       statements = body.statements

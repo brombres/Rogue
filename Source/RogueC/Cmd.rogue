@@ -743,7 +743,7 @@ endClass
 
 class Class : Cmd
   PROPERTIES
-    constructor_properties : Cmd
+    constructor_properties : Parameters
     base_types             : Cmd
     attributes             : Attributes
     sections               : Cmd
@@ -1599,11 +1599,11 @@ class Method : Procedure
     type_context : Type
 
   METHODS
-    method init( t:Token, name:String, parameters=null:Cmd, return_type=null:Type,
+    method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )
       init( t, null, name, parameters, return_type, attributes, body )
 
-    method init( t:Token, module_context:Module, name:String, parameters=null:Cmd, return_type=null:Type,
+    method init( t:Token, module_context:Module, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )
       prior.init( t, module_context, name, parameters, return_type, attributes, body )
       this.attributes.is_method = true
@@ -1952,4 +1952,19 @@ class TemplateArgs : CmdList
 
     method get( index:Int32 )->TokenList
       return list[index]->(as TokenList)
+endClass
+
+class AttributeAspect : Cmd
+  METHODS
+    method description->String
+      return "AttributeAspect"
+endClass
+
+class Parameters : CmdList
+  METHODS
+    method description->String
+      return "Parameters" + list_description
+
+    method get( index:Int32 )->Local
+      return list[index]->(as Local)
 endClass

@@ -152,7 +152,7 @@ class Visitor
       cmd.index = visit(cmd.index)
 
     method on_visit_children( cmd:Procedure )
-      cmd.parameters = visit(cmd.parameters)
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
       cmd.return_type = visit(cmd.return_type)->(as Type)
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
       cmd.body = visit(cmd.body)->(as LocalScope)
@@ -179,7 +179,7 @@ class Visitor
       cmd.info = visit(cmd.info)->(as Local)
 
     method on_visit_children( cmd:Class )
-      cmd.constructor_properties = visit(cmd.constructor_properties)
+      cmd.constructor_properties = visit(cmd.constructor_properties)->(as Parameters)
       cmd.base_types = visit(cmd.base_types)
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
       cmd.sections = visit(cmd.sections)
@@ -233,7 +233,7 @@ class Visitor
       cmd.result = visit(cmd.result)
 
     method on_visit_children( cmd:Routine )
-      cmd.parameters = visit(cmd.parameters)
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
       cmd.return_type = visit(cmd.return_type)->(as Type)
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
       cmd.body = visit(cmd.body)->(as LocalScope)
@@ -263,7 +263,7 @@ class Visitor
 
     method on_visit_children( cmd:Method )
       cmd.type_context = visit(cmd.type_context)->(as Type)
-      cmd.parameters = visit(cmd.parameters)
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
       cmd.return_type = visit(cmd.return_type)->(as Type)
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
       cmd.body = visit(cmd.body)->(as LocalScope)

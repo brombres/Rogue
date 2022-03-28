@@ -15,9 +15,24 @@ class Organizer : Visitor
     method on_visit( cmd:Class )
       cmd.attributes.flags |= this_type.attributes.flags
       this_type.attributes = cmd.attributes
-      if (not this_type.is_primitive and not this_type.is_compound)
+      if (not this_type.is_primitive and not this_type.is_compound and not this_type.is_aspect)
         this_type.attributes.is_object = true
       endIf
+
+      if (cmd.constructor_properties)
+        # Turn parameters into properties and generate a corresponding init() method.
+        local m_init = Method( cmd.t, "init" )
+        forEach (v in cmd.constructor_properties)
+          if (v.type)
+            local p = Property( v.t, v.name, v.initial_value, v.type )
+            collect( v.t, p )
+            v.type = null  # turn into auto-store parameter
+          endIf
+          m_init.parameters.add( v )
+        endForEach
+        on( m_init )
+      endIf
+
       visit_children( cmd )
 
     method on( cmd:ControlStructure )->Cmd

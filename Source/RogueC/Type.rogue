@@ -96,6 +96,9 @@ class Type : Cmd
       # TODO: add support for class hierarchy
       return false
 
+    method is_aspect->Logical
+      return attributes.is_aspect
+
     method is_compound->Logical
       return attributes.is_compound
 

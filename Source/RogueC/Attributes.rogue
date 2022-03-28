@@ -6,17 +6,18 @@ class Attribute
     PRIMITIVE        = (1:<<:1)
     COMPOUND         = (1:<<:2)
     OBJECT           = (1:<<:3)
-    EXPORT           = (1:<<:4)
-    ESSENTIAL        = (1:<<:5)
-    SINGLETON        = (1:<<:6)
-    DEFINED          = (1:<<:7)
-    ORGANIZED        = (1:<<:8)
-    RESOLVED         = (1:<<:9)
-    ANCHORED         = (1:<<:10)  # holds a reference that has been ref-counted elsewhere in the stack
-    METHOD           = (1:<<:11) # object method (not global method or routine)
-    HAS_RETURN       = (1:<<:12)
-    VISITING         = (1:<<:13)
-    REQUIRES_CLEANUP = (1:<<:14)
+    ASPECT           = (1:<<:4)
+    EXPORT           = (1:<<:5)
+    ESSENTIAL        = (1:<<:6)
+    SINGLETON        = (1:<<:7)
+    DEFINED          = (1:<<:8)
+    ORGANIZED        = (1:<<:9)
+    RESOLVED         = (1:<<:10)
+    ANCHORED         = (1:<<:11)  # holds a reference that has been ref-counted elsewhere in the stack
+    METHOD           = (1:<<:12) # object method (not global method or routine)
+    HAS_RETURN       = (1:<<:13)
+    VISITING         = (1:<<:14)
+    REQUIRES_CLEANUP = (1:<<:15)
 endClass
 
 class Attributes : CmdList
@@ -24,6 +25,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_primitive,     Attribute.PRIMITIVE )
   ROGUE_ATTRIBUTE( is_compound,      Attribute.COMPOUND )
   ROGUE_ATTRIBUTE( is_object,        Attribute.OBJECT )
+  ROGUE_ATTRIBUTE( is_aspect,        Attribute.ASPECT )
   ROGUE_ATTRIBUTE( is_exported,      Attribute.EXPORT )
   ROGUE_ATTRIBUTE( is_essential,     Attribute.ESSENTIAL )
   ROGUE_ATTRIBUTE( is_singleton,     Attribute.SINGLETON )
@@ -65,13 +67,16 @@ class Attributes : CmdList
       return "Attributes" + list_description
 
     method is_reference->Logical
-      return (flags & (Attribute.OBJECT))?
+      return (flags & (Attribute.OBJECT | Attribute.ASPECT))?
 endClass
 
 augment
   METHODS
     method Cmd.attribute_flags->Int32
       return 0
+
+    method AttributeAspect.attribute_flags->Int32
+      return Attribute.ASPECT
 
     method AttributeEssential.attribute_flags->Int32
       return Attribute.ESSENTIAL

@@ -478,7 +478,7 @@ parser
       mustConsume "endRoutine"
     endIf
     create LocalScope(statements):ControlStructure
-    produce Routine(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    produce Routine(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
   endOn
 
   on "uses" string uses_attributes -> UsesModule(path,attributes:Attributes)
@@ -499,7 +499,7 @@ parser
     procedure_parameter
     while (consume(',')) procedure_parameter
     mustConsume ')'
-  produceList
+  produceList Parameters
 
 - procedure_parameter
   consume_eols
@@ -622,8 +622,10 @@ parser
     produce AttributeEssential
   elseIf (consume @"primitive")
     produce AttributePrimitive
+  elseIf (consume @"aspect")
+    produce AttributeAspect
   endIf
-  syntaxError "Illegal class attribute. Expected one or more of [essential primitive singleton]."
+  syntaxError "Illegal class attribute. Expected one or more of [aspect essential primitive singleton]."
 
 - class
   constructor_properties
@@ -635,7 +637,7 @@ parser
     class_sections
     mustConsume "endClass"
   endIf
-  produce Class( constructor_properties, base_types, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types, attributes:Attributes, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
@@ -931,7 +933,7 @@ parser
     consume(':')
     multi_line_statements
     create LocalScope(statements):ControlStructure
-    produce Method(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    produce Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
   endOn
 
 - global_method
@@ -943,58 +945,8 @@ parser
     consume(':')
     multi_line_statements
     create LocalScope(statements):ControlStructure
-    produce GlobalMethod(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
   endOn
-
-#{
-- signature
-  identifier
-  procedure_parameters
-  procedure_return_type
-  attributes
-
-- native_global_method
-  identifier
-  native_parameter_types
-  procedure_return_type
-  attributes
-  beginList
-  createList Statements
-  produce GlobalMethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):MethodDef
-
-- native_method
-  identifier
-  native_parameter_types
-  procedure_return_type
-  attributes
-  beginList
-  createList Statements
-  produce MethodDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
-
-- native_routine
-  identifier
-  native_parameter_types
-  procedure_return_type
-  attributes
-  beginList
-  createList Statements
-  produce RoutineDef(name:String,parameters,return_type:Type,attributes:Attributes,statements):ProcedureDef
-
-- native_parameter_types
-  beginList
-    if (not consume('(')) produceList
-    if (consume(')')) produceList
-    native_parameter_type
-    while (consume(',')) native_parameter_type
-    mustConsume ')'
-  produceList
-
-- native_parameter_type
-  createNull
-  createNull
-  type
-  produce Local(name:String,initial_value,type:Type)
-}#
 
 - properties
   beginList
@@ -1570,7 +1522,7 @@ parser
   create PrintReal64(operand):PrintValue
   create PrintString(operand):PrintValue
   create PrintValue(operand)
-  create Procedure(name:String,parameters,return_type:Type,attributes:Attributes,body:LocalScope)
+  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
   #  create ProcedureDef(name:String,parameters,return_type:Type,attributes,statements)
   #  create PushResult(operand):Unary
   #  create ReturnResult(result)
