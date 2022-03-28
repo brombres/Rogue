@@ -195,7 +195,7 @@ class CWriter : BufferedPrintWriter
            |void Rogue_delete_object( void* obj )
            |{
            |  // TODO: dereference properties
-           |  printf( "Destroying %s\n", ((RogueObject*)obj)->type->name );
+           |  printf( "Delete object %s\n", ((RogueObject*)obj)->type->name );
            |  ROGUE_FREE( obj );
            |}
            |

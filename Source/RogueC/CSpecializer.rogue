@@ -42,8 +42,12 @@ class CSpecializer : Visitor
       # Anchor the object context if necessary
       local context = cmd.context
       if (context.type.is_reference and not context.is_anchored)
-        local v = add_local( context.t, "anchored_context", context.type )
-        insert( SetLocal(context.t,v,context,&initial_assignment) )
+        context = visit( context )
+        local v = context.intermediate_v
+        if (not v or not v.is_anchored)
+          v = add_local( context.t, "anchored_context", context.type, DummyInitialValue )
+          insert( SetLocal(context.t,v,context,&initial_assignment) )
+        endIf
         cmd.context = GetLocal(context.t,v)
       endIf
       return on( cmd->(as CallProcedure) )
@@ -282,6 +286,12 @@ augment ControlStructure
 endAugment
 
 augment CreateObjectAndSetLocal
+  METHODS
+    method intermediate_v->Local
+      return info
+endAugment
+
+augment GetLocal
   METHODS
     method intermediate_v->Local
       return info
