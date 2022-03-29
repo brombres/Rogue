@@ -29,6 +29,9 @@ class Module
 
     method collect_routines( r_name:String, list:Procedure[], &is_limited )
       if (is_collecting_routines) return
+
+      organize
+
       forEach (r in routines)
         if (r.name == r_name) list.add( r )
       endForEach

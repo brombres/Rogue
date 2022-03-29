@@ -388,14 +388,14 @@ endAugment
 augment Type
   PROPERTIES
     c_name : String   # e.g. RogueString
-    c_type : String   # e.g. RogueString*
+    c_ref_name : String   # e.g. RogueString*
 
   METHODS
-    method c_type->String
-      if (@c_type) return @c_type
-      @c_type = c_name
-      if (is_reference) @c_type += "*"
-      return @c_type
+    method c_ref_name->String
+      if (@c_ref_name) return @c_ref_name
+      @c_ref_name = c_name
+      if (is_reference) @c_ref_name += "*"
+      return @c_ref_name
 
     method c_name->String
       if (@c_name) return @c_name

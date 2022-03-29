@@ -1,9 +1,13 @@
 module Rogue
 
+uses Utility/WorkList
+
 class Type : Cmd
   PROPERTIES
     module_context    : Module
     name              : String
+    base_class        : Type
+    aspects           : Type[]
     attributes        : Attributes
     definitions       = StringTable<<Cmd>>()
     global_properties = StringTable<<Property>>()
@@ -66,6 +70,8 @@ class Type : Cmd
       return this
 
     method collect_methods( m_name:String, list:Procedure[], &require_global )
+      organize
+
       forEach (m in global_methods)
         if (m.name == m_name) list.add( m )
       endForEach
@@ -91,9 +97,12 @@ class Type : Cmd
     method description->String
       return "$" (%name)
 
-    method instance_of( base_class:Type )->Logical
-      if (this is base_class) return true
-      # TODO: add support for class hierarchy
+    method instance_of( ancestor_class:Type )->Logical
+      local type = this
+      while (type)
+        if (type is ancestor_class) return true
+        type .= base_class
+      endWhile
       return false
 
     method is_aspect->Logical
@@ -101,6 +110,9 @@ class Type : Cmd
 
     method is_compound->Logical
       return attributes.is_compound
+
+    method is_object->Logical
+      return attributes.is_object
 
     method is_primitive->Logical
       return attributes.is_primitive
@@ -113,13 +125,82 @@ class Type : Cmd
       attributes.is_organized = true
       ensure_definition
 
-      # TODO: organize base types, validate hierarchy
+      # Organize base types
+      if (base_class) base_class.organize
+
+      if (aspects)
+        (forEach in aspects).organize
+      endIf
+
+      # Inherit properties
+      if (base_class or aspects)
+        use my_properties = WorkList<<Property>>
+          my_properties.add( forEach in properties )
+          properties.clear
+
+          if (base_class)
+            forEach (p in base_class.properties)
+              properties[p.name] = p
+            endForEach
+
+            forEach (p in base_class.native_properties step -1)
+              native_properties.insert( p )
+            endForEach
+          endIf
+
+          forEach (p in my_properties)
+            local base_p = properties[p.name]
+            if (base_p)
+              if (not p.type.instance_of(base_p.type))
+                throw p.t.error( "Redeclared property '$' has type $ that is not instanceOf inherited type $."...
+                  (p.name,p.type,base_p.type) )
+              endIf
+            endIf
+            properties[p.name] = p
+          endForEach
+
+        endUse
+      endIf
+
+      # Inherit methods
+      if (base_class)
+        local has_init = false
+        forEach (m in methods)
+          if (m.name == "init")
+            has_init = true
+            escapeForEach
+          endIf
+        endForEach
+
+        forEach (base_m in base_class.methods)
+          if (has_init and base_m.name == "init") nextIteration
+          local m = methods[ base_m.signature ]
+          if (m)
+            if (m.return_type? xor base_m.return_type?)
+              if (m.return_type?)
+                throw m.t.error( "Return type mismatch - overridden method $ does not return a value."(base_m.context_signature) )
+              else
+                throw m.t.error( "Return type mismatch - override method $ does not return a value."(m.context_signature) )
+              endIf
+            endIf
+            if (m.return_type and not m.return_type.instance_of(base_m.return_type))
+              throw m.t.error( "Return type mismatch - override return type $ is not instanceOf overridden return type $."...
+                (m.return_type,base_m.return_type) )
+            endIf
+          else
+            add( base_m )
+          endIf
+        endForEach
+      endIf
+
       # TODO: inherit base class methods
 
+      #{
     method resolve
       if (attributes.is_resolved) return
       attributes.is_resolved = true
       organize
+      }#
 
     method to->Character
       return Cmd.to_character(name)

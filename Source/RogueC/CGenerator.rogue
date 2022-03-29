@@ -46,6 +46,28 @@ class CGenerator : Visitor
       endForEach
       return null
 
+    method write_with_cast( cmd:Cmd, to_type:Type )
+      if (cmd.type is to_type)
+        visit( cmd )
+      else
+        writer.print "(("
+        writer.print to_type.c_ref_name
+        writer.print ")"
+        visit( cmd )
+        writer.print ")"
+      endIf
+
+    method write_with_cast( cmd:String, from_type:Type, to_type:Type )
+      if (from_type is to_type)
+        writer.print cmd
+      else
+        writer.print "(("
+        writer.print to_type.c_ref_name
+        writer.print ")"
+        writer.print cmd
+        writer.print ")"
+      endIf
+
     method on_visit( cmd:Cmd )
       throw UnsupportedOperationError("CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
 
@@ -111,7 +133,8 @@ class CGenerator : Visitor
         writer.print "( "
         forEach (arg at i in cmd.args)
           if (i) writer.print ", "
-          visit( arg )
+          local p = cmd.info.parameters[i]
+          write_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       else
@@ -122,14 +145,16 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
       if (cmd.args.count == 0)
         writer.print '('
-        visit( cmd.context )
+        write_with_cast( cmd.context, cmd.info->(as Method).type_context )
         writer.print ')'
       else
         writer.print "( "
-        visit( cmd.context )
+        write_with_cast( cmd.context, cmd.info->(as Method).type_context )
+
         forEach (arg at i in cmd.args)
           writer.print ", "
-          visit( arg )
+          local p = cmd.info.parameters[i]
+          write_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       endIf
@@ -137,13 +162,17 @@ class CGenerator : Visitor
     method on_visit( cmd:CallThisMethod )
       writer.print( cmd.info.c_name )
       if (cmd.args.count == 0)
-        writer.print "(THIS)"
+        writer.print '('
+        write_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
+        writer.print ')'
       else
-        writer.print "( THIS"
+        writer.print "( "
+        write_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
         if (cmd.args.count)
           forEach (arg at i in cmd.args)
             writer.print ", "
-            visit( arg )
+            local p = cmd.info.parameters[i]
+            write_with_cast( arg, p.type )
           endForEach
         endIf
         writer.print " )"
@@ -155,7 +184,8 @@ class CGenerator : Visitor
         writer.print "( "
         forEach (arg at i in cmd.args)
           if (i) writer.print ", "
-          visit( arg )
+          local p = cmd.info.parameters[i]
+          write_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       else
@@ -266,7 +296,7 @@ class CGenerator : Visitor
         endIf
 
         forEach (v in cmd.locals)
-          writer.print( v.type.c_type ).print( ' ' )
+          writer.print( v.type.c_ref_name ).print( ' ' )
           writer.print( v.c_name )
           if (not v.initial_value)
             writer.print( " = " )
@@ -360,6 +390,8 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
 
     method on_visit( cmd:GlobalMethod )
+      if (cmd.type_context is not this_type) return
+
       this_type.write_c_global_method_header( cmd, writer )
       writer.println
 
@@ -498,6 +530,8 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
 
     method on_visit( cmd:Method )
+      if (cmd.type_context is not this_type) return
+
       this_type.write_c_method_header( cmd, writer )
       writer.println
 
@@ -1024,13 +1058,17 @@ augment
       endIf
 
       forEach (m in global_methods)
-        write_c_global_method_header( m, writer )
-        writer.println ';'
+        if (m.type_context is this)
+          write_c_global_method_header( m, writer )
+          writer.println ';'
+        endIf
       endForEach
 
       forEach (m in methods)
-        write_c_method_header( m, writer )
-        writer.println ';'
+        if (m.type_context is this)
+          write_c_method_header( m, writer )
+          writer.println ';'
+        endIf
       endForEach
 
     method Type.generate_c_code( writer:CWriter )

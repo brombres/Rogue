@@ -33,6 +33,29 @@ class Organizer : Visitor
         on( m_init )
       endIf
 
+      forEach (type in cmd.base_types)
+        if (type.is_object)
+          if (this_type.base_class and this_type.base_class is not type)
+            throw cmd.base_types.t.error(
+              "Class $ cannot extend both $ and $. Only one base class is allowed."...
+              (this_type.name,this_type.base_class,type)
+            )
+          endIf
+          if (not this_type.is_object)
+            throw cmd.base_types.t.error( "Compounds, aspects, and primitives cannot extend object classes." )
+          endIf
+          if (type.instance_of(this_type))
+            throw cmd.base_types.t.error( "Circular class extension - $ already extends $." (type,this_type) )
+          endIf
+          this_type.base_class = type
+        elseIf (this_type.is_aspect)
+          throw cmd.base_types.t.error( "Aspects cannot extend other aspects or classes." )
+        else
+          ensure type.aspects
+          type.aspects.add( type )
+        endIf
+      endForEach
+
       visit_children( cmd )
 
     method on( cmd:ControlStructure )->Cmd

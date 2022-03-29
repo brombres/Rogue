@@ -637,7 +637,7 @@ parser
     class_sections
     mustConsume "endClass"
   endIf
-  produce Class( constructor_properties:Parameters, base_types, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
@@ -663,13 +663,13 @@ parser
 
 - base_types
   beginList
-    if (not consume(':')) produceList
+    if (not consume(':')) produceList TypeList
     type
     while (consume(','))
       consume_eols
       type
     endWhile
-  produceList
+  produceList TypeList
 
 - attributes
   beginList

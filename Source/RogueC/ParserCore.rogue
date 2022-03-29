@@ -710,7 +710,7 @@ class ParserCore [abstract]
               _pop_frame
               if (not _consume(TokenType.KEYWORD_END_CLASS)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_CLASS )
             endIf
-            if (not disable_output) _push( Class(_cur_t,_node_arg(-4)->(as Parameters),_node_arg(-3),_node_arg(-2)->(as Attributes),_node_arg(-1)), 4 )
+            if (not disable_output) _push( Class(_cur_t,_node_arg(-4)->(as Parameters),_node_arg(-3)->(as TypeList),_node_arg(-2)->(as Attributes),_node_arg(-1)), 4 )
             return
           case ip_placeholder
             if (_next_t.type == TokenType.PLACEHOLDER)
@@ -753,7 +753,7 @@ class ParserCore [abstract]
             _begin_list
             if ((not _consume(TokenType.SYMBOL_COLON)))
               if (disable_output)     _discard_list
-              else                    _push_list( CmdList(_list_t) )
+              else                    _push_list( TypeList(_list_t) )
               return
             endIf
             _execute(ip_type)
@@ -765,7 +765,7 @@ class ParserCore [abstract]
               _pop_frame
             endWhile
             if (disable_output)     _discard_list
-            else                    _push_list( CmdList(_list_t) )
+            else                    _push_list( TypeList(_list_t) )
             return
           case ip_attributes
             _begin_list

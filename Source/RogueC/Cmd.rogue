@@ -744,7 +744,7 @@ endClass
 class Class : Cmd
   PROPERTIES
     constructor_properties : Parameters
-    base_types             : Cmd
+    base_types             : TypeList
     attributes             : Attributes
     sections               : Cmd
 
@@ -1584,6 +1584,9 @@ class GlobalMethod : Procedure
     type_context : Type
 
   METHODS
+    method context_signature->String
+      return "$::$.$"(module_context,type_context,signature)
+
     method organize( organizer=null:Organizer )
       if (is_organized) return
 
@@ -1611,6 +1614,9 @@ class Method : Procedure
     method init( existing:Method )
       prior.init( existing )
       type_context = existing.type_context
+
+    method context_signature->String
+      return "$::$.$"(module_context,type_context,signature)
 
     method organize( organizer=null:Organizer )
       if (is_organized) return
