@@ -18,6 +18,7 @@ class Type : Cmd
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
     type_args         : TemplateArgs
+    id                : Int32
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type

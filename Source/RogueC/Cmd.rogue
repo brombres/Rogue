@@ -1600,6 +1600,7 @@ endClass
 class Method : Procedure
   PROPERTIES
     type_context : Type
+    id           : Int32
 
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
@@ -1631,7 +1632,7 @@ class Method : Procedure
 
 endClass
 
-class CallMethod : CallProcedure
+class CallDynamicMethod : CallProcedure
   PROPERTIES
     context : Cmd
 
@@ -1640,12 +1641,12 @@ class CallMethod : CallProcedure
 
     method init( t, context, info, args )
 
-    method init( existing:CallMethod )
+    method init( existing:CallDynamicMethod )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
 
     method description->String
-      return "CallMethod($,$,$)" (%context,%info,%args)
+      return "CallDynamicMethod($,$,$)" (%context,%info,%args)
 
 endClass
 

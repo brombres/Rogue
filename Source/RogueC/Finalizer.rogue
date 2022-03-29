@@ -1,5 +1,45 @@
 module Rogue
 
 class Finalizer : Visitor
+  PROPERTIES
+    next_type_id   = 1
+    next_method_id = 1
+
   METHODS
+    method apply
+      Program.apply( this )
+
+      forEach (entry in Program.dynamic_methods.entries)
+        if (entry.value.count > 1)
+          (forEach in entry.value).attributes.dynamic_dispatch = true
+        else
+          Program.dynamic_methods.remove( entry )
+        endIf
+      endForEach
+
+    method on_visit_type( type:Type )
+      type.id = next_type_id
+      ++next_type_id
+      prior.on_visit_type( type )
+
+    method on_visit( m:Method )
+      if (m.type_context is this_type and this_type.is_reference)
+        m.id = next_method_id
+        ++next_method_id
+
+        if (this_type.base_class)
+          local base_m = this_type.base_class.methods[ m.signature ]
+          if (base_m) base_m.attributes.is_overridden = true
+        endIf
+
+        local methods = Program.dynamic_methods[m.signature]
+        if (not methods)
+          methods = Method[]
+          Program.dynamic_methods[m.signature] = methods
+        endIf
+        methods.add( m )
+
+      endIf
+      visit_children( m )
+
 endClass

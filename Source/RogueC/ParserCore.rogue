@@ -2302,7 +2302,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( ConvertToReal32(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( ConvertToReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CallMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+            if (not disable_output) _push( CallDynamicMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallRoutine(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallThisMethod(_cur_t,_node_arg(-1)), 1 )

@@ -838,7 +838,7 @@ augment
 
     method Method.cmd_call( context:Cmd, args:Cmd )->Cmd
       if (context)
-        return CallMethod( t, context, this, args )
+        return CallDynamicMethod( t, context, this, args )
       else
         return CallThisMethod( t, this, args )
       endIf

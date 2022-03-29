@@ -279,7 +279,7 @@ class Visitor
       cmd.target = visit(cmd.target)
       cmd.operand = visit(cmd.operand)
 
-    method on_visit_children( cmd:CallMethod )
+    method on_visit_children( cmd:CallDynamicMethod )
       cmd.context = visit(cmd.context)
       cmd.args = visit(cmd.args)
 

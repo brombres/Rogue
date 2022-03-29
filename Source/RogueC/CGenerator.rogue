@@ -141,8 +141,14 @@ class CGenerator : Visitor
         writer.print "()"
       endIf
 
-    method on_visit( cmd:CallMethod )
-      writer.print( cmd.info.c_name )
+    method on_visit( cmd:CallDynamicMethod )
+      if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
+        writer.print "Rogue_dispatch_"
+        writer.print( cmd.info->(as Method).c_signature )
+      else
+        writer.print( cmd.info.c_name )
+      endIf
+
       if (cmd.args.count == 0)
         writer.print '('
         write_with_cast( cmd.context, cmd.info->(as Method).type_context )
@@ -948,7 +954,9 @@ augment
           writer.print   type.module_context.name
           writer.print   ''", "''
           writer.print   type.name
-          writer.print   ''", sizeof(''
+          writer.print   ''", ''
+          writer.print   type.id
+          writer.print   '', sizeof(''
           writer.print   type.c_name
           writer.print   ''), ''
           local default_constructor = type.methods["init()"]
@@ -998,6 +1006,14 @@ augment
 
       (forEach in modules).generate_c_header( h_writer )
 
+      local wrote_any = false
+      forEach (group in Program.dynamic_methods)
+        write_c_dispatch_method_header( group, h_writer )
+        h_writer.println ';'
+        wrote_any = true
+      endForEach
+      if (wrote_any) h_writer.println
+
       forEach (str in Program.unique_strings)
         h_writer.print   "extern RogueString* "
         h_writer.print   str
@@ -1006,9 +1022,47 @@ augment
 
       h_writer.close
 
+      #-------------------------------------------------------------------------
+
       local c_writer = CWriter( File("Test.c") )
 
       (forEach in modules).generate_c_code( c_writer )
+
+      forEach (group in Program.dynamic_methods)
+        write_c_dispatch_method_header( group, c_writer )
+        c_writer.println
+        c_writer.println '{'
+        c_writer.indent += 2
+        c_writer.println "switch (((RogueObject*)THIS)->type->id)"
+        c_writer.println '{'
+        c_writer.indent += 2
+        local last_m = group.last
+        forEach (m in group)
+          if (m is not last_m)
+            c_writer.print "case "
+            c_writer.print m.type_context.id
+          else
+            c_writer.print "default"
+          endIf
+          c_writer.print ": "
+          if (m.return_type) c_writer.print "return "
+          c_writer.print m.c_name
+          c_writer.print "(("
+          c_writer.print m.type_context.c_ref_name
+          c_writer.print ")THIS"
+          forEach (i of m.parameters)
+            c_writer.print ",p"
+            c_writer.print i
+          endForEach
+          if (m.return_type) c_writer.println ");"
+          else               c_writer.println "); return;"
+        endForEach
+        c_writer.indent -= 2
+        c_writer.println '}'
+        c_writer.indent -= 2
+        c_writer.println '}'
+        c_writer.println
+      endForEach
 
       forEach (str in Program.unique_strings)
         c_writer.print   "RogueString* "
@@ -1043,6 +1097,25 @@ augment
         endForEach
         writer.println
       endIf
+
+    method Program.write_c_dispatch_method_header( group:Method[], writer:CWriter )
+      local m = group.first  # any method will do; they all share the same signature
+      if (m.return_type)
+        writer.print( m.return_type.c_ref_name )
+      else
+        writer.print "void"
+      endIf
+      writer.print " Rogue_dispatch_"
+      writer.print( m.c_signature )
+      writer.print( "( void* THIS" )
+      forEach (p at i in m.parameters)
+        writer.print ", "
+        writer.print( p.type.c_ref_name )
+        writer.print ' '
+        writer.print "p"
+        writer.print i
+      endForEach
+      writer.print( " )" )
 
     method Statements.needs_semicolon->Logical
       return false

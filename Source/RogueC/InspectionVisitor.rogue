@@ -60,7 +60,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.right)
       return result
 
-    method on( cmd:CallMethod )->$ReturnType
+    method on( cmd:CallDynamicMethod )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.context)
       if (result?) return result

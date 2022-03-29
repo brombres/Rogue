@@ -141,6 +141,7 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char* module_name;
            |  const char* name;
+           |  RogueInt32 id;
            |  RogueInt32 size;
            |  RogueFn_init fn_init;
            |};

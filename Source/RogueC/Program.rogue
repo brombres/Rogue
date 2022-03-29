@@ -7,28 +7,29 @@ class Program [singleton]
     included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()
 
-    using_arc      = true  # Automatic Reference Counting
+    using_arc       = true  # Automatic Reference Counting
 
-    modules        = StringTable<<Module>>()
-    default_module : Module
-    current_module : Module
+    modules         = StringTable<<Module>>()
+    default_module  : Module
+    current_module  : Module
 
-    type_Logical   : Type
-    type_Byte      : Type
-    type_Character : Type
-    type_Int32     : Type
-    type_Int64     : Type
-    type_Real32    : Type
-    type_Real64    : Type
+    type_Logical    : Type
+    type_Byte       : Type
+    type_Character  : Type
+    type_Int32      : Type
+    type_Int64      : Type
+    type_Real32     : Type
+    type_Real64     : Type
 
-    type_null      : Type
-    type_Object    : Type
-    type_String    : Type
-    type_Exception : Type
+    type_null       : Type
+    type_Object     : Type
+    type_String     : Type
+    type_Exception  : Type
 
-    unique_strings = StringTable<<String>>()
+    is_modified     : Logical
 
-    is_modified    : Logical
+    unique_strings  = StringTable<<String>>()
+    dynamic_methods = StringTable<<Method[]>>()
 
   METHODS
     method init
@@ -141,6 +142,6 @@ class Program [singleton]
 
       (forEach in modules).organize
       apply( Resolver() )
-      #apply( Finalizer() )
+      Finalizer().apply
 
 endClass

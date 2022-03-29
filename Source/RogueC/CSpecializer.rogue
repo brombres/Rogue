@@ -38,7 +38,7 @@ class CSpecializer : Visitor
         current_statements.write( cmd )
       endIf
 
-    method on( cmd:CallMethod )->Cmd
+    method on( cmd:CallDynamicMethod )->Cmd
       # Anchor the object context if necessary
       local context = cmd.context
       if (context.type.is_reference and not context.is_anchored)
@@ -97,7 +97,7 @@ class CSpecializer : Visitor
       local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
       insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
       if (cmd.m_init)
-        insert( validate(CallMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
+        insert( validate(CallDynamicMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
       endIf
       return GetLocal(cmd.t,v)
 
@@ -324,6 +324,28 @@ augment LogicalOr
     method set_intermediate_v( @intermediate_v )
 endAugment
 
+augment Method
+  PROPERTIES
+    c_signature   : String
+
+  METHODS
+    method c_signature->String
+      if (@c_signature) return @c_signature
+
+      use builder = StringBuilder.pool
+        builder.print( name )
+        if (parameters.count)
+          builder.print '_'
+          forEach (p in parameters)
+            builder.print( "_" ).print( p.type.c_name )
+          endForEach
+        endIf
+        c_signature = builder
+        return @c_signature
+      endUse
+
+endAugment
+
 augment Procedure
   PROPERTIES
     c_name        : String
@@ -425,13 +447,7 @@ augment
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
         builder.print( type_context.c_name ).print( "__" )
-        builder.print( name )
-        if (parameters.count)
-          builder.print '_'
-          forEach (p in parameters)
-            builder.print( "_" ).print( p.type.c_name )
-          endForEach
-        endIf
+        builder.print( c_signature )
         c_name = builder
         return @c_name
       endUse

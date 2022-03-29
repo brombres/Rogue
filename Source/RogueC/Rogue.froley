@@ -1442,12 +1442,12 @@ parser
   create ConvertToLogical(operand):Convert
   create ConvertToReal32(operand):Convert
   create ConvertToReal64(operand):Convert
-  #  create CallMethod(context,procedure:Procedure,args):CallProcedure
+  #  create CallDynamicMethod(context,procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
   #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
   #  create CallNative
   create CallGlobalMethod(args):CallProcedure
-  create CallMethod(context,args):CallProcedure
+  create CallDynamicMethod(context,args):CallProcedure
   create CallProcedure(args)
   create CallRoutine(args):CallProcedure
   create CallThisMethod(args):CallProcedure
