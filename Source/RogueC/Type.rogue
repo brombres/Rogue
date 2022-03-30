@@ -108,6 +108,41 @@ class Type : Cmd
     method description->String
       return "$" (%name)
 
+    method incorporate( aspect_m:Method )
+      local existing_m = methods[ aspect_m.signature ]
+
+      if (existing_m)
+        if (existing_m.return_type? xor aspect_m.return_type?)
+          if (existing_m.return_type?)
+            throw aspect_m.t.error( "Return type mismatch - existing method $ does not return a value."...
+                (existing_m.context_signature) )
+          else
+            throw aspect_m.t.error( "Return type mismatch - existing method $ returns a value."...
+                (existing_m.context_signature) )
+          endIf
+        endIf
+        if (existing_m.return_type and existing_m.return_type is not aspect_m.return_type)
+          throw existing_m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
+          (aspect_m.return_type,existing_m.return_type) )
+        endIf
+      endIf
+
+      aspect_m .= cloned
+      AspectMethodPatcher.patch( this, aspect_m )
+
+      if (existing_m)
+        if (aspect_m.attributes.is_insert)
+          aspect_m.statements.add( forEach in existing_m.statements )
+          methods[ aspect_m.signature ] = aspect_m
+        elseIf (aspect_m.attributes.is_append)
+          existing_m.statements.add( forEach in aspect_m.statements )
+        else
+          methods[ aspect_m.signature ] = aspect_m
+        endIf
+      else
+        methods[ aspect_m.signature ] = aspect_m
+      endIf
+
     method instance_of( ancestor_type:Type )->Logical
       if (ancestor_type is Program.type_Object and this.is_reference) return true
 
@@ -251,38 +286,25 @@ class Type : Cmd
 
       # Incorporate aspect methods
       if (aspects)
+        # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods)
-            local m = methods[ aspect_m.signature ]
-            if (m)
-              if (m.return_type? xor aspect_m.return_type?)
-                if (m.return_type?)
-                  throw aspect_m.t.error( "Return type mismatch - existing method $ does not return a value."(m.context_signature) )
-                else
-                  throw aspect_m.t.error( "Return type mismatch - existing method $ returns a value."(m.context_signature) )
-                endIf
-              endIf
-              if (m.return_type and m.return_type is not aspect_m.return_type)
-                throw m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
-                    (aspect_m.return_type,m.return_type) )
-              endIf
-
-              if (m.type_context is not this)
-                # Replace the inherited method with the aspect method
-                incorporate( aspect_m )
-              endIf
-            else
+            if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
               incorporate( aspect_m )
             endIf
           endForEach
         endForEach
-      endIf
 
-    method incorporate( aspect_m:Method )
-      # TODO: handle [insert] & [append] aspect methods
-      aspect_m .= cloned
-      AspectMethodPatcher.patch( this, aspect_m )
-      methods[ aspect_m.signature ] = aspect_m
+        # Incorporate [insert] and [append] methods
+        forEach (incorporated_aspect in aspects)
+          forEach (aspect_m in incorporated_aspect.methods)
+            if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+              incorporate( aspect_m )
+            endIf
+          endForEach
+        endForEach
+
+      endIf
 
       #{
     method resolve

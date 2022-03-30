@@ -67,6 +67,14 @@ class Procedure : Cmd
 
       if (not module_context) module_context = Program.current_module
 
+      if (not type_context or not type_context.is_aspect)
+        if (attributes.is_append) throw t.error( "Attribute [append] is only valid for aspect methods." )
+        if (attributes.is_insert) throw t.error( "Attribute [insert] is only valid for aspect methods." )
+      endIf
+      if (attributes.is_append and attributes.is_insert)
+        throw t.error( "Attributes [append] and [insert] cannot be used together." )
+      endIf
+
       if (not signature)
         use builder = StringBuilder.pool
           builder.print name
@@ -127,7 +135,7 @@ class Procedure : Cmd
       resolver.visit( module_context, this )
 
     method type_context->Type
-      throw UnsupportedOperationError()
+      return null
 
 endClass
 

@@ -470,7 +470,7 @@ parser
     identifier
     procedure_parameters
     procedure_return_type
-    attributes
+    procedure_attributes
     if (consume(':'))
       single_line_statements
     else
@@ -488,6 +488,22 @@ parser
   endIf
 
   procedure_body
+
+- procedure_attributes
+  beginList
+    on '['
+      while (hasAnother and not nextIs(']'))
+        procedure_attribute
+        consume ','
+      endWhile
+      mustConsume(']')
+    endOn
+  produceList Attributes
+
+- procedure_attribute
+  on @"append" -> AttributeAppend
+  on @"insert" -> AttributeInsert
+  syntaxError "Illegal procedure attribute. Expected one or more of [append insert]."
 
 - procedure_body
   multi_line_statements
@@ -602,7 +618,7 @@ parser
 
 - module_attribute
   #on "export" -> AttributeExport
-  syntaxError "Illegal module attribute. Expected any of [TBD]."
+  syntaxError "Illegal module attribute."
 
 - class_attributes
   beginList
@@ -929,7 +945,7 @@ parser
     identifier
     procedure_parameters
     procedure_return_type
-    attributes
+    procedure_attributes
     consume(':')
     multi_line_statements
     create LocalScope(statements):ControlStructure
@@ -941,7 +957,7 @@ parser
     identifier
     procedure_parameters
     procedure_return_type
-    attributes
+    procedure_attributes
     consume(':')
     multi_line_statements
     create LocalScope(statements):ControlStructure

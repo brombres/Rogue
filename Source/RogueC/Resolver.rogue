@@ -241,14 +241,18 @@ class Resolver : Visitor
 
     method on( cmd:Print )->Cmd
       which (cmd.args.count)
-        case 0: throw cmd.t.error( "One or more arguments expected." )
-        case 1:
+        case 0
+          throw cmd.t.error( "One or more arguments expected." )
+        case 1
           local arg = visit( cmd.args.first )
-          return visit( arg.require_type.cmd_print(arg) )
+          return arg.require_type.cmd_print( arg )
         others
           local result = Statements( cmd.t )
-          result.add( Print(cmd.t,forEach in cmd.args) )
-          return visit( result )
+          forEach (arg in cmd.args)
+            arg = visit(arg)
+            result.add( arg.require_type.cmd_print(arg) )
+          endForEach
+          return result
       endWhich
 
       #{

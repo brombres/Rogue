@@ -2012,3 +2012,15 @@ class CallThisStaticMethod : CallProcedure
       return "CallThisStaticMethod($,$)" (%info,%args)
 
 endClass
+
+class AttributeAppend : Cmd
+  METHODS
+    method description->String
+      return "AttributeAppend"
+endClass
+
+class AttributeInsert : Cmd
+  METHODS
+    method description->String
+      return "AttributeInsert"
+endClass

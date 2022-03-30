@@ -20,6 +20,8 @@ class Attribute
     REQUIRES_CLEANUP = (1:<<:15)
     OVERRIDDEN       = (1:<<:16)
     DYNAMIC_DISPATCH = (1:<<:17)
+    INSERT           = (1:<<:18)
+    APPEND           = (1:<<:19)
 endClass
 
 class Attributes : CmdList
@@ -41,6 +43,8 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( requires_cleanup, Attribute.REQUIRES_CLEANUP )
   ROGUE_ATTRIBUTE( is_overridden,    Attribute.OVERRIDDEN )
   ROGUE_ATTRIBUTE( dynamic_dispatch, Attribute.DYNAMIC_DISPATCH )
+  ROGUE_ATTRIBUTE( is_insert,        Attribute.INSERT )
+  ROGUE_ATTRIBUTE( is_append,        Attribute.APPEND )
 
   PROPERTIES
     flags : Int32
@@ -79,6 +83,9 @@ augment
     method Cmd.attribute_flags->Int32
       return 0
 
+    method AttributeAppend.attribute_flags->Int32
+      return Attribute.APPEND
+
     method AttributeAspect.attribute_flags->Int32
       return Attribute.ASPECT
 
@@ -87,6 +94,9 @@ augment
 
     method AttributeExport.attribute_flags->Int32
       return Attribute.EXPORT
+
+    method AttributeInsert.attribute_flags->Int32
+      return Attribute.INSERT
 
     method AttributePrimitive.attribute_flags->Int32
       return Attribute.PRIMITIVE
