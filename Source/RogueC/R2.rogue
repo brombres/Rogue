@@ -2,6 +2,7 @@ module Rogue
 
 $include "Macros.rogue"
 
+$include "AspectMethodPatcher.rogue"
 $include "Attributes.rogue"
 $include "Candidates.rogue"
 $include "Collector.rogue"

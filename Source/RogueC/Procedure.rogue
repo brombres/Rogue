@@ -40,8 +40,14 @@ class Procedure : Cmd
       if (existing.return_type) return_type = existing.return_type.cloned
       if (existing.attributes)  attributes  = existing.attributes.cloned
       if (existing.body)        body  = existing.body.cloned
-      signature = existing.signature
       if (body) statements = body.statements
+      module_context = existing.module_context
+      signature = existing.signature
+      is_organized = existing.is_organized
+      is_resolved  = existing.is_resolved
+      min_args     = existing.min_args
+      locals.add( (forEach in existing.locals).cloned )
+      throws       = existing.throws
 
     method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
@@ -119,6 +125,9 @@ class Procedure : Cmd
       ensure resolver
 
       resolver.visit( module_context, this )
+
+    method type_context->Type
+      throw UnsupportedOperationError()
 
 endClass
 

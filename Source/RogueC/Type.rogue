@@ -165,7 +165,7 @@ class Type : Cmd
         (forEach in aspects).organize
 
         # Build flat list of incorporated aspects. Each aspect will already have
-        # a flat list of its children.
+        # a flat list of its own base aspects.
         use aspect_list = WorkList<<Type>>
           forEach (incorporated_aspect in aspects)
             if (incorporated_aspect.aspects)
@@ -218,7 +218,7 @@ class Type : Cmd
         endUse
       endIf
 
-      # Inherit methods
+      # Inherit base class methods
       if (base_class)
         local has_init = false
         forEach (m in methods)
@@ -236,7 +236,7 @@ class Type : Cmd
               if (m.return_type?)
                 throw m.t.error( "Return type mismatch - overridden method $ does not return a value."(base_m.context_signature) )
               else
-                throw m.t.error( "Return type mismatch - override method $ does not return a value."(m.context_signature) )
+                throw m.t.error( "Return type mismatch - overridden method $ returns a value."(base_m.context_signature) )
               endIf
             endIf
             if (m.return_type and not m.return_type.instance_of(base_m.return_type))
@@ -249,7 +249,40 @@ class Type : Cmd
         endForEach
       endIf
 
-      # TODO: inherit base class methods
+      # Incorporate aspect methods
+      if (aspects)
+        forEach (incorporated_aspect in aspects)
+          forEach (aspect_m in incorporated_aspect.methods)
+            local m = methods[ aspect_m.signature ]
+            if (m)
+              if (m.return_type? xor aspect_m.return_type?)
+                if (m.return_type?)
+                  throw aspect_m.t.error( "Return type mismatch - existing method $ does not return a value."(m.context_signature) )
+                else
+                  throw aspect_m.t.error( "Return type mismatch - existing method $ returns a value."(m.context_signature) )
+                endIf
+              endIf
+              if (m.return_type and m.return_type is not aspect_m.return_type)
+                throw m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
+                    (aspect_m.return_type,m.return_type) )
+              endIf
+
+              if (m.type_context is not this)
+                # Replace the inherited method with the aspect method
+                incorporate( aspect_m )
+              endIf
+            else
+              incorporate( aspect_m )
+            endIf
+          endForEach
+        endForEach
+      endIf
+
+    method incorporate( aspect_m:Method )
+      # TODO: handle [insert] & [append] aspect methods
+      aspect_m .= cloned
+      AspectMethodPatcher.patch( this, aspect_m )
+      methods[ aspect_m.signature ] = aspect_m
 
       #{
     method resolve

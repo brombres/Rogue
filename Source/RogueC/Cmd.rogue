@@ -1593,7 +1593,10 @@ class GlobalMethod : Procedure
       ensure organizer( module_context )
       prior.organize( organizer )
 
-      type_context.add( this )
+      @type_context.add( this )
+
+    method type_context->Type
+      return @type_context
 
 endClass
 
@@ -1614,21 +1617,23 @@ class Method : Procedure
 
     method init( existing:Method )
       prior.init( existing )
-      type_context = existing.type_context
+      type_context = existing.@type_context
 
     method context_signature->String
-      return "$::$.$"(module_context,type_context,signature)
+      return "$::$.$"(module_context,@type_context,signature)
 
     method organize( organizer=null:Organizer )
       if (is_organized) return
 
       ensure organizer( module_context )
-      temporarily organizer.this_type = type_context
+      temporarily organizer.this_type = @type_context
         prior.organize( organizer )
       endTemporarily
 
-      # TODO: inherit
-      type_context.add( this )
+      @type_context.add( this )
+
+    method type_context->Type
+      return @type_context
 
 endClass
 

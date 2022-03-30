@@ -1,7 +1,7 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
 module Rogue
 
-class InspectonVisitor : InspectionVisitor<<Logical>>
+class InspectionVisitor : InspectionVisitor<<Logical>>
 endClass
 
 class InspectionVisitor<<$ReturnType>>
