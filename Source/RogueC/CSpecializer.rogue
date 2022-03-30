@@ -426,7 +426,11 @@ augment Type
 
     method c_name->String
       if (@c_name) return @c_name
-      @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
+      if (is_aspect)
+        @c_name = "RogueObject"
+      else
+        @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
+      endIf
       return @c_name
 
 endAugment

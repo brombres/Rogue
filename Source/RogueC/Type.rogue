@@ -122,9 +122,20 @@ class Type : Cmd
           endIf
         endIf
         if (existing_m.return_type and existing_m.return_type is not aspect_m.return_type)
-          throw existing_m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
+          throw aspect_m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
           (aspect_m.return_type,existing_m.return_type) )
         endIf
+
+        forEach (aspect_p at i in aspect_m.parameters)
+          local existing_p = existing_m.parameters[i]
+          if (aspect_p.name != existing_p.name)
+            throw aspect_m.t.error(
+              "Parameter name mismatch - aspect parameter '$' must be named '$' as in the existing method."...
+              (aspect_p.name,existing_p.name)
+            )
+          endIf
+        endForEach
+
       endIf
 
       aspect_m .= cloned

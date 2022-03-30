@@ -142,11 +142,21 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:CallDynamicMethod )
-      if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
-        writer.print "Rogue_dispatch_"
-        writer.print( cmd.info->(as Method).c_signature )
+      if (cmd.context.type.is_aspect)
+        local group = Program.dynamic_methods[cmd.info.signature]
+        if (group.count == 1)
+          writer.print( group.first.c_name )
+        else
+          writer.print "Rogue_dispatch_"
+          writer.print( cmd.info->(as Method).c_signature )
+        endIf
       else
-        writer.print( cmd.info.c_name )
+        if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
+          writer.print "Rogue_dispatch_"
+          writer.print( cmd.info->(as Method).c_signature )
+        else
+          writer.print( cmd.info.c_name )
+        endIf
       endIf
 
       if (cmd.args.count == 0)
@@ -166,11 +176,21 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:CallThisDynamicMethod )
-      if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
-        writer.print "Rogue_dispatch_"
-        writer.print( cmd.info->(as Method).c_signature )
+      if (this_type.is_aspect)
+        local group = Program.dynamic_methods[cmd.info.signature]
+        if (group.count == 1)
+          writer.print( group.first.c_name )
+        else
+          writer.print "Rogue_dispatch_"
+          writer.print( cmd.info->(as Method).c_signature )
+        endIf
       else
-        writer.print( cmd.info.c_name )
+        if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
+          writer.print "Rogue_dispatch_"
+          writer.print( cmd.info->(as Method).c_signature )
+        else
+          writer.print( cmd.info.c_name )
+        endIf
       endIf
 
       if (cmd.args.count == 0)
@@ -1018,6 +1038,7 @@ augment
 
       local wrote_any = false
       forEach (group in Program.dynamic_methods)
+        if (group.count == 1) nextIteration
         write_c_dispatch_method_header( group, h_writer )
         h_writer.println ';'
         wrote_any = true
@@ -1039,6 +1060,7 @@ augment
       (forEach in modules).generate_c_code( c_writer )
 
       forEach (group in Program.dynamic_methods)
+        if (group.count == 1) nextIteration
         write_c_dispatch_method_header( group, c_writer )
         c_writer.println
         c_writer.println '{'

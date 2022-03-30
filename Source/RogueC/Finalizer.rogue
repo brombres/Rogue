@@ -12,8 +12,6 @@ class Finalizer : Visitor
       forEach (entry in Program.dynamic_methods.entries)
         if (entry.value.count > 1)
           (forEach in entry.value).attributes.dynamic_dispatch = true
-        else
-          Program.dynamic_methods.remove( entry )
         endIf
       endForEach
 
