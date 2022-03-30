@@ -171,4 +171,8 @@ class Parser : ParserCore
     method print_stack
       @trace _list_starts
       @trace _cmd_stack
+
+    method print_trace
+      trace _saved_positions.count
+
 endClass

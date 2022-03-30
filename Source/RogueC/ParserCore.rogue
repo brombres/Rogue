@@ -609,7 +609,8 @@ class ParserCore [abstract]
             while ((((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_COMMA))) and (not (_next_t.type == TokenType.SYMBOL_GTGT))))
               _read
             endWhile
-            if (not disable_output) _create_token_list
+            if (disable_output) _discard_position
+            else                _create_token_list
             return
           case ip_type_name
             _save_position
@@ -790,7 +791,7 @@ class ParserCore [abstract]
             endIf
             _execute(ip_type)
             _pop_frame
-            while (((_position < _limit) and ((_next_t.type == TokenType.SYMBOL_COMMA) or (((not (_next_t.type == TokenType.EOL)) and (not (_next_t.type == TokenType.SYMBOL_SEMICOLON))) and (not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?)))))
+            while (((_position < _limit) and ((_next_t.type == TokenType.SYMBOL_COMMA) or (_next_t.type == TokenType.IDENTIFIER))))
               if (_consume(TokenType.SYMBOL_COMMA))
                 _execute(ip_consume_eols)
                 _pop_frame

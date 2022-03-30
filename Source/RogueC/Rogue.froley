@@ -681,7 +681,7 @@ parser
   beginList
     if (not consume(':')) produceList TypeList
     type
-    while (hasAnother and (nextIs(',') or (not nextIs(EOL) and not nextIs(';') and not nextHasAttribute(structural))))
+    while (hasAnother and (nextIs(',') or nextIs(IDENTIFIER)))
       if (consume(',')) consume_eols
       type
     endWhile

@@ -162,6 +162,9 @@ class TokenList : Cmd
       prior.init( existing )
       tokens = existing.tokens.cloned
 
+    method description->String
+      return "TokenList($)"(tokens)
+
     method to->Token[]
       return tokens
 endClass

@@ -55,9 +55,6 @@ class Organizer : Visitor
           this_type.base_class = base_type
         else
           # base_type.is_aspect
-          if (this_type.is_value_type)
-            throw cmd.base_types.t.error( "Compounds and primitives cannot incorporate aspects." )
-          endIf
           ensure this_type.aspects
           this_type.aspects.add( base_type )
         endIf

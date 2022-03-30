@@ -27,9 +27,9 @@ class Type : Cmd
           use builder = StringBuilder.pool
             builder.print name
             builder.print "<<"
-            forEach (type at i in type_args)
+            forEach (token_list at i in type_args)
               if (i) builder.print ','
-              builder.print type->String
+              builder.print ((forEach in token_list.tokens)->String)
             endForEach
             builder.print ">>"
             name = builder->String
@@ -102,6 +102,7 @@ class Type : Cmd
       if (template)
         template.generate( type_args, this )
       else
+        println
         throw t.error( "Reference to undefined class '$::$'."(module_context,name) )
       endIf
 
