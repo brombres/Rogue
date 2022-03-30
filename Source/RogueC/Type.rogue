@@ -67,6 +67,16 @@ class Type : Cmd
       methods[ m.signature ] = m
       # TODO: check for existing methods
 
+    method add_extended_property( p:Property )
+      local base_p = properties[p.name]
+      if (base_p)
+        if (not p.type.instance_of(base_p.type))
+          throw p.t.error( "Redeclared property '$' has type $ which is not instanceOf inherited type $."...
+            (p.name,p.type,base_p.type) )
+        endIf
+      endIf
+      properties[p.name] = p
+
     method cloned->this
       return this
 
@@ -98,13 +108,27 @@ class Type : Cmd
     method description->String
       return "$" (%name)
 
-    method instance_of( ancestor_class:Type )->Logical
-      local type = this
-      while (type)
-        if (type is ancestor_class) return true
-        type .= base_class
-      endWhile
-      return false
+    method instance_of( ancestor_type:Type )->Logical
+      if (ancestor_type is Program.type_Object and this.is_reference) return true
+
+      if (ancestor_type.is_aspect)
+        local type = this
+        while (type)
+          if (type.aspects)
+            if ((forEach in type.aspects) is ancestor_type) return true
+          endIf
+          type .= base_class
+        endWhile
+        return false
+      else
+        local type = this
+        while (type)
+          if (type is ancestor_type) return true
+
+          type .= base_class
+        endWhile
+        return false
+      endIf
 
     method is_aspect->Logical
       return attributes.is_aspect
@@ -121,16 +145,42 @@ class Type : Cmd
     method is_reference->Logical
       return attributes.is_reference
 
+    method is_value_type->Logical
+      return attributes.is_primitive or attributes.is_compound
+
     method organize
       if (attributes.is_organized) return
       attributes.is_organized = true
       ensure_definition
 
       # Organize base types
-      if (base_class) base_class.organize
+      if (base_class)
+        base_class.organize
+      elseIf (this.is_object and this is not Program.type_Object)
+        base_class = Program.type_Object
+        base_class.organize
+      endIf
 
       if (aspects)
         (forEach in aspects).organize
+
+        # Build flat list of incorporated aspects. Each aspect will already have
+        # a flat list of its children.
+        use aspect_list = WorkList<<Type>>
+          forEach (incorporated_aspect in aspects)
+            if (incorporated_aspect.aspects)
+              aspect_list.add( incorporated_aspect.aspects )
+            endIf
+            aspect_list.add( incorporated_aspect )
+          endForEach
+          aspects.clear
+          aspects.add( aspect_list )
+        endUse
+      endIf
+
+      # Check attributes
+      if (is_aspect)
+        if (attributes.is_singleton) throw t.error( "Aspects cannot have singletons." )
       endIf
 
       # Inherit properties
@@ -149,15 +199,20 @@ class Type : Cmd
             endForEach
           endIf
 
+          if (aspects)
+            forEach (incorporated_aspect in aspects)
+              forEach (p in incorporated_aspect.native_properties step -1)
+                native_properties.insert( p )
+              endForEach
+
+              forEach (p in incorporated_aspect.properties)
+                add_extended_property( p )
+              endForEach
+            endForEach
+          endIf
+
           forEach (p in my_properties)
-            local base_p = properties[p.name]
-            if (base_p)
-              if (not p.type.instance_of(base_p.type))
-                throw p.t.error( "Redeclared property '$' has type $ that is not instanceOf inherited type $."...
-                  (p.name,p.type,base_p.type) )
-              endIf
-            endIf
-            properties[p.name] = p
+            add_extended_property( p )
           endForEach
 
         endUse

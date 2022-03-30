@@ -758,9 +758,11 @@ class ParserCore [abstract]
             endIf
             _execute(ip_type)
             _pop_frame
-            while (_consume(TokenType.SYMBOL_COMMA))
-              _execute(ip_consume_eols)
-              _pop_frame
+            while (((_position < _limit) and ((_next_t.type == TokenType.SYMBOL_COMMA) or (((not (_next_t.type == TokenType.EOL)) and (not (_next_t.type == TokenType.SYMBOL_SEMICOLON))) and (not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?)))))
+              if (_consume(TokenType.SYMBOL_COMMA))
+                _execute(ip_consume_eols)
+                _pop_frame
+              endIf
               _execute(ip_type)
               _pop_frame
             endWhile
@@ -2301,11 +2303,13 @@ class ParserCore [abstract]
             if (not disable_output) _push( ConvertToLogical(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( ConvertToReal32(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( ConvertToReal64(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallDynamicMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+            if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallRoutine(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( CallThisMethod(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CallStaticMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+            if (not disable_output) _push( CallThisDynamicMethod(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( CallThisStaticMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( Compare(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( Conditional(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( ControlStructure(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )

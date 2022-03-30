@@ -165,8 +165,14 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
-    method on_visit( cmd:CallThisMethod )
-      writer.print( cmd.info.c_name )
+    method on_visit( cmd:CallThisDynamicMethod )
+      if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
+        writer.print "Rogue_dispatch_"
+        writer.print( cmd.info->(as Method).c_signature )
+      else
+        writer.print( cmd.info.c_name )
+      endIf
+
       if (cmd.args.count == 0)
         writer.print '('
         write_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
@@ -873,7 +879,7 @@ augment
 
     method Module.generate_c_class_structs( writer:CWriter )
       forEach (type in types)
-        if (not type.is_primitive)
+        if (type.is_object or type.is_compound)
           writer.print   "struct "
           writer.print   type.c_name
           writer.println
@@ -900,7 +906,7 @@ augment
       writer.println "typedef struct RogueType RogueType;"
 
       forEach (type in types)
-        if (not type.is_primitive)
+        if (type.is_object or type.is_compound)
           writer.print   "typedef struct "
           writer.print   type.c_name
           writer.print   ' '
@@ -911,9 +917,11 @@ augment
       writer.println
 
       forEach (type in types)
-        writer.print "extern RogueType Type"
-        writer.print type.c_name
-        writer.println ";"
+        if (type.is_object or type.is_compound)
+          writer.print "extern RogueType Type"
+          writer.print type.c_name
+          writer.println ";"
+        endIf
       endForEach
       writer.println
 
@@ -939,6 +947,8 @@ augment
 
       if (types.count)
         forEach (type in types)
+          if (type.is_primitive or type.is_aspect) nextIteration
+
           if (type.attributes.is_singleton)
             writer.print   type.c_name
             if (type.is_reference) writer.print '*'
@@ -1121,6 +1131,8 @@ augment
       return false
 
     method Type.generate_c_header( writer:CWriter )
+      if (is_aspect) return
+
       if (attributes.is_singleton)
         writer.print   "extern "
         writer.print   c_name
@@ -1145,6 +1157,8 @@ augment
       endForEach
 
     method Type.generate_c_code( writer:CWriter )
+      if (is_aspect) return
+
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )
       cgen.visit_methods( this )

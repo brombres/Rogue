@@ -20,7 +20,9 @@ class Resolver : Visitor
 
     method visit_type( type:Type )
       type.organize
-      prior.visit_type( type )
+      if (not type.is_aspect)
+        prior.visit_type( type )
+      endIf
 
     method add_local( v:Local )
       this_procedure.locals.add( v )
@@ -840,7 +842,7 @@ augment
       if (context)
         return CallDynamicMethod( t, context, this, args )
       else
-        return CallThisMethod( t, this, args )
+        return CallThisDynamicMethod( t, this, args )
       endIf
 
     method Routine.cmd_call( context:Cmd, args:Cmd )->Cmd

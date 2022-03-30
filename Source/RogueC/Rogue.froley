@@ -665,8 +665,8 @@ parser
   beginList
     if (not consume(':')) produceList TypeList
     type
-    while (consume(','))
-      consume_eols
+    while (hasAnother and (nextIs(',') or (not nextIs(EOL) and not nextIs(';') and not nextHasAttribute(structural))))
+      if (consume(',')) consume_eols
       type
     endWhile
   produceList TypeList
@@ -1442,77 +1442,29 @@ parser
   create ConvertToLogical(operand):Convert
   create ConvertToReal32(operand):Convert
   create ConvertToReal64(operand):Convert
-  #  create CallDynamicMethod(context,procedure:Procedure,args):CallProcedure
-  #  create CallGlobalMethod(procedure:Procedure,args):CallProcedure
-  #  create CallGlobalMethodWithContext(context,procedure:Procedure,args):CallProcedure
-  #  create CallNative
-  create CallGlobalMethod(args):CallProcedure
   create CallDynamicMethod(context,args):CallProcedure
+  create CallGlobalMethod(args):CallProcedure
   create CallProcedure(args)
   create CallRoutine(args):CallProcedure
-  create CallThisMethod(args):CallProcedure
+  create CallStaticMethod(context,args):CallProcedure
+  create CallThisDynamicMethod(args):CallProcedure
+  create CallThisStaticMethod(args):CallProcedure
   create Compare(left,right):Binary
-  #  create CompareEQReal64(left,right):Compare
-  #  create CompareNEReal64(left,right):Compare
-  #  create CompareLTReal64(left,right):Compare
-  #  create CompareGTReal64(left,right):Compare
-  #  create CompareLEReal64(left,right):Compare
-  #  create CompareGEReal64(left,right):Compare
   create Conditional(condition,statements):ControlStructure
   create ControlStructure(initialization,statements)
   create CreateObject(of_type:Type,info:Local)
-  #  create CreateXY0
-  #  create CreateXY1(value)
-  #  create CreateXY2(x,y)
-  #  create DecrementLocal(info:Local)
-  #  create DecrementLocalInt32(info:Local)
-  #  create DecrementThisProperty(info:Property)
-  #  create DecrementThisPropertyInt32(info:Property)
-  #  create Description(operand):Unary
-  #  create DivideInt32(left,right):Binary
-  #  create DivideObject(left,right):Binary
-  #  create DivideReal64(left,right):Binary
-  #  create DivideString(left,right):Binary
-  #  create DivideValue(left,right):Binary
   create DummyInitialValue
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
-  #  create ForEachIn(control_v:Local,index_v:Local,collection_v:Local,step_size,statements)
-  #  create ForEachInIndexedCollection(control_v:Local,index_v:Local,collection_v:Local,cmd_count,cmd_get,step_size,statements)
   create Iterator(control,condition,statements,upkeep):Conditional
   create GetLocal(info:Local)
   create GetProperty(context,info:Property)
   create GetThisProperty(info:Property)
   create GetSingleton(type:Type)
-  #  create GetThisProperty(info:Property)
-  #  create IncrementLocal(info:Local)
-  #  create IncrementLocalInt32(info:Local)
-  #  create IncrementThisProperty(info:Property)
-  #  create IncrementThisPropertyInt32(info:Property)
-  #  create Join(a:String,b:String)
-  #  create LeftShiftInt32(left,right):Binary
-  #  create LeftShiftObject(left,right):Binary
-  #  create LeftShiftValue(left,right):Binary
   create Literal
   create LiteralInt32(value:Integer):LiteralInteger
   create LiteralInt64(value:Integer):LiteralInteger
-  #  create LiteralNull(type:Type):Literal
-  #  create LiteralValueUndefined:Literal
-  #  create Local(name:String,initial_value)
-  #create LocalDeclaration( info:Local )
   create LocalScope:ControlStructure
-  #  create ModInt32(left,right):Binary
-  #  create ModObject(left,right):Binary
-  #  create ModReal64(left,right):Binary
-  #  create ModValue(left,right):Binary
-  #  create MultiplyInt32(left,right):Binary
-  #  create MultiplyObject(left,right):Binary
-  #  create MultiplyReal64(left,right):Binary
-  #  create MultiplyString(left,right):Binary
-  #  create MultiplyValue(left,right):Binary
   create NativeProperty( expression:String )
-  #  create NegateInt32(operand):Unary
-  #  create NegateReal64(operand):Unary
-  #  create NegateValue(operand):Unary
   create OpAndAssign(target,operand)
   create PrintCharacter(operand):PrintValue
   create PrintInt32(operand):PrintValue
@@ -1523,34 +1475,15 @@ parser
   create PrintString(operand):PrintValue
   create PrintValue(operand)
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
-  #  create ProcedureDef(name:String,parameters,return_type:Type,attributes,statements)
-  #  create PushResult(operand):Unary
-  #  create ReturnResult(result)
   create Range(left,right):Binary
   create ReturnOnException
-  #  create RightShiftInt32(left,right):Binary
-  #  create RightShiftValue(left,right):Binary
-  #  create RightShiftXInt32(left,right):Binary
-  #  create RightShiftXValue(left,right):Binary
   create SetLocal(info:Local,new_value)
   create SetProperty(context,info:Property,new_value)
   create SetThisProperty(info:Property,new_value)
-  #  create SetThisProperty(info:Property,new_value)
-  #  create StackTopInt32
   create Stepper(operand)
-  #  create SubtractInt32(left,right):Binary
-  #  create SubtractObject(left,right):Binary
-  #  create SubtractReal64(left,right):Binary
-  #  create SubtractString(left,right):Binary
-  #  create SubtractValue(left,right):Binary
   create TypeContext(type:Type)
   create CreateObject(of_type:Type,args)
-  #  create ValueAsInt32(operand):Unary
-  #  create XYGetX(context)
-  #  create XYGetY(context)
 
 --------------------------------------------------------------------------------
 nativeTypes
 --------------------------------------------------------------------------------
-#Module
-#Type

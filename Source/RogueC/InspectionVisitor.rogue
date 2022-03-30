@@ -361,4 +361,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.type_args)
       return result
 
+    method on( cmd:CallStaticMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
 endClass

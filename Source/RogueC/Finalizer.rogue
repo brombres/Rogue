@@ -18,11 +18,15 @@ class Finalizer : Visitor
       endForEach
 
     method on_visit_type( type:Type )
+      if (type.is_aspect) return
+
       type.id = next_type_id
       ++next_type_id
       prior.on_visit_type( type )
 
     method on_visit( m:Method )
+      if (m.type_context.is_aspect) return
+
       if (m.type_context is this_type and this_type.is_reference)
         m.id = next_method_id
         ++next_method_id

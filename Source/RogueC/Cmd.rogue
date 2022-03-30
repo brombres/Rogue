@@ -1650,17 +1650,17 @@ class CallDynamicMethod : CallProcedure
 
 endClass
 
-class CallThisMethod : CallProcedure
+class CallThisDynamicMethod : CallProcedure
   METHODS
     method init( t, args )
 
     method init( t, info, args )
 
-    method init( existing:CallThisMethod )
+    method init( existing:CallThisDynamicMethod )
       prior.init( existing )
 
     method description->String
-      return "CallThisMethod($,$)" (info.name,%args)
+      return "CallThisDynamicMethod($,$)" (info,%args)
 
 endClass
 
@@ -1974,4 +1974,36 @@ class Parameters : CmdList
 
     method get( index:Int32 )->Local
       return list[index]->(as Local)
+endClass
+
+class CallStaticMethod : CallProcedure
+  PROPERTIES
+    context : Cmd
+
+  METHODS
+    method init( t, context, args )
+
+    method init( t, context, info, args )
+
+    method init( existing:CallStaticMethod )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+
+    method description->String
+      return "CallStaticMethod($,$,$)" (%context,%info,%args)
+
+endClass
+
+class CallThisStaticMethod : CallProcedure
+  METHODS
+    method init( t, args )
+
+    method init( t, info, args )
+
+    method init( existing:CallThisStaticMethod )
+      prior.init( existing )
+
+    method description->String
+      return "CallThisStaticMethod($,$)" (%info,%args)
+
 endClass

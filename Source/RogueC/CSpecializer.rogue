@@ -10,6 +10,11 @@ class CSpecializer : Visitor
     control_stack      = ControlStructure[]
 
   METHODS
+    method visit_type( type:Type )
+      if (not type.is_aspect)
+        prior.visit_type( type )
+      endIf
+
     method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
       local v = Local( t, autoname(base), initial_value, type )
       v.c_name = "$_$" (v.name,this_procedure.locals.count)
