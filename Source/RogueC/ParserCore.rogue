@@ -52,64 +52,66 @@ class ParserCore [abstract]
     ip_if_statement = 39
     ip_if_statement_multi_line_elseIf_else = 40
     ip_if_statement_single_line_elseIf_else = 41
-    ip_wrap_in_local_scope = 42
-    ip_method = 43
-    ip_global_method = 44
-    ip_properties = 45
-    ip_property_declaration = 46
-    ip_multi_line_statements = 47
-    ip_single_line_statements = 48
-    ip_control_structure = 49
-    ip_args = 50
-    ip_arg = 51
-    ip_statement = 52
-    ip_local_declarations = 53
-    ip_local_declaration = 54
-    ip_block = 55
-    ip_try_catch = 56
-    ip_catches = 57
-    ip_catch_clause = 58
-    ip_module_path = 59
-    ip_uses_attributes = 60
-    ip_uses_attribute = 61
-    ip_access_args = 62
-    ip_optional_expression = 63
-    ip_expression = 64
-    ip_op_and_assign = 65
-    ip_logical_xor = 66
-    ip_logical_xor__inner = 67
-    ip_logical_or = 68
-    ip_logical_or__inner = 69
-    ip_logical_and = 70
-    ip_logical_and__inner = 71
-    ip_comparison = 72
-    ip_comparison__inner = 73
-    ip_reference_comparison = 74
-    ip_bitwise_xor = 75
-    ip_bitwise_xor__inner = 76
-    ip_bitwise_or = 77
-    ip_bitwise_or__inner = 78
-    ip_bitwise_and = 79
-    ip_bitwise_and__inner = 80
-    ip_bitwise_shift = 81
-    ip_bitwise_shift__inner = 82
-    ip_add_subtract = 83
-    ip_add_subtract__inner = 84
-    ip_multiply_divide_mod = 85
-    ip_multiply_divide_mod__inner = 86
-    ip_power = 87
-    ip_power__inner = 88
-    ip_pre_unary = 89
-    ip_post_unary = 90
-    ip_post_unary__inner = 91
-    ip_access = 92
-    ip_access_inner = 93
-    ip_term = 94
-    ip_native_code = 95
-    ip_preprocess = 96
-    ip_process_another = 97
-    ip_collect_meta_filepath = 98
-    ip_additional_node_types = 99
+    ip_inline_which = 42
+    ip_inline_which_case = 43
+    ip_wrap_in_local_scope = 44
+    ip_method = 45
+    ip_global_method = 46
+    ip_properties = 47
+    ip_property_declaration = 48
+    ip_multi_line_statements = 49
+    ip_single_line_statements = 50
+    ip_control_structure = 51
+    ip_args = 52
+    ip_arg = 53
+    ip_statement = 54
+    ip_local_declarations = 55
+    ip_local_declaration = 56
+    ip_block = 57
+    ip_try_catch = 58
+    ip_catches = 59
+    ip_catch_clause = 60
+    ip_module_path = 61
+    ip_uses_attributes = 62
+    ip_uses_attribute = 63
+    ip_access_args = 64
+    ip_optional_expression = 65
+    ip_expression = 66
+    ip_op_and_assign = 67
+    ip_logical_xor = 68
+    ip_logical_xor__inner = 69
+    ip_logical_or = 70
+    ip_logical_or__inner = 71
+    ip_logical_and = 72
+    ip_logical_and__inner = 73
+    ip_comparison = 74
+    ip_comparison__inner = 75
+    ip_reference_comparison = 76
+    ip_bitwise_xor = 77
+    ip_bitwise_xor__inner = 78
+    ip_bitwise_or = 79
+    ip_bitwise_or__inner = 80
+    ip_bitwise_and = 81
+    ip_bitwise_and__inner = 82
+    ip_bitwise_shift = 83
+    ip_bitwise_shift__inner = 84
+    ip_add_subtract = 85
+    ip_add_subtract__inner = 86
+    ip_multiply_divide_mod = 87
+    ip_multiply_divide_mod__inner = 88
+    ip_power = 89
+    ip_power__inner = 90
+    ip_pre_unary = 91
+    ip_post_unary = 92
+    ip_post_unary__inner = 93
+    ip_access = 94
+    ip_access_inner = 95
+    ip_term = 96
+    ip_native_code = 97
+    ip_preprocess = 98
+    ip_process_another = 99
+    ip_collect_meta_filepath = 100
+    ip_additional_node_types = 101
 
   PROPERTIES
     _tokens          : Token[]
@@ -1183,6 +1185,50 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
+          case ip_inline_which
+            if (_next_t.type == TokenType.KEYWORD_WHICH)
+              temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
+                if (not _consume(TokenType.SYMBOL_OPEN_CURLY)) _throw_syntax_error( &expected=TokenType.SYMBOL_OPEN_CURLY )
+                _execute(ip_consume_eols)
+                _pop_frame
+                _begin_list
+                _execute(ip_inline_which_case)
+                _pop_frame
+                _execute(ip_consume_eols)
+                _pop_frame
+                while (_consume(TokenType.SYMBOL_DOUBLE_VERTICAL_BAR))
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                  _execute(ip_inline_which_case)
+                  _pop_frame
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                endWhile
+                if (disable_output)     _discard_list
+                else                    _push_list( InlineWhichCases(_list_t) )
+                if (not _consume(TokenType.SYMBOL_CLOSE_CURLY)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_CURLY )
+                if (not disable_output) _push( InlineWhich(_cur_t,_node_arg(-1)->(as InlineWhichCases)), 1 )
+                return
+              endTemporarily
+            endIf
+            return
+          case ip_inline_which_case
+            _execute(ip_expression)
+            _pop_frame
+            _execute(ip_consume_eols)
+            _pop_frame
+            if (_consume(TokenType.SYMBOL_COLON))
+              _execute(ip_expression)
+              _pop_frame
+              _execute(ip_consume_eols)
+              _pop_frame
+            else
+              if (not disable_output) _push( null, 0 )
+            endIf
+            if (not disable_output) _push( InlineWhichCase(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+            return
           case ip_wrap_in_local_scope
             if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
             return
@@ -2152,6 +2198,13 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.KEYWORD_THIS)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( This(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_WHICH)
+              temporarily _cur_t = _next_t
+                _execute(ip_inline_which)
+                _pop_frame
                 return
               endTemporarily
             endIf

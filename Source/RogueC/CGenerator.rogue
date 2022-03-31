@@ -467,6 +467,31 @@ class CGenerator : Visitor
       endIf
       on_leave( cmd, &optional )
 
+    method on_visit( cmd:InlineWhich )
+      # a:x || b:y || c
+      # ->
+      # (a) ? (x) : ((b) ? (y) : (c))
+      local first_case = cmd.cases[0]
+      print_parenthesized( first_case.condition )
+      writer.print " ? "
+      print_parenthesized( first_case.value )
+      writer.print " : "
+      write_case( cmd, 1 )
+
+    method write_case( cmd:InlineWhich, i:Int32 )
+      local cur_case = cmd.cases[i]
+      if (i+1 < cmd.cases.count)
+        writer.print '('
+        print_parenthesized( cur_case.condition )
+        writer.print " ? "
+        print_parenthesized( cur_case.value )
+        writer.print " : "
+        write_case( cmd, i+1 )
+        writer.print ')'
+      else
+        print_parenthesized( cur_case.value )
+      endIf
+
     method on_visit( cmd:Is )
       print_parenthesized( cmd.left )
       writer.print " == "

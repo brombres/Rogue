@@ -730,7 +730,7 @@ class GetLocal : Cmd
 
     method init( existing:GetLocal )
       prior.init( existing )
-      if (existing.info) info = existing.info.cloned
+      if (existing.info) info = existing.info
 
     method description->String
       return "GetLocal($)" (%info)
@@ -2026,4 +2026,51 @@ class AttributeInsert : Cmd
   METHODS
     method description->String
       return "AttributeInsert"
+endClass
+
+class InlineWhich : Cmd
+  PROPERTIES
+    cases       : InlineWhichCases
+    result_type : Type
+
+  METHODS
+    method init( t, cases )
+
+    method init( existing:InlineWhich )
+      prior.init( existing )
+      if (existing.cases) cases = existing.cases.cloned
+
+    method description->String
+      return "InlineWhich($)" (%cases)
+
+    method type->Type
+      return result_type
+
+endClass
+
+class InlineWhichCase : Cmd
+  PROPERTIES
+    condition : Cmd
+    value     : Cmd
+
+  METHODS
+    method init( t, condition, value )
+
+    method init( existing:InlineWhichCase )
+      prior.init( existing )
+      if (existing.condition) condition = existing.condition.cloned
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "InlineWhichCase($,$)" (%condition,%value)
+
+endClass
+
+class InlineWhichCases : CmdList
+  METHODS
+    method description->String
+      return "InlineWhichCases" + list_description
+
+    method get( index:Int32 )->InlineWhichCase
+      return list[index]->(as InlineWhichCase)
 endClass

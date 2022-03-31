@@ -64,7 +64,7 @@ class Resolver : Visitor
       local right = cmd.right
       local left_type = left.require_type
       local right_type = right.require_type
-      local result_type = Cmd.common_op_type( left_type, right_type )
+      local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
       if (left_type is not result_type) cmd.left = validate( result_type.cmd_cast(left) )
       if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
       # on_validate() will be called after this method returns
@@ -125,6 +125,33 @@ class Resolver : Visitor
       cmd.statements = visit( cmd.statements )
       if (cmd.cmd_else) cmd.cmd_else = visit( cmd.cmd_else )->(as If)
       pop_scope
+
+    method on( cmd:InlineWhich )->Cmd
+      if (cmd.cases.count == 1) return visit( cmd.cases.first )
+
+      visit_children( cmd )
+
+      local last_case = cmd.cases.last->(as InlineWhichCase)
+      if (last_case.value)
+        if (last_case.condition)
+          throw cmd.t.error( "Last which{} case must be a value without a condition, e.g. 'which {a:x || b:y || c}'." )
+        endIf
+      else
+        swapValues( last_case.value, last_case.condition )
+      endIf
+
+      local result_type : Type
+      forEach (wcase in cmd.cases)
+        local cur_type = which{ wcase.value || wcase.condition }.require_type
+        result_type = which{ result_type:Cmd.common_type(cmd.t,result_type,cur_type) || cur_type }
+      endForEach
+      cmd.result_type = result_type
+
+      forEach (wcase in cmd.cases)
+        if (wcase.value) wcase.value .= cmd_convert_to( result_type )
+      endForEach
+
+      return cmd
 
     method on( cmd:Is )->Cmd
       cmd.left = visit( cmd.left )
@@ -338,7 +365,7 @@ class Resolver : Visitor
       cmd.operand = visit( cmd.operand )
       local type = cmd.require_type
       if (type.is_primitive)
-        local op_type = Cmd.common_op_type( type, Program.type_Int32 )
+        local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
         if (type is not op_type) cmd.operand = validate( cmd.cmd_convert_to(op_type) )
       endIf
 

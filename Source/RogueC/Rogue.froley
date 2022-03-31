@@ -36,6 +36,7 @@ KEYWORD_END_IF         endIf       [structural]
 KEYWORD_END_LOOP       endLoop     [structural]
 KEYWORD_END_ROUTINE    endRoutine  [structural]
 KEYWORD_END_TRY        endTry      [structural]
+KEYWORD_END_WHICH      endWhich    [structural]
 KEYWORD_END_WHILE      endWhile    [structural]
 KEYWORD_EXPORT         export
 KEYWORD_FALSE          false
@@ -70,6 +71,7 @@ KEYWORD_TRUE           true
 KEYWORD_TRY            try
 KEYWORD_UNDEFINED      undefined
 KEYWORD_USES           uses        [structural]
+KEYWORD_WHICH          which
 KEYWORD_WHILE          while
 KEYWORD_XOR            xor
 
@@ -936,6 +938,31 @@ parser
     produceNull
   endOn
 
+- inline_which
+  on "which"
+    consume_eols
+    mustConsume '{'
+    consume_eols
+    beginList
+      inline_which_case
+      consume_eols
+      while (consume("||"))
+        consume_eols
+        inline_which_case
+        consume_eols
+      endWhile
+    createList InlineWhichCases
+    mustConsume '}'
+    produce InlineWhich(cases:InlineWhichCases)
+  endOn
+
+- inline_which_case
+  expression
+  consume_eols
+  if (consume(':')) expression; consume_eols
+  else              createNull
+  produce InlineWhichCase(condition,value)
+
 - wrap_in_local_scope
   create LocalScope(statements):ControlStructure
 
@@ -1333,6 +1360,7 @@ parser
   on "null"               -> LiteralNull
   on "pi"                 -> LiteralPi
   on "this"               -> This
+  onPeek "which" inline_which: return
   on '(', expression, ')':   return
 #{
   onPeek "[" literal_list -> LiteralValueList(args)

@@ -114,6 +114,24 @@ class CSpecializer : Visitor
       cmd.statements = visit( cmd.statements )
       control_stack.remove_last
 
+    method on_visit( cmd:InlineWhich )
+      forEach (wcase in cmd.cases)
+        # which{ a || b }
+        # ->
+        # local temp = a
+        # which{ temp:temp || b }
+        if (not wcase.value)
+          if (wcase.condition instanceOf GetLocal)
+            wcase.value = wcase.condition.cloned
+          else
+            local v = add_local( cmd.t, "case", wcase.condition.type, DummyInitialValue )
+            insert( SetLocal(cmd.t,v,wcase.condition,&initial_assignment) )
+            wcase.condition = GetLocal( cmd.t, v )
+            wcase.value     = GetLocal( cmd.t, v )
+          endIf
+        endIf
+      endForEach
+
     method on_visit( cmd:Iterator )
       control_stack.add( cmd )
       temporarily insert_in_init = true

@@ -368,4 +368,16 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on( cmd:InlineWhich )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.cases)
+      return result
+
+    method on( cmd:InlineWhichCase )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
 endClass

@@ -339,5 +339,12 @@ class Visitor
       cmd.context = visit(cmd.context)
       cmd.args = visit(cmd.args)
 
+    method on_visit_children( cmd:InlineWhich )
+      cmd.cases = visit(cmd.cases)->(as InlineWhichCases)
+
+    method on_visit_children( cmd:InlineWhichCase )
+      cmd.condition = visit(cmd.condition)
+      cmd.value = visit(cmd.value)
+
 endClass
 

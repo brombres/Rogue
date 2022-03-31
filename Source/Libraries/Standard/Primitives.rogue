@@ -221,13 +221,11 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
       if (this > high) return high
       return this
 
-      #{
     method or_larger( other:$DataType )->$DataType
       return which{ this>=other:this || other }
 
     method or_smaller( other:$DataType )->$DataType
       return which{ this<=other:this || other }
-      }#
 
 endClass
 
