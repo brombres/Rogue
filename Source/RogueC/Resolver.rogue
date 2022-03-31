@@ -134,7 +134,7 @@ class Resolver : Visitor
       local last_case = cmd.cases.last->(as InlineWhichCase)
       if (last_case.value)
         if (last_case.condition)
-          throw cmd.t.error( "Last which{} case must be a value without a condition, e.g. 'which {a:x || b:y || c}'." )
+          throw cmd.t.error( "Last which{} case must be a value without a condition, e.g. 'which {a:x || b:y || z}'." )
         endIf
       else
         swapValues( last_case.value, last_case.condition )
@@ -479,7 +479,7 @@ class Resolver : Visitor
         local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
 
         if (match)
-          if (not args and match.min_args == 0) args = CmdList(t)
+          if (not args) args = CmdList(t)
           cast_args_to_parameter_types( args, match )
           return validate( match.cmd_call(context,args) )
         endIf

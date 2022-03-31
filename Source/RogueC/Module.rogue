@@ -1,9 +1,6 @@
 module Rogue
 
 class Module
-  ROGUE_ATTRIBUTE( is_visiting, 1 )
-  ROGUE_ATTRIBUTE( is_collecting_routines,  2 )
-
   PROPERTIES
     t    : Token
     name : String
@@ -14,13 +11,14 @@ class Module
     types             = StringTable<<Type>>()
     routines          = StringTable<<Routine>>()
 
-    flags : Int32
+    attributes        : Attributes
 
     native_headers = String[]
     native_code    = String[]
 
   METHODS
     method init( t, name )
+      attributes = Attributes(t)
       Program.modules[ name ] = this
       ensure global_statements(t)
 
@@ -28,7 +26,7 @@ class Module
       routines[ r.signature ] = r
 
     method collect_routines( r_name:String, list:Procedure[], &is_limited )
-      if (is_collecting_routines) return
+      if (attributes.is_visiting) return
 
       organize
 
@@ -36,7 +34,7 @@ class Module
         if (r.name == r_name) list.add( r )
       endForEach
 
-      temporarily is_collecting_routines = true
+      temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
           if (not is_limited or used_m.is_exported)
             used_m.m.collect_routines( r_name, list, &is_limited )
@@ -46,16 +44,16 @@ class Module
 
     method collect_used_modules
       # Ensure we have a flat list of all modules we should search for types in.
-      temporarily is_visiting = true
+      temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
           if (used_m.is_exported) used_m.m.collect_used_modules( this )
         endForEach
       endTemporarily
 
     method collect_used_modules( target:Module )
-      if (is_visiting) return
+      if (attributes.is_visiting) return
 
-      temporarily is_visiting = true
+      temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
           if (used_m.is_exported)
             target.uses_module( used_m.m )
@@ -88,6 +86,9 @@ class Module
       return result
 
     method organize
+      if (attributes.is_organized) return
+      attributes.is_organized = true
+
       # Instantiate any essential templates
       forEach (t in templates)
         if (t.attributes.is_essential)
@@ -102,17 +103,6 @@ class Module
         routines[ r.signature ] = r
       endIf
       r.statements.add( forEach in global_statements )
-
-      #local organizer = Organizer( this )
-      #organizer.visit( forEach in types )
-      #organizer.visit( null, forEach in (forEach in routines_by_name) )
-
-      #{
-    method type( name:String )->Type
-      local result = find_type( name )
-      if (result) return result
-      return Type( t, name )
-      }#
 
     method uses_module( m:Module, &is_exported )
       if (m is this) return
