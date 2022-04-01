@@ -28,14 +28,6 @@ class CSpecializer : Visitor
       ++autoname_index
       return result
 
-    method track_escape
-      forEach (scope in control_stack step -1)
-        if (scope.has_cleanup_code)
-          this_procedure.attributes.requires_cleanup = true
-          return
-        endIf
-      endForEach
-
     method insert( cmd:Cmd )
       if (insert_in_init)
         control_stack.last.initialization.add( cmd )
@@ -70,19 +62,18 @@ class CSpecializer : Visitor
       endForEach
 
       local throws = cmd.info.throws?
-      local is_ref = cmd.info.return_type? and cmd.info.return_type.is_reference
-      if (throws or is_ref)
+      if (throws)
         # Decompose call
-        if (is_ref or cmd.info.return_type?)
+        if (cmd.info.return_type?)
           local v = add_local( cmd.t, "call", cmd.info.return_type, DummyInitialValue )
+          v.attributes.is_retained = true
           insert( SetLocal(cmd.t,v,cmd,&initial_assignment) )
+
           if (throws)
-            track_escape
             insert( ReturnOnException(cmd.t) )
           endIf
           return GetLocal( cmd.t, v )
         else
-          track_escape
           insert( cmd )
           return ReturnOnException( cmd.t )
         endIf
@@ -92,7 +83,7 @@ class CSpecializer : Visitor
 
     method on( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
-      visit_content( cmd )
+      handle( cmd )
       control_stack.remove_last
       return cmd
 
@@ -100,6 +91,7 @@ class CSpecializer : Visitor
       visit_children( cmd )
 
       local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
+      v.attributes.is_retained = true
       insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
       if (cmd.m_init)
         insert( validate(CallDynamicMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
@@ -263,7 +255,6 @@ class CSpecializer : Visitor
       visit_children( cmd )
 
     method on_visit( cmd:Return )
-      track_escape
       visit_children( cmd )
 
     method on_visit( cmd:Statements )
@@ -275,7 +266,6 @@ class CSpecializer : Visitor
       endTemporarily
 
     method on_visit( cmd:Throw )
-      track_escape
       visit_children( cmd )
 endClass
 

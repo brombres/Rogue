@@ -64,7 +64,7 @@ class Organizer : Visitor
 
     method on( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
-      visit_content( cmd )
+      handle( cmd )
       control_stack.remove_last
       return cmd
 

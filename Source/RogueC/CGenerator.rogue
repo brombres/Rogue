@@ -366,7 +366,7 @@ class CGenerator : Visitor
 
         forEach (v in cmd.locals)
           if (v.type.is_reference)
-            writer.print "ROGUE_RELEASE_REF( &"
+            writer.print "/*requires_cleanup:$*/ROGUE_RELEASE_REF( &"(this_procedure.attributes.requires_cleanup)
             writer.print v.c_name
             writer.print( " )" )
             writer.println( ';' )
@@ -413,10 +413,14 @@ class CGenerator : Visitor
       writer.print cmd.of_type.c_name
       writer.print ")"
 
-      #method on_visit( cmd:CreateObject )
-      #  writer.print "ROGUE_CREATE_OBJECT("
-      #  writer.print cmd.of_type.c_name
-      #  writer.print ")"
+    method on_visit( cmd:DiscardResult )
+      if (cmd.operand.type.is_reference)
+        writer.print "ROGUE_RELEASE("
+        visit( cmd.operand )
+        writer.print ')'
+      else
+        visit( cmd.operand )
+      endIf
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
@@ -679,17 +683,17 @@ class CGenerator : Visitor
         visible_locals.add( p->(as Local) )
       endForEach
 
-      visit_content( cmd )
+      handle( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
       return cmd
 
     method on_visit( cmd:Return )
       if (not this_procedure.attributes.requires_cleanup)
-        writer.print "return"
+        writer.print "/**/return"
         if (cmd.result)
           writer.print ' '
-          if (this_procedure.return_type.is_reference)
+          if (this_procedure.return_type.is_reference and not cmd.result.is_retained)
             writer.print   "ROGUE_RETAIN("
             visit( cmd.result )
             writer.print ')'
@@ -704,7 +708,7 @@ class CGenerator : Visitor
       if (cmd.result)
         writer.print this_procedure.c_result_name
         writer.print " = "
-        if (this_procedure.return_type.is_reference)
+        if (this_procedure.return_type.is_reference and not cmd.result.is_retained)
           writer.print   "ROGUE_RETAIN("
           visit( cmd.result )
           writer.println ");"
@@ -931,7 +935,7 @@ augment
           writer.println '{'
           writer.indent  += 2
           writer.println "RogueType* type;"
-          writer.println "RogueInt32 ref_count;"
+          writer.println "RogueInt32 refcount;"
           forEach (p in type.properties)
             writer.print   p.type.c_name
             if (p.type.is_reference) writer.print '*'
@@ -1049,6 +1053,7 @@ augment
 
     method Program.generate_c
       apply( CSpecializer() )
+      apply( EscapeAnalyzer() )
 
       local h_writer = CWriter( File("Test.h"), &header )
 

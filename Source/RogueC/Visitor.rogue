@@ -9,7 +9,7 @@ class Visitor
   #   CALL                       OVERLOADABLE METHOD
   #   --------------------       -----------------------------------------
   #   visit(cmd)->Cmd         -> on(cmd:CmdType)->Cmd
-  #     visit_content(cmd)    ->   on_visit(cmd:CmdType)
+  #     handle(cmd)    ->   on_visit(cmd:CmdType)
   #       visit_children(cmd) ->     on_visit_children(cmd:CmdType)
   #     validate(cmd)->Cmd    ->   on_validate(cmd:CmdType)->Cmd
   #
@@ -23,7 +23,7 @@ class Visitor
 
   METHODS
     method on( cmd:Cmd )->Cmd
-      visit_content( cmd )
+      handle( cmd )
       return validate( cmd )
 
     method on_visit( cmd:Cmd )
@@ -51,7 +51,7 @@ class Visitor
       cmd.dispatch_on_visit_children<<ThisType>>( this )
       return cmd
 
-    method visit_content( cmd:Cmd )->Cmd [propagated]
+    method handle( cmd:Cmd )->Cmd [propagated]
       # Primarily for internal use - see on(Cmd) for usage.
       cmd.dispatch_on_visit<<ThisType>>( this )
       return cmd
@@ -62,7 +62,7 @@ class Visitor
 
     method visit_routines( m:Module )
       temporarily this_module = m
-        forEach(r in m.routines.values)
+        forEach(r in m.routines)
           temporarily this_procedure = r
             visit( r )
           endTemporarily
@@ -71,7 +71,7 @@ class Visitor
 
     method visit_types( m:Module )
       temporarily this_module = m
-        forEach (type in m.types.values)
+        forEach (type in m.types)
           visit_type( type )
         endForEach
       endTemporarily
@@ -345,6 +345,9 @@ class Visitor
     method on_visit_children( cmd:InlineWhichCase )
       cmd.condition = visit(cmd.condition)
       cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:DiscardResult )
+      cmd.operand = visit(cmd.operand)
 
 endClass
 

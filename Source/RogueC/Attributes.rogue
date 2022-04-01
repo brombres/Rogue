@@ -13,15 +13,16 @@ class Attribute
     DEFINED          = (1:<<:8)
     ORGANIZED        = (1:<<:9)
     RESOLVED         = (1:<<:10)
-    ANCHORED         = (1:<<:11)  # holds a reference that has been ref-counted elsewhere in the stack
-    METHOD           = (1:<<:12) # object method (not global method or routine)
-    HAS_RETURN       = (1:<<:13)
-    VISITING         = (1:<<:14)
-    REQUIRES_CLEANUP = (1:<<:15)
-    OVERRIDDEN       = (1:<<:16)
-    DYNAMIC_DISPATCH = (1:<<:17)
-    INSERT           = (1:<<:18)
-    APPEND           = (1:<<:19)
+    ANCHORED         = (1:<<:11) # a reference that is stored in a refcounted local variable
+    RETAINED         = (1:<<:12) # a reference to an object that has already been refcounted in this context
+    METHOD           = (1:<<:13) # object method (not global method or routine)
+    HAS_RETURN       = (1:<<:14)
+    VISITING         = (1:<<:15)
+    REQUIRES_CLEANUP = (1:<<:16)
+    OVERRIDDEN       = (1:<<:17)
+    DYNAMIC_DISPATCH = (1:<<:18)
+    INSERT           = (1:<<:19)
+    APPEND           = (1:<<:20)
 endClass
 
 class Attributes : CmdList
@@ -37,6 +38,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_organized,     Attribute.ORGANIZED )
   ROGUE_ATTRIBUTE( is_resolved,      Attribute.RESOLVED )
   ROGUE_ATTRIBUTE( is_anchored,      Attribute.ANCHORED )
+  ROGUE_ATTRIBUTE( is_retained,      Attribute.RETAINED )
   ROGUE_ATTRIBUTE( is_method,        Attribute.METHOD )
   ROGUE_ATTRIBUTE( has_return,       Attribute.HAS_RETURN )
   ROGUE_ATTRIBUTE( is_visiting,      Attribute.VISITING )

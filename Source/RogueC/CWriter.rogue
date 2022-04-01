@@ -189,7 +189,7 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->type = type;
-           |  obj->ref_count = 1;
+           |  obj->refcount = 1;
            |  return obj;
            |}
            |
@@ -212,14 +212,14 @@ class CWriter : BufferedPrintWriter
            |
            |void* Rogue_release( void* obj )
            |{
-           |  if (obj && ! --(((RogueObject*)obj)->ref_count)) Rogue_delete_object( obj );
+           |  if (obj && ! --(((RogueObject*)obj)->refcount)) Rogue_delete_object( obj );
            |  return 0;
            |}
            |
            |void Rogue_release_ref( void* ref )
            |{
            |  RogueObject* obj = *((RogueObject**)ref);
-           |  if (obj && ! --(obj->ref_count))
+           |  if (obj && ! --(obj->refcount))
            |  {
            |    Rogue_delete_object( obj );
            |    *((RogueObject**)ref) = 0;
@@ -228,7 +228,7 @@ class CWriter : BufferedPrintWriter
            |
            |void* Rogue_retain( void* obj )
            |{
-           |  if (obj) ++(((RogueObject*)obj)->ref_count);
+           |  if (obj) ++(((RogueObject*)obj)->refcount);
            |  return obj;
            |}
            |
@@ -236,14 +236,14 @@ class CWriter : BufferedPrintWriter
            |{
            |  RogueObject* obj = *((RogueObject**)ref);
            |  if ( !obj ) return;
-           |  ++(obj->ref_count);
+           |  ++(obj->refcount);
            |}
            |
            |void Rogue_set_ref( void* ref, void* new_obj )
            |{
            |  RogueObject* old_obj = *((RogueObject**)ref);
-           |  if (old_obj && ! --old_obj->ref_count) Rogue_delete_object( old_obj );
-           |  if (new_obj) ++((RogueObject*)new_obj)->ref_count;
+           |  if (old_obj && ! --old_obj->refcount) Rogue_delete_object( old_obj );
+           |  if (new_obj) ++((RogueObject*)new_obj)->refcount;
            |  *((void**)ref) = new_obj;
            |}
            |

@@ -10,6 +10,6 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
       m.type_context   = this_type
       visit( m )
 
-    method on_enter( cmd:This )
+    method on_visit( cmd:This )
       cmd.this_type = this_type
 endClass

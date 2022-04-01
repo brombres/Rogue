@@ -55,13 +55,26 @@ class Program [singleton]
         include_search_paths.add( path )
       endIf
 
+    method apply( visitor:InspectionVisitor )
+      is_modified = true
+
+      while (is_modified)
+        is_modified = false
+
+        forEach (m in modules)
+          temporarily visitor.this_module = m
+            visitor.visit( m )
+          endTemporarily
+        endForEach
+      endWhile
+
     method apply( visitor:Visitor )
       is_modified = true
 
       while (is_modified)
         is_modified = false
 
-        forEach (m in modules.values)
+        forEach (m in modules)
           temporarily visitor.this_module = m
             visitor.visit( m )
           endTemporarily

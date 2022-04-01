@@ -1,0 +1,51 @@
+module Rogue
+
+class EscapeAnalyzer : InspectionVisitor
+  PROPERTIES
+    control_stack      = ControlStructure[]
+
+  METHODS
+    method visit_type( type:Type )
+      if (type.is_aspect) return
+      prior.visit_type( type )
+
+    method track_escape
+      if (this_procedure.attributes.requires_cleanup) return  # already flagged
+
+      forEach (scope in control_stack step -1)
+        if (scope.has_cleanup_code)
+          this_procedure.attributes.requires_cleanup = true
+          return
+        endIf
+      endForEach
+
+    method on( cmd:ControlStructure )->Logical
+      control_stack.add( cmd )
+      prior.on( cmd )
+      control_stack.remove_last
+      return false
+
+    method on_visit( cmd:CreateObjectAndSetLocal )
+      track_escape
+
+    method on( cmd:If )->Logical
+      control_stack.add( cmd )
+      prior.on( cmd )
+      control_stack.remove_last
+      return false
+
+    method on( cmd:Iterator )->Logical
+      control_stack.add( cmd )
+      prior.on( cmd )
+      control_stack.remove_last
+      return false
+
+    method on_visit( cmd:Return )
+      track_escape
+
+    method on_visit( cmd:ReturnOnException )
+      track_escape
+
+    method on_visit( cmd:Throw )
+      track_escape
+endClass

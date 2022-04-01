@@ -81,7 +81,7 @@ class Resolver : Visitor
 
     method on( cmd:ControlStructure )->Cmd
       push_scope( cmd )
-      visit_content( cmd )
+      handle( cmd )
       pop_scope
       return cmd
 
@@ -341,7 +341,7 @@ class Resolver : Visitor
         forEach (statement in current_statements)
           statement = visit( statement )
           if (statement)
-            #if (statement.type) statement = DiscardResult( statement.t, statement )
+            if (statement.type) statement = DiscardResult( statement.t, statement )
             current_statements.write( statement )
           endIf
         endForEach
@@ -1106,3 +1106,4 @@ augment
 
 endAugment
 }#
+

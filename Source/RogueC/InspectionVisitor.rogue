@@ -5,25 +5,78 @@ class InspectionVisitor : InspectionVisitor<<Logical>>
 endClass
 
 class InspectionVisitor<<$ReturnType>>
+  PROPERTIES
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+
   METHODS
+    method visit( m:Module )
+      visit_routines( m )
+      visit_types( m )
+
+    method visit_routines( m:Module )
+      temporarily this_module = m
+        forEach(r in m.routines)
+          temporarily this_procedure = r
+            visit( r )
+          endTemporarily
+        endForEach
+      endTemporarily
+
+    method visit_types( m:Module )
+      temporarily this_module = m
+        forEach (type in m.types)
+          visit_type( type )
+        endForEach
+      endTemporarily
+
+    method visit_type( type:Type )
+      temporarily this_type = type
+        on_visit_type( type )
+      endTemporarily
+
+    method on_visit_type( type:Type )
+      visit_global_methods( type )
+      visit_methods( type )
+
+    method visit_global_methods( type:Type )
+      temporarily this_type = type
+        forEach (m in type.global_methods)
+          temporarily this_procedure = m
+            visit( m )
+          endTemporarily
+        endForEach
+      endTemporarily
+
+    method visit_methods( type:Type )
+      temporarily this_type = type
+        forEach (m in type.methods)
+          temporarily this_procedure = m
+            visit( m )
+          endTemporarily
+        endForEach
+      endTemporarily
+
     method on( cmd:Cmd )->$ReturnType
       # Default per-node InspectionVisitor call sequence.
       #
       #   CALL                        OVERLOADABLE METHOD
       #   --------------------        ------------------------
       #   visit(cmd)->$ReturnType  -> on(cmd:CmdType)->$ReturnType
-      #     enter(cmd) ->               on_enter(cmd:CmdType)
-      enter( cmd )
+      #     handle(cmd)            -> on_visit(cmd:CmdType)
+      handle( cmd )
       return $ReturnType.meta.default_value
 
     method on( cmd:CmdList )->Logical
+      handle( cmd )
       forEach (statement in cmd.list)
         local result = visit(statement)
         if (result?) return result
       endForEach
       return $ReturnType.meta.default_value
 
-    method on_enter( cmd:Cmd )
+    method on_visit( cmd:Cmd )
       # This method is called from the default on(CmdType) before
       # children are visited.
 
@@ -31,15 +84,17 @@ class InspectionVisitor<<$ReturnType>>
       if (cmd is null) return $ReturnType.meta.default_value
       return cmd.dispatch<<ThisType,$ReturnType>>( this )
 
-    method enter( cmd:Cmd ) [propagated]
-      cmd.dispatch_on_enter<<ThisType>>( this )
+    method handle( cmd:Cmd ) [propagated]
+      cmd.dispatch_on_visit<<ThisType>>( this )
 
     method on( cmd:Access )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.args)
       return result
 
     method on( cmd:AddAndAssignLocal )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       if (result?) return result
@@ -47,6 +102,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Assign )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.target)
       if (result?) return result
@@ -54,6 +110,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Binary )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.left)
       if (result?) return result
@@ -61,6 +118,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:CallDynamicMethod )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
       if (result?) return result
@@ -68,11 +126,21 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:CallProcedure )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.args)
       return result
 
+    method on( cmd:CallStaticMethod )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
     method on( cmd:Catch )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.exception_type)
       if (result?) return result
@@ -80,6 +148,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Class )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.constructor_properties)
       if (result?) return result
@@ -91,6 +160,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Conditional )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.condition)
       if (result?) return result
@@ -98,6 +168,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:ContextAccess )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
       if (result?) return result
@@ -105,37 +176,55 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:ControlStructure )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.initialization)
       if (result?) return result
       result = visit(cmd.statements)
       return result
 
+    method on( cmd:Convert )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
     method on( cmd:ConvertToType )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.operand)
       if (result?) return result
       result = visit(cmd.to_type)
       return result
 
-    method on( cmd:CreateObjectAndSetLocal )->$ReturnType
+    method on( cmd:CreateObject )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.of_type)
       if (result?) return result
-      result = visit(cmd.info)
+      result = visit(cmd.args)
       return result
 
     method on( cmd:DefineModule )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.attributes)
       return result
 
     method on( cmd:Definition )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.value)
       return result
 
+    method on( cmd:DiscardResult )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
     method on( cmd:ForEach )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.condition)
       if (result?) return result
@@ -143,6 +232,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:ForEachCollection )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.data)
       if (result?) return result
@@ -152,6 +242,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:ForEachControl )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.optional_at)
       if (result?) return result
@@ -159,11 +250,13 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:GetLocal )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       return result
 
     method on( cmd:GetProperty )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
       if (result?) return result
@@ -171,16 +264,19 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:GetSingleton )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.type)
       return result
 
     method on( cmd:GetThisProperty )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       return result
 
     method on( cmd:If )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.condition)
       if (result?) return result
@@ -190,16 +286,30 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:IndexAccess )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
       if (result?) return result
       result = visit(cmd.index)
       return result
 
-    method on( cmd:Iterator )->$ReturnType
+    method on( cmd:InlineWhich )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
-      result = visit(cmd.initialization)
+      result = visit(cmd.cases)
+      return result
+
+    method on( cmd:InlineWhichCase )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.condition)
       if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on( cmd:Iterator )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
       result = visit(cmd.control)
       if (result?) return result
       result = visit(cmd.condition)
@@ -210,6 +320,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Local )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.initial_value)
       if (result?) return result
@@ -217,6 +328,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:LocalDeclarations )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.declarations)
       if (result?) return result
@@ -224,16 +336,19 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:ModuleQualifiedID )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
       return result
 
     method on( cmd:NativeExpression )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.result_type)
       return result
 
     method on( cmd:OpAndAssign )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.target)
       if (result?) return result
@@ -241,21 +356,25 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Print )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.args)
       return result
 
     method on( cmd:PrintValue )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.operand)
       return result
 
     method on( cmd:Println )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.args)
       return result
 
     method on( cmd:Procedure )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.parameters)
       if (result?) return result
@@ -267,6 +386,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Property )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.initial_value)
       if (result?) return result
@@ -274,6 +394,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:PropertyDeclarations )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.declarations)
       if (result?) return result
@@ -283,11 +404,13 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:Return )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.result)
       return result
 
     method on( cmd:SetLocal )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       if (result?) return result
@@ -295,6 +418,7 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:SetProperty )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
       if (result?) return result
@@ -304,80 +428,57 @@ class InspectionVisitor<<$ReturnType>>
       return result
 
     method on( cmd:SetThisProperty )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       if (result?) return result
       result = visit(cmd.new_value)
       return result
 
+    method on( cmd:Stepper )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
     method on( cmd:Throw )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.exception)
       return result
 
     method on( cmd:Try )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.statements)
       if (result?) return result
       result = visit(cmd.catches)
       return result
 
+    method on( cmd:Type )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.type_args)
+      return result
+
     method on( cmd:TypeContext )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.type)
       return result
 
     method on( cmd:Unary )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.operand)
       return result
 
-    method on( cmd:CreateObject )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.of_type)
-      if (result?) return result
-      result = visit(cmd.args)
-      return result
-
     method on( cmd:UsesModule )->$ReturnType
+      handle( cmd )
       local result : $ReturnType
       result = visit(cmd.path)
       if (result?) return result
       result = visit(cmd.attributes)
-      return result
-
-    method on( cmd:Convert )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.operand)
-      return result
-
-    method on( cmd:Stepper )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.operand)
-      return result
-
-    method on( cmd:Type )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.type_args)
-      return result
-
-    method on( cmd:CallStaticMethod )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.context)
-      if (result?) return result
-      result = visit(cmd.args)
-      return result
-
-    method on( cmd:InlineWhich )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.cases)
-      return result
-
-    method on( cmd:InlineWhichCase )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.condition)
-      if (result?) return result
-      result = visit(cmd.value)
       return result
 
 endClass

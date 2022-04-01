@@ -25,7 +25,23 @@ augment
     method Cmd.catches_exception( of_type:Type )->Logical
       return false
 
+    method Cmd.is_retained->Logical
+      return false
+
     method Cmd.needs_decomposition->Logical
       return DecompositionAnalyzer.visit( this )
+
+    method CallProcedure.is_retained->Logical
+      return true  # any reference return type is already retained
+
+    method CreateObject.is_retained->Logical
+      return true  # new objects have a refcount of 1
+
+    method Local.is_retained->Logical
+      return attributes.is_retained
+
+    method SetLocal.is_retained->Logical
+      return info.attributes.is_retained
+
 endAugment
 
