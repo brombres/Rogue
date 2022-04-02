@@ -34,9 +34,6 @@ augment
     method CallProcedure.is_retained->Logical
       return true  # any reference return type is already retained
 
-    method CreateObject.is_retained->Logical
-      return true  # new objects have a refcount of 1
-
     method Local.is_retained->Logical
       return attributes.is_retained
 

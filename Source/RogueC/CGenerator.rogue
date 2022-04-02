@@ -357,9 +357,11 @@ class CGenerator : Visitor
           forEach (p in this_procedure.parameters)
             if (p.type.is_reference and not p.is_anchored)
               writer.print "ROGUE_RELEASE_REF( &"
-              writer.print p->(as Local).c_name
+              writer.print p.c_name
               writer.print( " )" )
               writer.println( ';' )
+            elseIf (p.type.is_compound and p.type.contains_reference)
+              writer.print( p.type.c_name ).print( "_on_release( &" ).print( p.c_name ).println( " );" )
             endIf
           endForEach
         endIf
@@ -370,6 +372,8 @@ class CGenerator : Visitor
             writer.print v.c_name
             writer.print( " )" )
             writer.println( ';' )
+          elseIf (v.type.is_compound and v.type.contains_reference)
+            writer.print( v.type.c_name ).print( "_on_release( &" ).print( v.c_name ).println( " );" )
           endIf
         endForEach
 
@@ -408,12 +412,22 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CreateCompound )
       # This command only exists in the compound's primary create() global method.
-      writer.print( "return (" ).print( this_type.c_name ).print( ") {" )
+      if (this_type.contains_reference)
+        writer.print( this_type.c_name ).print( " result = " )
+      else
+        writer.print( "return (" ).print( this_type.c_name ).print( ") " )
+      endIf
+      writer.print '{'
       forEach (param at i in this_procedure.parameters)
         if (i > 0) writer.print ','
         writer.print(' ').print(param.c_name)
       endForEach
       writer.print " }"
+      if (this_type.contains_reference)
+        writer.println ";"
+        writer.print( this_type.c_name ).println( "_on_retain( &result );" )
+        writer.print   "return result"
+      endIf
 
     method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
@@ -762,7 +776,7 @@ class CGenerator : Visitor
       writer.println
 
     method on_visit( cmd:SetLocal )
-      if (cmd.info.type.is_reference)
+      if (cmd.info.type.is_reference and not cmd.new_value.is_retained)
         if (cmd.is_initial_assignment)
           writer.print cmd.info.c_name
           writer.print " = ROGUE_RETAIN("
@@ -960,6 +974,15 @@ augment
           writer.println
         endIf
         writer.println( forEach in type.native_header )
+
+        if (type.is_compound and type.contains_reference)
+          writer.print( "void " ).print( type.c_name ).print( "_on_retain( " ).print( type.c_name ).println( "* THIS );" )
+        endIf
+        if (type.contains_reference)
+          writer.print( "void " ).print( type.c_name ).print( "_on_release( " ).print( type.c_name ).println( "* THIS );" )
+          writer.println
+        endIf
+
       endForEach
 
     method Module.generate_c_class_typedefs( writer:CWriter )
@@ -1031,10 +1054,15 @@ augment
           writer.print   ''), ''
           local default_constructor = type.methods["init()"]
           if (default_constructor)
-            writer.print   ''(RogueFn_init)''
+            writer.print   ''(RogueFn_Object)''
             writer.print   default_constructor.c_name
           else
             writer.print   "0"
+          endIf
+          if (type.contains_reference)
+            writer.print( ",(RogueFn_Object)" ).print( type.c_name ).print( "_on_release" );
+          else
+            writer.print   ",0"
           endIf
           writer.println '' };''
         endForEach
@@ -1074,7 +1102,6 @@ augment
          |//------------------------------------------------------------------------------
       (forEach in modules).generate_c_class_typedefs( h_writer )
       (forEach in modules).generate_c_class_structs( h_writer )
-
       (forEach in modules).generate_c_header( h_writer )
 
       local wrote_any = false
@@ -1203,6 +1230,7 @@ augment
         writer.print   ' '
         writer.print   c_name
         writer.println "_singleton;"
+        writer.println
       endIf
 
       forEach (m in global_methods)
@@ -1221,6 +1249,36 @@ augment
 
     method Type.generate_c_code( writer:CWriter )
       if (is_aspect) return
+
+      if (is_compound and contains_reference)
+        writer.print( "void " ).print( c_name ).print( "_on_retain( " ).print( c_name ).println( "* THIS )" )
+        writer.println '{'
+        forEach (p in properties)
+          if (p.type.is_reference)
+            writer.print( "  ROGUE_RETAIN_REF( &THIS->" ).print( p.c_name ).println( " );" )
+          elseIf (p.type.is_compound and p.type.contains_reference)
+            writer.print "  "
+            writer.print( p.type.c_name ).print( "_on_retain( &THIS->" )
+            writer.print( p.c_name ).println( " );" )
+          endIf
+        endForEach
+        writer.println '}'
+        writer.println
+      endIf
+      if (contains_reference)
+        writer.print( "void " ).print( c_name ).print( "_on_release( " ).print( c_name ).println( "* THIS )" )
+        writer.println '{'
+        forEach (p in properties)
+          if (p.type.is_reference)
+            writer.print( "  ROGUE_RELEASE_REF( &THIS->" ).print( p.c_name ).println( " );" )
+          elseIf (p.type.is_compound and p.type.contains_reference)
+            writer.print "  "
+            writer.print( p.type.c_name ).print( "_on_release( &THIS->" ).print( p.c_name ).println( " );" )
+          endIf
+        endForEach
+        writer.println '}'
+        writer.println
+      endIf
 
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )

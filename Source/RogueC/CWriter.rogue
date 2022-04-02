@@ -135,15 +135,16 @@ class CWriter : BufferedPrintWriter
            |#define ROGUE_RETAIN( obj )   Rogue_retain( obj )
            |
            |typedef struct RogueType RogueType;
-           |typedef void (*RogueFn_init)(void*);
+           |typedef void (*RogueFn_Object)(void*);
            |
            |struct RogueType
            |{
-           |  const char* module_name;
-           |  const char* name;
-           |  RogueInt32 id;
-           |  RogueInt32 size;
-           |  RogueFn_init fn_init;
+           |  const char*    module_name;
+           |  const char*    name;
+           |  RogueInt32     id;
+           |  RogueInt32     size;
+           |  RogueFn_Object fn_init;
+           |  RogueFn_Object fn_on_release;
            |};
            |
            |void* Rogue_create_object( void* type );
@@ -189,13 +190,13 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->type = type;
-           |  obj->refcount = 1;
+           |  // refcount starts at 0
            |  return obj;
            |}
            |
            |void Rogue_delete_object( void* obj )
            |{
-           |  // TODO: dereference properties
+           |  if (((RogueObject*)obj)->type->fn_on_release) ((RogueObject*)obj)->type->fn_on_release( obj );
            |  printf( "Delete object %s\n", ((RogueObject*)obj)->type->name );
            |  ROGUE_FREE( obj );
            |}

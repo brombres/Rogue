@@ -94,6 +94,23 @@ class Type : Cmd
         endForEach
       endIf
 
+    method contains_embedded_compound( type:Type )->Logical
+      forEach (p in properties)
+        if (p.type is type) return true
+        if (p.type.is_compound and p.type.contains_embedded_compound(type)) return true
+      endForEach
+      return false
+
+    method contains_embedded_reference->Logical
+      forEach (p in properties)
+        if (p.type.is_reference) return true
+        if (p.type.is_compound and p.type.contains_embedded_reference) return true
+      endForEach
+      return false
+
+    method contains_reference->Logical
+      return attributes.contains_reference
+
     method ensure_definition
       if (attributes.is_defined) return
 

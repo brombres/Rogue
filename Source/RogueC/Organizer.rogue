@@ -175,7 +175,21 @@ class Organizer : Visitor
         endIf
       endIf
 
+      if (this_type.is_compound and p.type.is_compound)
+        if (p.type.contains_embedded_compound(this_type))
+          throw t.error(
+              "Circular compound definition - $ directly or indirectly contains an embedded $, so $ cannot contain a $."...
+              (p.type,this_type,this_type,p.type)
+          )
+        endIf
+      endIf
+
       visit( p )
+
+      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
+        this_type.attributes.contains_reference = true
+      endIf
+
       if (this_type.properties.contains(p.name))
         throw t.error( ''Type $ already defines a property named "$".''(this_type,p.name) )
       endIf
