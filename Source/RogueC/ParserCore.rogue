@@ -710,6 +710,12 @@ class ParserCore [abstract]
             else                    _push_list( Attributes(_list_t) )
             return
           case ip_class_attribute
+            if (_next_t.content and _next_t.content == "compound")
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( AttributeCompound(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.content and _next_t.content == "singleton")
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( AttributeSingleton(_cur_t), 0 )
@@ -729,7 +735,7 @@ class ParserCore [abstract]
               if (not disable_output) _push( AttributeAspect(_cur_t), 0 )
               return
             endIf
-            _throw_syntax_error("Illegal class attribute. Expected one or more of [aspect essential primitive singleton].")
+            _throw_syntax_error("Illegal class attribute. Expected one or more of [aspect compound essential primitive singleton].")
             return
           case ip_class
             _execute(ip_constructor_properties)
@@ -2381,14 +2387,6 @@ class ParserCore [abstract]
             return
           case ip_additional_node_types
             if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            if (not disable_output) _push( Convert(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToByte(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToCharacter(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToInt32(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToInt64(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToLogical(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToReal32(_cur_t,_node_arg(-1)), 1 )
-            if (not disable_output) _push( ConvertToReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallDynamicMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
@@ -2399,7 +2397,16 @@ class ParserCore [abstract]
             if (not disable_output) _push( Compare(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( Conditional(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( ControlStructure(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+            if (not disable_output) _push( Convert(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToByte(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToCharacter(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToInt32(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToInt64(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToLogical(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToReal32(_cur_t,_node_arg(-1)), 1 )
+            if (not disable_output) _push( ConvertToReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)->(as Local)), 2 )
+            if (not disable_output) _push( CreateCompound(_cur_t), 0 )
             if (not disable_output) _push( DiscardResult(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )

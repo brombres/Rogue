@@ -20,17 +20,40 @@ class Organizer : Visitor
       endIf
 
       if (cmd.constructor_properties)
-        # Turn parameters into properties and generate a corresponding init() method.
-        local m_init = Method( cmd.t, "init" )
-        forEach (v in cmd.constructor_properties)
-          if (v.type)
+        if (this_type.is_object)
+          # Turn parameters into properties and generate a corresponding init() method.
+          local m_init = Method( cmd.t, "init" )
+          forEach (v in cmd.constructor_properties)
+            if (v.type)
+              local p = Property( v.t, v.name, v.initial_value, v.type )
+              collect( v.t, p )
+              v.type = null  # turn into auto-store parameter
+            endIf
+            m_init.parameters.add( v )
+          endForEach
+          on( m_init )
+
+        elseIf (this_type.is_compound)
+          # Turn parameters into properties.
+          # Make a create() global method as the "primary constructor".
+          local m_create = GlobalMethod( cmd.t, "create", &return_type=this_type )
+          forEach (v in cmd.constructor_properties)
+            if (not v.type) throw v.t.error( "Missing ':Type'." )
             local p = Property( v.t, v.name, v.initial_value, v.type )
             collect( v.t, p )
-            v.type = null  # turn into auto-store parameter
-          endIf
-          m_init.parameters.add( v )
-        endForEach
-        on( m_init )
+          endForEach
+          m_create.parameters.add( forEach in cmd.constructor_properties )
+          m_create.statements.add( CreateCompound(cmd.t) )
+          on( m_create )
+
+        elseIf (this_type.is_aspect)
+          throw cmd.constructor_properties.t.error( "Aspects cannot have constructor properties." )
+
+        else
+          throw cmd.constructor_properties.t.error( "Primitives cannot have constructor properties." )
+
+        endIf
+
       endIf
 
       forEach (base_type in cmd.base_types)
@@ -86,6 +109,12 @@ class Organizer : Visitor
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.organize( this )
+      if (this_type.is_compound and cmd.name == "init")
+        throw cmd.t.error(
+            "Compounds and primitives cannot have init() methods. Add global method create$->$ instead." ...
+            (cmd.signature.rightmost(-4),this_type)
+        )
+      endIf
       return cmd
 
     method on( cmd:NativeCode )->Cmd

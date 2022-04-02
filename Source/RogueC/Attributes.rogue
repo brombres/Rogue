@@ -91,6 +91,9 @@ augment
     method AttributeAspect.attribute_flags->Int32
       return Attribute.ASPECT
 
+    method AttributeCompound.attribute_flags->Int32
+      return Attribute.COMPOUND
+
     method AttributeEssential.attribute_flags->Int32
       return Attribute.ESSENTIAL
 

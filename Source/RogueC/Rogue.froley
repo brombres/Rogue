@@ -634,6 +634,7 @@ parser
   produceList Attributes
 
 - class_attribute
+  on @"compound"  -> AttributeCompound
   on @"singleton" -> AttributeSingleton
   if (consume @"essential")
     call class_attribute_essential
@@ -643,7 +644,7 @@ parser
   elseIf (consume @"aspect")
     produce AttributeAspect
   endIf
-  syntaxError "Illegal class attribute. Expected one or more of [aspect essential primitive singleton]."
+  syntaxError "Illegal class attribute. Expected one or more of [aspect compound essential primitive singleton]."
 
 - class
   constructor_properties
@@ -1478,14 +1479,6 @@ parser
 
 - additional_node_types
   create AddAndAssignLocal(info:Local,operand)
-  create Convert(operand)
-  create ConvertToByte(operand):Convert
-  create ConvertToCharacter(operand):Convert
-  create ConvertToInt32(operand):Convert
-  create ConvertToInt64(operand):Convert
-  create ConvertToLogical(operand):Convert
-  create ConvertToReal32(operand):Convert
-  create ConvertToReal64(operand):Convert
   create CallDynamicMethod(context,args):CallProcedure
   create CallGlobalMethod(args):CallProcedure
   create CallProcedure(args)
@@ -1496,7 +1489,16 @@ parser
   create Compare(left,right):Binary
   create Conditional(condition,statements):ControlStructure
   create ControlStructure(initialization,statements)
+  create Convert(operand)
+  create ConvertToByte(operand):Convert
+  create ConvertToCharacter(operand):Convert
+  create ConvertToInt32(operand):Convert
+  create ConvertToInt64(operand):Convert
+  create ConvertToLogical(operand):Convert
+  create ConvertToReal32(operand):Convert
+  create ConvertToReal64(operand):Convert
   create CreateObject(of_type:Type,info:Local)
+  create CreateCompound
   create DiscardResult(operand)
   create DummyInitialValue
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)

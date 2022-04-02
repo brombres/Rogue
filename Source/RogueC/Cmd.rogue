@@ -2087,3 +2087,15 @@ class DiscardResult : Cmd
       return "DiscardResult($)" (%operand)
 
 endClass
+
+class AttributeCompound : Cmd
+  METHODS
+    method description->String
+      return "AttributeCompound"
+endClass
+
+class CreateCompound : Cmd
+  METHODS
+    method description->String
+      return "CreateCompound"
+endClass
