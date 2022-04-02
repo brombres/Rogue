@@ -1349,7 +1349,7 @@ parser
   on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer)
   on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer)
   on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer)
-  on REAL_NUMBER    -> LiteralReal64(value=content:Real)
+  on REAL_NUMBER    -> LiteralReal(value=content:Real)
   on CHARACTER      -> LiteralCharacter(value=content:Character)
   onPeek IDENTIFIER
     id_or_type

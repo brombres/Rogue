@@ -586,7 +586,7 @@ class CGenerator : Visitor
     method on_visit( cmd:LiteralPi )
       writer.print pi
 
-    method on_visit( cmd:LiteralReal64 )
+    method on_visit( cmd:LiteralReal )
       writer.print cmd.value
 
     method on_visit( cmd:LiteralString )

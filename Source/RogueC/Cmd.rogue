@@ -475,19 +475,19 @@ class LiteralInt64 : LiteralInteger
 
 endClass
 
-class LiteralReal64 : Cmd
+class LiteralReal : Cmd
   PROPERTIES
     value : Real64
 
   METHODS
     method init( t, value )
 
-    method init( existing:LiteralReal64 )
+    method init( existing:LiteralReal )
       prior.init( existing )
       value = existing.value
 
     method description->String
-      return "LiteralReal64($)" (%value)
+      return "LiteralReal($)" (%value)
 
     method to->Int32:  return value
     method to->Real64: return value

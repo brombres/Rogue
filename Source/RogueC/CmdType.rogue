@@ -10,6 +10,10 @@ augment Cmd
         if (a is type or b is type) return type
         type = Program.type_Real64
         if (a is type or b is type) return type
+        type = Program.type_Real
+        if (a is type or b is type) return type
+        type = Program.type_Real32
+        if (a is type or b is type) return type
         type = Program.type_Int64
         if (a is type or b is type) return type
         return Program.type_Int32  # any mismatched pair Logical/Byte/Character/Int32 -> Int32
@@ -33,7 +37,7 @@ augment Cmd
       if (not type.is_primitive) return type
 
       if (type is Program.type_Real64 or type is Program.type_Real32)
-        return Program.type_Real64
+        return Program.type_Real
       elseIf (type is Program.type_Int64)
         return Program.type_Int64
       else
@@ -114,7 +118,7 @@ augment
       return LiteralLogical( cmd_t, false )
 
     method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralReal64( cmd_t, 0 )
+      return LiteralReal( cmd_t, 0 )
 
     method TypeString.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralString( cmd_t, null )
@@ -298,10 +302,10 @@ augment
       #return @type
 
     method LiteralPi.type->Type
-      return Program.type_Real64
+      return Program.type_Real
 
-    method LiteralReal64.type->Type
-      return Program.type_Real64
+    method LiteralReal.type->Type
+      return Program.type_Real
 
     method LiteralString.type->Type
       return Program.type_String
@@ -360,9 +364,9 @@ augment
 
     #{
     method XYGetX.type->Type
-      return Program.type_Real64
+      return Program.type_Real
 
     method XYGetY.type->Type
-      return Program.type_Real64
+      return Program.type_Real
       }#
 endAugment

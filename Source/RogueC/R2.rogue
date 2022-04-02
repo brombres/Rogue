@@ -63,6 +63,14 @@ class RogueC
         Program.add_include_search_path( forEach in paths )
       endIf
 
+      if (command//options//real)
+        local real_bits = command//options//real->Int32
+        if (real_bits != 32 and real_bits != 64)
+          throw Error( "--real can only be set to 32 or 64." )
+        endIf
+        Program.real_bits = real_bits
+      endIf
+
       Program.using_arc = true
       Program.include( forEach in command//args )
       Program.include( "Standard" )
@@ -75,6 +83,7 @@ class RogueC
         #option( "--flag",      &alias="-f" )
         option( "--help",       &aliases=["-h","-?"] )
         option( "--libraries=", &alias="-L", &multi )
+        option( "--real=", &alias="-r" )
         #option( "--setting=", &alias="-s" )
       ].parse( args )
       return command
@@ -86,6 +95,15 @@ class RogueC
                |OPTIONS
                |  --help, -h, -?
                |    Show this help text.
+               |
+               |  --libraries="path1;path2", -L path1:path2
+               |    Specify paths RogueC should look through for '$include' and 'uses' directives.
+               |    This option can be listed multiple times. Both ';' and ':' can be used as a
+               |    path separator on quoted paths.
+               |
+               |  --real=32, -r 32
+               |    Specifies that the 'Real' datatype should be Real32 instead of Real64.
+               |    This affects the type of floating point literals (2.54, pi) as well.
 
 endClass
 
