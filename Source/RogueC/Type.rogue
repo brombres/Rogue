@@ -18,6 +18,7 @@ class Type : Cmd
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
     type_args         : TemplateArgs
+    _template         : Template
 
     id                : Int32
     m_on_cleanup      : Method
@@ -119,7 +120,7 @@ class Type : Cmd
       local template_name = "$<<$>>"(name.before_first('<'),type_arg_count)
       local template = module_context.templates[template_name]
       if (template)
-        template.generate( type_args, this )
+        template.generate( this )
       else
         println
         throw t.error( "Reference to undefined class '$::$'."(module_context,name) )

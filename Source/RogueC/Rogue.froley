@@ -28,7 +28,7 @@ KEYWORD_CLASS          class       [structural]
 KEYWORD_DEFINITIONS    DEFINITIONS [structural]
 KEYWORD_DOWN_TO        downTo
 KEYWORD_ELSE           else        [structural]
-KEYWORD_ELSE_IF        elseIf
+KEYWORD_ELSE_IF        elseIf      [structural]
 KEYWORD_END_BLOCK      endBlock    [structural]
 KEYWORD_END_CLASS      endClass    [structural]
 KEYWORD_END_FOR_EACH   endForEach  [structural]
@@ -47,6 +47,7 @@ KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
 KEYWORD_IF             if
 KEYWORD_IMPORT         import
 KEYWORD_INCLUDE        include
+KEYWORD_INSTANCE_OF    instanceOf
 KEYWORD_IS             is
 KEYWORD_IS_TYPE        isType
 KEYWORD_LOCAL          local
@@ -1287,7 +1288,10 @@ parser
   endOn
   on "isType"
     type
-    produce IsType(operand,is_type:Type)
+    produce IsType(operand,compare_type:Type)
+  elseOn "instanceOf"
+    type
+    produce InstanceOf(operand,compare_type:Type)
   endOn
 
 - bitwise_xor [binary]
@@ -1357,6 +1361,11 @@ parser
   on REAL_NUMBER    -> LiteralReal(value=content:Real):Literal
   on CHARACTER      -> LiteralCharacter(value=content:Character):Literal
   onPeek IDENTIFIER
+    id_or_type
+    access_args
+    produce Access( name:String, args )
+  endOn
+  onPeek PLACEHOLDER
     id_or_type
     access_args
     produce Access( name:String, args )

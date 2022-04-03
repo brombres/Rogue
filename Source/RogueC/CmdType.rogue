@@ -326,8 +326,11 @@ augment
     method IsNot.type->Type
       return Program.type_Logical
 
+    method InstanceOf.type->Type
+      return Program.type_Logical
+
     method IsType.type->Type
-      return compare_type
+      return Program.type_Logical
 
     method LiteralCharacter.type->Type
       return Program.type_Character

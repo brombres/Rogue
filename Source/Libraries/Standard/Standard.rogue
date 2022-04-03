@@ -1,6 +1,6 @@
-$include Standard/Array
 $include Standard/Console
 $include Standard/Exception
+$include Standard/List
 $include Standard/Object
 $include Standard/Primitives
 $include Standard/String

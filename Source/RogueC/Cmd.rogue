@@ -2117,3 +2117,21 @@ class IsType : Cmd
       return "IsType($,$)" (%operand,%compare_type)
 
 endClass
+
+class InstanceOf : Cmd
+  PROPERTIES
+    operand      : Cmd
+    compare_type : Type
+
+  METHODS
+    method init( t, operand, compare_type )
+
+    method init( existing:InstanceOf )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.compare_type) compare_type = existing.compare_type.cloned
+
+    method description->String
+      return "InstanceOf($,$)" (%operand,%compare_type)
+
+endClass

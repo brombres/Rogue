@@ -199,7 +199,7 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (((RogueObject*)obj)->type->fn_on_release)
            |  {
-           |    if (! ((RogueObject*)obj)->type->fn_on_release(obj)) return;
+           |    if ( !((RogueObject*)obj)->type->fn_on_release(obj) ) return;
            |    // on_release > on_cleanup could retain object
            |  }
            |  printf( "Delete object %s\n", ((RogueObject*)obj)->type->name );
@@ -283,6 +283,19 @@ class CWriter : BufferedPrintWriter
            |{
            |  RogueReal64 q = a / b;
            |  return a - (floor(q) * b);
+           |}
+           |
+           |RogueLogical Rogue_instance_of( void* obj, RogueType* ancestor_type )
+           |{
+           |  if ( !obj ) return 0;
+           |  printf("TODO: Rogue_instance_of()\n");
+           |  return 0;
+           |}
+           |
+           |RogueLogical Rogue_is_type( void* obj, RogueType* type )
+           |{
+           |  if ( !obj ) return 0;
+           |  return ((RogueObject*)obj)->type == type;
            |}
         println
 

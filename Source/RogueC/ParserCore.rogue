@@ -1833,6 +1833,13 @@ class ParserCore [abstract]
                 if (not disable_output) _push( IsType(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
                 return
               endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_INSTANCE_OF)
+              temporarily _cur_t = _on_t
+                _execute(ip_type)
+                _pop_frame
+                if (not disable_output) _push( InstanceOf(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+                return
+              endTemporarily
             endIf
             return
           case ip_bitwise_xor
@@ -2176,6 +2183,16 @@ class ParserCore [abstract]
               endTemporarily
             endIf
             if (_next_t.type == TokenType.IDENTIFIER)
+              temporarily _cur_t = _next_t
+                _execute(ip_id_or_type)
+                _pop_frame
+                _execute(ip_access_args)
+                _pop_frame
+                if (not disable_output) _push( Access(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.PLACEHOLDER)
               temporarily _cur_t = _next_t
                 _execute(ip_id_or_type)
                 _pop_frame

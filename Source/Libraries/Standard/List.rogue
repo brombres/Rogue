@@ -1,0 +1,104 @@
+class List<<$DataType>>
+  PROPERTIES
+    count        : Int32
+    capacity     : Int32
+    element_size : Int32
+    is_ref_array : Logical
+    element_type : $DataType  # dummy property used to generate type-releated C code
+
+    native @|union
+            |{
+            |  RogueObject**   as_objects;
+            |  RogueByte*      as_logicals;
+            |  RogueByte*      as_bytes;
+            |  RogueCharacter* as_characters;
+            |  RogueInt32*     as_int32s;
+            |  RogueInt64*     as_int64s;
+            |  RogueReal32*    as_real32s;
+            |  RogueReal64*    as_real64s;
+            |  void*           as_unknown;
+            |};
+
+  METHODS
+    method init
+      if ($DataType isType Logical) element_size = 1
+      else                          element_size = native("sizeof($element_type)")->Int32
+      if ($DataType instanceOf Object) is_ref_array = true
+
+    method on_cleanup
+      native @|if ($this->as_bytes)
+              |{
+              |  ROGUE_FREE( $this->as_bytes );
+              |  $this->as_bytes = 0;
+              |  $capacity = 0;
+              |  $count = 0;
+              |}
+
+    method add( value:$DataType )
+      reserve( 1 )
+      if ($DataType isType Logical)
+        native @|$this->as_logicals[$count++] = (RogueByte)$value;
+      else
+        native @|(($<<value>>*)($this->as_unknown))[$count++] = $value;
+      endIf
+
+    method get( index:Int32 )->$DataType
+      native @|return (($<<element_type>>*)($this->as_unknown))[$index];
+
+    method reserve( additional_capacity:Int32 )
+      local required_capacity = count + additional_capacity
+      if (required_capacity <= capacity) return
+
+      required_capacity = required_capacity.or_larger( count*2 ).or_larger( 10 )
+
+      native @|int total_size = $required_capacity * $element_size;
+              |RogueByte* new_data = (RogueByte*) ROGUE_MALLOC( total_size );
+              |
+              |if ($this->as_bytes)
+              |{
+              |  int old_size = $capacity * $element_size;
+              |  RogueByte* old_data = $this->as_bytes;
+              |  memcpy( new_data, old_data, old_size );
+              |  memset( new_data+old_size, 0, total_size-old_size );
+              |  ROGUE_FREE( old_data );
+              |}
+              |else
+              |{
+              |  memset( new_data, 0, total_size );
+              |}
+              |$this->as_bytes = new_data;
+
+      capacity = required_capacity
+
+    #{
+    method count->Int32 [macro]
+      return native( "$this->count" )->Int32
+
+    method element_size->Int32 [macro]
+      return native('$this->element_size')->Int32
+
+    method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
+      return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
+
+    method zero( i1:Int32, n:Int32 )
+      local size = element_size
+      native @|memset( $this->as_bytes + $i1*$size, 0, $n*$size );
+      }#
+
+endClass
+
+#{
+class Array<<$DataType>> : Array [native]
+  METHODS
+    method cloned->Array<<$DataType>>
+      local result = Array<<$DataType>>( count )
+      forEach (value at index in this) result[ index ] = value
+      return result
+
+    method get( index:Int32 )->$DataType
+      return this[ index ]  # intercepted by compiler
+
+    method set( index:Int32, new_value:$DataType )
+      this[ index ] = new_value
+endClass
+}#

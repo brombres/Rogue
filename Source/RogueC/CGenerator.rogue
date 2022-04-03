@@ -519,6 +519,12 @@ class CGenerator : Visitor
         print_parenthesized( cur_case.value )
       endIf
 
+    method on_visit( cmd:InstanceOf )
+      writer.print "Rogue_instance_of("
+      visit( cmd.operand )
+      writer.print ", &"
+      writer.print( cmd.compare_type.c_name ).print( ')' )
+
     method on_visit( cmd:Is )
       print_parenthesized( cmd.left )
       writer.print " == "
@@ -528,6 +534,12 @@ class CGenerator : Visitor
       print_parenthesized( cmd.left )
       writer.print " != "
       print_parenthesized( cmd.right )
+
+    method on_visit( cmd:IsType )
+      writer.print "Rogue_is_type("
+      visit( cmd.operand )
+      writer.print ", &"
+      writer.print( cmd.compare_type.c_name ).print( ')' )
 
     method on_visit( cmd:Iterator )
       on_enter( cmd )
@@ -863,42 +875,71 @@ class CGenerator : Visitor
       visible_locals.add( forEach in cmd.locals )
 
     method print_native_code( t:Token, code:String )
-      local i1 = code.locate('$')
-      while (i1)
-        local i2 = i1.value
-        while (i2+1 < code.count)
-          local ch = code[i2+1]
-          if (not (ch.is_letter or ch.is_number or ch == '_')) escapeWhile
-          ++i2
-        endWhile
+      block
+        # Replace $<<TypeName>> with C type name
+        local i1 = code.locate("$<<")
+        while (i1)
+          local i2 = code.locate( ">>", i1 )
+          if (not i2) escapeWhile
 
-        local marker = code.from(i1.value+1,i2)
-        code = code.leftmost(i1.value) + native_replacement(t,marker) + code.from(i2+1)
-        i1 = code.locate( '$', i1 )
-      endWhile
+          local marker = code.from(i1.value+3,i2.value-1)
+          code = code.leftmost(i1.value) + native_replacement(t,marker,&type) + code.from(i2.value+2)
+
+          i1 = code.locate("$<<",i2)
+        endWhile
+      endBlock
+
+      block
+        # Replace $varname with e.g. localname_0 or THIS->property_name
+        local i1 = code.locate('$')
+        while (i1)
+          local i2 = i1.value
+          while (i2+1 < code.count)
+            local ch = code[i2+1]
+            if (not (ch.is_letter or ch.is_number or ch == '_')) escapeWhile
+            ++i2
+          endWhile
+
+          local marker = code.from(i1.value+1,i2)
+          code = code.leftmost(i1.value) + native_replacement(t,marker) + code.from(i2+1)
+          i1 = code.locate( '$', i1 )
+        endWhile
+      endBlock
 
       writer.print code
 
-    method native_replacement( t:Token, name:String )->String
+    method native_replacement( t:Token, name:String, &type )->String
       forEach (v in visible_locals)
-        if (name == v.name) return v.c_name
+        if (name == v.name)
+          if (type) return v.type.c_ref_name
+          else      return v.c_name
+        endIf
       endForEach
 
       if (this_type)
         if (this_procedure instanceOf Method)
-          if (name == "this") return "THIS"
+          if (name == "this")
+            if (type) return this_type.c_ref_name
+            else      return "THIS"
+          endIf
 
           forEach (p in this_type.properties)
-            if (name == p.name) return "THIS->" + p.c_name
+            if (name == p.name)
+              if (type) return p.type.c_ref_name
+              else      return "THIS->" + p.c_name
+            endIf
           endForEach
         endIf
 
         forEach (p in this_type.global_properties)
-          if (name == p.name) return p.c_name
+          if (name == p.name)
+            if (type) return p.type.c_ref_name
+            else      return p.c_name
+          endIf
         endForEach
       endIf
 
-      throw t.error( "No such value '$' exists in current scope."(name) )
+      throw t.error( "No such variable '$' exists in current scope."(name) )
 endClass
 
 # write_print()

@@ -201,12 +201,28 @@ class Resolver : Visitor
         return cmd
       endIf
 
+    method on( cmd:InstanceOf )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local operand_type = cmd.operand.require_type
+      if (cmd.operand.is_type_context)
+        if (operand_type.attributes.is_singleton)
+          return cmd  # leave as a runtime check - singleton ref could hold an extended class
+        else
+          return LiteralLogical( cmd.t, operand_type.instance_of(cmd.compare_type) )
+        endIf
+      elseIf (cmd.compare_type.instance_of(operand_type))
+        # Leave it as a runtime check
+        return cmd
+      else
+        return LiteralLogical( cmd.t, false )
+      endIf
+
     method on( cmd:IsType )->Cmd
       cmd.operand = visit( cmd.operand )
       local operand_type = cmd.operand.require_type
       if (cmd.operand.is_type_context)
         if (operand_type.attributes.is_singleton)
-          return cmd  # leave as a runtime check - singleton could be assigned extended class
+          return cmd  # leave as a runtime check - singleton ref could hold an extended class
         else
           return LiteralLogical( cmd.t, operand_type is cmd.compare_type )
         endIf

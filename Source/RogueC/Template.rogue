@@ -16,16 +16,17 @@ class Template
     method description->String
       return name
 
-    method generate( type_args:TemplateArgs, type:Type )
+    method generate( type:Type )
+      type._template = this
       local template_tokens = tokens
 
-      if (type_args)
-        assert placeholders.count == type_args.count
+      if (type.type_args)
+        assert placeholders.count == type.type_args.count
         template_tokens = Token[]( tokens.count * 1.1 )
 
         local replacements = Table<<String,Token[]>>()
         forEach (placeholder at i in placeholders)
-          replacements[placeholder] = type_args[i].tokens
+          replacements[placeholder] = type.type_args[i].tokens
         endForEach
 
         forEach (t in tokens)

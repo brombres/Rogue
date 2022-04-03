@@ -72,7 +72,7 @@ class Module
       local template = templates[ "$<<0>>"(name) ]
       if (template)
         local type = Type( template.tokens.first, this, name, 0 )
-        template.generate( null, type )
+        template.generate( type )
         return type
       endIf
 
