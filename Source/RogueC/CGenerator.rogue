@@ -979,7 +979,7 @@ augment
           writer.print( "void " ).print( type.c_name ).print( "_on_retain( " ).print( type.c_name ).println( "* THIS );" )
         endIf
         if (type.contains_reference or type.m_on_cleanup)
-          writer.print( "void " ).print( type.c_name ).print( "_on_release( " ).print( type.c_name ).println( "* THIS );" )
+          writer.print( "int " ).print( type.c_name ).print( "_on_release( " ).print( type.c_name ).println( "* THIS );" )
           writer.println
         endIf
 
@@ -1060,7 +1060,7 @@ augment
             writer.print   "0"
           endIf
           if (type.contains_reference or type.m_on_cleanup)
-            writer.print( ",(RogueFn_Object)" ).print( type.c_name ).print( "_on_release" );
+            writer.print( ",(RogueFn_Object__Int)" ).print( type.c_name ).print( "_on_release" );
           else
             writer.print   ",0"
           endIf
@@ -1266,12 +1266,12 @@ augment
         writer.println
       endIf
       if (contains_reference or m_on_cleanup)
-        writer.print( "void " ).print( c_name ).print( "_on_release( " ).print( c_name ).println( "* THIS )" )
+        writer.print( "int " ).print( c_name ).print( "_on_release( " ).print( c_name ).println( "* THIS )" )
         writer.println '{'
 
         if (m_on_cleanup)
           writer.print( "  " ).print( m_on_cleanup.c_name ).println( "( THIS );" )
-          if (this.is_reference) writer.println "  if (THIS->refcount) return;"
+          if (this.is_reference) writer.println "  if (THIS->refcount) return 0;"
         endIf
 
         forEach (p in properties)
@@ -1282,6 +1282,7 @@ augment
             writer.print( p.type.c_name ).print( "_on_release( &THIS->" ).print( p.c_name ).println( " );" )
           endIf
         endForEach
+        writer.println "  return 1;"
         writer.println '}'
         writer.println
       endIf
