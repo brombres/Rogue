@@ -217,11 +217,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.value)
       return result
 
-    method on( cmd:DiscardResult )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.operand)
-      return result
+    #method on( cmd:DiscardResult )->$ReturnType
+    #  handle( cmd )
+    #  local result : $ReturnType
+    #  result = visit(cmd.operand)
+    #  return result
 
     method on( cmd:ForEach )->$ReturnType
       handle( cmd )

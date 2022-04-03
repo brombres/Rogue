@@ -432,18 +432,18 @@ class CGenerator : Visitor
     method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
       writer.print " = "
-      writer.print "ROGUE_CREATE_OBJECT("
+      writer.print "ROGUE_RETAIN( ROGUE_CREATE_OBJECT("
       writer.print cmd.of_type.c_name
-      writer.print ")"
+      writer.print ") )"
 
-    method on_visit( cmd:DiscardResult )
-      if (cmd.operand.type.is_reference)
-        writer.print "ROGUE_RELEASE("
-        visit( cmd.operand )
-        writer.print ')'
-      else
-        visit( cmd.operand )
-      endIf
+    #method on_visit( cmd:DiscardResult )
+    #  if (cmd.operand.type.is_reference)
+    #    writer.print "ROGUE_RELEASE("
+    #    visit( cmd.operand )
+    #    writer.print ')'
+    #  else
+    #    visit( cmd.operand )
+    #  endIf
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )

@@ -1504,7 +1504,7 @@ parser
   create ConvertToReal64(operand):Convert
   create CreateObject(of_type:Type,info:Local)
   create CreateCompound
-  create DiscardResult(operand)
+  #create DiscardResult(operand)
   create DummyInitialValue
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   create Iterator(control,condition,statements,upkeep):Conditional

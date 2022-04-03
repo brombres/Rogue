@@ -2072,21 +2072,21 @@ class InlineWhichCases : CmdList
       return list[index]->(as InlineWhichCase)
 endClass
 
-class DiscardResult : Cmd
-  PROPERTIES
-    operand : Cmd
-
-  METHODS
-    method init( t, operand )
-
-    method init( existing:DiscardResult )
-      prior.init( existing )
-      if (existing.operand) operand = existing.operand.cloned
-
-    method description->String
-      return "DiscardResult($)" (%operand)
-
-endClass
+#class DiscardResult : Cmd
+#  PROPERTIES
+#    operand : Cmd
+#
+#  METHODS
+#    method init( t, operand )
+#
+#    method init( existing:DiscardResult )
+#      prior.init( existing )
+#      if (existing.operand) operand = existing.operand.cloned
+#
+#    method description->String
+#      return "DiscardResult($)" (%operand)
+#
+#endClass
 
 class AttributeCompound : Cmd
   METHODS

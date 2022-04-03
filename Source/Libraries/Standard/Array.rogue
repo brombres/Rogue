@@ -1,6 +1,20 @@
 class Array
   PROPERTIES
-    native "void* data;"
+    count        : Int32
+    element_size : Int32
+    is_ref_array : Logical
+
+    native @|union
+            |{
+            |  RogueObject**   as_objects;
+            |  RogueByte*      as_logicals;
+            |  RogueByte*      as_bytes;
+            |  RogueCharacter* as_characters;
+            |  RogueInt32*     as_int32s;
+            |  RogueInt64*     as_int64s;
+            |  RogueReal32*    as_real32s;
+            |  RogueReal64*    as_real64s;
+            |};
 
   METHODS
     #{
