@@ -196,7 +196,11 @@ class CWriter : BufferedPrintWriter
            |
            |void Rogue_delete_object( void* obj )
            |{
-           |  if (((RogueObject*)obj)->type->fn_on_release) ((RogueObject*)obj)->type->fn_on_release( obj );
+           |  if (((RogueObject*)obj)->type->fn_on_release)
+           |  {
+           |    ((RogueObject*)obj)->type->fn_on_release( obj );
+           |    if (((RogueObject*)obj)->refcount) return;  // on_release > on_cleanup could retain object
+           |  }
            |  printf( "Delete object %s\n", ((RogueObject*)obj)->type->name );
            |  ROGUE_FREE( obj );
            |}

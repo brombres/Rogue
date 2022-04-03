@@ -20,6 +20,7 @@ class Type : Cmd
     type_args         : TemplateArgs
 
     id                : Int32
+    m_on_cleanup      : Method
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type

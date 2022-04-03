@@ -978,7 +978,7 @@ augment
         if (type.is_compound and type.contains_reference)
           writer.print( "void " ).print( type.c_name ).print( "_on_retain( " ).print( type.c_name ).println( "* THIS );" )
         endIf
-        if (type.contains_reference)
+        if (type.contains_reference or type.m_on_cleanup)
           writer.print( "void " ).print( type.c_name ).print( "_on_release( " ).print( type.c_name ).println( "* THIS );" )
           writer.println
         endIf
@@ -1059,7 +1059,7 @@ augment
           else
             writer.print   "0"
           endIf
-          if (type.contains_reference)
+          if (type.contains_reference or type.m_on_cleanup)
             writer.print( ",(RogueFn_Object)" ).print( type.c_name ).print( "_on_release" );
           else
             writer.print   ",0"
@@ -1265,9 +1265,15 @@ augment
         writer.println '}'
         writer.println
       endIf
-      if (contains_reference)
+      if (contains_reference or m_on_cleanup)
         writer.print( "void " ).print( c_name ).print( "_on_release( " ).print( c_name ).println( "* THIS )" )
         writer.println '{'
+
+        if (m_on_cleanup)
+          writer.print( "  " ).print( m_on_cleanup.c_name ).println( "( THIS );" )
+          if (this.is_reference) writer.println "  if (THIS->refcount) return;"
+        endIf
+
         forEach (p in properties)
           if (p.type.is_reference)
             writer.print( "  ROGUE_RELEASE_REF( &THIS->" ).print( p.c_name ).println( " );" )

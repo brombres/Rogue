@@ -20,8 +20,14 @@ class Resolver : Visitor
 
     method visit_type( type:Type )
       type.organize
-      if (not type.is_aspect)
-        prior.visit_type( type )
+      if (type.is_aspect) return
+
+      prior.visit_type( type )
+      type.m_on_cleanup = type.methods["on_cleanup()"]
+      if (type.m_on_cleanup)
+        if (type.m_on_cleanup.return_type)
+          throw type.m_on_cleanup.t.error( "on_cleanup() cannot return a value." )
+        endIf
       endIf
 
     method add_local( v:Local )
