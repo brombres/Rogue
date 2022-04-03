@@ -48,6 +48,7 @@ KEYWORD_IF             if
 KEYWORD_IMPORT         import
 KEYWORD_INCLUDE        include
 KEYWORD_IS             is
+KEYWORD_IS_TYPE        isType
 KEYWORD_LOCAL          local
 KEYWORD_LOOP           loop
 KEYWORD_METHOD         method      [structural]
@@ -1284,6 +1285,10 @@ parser
       produce Is(left,right):Binary
     endIf
   endOn
+  on "isType"
+    type
+    produce IsType(operand,is_type:Type)
+  endOn
 
 - bitwise_xor [binary]
   on '~' -> BitwiseXor
@@ -1345,26 +1350,26 @@ parser
 
 - term
   on STRING         -> LiteralString(value=content):Literal
-  on INTEGER        -> LiteralInteger(content=content:String,base="10":Integer)
-  on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer)
-  on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer)
-  on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer)
-  on REAL_NUMBER    -> LiteralReal(value=content:Real)
-  on CHARACTER      -> LiteralCharacter(value=content:Character)
+  on INTEGER        -> LiteralInteger(content=content:String,base="10":Integer):Literal
+  on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer):Literal
+  on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer):Literal
+  on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer):Literal
+  on REAL_NUMBER    -> LiteralReal(value=content:Real):Literal
+  on CHARACTER      -> LiteralCharacter(value=content:Character):Literal
   onPeek IDENTIFIER
     id_or_type
     access_args
     produce Access( name:String, args )
   endOn
-  on "true"               -> LiteralLogical(value="true":Logical)
-  on "false"              -> LiteralLogical(value="false":Logical)
-  on "null"               -> LiteralNull
-  on "pi"                 -> LiteralPi
+  on "true"               -> LiteralLogical(value="true":Logical):Literal
+  on "false"              -> LiteralLogical(value="false":Logical):Literal
+  on "null"               -> LiteralNull:Literal
+  on "pi"                 -> LiteralPi:Literal
   on "this"               -> This
   onPeek "which" inline_which: return
   on '(', expression, ')':   return
 #{
-  onPeek "[" literal_list -> LiteralValueList(args)
+  onPeek "[" literal_list -> LiteralValueList(args):Literal
   on "[]"                 -> EmptyList
 
   on "import"

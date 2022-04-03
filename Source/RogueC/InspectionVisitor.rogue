@@ -481,4 +481,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.attributes)
       return result
 
+    method on( cmd:IsType )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.compare_type)
+      return result
+
 endClass

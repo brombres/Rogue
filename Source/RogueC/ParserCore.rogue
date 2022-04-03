@@ -1826,6 +1826,14 @@ class ParserCore [abstract]
                 endIf
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_IS_TYPE)
+              temporarily _cur_t = _on_t
+                _execute(ip_type)
+                _pop_frame
+                if (not disable_output) _push( IsType(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+                return
+              endTemporarily
+            endIf
             return
           case ip_bitwise_xor
             _execute(ip_bitwise_or)

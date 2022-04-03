@@ -349,5 +349,9 @@ class Visitor
     method on_visit_children( cmd:DiscardResult )
       cmd.operand = visit(cmd.operand)
 
+    method on_visit_children( cmd:IsType )
+      cmd.operand = visit(cmd.operand)
+      cmd.compare_type = visit(cmd.compare_type)->(as Type)
+
 endClass
 

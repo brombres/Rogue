@@ -117,14 +117,34 @@ class Resolver : Visitor
         on_visit( cmd->(as Procedure) )
       endTemporarily
 
-    method on_visit( cmd:If )
+    method on( cmd:If )->Cmd
       push_scope( cmd )
       temporarily insert_in_init = true
         cmd.condition = visit( cmd.condition )
       endTemporarily
+
+      if (cmd.condition and cmd.condition.is_literal)
+        pop_scope
+        if (cmd.condition.is_truthy)
+          # Keep the statements, discard any elseIfs/else
+          return visit( cmd.statements )
+        elseIf (cmd.cmd_else)
+          # Discard this 'if' in favor of the elseIf or else that comes next
+          if (cmd.cmd_else.condition)
+            return visit( cmd.cmd_else )
+          else
+            return visit( cmd.cmd_else.statements )
+          endIf
+        else
+          return null # this 'if' disappears entirely
+        endIf
+      endIf
+
       cmd.statements = visit( cmd.statements )
       if (cmd.cmd_else) cmd.cmd_else = visit( cmd.cmd_else )->(as If)
       pop_scope
+
+      return cmd
 
     method on( cmd:InlineWhich )->Cmd
       if (cmd.cases.count == 1) return visit( cmd.cases.first )
@@ -173,6 +193,22 @@ class Resolver : Visitor
         return validate( CompareNE(cmd.t,cmd.left,cmd.right) )
       else
         return cmd
+      endIf
+
+    method on( cmd:IsType )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local operand_type = cmd.operand.require_type
+      if (cmd.operand.is_type_context)
+        if (operand_type.attributes.is_singleton)
+          return cmd  # leave as a runtime check - singleton could be assigned extended class
+        else
+          return LiteralLogical( cmd.t, operand_type is cmd.compare_type )
+        endIf
+      elseIf (cmd.compare_type.instance_of(operand_type))
+        # Leave it as a runtime check
+        return cmd
+      else
+        return LiteralLogical( cmd.t, false )  # no way
       endIf
 
     method on_visit( cmd:Iterator )

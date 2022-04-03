@@ -1,3 +1,4 @@
+$include Standard/Array
 $include Standard/Console
 $include Standard/Exception
 $include Standard/Object

@@ -50,9 +50,6 @@ augment Cmd
       if (cur_type is target_type) return this
       return target_type.cmd_cast( this )
 
-    method is_type_context->Logical
-      return false
-
     method require_type->Type
       local result = type
       if (result) return result
@@ -147,6 +144,46 @@ augment
       return true
 endAugment
 
+# is_literal
+augment
+  METHODS
+    method Cmd.is_literal->Logical
+      return false
+
+    method Literal.is_literal->Logical
+      return true
+
+endAugment
+
+# is_truthy
+augment
+  METHODS
+    method Cmd.is_truthy->Logical
+      return true
+
+    method LiteralCharacter.is_truthy->Logical
+      return value?
+
+    method LiteralInt32.is_truthy->Logical
+      return value?
+
+    method LiteralInt64.is_truthy->Logical
+      return value?
+
+    method LiteralLogical.is_truthy->Logical
+      return value
+
+    method LiteralNull.is_truthy->Logical
+      return false
+
+    method LiteralReal32.is_truthy->Logical
+      return value? and not value.is_NaN
+
+    method LiteralReal64.is_truthy->Logical
+      return value? and not value.is_NaN
+
+endAugment
+
 # is_operator
 augment
   METHODS
@@ -163,6 +200,9 @@ endAugment
 # is_type_context
 augment
   METHODS
+    method Cmd.is_type_context->Logical
+      return false
+
     method TypeContext.is_type_context->Logical
       return true
 endAugment
@@ -285,6 +325,9 @@ augment
 
     method IsNot.type->Type
       return Program.type_Logical
+
+    method IsType.type->Type
+      return compare_type
 
     method LiteralCharacter.type->Type
       return Program.type_Character

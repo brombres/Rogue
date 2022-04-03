@@ -390,7 +390,7 @@ class Literal : Cmd
       return "Literal"
 endClass
 
-class LiteralCharacter : Cmd
+class LiteralCharacter : Literal
   PROPERTIES
     value : Character
 
@@ -410,7 +410,7 @@ class LiteralCharacter : Cmd
 
 endClass
 
-class LiteralInteger : Cmd
+class LiteralInteger : Literal
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
       contingent
@@ -475,7 +475,7 @@ class LiteralInt64 : LiteralInteger
 
 endClass
 
-class LiteralReal : Cmd
+class LiteralReal : Literal
   PROPERTIES
     value : Real64
 
@@ -1273,7 +1273,7 @@ class BitwiseNot : Unary
 
 endClass
 
-class LiteralLogical : Cmd
+class LiteralLogical : Literal
   PROPERTIES
     value : Logical
 
@@ -1293,7 +1293,7 @@ class LiteralLogical : Cmd
 
 endClass
 
-class LiteralPi : Cmd
+class LiteralPi : Literal
   METHODS
     method description->String
       return "LiteralPi"
@@ -1559,7 +1559,7 @@ class OpAndAssign : Cmd
 
 endClass
 
-class LiteralNull : Cmd
+class LiteralNull : Literal
   PROPERTIES
     of_type : Type
 
@@ -2098,4 +2098,22 @@ class CreateCompound : Cmd
   METHODS
     method description->String
       return "CreateCompound"
+endClass
+
+class IsType : Cmd
+  PROPERTIES
+    operand : Cmd
+    compare_type : Type
+
+  METHODS
+    method init( t, operand, compare_type )
+
+    method init( existing:IsType )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.compare_type) compare_type = existing.compare_type.cloned
+
+    method description->String
+      return "IsType($,$)" (%operand,%compare_type)
+
 endClass

@@ -1,0 +1,37 @@
+class Array
+  PROPERTIES
+    native "void* data;"
+
+  METHODS
+    #{
+    method count->Int32 [macro]
+      return native( "$this->count" )->Int32
+
+    method element_size->Int32 [macro]
+      return native('$this->element_size')->Int32
+
+    method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
+      return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
+
+    method zero( i1:Int32, n:Int32 )
+      local size = element_size
+      native @|memset( $this->as_bytes + $i1*$size, 0, $n*$size );
+      }#
+
+endClass
+
+#{
+class Array<<$DataType>> : Array [native]
+  METHODS
+    method cloned->Array<<$DataType>>
+      local result = Array<<$DataType>>( count )
+      forEach (value at index in this) result[ index ] = value
+      return result
+
+    method get( index:Int32 )->$DataType
+      return this[ index ]  # intercepted by compiler
+
+    method set( index:Int32, new_value:$DataType )
+      this[ index ] = new_value
+endClass
+}#
