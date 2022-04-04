@@ -398,11 +398,6 @@ augment
     method PropertyDeclarations.type->Type
       return @type
 
-      #{
-    method StackTopInt32.type->Type
-      return Program.type_Int32
-      }#
-
     method This.type->Type
       return this_type
 

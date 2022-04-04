@@ -16,12 +16,36 @@ class String
       return native( "RogueString_create_with_byte_capacity(ROGUE_STRING_INTERNAL_BUFFER_SIZE)" )->String
 
   METHODS
-    method print( value:String )
-      if (is_immutable) return
+    #{
+    method print( value:Character )
+      native @|printf( "%c", (char)$value );
+
+    method print( value:Int32 )
+      native @|printf( "%d", $value );
+
+    method print( value:Int64 )
+      native @|printf( "%lld", $value );
+
+    method print( value:Logical )
+      native @|printf( "%s", $value?"true":"false" );
+
+    method print( value:Real32 )
+      native @|printf( "%f", $value );
+
+    method print( value:Real64 )
+      native @|printf( "%lf", $value );
+
+    method print( value:Object )
+      #if (value) print( %
+      #else       print( "null" )
+    }#
+
+    method print( value:String )->this
+      if (is_immutable) return this
 
       if (value is null)
         print( "null" )
-        return
+        return this
       endIf
 
       reserve( value.byte_count )
@@ -30,6 +54,42 @@ class String
          |$hash_code = RogueString_compute_hash_code( $value, $hash_code );
          |$byte_count += $value->byte_count;
          |$this->utf8[$count += $value->count] = 0;
+
+      return this
+
+
+         #{
+    method println
+      print( '\n' )
+
+    method println( value:Character )
+      print( value )
+      print( '\n' )
+
+    method println( value:Int32 )
+      print( value )
+      print( '\n' )
+
+    method println( value:Int64 )
+      print( value )
+      print( '\n' )
+
+    method println( value:Logical )
+      print( value )
+      print( '\n' )
+
+    method println( value:Real32 )
+      print( value )
+      print( '\n' )
+
+    method println( value:Real64 )
+      print( value )
+      print( '\n' )
+
+    method println( value:String )
+      print( value )
+      print( '\n' )
+      }#
 
     method reserve( additional_bytes:Int32 )
       local required_capacity = byte_count + additional_bytes

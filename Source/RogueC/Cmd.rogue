@@ -2118,3 +2118,10 @@ class IsReference : Cmd
       return "IsReference($)" (%operand)
 
 endClass
+
+
+class AttributeReturnsThis : Cmd
+  METHODS
+    method description->String
+      return "AttributeReturnsThis"
+endClass

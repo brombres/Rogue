@@ -227,5 +227,8 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
     method or_smaller( other:$DataType )->$DataType
       return which{ this<=other:this || other }
 
+    method to->String
+      return "String"
+
 endClass
 

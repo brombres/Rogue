@@ -154,19 +154,9 @@ class Parser : ParserCore
       if (not disable_output) _push( Identifier(t,module_id), 0 )
       Program.current_module = Program.get_module( t, module_id )
 
-    method rewrite_cur_token
-      processed_tokens.add( _cur_t )
-
-    method rewrite_token
-      processed_tokens.add( _read )
-
     method _peek->Token
       if (inserted_tokens.count) return inserted_tokens.last
       return prior._peek
-
-    method _read->Token
-      if (inserted_tokens.count) return inserted_tokens.remove_last
-      return prior._read
 
     method print_stack
       @trace _list_starts
@@ -174,6 +164,16 @@ class Parser : ParserCore
 
     method print_trace
       @trace _next_t
+
+    method _read->Token
+      if (inserted_tokens.count) return inserted_tokens.remove_last
+      return prior._read
+
+    method rewrite_cur_token
+      processed_tokens.add( _cur_t )
+
+    method rewrite_token
+      processed_tokens.add( _read )
 
     method store_statement_args
       if (_cmd_stack.is_empty) return  # in first pass where no nodes are created

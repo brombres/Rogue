@@ -33,6 +33,12 @@ class Procedure : Cmd
       if (not body)       body = LocalScope(t)
       statements = body.statements
 
+      if (attributes.returns_this)
+        if (this not instanceOf Method)
+          throw t.error( "Return type 'this' can only be used with an object method." )
+        endIf
+      endIf
+
     method init( existing:Procedure )
       prior.init( existing )
       name = existing.name
@@ -73,6 +79,13 @@ class Procedure : Cmd
       endIf
       if (attributes.is_append and attributes.is_insert)
         throw t.error( "Attributes [append] and [insert] cannot be used together." )
+      endIf
+
+      if (attributes.returns_this) return_type = type_context
+
+      if (name == "to" and return_type)
+        # to->String -> to_String->String etc.
+        name = "to_" + return_type.name
       endIf
 
       if (not signature)

@@ -18,6 +18,10 @@ class Global [singleton]
     method print( value:Real64 )
       native @|printf( "%lf", $value );
 
+    method print( value:Object )
+      #if (value) print( %
+      #else       print( "null" )
+
     method print( value:String )
       if (value) native @|printf( "%s", $value->utf8 );
       else       print( "null" )

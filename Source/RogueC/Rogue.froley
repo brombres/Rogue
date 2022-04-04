@@ -503,6 +503,11 @@ parser
 
 - procedure_attributes
   beginList
+    if (procedure_returns_this)
+      create AttributeReturnsThis
+      procedure_returns_this = false
+    endIf
+
     on '['
       while (hasAnother and not nextIs(']'))
         procedure_attribute
@@ -541,6 +546,10 @@ parser
 
 - procedure_return_type
   if (not consume('->')) produceNull
+  if (consume("this"))
+    procedure_returns_this = true
+    produceNull
+  endIf
   type
 
 - id_or_type

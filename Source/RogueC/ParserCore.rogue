@@ -130,7 +130,8 @@ class ParserCore [abstract]
     buffer           = StringBuilder()
     output           = StringBuilder()
 
-    disable_output : Int32
+    disable_output         : Int32
+    procedure_returns_this : Logical
 
   METHODS
     method init( file:File )
@@ -478,6 +479,10 @@ class ParserCore [abstract]
             return
           case ip_procedure_attributes
             _begin_list
+            if (procedure_returns_this)
+              if (not disable_output) _push( AttributeReturnsThis(_cur_t), 0 )
+              procedure_returns_this = false
+            endIf
             if (_next_t.type == TokenType.SYMBOL_OPEN_SQUARE)
               temporarily _cur_t = _on_t
                 while (((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_CLOSE_SQUARE))))
@@ -559,6 +564,11 @@ class ParserCore [abstract]
             return
           case ip_procedure_return_type
             if ((not _consume(TokenType.SYMBOL_ARROW)))
+              if (not disable_output) _push( null, 0 )
+              return
+            endIf
+            if (_consume(TokenType.KEYWORD_THIS))
+              procedure_returns_this = true
               if (not disable_output) _push( null, 0 )
               return
             endIf

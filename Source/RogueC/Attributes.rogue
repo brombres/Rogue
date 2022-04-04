@@ -24,6 +24,7 @@ class Attribute
     INSERT             = (1:<<:19)
     APPEND             = (1:<<:20)
     CONTAINS_REFERENCE = (1:<<:21)
+    RETURNS_THIS       = (1:<<:22)
 endClass
 
 class Attributes : CmdList
@@ -49,6 +50,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_insert,          Attribute.INSERT )
   ROGUE_ATTRIBUTE( is_append,          Attribute.APPEND )
   ROGUE_ATTRIBUTE( contains_reference, Attribute.CONTAINS_REFERENCE )
+  ROGUE_ATTRIBUTE( returns_this,       Attribute.RETURNS_THIS )
 
   PROPERTIES
     flags : Int32
@@ -107,6 +109,9 @@ augment
 
     method AttributePrimitive.attribute_flags->Int32
       return Attribute.PRIMITIVE
+
+    method AttributeReturnsThis.attribute_flags->Int32
+      return Attribute.RETURNS_THIS
 
     method AttributeSingleton.attribute_flags->Int32
       return Attribute.SINGLETON
