@@ -1348,7 +1348,7 @@ parser
   elseOn '['
     expression
     mustConsume(']')
-    create IndexAccess(context,index)
+    create IndexedAccess(context,index)
     access_inner
   endOn
 

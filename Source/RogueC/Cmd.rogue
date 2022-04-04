@@ -359,7 +359,7 @@ class Identifier : Cmd
 
 endClass
 
-class IndexAccess : Cmd
+class IndexedAccess : Cmd
   PROPERTIES
     context : Cmd
     index   : Cmd
@@ -367,13 +367,13 @@ class IndexAccess : Cmd
   METHODS
     method init( t, context, index )
 
-    method init( existing:IndexAccess )
+    method init( existing:IndexedAccess )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
       if (existing.index) index = existing.index.cloned
 
     method description->String
-      return "IndexAccess($,$)" (%context,%index)
+      return "IndexedAccess($,$)" (%context,%index)
 
 endClass
 

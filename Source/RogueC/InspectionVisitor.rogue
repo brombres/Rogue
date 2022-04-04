@@ -285,7 +285,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.cmd_else)
       return result
 
-    method on( cmd:IndexAccess )->$ReturnType
+    method on( cmd:IndexedAccess )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)

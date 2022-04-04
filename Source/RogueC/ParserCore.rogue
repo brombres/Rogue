@@ -2133,7 +2133,7 @@ class ParserCore [abstract]
                 _execute(ip_expression)
                 _pop_frame
                 if (not _consume(TokenType.SYMBOL_CLOSE_SQUARE)) _throw_syntax_error( &expected=TokenType.SYMBOL_CLOSE_SQUARE )
-                if (not disable_output) _push( IndexAccess(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( IndexedAccess(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_access_inner)
                 _pop_frame
               endTemporarily

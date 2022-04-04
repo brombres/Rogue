@@ -317,7 +317,7 @@ augment
     method ImportModule.type->Type
       return Program.type_Value
 
-    method IndexAccess.type->Type
+    method IndexedAccess.type->Type
       return context.type
 }#
     method Is.type->Type

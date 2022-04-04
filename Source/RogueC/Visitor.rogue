@@ -147,7 +147,7 @@ class Visitor
       cmd.context = visit(cmd.context)
       cmd.args = visit(cmd.args)
 
-    method on_visit_children( cmd:IndexAccess )
+    method on_visit_children( cmd:IndexedAccess )
       cmd.context = visit(cmd.context)
       cmd.index = visit(cmd.index)
 
