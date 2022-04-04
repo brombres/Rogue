@@ -175,4 +175,25 @@ class Parser : ParserCore
     method print_trace
       @trace _next_t
 
+    method store_statement_args
+      if (_cmd_stack.is_empty) return  # in first pass where no nodes are created
+
+      local args = _cmd_stack.remove_last->(as Args)
+      assert args?
+
+      block access = _cmd_stack.last->(as Access)
+        if (access)
+          if (access.args) throw args.t.error( "Unexpected expression." )
+          access.args = args
+          return
+        endIf
+      endBlock
+
+      block access = _cmd_stack.last->(as ContextAccess)
+        if (access)
+          if (not access.args) access.args = args
+          else throw args.t.error( "Unexpected expression." )
+        endIf
+      endBlock
+
 endClass

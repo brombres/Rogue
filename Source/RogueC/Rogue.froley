@@ -1096,8 +1096,8 @@ parser
 
 - statement
   #on "noAction": return
-  on @"print"     args -> Print(args)
-  on @"println"   args -> Println(args)
+  #on @"print"     args -> Print(args)
+  #on @"println"   args -> Println(args)
   on "return"     optional_expression -> Return(result)
   on "throw"      expression -> Throw(exception)
 
@@ -1118,6 +1118,11 @@ parser
   on "--" -> Postdecrement(operand):Stepper
 
   on "=" expression -> Assign(target,new_value)
+
+  if (hasAnother and not nextHasAttribute(structural) and not nextIs(EOL))
+    args
+    call store_statement_args
+  endIf
 
 - local_declarations
   beginList

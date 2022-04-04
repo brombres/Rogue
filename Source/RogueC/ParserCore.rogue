@@ -157,6 +157,8 @@ class ParserCore [abstract]
 
     method class_attribute_essential [abstract]
 
+    method store_statement_args [abstract]
+
     method uses_attribute_no_include [abstract]
 
     method mark_token [abstract]
@@ -1446,22 +1448,6 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_statement
-            if (_next_t.content and _next_t.content == "print")
-              temporarily _cur_t = _on_t
-                _execute(ip_args)
-                _pop_frame
-                if (not disable_output) _push( Print(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.content and _next_t.content == "println")
-              temporarily _cur_t = _on_t
-                _execute(ip_args)
-                _pop_frame
-                if (not disable_output) _push( Println(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
             if (_next_t.type == TokenType.KEYWORD_RETURN)
               temporarily _cur_t = _on_t
                 _execute(ip_optional_expression)
@@ -1528,6 +1514,13 @@ class ParserCore [abstract]
                 if (not disable_output) _push( Assign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
               endTemporarily
+            endIf
+            if ((((_position < _limit) and (not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?)) and (not (_next_t.type == TokenType.EOL))))
+              _execute(ip_args)
+              _pop_frame
+              this.ip = ip
+              store_statement_args
+              ip = this.ip
             endIf
             return
           case ip_local_declarations
