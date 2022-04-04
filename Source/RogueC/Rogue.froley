@@ -49,6 +49,9 @@ KEYWORD_IMPORT         import
 KEYWORD_INCLUDE        include
 KEYWORD_INSTANCE_OF    instanceOf
 KEYWORD_IS             is
+KEYWORD_IS_COMPOUND    isCompound
+KEYWORD_IS_PRIMITIVE   isPrimitive
+KEYWORD_IS_REFERENCE   isReference
 KEYWORD_IS_TYPE        isType
 KEYWORD_LOCAL          local
 KEYWORD_LOOP           loop
@@ -1286,12 +1289,18 @@ parser
       produce Is(left,right):Binary
     endIf
   endOn
-  on "isType"
-    type
-    produce IsType(operand,compare_type:Type)
-  elseOn "instanceOf"
+  on "instanceOf"
     type
     produce InstanceOf(operand,compare_type:Type)
+  elseOn "isCompound"
+    produce IsCompound(operand)
+  elseOn "isPrimitive"
+    produce IsPrimitive(operand)
+  elseOn "isReference"
+    produce IsReference(operand)
+  elseOn "isType"
+    type
+    produce IsType(operand,compare_type:Type)
   endOn
 
 - bitwise_xor [binary]

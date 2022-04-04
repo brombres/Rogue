@@ -2135,3 +2135,51 @@ class InstanceOf : Cmd
       return "InstanceOf($,$)" (%operand,%compare_type)
 
 endClass
+
+class IsCompound : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:IsCompound )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "IsCompound($)" (%operand)
+
+endClass
+
+class IsPrimitive : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:IsPrimitive )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "IsPrimitive($)" (%operand)
+
+endClass
+
+class IsReference : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:IsReference )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "IsReference($)" (%operand)
+
+endClass

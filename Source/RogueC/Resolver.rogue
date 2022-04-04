@@ -236,6 +236,18 @@ class Resolver : Visitor
         return LiteralLogical( cmd.t, false )
       endIf
 
+    method on( cmd:IsCompound )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_compound )
+
+    method on( cmd:IsPrimitive )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_primitive )
+
+    method on( cmd:IsReference )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_reference )
+
     method on( cmd:IsType )->Cmd
       cmd.operand = visit( cmd.operand )
       local operand_type = cmd.operand.require_type

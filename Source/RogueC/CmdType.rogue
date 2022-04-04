@@ -329,6 +329,15 @@ augment
     method InstanceOf.type->Type
       return Program.type_Logical
 
+    method IsCompound.type->Type
+      return Program.type_Logical
+
+    method IsPrimitive.type->Type
+      return Program.type_Logical
+
+    method IsReference.type->Type
+      return Program.type_Logical
+
     method IsType.type->Type
       return Program.type_Logical
 

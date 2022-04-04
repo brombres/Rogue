@@ -90,7 +90,9 @@ class List<<$DataType>>
 
     method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
       return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
+      }#
 
+      #{
     method zero( i1:Int32, n:Int32 )
       local size = element_size
       native @|memset( $this->as_bytes + $i1*$size, 0, $n*$size );

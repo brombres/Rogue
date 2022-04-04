@@ -1826,18 +1826,33 @@ class ParserCore [abstract]
                 endIf
               endTemporarily
             endIf
-            if (_next_t.type == TokenType.KEYWORD_IS_TYPE)
-              temporarily _cur_t = _on_t
-                _execute(ip_type)
-                _pop_frame
-                if (not disable_output) _push( IsType(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
-                return
-              endTemporarily
-            elseIf (_next_t.type == TokenType.KEYWORD_INSTANCE_OF)
+            if (_next_t.type == TokenType.KEYWORD_INSTANCE_OF)
               temporarily _cur_t = _on_t
                 _execute(ip_type)
                 _pop_frame
                 if (not disable_output) _push( InstanceOf(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_IS_COMPOUND)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( IsCompound(_cur_t,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_IS_PRIMITIVE)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( IsPrimitive(_cur_t,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_IS_REFERENCE)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( IsReference(_cur_t,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_IS_TYPE)
+              temporarily _cur_t = _on_t
+                _execute(ip_type)
+                _pop_frame
+                if (not disable_output) _push( IsType(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
                 return
               endTemporarily
             endIf

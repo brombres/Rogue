@@ -497,4 +497,22 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.compare_type)
       return result
 
+    method on( cmd:IsCompound )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:IsPrimitive )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:IsReference )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
 endClass
