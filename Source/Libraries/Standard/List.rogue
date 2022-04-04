@@ -82,12 +82,6 @@ class List<<$DataType>>
       endIf
 
     #{
-    method count->Int32 [macro]
-      return native( "$this->count" )->Int32
-
-    method element_size->Int32 [macro]
-      return native('$this->element_size')->Int32
-
     method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
       return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
       }#

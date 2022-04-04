@@ -56,6 +56,15 @@ class Type : Cmd
       type.ensure_definition
       return type
 
+    method create( t:Token, core_type:Type, optional:Logical )->Type
+      # CoreType -> CoreType? -> Optional<<CoreType>>
+      local name = core_type.name + "?"
+      local type = Program.current_module.find_type( name, &extended_search )
+      if (type) return type
+      type = Type( t, name, 0, null )
+      type.ensure_definition
+      return type
+
   METHODS
     method init( t, name, attributes:Int32, type_args=null:TemplateArgs, &unlisted )
       init( t, Program.current_module, name, attributes, type_args, &=unlisted )
@@ -126,10 +135,16 @@ class Type : Cmd
       if (attributes.is_defined) return
 
       local template_name : String
-      if (name.ends_with("[]"))
+      if (name.ends_with(']'))
         template_name = "List<<1>>"
         local tokens = Token[]
         tokens.add( forEach in Scanner(t.filepath,name.leftmost(-2),t.line,t.column).tokenize )
+        tokens.remove_last  # EOL
+        type_args = TemplateArgs(t).[ add(TokenList(t,tokens)) ]
+      elseIf (name.ends_with('?'))
+        template_name = "Optional<<1>>"
+        local tokens = Token[]
+        tokens.add( forEach in Scanner(t.filepath,name.leftmost(-1),t.line,t.column).tokenize )
         tokens.remove_last  # EOL
         type_args = TemplateArgs(t).[ add(TokenList(t,tokens)) ]
       else

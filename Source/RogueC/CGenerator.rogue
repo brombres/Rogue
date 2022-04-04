@@ -332,7 +332,8 @@ class CGenerator : Visitor
           writer.print( v.c_name )
           if (not v.initial_value)
             writer.print( " = " )
-            writer.print "0"
+            if (v.type.is_compound) writer.print "{}"
+            else                    writer.print "0"
             #if (v.type.is_reference)     writer.print "0"
             #elseIf (v.type.is_primitive) writer.print "0"
             #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )

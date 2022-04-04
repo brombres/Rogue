@@ -540,7 +540,7 @@ parser
 
 - id_or_type
   type_name
-  if (nextIs("<<") or nextIs("[]")) remaining_type
+  if (nextIs("<<") or nextIs("[]") or nextIs('?')) remaining_type
 
 - type
   type_name
@@ -550,9 +550,11 @@ parser
   if (nextIs("<<")) type_args
   else              createNull
   create Type(name:String,type_args:TemplateArgs)
-  while (nextIs("[]"))
+  while (nextIs("[]") or nextIs('?'))
     on "[]"
       create Type(element_type:Type)
+    elseOn '?'
+      create Type(core_type:Type,optional="true":Logical)
     endOn
   endWhile
 

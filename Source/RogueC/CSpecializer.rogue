@@ -374,6 +374,18 @@ augment Program
 
   METHODS
     method to_c_name( name:String )->String
+      loop
+        if (name.ends_with("[]"))
+          name = name.leftmost(-2) + "List"
+          nextIteration
+        elseIf (name.ends_with('?'))
+          name = "Optional" + name.leftmost(-1)
+          nextIteration
+        else
+          escapeLoop
+        endIf
+      endLoop
+
       use builder = StringBuilder.pool
         local iterator = name.iterator
         while (iterator.has_another)
@@ -386,9 +398,6 @@ augment Program
           elseIf (ch == '<')
             if (iterator.peek == '<') builder.print '_'; iterator.read
             else                      builder.print "GT"
-          elseIf (ch == '[' and iterator.peek == ']')
-            iterator.read
-            builder.print "List"
           else
             builder.print '_'
           endIf

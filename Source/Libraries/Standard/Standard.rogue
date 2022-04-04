@@ -2,6 +2,7 @@ $include Standard/Console
 $include Standard/Exception
 $include Standard/List
 $include Standard/Object
+$include Standard/Optional
 $include Standard/Primitives
 $include Standard/String
 $include Standard/System
