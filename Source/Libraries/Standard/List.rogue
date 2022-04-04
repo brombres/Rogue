@@ -43,7 +43,11 @@ class List<<$DataType>>
       endIf
 
     method get( index:Int32 )->$DataType
-      native @|return (($<<element_type>>*)($this->as_unknown))[$index];
+      if ($DataType isType Logical)
+        native @|return $this->as_logicals[$index];
+      else
+        native @|return (($<<element_type>>*)($this->as_unknown))[$index];
+      endIf
 
     method reserve( additional_capacity:Int32 )
       local required_capacity = count + additional_capacity
@@ -69,6 +73,13 @@ class List<<$DataType>>
               |$this->as_bytes = new_data;
 
       capacity = required_capacity
+
+    method set( index:Int32, value:$DataType )
+      if ($DataType isType Logical)
+        native @|$this->as_logicals[$index] = (RogueByte) $value;
+      else
+        native @|(($<<element_type>>*)($this->as_unknown))[$index] = $value;
+      endIf
 
     #{
     method count->Int32 [macro]

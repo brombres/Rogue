@@ -832,7 +832,7 @@ augment
       throw t.error( "Illegal target for assignment." )
 
     method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
-      return resolver.visit( ContextAccess(t, context, "set", CmdList(t,index,new_value)) )
+      return resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
 endAugment
 
 # cmd_print()
