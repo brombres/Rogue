@@ -1,0 +1,5 @@
+class Global [singleton]
+  METHODS
+    method println2
+      println "println2"
+endClass

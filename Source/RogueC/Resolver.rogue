@@ -571,6 +571,13 @@ class Resolver : Visitor
           return validate( match.cmd_call(context,args) )
         endIf
 
+        if (not type_context)
+          match = find_procedure( t, Program.type_Global, context, name, args, &suppress_error )
+          if (not args) args = CmdList(t)
+          cast_args_to_parameter_types( args, match )
+          return validate( match.cmd_call(GetSingleton(t,Program.type_Global),args) )
+        endIf
+
         if (not is_global)
           # TODO: update to allow global properties
           if (type_context and not args)

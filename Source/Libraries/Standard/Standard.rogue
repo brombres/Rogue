@@ -1,5 +1,6 @@
 $include Standard/Console
 $include Standard/Exception
+$include Standard/Global
 $include Standard/List
 $include Standard/Object
 $include Standard/Optional

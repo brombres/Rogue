@@ -24,6 +24,7 @@ class Program [singleton]
     type_Real       : Type
 
     type_null       : Type
+    type_Global     : Type
     type_Object     : Type
     type_String     : Type
     type_Exception  : Type
@@ -49,6 +50,7 @@ class Program [singleton]
       real_bits      = 64  # default; calls set_real_bits
 
       type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
+      type_Global    = Type( t, "Global", Attribute.OBJECT|Attribute.SINGLETON )
       type_Object    = Type( t, "Object", Attribute.OBJECT )
       type_String    = TypeString( t )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
