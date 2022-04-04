@@ -34,10 +34,12 @@ class Finalizer : Visitor
           if (base_m) base_m.attributes.is_overridden = true
         endIf
 
-        local methods = Program.dynamic_methods[m.signature]
+        local full_sig = m.signature
+        if (m.return_type) full_sig += "->" + m.return_type
+        local methods = Program.dynamic_methods[full_sig]
         if (not methods)
           methods = Method[]
-          Program.dynamic_methods[m.signature] = methods
+          Program.dynamic_methods[full_sig] = methods
         endIf
         methods.add( m )
 

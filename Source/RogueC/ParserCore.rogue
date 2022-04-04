@@ -24,94 +24,95 @@ class ParserCore [abstract]
     ip_procedure_return_type = 11
     ip_id_or_type = 12
     ip_type = 13
-    ip_type_args = 14
-    ip_template_arg_tokens = 15
-    ip_type_name = 16
-    ip_optional_type = 17
-    ip_identifier = 18
-    ip_string = 19
-    ip_module_attributes = 20
-    ip_module_attribute = 21
-    ip_class_attributes = 22
-    ip_class_attribute = 23
-    ip_class = 24
-    ip_placeholder = 25
-    ip_template_parameters = 26
-    ip_constructor_properties = 27
-    ip_base_types = 28
-    ip_attributes = 29
-    ip_class_sections = 30
-    ip_class_section = 31
-    ip_native_code_blocks = 32
-    ip_native_code_block = 33
-    ip_definition = 34
-    ip_forEach_loop = 35
-    ip_forEach_control = 36
-    ip_forEach_optional_at = 37
-    ip_forEach_collection = 38
-    ip_if_statement = 39
-    ip_if_statement_multi_line_elseIf_else = 40
-    ip_if_statement_single_line_elseIf_else = 41
-    ip_inline_which = 42
-    ip_inline_which_case = 43
-    ip_wrap_in_local_scope = 44
-    ip_method = 45
-    ip_global_method = 46
-    ip_properties = 47
-    ip_property_declaration = 48
-    ip_multi_line_statements = 49
-    ip_single_line_statements = 50
-    ip_control_structure = 51
-    ip_args = 52
-    ip_arg = 53
-    ip_statement = 54
-    ip_local_declarations = 55
-    ip_local_declaration = 56
-    ip_block = 57
-    ip_try_catch = 58
-    ip_catches = 59
-    ip_catch_clause = 60
-    ip_module_path = 61
-    ip_uses_attributes = 62
-    ip_uses_attribute = 63
-    ip_access_args = 64
-    ip_optional_expression = 65
-    ip_expression = 66
-    ip_op_and_assign = 67
-    ip_logical_xor = 68
-    ip_logical_xor__inner = 69
-    ip_logical_or = 70
-    ip_logical_or__inner = 71
-    ip_logical_and = 72
-    ip_logical_and__inner = 73
-    ip_comparison = 74
-    ip_comparison__inner = 75
-    ip_reference_comparison = 76
-    ip_bitwise_xor = 77
-    ip_bitwise_xor__inner = 78
-    ip_bitwise_or = 79
-    ip_bitwise_or__inner = 80
-    ip_bitwise_and = 81
-    ip_bitwise_and__inner = 82
-    ip_bitwise_shift = 83
-    ip_bitwise_shift__inner = 84
-    ip_add_subtract = 85
-    ip_add_subtract__inner = 86
-    ip_multiply_divide_mod = 87
-    ip_multiply_divide_mod__inner = 88
-    ip_power = 89
-    ip_power__inner = 90
-    ip_pre_unary = 91
-    ip_post_unary = 92
-    ip_post_unary__inner = 93
-    ip_access = 94
-    ip_access_inner = 95
-    ip_term = 96
-    ip_native_code = 97
-    ip_preprocess = 98
-    ip_process_another = 99
-    ip_collect_meta_filepath = 100
-    ip_additional_node_types = 101
+    ip_remaining_type = 14
+    ip_type_args = 15
+    ip_template_arg_tokens = 16
+    ip_type_name = 17
+    ip_optional_type = 18
+    ip_identifier = 19
+    ip_string = 20
+    ip_module_attributes = 21
+    ip_module_attribute = 22
+    ip_class_attributes = 23
+    ip_class_attribute = 24
+    ip_class = 25
+    ip_placeholder = 26
+    ip_template_parameters = 27
+    ip_constructor_properties = 28
+    ip_base_types = 29
+    ip_attributes = 30
+    ip_class_sections = 31
+    ip_class_section = 32
+    ip_native_code_blocks = 33
+    ip_native_code_block = 34
+    ip_definition = 35
+    ip_forEach_loop = 36
+    ip_forEach_control = 37
+    ip_forEach_optional_at = 38
+    ip_forEach_collection = 39
+    ip_if_statement = 40
+    ip_if_statement_multi_line_elseIf_else = 41
+    ip_if_statement_single_line_elseIf_else = 42
+    ip_inline_which = 43
+    ip_inline_which_case = 44
+    ip_wrap_in_local_scope = 45
+    ip_method = 46
+    ip_global_method = 47
+    ip_properties = 48
+    ip_property_declaration = 49
+    ip_multi_line_statements = 50
+    ip_single_line_statements = 51
+    ip_control_structure = 52
+    ip_args = 53
+    ip_arg = 54
+    ip_statement = 55
+    ip_local_declarations = 56
+    ip_local_declaration = 57
+    ip_block = 58
+    ip_try_catch = 59
+    ip_catches = 60
+    ip_catch_clause = 61
+    ip_module_path = 62
+    ip_uses_attributes = 63
+    ip_uses_attribute = 64
+    ip_access_args = 65
+    ip_optional_expression = 66
+    ip_expression = 67
+    ip_op_and_assign = 68
+    ip_logical_xor = 69
+    ip_logical_xor__inner = 70
+    ip_logical_or = 71
+    ip_logical_or__inner = 72
+    ip_logical_and = 73
+    ip_logical_and__inner = 74
+    ip_comparison = 75
+    ip_comparison__inner = 76
+    ip_reference_comparison = 77
+    ip_bitwise_xor = 78
+    ip_bitwise_xor__inner = 79
+    ip_bitwise_or = 80
+    ip_bitwise_or__inner = 81
+    ip_bitwise_and = 82
+    ip_bitwise_and__inner = 83
+    ip_bitwise_shift = 84
+    ip_bitwise_shift__inner = 85
+    ip_add_subtract = 86
+    ip_add_subtract__inner = 87
+    ip_multiply_divide_mod = 88
+    ip_multiply_divide_mod__inner = 89
+    ip_power = 90
+    ip_power__inner = 91
+    ip_pre_unary = 92
+    ip_post_unary = 93
+    ip_post_unary__inner = 94
+    ip_access = 95
+    ip_access_inner = 96
+    ip_term = 97
+    ip_native_code = 98
+    ip_preprocess = 99
+    ip_process_another = 100
+    ip_collect_meta_filepath = 101
+    ip_additional_node_types = 102
 
   PROPERTIES
     _tokens          : Token[]
@@ -565,16 +566,18 @@ class ParserCore [abstract]
           case ip_id_or_type
             _execute(ip_type_name)
             _pop_frame
-            if ((not (_next_t.type == TokenType.SYMBOL_LTLT)))
-              return
+            if (((_next_t.type == TokenType.SYMBOL_LTLT) or (_next_t.type == TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS)))
+              _execute(ip_remaining_type)
+              _pop_frame
             endIf
-            _execute(ip_type_args)
-            _pop_frame
-            if (not disable_output) _push( Type(_cur_t,_string_arg(-2),_node_arg(-1)->(as TemplateArgs)), 2 )
             return
           case ip_type
             _execute(ip_type_name)
             _pop_frame
+            _execute(ip_remaining_type)
+            _pop_frame
+            return
+          case ip_remaining_type
             if ((_next_t.type == TokenType.SYMBOL_LTLT))
               _execute(ip_type_args)
               _pop_frame
@@ -582,6 +585,13 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
             endIf
             if (not disable_output) _push( Type(_cur_t,_string_arg(-2),_node_arg(-1)->(as TemplateArgs)), 2 )
+            while ((_next_t.type == TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS))
+              if (_next_t.type == TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS)
+                temporarily _cur_t = _on_t
+                  if (not disable_output) _push( Type(_cur_t,_node_arg(-1)->(as Type)), 1 )
+                endTemporarily
+              endIf
+            endWhile
             return
           case ip_type_args
             _consume(TokenType.SYMBOL_LTLT)

@@ -540,15 +540,21 @@ parser
 
 - id_or_type
   type_name
-  if (not nextIs("<<")) return
-  type_args
-  produce Type(name:String,type_args:TemplateArgs)
+  if (nextIs("<<") or nextIs("[]")) remaining_type
 
 - type
   type_name
+  remaining_type
+
+- remaining_type
   if (nextIs("<<")) type_args
   else              createNull
-  produce Type(name:String,type_args:TemplateArgs)
+  create Type(name:String,type_args:TemplateArgs)
+  while (nextIs("[]"))
+    on "[]"
+      create Type(element_type:Type)
+    endOn
+  endWhile
 
 - type_args
   consume("<<")

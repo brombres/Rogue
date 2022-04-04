@@ -8,15 +8,15 @@ class List<<$DataType>>
 
     native @|union
             |{
+            |  void*           data;
             |  RogueObject**   as_objects;
-            |  RogueByte*      as_logicals;
-            |  RogueByte*      as_bytes;
-            |  RogueCharacter* as_characters;
-            |  RogueInt32*     as_int32s;
-            |  RogueInt64*     as_int64s;
-            |  RogueReal32*    as_real32s;
             |  RogueReal64*    as_real64s;
-            |  void*           as_unknown;
+            |  RogueReal32*    as_real32s;
+            |  RogueInt64*     as_int64s;
+            |  RogueInt32*     as_int32s;
+            |  RogueCharacter* as_characters;
+            |  RogueByte*      as_bytes;
+            |  RogueByte*      as_logicals;
             |};
 
   METHODS
@@ -39,14 +39,14 @@ class List<<$DataType>>
       if ($DataType isType Logical)
         native @|$this->as_logicals[$count++] = (RogueByte)$value;
       else
-        native @|(($<<value>>*)($this->as_unknown))[$count++] = $value;
+        native @|(($<<value>>*)($this->data))[$count++] = $value;
       endIf
 
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
         native @|return $this->as_logicals[$index];
       else
-        native @|return (($<<element_type>>*)($this->as_unknown))[$index];
+        native @|return (($<<element_type>>*)($this->data))[$index];
       endIf
 
     method reserve( additional_capacity:Int32 )
@@ -78,7 +78,7 @@ class List<<$DataType>>
       if ($DataType isType Logical)
         native @|$this->as_logicals[$index] = (RogueByte) $value;
       else
-        native @|(($<<element_type>>*)($this->as_unknown))[$index] = $value;
+        native @|(($<<element_type>>*)($this->data))[$index] = $value;
       endIf
 
     #{

@@ -523,13 +523,11 @@ class Resolver : Visitor
             if (type.attributes.is_singleton)
               return GetSingleton(t,type)
             else
-            #{
               if (type.name.ends_with(']'))
-                return resolve_access( t, null, type.name, CmdList(t) )
+                return resolve_access( t, null, type.name, Args(t) )
               else
-            }#
                 return TypeContext(t,type)
-              #endIf
+              endIf
             endIf
           endIf
 

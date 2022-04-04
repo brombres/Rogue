@@ -386,6 +386,9 @@ augment Program
           elseIf (ch == '<')
             if (iterator.peek == '<') builder.print '_'; iterator.read
             else                      builder.print "GT"
+          elseIf (ch == '[' and iterator.peek == ']')
+            iterator.read
+            builder.print "List"
           else
             builder.print '_'
           endIf
