@@ -173,6 +173,6 @@ class Parser : ParserCore
       @trace _cmd_stack
 
     method print_trace
-      @trace _next_t.filepath, _next_t.line
+      @trace _next_t
 
 endClass

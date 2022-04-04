@@ -360,43 +360,29 @@ class Resolver : Visitor
         case 0
           throw cmd.t.error( "One or more arguments expected." )
         case 1
-          local arg = visit( cmd.args.first )
-          return arg.require_type.cmd_print( arg )
+          return resolve_access( cmd.t, GetSingleton(cmd.t,Program.type_Global), "print", cmd.args )
         others
           local result = Statements( cmd.t )
           forEach (arg in cmd.args)
-            arg = visit(arg)
-            result.add( arg.require_type.cmd_print(arg) )
+            result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "print", Args(arg.t,arg)) )
           endForEach
           return result
       endWhich
 
-      #{
-      forEach (arg in rewriter=cmd.args.list.rewriter)
-        arg = validate( Description(arg.t,arg) ).require_value
-        if (arg) rewriter.write( arg )
-      endForEach
-
-      if (cmd.args.count == 0) throw cmd.t.error( "One or more arguments expected." )
-      }#
-
     method on( cmd:Println )->Cmd
       which (cmd.args.count)
         case 0
-          return PrintNewline( cmd.t )
+          return resolve_access( cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", null )
+        case 1
+          return resolve_access( cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", cmd.args )
         others
           local result = Statements( cmd.t )
-          result.add( Print(cmd.t,Args(cmd.t,forEach in cmd.args)) )
-          result.add( PrintNewline(cmd.t) )
-          return visit( result )
+          forEach (arg in cmd.args)
+            result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "print", Args(arg.t,arg)) )
+          endForEach
+          result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", null) )
+          return result
       endWhich
-
-      #{
-      forEach (arg in rewriter=cmd.args.list.rewriter)
-        arg = validate( Description(arg.t,arg) ).require_value
-        if (arg) rewriter.write( arg )
-      endForEach
-      }#
 
     method on( cmd:Return )->Cmd
       this_procedure.attributes.has_return = true
@@ -712,7 +698,7 @@ class Resolver : Visitor
               mesg += sig
               mesg += ". Candidates:\n\n"
               forEach (m in Candidates)
-                mesg += "  " + m.context_signature
+                mesg += "  $\n" (m.context_signature)
               endForEach
 
           endWhich
@@ -754,6 +740,17 @@ class Resolver : Visitor
       endForEach
       if (Candidates.found_match) return Candidates.match
       if (not Candidates.refine) return null
+
+      # Filter by exact arg types
+      if (arg_count)
+        forEach (m in Candidates)
+          forEach (arg at i in args)
+            if (arg.type is m.parameters[i].type) Candidates.keep m
+          endForEach
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        if (not Candidates.refine) return null
+      endIf
 
       return null
 endClass
@@ -851,38 +848,6 @@ augment
     method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       return resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
 endAugment
-
-# cmd_print()
-augment
-  METHODS
-    method Cmd.cmd_print( operand:Cmd )->Cmd
-      throw operand.t.error( "[INTERNAL] $.cmd_print() is undefined." (type_name) )
-
-    method TypeByte.cmd_print( operand:Cmd )->Cmd
-      return PrintInt32( operand.t, ConvertToInt32(t,operand) )
-
-    method TypeCharacter.cmd_print( operand:Cmd )->Cmd
-      return PrintCharacter( operand.t, operand )
-
-    method TypeInt32.cmd_print( operand:Cmd )->Cmd
-      return PrintInt32( operand.t, operand )
-
-    method TypeInt64.cmd_print( operand:Cmd )->Cmd
-      return PrintInt64( operand.t, operand )
-
-    method TypeLogical.cmd_print( operand:Cmd )->Cmd
-      return PrintLogical( operand.t, operand )
-
-    method TypeReal32.cmd_print( operand:Cmd )->Cmd
-      return PrintReal64( operand.t, ConvertToReal64(t,operand) )
-
-    method TypeReal64.cmd_print( operand:Cmd )->Cmd
-      return PrintReal64( operand.t, operand )
-
-    method TypeString.cmd_print( operand:Cmd )->Cmd
-      return PrintString( operand.t, operand )
-endAugment
-
 
 #{
 # BitwiseAnd
@@ -1146,13 +1111,6 @@ augment
 
 endAugment
 }#
-
-# Print
-augment
-  METHODS
-    method Cmd.cmd_print( t:Token, operand:Cmd )->Cmd
-      throw t.error( "Values of type $ cannot be printed"(type_name) )
-endAugment
 
 #{
 # RightShift

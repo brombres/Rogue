@@ -606,19 +606,6 @@ class Join : Cmd
 
 endClass
 
-class PrintString : PrintValue
-  METHODS
-    method description->String
-      return "PrintString($)" (%operand)
-
-endClass
-
-class PrintNewline : Cmd
-  METHODS
-    method description->String
-      return "PrintNewline"
-endClass
-
 class Local : Cmd
   PROPERTIES
     name          : String
@@ -731,13 +718,6 @@ class GetLocal : Cmd
 
     method description->String
       return "GetLocal($)" (%info)
-
-endClass
-
-class PrintInt32 : PrintValue
-  METHODS
-    method description->String
-      return "PrintInt32($)" (%operand)
 
 endClass
 
@@ -1138,14 +1118,6 @@ class Block : ControlStructure
 
 endClass
 
-
-class PrintLogical : PrintValue
-  METHODS
-    method description->String
-      return "PrintLogical($)" (%operand)
-
-endClass
-
 class Stepper : Cmd
   PROPERTIES
     operand : Cmd
@@ -1205,22 +1177,6 @@ class If : Conditional
 
     method description->String
       return "If($,$,$)" (%condition,%statements,%cmd_else)
-
-endClass
-
-class PrintValue : Cmd
-  PROPERTIES
-    operand : Cmd
-
-  METHODS
-    method init( t, operand )
-
-    method init( existing:PrintValue )
-      prior.init( existing )
-      operand = existing.operand.cloned
-
-    method description->String
-      return "PrintValue($)" (%operand)
 
 endClass
 
@@ -1355,13 +1311,6 @@ class ConvertToReal64 : Convert
   METHODS
     method description->String
       return "ConvertToReal64($)" (%operand)
-
-endClass
-
-class PrintReal64 : PrintValue
-  METHODS
-    method description->String
-      return "PrintReal64($)" (%operand)
 
 endClass
 
@@ -1755,13 +1704,6 @@ class IsNot : Binary
 
 endClass
 
-class PrintCharacter : PrintValue
-  METHODS
-    method description->String
-      return "PrintCharacter($)" (%operand)
-
-endClass
-
 class AttributeEssential : Cmd
   METHODS
     method description->String
@@ -1772,13 +1714,6 @@ class AttributeSingleton : Cmd
   METHODS
     method description->String
       return "AttributeSingleton"
-endClass
-
-class PrintInt64 : PrintValue
-  METHODS
-    method description->String
-      return "PrintInt64($)" (%operand)
-
 endClass
 
 class GetSingleton : Cmd

@@ -954,12 +954,16 @@ class ScannerCore [abstract]
           case ip_scan_verbatim_string
             while (_scanner.has_another)
               _scan_pattern_2.scan(_scanner,buffer)
+              _save_position
               _scanner.consume('\n')
               _scan_pattern_17.scan(_scanner)
               if ((not _scanner.consume('|')))
+                _restore_position
                 return true
+              else
+                _discard_position
+                buffer.print('\n')
               endIf
-              buffer.print('\n')
             endWhile
             return true
           others

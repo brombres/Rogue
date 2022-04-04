@@ -355,24 +355,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
-    method on( cmd:Print )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.args)
-      return result
-
-    method on( cmd:PrintValue )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.operand)
-      return result
-
-    method on( cmd:Println )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.args)
-      return result
-
     method on( cmd:Procedure )->$ReturnType
       handle( cmd )
       local result : $ReturnType
@@ -513,6 +495,18 @@ class InspectionVisitor<<$ReturnType>>
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.operand)
+      return result
+
+    method on( cmd:Print )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:Println )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.args)
       return result
 
 endClass

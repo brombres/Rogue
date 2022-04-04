@@ -131,7 +131,7 @@ SYMBOL_RIGHT_SHIFT           :>>:
 SYMBOL_RIGHT_SHIFT_EQUALS    :>>:=
 SYMBOL_RIGHT_SHIFT_X         :>>>:
 SYMBOL_RIGHT_SHIFT_X_EQUALS  :>>>:=
-SYMBOL_SEMICOLON             ;
+SYMBOL_SEMICOLON             ;  [structural]
 SYMBOL_SLASH                 /
 SYMBOL_TILDE                 ~
 SYMBOL_VERTICAL_BAR          |
@@ -421,12 +421,17 @@ scanner
 - scan_verbatim_string
   while (hasAnother)
     scan [^\n]*
-    consume '\n'
-    consume [ ]*
-    if (not consume('|')) return
-    collect '\n'
+    savePosition
+      consume '\n'
+      consume [ ]*
+      if (not consume('|'))
+        restorePosition
+        return
+      else
+        discardPosition
+        collect '\n'
+      endIf
   endWhile
-  return
 
 
 ----------------------------------------------------------------------
@@ -1045,7 +1050,7 @@ parser
   if (consume(EOL)) produceList Statements
   statement
   while (consume(';'))
-    statement
+    if (not nextIs(EOL)) statement
   endWhile
   must_consume_eols
 
@@ -1544,14 +1549,6 @@ parser
   create LocalScope:ControlStructure
   create NativeProperty( expression:String )
   create OpAndAssign(target,operand)
-  create PrintCharacter(operand):PrintValue
-  create PrintInt32(operand):PrintValue
-  create PrintInt64(operand):PrintValue
-  create PrintLogical(operand):PrintValue
-  create PrintNewline
-  create PrintReal64(operand):PrintValue
-  create PrintString(operand):PrintValue
-  create PrintValue(operand)
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
   create Range(left,right):Binary
   create ReturnOnException

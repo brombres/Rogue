@@ -1,5 +1,55 @@
 class Global [singleton]
   METHODS
-    method println2
-      println "println2"
+    method print( value:Character )
+      native @|printf( "%c", (char)$value );
+
+    method print( value:Int32 )
+      native @|printf( "%d", $value );
+
+    method print( value:Int64 )
+      native @|printf( "%lld", $value );
+
+    method print( value:Logical )
+      native @|printf( "%s", $value?"true":"false" );
+
+    method print( value:Real32 )
+      native @|printf( "%f", $value );
+
+    method print( value:Real64 )
+      native @|printf( "%lf", $value );
+
+    method print( value:String )
+      if (value) native @|printf( "%s", $value->utf8 );
+      else       print( "null" )
+
+    method println
+      print( '\n' )
+
+    method println( value:Character )
+      print( value )
+      print( '\n' )
+
+    method println( value:Int32 )
+      print( value )
+      print( '\n' )
+
+    method println( value:Int64 )
+      print( value )
+      print( '\n' )
+
+    method println( value:Logical )
+      print( value )
+      print( '\n' )
+
+    method println( value:Real32 )
+      print( value )
+      print( '\n' )
+
+    method println( value:Real64 )
+      print( value )
+      print( '\n' )
+
+    method println( value:String )
+      print( value )
+      print( '\n' )
 endClass
