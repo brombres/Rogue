@@ -107,6 +107,8 @@ class CSpecializer : Visitor
       control_stack.remove_last
 
     method on_visit( cmd:InlineWhich )
+      visit_children( cmd )
+
       forEach (wcase in cmd.cases)
         # which{ a || b }
         # ->

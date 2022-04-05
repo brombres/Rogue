@@ -128,7 +128,6 @@ class CWriter : BufferedPrintWriter
            |    ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
            |
            |#define ROGUE_RELEASE_REF( ref )  Rogue_release_ref( ref )
-           |#define ROGUE_RETAIN_REF( ref )   Rogue_retain_ref( ref )
            |#define ROGUE_SET_REF( ref, obj ) Rogue_set_ref( ref, obj )
            |
            |#define ROGUE_RELEASE( obj )  Rogue_release( obj )
@@ -154,12 +153,10 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_release( void* obj );
            |void  Rogue_release_ref( void* ref );
            |void* Rogue_retain( void* obj );
-           |void  Rogue_retain_ref( void* ref );
            |void  Rogue_set_ref( void* ref, void* new_obj );
            |
            |void  Rogue_launch();
            |
-           |#define ROGUE_STRING_INTERNAL_BUFFER_SIZE 68
            |#define ROGUE_EXE_CONTINUE  0
            |#define ROGUE_EXE_RETURN    1
            |#define ROGUE_EXE_EXCEPTION 2
@@ -236,13 +233,6 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (obj) ++(((RogueObject*)obj)->refcount);
            |  return obj;
-           |}
-           |
-           |void Rogue_retain_ref( void* ref )
-           |{
-           |  RogueObject* obj = *((RogueObject**)ref);
-           |  if ( !obj ) return;
-           |  ++(obj->refcount);
            |}
            |
            |void Rogue_set_ref( void* ref, void* new_obj )
@@ -388,5 +378,15 @@ class CWriter : BufferedPrintWriter
 
       if (not omit_quotes) print '"'
 
+    method print_with_cast( cmd:String, from_type:Type, to_type:Type )
+      if (from_type is to_type)
+        print cmd
+      else
+        print "(("
+        print to_type.c_ref_name
+        print ")"
+        print cmd
+        print ")"
+      endIf
 endClass
 

@@ -204,6 +204,12 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
 endClass
 
 class Logical [primitive]
+  METHODS
+    method description->String
+      return this->String
+
+    method to->String
+      return which{ this:"true" || "false" }
 endClass
 
 class CommonPrimitiveMethods<<$DataType>> [aspect]
@@ -220,6 +226,9 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
     method clamped_high( high:$DataType )->$DataType
       if (this > high) return high
       return this
+
+    method description->String
+      return this->String
 
     method or_larger( other:$DataType )->$DataType
       return which{ this>=other:this || other }

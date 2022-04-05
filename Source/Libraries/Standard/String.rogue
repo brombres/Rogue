@@ -1,44 +1,19 @@
 class String
   PROPERTIES
     count           : Int32  # in whole characters
-    byte_capacity   : Int32  # in bytes; will be >= byte_count+1 (+1 accommodates null terminator)
-    byte_count      : Int32  # in UTF-8 bytes, not including null terminator
     cursor_offset   : Int32  # in bytes
     cursor_index    : Int32  # in characters
     hash_code       : Int32
     is_immutable    : Logical
-    must_free       : Logical
-    native  "char* utf8;"  # always includes null pointer
-    native  "char  buffer[ROGUE_STRING_INTERNAL_BUFFER_SIZE];"
-
-  GLOBAL METHODS
-    method create->String
-      return native( "RogueString_create_with_byte_capacity(ROGUE_STRING_INTERNAL_BUFFER_SIZE)" )->String
+    data            : Byte[]
 
   METHODS
-    #{
-    method print( value:Character )
-      native @|printf( "%c", (char)$value );
+    method init
+      init( 20 )
 
-    method print( value:Int32 )
-      native @|printf( "%d", $value );
-
-    method print( value:Int64 )
-      native @|printf( "%lld", $value );
-
-    method print( value:Logical )
-      native @|printf( "%s", $value?"true":"false" );
-
-    method print( value:Real32 )
-      native @|printf( "%f", $value );
-
-    method print( value:Real64 )
-      native @|printf( "%lf", $value );
-
-    method print( value:Object )
-      #if (value) print( %
-      #else       print( "null" )
-    }#
+    method init( byte_capacity:Int32 )
+      data = Byte[]( byte_capacity + 1 )
+      data[0] = 0
 
     method print( value:String )->this
       if (is_immutable) return this
@@ -48,70 +23,47 @@ class String
         return this
       endIf
 
-      reserve( value.byte_count )
+      reserve( value.data.count )  # will include space for null terminator
       native ...
-        @|memcpy( $this->utf8+$byte_count, $value->utf8, $value->byte_count );
+        @|memcpy( $this->data->as_utf8+$data->count, $value->data->as_utf8, $value->data->count );
+         |$this->count       += $value->count;
+         |$this->data->count += $value->data->count;
          |$hash_code = RogueString_compute_hash_code( $value, $hash_code );
-         |$byte_count += $value->byte_count;
-         |$this->utf8[$count += $value->count] = 0;
+         |$this->data->as_utf8[$this->data->count] = 0;
 
       return this
 
+      #{
+    method print( value:Character, formatted=true:Logical )->this
+      #if (formatted)
+      #  if (value == '\n')    at_newline = true
+      #  elseIf (needs_indent) print_indent
+      #endIf
 
-         #{
-    method println
-      print( '\n' )
-
-    method println( value:Character )
-      print( value )
-      print( '\n' )
-
-    method println( value:Int32 )
-      print( value )
-      print( '\n' )
-
-    method println( value:Int64 )
-      print( value )
-      print( '\n' )
-
-    method println( value:Logical )
-      print( value )
-      print( '\n' )
-
-    method println( value:Real32 )
-      print( value )
-      print( '\n' )
-
-    method println( value:Real64 )
-      print( value )
-      print( '\n' )
-
-    method println( value:String )
-      print( value )
-      print( '\n' )
+      ++count
+      if (value < 0)
+        data.add( 0 )
+      elseIf (value <= Character(0x7F))
+        data.add( value )
+      elseIf (value <= Character(0x7FF))
+        data.[ add(0xC0 | (value:>>>:6)), add(0x80 | (value & 0x3F)) ]
+      elseIf (value <= Character(0xFFFF))
+        data.[ add(0xE0 | (value:>>>:12)), add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
+      elseIf (value <= Character(0x10FFFF))
+        data.[ add(0xF0 | (value:>>>:18)), add(0x80 | ((value:>>>:12) & 0x3F)) ]
+        data.[ add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
+      else
+        data.add( '?' )
+      endIf
+      return this
       }#
 
     method reserve( additional_bytes:Int32 )
-      local required_capacity = byte_count + additional_bytes
-      if (byte_capacity >= required_capacity) return
-
-      local doubled = byte_capacity + byte_capacity
-      if (doubled > required_capacity) required_capacity = doubled
-
-      native ...
-        @|char* old_data = THIS->utf8;
-         |THIS->utf8 = ROGUE_MALLOC( $required_capacity );
-         |memcpy( THIS->utf8, old_data, $byte_count+1 );
-         |if ($must_free) ROGUE_FREE(old_data);
-
-      must_free = true
-      byte_capacity = required_capacity
-
+      data.reserve( additional_bytes+1 ) # +1 for null terminator
 
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
                   |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int must_free );
-                  |RogueString* RogueString_create_with_byte_capacity( RogueInt32 byte_capacity );
                   |RogueInt32   RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash );
                   |const char*  RogueString_to_c_string( RogueString* st );
                   |RogueInt32   RogueString_utf8_character_count( const char* cstring, int byte_count );
@@ -123,13 +75,19 @@ class String
                  |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, must_free );
                  |
                  |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
-                 |  result->utf8 = (char*) cstring;
-                 |  result->byte_count   = byte_count;
+                 |  ROGUE_RETAIN( result );
+                 |  RogueByteList* data = ROGUE_CREATE_OBJECT( RogueByteList );
+                 |  ROGUE_RETAIN( data );
+                 |  result->data = data;
+                 |
+                 |  data->as_utf8        = (char*) cstring;
+                 |  data->count          = byte_count;
+                 |  data->capacity       = byte_count + 1;
+                 |  data->is_borrowed    = !must_free;
+                 |
                  |  result->count        = character_count;
-                 |  result->is_immutable = 1;
-                 |  result->must_free = must_free;
+                 |  result->is_immutable = !must_free;
                  |  result->hash_code = RogueString_compute_hash_code( result, 0 );
-                 |  //printf("sizeof(RogueString): %d\n",(int)sizeof(RogueString));
                  |  return result;
                  |}
                  |
@@ -145,8 +103,16 @@ class String
                  |    else                   ++utf8_byte_count;
                  |  }
                  |
-                 |  RogueString* result = RogueString_create_with_byte_capacity( utf8_byte_count+1 );
-                 |  char* utf8 = result->utf8;
+                 |  if (utf8_byte_count == byte_count)
+                 |  {
+                 |    return RogueString_create( cstring, byte_count, must_free );
+                 |  }
+                 |
+                 |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
+                 |  ROGUE_RETAIN( result );
+                 |  RogueString__init__RogueInt32( result, utf8_byte_count );
+                 |
+                 |  char* utf8 = result->data->as_utf8;
                  |  int dest_i = 0;
                  |  for (i=-1; ++i<byte_count; )
                  |  {
@@ -166,37 +132,20 @@ class String
                  |  }
                  |  utf8[ utf8_byte_count ] = 0;
                  |
-                 |  result->is_immutable = 1;
-                 |  result->byte_count      = utf8_byte_count;
-                 |  result->count           = byte_count;
-                 |  result->hash_code = RogueString_compute_hash_code( result, 0 );
-                 |  return result;
-                 |}
+                 |  result->data->count = utf8_byte_count;
+                 |  result->count       = byte_count;
+                 |  result->hash_code   = RogueString_compute_hash_code( result, 0 );
                  |
-                 |RogueString* RogueString_create_with_byte_capacity( RogueInt32 byte_capacity )
-                 |{
-                 |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
-                 |  result->byte_capacity = byte_capacity;
-                 |  if (byte_capacity <= ROGUE_STRING_INTERNAL_BUFFER_SIZE)
-                 |  {
-                 |    result->utf8 = result->buffer;
-                 |    byte_capacity = ROGUE_STRING_INTERNAL_BUFFER_SIZE;
-                 |  }
-                 |  else
-                 |  {
-                 |    if (byte_capacity < 1) byte_capacity = 1;
-                 |    result->utf8 = (char*) ROGUE_MALLOC( byte_capacity );
-                 |    result->must_free = 1;
-                 |  }
-                 |  // result->utf8[0] = 0;  // object is already zero-filled
+                 |  if (must_free) ROGUE_FREE( (void*)cstring );
+                 |
                  |  return result;
                  |}
                  |
                  |RogueInt32 RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash )
                  |{
                  |  RogueInt32 hash = starting_hash;
-                 |  int n = THIS->byte_count;
-                 |  char* src = THIS->utf8 - 1;
+                 |  int n = THIS->data->count;
+                 |  char* src = THIS->data->as_utf8 - 1;
                  |  while (--n >= 0)
                  |  {
                  |    hash = ((hash<<3) - hash) + *(++src);
@@ -207,7 +156,7 @@ class String
                  |const char* RogueString_to_c_string( RogueString* st )
                  |{
                  |  if ( !st ) { return "null"; }
-                 |  return st->utf8;
+                 |  return st->data->as_utf8;
                  |}
                  |
                  |RogueInt32 RogueString_utf8_character_count( const char* cstring, int byte_count )
@@ -237,7 +186,10 @@ class String
                  |        else
                  |        {
                  |          // %1110xxxx 10xxxxxx 10xxxxxx
-                 |          if (i + 3 > byte_count || ((cstring[i+1] & 0xC0) != 0x80) || ((cstring[i+2] & 0xC0) != 0x80)) { return -1;}
+                 |          if (i + 3 > byte_count || ((cstring[i+1] & 0xC0) != 0x80) || ((cstring[i+2] & 0xC0) != 0x80))
+                 |          {
+                 |            return -1;
+                 |          }
                  |          i += 3;
                  |        }
                  |      }

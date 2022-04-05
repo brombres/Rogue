@@ -46,7 +46,7 @@ class CGenerator : Visitor
       endForEach
       return null
 
-    method write_with_cast( cmd:Cmd, to_type:Type )
+    method print_with_cast( cmd:Cmd, to_type:Type )
       if (cmd.type is to_type)
         visit( cmd )
       else
@@ -57,16 +57,8 @@ class CGenerator : Visitor
         writer.print ")"
       endIf
 
-    method write_with_cast( cmd:String, from_type:Type, to_type:Type )
-      if (from_type is to_type)
-        writer.print cmd
-      else
-        writer.print "(("
-        writer.print to_type.c_ref_name
-        writer.print ")"
-        writer.print cmd
-        writer.print ")"
-      endIf
+    method print_with_cast( cmd:String, from_type:Type, to_type:Type )
+      writer.print_with_cast( cmd, from_type, to_type )
 
     method on_visit( cmd:Cmd )
       throw UnsupportedOperationError("CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
@@ -134,7 +126,7 @@ class CGenerator : Visitor
         forEach (arg at i in cmd.args)
           if (i) writer.print ", "
           local p = cmd.info.parameters[i]
-          write_with_cast( arg, p.type )
+          print_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       else
@@ -161,16 +153,16 @@ class CGenerator : Visitor
 
       if (cmd.args.count == 0)
         writer.print '('
-        write_with_cast( cmd.context, cmd.info->(as Method).type_context )
+        print_with_cast( cmd.context, cmd.info->(as Method).type_context )
         writer.print ')'
       else
         writer.print "( "
-        write_with_cast( cmd.context, cmd.info->(as Method).type_context )
+        print_with_cast( cmd.context, cmd.info->(as Method).type_context )
 
         forEach (arg at i in cmd.args)
           writer.print ", "
           local p = cmd.info.parameters[i]
-          write_with_cast( arg, p.type )
+          print_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       endIf
@@ -195,16 +187,16 @@ class CGenerator : Visitor
 
       if (cmd.args.count == 0)
         writer.print '('
-        write_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
+        print_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
         writer.print ')'
       else
         writer.print "( "
-        write_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
+        print_with_cast( "THIS", this_type, cmd.info->(as Method).type_context )
         if (cmd.args.count)
           forEach (arg at i in cmd.args)
             writer.print ", "
             local p = cmd.info.parameters[i]
-            write_with_cast( arg, p.type )
+            print_with_cast( arg, p.type )
           endForEach
         endIf
         writer.print " )"
@@ -217,7 +209,7 @@ class CGenerator : Visitor
         forEach (arg at i in cmd.args)
           if (i) writer.print ", "
           local p = cmd.info.parameters[i]
-          write_with_cast( arg, p.type )
+          print_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       else
@@ -319,7 +311,7 @@ class CGenerator : Visitor
             # if their value is changed over the course of the method then
             # the parameter is unanchored and must be retained & released.
             if (p.type.is_reference and not p.is_anchored)
-              writer.print "ROGUE_RETAIN_REF( &"
+              writer.print "ROGUE_RETAIN( "
               writer.print p->(as Local).c_name
               writer.print( " )" )
               writer.println( ';' )
@@ -1264,7 +1256,7 @@ augment
         writer.println '{'
         forEach (p in properties)
           if (p.type.is_reference)
-            writer.print( "  ROGUE_RETAIN_REF( &THIS->" ).print( p.c_name ).println( " );" )
+            writer.print( "  ROGUE_RETAIN( THIS->" ).print( p.c_name ).println( " );" )
           elseIf (p.type.is_compound and p.type.contains_reference)
             writer.print "  "
             writer.print( p.type.c_name ).print( "_on_retain( &THIS->" )
@@ -1279,7 +1271,9 @@ augment
         writer.println '{'
 
         if (m_on_cleanup)
-          writer.print( "  " ).print( m_on_cleanup.c_name ).println( "( THIS );" )
+          writer.print( "  " ).print( m_on_cleanup.c_name ).print( "( " )
+          writer.print_with_cast( "THIS", this, m_on_cleanup.type_context )
+          writer.println " );"
           if (this.is_reference) writer.println "  if (THIS->refcount) return 0;"
         endIf
 

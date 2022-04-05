@@ -1,3 +1,9 @@
 class Object
+  METHODS
+    method description->String
+      return "Object"
+
+    method to->String
+      return description
 endClass
 

@@ -23,7 +23,7 @@ class Global [singleton]
       #else       print( "null" )
 
     method print( value:String )
-      if (value) native @|printf( "%s", $value->utf8 );
+      if (value) native @|printf( "%s", $value->data->as_utf8 );
       else       print( "null" )
 
     method println

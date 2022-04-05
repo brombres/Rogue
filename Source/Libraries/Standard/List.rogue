@@ -5,6 +5,7 @@ class List<<$DataType>>
     element_size : Int32
     is_ref_array : Logical
     element_type : $DataType  # dummy property used to generate type-releated C code
+    is_borrowed  : Logical
 
     native @|union
             |{
@@ -16,6 +17,7 @@ class List<<$DataType>>
             |  RogueInt32*     as_int32s;
             |  RogueCharacter* as_characters;
             |  RogueByte*      as_bytes;
+            |  char*           as_utf8; // only valid for String data; includes null terminator
             |  RogueByte*      as_logicals;
             |};
 
@@ -25,10 +27,15 @@ class List<<$DataType>>
       else                          element_size = native("sizeof($element_type)")->Int32
       if ($DataType instanceOf Object) is_ref_array = true
 
+    method init( capacity:Int32 )
+      init
+      reserve( capacity )
+
     method on_cleanup
       native @|if ($this->as_bytes)
               |{
-              |  ROGUE_FREE( $this->as_bytes );
+              |  if ($is_borrowed) $is_borrowed = 0;
+              |  else              ROGUE_FREE( $this->as_bytes );
               |  $this->as_bytes = 0;
               |  $capacity = 0;
               |  $count = 0;
@@ -64,7 +71,8 @@ class List<<$DataType>>
               |  RogueByte* old_data = $this->as_bytes;
               |  memcpy( new_data, old_data, old_size );
               |  memset( new_data+old_size, 0, total_size-old_size );
-              |  ROGUE_FREE( old_data );
+              |  if ($is_borrowed) $is_borrowed = 0;
+              |  else              ROGUE_FREE( old_data );
               |}
               |else
               |{
