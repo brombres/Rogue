@@ -1564,6 +1564,10 @@ class Method : Procedure
       prior.init( t, module_context, name, parameters, return_type, attributes, body )
       this.attributes.is_method = true
 
+    method init( t:Token, type_context, name:String )
+      prior.init( t, type_context.module_context, name, null, null, null, null )
+      this.attributes.is_method = true
+
     method init( existing:Method )
       prior.init( existing )
       type_context = existing.@type_context

@@ -143,6 +143,7 @@ class CWriter : BufferedPrintWriter
            |  const char*         name;
            |  RogueInt32          id;
            |  RogueInt32          size;
+           |  RogueFn_Object      fn_init_object;
            |  RogueFn_Object      fn_init;
            |  RogueFn_Object__Int fn_on_release;
            |};
@@ -188,6 +189,12 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->type = type;
+           |  if (type->fn_init_object)
+           |  {
+           |    ++obj->refcount;
+           |    type->fn_init_object( obj );
+           |    --obj->refcount;
+           |  }
            |  // refcount starts at 0
            |  return obj;
            |}

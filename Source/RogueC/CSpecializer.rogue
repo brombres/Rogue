@@ -336,11 +336,16 @@ augment LogicalOr
     method set_intermediate_v( @intermediate_v )
 endAugment
 
-augment Method
+augment Procedure
   PROPERTIES
-    c_signature   : String
+    c_name        : String
+    c_result_name : String
+    c_signature   : String  # for dynamic dispatch
 
   METHODS
+    method c_name->String
+      throw UnsupportedOperationError()
+
     method c_signature->String
       if (@c_signature) return @c_signature
 
@@ -355,17 +360,6 @@ augment Method
         c_signature = builder
         return @c_signature
       endUse
-
-endAugment
-
-augment Procedure
-  PROPERTIES
-    c_name        : String
-    c_result_name : String
-
-  METHODS
-    method c_name->String
-      throw UnsupportedOperationError()
 
 endAugment
 

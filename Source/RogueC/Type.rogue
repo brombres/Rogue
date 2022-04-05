@@ -85,6 +85,9 @@ class Type : Cmd
       # TODO: check for existing methods
 
     method add( m:Method )
+      assert m
+      assert m.signature
+      assert methods
       methods[ m.signature ] = m
       # TODO: check for existing methods
 
@@ -283,6 +286,32 @@ class Type : Cmd
         if (attributes.is_singleton) throw t.error( "Aspects cannot have singletons." )
       endIf
 
+      # Add init_object() methods for new initial property assignments
+      if (is_object)
+        local m = methods["init_object()"]
+        if (not m)
+          m = Method( t, this, "init_object" )
+          m.organize
+          methods[ m.signature ] = m
+        endIf
+
+        use my_properties = WorkList<<Property>>
+          my_properties.add( forEach in properties )
+          forEach (p in my_properties step -1)
+            if (p.initial_value)
+              local initial_value = p.initial_value.cloned
+              AspectMethodPatcher.patch( this, initial_value )  # fix 'this' type
+              m.statements.insert( SetThisProperty(p.t,p,initial_value) )
+            endIf
+          endForEach
+          if (base_class)
+            local prior_m = base_class.methods[ "init_object()" ]
+            assert prior_m
+            m.statements.insert( CallThisStaticMethod(m.t,prior_m,Args(m.t)) )
+          endIf
+        endUse
+      endIf
+
       # Inherit properties
       if (base_class or aspects)
         use my_properties = WorkList<<Property>>
@@ -370,13 +399,6 @@ class Type : Cmd
         endForEach
 
       endIf
-
-      #{
-    method resolve
-      if (attributes.is_resolved) return
-      attributes.is_resolved = true
-      organize
-      }#
 
     method to->Character
       return Cmd.to_character(name)
