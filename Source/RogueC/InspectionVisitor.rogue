@@ -509,4 +509,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on( cmd:ContextBlock )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.commands)
+      return result
+
 endClass

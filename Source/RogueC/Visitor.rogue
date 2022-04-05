@@ -363,5 +363,9 @@ class Visitor
     method on_visit_children( cmd:Println )
       cmd.args = visit(cmd.args)
 
+    method on_visit_children( cmd:ContextBlock )
+      cmd.context = visit(cmd.context)
+      cmd.commands = visit(cmd.commands)
+
 endClass
 

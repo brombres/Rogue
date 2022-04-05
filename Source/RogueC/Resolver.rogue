@@ -36,6 +36,11 @@ class Resolver : Visitor
       control_stack.last.locals.add( v )
       visible_locals.add( v )
 
+    method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
+      local v = Local( t, autoname(base), initial_value, type )
+      add_local( v )
+      return v
+
     method auto_local( t:Token, base:String, type:Type )->Local
       return Local( t, autoname(base), null, type )
 
@@ -84,6 +89,16 @@ class Resolver : Visitor
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
+
+    method on( cmd:ContextBlock )->Cmd
+      local context = visit( cmd.context )
+      local v = add_local( cmd.t, "context_block", context.require_type, DummyInitialValue )
+      insert( SetLocal( v.t, v, context, &initial_assignment ) )
+      forEach (contxt_cmd in cmd.commands)
+        contxt_cmd = visit( ContextBlockPatcher.patch(v,contxt_cmd) )
+        if (contxt_cmd) insert( contxt_cmd )
+      endForEach
+      return GetLocal( v.t, v )
 
     method on( cmd:ControlStructure )->Cmd
       push_scope( cmd )

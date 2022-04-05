@@ -2125,3 +2125,27 @@ class AttributeReturnsThis : Cmd
     method description->String
       return "AttributeReturnsThis"
 endClass
+
+class ContextBlock : Cmd
+  PROPERTIES
+    context  : Cmd
+    commands : Cmd
+
+  METHODS
+    method init( t, context, commands )
+
+    method init( existing:ContextBlock )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.commands) commands = existing.commands.cloned
+
+    method description->String
+      return "ContextBlock($,$)" (%context,%commands)
+
+endClass
+
+class ContextBlockContext : Cmd
+  METHODS
+    method description->String
+      return "ContextBlockContext"
+endClass

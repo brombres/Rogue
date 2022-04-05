@@ -76,7 +76,7 @@ class ScannerCore [abstract]
     _scan_pattern_15 = ScanPattern( "[0-9A-Fa-f]+" )
     _scan_pattern_16 = ScanPattern( "[0-9a-fA-F]" )
     _scan_pattern_17 = ScanPattern( "[ ]*" )
-    _scan_table_0 = ScanTable("gkL/Hgo+IkAnQkBIJFImgQgtgQ4qgRxcgSIhgSRegSp9gSxdgS4pgTA6gTIsgWQugWZ8gXRbgX49ggQ+ggo8ghR7gh4ogiAlgiIrgig/gjI7gjgvgjp+gkAAAAEAAgEnRgMACgJ8TltQBAAhAP8CZFhpbv8BZVz/AWZg/wFpZP8Bbmj/AWVsBQD/AW5y/wFjdv8BbHr/AXV+/wFkgQL/AWWBBgYABwE9gQw9ACQDPoEWLYEYPYEaCAAlADkACQE9gSA6AAsADAE9gSgmAA0ADgAPABAAEQM6gTo8gTw+gUoSAP8BPIFA/wE6gUQfAT2BSCAA/wE+gU7/AjqBVD6BWjABPYFYMQD/ATqBXjIBPYFiMwATACsBLoFqFAI8gXA+gXIVABYANwJ8gXo9gXwXAD4AKAFdggIYABoBPYIIGQAcAj2CED6CEhsAHQAiAj2CGjyCHB4AIwAnACkAKgE9giY8ACwCK4IuPYIwLQA4AC4BOoI2LwA0ADUBPYI+OwA2AA==")
+    _scan_table_0 = ScanTable("gkb/Hgo+IkAnQkBIJFImgQgtgQ4qgRxcgSIhgSRegSp9gSxdgS4pgTA6gTIsgWQugWZ8gXhbggI9ggg+gg48ghh7giIogiQlgiYrgiw/gjY7gjwvgj5+gkQAAAEAAgEnRgMACgJ8TltQBAAiAP8CZFhpbv8BZVz/AWZg/wFpZP8Bbmj/AWVsBQD/AW5y/wFjdv8BbHr/AXV+/wFkgQL/AWWBBgYABwE9gQw+ACUDPoEWLYEYPYEaCAAmADoACQE9gSA7AAsADAE9gSgnAA0ADgAPABAAEQM6gTo8gTw+gUoSAP8BPIFA/wE6gUQgAT2BSCEA/wE+gU7/AjqBVD6BWjEBPYFYMgD/ATqBXjMBPYFiNAATACwCLoFsW4F2FAI8gXI+gXQVABYAFwA4AnyBfj2CABgAPwApAV2CBhkAGwE9ggwaAB0CPYIUPoIWHAAeACMCPYIePIIgHwAkACgAKgArAT2CKj0ALQIrgjI9gjQuADkALwE6gjowADUANgE9gkI8ADcA")
     _scan_table_1 = ScanTable("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")
     _scan_table_2 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
     _scan_table_3 = ScanTable("EgABMAT/A2IMYw54EAEAAgADAA==")
@@ -314,123 +314,126 @@ class ScannerCore [abstract]
                   _add( TokenType.SYMBOL_DOTDOTGT )
                   return false
                 case 23
-                  _add( TokenType.SYMBOL_DOUBLE_VERTICAL_BAR )
+                  _add( TokenType.SYMBOL_DOT_OPEN_SQUARE )
                   return false
                 case 24
-                  _add( TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS )
+                  _add( TokenType.SYMBOL_DOUBLE_VERTICAL_BAR )
                   return false
                 case 25
-                  _add( TokenType.SYMBOL_EQ )
+                  _add( TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS )
                   return false
                 case 26
-                  _add( TokenType.SYMBOL_EQUALS )
+                  _add( TokenType.SYMBOL_EQ )
                   return false
                 case 27
-                  _add( TokenType.SYMBOL_GE )
+                  _add( TokenType.SYMBOL_EQUALS )
                   return false
                 case 28
-                  _add( TokenType.SYMBOL_GT )
+                  _add( TokenType.SYMBOL_GE )
                   return false
                 case 29
-                  _add( TokenType.SYMBOL_GTGT )
+                  _add( TokenType.SYMBOL_GT )
                   return false
                 case 30
-                  _add( TokenType.SYMBOL_LE )
+                  _add( TokenType.SYMBOL_GTGT )
                   return false
                 case 31
-                  _add( TokenType.SYMBOL_LEFT_SHIFT )
+                  _add( TokenType.SYMBOL_LE )
                   return false
                 case 32
-                  _add( TokenType.SYMBOL_LEFT_SHIFT_EQUALS )
+                  _add( TokenType.SYMBOL_LEFT_SHIFT )
                   return false
                 case 33
-                  _add( TokenType.SYMBOL_LITERAL_OPEN_SQUARE )
+                  _add( TokenType.SYMBOL_LEFT_SHIFT_EQUALS )
                   return false
                 case 34
-                  _add( TokenType.SYMBOL_LT )
+                  _add( TokenType.SYMBOL_LITERAL_OPEN_SQUARE )
                   return false
                 case 35
-                  _add( TokenType.SYMBOL_LTLT )
+                  _add( TokenType.SYMBOL_LT )
                   return false
                 case 36
-                  _add( TokenType.SYMBOL_MINUS )
+                  _add( TokenType.SYMBOL_LTLT )
                   return false
                 case 37
-                  _add( TokenType.SYMBOL_MINUS_MINUS )
+                  _add( TokenType.SYMBOL_MINUS )
                   return false
                 case 38
-                  _add( TokenType.SYMBOL_NE )
+                  _add( TokenType.SYMBOL_MINUS_MINUS )
                   return false
                 case 39
-                  _add( TokenType.SYMBOL_OPEN_CURLY )
+                  _add( TokenType.SYMBOL_NE )
                   return false
                 case 40
-                  _add( TokenType.SYMBOL_OPEN_SQUARE )
+                  _add( TokenType.SYMBOL_OPEN_CURLY )
                   return false
                 case 41
-                  _add( TokenType.SYMBOL_OPEN_PAREN )
+                  _add( TokenType.SYMBOL_OPEN_SQUARE )
                   return false
                 case 42
-                  _add( TokenType.SYMBOL_PERCENT )
+                  _add( TokenType.SYMBOL_OPEN_PAREN )
                   return false
                 case 43
-                  _add( TokenType.SYMBOL_PERIOD )
+                  _add( TokenType.SYMBOL_PERCENT )
                   return false
                 case 44
-                  _add( TokenType.SYMBOL_PLUS )
+                  _add( TokenType.SYMBOL_PERIOD )
                   return false
                 case 45
-                  _add( TokenType.SYMBOL_PLUS_PLUS )
+                  _add( TokenType.SYMBOL_PLUS )
                   return false
                 case 46
-                  _add( TokenType.SYMBOL_QUESTION )
+                  _add( TokenType.SYMBOL_PLUS_PLUS )
                   return false
                 case 47
-                  _add( TokenType.SYMBOL_QUESTION_COLON )
+                  _add( TokenType.SYMBOL_QUESTION )
                   return false
                 case 48
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT )
+                  _add( TokenType.SYMBOL_QUESTION_COLON )
                   return false
                 case 49
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT_EQUALS )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT )
                   return false
                 case 50
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT_EQUALS )
                   return false
                 case 51
-                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X_EQUALS )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X )
                   return false
                 case 52
-                  _add( TokenType.SYMBOL_SEMICOLON )
+                  _add( TokenType.SYMBOL_RIGHT_SHIFT_X_EQUALS )
                   return false
                 case 53
-                  _add( TokenType.SYMBOL_SLASH )
+                  _add( TokenType.SYMBOL_SEMICOLON )
                   return false
                 case 54
-                  _add( TokenType.SYMBOL_TILDE )
+                  _add( TokenType.SYMBOL_SLASH )
                   return false
                 case 55
-                  _add( TokenType.SYMBOL_VERTICAL_BAR )
+                  _add( TokenType.SYMBOL_TILDE )
                   return false
                 case 56
-                  _add( TokenType.SYMBOL_PLUS_EQUALS )
+                  _add( TokenType.SYMBOL_VERTICAL_BAR )
                   return false
                 case 57
-                  _add( TokenType.SYMBOL_MINUS_EQUALS )
+                  _add( TokenType.SYMBOL_PLUS_EQUALS )
                   return false
                 case 58
-                  _add( TokenType.SYMBOL_TIMES_EQUALS )
+                  _add( TokenType.SYMBOL_MINUS_EQUALS )
                   return false
                 case 59
-                  _add( TokenType.SYMBOL_DIVIDE_EQUALS )
+                  _add( TokenType.SYMBOL_TIMES_EQUALS )
                   return false
                 case 60
-                  _add( TokenType.SYMBOL_MOD_EQUALS )
+                  _add( TokenType.SYMBOL_DIVIDE_EQUALS )
                   return false
                 case 61
-                  _add( TokenType.SYMBOL_AND_EQUALS )
+                  _add( TokenType.SYMBOL_MOD_EQUALS )
                   return false
                 case 62
+                  _add( TokenType.SYMBOL_AND_EQUALS )
+                  return false
+                case 63
                   _add( TokenType.SYMBOL_OR_EQUALS )
                   return false
                 others

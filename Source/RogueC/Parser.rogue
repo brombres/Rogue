@@ -176,7 +176,7 @@ class Parser : ParserCore
       processed_tokens.add( _read )
 
     method store_statement_args
-      if (_cmd_stack.is_empty) return  # in first pass where no nodes are created
+      if (disable_output) return
 
       local args = _cmd_stack.remove_last->(as Args)
       assert args?

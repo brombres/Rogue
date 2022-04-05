@@ -102,6 +102,7 @@ SYMBOL_COMMA                 ,   [structural]
 SYMBOL_DOTDOT                ..
 SYMBOL_DOTDOTLT              ..<
 SYMBOL_DOTDOTGT              ..>
+SYMBOL_DOT_OPEN_SQUARE       .[
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
 SYMBOL_EQ                    ==
@@ -1097,7 +1098,6 @@ parser
       if (consume ',') consume_eols
     endWhile
   endIf
-
   produceList Args
 
 - arg
@@ -1386,7 +1386,30 @@ parser
     mustConsume(']')
     create IndexedAccess(context,index)
     access_inner
+  elseOn ".["
+    consume_eols
+    if (consume(']'))
+      access_inner
+      return
+    endIf
+    beginList
+      context_block_command
+      consume_eols
+      while (consume(','))
+        context_block_command
+        consume_eols
+      endWhile
+      mustConsume ']'
+    createList
+    create ContextBlock(context,commands)
   endOn
+
+- context_block_command
+  create ContextBlockContext
+  identifier
+  access_args
+  create ContextAccess(context,name:String,args)
+  access_inner
 
 - term
   on STRING         -> LiteralString(value=content):Literal
