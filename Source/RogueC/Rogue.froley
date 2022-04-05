@@ -1340,9 +1340,9 @@ parser
   on '&' -> BitwiseAnd
 
 - bitwise_shift [binary]
-  on ":<<:"  -> LeftShift
-  on ":>>:"  -> RightShift
-  on ":>>>:" -> RightShiftX
+  on ":<<:"  -> ShiftLeft
+  on ":>>:"  -> ShiftRight
+  on ":>>>:" -> ShiftRightX
 
 - add_subtract [binary]
   on "+" -> Add

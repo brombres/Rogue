@@ -15,6 +15,27 @@ class String
       data = Byte[]( byte_capacity + 1 )
       data[0] = 0
 
+    method print( value:Character, formatted=true:Logical )->this
+      #if (formatted)
+      #  if (value == '\n')    at_newline = true
+      #  elseIf (needs_indent) print_indent
+      #endIf
+
+      ++count
+      if (value <= Character(0x7F))
+        data.add( value )
+      elseIf (value <= Character(0x7FF))
+        data.[ add(0xC0 | (value:>>>:6)), add(0x80 | (value & 0x3F)) ]
+      elseIf (value <= Character(0xFFFF))
+        data.[ add(0xE0 | (value:>>>:12)), add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
+      elseIf (value <= Character(0x10FFFF))
+        data.[ add(0xF0 | (value:>>>:18)), add(0x80 | ((value:>>>:12) & 0x3F)) ]
+        data.[ add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
+      else
+        data.add( '?' )
+      endIf
+      return this
+
     method print( value:String )->this
       if (is_immutable) return this
 
@@ -32,31 +53,6 @@ class String
          |$this->data->as_utf8[$this->data->count] = 0;
 
       return this
-
-      #{
-    method print( value:Character, formatted=true:Logical )->this
-      #if (formatted)
-      #  if (value == '\n')    at_newline = true
-      #  elseIf (needs_indent) print_indent
-      #endIf
-
-      ++count
-      if (value < 0)
-        data.add( 0 )
-      elseIf (value <= Character(0x7F))
-        data.add( value )
-      elseIf (value <= Character(0x7FF))
-        data.[ add(0xC0 | (value:>>>:6)), add(0x80 | (value & 0x3F)) ]
-      elseIf (value <= Character(0xFFFF))
-        data.[ add(0xE0 | (value:>>>:12)), add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
-      elseIf (value <= Character(0x10FFFF))
-        data.[ add(0xF0 | (value:>>>:18)), add(0x80 | ((value:>>>:12) & 0x3F)) ]
-        data.[ add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
-      else
-        data.add( '?' )
-      endIf
-      return this
-      }#
 
     method reserve( additional_bytes:Int32 )
       data.reserve( additional_bytes+1 ) # +1 for null terminator

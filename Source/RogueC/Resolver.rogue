@@ -94,9 +94,9 @@ class Resolver : Visitor
       local context = visit( cmd.context )
       local v = add_local( cmd.t, "context_block", context.require_type, DummyInitialValue )
       insert( SetLocal( v.t, v, context, &initial_assignment ) )
-      forEach (contxt_cmd in cmd.commands)
-        contxt_cmd = visit( ContextBlockPatcher.patch(v,contxt_cmd) )
-        if (contxt_cmd) insert( contxt_cmd )
+      forEach (context_cmd in cmd.commands)
+        context_cmd = visit( ContextBlockPatcher.patch(v,context_cmd) )
+        if (context_cmd) insert( context_cmd )
       endForEach
       return GetLocal( v.t, v )
 
@@ -414,17 +414,9 @@ class Resolver : Visitor
       endIf
       return cmd
 
-      #{
-    method on_visit( cmd:ReturnResult )
-      visit_children( cmd )
-      cmd.result.require_value
-
-    method on_validate( cmd:RightShift )->Cmd
-      return validate( cmd.left.type.cmd_right_shift(cmd.t, cmd.left, cmd.right) )
-
-    method on_validate( cmd:RightShiftX )->Cmd
-      return validate( cmd.left.type.cmd_right_shift_x(cmd.t, cmd.left, cmd.right) )
-}#
+    method on( cmd:ShiftRight )->Cmd
+      return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "shift_right",
+                             Args(cmd.t,cmd.left,cmd.right) )
 
     method on_visit( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
@@ -432,7 +424,8 @@ class Resolver : Visitor
           statement = visit( statement )
           if (statement)
             #if (statement.type) statement = DiscardResult( statement.t, statement )
-            current_statements.write( statement )
+            if (statement.type) statement = statement.discarding_result
+            if (statement) current_statements.write( statement )
           endIf
         endForEach
       endTemporarily
@@ -1058,7 +1051,7 @@ augment
       #return CallRoutine( t, this, args )
 endAugment
 
-# LeftShift
+# ShiftLeft
 augment
   METHODS
     method Type.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
@@ -1128,7 +1121,7 @@ endAugment
 }#
 
 #{
-# RightShift
+# ShiftRight
 augment
   METHODS
     method Type.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
@@ -1142,7 +1135,7 @@ augment
 
 endAugment
 
-# RightShiftX
+# ShiftRightX
 augment
   METHODS
     method Type.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd

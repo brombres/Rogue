@@ -1946,7 +1946,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_add_subtract)
                 _pop_frame
-                if (not disable_output) _push( LeftShift(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( ShiftLeft(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_bitwise_shift__inner)
                 _pop_frame
                 return
@@ -1957,7 +1957,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_add_subtract)
                 _pop_frame
-                if (not disable_output) _push( RightShift(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( ShiftRight(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_bitwise_shift__inner)
                 _pop_frame
                 return
@@ -1968,7 +1968,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_add_subtract)
                 _pop_frame
-                if (not disable_output) _push( RightShiftX(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( ShiftRightX(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_bitwise_shift__inner)
                 _pop_frame
                 return

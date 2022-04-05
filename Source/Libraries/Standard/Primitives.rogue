@@ -198,6 +198,9 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
 endClass
 
 class Character [primitive]
+  GLOBAL METHODS
+    method create( value:Int32 )->Character
+      return value->Character
 endClass
 
 class Byte : CommonPrimitiveMethods<<Byte>> [primitive]

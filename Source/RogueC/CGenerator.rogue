@@ -555,11 +555,6 @@ class CGenerator : Visitor
       writer.println ");"
       on_leave( cmd )
 
-    method on_visit( cmd:LeftShift )
-      print_parenthesized( cmd.left )
-      writer.print " << "
-      print_parenthesized( cmd.right )
-
     method on_visit( cmd:LiteralCharacter )
       if (cmd.value >= 32)
         writer.print '\''
@@ -665,9 +660,21 @@ class CGenerator : Visitor
       visit( cmd.right )
       writer.print ')'
 
+    method on_visit( cmd:Predecrement )
+      writer.print "--"
+      visit( cmd.operand )
+
     method on_visit( cmd:Preincrement )
       writer.print "++"
       visit( cmd.operand )
+
+    method on_visit( cmd:Postdecrement )
+      visit( cmd.operand )
+      writer.print "--"
+
+    method on_visit( cmd:Postincrement )
+      visit( cmd.operand )
+      writer.print "++"
 
     method on( cmd:Procedure )->Cmd
       this_procedure = cmd
@@ -797,6 +804,16 @@ class CGenerator : Visitor
         writer.print( " = " )
         visit( cmd.new_value )
       endIf
+
+    method on_visit( cmd:ShiftLeft )
+      print_parenthesized( cmd.left )
+      writer.print " << "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:ShiftRightX )
+      print_parenthesized( cmd.left )
+      writer.print " >> "
+      print_parenthesized( cmd.right )
 
     method on_visit( cmd:Statements )
       forEach (statement in cmd)

@@ -113,6 +113,7 @@ class Math
     method mod( a:Real64, b:Real64 )->Real64
       local q = a / b
       return a - floor(q)*b
+      }#
 
     method shift_right( value:Int32, bits:Int32 )->Int32
       if (bits <= 0) return value
@@ -127,6 +128,5 @@ class Math
       --bits
       if (bits) return ((value :>>>: 1) & 0x7fffFFFFffffFFFF) :>>>: bits
       else      return (value :>>>: 1) & 0x7fffFFFFffffFFFF
-      }#
 endClass
 

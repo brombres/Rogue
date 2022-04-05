@@ -125,6 +125,19 @@ augment
 endAugment
 }#
 
+# discarding_result
+augment
+  METHODS
+    method Cmd.discarding_result->Cmd
+      return this  # no change
+
+    method GetLocal.discarding_result->Cmd
+      return null
+
+    method Literal.discarding_result->Cmd
+      return null
+endAugment
+
 # is_anchored
 augment
   METHODS
