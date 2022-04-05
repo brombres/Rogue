@@ -57,7 +57,6 @@ class Program [singleton]
       type_String    = TypeString( t )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
 
-
     method add_include_search_path( path:String )
       if (not include_search_paths.contains(path))
         include_search_paths.add( path )
@@ -162,6 +161,7 @@ class Program [singleton]
       endForEach
 
       (forEach in modules).organize
+
       apply( Resolver() )
       Finalizer().apply
 

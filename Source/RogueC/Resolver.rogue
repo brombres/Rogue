@@ -753,7 +753,10 @@ class Resolver : Visitor
       if (arg_count)
         forEach (m in Candidates)
           forEach (arg at i in args)
-            if (arg.type is m.parameters[i].type) Candidates.keep m
+            if (arg.type is m.parameters[i].type)
+              Candidates.keep m
+              escapeForEach
+            endIf
           endForEach
         endForEach
         if (Candidates.found_match) return Candidates.match
