@@ -551,6 +551,18 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.SYMBOL_AMPERSAND)
+              temporarily _cur_t = _on_t
+                _execute(ip_identifier)
+                _pop_frame
+                _execute(ip_optional_initial_value)
+                _pop_frame
+                _execute(ip_optional_type)
+                _pop_frame
+                if (not disable_output) _push( Local(_cur_t,_string_arg(-3),_node_arg(-2),_node_arg(-1)->(as Type),_string_to_Logical("true")), 3 )
+                return
+              endTemporarily
+            endIf
             if (not _consume(TokenType.IDENTIFIER)) _throw_syntax_error( &expected=TokenType.IDENTIFIER )
             return
           case ip_optional_initial_value

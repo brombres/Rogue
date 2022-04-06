@@ -97,7 +97,10 @@ class Procedure : Cmd
               assert p
               if (i) builder.print ','
               if (not p.type)
-                if (this instanceOf Method)
+                if (p.attributes.is_default_parameter)
+                  if (p.initial_value) p.type = p.initial_value.type
+                  if (not p.type) p.type = Program.type_Logical
+                elseIf (this instanceOf Method)
                   local prop = this->(as Method).type_context.properties[p.name]
                   if (prop)
                     p.name = "_auto_store_" + p.name

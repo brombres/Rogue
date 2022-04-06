@@ -251,21 +251,21 @@ class Type : Cmd
     method is_value_type->Logical
       return attributes.is_primitive or attributes.is_compound
 
-    method organize
-      if (attributes.is_organized) return
-      attributes.is_organized = true
+    method categorize
+      if (attributes.is_categorized) return
+      attributes.is_categorized = true
       ensure_definition
 
-      # Organize base types
+      # Categorize base types
       if (base_class)
-        base_class.organize
+        base_class.categorize
       elseIf (this.is_object and this is not Program.type_Object)
         base_class = Program.type_Object
-        base_class.organize
+        base_class.categorize
       endIf
 
       if (aspects)
-        (forEach in aspects).organize
+        (forEach in aspects).categorize
 
         # Build flat list of incorporated aspects. Each aspect will already have
         # a flat list of its own base aspects.
@@ -284,32 +284,6 @@ class Type : Cmd
       # Check attributes
       if (is_aspect)
         if (attributes.is_singleton) throw t.error( "Aspects cannot have singletons." )
-      endIf
-
-      # Add init_object() methods for new initial property assignments
-      if (is_object)
-        local m = methods["init_object()"]
-        if (not m)
-          m = Method( t, this, "init_object" )
-          m.organize
-          methods[ m.signature ] = m
-        endIf
-
-        use my_properties = WorkList<<Property>>
-          my_properties.add( forEach in properties )
-          forEach (p in my_properties step -1)
-            if (p.initial_value)
-              local initial_value = p.initial_value.cloned
-              AspectMethodPatcher.patch( this, initial_value )  # fix 'this' type
-              m.statements.insert( SetThisProperty(p.t,p,initial_value) )
-            endIf
-          endForEach
-          if (base_class)
-            local prior_m = base_class.methods[ "init_object()" ]
-            assert prior_m
-            m.statements.insert( CallThisStaticMethod(m.t,prior_m,Args(m.t)) )
-          endIf
-        endUse
       endIf
 
       # Inherit properties
@@ -344,6 +318,46 @@ class Type : Cmd
             add_extended_property( p )
           endForEach
 
+        endUse
+      endIf
+
+    method organize
+      if (attributes.is_organized) return
+      attributes.is_organized = true
+      categorize
+
+      # Organize base types
+      if (base_class) base_class.organize
+      if (aspects)
+        (forEach in aspects).organize
+      endIf
+
+      # Add init_object() methods for new initial property assignments
+      if (is_object)
+        local m = methods["init_object()"]
+        if (not m)
+          m = Method( t, this, "init_object" )
+          m.organize
+          methods[ m.signature ] = m
+        endIf
+
+        use my_properties = WorkList<<Property>>
+          forEach (p in properties)
+            if (p.type_context is this) my_properties.add( p )
+          endForEach
+
+          forEach (p in my_properties step -1)
+            if (p.initial_value)
+              local initial_value = p.initial_value.cloned
+              AspectMethodPatcher.patch( this, initial_value )  # fix 'this' type
+              m.statements.insert( SetThisProperty(p.t,p,initial_value) )
+            endIf
+          endForEach
+          if (base_class)
+            local prior_m = base_class.methods[ "init_object()" ]
+            assert prior_m
+            m.statements.insert( CallThisStaticMethod(m.t,prior_m,Args(m.t)) )
+          endIf
         endUse
       endIf
 

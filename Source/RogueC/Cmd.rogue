@@ -614,9 +614,10 @@ class Local : Cmd
     attributes    : Attributes
 
   METHODS
-    method init( t, name, initial_value, type )
+    method init( t, name, initial_value, type, &default_parameter )
       ensure attributes(t)
       attributes.is_anchored = true
+      attributes.is_default_parameter = default_parameter
 
     method init( existing:Local )
       prior.init( existing )
@@ -787,6 +788,7 @@ endClass
 
 class Property : Cmd
   PROPERTIES
+    type_context  : Type
     name          : String
     initial_value : Cmd
     type          : Type
@@ -796,6 +798,7 @@ class Property : Cmd
 
     method init( existing:Property )
       prior.init( existing )
+      type_context = existing.type_context
       name = existing.name
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned

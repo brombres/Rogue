@@ -538,7 +538,7 @@ parser
 - procedure_parameter
   consume_eols
   on IDENTIFIER optional_initial_value optional_type -> Local(name=content,initial_value,type:Type)
-  #on '&' identifier optional_initial_value optional_type -> FlagParameter(name:String,initial_value,type:Type):Parameter
+  on '&' identifier optional_initial_value optional_type -> Local(name:String,initial_value,type:Type,default_parameter="true":Logical)
   mustConsume IDENTIFIER  # generate error message
 
 - optional_initial_value

@@ -1,0 +1,159 @@
+module Rogue
+
+class Categorizer : Visitor
+  METHODS
+    method init( this_module )
+
+    method visit( this_type, class_def:Cmd )
+      # Called when instantiating a template
+      visit( class_def )
+      this_type.categorize
+
+    method on_visit( cmd:Class )
+      cmd.attributes.flags |= this_type.attributes.flags
+      this_type.attributes = cmd.attributes
+      if (not this_type.is_primitive and not this_type.is_compound and not this_type.is_aspect)
+        this_type.attributes.is_object = true
+      endIf
+
+      if (cmd.constructor_properties)
+        if (this_type.is_object)
+          # Turn parameters into properties
+          forEach (v in cmd.constructor_properties)
+            if (v.type)
+              local p = Property( v.t, v.name, v.initial_value, v.type )
+              collect( v.t, p )
+              v.type = null  # turn into auto-store parameter
+            endIf
+          endForEach
+
+        elseIf (this_type.is_compound)
+          # Turn parameters into properties.
+          # Make a create() global method as the "primary constructor".
+          forEach (v in cmd.constructor_properties)
+            if (not v.type) throw v.t.error( "Missing ':Type'." )
+            local p = Property( v.t, v.name, v.initial_value, v.type )
+            collect( v.t, p )
+          endForEach
+
+        elseIf (this_type.is_aspect)
+          throw cmd.constructor_properties.t.error( "Aspects cannot have constructor properties." )
+
+        else
+          throw cmd.constructor_properties.t.error( "Primitives cannot have constructor properties." )
+
+        endIf
+      endIf
+
+      forEach (base_type in cmd.base_types)
+        if (base_type.instance_of(this_type))
+          throw cmd.base_types.t.error( "Circular class extension - $ already extends $." (base_type,this_type) )
+        endIf
+
+        if (base_type.is_primitive)
+          throw cmd.base_types.t.error( "Primitive $ cannot be extended."(base_type) )
+        elseIf (base_type.is_compound)
+          throw cmd.base_types.t.error( "Compound $ cannot be extended."(base_type) )
+        elseIf (base_type.is_object)
+          if (this_type.base_class and this_type.base_class is not base_type)
+            throw cmd.base_types.t.error(
+              "Class $ cannot extend both $ and $. Only one base class is allowed."...
+              (this_type.name,this_type.base_class,base_type)
+            )
+          endIf
+          if (not this_type.is_object)
+            throw cmd.base_types.t.error( "Compounds, aspects, and primitives cannot extend objects." )
+          endIf
+          this_type.base_class = base_type
+        else
+          # base_type.is_aspect
+          ensure this_type.aspects
+          this_type.aspects.add( base_type )
+        endIf
+      endForEach
+
+      visit_children( cmd )
+
+    method on( cmd:Definition )->Cmd
+      assert this_type
+      if (this_type.definitions.contains(cmd.name))
+        throw cmd.t.error( "'$.$' is already defined."(this_type,cmd.name) )
+      endIf
+      this_type.definitions[ cmd.name ] = cmd.value
+      return null
+
+    method on( cmd:NativeCode )->Cmd
+      this_type.native_code.add( cmd )
+      return null
+
+    method on( cmd:NativeHeader )->Cmd
+      this_type.native_header.add( cmd )
+      return null
+
+    method on( cmd:PropertyDeclarations )->Cmd
+      local type = cmd.type
+      if (type)
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            p.type = type
+            collect( decl.t, p )
+          else
+            throw decl.t.error( "Native properties must be on individual lines." )
+          endIf
+        endForEach
+      else
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            collect( p.t, p )
+          else
+            local c_property = decl->(as NativeCProperty)
+            if (c_property)
+              this_type.native_properties.add( c_property.expression )
+            endIf
+          endIf
+        endForEach
+      endIf
+      return null
+
+    method collect( t:Token, p:Property )
+      assert this_type
+      p.type_context = this_type
+
+      if (not p.type)
+        if (p.initial_value)
+          p.type = p.initial_value.type
+          if (not p.type)
+            throw p.t.error(
+              ''Cannot implicitly determine type of property "$" from initial value. ''(p.name) +
+              ''Add an explicit ': Type' at the end of the line.''
+            )
+          endIf
+        else
+          throw p.t.error( ''Property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
+        endIf
+      endIf
+
+      if (this_type.is_compound and p.type.is_compound)
+        if (p.type.contains_embedded_compound(this_type))
+          throw t.error(
+              "Circular compound definition - $ directly or indirectly contains an embedded $, so $ cannot contain a $."...
+              (p.type,this_type,this_type,p.type)
+          )
+        endIf
+      endIf
+
+      visit( p )
+
+      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
+        this_type.attributes.contains_reference = true
+      endIf
+
+      local existing_p = this_type.properties[p.name]
+      if (existing_p and existing_p.type_context is this_type)
+        throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
+      endIf
+      this_type.properties[ p.name ] = p
+
+endClass

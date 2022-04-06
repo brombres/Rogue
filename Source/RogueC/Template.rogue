@@ -17,6 +17,8 @@ class Template
       return name
 
     method generate( type:Type )
+      type.attributes.is_defined = true
+
       type._template = this
       local template_tokens = tokens
 
@@ -44,7 +46,7 @@ class Template
       endIf
 
       local class_def = Parser( template_tokens ).parse( Parser.ip_class )
+      Categorizer( type.module_context ).visit( type, class_def )
       Organizer( type.module_context ).visit( type, class_def )
-      type.attributes.is_defined = true
       Program.is_modified = true
 endClass
