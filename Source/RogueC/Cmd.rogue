@@ -2213,3 +2213,21 @@ class AddAndAssignThisProperty : Cmd
       return "AddAndAssignThisProperty($,$)" (%info,%operand)
 
 endClass
+
+class Loop : Cmd
+  PROPERTIES
+    loop_count : Cmd
+    statements : Cmd
+
+  METHODS
+    method init( t, loop_count, statements )
+
+    method init( existing:Loop )
+      prior.init( existing )
+      if (existing.loop_count) loop_count = existing.loop_count.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "Loop($,$)" (%loop_count,%statements)
+
+endClass

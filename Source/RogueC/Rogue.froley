@@ -1071,10 +1071,8 @@ parser
   onPeek "block"   block:              return
   onPeek "forEach" forEach_loop:       return
   onPeek "if"      if_statement:       return
-#{
   onPeek "loop"    loop:               return
-  onPeek "while"   while_loop:         return
-}#
+  #onPeek "while"   while_loop:         return
   onPeek "try"     try_catch:          return
   statement
 
@@ -1179,21 +1177,23 @@ parser
   endOn
   produce Block(statements):ControlStructure
 
-#{
 - loop
   on "loop"
     on EOL
       createNull # loop_count
       multi_line_statements
+      wrap_in_local_scope
       mustConsume "endLoop"
     elseOnOthers
       expression
       if (consume(EOL)) multi_line_statements; mustConsume "endLoop"
       else              single_line_statements
+      wrap_in_local_scope
     endOn
     produce Loop(loop_count,statements)
   endOn
 
+#{
 - while_loop
   on "while"
     expression

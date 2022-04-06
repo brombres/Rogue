@@ -6,4 +6,5 @@ enum ControlType
   BLOCK
   FOR_EACH
   IF
+  LOOP
 endEnum

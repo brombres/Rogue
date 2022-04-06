@@ -531,4 +531,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
+    method on( cmd:Loop )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.loop_count)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
 endClass
