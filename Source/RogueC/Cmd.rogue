@@ -1137,31 +1137,31 @@ class Stepper : Cmd
 
 endClass
 
-class Postdecrement : Stepper
+class PostDecrement : Stepper
   METHODS
     method description->String
-      return "Postdecrement($)" (%operand)
+      return "PostDecrement($)" (%operand)
 
 endClass
 
-class Postincrement : Stepper
+class PostIncrement : Stepper
   METHODS
     method description->String
-      return "Postincrement($)" (%operand)
+      return "PostIncrement($)" (%operand)
 
 endClass
 
-class Predecrement : Stepper
+class PreDecrement : Stepper
   METHODS
     method description->String
-      return "Predecrement($)" (%operand)
+      return "PreDecrement($)" (%operand)
 
 endClass
 
-class Preincrement : Stepper
+class PreIncrement : Stepper
   METHODS
     method description->String
-      return "Preincrement($)" (%operand)
+      return "PreIncrement($)" (%operand)
 
 endClass
 

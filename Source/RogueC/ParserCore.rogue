@@ -1554,7 +1554,7 @@ class ParserCore [abstract]
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
                 _pop_frame
-                if (not disable_output) _push( Preincrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PreIncrement(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -1562,7 +1562,7 @@ class ParserCore [abstract]
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
                 _pop_frame
-                if (not disable_output) _push( Predecrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PreDecrement(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -1570,13 +1570,13 @@ class ParserCore [abstract]
             _pop_frame
             if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( Postincrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PostIncrement(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
             if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( Postdecrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PostDecrement(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -2191,7 +2191,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_pre_unary)
                 _pop_frame
-                if (not disable_output) _push( Preincrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PreIncrement(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -2200,7 +2200,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_pre_unary)
                 _pop_frame
-                if (not disable_output) _push( Predecrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PreDecrement(_cur_t,_node_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
@@ -2216,7 +2216,7 @@ class ParserCore [abstract]
           case ip_post_unary__inner
             if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( Postincrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PostIncrement(_cur_t,_node_arg(-1)), 1 )
                 _execute(ip_post_unary__inner)
                 _pop_frame
                 return
@@ -2224,7 +2224,7 @@ class ParserCore [abstract]
             endIf
             if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( Postdecrement(_cur_t,_node_arg(-1)), 1 )
+                if (not disable_output) _push( PostDecrement(_cur_t,_node_arg(-1)), 1 )
                 _execute(ip_post_unary__inner)
                 _pop_frame
                 return

@@ -342,7 +342,7 @@ class Resolver : Visitor
             Add( v.t, cmd.loop_count.cmd_convert_to(Program.type_Int32), LiteralInt32(v.t,1) )
           )
         )
-        iterator.condition = Predecrement( v.t, GetLocal(v.t,v) )
+        iterator.condition = PreDecrement( v.t, GetLocal(v.t,v) )
       else
         iterator.control = LiteralLogical(cmd.t,true)
       endIf
@@ -1159,7 +1159,7 @@ augment
       if (cmd_collection.step_size)
         cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator_name), cmd_collection.step_size) )
       else
-        cmd_iterator.upkeep.add( Preincrement(t, Access(t,v_iterator_name)) )
+        cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_iterator_name)) )
       endIf
 
       resolver.pop_scope

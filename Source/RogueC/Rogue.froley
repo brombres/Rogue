@@ -1134,13 +1134,13 @@ parser
     return
   endOn
 
-  on "++" expression -> Preincrement(operand):Stepper
-  on "--" expression -> Predecrement(operand):Stepper
+  on "++" expression -> PreIncrement(operand):Stepper
+  on "--" expression -> PreDecrement(operand):Stepper
 
   expression
 
-  on "++" -> Postincrement(operand):Stepper
-  on "--" -> Postdecrement(operand):Stepper
+  on "++" -> PostIncrement(operand):Stepper
+  on "--" -> PostDecrement(operand):Stepper
 
   on "=" expression -> Assign(target,new_value)
 
@@ -1378,12 +1378,12 @@ parser
   on "!"   -> BitwiseNot
   on "not" -> LogicalNot
   on "-"   -> Negate
-  on "++"  -> Preincrement
-  on "--"  -> Predecrement
+  on "++"  -> PreIncrement
+  on "--"  -> PreDecrement
 
 - post_unary [postUnary]
-  on "++"  -> Postincrement
-  on "--"  -> Postdecrement
+  on "++"  -> PostIncrement
+  on "--"  -> PostDecrement
 
 - access
   term

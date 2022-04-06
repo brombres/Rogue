@@ -687,19 +687,19 @@ class CGenerator : Visitor
       visit( cmd.right )
       writer.print ')'
 
-    method on_visit( cmd:Predecrement )
+    method on_visit( cmd:PreDecrement )
       writer.print "--"
       visit( cmd.operand )
 
-    method on_visit( cmd:Preincrement )
+    method on_visit( cmd:PreIncrement )
       writer.print "++"
       visit( cmd.operand )
 
-    method on_visit( cmd:Postdecrement )
+    method on_visit( cmd:PostDecrement )
       visit( cmd.operand )
       writer.print "--"
 
-    method on_visit( cmd:Postincrement )
+    method on_visit( cmd:PostIncrement )
       visit( cmd.operand )
       writer.print "++"
 
