@@ -367,5 +367,12 @@ class Visitor
       cmd.context = visit(cmd.context)
       cmd.commands = visit(cmd.commands)
 
+    method on_visit_children( cmd:NamedArg )
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:AddAndAssignThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
 endClass
 

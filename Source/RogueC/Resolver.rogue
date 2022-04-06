@@ -567,9 +567,11 @@ class Resolver : Visitor
 
         if (not type_context)
           match = find_procedure( t, Program.type_Global, context, name, args, &suppress_error )
-          if (not args) args = CmdList(t)
-          cast_args_to_parameter_types( args, match )
-          return validate( match.cmd_call(GetSingleton(t,Program.type_Global),args) )
+          if (match)
+            if (not args) args = CmdList(t)
+            cast_args_to_parameter_types( args, match )
+            return validate( match.cmd_call(GetSingleton(t,Program.type_Global),args) )
+          endIf
         endIf
 
         if (not is_global)
@@ -636,13 +638,24 @@ class Resolver : Visitor
       # And fill in default values
       proc.resolve
 
-      if (not args) return
-
-      while (args.count < proc.parameters.count)
-        args.add( proc.parameters[args.count]->(as Local).initial_value.cloned )
-      endWhile
+      proc.arrange_args( args )
 
       forEach (arg at i in args)
+        if (arg instanceOf NamedArg)
+          local named_arg = arg->(as NamedArg)
+          if (named_arg.is_zero)
+            if (named_arg.value) throw named_arg.value.t.error( "Unexpected value." )
+            arg = LiteralLogical(named_arg.t,false)
+          elseIf (named_arg.is_forward)
+            arg = visit( Access(named_arg.t,named_arg.name,null) )
+          elseIf (named_arg.value)
+            arg = named_arg.value
+          else
+            arg = LiteralLogical(named_arg.t,true)
+          endIf
+        elseIf (arg instanceOf DefaultArg)
+          arg = visit( arg->(as DefaultArg).operand.cloned )
+        endIf
         args[i] = validate( arg.cmd_convert_to(proc.parameters[i].type) )
       endForEach
 
@@ -695,7 +708,7 @@ class Resolver : Visitor
 
               mesg += sig
               mesg += " has arguments that are incompatible with the best candidate:\n\n"
-              mesg += "  " + Candidates[0].context_signature
+              mesg += "  " + Candidates[0].dev_signature
 
             others
               mesg = "Ambiguous call to "
@@ -706,7 +719,7 @@ class Resolver : Visitor
               mesg += sig
               mesg += ". Candidates:\n\n"
               forEach (m in Candidates)
-                mesg += "  $\n" (m.context_signature)
+                mesg += "  $\n" (m.dev_signature)
               endForEach
 
           endWhich
@@ -734,12 +747,61 @@ class Resolver : Visitor
     method refine_candidates( type_context:Type, args:Cmd )->Procedure
       local arg_count = which{ args:args.count || 0 }
 
+      local has_named_arg = false
+      if (args)
+        # Remove any DefaultArgs and check for named args with duplicate names.
+        use arg_names = WorkList<<String>>
+          forEach (arg in rewriter=args->(as CmdList).list.rewriter)
+            if (arg instanceOf NamedArg)
+              local named_arg = arg->(as NamedArg)
+              rewriter.write( arg )
+              has_named_arg = true
+              if (arg_names.contains(named_arg.name))
+                throw arg.t.error( "Named argument '$' is used multiple times."(named_arg.name) )
+              endIf
+              arg_names.add( named_arg.name )
+            elseIf (arg not instanceOf DefaultArg)
+              rewriter.write( arg )
+            endIf
+          endForEach
+        endUse
+      endIf
+
       # Filter out incorrect number of args
       forEach (m in Candidates)
         if (m.accepts_arg_count(arg_count)) Candidates.keep m
       endForEach
-      if (Candidates.found_match) return Candidates.match
       if (not Candidates.refine) return null
+
+      # Filter by candidates that contain all named args in a compatible arrangement.
+      # Example: if 'method m(a:Int32,b=0:Int32)' called with 'm(&b=5)', that method
+      # is not compatible with those arguments.
+      if (has_named_arg)
+        forEach (m in Candidates)
+          contingent
+            forEach (arg in args)
+              if (arg instanceOf NamedArg)
+                local arg_name = arg->(as NamedArg).name
+                necessary (m.has_parameter_named(arg_name))
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (not Candidates.refine) return null
+
+        forEach (m in Candidates)
+          contingent
+            if (m.arrange_args(args)) Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        if (not Candidates.refine) return null
+
+      else
+        if (Candidates.found_match) return Candidates.match
+
+      endIf
 
       # Filter out candidates that don't have the same module context as the first candidate
       local priority_module_context = Candidates[0].module_context
@@ -752,6 +814,7 @@ class Resolver : Visitor
       # Filter by exact arg types
       if (arg_count)
         forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args )
           forEach (arg at i in args)
             if (arg.type is m.parameters[i].type)
               Candidates.keep m
@@ -817,7 +880,13 @@ augment
         return resolver.validate( AddAndAssignLocal(t,v,operand) )
       endIf
 
-      throw t.error( "[TODO] Unimplemented assignment target." )
+      local p = resolver.this_type.properties[ name ]
+      if (p)
+        if (operand_type is not p.type) operand = resolver.validate(operand.cmd_convert_to(p.type))
+        return resolver.validate( AddAndAssignThisProperty(t,p,operand) )
+      endIf
+
+      throw t.error( "[TODO] Unimplemented assignment target (global property, Global.propery)." )
 endAugment
 
 # Assignment

@@ -81,6 +81,14 @@ class CGenerator : Visitor
       print_parenthesized( cmd.operand )
       writer.print ')'
 
+    method on_visit( cmd:AddAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " += "
+      visit( cmd.operand )
+
     method on_visit( cmd:CmdList )
       visit_children( cmd )
 

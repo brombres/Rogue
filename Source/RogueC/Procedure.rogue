@@ -1,5 +1,7 @@
 module Rogue
 
+uses Utility/WorkList
+
 class Procedure : Cmd
   PROPERTIES
     module_context : Module
@@ -58,14 +60,90 @@ class Procedure : Cmd
     method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
 
-    method context_signature->String
-      return "$::$"(module_context,signature)
+    method arrange_args( args:Cmd )->Logical
+      use list = WorkList<<Cmd>>
+        list.expand_to_count( parameters.count )
+
+        # Put each named arg in the right spot
+        forEach (arg in args)
+          block arg = arg->(as NamedArg)
+            if (arg and arg.name)
+              list[ locate_parameter(arg.name).value ] = arg
+            endIf
+          endBlock
+        endForEach
+
+        # Populate empty spots with positional args
+        local available_i = 0
+        forEach (arg in args)
+          if (arg not instanceOf NamedArg)
+            while (list[available_i]) ++available_i
+            list[available_i] = arg
+          endIf
+        endForEach
+
+        # If there are any null spots remaining...
+        if (list.contains(null->(as Cmd)))
+
+          # Fill in empty spots that have default values with placeholder named args.
+          forEach (param at i in parameters)
+            if (not list[i] and param.initial_value)
+              list[i] = DefaultArg( param.t, param.initial_value )
+            endIf
+          endForEach
+
+          # If any null spots still remain it's not a compatible method.
+          if (list.contains(null->(as Cmd))) return false
+        endIf
+
+        # Everything looks good. Commit the new ordering.
+        args.clear
+        args.add( forEach in list )
+
+        return true
+      endUse
 
     method description->String
       return which{ signature || name }
 
+    method dev_signature->String
+      use builder = StringBuilder.pool
+        builder.print module_context
+        builder.print "::"
+        builder.print name
+        builder.print "("
+        forEach (param at i in parameters)
+          if (i > 0) builder.print ','
+          if (param.attributes.is_default_parameter and param.type is Program.type_Logical)
+            builder.print '&'
+            builder.print param.name
+          elseIf (param.initial_value)
+            builder.print '['
+            builder.print param.name
+            builder.print ':'
+            builder.print param.type
+            builder.print ']'
+          else
+            builder.print param.name
+            builder.print ':'
+            builder.print param.type
+          endIf
+        endForEach
+        builder.print ")"
+        return builder->String
+      endUse
+
+    method has_parameter_named( name:String )->Logical
+      return locate_parameter( name )?
+
     method is_method->Logical
       return attributes.is_method
+
+    method locate_parameter( name:String )->Int32?
+      forEach (param at i in parameters)
+        if (param.name == name) return i
+      endForEach
+      return null
 
     method organize( organizer=null:Organizer )
       if (is_organized) return
@@ -100,6 +178,7 @@ class Procedure : Cmd
                 if (p.attributes.is_default_parameter)
                   if (p.initial_value) p.type = p.initial_value.type
                   if (not p.type) p.type = Program.type_Logical
+                  if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
                 elseIf (this instanceOf Method)
                   local prop = this->(as Method).type_context.properties[p.name]
                   if (prop)

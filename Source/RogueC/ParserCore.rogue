@@ -1467,6 +1467,48 @@ class ParserCore [abstract]
             else                    _push_list( Args(_list_t) )
             return
           case ip_arg
+            if (_next_t.type == TokenType.SYMBOL_AMPERSAND)
+              temporarily _cur_t = _on_t
+                if (_next_t.type == TokenType.SYMBOL_BANG)
+                  temporarily _cur_t = _on_t
+                    _execute(ip_identifier)
+                    _pop_frame
+                    if (_consume(TokenType.SYMBOL_EQUALS))
+                      _execute(ip_expression)
+                      _pop_frame
+                    else
+                      if (not disable_output) _push( null, 0 )
+                    endIf
+                    if (not disable_output) _push( NamedArg(_cur_t,_string_arg(-2),_node_arg(-1),_string_to_Logical("true")), 2 )
+                    return
+                  endTemporarily
+                else
+                  _execute(ip_identifier)
+                  _pop_frame
+                  if (_consume(TokenType.SYMBOL_EQUALS))
+                    _execute(ip_expression)
+                    _pop_frame
+                  else
+                    if (not disable_output) _push( null, 0 )
+                  endIf
+                  if (not disable_output) _push( NamedArg(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+                  return
+                endIf
+              endTemporarily
+            elseIf (_next_t.type == TokenType.SYMBOL_AND_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_identifier)
+                _pop_frame
+                if (_consume(TokenType.SYMBOL_EQUALS))
+                  _execute(ip_expression)
+                  _pop_frame
+                else
+                  if (not disable_output) _push( null, 0 )
+                endIf
+                if (not disable_output) _push( NamedArg(_cur_t,_string_arg(-2),_node_arg(-1),_string_to_Logical("false"),_string_to_Logical("true")), 2 )
+                return
+              endTemporarily
+            endIf
             _execute(ip_expression)
             _pop_frame
             return
@@ -1698,6 +1740,8 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_op_and_assign
+            _execute(ip_logical_xor)
+            _pop_frame
             if (_next_t.type == TokenType.SYMBOL_PLUS_EQUALS)
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
@@ -1706,8 +1750,6 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
-            _execute(ip_logical_xor)
-            _pop_frame
             return
           case ip_logical_xor
             _execute(ip_logical_or)
@@ -2494,6 +2536,7 @@ class ParserCore [abstract]
             return
           case ip_additional_node_types
             if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( AddAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallDynamicMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
@@ -2514,6 +2557,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( ConvertToReal64(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CreateObject(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)->(as Local)), 2 )
             if (not disable_output) _push( CreateCompound(_cur_t), 0 )
+            if (not disable_output) _push( DefaultArg(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             if (not disable_output) _push( Iterator(_cur_t,_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 4 )

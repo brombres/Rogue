@@ -53,7 +53,7 @@ augment Cmd
     method require_type->Type
       local result = type
       if (result) return result
-      println StackTrace()
+      #println StackTrace()
       throw t.error( "Value expected ($)."(this) )  # FIXME
 
     method require_value->Cmd
@@ -99,7 +99,6 @@ augment
       return this
 endAugment
 
-#{
 # cmd_default_value()
 augment
   METHODS
@@ -124,7 +123,6 @@ augment
     method TypeValue.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralValueUndefined( cmd_t )
 endAugment
-}#
 
 # discarding_result
 augment
@@ -393,6 +391,10 @@ augment
     method LocalDeclarations.type->Type
       return @type
 
+    method NamedArg.type->Type
+      if (not value) return Program.type_Logical
+      return value.type
+
     method NativeExpression.type->Type
       return result_type->(as Type)
 
@@ -418,19 +420,7 @@ augment
     method TypeContext.type->Type
       return @type
 
-      #{
-    method TypeRef.to->Type
-      return Type( t, name )
-    }#
-
     method Unary.type->Type
       return operand.type
 
-    #{
-    method XYGetX.type->Type
-      return Program.type_Real
-
-    method XYGetY.type->Type
-      return Program.type_Real
-      }#
 endAugment

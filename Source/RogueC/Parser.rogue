@@ -180,7 +180,6 @@ class Parser : ParserCore
 
       local args = _cmd_stack.remove_last->(as Args)
       assert args?
-
       block access = _cmd_stack.last->(as Access)
         if (access)
           if (access.args) throw args.t.error( "Unexpected expression." )
@@ -193,7 +192,10 @@ class Parser : ParserCore
         if (access)
           if (not access.args) access.args = args
           else throw args.t.error( "Unexpected expression." )
+          return
         endIf
       endBlock
+
+      throw args.t.error( "Unexpected expression." )
 
 endClass

@@ -1516,6 +1516,14 @@ class LiteralNull : Literal
     of_type : Type
 
   METHODS
+    method init( t )
+
+    method init( t, of_type )
+
+    method init( existing:LiteralNull )
+      t = existing.t
+      of_type = existing.of_type
+
     method description->String
       return "LiteralNull"
 endClass
@@ -2155,4 +2163,53 @@ class ContextBlockContext : Cmd
   METHODS
     method description->String
       return "ContextBlockContext"
+endClass
+
+class NamedArg : Cmd
+  PROPERTIES
+    name       : String
+    value      : Cmd
+    is_zero    : Logical
+    is_forward : Logical
+
+  METHODS
+    method init( t, name, value, &zero, &forward )
+      is_zero = zero
+      is_forward = forward
+
+    method init( existing:NamedArg )
+      prior.init( existing )
+      name = existing.name
+      if (existing.value) value = existing.value.cloned
+      is_zero = existing.is_zero
+      is_forward = existing.is_forward
+
+    method description->String
+      return "NamedArg($,$)" (%name,%value)
+
+endClass
+
+class DefaultArg : Unary
+  METHODS
+    method description->String
+      return "DefaultArg($)" (%operand)
+
+endClass
+
+class AddAndAssignThisProperty : Cmd
+  PROPERTIES
+    info    : Property
+    operand : Cmd
+
+  METHODS
+    method init( t, info, operand )
+
+    method init( existing:AddAndAssignThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "AddAndAssignThisProperty($,$)" (%info,%operand)
+
 endClass
