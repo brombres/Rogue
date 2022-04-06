@@ -17,17 +17,20 @@ class String
       data = Byte[]( byte_capacity + 1 )
       data[0] = 0
 
-    method print( value:Character, &formatted=true )->this
+    method print( value:Byte )->this
+      return print( value->Int64 )
+
+    method print( value:Character )->this
       if (is_immutable) return this
 
-      if (formatted)
-        if (value == '\n')
-          at_newline = true
-        elseIf (at_newline and indent)
-          forEach (i in 1..indent) data.add( ' ' )
+      if (value == '\n')
+        at_newline = true
+      elseIf (at_newline)
+        if (indent)
+          forEach (i in 1..indent) data.add(' ')
           count += indent
-          at_newline = false
         endIf
+        at_newline = false
       endIf
 
       ++count
@@ -45,6 +48,9 @@ class String
       endIf
       return this
 
+    method print( value:Int32 )->this
+      return print( value->Int64 )
+
     method print( value:Int64 )->this
       if (value == (1->Int64 :<<: 63))
         return print( "-9223372036854775808" )
@@ -57,6 +63,9 @@ class String
       else
         return print( ('0'+value)->Character )
       endIf
+
+    #method print( value:Real32 )->StringBuilder
+      #return this.print( value->Real64 )
 
     method print( value:String )->this
       if (is_immutable) return this

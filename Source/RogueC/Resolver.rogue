@@ -826,6 +826,17 @@ class Resolver : Visitor
         Candidates.refine
       endIf
 
+      # Filter by fewest parameters (omitting calls with excess default args)
+      if (arg_count)
+        local min_params = Candidates[0].parameters.count
+        min_params .= or_smaller( (forEach in Candidates from 1).parameters.count )
+        forEach (m in Candidates)
+          if (m.parameters.count == min_params) Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
       # Filter by arg categories (reference/primitive/compound)
       if (arg_count)
         forEach (m in Candidates)
