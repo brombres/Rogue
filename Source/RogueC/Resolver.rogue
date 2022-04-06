@@ -337,9 +337,12 @@ class Resolver : Visitor
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
       if (cmd.loop_count)
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
-        iterator.initialization.add( SetLocal(v.t,v,cmd.loop_count.cmd_convert_to(Program.type_Int32)) )
-        iterator.condition = GetLocal(v.t,v)
-        iterator.upkeep.add( Predecrement(v.t,GetLocal(v.t,v)) )
+        iterator.initialization.add(
+          SetLocal( v.t, v,
+            Add( v.t, cmd.loop_count.cmd_convert_to(Program.type_Int32), LiteralInt32(v.t,1) )
+          )
+        )
+        iterator.condition = Predecrement( v.t, GetLocal(v.t,v) )
       else
         iterator.control = LiteralLogical(cmd.t,true)
       endIf
