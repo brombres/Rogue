@@ -809,7 +809,7 @@ class Resolver : Visitor
         if (m.module_context is priority_module_context) Candidates.keep m
       endForEach
       if (Candidates.found_match) return Candidates.match
-      if (not Candidates.refine) return null
+      Candidates.refine
 
       # Filter by exact arg types
       if (arg_count)
@@ -823,7 +823,45 @@ class Resolver : Visitor
           endForEach
         endForEach
         if (Candidates.found_match) return Candidates.match
-        if (not Candidates.refine) return null
+        Candidates.refine
+      endIf
+
+      # Filter by arg categories (reference/primitive/compound)
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args )
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              if (arg_type.is_reference) necessary (param_type.is_reference)
+              if (arg_type.is_primitive) necessary (param_type.is_primitive)
+              if (arg_type.is_compound)  necessary (param_type.is_compound)
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Prefer methods with higher-precision args
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args )
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              if (arg_type.is_primitive and param_type.is_primitive)
+                necessary (param_type.precision_index >= arg_type.precision_index)
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
       endIf
 
       return null

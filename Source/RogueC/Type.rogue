@@ -414,6 +414,9 @@ class Type : Cmd
 
       endIf
 
+    method precision_index->Int32
+      return 10 # Objects etc.
+
     method to->Character
       return Cmd.to_character(name)
 
@@ -431,42 +434,63 @@ class TypeLogical : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Logical", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 0
 endClass
 
 class TypeByte : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Byte", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 1
 endClass
 
 class TypeCharacter : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Character", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 2
 endClass
 
 class TypeInt32 : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Int32", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 3
 endClass
 
 class TypeInt64 : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Int64", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 4
 endClass
 
 class TypeReal32 : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Real32", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 5
 endClass
 
 class TypeReal64 : BuiltInType
   METHODS
     method init( t:Token )
       prior.init( t, "Real64", Attribute.PRIMITIVE )
+
+    method precision_index->Int32
+      return 6
 endClass
 
 class TypeString : BuiltInType
