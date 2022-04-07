@@ -148,7 +148,8 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char*    module_name;
            |  const char*    name;
-           |  const void**   local_pointers; // only for compounds with embedded refs
+           |  void**         local_pointer_stack; // Objects + compounds with embedded refs
+           |  RogueInt32     local_pointer_capacity;
            |  RogueInt32     local_pointer_count;
            |  RogueInt32     id;
            |  RogueInt32     size;
@@ -158,13 +159,17 @@ class CWriter : BufferedPrintWriter
            |  RogueFn_Object fn_on_cleanup;
            |};
            |
+           |//------------------------------------------------------------------------------
+           |// Runtime
+           |//------------------------------------------------------------------------------
            |void* Rogue_create_object( void* type );
            |void  Rogue_destroy_object( void* obj );
            |void* Rogue_singleton( void* type, void* singleton_ref );
            |
            |void* Rogue_release( void* obj );
-           |
            |void* Rogue_retain( void* obj );
+           |
+           |void  RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer );
            |
            |void  Rogue_launch();
            |
@@ -174,9 +179,6 @@ class CWriter : BufferedPrintWriter
            |
            |struct RogueObject;
            |
-           |//------------------------------------------------------------------------------
-           |// Runtime
-           |//------------------------------------------------------------------------------
            |extern int                 Rogue_execution_status; // 1=return, 2=exception
            |extern struct RogueObject* Rogue_exception;
            |
@@ -193,7 +195,10 @@ class CWriter : BufferedPrintWriter
         println  "#include <stdio.h>"
         println
         println ...
-          @|void* Rogue_create_object( void* _type )
+          @|//------------------------------------------------------------------------------
+           |// Runtime
+           |//------------------------------------------------------------------------------
+           |void* Rogue_create_object( void* _type )
            |{
            |  RogueType*  type = (RogueType*) _type;
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
@@ -231,9 +236,25 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
-           |//------------------------------------------------------------------------------
-           |// Runtime
-           |//------------------------------------------------------------------------------
+           |void RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer )
+           |{
+           |  if (type->local_pointer_count == type->local_pointer_capacity)
+           |  {
+           |    int required_capacity = type->local_pointer_capacity << 1;
+           |    if (required_capacity < 32) required_capacity = 32;
+           |
+           |    void** new_data = (void**) ROGUE_MALLOC( sizeof(void*) * required_capacity );
+           |    if (type->local_pointer_stack)
+           |    {
+           |      memcpy( new_data, type->local_pointer_stack, sizeof(void*)*type->local_pointer_count );
+           |      ROGUE_FREE( type->local_pointer_stack );
+           |    }
+           |    type->local_pointer_stack = new_data;
+           |    type->local_pointer_capacity = required_capacity;
+           |  }
+           |  type->local_pointer_stack[ type->local_pointer_count++ ] = local_pointer;
+           |}
+           |
            |int          Rogue_execution_status = 0;
            |RogueObject* Rogue_exception = 0;
            |

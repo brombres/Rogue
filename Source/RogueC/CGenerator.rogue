@@ -1,5 +1,7 @@
 module Rogue
 
+uses Utility/WorkList
+
 class CGenerator : Visitor
   PROPERTIES
     writer         : CWriter
@@ -323,29 +325,65 @@ class CGenerator : Visitor
         writer.indent += 2
 
         if (is_procedure)
-          if (this_procedure.return_type and this_procedure.attributes.has_return and
-              this_procedure.attributes.requires_cleanup)
-            writer.print this_procedure.return_type.c_name
-            if (this_procedure.return_type.is_reference) writer.print '*'
-            writer.print   ' '
-            writer.print   this_procedure.c_result_name
-            writer.println " = 0;"
+          if (Program.gc_auto)
+            if (this_procedure.return_type and this_procedure.attributes.has_return and
+                this_procedure.attributes.requires_cleanup)
+              writer.print this_procedure.return_type.c_name
+              if (this_procedure.return_type.is_reference) writer.print '*'
+              writer.print   ' '
+              writer.print   this_procedure.c_result_name
+              writer.println " = 0;"
+            endIf
+
+            # Declare all local parameters.
+            if (this_procedure.locals.count)
+              forEach (v in this_procedure.locals)
+                writer.print( v.type.c_ref_name ).print( ' ' )
+                writer.print( v.c_name )
+                if (not v.initial_value)
+                  writer.print( " = " )
+                  if (v.type.is_compound) writer.print "{}"
+                  else                    writer.print "0"
+                endIf
+                writer.println( ';' )
+              endForEach
+              writer.println
+            endIf
+
+            if (this_procedure.has_cleanup_code)
+              forEach (p in this_procedure.parameters)
+                if (p.type.is_reference)
+                  writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+                  writer.print   p.c_name
+                  writer.println ");"
+                elseIf (p.type.contains_reference)
+                  writer.print   "RogueType_local_pointer_stack_add( &Type"
+                  writer.print   p.type.c_name
+                  writer.print   ", &"
+                  writer.print   p.c_name
+                  writer.println ");"
+                endIf
+              endForEach
+
+              forEach (v in this_procedure.locals)
+                if (v.type.is_reference)
+                  writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+                  writer.print   v.c_name
+                  writer.println ");"
+                elseIf (v.type.contains_reference)
+                  writer.print   "RogueType_local_pointer_stack_add( &Type"
+                  writer.print   v.type.c_name
+                  writer.print   ", &"
+                  writer.print   v.c_name
+                  writer.println ");"
+                endIf
+              endForEach
+              writer.println
+            endIf
           endIf
-
-          # TODO
-          #forEach (p in this_procedure.parameters)
-          #  # In gc_auto mode, pointers to any references and compounds containing
-          #  # references must be added to a local pointer stack for GC tracing.
-
-          #  if (p.type.is_reference and not p.is_anchored)
-          #    writer.print "ROGUE_RETAIN( "
-          #    writer.print p->(as Local).c_name
-          #    writer.print( " )" )
-          #    writer.println( ';' )
-          #  endIf
-          #endForEach
         endIf
 
+        #{
         forEach (v in cmd.locals)
           writer.print( v.type.c_ref_name ).print( ' ' )
           writer.print( v.c_name )
@@ -356,6 +394,7 @@ class CGenerator : Visitor
           endIf
           writer.println( ';' )
         endForEach
+        }#
 
       endIf
 
@@ -396,6 +435,57 @@ class CGenerator : Visitor
         #endForEach
 
         if (is_procedure)
+          if (this_procedure.has_cleanup_code)
+            if (Program.gc_auto)
+              writer.println
+
+              local pop_count = 0
+              forEach (p in this_procedure.parameters)
+                if (p.type.is_reference) ++pop_count
+              endForEach
+              forEach (p in this_procedure.locals)
+                if (p.type.is_reference) ++pop_count
+              endForEach
+              if (pop_count)
+                writer.print   "TypeRogueObject.local_pointer_count -= "
+                writer.print   pop_count
+                writer.println ';'
+              endIf
+
+              use unique_compound_types = WorkList<<Type>>
+                forEach (p in this_procedure.parameters)
+                  if (p.type.is_compound and p.type.contains_reference)
+                    if (not unique_compound_types.contains(p.type)) unique_compound_types.add( p.type )
+                  endIf
+                endForEach
+                forEach (v in this_procedure.locals)
+                  if (v.type.is_compound and v.type.contains_reference)
+                    if (not unique_compound_types.contains(v.type)) unique_compound_types.add( v.type )
+                  endIf
+                endForEach
+
+                forEach (type in unique_compound_types)
+                  pop_count = 0
+                  forEach (p in this_procedure.parameters)
+                    if (p.type is type) ++pop_count
+                  endForEach
+                  forEach (p in this_procedure.locals)
+                    if (p.type is type) ++pop_count
+                  endForEach
+                  if (pop_count)
+                    writer.print   "Type"
+                    writer.print   type.c_name
+                    writer.print   ".local_pointer_count -= "
+                    writer.print   pop_count
+                    writer.println ';'
+                  endIf
+                endForEach
+              endUse
+
+              writer.println
+            endIf
+          endIf
+
           if (this_procedure.return_type and this_procedure.attributes.has_return and
               this_procedure.attributes.requires_cleanup)
             if (this_procedure.throws)
@@ -967,11 +1057,11 @@ augment
 
           writer.print( "void " ).print( type.c_name ).print( "_on_retain( " ).print( type.c_name ).println( "* THIS );" )
         endIf
-        if (type.contains_reference or type.m_on_cleanup)
-          writer.print( "int " ).print( type.c_name ).print( "_on_release( " ).print( type.c_name ).println( "* THIS );" )
+        }#
+        if (type.contains_reference or type is Program.type_Object)
+          writer.print( "void " ).print( type.c_name ).println( "_gc_trace( void* THIS );" )
           writer.println
         endIf
-        }#
 
       endForEach
 
@@ -1046,7 +1136,8 @@ augment
           writer.print   ''", "''
           writer.print   type.name
           writer.print   ''", ''
-          writer.print   "0, " # local_pointers
+          writer.print   "0, " # local_pointer_stack
+          writer.print   "0, " # local_pointer_capacity
           writer.print   "0, " # local_pointer_count
           writer.print   type.id
           writer.print   '', sizeof(''
@@ -1070,16 +1161,18 @@ augment
             writer.print   "0"
           endIf
 
-          writer.print ", 0" # fn_gc_trace
-          writer.print ", 0" # fn_on_cleanup
-
-          #{
-          if (type.contains_reference or type.m_on_cleanup)
-            writer.print( ",(RogueFn_Object__Int)" ).print( type.c_name ).print( "_on_release" );
+          # fn_gc_trace
+          writer.print ", "
+          if (type.is_object)
+            writer.print "(RogueFn_Object)"
+            if (type.contains_reference) writer.print type.c_name
+            else                         writer.print "RogueObject"
+            writer.print "_gc_trace"
           else
-            writer.print   ",0"
+            writer.print '0'
           endIf
-          }#
+
+          writer.print ", 0" # fn_on_cleanup
 
           writer.println '' };''
         endForEach
@@ -1311,31 +1404,38 @@ augment
       endIf
       }#
 
-      #{
-      if (contains_reference or m_on_cleanup)
-        writer.print( "int " ).print( c_name ).print( "_on_release( " ).print( c_name ).println( "* THIS )" )
+      if (contains_reference or this is Program.type_Object)
+        writer.print( "void " ).print( c_name ).print( "_gc_trace( void* THIS )" )
         writer.println '{'
+        writer.indent += 2
 
-        if (m_on_cleanup)
-          writer.print( "  " ).print( m_on_cleanup.c_name ).print( "( " )
-          writer.print_with_cast( "THIS", this, m_on_cleanup.type_context )
-          writer.println " );"
-          if (this.is_reference) writer.println "  if (THIS->refcount) return 0;"
+        if (is_reference)
+          writer.println "((RogueObject*)THIS)->refcount = ~((RogueObject*)THIS)->refcount;"
         endIf
 
-        forEach (p in properties)
-          if (p.type.is_reference)
-            writer.print( "  ROGUE_RELEASE_REF( &THIS->" ).print( p.c_name ).println( " );" )
-          elseIf (p.type.is_compound and p.type.contains_reference)
-            writer.print "  "
-            writer.print( p.type.c_name ).print( "_on_release( &THIS->" ).print( p.c_name ).println( " );" )
-          endIf
-        endForEach
-        writer.println "  return 1;"
+        contingent
+          forEach (p in properties)
+            sufficient (p.type.is_reference)
+          endForEach
+
+        satisfied
+          writer.println
+          if (contains_reference) writer.println "RogueObject* ref;"
+          forEach (p in properties)
+            if (p.type.is_reference)
+              writer.print   "if ((ref = (RogueObject*)(("
+              writer.print   c_name
+              writer.print   "*)THIS)->"
+              writer.print   p.c_name
+              writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+            endIf
+          endForEach
+        endContingent
+
+        writer.indent -= 2
         writer.println '}'
         writer.println
       endIf
-      }#
 
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )
