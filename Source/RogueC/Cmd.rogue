@@ -616,7 +616,6 @@ class Local : Cmd
   METHODS
     method init( t, name, initial_value, type, &default_parameter )
       ensure attributes(t)
-      attributes.is_anchored = true
       attributes.is_default_parameter = default_parameter
 
     method init( existing:Local )
@@ -694,7 +693,6 @@ class SetLocal : Cmd
   METHODS
     method init( t, info, new_value, &initial_assignment )
       is_initial_assignment = initial_assignment
-      info.attributes.is_anchored = initial_assignment
 
     method init( existing:SetLocal )
       prior.init( existing )

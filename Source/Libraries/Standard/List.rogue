@@ -76,8 +76,6 @@ class List<<$DataType>>
                 |$this->as_logicals[$count] = 0;
                 |return result;
       else
-        # We skip the object release() but also skip the object retain() for the result,
-        # so it balances out.
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |(($<<element_type>>*)($this->data))[$count] = 0;
                 |return result;
@@ -112,8 +110,6 @@ class List<<$DataType>>
     method set( index:Int32, value:$DataType )
       if ($DataType isType Logical)
         native @|$this->as_logicals[$index] = (RogueByte) $value;
-      elseIf ($DataType isReference)
-        native @|ROGUE_SET_REF( (($<<element_type>>*)($this->data)) + $index, $value );
       else
         native @|(($<<element_type>>*)($this->data))[$index] = $value;
       endIf

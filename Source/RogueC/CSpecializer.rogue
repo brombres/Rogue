@@ -35,43 +35,24 @@ class CSpecializer : Visitor
         current_statements.write( cmd )
       endIf
 
-    method on( cmd:CallDynamicMethod )->Cmd
-      # Anchor the object context if necessary
-      local context = cmd.context
-      if (context.type.is_reference and not context.is_anchored)
-        context = visit( context )
-        local v = context.intermediate_v
-        if (not v or not v.is_anchored)
-          v = add_local( context.t, "anchored_context", context.type, DummyInitialValue )
-          insert( SetLocal(context.t,v,context,&initial_assignment) )
-        endIf
-        cmd.context = GetLocal(context.t,v)
-      endIf
-      return on( cmd->(as CallProcedure) )
-
     method on( cmd:CallProcedure )->Cmd
       visit_children( cmd )
 
       # Anchor any args that need it
-      forEach (arg at i in cmd.args)
-        if (arg.type.is_reference and not arg.is_anchored)
-          local v = add_local( arg.t, "anchored_arg_"+i, arg.type )
-          insert( SetLocal(arg.t,v,arg,&initial_assignment) )
-          cmd.args[i] = GetLocal(arg.t,v)
-        endIf
-      endForEach
+      #forEach (arg at i in cmd.args)
+      #  if (arg.type.is_reference and not arg.is_anchored)
+      #    local v = add_local( arg.t, "anchored_arg_"+i, arg.type )
+      #    insert( SetLocal(arg.t,v,arg,&initial_assignment) )
+      #    cmd.args[i] = GetLocal(arg.t,v)
+      #  endIf
+      #endForEach
 
-      local throws = cmd.info.throws?
-      if (throws or (cmd.info.return_type? and cmd.info.return_type.is_reference))
+      if (cmd.info.throws?)
         # Decompose call
         if (cmd.info.return_type?)
           local v = add_local( cmd.t, "call", cmd.info.return_type, DummyInitialValue )
-          v.attributes.is_retained = true
           insert( SetLocal(cmd.t,v,cmd,&initial_assignment) )
-
-          if (throws)
-            insert( ReturnOnException(cmd.t) )
-          endIf
+          insert( ReturnOnException(cmd.t) )
           return GetLocal( cmd.t, v )
         else
           insert( cmd )
@@ -91,7 +72,6 @@ class CSpecializer : Visitor
       visit_children( cmd )
 
       local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
-      v.attributes.is_retained = true
       insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
       if (cmd.m_init)
         insert( validate(CallDynamicMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
@@ -270,6 +250,22 @@ class CSpecializer : Visitor
           endContingent
         endForEach
       endTemporarily
+
+    method on( cmd:SetLocal )->Cmd
+      local cmd_create = cmd.new_value->(as CreateObject)
+      if (not cmd_create)
+        visit_children( cmd )
+        return cmd
+      endIf
+
+      local args = visit( cmd_create.args )
+      local cmd_create2 = validate( CreateObjectAndSetLocal(cmd_create.t,cmd_create.of_type,cmd.info) )
+      if (cmd_create.m_init)
+        insert( cmd_create2 )
+        return validate( CallDynamicMethod(cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args) )
+      else
+        return cmd_create2
+      endIf
 
     method on_visit( cmd:Throw )
       visit_children( cmd )
@@ -489,7 +485,7 @@ augment
     method Routine.c_name->String
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
-        builder.print( module_context.c_name ).print( "___" )
+        builder.print( module_context.c_name ).print( "__" )
         builder.print( name )
         if (parameters.count)
           builder.print "_"

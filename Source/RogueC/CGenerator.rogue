@@ -332,18 +332,18 @@ class CGenerator : Visitor
             writer.println " = 0;"
           endIf
 
-          forEach (p in this_procedure.parameters)
-            # All reference args passed to a procedure must be anchored.
-            # All reference parameters are likewise anchored by default, but
-            # if their value is changed over the course of the method then
-            # the parameter is unanchored and must be retained & released.
-            if (p.type.is_reference and not p.is_anchored)
-              writer.print "ROGUE_RETAIN( "
-              writer.print p->(as Local).c_name
-              writer.print( " )" )
-              writer.println( ';' )
-            endIf
-          endForEach
+          # TODO
+          #forEach (p in this_procedure.parameters)
+          #  # In gc_auto mode, pointers to any references and compounds containing
+          #  # references must be added to a local pointer stack for GC tracing.
+
+          #  if (p.type.is_reference and not p.is_anchored)
+          #    writer.print "ROGUE_RETAIN( "
+          #    writer.print p->(as Local).c_name
+          #    writer.print( " )" )
+          #    writer.println( ';' )
+          #  endIf
+          #endForEach
         endIf
 
         forEach (v in cmd.locals)
@@ -353,9 +353,6 @@ class CGenerator : Visitor
             writer.print( " = " )
             if (v.type.is_compound) writer.print "{}"
             else                    writer.print "0"
-            #if (v.type.is_reference)     writer.print "0"
-            #elseIf (v.type.is_primitive) writer.print "0"
-            #else                     throw t.error( "[INTERNAL] Unhandled type $ in C.write_local_declarations()."(v.type) )
           endIf
           writer.println( ';' )
         endForEach
@@ -373,29 +370,30 @@ class CGenerator : Visitor
       pop_scope
 
       if (cmd.locals.count or is_procedure or not optional)
-        if (is_procedure)
-          forEach (p in this_procedure.parameters)
-            if (p.type.is_reference and not p.is_anchored)
-              writer.print "ROGUE_RELEASE_REF( &"
-              writer.print p.c_name
-              writer.print( " )" )
-              writer.println( ';' )
-            elseIf (p.type.is_compound and p.type.contains_reference)
-              writer.print( p.type.c_name ).print( "_on_release( &" ).print( p.c_name ).println( " );" )
-            endIf
-          endForEach
-        endIf
+        # TODO: revamp to pop pointers off local pointer stack
+        #if (is_procedure)
+        #  forEach (p in this_procedure.parameters)
+        #    if (p.type.is_reference and not p.is_anchored)
+        #      writer.print "ROGUE_RELEASE_REF( &"
+        #      writer.print p.c_name
+        #      writer.print( " )" )
+        #      writer.println( ';' )
+        #    elseIf (p.type.is_compound and p.type.contains_reference)
+        #      writer.print( p.type.c_name ).print( "_on_release( &" ).print( p.c_name ).println( " );" )
+        #    endIf
+        #  endForEach
+        #endIf
 
-        forEach (v in cmd.locals)
-          if (v.type.is_reference)
-            writer.print "ROGUE_RELEASE_REF( &"
-            writer.print v.c_name
-            writer.print( " )" )
-            writer.println( ';' )
-          elseIf (v.type.is_compound and v.type.contains_reference)
-            writer.print( v.type.c_name ).print( "_on_release( &" ).print( v.c_name ).println( " );" )
-          endIf
-        endForEach
+        #forEach (v in cmd.locals)
+        #  if (v.type.is_reference)
+        #    writer.print "ROGUE_RELEASE_REF( &"
+        #    writer.print v.c_name
+        #    writer.print( " )" )
+        #    writer.println( ';' )
+        #  elseIf (v.type.is_compound and v.type.contains_reference)
+        #    writer.print( v.type.c_name ).print( "_on_release( &" ).print( v.c_name ).println( " );" )
+        #  endIf
+        #endForEach
 
         if (is_procedure)
           if (this_procedure.return_type and this_procedure.attributes.has_return and
@@ -443,27 +441,13 @@ class CGenerator : Visitor
         writer.print(' ').print(param.c_name)
       endForEach
       writer.print " }"
-      if (this_type.contains_reference)
-        writer.println ";"
-        writer.print( this_type.c_name ).println( "_on_retain( &result );" )
-        writer.print   "return result"
-      endIf
 
     method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
       writer.print " = "
-      writer.print "ROGUE_RETAIN( ROGUE_CREATE_OBJECT("
+      writer.print "ROGUE_CREATE_OBJECT( "
       writer.print cmd.of_type.c_name
-      writer.print ") )"
-
-    #method on_visit( cmd:DiscardResult )
-    #  if (cmd.operand.type.is_reference)
-    #    writer.print "ROGUE_RELEASE("
-    #    visit( cmd.operand )
-    #    writer.print ')'
-    #  else
-    #    visit( cmd.operand )
-    #  endIf
+      writer.print " )"
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
@@ -621,11 +605,6 @@ class CGenerator : Visitor
       assert c_id
       writer.print( c_id )
 
-    #method on_visit( cmd:LocalDeclarations )
-    #  visit_children( cmd )
-
-    #method on_visit( cmd:LocalDef )
-
     method on_visit( cmd:LogicalAnd )
       print_parenthesized( cmd.left )
       writer.print " && "
@@ -722,13 +701,7 @@ class CGenerator : Visitor
         writer.print "return"
         if (cmd.result)
           writer.print ' '
-          if (this_procedure.return_type.is_reference and not cmd.result.is_retained)
-            writer.print   "ROGUE_RETAIN("
-            visit( cmd.result )
-            writer.print ')'
-          else
-            visit( cmd.result )
-          endIf
+          visit( cmd.result )
         endIf
         writer.println ";"
         return
@@ -737,14 +710,8 @@ class CGenerator : Visitor
       if (cmd.result)
         writer.print this_procedure.c_result_name
         writer.print " = "
-        if (this_procedure.return_type.is_reference and not cmd.result.is_retained)
-          writer.print   "ROGUE_RETAIN("
-          visit( cmd.result )
-          writer.println ");"
-        else
-          visit( cmd.result )
-          writer.println ";"
-        endIf
+        visit( cmd.result )
+        writer.println ";"
       endIf
 
       if (escape_needs_jump(cmd))
@@ -782,98 +749,27 @@ class CGenerator : Visitor
       writer.println
 
     method on_visit( cmd:SetGlobalProperty )
-      local type = cmd.info.type
-      if (type.is_reference)
-        writer.print "ROGUE_SET_REF( &"
-        writer.print cmd.info.c_name
-        writer.print ", "
-        visit( cmd.new_value )
-        writer.print " )"
-      elseIf (type.is_compound and type.contains_reference)
-        writer.print( type.c_name ).print( "_set_compound( &" )
-        writer.print( cmd.info.c_name )
-        writer.print( ", " )
-        visit( cmd.new_value )
-        writer.print( " )" )
-      else
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
 
     method on_visit( cmd:SetLocal )
-      local type = cmd.info.type
-      if (type.is_reference and not cmd.new_value.is_retained)
-        if (cmd.is_initial_assignment)
-          writer.print cmd.info.c_name
-          writer.print " = ROGUE_RETAIN("
-          visit( cmd.new_value )
-          writer.print ")"
-        else
-          writer.print "ROGUE_SET_REF( &"
-          writer.print cmd.info.c_name
-          writer.print ", "
-          visit( cmd.new_value )
-          writer.print " )"
-        endIf
-      elseIf (type.is_compound and type.contains_reference)
-        writer.print( type.c_name ).print( "_set_compound( &" )
-        writer.print( cmd.info.c_name )
-        writer.print( ", " )
-        visit( cmd.new_value )
-        writer.print " )"
-      else
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
 
     method on_visit( cmd:SetProperty )
-      local type = cmd.info.type
-      if (type.is_reference)
-        writer.print "ROGUE_SET_REF( &("
-        visit( cmd.context )
-        writer.print "->"
-        writer.print cmd.info.c_name
-        writer.print "), "
-        visit( cmd.new_value )
-        writer.print " )"
-      elseIf (type.is_compound and type.contains_reference)
-        writer.print( type.c_name ).print( "_set_compound( &" )
-        visit( cmd.context )
-        writer.print "->"
-        writer.print( cmd.info.c_name )
-        writer.print( ", " )
-        visit( cmd.new_value )
-        writer.print( " )" )
-      else
-        visit( cmd.context )
-        writer.print "->"
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
+      visit( cmd.context )
+      writer.print "->"
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
 
     method on_visit( cmd:SetThisProperty )
-      local type = cmd.info.type
-      if (type.is_reference)
-        writer.print "ROGUE_SET_REF( &(THIS->"
-        writer.print cmd.info.c_name
-        writer.print "), "
-        visit( cmd.new_value )
-        writer.print " )"
-      elseIf (type.is_compound and type.contains_reference)
-        writer.print( type.c_name ).print( "_set_compound( &THIS->" )
-        writer.print( cmd.info.c_name )
-        writer.print( ", " )
-        visit( cmd.new_value )
-        writer.print( " )" )
-      else
-        writer.print( "THIS->" )
-        writer.print( cmd.info.c_name )
-        writer.print( " = " )
-        visit( cmd.new_value )
-      endIf
+      writer.print( "THIS->" )
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
 
     method on_visit( cmd:ShiftLeft )
       print_parenthesized( cmd.left )
@@ -900,9 +796,9 @@ class CGenerator : Visitor
       writer.print "THIS"
 
     method on_visit( cmd:Throw )
-      writer.print   "Rogue_exception = (RogueObject*) ROGUE_RETAIN("
+      writer.print   "Rogue_exception = "
       visit( cmd.exception )
-      writer.println ");"
+      writer.println ';'
       writer.println "Rogue_execution_status = ROGUE_EXE_EXCEPTION;"
       if (escape_needs_jump(cmd))
         writer.print "goto "
@@ -1063,6 +959,7 @@ augment
         endIf
         writer.println( forEach in type.native_header )
 
+        #{
         if (type.is_compound and type.contains_reference)
           writer.print( "void " ).print( type.c_name ).print( "_set_compound( " ).print( type.c_name ).println( "* THIS, " )
           writer.print( type.c_name ).println( " new_value );" )
@@ -1073,6 +970,7 @@ augment
           writer.print( "int " ).print( type.c_name ).print( "_on_release( " ).print( type.c_name ).println( "* THIS );" )
           writer.println
         endIf
+        }#
 
       endForEach
 
@@ -1147,6 +1045,8 @@ augment
           writer.print   ''", "''
           writer.print   type.name
           writer.print   ''", ''
+          writer.print   "0, " # local_pointers
+          writer.print   "0, " # local_pointer_count
           writer.print   type.id
           writer.print   '', sizeof(''
           writer.print   type.c_name
@@ -1169,11 +1069,17 @@ augment
             writer.print   "0"
           endIf
 
+          writer.print ", 0" # fn_gc_trace
+          writer.print ", 0" # fn_on_cleanup
+
+          #{
           if (type.contains_reference or type.m_on_cleanup)
             writer.print( ",(RogueFn_Object__Int)" ).print( type.c_name ).print( "_on_release" );
           else
             writer.print   ",0"
           endIf
+          }#
+
           writer.println '' };''
         endForEach
         writer.println
@@ -1377,6 +1283,7 @@ augment
     method Type.generate_c_code( writer:CWriter )
       if (is_aspect) return
 
+      #{
       if (is_compound and contains_reference)
         writer.print( "void " ).print( type.c_name ).print( "_set_compound( " ).print( type.c_name ).println( "* THIS, " )
         writer.print( type.c_name ).println( " new_value )" )
@@ -1401,6 +1308,9 @@ augment
         writer.println '}'
         writer.println
       endIf
+      }#
+
+      #{
       if (contains_reference or m_on_cleanup)
         writer.print( "int " ).print( c_name ).print( "_on_release( " ).print( c_name ).println( "* THIS )" )
         writer.println '{'
@@ -1424,6 +1334,7 @@ augment
         writer.println '}'
         writer.println
       endIf
+      }#
 
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )

@@ -73,7 +73,6 @@ class RogueC
         Program.real_bits = real_bits
       endIf
 
-      Program.using_arc = true
       Program.include( forEach in command//args )
       Program.include( "Standard" )
       Program.resolve

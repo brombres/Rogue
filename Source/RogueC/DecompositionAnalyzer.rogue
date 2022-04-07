@@ -4,10 +4,10 @@ class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
   METHODS
     method on( cmd:CallProcedure )->Logical
       if (cmd.info.throws?) return true          # call throws exception
-      return cmd.info.return_type.is_reference   # unanchored reference?
+      return prior.on( cmd )
 
-    method on( cmd:CreateObject )->Logical
-      return true # unanchored reference
+    #method on( cmd:CreateObject )->Logical
+      #return true # unanchored reference
 
     method on( cmd:InlineWhich )->Logical
       forEach (wcase in cmd.cases)

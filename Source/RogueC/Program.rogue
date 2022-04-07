@@ -8,7 +8,6 @@ class Program [singleton]
     definitions          = StringTable<<Token[]>>()
 
     real_bits       : Int32 # Set with --real=32 compile option
-    using_arc       = true  # Automatic Reference Counting
 
     modules         = StringTable<<Module>>()
     default_module  : Module

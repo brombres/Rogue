@@ -121,40 +121,50 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_FREE free
            |#endif
            |
-           |#define ROGUE_CREATE_OBJECT( TypeName ) \
-           |    ((TypeName*)Rogue_create_object(&Type##TypeName))
+           |#if !defined(ROGUE_CREATE_OBJECT)
+           |  #define ROGUE_CREATE_OBJECT( TypeName ) \
+           |      ((TypeName*)Rogue_create_object(&Type##TypeName))
+           |#endif
            |
-           |#define ROGUE_SINGLETON( TypeName ) \
-           |    ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
+           |#if !defined(ROGUE_SINGLETON)
+           |  #define ROGUE_SINGLETON( TypeName ) \
+           |      ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
+           |#endif
            |
-           |#define ROGUE_RELEASE_REF( ref )  Rogue_release_ref( ref )
-           |#define ROGUE_SET_REF( ref, obj ) Rogue_set_ref( ref, obj )
+           |#if !defined(ROGUE_RELEASE)
+           |  // Allow 'obj' to be GC'd if there are no other references to it.
+           |  #define ROGUE_RELEASE( obj )  Rogue_release( obj )
+           |#endif
            |
-           |#define ROGUE_RELEASE( obj )  Rogue_release( obj )
-           |#define ROGUE_RETAIN( obj )   Rogue_retain( obj )
+           |#if !defined(ROGUE_RETAIN)
+           |  // Prevent 'obj' from being GC'd if there are no other references to it.
+           |  #define ROGUE_RETAIN( obj )   Rogue_retain( obj )
+           |#endif
            |
            |typedef struct RogueType RogueType;
            |typedef void (*RogueFn_Object)(void*);
-           |typedef int  (*RogueFn_Object__Int)(void*);
            |
            |struct RogueType
            |{
-           |  const char*         module_name;
-           |  const char*         name;
-           |  RogueInt32          id;
-           |  RogueInt32          size;
-           |  RogueFn_Object      fn_init_object;
-           |  RogueFn_Object      fn_init;
-           |  RogueFn_Object__Int fn_on_release;
+           |  const char*    module_name;
+           |  const char*    name;
+           |  const void**   local_pointers; // only for compounds with embedded refs
+           |  RogueInt32     local_pointer_count;
+           |  RogueInt32     id;
+           |  RogueInt32     size;
+           |  RogueFn_Object fn_init_object;
+           |  RogueFn_Object fn_init;
+           |  RogueFn_Object fn_gc_trace;
+           |  RogueFn_Object fn_on_cleanup;
            |};
            |
            |void* Rogue_create_object( void* type );
-           |void  Rogue_delete_object( void* obj );
+           |void  Rogue_destroy_object( void* obj );
            |void* Rogue_singleton( void* type, void* singleton_ref );
+           |
            |void* Rogue_release( void* obj );
-           |void  Rogue_release_ref( void* ref );
+           |
            |void* Rogue_retain( void* obj );
-           |void  Rogue_set_ref( void* ref, void* new_obj );
            |
            |void  Rogue_launch();
            |
@@ -189,24 +199,14 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->type = type;
-           |  if (type->fn_init_object)
-           |  {
-           |    ++obj->refcount;
-           |    type->fn_init_object( obj );
-           |    --obj->refcount;
-           |  }
+           |  if (type->fn_init_object) type->fn_init_object( obj );
            |  // refcount starts at 0
            |  return obj;
            |}
            |
-           |void Rogue_delete_object( void* obj )
+           |void Rogue_destroy_object( void* obj )
            |{
-           |  if (((RogueObject*)obj)->type->fn_on_release)
-           |  {
-           |    if ( !((RogueObject*)obj)->type->fn_on_release(obj) ) return;
-           |    // on_release > on_cleanup could retain object
-           |  }
-           |  printf( "Delete object %s\n", ((RogueObject*)obj)->type->name );
+           |  printf( "Destroy object %s\n", ((RogueObject*)obj)->type->name );
            |  ROGUE_FREE( obj );
            |}
            |
@@ -215,39 +215,20 @@ class CWriter : BufferedPrintWriter
            |  if (*((RogueObject**)singleton_ref)) return *((RogueObject**)singleton_ref);
            |  RogueType* type = (RogueType*) _type;
            |  RogueObject* obj = Rogue_create_object( type );
-           |  Rogue_set_ref( singleton_ref, obj );
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
            |  return obj;
            |}
            |
            |void* Rogue_release( void* obj )
            |{
-           |  if (obj && ! --(((RogueObject*)obj)->refcount)) Rogue_delete_object( obj );
+           |  if (obj) --(((RogueObject*)obj)->refcount);
            |  return 0;
-           |}
-           |
-           |void Rogue_release_ref( void* ref )
-           |{
-           |  RogueObject* obj = *((RogueObject**)ref);
-           |  if (obj && ! --(obj->refcount))
-           |  {
-           |    Rogue_delete_object( obj );
-           |    *((RogueObject**)ref) = 0;
-           |  }
            |}
            |
            |void* Rogue_retain( void* obj )
            |{
            |  if (obj) ++(((RogueObject*)obj)->refcount);
            |  return obj;
-           |}
-           |
-           |void Rogue_set_ref( void* ref, void* new_obj )
-           |{
-           |  RogueObject* old_obj = *((RogueObject**)ref);
-           |  if (old_obj && ! --old_obj->refcount) Rogue_delete_object( old_obj );
-           |  if (new_obj) ++((RogueObject*)new_obj)->refcount;
-           |  *((void**)ref) = new_obj;
            |}
            |
            |//------------------------------------------------------------------------------

@@ -28,6 +28,7 @@ class String
       indent = 0
       at_newline = true
       hash_code = -1
+      return this
 
     method hash_code->Int32
       if (@hash_code == -1)
@@ -124,8 +125,8 @@ class String
                  |  RogueInt32 character_count = RogueString_utf8_character_count( cstring, byte_count );
                  |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, must_free );
                  |
-                 |  RogueString* result = ROGUE_RETAIN( ROGUE_CREATE_OBJECT(RogueString) );
-                 |  RogueByteList* data = ROGUE_RETAIN( ROGUE_CREATE_OBJECT(RogueByteList) );
+                 |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
+                 |  RogueByteList* data = ROGUE_CREATE_OBJECT( RogueByteList );
                  |  result->data = data;
                  |
                  |  data->as_utf8        = (char*) cstring;
@@ -156,7 +157,7 @@ class String
                  |    return RogueString_create( cstring, byte_count, must_free );
                  |  }
                  |
-                 |  RogueString* result = ROGUE_RETAIN( ROGUE_CREATE_OBJECT(RogueString) );
+                 |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
                  |  RogueString__init__RogueInt32( result, utf8_byte_count );
                  |
                  |  char* utf8 = result->data->as_utf8;
