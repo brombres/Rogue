@@ -14,7 +14,7 @@ class Collector : Visitor
       return null
 
     method on( cmd:Routine )->Cmd
-      cmd.organize
+      cmd.organize_methods
       return null
 
     method on( cmd:Statements )->Cmd

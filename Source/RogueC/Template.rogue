@@ -46,7 +46,7 @@ class Template
       endIf
 
       local class_def = Parser( template_tokens ).parse( Parser.ip_class )
-      Categorizer( type.module_context ).visit( type, class_def )
-      Organizer( type.module_context ).visit( type, class_def )
+      TypeOrganizer( type.module_context ).visit( type, class_def )
+      MethodOrganizer( type.module_context ).visit( type, class_def )
       Program.is_modified = true
 endClass

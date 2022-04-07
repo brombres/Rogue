@@ -160,7 +160,7 @@ class Program [singleton]
         endTemporarily
       endForEach
 
-      (forEach in modules).organize
+      (forEach in modules).organize_methods
 
       apply( Resolver() )
       Finalizer().apply

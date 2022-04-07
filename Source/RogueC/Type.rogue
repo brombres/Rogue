@@ -105,7 +105,7 @@ class Type : Cmd
       return this
 
     method collect_methods( m_name:String, list:Procedure[], &require_global )
-      organize
+      organize_methods
 
       forEach (m in global_methods)
         if (m.name == m_name) list.add( m )
@@ -251,21 +251,21 @@ class Type : Cmd
     method is_value_type->Logical
       return attributes.is_primitive or attributes.is_compound
 
-    method categorize
+    method organize_type
       if (attributes.is_categorized) return
       attributes.is_categorized = true
       ensure_definition
 
       # Categorize base types
       if (base_class)
-        base_class.categorize
+        base_class.organize_type
       elseIf (this.is_object and this is not Program.type_Object)
         base_class = Program.type_Object
-        base_class.categorize
+        base_class.organize_type
       endIf
 
       if (aspects)
-        (forEach in aspects).categorize
+        (forEach in aspects).organize_type
 
         # Build flat list of incorporated aspects. Each aspect will already have
         # a flat list of its own base aspects.
@@ -321,15 +321,15 @@ class Type : Cmd
         endUse
       endIf
 
-    method organize
+    method organize_methods
       if (attributes.is_organized) return
       attributes.is_organized = true
-      categorize
+      organize_type
 
       # Organize base types
-      if (base_class) base_class.organize
+      if (base_class) base_class.organize_methods
       if (aspects)
-        (forEach in aspects).organize
+        (forEach in aspects).organize_methods
       endIf
 
       # Add init_class() for global property initialization
@@ -337,7 +337,7 @@ class Type : Cmd
         local m = global_methods["init_class()"]
         if (not m)
           m = GlobalMethod( t, this, "init_class" )
-          m.organize
+          m.organize_methods
           global_methods[ m.signature ] = m
         endIf
 
@@ -357,7 +357,7 @@ class Type : Cmd
         local m = methods["init_object()"]
         if (not m)
           m = Method( t, this, "init_object" )
-          m.organize
+          m.organize_methods
           methods[ m.signature ] = m
         endIf
 

@@ -19,7 +19,7 @@ class Resolver : Visitor
       endTemporarily
 
     method visit_type( type:Type )
-      type.organize
+      type.organize_methods
       if (type.is_aspect) return
 
       prior.visit_type( type )
@@ -545,7 +545,7 @@ class Resolver : Visitor
         endIf
 
         if (type_context)
-          type_context.organize
+          type_context.organize_methods
           local def = type_context.definitions[ name ]
           if (def) return visit( def.cloned )
         endIf

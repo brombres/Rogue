@@ -1,13 +1,13 @@
 module Rogue
 
-class Categorizer : Visitor
+class TypeOrganizer : Visitor
   METHODS
     method init( this_module )
 
     method visit( this_type, class_def:Cmd )
       # Called when instantiating a template
       visit( class_def )
-      this_type.categorize
+      this_type.organize_type
 
     method on_visit( cmd:Class )
       cmd.attributes.flags |= this_type.attributes.flags

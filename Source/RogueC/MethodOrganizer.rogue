@@ -1,6 +1,6 @@
 module Rogue
 
-class Organizer : Visitor
+class MethodOrganizer : Visitor
   METHODS
     method init( this_module )
 
@@ -30,13 +30,13 @@ class Organizer : Visitor
     method on( cmd:GlobalMethod )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type
-      cmd.organize( this )
+      cmd.organize_methods( this )
       return cmd
 
     method on( cmd:Method )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type
-      cmd.organize( this )
+      cmd.organize_methods( this )
       if (this_type.is_compound and cmd.name == "init")
         throw cmd.t.error(
             "Compounds and primitives cannot have init() methods. Add global method create$->$ instead." ...

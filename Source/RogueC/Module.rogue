@@ -28,7 +28,7 @@ class Module
     method collect_routines( r_name:String, list:Procedure[], &is_limited )
       if (attributes.is_visiting) return
 
-      organize
+      organize_methods
 
       forEach (r in routines)
         if (r.name == r_name) list.add( r )
@@ -86,7 +86,7 @@ class Module
 
       return result
 
-    method organize
+    method organize_methods
       if (attributes.is_organized) return
       attributes.is_organized = true
 
@@ -100,7 +100,7 @@ class Module
       local r = routines[ "on_launch()" ]
       if (not r)
         r = Routine( t, this, "on_launch" )
-        r.organize
+        r.organize_methods
         routines[ r.signature ] = r
       endIf
       r.statements.add( forEach in global_statements )
