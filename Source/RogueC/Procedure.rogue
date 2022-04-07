@@ -36,7 +36,7 @@ class Procedure : Cmd
       statements = body.statements
 
       if (attributes.returns_this)
-        if (this not instanceOf Method)
+        if (not this.is_method)
           throw t.error( "Return type 'this' can only be used with an object method." )
         endIf
       endIf
@@ -137,7 +137,7 @@ class Procedure : Cmd
       return locate_parameter( name )?
 
     method is_method->Logical
-      return attributes.is_method
+      return this instanceOf Method
 
     method locate_parameter( name:String )->Int32?
       forEach (param at i in parameters)
@@ -179,7 +179,7 @@ class Procedure : Cmd
                   if (p.initial_value) p.type = p.initial_value.type
                   if (not p.type) p.type = Program.type_Logical
                   if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
-                elseIf (this instanceOf Method)
+                elseIf (this.is_method)
                   local prop = this->(as Method).type_context.properties[p.name]
                   if (prop)
                     p.name = "_auto_store_" + p.name

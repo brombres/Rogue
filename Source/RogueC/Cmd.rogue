@@ -1587,11 +1587,9 @@ class Method : Procedure
     method init( t:Token, module_context:Module, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )
       prior.init( t, module_context, name, parameters, return_type, attributes, body )
-      this.attributes.is_method = true
 
     method init( t:Token, type_context, name:String )
       prior.init( t, type_context.module_context, name, null, null, null, null )
-      this.attributes.is_method = true
 
     method init( existing:Method )
       prior.init( existing )
@@ -2315,5 +2313,46 @@ class SetGlobalProperty : Cmd
 
     method description->String
       return "SetGlobalProperty($,$)" (%info,%new_value)
+
+endClass
+
+class ContextDirectAccess : Cmd
+  PROPERTIES
+    context : Cmd
+    name    : String
+
+  METHODS
+    method init( t, context, name )
+
+    method init( existing:ContextDirectAccess )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      name = existing.name
+
+    method description->String
+      return "ContextDirectAccess($,$)" (%context,%name)
+
+endClass
+
+class DirectAccess : Cmd
+  PROPERTIES
+    name : String
+
+  METHODS
+    method init( t, name )
+
+    method init( existing:DirectAccess )
+      prior.init( existing )
+      name = existing.name
+
+    method description->String
+      return "DirectAccess($)" (%name)
+
+    method to->Character
+      return Cmd.to_character(name)
+
+    method to->Int32:  return name
+    method to->Logical: return name?
+    method to->String: return name
 
 endClass

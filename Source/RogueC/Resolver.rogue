@@ -59,10 +59,6 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
 
-    method on( cmd:TypeAccess )->Cmd
-      cmd.args = visit( cmd.args )
-      return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
-
     method on( cmd:AddAndAssign )->Cmd
       return validate( cmd.target.resolve_add_and_assign(visit(cmd.operand).require_value,this) )
 
@@ -104,6 +100,9 @@ class Resolver : Visitor
       endForEach
       return GetLocal( v.t, v )
 
+    method on( cmd:ContextDirectAccess )->Cmd
+      return resolve_direct_access( cmd.t, cmd.context, cmd.name )
+
     method on( cmd:ControlStructure )->Cmd
       push_scope( cmd )
       handle( cmd )
@@ -131,6 +130,9 @@ class Resolver : Visitor
         back_propagate_thrown_exception( cmd.m_init.throws )
       endIf
       return cmd
+
+    method on( cmd:DirectAccess )->Cmd
+      return resolve_direct_access( cmd.t, null, cmd.name )
 
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
@@ -465,6 +467,10 @@ class Resolver : Visitor
       back_propagate_thrown_exception( exception_type )
       return cmd
 
+    method on( cmd:TypeAccess )->Cmd
+      cmd.args = visit( cmd.args )
+      return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
+
     method on_visit( cmd:Unary )
       cmd.operand = visit( cmd.operand )
       local type = cmd.require_type
@@ -559,7 +565,7 @@ class Resolver : Visitor
         endIf
 
         if (not type_context)
-          match = find_procedure( t, Program.type_Global, context, name, args, &suppress_error )
+          match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
           if (match)
             if (not args) args = CmdList(t)
             cast_args_to_parameter_types( args, match )
@@ -584,6 +590,30 @@ class Resolver : Visitor
 
       endTemporarily
       return null  # never reached
+
+    method resolve_direct_access( t:Token, context:Cmd, name:String )->Cmd
+      local type_context = this_type
+      if (context)
+        context = visit( context )
+        type_context = context.require_type
+      endIf
+
+      if (context or this_procedure.is_method)
+        local p = type_context.properties[ name ]
+        if (p)
+          if (context) return validate( GetProperty(t,context,p) )
+          else         return validate( GetThisProperty(t,p) )
+        endIf
+      endIf
+
+      block
+        local p = type_context.global_properties[ name ]
+        if (p)
+          return validate( GetGlobalProperty(t,p) )
+        endIf
+      endBlock
+
+      throw t.error( "No such property '$' in type $."(name,type_context) )
 
     method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error )->Cmd
       temporarily this_module = type.module_context

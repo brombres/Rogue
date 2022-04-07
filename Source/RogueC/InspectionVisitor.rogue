@@ -571,4 +571,10 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.new_value)
       return result
 
+    method on( cmd:ContextDirectAccess )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      return result
+
 endClass

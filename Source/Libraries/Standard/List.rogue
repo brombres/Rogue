@@ -49,11 +49,38 @@ class List<<$DataType>>
         native @|(($<<value>>*)($this->data))[$count++] = $value;
       endIf
 
+    method clear
+      discard_from( 0 )
+
+    method discard_from( index:Int32 )
+      local n = (count - index)
+      if (n > 0)
+        zero( index, n )
+        count = index
+      endIf
+
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
         native @|return $this->as_logicals[$index];
       else
         native @|return (($<<element_type>>*)($this->data))[$index];
+      endIf
+
+    method is_empty->Logical
+      return count == 0
+
+    method remove_last->$DataType
+      --count
+      if ($DataType isType Logical)
+        native @|RogueLogical result = $this->as_logicals[$count];
+                |$this->as_logicals[$count] = 0;
+                |return result;
+      else
+        # We skip the object release() but also skip the object retain() for the result,
+        # so it balances out.
+        native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
+                |(($<<element_type>>*)($this->data))[$count] = 0;
+                |return result;
       endIf
 
     method reserve( additional_capacity:Int32 )
@@ -85,6 +112,8 @@ class List<<$DataType>>
     method set( index:Int32, value:$DataType )
       if ($DataType isType Logical)
         native @|$this->as_logicals[$index] = (RogueByte) $value;
+      elseIf ($DataType isReference)
+        native @|ROGUE_SET_REF( (($<<element_type>>*)($this->data)) + $index, $value );
       else
         native @|(($<<element_type>>*)($this->data))[$index] = $value;
       endIf
@@ -94,11 +123,9 @@ class List<<$DataType>>
       return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
       }#
 
-      #{
     method zero( i1:Int32, n:Int32 )
       local size = element_size
       native @|memset( $this->as_bytes + $i1*$size, 0, $n*$size );
-      }#
 
 endClass
 

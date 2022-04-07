@@ -597,8 +597,6 @@ parser
   produceTokenList
 
 - type_name
-  #identifier
-  #on "[]": create Join(a:String,b="[]")
   savePosition
   on "::"
     create Identifier(name="\"Rogue\"":String)
@@ -616,8 +614,6 @@ parser
       create ModuleQualifiedID(context,name:String)
     endOn
   endWhile
-
-  #while (consume("[]")) noAction TODO
 
 - optional_type
   if (consume(':')) type
@@ -1140,7 +1136,7 @@ parser
   expression
 
 - statement
-  #on "noAction": return
+  on "noAction":  return
   #on @"print"     args -> Print(args)
   #on @"println"   args -> Println(args)
   on "return"     optional_expression -> Return(result)
@@ -1154,13 +1150,13 @@ parser
     return
   endOn
 
-  on "++" expression -> PreIncrement(operand):Stepper
-  on "--" expression -> PreDecrement(operand):Stepper
+  #on "++" expression -> PreIncrement(operand):Stepper
+  #on "--" expression -> PreDecrement(operand):Stepper
 
   expression
 
-  on "++" -> PostIncrement(operand):Stepper
-  on "--" -> PostDecrement(operand):Stepper
+  #on "++" -> PostIncrement(operand):Stepper
+  #on "--" -> PostDecrement(operand):Stepper
 
   on "=" expression -> Assign(target,new_value)
 
@@ -1411,9 +1407,14 @@ parser
 
 - access_inner
   on '.'
-    identifier
-    access_args
-    create ContextAccess(context,name:String,args)
+    on '@'
+      identifier
+      create ContextDirectAccess(context,name:String)
+    elseOnOthers
+      identifier
+      access_args
+      create ContextAccess(context,name:String,args)
+    endOn
     access_inner
   elseOn "->"
     type
@@ -1447,6 +1448,7 @@ parser
   identifier
   access_args
   create ContextAccess(context,name:String,args)
+  on "=" expression -> Assign(target,new_value)
   access_inner
 
 - term
@@ -1457,6 +1459,10 @@ parser
   on OCTAL_INTEGER  -> LiteralInteger(content=content:String,base="8":Integer):Literal
   on REAL_NUMBER    -> LiteralReal(value=content:Real):Literal
   on CHARACTER      -> LiteralCharacter(value=content:Character):Literal
+  on '@'
+    type_name
+    produce DirectAccess( name:String )
+  endOn
   onPeek IDENTIFIER
     type_name
     if (nextIs("<<") or nextIs("[]") or nextIs('?'))

@@ -1,12 +1,9 @@
 class String
-  GLOBAL PROPERTIES
-    pool = String[]
-
   PROPERTIES
     count           : Int32  # in whole characters
     cursor_offset   : Int32  # in bytes
     cursor_index    : Int32  # in characters
-    hash_code       : Int32
+    hash_code       = -1
     indent          : Int32
     at_newline      = true
     is_immutable    : Logical
@@ -20,11 +17,30 @@ class String
       data = Byte[]( byte_capacity + 1 )
       data[0] = 0
 
+    method capacity->Int32
+      return data.capacity
+
+    method clear->this
+      if (is_immutable) return this
+      data.clear
+      data[0] = 0
+      count = 0
+      indent = 0
+      at_newline = true
+      hash_code = -1
+
+    method hash_code->Int32
+      if (@hash_code == -1)
+        native @|$hash_code = RogueString_compute_hash_code( $this, 0 );
+      endIf
+      return @hash_code
+
     method print( value:Byte )->this
       return print( value->Int64 )
 
     method print( value:Character )->this
       if (is_immutable) return this
+      hash_code = -1  # invalidate
 
       if (value == '\n')
         at_newline = true
@@ -78,17 +94,21 @@ class String
         return this
       endIf
 
+      if (value.count == 0) return this  # no change
+
       reserve( value.data.count )  # will include space for null terminator
       native ...
         @|memcpy( $this->data->as_utf8+$data->count, $value->data->as_utf8, $value->data->count );
          |$this->count       += $value->count;
          |$this->data->count += $value->data->count;
-         |$hash_code = RogueString_compute_hash_code( $value, $hash_code );
          |$this->data->as_utf8[$this->data->count] = 0;
+
+      hash_code = -1;
 
       return this
 
     method reserve( additional_bytes:Int32 )
+      if (is_immutable) return
       data.reserve( additional_bytes+1 ) # +1 for null terminator
 
   NATIVE
@@ -115,7 +135,7 @@ class String
                  |
                  |  result->count        = character_count;
                  |  result->is_immutable = !must_free;
-                 |  result->hash_code = RogueString_compute_hash_code( result, 0 );
+                 |  result->hash_code = -1;
                  |  return result;
                  |}
                  |
@@ -161,7 +181,7 @@ class String
                  |
                  |  result->data->count = utf8_byte_count;
                  |  result->count       = byte_count;
-                 |  result->hash_code   = RogueString_compute_hash_code( result, 0 );
+                 |  result->hash_code   = -1;
                  |
                  |  if (must_free) ROGUE_FREE( (void*)cstring );
                  |
@@ -236,5 +256,11 @@ class String
                  |  return character_count;
                  |}
                  |
+endClass
+
+class StringPool : ObjectPool<<String>>
+  METHODS
+    method on_end_use( builder:String )
+      available.add( builder.clear )
 endClass
 

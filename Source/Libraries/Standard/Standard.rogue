@@ -3,6 +3,7 @@ $include Standard/Exception
 $include Standard/Global
 $include Standard/List
 $include Standard/Object
+$include Standard/ObjectPool
 $include Standard/Optional
 $include Standard/Primitives
 $include Standard/String

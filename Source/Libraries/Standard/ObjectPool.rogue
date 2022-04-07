@@ -1,0 +1,12 @@
+class ObjectPool<<$DataType>> [singleton]
+  PROPERTIES
+    available = $DataType[]
+
+  METHODS
+    method on_use->$DataType
+      if (available.is_empty) return $DataType()
+      return available.remove_last
+
+    method on_end_use( object:$DataType )
+      noAction
+endClass

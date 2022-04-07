@@ -1554,6 +1554,11 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_statement
+            if (_next_t.type == TokenType.KEYWORD_NO_ACTION)
+              temporarily _cur_t = _on_t
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_RETURN)
               temporarily _cur_t = _on_t
                 _execute(ip_optional_expression)
@@ -1583,36 +1588,8 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
-            if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( PreIncrement(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( PreDecrement(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
             _execute(ip_expression)
             _pop_frame
-            if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
-              temporarily _cur_t = _on_t
-                if (not disable_output) _push( PostIncrement(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
-              temporarily _cur_t = _on_t
-                if (not disable_output) _push( PostDecrement(_cur_t,_node_arg(-1)), 1 )
-                return
-              endTemporarily
-            endIf
             if (_next_t.type == TokenType.SYMBOL_EQUALS)
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
@@ -2273,11 +2250,19 @@ class ParserCore [abstract]
           case ip_access_inner
             if (_next_t.type == TokenType.SYMBOL_PERIOD)
               temporarily _cur_t = _on_t
-                _execute(ip_identifier)
-                _pop_frame
-                _execute(ip_access_args)
-                _pop_frame
-                if (not disable_output) _push( ContextAccess(_cur_t,_node_arg(-3),_string_arg(-2),_node_arg(-1)), 3 )
+                if (_next_t.type == TokenType.SYMBOL_AT)
+                  temporarily _cur_t = _on_t
+                    _execute(ip_identifier)
+                    _pop_frame
+                    if (not disable_output) _push( ContextDirectAccess(_cur_t,_node_arg(-2),_string_arg(-1)), 2 )
+                  endTemporarily
+                else
+                  _execute(ip_identifier)
+                  _pop_frame
+                  _execute(ip_access_args)
+                  _pop_frame
+                  if (not disable_output) _push( ContextAccess(_cur_t,_node_arg(-3),_string_arg(-2),_node_arg(-1)), 3 )
+                endIf
                 _execute(ip_access_inner)
                 _pop_frame
               endTemporarily
@@ -2332,6 +2317,14 @@ class ParserCore [abstract]
             _execute(ip_access_args)
             _pop_frame
             if (not disable_output) _push( ContextAccess(_cur_t,_node_arg(-3),_string_arg(-2),_node_arg(-1)), 3 )
+            if (_next_t.type == TokenType.SYMBOL_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( Assign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
             _execute(ip_access_inner)
             _pop_frame
             return
@@ -2375,6 +2368,14 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.CHARACTER)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( LiteralCharacter(_cur_t,_string_to_Character(_cur_t.content)), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_AT)
+              temporarily _cur_t = _on_t
+                _execute(ip_type_name)
+                _pop_frame
+                if (not disable_output) _push( DirectAccess(_cur_t,_string_arg(-1)), 1 )
                 return
               endTemporarily
             endIf
