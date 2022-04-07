@@ -1050,14 +1050,6 @@ augment
         endIf
         writer.println( forEach in type.native_header )
 
-        #{
-        if (type.is_compound and type.contains_reference)
-          writer.print( "void " ).print( type.c_name ).print( "_set_compound( " ).print( type.c_name ).println( "* THIS, " )
-          writer.print( type.c_name ).println( " new_value );" )
-
-          writer.print( "void " ).print( type.c_name ).print( "_on_retain( " ).print( type.c_name ).println( "* THIS );" )
-        endIf
-        }#
         if (type.contains_reference or type is Program.type_Object)
           writer.print( "void " ).print( type.c_name ).println( "_gc_trace( void* THIS );" )
           writer.println
@@ -1430,6 +1422,21 @@ augment
               writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
             endIf
           endForEach
+
+          if (attributes.is_reference_list)
+            writer.println
+            writer.print   "RogueObject** cursor = ((RogueObject**)(("
+            writer.print   c_name
+            writer.println "*)THIS)->data) - 1;"
+            writer.print   "int n = ((int)(("
+            writer.print   c_name
+            writer.println "*)THIS)->capacity);"
+            writer.println @|while (--n >=0)
+                            |{
+                            |  if ((ref = *(++cursor)) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);
+                            |}
+          endIf
+
         endContingent
 
         writer.indent -= 2

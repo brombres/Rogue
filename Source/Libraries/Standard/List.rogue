@@ -1,4 +1,6 @@
-class List<<$DataType>>
+class ListType [aspect];
+
+class List<<$DataType>> : ListType
   PROPERTIES
     count        : Int32
     capacity     : Int32

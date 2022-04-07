@@ -321,6 +321,16 @@ class Type : Cmd
         endUse
       endIf
 
+      if (this.instance_of(Program.type_ListType))
+        local p_element_type = properties["element_type"]
+        assert p_element_type
+        if (p_element_type.type.is_reference)
+          attributes.is_reference_list = true
+          attributes.contains_reference = true
+        endIf
+      endIf
+
+
     method organize_methods
       if (attributes.is_organized) return
       attributes.is_organized = true

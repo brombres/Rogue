@@ -25,6 +25,7 @@ class Attribute
     DEFAULT_PARAMETER  = (1:<<:20)
     CATEGORIZED        = (1:<<:21)
     IS_GLOBAL          = (1:<<:22)
+    REFERENCE_LIST     = (1:<<:23)
 endClass
 
 class Attributes : CmdList
@@ -51,6 +52,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_default_parameter, Attribute.DEFAULT_PARAMETER )
   ROGUE_ATTRIBUTE( is_categorized,       Attribute.CATEGORIZED )
   ROGUE_ATTRIBUTE( is_global,            Attribute.IS_GLOBAL )
+  ROGUE_ATTRIBUTE( is_reference_list,    Attribute.REFERENCE_LIST )
 
   PROPERTIES
     flags : Int32
