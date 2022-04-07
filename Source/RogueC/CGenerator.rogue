@@ -823,12 +823,13 @@ class CGenerator : Visitor
         local i1 = code.locate("$<<")
         while (i1)
           local i2 = code.locate( ">>", i1 )
-          if (not i2) escapeWhile
+          if (not i2)
+            throw t.error( "Use of unterminated '$<<' variable marker." )
+          endIf
 
           local marker = code.from(i1.value+3,i2.value-1)
           code = code.leftmost(i1.value) + native_replacement(t,marker,&type) + code.from(i2.value+2)
-
-          i1 = code.locate("$<<",i2)
+          i1 = code.locate("$<<",i1)
         endWhile
       endBlock
 

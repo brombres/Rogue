@@ -75,6 +75,10 @@ class List<<$DataType>>
         native @|RogueLogical result = $this->as_logicals[$count];
                 |$this->as_logicals[$count] = 0;
                 |return result;
+      elseIf ($DataType isCompound)
+        native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
+                |memset( (($<<element_type>>*)($this->data)) + $count, 0, sizeof($<<element_type>>) );
+                |return result;
       else
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |(($<<element_type>>*)($this->data))[$count] = 0;
