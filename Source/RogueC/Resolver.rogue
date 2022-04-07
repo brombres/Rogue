@@ -564,13 +564,12 @@ class Resolver : Visitor
           return validate( match.cmd_call(context,args) )
         endIf
 
-        if (not type_context)
-          match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
-          if (match)
-            if (not args) args = CmdList(t)
-            cast_args_to_parameter_types( args, match )
-            return validate( match.cmd_call(GetSingleton(t,Program.type_Global),args) )
-          endIf
+        # Check in Global
+        match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
+        if (match)
+          if (not args) args = CmdList(t)
+          cast_args_to_parameter_types( args, match )
+          return validate( match.cmd_call(GetSingleton(t,Program.type_Global),args) )
         endIf
 
         if (not is_global)
@@ -610,6 +609,34 @@ class Resolver : Visitor
         local p = type_context.global_properties[ name ]
         if (p)
           return validate( GetGlobalProperty(t,p) )
+        endIf
+      endBlock
+
+      throw t.error( "No such property '$' in type $."(name,type_context) )
+
+    method resolve_direct_assignment( t:Token, context:Cmd, name:String, new_value:Cmd )->Cmd
+      local type_context = this_type
+      if (context)
+        context = visit( context )
+        type_context = context.require_type
+      endIf
+
+      new_value = visit( new_value ).require_value
+
+      if (context or this_procedure.is_method)
+        local p = type_context.properties[ name ]
+        if (p)
+          new_value = validate( new_value.cmd_convert_to(p.type) )
+          if (context) return validate( SetProperty(t,context,p,new_value) )
+          else         return validate( SetThisProperty(t,p,new_value) )
+        endIf
+      endIf
+
+      block
+        local p = type_context.global_properties[ name ]
+        if (p)
+          new_value = validate( new_value.cmd_convert_to(p.type) )
+          return validate( SetGlobalProperty(t,p,new_value) )
         endIf
       endBlock
 
@@ -992,6 +1019,9 @@ augment
         if (v) return resolver.validate( SetLocal(t,v,new_value) )
 
         if (resolver.this_type)
+          local cmd_call = resolver.resolve_access( t, null, "set_"+name, Args(t,new_value), &suppress_error )
+          if (cmd_call) return cmd_call
+
           local p = resolver.this_type.properties[ name ]
           if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
         endIf
@@ -1004,10 +1034,16 @@ augment
       endIf
       throw t.error( "Illegal target for assignment." )
 
+    method ContextDirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      return resolver.resolve_direct_assignment( t, context, name, new_value )
+
     method ContextAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
         context = resolver.visit( context )
         local context_type = context.require_type
+
+        local cmd_call = resolver.resolve_access( t, context, "set_"+name, Args(t,new_value), &suppress_error )
+        if (cmd_call) return cmd_call
 
         local p = context_type.properties[ name ]
         if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
@@ -1015,6 +1051,9 @@ augment
         throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type.name) )
       endIf
       throw t.error( "Illegal target for assignment." )
+
+    method DirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      return resolver.resolve_direct_assignment( t, null, name, new_value )
 
     method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       return resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
