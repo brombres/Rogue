@@ -539,4 +539,36 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
+    method on( cmd:GlobalPropertyDeclarations )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.declarations)
+      if (result?) return result
+      result = visit(cmd.type)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      return result
+
+    method on( cmd:TypeAccess )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on( cmd:GetGlobalProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:SetGlobalProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
 endClass

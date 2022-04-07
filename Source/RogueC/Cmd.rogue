@@ -792,9 +792,11 @@ class Property : Cmd
     name          : String
     initial_value : Cmd
     type          : Type
+    attributes    : Attributes
 
   METHODS
     method init( t, name, initial_value, type )
+      attributes = Attributes(t)
 
     method init( existing:Property )
       prior.init( existing )
@@ -802,6 +804,7 @@ class Property : Cmd
       name = existing.name
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
+      if (existing.attributes) attributes = existing.attributes.cloned
 
     method description->String
       return "Property($,$,$)" (%name,%initial_value,%type)
@@ -1544,6 +1547,17 @@ class GlobalMethod : Procedure
     type_context : Type
 
   METHODS
+    method init( t:Token, type_context, name:String )
+      prior.init( t, type_context.module_context, name, null, null, null, null )
+
+    method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
+                 attributes=null:Attributes, body=null:LocalScope )
+        prior.init( t, name, parameters, return_type, attributes, body )
+
+    method init( existing:GlobalMethod )
+      prior.init( existing )
+      type_context = existing.@type_context
+
     method context_signature->String
       return "$::$.$"(module_context,type_context,signature)
 
@@ -2229,5 +2243,77 @@ class Loop : Cmd
 
     method description->String
       return "Loop($,$)" (%loop_count,%statements)
+
+endClass
+
+class GlobalPropertyDeclarations : Cmd
+  PROPERTIES
+    declarations : Cmd
+    type         : Type
+    attributes   : Attributes
+
+  METHODS
+    method init( t, declarations, type, attributes )
+
+    method init( existing:GlobalPropertyDeclarations )
+      prior.init( existing )
+      if (existing.declarations) declarations = existing.declarations.cloned
+      if (existing.type) type = existing.type.cloned
+      if (existing.attributes) attributes = existing.attributes.cloned
+
+    method description->String
+      return "GlobalPropertyDeclarations($,$,$)" (%declarations,%type,%attributes)
+
+endClass
+
+class TypeAccess : Cmd
+  PROPERTIES
+    of_type : Type
+    args    : Cmd
+
+  METHODS
+    method init( t, of_type, args )
+
+    method init( existing:TypeAccess )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "TypeAccess($,$)" (%of_type,%args)
+
+endClass
+
+class GetGlobalProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:GetGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "GetGlobalProperty($)" (%info)
+
+endClass
+
+class SetGlobalProperty : Cmd
+  PROPERTIES
+    info      : Property
+    new_value : Cmd
+
+  METHODS
+    method init( t, info, new_value )
+
+    method init( existing:SetGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "SetGlobalProperty($,$)" (%info,%new_value)
 
 endClass

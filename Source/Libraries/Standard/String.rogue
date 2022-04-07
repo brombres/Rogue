@@ -1,4 +1,7 @@
 class String
+  GLOBAL PROPERTIES
+    pool = String[]
+
   PROPERTIES
     count           : Int32  # in whole characters
     cursor_offset   : Int32  # in bytes

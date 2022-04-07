@@ -12,9 +12,9 @@ class Type : Cmd
     definitions       = StringTable<<Cmd>>()
     global_properties = StringTable<<Property>>()
     properties        = StringTable<<Property>>()
+    native_properties = String[]
     global_methods    = StringTable<<GlobalMethod>>()
     methods           = StringTable<<Method>>()
-    native_properties = String[]
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
     type_args         : TemplateArgs
@@ -330,6 +330,26 @@ class Type : Cmd
       if (base_class) base_class.organize
       if (aspects)
         (forEach in aspects).organize
+      endIf
+
+      # Add init_class() for global property initialization
+      if (not is_aspect)
+        local m = global_methods["init_class()"]
+        if (not m)
+          m = GlobalMethod( t, this, "init_class" )
+          m.organize
+          global_methods[ m.signature ] = m
+        endIf
+
+        use my_properties = WorkList<<Property>>
+          my_properties.add( forEach in global_properties )
+
+          forEach (p in my_properties step -1)
+            if (not p.initial_value) p.initial_value = p.type.cmd_default_value( p.t )
+            m.statements.insert( SetGlobalProperty(p.t,p,p.initial_value) )
+          endForEach
+        endUse
+
       endIf
 
       # Add init_object() methods for new initial property assignments

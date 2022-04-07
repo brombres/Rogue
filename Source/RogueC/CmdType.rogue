@@ -225,10 +225,8 @@ augment
     method Cmd.type->Type
       return null
 
-      #{
-    method Access.type->Type
-      return Program.find_type(name)
-      }#
+    #method Access.type->Type
+      #return Program.find_type(name)
 
     method AddAndAssign.type->Type
       return target.type
@@ -312,6 +310,9 @@ augment
     method EmptyList.type->Type
       return Program.type_Value
       }#
+
+    method GetGlobalProperty.type->Type
+      return info.@type
 
     method GetLocal.type->Type
       return info.@type
@@ -416,6 +417,9 @@ augment
 
     method This.type->Type
       return this_type
+
+    method TypeAccess.type->Type
+      return of_type
 
     method TypeContext.type->Type
       return @type

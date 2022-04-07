@@ -74,12 +74,57 @@ class Categorizer : Visitor
 
       visit_children( cmd )
 
+    method on( cmd:Access )->Cmd
+      visit_children( cmd )
+
+      # Convert to TypeAccess if applicable.
+      local m = this_module
+      local name = cmd.name
+
+      if (name.contains("::"))
+        local m_name = name.before_last("::")
+        m = Program.modules[ m_name ]
+        if (not m) throw cmd.t.error( "No such module '$'."(m_name) )
+        name .= after_last("::")
+      endIf
+
+      local type = m.find_type( name, &extended_search )
+      if (type) return TypeAccess( cmd.t, type, cmd.args )
+      return cmd
+
     method on( cmd:Definition )->Cmd
       assert this_type
       if (this_type.definitions.contains(cmd.name))
         throw cmd.t.error( "'$.$' is already defined."(this_type,cmd.name) )
       endIf
       this_type.definitions[ cmd.name ] = cmd.value
+      return null
+
+    method on( cmd:GlobalPropertyDeclarations )->Cmd
+      local type = cmd.type
+      if (type)
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            p.type = type
+            collect_global( decl.t, p )
+          else
+            throw decl.t.error( "Global properties cannot be native." )
+          endIf
+        endForEach
+      else
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            collect_global( p.t, p )
+          else
+            local c_property = decl->(as NativeCProperty)
+            if (c_property)
+              throw c_property.t.error( "Global properties cannot be native." )
+            endIf
+          endIf
+        endForEach
+      endIf
       return null
 
     method on( cmd:NativeCode )->Cmd
@@ -118,6 +163,8 @@ class Categorizer : Visitor
       return null
 
     method collect( t:Token, p:Property )
+      visit( p )
+
       assert this_type
       p.type_context = this_type
 
@@ -144,8 +191,6 @@ class Categorizer : Visitor
         endIf
       endIf
 
-      visit( p )
-
       if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
         this_type.attributes.contains_reference = true
       endIf
@@ -155,5 +200,36 @@ class Categorizer : Visitor
         throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
       endIf
       this_type.properties[ p.name ] = p
+
+    method collect_global( t:Token, p:Property )
+      visit( p )
+
+      assert this_type
+      p.type_context = this_type
+      p.attributes.is_global = true
+
+      if (not p.type)
+        if (p.initial_value)
+          p.type = p.initial_value.type
+          if (not p.type)
+            throw p.t.error(
+            ''Cannot implicitly determine type of global property "$" from initial value. ''(p.name) +
+              ''Add an explicit ': Type' at the end of the line.''
+            )
+          endIf
+        else
+          throw p.t.error( ''Global property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
+        endIf
+      endIf
+
+      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
+        this_type.attributes.contains_reference = true
+      endIf
+
+      local existing_p = this_type.global_properties[p.name]
+      if (existing_p and existing_p.type_context is this_type)
+        throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
+      endIf
+      this_type.global_properties[ p.name ] = p
 
 endClass

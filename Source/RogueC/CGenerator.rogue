@@ -781,8 +781,29 @@ class CGenerator : Visitor
 
       writer.println
 
+    method on_visit( cmd:SetGlobalProperty )
+      local type = cmd.info.type
+      if (type.is_reference)
+        writer.print "ROGUE_SET_REF( &"
+        writer.print cmd.info.c_name
+        writer.print ", "
+        visit( cmd.new_value )
+        writer.print " )"
+      elseIf (type.is_compound and type.contains_reference)
+        writer.print( type.c_name ).print( "_set_compound( &" )
+        writer.print( cmd.info.c_name )
+        writer.print( ", " )
+        visit( cmd.new_value )
+        writer.print( " )" )
+      else
+        writer.print( cmd.info.c_name )
+        writer.print( " = " )
+        visit( cmd.new_value )
+      endIf
+
     method on_visit( cmd:SetLocal )
-      if (cmd.info.type.is_reference and not cmd.new_value.is_retained)
+      local type = cmd.info.type
+      if (type.is_reference and not cmd.new_value.is_retained)
         if (cmd.is_initial_assignment)
           writer.print cmd.info.c_name
           writer.print " = ROGUE_RETAIN("
@@ -795,6 +816,12 @@ class CGenerator : Visitor
           visit( cmd.new_value )
           writer.print " )"
         endIf
+      elseIf (type.is_compound and type.contains_reference)
+        writer.print( type.c_name ).print( "_set_compound( &" )
+        writer.print( cmd.info.c_name )
+        writer.print( ", " )
+        visit( cmd.new_value )
+        writer.print " )"
       else
         writer.print( cmd.info.c_name )
         writer.print( " = " )
@@ -802,7 +829,8 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:SetProperty )
-      if (cmd.info.type.is_reference)
+      local type = cmd.info.type
+      if (type.is_reference)
         writer.print "ROGUE_SET_REF( &("
         visit( cmd.context )
         writer.print "->"
@@ -810,6 +838,14 @@ class CGenerator : Visitor
         writer.print "), "
         visit( cmd.new_value )
         writer.print " )"
+      elseIf (type.is_compound and type.contains_reference)
+        writer.print( type.c_name ).print( "_set_compound( &" )
+        visit( cmd.context )
+        writer.print "->"
+        writer.print( cmd.info.c_name )
+        writer.print( ", " )
+        visit( cmd.new_value )
+        writer.print( " )" )
       else
         visit( cmd.context )
         writer.print "->"
@@ -819,12 +855,19 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:SetThisProperty )
-      if (cmd.info.type.is_reference)
+      local type = cmd.info.type
+      if (type.is_reference)
         writer.print "ROGUE_SET_REF( &(THIS->"
         writer.print cmd.info.c_name
         writer.print "), "
         visit( cmd.new_value )
         writer.print " )"
+      elseIf (type.is_compound and type.contains_reference)
+        writer.print( type.c_name ).print( "_set_compound( &THIS->" )
+        writer.print( cmd.info.c_name )
+        writer.print( ", " )
+        visit( cmd.new_value )
+        writer.print( " )" )
       else
         writer.print( "THIS->" )
         writer.print( cmd.info.c_name )
@@ -1021,6 +1064,9 @@ augment
         writer.println( forEach in type.native_header )
 
         if (type.is_compound and type.contains_reference)
+          writer.print( "void " ).print( type.c_name ).print( "_set_compound( " ).print( type.c_name ).println( "* THIS, " )
+          writer.print( type.c_name ).println( " new_value );" )
+
           writer.print( "void " ).print( type.c_name ).print( "_on_retain( " ).print( type.c_name ).println( "* THIS );" )
         endIf
         if (type.contains_reference or type.m_on_cleanup)
@@ -1086,6 +1132,14 @@ augment
             writer.println
           endIf
 
+          forEach (p in type.global_properties)
+            writer.print p.type.c_ref_name
+            writer.print ' '
+            writer.print p.c_name
+            if (p.type.is_reference) writer.println "= 0;"
+            else                     writer.println "= {};"
+          endForEach
+
           writer.print   "RogueType Type"
           writer.print   type.c_name
           writer.print   '' = { "''
@@ -1136,6 +1190,14 @@ augment
       endIf
 
       CGenerator(writer).visit_routines( this )
+
+    method Module.generate_c_class_initialization( writer:CWriter )
+      forEach (type in types)
+        if (type.is_aspect) nextIteration
+        local m = type.global_methods["init_class()"]
+        writer.print( m.c_name ).println( "();" )
+      endForEach
+      writer.println
 
     method Module.generate_c_launch_commands( writer:CWriter )
       local r = routines[ "on_launch()" ]
@@ -1231,6 +1293,7 @@ augment
                         |{
       c_writer.indent += 2
       Program.generate_c_string_literals( c_writer )
+      (forEach in modules).generate_c_class_initialization( c_writer )
       (forEach in modules).generate_c_launch_commands( c_writer )
       c_writer.indent -= 2
       c_writer.println @|}
@@ -1289,6 +1352,14 @@ augment
         writer.println
       endIf
 
+      forEach (p in global_properties)
+        writer.print "extern "
+        writer.print p.type.c_ref_name
+        writer.print ' '
+        writer.print p.c_name
+        writer.println ';'
+      endForEach
+
       forEach (m in global_methods)
         if (m.type_context is this)
           write_c_global_method_header( m, writer )
@@ -1307,6 +1378,15 @@ augment
       if (is_aspect) return
 
       if (is_compound and contains_reference)
+        writer.print( "void " ).print( type.c_name ).print( "_set_compound( " ).print( type.c_name ).println( "* THIS, " )
+        writer.print( type.c_name ).println( " new_value )" )
+        writer.println '{'
+        writer.print(   "  " ).print( type.c_name ).println( "_on_release( THIS );" )
+        writer.println( "  *THIS = new_value;" )
+        writer.print(   "  " ).print( type.c_name ).println( "_on_retain( THIS );" )
+        writer.println '}'
+        writer.println
+
         writer.print( "void " ).print( c_name ).print( "_on_retain( " ).print( c_name ).println( "* THIS )" )
         writer.println '{'
         forEach (p in properties)

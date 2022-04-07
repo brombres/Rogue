@@ -27,6 +27,7 @@ class Attribute
     RETURNS_THIS       = (1:<<:22)
     DEFAULT_PARAMETER  = (1:<<:23)
     CATEGORIZED        = (1:<<:24)
+    IS_GLOBAL          = (1:<<:25)
 endClass
 
 class Attributes : CmdList
@@ -55,6 +56,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( returns_this,         Attribute.RETURNS_THIS )
   ROGUE_ATTRIBUTE( is_default_parameter, Attribute.DEFAULT_PARAMETER )
   ROGUE_ATTRIBUTE( is_categorized,       Attribute.CATEGORIZED )
+  ROGUE_ATTRIBUTE( is_global,            Attribute.IS_GLOBAL )
 
   PROPERTIES
     flags : Int32

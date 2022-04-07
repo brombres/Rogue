@@ -46,4 +46,7 @@ class Finalizer : Visitor
       endIf
       visit_children( m )
 
+    method on_visit( p:Property )
+      p.initial_value = null
+
 endClass

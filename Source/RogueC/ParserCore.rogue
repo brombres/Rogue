@@ -58,63 +58,64 @@ class ParserCore [abstract]
     ip_wrap_in_local_scope = 45
     ip_method = 46
     ip_global_method = 47
-    ip_properties = 48
-    ip_property_declaration = 49
-    ip_multi_line_statements = 50
-    ip_single_line_statements = 51
-    ip_control_structure = 52
-    ip_args = 53
-    ip_arg = 54
-    ip_statement = 55
-    ip_local_declarations = 56
-    ip_local_declaration = 57
-    ip_block = 58
-    ip_loop = 59
-    ip_try_catch = 60
-    ip_catches = 61
-    ip_catch_clause = 62
-    ip_module_path = 63
-    ip_uses_attributes = 64
-    ip_uses_attribute = 65
-    ip_access_args = 66
-    ip_optional_expression = 67
-    ip_expression = 68
-    ip_op_and_assign = 69
-    ip_logical_xor = 70
-    ip_logical_xor__inner = 71
-    ip_logical_or = 72
-    ip_logical_or__inner = 73
-    ip_logical_and = 74
-    ip_logical_and__inner = 75
-    ip_comparison = 76
-    ip_comparison__inner = 77
-    ip_reference_comparison = 78
-    ip_bitwise_xor = 79
-    ip_bitwise_xor__inner = 80
-    ip_bitwise_or = 81
-    ip_bitwise_or__inner = 82
-    ip_bitwise_and = 83
-    ip_bitwise_and__inner = 84
-    ip_bitwise_shift = 85
-    ip_bitwise_shift__inner = 86
-    ip_add_subtract = 87
-    ip_add_subtract__inner = 88
-    ip_multiply_divide_mod = 89
-    ip_multiply_divide_mod__inner = 90
-    ip_power = 91
-    ip_power__inner = 92
-    ip_pre_unary = 93
-    ip_post_unary = 94
-    ip_post_unary__inner = 95
-    ip_access = 96
-    ip_access_inner = 97
-    ip_context_block_command = 98
-    ip_term = 99
-    ip_native_code = 100
-    ip_preprocess = 101
-    ip_process_another = 102
-    ip_collect_meta_filepath = 103
-    ip_additional_node_types = 104
+    ip_global_properties = 48
+    ip_properties = 49
+    ip_property_declaration = 50
+    ip_multi_line_statements = 51
+    ip_single_line_statements = 52
+    ip_control_structure = 53
+    ip_args = 54
+    ip_arg = 55
+    ip_statement = 56
+    ip_local_declarations = 57
+    ip_local_declaration = 58
+    ip_block = 59
+    ip_loop = 60
+    ip_try_catch = 61
+    ip_catches = 62
+    ip_catch_clause = 63
+    ip_module_path = 64
+    ip_uses_attributes = 65
+    ip_uses_attribute = 66
+    ip_access_args = 67
+    ip_optional_expression = 68
+    ip_expression = 69
+    ip_op_and_assign = 70
+    ip_logical_xor = 71
+    ip_logical_xor__inner = 72
+    ip_logical_or = 73
+    ip_logical_or__inner = 74
+    ip_logical_and = 75
+    ip_logical_and__inner = 76
+    ip_comparison = 77
+    ip_comparison__inner = 78
+    ip_reference_comparison = 79
+    ip_bitwise_xor = 80
+    ip_bitwise_xor__inner = 81
+    ip_bitwise_or = 82
+    ip_bitwise_or__inner = 83
+    ip_bitwise_and = 84
+    ip_bitwise_and__inner = 85
+    ip_bitwise_shift = 86
+    ip_bitwise_shift__inner = 87
+    ip_add_subtract = 88
+    ip_add_subtract__inner = 89
+    ip_multiply_divide_mod = 90
+    ip_multiply_divide_mod__inner = 91
+    ip_power = 92
+    ip_power__inner = 93
+    ip_pre_unary = 94
+    ip_post_unary = 95
+    ip_post_unary__inner = 96
+    ip_access = 97
+    ip_access_inner = 98
+    ip_context_block_command = 99
+    ip_term = 100
+    ip_native_code = 101
+    ip_preprocess = 102
+    ip_process_another = 103
+    ip_collect_meta_filepath = 104
+    ip_additional_node_types = 105
 
   PROPERTIES
     _tokens          : Token[]
@@ -916,6 +917,18 @@ class ParserCore [abstract]
                 endWhile
                 return
               endTemporarily
+            elseIf (_next_t.type == TokenType.KEYWORD_GLOBAL_PROPERTIES)
+              temporarily _cur_t = _on_t
+                _execute(ip_consume_eols)
+                _pop_frame
+                while ((not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?))
+                  _execute(ip_global_properties)
+                  _pop_frame
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                endWhile
+                return
+              endTemporarily
             elseIf (_next_t.type == TokenType.KEYWORD_PROPERTIES)
               temporarily _cur_t = _on_t
                 _execute(ip_consume_eols)
@@ -1317,6 +1330,26 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            return
+          case ip_global_properties
+            _begin_list
+            _execute(ip_consume_eols)
+            _pop_frame
+            _execute(ip_property_declaration)
+            _pop_frame
+            while (_consume(TokenType.SYMBOL_COMMA))
+              _execute(ip_consume_eols)
+              _pop_frame
+              _execute(ip_property_declaration)
+              _pop_frame
+            endWhile
+            if (disable_output)     _discard_list
+            else                    _push_list( CmdList(_list_t) )
+            _execute(ip_optional_type)
+            _pop_frame
+            _execute(ip_attributes)
+            _pop_frame
+            if (not disable_output) _push( GlobalPropertyDeclarations(_cur_t,_node_arg(-3),_node_arg(-2)->(as Type),_node_arg(-1)->(as Attributes)), 3 )
             return
           case ip_properties
             _begin_list
@@ -2347,12 +2380,21 @@ class ParserCore [abstract]
             endIf
             if (_next_t.type == TokenType.IDENTIFIER)
               temporarily _cur_t = _next_t
-                _execute(ip_id_or_type)
+                _execute(ip_type_name)
                 _pop_frame
-                _execute(ip_access_args)
-                _pop_frame
-                if (not disable_output) _push( Access(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
-                return
+                if ((((_next_t.type == TokenType.SYMBOL_LTLT) or (_next_t.type == TokenType.SYMBOL_EMPTY_SQUARE_BRACKETS)) or (_next_t.type == TokenType.SYMBOL_QUESTION)))
+                  _execute(ip_remaining_type)
+                  _pop_frame
+                  _execute(ip_access_args)
+                  _pop_frame
+                  if (not disable_output) _push( TypeAccess(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)), 2 )
+                  return
+                else
+                  _execute(ip_access_args)
+                  _pop_frame
+                  if (not disable_output) _push( Access(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+                  return
+                endIf
               endTemporarily
             endIf
             if (_next_t.type == TokenType.PLACEHOLDER)
@@ -2600,6 +2642,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             if (not disable_output) _push( Iterator(_cur_t,_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 4 )
+            if (not disable_output) _push( GetGlobalProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
             if (not disable_output) _push( GetLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
             if (not disable_output) _push( GetProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
             if (not disable_output) _push( GetThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
@@ -2613,6 +2656,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
             if (not disable_output) _push( Range(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( ReturnOnException(_cur_t), 0 )
+            if (not disable_output) _push( SetGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             if (not disable_output) _push( SetLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( SetProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
             if (not disable_output) _push( SetThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )

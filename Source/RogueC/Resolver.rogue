@@ -59,6 +59,10 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
 
+    method on( cmd:TypeAccess )->Cmd
+      cmd.args = visit( cmd.args )
+      return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
+
     method on( cmd:AddAndAssign )->Cmd
       return validate( cmd.target.resolve_add_and_assign(visit(cmd.operand).require_value,this) )
 
@@ -385,6 +389,7 @@ class Resolver : Visitor
       control_stack.add( cmd )
       visible_locals.add( forEach in cmd.locals )
 
+      #{
     method on( cmd:Print )->Cmd
       which (cmd.args.count)
         case 0
@@ -413,6 +418,7 @@ class Resolver : Visitor
           result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", null) )
           return result
       endWhich
+      }#
 
     method on( cmd:Return )->Cmd
       this_procedure.attributes.has_return = true
@@ -528,39 +534,11 @@ class Resolver : Visitor
 
         else
           local type = this_module.find_type( name, &extended_search )
-          if (type and not args)
-            if (type.attributes.is_singleton)
-              return GetSingleton(t,type)
-            else
-              if (type.name.ends_with(']'))
-                return resolve_access( t, null, type.name, Args(t) )
-              else
-                return TypeContext(t,type)
-              endIf
-            endIf
-          endIf
+          if (type) return resolve_type_access( t, type, args, &=suppress_error )
 
           type_context = this_type  # may be null
 
-          if (args)
-            # Call or constructor
-            if (type)
-              #{
-              if (name == "XY")
-                forEach (arg at i in args)
-                  args[i] = validate( arg.cmd_convert_to(Program.type_Real64) )
-                endForEach
-                which (args.count)
-                  case 0: return validate( CreateXY0(t) )
-                  case 1: return validate( CreateXY1(t,args[0]) )
-                  case 2: return validate( CreateXY2(t,args[0],args[1]) )
-                  others: throw t.error( "0, 1, or 2 arguments expected for XY() constructor." )
-                endWhich
-              endIf
-              }#
-              return validate( cmd_create_object(t,type,args) )
-            endIf
-          else
+          if (not args)
             local v = find_local( name )
             if (v) return validate( GetLocal(t,v) )
           endIf
@@ -606,6 +584,25 @@ class Resolver : Visitor
 
       endTemporarily
       return null  # never reached
+
+    method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error )->Cmd
+      temporarily this_module = type.module_context
+
+        if (args)
+          return validate( cmd_create_object(t,type,args) )
+        else
+          if (type.attributes.is_singleton)
+            return GetSingleton(t,type)
+          else
+            if (type.name.ends_with(']'))
+              return resolve_access( t, null, type.name, Args(t) )
+            else
+              return TypeContext(t,type)
+            endIf
+          endIf
+        endIf
+
+      endTemporarily
 
 
     method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd

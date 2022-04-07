@@ -417,6 +417,23 @@ augment Program
       endIf
 endAugment
 
+augment Property
+  PROPERTIES
+    c_name : String
+
+  METHODS
+    method c_name->String
+      if (@c_name) return @c_name
+
+      if (attributes.is_global)
+        @c_name = "$__g_$"(type_context.c_name,name)
+      else
+        @c_name = name
+      endIf
+      return @c_name
+
+endAugment
+
 augment Type
   PROPERTIES
     c_name : String   # e.g. RogueString
@@ -467,9 +484,6 @@ augment
       endUse
 
     method Module.c_name->String
-      return name
-
-    method Property.c_name->String
       return name
 
     method Routine.c_name->String
