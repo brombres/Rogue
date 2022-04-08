@@ -223,7 +223,7 @@ class TypeOrganizer : Visitor
       endIf
 
       if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
-        this_type.attributes.contains_reference = true
+        p.type.attributes.contains_reference = true
       endIf
 
       local existing_p = this_type.global_properties[p.name]

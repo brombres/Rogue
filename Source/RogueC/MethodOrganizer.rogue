@@ -20,7 +20,11 @@ class MethodOrganizer : Visitor
           # Generate a create() global method as the "primary constructor".
           local m_create = GlobalMethod( cmd.t, "create", &return_type=this_type )
           m_create.parameters.add( forEach in cmd.constructor_properties )
-          m_create.statements.add( CreateCompound(cmd.t) )
+          local v = Local( cmd.t, "result", null, this_type )
+          m_create.locals.add( v )
+          m_create.body.locals.add( v )
+          m_create.statements.add( SetLocal(cmd.t,v,CreateCompound(cmd.t)) )
+          m_create.statements.add( Return(cmd.t,GetLocal(cmd.t,v)) )
           on( m_create )
         endIf
       endIf

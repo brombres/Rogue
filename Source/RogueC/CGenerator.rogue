@@ -332,7 +332,9 @@ class CGenerator : Visitor
               if (this_procedure.return_type.is_reference) writer.print '*'
               writer.print   ' '
               writer.print   this_procedure.c_result_name
-              writer.println " = 0;"
+              writer.print " = "
+              if (this_procedure.return_type.is_compound) writer.println "{};"
+              else                                        writer.println "0;"
             endIf
 
             # Declare all local parameters.
@@ -340,11 +342,9 @@ class CGenerator : Visitor
               forEach (v in this_procedure.locals)
                 writer.print( v.type.c_ref_name ).print( ' ' )
                 writer.print( v.c_name )
-                if (not v.initial_value)
-                  writer.print( " = " )
-                  if (v.type.is_compound) writer.print "{}"
-                  else                    writer.print "0"
-                endIf
+                writer.print( " = " )
+                if (v.type.is_compound) writer.print "{}"
+                else                    writer.print "0"
                 writer.println( ';' )
               endForEach
               writer.println
@@ -355,13 +355,13 @@ class CGenerator : Visitor
                 if (p.type.is_reference)
                   writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
                   writer.print   p.c_name
-                  writer.println ");"
+                  writer.println " );"
                 elseIf (p.type.contains_reference)
                   writer.print   "RogueType_local_pointer_stack_add( &Type"
                   writer.print   p.type.c_name
                   writer.print   ", &"
                   writer.print   p.c_name
-                  writer.println ");"
+                  writer.println " );"
                 endIf
               endForEach
 
@@ -369,32 +369,19 @@ class CGenerator : Visitor
                 if (v.type.is_reference)
                   writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
                   writer.print   v.c_name
-                  writer.println ");"
+                  writer.println " );"
                 elseIf (v.type.contains_reference)
                   writer.print   "RogueType_local_pointer_stack_add( &Type"
                   writer.print   v.type.c_name
                   writer.print   ", &"
                   writer.print   v.c_name
-                  writer.println ");"
+                  writer.println " );"
                 endIf
               endForEach
               writer.println
             endIf
           endIf
         endIf
-
-        #{
-        forEach (v in cmd.locals)
-          writer.print( v.type.c_ref_name ).print( ' ' )
-          writer.print( v.c_name )
-          if (not v.initial_value)
-            writer.print( " = " )
-            if (v.type.is_compound) writer.print "{}"
-            else                    writer.print "0"
-          endIf
-          writer.println( ';' )
-        endForEach
-        }#
 
       endIf
 
@@ -520,11 +507,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CreateCompound )
       # This command only exists in the compound's primary create() global method.
-      if (this_type.contains_reference)
-        writer.print( this_type.c_name ).print( " result = " )
-      else
-        writer.print( "return (" ).print( this_type.c_name ).print( ") " )
-      endIf
+      writer.print( "(" ).print( this_type.c_name ).print( ") " )
       writer.print '{'
       forEach (param at i in this_procedure.parameters)
         if (i > 0) writer.print ','
@@ -1050,7 +1033,7 @@ augment
         endIf
         writer.println( forEach in type.native_header )
 
-        if (type.contains_reference or type is Program.type_Object)
+        if (type.is_reference or type.contains_reference or type is Program.type_Object)
           writer.print( "void " ).print( type.c_name ).println( "_gc_trace( void* THIS );" )
           writer.println
         endIf
@@ -1369,35 +1352,8 @@ augment
     method Type.generate_c_code( writer:CWriter )
       if (is_aspect) return
 
-      #{
-      if (is_compound and contains_reference)
-        writer.print( "void " ).print( type.c_name ).print( "_set_compound( " ).print( type.c_name ).println( "* THIS, " )
-        writer.print( type.c_name ).println( " new_value )" )
-        writer.println '{'
-        writer.print(   "  " ).print( type.c_name ).println( "_on_release( THIS );" )
-        writer.println( "  *THIS = new_value;" )
-        writer.print(   "  " ).print( type.c_name ).println( "_on_retain( THIS );" )
-        writer.println '}'
-        writer.println
-
-        writer.print( "void " ).print( c_name ).print( "_on_retain( " ).print( c_name ).println( "* THIS )" )
-        writer.println '{'
-        forEach (p in properties)
-          if (p.type.is_reference)
-            writer.print( "  ROGUE_RETAIN( THIS->" ).print( p.c_name ).println( " );" )
-          elseIf (p.type.is_compound and p.type.contains_reference)
-            writer.print "  "
-            writer.print( p.type.c_name ).print( "_on_retain( &THIS->" )
-            writer.print( p.c_name ).println( " );" )
-          endIf
-        endForEach
-        writer.println '}'
-        writer.println
-      endIf
-      }#
-
-      if (contains_reference or this is Program.type_Object)
-        writer.print( "void " ).print( c_name ).print( "_gc_trace( void* THIS )" )
+      if (is_reference or contains_reference or this is Program.type_Object)
+        writer.print( "void " ).print( c_name ).println( "_gc_trace( void* THIS )" )
         writer.println '{'
         writer.indent += 2
 
@@ -1420,6 +1376,14 @@ augment
               writer.print   "*)THIS)->"
               writer.print   p.c_name
               writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+            elseIf (p.type.contains_reference)
+              use path = WorkList<<String>>
+                path.add( "if ((ref = (RogueObject*)((" )
+                path.add( c_name )
+                path.add( "*)THIS)->" )
+                path.add( p.c_name )
+                print_gc_checks( path, p, writer )
+              endUse
             endIf
           endForEach
 
@@ -1447,6 +1411,23 @@ augment
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )
       cgen.visit_methods( this )
+
+    method Type.print_gc_checks( path:String[], p:Property, writer:CWriter )
+      forEach (p2 in p.type.properties)
+        if (p2.type.is_reference)
+          writer.print( forEach in path )
+          writer.print   '.'
+          writer.print   p2.c_name
+          writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+        elseIf (p2.type.contains_reference)
+          path.add( p2.c_name )
+          path.add( '.' )
+          print_gc_checks( path, p2, writer )
+          path.remove_last
+          path.remove_last
+        endIf
+      endForEach
+
 
     method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
       if (m.return_type)
