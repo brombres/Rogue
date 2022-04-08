@@ -45,10 +45,10 @@ augment Cmd
       endIf
 
   METHODS
-    method cmd_convert_to( target_type:Type )->Cmd
+    method resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
       local cur_type = require_type
       if (cur_type is target_type) return this
-      return target_type.cmd_cast( this )
+      return target_type.resolve_conversion( this, resolver )
 
     method require_type->Type
       local result = type
@@ -62,39 +62,39 @@ augment Cmd
 
 endAugment
 
-# cmd_cast()
+# resolve_conversion()
 augment
   METHODS
-    method Type.cmd_cast( cmd:Cmd )->Cmd
-      throw UnsupportedOperationError()
+    method Type.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.visit( ContextAccess(cmd.t, cmd, "to_"+name, null) )
 
-    method TypeByte.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToByte(cmd.t,cmd)
+    method TypeByte.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToByte(cmd.t,cmd) )
 
-    method TypeCharacter.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToCharacter(cmd.t,cmd)
+    method TypeCharacter.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToCharacter(cmd.t,cmd) )
 
-    method TypeInt32.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToInt32(cmd.t,cmd)
+    method TypeInt32.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToInt32(cmd.t,cmd) )
 
-    method TypeInt64.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToInt64(cmd.t,cmd)
+    method TypeInt64.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToInt64(cmd.t,cmd) )
 
-    method TypeLogical.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToLogical(cmd.t,cmd)
+    method TypeLogical.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToLogical(cmd.t,cmd) )
 
-    method TypeReal32.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToReal32(cmd.t,cmd)
+    method TypeReal32.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToReal32(cmd.t,cmd) )
 
-    method TypeReal64.cmd_cast( cmd:Cmd )->Cmd
-      return ConvertToReal64(cmd.t,cmd)
+    method TypeReal64.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
+      return resolver.validate( ConvertToReal64(cmd.t,cmd) )
 
 endAugment
 
-# cmd_convert_to
+# resolve_conversion_to
 augment
   METHODS
-    method LiteralNull.cmd_convert_to( target_type:Type )->Cmd
+    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
       of_type = target_type
       return this
 endAugment

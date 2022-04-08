@@ -100,7 +100,7 @@ class Module
       local r = routines[ "on_launch()" ]
       if (not r)
         r = Routine( t, this, "on_launch" )
-        r.organize_methods
+        r.organize
         routines[ r.signature ] = r
       endIf
       r.statements.add( forEach in global_statements )

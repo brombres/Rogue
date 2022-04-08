@@ -4,16 +4,18 @@ class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
       local default_value : $DataType
       return $DataType?( default_value, false )
 
-#{
   METHODS
+#{
     method required_value->$DataType
       require exists || "Non-null value expected"
       return value
+}#
 
     method description->String
       if (exists) return value->String
       else        return "null"
 
+      #{
     method operator==( other:$DataType? )->Logical
       if (exists) return ?:{ other.exists:(value==other.value) || false }
       else        return ?:{ other.exists:false || true }

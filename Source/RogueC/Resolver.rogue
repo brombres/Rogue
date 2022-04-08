@@ -76,8 +76,8 @@ class Resolver : Visitor
       local left_type = left.require_type
       local right_type = right.require_type
       local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
-      if (left_type is not result_type) cmd.left = validate( result_type.cmd_cast(left) )
-      if (right_type is not result_type) cmd.right = validate( result_type.cmd_cast(right) )
+      if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, this )
+      if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, this )
       # on_validate() will be called after this method returns
 
     method on_validate( cmd:CallProcedure )->Cmd
@@ -120,7 +120,7 @@ class Resolver : Visitor
       if (cmd_call) return cmd_call
 
       if (operand_type.is_primitive and cmd.to_type.is_primitive)
-        return cmd.operand.cmd_convert_to( cmd.to_type )
+        return cmd.operand.resolve_conversion_to( cmd.to_type, this )
       endIf
 
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
@@ -214,7 +214,7 @@ class Resolver : Visitor
       cmd.result_type = result_type
 
       forEach (wcase in cmd.cases)
-        if (wcase.value) wcase.value .= cmd_convert_to( result_type )
+        if (wcase.value) wcase.value .= resolve_conversion_to( result_type, this )
       endForEach
 
       return cmd
@@ -310,7 +310,7 @@ class Resolver : Visitor
           block v = v->(as Local)
             if (v.initial_value)
               v.initial_value = visit( v.initial_value ).require_value
-              if (v.@type) v.initial_value = visit( v.initial_value.cmd_convert_to(v.@type) )
+              if (v.@type) v.initial_value = visit( v.initial_value.resolve_conversion_to(v.@type, this) )
               else         v.type = v.initial_value.type
             elseIf (not v.@type)
               throw v.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
@@ -345,7 +345,7 @@ class Resolver : Visitor
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
         iterator.initialization.add(
           SetLocal( v.t, v,
-            Add( v.t, cmd.loop_count.cmd_convert_to(Program.type_Int32), LiteralInt32(v.t,1) )
+          Add( v.t, cmd.loop_count.resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
           )
         )
         iterator.condition = PreDecrement( v.t, GetLocal(v.t,v) )
@@ -476,7 +476,7 @@ class Resolver : Visitor
       local type = cmd.require_type
       if (type.is_primitive)
         local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
-        if (type is not op_type) cmd.operand = validate( cmd.cmd_convert_to(op_type) )
+        if (type is not op_type) cmd.operand = cmd.resolve_conversion_to(op_type, this)
       endIf
 
       #{
@@ -626,7 +626,7 @@ class Resolver : Visitor
       if (context or this_procedure.is_method)
         local p = type_context.properties[ name ]
         if (p)
-          new_value = validate( new_value.cmd_convert_to(p.type) )
+          new_value = new_value.resolve_conversion_to(p.type, this)
           if (context) return validate( SetProperty(t,context,p,new_value) )
           else         return validate( SetThisProperty(t,p,new_value) )
         endIf
@@ -635,7 +635,7 @@ class Resolver : Visitor
       block
         local p = type_context.global_properties[ name ]
         if (p)
-          new_value = validate( new_value.cmd_convert_to(p.type) )
+          new_value = new_value.resolve_conversion_to(p.type, this)
           return validate( SetGlobalProperty(t,p,new_value) )
         endIf
       endBlock
@@ -725,7 +725,7 @@ class Resolver : Visitor
         elseIf (arg instanceOf DefaultArg)
           arg = visit( arg->(as DefaultArg).operand.cloned )
         endIf
-        args[i] = validate( arg.cmd_convert_to(proc.parameters[i].type) )
+        args[i] = arg.resolve_conversion_to(proc.parameters[i].type, this)
       endForEach
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
@@ -925,7 +925,7 @@ class Resolver : Visitor
         Candidates.refine
       endIf
 
-      # Prefer methods with higher-precision args
+      # Prefer methods with primitive parameters that are higher precision than the args
       if (arg_count)
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args )
@@ -939,6 +939,16 @@ class Resolver : Visitor
             endForEach
             Candidates.keep m
           endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      if (arg_count == 1)
+        # Prefer methods with a String as the initial parameter; the arg will be to->String'd
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args )
+          if (m.parameters.first.type is Program.type_String) Candidates.keep m
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
@@ -994,13 +1004,13 @@ augment
 
       local v = resolver.find_local( name )
       if (v)
-        if (operand_type is not v.type) operand = resolver.validate(operand.cmd_convert_to(v.type))
+        if (operand_type is not v.type) operand = operand.resolve_conversion_to(v.type, resolver)
         return resolver.validate( AddAndAssignLocal(t,v,operand) )
       endIf
 
       local p = resolver.this_type.properties[ name ]
       if (p)
-        if (operand_type is not p.type) operand = resolver.validate(operand.cmd_convert_to(p.type))
+        if (operand_type is not p.type) operand = operand.resolve_conversion_to(p.type, resolver)
         return resolver.validate( AddAndAssignThisProperty(t,p,operand) )
       endIf
 

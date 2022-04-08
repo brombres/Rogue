@@ -145,7 +145,7 @@ class Procedure : Cmd
       endForEach
       return null
 
-    method organize_methods( organizer=null:MethodOrganizer )
+    method organize( organizer=null:MethodOrganizer )
       if (is_organized) return
       is_organized = true
 
@@ -221,7 +221,7 @@ class Procedure : Cmd
       endTemporarily
 
     method resolve( resolver=null:Resolver )
-      if (not is_organized) organize_methods
+      if (not is_organized) organize
 
       if (is_resolved) return
       is_resolved = true

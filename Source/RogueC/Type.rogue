@@ -63,6 +63,7 @@ class Type : Cmd
       if (type) return type
       type = Type( t, name, 0, null )
       type.ensure_definition
+      type.attributes.is_optional = true
       return type
 
   METHODS
@@ -347,7 +348,7 @@ class Type : Cmd
         local m = global_methods["init_class()"]
         if (not m)
           m = GlobalMethod( t, this, "init_class" )
-          m.organize_methods
+          m.organize
           global_methods[ m.signature ] = m
         endIf
 
@@ -367,7 +368,7 @@ class Type : Cmd
         local m = methods["init_object()"]
         if (not m)
           m = Method( t, this, "init_object" )
-          m.organize_methods
+          m.organize
           methods[ m.signature ] = m
         endIf
 
@@ -442,6 +443,29 @@ class Type : Cmd
           endForEach
         endForEach
 
+      endIf
+
+      # Compounds get to->String and description->String. to->String calls description() by default.
+      if (is_compound)
+        block m = methods["description()"]
+          if (not m)
+            m = Method( t, this, "description" )
+            m.return_type = Program.type_String
+            m.statements.add( Return(t,LiteralString(t,name)) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        block m = methods["to_String()"]
+          if (not m)
+            m = Method( t, this, "to_String" )
+            m.return_type = Program.type_String
+            m.statements.add( Return(t,Access(t,"description")) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
       endIf
 
     method precision_index->Int32
