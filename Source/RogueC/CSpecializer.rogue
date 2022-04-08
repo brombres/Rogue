@@ -35,17 +35,35 @@ class CSpecializer : Visitor
         current_statements.write( cmd )
       endIf
 
+    method on( cmd:CallDynamicMethod )->Cmd
+      # Anchor the object context if necessary
+      local context = cmd.context
+      if (Program.gc_auto)
+        if ((context.type.is_reference or context.type.contains_reference) and not context.is_anchored)
+          context = visit( context )
+          local v = context.intermediate_v
+          if (not v or not v.is_anchored)
+            v = add_local( context.t, "anchored_context", context.type, DummyInitialValue )
+            insert( SetLocal(context.t,v,context,&initial_assignment) )
+          endIf
+          cmd.context = GetLocal(context.t,v)
+        endIf
+      endIf
+      return on( cmd->(as CallProcedure) )
+
     method on( cmd:CallProcedure )->Cmd
       visit_children( cmd )
 
       # Anchor any args that need it
-      #forEach (arg at i in cmd.args)
-      #  if (arg.type.is_reference and not arg.is_anchored)
-      #    local v = add_local( arg.t, "anchored_arg_"+i, arg.type )
-      #    insert( SetLocal(arg.t,v,arg,&initial_assignment) )
-      #    cmd.args[i] = GetLocal(arg.t,v)
-      #  endIf
-      #endForEach
+      if (Program.gc_auto)
+        forEach (arg at i in cmd.args)
+          if ((arg.type.is_reference or arg.type.contains_reference) and not arg.is_anchored)
+            local v = add_local( arg.t, "anchored_arg_"+i, arg.type )
+            insert( SetLocal(arg.t,v,arg,&initial_assignment) )
+            cmd.args[i] = GetLocal(arg.t,v)
+          endIf
+        endForEach
+      endIf
 
       if (cmd.info.throws?)
         # Decompose call

@@ -26,6 +26,7 @@ class Attribute
     CATEGORIZED        = (1:<<:21)
     IS_GLOBAL          = (1:<<:22)
     REFERENCE_LIST     = (1:<<:23)
+    ANCHORED           = (1:<<:24)
 endClass
 
 class Attributes : CmdList
@@ -53,6 +54,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_categorized,       Attribute.CATEGORIZED )
   ROGUE_ATTRIBUTE( is_global,            Attribute.IS_GLOBAL )
   ROGUE_ATTRIBUTE( is_reference_list,    Attribute.REFERENCE_LIST )
+  ROGUE_ATTRIBUTE( is_anchored,          Attribute.ANCHORED )
 
   PROPERTIES
     flags : Int32

@@ -373,6 +373,7 @@ class Resolver : Visitor
       visible_locals_fp.add( visible_locals.count )
       forEach (p in cmd.parameters)
         block p = p->(as Local)
+          p.attributes.is_anchored = true  # starting assumption
           visible_locals.add( p )
         endBlock
       endForEach

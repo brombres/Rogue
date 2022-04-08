@@ -63,13 +63,17 @@ endAugment
 augment Procedure
   METHODS
     method has_cleanup_code->Logical
-      forEach (p in parameters)
-        if (p.type.is_reference or p.type.contains_reference) return true
-      endForEach
+      if (Program.gc_auto)
+        forEach (p in parameters)
+          if (not p.is_anchored)
+            if (p.type.is_reference or p.type.contains_reference) return true
+          endIf
+        endForEach
 
-      forEach (v in locals)
-        if (v.type.is_reference or v.type.contains_reference) return true
-      endForEach
+        forEach (v in locals)
+          if (v.type.is_reference or v.type.contains_reference) return true
+        endForEach
+      endIf
 
       return body.has_cleanup_code
 endAugment

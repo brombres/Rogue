@@ -325,33 +325,33 @@ class CGenerator : Visitor
         writer.indent += 2
 
         if (is_procedure)
-          if (Program.gc_auto)
-            if (this_procedure.return_type and this_procedure.attributes.has_return and
-                this_procedure.attributes.requires_cleanup)
-              writer.print this_procedure.return_type.c_name
-              if (this_procedure.return_type.is_reference) writer.print '*'
-              writer.print   ' '
-              writer.print   this_procedure.c_result_name
-              writer.print " = "
-              if (this_procedure.return_type.is_compound) writer.println "{};"
-              else                                        writer.println "0;"
-            endIf
+          if (this_procedure.return_type and this_procedure.attributes.has_return and
+              this_procedure.attributes.requires_cleanup)
+            writer.print this_procedure.return_type.c_name
+            if (this_procedure.return_type.is_reference) writer.print '*'
+            writer.print   ' '
+            writer.print   this_procedure.c_result_name
+            writer.print " = "
+            if (this_procedure.return_type.is_compound) writer.println "{};"
+            else                                        writer.println "0;"
+          endIf
 
-            # Declare all local parameters.
-            if (this_procedure.locals.count)
-              forEach (v in this_procedure.locals)
-                writer.print( v.type.c_ref_name ).print( ' ' )
-                writer.print( v.c_name )
-                writer.print( " = " )
-                if (v.type.is_compound) writer.print "{}"
-                else                    writer.print "0"
-                writer.println( ';' )
-              endForEach
-              writer.println
-            endIf
+          # Declare all local parameters.
+          if (this_procedure.locals.count)
+            forEach (v in this_procedure.locals)
+              writer.print( v.type.c_ref_name ).print( ' ' )
+              writer.print( v.c_name )
+              writer.print( " = " )
+              if (v.type.is_compound) writer.print "{}"
+              else                    writer.print "0"
+              writer.println( ';' )
+            endForEach
+            writer.println
+          endIf
 
-            if (this_procedure.has_cleanup_code)
-              forEach (p in this_procedure.parameters)
+          if (this_procedure.has_cleanup_code and Program.gc_auto)
+            forEach (p in this_procedure.parameters)
+              if (not p.is_anchored)
                 if (p.type.is_reference)
                   writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
                   writer.print   p.c_name
@@ -363,23 +363,23 @@ class CGenerator : Visitor
                   writer.print   p.c_name
                   writer.println " );"
                 endIf
-              endForEach
+              endIf
+            endForEach
 
-              forEach (v in this_procedure.locals)
-                if (v.type.is_reference)
-                  writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
-                  writer.print   v.c_name
-                  writer.println " );"
-                elseIf (v.type.contains_reference)
-                  writer.print   "RogueType_local_pointer_stack_add( &Type"
-                  writer.print   v.type.c_name
-                  writer.print   ", &"
-                  writer.print   v.c_name
-                  writer.println " );"
-                endIf
-              endForEach
-              writer.println
-            endIf
+            forEach (v in this_procedure.locals)
+              if (v.type.is_reference)
+                writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+                writer.print   v.c_name
+                writer.println " );"
+              elseIf (v.type.contains_reference)
+                writer.print   "RogueType_local_pointer_stack_add( &Type"
+                writer.print   v.type.c_name
+                writer.print   ", &"
+                writer.print   v.c_name
+                writer.println " );"
+              endIf
+            endForEach
+            writer.println
           endIf
         endIf
 
@@ -396,31 +396,6 @@ class CGenerator : Visitor
       pop_scope
 
       if (cmd.locals.count or is_procedure or not optional)
-        # TODO: revamp to pop pointers off local pointer stack
-        #if (is_procedure)
-        #  forEach (p in this_procedure.parameters)
-        #    if (p.type.is_reference and not p.is_anchored)
-        #      writer.print "ROGUE_RELEASE_REF( &"
-        #      writer.print p.c_name
-        #      writer.print( " )" )
-        #      writer.println( ';' )
-        #    elseIf (p.type.is_compound and p.type.contains_reference)
-        #      writer.print( p.type.c_name ).print( "_on_release( &" ).print( p.c_name ).println( " );" )
-        #    endIf
-        #  endForEach
-        #endIf
-
-        #forEach (v in cmd.locals)
-        #  if (v.type.is_reference)
-        #    writer.print "ROGUE_RELEASE_REF( &"
-        #    writer.print v.c_name
-        #    writer.print( " )" )
-        #    writer.println( ';' )
-        #  elseIf (v.type.is_compound and v.type.contains_reference)
-        #    writer.print( v.type.c_name ).print( "_on_release( &" ).print( v.c_name ).println( " );" )
-        #  endIf
-        #endForEach
-
         if (is_procedure)
           if (this_procedure.has_cleanup_code)
             if (Program.gc_auto)
@@ -428,10 +403,12 @@ class CGenerator : Visitor
 
               local pop_count = 0
               forEach (p in this_procedure.parameters)
-                if (p.type.is_reference) ++pop_count
+                if (not p.is_anchored)
+                  if (p.type.is_reference) ++pop_count
+                endIf
               endForEach
-              forEach (p in this_procedure.locals)
-                if (p.type.is_reference) ++pop_count
+              forEach (v in this_procedure.locals)
+                if (v.type.is_reference) ++pop_count
               endForEach
               if (pop_count)
                 writer.print   "TypeRogueObject.local_pointer_count -= "
@@ -441,8 +418,10 @@ class CGenerator : Visitor
 
               use unique_compound_types = WorkList<<Type>>
                 forEach (p in this_procedure.parameters)
-                  if (p.type.is_compound and p.type.contains_reference)
-                    if (not unique_compound_types.contains(p.type)) unique_compound_types.add( p.type )
+                  if (not p.is_anchored)
+                    if (p.type.is_compound and p.type.contains_reference)
+                      if (not unique_compound_types.contains(p.type)) unique_compound_types.add( p.type )
+                    endIf
                   endIf
                 endForEach
                 forEach (v in this_procedure.locals)
@@ -454,7 +433,9 @@ class CGenerator : Visitor
                 forEach (type in unique_compound_types)
                   pop_count = 0
                   forEach (p in this_procedure.parameters)
-                    if (p.type is type) ++pop_count
+                    if (not p.is_anchored)
+                      if (p.type is type) ++pop_count
+                    endIf
                   endForEach
                   forEach (p in this_procedure.locals)
                     if (p.type is type) ++pop_count
