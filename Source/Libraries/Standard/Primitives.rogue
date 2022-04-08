@@ -126,10 +126,13 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
 
     method to->Object
       return Boxed<<Int32>>(this)
+      }#
 
     method description->String
+      return String().print( this )
+      #{
       if (this >= -1 and this <= 9)
-        which (this)
+        which (this)  # FIXME Int32 description()
           case -1: return "-1"
           case  0: return "0"
           case  1: return "1"
@@ -144,7 +147,9 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
         endWhich
       endIf
       return "" + this
+      }#
 
+      #{
     method to->String( digits=0:Int32, &hex, &octal, &binary )
       if (hex)    return to_hex_string( which{digits||8} )
       if (octal)  return to_octal_string( which{digits||11} )
@@ -231,7 +236,7 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
       return this
 
     method description->String
-      return this->String
+      return "TODO: primitive description()"
 
     method or_larger( other:$DataType )->$DataType
       return which{ this>=other:this || other }
@@ -240,7 +245,7 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
       return which{ this<=other:this || other }
 
     method to->String
-      return "String"
+      return description
 
 endClass
 

@@ -1387,7 +1387,7 @@ endClass
 class NativeExpression : Cmd
   PROPERTIES
     content     : String
-    result_type : Cmd
+    result_type : Type
 
   METHODS
     method init( t, content, result_type )

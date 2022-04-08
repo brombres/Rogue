@@ -1516,7 +1516,7 @@ parser
   endIf
   if consume("->")
     type
-    produce NativeExpression(content:String,result_type)
+    produce NativeExpression(content:String,result_type:Type)
   else
     produce NativeStatement(content:String)
   endIf

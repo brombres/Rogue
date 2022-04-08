@@ -45,11 +45,6 @@ augment Cmd
       endIf
 
   METHODS
-    method resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
-      local cur_type = require_type
-      if (cur_type is target_type) return this
-      return target_type.resolve_conversion( this, resolver )
-
     method require_type->Type
       local result = type
       if (result) return result
@@ -66,7 +61,12 @@ endAugment
 augment
   METHODS
     method Type.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.visit( ContextAccess(cmd.t, cmd, "to_"+name, null) )
+      if (this.attributes.is_optional)
+        cmd = cmd.resolve_conversion_to( properties//value.type, resolver )
+        return resolver.visit( TypeAccess( t, this, Args(t,cmd,LiteralLogical(t,true)) ) )
+      else
+        return resolver.visit( ContextAccess(cmd.t, cmd, "to_"+name, null) )
+      endIf
 
     method TypeByte.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
       return resolver.validate( ConvertToByte(cmd.t,cmd) )
@@ -94,9 +94,19 @@ endAugment
 # resolve_conversion_to
 augment
   METHODS
+    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
+      local cur_type = require_type
+      if (cur_type is target_type) return this
+      return target_type.resolve_conversion( this, resolver )
+
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
-      of_type = target_type
-      return this
+      if (target_type.attributes.is_optional)
+        of_type = target_type.properties//value.type
+        return resolver.visit( TypeAccess( t, target_type, Args(t,this,LiteralLogical(t,false)) ) )
+      else
+        of_type = target_type
+        return this
+      endIf
 endAugment
 
 # cmd_default_value()

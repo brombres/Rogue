@@ -2474,7 +2474,7 @@ class ParserCore [abstract]
             if (_consume(TokenType.SYMBOL_ARROW))
               _execute(ip_type)
               _pop_frame
-              if (not disable_output) _push( NativeExpression(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+              if (not disable_output) _push( NativeExpression(_cur_t,_string_arg(-2),_node_arg(-1)->(as Type)), 2 )
               return
             else
               if (not disable_output) _push( NativeStatement(_cur_t,_string_arg(-1)), 1 )

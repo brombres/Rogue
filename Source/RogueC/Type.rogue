@@ -168,7 +168,6 @@ class Type : Cmd
 
     method incorporate( aspect_m:Method )
       local existing_m = methods[ aspect_m.signature ]
-
       if (existing_m)
         if (existing_m.return_type? xor aspect_m.return_type?)
           if (existing_m.return_type?)
@@ -205,7 +204,7 @@ class Type : Cmd
           methods[ aspect_m.signature ] = aspect_m
         elseIf (aspect_m.attributes.is_append)
           existing_m.statements.add( forEach in aspect_m.statements )
-        else
+        elseIf (existing_m.type_context is not this)
           methods[ aspect_m.signature ] = aspect_m
         endIf
       else

@@ -437,6 +437,22 @@ class Resolver : Visitor
       endIf
       return cmd
 
+    method validate( cmd:SetGlobalProperty )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method validate( cmd:SetLocal )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method validate( cmd:SetProperty )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method validate( cmd:SetThisProperty )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
     method on( cmd:ShiftRight )->Cmd
       return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "shift_right",
                              Args(cmd.t,cmd.left,cmd.right) )
