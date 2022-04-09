@@ -48,7 +48,7 @@ augment Cmd
     method require_type->Type
       local result = type
       if (result) return result
-      #println StackTrace()
+      println StackTrace()
       throw t.error( "Value expected ($)."(this) )  # FIXME
 
     method require_value->Cmd

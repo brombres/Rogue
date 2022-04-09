@@ -1906,6 +1906,14 @@ class This : Cmd
     this_type : Type
 
   METHODS
+    method init( t )
+
+    method init( t, this_type )
+
+    method init( other:This )
+      prior.init( other )
+      this_type = other.this_type
+
     method description->String
       return "This"
 endClass

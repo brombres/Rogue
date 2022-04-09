@@ -61,14 +61,20 @@ class Procedure : Cmd
       return n >= min_args and n <= parameters.count
 
     method arrange_args( args:Cmd )->Logical
+      args->(as CmdList).list.discard( $ instanceOf DefaultArg )
+      if (args.count > parameters.count) return false
+
       use list = WorkList<<Cmd>>
+        #loop (parameters.count) list.add( null->(as Cmd) )
         list.expand_to_count( parameters.count )
 
         # Put each named arg in the right spot
         forEach (arg in args)
           block arg = arg->(as NamedArg)
             if (arg and arg.name)
-              list[ locate_parameter(arg.name).value ] = arg
+              local index = locate_parameter(arg.name)
+              assert index?
+              list[ index.value ] = arg
             endIf
           endBlock
         endForEach
@@ -76,8 +82,9 @@ class Procedure : Cmd
         # Populate empty spots with positional args
         local available_i = 0
         forEach (arg in args)
-          if (arg not instanceOf NamedArg)
-            while (list[available_i]) ++available_i
+          if (arg not instanceOf NamedArg and arg not instanceOf DefaultArg)
+            while (list[available_i] and available_i<list.count) ++available_i
+            assert available_i < list.count
             list[available_i] = arg
           endIf
         endForEach

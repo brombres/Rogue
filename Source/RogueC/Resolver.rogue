@@ -2,6 +2,9 @@ module Rogue
 uses Utility/WorkList
 
 class Resolver : Visitor
+  GLOBAL PROPERTIES
+    nesting = 0
+
   PROPERTIES
     visible_locals    = Local[]
     visible_locals_fp = Int32[]
@@ -70,7 +73,7 @@ class Resolver : Visitor
       return visit( ControlStructure(cmd.t, cmd.statements, ControlType.BLOCK) )
 
     method on_validate( cmd:Binary )->Cmd
-      return cmd.left.require_type.resolve_op( cmd, this )
+      return cmd.left.require_type.resolve_binary_op( cmd, this )
 
     method on_validate( cmd:CallProcedure )->Cmd
       if (cmd.info.throws)
@@ -80,7 +83,8 @@ class Resolver : Visitor
 
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
-      return resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
+      local result = resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
+      return result
 
     method on( cmd:ContextBlock )->Cmd
       local context = visit( cmd.context )
@@ -462,11 +466,6 @@ class Resolver : Visitor
         endForEach
       endTemporarily
 
-#{
-    method on_validate( cmd:Subtract )->Cmd
-      return validate( cmd.left.type.cmd_subtract(cmd.t, cmd.left, cmd.right) )
-      }#
-
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
       local exception_type = cmd.exception.require_type
@@ -480,13 +479,8 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
 
-    method on_visit( cmd:Unary )
-      cmd.operand = visit( cmd.operand )
-      local type = cmd.require_type
-      if (type.is_primitive)
-        local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
-        if (type is not op_type) cmd.operand = cmd.resolve_conversion_to(op_type, this)
-      endIf
+    method on_validate( cmd:Unary )->Cmd
+      return cmd.operand.require_type.resolve_unary_op( cmd, this )
 
       #{
     method on_visit( cmd:While )
@@ -538,7 +532,6 @@ class Resolver : Visitor
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
 
           type_context = this_type  # may be null
-
           if (not args)
             local v = find_local( name )
             if (v) return validate( GetLocal(t,v) )
@@ -552,7 +545,6 @@ class Resolver : Visitor
         endIf
 
         local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
-
         if (match) return resolve_call( t, context, match, args )
 
         # Check in Global
@@ -607,7 +599,7 @@ class Resolver : Visitor
     method resolve_call( t:Token, context:Cmd, proc:Procedure, args:Cmd )->Cmd
       if (not args) args = CmdList(t)
       convert_args_to_parameter_types( args, proc )
-      return validate( proc.cmd_call(context,args) )
+      return visit( proc.cmd_call(context,args) )
 
     method resolve_direct_access( t:Token, context:Cmd, name:String )->Cmd
       local type_context = this_type
@@ -721,7 +713,12 @@ class Resolver : Visitor
       # And fill in default values
       proc.resolve
 
-      proc.arrange_args( args )
+      if (not proc.arrange_args(args))
+        trace args
+        trace proc.parameters
+        println StackTrace()
+        throw args.t.error( "[INTERNAL] Invalid procedure selected." )
+      endIf
 
       forEach (arg at i in args)
         if (arg instanceOf NamedArg)
@@ -1046,7 +1043,8 @@ augment
       return resolver.resolve_direct_assignment( t, null, name, new_value )
 
     method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
-      return resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
+      local result = resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
+      return result
 endAugment
 
 # Call
@@ -1116,7 +1114,7 @@ endAugment
 # Op
 augment
   METHODS
-    method Type.resolve_op( cmd:Binary, resolver:Resolver )->Cmd
+    method Type.resolve_binary_op( cmd:Binary, resolver:Resolver )->Cmd
       local left_type = cmd.left.require_type
       local right_type = cmd.right.require_type
 
@@ -1125,6 +1123,9 @@ augment
         if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
         if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
         return cmd
+
+      elseIf (cmd.symbol is null)
+        throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
 
       else
         local op_method_name = "operator" + cmd.symbol
@@ -1151,6 +1152,39 @@ augment
           message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
           message.println "  $.$($)" (left_type,op_method_name,right_type)
           message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+          throw cmd.t.error( message )
+        endUse
+      endIf
+
+      return null
+
+    method Type.resolve_unary_op( cmd:Unary, resolver:Resolver )->Cmd
+      local type = cmd.operand.require_type
+
+      if (type.is_primitive)
+        local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
+        if (type is not op_type) cmd.operand = cmd.resolve_conversion_to(op_type, resolver)
+        return cmd
+
+      elseIf (cmd.symbol is null)
+        throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
+
+      else
+        local op_method_name = "operator" + cmd.symbol
+        local arg = Args( t, cmd.operand )
+
+        type.organize_methods
+        local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
+        if (m) return resolver.resolve_call( cmd.t, null, m, arg )
+
+        m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
+        if (m) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+
+        use message = StringBuilder.pool
+          message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
+          message.println "Define one of the following methods to support the operation:\n"
+          message.println "  $.$($)  (global method)" (type,op_method_name,type)
+          message.println "  $.$()"  (type,op_method_name)
           throw cmd.t.error( message )
         endUse
       endIf
