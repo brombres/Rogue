@@ -2364,3 +2364,28 @@ class DirectAccess : Cmd
     method to->String: return name
 
 endClass
+
+class Logicalize : Unary
+  METHODS
+    method description->String
+      return "Logicalize($)" (%operand)
+
+endClass
+
+class WideningCast : Cmd
+  PROPERTIES
+    operand : Cmd
+    to_type : Type
+
+  METHODS
+    method init( t, operand, to_type )
+
+    method init( existing:WideningCast )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.to_type) to_type = existing.to_type.cloned
+
+    method description->String
+      return "WideningCast($,$)" (%operand,%to_type)
+
+endClass

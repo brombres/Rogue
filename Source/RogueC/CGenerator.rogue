@@ -674,6 +674,10 @@ class CGenerator : Visitor
       writer.print " || "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:Logicalize )
+      writer.print "!!"
+      print_parenthesized( cmd.operand )
+
     method on_visit( cmd:Method )
       if (cmd.type_context is not this_type) return
 
@@ -862,6 +866,9 @@ class CGenerator : Visitor
         writer.print "return"
         if (this_procedure.return_type) writer.print " 0"
       endIf
+
+    method on_visit( cmd:WideningCast )
+      print_with_cast( cmd.operand, cmd.to_type )
 
     method pop_scope
       visible_locals.discard_from( visible_locals_fp.remove_last )

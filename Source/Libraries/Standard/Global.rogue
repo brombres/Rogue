@@ -19,8 +19,8 @@ class Global [singleton]
       native @|printf( "%lf", $value );
 
     method print( value:Object )
-      #if (value) print( %
-      #else       print( "null" )
+      if (value) print( value.description )
+      else       print "null"
 
     method print( value:String )
       if (value) native @|printf( "%s", $value->data->as_utf8 );
@@ -42,6 +42,10 @@ class Global [singleton]
       print( '\n' )
 
     method println( value:Logical )
+      print( value )
+      print( '\n' )
+
+    method println( value:Object )
       print( value )
       print( '\n' )
 

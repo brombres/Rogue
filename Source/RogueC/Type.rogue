@@ -282,8 +282,10 @@ class Type : Cmd
       endIf
 
       # Check attributes
-      if (is_aspect)
-        if (attributes.is_singleton) throw t.error( "Aspects cannot have singletons." )
+      if (attributes.is_singleton)
+        if (is_aspect) throw t.error( "Aspects cannot have singletons." )
+
+        attributes.is_anchored = true # any SetSingleton command will disprove this
       endIf
 
       # Inherit properties

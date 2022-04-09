@@ -335,6 +335,22 @@ class Resolver : Visitor
 
       return null
 
+    method on( cmd:Logicalize )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local type = cmd.operand.require_type
+      if (type is Program.type_Logical) return cmd.operand
+      if (type.is_primitive) return cmd
+
+      local suppress_error = type.is_reference
+
+      local result = type.resolve_unary_op( cmd, this, &=suppress_error )
+      if (result) return result
+
+      result = cmd.operand.resolve_conversion_to( Program.type_Logical, this, &=suppress_error )
+      if (result) return result
+
+      return cmd # a reference with no to->Logical available; will do a null check
+
     method on( cmd:Loop )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
       if (cmd.loop_count)
@@ -657,7 +673,7 @@ class Resolver : Visitor
       temporarily this_module = type.module_context
 
         if (args)
-          return validate( cmd_create_object(t,type,args) )
+          return validate( cmd_create_object(t,type,args,&=suppress_error) )
         else
           if (type.attributes.is_singleton)
             return GetSingleton(t,type)
@@ -673,7 +689,7 @@ class Resolver : Visitor
       endTemporarily
 
 
-    method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd
+    method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error )->Cmd
       local m_create = find_procedure( t, type_context, null, "create", args, &require_global, &suppress_error )->(as GlobalMethod)
       if (m_create) return resolve_call( t, null, m_create, args )
 
@@ -682,6 +698,8 @@ class Resolver : Visitor
         convert_args_to_parameter_types( args, m_init )
         return CreateObject( t, type_context, m_init, args )
       endIf
+
+      if (suppress_error) return null
 
       local mesg : String
       use Candidates
@@ -936,6 +954,33 @@ class Resolver : Visitor
         Candidates.refine
       endIf
 
+      # Filter out methods where a reference arg type is not instanceOf the corresponding parameter type
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args )
+          forEach (arg at i in args)
+            local arg_type = arg.type
+            local param_type = m.parameters[i].type
+            if (arg_type.is_reference and param_type.is_reference)
+              if (arg_type.instance_of(param_type)) Candidates.keep m
+            endIf
+          endForEach
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Filter out methods with more generalized reference types, e.g. prefer String over Object.
+      if (arg_count)
+        forEach (m in Candidates)
+          if (not does_any_candidate_have_more_specialized_reference_parameters(m))
+            Candidates.keep( m )
+          endIf
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
       # Prefer methods with primitive parameters that are higher precision than the args
       if (arg_count)
         forEach (m in Candidates)
@@ -966,6 +1011,26 @@ class Resolver : Visitor
       endIf
 
       return null
+
+    method does_any_candidate_have_more_specialized_reference_parameters( m1:Procedure )->Logical
+      forEach (m2 in Candidates)
+        contingent
+          local any_refs = false
+          forEach (i in 0..<m1.parameters.count.or_smaller(m2.parameters.count))
+            local type1 = m1.parameters[i].type
+            local type2 = m2.parameters[i].type
+            if (type1.is_reference and type2.is_reference)
+              any_refs = true
+              necessary (type2.instance_of(type1))
+            endIf
+          endForEach
+
+          # Every m2 ref parameter is equal to or more specialized than m1
+          if (any_refs) return true
+        endContingent
+      endForEach
+
+      return false
 endClass
 
 # AddAndAssign
@@ -1158,7 +1223,7 @@ augment
 
       return null
 
-    method Type.resolve_unary_op( cmd:Unary, resolver:Resolver )->Cmd
+    method Type.resolve_unary_op( cmd:Unary, resolver:Resolver, &suppress_error )->Cmd
       local type = cmd.operand.require_type
 
       if (type.is_primitive)
@@ -1179,6 +1244,8 @@ augment
 
         m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
         if (m) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+
+        if (suppress_error) return null
 
         use message = StringBuilder.pool
           message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)

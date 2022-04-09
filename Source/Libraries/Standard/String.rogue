@@ -87,6 +87,17 @@ class String
     #method print( value:Real32 )->StringBuilder
       #return this.print( value->Real64 )
 
+    method print( value:Object )->this
+      if (is_immutable) return this
+
+      if (value is null)
+        print( "null" )
+        return this
+      endIf
+
+      print( value.description )
+      return this
+
     method print( value:String )->this
       if (is_immutable) return this
 

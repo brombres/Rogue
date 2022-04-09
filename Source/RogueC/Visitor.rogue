@@ -397,5 +397,9 @@ class Visitor
     method on_visit_children( cmd:ContextDirectAccess )
       cmd.context = visit(cmd.context)
 
+    method on_visit_children( cmd:WideningCast )
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
+
 endClass
 

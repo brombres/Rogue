@@ -57,47 +57,40 @@ augment Cmd
 
 endAugment
 
-# resolve_conversion()
-augment
-  METHODS
-    method Type.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      if (this.attributes.is_optional)
-        cmd = cmd.resolve_conversion_to( properties//value.type, resolver )
-        return resolver.visit( TypeAccess( t, this, Args(t,cmd,LiteralLogical(t,true)) ) )
-      else
-        return resolver.visit( ContextAccess(cmd.t, cmd, "to_"+name, null) )
-      endIf
-
-    method TypeByte.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToByte(cmd.t,cmd) )
-
-    method TypeCharacter.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToCharacter(cmd.t,cmd) )
-
-    method TypeInt32.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToInt32(cmd.t,cmd) )
-
-    method TypeInt64.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToInt64(cmd.t,cmd) )
-
-    method TypeLogical.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToLogical(cmd.t,cmd) )
-
-    method TypeReal32.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToReal32(cmd.t,cmd) )
-
-    method TypeReal64.resolve_conversion( cmd:Cmd, resolver:Resolver )->Cmd
-      return resolver.validate( ConvertToReal64(cmd.t,cmd) )
-
-endAugment
-
 # resolve_conversion_to
 augment
   METHODS
-    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
-      local cur_type = require_type
-      if (cur_type is target_type) return this
-      return target_type.resolve_conversion( this, resolver )
+    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd
+      local this_type = require_type
+      if (this_type is target_type) return this
+
+      if (this_type.is_primitive and target_type.is_primitive)
+        if (target_type is Program.type_Byte)      return resolver.validate( ConvertToByte( t, this ) )
+        if (target_type is Program.type_Character) return resolver.validate( ConvertToCharacter( t, this ) )
+        if (target_type is Program.type_Int32)     return resolver.validate( ConvertToInt32( t, this ) )
+        if (target_type is Program.type_Int64)     return resolver.validate( ConvertToInt64( t, this ) )
+        if (target_type is Program.type_Logical)   return resolver.validate( ConvertToLogical( t, this ) )
+        if (target_type is Program.type_Real32)    return resolver.validate( ConvertToReal32( t, this ) )
+        if (target_type is Program.type_Real64)    return resolver.validate( ConvertToReal64( t, this ) )
+        throw t.error( "[INTERNAL] Unhandled primitive conversion." )
+      endIf
+
+      # See if this_type has a to->TargetType method.
+      local result = resolver.resolve_call( t, this_type, this, "to_$"(target_type), null, &suppress_error )
+      if (result) return result
+
+      # Look for a TargetType(this) constructor.
+      result = resolver.resolve_type_access( t, target_type, Args(t,this), &suppress_error )
+      if (result) return result
+
+      if (this_type.instance_of(target_type))
+        return resolver.validate( WideningCast(t,this,target_type) )
+      endIf
+
+      if (suppress_error) return null
+
+      throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
+
 
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
       if (target_type.attributes.is_optional)
@@ -161,6 +154,9 @@ augment
 
     method Local.is_anchored->Logical
       return attributes.is_anchored
+
+    method GetSingleton.is_anchored->Logical
+      return @type.attributes.is_anchored
 
     method This.is_anchored->Logical
       return true
@@ -238,6 +234,7 @@ augment
     method Subtract.symbol->String:       return "-"
     method Multiply.symbol->String:       return "*"
     method Divide.symbol->String:         return "/"
+    method Logicalize.symbol->String:     return "?"
     method Mod.symbol->String:            return "%"
     method Negate.symbol->String:         return "-"
     method Power.symbol->String:          return "^"
@@ -427,6 +424,9 @@ augment
     method LocalDeclarations.type->Type
       return @type
 
+    method Logicalize.type->Type
+      return Program.type_Logical
+
     method NamedArg.type->Type
       if (not value) return Program.type_Logical
       return value.type
@@ -461,5 +461,8 @@ augment
 
     method Unary.type->Type
       return operand.type
+
+    method WideningCast.type->Type
+      return to_type
 
 endAugment

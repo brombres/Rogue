@@ -1422,6 +1422,7 @@ parser
 - post_unary [postUnary]
   on "++"  -> PostIncrement
   on "--"  -> PostDecrement
+  on '?'   -> Logicalize
 
 - access
   term
@@ -1487,7 +1488,7 @@ parser
   endOn
   onPeek IDENTIFIER
     type_name
-    if (nextIs("<<") or nextIs("[]") or nextIs('?'))
+    if (nextIs("<<") or nextIs("[]"))
       remaining_type
       access_args
       produce TypeAccess( of_type:Type, args )
@@ -1643,6 +1644,7 @@ parser
   create ConvertToLogical(operand):Convert
   create ConvertToReal32(operand):Convert
   create ConvertToReal64(operand):Convert
+  create CreateObject(of_type:Type,args)
   create CreateObject(of_type:Type,info:Local)
   create CreateCompound
   create DefaultArg(operand):Unary
@@ -1670,7 +1672,7 @@ parser
   create SetThisProperty(info:Property,new_value)
   create Stepper(operand)
   create TypeContext(type:Type)
-  create CreateObject(of_type:Type,args)
+  create WideningCast(operand,to_type:Type)
 
 --------------------------------------------------------------------------------
 nativeTypes

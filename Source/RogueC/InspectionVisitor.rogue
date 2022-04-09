@@ -577,4 +577,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.context)
       return result
 
+    method on( cmd:WideningCast )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      return result
+
 endClass
