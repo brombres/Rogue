@@ -480,7 +480,7 @@ parser
   endOn
 
   on "routine"
-    identifier
+    procedure_name
     procedure_parameters
     procedure_return_type
     procedure_attributes
@@ -525,6 +525,28 @@ parser
 
 - procedure_body
   multi_line_statements
+
+- procedure_name
+  on @"operator"
+    on "?" ->     Identifier(name="operator?":String)
+    on "+" ->     Identifier(name="operator+":String)
+    on "-" ->     Identifier(name="operator-":String)
+    on "*" ->     Identifier(name="operator*":String)
+    on "/" ->     Identifier(name="operator/":String)
+    on "%" ->     Identifier(name="operator%":String)
+    on "^" ->     Identifier(name="operator^":String)
+    on "++" ->    Identifier(name="operator++":String)
+    on "--" ->    Identifier(name="operator--":String)
+    on "&" ->     Identifier(name="operator&":String)
+    on "|" ->     Identifier(name="operator|":String)
+    on "~" ->     Identifier(name="operator~":String)
+    on "!" ->     Identifier(name="operator!":String)
+    on ":<<:" ->  Identifier(name="operator:<<:":String)
+    on ":>>:" ->  Identifier(name="operator:>>:":String)
+    on ":>>>:" -> Identifier(name="operator:>>>:":String)
+  elseOnOthers
+    identifier
+  endOn
 
 - procedure_parameters
   beginList
@@ -599,7 +621,7 @@ parser
 - type_name
   savePosition
   on "::"
-    create Identifier(name="\"Rogue\"":String)
+    create Identifier(name="Rogue":String)
     identifier
     create ModuleQualifiedID(context,name:String)
     discardPosition
@@ -1001,7 +1023,7 @@ parser
 
 - method
   on "method"
-    identifier
+    procedure_name
     procedure_parameters
     procedure_return_type
     procedure_attributes
@@ -1013,7 +1035,7 @@ parser
 
 - global_method
   on "method"
-    identifier
+    procedure_name
     procedure_parameters
     procedure_return_type
     procedure_attributes
@@ -1374,9 +1396,9 @@ parser
   on '&' -> BitwiseAnd
 
 - bitwise_shift [binary]
-  on ":<<:"  -> ShiftLeft
-  on ":>>:"  -> ShiftRight
-  on ":>>>:" -> ShiftRightX
+  on ":<<:"  -> BitShiftLeft
+  on ":>>:"  -> BitShiftRight
+  on ":>>>:" -> BitShiftRightX
 
 - add_subtract [binary]
   on "+" -> Add

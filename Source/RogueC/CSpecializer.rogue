@@ -396,6 +396,12 @@ augment Program
         endIf
       endLoop
 
+      if (name.contains(':'))
+        name .= replacing( ":<<:",  "SHL" )
+        name .= replacing( ":>>:",  "SHR" )
+        name .= replacing( ":>>>:", "SHRX" )
+      endIf
+
       use builder = StringBuilder.pool
         local iterator = name.iterator
         while (iterator.has_another)
@@ -408,8 +414,25 @@ augment Program
           elseIf (ch == '<')
             if (iterator.peek == '<') builder.print '_'; iterator.read
             else                      builder.print "GT"
+          elseIf (ch == '+')
+            if (iterator.peek == '+') builder.print "INC"; iterator.read
+            else                      builder.print "PLUS"
+          elseIf (ch == '-')
+            if (iterator.peek == '-') builder.print "DEC"; iterator.read
+            else                      builder.print "MINUS"
           else
-            builder.print '_'
+            which (ch)
+              case '?': builder.print "Q"
+              case '*': builder.print "TIMES"
+              case '/': builder.print "DIVIDE"
+              case '%': builder.print "MOD"
+              case '^': builder.print "POWER"
+              case '&': builder.print "AND"
+              case '|': builder.print "OR"
+              case '~': builder.print "XOR"
+              case '!': builder.print "NOT"
+              others:   builder.print '_'
+            endWhich
           endIf
         endWhile
         return builder->String
@@ -492,7 +515,13 @@ augment
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
         builder.print( type_context.c_name ).print( "__" )
-        builder.print( c_signature )
+        builder.print( Program.to_c_name(name) )
+        if (parameters.count)
+          builder.print '_'
+          forEach (p in parameters)
+            builder.print( "_" ).print( p.type.c_name )
+          endForEach
+        endIf
         c_name = builder
         return @c_name
       endUse
@@ -504,7 +533,7 @@ augment
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
         builder.print( module_context.c_name ).print( "__" )
-        builder.print( name )
+        builder.print( Program.to_c_name(name) )
         if (parameters.count)
           builder.print "_"
           forEach (p in parameters)

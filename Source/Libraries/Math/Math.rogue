@@ -115,14 +115,14 @@ class Math
       return a - floor(q)*b
       }#
 
-    method shift_right( value:Int32, bits:Int32 )->Int32
+    method bit_shift_right( value:Int32, bits:Int32 )->Int32
       if (bits <= 0) return value
 
       --bits
       if (bits) return ((value :>>>: 1) & 0x7fffFFFF) :>>>: bits
       else      return (value :>>>: 1) & 0x7fffFFFF
 
-    method shift_right( value:Int64, bits:Int64 )->Int64
+    method bit_shift_right( value:Int64, bits:Int64 )->Int64
       if (bits <= 0) return value
 
       --bits

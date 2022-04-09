@@ -825,12 +825,12 @@ class CGenerator : Visitor
       writer.print( " = " )
       visit( cmd.new_value )
 
-    method on_visit( cmd:ShiftLeft )
+    method on_visit( cmd:BitShiftLeft )
       print_parenthesized( cmd.left )
       writer.print " << "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:ShiftRightX )
+    method on_visit( cmd:BitShiftRightX )
       print_parenthesized( cmd.left )
       writer.print " >> "
       print_parenthesized( cmd.right )

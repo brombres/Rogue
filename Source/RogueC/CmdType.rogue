@@ -229,6 +229,31 @@ augment
       return true
 endAugment
 
+# symbol()
+augment
+  METHODS
+    method Binary.symbol->String:         return null
+    method Unary.symbol->String:          return null
+    method Add.symbol->String:            return "+"
+    method Subtract.symbol->String:       return "-"
+    method Multiply.symbol->String:       return "*"
+    method Divide.symbol->String:         return "/"
+    method Mod.symbol->String:            return "%"
+    method Negate.symbol->String:         return "-"
+    method Power.symbol->String:          return "^"
+    method PreIncrement.symbol->String:   return "++"
+    method PostIncrement.symbol->String:  return "++"
+    method PreDecrement.symbol->String:   return "--"
+    method PostDecrement.symbol->String:  return "--"
+    method BitwiseAnd.symbol->String:     return "&"
+    method BitwiseOr.symbol->String:      return "|"
+    method BitwiseXor.symbol->String:     return "~"
+    method BitwiseNot.symbol->String:     return "!"
+    method BitShiftLeft.symbol->String:   return ":<<:"
+    method BitShiftRight.symbol->String:  return ":>>:"
+    method BitShiftRightX.symbol->String: return ":>>>:"
+endAugment
+
 # type()
 augment
   METHODS

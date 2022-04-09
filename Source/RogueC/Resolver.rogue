@@ -69,16 +69,8 @@ class Resolver : Visitor
     method on( cmd:Block )->Cmd
       return visit( ControlStructure(cmd.t, cmd.statements, ControlType.BLOCK) )
 
-    method on_visit( cmd:Binary )
-      visit_children( cmd )
-      local left = cmd.left
-      local right = cmd.right
-      local left_type = left.require_type
-      local right_type = right.require_type
-      local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
-      if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, this )
-      if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, this )
-      # on_validate() will be called after this method returns
+    method on_validate( cmd:Binary )->Cmd
+      return cmd.left.require_type.resolve_op( cmd, this )
 
     method on_validate( cmd:CallProcedure )->Cmd
       if (cmd.info.throws)
@@ -422,39 +414,40 @@ class Resolver : Visitor
       endWhich
       }#
 
-    method on( cmd:Return )->Cmd
+    method on_validate( cmd:Return )->Cmd
       this_procedure.attributes.has_return = true
 
       if (cmd.result)
         if (not this_procedure.return_type)
           throw cmd.t.error( "Unexpected return value - $ does not declare a return type."(this_procedure) )
         endIf
-        cmd.result = visit( cmd.result ).require_value
+        cmd.result = cmd.result.require_value.resolve_conversion_to( this_procedure.return_type, this )
       else
         if (this_procedure.return_type)
           throw cmd.t.error( "$ return value expected."(this_procedure.return_type) )
         endIf
       endIf
+
       return cmd
 
-    method validate( cmd:SetGlobalProperty )->Cmd
+    method on_validate( cmd:SetGlobalProperty )->Cmd
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
-    method validate( cmd:SetLocal )->Cmd
+    method on_validate( cmd:SetLocal )->Cmd
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
-    method validate( cmd:SetProperty )->Cmd
+    method on_validate( cmd:SetProperty )->Cmd
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
-    method validate( cmd:SetThisProperty )->Cmd
+    method on_validate( cmd:SetThisProperty )->Cmd
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
-    method on( cmd:ShiftRight )->Cmd
-      return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "shift_right",
+    method on( cmd:BitShiftRight )->Cmd
+      return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "bit_shift_right",
                              Args(cmd.t,cmd.left,cmd.right) )
 
     method on_visit( cmd:Statements )
@@ -540,20 +533,6 @@ class Resolver : Visitor
           is_global = context.is_type_context
           type_context = context.require_type
 
-          #if (not args)
-          #  if (type_context is Program.type_Value)
-          #    if (name == "x" or name == "y")
-          #      context = validate( CastValueToXY(t,context) )
-          #      type_context = Program.type_XY
-          #    endIf
-          #  endIf
-
-          #  if (type_context is Program.type_XY)
-          #    if (name == "x") return validate( XYGetX(t, context) )
-          #    if (name == "y") return validate( XYGetY(t, context) )
-          #  endIf
-          #endIf
-
         else
           local type = this_module.find_type( name, &extended_search )
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
@@ -574,19 +553,11 @@ class Resolver : Visitor
 
         local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
 
-        if (match)
-          if (not args) args = CmdList(t)
-          cast_args_to_parameter_types( args, match )
-          return validate( match.cmd_call(context,args) )
-        endIf
+        if (match) return resolve_call( t, context, match, args )
 
         # Check in Global
         match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
-        if (match)
-          if (not args) args = CmdList(t)
-          cast_args_to_parameter_types( args, match )
-          return validate( match.cmd_call(GetSingleton(t,Program.type_Global),args) )
-        endIf
+        if (match) return resolve_call( t, GetSingleton(t,Program.type_Global), match, args )
 
         if (not is_global)
           # TODO: update to allow global properties
@@ -605,6 +576,38 @@ class Resolver : Visitor
 
       endTemporarily
       return null  # never reached
+
+    method resolve_call( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
+      local m = this_module
+      if (name.contains("::"))
+        local m_name = name.before_last("::")
+        m = Program.modules[ m_name ]
+        if (not m) throw t.error( "No such module '$'."(m_name) )
+        name .= after_last("::")
+      endIf
+
+      temporarily this_module = m
+
+        local is_global = context and context.is_type_context
+
+        type_context.organize_methods
+        local def = type_context.definitions[ name ]
+        if (def) return visit( def.cloned )
+
+        local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+        if (match) return resolve_call( t, context, match, args )
+
+        if (suppress_error) return null->(as Cmd)
+
+        find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+
+      endTemporarily
+      return null  # never reached
+
+    method resolve_call( t:Token, context:Cmd, proc:Procedure, args:Cmd )->Cmd
+      if (not args) args = CmdList(t)
+      convert_args_to_parameter_types( args, proc )
+      return validate( proc.cmd_call(context,args) )
 
     method resolve_direct_access( t:Token, context:Cmd, name:String )->Cmd
       local type_context = this_type
@@ -680,16 +683,11 @@ class Resolver : Visitor
 
     method cmd_create_object( t:Token, type_context:Type, args:Cmd )->Cmd
       local m_create = find_procedure( t, type_context, null, "create", args, &require_global, &suppress_error )->(as GlobalMethod)
-      if (m_create)
-        if (not args) args = CmdList(t)
-        cast_args_to_parameter_types( args, m_create )
-        return CallGlobalMethod( t, m_create, args )
-      endIf
+      if (m_create) return resolve_call( t, null, m_create, args )
 
       local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )->(as Method)
       if (m_init)
-        if (not args) args = CmdList(t)
-        cast_args_to_parameter_types( args, m_init )
+        convert_args_to_parameter_types( args, m_init )
         return CreateObject( t, type_context, m_init, args )
       endIf
 
@@ -719,7 +717,7 @@ class Resolver : Visitor
       endUse
       throw t.error( mesg )
 
-    method cast_args_to_parameter_types( args:Cmd, proc:Procedure )
+    method convert_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
       proc.resolve
 
@@ -973,40 +971,6 @@ class Resolver : Visitor
       return null
 endClass
 
-#{
-augment Procedure
-  PROPERTIES
-    local_stack_slots : Int32  # in addition to args already on stack
-
-  METHODS
-    method find_local( name:String )->Local
-      forEach (v in locals step -1)
-        if (v.name == name) return v
-      endForEach
-      return null
-endAugment
-
-# Add
-augment
-  METHODS
-    method Type.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be added."(name) )
-
-    method TypeInt32.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return AddInt32( t, lhs, rhs )
-
-    method TypeReal64.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return AddReal64( t, lhs, rhs )
-
-    method TypeString.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return AddString( t, lhs, rhs )
-
-    method TypeValue.cmd_add( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return AddValue( t, lhs, rhs )
-
-endAugment
-}#
-
 # AddAndAssign
 augment
   METHODS
@@ -1085,76 +1049,6 @@ augment
       return resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
 endAugment
 
-#{
-# BitwiseAnd
-augment
-  METHODS
-    method Type.cmd_bitwise_and( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be bitwise-AND'd."(name) )
-
-    method TypeInt32.cmd_bitwise_and( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return BitwiseAndInt32( t, lhs, rhs )
-
-    method TypeValue.cmd_bitwise_and( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return BitwiseAndValue( t, lhs, rhs )
-
-endAugment
-
-# BitwiseOr
-augment
-  METHODS
-    method Type.cmd_bitwise_or( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be bitwise-OR'd."(name) )
-
-    method TypeInt32.cmd_bitwise_or( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return BitwiseOrInt32( t, lhs, rhs )
-
-    method TypeValue.cmd_bitwise_or( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return BitwiseOrValue( t, lhs, rhs )
-
-endAugment
-
-# BitwiseOrAndAssign
-augment
-  METHODS
-    method Cmd.resolve_bitwise_or_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal target for '|='." )
-
-    method Access.resolve_bitwise_or_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
-      if (not args)
-        local v = resolver.find_local( name )
-        if (v) return resolver.validate( BitwiseOrAndAssignLocal(t,v,operand) )
-
-        local p = resolver.this_type.find_property( name )
-        if (p) return resolver.validate( BitwiseOrAndAssignThisProperty(t,p,operand) )
-      endIf
-      throw t.error( "Illegal target for '|='." )
-
-    method ContextAccess.resolve_bitwise_or_and_assign( t:Token, operand:Cmd, resolver:Resolver )->Cmd
-      if (not args)
-        context = resolver.visit( context )
-        local p = context.require_type.find_property( name )
-        if (p) return resolver.validate( BitwiseOrAndAssignProperty(t,context,p,operand) )
-      endIf
-      throw t.error( "Illegal target for '|='." )
-
-endAugment
-
-# BitwiseXor
-augment
-  METHODS
-    method Type.cmd_bitwise_xor( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be bitwise-XOR'd."(name) )
-
-    method TypeInt32.cmd_bitwise_xor( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return BitwiseXorInt32( t, lhs, rhs )
-
-    method TypeValue.cmd_bitwise_xor( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return BitwiseXorValue( t, lhs, rhs )
-
-endAugment
-}#
-
 # Call
 augment
   METHODS
@@ -1174,45 +1068,6 @@ augment
     method Routine.cmd_call( context:Cmd, args:Cmd )->Cmd
       return CallRoutine( t, this, args )
 endAugment
-
-#{
-# Divide
-augment
-  METHODS
-    method Type.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be divided."(name) )
-
-    method TypeInt32.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return DivideInt32( t, lhs, rhs )
-
-    method TypeReal64.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return DivideReal64( t, lhs, rhs )
-
-    method TypeString.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return DivideString( t, lhs, rhs )
-
-    method TypeValue.cmd_divide( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return DivideValue( t, lhs, rhs )
-
-endAugment
-
-# Decrement
-augment
-  METHODS
-    method Cmd.resolve_decrement( t:Token, resolver:Resolver )->Cmd
-      throw t.error( "Illegal target for decrement." )
-
-    method Access.resolve_decrement( t:Token, resolver:Resolver )->Cmd
-      if (not args)
-        local v = resolver.find_local( name )
-        if (v) return resolver.validate( DecrementLocal(t,v) )
-
-        local p = resolver.this_type.find_property( name )
-        if (p) return resolver.validate( DecrementThisProperty(t,p) )
-      endIf
-      throw t.error( "Illegal target for decrement." )
-endAugment
-}#
 
 # ForEach
 augment
@@ -1258,140 +1113,48 @@ augment
 
 endAugment
 
-#{
-# Increment
+# Op
 augment
   METHODS
-    method Cmd.resolve_increment( t:Token, resolver:Resolver )->Cmd
-      throw t.error( "Illegal target for increment." )
+    method Type.resolve_op( cmd:Binary, resolver:Resolver )->Cmd
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
 
-    method Access.resolve_increment( t:Token, resolver:Resolver )->Cmd
-      if (not args)
-        local v = resolver.find_local( name )
-        if (v) return resolver.validate( IncrementLocal(t,v) )
+      if (left_type.is_primitive and right_type.is_primitive)
+        local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
+        if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
+        if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+        return cmd
 
-        local p = resolver.this_type.find_property( name )
-        if (p) return resolver.validate( IncrementThisProperty(t,p) )
+      else
+        local op_method_name = "operator" + cmd.symbol
+        local args_left_right = Args( t, cmd.left, cmd.right )
+
+        if (left_type.is_primitive)
+          right_type.organize_methods
+          local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+        else
+          left_type.organize_methods
+          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          local arg = Args( t, cmd.right )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
+          if (m) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+        endIf
+
+        use message = StringBuilder.pool
+          message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
+          message.println "Define one of the following methods to support the operation:\n"
+          message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
+          message.println "  $.$($)" (left_type,op_method_name,right_type)
+          message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+          throw cmd.t.error( message )
+        endUse
       endIf
-      throw t.error( "Illegal target for increment." )
 
-      #method Access.resolve_increment( t:Token, resolver:Resolver )->Cmd
-      #return CallRoutine( t, this, args )
+      return null
 endAugment
-
-# ShiftLeft
-augment
-  METHODS
-    method Type.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be bit-shifted."(name) )
-
-    method TypeInt32.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return LeftShiftInt32( t, lhs, rhs )
-
-    method TypeValue.cmd_left_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return LeftShiftValue( t, lhs, rhs )
-
-endAugment
-
-# Mod
-augment
-  METHODS
-    method Type.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be mod'd."(name) )
-
-    method TypeInt32.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return ModInt32( t, lhs, rhs )
-
-    method TypeReal64.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return ModReal64( t, lhs, rhs )
-
-    method TypeValue.cmd_mod( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return ModValue( t, lhs, rhs )
-
-endAugment
-
-# Multiply
-augment
-  METHODS
-    method Type.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be multiplied."(name) )
-
-    method TypeInt32.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return MultiplyInt32( t, lhs, rhs )
-
-    method TypeReal64.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return MultiplyReal64( t, lhs, rhs )
-
-    method TypeString.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return MultiplyString( t, lhs, rhs )
-
-    method TypeValue.cmd_multiply( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return MultiplyValue( t, lhs, rhs )
-
-endAugment
-
-# Negate
-augment
-  METHODS
-    method Type.cmd_negate( t:Token, operand:Cmd )->Cmd
-      throw t.error( "Values of type $ cannot be negated."(name) )
-
-    method TypeInt32.cmd_negate( t:Token, operand:Cmd )->Cmd
-      return NegateInt32( t, operand )
-
-    method TypeReal64.cmd_negate( t:Token, operand:Cmd )->Cmd
-      return NegateReal64( t, operand )
-
-    method TypeValue.cmd_negate( t:Token, operand:Cmd )->Cmd
-      return NegateValue( t, operand )
-
-endAugment
-}#
-
-#{
-# ShiftRight
-augment
-  METHODS
-    method Type.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be bit-shifted."(name) )
-
-    method TypeInt32.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return RightShiftInt32( t, lhs, rhs )
-
-    method TypeValue.cmd_right_shift( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return RightShiftValue( t, lhs, rhs )
-
-endAugment
-
-# ShiftRightX
-augment
-  METHODS
-    method Type.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be bit-shifted."(name) )
-
-    method TypeInt32.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return RightShiftXInt32( t, lhs, rhs )
-
-    method TypeValue.cmd_right_shift_x( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return RightShiftXValue( t, lhs, rhs )
-
-endAugment
-
-# Subtract
-augment
-  METHODS
-    method Type.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      throw t.error( "Values of type $ cannot be subtracted."(name) )
-
-    method TypeInt32.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return SubtractInt32( t, lhs, rhs )
-
-    method TypeReal64.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return SubtractReal64( t, lhs, rhs )
-
-    method TypeString.cmd_subtract( t:Token, lhs:Cmd, rhs:Cmd)->Cmd
-      return SubtractString( t, lhs, rhs )
-
-endAugment
-}#
 

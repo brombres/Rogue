@@ -18,104 +18,105 @@ class ParserCore [abstract]
     ip_procedure_attributes = 5
     ip_procedure_attribute = 6
     ip_procedure_body = 7
-    ip_procedure_parameters = 8
-    ip_procedure_parameter = 9
-    ip_optional_initial_value = 10
-    ip_procedure_return_type = 11
-    ip_id_or_type = 12
-    ip_type = 13
-    ip_remaining_type = 14
-    ip_type_args = 15
-    ip_template_arg_tokens = 16
-    ip_type_name = 17
-    ip_optional_type = 18
-    ip_identifier = 19
-    ip_string = 20
-    ip_module_attributes = 21
-    ip_module_attribute = 22
-    ip_class_attributes = 23
-    ip_class_attribute = 24
-    ip_class = 25
-    ip_placeholder = 26
-    ip_template_parameters = 27
-    ip_constructor_properties = 28
-    ip_base_types = 29
-    ip_attributes = 30
-    ip_class_sections = 31
-    ip_class_section = 32
-    ip_native_code_blocks = 33
-    ip_native_code_block = 34
-    ip_definition = 35
-    ip_forEach_loop = 36
-    ip_forEach_control = 37
-    ip_forEach_optional_at = 38
-    ip_forEach_collection = 39
-    ip_if_statement = 40
-    ip_if_statement_multi_line_elseIf_else = 41
-    ip_if_statement_single_line_elseIf_else = 42
-    ip_inline_which = 43
-    ip_inline_which_case = 44
-    ip_wrap_in_local_scope = 45
-    ip_method = 46
-    ip_global_method = 47
-    ip_global_properties = 48
-    ip_properties = 49
-    ip_property_declaration = 50
-    ip_multi_line_statements = 51
-    ip_single_line_statements = 52
-    ip_control_structure = 53
-    ip_args = 54
-    ip_arg = 55
-    ip_statement = 56
-    ip_local_declarations = 57
-    ip_local_declaration = 58
-    ip_block = 59
-    ip_loop = 60
-    ip_try_catch = 61
-    ip_catches = 62
-    ip_catch_clause = 63
-    ip_module_path = 64
-    ip_uses_attributes = 65
-    ip_uses_attribute = 66
-    ip_access_args = 67
-    ip_optional_expression = 68
-    ip_expression = 69
-    ip_op_and_assign = 70
-    ip_logical_xor = 71
-    ip_logical_xor__inner = 72
-    ip_logical_or = 73
-    ip_logical_or__inner = 74
-    ip_logical_and = 75
-    ip_logical_and__inner = 76
-    ip_comparison = 77
-    ip_comparison__inner = 78
-    ip_reference_comparison = 79
-    ip_bitwise_xor = 80
-    ip_bitwise_xor__inner = 81
-    ip_bitwise_or = 82
-    ip_bitwise_or__inner = 83
-    ip_bitwise_and = 84
-    ip_bitwise_and__inner = 85
-    ip_bitwise_shift = 86
-    ip_bitwise_shift__inner = 87
-    ip_add_subtract = 88
-    ip_add_subtract__inner = 89
-    ip_multiply_divide_mod = 90
-    ip_multiply_divide_mod__inner = 91
-    ip_power = 92
-    ip_power__inner = 93
-    ip_pre_unary = 94
-    ip_post_unary = 95
-    ip_post_unary__inner = 96
-    ip_access = 97
-    ip_access_inner = 98
-    ip_context_block_command = 99
-    ip_term = 100
-    ip_native_code = 101
-    ip_preprocess = 102
-    ip_process_another = 103
-    ip_collect_meta_filepath = 104
-    ip_additional_node_types = 105
+    ip_procedure_name = 8
+    ip_procedure_parameters = 9
+    ip_procedure_parameter = 10
+    ip_optional_initial_value = 11
+    ip_procedure_return_type = 12
+    ip_id_or_type = 13
+    ip_type = 14
+    ip_remaining_type = 15
+    ip_type_args = 16
+    ip_template_arg_tokens = 17
+    ip_type_name = 18
+    ip_optional_type = 19
+    ip_identifier = 20
+    ip_string = 21
+    ip_module_attributes = 22
+    ip_module_attribute = 23
+    ip_class_attributes = 24
+    ip_class_attribute = 25
+    ip_class = 26
+    ip_placeholder = 27
+    ip_template_parameters = 28
+    ip_constructor_properties = 29
+    ip_base_types = 30
+    ip_attributes = 31
+    ip_class_sections = 32
+    ip_class_section = 33
+    ip_native_code_blocks = 34
+    ip_native_code_block = 35
+    ip_definition = 36
+    ip_forEach_loop = 37
+    ip_forEach_control = 38
+    ip_forEach_optional_at = 39
+    ip_forEach_collection = 40
+    ip_if_statement = 41
+    ip_if_statement_multi_line_elseIf_else = 42
+    ip_if_statement_single_line_elseIf_else = 43
+    ip_inline_which = 44
+    ip_inline_which_case = 45
+    ip_wrap_in_local_scope = 46
+    ip_method = 47
+    ip_global_method = 48
+    ip_global_properties = 49
+    ip_properties = 50
+    ip_property_declaration = 51
+    ip_multi_line_statements = 52
+    ip_single_line_statements = 53
+    ip_control_structure = 54
+    ip_args = 55
+    ip_arg = 56
+    ip_statement = 57
+    ip_local_declarations = 58
+    ip_local_declaration = 59
+    ip_block = 60
+    ip_loop = 61
+    ip_try_catch = 62
+    ip_catches = 63
+    ip_catch_clause = 64
+    ip_module_path = 65
+    ip_uses_attributes = 66
+    ip_uses_attribute = 67
+    ip_access_args = 68
+    ip_optional_expression = 69
+    ip_expression = 70
+    ip_op_and_assign = 71
+    ip_logical_xor = 72
+    ip_logical_xor__inner = 73
+    ip_logical_or = 74
+    ip_logical_or__inner = 75
+    ip_logical_and = 76
+    ip_logical_and__inner = 77
+    ip_comparison = 78
+    ip_comparison__inner = 79
+    ip_reference_comparison = 80
+    ip_bitwise_xor = 81
+    ip_bitwise_xor__inner = 82
+    ip_bitwise_or = 83
+    ip_bitwise_or__inner = 84
+    ip_bitwise_and = 85
+    ip_bitwise_and__inner = 86
+    ip_bitwise_shift = 87
+    ip_bitwise_shift__inner = 88
+    ip_add_subtract = 89
+    ip_add_subtract__inner = 90
+    ip_multiply_divide_mod = 91
+    ip_multiply_divide_mod__inner = 92
+    ip_power = 93
+    ip_power__inner = 94
+    ip_pre_unary = 95
+    ip_post_unary = 96
+    ip_post_unary__inner = 97
+    ip_access = 98
+    ip_access_inner = 99
+    ip_context_block_command = 100
+    ip_term = 101
+    ip_native_code = 102
+    ip_preprocess = 103
+    ip_process_another = 104
+    ip_collect_meta_filepath = 105
+    ip_additional_node_types = 106
 
   PROPERTIES
     _tokens          : Token[]
@@ -443,7 +444,7 @@ class ParserCore [abstract]
             endIf
             if (_next_t.type == TokenType.KEYWORD_ROUTINE)
               temporarily _cur_t = _on_t
-                _execute(ip_identifier)
+                _execute(ip_procedure_name)
                 _pop_frame
                 _execute(ip_procedure_parameters)
                 _pop_frame
@@ -517,6 +518,111 @@ class ParserCore [abstract]
           case ip_procedure_body
             _execute(ip_multi_line_statements)
             _pop_frame
+            return
+          case ip_procedure_name
+            if (_next_t.content and _next_t.content == "operator")
+              temporarily _cur_t = _on_t
+                if (_next_t.type == TokenType.SYMBOL_QUESTION)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator?"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_PLUS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator+"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_MINUS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator-"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_ASTERISK)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator*"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_SLASH)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator/"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_PERCENT)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator%"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_CARET)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator^"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_PLUS_PLUS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator++"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_MINUS_MINUS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator--"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_AMPERSAND)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator&"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_VERTICAL_BAR)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator|"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_TILDE)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator~"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_BANG)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator!"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_LEFT_SHIFT)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator:<<:"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_RIGHT_SHIFT)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator:>>:"), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_RIGHT_SHIFT_X)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator:>>>:"), 0 )
+                    return
+                  endTemporarily
+                endIf
+              endTemporarily
+            else
+              _execute(ip_identifier)
+              _pop_frame
+            endIf
             return
           case ip_procedure_parameters
             _begin_list
@@ -659,7 +765,7 @@ class ParserCore [abstract]
             _save_position
             if (_next_t.type == TokenType.SYMBOL_COLON_COLON)
               temporarily _cur_t = _on_t
-                if (not disable_output) _push( Identifier(_cur_t,"\"Rogue\""), 0 )
+                if (not disable_output) _push( Identifier(_cur_t,"Rogue"), 0 )
                 _execute(ip_identifier)
                 _pop_frame
                 if (not disable_output) _push( ModuleQualifiedID(_cur_t,_node_arg(-2),_string_arg(-1)), 2 )
@@ -1294,7 +1400,7 @@ class ParserCore [abstract]
           case ip_method
             if (_next_t.type == TokenType.KEYWORD_METHOD)
               temporarily _cur_t = _on_t
-                _execute(ip_identifier)
+                _execute(ip_procedure_name)
                 _pop_frame
                 _execute(ip_procedure_parameters)
                 _pop_frame
@@ -1314,7 +1420,7 @@ class ParserCore [abstract]
           case ip_global_method
             if (_next_t.type == TokenType.KEYWORD_METHOD)
               temporarily _cur_t = _on_t
-                _execute(ip_identifier)
+                _execute(ip_procedure_name)
                 _pop_frame
                 _execute(ip_procedure_parameters)
                 _pop_frame
@@ -2049,7 +2155,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_add_subtract)
                 _pop_frame
-                if (not disable_output) _push( ShiftLeft(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( BitShiftLeft(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_bitwise_shift__inner)
                 _pop_frame
                 return
@@ -2060,7 +2166,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_add_subtract)
                 _pop_frame
-                if (not disable_output) _push( ShiftRight(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( BitShiftRight(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_bitwise_shift__inner)
                 _pop_frame
                 return
@@ -2071,7 +2177,7 @@ class ParserCore [abstract]
                 _consume_eols
                 _execute(ip_add_subtract)
                 _pop_frame
-                if (not disable_output) _push( ShiftRightX(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( BitShiftRightX(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_bitwise_shift__inner)
                 _pop_frame
                 return

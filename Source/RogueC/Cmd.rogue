@@ -377,10 +377,10 @@ class IndexedAccess : Cmd
 
 endClass
 
-class ShiftLeft : Binary
+class BitShiftLeft : Binary
   METHODS
     method description->String
-      return "ShiftLeft($,$)" (%left,%right)
+      return "BitShiftLeft($,$)" (%left,%right)
 
 endClass
 
@@ -567,17 +567,17 @@ class Negate : Unary
 
 endClass
 
-class ShiftRight : Binary
+class BitShiftRight : Binary
   METHODS
     method description->String
-      return "ShiftRight($,$)" (%left,%right)
+      return "BitShiftRight($,$)" (%left,%right)
 
 endClass
 
-class ShiftRightX : Binary
+class BitShiftRightX : Binary
   METHODS
     method description->String
-      return "ShiftRightX($,$)" (%left,%right)
+      return "BitShiftRightX($,$)" (%left,%right)
 
 endClass
 
