@@ -1549,10 +1549,12 @@ class GlobalMethod : Procedure
   METHODS
     method init( t:Token, type_context, name:String )
       prior.init( t, type_context.module_context, name, null, null, null, null )
+      attributes.is_global = true
 
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
                  attributes=null:Attributes, body=null:LocalScope )
-        prior.init( t, name, parameters, return_type, attributes, body )
+      prior.init( t, name, parameters, return_type, attributes, body )
+      attributes.is_global = true
 
     method init( existing:GlobalMethod )
       prior.init( existing )

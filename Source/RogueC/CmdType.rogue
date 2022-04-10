@@ -232,6 +232,8 @@ augment
       local cmd = resolver.visit( this )
       local type = cmd.require_type
 
+      if (cmd instanceOf LiteralLogical) return cmd
+
       if (type is Program.type_Logical) return Logicalized(cmd.t,cmd)
       if (type.is_primitive) return Logicalized(cmd.t,cmd)
       if (type.attributes.is_optional) return resolver.visit( ContextAccess(cmd.t,cmd,"exists",null) )

@@ -585,6 +585,7 @@ class Resolver : Visitor
           type_context = context.require_type
 
         else
+          is_global = this_procedure.attributes.is_global
           local type = this_module.find_type( name, &extended_search )
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
 
@@ -609,7 +610,6 @@ class Resolver : Visitor
         if (match) return resolve_call( t, GetSingleton(t,Program.type_Global), match, args )
 
         if (not is_global)
-          # TODO: update to allow global properties
           if (type_context and not args)
             local p = type_context.properties[ name ]
             if (p)
@@ -618,6 +618,13 @@ class Resolver : Visitor
             endIf
           endIf
         endIf
+
+        block
+          local p = type_context.global_properties[ name ]
+          if (p)
+            return validate( GetGlobalProperty(t,p) )
+          endIf
+        endBlock
 
         if (suppress_error) return null->(as Cmd)
 
@@ -694,7 +701,6 @@ class Resolver : Visitor
       if (context or this_procedure.is_method)
         local p = type_context.properties[ name ]
         if (p)
-          new_value = new_value.resolve_conversion_to(p.type, this)
           if (context) return validate( SetProperty(t,context,p,new_value) )
           else         return validate( SetThisProperty(t,p,new_value) )
         endIf
@@ -703,7 +709,6 @@ class Resolver : Visitor
       block
         local p = type_context.global_properties[ name ]
         if (p)
-          new_value = new_value.resolve_conversion_to(p.type, this)
           return validate( SetGlobalProperty(t,p,new_value) )
         endIf
       endBlock
@@ -826,7 +831,7 @@ class Resolver : Visitor
         endIf
 
         local mesg : String
-        if (args)
+        if (args or Candidates.count)
           which (Candidates.count)
             case 0
               mesg = "No such "
@@ -846,7 +851,9 @@ class Resolver : Visitor
               elseIf (this_type) mesg += this_type + "."
 
               mesg += sig
-              mesg += " has arguments that are incompatible with the best candidate:\n\n"
+              if (args) mesg += " has arguments that are"
+              else      mesg += " is"
+              mesg += " incompatible with the best candidate:\n\n"
               mesg += "  " + Candidates[0].dev_signature
 
             others
@@ -880,7 +887,6 @@ class Resolver : Visitor
 
         error_message = mesg
       endUse
-
       throw t.error( error_message )
 
     method refine_candidates( type_context:Type, args:Cmd )->Procedure
@@ -1115,12 +1121,23 @@ augment
           local cmd_call = resolver.resolve_access( t, null, "set_"+name, Args(t,new_value), &suppress_error )
           if (cmd_call) return cmd_call
 
-          local p = resolver.this_type.properties[ name ]
-          if (p) return resolver.validate( SetThisProperty(t,p,new_value) )
+          if (resolver.this_procedure.is_method)
+            local p = resolver.this_type.properties[ name ]
+            if (p)
+              return resolver.validate( SetThisProperty(t,p,new_value) )
+            endIf
+          endIf
+
+          local p = resolver.this_type.global_properties[ name ]
+          if (p)
+            return resolver.validate( SetGlobalProperty(t,p,new_value) )
+          endIf
         endIf
 
-        if (resolver.this_type)
-          throw t.error( "No such local or property '$' or setter set_$() in current context."(name,name) )
+        if (resolver.this_procedure.is_method)
+          throw t.error( "No such local, property, or global property '$', or setter set_$(), in current context."(name,name) )
+        elseIf (resolver.this_procedure.attributes.is_global)
+          throw t.error( "No such local or global property '$' in current context."(name) )
         else
           throw t.error( "No such local '$' in current context."(name) )
         endIf
@@ -1140,6 +1157,11 @@ augment
 
         local p = context_type.properties[ name ]
         if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
+
+        p = context_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( SetGlobalProperty(t,p,new_value) )
+        endIf
 
         throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type.name) )
       endIf

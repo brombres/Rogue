@@ -117,6 +117,7 @@ class Procedure : Cmd
       use builder = StringBuilder.pool
         builder.print module_context
         builder.print "::"
+        if (type_context) builder.print( type_context ).print( '.' )
         builder.print name
         builder.print "("
         forEach (param at i in parameters)

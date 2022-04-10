@@ -511,17 +511,8 @@ class CGenerator : Visitor
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:GlobalMethod )
-      if (cmd.type_context is not this_type) return
-
-      this_type.write_c_global_method_header( cmd, writer )
-      writer.println
-
-      on_enter( cmd.body, &is_procedure )
-      visit( cmd.statements )
-      on_leave( cmd.body, &is_procedure )
-
-      writer.println
+    method on_visit( cmd:GetGlobalProperty )
+      writer.print( cmd.info.c_name )
 
     method on_visit( cmd:GetProperty )
       visit( cmd.context )
@@ -541,6 +532,18 @@ class CGenerator : Visitor
       if (this_type.is_reference) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GlobalMethod )
+      if (cmd.type_context is not this_type) return
+
+      this_type.write_c_global_method_header( cmd, writer )
+      writer.println
+
+      on_enter( cmd.body, &is_procedure )
+      visit( cmd.statements )
+      on_leave( cmd.body, &is_procedure )
+
+      writer.println
 
     method on_visit( cmd:If )
       on_enter( cmd, &optional )
