@@ -103,6 +103,11 @@ class CGenerator : Visitor
         visit( cmd )
       endIf
 
+    method on_visit( cmd:CompareOp )
+      print_parenthesized( cmd.left )
+      writer.print " - "
+      print_parenthesized( cmd.right )
+
     method on_visit( cmd:BitwiseAnd )
       print_parenthesized( cmd.left )
       writer.print " & "

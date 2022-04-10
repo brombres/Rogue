@@ -302,7 +302,7 @@ class CompareLT : Compare
 
 endClass
 
-class CompareNE : Binary
+class CompareNE : Compare
   METHODS
     method description->String
       return "CompareNE($,$)" (%left,%right)
@@ -2404,5 +2404,12 @@ class Logicalized : Unary
   METHODS
     method description->String
       return "Logicalized($)" (%operand)
+
+endClass
+
+class CompareOp : Compare
+  METHODS
+    method description->String
+      return "CompareOp($,$)" (%left,%right)
 
 endClass

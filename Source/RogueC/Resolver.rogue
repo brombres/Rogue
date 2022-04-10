@@ -81,6 +81,43 @@ class Resolver : Visitor
       endIf
       return cmd
 
+    method on_validate( cmd:CompareEQ )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this, &suppress_error )
+      if (result) return validate( LogicalNot(cmd.t,result) )
+      if (cmd.left.type.is_primitive and cmd.right.type.is_primitive) return cmd
+      return cmd.left.require_type.resolve_compare_op( cmd, "operator==", this )
+
+    method on_validate( cmd:CompareNE )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this, &suppress_error )
+      if (result) return result.logicalized( this )
+      if (cmd.left.type.is_primitive and cmd.right.type.is_primitive) return cmd
+      return LogicalNot( cmd.t, cmd.left.require_type.resolve_compare_op( cmd, "operator==", this ) )
+
+    method on_validate( cmd:CompareLT )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareLT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareLE )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareLE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareGT )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareGT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareGE )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareGE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareOp )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return result
+      return cmd  # resolved primitive comparison
+
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       local result = resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -335,6 +372,9 @@ class Resolver : Visitor
       endForEach
 
       return null
+
+    method on_validate( cmd:LogicalNot )->Cmd
+      return cmd
 
     method on( cmd:Logicalize )->Cmd
       return cmd.operand.logicalized( this )
@@ -1199,11 +1239,53 @@ augment
 
           local arg = Args( t, cmd.right )
           m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
-          if (m) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
         endIf
 
         use message = StringBuilder.pool
           message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
+          message.println "Define one of the following methods to support the operation:\n"
+          message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
+          message.println "  $.$($)" (left_type,op_method_name,right_type)
+          message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+          throw cmd.t.error( message )
+        endUse
+      endIf
+
+      return null
+
+    method Type.resolve_compare_op( cmd:Compare, op_method_name:String, resolver:Resolver, &suppress_error )->Cmd
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
+
+      if (left_type.is_primitive and right_type.is_primitive)
+        local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
+        if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
+        if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+        return null
+
+      else
+        local args_left_right = Args( t, cmd.left, cmd.right )
+
+        if (left_type.is_primitive)
+          right_type.organize_methods
+          local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+        else
+          left_type.organize_methods
+          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          local arg = Args( t, cmd.right )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+        endIf
+
+        if (suppress_error) return null
+
+        use message = StringBuilder.pool
+          message.print   "Operation $ $ $ is undefined. "(left_type,op_method_name.after_first("operator"),right_type)
           message.println "Define one of the following methods to support the operation:\n"
           message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
           message.println "  $.$($)" (left_type,op_method_name,right_type)
@@ -1234,7 +1316,7 @@ augment
         if (m) return resolver.resolve_call( cmd.t, null, m, arg )
 
         m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
-        if (m) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
 
         if (suppress_error) return null
 

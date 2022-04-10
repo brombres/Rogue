@@ -99,6 +99,7 @@ SYMBOL_CLOSE_PAREN           )   [structural]
 SYMBOL_COLON                 :   [structural]
 SYMBOL_COLON_COLON           ::
 SYMBOL_COMMA                 ,   [structural]
+SYMBOL_COMPARE               <>
 SYMBOL_DOTDOT                ..
 SYMBOL_DOTDOTLT              ..<
 SYMBOL_DOTDOTGT              ..>
@@ -544,6 +545,8 @@ parser
     on ":<<:" ->  Identifier(name="operator:<<:":String)
     on ":>>:" ->  Identifier(name="operator:>>:":String)
     on ":>>>:" -> Identifier(name="operator:>>>:":String)
+    on "=="    -> Identifier(name="operator==":String)
+    on "<>"    -> Identifier(name="operator<>":String)
   elseOnOthers
     identifier
   endOn
@@ -1360,6 +1363,7 @@ parser
   on ">"  -> CompareGT
   on "<=" -> CompareLE
   on ">=" -> CompareGE
+  on "<>" -> CompareOp
 
 - reference_comparison
   bitwise_xor

@@ -618,6 +618,18 @@ class ParserCore [abstract]
                     return
                   endTemporarily
                 endIf
+                if (_next_t.type == TokenType.SYMBOL_EQ)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator=="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_COMPARE)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator<>"), 0 )
+                    return
+                  endTemporarily
+                endIf
               endTemporarily
             else
               _execute(ip_identifier)
@@ -2031,6 +2043,17 @@ class ParserCore [abstract]
                 _execute(ip_reference_comparison)
                 _pop_frame
                 if (not disable_output) _push( CompareGE(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                _execute(ip_comparison__inner)
+                _pop_frame
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_COMPARE)
+              temporarily _cur_t = _on_t
+                _consume_eols
+                _execute(ip_reference_comparison)
+                _pop_frame
+                if (not disable_output) _push( CompareOp(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 _execute(ip_comparison__inner)
                 _pop_frame
                 return
