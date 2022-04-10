@@ -410,6 +410,16 @@ class Resolver : Visitor
       this_module.native_code.add( cmd.content )
       return null
 
+    method on_validate( cmd:PostDecrement )->Cmd
+      local type = cmd.operand.require_type
+      if (type.is_primitive) return cmd
+      throw cmd.t.error( "Post-decrement ('obj--') cannot be used on objects and compounds." )
+
+    method on_validate( cmd:PostIncrement )->Cmd
+      local type = cmd.operand.require_type
+      if (type.is_primitive) return cmd
+      throw cmd.t.error( "Post-increment ('obj++') cannot be used on objects and compounds." )
+
     method on_visit( cmd:Procedure )
       autoname_index = 0
 
