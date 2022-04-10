@@ -1677,6 +1677,22 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.content and _next_t.content == "print")
+              temporarily _cur_t = _on_t
+                _execute(ip_args)
+                _pop_frame
+                if (not disable_output) _push( Access(_cur_t,_cur_t.content,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.content and _next_t.content == "println")
+              temporarily _cur_t = _on_t
+                _execute(ip_args)
+                _pop_frame
+                if (not disable_output) _push( Access(_cur_t,_cur_t.content,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_RETURN)
               temporarily _cur_t = _on_t
                 _execute(ip_optional_expression)

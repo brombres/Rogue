@@ -1162,8 +1162,8 @@ parser
 
 - statement
   on "noAction":  return
-  #on @"print"     args -> Print(args)
-  #on @"println"   args -> Println(args)
+  on @"print"     args -> Access(name=content,args)
+  on @"println"   args -> Access(name=content,args)
   on "return"     optional_expression -> Return(result)
   on "throw"      expression -> Throw(exception)
 
@@ -1175,13 +1175,7 @@ parser
     return
   endOn
 
-  #on "++" expression -> PreIncrement(operand):Stepper
-  #on "--" expression -> PreDecrement(operand):Stepper
-
   expression
-
-  #on "++" -> PostIncrement(operand):Stepper
-  #on "--" -> PostDecrement(operand):Stepper
 
   on "=" expression -> Assign(target,new_value)
 

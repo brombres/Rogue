@@ -446,13 +446,13 @@ class Type : Cmd
 
       endIf
 
-      # Compounds get to->String and description->String. to->String calls description() by default.
+      # Compounds get to->String and description->String. description() calls to->String by default.
       if (is_compound)
         block m = methods["description()"]
           if (not m)
             m = Method( t, this, "description" )
             m.return_type = Program.type_String
-            m.statements.add( Return(t,LiteralString(t,name)) )
+            m.statements.add( Return(t,Access(t,"to_String")) )
             m.organize
             methods[ m.signature ] = m
           endIf
@@ -462,7 +462,7 @@ class Type : Cmd
           if (not m)
             m = Method( t, this, "to_String" )
             m.return_type = Program.type_String
-            m.statements.add( Return(t,Access(t,"description")) )
+            m.statements.add( Return(t,LiteralString(t,name)) )
             m.organize
             methods[ m.signature ] = m
           endIf

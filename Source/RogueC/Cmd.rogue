@@ -1124,7 +1124,7 @@ class Block : ControlStructure
 
 endClass
 
-class Stepper : Cmd
+class Stepper : Unary
   PROPERTIES
     operand : Cmd
 

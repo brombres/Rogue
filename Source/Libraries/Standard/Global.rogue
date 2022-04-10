@@ -19,7 +19,7 @@ class Global [singleton]
       native @|printf( "%lf", $value );
 
     method print( value:Object )
-      if (value) print( value.description )
+      if (value) print( value->String )
       else       print "null"
 
     method print( value:String )

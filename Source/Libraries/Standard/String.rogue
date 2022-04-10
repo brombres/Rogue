@@ -95,7 +95,7 @@ class String
         return this
       endIf
 
-      print( value.description )
+      print( value->String )
       return this
 
     method print( value:String )->this
