@@ -657,6 +657,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:LiteralString )
       local c_id = Program.unique_strings[cmd.value]
+      if (not c_id) trace cmd.value
       assert c_id
       writer.print( c_id )
 
@@ -674,7 +675,7 @@ class CGenerator : Visitor
       writer.print " || "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:Logicalize )
+    method on_visit( cmd:Logicalized )
       writer.print "!!"
       print_parenthesized( cmd.operand )
 

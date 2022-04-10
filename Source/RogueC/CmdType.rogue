@@ -225,6 +225,30 @@ augment
       return true
 endAugment
 
+# logicalized()
+augment
+  METHODS
+    method Cmd.logicalized( resolver:Resolver )->Cmd
+      local cmd = resolver.visit( this )
+      local type = cmd.require_type
+
+      if (type is Program.type_Logical) return Logicalized(cmd.t,cmd)
+      if (type.is_primitive) return Logicalized(cmd.t,cmd)
+      if (type.attributes.is_optional) return resolver.visit( ContextAccess(cmd.t,cmd,"exists",null) )
+
+      local suppress_error = type.is_reference
+
+      local logicalized = Logicalized( cmd.t, cmd )
+      local result = type.resolve_unary_op( logicalized, resolver, &=suppress_error )
+      if (result) return result
+
+      result = cmd.resolve_conversion_to( Program.type_Logical, resolver, &=suppress_error )
+      if (result) return result
+
+      return logicalized   # a reference with no to->Logical available
+
+endAugment
+
 # symbol()
 augment
   METHODS
@@ -235,6 +259,7 @@ augment
     method Multiply.symbol->String:       return "*"
     method Divide.symbol->String:         return "/"
     method Logicalize.symbol->String:     return "?"
+    method Logicalized.symbol->String:    return "?"
     method Mod.symbol->String:            return "%"
     method Negate.symbol->String:         return "-"
     method Power.symbol->String:          return "^"
@@ -317,6 +342,9 @@ augment
 
     method ConvertToType.type->Type
       return to_type
+
+    method CreateCompound.type->Type
+      return of_type
 
     method CreateObject.type->Type
       return of_type
@@ -425,6 +453,9 @@ augment
       return @type
 
     method Logicalize.type->Type
+      return Program.type_Logical
+
+    method Logicalized.type->Type
       return Program.type_Logical
 
     method NamedArg.type->Type

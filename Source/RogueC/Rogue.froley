@@ -576,11 +576,11 @@ parser
   type
 
 - id_or_type
-  type_name
+  pathed_name
   if (nextIs("<<") or nextIs("[]") or nextIs('?')) remaining_type
 
 - type
-  type_name
+  pathed_name
   remaining_type
 
 - remaining_type
@@ -618,7 +618,7 @@ parser
   endWhile
   produceTokenList
 
-- type_name
+- pathed_name
   savePosition
   on "::"
     create Identifier(name="Rogue":String)
@@ -1434,7 +1434,7 @@ parser
       identifier
       create ContextDirectAccess(context,name:String)
     elseOnOthers
-      identifier
+      procedure_name
       access_args
       create ContextAccess(context,name:String,args)
     endOn
@@ -1468,7 +1468,7 @@ parser
 
 - context_block_command
   create ContextBlockContext
-  identifier
+  procedure_name
   access_args
   create ContextAccess(context,name:String,args)
   on "=" expression -> Assign(target,new_value)
@@ -1483,15 +1483,33 @@ parser
   on REAL_NUMBER    -> LiteralReal(value=content:Real):Literal
   on CHARACTER      -> LiteralCharacter(value=content:Character):Literal
   on '@'
-    type_name
+    pathed_name
     produce DirectAccess( name:String )
   endOn
-  onPeek IDENTIFIER
-    type_name
+  onPeek @"operator"
+    procedure_name
+    access_args
+    produce Access( name:String, args )
+  elseOnPeek IDENTIFIER
+    pathed_name
     if (nextIs("<<") or nextIs("[]"))
       remaining_type
       access_args
       produce TypeAccess( of_type:Type, args )
+    elseIf (nextIs('?'))
+      on '?'
+        if (nextIs('('))
+          createNull
+          create Type(name:String,type_args:TemplateArgs)
+          create Type(core_type:Type,optional="true":Logical)
+          access_args
+          produce TypeAccess( of_type:Type, args )
+        else
+          createNull
+          create Access( name:String, args )
+          produce Logicalize(operand):Unary
+        endIf
+      endOn
     else
       access_args
       produce Access( name:String, args )
@@ -1661,6 +1679,7 @@ parser
   create LiteralInt32(value:Integer):LiteralInteger
   create LiteralInt64(value:Integer):LiteralInteger
   create LocalScope:ControlStructure
+  create Logicalized(operand):Unary
   create NativeProperty( expression:String )
   create OpAndAssign(target,operand)
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)

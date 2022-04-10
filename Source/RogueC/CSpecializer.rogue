@@ -102,6 +102,7 @@ class CSpecializer : Visitor
         cmd.condition = visit( cmd.condition )
       endTemporarily
       cmd.statements = visit( cmd.statements )
+      cmd.cmd_else = visit(cmd.cmd_else)->(as If)
       control_stack.remove_last
 
     method on_visit( cmd:InlineWhich )

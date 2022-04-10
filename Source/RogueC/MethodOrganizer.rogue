@@ -23,7 +23,7 @@ class MethodOrganizer : Visitor
           local v = Local( cmd.t, "result", DummyInitialValue, this_type )
           m_create.locals.add( v )
           m_create.body.locals.add( v )
-          m_create.statements.add( SetLocal(cmd.t,v,CreateCompound(cmd.t),&initial_assignment) )
+          m_create.statements.add( SetLocal(cmd.t,v,CreateCompound(cmd.t,this_type),&initial_assignment) )
           m_create.statements.add( Return(cmd.t,GetLocal(cmd.t,v)) )
           on( m_create )
         endIf

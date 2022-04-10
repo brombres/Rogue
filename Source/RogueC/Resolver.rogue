@@ -162,7 +162,7 @@ class Resolver : Visitor
     method on( cmd:If )->Cmd
       push_scope( cmd )
       temporarily insert_in_init = true
-        cmd.condition = visit( cmd.condition )
+        if (cmd.condition) cmd.condition .= logicalized( this )
       endTemporarily
 
       if (cmd.condition and cmd.condition.is_literal)
@@ -210,6 +210,7 @@ class Resolver : Visitor
       cmd.result_type = result_type
 
       forEach (wcase in cmd.cases)
+        if (wcase.condition) wcase.condition .= logicalized( this )
         if (wcase.value) wcase.value .= resolve_conversion_to( result_type, this )
       endForEach
 
@@ -336,20 +337,10 @@ class Resolver : Visitor
       return null
 
     method on( cmd:Logicalize )->Cmd
-      cmd.operand = visit( cmd.operand )
-      local type = cmd.operand.require_type
-      if (type is Program.type_Logical) return cmd.operand
-      if (type.is_primitive) return cmd
+      return cmd.operand.logicalized( this )
 
-      local suppress_error = type.is_reference
-
-      local result = type.resolve_unary_op( cmd, this, &=suppress_error )
-      if (result) return result
-
-      result = cmd.operand.resolve_conversion_to( Program.type_Logical, this, &=suppress_error )
-      if (result) return result
-
-      return cmd # a reference with no to->Logical available; will do a null check
+    method on( cmd:Logicalized )->Cmd
+      return cmd  # good to go
 
     method on( cmd:Loop )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
