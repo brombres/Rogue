@@ -54,6 +54,29 @@ class List<<$DataType>> : ListType
     method clear
       discard_from( 0 )
 
+    method cloned->$DataType[]
+      local result = $DataType[]( count )
+      result.count = count
+      copy( 0, count, result, 0 )
+      return result
+
+    method copy( src_i1:Int32, src_count:Int32, dest:$DataType[], dest_i1:Int32 )
+      if (src_count <= 0) return
+
+      if (this is dest)
+        native @|memmove(
+                |  $dest->as_bytes + $dest_i1*$element_size,
+                |  $this->as_bytes + $src_i1*$element_size,
+                |  $src_count * $element_size
+                |);
+      else
+        native @|memcpy(
+                |  $dest->as_bytes + $dest_i1*$element_size,
+                |  $this->as_bytes + $src_i1*$element_size,
+                |  $src_count * $element_size
+                |);
+      endIf
+
     method discard_from( index:Int32 )
       local n = (count - index)
       if (n > 0)

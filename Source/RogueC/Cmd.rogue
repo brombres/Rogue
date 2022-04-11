@@ -1940,7 +1940,7 @@ class This : Cmd
       this_type = other.this_type
 
     method description->String
-      return "This"
+      return "This($)"(this_type)
 endClass
 
 class TypeList : CmdList

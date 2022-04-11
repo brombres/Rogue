@@ -37,6 +37,10 @@ class MethodOrganizer : Visitor
       cmd.organize( this )
       return cmd
 
+    method on_visit_children( cmd:Local )
+      prior.on_visit_children( cmd )
+      cmd.initial_value = visit( cmd.initial_value )
+
     method on( cmd:Method )->Cmd
       cmd.module_context = this_module
       cmd.type_context = this_type

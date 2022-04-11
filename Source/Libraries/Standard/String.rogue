@@ -17,6 +17,13 @@ class String
     method init
       init( 20 )
 
+    method init( existing:String )
+      count = existing.count
+      hash_code = existing.hash_code
+      is_ascii = existing.is_ascii
+      data = existing.data.cloned
+      data[count] = 0
+
     method init( byte_capacity:Int32 )
       data = Byte[]( byte_capacity + 1 )
       data[0] = 0
@@ -34,6 +41,12 @@ class String
       at_newline = true
       hash_code = -1
       return this
+
+    method cloned->String
+      return String( this )
+
+    method first->Character
+      return this[0]
 
     method get( index:Int32 )->Character
       if (is_ascii) return data[index]
@@ -80,6 +93,9 @@ class String
         native @|$hash_code = RogueString_compute_hash_code( $this, 0 );
       endIf
       return @hash_code
+
+    method last->Character
+      return this[ count-1 ]
 
     method print( value:Byte )->this
       return print( value->Int64 )
@@ -259,6 +275,16 @@ class String
 
       return this
 
+    method remove_last->Character
+      local result = this[ count-1 ]
+      if (is_immutable) return result
+
+      --count
+      cursor = count
+      data.discard_from( cursor_offset )
+      hash_code = -1
+      return result
+
     method reserve( additional_bytes:Int32 )
       if (is_immutable) return
       data.reserve( additional_bytes+1 ) # +1 for null terminator
@@ -346,6 +372,7 @@ class String
                  |  data->count          = byte_count;
                  |  data->capacity       = byte_count + 1;
                  |  data->is_borrowed    = !must_free;
+                 |  data->element_size   = 1;
                  |
                  |  result->count        = character_count;
                  |  result->is_immutable = !must_free;

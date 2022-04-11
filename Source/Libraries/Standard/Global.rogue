@@ -1,5 +1,8 @@
 class Global [singleton]
   METHODS
+    method print( value:Byte )
+      native @|printf( "%d", $value );
+
     method print( value:Character )
       native @|printf( "%c", (char)$value );
 
@@ -27,6 +30,10 @@ class Global [singleton]
       else       print( "null" )
 
     method println
+      print( '\n' )
+
+    method println( value:Byte )
+      print( value )
       print( '\n' )
 
     method println( value:Character )
