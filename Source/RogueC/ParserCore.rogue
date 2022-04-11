@@ -75,48 +75,50 @@ class ParserCore [abstract]
     ip_try_catch = 62
     ip_catches = 63
     ip_catch_clause = 64
-    ip_module_path = 65
-    ip_uses_attributes = 66
-    ip_uses_attribute = 67
-    ip_access_args = 68
-    ip_optional_expression = 69
-    ip_expression = 70
-    ip_op_and_assign = 71
-    ip_logical_xor = 72
-    ip_logical_xor__inner = 73
-    ip_logical_or = 74
-    ip_logical_or__inner = 75
-    ip_logical_and = 76
-    ip_logical_and__inner = 77
-    ip_comparison = 78
-    ip_comparison__inner = 79
-    ip_reference_comparison = 80
-    ip_bitwise_xor = 81
-    ip_bitwise_xor__inner = 82
-    ip_bitwise_or = 83
-    ip_bitwise_or__inner = 84
-    ip_bitwise_and = 85
-    ip_bitwise_and__inner = 86
-    ip_bitwise_shift = 87
-    ip_bitwise_shift__inner = 88
-    ip_add_subtract = 89
-    ip_add_subtract__inner = 90
-    ip_multiply_divide_mod = 91
-    ip_multiply_divide_mod__inner = 92
-    ip_power = 93
-    ip_power__inner = 94
-    ip_pre_unary = 95
-    ip_post_unary = 96
-    ip_post_unary__inner = 97
-    ip_access = 98
-    ip_access_inner = 99
-    ip_context_block_command = 100
-    ip_term = 101
-    ip_native_code = 102
-    ip_preprocess = 103
-    ip_process_another = 104
-    ip_collect_meta_filepath = 105
-    ip_additional_node_types = 106
+    ip_use = 65
+    ip_used_resource = 66
+    ip_module_path = 67
+    ip_uses_attributes = 68
+    ip_uses_attribute = 69
+    ip_access_args = 70
+    ip_optional_expression = 71
+    ip_expression = 72
+    ip_op_and_assign = 73
+    ip_logical_xor = 74
+    ip_logical_xor__inner = 75
+    ip_logical_or = 76
+    ip_logical_or__inner = 77
+    ip_logical_and = 78
+    ip_logical_and__inner = 79
+    ip_comparison = 80
+    ip_comparison__inner = 81
+    ip_reference_comparison = 82
+    ip_bitwise_xor = 83
+    ip_bitwise_xor__inner = 84
+    ip_bitwise_or = 85
+    ip_bitwise_or__inner = 86
+    ip_bitwise_and = 87
+    ip_bitwise_and__inner = 88
+    ip_bitwise_shift = 89
+    ip_bitwise_shift__inner = 90
+    ip_add_subtract = 91
+    ip_add_subtract__inner = 92
+    ip_multiply_divide_mod = 93
+    ip_multiply_divide_mod__inner = 94
+    ip_power = 95
+    ip_power__inner = 96
+    ip_pre_unary = 97
+    ip_post_unary = 98
+    ip_post_unary__inner = 99
+    ip_access = 100
+    ip_access_inner = 101
+    ip_context_block_command = 102
+    ip_term = 103
+    ip_native_code = 104
+    ip_preprocess = 105
+    ip_process_another = 106
+    ip_collect_meta_filepath = 107
+    ip_additional_node_types = 108
 
   PROPERTIES
     _tokens          : Token[]
@@ -1587,6 +1589,13 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_USE)
+              temporarily _cur_t = _next_t
+                _execute(ip_use)
+                _pop_frame
+                return
+              endTemporarily
+            endIf
             _execute(ip_statement)
             _pop_frame
             return
@@ -1861,6 +1870,54 @@ class ParserCore [abstract]
               _pop_frame
             endIf
             return
+          case ip_use
+            if (_next_t.type == TokenType.KEYWORD_USE)
+              temporarily _cur_t = _on_t
+                _begin_list
+                _execute(ip_used_resource)
+                _pop_frame
+                while (_consume(TokenType.SYMBOL_COMMA))
+                  _execute(ip_consume_eols)
+                  _pop_frame
+                  _execute(ip_used_resource)
+                  _pop_frame
+                endWhile
+                if (disable_output)     _discard_list
+                else                    _push_list( UsedResources(_list_t) )
+                _execute(ip_must_consume_eols)
+                _pop_frame
+                _execute(ip_multi_line_statements)
+                _pop_frame
+                if (not _consume(TokenType.KEYWORD_END_USE)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_USE )
+                if (not disable_output) _push( Use(_cur_t,_node_arg(-2)->(as UsedResources),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            return
+          case ip_used_resource
+            _save_position
+            if (_next_t.type == TokenType.IDENTIFIER)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( Identifier(_cur_t,_cur_t.content), 0 )
+                if (_next_t.type == TokenType.SYMBOL_EQUALS)
+                  temporarily _cur_t = _on_t
+                    _execute(ip_expression)
+                    _pop_frame
+                    if (not disable_output) _push( UsedResource(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+                    _discard_position
+                    return
+                  endTemporarily
+                endIf
+              endTemporarily
+            endIf
+            _restore_position
+            if (not disable_output) _push( null, 0 )
+            _execute(ip_expression)
+            _pop_frame
+            if (not disable_output) _push( UsedResource(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+            return
+            _execute(ip_expression)
+            _pop_frame
           case ip_module_path
             _begin_list
             _execute(ip_identifier)

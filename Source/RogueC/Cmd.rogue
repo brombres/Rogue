@@ -614,6 +614,10 @@ class Local : Cmd
     attributes    : Attributes
 
   METHODS
+    method init( t, name, type )
+      ensure attributes(t)
+      attributes.is_anchored = true  # starting assumption
+
     method init( t, name, initial_value, type, &default_parameter )
       ensure attributes(t)
       attributes.is_default_parameter = default_parameter
@@ -692,6 +696,9 @@ class SetLocal : Cmd
     is_initial_assignment : Logical
 
   METHODS
+    method init( info:Local, new_value:Cmd, &initial_assignment )
+      init( info.t, info, new_value, &=initial_assignment )
+
     method init( t, info, new_value, &initial_assignment )
       is_initial_assignment = initial_assignment
       info.attributes.is_anchored = initial_assignment
@@ -711,6 +718,9 @@ class GetLocal : Cmd
     info : Local
 
   METHODS
+    method init( info )
+      t = info.t
+
     method init( t, info )
 
     method init( existing:GetLocal )
@@ -1112,6 +1122,9 @@ class Block : ControlStructure
     statements : Cmd
 
   METHODS
+    method init( t )
+      prior.init( t, Statements(t), Statements(t) )
+
     method init( t, statements:Cmd )
       prior.init( t, Statements(t), statements )
 
@@ -2413,5 +2426,50 @@ class CompareOp : Compare
   METHODS
     method description->String
       return "CompareOp($,$)" (%left,%right)
+
+endClass
+
+class UsedResource : Cmd
+  PROPERTIES
+    name     : String
+    resource : Cmd
+
+  METHODS
+    method init( t, name, resource )
+
+    method init( existing:UsedResource )
+      prior.init( existing )
+      name = existing.name
+      if (existing.resource) resource = existing.resource.cloned
+
+    method description->String
+      return "UsedResource($,$)" (%name,%resource)
+
+endClass
+
+class UsedResources : CmdList
+  METHODS
+    method description->String
+      return "UsedResources" + list_description
+
+    method get( index:Int32 )->UsedResource
+      return list[index]->(as UsedResource)
+endClass
+
+class Use : ControlStructure
+  PROPERTIES
+    resources  : UsedResources
+    statements : Cmd
+
+  METHODS
+    method init( t, resources, statements )
+
+    method init( existing:Use )
+      prior.init( existing )
+      if (existing.resources) resources = existing.resources.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "Use($,$)" (%resources,%statements)
 
 endClass

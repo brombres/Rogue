@@ -33,11 +33,12 @@ class Resolver : Visitor
         endIf
       endIf
 
-    method add_local( v:Local )
+    method add_local( v:Local )->Local
       this_procedure.locals.add( v )
       assert control_stack.count
       control_stack.last.locals.add( v )
       visible_locals.add( v )
+      return v
 
     method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
       local v = Local( t, autoname(base), initial_value, type )
@@ -68,6 +69,10 @@ class Resolver : Visitor
     method on( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
+
+    method on( cmd:BitShiftRight )->Cmd
+      return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "bit_shift_right",
+                             Args(cmd.t,cmd.left,cmd.right) )
 
     method on( cmd:Block )->Cmd
       return visit( ControlStructure(cmd.t, cmd.statements, ControlType.BLOCK) )
@@ -444,37 +449,6 @@ class Resolver : Visitor
       control_stack.add( cmd )
       visible_locals.add( forEach in cmd.locals )
 
-      #{
-    method on( cmd:Print )->Cmd
-      which (cmd.args.count)
-        case 0
-          throw cmd.t.error( "One or more arguments expected." )
-        case 1
-          return resolve_access( cmd.t, GetSingleton(cmd.t,Program.type_Global), "print", cmd.args )
-        others
-          local result = Statements( cmd.t )
-          forEach (arg in cmd.args)
-            result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "print", Args(arg.t,arg)) )
-          endForEach
-          return result
-      endWhich
-
-    method on( cmd:Println )->Cmd
-      which (cmd.args.count)
-        case 0
-          return resolve_access( cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", null )
-        case 1
-          return resolve_access( cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", cmd.args )
-        others
-          local result = Statements( cmd.t )
-          forEach (arg in cmd.args)
-            result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "print", Args(arg.t,arg)) )
-          endForEach
-          result.add( resolve_access(cmd.t, GetSingleton(cmd.t,Program.type_Global), "println", null) )
-          return result
-      endWhich
-      }#
-
     method on_validate( cmd:Return )->Cmd
       this_procedure.attributes.has_return = true
 
@@ -507,10 +481,6 @@ class Resolver : Visitor
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
-    method on( cmd:BitShiftRight )->Cmd
-      return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "bit_shift_right",
-                             Args(cmd.t,cmd.left,cmd.right) )
-
     method on_visit( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
         forEach (statement in current_statements)
@@ -538,6 +508,39 @@ class Resolver : Visitor
 
     method on_validate( cmd:Unary )->Cmd
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
+
+    method on( cmd:Use )->Cmd
+      push_scope( cmd )
+
+      if (cmd.resources.count > 1)
+        local res = cmd.resources.remove_first->(as UsedResource)
+        local nested_use = Use( cmd.t, cmd.resources, cmd.statements )
+        cmd.resources = UsedResources(cmd.t).[ add(res) ]
+        cmd.statements = Statements(cmd.statements.t).[ add(nested_use) ]
+      endIf
+
+      local cmd_block = Block( cmd.t )
+      local res = cmd.resources.first->(as UsedResource)
+      local resource = visit( res.resource )
+      local resource_type = resource.require_type
+
+      local v_resource = add_local( resource.t, "resource", resource_type )
+      cmd_block.statements.add( SetLocal(v_resource, resource, &initial_assignment) )
+
+      local cmd_call = resolve_call( resource.t, resource.require_type, resource, "on_use", null )
+      local v = add_local( Local(res.t, res.name, cmd_call.require_type) )
+      cmd_block.statements.add( SetLocal(v, cmd_call, &initial_assignment) )
+
+      cmd_block.statements.add( forEach in visit(cmd.statements) )
+
+      cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
+      cmd_block.statements.add( cmd_call )
+
+      local result = visit( cmd_block )
+
+      pop_scope
+
+      return result
 
       #{
     method on_visit( cmd:While )
@@ -619,12 +622,12 @@ class Resolver : Visitor
           endIf
         endIf
 
-        block
+        if (type_context)
           local p = type_context.global_properties[ name ]
           if (p)
             return validate( GetGlobalProperty(t,p) )
           endIf
-        endBlock
+        endIf
 
         if (suppress_error) return null->(as Cmd)
 

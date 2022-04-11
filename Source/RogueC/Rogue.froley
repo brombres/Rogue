@@ -36,6 +36,7 @@ KEYWORD_END_IF         endIf       [structural]
 KEYWORD_END_LOOP       endLoop     [structural]
 KEYWORD_END_ROUTINE    endRoutine  [structural]
 KEYWORD_END_TRY        endTry      [structural]
+KEYWORD_END_USE        endUse      [structural]
 KEYWORD_END_WHICH      endWhich    [structural]
 KEYWORD_END_WHILE      endWhile    [structural]
 KEYWORD_EXPORT         export
@@ -75,6 +76,7 @@ KEYWORD_THROW          throw
 KEYWORD_TRUE           true
 KEYWORD_TRY            try
 KEYWORD_UNDEFINED      undefined
+KEYWORD_USE            use
 KEYWORD_USES           uses        [structural]
 KEYWORD_WHICH          which
 KEYWORD_WHILE          while
@@ -1115,6 +1117,7 @@ parser
   onPeek "loop"    loop:               return
   #onPeek "while"   while_loop:         return
   onPeek "try"     try_catch:          return
+  onPeek "use"     use:                return
   statement
 
 - args
@@ -1273,6 +1276,40 @@ parser
     createNull
     type
   endIf
+
+- use
+  on "use"
+    beginList
+      used_resource
+      while (consume(','))
+        consume_eols
+        used_resource
+      endWhile
+    createList UsedResources
+    must_consume_eols
+    multi_line_statements
+    mustConsume "endUse"
+    produce Use(resources:UsedResources,statements):ControlStructure
+  endOn
+
+- used_resource
+  savePosition
+  on IDENTIFIER
+    create Identifier(name=content)
+    on '='
+      expression
+      create UsedResource(name:String,resource)
+      discardPosition
+      return
+    endOn
+  endOn
+
+  restorePosition
+  createNull
+  expression
+  produce UsedResource(name:String,resource)
+
+  expression
 
 - module_path
   beginList
