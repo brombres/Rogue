@@ -127,13 +127,6 @@ class CGenerator : Visitor
       writer.print " ^ "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:Block )
-      writer.println '{'
-      writer.indent += 2
-      visit_children( cmd )
-      writer.indent -= 2
-      writer.println '}'
-
     method on_visit( cmd:CallGlobalMethod )
       writer.print( cmd.info.c_name )
       if (cmd.args.count)
@@ -398,9 +391,11 @@ class CGenerator : Visitor
         writer.println ":;"
       endIf
 
+      visit( cmd.@cleanup )
+
       pop_scope
 
-      if (cmd.locals.count or is_procedure or not optional)
+      if (cmd.locals.count or is_procedure or not optional or cmd.has_cleanup_code)
         if (is_procedure)
           if (this_procedure.has_cleanup_code)
             if (Program.gc_auto)
@@ -471,15 +466,17 @@ class CGenerator : Visitor
             writer.println ';'
           endIf
 
-        else
-          if (cmd.control_escapes)
-            localize escape_label
-            if (escape_label)
-              writer.print "if (Rogue_execution_status) goto "
-              writer.print escape_label
-              writer.println ";"
-            endIf
+        elseIf (cmd.control_escapes)
+          localize escape_label
+          if (escape_label)
+            writer.print "if (Rogue_execution_status) goto "
+            writer.print escape_label
+            writer.println ";"
           endIf
+
+        elseIf (cmd.has_cleanup_code)
+          writer.println "if (Rogue_execution_status) return;"
+
         endIf
 
         writer.indent -= 2
@@ -787,6 +784,10 @@ class CGenerator : Visitor
         writer.print   "goto "
         writer.print   escape_label
         writer.println ';'
+
+      elseIf (control_stack.last.has_cleanup_code)
+        writer.println "Rogue_execution_status = ROGUE_EXE_RETURN;"
+
       elseIf (control_stack.count > 1)
         writer.print "return"
         if (this_procedure.return_type)

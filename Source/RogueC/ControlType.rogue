@@ -7,4 +7,5 @@ enum ControlType
   FOR_EACH
   IF
   LOOP
+  USE
 endEnum

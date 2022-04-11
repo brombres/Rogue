@@ -196,13 +196,15 @@ class Visitor
       cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
     method on_visit_children( cmd:Block )
-      cmd.initialization = visit(cmd.initialization)
+      cmd.initialization = visit(cmd.@initialization)
       cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Conditional )
-      cmd.initialization = visit(cmd.initialization)
+      cmd.initialization = visit(cmd.@initialization)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:ForEach )
       cmd.condition = visit(cmd.condition)->(as ForEachControl)
@@ -212,11 +214,12 @@ class Visitor
       cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Iterator )
-      cmd.initialization = visit(cmd.initialization)
+      cmd.initialization = visit(cmd.@initialization)
       cmd.control = visit(cmd.control)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.upkeep = visit(cmd.upkeep)
+      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:If )
       cmd.condition = visit(cmd.condition)
@@ -308,14 +311,16 @@ class Visitor
       cmd.exception = visit(cmd.exception)
 
     method on_visit_children( cmd:Try )
-      cmd.initialization = visit(cmd.initialization)
+      cmd.initialization = visit(cmd.@initialization)
       cmd.statements = visit(cmd.statements)
       cmd.catches = visit(cmd.catches)->(as Catches)
+      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Catch )
-      cmd.initialization = visit(cmd.initialization)
+      cmd.initialization = visit(cmd.@initialization)
       cmd.exception_type = visit(cmd.exception_type)->(as Type)
       cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Convert )
       cmd.operand = visit(cmd.operand)

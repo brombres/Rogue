@@ -130,7 +130,7 @@ class CSpecializer : Visitor
       temporarily insert_in_init = true
         cmd.condition = visit( cmd.condition )
       endTemporarily
-      cmd.initialization = visit( cmd.initialization )
+      cmd.initialization = visit( cmd.@initialization )
       cmd.statements = visit( cmd.statements )
       cmd.upkeep = visit( cmd.upkeep )
       cmd.control = visit( cmd.control )

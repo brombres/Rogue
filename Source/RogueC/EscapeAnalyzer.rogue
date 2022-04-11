@@ -57,6 +57,7 @@ endClass
 augment ControlStructure
   METHODS
     method has_cleanup_code->Logical
+      if (@cleanup) return true
       return false
 endAugment
 

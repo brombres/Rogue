@@ -75,7 +75,10 @@ class Resolver : Visitor
                              Args(cmd.t,cmd.left,cmd.right) )
 
     method on( cmd:Block )->Cmd
-      return visit( ControlStructure(cmd.t, cmd.statements, ControlType.BLOCK) )
+      local result = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )
+      result.initialization = cmd.@initialization
+      result.cleanup = cmd.@cleanup
+      return visit( result )
 
     method on_validate( cmd:Binary )->Cmd
       return cmd.left.require_type.resolve_binary_op( cmd, this )
@@ -519,7 +522,7 @@ class Resolver : Visitor
         cmd.statements = Statements(cmd.statements.t).[ add(nested_use) ]
       endIf
 
-      local cmd_block = Block( cmd.t )
+      local cmd_block = Block( cmd.t ).[ control_type = ControlType.USE ]
       local res = cmd.resources.first->(as UsedResource)
       local resource = visit( res.resource )
       local resource_type = resource.require_type
@@ -534,7 +537,7 @@ class Resolver : Visitor
       cmd_block.statements.add( forEach in visit(cmd.statements) )
 
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
-      cmd_block.statements.add( cmd_call )
+      cmd_block.cleanup.add( cmd_call )
 
       local result = visit( cmd_block )
 

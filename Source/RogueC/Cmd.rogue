@@ -902,28 +902,37 @@ class ControlStructure : Cmd
     locals           = Local[]  # local to the scope of the control structure
     initialization   : Cmd
     statements       : Cmd
+    cleanup          : Cmd
     control_type     : ControlType
     control_escapes  : Logical
     throws_exception : Logical
 
   METHODS
     method init( t, control_type )
-      initialization = Statements(t)
       statements     = Statements(t)
 
     method init( t, statements, control_type=ControlType.UNDEFINED )
-      initialization = Statements(t)
 
     method init( t, initialization, statements, control_type=ControlType.UNDEFINED )
 
     method init( existing:ControlStructure )
       prior.init( existing )
       if (existing.locals) locals = existing.locals.cloned
-      if (existing.initialization) initialization = existing.initialization.cloned
+      if (existing.@initialization) initialization = existing.@initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
+
+    method cleanup->Cmd
+      if (@cleanup) return @cleanup
+      @cleanup = Statements(t)
+      return @cleanup
 
     method description->String
       return "ControlStructure($)" (%statements)
+
+    method initialization->Cmd
+      if (@initialization) return @initialization
+      @initialization = Statements(t)
+      return @initialization
 
 endClass
 
@@ -981,7 +990,8 @@ class Iterator : Conditional
       if (existing.upkeep)  upkeep  = existing.upkeep.cloned
 
     method description->String
-      return "Iterator($,$,$,$,$)" (%initialization,%control,%condition,%statements,%upkeep)
+      return "Iterator($,$,$,$,$)" (%@initialization,%control,%condition,%statements,%upkeep)
+
 
 endClass
 
