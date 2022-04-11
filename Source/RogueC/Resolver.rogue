@@ -241,18 +241,27 @@ class Resolver : Visitor
       local last_case = cmd.cases.last->(as InlineWhichCase)
       if (last_case.value)
         if (last_case.condition)
-          throw cmd.t.error( "Last which{} case must be a value without a condition, e.g. 'which {a:x || b:y || z}'." )
+          throw cmd.t.error( "The last which{} case must be a value without a condition, e.g. 'which {a:x || b:y || z}'." )
         endIf
       else
-        swapValues( last_case.value, last_case.condition )
+        swapValues( last_case.condition, last_case.value )
       endIf
 
       local result_type : Type
+      local unwrap_optional = false
       forEach (wcase in cmd.cases)
         local cur_type = which{ wcase.value || wcase.condition }.require_type
+        if (cur_type.attributes.is_optional)
+          unwrap_optional = true
+          cur_type = cur_type.properties//value.type
+        endIf
         result_type = which{ result_type:Cmd.common_type(cmd.t,result_type,cur_type) || cur_type }
       endForEach
       cmd.result_type = result_type
+
+      if (unwrap_optional and last_case.value.type.attributes.is_optional)
+        throw last_case.value.t.error( "The last which{} case cannot be an optional value." )
+      endIf
 
       forEach (wcase in cmd.cases)
         if (wcase.condition) wcase.condition .= logicalized( this )
@@ -813,7 +822,6 @@ class Resolver : Visitor
         &require_global, &suppress_error )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
-
       local error_message : String
       use Candidates
         if (type_context)
@@ -821,9 +829,13 @@ class Resolver : Visitor
         else
           this_module.collect_routines( name, Candidates.list )
         endIf
-        local result = refine_candidates( type_context, args )
-        if (result)         return result.[resolve]
-        if (suppress_error) return null
+
+        if (Candidates.count)
+          local result = refine_candidates( type_context, args )
+          if (result)         return result.[resolve]
+        elseIf (suppress_error)
+          return null
+        endIf
 
         # Throw an error
         local sig = name
@@ -1067,6 +1079,7 @@ class Resolver : Visitor
 
     method does_any_candidate_have_more_specialized_reference_parameters( m1:Procedure )->Logical
       forEach (m2 in Candidates)
+        if (m2 is m1) nextIteration
         contingent
           local any_refs = false
           forEach (i in 0..<m1.parameters.count.or_smaller(m2.parameters.count))

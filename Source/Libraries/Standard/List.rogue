@@ -84,6 +84,18 @@ class List<<$DataType>> : ListType
         count = index
       endIf
 
+      #{
+    method fill( value:$DataType, i1=0:Int32, count=null:Int32? )
+      local n = which{ count || this.count }
+      if ($DataType isType Logical or $DataType isType Byte)
+        memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
+      elseIf ($DataType isPrimitive)
+        if (value)
+        else
+          native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
+        endIf
+        }#
+
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
         native @|return $this->as_logicals[$index];
@@ -148,9 +160,9 @@ class List<<$DataType>> : ListType
       return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
       }#
 
-    method zero( i1:Int32, n:Int32 )
-      local size = element_size
-      native @|memset( $this->as_bytes + $i1*$size, 0, $n*$size );
+    method zero( i1=0:Int32, count=null:Int32? )
+      local n = which{ count || this.count }
+      native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
 
 endClass
 
