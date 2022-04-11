@@ -232,9 +232,8 @@ augment
       local cmd = resolver.visit( this )
       local type = cmd.require_type
 
-      if (cmd instanceOf LiteralLogical) return cmd
+      if (cmd instanceOf LiteralLogical or type is Program.type_Logical) return cmd
 
-      if (type is Program.type_Logical) return Logicalized(cmd.t,cmd)
       if (type.is_primitive) return Logicalized(cmd.t,cmd)
       if (type.attributes.is_optional) return resolver.visit( ContextAccess(cmd.t,cmd,"exists",null) )
 
@@ -456,6 +455,18 @@ augment
 
     method LocalDeclarations.type->Type
       return @type
+
+    method LogicalAnd.type->Type
+      return Program.type_Logical
+
+    method LogicalNot.type->Type
+      return Program.type_Logical
+
+    method LogicalOr.type->Type
+      return Program.type_Logical
+
+    method LogicalXor.type->Type
+      return Program.type_Logical
 
     method Logicalize.type->Type
       return Program.type_Logical

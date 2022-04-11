@@ -390,7 +390,22 @@ class Resolver : Visitor
 
       return null
 
+    method on_validate( cmd:LogicalAnd )->Cmd
+      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value and cmd.right->(as LiteralLogical).value )
+      endIf
+      return cmd
+
     method on_validate( cmd:LogicalNot )->Cmd
+      if (cmd.operand instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, not cmd.operand->(as LiteralLogical).value )
+      endIf
+      return cmd
+
+    method on_validate( cmd:LogicalOr )->Cmd
+      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value or cmd.right->(as LiteralLogical).value )
+      endIf
       return cmd
 
     method on( cmd:Logicalize )->Cmd

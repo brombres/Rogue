@@ -84,17 +84,26 @@ class List<<$DataType>> : ListType
         count = index
       endIf
 
-      #{
     method fill( value:$DataType, i1=0:Int32, count=null:Int32? )
       local n = which{ count || this.count }
+
+      if ($DataType isType Logical) native @|//A
+      if ($DataType isType Byte) native @|//B
+      if ($DataType isType Logical or $DataType isType Byte) native @|//C
+
       if ($DataType isType Logical or $DataType isType Byte)
-        memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
-      elseIf ($DataType isPrimitive)
-        if (value)
-        else
+        native @|memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
+        return
+      elseIf ($DataType isPrimitive or $DataType isReference)
+        if (not value)
           native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
+          return
         endIf
-        }#
+      endIf
+
+      native @|RogueInt32 n = $n;
+              |$<<element_type>>* ptr = (($<<element_type>>*)$this->data) + ($i1 - 1);
+              |while (--n >= 0) *(++ptr) = $value;
 
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
