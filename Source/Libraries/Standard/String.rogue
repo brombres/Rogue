@@ -10,6 +10,7 @@ class String
     indent          : Int32
     at_newline      = true
     is_immutable    : Logical
+    is_ascii        : Logical  # makes indexing easier if true
     data            : Byte[]
 
   METHODS
@@ -19,6 +20,7 @@ class String
     method init( byte_capacity:Int32 )
       data = Byte[]( byte_capacity + 1 )
       data[0] = 0
+      is_ascii = true
 
     method capacity->Int32
       return data.capacity
@@ -32,6 +34,46 @@ class String
       at_newline = true
       hash_code = -1
       return this
+
+    method get( index:Int32 )->Character
+      if (is_ascii) return data[index]
+
+      cursor = index
+
+      native ...
+        @|
+         |char* utf8 = $data->as_utf8;
+         |
+         |RogueInt32 offset = $cursor_offset;
+         |RogueCharacter ch = utf8[ offset ];
+         |if (ch & 0x80)
+         |{
+         |  if (ch & 0x20)
+         |  {
+         |    if (ch & 0x10)
+         |    {
+         |      return ((ch&7)<<18)
+         |          | ((utf8[offset+1] & 0x3F) << 12)
+         |          | ((utf8[offset+2] & 0x3F) << 6)
+         |          | (utf8[offset+3] & 0x3F);
+         |    }
+         |    else
+         |    {
+         |      return ((ch&15)<<12)
+         |          | ((utf8[offset+1] & 0x3F) << 6)
+         |          | (utf8[offset+2] & 0x3F);
+         |    }
+         |  }
+         |  else
+         |  {
+         |    return ((ch&31)<<6)
+         |        | (utf8[offset+1] & 0x3F);
+         |  }
+         |}
+         |else
+         |{
+         |  return ch;
+         |}
 
     method hash_code->Int32
       if (@hash_code == -1)
@@ -59,15 +101,18 @@ class String
       ++count
       if (value <= Character(0x7F))
         data.add( value )
-      elseIf (value <= Character(0x7FF))
-        data.[ add(0xC0 | (value:>>>:6)), add(0x80 | (value & 0x3F)) ]
-      elseIf (value <= Character(0xFFFF))
-        data.[ add(0xE0 | (value:>>>:12)), add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
-      elseIf (value <= Character(0x10FFFF))
-        data.[ add(0xF0 | (value:>>>:18)), add(0x80 | ((value:>>>:12) & 0x3F)) ]
-        data.[ add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
       else
-        data.add( '?' )
+        is_ascii = false
+        if (value <= Character(0x7FF))
+          data.[ add(0xC0 | (value:>>>:6)), add(0x80 | (value & 0x3F)) ]
+        elseIf (value <= Character(0xFFFF))
+          data.[ add(0xE0 | (value:>>>:12)), add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
+        elseIf (value <= Character(0x10FFFF))
+          data.[ add(0xF0 | (value:>>>:18)), add(0x80 | ((value:>>>:12) & 0x3F)) ]
+          data.[ add(0x80 | ((value:>>>:6) & 0x3F)), add(0x80 | (value & 0x3F)) ]
+        else
+          data.add( '?' )
+        endIf
       endIf
       return this
 
@@ -87,9 +132,6 @@ class String
         return print( ('0'+value)->Character )
       endIf
 
-    #method print( value:Real32 )->StringBuilder
-      #return this.print( value->Real64 )
-
     method print( value:Object )->this
       if (is_immutable) return this
 
@@ -100,6 +142,101 @@ class String
 
       print( value->String )
       return this
+
+      #{
+    method print( value:Real32 )->this
+      return this.print( value->Real64 )
+
+    method print( value:Real64 )->this
+      if (value == 0)
+        print( "0.0" )
+        return this
+      elseIf (value.is_infinite)
+        if (value < 0) print( "-infinity" )
+        else           print( "infinity" )
+        return this
+      elseIf (value.is_NaN)
+        print( "NaN" )
+        return this
+      endIf
+
+      if (value < 0)
+        print( '-' )
+        value = -value
+      endIf
+
+      # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
+      if (value >= 1000000000000000.0)
+        local pow10 = 0
+        while (value >= 10.0)
+          value /= 10.0
+          ++pow10
+        endWhile
+
+        return print( value ).print( 'e' ).print( pow10->Int32 )
+      endIf
+
+      if (value < 0.00001)
+        local pow10 = 0
+        while (value < 0.1)
+          value *= 10.0
+          --pow10
+        endWhile
+
+        return print( value ).print( 'e' ).print( pow10->Int32 )
+      endIf
+
+      # Standard output
+      forEach (decimal_count in 1..18)
+        print_to_work_bytes( value, decimal_count )
+        if (scan_work_bytes == value) escapeForEach
+      endForEach
+
+      print_work_bytes
+
+      return this
+
+    method print( value:Real64, decimal_places:Int32 )->this
+      if (value.is_infinite)
+        if (value < 0) print( "-infinity" )
+        else           print( "infinity" )
+        return this
+      elseIf (value.is_NaN)
+        print( "NaN" )
+        return this
+      endIf
+
+      if (value < 0 )
+        print( '-' )
+        value = -value
+      endIf
+
+      local whole = Math.floor( value )
+      value -= whole
+      while (whole >= 10)
+        print( ('0' + ((whole%10)->Int32))->Character )
+        whole /= 10
+      endWhile
+      print( ('0' + ((whole%10)->Int32))->Character )
+
+      reverse
+
+      if (decimal_places != 0)
+        print( '.' )
+        forEach (1..decimal_places)
+          value *= 10
+          local digit = Math.floor(value)->Int32
+          value -= digit
+          print( ('0' + digit)->Character )
+        endForEach
+      endIf
+      if (value >= 0.5)
+        print( '5' )
+        _round_off
+      endIf
+
+      return this
+      }#
 
     method print( value:String )->this
       if (is_immutable) return this
@@ -126,6 +263,68 @@ class String
       if (is_immutable) return
       data.reserve( additional_bytes+1 ) # +1 for null terminator
 
+    method set_cursor( character_index:Int32 )
+      # Sets this string's cursor_offset (in bytes) and cursor_index (in characters)
+      if (is_ascii)
+        cursor_offset = character_index
+        cursor_index = character_index
+        return
+      endIf
+
+      native ...
+        @|char* utf8 = $data->as_utf8;
+         |
+         |RogueInt32 c_offset;
+         |RogueInt32 c_index;
+         |
+         |if ($character_index == 0)
+         |{
+         |  $cursor_index = 0;
+         |  $cursor_offset = 0;
+         |  return;
+         |}
+         |else if ($character_index >= $count - 1 || $cursor_index > $count-1 || $cursor_offset > $data->count-1)
+         |{
+         |  c_offset = $data->count;
+         |  c_index = $count;
+         |}
+         |else
+         |{
+         |  c_offset = $cursor_offset;
+         |  c_index  = $cursor_index;
+         |}
+         |
+         |while (c_index < $character_index)
+         |{
+         |  while ((utf8[++c_offset] & 0xC0) == 0x80) {}
+         |  ++c_index;
+         |}
+         |
+         |while (c_index > $character_index)
+         |{
+         |  while ((utf8[--c_offset] & 0xC0) == 0x80) {}
+         |  --c_index;
+         |}
+         |
+         |$cursor_index = c_index;
+         |$cursor_offset = c_offset;
+
+#{
+    method _round_off
+      if (work_bytes.remove_last >= '5')
+        local i = work_bytes.count - 1
+        while (i >= 0)
+          if (work_bytes[i] != '.')
+            ++work_bytes[i]
+            if (work_bytes[i] == ('9'+1)) work_bytes[i] = '0'
+            else                          return
+          endIf
+          --i
+        endWhile
+        work_bytes.insert( '1' )
+      endIf
+}#
+
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
                   |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int must_free );
@@ -150,7 +349,8 @@ class String
                  |
                  |  result->count        = character_count;
                  |  result->is_immutable = !must_free;
-                 |  result->hash_code = -1;
+                 |  result->hash_code    = -1;
+                 |  result->is_ascii     = (character_count == byte_count);
                  |  return result;
                  |}
                  |
@@ -271,6 +471,7 @@ class String
                  |  return character_count;
                  |}
                  |
+
 endClass
 
 class StringPool : ObjectPool<<String>>
