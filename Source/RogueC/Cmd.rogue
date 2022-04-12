@@ -2501,3 +2501,9 @@ class While : Cmd
       return "While($,$)" (%condition,%statements)
 
 endClass
+
+class LiteralList : CmdList
+  METHODS
+    method description->String
+      return "LiteralList" + list_description
+endClass

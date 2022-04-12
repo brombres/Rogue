@@ -1560,11 +1560,14 @@ parser
   on "pi"                 -> LiteralPi:Literal
   on "this"               -> This
   onPeek "which" inline_which: return
-  on '(', expression, ')':   return
-#{
-  onPeek "[" literal_list -> LiteralValueList(args):Literal
-  on "[]"                 -> EmptyList
+  on '(', expression, ')':     return
+  onPeek '[' literal_list :    return
+  on "[]"
+    beginList
+    produceList LiteralList
+  endOn
 
+#{
   on "import"
     if (consume('('))
       string
@@ -1597,12 +1600,11 @@ parser
   endIf
 
 
-#{
 - literal_list
   on '['
     beginList
-    if (consume(']')) produceList  # Empty list
     consume_eols
+    if (consume(']')) produceList LiteralList
     expression
     consume_eols
     while (not nextIs(']'))
@@ -1611,9 +1613,8 @@ parser
       consume_eols
     endWhile
     mustConsume( ']' )
-    produceList Args
+    produceList LiteralList
   endOn
-}#
 
 - preprocess
   while (hasAnother)

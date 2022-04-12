@@ -353,6 +353,27 @@ class Resolver : Visitor
       cmd.control = visit( cmd.control )
       pop_scope
 
+    method on( cmd:LiteralList )->Cmd
+      if (cmd.count == 0) throw cmd.t.error( "[INTERNAL] TODO: Empty LiteralList -> ValueList" )
+
+      visit_children( cmd )
+
+      local common_type : Type
+      forEach (arg at i in cmd)
+        local arg_type = arg.require_type
+        common_type = which{ common_type:Cmd.common_type(cmd.t,common_type,arg_type) || arg_type }
+      endForEach
+
+      local t = cmd.t
+      local list_type = Type( t, common_type.name+"[]" )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(t,arg) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt32(t,cmd.count))), build_list) )
+
     method on( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
         # local a, b=x, c : Type
