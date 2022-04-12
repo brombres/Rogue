@@ -250,10 +250,12 @@ class Resolver : Visitor
       local result_type : Type
       local unwrap_optional = false
       forEach (wcase in cmd.cases)
-        local cur_type = which{ wcase.value || wcase.condition }.require_type
+        local cur_value = which{ wcase.value || wcase.condition }
+        local cur_type = cur_value.require_type
         if (cur_type.attributes.is_optional)
           unwrap_optional = true
           cur_type = cur_type.properties//value.type
+          wcase.value = visit( ContextAccess(cur_value.t, cur_value, "value") )
         endIf
         result_type = which{ result_type:Cmd.common_type(cmd.t,result_type,cur_type) || cur_type }
       endForEach
@@ -264,8 +266,12 @@ class Resolver : Visitor
       endIf
 
       forEach (wcase in cmd.cases)
-        if (wcase.condition) wcase.condition .= logicalized( this )
-        if (wcase.value) wcase.value .= resolve_conversion_to( result_type, this )
+        if (wcase.condition)
+          wcase.condition .= logicalized( this )
+        endIf
+        if (wcase.value)
+          wcase.value .= resolve_conversion_to( result_type, this )
+        endIf
       endForEach
 
       return cmd
