@@ -690,7 +690,7 @@ class Resolver : Visitor
       endTemporarily
       return null  # never reached
 
-    method resolve_call( t:Token, context:Cmd, proc:Procedure, args:Cmd )->Cmd
+    method resolve_call( t:Token, context:Cmd, proc:Procedure, args=null:Cmd )->Cmd
       if (not args) args = CmdList(t)
       convert_args_to_parameter_types( args, proc )
       return visit( proc.cmd_call(context,args) )
@@ -1290,6 +1290,10 @@ augment
 
       if (has_count and m_get)
         # Collection implements count/at or count/get protocol
+        if (not m_get.return_type)
+          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
+        endIf
+
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
         cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
 
@@ -1299,10 +1303,6 @@ augment
         cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
 
         assert cmd_foreach.statements instanceOf LocalScope
-
-        if (not m_get.return_type)
-          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
-        endIf
 
         resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
@@ -1316,12 +1316,39 @@ augment
         return
       endIf
 
-      #{
       local m_read_another = collection_type.methods[ "read_another()" ]
       if (m_read_another)
         # Collection implements read_another() protocol.
+        if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
+        endIf
+
+        local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+        cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+
+        local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
+        cmd_iterator.initialization.add(
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another), &initial_assignment )
+        )
+        cmd_iterator.upkeep.add(
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another) )
+        )
+
+        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
+        local cur_type = m_read_another.return_type.properties//value.type
+        assert cur_type
+
+        resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
+        local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+        resolver.control_stack.last.initialization.insert(
+          SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
+        )
+        resolver.pop_scope
+
+        return
       endIf
 
+      #{
       local m_has_another = collection_type.methods[ "has_another()" ]
       local m_read        = collection_type.methods[ "read()" ]
       if (m_has_another and m_read)

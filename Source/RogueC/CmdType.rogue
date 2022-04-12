@@ -92,7 +92,7 @@ augment
       throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
 
 
-    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver )->Cmd
+    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
       if (target_type.attributes.is_optional)
         of_type = target_type.properties//value.type
         return resolver.visit( TypeAccess( t, target_type, Args(t,this,LiteralLogical(t,false)) ) )

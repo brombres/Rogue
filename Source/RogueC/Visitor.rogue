@@ -195,23 +195,20 @@ class Visitor
       cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
       cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
-    method on_visit_children( cmd:Block )
-      cmd.initialization = visit(cmd.@initialization)
-      cmd.statements = visit(cmd.statements)
-      cmd.cleanup = visit(cmd.@cleanup)
-
     method on_visit_children( cmd:Conditional )
-      cmd.initialization = visit(cmd.@initialization)
+      cmd.initialization = visit( cmd.@initialization )
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
-      cmd.cleanup = visit(cmd.@cleanup)
+      cmd.cleanup = visit( cmd.@cleanup )
 
     method on_visit_children( cmd:ForEach )
       cmd.condition = visit(cmd.condition)->(as ForEachControl)
       cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:ControlStructure )
+      cmd.initialization = visit( cmd.@initialization )
       cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit( cmd.@cleanup )
 
     method on_visit_children( cmd:Iterator )
       cmd.initialization = visit(cmd.@initialization)
@@ -222,9 +219,11 @@ class Visitor
       cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:If )
+      cmd.initialization = visit(cmd.@initialization)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.cmd_else = visit(cmd.cmd_else)->(as If)
+      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Return )
       cmd.result = visit(cmd.result)
@@ -410,8 +409,10 @@ class Visitor
       cmd.resource = visit(cmd.resource)
 
     method on_visit_children( cmd:Use )
+      cmd.initialization = visit(cmd.@initialization)
       cmd.resources = visit(cmd.resources)->(as UsedResources)
       cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit(cmd.@cleanup)
 
 endClass
 
