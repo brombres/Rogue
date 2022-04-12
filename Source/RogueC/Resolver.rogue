@@ -1403,6 +1403,14 @@ augment
       endIf
 
       if (collection_type.methods.contains("reader()"))
+        cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "reader" )
+
+        temporarily resolver.insert_in_init = true
+          resolver.visit( cmd_collection )
+        endTemporarily
+
+        resolve_foreach( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        return
       endIf
 
       use builder = StringBuilder.pool
