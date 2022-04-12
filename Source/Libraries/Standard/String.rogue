@@ -275,6 +275,17 @@ class String
 
       return this
 
+    method remove_first->Character
+      local result = this[ 0 ]
+      if (is_immutable) return result
+
+      cursor = 1
+      data.shift( -cursor_offset )
+      hash_code = -1
+      --count
+      data[count] = 0
+      return result
+
     method remove_last->Character
       local result = this[ count-1 ]
       if (is_immutable) return result
@@ -335,21 +346,26 @@ class String
          |$cursor_index = c_index;
          |$cursor_offset = c_offset;
 
-#{
+         #{
     method _round_off
-      if (work_bytes.remove_last >= '5')
-        local i = work_bytes.count - 1
-        while (i >= 0)
-          if (work_bytes[i] != '.')
-            ++work_bytes[i]
-            if (work_bytes[i] == ('9'+1)) work_bytes[i] = '0'
+      # Internal use.
+      #
+      # Removes the last digit and rounds off preceding digits accordingly.
+      #
+      # Requires: this mutable String contains a real number in the form [0-9]*.[0-9]+
+      if (remove_last >= '5')
+        forEach (i in count-1 downTo 0)
+          if (this[i] != '.')
+            local digit = this[i]
+            if (digit == '9') this[i] = 0
+            if (this[i] == ('9'+1)) work_bytes[i] = '0'
             else                          return
           endIf
           --i
         endWhile
         work_bytes.insert( '1' )
       endIf
-}#
+      }#
 
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );

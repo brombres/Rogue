@@ -8,5 +8,6 @@ class ObjectPool<<$DataType>> [singleton]
       return available.remove_last
 
     method on_end_use( object:$DataType )
-      noAction # override with any object cleanup
+      # override with desired object cleanup
+      if ($DataType instanceOf ListType) object.clear
 endClass
