@@ -1318,9 +1318,17 @@ augment
 
       local m_read_another = collection_type.methods[ "read_another()" ]
       if (m_read_another)
-        # Collection implements read_another() protocol.
+        # Collection implements read-another protocol.
         if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
           throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
+        endIf
+
+        if (cmd_collection.starting_index)
+          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the read-another protocol." )
+        endIf
+
+        if (cmd_collection.step_size)
+          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has_another protocol." )
         endIf
 
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
@@ -1348,13 +1356,42 @@ augment
         return
       endIf
 
-      #{
-      local m_has_another = collection_type.methods[ "has_another()" ]
-      local m_read        = collection_type.methods[ "read()" ]
-      if (m_has_another and m_read)
-        # Collection implements read_another() protocol.
+      local has_has_another = collection_type.methods.contains( "has_another()" )
+      if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
+      local m_read = collection_type.methods[ "read()" ]
+      if (has_has_another and m_read)
+        # Collection implements has-another protocol.
+        if (not m_read.return_type)
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
+        endIf
+
+        if (cmd_collection.starting_index)
+          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
+        endIf
+
+        if (cmd_collection.step_size)
+          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
+        endIf
+
+        local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+        cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+
+        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
+
+        local cur_type = m_read.return_type
+        assert cur_type
+
+        resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
+        local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+        resolver.control_stack.last.initialization.insert(
+          SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
+        )
+        resolver.pop_scope
+
+        return
       endIf
 
+      #{
       if (collection.methods.contains("iterator()"))
       endIf
 
