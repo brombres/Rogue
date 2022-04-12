@@ -316,7 +316,7 @@ class ContextAccess : Cmd
     args    : Cmd
 
   METHODS
-    method init( t, context, name, args )
+    method init( t, context, name, args=null )
 
     method init( existing:ContextAccess )
       prior.init( existing )
@@ -997,7 +997,7 @@ endClass
 
 class ForEach : Cmd
   PROPERTIES
-    condition    : ForEachControl
+    condition  : ForEachControl
     statements : Cmd
 
   METHODS

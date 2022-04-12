@@ -77,6 +77,19 @@ class List<<$DataType>> : ListType
                 |);
       endIf
 
+    method description->String
+      return "TODO"
+      #{
+      local result = String()
+      result.print '['
+      forEach (value at i in this)
+        if (i > 0) result.print ','
+        result.print( value )
+      endForEach
+      result.print ']'
+      return result
+      }#
+
     method discard_from( index:Int32 )
       local n = (count - index)
       if (n > 0)
@@ -168,6 +181,9 @@ class List<<$DataType>> : ListType
     method set( i1:Int32, other:Array, other_i1=0:Int32, copy_count=-1:Int32 )->Array [macro]
       return native('RogueArray_set($this,$i1,$other,$other_i1,$copy_count)')->Array
       }#
+
+    method to->String
+      return description
 
     method zero( i1=0:Int32, count=null:Int32? )
       local n = which{ count || this.count }

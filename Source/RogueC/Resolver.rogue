@@ -1236,11 +1236,115 @@ augment
       throw UnsupportedOperationError()
 
     method ForEachInControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
+      resolver.push_scope( cmd_iterator )
+
+      temporarily resolver.insert_in_init = true
+        resolver.visit( this )
+        resolver.visit( collection )
+      endTemporarily
+
       collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
+
+      resolver.pop_scope
+
+    method ForEachOfControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
+      if (optional_at) throw optional_at.t.error( "'at' cannot be used in a forEach-of." )
+
+      resolver.push_scope( cmd_iterator )
+
+      temporarily resolver.insert_in_init = true
+        resolver.visit( this )
+        resolver.visit( collection )
+      endTemporarily
+
+      collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
+
+      resolver.pop_scope
 
     method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
-      throw UnsupportedOperationError()
+      local collection_type = cmd_collection.data.require_type
+
+      local has_count = collection_type.methods.contains("count()")
+      if (not has_count) has_count = collection_type.properties.contains("count")
+
+      local m_get          = collection_type.methods[ "at(Int32)" ]
+      if (not m_get) m_get = collection_type.methods[ "get(Int32)" ]
+
+      local v_index : Local
+      if (cmd_control.optional_at or (has_count and m_get))
+        local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
+        v_index = resolver.add_local( Local(t, v_index_name, null, Program.type_Int32) )
+
+        local initial_index : Cmd
+        if (cmd_collection.starting_index) initial_index = cmd_collection.starting_index
+        else                               initial_index = LiteralInt32( t, 0 )
+        cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+
+        if (cmd_collection.step_size)
+          cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
+        else
+          cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_index.name)) )
+        endIf
+      endIf
+
+      if (has_count and m_get)
+        # Collection implements count/at or count/get protocol
+        local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+        cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+
+        local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+        cmd_iterator.initialization.add( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
+
+        cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+
+        assert cmd_foreach.statements instanceOf LocalScope
+
+        if (not m_get.return_type)
+          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
+        endIf
+
+        resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
+        local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
+        resolver.control_stack.last.initialization.insert(
+          SetLocal( v_cur,
+            resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
+                Args(cmd_collection.t,GetLocal(v_index)) )
+          )
+        )
+        resolver.pop_scope
+        return
+      endIf
+
+      #{
+      local m_read_another = collection_type.methods[ "read_another()" ]
+      if (m_read_another)
+        # Collection implements read_another() protocol.
+      endIf
+
+      local m_has_another = collection_type.methods[ "has_another()" ]
+      local m_read        = collection_type.methods[ "read()" ]
+      if (m_has_another and m_read)
+        # Collection implements read_another() protocol.
+      endIf
+
+      if (collection.methods.contains("iterator()"))
+      endIf
+
+      if (collection.methods.contains("reader()"))
+      endIf
+      }#
+
+      use builder = StringBuilder.pool
+        builder.println @|Collection does not implement any of the collection protocols:
+                         |
+                         |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
+                         |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                         |  read_another()->ElementType?
+                         |  iterator()->Collection (result must implement one of the above protocols)
+                         |  reader()->Collection (result must implement one of the above protocols)
+        throw t.error( builder->String )
+      endUse
 
     method Range.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
@@ -1248,28 +1352,34 @@ augment
 
     method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
-      resolver.push_scope( cmd_iterator )
-      temporarily resolver.insert_in_init = true
-        resolver.visit( cmd_control )
-        resolver.visit( cmd_collection )
-      endTemporarily
-
-      local v_iterator_name = which{ cmd_control.name || resolver.autoname("i") }
-      local v_iterator = Local( cmd_control.t, v_iterator_name, null, type )
-      cmd_iterator.locals.add( v_iterator )
-      resolver.this_procedure.locals.add( v_iterator )
-      resolver.visible_locals.add( v_iterator )
-
-      cmd_iterator.initialization.add( SetLocal(t,v_iterator,left) )
-      cmd_iterator.condition = CompareLE( t, Access(t,v_iterator_name), right )
-
-      if (cmd_collection.step_size)
-        cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator_name), cmd_collection.step_size) )
-      else
-        cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_iterator_name)) )
+      if (cmd_collection.starting_index)
+        throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )
       endIf
 
-      resolver.pop_scope
+      local v_iterator_name = which{ cmd_control.name || resolver.autoname("i") }
+      local v_iterator = resolver.add_local( Local(cmd_control.t, v_iterator_name, null, type) )
+
+      local v_index : Local
+      if (cmd_control.optional_at)
+        v_index = resolver.add_local( Local(cmd_control.optional_at.t, cmd_control.optional_at.name, null, Program.type_Int32) )
+        cmd_iterator.initialization.add( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+      endIf
+
+      cmd_iterator.initialization.add( SetLocal(t,v_iterator,left,&initial_assignment) )
+
+      cmd_iterator.condition = CompareLE( t, GetLocal(v_iterator), right )
+
+      if (cmd_collection.step_size)
+        cmd_iterator.upkeep.add( AddAndAssign(t, GetLocal(v_iterator), cmd_collection.step_size) )
+        if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
+      else
+        cmd_iterator.upkeep.add( PreIncrement(t, GetLocal(v_iterator)) )
+        if (v_index) cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_index.name)) )
+      endIf
+
+    method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
+                                  cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      throw UnsupportedOperationError()
 
 endAugment
 
