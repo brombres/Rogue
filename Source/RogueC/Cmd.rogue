@@ -2483,3 +2483,21 @@ class Use : ControlStructure
       return "Use($,$)" (%resources,%statements)
 
 endClass
+
+class While : Cmd
+  PROPERTIES
+    condition  : Cmd
+    statements : Cmd
+
+  METHODS
+    method init( t, condition, statements )
+
+    method init( existing:While )
+      prior.init( existing )
+      if (existing.condition) condition = existing.condition.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "While($,$)" (%condition,%statements)
+
+endClass

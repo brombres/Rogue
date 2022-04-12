@@ -414,5 +414,9 @@ class Visitor
       cmd.statements = visit(cmd.statements)
       cmd.cleanup = visit(cmd.@cleanup)
 
+    method on_visit_children( cmd:While )
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
+
 endClass
 

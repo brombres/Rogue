@@ -625,4 +625,12 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.@cleanup)
       return result
 
+    method on( cmd:While )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
 endClass

@@ -575,17 +575,18 @@ class Resolver : Visitor
 
       return result
 
-      #{
-    method on_visit( cmd:While )
-      visit_children( cmd )
-      cmd.condition.require_value
+    method on( cmd:While )->Cmd
+      local iterator = Iterator( cmd.t, cmd.statements, ControlType.WHILE )
 
-    method resolve( v:Local )
-      if (v.initial_value)
-        v.initial_value = visit( v.initial_value ).require_value
-        if (not v.type) v.type = v.initial_value.type
-      endIf
-}#
+      push_scope( iterator )
+
+      temporarily insert_in_init = true
+        iterator.condition = visit( cmd.condition ).logicalized( this )
+      endTemporarily
+
+      pop_scope
+
+      return visit( iterator )
 
     method back_propagate_thrown_exception( type:Type )
       forEach (control_structure in control_stack step -1)

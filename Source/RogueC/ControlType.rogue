@@ -4,8 +4,9 @@ enum ControlType
   UNDEFINED
   LOCAL_SCOPE
   BLOCK
-  FOR_EACH
   IF
+  WHILE
   LOOP
+  FOR_EACH
   USE
 endEnum
