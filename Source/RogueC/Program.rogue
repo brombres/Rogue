@@ -7,34 +7,35 @@ class Program [singleton]
     included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()
 
-    gc_auto         = true
-    real_bits       : Int32 # Set with --real=32 compile option
+    gc_auto           = true
+    real_bits         : Int32 # Set with --real=32 compile option
 
-    modules         = StringTable<<Module>>()
-    default_module  : Module
-    current_module  : Module
+    modules           = StringTable<<Module>>()
+    default_module    : Module
+    current_module    : Module
 
-    type_Logical    : Type
-    type_Byte       : Type
-    type_Character  : Type
-    type_Int32      : Type
-    type_Int64      : Type
-    type_Real32     : Type
-    type_Real64     : Type
-    type_Real       : Type
+    type_Logical      : Type
+    type_Byte         : Type
+    type_Character    : Type
+    type_Int32        : Type
+    type_Int64        : Type
+    type_Real32       : Type
+    type_Real64       : Type
+    type_Real         : Type
 
-    type_null       : Type
-    type_Global     : Type
-    type_ListType   : Type
-    type_Math       : Type
-    type_Object     : Type
-    type_String     : Type
-    type_Exception  : Type
+    type_null         : Type
+    type_Global       : Type
+    type_ListType     : Type
+    type_Math         : Type
+    type_Object       : Type
+    type_String       : Type
+    type_Exception    : Type
 
-    is_modified     : Logical
+    is_modified       : Logical
+    unorganized_types = Type[]
 
-    unique_strings  = StringTable<<String>>()
-    dynamic_methods = StringTable<<Method[]>>()
+    unique_strings   = StringTable<<String>>()
+    dynamic_methods  = StringTable<<Method[]>>()
 
   METHODS
     method init

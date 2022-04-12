@@ -45,8 +45,26 @@ class Template
         endForEach
       endIf
 
-      local class_def = Parser( template_tokens ).parse( Parser.ip_class )
-      TypeOrganizer( type.module_context ).visit( type, class_def )
-      MethodOrganizer( type.module_context ).visit( type, class_def )
+      Program.unorganized_types.add( type )
+      local unresolved_type_count = Program.unorganized_types.count
+
+      type.class_def = Parser( template_tokens ).parse( Parser.ip_class )
+
+      if (unresolved_type_count == 1)
+        local i = 0
+        while (i < Program.unorganized_types.count)
+          Program.unorganized_types[i].organize_type
+          ++i
+        endWhile
+
+        i = 0
+        while (i < Program.unorganized_types.count)
+          Program.unorganized_types[i].organize_methods
+          ++i
+        endWhile
+
+        Program.unorganized_types.clear
+      endIf
+
       Program.is_modified = true
 endClass

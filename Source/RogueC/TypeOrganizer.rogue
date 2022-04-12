@@ -7,7 +7,6 @@ class TypeOrganizer : Visitor
     method visit( this_type, class_def:Cmd )
       # Called when instantiating a template
       visit( class_def )
-      this_type.organize_type
 
     method on_visit( cmd:Class )
       cmd.attributes.flags |= this_type.attributes.flags
@@ -46,6 +45,8 @@ class TypeOrganizer : Visitor
       endIf
 
       forEach (base_type in cmd.base_types)
+        base_type.organize_type
+
         if (base_type.instance_of(this_type))
           throw cmd.base_types.t.error( "Circular class extension - $ already extends $." (base_type,this_type) )
         endIf
@@ -182,6 +183,8 @@ class TypeOrganizer : Visitor
         endIf
       endIf
 
+      p.type.organize_type
+
       if (this_type.is_compound and p.type.is_compound)
         if (p.type.contains_embedded_compound(this_type))
           throw t.error(
@@ -221,6 +224,8 @@ class TypeOrganizer : Visitor
           throw p.t.error( ''Global property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
         endIf
       endIf
+
+      p.type.organize_type
 
       if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
         p.type.attributes.contains_reference = true
