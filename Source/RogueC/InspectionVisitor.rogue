@@ -93,14 +93,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
-    method on( cmd:AddAndAssignLocal )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      if (result?) return result
-      result = visit(cmd.operand)
-      return result
-
     method on( cmd:Assign )->$ReturnType
       handle( cmd )
       local result : $ReturnType
@@ -365,14 +357,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.result_type)
       return result
 
-    method on( cmd:OpAndAssign )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.target)
-      if (result?) return result
-      result = visit(cmd.operand)
-      return result
-
     method on( cmd:Procedure )->$ReturnType
       handle( cmd )
       local result : $ReturnType
@@ -545,14 +529,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.value)
       return result
 
-    method on( cmd:AddAndAssignThisProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      if (result?) return result
-      result = visit(cmd.operand)
-      return result
-
     method on( cmd:Loop )->$ReturnType
       handle( cmd )
       local result : $ReturnType
@@ -633,14 +609,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
-    method on( cmd:AddAndAssignGlobalProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      if (result?) return result
-      result = visit(cmd.operand)
-      return result
-
     method on( cmd:AddAndAssignProperty )->$ReturnType
       handle( cmd )
       local result : $ReturnType
@@ -651,10 +619,106 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
-    method on( cmd:ResolvedOpAndAssign )->$ReturnType
+    method on( cmd:BitShiftLeftAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:BitShiftRightXAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:BitwiseAndAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:BitwiseOrAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:BitwiseXorAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:DivideAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:MultiplyAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:OpAndAssign )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.target)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:ResolvedOpAndAssignLocal )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:ResolvedOpAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:SubtractAndAssignProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
       if (result?) return result
       result = visit(cmd.operand)
       return result

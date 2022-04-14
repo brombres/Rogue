@@ -152,6 +152,7 @@ SYMBOL_BITWISE_XOR_EQUALS    ~=
 SYMBOL_SHIFT_LEFT_EQUALS     :<<:=
 SYMBOL_SHIFT_RIGHT_EQUALS    :>>:=
 SYMBOL_SHIFT_RIGHT_X_EQUALS  :>>>:=
+#SYMBOL_ACCESS_EQUALS         .=
 
 ----------------------------------------------------------------------
 scanner
@@ -1391,9 +1392,14 @@ parser
   on "&="     expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
   on "|="     expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
   on "~="     expression -> BitwiseXorAndAssign(target,operand):OpAndAssign
-  on ":<<:="  expression -> ShiftLeftAndAssign(target,operand):OpAndAssign
-  on ":>>:="  expression -> ShiftRightAndAssign(target,operand):OpAndAssign
-  on ":>>>:=" expression -> ShiftRightXAndAssign(target,operand):OpAndAssign
+  on ":<<:="  expression -> BitShiftLeftAndAssign(target,operand):OpAndAssign
+  on ":>>:="  expression -> BitShiftRightAndAssign(target,operand):OpAndAssign
+  on ":>>>:=" expression -> BitShiftRightXAndAssign(target,operand):OpAndAssign
+#{
+  on ".="
+    create AccessAndAssignContext(context)
+    expression -> AccessAndAssign(target,operand):OpAndAssign
+}#
 
 - logical_xor [binary]
   on "xor" -> LogicalXor
@@ -1744,45 +1750,44 @@ parser
   create TypeContext(type:Type)
   create WideningCast(operand,to_type:Type)
 
-  create ResolvedOpAndAssign(info:Property,operand)
-  create AddAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create AddAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create AddAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create AddAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-#{
-  create SubtractAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create SubtractAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create SubtractAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create SubtractAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create MultiplyAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create MultiplyAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create MultiplyAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create MultiplyAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create DivideAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create DivideAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create DivideAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create DivideAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create BitwiseAndAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create BitwiseAndAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create BitwiseAndAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create BitwiseAndAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create BitwiseOrAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create BitwiseOrAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create BitwiseOrAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create BitwiseOrAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create BitwiseXorAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create BitwiseXorAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create BitwiseXorAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create BitwiseXorAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create ShiftLeftAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create ShiftLeftAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create ShiftLeftAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create ShiftLeftAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-  create ShiftRightXAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
-  create ShiftRightXAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
-  create ShiftRightXAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
-  create ShiftRightXAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
-}#
+  create ResolvedOpAndAssignLocal(info:Local,operand)
+  create ResolvedOpAndAssignProperty(info:Property,operand)
+  create AddAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create AddAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create AddAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create AddAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create SubtractAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create SubtractAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create SubtractAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create SubtractAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create MultiplyAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create MultiplyAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create MultiplyAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create MultiplyAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create DivideAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create DivideAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create DivideAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create DivideAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseAndAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseAndAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create BitwiseAndAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseAndAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseOrAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseOrAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create BitwiseOrAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseOrAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseXorAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseXorAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create BitwiseXorAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create BitwiseXorAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitShiftLeftAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitShiftLeftAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create BitShiftLeftAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create BitShiftLeftAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitShiftRightXAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssignProperty
+  create BitShiftRightXAndAssignLocal(info:Local,operand):ResolvedOpAndAssignLocal
+  create BitShiftRightXAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
+  create BitShiftRightXAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
 
 --------------------------------------------------------------------------------
 nativeTypes

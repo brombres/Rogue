@@ -2159,7 +2159,7 @@ class ParserCore [abstract]
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
                 _pop_frame
-                if (not disable_output) _push( ShiftLeftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( BitShiftLeftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
               endTemporarily
             endIf
@@ -2167,7 +2167,7 @@ class ParserCore [abstract]
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
                 _pop_frame
-                if (not disable_output) _push( ShiftRightAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( BitShiftRightAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
               endTemporarily
             endIf
@@ -2175,7 +2175,7 @@ class ParserCore [abstract]
               temporarily _cur_t = _on_t
                 _execute(ip_expression)
                 _pop_frame
-                if (not disable_output) _push( ShiftRightXAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                if (not disable_output) _push( BitShiftRightXAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
               endTemporarily
             endIf
@@ -3138,11 +3138,44 @@ class ParserCore [abstract]
             if (not disable_output) _push( Stepper(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( TypeContext(_cur_t,_node_arg(-1)->(as Type)), 1 )
             if (not disable_output) _push( WideningCast(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
-            if (not disable_output) _push( ResolvedOpAndAssign(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( ResolvedOpAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( ResolvedOpAndAssignProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             if (not disable_output) _push( AddAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( AddAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
             if (not disable_output) _push( AddAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( SubtractAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( SubtractAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( SubtractAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( SubtractAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( MultiplyAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( MultiplyAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( MultiplyAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( MultiplyAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( DivideAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( DivideAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( DivideAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( DivideAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseAndAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseAndAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseAndAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( BitwiseAndAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseOrAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseOrAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseOrAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( BitwiseOrAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseXorAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseXorAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitwiseXorAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( BitwiseXorAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitShiftLeftAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitShiftLeftAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitShiftLeftAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( BitShiftLeftAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitShiftRightXAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitShiftRightXAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( BitShiftRightXAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( BitShiftRightXAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             return
           others
             return
