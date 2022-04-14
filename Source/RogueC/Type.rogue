@@ -252,6 +252,10 @@ class Type : Cmd
     method is_value_type->Logical
       return attributes.is_primitive or attributes.is_compound
 
+    method organize
+      organize_type
+      organize_methods
+
     method organize_type
       if (attributes.is_type_organized) return
       attributes.is_type_organized = true

@@ -634,6 +634,78 @@ class ParserCore [abstract]
                     return
                   endTemporarily
                 endIf
+                if (_next_t.type == TokenType.SYMBOL_PLUS_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator+="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_MINUS_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator-="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_TIMES_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator*="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_DIVIDE_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator/="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_MOD_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator%="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_POWER_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator^="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_BITWISE_AND_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator&="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_BITWISE_OR_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator|="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_BITWISE_XOR_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator~="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_SHIFT_LEFT_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator:<<:="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator:>>:="), 0 )
+                    return
+                  endTemporarily
+                endIf
+                if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_X_EQUALS)
+                  temporarily _cur_t = _on_t
+                    if (not disable_output) _push( Identifier(_cur_t,"operator:>>>:="), 0 )
+                    return
+                  endTemporarily
+                endIf
               endTemporarily
             else
               _execute(ip_identifier)
@@ -1672,7 +1744,7 @@ class ParserCore [abstract]
                   return
                 endIf
               endTemporarily
-            elseIf (_next_t.type == TokenType.SYMBOL_AND_EQUALS)
+            elseIf (_next_t.type == TokenType.SYMBOL_BITWISE_AND_EQUALS)
               temporarily _cur_t = _on_t
                 _execute(ip_identifier)
                 _pop_frame
@@ -2016,6 +2088,94 @@ class ParserCore [abstract]
                 _execute(ip_expression)
                 _pop_frame
                 if (not disable_output) _push( AddAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_MINUS_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( SubtractAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_TIMES_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( MultiplyAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_DIVIDE_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( DivideAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_MOD_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( ModAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_POWER_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( PowerAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_BITWISE_AND_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitwiseAndAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_BITWISE_OR_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitwiseOrAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_BITWISE_XOR_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitwiseXorAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_SHIFT_LEFT_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( ShiftLeftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( ShiftRightAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_X_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( ShiftRightXAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
               endTemporarily
             endIf
@@ -2931,8 +3091,6 @@ class ParserCore [abstract]
             endIf
             return
           case ip_additional_node_types
-            if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
-            if (not disable_output) _push( AddAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallDynamicMethod(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( CallGlobalMethod(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( CallProcedure(_cur_t,_node_arg(-1)), 1 )
@@ -2980,6 +3138,11 @@ class ParserCore [abstract]
             if (not disable_output) _push( Stepper(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( TypeContext(_cur_t,_node_arg(-1)->(as Type)), 1 )
             if (not disable_output) _push( WideningCast(_cur_t,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+            if (not disable_output) _push( ResolvedOpAndAssign(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( AddAndAssignGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( AddAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
+            if (not disable_output) _push( AddAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
+            if (not disable_output) _push( AddAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
             return
           others
             return

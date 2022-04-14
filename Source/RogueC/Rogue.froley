@@ -145,8 +145,13 @@ SYMBOL_MINUS_EQUALS          -=
 SYMBOL_TIMES_EQUALS          *=
 SYMBOL_DIVIDE_EQUALS         /=
 SYMBOL_MOD_EQUALS            %=
-SYMBOL_AND_EQUALS            &=
-SYMBOL_OR_EQUALS             |=
+SYMBOL_POWER_EQUALS          ^=
+SYMBOL_BITWISE_AND_EQUALS    &=
+SYMBOL_BITWISE_OR_EQUALS     |=
+SYMBOL_BITWISE_XOR_EQUALS    ~=
+SYMBOL_SHIFT_LEFT_EQUALS     :<<:=
+SYMBOL_SHIFT_RIGHT_EQUALS    :>>:=
+SYMBOL_SHIFT_RIGHT_X_EQUALS  :>>>:=
 
 ----------------------------------------------------------------------
 scanner
@@ -531,24 +536,37 @@ parser
 
 - procedure_name
   on @"operator"
-    on "?" ->     Identifier(name="operator?":String)
-    on "+" ->     Identifier(name="operator+":String)
-    on "-" ->     Identifier(name="operator-":String)
-    on "*" ->     Identifier(name="operator*":String)
-    on "/" ->     Identifier(name="operator/":String)
-    on "%" ->     Identifier(name="operator%":String)
-    on "^" ->     Identifier(name="operator^":String)
-    on "++" ->    Identifier(name="operator++":String)
-    on "--" ->    Identifier(name="operator--":String)
-    on "&" ->     Identifier(name="operator&":String)
-    on "|" ->     Identifier(name="operator|":String)
-    on "~" ->     Identifier(name="operator~":String)
-    on "!" ->     Identifier(name="operator!":String)
-    on ":<<:" ->  Identifier(name="operator:<<:":String)
-    on ":>>:" ->  Identifier(name="operator:>>:":String)
-    on ":>>>:" -> Identifier(name="operator:>>>:":String)
-    on "=="    -> Identifier(name="operator==":String)
-    on "<>"    -> Identifier(name="operator<>":String)
+    on "?"      -> Identifier(name="operator?":String)
+    on "+"      -> Identifier(name="operator+":String)
+    on "-"      -> Identifier(name="operator-":String)
+    on "*"      -> Identifier(name="operator*":String)
+    on "/"      -> Identifier(name="operator/":String)
+    on "%"      -> Identifier(name="operator%":String)
+    on "^"      -> Identifier(name="operator^":String)
+    on "++"     -> Identifier(name="operator++":String)
+    on "--"     -> Identifier(name="operator--":String)
+    on "&"      -> Identifier(name="operator&":String)
+    on "|"      -> Identifier(name="operator|":String)
+    on "~"      -> Identifier(name="operator~":String)
+    on "!"      -> Identifier(name="operator!":String)
+    on ":<<:"   -> Identifier(name="operator:<<:":String)
+    on ":>>:"   -> Identifier(name="operator:>>:":String)
+    on ":>>>:"  -> Identifier(name="operator:>>>:":String)
+    on "=="     -> Identifier(name="operator==":String)
+    on "<>"     -> Identifier(name="operator<>":String)
+    on "+="     -> Identifier(name="operator+=":String)
+    on "-="     -> Identifier(name="operator-=":String)
+    on "*="     -> Identifier(name="operator*=":String)
+    on "/="     -> Identifier(name="operator/=":String)
+    on "%="     -> Identifier(name="operator%=":String)
+    on "^="     -> Identifier(name="operator^=":String)
+    on "&="     -> Identifier(name="operator&=":String)
+    on "|="     -> Identifier(name="operator|=":String)
+    on "~="     -> Identifier(name="operator~=":String)
+    on ":<<:="  -> Identifier(name="operator:<<:=":String)
+    on ":>>:="  -> Identifier(name="operator:>>:=":String)
+    on ":>>>:=" -> Identifier(name="operator:>>>:=":String)
+
   elseOnOthers
     identifier
   endOn
@@ -1364,18 +1382,18 @@ parser
 
 - op_and_assign
   logical_xor
-  on "+=" expression -> AddAndAssign(target,operand):OpAndAssign
-#{
-  #on "-=", expression -> SubtractAndAssign(target,operand):OpAndAssign
-  #on "*=", expression -> MultiplyAndAssign(target,operand):OpAndAssign
-  #on "/=", expression -> DivideAndAssign(target,operand):OpAndAssign
-  #on "%=", expression -> ModAndAssign(target,operand):OpAndAssign
-  #on "&=", expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
-  on "|=", expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
-  on ":<<:="  expression -> LeftShiftAndAssign(target,operand):OpAndAssign
-  on ":>>:="  expression -> RightShiftAndAssign(target,operand):OpAndAssign
-  on ":>>>:=" expression -> RightShiftXAndAssign(target,operand):OpAndAssign
-}#
+  on "+="     expression -> AddAndAssign(target,operand):OpAndAssign
+  on "-="     expression -> SubtractAndAssign(target,operand):OpAndAssign
+  on "*="     expression -> MultiplyAndAssign(target,operand):OpAndAssign
+  on "/="     expression -> DivideAndAssign(target,operand):OpAndAssign
+  on "%="     expression -> ModAndAssign(target,operand):OpAndAssign
+  on "^="     expression -> PowerAndAssign(target,operand):OpAndAssign
+  on "&="     expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
+  on "|="     expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
+  on "~="     expression -> BitwiseXorAndAssign(target,operand):OpAndAssign
+  on ":<<:="  expression -> ShiftLeftAndAssign(target,operand):OpAndAssign
+  on ":>>:="  expression -> ShiftRightAndAssign(target,operand):OpAndAssign
+  on ":>>>:=" expression -> ShiftRightXAndAssign(target,operand):OpAndAssign
 
 - logical_xor [binary]
   on "xor" -> LogicalXor
@@ -1677,8 +1695,6 @@ parser
   endOn
 
 - additional_node_types
-  create AddAndAssignLocal(info:Local,operand)
-  create AddAndAssignThisProperty(info:Property,operand)
   create CallDynamicMethod(context,args):CallProcedure
   create CallGlobalMethod(args):CallProcedure
   create CallProcedure(args)
@@ -1727,6 +1743,46 @@ parser
   create Stepper(operand)
   create TypeContext(type:Type)
   create WideningCast(operand,to_type:Type)
+
+  create ResolvedOpAndAssign(info:Property,operand)
+  create AddAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create AddAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create AddAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create AddAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+#{
+  create SubtractAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create SubtractAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create SubtractAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create SubtractAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create MultiplyAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create MultiplyAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create MultiplyAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create MultiplyAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create DivideAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create DivideAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create DivideAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create DivideAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create BitwiseAndAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create BitwiseAndAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create BitwiseAndAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create BitwiseAndAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create BitwiseOrAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create BitwiseOrAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create BitwiseOrAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create BitwiseOrAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create BitwiseXorAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create BitwiseXorAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create BitwiseXorAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create BitwiseXorAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create ShiftLeftAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create ShiftLeftAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create ShiftLeftAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create ShiftLeftAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+  create ShiftRightXAndAssignGlobalProperty(info:Property,operand):ResolvedOpAndAssign
+  create ShiftRightXAndAssignLocal(info:Local,operand):ResolvedOpAndAssign
+  create ShiftRightXAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssign
+  create ShiftRightXAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssign
+}#
 
 --------------------------------------------------------------------------------
 nativeTypes

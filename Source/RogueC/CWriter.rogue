@@ -184,6 +184,7 @@ class CWriter : BufferedPrintWriter
            |
            |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
            |RogueInt64  Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
+           |RogueReal32 Rogue_mod_Real32( RogueReal32 a, RogueReal32 b );
            |RogueReal64 Rogue_mod_Real64( RogueReal64 a, RogueReal64 b );
         println
 
@@ -276,6 +277,12 @@ class CWriter : BufferedPrintWriter
            |  if ((a ^ b) >= 0) return r;
            |  if (r) return r + b;
            |  return 0;
+           |}
+           |
+           |RogueReal32 Rogue_mod_Real32( RogueReal32 a, RogueReal32 b )
+           |{
+           |  RogueReal32 q = a / b;
+           |  return a - (floorf(q) * b);
            |}
            |
            |RogueReal64 Rogue_mod_Real64( RogueReal64 a, RogueReal64 b )

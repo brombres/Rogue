@@ -89,8 +89,14 @@ class CmdList : Cmd
     method init( t )
       noAction
 
+    method init( element:Cmd )
+      init( element.t, element )
+
     method init( t, element:Cmd )
       list.add( element )
+
+    method init( element1:Cmd, element2:Cmd )
+      init( element1.t, element1, element2 )
 
     method init( t, element1:Cmd, element2:Cmd )
       list.add( element1 )
@@ -1501,7 +1507,7 @@ class AddAndAssign : OpAndAssign
 
 endClass
 
-class AddAndAssignLocal : Cmd
+class AddAndAssignLocal : ResolvedOpAndAssign
   PROPERTIES
     info    : Local
     operand : Cmd
@@ -1676,6 +1682,9 @@ class GetProperty : Cmd
     info    : Property
 
   METHODS
+    method init( context, info )
+      t = context.t
+
     method init( t, context, info )
 
     method init( existing:GetProperty )
@@ -1693,6 +1702,9 @@ class GetThisProperty : Cmd
     info : Property
 
   METHODS
+    method init( info )
+      t = info.t
+
     method init( t, info )
 
     method init( existing:GetThisProperty )
@@ -1711,6 +1723,9 @@ class SetProperty : Cmd
     new_value : Cmd
 
   METHODS
+    method init( context, info, new_value )
+      t = context.t
+
     method init( t, context, info, new_value )
 
     method init( existing:SetProperty )
@@ -1730,6 +1745,9 @@ class SetThisProperty : Cmd
     new_value : Cmd
 
   METHODS
+    method init( info, new_value )
+      t = info.t
+
     method init( t, info, new_value )
 
     method init( existing:SetThisProperty )
@@ -2202,12 +2220,19 @@ class ContextBlock : Cmd
     commands : Cmd
 
   METHODS
-    method init( t, context, commands )
+    method init( t, context, commands=null )
+      if (not commands) commands = Args(t)
 
     method init( existing:ContextBlock )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
       if (existing.commands) commands = existing.commands.cloned
+
+    method add( cmd:Cmd )
+      commands.add( cmd )
+
+    method add( cmd:String, args=null:Args )
+      commands.add( ContextAccess( t, ContextBlockContext(t), cmd, args ) )
 
     method description->String
       return "ContextBlock($,$)" (%context,%commands)
@@ -2251,7 +2276,7 @@ class DefaultArg : Unary
 
 endClass
 
-class AddAndAssignThisProperty : Cmd
+class AddAndAssignThisProperty : ResolvedOpAndAssign
   PROPERTIES
     info    : Property
     operand : Cmd
@@ -2330,6 +2355,9 @@ class GetGlobalProperty : Cmd
     info : Property
 
   METHODS
+    method init( info )
+      t = info.t
+
     method init( t, info )
 
     method init( existing:GetGlobalProperty )
@@ -2347,6 +2375,9 @@ class SetGlobalProperty : Cmd
     new_value : Cmd
 
   METHODS
+    method init( info, new_value )
+      t = info.t
+
     method init( t, info, new_value )
 
     method init( existing:SetGlobalProperty )
@@ -2506,4 +2537,137 @@ class LiteralList : CmdList
   METHODS
     method description->String
       return "LiteralList" + list_description
+endClass
+
+class AddAndAssignGlobalProperty : ResolvedOpAndAssign
+  PROPERTIES
+    info    : Property
+    operand : Cmd
+
+  METHODS
+    method init( t, info, operand )
+
+    method init( existing:AddAndAssignGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "AddAndAssignGlobalProperty($,$)" (%info,%operand)
+
+endClass
+
+class BitwiseAndAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "BitwiseAndAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class BitwiseOrAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "BitwiseOrAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class BitwiseXorAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "BitwiseXorAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class DivideAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "DivideAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class ModAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "ModAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class MultiplyAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "MultiplyAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class PowerAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "PowerAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class ShiftLeftAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "ShiftLeftAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class ShiftRightAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "ShiftRightAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class ShiftRightXAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "ShiftRightXAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class SubtractAndAssign : OpAndAssign
+  METHODS
+    method description->String
+      return "SubtractAndAssign($,$)" (%target,%operand)
+
+endClass
+
+class AddAndAssignProperty : ResolvedOpAndAssign
+  PROPERTIES
+    context : Cmd
+    info    : Property
+    operand : Cmd
+
+  METHODS
+    method init( t, context, info, operand )
+
+    method init( existing:AddAndAssignProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "AddAndAssignProperty($,$,$)" (%context,%info,%operand)
+
+endClass
+
+class ResolvedOpAndAssign : Cmd
+  PROPERTIES
+    target  : Cmd
+    operand : Cmd
+
+  METHODS
+    method init( t, target, operand )
+
+    method init( existing:ResolvedOpAndAssign )
+      prior.init( existing )
+      if (existing.target) target = existing.target.cloned
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "ResolvedOpAndAssign($,$)" (%target,%operand)
+
 endClass

@@ -173,6 +173,29 @@ augment
 
 endAugment
 
+# is_simple
+augment
+  METHODS
+    method Cmd.is_simple->Logical
+      return false
+
+    method GetLocal.is_simple->Logical
+      return true
+
+    method GetGlobal.is_simple->Logical
+      return true
+
+    method GetSingleton.is_simple->Logical
+      return true
+
+    method GetThisProperty.is_simple->Logical
+      return true
+
+    method Literal.is_simple->Logical
+      return true
+
+endAugment
+
 # is_truthy
 augment
   METHODS
@@ -253,28 +276,41 @@ endAugment
 # symbol()
 augment
   METHODS
-    method Binary.symbol->String:         return null
-    method Unary.symbol->String:          return null
-    method Add.symbol->String:            return "+"
-    method Subtract.symbol->String:       return "-"
-    method Multiply.symbol->String:       return "*"
-    method Divide.symbol->String:         return "/"
-    method Logicalize.symbol->String:     return "?"
-    method Logicalized.symbol->String:    return "?"
-    method Mod.symbol->String:            return "%"
-    method Negate.symbol->String:         return "-"
-    method Power.symbol->String:          return "^"
-    method PreIncrement.symbol->String:   return "++"
-    method PostIncrement.symbol->String:  return "++"
-    method PreDecrement.symbol->String:   return "--"
-    method PostDecrement.symbol->String:  return "--"
-    method BitwiseAnd.symbol->String:     return "&"
-    method BitwiseOr.symbol->String:      return "|"
-    method BitwiseXor.symbol->String:     return "~"
-    method BitwiseNot.symbol->String:     return "!"
-    method BitShiftLeft.symbol->String:   return ":<<:"
-    method BitShiftRight.symbol->String:  return ":>>:"
-    method BitShiftRightX.symbol->String: return ":>>>:"
+    method Binary.symbol->String:                return null
+    method Unary.symbol->String:                 return null
+    method Add.symbol->String:                   return "+"
+    method Subtract.symbol->String:              return "-"
+    method Multiply.symbol->String:              return "*"
+    method Divide.symbol->String:                return "/"
+    method Logicalize.symbol->String:            return "?"
+    method Logicalized.symbol->String:           return "?"
+    method Mod.symbol->String:                   return "%"
+    method Negate.symbol->String:                return "-"
+    method Power.symbol->String:                 return "^"
+    method PreIncrement.symbol->String:          return "++"
+    method PostIncrement.symbol->String:         return "++"
+    method PreDecrement.symbol->String:          return "--"
+    method PostDecrement.symbol->String:         return "--"
+    method BitwiseAnd.symbol->String:            return "&"
+    method BitwiseOr.symbol->String:             return "|"
+    method BitwiseXor.symbol->String:            return "~"
+    method BitwiseNot.symbol->String:            return "!"
+    method BitShiftLeft.symbol->String:          return ":<<:"
+    method BitShiftRight.symbol->String:         return ":>>:"
+    method BitShiftRightX.symbol->String:        return ":>>>:"
+    method OpAndAssign.symbol->String:           return null
+    method AddAndAssign.symbol->String:          return "+="
+    method SubtractAndAssign.symbol->String:     return "-="
+    method MultiplyAndAssign.symbol->String:     return "*="
+    method DivideAndAssign.symbol->String:       return "/="
+    method ModAndAssign.symbol->String:          return "%="
+    method PowerAndAssign.symbol->String:        return "^="
+    method BitwiseAndAndAssign.symbol->String:   return "&="
+    method BitwiseOrAndAssign.symbol->String:    return "|="
+    method BitwiseXorAndAssign.symbol->String:   return "~="
+    method ShiftLeftAndAssign.symbol->String:    return ":<<:="
+    method ShiftRightAndAssign.symbol->String:   return ":>>:="
+    method ShiftRightXAndAssign.symbol->String:  return ":>>>:="
 endAugment
 
 # type()
@@ -389,6 +425,10 @@ augment
 
     method GetThisProperty.type->Type
       return info.@type
+
+    method GlobalPropertyDeclarations.type->Type
+      return @type
+
 
       #{
     method ImportModule.type->Type

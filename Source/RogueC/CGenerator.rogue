@@ -83,6 +83,19 @@ class CGenerator : Visitor
       print_parenthesized( cmd.operand )
       writer.print ')'
 
+    method on_visit( cmd:AddAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " += " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:AddAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " += "
+      visit( cmd.operand )
+
     method on_visit( cmd:AddAndAssignThisProperty )
       writer.print "THIS"
       if (this_type.is_reference) writer.print "->"
@@ -90,6 +103,232 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
       writer.print " += "
       visit( cmd.operand )
+
+#{
+    method on_visit( cmd:SubtractAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " -= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:SubtractAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " -= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:SubtractAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " -= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:SubtractAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " -= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " *= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:MultiplyAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " *= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " *= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " *= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " /= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:DivideAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " /= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " /= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " /= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseAndAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " &= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitwiseAndAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " &= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseAndAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " &= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseAndAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " &= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseOrAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " |= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitwiseOrAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " |= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseOrAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " |= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseOrAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " |= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseXorAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " ^= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitwiseXorAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " ^= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseXorAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " ^= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseXorAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " ^= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:ShiftLeftAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " <<= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ShiftLeftAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " <<= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:ShiftLeftAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " <<= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:ShiftLeftAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " <<= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:ShiftRightXAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " >>= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ShiftRightXAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " >>= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:ShiftRightXAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " >>= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:ShiftRightXAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " >>= "
+      visit( cmd.operand )
+}#
 
     method on_visit( cmd:CmdList )
       visit_children( cmd )
@@ -696,9 +935,10 @@ class CGenerator : Visitor
       writer.println
 
     method on_visit( cmd:Mod )
-      if (cmd.type is Program.type_Real64)    writer.print "Rogue_mod_Real64"
-      elseIf (cmd.type is Program.type_Int64) writer.print "Rogue_mod_Int64"
-      else                                    writer.print "Rogue_mod_Int32"
+      if (cmd.type is Program.type_Real64)     writer.print "Rogue_mod_Real64"
+      elseIf (cmd.type is Program.type_Real32) writer.print "Rogue_mod_Real32"
+      elseIf (cmd.type is Program.type_Int64)  writer.print "Rogue_mod_Int64"
+      else                                     writer.print "Rogue_mod_Int32"
       writer.print '('
       visit( cmd.left )
       writer.print ','
@@ -828,7 +1068,8 @@ class CGenerator : Visitor
 
     method on_visit( cmd:SetProperty )
       visit( cmd.context )
-      writer.print "->"
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
       writer.print( cmd.info.c_name )
       writer.print( " = " )
       visit( cmd.new_value )
@@ -1098,8 +1339,8 @@ augment
             writer.print p.type.c_ref_name
             writer.print ' '
             writer.print p.c_name
-            if (p.type.is_reference) writer.println "= 0;"
-            else                     writer.println "= {};"
+            if (p.type.is_compound) writer.println "= {};"
+            else                    writer.println "= 0;"
           endForEach
 
           writer.print   "RogueType Type"
