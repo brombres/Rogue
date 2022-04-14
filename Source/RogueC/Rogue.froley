@@ -152,7 +152,7 @@ SYMBOL_BITWISE_XOR_EQUALS    ~=
 SYMBOL_SHIFT_LEFT_EQUALS     :<<:=
 SYMBOL_SHIFT_RIGHT_EQUALS    :>>:=
 SYMBOL_SHIFT_RIGHT_X_EQUALS  :>>>:=
-#SYMBOL_ACCESS_EQUALS         .=
+SYMBOL_ACCESS_EQUALS         .=
 
 ----------------------------------------------------------------------
 scanner
@@ -1201,6 +1201,33 @@ parser
 
   on "=" expression -> Assign(target,new_value)
 
+  on "+="     expression -> AddAndAssign(target,operand):OpAndAssign
+  on "-="     expression -> SubtractAndAssign(target,operand):OpAndAssign
+  on "*="     expression -> MultiplyAndAssign(target,operand):OpAndAssign
+  on "/="     expression -> DivideAndAssign(target,operand):OpAndAssign
+  on "%="     expression -> ModAndAssign(target,operand):OpAndAssign
+  on "^="     expression -> PowerAndAssign(target,operand):OpAndAssign
+  on "&="     expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
+  on "|="     expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
+  on "~="     expression -> BitwiseXorAndAssign(target,operand):OpAndAssign
+  on ":<<:="  expression -> BitShiftLeftAndAssign(target,operand):OpAndAssign
+  on ":>>:="  expression -> BitShiftRightAndAssign(target,operand):OpAndAssign
+  on ":>>>:=" expression -> BitShiftRightXAndAssign(target,operand):OpAndAssign
+
+  on ".="
+    create AccessAndAssignContext(context)
+    on '@'
+      identifier
+      create ContextDirectAccess(context,name:String)
+    elseOnOthers
+      procedure_name
+      access_args
+      create ContextAccess(context,name:String,args)
+    endOn
+    access_inner  # parse any further accesses
+    produce AccessAndAssign(operand)
+  endOn
+
   if (hasAnother and not nextHasAttribute(structural) and not nextIs(EOL))
     args
     call store_statement_args
@@ -1379,27 +1406,7 @@ parser
   expression
 
 - expression
-  op_and_assign
-
-- op_and_assign
   logical_xor
-  on "+="     expression -> AddAndAssign(target,operand):OpAndAssign
-  on "-="     expression -> SubtractAndAssign(target,operand):OpAndAssign
-  on "*="     expression -> MultiplyAndAssign(target,operand):OpAndAssign
-  on "/="     expression -> DivideAndAssign(target,operand):OpAndAssign
-  on "%="     expression -> ModAndAssign(target,operand):OpAndAssign
-  on "^="     expression -> PowerAndAssign(target,operand):OpAndAssign
-  on "&="     expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
-  on "|="     expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
-  on "~="     expression -> BitwiseXorAndAssign(target,operand):OpAndAssign
-  on ":<<:="  expression -> BitShiftLeftAndAssign(target,operand):OpAndAssign
-  on ":>>:="  expression -> BitShiftRightAndAssign(target,operand):OpAndAssign
-  on ":>>>:=" expression -> BitShiftRightXAndAssign(target,operand):OpAndAssign
-#{
-  on ".="
-    create AccessAndAssignContext(context)
-    expression -> AccessAndAssign(target,operand):OpAndAssign
-}#
 
 - logical_xor [binary]
   on "xor" -> LogicalXor

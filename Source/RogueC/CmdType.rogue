@@ -179,6 +179,9 @@ augment
     method Cmd.is_simple->Logical
       return false
 
+    method Access.is_simple->Logical
+      return args is null or args.count == 0
+
     method GetLocal.is_simple->Logical
       return true
 

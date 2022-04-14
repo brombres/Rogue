@@ -84,43 +84,42 @@ class ParserCore [abstract]
     ip_access_args = 71
     ip_optional_expression = 72
     ip_expression = 73
-    ip_op_and_assign = 74
-    ip_logical_xor = 75
-    ip_logical_xor__inner = 76
-    ip_logical_or = 77
-    ip_logical_or__inner = 78
-    ip_logical_and = 79
-    ip_logical_and__inner = 80
-    ip_comparison = 81
-    ip_comparison__inner = 82
-    ip_reference_comparison = 83
-    ip_bitwise_xor = 84
-    ip_bitwise_xor__inner = 85
-    ip_bitwise_or = 86
-    ip_bitwise_or__inner = 87
-    ip_bitwise_and = 88
-    ip_bitwise_and__inner = 89
-    ip_bitwise_shift = 90
-    ip_bitwise_shift__inner = 91
-    ip_add_subtract = 92
-    ip_add_subtract__inner = 93
-    ip_multiply_divide_mod = 94
-    ip_multiply_divide_mod__inner = 95
-    ip_power = 96
-    ip_power__inner = 97
-    ip_pre_unary = 98
-    ip_post_unary = 99
-    ip_post_unary__inner = 100
-    ip_access = 101
-    ip_access_inner = 102
-    ip_context_block_command = 103
-    ip_term = 104
-    ip_native_code = 105
-    ip_literal_list = 106
-    ip_preprocess = 107
-    ip_process_another = 108
-    ip_collect_meta_filepath = 109
-    ip_additional_node_types = 110
+    ip_logical_xor = 74
+    ip_logical_xor__inner = 75
+    ip_logical_or = 76
+    ip_logical_or__inner = 77
+    ip_logical_and = 78
+    ip_logical_and__inner = 79
+    ip_comparison = 80
+    ip_comparison__inner = 81
+    ip_reference_comparison = 82
+    ip_bitwise_xor = 83
+    ip_bitwise_xor__inner = 84
+    ip_bitwise_or = 85
+    ip_bitwise_or__inner = 86
+    ip_bitwise_and = 87
+    ip_bitwise_and__inner = 88
+    ip_bitwise_shift = 89
+    ip_bitwise_shift__inner = 90
+    ip_add_subtract = 91
+    ip_add_subtract__inner = 92
+    ip_multiply_divide_mod = 93
+    ip_multiply_divide_mod__inner = 94
+    ip_power = 95
+    ip_power__inner = 96
+    ip_pre_unary = 97
+    ip_post_unary = 98
+    ip_post_unary__inner = 99
+    ip_access = 100
+    ip_access_inner = 101
+    ip_context_block_command = 102
+    ip_term = 103
+    ip_native_code = 104
+    ip_literal_list = 105
+    ip_preprocess = 106
+    ip_process_another = 107
+    ip_collect_meta_filepath = 108
+    ip_additional_node_types = 109
 
   PROPERTIES
     _tokens          : Token[]
@@ -1822,6 +1821,124 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.SYMBOL_PLUS_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( AddAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_MINUS_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( SubtractAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_TIMES_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( MultiplyAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_DIVIDE_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( DivideAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_MOD_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( ModAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_POWER_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( PowerAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_BITWISE_AND_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitwiseAndAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_BITWISE_OR_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitwiseOrAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_BITWISE_XOR_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitwiseXorAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_SHIFT_LEFT_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitShiftLeftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitShiftRightAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_X_EQUALS)
+              temporarily _cur_t = _on_t
+                _execute(ip_expression)
+                _pop_frame
+                if (not disable_output) _push( BitShiftRightXAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.SYMBOL_ACCESS_EQUALS)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( AccessAndAssignContext(_cur_t,_node_arg(-1)), 1 )
+                if (_next_t.type == TokenType.SYMBOL_AT)
+                  temporarily _cur_t = _on_t
+                    _execute(ip_identifier)
+                    _pop_frame
+                    if (not disable_output) _push( ContextDirectAccess(_cur_t,_node_arg(-2),_string_arg(-1)), 2 )
+                  endTemporarily
+                else
+                  _execute(ip_procedure_name)
+                  _pop_frame
+                  _execute(ip_access_args)
+                  _pop_frame
+                  if (not disable_output) _push( ContextAccess(_cur_t,_node_arg(-3),_string_arg(-2),_node_arg(-1)), 3 )
+                endIf
+                _execute(ip_access_inner)
+                _pop_frame
+                if (not disable_output) _push( AccessAndAssign(_cur_t,_node_arg(-1)), 1 )
+                return
+              endTemporarily
+            endIf
             if ((((_position < _limit) and (not (_next_t.type.attributes & TokenType.ATTRIBUTE_STRUCTURAL)?)) and (not (_next_t.type == TokenType.EOL))))
               _execute(ip_args)
               _pop_frame
@@ -2077,108 +2194,8 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_expression
-            _execute(ip_op_and_assign)
-            _pop_frame
-            return
-          case ip_op_and_assign
             _execute(ip_logical_xor)
             _pop_frame
-            if (_next_t.type == TokenType.SYMBOL_PLUS_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( AddAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_MINUS_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( SubtractAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_TIMES_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( MultiplyAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_DIVIDE_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( DivideAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_MOD_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( ModAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_POWER_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( PowerAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_BITWISE_AND_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( BitwiseAndAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_BITWISE_OR_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( BitwiseOrAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_BITWISE_XOR_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( BitwiseXorAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_SHIFT_LEFT_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( BitShiftLeftAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( BitShiftRightAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
-            if (_next_t.type == TokenType.SYMBOL_SHIFT_RIGHT_X_EQUALS)
-              temporarily _cur_t = _on_t
-                _execute(ip_expression)
-                _pop_frame
-                if (not disable_output) _push( BitShiftRightXAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-                return
-              endTemporarily
-            endIf
             return
           case ip_logical_xor
             _execute(ip_logical_or)

@@ -63,6 +63,18 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
 
+    method on( cmd:AccessAndAssign )->Cmd
+      local context = AccessAndAssignPatcher.find_context(cmd)
+
+      local resolved_context = visit( context )
+
+      if (resolved_context.is_simple)
+        AccessAndAssignPatcher.patch( cmd, resolved_context )
+        return visit( Assign(cmd.t, context, cmd.operand) )
+      endIf
+
+      return context.resolve_access_and_assign( cmd.operand, this )
+
     method on( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
@@ -1163,6 +1175,77 @@ class Resolver : Visitor
 
 endClass
 
+      #{
+      local resolved_context = visit( context )
+      local context_type = resolved_context.require_type
+
+        local v_context = resolver.add_local( t, "context", context_type )
+        resolver.insert( SetLocal(v_context, resolved_context, &initial_assignment) )
+        AccessAndAssignPatcher.patch( cmd, GetLocal(v_context) )
+
+        return resolver.visit( Assign(t, context, cmd.operand )
+      endIf
+      }#
+
+# resolve_access_and_assign
+augment
+  METHODS
+    method Cmd.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target." )
+
+    method ContextAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
+
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      block p = context_type.properties[ name ]
+        if (p)
+          if (context.is_simple)
+            operand = AccessAndAssignPatcher.patch( operand, context.cloned )
+            return resolver.visit( Assign(t, context, operand) )
+          else
+            local v_context = resolver.add_local( t, "context", context.require_type )
+            resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+            local context_access = ContextAccess( t, GetLocal(v_context), name )
+            operand = AccessAndAssignPatcher.patch( operand, context_access.cloned )
+            return resolver.visit( Assign(t, context_access, operand) )
+          endIf
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          operand = AccessAndAssignPatcher.patch( operand, GetGlobalProperty(t,p) )
+          operand = operand.resolve_conversion_to( p.type, resolver )
+          return resolver.visit( SetGlobalProperty(t, p, operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_access_and_assign( operand, resolver )  # generate error
+
+    method TypeAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      return ContextAccess( t, resolver.visit(this), args ).resolve_access_and_assign( operand, resolver )
+
+    method IndexedAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      local context = resolver.visit( context ).require_value
+      local index = resolver.visit( index ).require_value
+
+      if (context.is_simple and index.is_simple)
+        operand = AccessAndAssignPatcher.patch( operand, this.cloned )
+        return resolver.visit( Assign(t, this, operand) )
+      else
+        local v_context = resolver.add_local( t, "context", context.require_type )
+        resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+        local v_index = resolver.add_local( t, "index", index.require_type )
+        resolver.insert( SetLocal(v_index, index, &initial_assignment) )
+
+        local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
+        operand = AccessAndAssignPatcher.patch( operand, indexed_access.cloned )
+        return resolver.visit( Assign(t, indexed_access, operand) )
+      endIf
+endAugment
+
 # OpAndAssign
 augment
   METHODS
@@ -1240,11 +1323,6 @@ augment
 
     method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
       throw t.error( "Illegal assignment target." )
-
-      #{
-    method Cmd.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target." )
-      }#
 
     method Access.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
@@ -1389,38 +1467,6 @@ augment
       endBlock
 
       return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
-
-      #{
-    method Access.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
-      if (args) prior.resolve_access_and_assign( operand, resolver )  # generate error
-
-      local v = resolver.find_local( name )
-      if (v)
-        return resolver.visit( SetLocal( v, ContextAccess(t,GetLocal(v),name) ) )
-      endIf
-
-      block p = resolver.this_type.properties[ name ]
-        if (p)
-          return resolver.visit( SetThisProperty( t, p, ContextAccess(t,GetThisProperty(t,p),name) ) )
-        endIf
-      endBlock
-
-      block p = resolver.this_type.global_properties[ name ]
-        if (p)
-          return resolver.visit( SetGlobalProperty( t, p, ContextAccess(t,GetGlobalProperty(t,p),name) ) )
-        endIf
-      endBlock
-
-      block p = Program.type_Global.properties[ name ]
-        if (p)
-          local get_singleton = GetSingleton( t, Program.type_Global )
-          return resolver.visit( SetProperty( t, get_singleton, p, ContextAccess(t,GetProperty(t,get_singleton.cloned),name) ) )
-          return resolver.visit( Assign(t, this, ContextAccess(t,this.cloned,operand)) )
-        endIf
-      endBlock
-
-      return prior.resolve_access_and_assign( operand, resolver )  # generate error
-      }#
 
     method ContextAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error

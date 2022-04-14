@@ -723,4 +723,16 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
+    method on( cmd:AccessAndAssign )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on( cmd:AccessAndAssignContext )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      return result
+
 endClass

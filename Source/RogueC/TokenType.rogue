@@ -147,6 +147,7 @@ enum TokenType( symbol:String, attributes=0:Int32 )
     SYMBOL_SHIFT_LEFT_EQUALS(":<<:=")
     SYMBOL_SHIFT_RIGHT_EQUALS(":>>:=")
     SYMBOL_SHIFT_RIGHT_X_EQUALS(":>>>:=")
+    SYMBOL_ACCESS_EQUALS(".=")
     EOI("end of input")
     COMPILE_ERROR("compile error")
 endEnum

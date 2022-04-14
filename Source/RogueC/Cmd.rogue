@@ -2939,3 +2939,35 @@ class SubtractAndAssignThisProperty : ResolvedOpAndAssignProperty
       return "SubtractAndAssignThisProperty($,$)" (%info,%operand)
 
 endClass
+
+class AccessAndAssign : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:AccessAndAssign )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "AccessAndAssign($)" (%operand)
+
+endClass
+
+class AccessAndAssignContext : Cmd
+  PROPERTIES
+    context : Cmd
+
+  METHODS
+    method init( t, context )
+
+    method init( existing:AccessAndAssignContext )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+
+    method description->String
+      return "AccessAndAssignContext($)" (%context)
+
+endClass
