@@ -1240,23 +1240,34 @@ class ParserCore [abstract]
             endIf
             return
           case ip_forEach_control
-            _execute(ip_identifier)
-            _pop_frame
-            _execute(ip_forEach_optional_at)
-            _pop_frame
-            if (_consume_content("in"))
-              _execute(ip_forEach_collection)
-              _pop_frame
-              if (not disable_output) _push( ForEachInControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
-              return
-            elseIf (_consume_content("of"))
-              _execute(ip_forEach_collection)
-              _pop_frame
-              if (not disable_output) _push( ForEachOfControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
-              return
-            else
-              _throw_syntax_error("Expected 'in' or 'of'.")
+            _save_position
+            if (_next_t.type == TokenType.IDENTIFIER)
+              temporarily _cur_t = _next_t
+                _execute(ip_identifier)
+                _pop_frame
+                _execute(ip_forEach_optional_at)
+                _pop_frame
+                if (_consume_content("in"))
+                  _execute(ip_forEach_collection)
+                  _pop_frame
+                  _discard_position
+                  if (not disable_output) _push( ForEachInControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
+                  return
+                elseIf (_consume_content("of"))
+                  _execute(ip_forEach_collection)
+                  _pop_frame
+                  _discard_position
+                  if (not disable_output) _push( ForEachOfControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
+                  return
+                endIf
+              endTemporarily
             endIf
+            _restore_position
+            if (not disable_output) _push( null, 0 )
+            if (not disable_output) _push( null, 0 )
+            _execute(ip_forEach_collection)
+            _pop_frame
+            if (not disable_output) _push( ForEachInControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             return
           case ip_forEach_optional_at
             if ((not _consume_content("at")))
@@ -2910,6 +2921,10 @@ class ParserCore [abstract]
                 if (disable_output)     _discard_list
                 else                    _push_list( LiteralList(_list_t) )
                 return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_FOR_EACH)
+              temporarily _cur_t = _next_t
               endTemporarily
             endIf
             if (_next_t.type == TokenType.KEYWORD_NATIVE)

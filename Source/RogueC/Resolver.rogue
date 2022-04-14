@@ -1761,15 +1761,17 @@ augment
 
         assert cmd_foreach.statements instanceOf LocalScope
 
-        resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
-        local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-        resolver.control_stack.last.initialization.insert(
-          SetLocal( v_cur,
-            resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
-                Args(cmd_collection.t,GetLocal(v_index)) )
+        if (cmd_control.name)
+          resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
+          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
+          resolver.control_stack.last.initialization.insert(
+            SetLocal( v_cur,
+              resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
+                  Args(cmd_collection.t,GetLocal(v_index)) )
+            )
           )
-        )
-        resolver.pop_scope
+          resolver.pop_scope
+        endIf
         return
       endIf
 

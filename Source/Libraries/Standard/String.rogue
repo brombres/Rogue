@@ -162,7 +162,9 @@ class String
       #{
     method print( value:Real32 )->this
       return this.print( value->Real64 )
+      }#
 
+      #{
     method print( value:Real64 )->this
       if (value == 0)
         print( "0.0" )
@@ -299,6 +301,25 @@ class String
     method reserve( additional_bytes:Int32 )
       if (is_immutable) return
       data.reserve( additional_bytes+1 ) # +1 for null terminator
+
+      #{
+    method reverse
+      # Reverses the characters in this mutable String.
+      if (is_immutable) return
+
+      use builder=String.pool
+        result.reserve( count )
+        result.print( forEach in this step -1 )
+        clear
+        this.print result
+      endUse
+
+    method reversed->String
+      local result = String()
+      result.reserve( count )
+      result.print( forEach in this step -1 )
+      return result
+      }#
 
     method set_cursor( character_index:Int32 )
       # Sets this string's cursor_offset (in bytes) and cursor_index (in characters)

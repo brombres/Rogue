@@ -16,6 +16,22 @@ class Console [singleton]
       |  #define STDOUT_FILENO 1
       |  #define STDERR_FILENO 2
       |#endif
+      |
+      |void Rogue_fwrite( const char* utf8, int byte_count, int out );
+
+    nativeCode
+      @|void Rogue_fwrite( const char* utf8, int byte_count, int out )
+       |{
+       |  while (byte_count)
+       |  {
+       |    int n = (int) write( out, utf8, byte_count );
+       |    if (n > 0)
+       |    {
+       |      utf8 += n;
+       |      byte_count -= n;
+       |    }
+       |  }
+       |}
 
   METHODS
     method height->Int32

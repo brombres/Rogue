@@ -876,17 +876,28 @@ parser
   endOn
 
 - forEach_control
-  identifier
-  forEach_optional_at
-  if (consume(@"in"))
-    forEach_collection
-    produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
-  elseIf (consume(@"of"))
-    forEach_collection
-    produce ForEachOfControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
-  else
-    syntaxError "Expected 'in' or 'of'."
-  endIf
+  savePosition
+  onPeek IDENTIFIER
+    identifier
+    forEach_optional_at
+    if (consume(@"in"))
+      forEach_collection
+      discardPosition
+      produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+    elseIf (consume(@"of"))
+      forEach_collection
+      discardPosition
+      produce ForEachOfControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+    endIf
+  endOn
+
+  # Inline forEach
+  restorePosition
+
+  createNull  # identifier
+  createNull  # optional_at
+  forEach_collection
+  produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
 
 - forEach_optional_at
   if (not consume(@"at")) produceNull
@@ -1598,17 +1609,9 @@ parser
     produceList LiteralList
   endOn
 
-#{
-  on "import"
-    if (consume('('))
-      string
-      mustConsume ')'
-    else
-      string
-    endIf
-    produce ImportModule(filepath:String)
+  onPeek "forEach"
   endOn
-}#
+
   on "native"
     native_code
     return
