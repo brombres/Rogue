@@ -122,17 +122,18 @@ class Procedure : Cmd
         builder.print "("
         forEach (param at i in parameters)
           if (i > 0) builder.print ','
+          local param_name = param.original_name
           if (param.attributes.is_default_parameter and param.type is Program.type_Logical)
             builder.print '&'
-            builder.print param.name
+            builder.print param_name
           elseIf (param.initial_value)
             builder.print '['
-            builder.print param.name
+            builder.print param_name
             builder.print ':'
             builder.print param.type
             builder.print ']'
           else
-            builder.print param.name
+            builder.print param_name
             builder.print ':'
             builder.print param.type
           endIf

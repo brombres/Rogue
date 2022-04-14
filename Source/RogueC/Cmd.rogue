@@ -615,16 +615,19 @@ endClass
 class Local : Cmd
   PROPERTIES
     name          : String
+    original_name : String   # for auto-store parameters
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
 
   METHODS
     method init( t, name, type )
+      original_name = name
       ensure attributes(t)
       attributes.is_anchored = true  # starting assumption
 
     method init( t, name, initial_value, type, &default_parameter )
+      original_name = name
       ensure attributes(t)
       attributes.is_default_parameter = default_parameter
       attributes.is_anchored = true  # starting assumption
@@ -632,6 +635,7 @@ class Local : Cmd
     method init( existing:Local )
       prior.init( existing )
       name = existing.name
+      original_name = existing.original_name
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
       attributes = existing.attributes.cloned
@@ -1153,7 +1157,7 @@ class Block : ControlStructure
 
 endClass
 
-class Stepper : Unary
+class Stepper : Cmd
   PROPERTIES
     operand : Cmd
 

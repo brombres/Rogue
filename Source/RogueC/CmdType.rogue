@@ -280,6 +280,7 @@ endAugment
 augment
   METHODS
     method Binary.symbol->String:                return null
+    method Stepper.symbol->String:               return null
     method Unary.symbol->String:                 return null
     method Add.symbol->String:                   return "+"
     method Subtract.symbol->String:              return "-"

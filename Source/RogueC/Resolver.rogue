@@ -579,6 +579,9 @@ class Resolver : Visitor
         endForEach
       endTemporarily
 
+    method on( cmd:PreIncrement )->Cmd
+      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
       local exception_type = cmd.exception.require_type
@@ -2004,12 +2007,54 @@ augment
 
       return null
 
+    method Type.resolve_stepper( cmd:Stepper, resolver:Resolver, &suppress_error )->Cmd
+      local type = this
+
+      if (type.is_primitive)
+        local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
+        cmd.operand = resolver.visit( cmd.operand )
+        if (type is not op_type) cmd.operand = cmd.operand.resolve_conversion_to(op_type, resolver)
+        return cmd
+
+      elseIf (cmd.symbol is null)
+        throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
+
+      else
+        local op_method_name = "operator" + cmd.symbol
+        local arg = Args( t, cmd.operand )
+
+        type.organize_methods
+        local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
+        if (m) return resolver.resolve_call( cmd.t, null, m, arg )
+
+        m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
+        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+
+        if (cmd.symbol == "++")
+          return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+        elseIf (cmd.symbol == "--")
+          return resolver.visit( SubtractAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+        endIf
+
+        if (suppress_error) return null
+
+        use message = StringBuilder.pool
+          message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
+          message.println "Define one of the following methods to support the operation:\n"
+          message.println "  $.$($)  (global method)" (type,op_method_name,type)
+          message.println "  $.$()"  (type,op_method_name)
+          throw cmd.t.error( message )
+        endUse
+      endIf
+
+      return null
+
     method Type.resolve_unary_op( cmd:Unary, resolver:Resolver, &suppress_error )->Cmd
       local type = cmd.operand.require_type
 
       if (type.is_primitive)
         local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
-        if (type is not op_type) cmd.operand = cmd.resolve_conversion_to(op_type, resolver)
+        if (type is not op_type) cmd.operand = cmd.operand.resolve_conversion_to(op_type, resolver)
         return cmd
 
       elseIf (cmd.symbol is null)
