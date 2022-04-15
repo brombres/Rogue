@@ -872,7 +872,7 @@ parser
       single_line_statements
       wrap_in_local_scope
     endIf
-    produce ForEach(condition:ForEachControl,statements)
+    produce ForEach(control:ForEachControl,statements)
   endOn
 
 - forEach_control
@@ -891,13 +891,30 @@ parser
     endIf
   endOn
 
-  # Inline forEach
+  # Anonymous forEach
   restorePosition
 
   createNull  # identifier
   createNull  # optional_at
   forEach_collection
   produce ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+
+- inline_forEach
+  on "forEach"
+    createNull  # name
+    createNull  # optional_at
+    if (consume(@"in"))
+      forEach_collection
+      create ForEachInControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+    elseIf (consume(@"of"))
+      forEach_collection
+      create ForEachOfControl(name:String,optional_at:ForEachAt,collection:ForEachCollection):ForEachControl
+    else
+      syntaxError "Expected 'in' or 'of'."
+    endIf
+    produce InlineForEach(control:ForEachControl)
+  endOn
+
 
 - forEach_optional_at
   if (not consume(@"at")) produceNull
@@ -1610,6 +1627,8 @@ parser
   endOn
 
   onPeek "forEach"
+    inline_forEach
+    return
   endOn
 
   on "native"

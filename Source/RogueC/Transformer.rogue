@@ -1,0 +1,55 @@
+module Rogue
+
+class Transformer : Visitor
+  PROPERTIES
+    inline_foreach_stack  = ForEach[]
+    autoname_index = 0
+
+  METHODS
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
+
+    method on( cmd:InlineForEach )->Cmd
+      local name = autoname( "iterator" )
+      cmd.control.name = name
+      inline_foreach_stack.add( ForEach(cmd.t,cmd.control,null) )
+      return Access( cmd.t, name )
+
+    method on_visit( cmd:Procedure )
+      autoname_index = 0
+      visit_children( cmd )
+
+    method on_visit_children( cmd:Statements )
+      forEach (element in writer=cmd.list.rewriter)
+        local cur_statement_index = writer.write_index
+        local inline_foreach_i1 = inline_foreach_stack.count
+
+        local visited_element = visit( element )
+        if (visited_element)
+          if (visited_element instanceOf Statements)
+            writer.write( forEach in visited_element )
+          else
+            writer.write( visited_element )
+          endIf
+        endIf
+
+        # Integrate inline forEach
+        while (inline_foreach_stack.count > inline_foreach_i1)
+          local cmd_foreach = inline_foreach_stack.remove_last
+
+          local statements = Statements( writer.list[cur_statement_index].t )
+          forEach (i in cur_statement_index..<writer.write_index)
+            statements.add( writer.list[i] )
+            writer.list[i] = null
+          endForEach
+
+          cmd_foreach.statements = LocalScope( statements.t, statements )
+          writer.list[ cur_statement_index ] = cmd_foreach
+          writer.write_index = cur_statement_index + 1
+        endWhile
+
+      endForEach
+
+endClass

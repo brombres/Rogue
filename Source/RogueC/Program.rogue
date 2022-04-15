@@ -165,6 +165,7 @@ class Program [singleton]
 
       (forEach in modules).organize_methods
 
+      apply( Transformer() )
       apply( Resolver() )
       Finalizer().apply
 

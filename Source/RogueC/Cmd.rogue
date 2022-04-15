@@ -1007,19 +1007,19 @@ endClass
 
 class ForEach : Cmd
   PROPERTIES
-    condition  : ForEachControl
+    control  : ForEachControl
     statements : Cmd
 
   METHODS
-    method init( t, condition, statements )
+    method init( t, control, statements )
 
     method init( existing:ForEach )
       prior.init( existing )
-      if (existing.condition) condition = existing.condition.cloned
+      if (existing.control) control = existing.control.cloned
       if (existing.statements) statements = existing.statements.cloned
 
     method description->String
-      return "ForEach($,$)" (%condition,%statements)
+      return "ForEach($,$)" (%control,%statements)
 
 endClass
 
@@ -2973,5 +2973,21 @@ class AccessAndAssignContext : Cmd
 
     method description->String
       return "AccessAndAssignContext($)" (%context)
+
+endClass
+
+class InlineForEach : Cmd
+  PROPERTIES
+    control : ForEachControl
+
+  METHODS
+    method init( t, control )
+
+    method init( existing:InlineForEach )
+      prior.init( existing )
+      if (existing.control) control = existing.control.cloned
+
+    method description->String
+      return "InlineForEach($)" (%control)
 
 endClass

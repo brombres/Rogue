@@ -186,7 +186,7 @@ class Resolver : Visitor
 
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
-      cmd.condition.resolve_foreach( this, cmd, iterator )
+      cmd.control.resolve_foreach( this, cmd, iterator )
       return visit( iterator )
 
     method on_visit( cmd:GlobalMethod )
@@ -1084,7 +1084,7 @@ class Resolver : Visitor
           if (has_named_arg) m.arrange_args( args )
           contingent
             forEach (arg at i in args)
-              local arg_type = arg.type
+              local arg_type = arg.require_type
               local param_type = m.parameters[i].type
               if (arg_type.is_reference) necessary (param_type.is_reference)
               if (arg_type.is_primitive) necessary (param_type.is_primitive)
@@ -1322,7 +1322,7 @@ augment
           )
 
     method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target." )
+      throw t.error( "Illegal assignment target. " )
 
     method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
       throw t.error( "Illegal assignment target." )
@@ -1907,7 +1907,7 @@ augment
       cmd_iterator.condition = CompareLE( t, GetLocal(v_iterator), right )
 
       if (cmd_collection.step_size)
-        cmd_iterator.upkeep.add( AddAndAssign(t, GetLocal(v_iterator), cmd_collection.step_size) )
+        cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator.name), cmd_collection.step_size) )
         if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
       else
         cmd_iterator.upkeep.add( PreIncrement(t, GetLocal(v_iterator)) )

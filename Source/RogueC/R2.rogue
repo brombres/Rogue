@@ -26,6 +26,7 @@ $include "Program.rogue"
 $include "Resolver.rogue"
 $include "Scanner.rogue"
 $include "Template.rogue"
+$include "Transformer.rogue"
 $include "Type.rogue"
 uses Rogue
 uses Utility/CommandLineParser

@@ -202,7 +202,7 @@ class Visitor
       cmd.cleanup = visit( cmd.@cleanup )
 
     method on_visit_children( cmd:ForEach )
-      cmd.condition = visit(cmd.condition)->(as ForEachControl)
+      cmd.control = visit(cmd.control)->(as ForEachControl)
       cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:ControlStructure )
@@ -468,6 +468,9 @@ class Visitor
 
     method on_visit_children( cmd:AccessAndAssignContext )
       cmd.context = visit(cmd.context)
+
+    method on_visit_children( cmd:InlineForEach )
+      cmd.control = visit(cmd.control)->(as ForEachControl)
 
 endClass
 

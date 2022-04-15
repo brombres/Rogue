@@ -31,17 +31,16 @@ class MethodOrganizer : Visitor
 
       visit_children( cmd )
 
-    method on( cmd:GlobalMethod )->Cmd
+    method on_visit( cmd:GlobalMethod )
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.organize( this )
-      return cmd
 
     method on_visit_children( cmd:Local )
       prior.on_visit_children( cmd )
       cmd.initial_value = visit( cmd.initial_value )
 
-    method on( cmd:Method )->Cmd
+    method on_visit( cmd:Method )
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.organize( this )
@@ -51,7 +50,21 @@ class MethodOrganizer : Visitor
             (cmd.signature.rightmost(-4),this_type)
         )
       endIf
-      return cmd
+
+    method on_visit( cmd:Routine )
+      cmd.organize( this )
+
+    method on_visit_children( cmd:Statements )
+      forEach (element in writer=cmd.list.rewriter)
+        local visited_element = visit( element )
+        if (visited_element)
+          if (visited_element instanceOf Statements)
+            writer.write( forEach in visited_element )
+          else
+            writer.write( visited_element )
+          endIf
+        endIf
+      endForEach
 
     method on_visit( cmd:This )
       assert this_procedure
