@@ -204,7 +204,7 @@ class String
         return print( value ).print( 'e' ).print( pow10->Int32 )
       endIf
 
-      # Standard output
+      # Standard, non-exponent format
       forEach (decimal_count in 1..18)
         print_to_work_bytes( value, decimal_count )
         if (scan_work_bytes == value) escapeForEach
