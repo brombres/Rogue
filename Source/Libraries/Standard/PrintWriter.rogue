@@ -1,0 +1,161 @@
+#{
+class PrintWriter [aspect]
+  GLOBAL METHODS
+    method create( writer:Writer<<Byte>> )->PrintWriter
+      return BufferedPrintWriter( writer )
+
+  METHODS
+    method close
+      flush
+
+    method flush         [abstract]
+
+    method print( value:Byte )->this                           [abstract]
+    method print( value:Character )->this                      [abstract]
+    method print( value:Int32 )->this                          [abstract]
+    method print( value:Logical )->this                        [abstract]
+    method print( value:Int64 )->this                          [abstract]
+    method print( value:Object )->this                         [abstract]
+    method print( value:Real64 )->this                         [abstract]
+    method print( value:Real64, decimal_places:Int32 )->this   [abstract]
+    method print( value:Real32 )->this                         [abstract]
+    method print( value:String )->this                         [abstract]
+    method print( buffer:StringBuilder )->this                 [abstract]
+    method println->this                                       [abstract]
+    method println( value:Byte )->this                         [abstract]
+    method println( value:Character )->this                    [abstract]
+    method println( value:Int32 )->this                        [abstract]
+    method println( value:Logical )->this                      [abstract]
+    method println( value:Int64 )->this                        [abstract]
+    method println( value:Real64 )->this                       [abstract]
+    method println( value:Real64, decimal_places:Int32 )->this [abstract]
+    method println( value:Real32 )->this                       [abstract]
+    method println( value:Object )->this                       [abstract]
+    method println( value:String )->this                       [abstract]
+
+    method println( text:String, wrap:Logical )
+      println text.word_wrapped( Console.width )
+
+    method println( text:String, wrap:Int32 )
+      println text.word_wrapped( Console.width.or_smaller(wrap) )
+endClass
+
+class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
+  PROPERTIES
+    $buffer = StringBuilder()
+
+  METHODS
+    method close
+      flush
+
+    method flush
+      flush( $buffer )
+
+    method flush( buffer:StringBuilder ) [abstract]
+
+    method indent->Int32
+      return $buffer.indent
+
+    method print( value:Byte )->this
+      $buffer.print( value )
+      return this
+
+    method print( value:Character )->this
+      $buffer.print( value )
+      if (value == '\n') flush
+      return this
+
+    method print( value:Int32 )->this
+      $buffer.print( value )
+      return this
+
+    method print( value:Logical )->this
+      $buffer.print( value )
+      return this
+
+    method print( value:Int64 )->this
+      $buffer.print( value )
+      return this
+
+    method print( value:Real64, decimal_places:Int32 )->this
+      $buffer.print( value, decimal_places )
+      return this
+
+    method print( value:Object )->this
+      $buffer.print( value )
+      return this
+
+    method print( value:Real64 )->this
+      $buffer.print( value )
+      return this
+
+    method print( value:Real32 )->this
+      $buffer.print( value->Real64 )
+      return this
+
+    method print( value:String )->this
+      $buffer.print( value )
+      if ($buffer.count > 1024) flush
+      return this
+
+    method print( value:StringBuilder )->this
+      $buffer.print( value )
+      return this
+
+    method println->this
+      $buffer.print( '\n' )
+      flush
+      return this
+
+    method println( value:Byte )->this
+      return print( value ).println
+
+    method println( value:Character )->this
+      return print( value ).println
+
+    method println( value:Int32 )->this
+      return print( value ).println
+
+    method println( value:Logical )->this
+      return print( value ).println
+
+    method println( value:Int64 )->this
+      return print( value ).println
+
+    method println( value:Real64 )->this
+      return print( value ).println
+
+    method println( value:Real64, decimal_places:Int32 )->this
+      return print( value, decimal_places ).println
+
+    method println( value:Real32 )->this
+      return print( value ).println
+
+    method println( value:Object )->this
+      return print( value ).println
+
+    method println( value:String )->this
+      return print( value ).println
+
+    method set_indent( new_indent:Int32 )
+      $buffer.indent = new_indent
+endClass
+
+class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
+  PROPERTIES
+    output : Writer<<Byte>>
+
+  METHODS
+    method init( output )
+
+    method close
+      flush
+      output.close
+
+    method flush( buffer:StringBuilder )
+      output.write( buffer.utf8 )
+      buffer.clear
+      output.flush
+endClass
+
+}#

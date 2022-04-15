@@ -94,6 +94,15 @@ class String
       endIf
       return @hash_code
 
+    method insert( ch:Character )->this
+      local i1 = data.count
+      print( ch )   # put new UTF8 bytes on end
+      local n = data.count - i1
+      data.shift( n ) # shift data right to make room for same bytes at beginning
+      data.copy( i1+n, n, data, 0 ) # copy bytes to beginning
+      data.discard_from(i1+n)
+      return this
+
     method last->Character
       return this[ count-1 ]
 
@@ -373,8 +382,9 @@ class String
       #
       # Removes the last digit and rounds off preceding digits accordingly.
       #
-      # Requires: this mutable String contains a real number in the form [0-9]*.[0-9]+
-      if (remove_last >= '5')
+      # Requires: this mutable String contains a real number (and only a real number)
+      # in the form [0-9]*.[0-9]+
+      if (count and remove_last >= '5')
         forEach (i in count-1 downTo 0)
           if (this[i] != '.')
             local digit = this[i]

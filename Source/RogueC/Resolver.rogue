@@ -1036,12 +1036,25 @@ class Resolver : Visitor
             if (m.arrange_args(args)) Candidates.keep m
           endContingent
         endForEach
-        if (Candidates.found_match) return Candidates.match
         if (not Candidates.refine) return null
 
+      endIf
+
+      # Filter by compatible and convertible args
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args )
+          contingent
+            forEach (arg at i in args)
+              necessary (arg_type_is_compatible(arg.require_type,m.parameters[i].type))
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        if (not Candidates.refine) return null
       else
         if (Candidates.found_match) return Candidates.match
-
       endIf
 
       # Filter out candidates that don't have the same module context as the first candidate
@@ -1175,6 +1188,17 @@ class Resolver : Visitor
       endForEach
 
       return false
+
+    method arg_type_is_compatible( arg_type:Type, param_type:Type )->Logical
+      if (arg_type is param_type) return true
+      if (arg_type.instance_of(param_type)) return true
+      if (arg_type.is_primitive and param_type.is_primitive) return true
+      if (param_type is Program.type_String) return true
+      if (param_type.attributes.is_optional and not arg_type.attributes.is_optional)
+        return arg_type_is_compatible( arg_type, param_type.properties//value.type )
+      endIf
+      return false
+
 
 endClass
 
