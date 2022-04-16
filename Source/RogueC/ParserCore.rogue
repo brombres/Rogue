@@ -3175,6 +3175,8 @@ class ParserCore [abstract]
             if (not disable_output) _push( Literal(_cur_t), 0 )
             if (not disable_output) _push( LiteralInt32(_cur_t,_integer_arg(-1)), 1 )
             if (not disable_output) _push( LiteralInt64(_cur_t,_integer_arg(-1)), 1 )
+            if (not disable_output) _push( LiteralReal32(_cur_t,_real_arg(-1)), 1 )
+            if (not disable_output) _push( LiteralReal64(_cur_t,_real_arg(-1)), 1 )
             if (not disable_output) _push( LocalScope(_cur_t), 0 )
             if (not disable_output) _push( Logicalized(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( NativeProperty(_cur_t,_string_arg(-1)), 1 )

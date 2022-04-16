@@ -478,6 +478,19 @@ class Resolver : Visitor
       this_module.native_code.add( cmd.content )
       return null
 
+    method on( cmd:Negate )->Cmd
+      visit_children( cmd )
+      local operand = cmd.operand
+      if (operand.is_literal)
+        if (operand instanceOf LiteralReal64) return LiteralReal64( cmd.t,   -operand->(as LiteralReal64).value )
+        if (operand instanceOf LiteralReal32) return LiteralReal32( cmd.t,   -operand->(as LiteralReal32).value )
+        if (operand instanceOf LiteralInt64) return LiteralInt64( cmd.t,     -operand->(as LiteralInt64).value )
+        if (operand instanceOf LiteralInt32) return LiteralInt32( cmd.t,     -operand->(as LiteralInt32).value )
+        if (operand instanceOf LiteralCharacter) return LiteralInt32( cmd.t, -(operand->(as LiteralCharacter).value->Int32) )
+        if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
+      endIf
+      return cmd
+
     method on( cmd:OpAndAssign )->Cmd
       local target = visit( cmd.target )  # don't alter cmd.target
       cmd.operand = visit( cmd.operand )
@@ -1742,15 +1755,30 @@ augment
       local m_get          = collection_type.methods[ "at(Int32)" ]
       if (not m_get) m_get = collection_type.methods[ "get(Int32)" ]
 
+      local down_to = false
       local v_index : Local
       if (cmd_control.optional_at or (has_count and m_get))
         local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
         v_index = resolver.add_local( Local(t, v_index_name, null, Program.type_Int32) )
 
+        if (cmd_collection.step_size)
+          cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
+          local literal_step = cmd_collection.step_size->(as LiteralInt32)
+          if (literal_step and literal_step.value < 0)
+            down_to = true
+          endIf
+        endIf
+
         local initial_index : Cmd
-        if (cmd_collection.starting_index) initial_index = cmd_collection.starting_index
-        else                               initial_index = LiteralInt32( t, 0 )
-        cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+        if (cmd_collection.starting_index)
+          initial_index = cmd_collection.starting_index
+          cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+        else
+          if (not down_to)
+            initial_index = LiteralInt32( t, 0 )
+            cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+          endIf
+        endIf
 
         if (cmd_collection.step_size)
           cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
@@ -1768,10 +1796,25 @@ augment
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
         cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
 
-        local v_count = resolver.add_local( t, "count", Program.type_Int32 )
-        cmd_iterator.initialization.add( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
-
-        cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+        if (down_to)
+          # Known negative step size
+          local initial_index = Subtract( t, ContextAccess(t, GetLocal(v_collection), "count"), LiteralInt32(t,1) )
+          cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
+        else
+          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          cmd_iterator.initialization.add( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
+          if (cmd_collection.step_size)
+            # Unknown step size - include both ends of the allowed range in the condition
+            cmd_iterator.condition = LogicalAnd( t,
+              CompareGE( t, GetLocal(v_index), LiteralInt32(t,v_count) ),
+              CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+            )
+          else
+            # No step size; counting up.
+            cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+          endIf
+        endIf
 
         assert cmd_foreach.statements instanceOf LocalScope
 

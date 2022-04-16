@@ -221,7 +221,9 @@ class String
       print_work_bytes
 
       return this
+      }#
 
+      #{
     method print( value:Real64, decimal_places:Int32 )->this
       if (value.is_infinite)
         if (value < 0) print( "-infinity" )
@@ -237,7 +239,7 @@ class String
         value = -value
       endIf
 
-      local whole = Math.floor( value )
+      local whole = value.floor
       value -= whole
       while (whole >= 10)
         print( ('0' + ((whole%10)->Int32))->Character )
@@ -251,7 +253,7 @@ class String
         print( '.' )
         forEach (1..decimal_places)
           value *= 10
-          local digit = Math.floor(value)->Int32
+          local digit = value.floor->Int32
           value -= digit
           print( ('0' + digit)->Character )
         endForEach
@@ -310,16 +312,15 @@ class String
       if (is_immutable) return
       data.reserve( additional_bytes+1 ) # +1 for null terminator
 
-      #{
     method reverse
       # Reverses the characters in this mutable String.
       if (is_immutable) return
 
       use builder=String.pool
-        result.reserve( count )
-        result.print( forEach in this step -1 )
+        builder.reserve( count )
+        builder.print( forEach in this step -1 )
         clear
-        this.print result
+        this.print builder
       endUse
 
     method reversed->String
@@ -327,7 +328,6 @@ class String
       result.reserve( count )
       result.print( forEach in this step -1 )
       return result
-      }#
 
     method set_cursor( character_index:Int32 )
       # Sets this string's cursor_offset (in bytes) and cursor_index (in characters)
@@ -382,19 +382,25 @@ class String
       #
       # Requires: this mutable String contains a real number (and only a real number)
       # in the form [0-9]*.[0-9]+
-      #{
-      if (count and remove_last >= '5')
-        forEach (i in count-1 downTo 0)
-          if (this[i] != '.')
-            ++data[cursor_offset]
-            if (this[i] == ('9'+1)) data[cursor_offset] = '0'
-            else                    return
-          endIf
-          --i
-        endForEach
-        insert( '1' )
+      if (count)
+        local ch = last
+        if (ch >= '5' and ch <= '9')
+          remove_last
+          forEach (i in count-1 downTo 0)
+            if (this[i] != '.')
+              ++data[cursor_offset]
+              if (this[i] == ('9'+1))
+                data[cursor_offset] = '0'
+              else
+                if (this[count-1] == '.') print '0'
+                return
+              endIf
+            endIf
+          endForEach
+          insert( '1' )
+          if (this[count-1] == '.') print '0'
+        endIf
       endIf
-      }#
 
   NATIVE
     nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );

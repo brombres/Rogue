@@ -4,6 +4,9 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       return value
 
   METHODS
+    method floor->Real64
+      return native("floor($this)")->Real64
+
     method integer_bits->Int64
       return native("*((RogueInt64*)&$this)")->Int64
 
@@ -17,6 +20,9 @@ endClass
 
 class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
   METHODS
+    method floor->Real32
+      return native("floorf($this)")->Real32
+
     method is_infinite->Logical
       # Returns true for positive OR negative infinity
       return (this == this) and (this - this != 0)

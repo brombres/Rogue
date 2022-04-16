@@ -1766,6 +1766,8 @@ parser
   create Literal
   create LiteralInt32(value:Integer):LiteralInteger
   create LiteralInt64(value:Integer):LiteralInteger
+  create LiteralReal32(value:Real):Literal
+  create LiteralReal64(value:Real):Literal
   create LocalScope:ControlStructure
   create Logicalized(operand):Unary
   create NativeProperty( expression:String )

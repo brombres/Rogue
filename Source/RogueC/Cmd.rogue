@@ -3124,3 +3124,43 @@ class PreDecrementLocal : Cmd
       return "PreDecrementLocal($)" (%info)
 
 endClass
+
+class LiteralReal32 : Literal
+  PROPERTIES
+    value : Real64
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralReal32 )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralReal32($)" (%value)
+
+    method to->Int32:  return value
+    method to->Real64: return value
+    method to->String: return value
+
+endClass
+
+class LiteralReal64 : Literal
+  PROPERTIES
+    value : Real64
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:LiteralReal64 )
+      prior.init( existing )
+      value = existing.value
+
+    method description->String
+      return "LiteralReal64($)" (%value)
+
+    method to->Int32:  return value
+    method to->Real64: return value
+    method to->String: return value
+
+endClass
