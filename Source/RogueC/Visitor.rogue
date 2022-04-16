@@ -472,5 +472,57 @@ class Visitor
     method on_visit_children( cmd:InlineForEach )
       cmd.control = visit(cmd.control)->(as ForEachControl)
 
+    method on_visit_children( cmd:PostDecrementGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PostDecrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:PostDecrementProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PostDecrementThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PostIncrementGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PostIncrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:PostIncrementProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PostIncrementThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreDecrementGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreDecrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:PreDecrementProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreDecrementThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreIncrementGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreIncrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:PreIncrementProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreIncrementThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
 endClass
 

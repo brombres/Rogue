@@ -2991,3 +2991,267 @@ class InlineForEach : Cmd
       return "InlineForEach($)" (%control)
 
 endClass
+
+class PostDecrementGlobalProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PostDecrementGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostDecrementGlobalProperty($)" (%info)
+
+endClass
+
+class PostDecrementLocal : Cmd
+  PROPERTIES
+    info : Local
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PostDecrementLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostDecrementLocal($)" (%info)
+
+endClass
+
+class PostDecrementProperty : Cmd
+  PROPERTIES
+    context : Cmd
+    info    : Property
+
+  METHODS
+    method init( t, context, info )
+
+    method init( existing:PostDecrementProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostDecrementProperty($,$)" (%context,%info)
+
+endClass
+
+class PostDecrementThisProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PostDecrementThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostDecrementThisProperty($)" (%info)
+
+endClass
+
+class PostIncrementGlobalProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PostIncrementGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostIncrementGlobalProperty($)" (%info)
+
+endClass
+
+class PostIncrementLocal : Cmd
+  PROPERTIES
+    info : Local
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PostIncrementLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostIncrementLocal($)" (%info)
+
+endClass
+
+class PostIncrementProperty : Cmd
+  PROPERTIES
+    context : Cmd
+    info    : Property
+
+  METHODS
+    method init( t, context, info )
+
+    method init( existing:PostIncrementProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostIncrementProperty($,$)" (%context,%info)
+
+endClass
+
+class PostIncrementThisProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PostIncrementThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PostIncrementThisProperty($)" (%info)
+
+endClass
+
+class PreDecrementGlobalProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PreDecrementGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreDecrementGlobalProperty($)" (%info)
+
+endClass
+
+class PreDecrementLocal : Cmd
+  PROPERTIES
+    info : Local
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PreDecrementLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreDecrementLocal($)" (%info)
+
+endClass
+
+class PreDecrementProperty : Cmd
+  PROPERTIES
+    context : Cmd
+    info    : Property
+
+  METHODS
+    method init( t, context, info )
+
+    method init( existing:PreDecrementProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreDecrementProperty($,$)" (%context,%info)
+
+endClass
+
+class PreDecrementThisProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PreDecrementThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreDecrementThisProperty($)" (%info)
+
+endClass
+
+class PreIncrementGlobalProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PreIncrementGlobalProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreIncrementGlobalProperty($)" (%info)
+
+endClass
+
+class PreIncrementLocal : Cmd
+  PROPERTIES
+    info : Local
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PreIncrementLocal )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreIncrementLocal($)" (%info)
+
+endClass
+
+class PreIncrementProperty : Cmd
+  PROPERTIES
+    context : Cmd
+    info    : Property
+
+  METHODS
+    method init( t, context, info )
+
+    method init( existing:PreIncrementProperty )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreIncrementProperty($,$)" (%context,%info)
+
+endClass
+
+class PreIncrementThisProperty : Cmd
+  PROPERTIES
+    info : Property
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:PreIncrementThisProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "PreIncrementThisProperty($)" (%info)
+
+endClass

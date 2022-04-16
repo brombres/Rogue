@@ -579,8 +579,39 @@ class Resolver : Visitor
         endForEach
       endTemporarily
 
+    method on( cmd:Stepper )->Cmd
+      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+      #{
+      local operand = visit( cmd.operand )  # don't alter cmd.operand yet
+      local operand_type = operand.require_type.[organize]
+      local op_method_name = "operator" + cmd.symbol
+
+      operand_type.organize_methods
+
+      # OperandType.operator++(operand:OperandType)
+      local arg = Args(cmd.t,operand)
+      local m = find_procedure( cmd.t, operand_type, null, op_method_name, arg, &require_global, &suppress_error )
+      if (m) return resolve_call( cmd.t, null, m, arg )
+
+      # OperandType.operator++()
+      m = find_procedure( cmd.t, operand_type, operand, op_method_name, &suppress_error )
+      if (m and m.is_method) return resolve_call( cmd.t, operand, m )
+
+      # No operator++/-- method available
+      return cmd.dispatch_resolve_stepper( this )
+
+    method on( cmd:PreDecrement )->Cmd
+      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+
     method on( cmd:PreIncrement )->Cmd
       return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+
+    method on( cmd:PostDecrement )->Cmd
+      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+
+    method on( cmd:PostIncrement )->Cmd
+      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+      }#
 
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
@@ -1961,8 +1992,8 @@ augment
         cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator.name), cmd_collection.step_size) )
         if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
       else
-        cmd_iterator.upkeep.add( PreIncrement(t, GetLocal(v_iterator)) )
-        if (v_index) cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_index.name)) )
+        cmd_iterator.upkeep.add( PreIncrementLocal(t,v_iterator) )
+        if (v_index) cmd_iterator.upkeep.add( PreIncrementLocal(t,v_index) )
       endIf
 
     method RangeUpToLessThan.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
@@ -1988,8 +2019,8 @@ augment
         cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator.name), cmd_collection.step_size) )
         if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
       else
-        cmd_iterator.upkeep.add( PreIncrement(t, GetLocal(v_iterator)) )
-        if (v_index) cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_index.name)) )
+        cmd_iterator.upkeep.add( PreIncrementLocal(t,v_iterator) )
+        if (v_index) cmd_iterator.upkeep.add( PreIncrementLocal(t,v_index) )
       endIf
 
     method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
@@ -2091,10 +2122,7 @@ augment
       local type = this
 
       if (type.is_primitive)
-        local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
-        cmd.operand = resolver.visit( cmd.operand )
-        if (type is not op_type) cmd.operand = cmd.operand.resolve_conversion_to(op_type, resolver)
-        return cmd
+        return cmd.dispatch_resolve_stepper( resolver )
 
       elseIf (cmd.symbol is null)
         throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
@@ -2165,3 +2193,105 @@ augment
       return null
 endAugment
 
+# Stepper
+augment
+  METHODS
+    method Cmd.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      throw UnsupportedOperationError()
+
+    method PostDecrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      return operand.
+          resolve_stepper<<-1,PostDecrementLocal,PostDecrementGlobalProperty,PostDecrementProperty,PostDecrementThisProperty>>(
+            resolver
+          )
+
+    method PostIncrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      return operand.
+          resolve_stepper<<1,PostIncrementLocal,PostIncrementGlobalProperty,PostIncrementProperty,PostIncrementThisProperty>>(
+            resolver
+          )
+
+    method PreDecrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      return operand.
+          resolve_stepper<<-1,PreDecrementLocal,PreDecrementGlobalProperty,PreDecrementProperty,PreDecrementThisProperty>>(
+            resolver
+          )
+
+    method PreIncrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      return operand.
+          resolve_stepper<<1,PreIncrementLocal,PreIncrementGlobalProperty,PreIncrementProperty,PreIncrementThisProperty>>(
+            resolver
+          )
+
+    method Cmd.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target. " + type_name )
+
+    method Access.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+      local v = resolver.find_local( name )
+      if (v)
+        return resolver.validate( $OpLocal(t,v) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpThisProperty(t,p) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+    method ContextAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      if (args) return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      block p = context_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,context,p) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+    method TypeAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      return ContextAccess( t, resolver.visit(this), args ).
+      resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )
+
+    method IndexedAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      local context = resolver.visit( context ).require_value
+      local index = resolver.visit( index ).require_value
+
+      if (context.is_simple and index.is_simple)
+        return resolver.visit( Assign(t, this, Add(t,this.cloned,LiteralInt32(t,$Step))) )
+      else
+        local v_context = resolver.add_local( t, "context", context.require_type )
+        resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+        local v_index = resolver.add_local( t, "index", index.require_type )
+        resolver.insert( SetLocal(v_index, index, &initial_assignment) )
+
+        local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
+        return resolver.visit( Assign(t, indexed_access, Add(t,indexed_access.cloned,LiteralInt32(t,$Step))) )
+      endIf
+
+endAugment

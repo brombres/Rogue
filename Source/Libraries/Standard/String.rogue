@@ -49,9 +49,8 @@ class String
       return this[0]
 
     method get( index:Int32 )->Character
-      if (is_ascii) return data[index]
-
       cursor = index
+      if (is_ascii) return data[index]
 
       native ...
         @|
@@ -376,7 +375,6 @@ class String
          |$cursor_index = c_index;
          |$cursor_offset = c_offset;
 
-         #{
     method _round_off
       # Internal use.
       #
@@ -384,17 +382,17 @@ class String
       #
       # Requires: this mutable String contains a real number (and only a real number)
       # in the form [0-9]*.[0-9]+
+      #{
       if (count and remove_last >= '5')
         forEach (i in count-1 downTo 0)
           if (this[i] != '.')
-            local digit = this[i]
-            if (digit == '9') this[i] = 0
-            if (this[i] == ('9'+1)) work_bytes[i] = '0'
-            else                          return
+            ++data[cursor_offset]
+            if (this[i] == ('9'+1)) data[cursor_offset] = '0'
+            else                    return
           endIf
           --i
-        endWhile
-        work_bytes.insert( '1' )
+        endForEach
+        insert( '1' )
       endIf
       }#
 

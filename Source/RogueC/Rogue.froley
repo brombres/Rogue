@@ -1818,6 +1818,23 @@ parser
   create BitShiftRightXAndAssignProperty(context,info:Property,operand):ResolvedOpAndAssignProperty
   create BitShiftRightXAndAssignThisProperty(info:Property,operand):ResolvedOpAndAssignProperty
 
+  create PostDecrementGlobalProperty(info:Property)
+  create PostDecrementLocal(info:Local)
+  create PostDecrementProperty(context,info:Property)
+  create PostDecrementThisProperty(info:Property)
+  create PostIncrementGlobalProperty(info:Property)
+  create PostIncrementLocal(info:Local)
+  create PostIncrementProperty(context,info:Property)
+  create PostIncrementThisProperty(info:Property)
+  create PreDecrementGlobalProperty(info:Property)
+  create PreDecrementLocal(info:Local)
+  create PreDecrementProperty(context,info:Property)
+  create PreDecrementThisProperty(info:Property)
+  create PreIncrementGlobalProperty(info:Property)
+  create PreIncrementLocal(info:Local)
+  create PreIncrementProperty(context,info:Property)
+  create PreIncrementThisProperty(info:Property)
+
 --------------------------------------------------------------------------------
 nativeTypes
 --------------------------------------------------------------------------------

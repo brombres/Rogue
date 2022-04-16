@@ -3233,6 +3233,22 @@ class ParserCore [abstract]
             if (not disable_output) _push( BitShiftRightXAndAssignLocal(_cur_t,_node_arg(-2)->(as Local),_node_arg(-1)), 2 )
             if (not disable_output) _push( BitShiftRightXAndAssignProperty(_cur_t,_node_arg(-3),_node_arg(-2)->(as Property),_node_arg(-1)), 3 )
             if (not disable_output) _push( BitShiftRightXAndAssignThisProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )
+            if (not disable_output) _push( PostDecrementGlobalProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PostDecrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
+            if (not disable_output) _push( PostDecrementProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
+            if (not disable_output) _push( PostDecrementThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PostIncrementGlobalProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PostIncrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
+            if (not disable_output) _push( PostIncrementProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
+            if (not disable_output) _push( PostIncrementThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PreDecrementGlobalProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PreDecrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
+            if (not disable_output) _push( PreDecrementProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
+            if (not disable_output) _push( PreDecrementThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PreIncrementGlobalProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
+            if (not disable_output) _push( PreIncrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
+            if (not disable_output) _push( PreIncrementProperty(_cur_t,_node_arg(-2),_node_arg(-1)->(as Property)), 2 )
+            if (not disable_output) _push( PreIncrementThisProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
             return
           others
             return
