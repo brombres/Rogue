@@ -968,21 +968,56 @@ class CGenerator : Visitor
       visit( cmd.right )
       writer.print ')'
 
-    method on_visit( cmd:PreDecrement )
+    method on_visit( cmd:DecrementGlobalProperty )
       writer.print "--"
-      visit( cmd.operand )
+      writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:PreIncrement )
-      writer.print "++"
-      visit( cmd.operand )
-
-    method on_visit( cmd:PostDecrement )
-      visit( cmd.operand )
+    method on_visit( cmd:DecrementLocal )
       writer.print "--"
+      writer.print( cmd.info.c_name )
 
-    method on_visit( cmd:PostIncrement )
-      visit( cmd.operand )
+    method on_visit( cmd:DecrementProperty )
+      writer.print "--"
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementThisProperty )
+      writer.print "--"
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementGlobalProperty )
       writer.print "++"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementLocal )
+      writer.print "++"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementProperty )
+      writer.print "++"
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementThisProperty )
+      writer.print "++"
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:PreDecrementLocal )
+      writer.print "--"
+      writer.print( cmd.info.c_name )
+
 
     method on( cmd:Procedure )->Cmd
       this_procedure = cmd

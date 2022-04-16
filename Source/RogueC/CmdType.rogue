@@ -291,10 +291,8 @@ augment
     method Mod.symbol->String:                   return "%"
     method Negate.symbol->String:                return "-"
     method Power.symbol->String:                 return "^"
-    method PreIncrement.symbol->String:          return "++"
-    method PostIncrement.symbol->String:         return "++"
-    method PreDecrement.symbol->String:          return "--"
-    method PostDecrement.symbol->String:         return "--"
+    method Increment.symbol->String:             return "++"
+    method Decrement.symbol->String:             return "--"
     method BitwiseAnd.symbol->String:            return "&"
     method BitwiseOr.symbol->String:             return "|"
     method BitwiseXor.symbol->String:            return "~"
@@ -531,6 +529,9 @@ augment
     method LiteralNull.type->Type
       if (of_type) return of_type
       return Program.type_null
+
+    method PreDecrementLocal.type->Type
+      return info.type
 
     method PrintValue.type->Type
       return null

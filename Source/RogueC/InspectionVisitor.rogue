@@ -741,45 +741,19 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.control)
       return result
 
-    method on( cmd:PostDecrementGlobalProperty )->$ReturnType
+    method on( cmd:DecrementGlobalProperty )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       return result
 
-    method on( cmd:PostDecrementLocal )->$ReturnType
+    method on( cmd:DecrementLocal )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       return result
 
-    method on( cmd:PostDecrementProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.context)
-      if (result?) return result
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PostDecrementThisProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PostIncrementGlobalProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PostIncrementLocal )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PostIncrementProperty )->$ReturnType
+    method on( cmd:DecrementProperty )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.context)
@@ -787,59 +761,39 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.info)
       return result
 
-    method on( cmd:PostIncrementThisProperty )->$ReturnType
+    method on( cmd:DecrementThisProperty )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       return result
 
-    method on( cmd:PreDecrementGlobalProperty )->$ReturnType
+    method on( cmd:IncrementGlobalProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:IncrementLocal )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:IncrementProperty )->$ReturnType
+      handle( cmd )
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      return result
+
+    method on( cmd:IncrementThisProperty )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)
       return result
 
     method on( cmd:PreDecrementLocal )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PreDecrementProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.context)
-      if (result?) return result
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PreDecrementThisProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PreIncrementGlobalProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PreIncrementLocal )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PreIncrementProperty )->$ReturnType
-      handle( cmd )
-      local result : $ReturnType
-      result = visit(cmd.context)
-      if (result?) return result
-      result = visit(cmd.info)
-      return result
-
-    method on( cmd:PreIncrementThisProperty )->$ReturnType
       handle( cmd )
       local result : $ReturnType
       result = visit(cmd.info)

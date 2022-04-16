@@ -459,7 +459,7 @@ class Resolver : Visitor
           Add( v.t, cmd.loop_count.resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
           )
         )
-        iterator.condition = PreDecrement( v.t, GetLocal(v.t,v) )
+        iterator.condition = PreDecrementLocal( v.t, v )
       else
         iterator.control = LiteralLogical(cmd.t,true)
       endIf
@@ -500,16 +500,6 @@ class Resolver : Visitor
 
       # No op-and-assign operator method available
       return cmd.dispatch_resolve_op_and_assign( cmd, this )
-
-    method on_validate( cmd:PostDecrement )->Cmd
-      local type = cmd.operand.require_type
-      if (type.is_primitive) return cmd
-      throw cmd.t.error( "Post-decrement ('obj--') cannot be used on objects and compounds." )
-
-    method on_validate( cmd:PostIncrement )->Cmd
-      local type = cmd.operand.require_type
-      if (type.is_primitive) return cmd
-      throw cmd.t.error( "Post-increment ('obj++') cannot be used on objects and compounds." )
 
     method on_visit( cmd:Procedure )
       autoname_index = 0
@@ -581,37 +571,6 @@ class Resolver : Visitor
 
     method on( cmd:Stepper )->Cmd
       return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
-      #{
-      local operand = visit( cmd.operand )  # don't alter cmd.operand yet
-      local operand_type = operand.require_type.[organize]
-      local op_method_name = "operator" + cmd.symbol
-
-      operand_type.organize_methods
-
-      # OperandType.operator++(operand:OperandType)
-      local arg = Args(cmd.t,operand)
-      local m = find_procedure( cmd.t, operand_type, null, op_method_name, arg, &require_global, &suppress_error )
-      if (m) return resolve_call( cmd.t, null, m, arg )
-
-      # OperandType.operator++()
-      m = find_procedure( cmd.t, operand_type, operand, op_method_name, &suppress_error )
-      if (m and m.is_method) return resolve_call( cmd.t, operand, m )
-
-      # No operator++/-- method available
-      return cmd.dispatch_resolve_stepper( this )
-
-    method on( cmd:PreDecrement )->Cmd
-      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
-
-    method on( cmd:PreIncrement )->Cmd
-      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
-
-    method on( cmd:PostDecrement )->Cmd
-      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
-
-    method on( cmd:PostIncrement )->Cmd
-      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
-      }#
 
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
@@ -1796,7 +1755,7 @@ augment
         if (cmd_collection.step_size)
           cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
         else
-          cmd_iterator.upkeep.add( PreIncrement(t, Access(t,v_index.name)) )
+          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
       endIf
 
@@ -1965,8 +1924,8 @@ augment
         cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator.name), cmd_collection.step_size) )
         if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
       else
-        cmd_iterator.upkeep.add( PreDecrement(t, GetLocal(v_iterator)) )
-        if (v_index) cmd_iterator.upkeep.add( PreDecrement(t, Access(t,v_index.name)) )
+        cmd_iterator.upkeep.add( DecrementLocal(t, v_iterator) )
+        if (v_index) cmd_iterator.upkeep.add( DecrementLocal(t,v_index) )
       endIf
 
     method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
@@ -1992,8 +1951,8 @@ augment
         cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator.name), cmd_collection.step_size) )
         if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
       else
-        cmd_iterator.upkeep.add( PreIncrementLocal(t,v_iterator) )
-        if (v_index) cmd_iterator.upkeep.add( PreIncrementLocal(t,v_index) )
+        cmd_iterator.upkeep.add( IncrementLocal(t,v_iterator) )
+        if (v_index) cmd_iterator.upkeep.add( IncrementLocal(t,v_index) )
       endIf
 
     method RangeUpToLessThan.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
@@ -2019,8 +1978,8 @@ augment
         cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_iterator.name), cmd_collection.step_size) )
         if (v_index) cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size.cloned) )
       else
-        cmd_iterator.upkeep.add( PreIncrementLocal(t,v_iterator) )
-        if (v_index) cmd_iterator.upkeep.add( PreIncrementLocal(t,v_index) )
+        cmd_iterator.upkeep.add( IncrementLocal(t,v_iterator) )
+        if (v_index) cmd_iterator.upkeep.add( IncrementLocal(t,v_index) )
       endIf
 
     method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
@@ -2132,9 +2091,12 @@ augment
         local arg = Args( t, cmd.operand )
 
         type.organize_methods
+
+        # OperandType.operator++(operand:OperandType)
         local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
         if (m) return resolver.resolve_call( cmd.t, null, m, arg )
 
+        # OperandType.operator++
         m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
         if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
 
@@ -2199,27 +2161,15 @@ augment
     method Cmd.dispatch_resolve_stepper( resolver:Resolver )->Cmd
       throw UnsupportedOperationError()
 
-    method PostDecrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+    method Decrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
       return operand.
-          resolve_stepper<<-1,PostDecrementLocal,PostDecrementGlobalProperty,PostDecrementProperty,PostDecrementThisProperty>>(
+          resolve_stepper<<-1,DecrementLocal,DecrementGlobalProperty,DecrementProperty,DecrementThisProperty>>(
             resolver
           )
 
-    method PostIncrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+    method Increment.dispatch_resolve_stepper( resolver:Resolver )->Cmd
       return operand.
-          resolve_stepper<<1,PostIncrementLocal,PostIncrementGlobalProperty,PostIncrementProperty,PostIncrementThisProperty>>(
-            resolver
-          )
-
-    method PreDecrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
-      return operand.
-          resolve_stepper<<-1,PreDecrementLocal,PreDecrementGlobalProperty,PreDecrementProperty,PreDecrementThisProperty>>(
-            resolver
-          )
-
-    method PreIncrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
-      return operand.
-          resolve_stepper<<1,PreIncrementLocal,PreIncrementGlobalProperty,PreIncrementProperty,PreIncrementThisProperty>>(
+          resolve_stepper<<1,IncrementLocal,IncrementGlobalProperty,IncrementProperty,IncrementThisProperty>>(
             resolver
           )
 
