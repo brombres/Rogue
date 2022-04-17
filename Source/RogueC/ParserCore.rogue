@@ -57,70 +57,69 @@ class ParserCore [abstract]
     ip_if_statement_single_line_elseIf_else = 44
     ip_inline_which = 45
     ip_inline_which_case = 46
-    ip_wrap_in_local_scope = 47
-    ip_method = 48
-    ip_global_method = 49
-    ip_global_properties = 50
-    ip_properties = 51
-    ip_property_declaration = 52
-    ip_multi_line_statements = 53
-    ip_single_line_statements = 54
-    ip_control_structure = 55
-    ip_args = 56
-    ip_arg = 57
-    ip_statement = 58
-    ip_local_declarations = 59
-    ip_local_declaration = 60
-    ip_block = 61
-    ip_loop = 62
-    ip_while_loop = 63
-    ip_try_catch = 64
-    ip_catches = 65
-    ip_catch_clause = 66
-    ip_use = 67
-    ip_used_resource = 68
-    ip_module_path = 69
-    ip_uses_attributes = 70
-    ip_uses_attribute = 71
-    ip_access_args = 72
-    ip_optional_expression = 73
-    ip_expression = 74
-    ip_logical_xor = 75
-    ip_logical_xor__inner = 76
-    ip_logical_or = 77
-    ip_logical_or__inner = 78
-    ip_logical_and = 79
-    ip_logical_and__inner = 80
-    ip_comparison = 81
-    ip_comparison__inner = 82
-    ip_reference_comparison = 83
-    ip_bitwise_xor = 84
-    ip_bitwise_xor__inner = 85
-    ip_bitwise_or = 86
-    ip_bitwise_or__inner = 87
-    ip_bitwise_and = 88
-    ip_bitwise_and__inner = 89
-    ip_bitwise_shift = 90
-    ip_bitwise_shift__inner = 91
-    ip_add_subtract = 92
-    ip_add_subtract__inner = 93
-    ip_multiply_divide_mod = 94
-    ip_multiply_divide_mod__inner = 95
-    ip_power = 96
-    ip_power__inner = 97
-    ip_pre_unary = 98
-    ip_post_unary = 99
-    ip_post_unary__inner = 100
-    ip_access = 101
-    ip_access_inner = 102
-    ip_context_block_command = 103
-    ip_term = 104
-    ip_native_code = 105
-    ip_literal_list = 106
-    ip_preprocess = 107
-    ip_process_another = 108
-    ip_collect_meta_filepath = 109
-    ip_additional_node_types = 110
+    ip_method = 47
+    ip_global_method = 48
+    ip_global_properties = 49
+    ip_properties = 50
+    ip_property_declaration = 51
+    ip_multi_line_statements = 52
+    ip_single_line_statements = 53
+    ip_control_structure = 54
+    ip_args = 55
+    ip_arg = 56
+    ip_statement = 57
+    ip_local_declarations = 58
+    ip_local_declaration = 59
+    ip_block = 60
+    ip_loop = 61
+    ip_while_loop = 62
+    ip_try_catch = 63
+    ip_catches = 64
+    ip_catch_clause = 65
+    ip_use = 66
+    ip_used_resource = 67
+    ip_module_path = 68
+    ip_uses_attributes = 69
+    ip_uses_attribute = 70
+    ip_access_args = 71
+    ip_optional_expression = 72
+    ip_expression = 73
+    ip_logical_xor = 74
+    ip_logical_xor__inner = 75
+    ip_logical_or = 76
+    ip_logical_or__inner = 77
+    ip_logical_and = 78
+    ip_logical_and__inner = 79
+    ip_comparison = 80
+    ip_comparison__inner = 81
+    ip_reference_comparison = 82
+    ip_bitwise_xor = 83
+    ip_bitwise_xor__inner = 84
+    ip_bitwise_or = 85
+    ip_bitwise_or__inner = 86
+    ip_bitwise_and = 87
+    ip_bitwise_and__inner = 88
+    ip_bitwise_shift = 89
+    ip_bitwise_shift__inner = 90
+    ip_add_subtract = 91
+    ip_add_subtract__inner = 92
+    ip_multiply_divide_mod = 93
+    ip_multiply_divide_mod__inner = 94
+    ip_power = 95
+    ip_power__inner = 96
+    ip_pre_unary = 97
+    ip_post_unary = 98
+    ip_post_unary__inner = 99
+    ip_access = 100
+    ip_access_inner = 101
+    ip_context_block_command = 102
+    ip_term = 103
+    ip_native_code = 104
+    ip_literal_list = 105
+    ip_preprocess = 106
+    ip_process_another = 107
+    ip_collect_meta_filepath = 108
+    ip_additional_node_types = 109
 
   PROPERTIES
     _tokens          : Token[]
@@ -1226,13 +1225,9 @@ class ParserCore [abstract]
                 if (_consume(TokenType.EOL))
                   _execute(ip_multi_line_statements)
                   _pop_frame
-                  _execute(ip_wrap_in_local_scope)
-                  _pop_frame
                   if (not _consume(TokenType.KEYWORD_END_FOR_EACH)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_FOR_EACH )
                 else
                   _execute(ip_single_line_statements)
-                  _pop_frame
-                  _execute(ip_wrap_in_local_scope)
                   _pop_frame
                 endIf
                 if (not disable_output) _push( ForEach(_cur_t,_node_arg(-2)->(as ForEachControl),_node_arg(-1)), 2 )
@@ -1362,15 +1357,11 @@ class ParserCore [abstract]
                 if (_consume(TokenType.EOL))
                   _execute(ip_multi_line_statements)
                   _pop_frame
-                  _execute(ip_wrap_in_local_scope)
-                  _pop_frame
                   _execute(ip_if_statement_multi_line_elseIf_else)
                   _pop_frame
                   if (not _consume(TokenType.KEYWORD_END_IF)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_IF )
                 else
                   _execute(ip_single_line_statements)
-                  _pop_frame
-                  _execute(ip_wrap_in_local_scope)
                   _pop_frame
                   _execute(ip_if_statement_single_line_elseIf_else)
                   _pop_frame
@@ -1390,8 +1381,6 @@ class ParserCore [abstract]
                   _discard_position
                   _execute(ip_multi_line_statements)
                   _pop_frame
-                  _execute(ip_wrap_in_local_scope)
-                  _pop_frame
                   _execute(ip_if_statement_multi_line_elseIf_else)
                   _pop_frame
                   if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
@@ -1408,8 +1397,6 @@ class ParserCore [abstract]
                   _discard_position
                   if (not disable_output) _push( null, 0 )
                   _execute(ip_multi_line_statements)
-                  _pop_frame
-                  _execute(ip_wrap_in_local_scope)
                   _pop_frame
                   if (not disable_output) _push( null, 0 )
                   if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
@@ -1439,8 +1426,6 @@ class ParserCore [abstract]
                   _discard_position
                   _execute(ip_single_line_statements)
                   _pop_frame
-                  _execute(ip_wrap_in_local_scope)
-                  _pop_frame
                   _execute(ip_if_statement_single_line_elseIf_else)
                   _pop_frame
                   if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
@@ -1457,8 +1442,6 @@ class ParserCore [abstract]
                   _discard_position
                   if (not disable_output) _push( null, 0 )
                   _execute(ip_single_line_statements)
-                  _pop_frame
-                  _execute(ip_wrap_in_local_scope)
                   _pop_frame
                   if (not disable_output) _push( null, 0 )
                   if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
@@ -1513,9 +1496,6 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
             endIf
             if (not disable_output) _push( InlineWhichCase(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
-            return
-          case ip_wrap_in_local_scope
-            if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
             return
           case ip_method
             if (_next_t.type == TokenType.KEYWORD_METHOD)
@@ -1794,6 +1774,12 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_statement
+            if (_next_t.type == TokenType.KEYWORD_ESCAPE_FOR_EACH)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( EscapeForEach(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_NO_ACTION)
               temporarily _cur_t = _on_t
                 return
@@ -2056,8 +2042,6 @@ class ParserCore [abstract]
                     if (not disable_output) _push( null, 0 )
                     _execute(ip_multi_line_statements)
                     _pop_frame
-                    _execute(ip_wrap_in_local_scope)
-                    _pop_frame
                     if (not _consume(TokenType.KEYWORD_END_LOOP)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_LOOP )
                   endTemporarily
                 else
@@ -2071,8 +2055,6 @@ class ParserCore [abstract]
                     _execute(ip_single_line_statements)
                     _pop_frame
                   endIf
-                  _execute(ip_wrap_in_local_scope)
-                  _pop_frame
                 endIf
                 if (not disable_output) _push( Loop(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
@@ -2092,8 +2074,6 @@ class ParserCore [abstract]
                   _execute(ip_single_line_statements)
                   _pop_frame
                 endIf
-                _execute(ip_wrap_in_local_scope)
-                _pop_frame
                 if (not disable_output) _push( While(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
                 return
               endTemporarily
@@ -3165,6 +3145,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( CreateCompound(_cur_t), 0 )
             if (not disable_output) _push( DefaultArg(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
+            if (not disable_output) _push( Escape(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             if (not disable_output) _push( Iterator(_cur_t,_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 4 )
             if (not disable_output) _push( GetGlobalProperty(_cur_t,_node_arg(-1)->(as Property)), 1 )
@@ -3177,7 +3158,6 @@ class ParserCore [abstract]
             if (not disable_output) _push( LiteralInt64(_cur_t,_integer_arg(-1)), 1 )
             if (not disable_output) _push( LiteralReal32(_cur_t,_real_arg(-1)), 1 )
             if (not disable_output) _push( LiteralReal64(_cur_t,_real_arg(-1)), 1 )
-            if (not disable_output) _push( LocalScope(_cur_t), 0 )
             if (not disable_output) _push( Logicalized(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( NativeProperty(_cur_t,_string_arg(-1)), 1 )
             if (not disable_output) _push( OpAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )

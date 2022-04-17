@@ -173,13 +173,14 @@ class CWriter : BufferedPrintWriter
            |
            |void  Rogue_launch();
            |
-           |#define ROGUE_EXE_CONTINUE  0
-           |#define ROGUE_EXE_RETURN    1
-           |#define ROGUE_EXE_EXCEPTION 2
+           |#define ROGUE_EXE_CONTINUE        0
+           |#define ROGUE_EXE_RETURN          1
+           |#define ROGUE_EXE_EXCEPTION       2
+           |#define ROGUE_EXE_ESCAPE_FOR_EACH 3
            |
            |struct RogueObject;
            |
-           |extern int                 Rogue_execution_status; // 1=return, 2=exception
+           |extern int                 Rogue_execution_status; // ROGUE_EXE_RETURN etc.
            |extern struct RogueObject* Rogue_exception;
            |
            |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );

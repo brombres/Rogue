@@ -909,17 +909,15 @@ endClass
 
 class ControlStructure : Cmd
   PROPERTIES
-    locals           = Local[]  # local to the scope of the control structure
-    initialization   : Cmd
-    statements       : Cmd
-    cleanup          : Cmd
-    control_type     : ControlType
-    control_escapes  : Logical
-    throws_exception : Logical
+    locals              = Local[]  # local to the scope of the control structure
+    initialization      : Cmd
+    statements          : Cmd
+    control_type        : ControlType
+    catches_escape      : Logical # catches control escape
 
   METHODS
     method init( t, control_type )
-      statements     = Statements(t)
+      statements = Statements(t)
 
     method init( t, statements, control_type=ControlType.UNDEFINED )
 
@@ -930,11 +928,6 @@ class ControlStructure : Cmd
       if (existing.locals) locals = existing.locals.cloned
       if (existing.@initialization) initialization = existing.@initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
-
-    method cleanup->Cmd
-      if (@cleanup) return @cleanup
-      @cleanup = Statements(t)
-      return @cleanup
 
     method description->String
       return "ControlStructure($)" (%statements)
@@ -3163,4 +3156,16 @@ class LiteralReal64 : Literal
     method to->Real64: return value
     method to->String: return value
 
+endClass
+
+class EscapeForEach : Escape
+  METHODS
+    method description->String
+      return "EscapeForEach"
+endClass
+
+class Escape : Cmd
+  METHODS
+    method description->String
+      return "Escape"
 endClass

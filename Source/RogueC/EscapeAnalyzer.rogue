@@ -1,27 +1,26 @@
+#{
 module Rogue
 
 class EscapeAnalyzer : InspectionVisitor
   PROPERTIES
-    control_stack      = ControlStructure[]
+    control_stack = ControlStructure[]
 
   METHODS
     method visit_type( type:Type )
       if (type.is_aspect) return
       prior.visit_type( type )
 
-    method track_escape
-      if (this_procedure.attributes.requires_cleanup) return  # already flagged
-
+    method track_escape( t:Token, control_type:ControlType )
       forEach (scope in control_stack step -1)
-        if (scope.has_cleanup_code)
-          this_procedure.attributes.requires_cleanup = true
+        if (scope.catches(control_type))
           return
+        else
+          scope.control_escapes = true
+          if (scope.requires_cleanup)
+            this_procedure.attributes.requires_cleanup = true
+          endIf
         endIf
       endForEach
-
-      if (this_procedure.has_cleanup_code)
-        this_procedure.attributes.requires_cleanup = true
-      endIf
 
     method on( cmd:ControlStructure )->Logical
       control_stack.add( cmd )
@@ -29,8 +28,11 @@ class EscapeAnalyzer : InspectionVisitor
       control_stack.remove_last
       return false
 
-    method on_visit( cmd:CreateObjectAndSetLocal )
-      track_escape
+    #method on_visit( cmd:CreateObjectAndSetLocal )
+      #track_escape
+
+    method on_visit( cmd:EscapeForEach )
+      track_escape( cmd.t, ControlType.FOR_EACH )
 
     method on( cmd:If )->Logical
       control_stack.add( cmd )
@@ -45,25 +47,18 @@ class EscapeAnalyzer : InspectionVisitor
       return false
 
     method on_visit( cmd:Return )
-      track_escape
+      track_escape( cmd.t, ControlType.RETURN )
 
     method on_visit( cmd:ReturnOnException )
-      track_escape
+      track_escape( cmd.t, ControlType.THROW )
 
     method on_visit( cmd:Throw )
-      track_escape
+      track_escape( cmd.t, ControlType.THROW )
 endClass
-
-augment ControlStructure
-  METHODS
-    method has_cleanup_code->Logical
-      if (@cleanup) return true
-      return false
-endAugment
 
 augment Procedure
   METHODS
-    method has_cleanup_code->Logical
+    method requires_cleanup->Logical
       if (Program.gc_auto)
         forEach (p in parameters)
           if (not p.is_anchored)
@@ -76,5 +71,17 @@ augment Procedure
         endForEach
       endIf
 
-      return body.has_cleanup_code
+      return false
 endAugment
+
+augment
+  METHODS
+    method Cmd.catches( escape_type:ControlType )->Logical
+      return false
+
+    method Iterator.catches( escape_type:ControlType )->Logical
+      if (control_type != escape_type) return false
+      catches_escape = true
+      return true
+endAugment
+}#

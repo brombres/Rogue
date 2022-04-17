@@ -89,7 +89,6 @@ class Resolver : Visitor
     method on( cmd:Block )->Cmd
       local result = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )
       result.initialization = cmd.@initialization
-      result.cleanup = cmd.@cleanup
       return visit( result )
 
     method on_validate( cmd:CallProcedure )->Cmd
@@ -183,6 +182,14 @@ class Resolver : Visitor
 
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
+
+    method on_visit( cmd:EscapeForEach )
+      contingent
+        forEach (scope in control_stack step -1)
+          sufficient (scope.control_type == ControlType.FOR_EACH)
+        endForEach
+        throw cmd.t.error( "No enclosing 'forEach' to escape from." )
+      endContingent
 
     method on( cmd:ForEach )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.FOR_EACH )
@@ -611,7 +618,7 @@ class Resolver : Visitor
         cmd.statements = Statements(cmd.statements.t).[ add(nested_use) ]
       endIf
 
-      local cmd_block = Block( cmd.t ).[ control_type = ControlType.USE ]
+      local cmd_block = ControlStructure( cmd.t, ControlType.USE )
       local res = cmd.resources.first->(as UsedResource)
       local resource = visit( res.resource )
       local resource_type = resource.require_type
@@ -626,7 +633,7 @@ class Resolver : Visitor
       cmd_block.statements.add( forEach in visit(cmd.statements) )
 
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
-      cmd_block.cleanup.add( cmd_call )
+      #cmd_block.cleanup.add( cmd_call ) FIXME
 
       local result = visit( cmd_block )
 
@@ -649,7 +656,6 @@ class Resolver : Visitor
 
     method back_propagate_thrown_exception( type:Type )
       forEach (control_structure in control_stack step -1)
-        control_structure.throws_exception = true
         if (control_structure.catches_exception(type)) return
       endForEach
       this_procedure.throws = type
@@ -1816,10 +1822,7 @@ augment
           endIf
         endIf
 
-        assert cmd_foreach.statements instanceOf LocalScope
-
         if (cmd_control.name)
-          resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
           resolver.control_stack.last.initialization.insert(
             SetLocal( v_cur,
@@ -1827,7 +1830,6 @@ augment
                   Args(cmd_collection.t,GetLocal(v_index)) )
             )
           )
-          resolver.pop_scope
         endIf
         return
       endIf
@@ -1862,12 +1864,10 @@ augment
         local cur_type = m_read_another.return_type.properties//value.type
         assert cur_type
 
-        resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
         resolver.control_stack.last.initialization.insert(
           SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
         )
-        resolver.pop_scope
 
         return
       endIf
@@ -1897,12 +1897,10 @@ augment
         local cur_type = m_read.return_type
         assert cur_type
 
-        resolver.push_scope( cmd_foreach.statements->(as LocalScope) )
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
         resolver.control_stack.last.initialization.insert(
           SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
         )
-        resolver.pop_scope
 
         return
       endIf

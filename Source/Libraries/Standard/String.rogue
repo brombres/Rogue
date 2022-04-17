@@ -174,6 +174,8 @@ class String
 
       #{
     method print( value:Real64 )->this
+      if (is_immutable) return this
+
       if (value == 0)
         print( "0.0" )
         return this
@@ -213,18 +215,21 @@ class String
       endIf
 
       # Standard, non-exponent format
-      forEach (decimal_count in 1..18)
-        print_to_work_bytes( value, decimal_count )
-        if (scan_work_bytes == value) escapeForEach
-      endForEach
+      use builder = String.pool
+        forEach (decimal_count in 1..18)
+          builder.print( value, decimal_count )
+          if (builder->Real64 == value) escapeForEach
+        endForEach
 
-      print_work_bytes
+        print builder
+      endUse
 
       return this
-      }#
+}#
 
-      #{
     method print( value:Real64, decimal_places:Int32 )->this
+      if (is_immutable) return this
+
       if (value.is_infinite)
         if (value < 0) print( "-infinity" )
         else           print( "infinity" )
@@ -234,37 +239,39 @@ class String
         return this
       endIf
 
-      if (value < 0 )
-        print( '-' )
-        value = -value
-      endIf
+      use builder = String.pool
+        if (value < 0 )
+          builder.print( '-' )
+          value = -value
+        endIf
 
-      local whole = value.floor
-      value -= whole
-      while (whole >= 10)
-        print( ('0' + ((whole%10)->Int32))->Character )
-        whole /= 10
-      endWhile
-      print( ('0' + ((whole%10)->Int32))->Character )
+        local whole = value.floor
+        value -= whole
+        while (whole >= 10)
+          builder.print( ('0' + ((whole%10)->Int32))->Character )
+          whole /= 10
+        endWhile
+        builder.print( ('0' + ((whole%10)->Int32))->Character )
 
-      reverse
+        builder.reverse
 
-      if (decimal_places != 0)
-        print( '.' )
-        forEach (1..decimal_places)
-          value *= 10
-          local digit = value.floor->Int32
-          value -= digit
-          print( ('0' + digit)->Character )
-        endForEach
-      endIf
-      if (value >= 0.5)
-        print( '5' )
-        _round_off
-      endIf
+        if (decimal_places != 0)
+          builder.print( '.' )
+          forEach (1..decimal_places)
+            value *= 10
+            local digit = value.floor->Int32
+            value -= digit
+            builder.print( ('0' + digit)->Character )
+          endForEach
+        endIf
+        if (value >= 0.5)
+          builder.print( '5' )
+          builder._round_off
+        endIf
+        print( builder )
+      endUse
 
       return this
-      }#
 
     method print( value:String )->this
       if (is_immutable) return this
@@ -382,24 +389,24 @@ class String
       #
       # Requires: this mutable String contains a real number (and only a real number)
       # in the form [0-9]*.[0-9]+
-      if (count)
-        local ch = last
-        if (ch >= '5' and ch <= '9')
-          remove_last
-          forEach (i in count-1 downTo 0)
-            if (this[i] != '.')
-              ++data[cursor_offset]
-              if (this[i] == ('9'+1))
-                data[cursor_offset] = '0'
-              else
-                if (this[count-1] == '.') print '0'
-                return
-              endIf
+      if (is_immutable or not count) return
+
+      local ch = last
+      if (ch >= '5' and ch <= '9')
+        remove_last
+        forEach (i in count-1 downTo 0)
+          if (this[i] != '.')
+            ++data[cursor_offset]
+            if (this[i] == ('9'+1))
+              data[cursor_offset] = '0'
+            else
+              if (this[count-1] == '.') print '0'
+              return
             endIf
-          endForEach
-          insert( '1' )
-          if (this[count-1] == '.') print '0'
-        endIf
+          endIf
+        endForEach
+        insert( '1' )
+        if (this[count-1] == '.') print '0'
       endIf
 
   NATIVE

@@ -20,67 +20,68 @@ PLACEHOLDER    $placeholder  [content]
 ----------------------------------------------------------------------
 tokens Keywords
 ----------------------------------------------------------------------
-KEYWORD_AND            and
-KEYWORD_AUGMENT        augment
-KEYWORD_BLOCK          block
-KEYWORD_CATCH          catch       [structural]
-KEYWORD_CLASS          class       [structural]
-KEYWORD_DEFINITIONS    DEFINITIONS [structural]
-KEYWORD_DOWN_TO        downTo
-KEYWORD_ELSE           else        [structural]
-KEYWORD_ELSE_IF        elseIf      [structural]
-KEYWORD_END_BLOCK      endBlock    [structural]
-KEYWORD_END_CLASS      endClass    [structural]
-KEYWORD_END_FOR_EACH   endForEach  [structural]
-KEYWORD_END_IF         endIf       [structural]
-KEYWORD_END_LOOP       endLoop     [structural]
-KEYWORD_END_ROUTINE    endRoutine  [structural]
-KEYWORD_END_TRY        endTry      [structural]
-KEYWORD_END_USE        endUse      [structural]
-KEYWORD_END_WHICH      endWhich    [structural]
-KEYWORD_END_WHILE      endWhile    [structural]
-KEYWORD_EXPORT         export
-KEYWORD_FALSE          false
-KEYWORD_FOR_EACH       forEach
-KEYWORD_GLOBAL         global
+KEYWORD_AND             and
+KEYWORD_AUGMENT         augment
+KEYWORD_BLOCK           block
+KEYWORD_CATCH           catch       [structural]
+KEYWORD_CLASS           class       [structural]
+KEYWORD_DEFINITIONS     DEFINITIONS [structural]
+KEYWORD_DOWN_TO         downTo
+KEYWORD_ELSE            else        [structural]
+KEYWORD_ELSE_IF         elseIf      [structural]
+KEYWORD_END_BLOCK       endBlock    [structural]
+KEYWORD_END_CLASS       endClass    [structural]
+KEYWORD_END_FOR_EACH    endForEach  [structural]
+KEYWORD_END_IF          endIf       [structural]
+KEYWORD_END_LOOP        endLoop     [structural]
+KEYWORD_END_ROUTINE     endRoutine  [structural]
+KEYWORD_END_TRY         endTry      [structural]
+KEYWORD_END_USE         endUse      [structural]
+KEYWORD_END_WHICH       endWhich    [structural]
+KEYWORD_END_WHILE       endWhile    [structural]
+KEYWORD_ESCAPE_FOR_EACH escapeForEach
+KEYWORD_EXPORT          export
+KEYWORD_FALSE           false
+KEYWORD_FOR_EACH        forEach
+KEYWORD_GLOBAL          global
 KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
-KEYWORD_IF             if
-KEYWORD_IMPORT         import
-KEYWORD_INCLUDE        include
-KEYWORD_INSTANCE_OF    instanceOf
-KEYWORD_IS             is
-KEYWORD_IS_COMPOUND    isCompound
-KEYWORD_IS_PRIMITIVE   isPrimitive
-KEYWORD_IS_REFERENCE   isReference
-KEYWORD_IS_TYPE        isType
-KEYWORD_LOCAL          local
-KEYWORD_LOOP           loop
-KEYWORD_METHOD         method      [structural]
-KEYWORD_METHODS        METHODS     [structural]
-KEYWORD_MODULE         module      [structural]
-KEYWORD_NATIVE_SECTION NATIVE      [structural]
-KEYWORD_NATIVE         native
-KEYWORD_NATIVE_HEADER  nativeHeader
-KEYWORD_NATIVE_CODE    nativeCode
-KEYWORD_NO_ACTION      noAction
-KEYWORD_NOT            not
-KEYWORD_NULL           null
-KEYWORD_OR             or
-KEYWORD_PI             pi
-KEYWORD_PROPERTIES     PROPERTIES  [structural]
-KEYWORD_RETURN         return
-KEYWORD_ROUTINE        routine     [structural]
-KEYWORD_THIS           this
-KEYWORD_THROW          throw
-KEYWORD_TRUE           true
-KEYWORD_TRY            try
-KEYWORD_UNDEFINED      undefined
-KEYWORD_USE            use
-KEYWORD_USES           uses        [structural]
-KEYWORD_WHICH          which
-KEYWORD_WHILE          while
-KEYWORD_XOR            xor
+KEYWORD_IF              if
+KEYWORD_IMPORT          import
+KEYWORD_INCLUDE         include
+KEYWORD_INSTANCE_OF     instanceOf
+KEYWORD_IS              is
+KEYWORD_IS_COMPOUND     isCompound
+KEYWORD_IS_PRIMITIVE    isPrimitive
+KEYWORD_IS_REFERENCE    isReference
+KEYWORD_IS_TYPE         isType
+KEYWORD_LOCAL           local
+KEYWORD_LOOP            loop
+KEYWORD_METHOD          method      [structural]
+KEYWORD_METHODS         METHODS     [structural]
+KEYWORD_MODULE          module      [structural]
+KEYWORD_NATIVE_SECTION  NATIVE      [structural]
+KEYWORD_NATIVE          native
+KEYWORD_NATIVE_HEADER   nativeHeader
+KEYWORD_NATIVE_CODE     nativeCode
+KEYWORD_NO_ACTION       noAction
+KEYWORD_NOT             not
+KEYWORD_NULL            null
+KEYWORD_OR              or
+KEYWORD_PI              pi
+KEYWORD_PROPERTIES      PROPERTIES  [structural]
+KEYWORD_RETURN          return
+KEYWORD_ROUTINE         routine     [structural]
+KEYWORD_THIS            this
+KEYWORD_THROW           throw
+KEYWORD_TRUE            true
+KEYWORD_TRY             try
+KEYWORD_UNDEFINED       undefined
+KEYWORD_USE             use
+KEYWORD_USES            uses        [structural]
+KEYWORD_WHICH           which
+KEYWORD_WHILE           while
+KEYWORD_XOR             xor
 
 ----------------------------------------------------------------------
 tokens Symbols
@@ -866,11 +867,9 @@ parser
     endIf
     if (consume(EOL))
       multi_line_statements
-      wrap_in_local_scope
       mustConsume "endForEach"
     else
       single_line_statements
-      wrap_in_local_scope
     endIf
     produce ForEach(control:ForEachControl,statements)
   endOn
@@ -962,13 +961,11 @@ parser
     if (consume(EOL))
       # Multi-line 'if'
       multi_line_statements
-      wrap_in_local_scope
       if_statement_multi_line_elseIf_else
       mustConsume 'endIf'
     else
       # Single-line 'if'
       single_line_statements
-      wrap_in_local_scope
       if_statement_single_line_elseIf_else
     endIf
     produce If(condition,statements,cmd_else:If):Conditional
@@ -982,7 +979,6 @@ parser
       # This elseIf is multi-line; good to keep going
       discardPosition
       multi_line_statements
-      wrap_in_local_scope
       if_statement_multi_line_elseIf_else
       produce If(condition,statements,cmd_else:If):Conditional
     else
@@ -996,7 +992,6 @@ parser
       discardPosition
       createNull
       multi_line_statements
-      wrap_in_local_scope
       createNull
       produce If(condition,statements,cmd_else:If):Conditional
     else
@@ -1021,7 +1016,6 @@ parser
       # This elseIf is single line; keep going
       discardPosition
       single_line_statements
-      wrap_in_local_scope
       if_statement_single_line_elseIf_else
       produce If(condition,statements,cmd_else:If):Conditional
     endIf
@@ -1035,7 +1029,6 @@ parser
       discardPosition
       createNull
       single_line_statements
-      wrap_in_local_scope
       createNull
       produce If(condition,statements,cmd_else:If):Conditional
     endIf
@@ -1068,10 +1061,6 @@ parser
   if (consume(':')) expression; consume_eols
   else              createNull
   produce InlineWhichCase(condition,value)
-
-- wrap_in_local_scope
-  create LocalScope(statements):ControlStructure
-
 
 - method
   on "method"
@@ -1211,11 +1200,12 @@ parser
   expression
 
 - statement
-  on "noAction":  return
-  on @"print"     args -> Access(name=content,args)
-  on @"println"   args -> Access(name=content,args)
-  on "return"     optional_expression -> Return(result)
-  on "throw"      expression -> Throw(exception)
+  on "escapeForEach"              -> EscapeForEach:Escape
+  on "noAction":                     return
+  on @"print"   args              -> Access(name=content,args)
+  on @"println" args              -> Access(name=content,args)
+  on "return" optional_expression -> Return(result)
+  on "throw" expression           -> Throw(exception)
 
   onPeek "nativeHeader"
     native_code_block
@@ -1300,13 +1290,11 @@ parser
     on EOL
       createNull # loop_count
       multi_line_statements
-      wrap_in_local_scope
       mustConsume "endLoop"
     elseOnOthers
       expression
       if (consume(EOL)) multi_line_statements; mustConsume "endLoop"
       else              single_line_statements
-      wrap_in_local_scope
     endOn
     produce Loop(loop_count,statements)
   endOn
@@ -1316,7 +1304,6 @@ parser
     expression
     if (consume(EOL)) multi_line_statements; mustConsume "endWhile"
     else              single_line_statements
-    wrap_in_local_scope
     produce While(condition,statements)
   endOn
 
@@ -1756,6 +1743,7 @@ parser
   create DefaultArg(operand):Unary
   #create DiscardResult(operand)
   create DummyInitialValue
+  create Escape
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
   create Iterator(control,condition,statements,upkeep):Conditional
   create GetGlobalProperty(info:Property)
@@ -1768,7 +1756,6 @@ parser
   create LiteralInt64(value:Integer):LiteralInteger
   create LiteralReal32(value:Real):Literal
   create LiteralReal64(value:Real):Literal
-  create LocalScope:ControlStructure
   create Logicalized(operand):Unary
   create NativeProperty( expression:String )
   create OpAndAssign(target,operand)

@@ -184,7 +184,7 @@ class CSpecializer : Visitor
         cmd.right.intermediate_v = v
 
         local statements = Statements( t, SetLocal(t,v,cmd.right) )
-        insert( visit( If(t, GetLocal(t,v), LocalScope(t,statements), null) ) )
+        insert( visit( If(t, GetLocal(t,v), statements, null) ) )
 
         contingent
           necessary statements.count
@@ -223,7 +223,7 @@ class CSpecializer : Visitor
         cmd.right.intermediate_v = v
 
         local statements = Statements( t, SetLocal(t,v,cmd.right) )
-        insert( visit( If(t, LogicalNot(t,GetLocal(t,v)), LocalScope(t,statements), null) ) )
+        insert( visit( If(t, LogicalNot(t,GetLocal(t,v)), statements, null) ) )
 
         contingent
           necessary statements.count
@@ -453,6 +453,24 @@ augment Program
         unique_c_names.add( c_name )
         return c_name
       endIf
+endAugment
+
+augment Procedure
+  METHODS
+    method requires_cleanup->Logical
+      if (Program.gc_auto)
+        forEach (p in parameters)
+          if (not p.is_anchored)
+            if (p.type.is_reference or p.type.contains_reference) return true
+          endIf
+        endForEach
+
+        forEach (v in locals)
+          if (v.type.is_reference or v.type.contains_reference) return true
+        endForEach
+      endIf
+
+      return false
 endAugment
 
 augment Property

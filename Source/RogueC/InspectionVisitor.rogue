@@ -139,8 +139,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.exception_type)
       if (result?) return result
       result = visit(cmd.statements)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:Class )->$ReturnType
@@ -163,8 +161,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.condition)
       if (result?) return result
       result = visit(cmd.statements)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:ContextAccess )->$ReturnType
@@ -181,8 +177,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.@initialization)
       if (result?) return result
       result = visit(cmd.statements)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:Convert )->$ReturnType
@@ -287,8 +281,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       if (result?) return result
       result = visit(cmd.cmd_else)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:IndexedAccess )->$ReturnType
@@ -325,8 +317,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       if (result?) return result
       result = visit(cmd.upkeep)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:Local )->$ReturnType
@@ -439,8 +429,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       if (result?) return result
       result = visit(cmd.catches)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:Type )->$ReturnType
@@ -597,8 +585,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.resources)
       if (result?) return result
       result = visit(cmd.statements)
-      if (result?) return result
-      result = visit(cmd.@cleanup)
       return result
 
     method on( cmd:While )->$ReturnType

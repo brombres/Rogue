@@ -199,7 +199,6 @@ class Visitor
       cmd.initialization = visit( cmd.@initialization )
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
-      cmd.cleanup = visit( cmd.@cleanup )
 
     method on_visit_children( cmd:ForEach )
       cmd.control = visit(cmd.control)->(as ForEachControl)
@@ -208,7 +207,6 @@ class Visitor
     method on_visit_children( cmd:ControlStructure )
       cmd.initialization = visit( cmd.@initialization )
       cmd.statements = visit(cmd.statements)
-      cmd.cleanup = visit( cmd.@cleanup )
 
     method on_visit_children( cmd:Iterator )
       cmd.initialization = visit(cmd.@initialization)
@@ -216,14 +214,12 @@ class Visitor
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.upkeep = visit(cmd.upkeep)
-      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:If )
       cmd.initialization = visit(cmd.@initialization)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.cmd_else = visit(cmd.cmd_else)->(as If)
-      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Return )
       cmd.result = visit(cmd.result)
@@ -309,13 +305,11 @@ class Visitor
       cmd.initialization = visit(cmd.@initialization)
       cmd.statements = visit(cmd.statements)
       cmd.catches = visit(cmd.catches)->(as Catches)
-      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Catch )
       cmd.initialization = visit(cmd.@initialization)
       cmd.exception_type = visit(cmd.exception_type)->(as Type)
       cmd.statements = visit(cmd.statements)
-      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:Convert )
       cmd.operand = visit(cmd.operand)
@@ -404,7 +398,6 @@ class Visitor
       cmd.initialization = visit(cmd.@initialization)
       cmd.resources = visit(cmd.resources)->(as UsedResources)
       cmd.statements = visit(cmd.statements)
-      cmd.cleanup = visit(cmd.@cleanup)
 
     method on_visit_children( cmd:While )
       cmd.condition = visit(cmd.condition)
