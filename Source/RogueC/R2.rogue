@@ -28,6 +28,7 @@ $include "Scanner.rogue"
 $include "Template.rogue"
 $include "Transformer.rogue"
 $include "Type.rogue"
+$include "EndScopePatcher.rogue"
 uses Rogue
 uses Utility/CommandLineParser
 

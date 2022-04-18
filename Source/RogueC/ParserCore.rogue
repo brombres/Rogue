@@ -1412,6 +1412,7 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
+            return
           case ip_if_statement_single_line_elseIf_else
             _save_position
             if (_next_t.type == TokenType.KEYWORD_ELSE_IF)
@@ -1453,6 +1454,7 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
+            return
           case ip_inline_which
             if (_next_t.type == TokenType.KEYWORD_WHICH)
               temporarily _cur_t = _on_t

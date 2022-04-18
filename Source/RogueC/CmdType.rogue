@@ -102,18 +102,6 @@ augment
       endIf
 endAugment
 
-# catches
-augment
-  METHODS
-    method Cmd.catches( escape_type:ControlType )->Logical
-      return false
-
-    method Iterator.catches( escape_type:ControlType )->Logical
-      if (control_type != escape_type) return false
-      catches_escape = true
-      return true
-endAugment
-
 # cmd_default_value()
 augment
   METHODS

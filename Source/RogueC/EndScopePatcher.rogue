@@ -1,0 +1,32 @@
+module Rogue
+
+class EndScopePatcher : Visitor [singleton]
+  PROPERTIES
+    insert_cmd    : Cmd
+    control_stack = ControlStructure[]
+
+  METHODS
+    method patch( insert_cmd, cmd:Cmd )->Cmd
+      assert control_stack.is_empty
+      return visit( cmd )
+
+    method on( cmd:ControlStructure )->Cmd
+      control_stack.add( cmd )
+      visit_content( cmd )
+      control_stack.remove_last
+      return cmd
+
+    method on( cmd:Escape )->Cmd
+      if ((forEach in control_stack).catches(cmd)) return cmd
+      return patched_statements( cmd )
+
+    method on( cmd:Return )->Cmd
+      return patched_statements( cmd )
+
+    method on( cmd:Throw )->Cmd
+      return patched_statements( cmd )
+
+    method patched_statements( cmd:Cmd )->Cmd
+      return Statements( cmd.t, insert_cmd.cloned, cmd )
+
+endClass

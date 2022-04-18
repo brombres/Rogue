@@ -1013,7 +1013,7 @@ class CGenerator : Visitor
         visible_locals.add( p->(as Local) )
       endForEach
 
-      handle( cmd )
+      visit_content( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
       return cmd

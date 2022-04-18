@@ -4,7 +4,8 @@ class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
   METHODS
     method on( cmd:CallProcedure )->Logical
       if (cmd.info.throws?) return true          # call throws exception
-      return prior.on( cmd )
+      visit_content( cmd )
+      return visit_children( cmd )
 
     method on( cmd:InlineWhich )->Logical
       forEach (wcase in cmd.cases)
@@ -14,7 +15,8 @@ class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
         # which{ temp:temp || b }
         if (not wcase.value and wcase.condition not instanceOf GetLocal) return true
       endForEach
-      return prior.on( cmd )
+      visit_content( cmd )
+      return visit_children( cmd )
 endClass
 
 augment

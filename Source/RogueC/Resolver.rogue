@@ -154,7 +154,7 @@ class Resolver : Visitor
 
     method on( cmd:ControlStructure )->Cmd
       push_scope( cmd )
-      handle( cmd )
+      visit_content( cmd )
       pop_scope
       return cmd
 
@@ -630,10 +630,10 @@ class Resolver : Visitor
       local v = add_local( Local(res.t, res.name, cmd_call.require_type) )
       cmd_block.statements.add( SetLocal(v, cmd_call, &initial_assignment) )
 
-      cmd_block.statements.add( forEach in visit(cmd.statements) )
-
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
-      #cmd_block.cleanup.add( cmd_call ) FIXME
+      local statements = EndScopePatcher.patch( cmd_call, cmd.statements )
+      cmd_block.statements.add( forEach in statements )
+      cmd_block.statements.add( cmd_call )
 
       local result = visit( cmd_block )
 

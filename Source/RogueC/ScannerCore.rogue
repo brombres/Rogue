@@ -472,6 +472,7 @@ class ScannerCore [abstract]
             if (not _execute(ip_scan_id_or_keyword)) return false
             if (not _execute(ip_scan_number)) return false
             _throw_syntax_error
+            return true
           case ip_scan_comment
             if (_scanner.consume('#'))
               if (_scanner.consume('{'))
@@ -733,6 +734,7 @@ class ScannerCore [abstract]
               _add( TokenType.IDENTIFIER )
               return false
             endContingent
+            return true
           case ip_scan_number
             if (((not _scan_pattern_7.is_next(_scanner)) or _scan_pattern_8.is_next(_scanner)))
               return true
@@ -791,6 +793,7 @@ class ScannerCore [abstract]
               _add( TokenType.REAL_NUMBER )
               return false
             endContingent
+            return true
           case ip_scan_integer
             while (_scan_pattern_11.scan(_scanner,buffer))
               if ((not _scan_pattern_12.scan(_scanner)))

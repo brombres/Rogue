@@ -17,8 +17,17 @@ class Cmd( t:Token )
     method add( cmd:Cmd )
       throw UnsupportedOperationError()
 
+    method catches( cmd:Cmd )->Logical
+      return catches( cmd.control_type )
+
+    method catches( escape_type:ControlType )->Logical
+      return false
+
     method clear
       throw UnsupportedOperationError()
+
+    method control_type->ControlType
+      return ControlType.UNDEFINED
 
     method count->Int32
       return 0
@@ -26,20 +35,11 @@ class Cmd( t:Token )
     method description->String
       return "Cmd"
 
-    method dispatch<<$VisitorType>>( visitor:$VisitorType )->Cmd [propagated]
-      return visitor.on( this )
+    method dispatch<<$m,$VisitorType>>( visitor:$VisitorType ) [propagated]
+      visitor.$m( this )
 
-    method dispatch<<$VisitorType,$ReturnType>>( visitor:$VisitorType )->$ReturnType [propagated]
-      return visitor.on( this )
-
-    method dispatch_on_visit<<$VisitorType>>( visitor:$VisitorType ) [propagated]
-      visitor.on_visit( this )
-
-    method dispatch_on_visit_children<<$VisitorType>>( visitor:$VisitorType ) [propagated]
-      visitor.on_visit_children( this )
-
-    method dispatch_on_validate<<$VisitorType>>( visitor:$VisitorType )->Cmd [propagated]
-      return visitor.on_validate( this )
+    method dispatch<<$m,$VisitorType,$ReturnType>>( visitor:$VisitorType )->$ReturnType [propagated]
+      return visitor.$m( this )
 
     method first->Cmd
       throw UnsupportedOperationError()
@@ -929,6 +929,9 @@ class ControlStructure : Cmd
       if (existing.@initialization) initialization = existing.@initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
 
+    method control_type->ControlType
+      return @control_type
+
     method description->String
       return "ControlStructure($)" (%statements)
 
@@ -991,6 +994,11 @@ class Iterator : Conditional
       prior.init( existing )
       if (existing.control) control = existing.control.cloned
       if (existing.upkeep)  upkeep  = existing.upkeep.cloned
+
+    method catches( escape_type:ControlType )->Logical
+      if (@control_type != escape_type) return false
+      catches_escape = true
+      return true
 
     method description->String
       return "Iterator($,$,$,$,$)" (%@initialization,%control,%condition,%statements,%upkeep)
@@ -1225,6 +1233,7 @@ class CallProcedure : Cmd
 
     method init( existing:CallProcedure )
       prior.init( existing )
+      info = existing.info
       if (existing.args) args = existing.args.cloned
 
     method description->String
@@ -3158,14 +3167,21 @@ class LiteralReal64 : Literal
 
 endClass
 
+class Escape : Cmd
+  METHODS
+    method control_type->ControlType
+      throw UnsupportedOperationError()
+
+    method description->String
+      return "Escape"
+endClass
+
 class EscapeForEach : Escape
   METHODS
+    method control_type->ControlType
+      return ControlType.FOR_EACH
+
     method description->String
       return "EscapeForEach"
 endClass
 
-class Escape : Cmd
-  METHODS
-    method description->String
-      return "Escape"
-endClass

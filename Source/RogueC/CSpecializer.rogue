@@ -82,7 +82,7 @@ class CSpecializer : Visitor
 
     method on( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )
-      handle( cmd )
+      visit_content( cmd )
       control_stack.remove_last
       return cmd
 

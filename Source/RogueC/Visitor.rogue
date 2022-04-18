@@ -9,7 +9,7 @@ class Visitor
   #   CALL                       OVERLOADABLE METHOD
   #   --------------------       -----------------------------------------
   #   visit(cmd)->Cmd         -> on(cmd:CmdType)->Cmd
-  #     handle(cmd)    ->   on_visit(cmd:CmdType)
+  #     visit_content(cmd)    ->   on_visit(cmd:CmdType)
   #       visit_children(cmd) ->     on_visit_children(cmd:CmdType)
   #     validate(cmd)->Cmd    ->   on_validate(cmd:CmdType)->Cmd
   #
@@ -23,7 +23,7 @@ class Visitor
 
   METHODS
     method on( cmd:Cmd )->Cmd
-      handle( cmd )
+      visit_content( cmd )
       return validate( cmd )
 
     method on_visit( cmd:Cmd )
@@ -44,16 +44,16 @@ class Visitor
       #     cmd.right = visit(cmd.right)
       #     return cmd
       if (cmd is null) return null
-      return cmd.dispatch<<ThisType>>( this )
+      return cmd.dispatch<<on,ThisType,Cmd>>( this )
 
     method visit_children( cmd:Cmd )->Cmd [propagated]
       # Call from 'on()' or 'on_visit()' handler to visit subtrees.
-      cmd.dispatch_on_visit_children<<ThisType>>( this )
+      cmd.dispatch<<on_visit_children,ThisType>>( this )
       return cmd
 
-    method handle( cmd:Cmd )->Cmd [propagated]
+    method visit_content( cmd:Cmd )->Cmd [propagated]
       # Primarily for internal use - see on(Cmd) for usage.
-      cmd.dispatch_on_visit<<ThisType>>( this )
+      cmd.dispatch<<on_visit,ThisType>>( this )
       return cmd
 
     method visit( m:Module )
@@ -105,7 +105,7 @@ class Visitor
 
     method validate( cmd:Cmd )->Cmd [propagated]
       if (cmd is null) return null
-      return cmd.dispatch_on_validate<<ThisType>>( this )
+      return cmd.dispatch<<on_validate,ThisType,Cmd>>( this )
 
     method on_visit_children( cmd:Cmd )
       # Overloaded automatically by the Froley compiler
