@@ -1,6 +1,6 @@
 module Rogue
 
-enum ControlType( name:String, status="ROGUE_EXE_UNDEFINED":String )
+enum ControlType( name:String )
   UNDEFINED( "undefined" )
   LOCAL_SCOPE( "local scope" )
   RETURN( "procedure" )
@@ -9,7 +9,7 @@ enum ControlType( name:String, status="ROGUE_EXE_UNDEFINED":String )
   IF( "if" )
   WHILE( "while" )
   LOOP( "loop" )
-  FOR_EACH( "forEach", "ROGUE_EXE_ESCAPE_FOR_EACH" )
+  FOR_EACH( "forEach" )
   USE( "use" )
 
   METHODS

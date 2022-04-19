@@ -226,6 +226,21 @@ class Character [primitive]
   GLOBAL METHODS
     method create( value:Int32 )->Character
       return value->Character
+
+  METHODS
+    method is_lowercase->Logical
+      return (this >= 'a' and this <= 'z')
+
+    method is_uppercase->Logical
+      return (this >= 'A' and this <= 'Z')
+
+    method to_lowercase->Character
+      if (not is_uppercase) return this
+      return Character( this + ('a'-'A') )
+
+    method to_uppercase->Character
+      if (not is_lowercase) return this
+      return Character( this + ('A'-'a') )
 endClass
 
 class Byte : CommonPrimitiveMethods<<Byte>> [primitive]

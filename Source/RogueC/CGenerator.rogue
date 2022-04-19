@@ -719,9 +719,9 @@ class CGenerator : Visitor
       writer.print cmd.of_type.c_name
       writer.print " )"
 
-    method on_visit( cmd:EscapeForEach )
+    method on_visit( cmd:Escape )
       writer.print "goto "
-      writer.print escape_label(ControlType.FOR_EACH)
+      writer.print escape_label(cmd.control_type)
 
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )

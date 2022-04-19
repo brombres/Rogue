@@ -39,7 +39,11 @@ KEYWORD_END_TRY         endTry      [structural]
 KEYWORD_END_USE         endUse      [structural]
 KEYWORD_END_WHICH       endWhich    [structural]
 KEYWORD_END_WHILE       endWhile    [structural]
+KEYWORD_ESCAPE_BLOCK    escapeBlock
 KEYWORD_ESCAPE_FOR_EACH escapeForEach
+KEYWORD_ESCAPE_IF       escapeIf
+KEYWORD_ESCAPE_LOOP     escapeLoop
+KEYWORD_ESCAPE_WHILE    escapeWhile
 KEYWORD_EXPORT          export
 KEYWORD_FALSE           false
 KEYWORD_FOR_EACH        forEach
@@ -1200,7 +1204,11 @@ parser
   expression
 
 - statement
+  on "escapeBlock"                -> EscapeBlock:Escape
   on "escapeForEach"              -> EscapeForEach:Escape
+  on "escapeIf"                   -> EscapeIf:Escape
+  on "escapeLoop"                 -> EscapeLoop:Escape
+  on "escapeWhile"                -> EscapeWhile:Escape
   on "noAction":                     return
   on @"print"   args              -> Access(name=content,args)
   on @"println" args              -> Access(name=content,args)

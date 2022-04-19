@@ -45,6 +45,9 @@ class String
     method cloned->String
       return String( this )
 
+    method contains( ch:Character, &ignore_case )->Logical
+      return locate(ch,&=ignore_case)?
+
     method first->Character
       return this[0]
 
@@ -104,6 +107,24 @@ class String
 
     method last->Character
       return this[ count-1 ]
+
+    method locate( ch:Character, optional_i1=null:Int32?, &ignore_case )->Int32?
+      local i = 0
+      local limit = count
+      if (optional_i1.exists) i = optional_i1.value
+
+      if (ignore_case)
+        while (i < limit)
+          if (this[i].to_lowercase == ch.to_lowercase) return i
+          ++i
+        endWhile
+      else
+        while (i < limit)
+          if (this[i] == ch) return i
+          ++i
+        endWhile
+      endIf
+      return null
 
     method print( value:Byte )->this
       return print( value->Int64 )
@@ -172,7 +193,6 @@ class String
       return this.print( value->Real64 )
       }#
 
-      #{
     method print( value:Real64 )->this
       if (is_immutable) return this
 
@@ -214,18 +234,20 @@ class String
         return print( value ).print( 'e' ).print( pow10->Int32 )
       endIf
 
-      # Standard, non-exponent format
       use builder = String.pool
-        forEach (decimal_count in 1..18)
-          builder.print( value, decimal_count )
-          if (builder->Real64 == value) escapeForEach
+        forEach (n in 1..18)
+          if (_check_to_string(value,n,builder)) escapeForEach
         endForEach
 
         print builder
       endUse
 
       return this
-}#
+
+    method _check_to_string( value:Real64, decimal_places:Int32, buffer:String )->Logical
+      buffer.clear
+      buffer.print( value, decimal_places )
+      return (buffer->Real64 == value)
 
     method print( value:Real64, decimal_places:Int32 )->this
       if (is_immutable) return this
@@ -381,6 +403,18 @@ class String
          |
          |$cursor_index = c_index;
          |$cursor_offset = c_offset;
+
+    method to->Real64
+      if (count == 0) return 0
+      if (this.contains(','))
+        use filtered = String.pool
+          forEach (ch in this)
+            if (ch != ',') filtered.print ch
+          endForEach
+          return filtered->Real64
+        endUse
+      endIf
+      return native( "strtod( (char*)$this->data->as_utf8, 0 )" )->Real64
 
     method _round_off
       # Internal use.

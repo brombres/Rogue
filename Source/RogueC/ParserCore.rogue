@@ -1412,7 +1412,6 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
-            return
           case ip_if_statement_single_line_elseIf_else
             _save_position
             if (_next_t.type == TokenType.KEYWORD_ELSE_IF)
@@ -1454,7 +1453,6 @@ class ParserCore [abstract]
               if (not disable_output) _push( null, 0 )
               return
             endIf
-            return
           case ip_inline_which
             if (_next_t.type == TokenType.KEYWORD_WHICH)
               temporarily _cur_t = _on_t
@@ -1776,9 +1774,33 @@ class ParserCore [abstract]
             _pop_frame
             return
           case ip_statement
+            if (_next_t.type == TokenType.KEYWORD_ESCAPE_BLOCK)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( EscapeBlock(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_ESCAPE_FOR_EACH)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( EscapeForEach(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_ESCAPE_IF)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( EscapeIf(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_ESCAPE_LOOP)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( EscapeLoop(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_ESCAPE_WHILE)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( EscapeWhile(_cur_t), 0 )
                 return
               endTemporarily
             endIf

@@ -3185,3 +3185,39 @@ class EscapeForEach : Escape
       return "EscapeForEach"
 endClass
 
+
+class EscapeBlock : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.BLOCK
+
+    method description->String
+      return "EscapeBlock"
+endClass
+
+class EscapeIf : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.IF
+
+    method description->String
+      return "EscapeIf"
+endClass
+
+class EscapeWhile : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.WHILE
+
+    method description->String
+      return "EscapeWhile"
+endClass
+
+class EscapeLoop : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.LOOP
+
+    method description->String
+      return "EscapeLoop"
+endClass

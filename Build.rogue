@@ -55,7 +55,7 @@ routine rogo_build
     rogo_froley
   endIf
 
-  local source_files = Files( "Source", "**/*.rogue" )
+  local source_files = Files( "Source/RogueC", "**/*.rogue" )
   if (source_files.any_newer_than(exe_filepath))
     local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
     if (source_files.any_newer_than(cpp_filepath))

@@ -2,11 +2,12 @@ module Rogue
 
 class EndScopePatcher : Visitor [singleton]
   PROPERTIES
+    resolver      : Resolver
     insert_cmd    : Cmd
     control_stack = ControlStructure[]
 
   METHODS
-    method patch( insert_cmd, cmd:Cmd )->Cmd
+    method patch( resolver, insert_cmd, cmd:Cmd )->Cmd
       assert control_stack.is_empty
       return visit( cmd )
 
@@ -21,7 +22,22 @@ class EndScopePatcher : Visitor [singleton]
       return patched_statements( cmd )
 
     method on( cmd:Return )->Cmd
-      return patched_statements( cmd )
+      if (cmd.result)
+        # return expression
+        # ->
+        # local result = expression
+        # patch_command
+        # return result
+        cmd.result = visit( cmd.result )
+        local v = resolver.add_local( cmd.result.t, "result", cmd.result.require_type )
+        local statements = Statements( v.t, SetLocal(v,cmd.result,&initial_assignment) )
+        statements.add( insert_cmd.cloned )
+        cmd.result = GetLocal(v)
+        statements.add( cmd )
+        return statements
+      else
+        return patched_statements( cmd )
+      endIf
 
     method on( cmd:Throw )->Cmd
       return patched_statements( cmd )

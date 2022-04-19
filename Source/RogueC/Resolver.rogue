@@ -183,12 +183,12 @@ class Resolver : Visitor
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
 
-    method on_visit( cmd:EscapeForEach )
+    method on_visit( cmd:Escape )
       contingent
         forEach (scope in control_stack step -1)
-          sufficient (scope.control_type == ControlType.FOR_EACH)
+          sufficient (scope.control_type == cmd.control_type)
         endForEach
-        throw cmd.t.error( "No enclosing 'forEach' to escape from." )
+        throw cmd.t.error( "No enclosing '$' to escape from."(cmd.control_type.name) )
       endContingent
 
     method on( cmd:ForEach )->Cmd
@@ -631,7 +631,7 @@ class Resolver : Visitor
       cmd_block.statements.add( SetLocal(v, cmd_call, &initial_assignment) )
 
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
-      local statements = EndScopePatcher.patch( cmd_call, cmd.statements )
+      local statements = EndScopePatcher.patch( this, cmd_call, cmd.statements )
       cmd_block.statements.add( forEach in statements )
       cmd_block.statements.add( cmd_call )
 
@@ -1204,6 +1204,9 @@ class Resolver : Visitor
       if (arg_type.is_primitive and param_type.is_primitive) return true
       if (param_type is Program.type_String) return true
       if (param_type.attributes.is_optional and not arg_type.attributes.is_optional)
+        if (arg_type is Program.type_null)
+          return true
+        endIf
         return arg_type_is_compatible( arg_type, param_type.properties//value.type )
       endIf
       return false
@@ -1824,7 +1827,7 @@ augment
 
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-          resolver.control_stack.last.initialization.insert(
+          resolver.control_stack.last.initialization.add(
             SetLocal( v_cur,
               resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
                   Args(cmd_collection.t,GetLocal(v_index)) )
@@ -1865,7 +1868,7 @@ augment
         assert cur_type
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        resolver.control_stack.last.initialization.insert(
+        resolver.control_stack.last.initialization.add(
           SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
         )
 
@@ -1898,7 +1901,7 @@ augment
         assert cur_type
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        resolver.control_stack.last.initialization.insert(
+        resolver.control_stack.last.initialization.add(
           SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
         )
 
