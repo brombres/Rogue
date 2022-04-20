@@ -1,0 +1,52 @@
+module Rogue
+
+class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
+  PROPERTIES
+    control_stack = ControlStructure[]
+
+  METHODS
+    method all_paths_return( cmd:Cmd )->Logical
+      return visit( cmd )
+
+    method on( cmd:ControlStructure )->Logical
+      control_stack.add( cmd )
+
+      local result = visit_children( cmd )
+
+      control_stack.remove_last
+      return result
+
+    method on( cmd:Escape )->Logical
+      if ((forEach in control_stack).catches_escape(cmd.control_type)) return false
+      return true
+
+    method on( cmd:If )->Logical
+      if (cmd.condition and not cmd.cmd_else) return false
+
+      control_stack.add( cmd )
+
+      local result = visit(cmd.statements)
+      if (result and cmd.cmd_else) result = visit( cmd.cmd_else )
+
+      control_stack.remove_last
+      return result
+
+    method on( cmd:Return )->Logical
+      return true
+
+    method on( cmd:Throw )->Logical
+      local thrown_type = which{ cmd.exception.type || Program.type_Exception }
+      if ((forEach in control_stack).catches_exception(thrown_type)) return false
+      return true
+
+    method on( cmd:Try )->Logical
+      control_stack.add( cmd )
+      if (not visit(cmd.statements)) return false
+      control_stack.remove_last
+
+      forEach (catch_block in cmd.catches)
+        if (not visit(catch_block)) return false
+      endForEach
+      return true
+
+endClass

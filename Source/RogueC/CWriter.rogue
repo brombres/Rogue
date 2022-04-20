@@ -173,15 +173,9 @@ class CWriter : BufferedPrintWriter
            |
            |void  Rogue_launch();
            |
-           |#define ROGUE_EXE_CONTINUE        0
-           |#define ROGUE_EXE_RETURN          1
-           |#define ROGUE_EXE_EXCEPTION       2
-           |#define ROGUE_EXE_ESCAPE_FOR_EACH 3
-           |
            |struct RogueObject;
            |
-           |extern int                 Rogue_execution_status; // ROGUE_EXE_RETURN etc.
-           |extern struct RogueObject* Rogue_exception;
+           |extern struct RogueObject* Rogue_exception;  // if non-null then an exception is being thrown
            |
            |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
            |RogueInt64  Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
@@ -257,7 +251,6 @@ class CWriter : BufferedPrintWriter
            |  type->local_pointer_stack[ type->local_pointer_count++ ] = local_pointer;
            |}
            |
-           |int          Rogue_execution_status = 0;
            |RogueObject* Rogue_exception = 0;
            |
            |RogueInt32 Rogue_mod_Int32( RogueInt32 a, RogueInt32 b )

@@ -87,9 +87,7 @@ class Resolver : Visitor
                              Args(cmd.t,cmd.left,cmd.right) )
 
     method on( cmd:Block )->Cmd
-      local result = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )
-      result.initialization = cmd.@initialization
-      return visit( result )
+      return visit( ControlStructure(cmd.t,cmd.statements,ControlType.BLOCK) )
 
     method on_validate( cmd:CallProcedure )->Cmd
       if (cmd.info.throws)
@@ -618,7 +616,7 @@ class Resolver : Visitor
         cmd.statements = Statements(cmd.statements.t).[ add(nested_use) ]
       endIf
 
-      local cmd_block = ControlStructure( cmd.t, ControlType.USE )
+      local cmd_block = CleanupBlock( cmd.t, ControlType.USE )
       local res = cmd.resources.first->(as UsedResource)
       local resource = visit( res.resource )
       local resource_type = resource.require_type
@@ -633,7 +631,8 @@ class Resolver : Visitor
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
       local statements = EndScopePatcher.patch( this, cmd_call, cmd.statements )
       cmd_block.statements.add( forEach in statements )
-      cmd_block.statements.add( cmd_call )
+
+      cmd_block.cleanup.add( cmd_call )
 
       local result = visit( cmd_block )
 
@@ -657,12 +656,17 @@ class Resolver : Visitor
     method back_propagate_thrown_exception( type:Type )
       forEach (control_structure in control_stack step -1)
         if (control_structure.catches_exception(type)) return
+        if (control_structure.requires_cleanup)
+          control_structure.catches_escape = true
+          control_structure.exception_passthrough = true
+        endIf
       endForEach
-      this_procedure.throws = type
 
     method insert( cmd:Cmd )
       if (insert_in_init)
-        control_stack.last.initialization.add( cmd )
+        local conditional = control_stack.last->(as Conditional)
+        assert conditional
+        conditional.initialization.add( cmd )
       else
         current_statements.write( cmd )
       endIf
@@ -1078,12 +1082,12 @@ class Resolver : Visitor
       if (arg_count)
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args )
-          forEach (arg at i in args)
-            if (arg.type is m.parameters[i].type)
-              Candidates.keep m
-              escapeForEach
-            endIf
-          endForEach
+          contingent
+            forEach (arg at i in args)
+              necessary (arg.type is m.parameters[i].type)
+            endForEach
+            Candidates.keep m
+          endContingent
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
@@ -1827,7 +1831,8 @@ augment
 
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-          resolver.control_stack.last.initialization.add(
+          assert resolver.control_stack.last is cmd_iterator
+          cmd_iterator.initialization.add(
             SetLocal( v_cur,
               resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
                   Args(cmd_collection.t,GetLocal(v_index)) )
@@ -1868,7 +1873,8 @@ augment
         assert cur_type
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        resolver.control_stack.last.initialization.add(
+        assert resolver.control_stack.last is cmd_iterator
+        cmd_iterator.initialization.add(
           SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
         )
 
@@ -1901,7 +1907,8 @@ augment
         assert cur_type
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        resolver.control_stack.last.initialization.add(
+        assert resolver.control_stack.last is cmd_iterator
+        cmd_iterator.initialization.add(
           SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
         )
 

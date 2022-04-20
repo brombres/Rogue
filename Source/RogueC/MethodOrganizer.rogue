@@ -1,12 +1,22 @@
 module Rogue
 
 class MethodOrganizer : Visitor
+  PROPERTIES
+    catches = Catch[]
+
   METHODS
     method init( this_module )
 
     method visit( this_type, class_def:Cmd )
       # Called when instantiating a template
       visit( class_def )
+
+    method on( cmd:Try )->Cmd
+      catches.add( forEach in cmd.catches )
+      visit_content( cmd )
+      local result = validate( cmd )
+      catches.discard_from( catches.count - cmd.catches.count )
+      return result
 
     method on_visit( cmd:Class )
       if (cmd.constructor_properties)
@@ -72,5 +82,21 @@ class MethodOrganizer : Visitor
         throw cmd.t.error( "'this' can only be referenced in an object method." )
       endIf
       cmd.this_type = this_type
+
+    method on_visit( cmd:Throw )
+      if (this_procedure.throws is not Program.type_Exception)
+        # Tag this procedure with the most general type of uncaught exception
+        local thrown_type = cmd.exception.type
+        if (not thrown_type) thrown_type = Program.type_Exception # assume general exception
+        forEach (catch_block in catches)
+          if (thrown_type.instance_of(catch_block.exception_type)) return
+        endForEach
+
+        if (not this_procedure.throws or this_procedure.throws.instance_of(thrown_type))
+          this_procedure.throws = thrown_type
+        endIf
+      endIf
+
+      visit_children( cmd )
 
 endClass

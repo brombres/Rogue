@@ -21,8 +21,8 @@ class CGenerator : Visitor
 
     method escape_label( control_type=ControlType.UNDEFINED:ControlType )->String
       forEach (scope in control_stack step -1)
-        if (scope.catches(control_type))
-          return scope.c_escape_label_name(this)
+        if (scope.catches_escape(control_type))
+          return scope.c_escape_label(this)
         endIf
       endForEach
       return null
@@ -537,9 +537,9 @@ class CGenerator : Visitor
       print_parenthesized( cmd.right )
       writer.print ')'
 
-    method on_enter( cmd:ControlStructure, &is_procedure )
+    method on_enter( cmd:ControlStructure )
       push_scope( cmd )
-      visit( cmd.@initialization )
+      cmd.on_begin_scope( this )
 
     method on_enter_procedure( cmd:ControlStructure )
       push_scope( cmd )
@@ -604,95 +604,16 @@ class CGenerator : Visitor
         writer.println
       endIf
 
-      visit( cmd.initialization )
-
     method on_leave( cmd:ControlStructure )
-      if (cmd.catches_escape)
-        writer.print cmd.c_escape_label_name(this)
-        writer.println ":;"
-        cmd.print_catch_code( writer )
-      endIf
+      pop_scope
+      cmd.on_end_scope( this )
 
+    method on_leave_procedure( body:ControlStructure )
       pop_scope
 
-    method on_leave_procedure( cmd:ControlStructure )
-      if (cmd.catches_escape)
-        writer.print cmd.c_escape_label_name(this)
-        writer.println ":;"
+      if (not BranchAnalyzer.all_paths_return(body))
+        print_procedure_cleanup
       endIf
-
-      pop_scope
-
-      if (this_procedure.requires_cleanup)
-        if (Program.gc_auto)
-          writer.println
-
-          local pop_count = 0
-          forEach (p in this_procedure.parameters)
-            if (not p.is_anchored)
-              if (p.type.is_reference) ++pop_count
-            endIf
-          endForEach
-          forEach (v in this_procedure.locals)
-            if (v.type.is_reference) ++pop_count
-          endForEach
-          if (pop_count)
-            writer.print   "TypeRogueObject.local_pointer_count -= "
-            writer.print   pop_count
-            writer.println ';'
-          endIf
-
-          use unique_compound_types = WorkList<<Type>>
-            forEach (p in this_procedure.parameters)
-              if (not p.is_anchored)
-                if (p.type.is_compound and p.type.contains_reference)
-                  if (not unique_compound_types.contains(p.type)) unique_compound_types.add( p.type )
-                endIf
-              endIf
-            endForEach
-            forEach (v in this_procedure.locals)
-              if (v.type.is_compound and v.type.contains_reference)
-                if (not unique_compound_types.contains(v.type)) unique_compound_types.add( v.type )
-              endIf
-            endForEach
-
-            forEach (type in unique_compound_types)
-              pop_count = 0
-              forEach (p in this_procedure.parameters)
-                if (not p.is_anchored)
-                  if (p.type is type) ++pop_count
-                endIf
-              endForEach
-              forEach (p in this_procedure.locals)
-                if (p.type is type) ++pop_count
-              endForEach
-              if (pop_count)
-                writer.print   "Type"
-                writer.print   type.c_name
-                writer.print   ".local_pointer_count -= "
-                writer.print   pop_count
-                writer.println ';'
-              endIf
-            endForEach
-          endUse
-
-          writer.println
-        endIf
-      endIf
-
-      #{
-      if (this_procedure.return_type and this_procedure.attributes.has_return and
-          this_procedure.attributes.requires_cleanup)
-        if (this_procedure.throws)
-          writer.println "if (Rogue_execution_status == ROGUE_EXE_RETURN) Rogue_execution_status = ROGUE_EXE_CONTINUE;"
-        elseIf (cmd.control_escapes)
-          writer.println "Rogue_execution_status = ROGUE_EXE_CONTINUE;"
-        endIf
-        writer.print "return "
-        writer.print this_procedure.c_result_name
-        writer.println ';'
-      endIf
-      }#
 
       writer.indent -= 2
       writer.println( "}" )
@@ -1019,6 +940,7 @@ class CGenerator : Visitor
       return cmd
 
     method on_visit( cmd:Return )
+      print_procedure_cleanup
       writer.print "return"
       if (cmd.result)
         writer.print ' '
@@ -1122,6 +1044,64 @@ class CGenerator : Visitor
       control_stack.add( cmd )
       visible_locals_fp.add( visible_locals.count )
       visible_locals.add( forEach in cmd.locals )
+
+    method print_procedure_cleanup
+      if (this_procedure.requires_cleanup)
+        if (Program.gc_auto)
+          writer.println
+
+          # Release Object refs
+          local pop_count = 0
+          forEach (p in this_procedure.parameters)
+            if (not p.is_anchored)
+              if (p.type.is_reference) ++pop_count
+            endIf
+          endForEach
+          forEach (v in this_procedure.locals)
+            if (v.type.is_reference) ++pop_count
+          endForEach
+          if (pop_count)
+            writer.print   "TypeRogueObject.local_pointer_count -= "
+            writer.print   pop_count
+            writer.println ';'
+          endIf
+
+          # Release compounds with refs
+          use unique_compound_types = WorkList<<Type>>
+            forEach (p in this_procedure.parameters)
+              if (not p.is_anchored)
+                if (p.type.is_compound and p.type.contains_reference)
+                  if (not unique_compound_types.contains(p.type)) unique_compound_types.add( p.type )
+                endIf
+              endIf
+            endForEach
+            forEach (v in this_procedure.locals)
+              if (v.type.is_compound and v.type.contains_reference)
+                if (not unique_compound_types.contains(v.type)) unique_compound_types.add( v.type )
+              endIf
+            endForEach
+
+            forEach (type in unique_compound_types)
+              pop_count = 0
+              forEach (p in this_procedure.parameters)
+                if (not p.is_anchored)
+                  if (p.type is type) ++pop_count
+                endIf
+              endForEach
+              forEach (p in this_procedure.locals)
+                if (p.type is type) ++pop_count
+              endForEach
+              if (pop_count)
+                writer.print   "Type"
+                writer.print   type.c_name
+                writer.print   ".local_pointer_count -= "
+                writer.print   pop_count
+                writer.println ';'
+              endIf
+            endForEach
+          endUse
+        endIf
+      endIf
 
     method print_native_code( t:Token, code:String )
       block
@@ -1709,12 +1689,11 @@ augment
 
 endAugment
 
-augment
-  METHODS
-    method Cmd.print_catch_code( writer:CWriter )
-      throw UnsupportedOperationError()
-
-    method ControlStructure.print_catch_code( writer:CWriter )
+      #{
+    method Use.print_catch_code( cgen:CGenerator )
+      local writer = cgen.writer
+      writer.print   c_escape_label(cgen)
+      writer.println ":;"
       #writer.println "Rogue_execution_status = ROGUE_EXE_CONTINUE;"
       #writer.print "if (Rogue_execution_status == "
       #writer.print control_type.status
@@ -1722,4 +1701,56 @@ augment
       #writer.println "{"
       #writer.println "  Rogue_execution_status = ROGUE_EXE_CONTINUE;"
       #writer.println "}"
+      }#
+
+augment
+  METHODS
+    method ControlStructure.on_begin_scope( cgen:CGenerator )
+      noAction
+
+    method ControlStructure.on_end_scope( cgen:CGenerator )
+      if (catches_escape)
+        local writer = cgen.writer
+        writer.print   c_escape_label(cgen)
+        writer.println ":;"
+      endIf
+
+    method Conditional.on_begin_scope( cgen:CGenerator )
+      cgen.visit( initialization )
+
+    method CleanupBlock.on_end_scope( cgen:CGenerator )
+      local writer = cgen.writer
+
+      if (catches_escape)
+        writer.print   c_escape_label(cgen)
+        writer.println ":;"
+      endIf
+
+      cgen.visit( cleanup )
+
+      if (exception_passthrough)
+        writer.print "if (Rogue_exception) "
+
+        forEach (control in cgen.control_stack step -1)
+          if (control.control_type == ControlType.TRY or control.requires_cleanup)
+            writer.print "goto "
+            writer.print control.c_escape_label(cgen)
+            writer.println ';'
+            return
+          endIf
+        endForEach
+
+        writer.print "return"
+        local return_type = cgen.this_procedure.return_type
+        if (return_type)
+          writer.print ' '
+          if (return_type.is_compound)
+            writer.print('(').print(return_type.c_name).print("){}")
+          else
+            cgen.visit( return_type.cmd_default_value(t) )
+          endIf
+        endIf
+        writer.println ';'
+      endIf
 endAugment
+

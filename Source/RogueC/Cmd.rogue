@@ -17,10 +17,10 @@ class Cmd( t:Token )
     method add( cmd:Cmd )
       throw UnsupportedOperationError()
 
-    method catches( cmd:Cmd )->Logical
-      return catches( cmd.control_type )
+    method catches_escape( cmd:Cmd )->Logical
+      return catches_escape( cmd.control_type )
 
-    method catches( escape_type:ControlType )->Logical
+    method catches_escape( escape_type:ControlType )->Logical
       return false
 
     method clear
@@ -909,11 +909,11 @@ endClass
 
 class ControlStructure : Cmd
   PROPERTIES
-    locals              = Local[]  # local to the scope of the control structure
-    initialization      : Cmd
-    statements          : Cmd
-    control_type        : ControlType
-    catches_escape      : Logical # catches control escape
+    locals                = Local[]  # local to the scope of the control structure
+    statements            : Cmd
+    control_type          : ControlType
+    catches_escape        : Logical # catches control escape
+    exception_passthrough : Logical # a thrown exception passes through
 
   METHODS
     method init( t, control_type )
@@ -921,12 +921,9 @@ class ControlStructure : Cmd
 
     method init( t, statements, control_type=ControlType.UNDEFINED )
 
-    method init( t, initialization, statements, control_type=ControlType.UNDEFINED )
-
     method init( existing:ControlStructure )
       prior.init( existing )
       if (existing.locals) locals = existing.locals.cloned
-      if (existing.@initialization) initialization = existing.@initialization.cloned
       if (existing.statements) statements = existing.statements.cloned
 
     method control_type->ControlType
@@ -935,10 +932,8 @@ class ControlStructure : Cmd
     method description->String
       return "ControlStructure($)" (%statements)
 
-    method initialization->Cmd
-      if (@initialization) return @initialization
-      @initialization = Statements(t)
-      return @initialization
+    method requires_cleanup->Logical
+      return false
 
 endClass
 
@@ -948,7 +943,7 @@ class LocalScope : ControlStructure
       prior.init( t, ControlType.LOCAL_SCOPE )
 
     method init( t:Token, statements:Cmd )
-      prior.init( t, Statements(t), statements, ControlType.LOCAL_SCOPE )
+      prior.init( t, statements, ControlType.LOCAL_SCOPE )
 
     method init( existing:LocalScope )
       prior.init( existing )
@@ -959,21 +954,25 @@ endClass
 
 class Conditional : ControlStructure
   PROPERTIES
-    condition : Cmd
+    initialization : Cmd
+    condition      : Cmd
 
   METHODS
     method init( t:Token, control_type:ControlType )
-      prior.init( t, Statements(t), control_type )
+      prior.init( t, control_type )
+      initialization = Statements(t)
 
     method init( t:Token, condition, statements:Cmd, control_type=ControlType.UNDEFINED:ControlType )
       prior.init( t, statements, control_type )
+      initialization = Statements(t)
 
     method init( existing:Conditional )
       prior.init( existing )
+      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.condition) condition = existing.condition.cloned
 
     method description->String
-      return "Conditional($,$)" (%condition,%statements)
+      return "Conditional($,$,$)" (%initialization,%condition,%statements)
 
 endClass
 
@@ -992,10 +991,10 @@ class Iterator : Conditional
 
     method init( existing:Iterator )
       prior.init( existing )
-      if (existing.control) control = existing.control.cloned
-      if (existing.upkeep)  upkeep  = existing.upkeep.cloned
+      if (existing.control)        control = existing.control.cloned
+      if (existing.upkeep)         upkeep  = existing.upkeep.cloned
 
-    method catches( escape_type:ControlType )->Logical
+    method catches_escape( escape_type:ControlType )->Logical
       if (@control_type != escape_type) return false
       catches_escape = true
       return true
@@ -1139,19 +1138,15 @@ class RangeUpToLessThan : Range
 endClass
 
 class Block : ControlStructure
-  PROPERTIES
-    statements : Cmd
-
   METHODS
     method init( t )
-      prior.init( t, Statements(t), Statements(t) )
+      prior.init( t, ControlType.BLOCK )
 
     method init( t, statements:Cmd )
-      prior.init( t, Statements(t), statements )
+      prior.init( t, statements, ControlType.BLOCK )
 
     method init( existing:Block )
       prior.init( existing )
-      if (existing.statements) statements = existing.statements.cloned
 
     method description->String
       return "Block($)" (%statements)
@@ -1847,7 +1842,7 @@ class Catch : ControlStructure
 
   METHODS
     method init( t, var_name, exception_type, statements:Cmd )
-      prior.init( t, Statements(t), statements )
+      prior.init( t, statements, ControlType.CATCH )
 
     method init( existing:Catch )
       prior.init( existing )
@@ -1865,7 +1860,7 @@ class Try : ControlStructure
 
   METHODS
     method init( t, statements, catches )
-      prior.init( t, Statements(t), statements )
+      prior.init( t, statements, ControlType.TRY )
 
     method init( existing:Try )
       prior.init( existing )
@@ -2459,6 +2454,32 @@ class Use : ControlStructure
     method description->String
       return "Use($,$)" (%resources,%statements)
 
+    method requires_cleanup->Logical
+      return true
+
+endClass
+
+class CleanupBlock : ControlStructure
+  PROPERTIES
+    cleanup : Cmd
+
+  METHODS
+    method init( t, control_type:ControlType )
+      prior.init( t, control_type )
+      cleanup = Statements(t)
+
+    method init( t, statements, cleanup=null )
+      cleanup = Statements(t)
+
+    method init( existing:CleanupBlock )
+      prior.init( existing )
+      if (existing.cleanup) cleanup = existing.cleanup.cloned
+
+    method description->String
+      return "CleanupBlock($,$)" (%statements,%cleanup)
+
+    method requires_cleanup->Logical
+      return true
 endClass
 
 class While : Cmd
@@ -3221,3 +3242,4 @@ class EscapeLoop : Escape
     method description->String
       return "EscapeLoop"
 endClass
+

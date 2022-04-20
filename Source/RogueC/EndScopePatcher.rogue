@@ -17,9 +17,9 @@ class EndScopePatcher : Visitor [singleton]
       control_stack.remove_last
       return cmd
 
-    method on( cmd:Escape )->Cmd
-      if ((forEach in control_stack).catches(cmd)) return cmd
-      return patched_statements( cmd )
+    #method on( cmd:Escape )->Cmd
+      #if ((forEach in control_stack).catches(cmd)) return cmd
+      #return patched_statements( cmd )
 
     method on( cmd:Return )->Cmd
       if (cmd.result)
@@ -28,7 +28,7 @@ class EndScopePatcher : Visitor [singleton]
         # local result = expression
         # patch_command
         # return result
-        cmd.result = visit( cmd.result )
+        cmd.result = resolver.visit( visit(cmd.result) )
         local v = resolver.add_local( cmd.result.t, "result", cmd.result.require_type )
         local statements = Statements( v.t, SetLocal(v,cmd.result,&initial_assignment) )
         statements.add( insert_cmd.cloned )

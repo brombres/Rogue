@@ -30,7 +30,9 @@ class CSpecializer : Visitor
 
     method insert( cmd:Cmd )
       if (insert_in_init)
-        control_stack.last.initialization.add( cmd )
+        local conditional = control_stack.last->(as Conditional)
+        assert conditional
+        conditional.initialization.add( cmd )
       else
         current_statements.write( cmd )
       endIf
@@ -301,14 +303,14 @@ endAugment
 
 augment ControlStructure
   PROPERTIES
-    c_escape_label_name : String
+    c_escape_label      : String
 
   METHODS
-    method c_escape_label_name( cgen:CGenerator )->String
-      if (not @c_escape_label_name)
-        @c_escape_label_name = cgen.autoname("escape")
+    method c_escape_label( cgen:CGenerator )->String
+      if (not @c_escape_label)
+        @c_escape_label = cgen.autoname("escape")
       endIf
-      return @c_escape_label_name
+      return @c_escape_label
 
 endAugment
 

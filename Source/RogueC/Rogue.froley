@@ -1734,9 +1734,10 @@ parser
   create CallStaticMethod(context,args):CallProcedure
   create CallThisDynamicMethod(args):CallProcedure
   create CallThisStaticMethod(args):CallProcedure
+  create CleanupBlock(statements,cleanup):ControlStructure
   create Compare(left,right):Binary
   create Conditional(condition,statements):ControlStructure
-  create ControlStructure(initialization,statements)
+  create ControlStructure(statements)
   create Convert(operand)
   create ConvertToByte(operand):Convert
   create ConvertToCharacter(operand):Convert

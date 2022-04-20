@@ -196,7 +196,7 @@ class Visitor
       cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
     method on_visit_children( cmd:Conditional )
-      cmd.initialization = visit( cmd.@initialization )
+      cmd.initialization = visit( cmd.initialization )
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
 
@@ -205,18 +205,17 @@ class Visitor
       cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:ControlStructure )
-      cmd.initialization = visit( cmd.@initialization )
       cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Iterator )
-      cmd.initialization = visit(cmd.@initialization)
+      cmd.initialization = visit(cmd.initialization)
       cmd.control = visit(cmd.control)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.upkeep = visit(cmd.upkeep)
 
     method on_visit_children( cmd:If )
-      cmd.initialization = visit(cmd.@initialization)
+      cmd.initialization = visit(cmd.initialization)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.cmd_else = visit(cmd.cmd_else)->(as If)
@@ -302,12 +301,10 @@ class Visitor
       cmd.exception = visit(cmd.exception)
 
     method on_visit_children( cmd:Try )
-      cmd.initialization = visit(cmd.@initialization)
       cmd.statements = visit(cmd.statements)
       cmd.catches = visit(cmd.catches)->(as Catches)
 
     method on_visit_children( cmd:Catch )
-      cmd.initialization = visit(cmd.@initialization)
       cmd.exception_type = visit(cmd.exception_type)->(as Type)
       cmd.statements = visit(cmd.statements)
 
@@ -395,7 +392,6 @@ class Visitor
       cmd.resource = visit(cmd.resource)
 
     method on_visit_children( cmd:Use )
-      cmd.initialization = visit(cmd.@initialization)
       cmd.resources = visit(cmd.resources)->(as UsedResources)
       cmd.statements = visit(cmd.statements)
 
@@ -493,6 +489,10 @@ class Visitor
 
     method on_visit_children( cmd:PreDecrementLocal )
       cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:CleanupBlock )
+      cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit(cmd.cleanup)
 
 endClass
 

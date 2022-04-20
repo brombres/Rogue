@@ -2,15 +2,17 @@ module Rogue
 
 enum ControlType( name:String )
   UNDEFINED( "undefined" )
+  BLOCK( "block" )
+  CATCH( "catch" )
+  FOR_EACH( "forEach" )
+  IF( "if" )
   LOCAL_SCOPE( "local scope" )
+  LOOP( "loop" )
   RETURN( "procedure" )
   THROW( "throw" )
-  BLOCK( "block" )
-  IF( "if" )
-  WHILE( "while" )
-  LOOP( "loop" )
-  FOR_EACH( "forEach" )
+  TRY( "try" )
   USE( "use" )
+  WHILE( "while" )
 
   METHODS
     method is_defined->Logical
