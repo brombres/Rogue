@@ -1765,8 +1765,8 @@ augment
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")
 
-      local m_get          = collection_type.methods[ "at(Int32)" ]
-      if (not m_get) m_get = collection_type.methods[ "get(Int32)" ]
+      local m_get          = collection_type.methods[ "at(Rogue::Int32)" ]
+      if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
 
       local down_to = false
       local v_index : Local

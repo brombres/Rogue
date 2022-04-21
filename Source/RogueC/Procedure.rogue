@@ -202,7 +202,7 @@ class Procedure : Cmd
                 endIf
               endIf
               assert p.type
-              builder.print( p.type.name )
+              builder.print( p.type.module_context.name ).print( "::" ).print( p.type.name )
             endBlock
           endForEach
           builder.print ')'
@@ -219,7 +219,7 @@ class Procedure : Cmd
         forEach (p in parameters from min_args)
           block p = p->(as Local)
             if (not p.initial_value)
-              throw p.t.error( "Missing default value. Once one parameter has a default value, all successive parameters must supply default values as well." )
+              throw p.t.error( "Missing default value. If one parameter has a default value then all successive parameters must supply default values as well." )
             endIf
           endBlock
         endForEach
