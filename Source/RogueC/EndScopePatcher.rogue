@@ -39,6 +39,17 @@ class EndScopePatcher : Visitor [singleton]
         return patched_statements( cmd )
       endIf
 
+    method on_visit( cmd:Statements )
+      temporarily resolver.current_statements = cmd.list.rewriter
+        forEach (statement in resolver.current_statements)
+          statement = visit( statement )
+          if (statement)
+            if (statement.type) statement = statement.discarding_result
+            if (statement) resolver.current_statements.write( statement )
+          endIf
+        endForEach
+      endTemporarily
+
     method on( cmd:Throw )->Cmd
       return patched_statements( cmd )
 

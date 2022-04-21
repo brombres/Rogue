@@ -14,6 +14,7 @@ class String
     data            : Byte[]
 
   GLOBAL METHODS
+    #{
     method operator+( left:String, right:Byte )->String
       if (left) return String().[ reserve(left.count+3), print(left), print(right) ]
       else      return String().[ print("null"), print(right) ]
@@ -52,6 +53,7 @@ class String
         if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
+      }#
 
     method operator+( left:String, right:Real64 )->String
       use builder = String.pool
@@ -60,23 +62,11 @@ class String
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
 
+      #{
     method operator+( left:String, right:String )->String
       if (right is null) return operator+( left, "null" )
       if (left) return String().[ reserve(left.count+right.count), print(left), print(right) ]
       else      return String().[ reserve(4+right.count), print("null"), print(right) ]
-
-      #{
-    method operator+( left:String, right:Object )->String
-      return which{ left || "null" }.operator+( right )
-
-    method operator+( left:String, right:Real64 )->String
-      return which{ left || "null" }.operator+( right )
-
-    method operator+( left:String, right:Real32 )->String
-      return which{ left || "null" }.operator+( right )
-
-    method operator+( left:String, right:String )->String
-      return which{ left || "null" }.operator+( right )
       }#
 
   METHODS

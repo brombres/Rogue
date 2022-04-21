@@ -196,7 +196,6 @@ class Visitor
       cmd.collection = visit(cmd.collection)->(as ForEachCollection)
 
     method on_visit_children( cmd:Conditional )
-      cmd.initialization = visit( cmd.initialization )
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
 
@@ -208,14 +207,12 @@ class Visitor
       cmd.statements = visit(cmd.statements)
 
     method on_visit_children( cmd:Iterator )
-      cmd.initialization = visit(cmd.initialization)
       cmd.control = visit(cmd.control)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.upkeep = visit(cmd.upkeep)
 
     method on_visit_children( cmd:If )
-      cmd.initialization = visit(cmd.initialization)
       cmd.condition = visit(cmd.condition)
       cmd.statements = visit(cmd.statements)
       cmd.cmd_else = visit(cmd.cmd_else)->(as If)

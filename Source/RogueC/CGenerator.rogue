@@ -48,7 +48,7 @@ class CGenerator : Visitor
       writer.print_with_cast( cmd, from_type, to_type )
 
     method on_visit( cmd:Cmd )
-      throw UnsupportedOperationError("CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
+      throw cmd.t.error("Unsupported operation CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
 
     method on_visit( cmd:Access )
       #println StackTrace()
@@ -1050,8 +1050,6 @@ class CGenerator : Visitor
     method print_procedure_cleanup
       if (this_procedure.requires_cleanup)
         if (Program.gc_auto)
-          writer.println
-
           # Release Object refs
           local pop_count = 0
           forEach (p in this_procedure.parameters)
@@ -1717,9 +1715,6 @@ augment
         writer.println ":;"
       endIf
 
-    method Conditional.on_begin_scope( cgen:CGenerator )
-      cgen.visit( initialization )
-
     method CleanupBlock.on_end_scope( cgen:CGenerator )
       local writer = cgen.writer
 
@@ -1728,7 +1723,9 @@ augment
         writer.println ":;"
       endIf
 
-      cgen.visit( cleanup )
+      if (not BranchAnalyzer.all_paths_return(statements))
+        cgen.visit( cleanup )
+      endIf
 
       if (exception_passthrough)
         writer.print "if (Rogue_exception) "

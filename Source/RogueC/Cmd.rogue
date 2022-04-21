@@ -954,25 +954,21 @@ endClass
 
 class Conditional : ControlStructure
   PROPERTIES
-    initialization : Cmd
     condition      : Cmd
 
   METHODS
     method init( t:Token, control_type:ControlType )
       prior.init( t, control_type )
-      initialization = Statements(t)
 
     method init( t:Token, condition, statements:Cmd, control_type=ControlType.UNDEFINED:ControlType )
       prior.init( t, statements, control_type )
-      initialization = Statements(t)
 
     method init( existing:Conditional )
       prior.init( existing )
-      if (existing.initialization) initialization = existing.initialization.cloned
       if (existing.condition) condition = existing.condition.cloned
 
     method description->String
-      return "Conditional($,$,$)" (%initialization,%condition,%statements)
+      return "Conditional($,$)" (%condition,%statements)
 
 endClass
 
@@ -1000,7 +996,7 @@ class Iterator : Conditional
       return true
 
     method description->String
-      return "Iterator($,$,$,$,$)" (%@initialization,%control,%condition,%statements,%upkeep)
+      return "Iterator($,$,$,$)" (%control,%condition,%statements,%upkeep)
 
 
 endClass

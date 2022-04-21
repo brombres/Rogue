@@ -11,7 +11,6 @@ class Resolver : Visitor
     control_stack     = ControlStructure[]
 
     current_statements : ListRewriter<<Cmd>>
-    insert_in_init     = false
 
     autoname_index = 0
 
@@ -220,9 +219,7 @@ class Resolver : Visitor
 
     method on( cmd:If )->Cmd
       push_scope( cmd )
-      temporarily insert_in_init = true
-        if (cmd.condition) cmd.condition .= logicalized( this )
-      endTemporarily
+      if (cmd.condition) cmd.condition .= logicalized( this )
 
       if (cmd.condition and cmd.condition.is_literal)
         pop_scope
@@ -358,10 +355,7 @@ class Resolver : Visitor
 
     method on_visit( cmd:Iterator )
       push_scope( cmd )
-      temporarily insert_in_init = true
-        cmd.condition = visit( cmd.condition )
-      endTemporarily
-      cmd.initialization = visit( cmd.initialization )
+      cmd.condition = visit( cmd.condition )
       cmd.statements = visit( cmd.statements )
       cmd.upkeep = visit( cmd.upkeep )
       cmd.control = visit( cmd.control )
@@ -459,7 +453,7 @@ class Resolver : Visitor
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
       if (cmd.loop_count)
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
-        iterator.initialization.add(
+        insert(
           SetLocal( v.t, v,
           Add( v.t, cmd.loop_count.resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
           )
@@ -607,8 +601,6 @@ class Resolver : Visitor
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
 
     method on( cmd:Use )->Cmd
-      push_scope( cmd )
-
       if (cmd.resources.count > 1)
         local res = cmd.resources.remove_first->(as UsedResource)
         local nested_use = Use( cmd.t, cmd.resources, cmd.statements )
@@ -617,6 +609,8 @@ class Resolver : Visitor
       endIf
 
       local cmd_block = CleanupBlock( cmd.t, ControlType.USE )
+      push_scope( cmd_block )
+
       local res = cmd.resources.first->(as UsedResource)
       local resource = visit( res.resource )
       local resource_type = resource.require_type
@@ -624,7 +618,7 @@ class Resolver : Visitor
       local v_resource = add_local( resource.t, "resource", resource_type )
       cmd_block.statements.add( SetLocal(v_resource, resource, &initial_assignment) )
 
-      local cmd_call = resolve_call( resource.t, resource.require_type, resource, "on_use", null )
+      local cmd_call = resolve_call( resource.t, resource.require_type, GetLocal(v_resource), "on_use", null )
       local v = add_local( Local(res.t, res.name, cmd_call.require_type) )
       cmd_block.statements.add( SetLocal(v, cmd_call, &initial_assignment) )
 
@@ -645,9 +639,7 @@ class Resolver : Visitor
 
       push_scope( iterator )
 
-      temporarily insert_in_init = true
-        iterator.condition = visit( cmd.condition ).logicalized( this )
-      endTemporarily
+      iterator.condition = visit( cmd.condition ).logicalized( this )
 
       pop_scope
 
@@ -663,13 +655,7 @@ class Resolver : Visitor
       endForEach
 
     method insert( cmd:Cmd )
-      if (insert_in_init)
-        local conditional = control_stack.last->(as Conditional)
-        assert conditional
-        conditional.initialization.add( cmd )
-      else
-        current_statements.write( cmd )
-      endIf
+      current_statements.write( visit(cmd) )
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m = this_module
@@ -1735,10 +1721,8 @@ augment
     method ForEachInControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
       resolver.push_scope( cmd_iterator )
 
-      temporarily resolver.insert_in_init = true
-        resolver.visit( this )
-        resolver.visit( collection )
-      endTemporarily
+      resolver.visit( this )
+      resolver.visit( collection )
 
       collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
 
@@ -1749,10 +1733,8 @@ augment
 
       resolver.push_scope( cmd_iterator )
 
-      temporarily resolver.insert_in_init = true
-        resolver.visit( this )
-        resolver.visit( collection )
-      endTemporarily
+      resolver.visit( this )
+      resolver.visit( collection )
 
       collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
 
@@ -1785,11 +1767,11 @@ augment
         local initial_index : Cmd
         if (cmd_collection.starting_index)
           initial_index = cmd_collection.starting_index
-          cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+          resolver.insert( SetLocal(v_index,initial_index,&initial_assignment) )
         else
           if (not down_to)
             initial_index = LiteralInt32( t, 0 )
-            cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+            resolver.insert( SetLocal(v_index,initial_index,&initial_assignment) )
           endIf
         endIf
 
@@ -1807,16 +1789,16 @@ augment
         endIf
 
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-        cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
 
         if (down_to)
           # Known negative step size
           local initial_index = Subtract( t, ContextAccess(t, GetLocal(v_collection), "count"), LiteralInt32(t,1) )
-          cmd_iterator.initialization.add( SetLocal(v_index,initial_index,&initial_assignment) )
+          resolver.insert( SetLocal(v_index,initial_index,&initial_assignment) )
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
         else
           local v_count = resolver.add_local( t, "count", Program.type_Int32 )
-          cmd_iterator.initialization.add( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
+          resolver.insert( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
           if (cmd_collection.step_size)
             # Unknown step size - include both ends of the allowed range in the condition
             cmd_iterator.condition = LogicalAnd( t,
@@ -1832,7 +1814,7 @@ augment
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
           assert resolver.control_stack.last is cmd_iterator
-          cmd_iterator.initialization.add(
+          resolver.insert(
             SetLocal( v_cur,
               resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
                   Args(cmd_collection.t,GetLocal(v_index)) )
@@ -1858,10 +1840,10 @@ augment
         endIf
 
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-        cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
 
         local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
-        cmd_iterator.initialization.add(
+        resolver.insert(
           SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another), &initial_assignment )
         )
         cmd_iterator.upkeep.add(
@@ -1874,7 +1856,7 @@ augment
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
         assert resolver.control_stack.last is cmd_iterator
-        cmd_iterator.initialization.add(
+        resolver.insert(
           SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
         )
 
@@ -1899,7 +1881,7 @@ augment
         endIf
 
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-        cmd_iterator.initialization.add( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
 
         cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
 
@@ -1908,7 +1890,7 @@ augment
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
         assert resolver.control_stack.last is cmd_iterator
-        cmd_iterator.initialization.add(
+        resolver.insert(
           SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
         )
 
@@ -1918,9 +1900,7 @@ augment
       if (collection_type.methods.contains("iterator()"))
         cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "iterator" )
 
-        temporarily resolver.insert_in_init = true
-          resolver.visit( cmd_collection )
-        endTemporarily
+        resolver.visit( cmd_collection )
 
         resolve_foreach( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
@@ -1929,9 +1909,7 @@ augment
       if (collection_type.methods.contains("reader()"))
         cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "reader" )
 
-        temporarily resolver.insert_in_init = true
-          resolver.visit( cmd_collection )
-        endTemporarily
+        resolver.visit( cmd_collection )
 
         resolve_foreach( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
@@ -1964,10 +1942,10 @@ augment
       local v_index : Local
       if (cmd_control.optional_at)
         v_index = resolver.add_local( Local(cmd_control.optional_at.t, cmd_control.optional_at.name, null, Program.type_Int32) )
-        cmd_iterator.initialization.add( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
       endIf
 
-      cmd_iterator.initialization.add( SetLocal(t,v_iterator,left,&initial_assignment) )
+      resolver.insert( SetLocal(t,v_iterator,left,&initial_assignment) )
 
       cmd_iterator.condition = CompareGE( t, GetLocal(v_iterator), right )
 
@@ -1991,10 +1969,10 @@ augment
       local v_index : Local
       if (cmd_control.optional_at)
         v_index = resolver.add_local( Local(cmd_control.optional_at.t, cmd_control.optional_at.name, null, Program.type_Int32) )
-        cmd_iterator.initialization.add( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
       endIf
 
-      cmd_iterator.initialization.add( SetLocal(t,v_iterator,left,&initial_assignment) )
+      resolver.insert( SetLocal(t,v_iterator,left,&initial_assignment) )
 
       cmd_iterator.condition = CompareLE( t, GetLocal(v_iterator), right )
 
@@ -2018,10 +1996,10 @@ augment
       local v_index : Local
       if (cmd_control.optional_at)
         v_index = resolver.add_local( Local(cmd_control.optional_at.t, cmd_control.optional_at.name, null, Program.type_Int32) )
-        cmd_iterator.initialization.add( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
       endIf
 
-      cmd_iterator.initialization.add( SetLocal(t,v_iterator,left,&initial_assignment) )
+      resolver.insert( SetLocal(t,v_iterator,left,&initial_assignment) )
 
       cmd_iterator.condition = CompareLT( t, GetLocal(v_iterator), right )
 
