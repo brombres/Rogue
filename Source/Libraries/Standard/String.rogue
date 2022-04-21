@@ -26,10 +26,6 @@ class String
       if (left) return String().[ reserve(left.count+11), print(left), print(right) ]
       else      return String().[ print("null"), print(right) ]
 
-    method operator+( left:String, right:Logical )->String
-      if (left) return String().[ reserve(left.count+5), print(left), print(right) ]
-      else      return String().[ print("null"), print(right) ]
-
     method operator+( left:String, right:Int64 )->String
       use builder = String.pool
         builder.print( right )
@@ -37,10 +33,39 @@ class String
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
 
-      #{
-    method operator+( left:String, right:Int64 )->String
-      return which{ left || "null" }.operator+( right )
+    method operator+( left:String, right:Logical )->String
+      if (left) return String().[ reserve(left.count+5), print(left), print(right) ]
+      else      return String().[ print("null"), print(right) ]
 
+    method operator+( left:String, right:Object )->String
+      if (right is null) return operator+( left, "null" )
+
+      use builder = String.pool
+        builder.print( right->String )
+        if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
+        else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
+      endUse
+
+    method operator+( left:String, right:Real32 )->String
+      use builder = String.pool
+        builder.print( right )
+        if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
+        else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
+      endUse
+
+    method operator+( left:String, right:Real64 )->String
+      use builder = String.pool
+        builder.print( right )
+        if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
+        else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
+      endUse
+
+    method operator+( left:String, right:String )->String
+      if (right is null) return operator+( left, "null" )
+      if (left) return String().[ reserve(left.count+right.count), print(left), print(right) ]
+      else      return String().[ reserve(4+right.count), print("null"), print(right) ]
+
+      #{
     method operator+( left:String, right:Object )->String
       return which{ left || "null" }.operator+( right )
 

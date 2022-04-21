@@ -695,7 +695,9 @@ class CGenerator : Visitor
       writer.println '}'
 
       if (cmd.cmd_else)
-        writer.println "else "
+        writer.print "else"
+        if (cmd.cmd_else.condition) writer.print " "
+        else                        writer.println
         visit( cmd.cmd_else )
       endIf
       on_leave( cmd )
