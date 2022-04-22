@@ -680,4 +680,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.cleanup)
       return result
 
+    method on_visit_children( cmd:FormattedString )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
 endClass

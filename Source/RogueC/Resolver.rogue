@@ -193,6 +193,34 @@ class Resolver : Visitor
       cmd.control.resolve_foreach( this, cmd, iterator )
       return visit( iterator )
 
+    method on( cmd:FormattedString )->Cmd
+      local marker_count = cmd.format.count('$')
+      if (marker_count != cmd.args.count)
+        if (marker_count < cmd.args.count)
+          throw cmd.t.error( "Formatted string has fewer '$' markers than replacement args." )
+        else
+          throw cmd.t.error( "Formatted string has more '$' markers than replacement args." )
+        endIf
+      endIf
+
+      local format = cmd.format
+      local t = cmd.t
+      local build_list = CmdList( t )
+      forEach (arg in cmd.args)
+        local i = format.locate('$').value
+        if (i > 0)
+          local st = LiteralString( t, format.leftmost(i) )
+          format .= rightmost(-(i+1))
+          build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,st) ) )
+        endIf
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,arg) ) )
+      endForEach
+      if (format.count)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,LiteralString(t,format)) ) )
+      endIf
+
+      return visit( ContextBlock(t, TypeAccess(t,Program.type_String,Args(t)), build_list) )
+
     method on_visit( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context
         on_visit( cmd->(as Procedure) )

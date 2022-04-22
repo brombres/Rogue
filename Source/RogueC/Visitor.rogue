@@ -491,5 +491,8 @@ class Visitor
       cmd.statements = visit(cmd.statements)
       cmd.cleanup = visit(cmd.cleanup)
 
+    method on_visit_children( cmd:FormattedString )
+      cmd.args = visit(cmd.args)
+
 endClass
 

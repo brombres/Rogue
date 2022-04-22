@@ -1565,7 +1565,14 @@ parser
   access_inner
 
 - term
-  on STRING         -> LiteralString(value=content):Literal
+  on STRING
+    create LiteralString(value=content):Literal
+    if (nextIs('('))
+      args
+      produce FormattedString(format:String,args)
+    endIf
+    return
+  endOn
   on INTEGER        -> LiteralInteger(content=content:String,base="10":Integer):Literal
   on HEX_INTEGER    -> LiteralInteger(content=content:String,base="16":Integer):Literal
   on BINARY_INTEGER -> LiteralInteger(content=content:String,base="2":Integer):Literal

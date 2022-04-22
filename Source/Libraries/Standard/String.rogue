@@ -14,7 +14,6 @@ class String
     data            : Byte[]
 
   GLOBAL METHODS
-    #{
     method operator+( left:String, right:Byte )->String
       if (left) return String().[ reserve(left.count+3), print(left), print(right) ]
       else      return String().[ print("null"), print(right) ]
@@ -53,7 +52,6 @@ class String
         if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
-      }#
 
     method operator+( left:String, right:Real64 )->String
       use builder = String.pool
@@ -62,12 +60,10 @@ class String
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
 
-      #{
     method operator+( left:String, right:String )->String
       if (right is null) return operator+( left, "null" )
       if (left) return String().[ reserve(left.count+right.count), print(left), print(right) ]
       else      return String().[ reserve(4+right.count), print("null"), print(right) ]
-      }#
 
   METHODS
     method init
@@ -159,6 +155,7 @@ class String
       data.shift( n ) # shift data right to make room for same bytes at beginning
       data.copy( i1+n, n, data, 0 ) # copy bytes to beginning
       data.discard_from(i1+n)
+      hash_code = -1
       return this
 
     method last->Character

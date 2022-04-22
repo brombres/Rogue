@@ -2779,6 +2779,12 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.STRING)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( LiteralString(_cur_t,_cur_t.content), 0 )
+                if ((_next_t.type == TokenType.SYMBOL_OPEN_PAREN))
+                  _execute(ip_args)
+                  _pop_frame
+                  if (not disable_output) _push( FormattedString(_cur_t,_string_arg(-2),_node_arg(-1)), 2 )
+                  return
+                endIf
                 return
               endTemporarily
             endIf

@@ -3239,3 +3239,21 @@ class EscapeLoop : Escape
       return "EscapeLoop"
 endClass
 
+
+class FormattedString : Cmd
+  PROPERTIES
+    format : String
+    args   : Cmd
+
+  METHODS
+    method init( t, format, args )
+
+    method init( existing:FormattedString )
+      prior.init( existing )
+      format = existing.format
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "FormattedString($,$)" (%format,%args)
+
+endClass
