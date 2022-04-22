@@ -277,6 +277,7 @@ class CSpecializer : Visitor
       endIf
 
     method on_visit( cmd:Throw )
+      insert( PushStackTraceCutoff(cmd.t) )
       visit_children( cmd )
 endClass
 

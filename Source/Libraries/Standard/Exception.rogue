@@ -1,8 +1,18 @@
 class Exception
   PROPERTIES
-    message : String
+    message     : String
+    stack_trace = StackTrace()
 
   METHODS
     method init( message )
+
+    method display
+      stack_trace.display
+      println message
+
+  GLOBAL METHODS
+    method display( ex:Exception )
+      if (ex) ex.display
+
 endClass
 

@@ -21,9 +21,6 @@ endClass
 
 augment
   METHODS
-    method Cmd.catches_exception( of_type:Type )->Logical
-      return false
-
     method Cmd.is_retained->Logical
       return false
 

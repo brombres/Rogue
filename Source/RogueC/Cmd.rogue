@@ -23,6 +23,9 @@ class Cmd( t:Token )
     method catches_escape( escape_type:ControlType )->Logical
       return false
 
+    method catches_exception( of_type:Type )->Logical
+      return false
+
     method clear
       throw UnsupportedOperationError()
 
@@ -1831,6 +1834,27 @@ class Throw : Cmd
 
 endClass
 
+class Try : ControlStructure
+  PROPERTIES
+    catches : Catches
+
+  METHODS
+    method init( t, statements, catches )
+      prior.init( t, statements, ControlType.TRY )
+
+    method init( existing:Try )
+      prior.init( existing )
+      if (existing.catches) catches = existing.catches.cloned->(as Catches)
+
+    method catches_exception( of_type:Type )->Logical
+      if (of_type.instance_of((forEach in catches).exception_type)) return true
+      return false
+
+    method description->String
+      return "Try($,$)" (%statements,%catches)
+
+endClass
+
 class Catch : ControlStructure
   PROPERTIES
     var_name       : String
@@ -1847,23 +1871,6 @@ class Catch : ControlStructure
 
     method description->String
       return "Catch($,$,$)" (%var_name,%exception_type,%statements)
-
-endClass
-
-class Try : ControlStructure
-  PROPERTIES
-    catches : Catches
-
-  METHODS
-    method init( t, statements, catches )
-      prior.init( t, statements, ControlType.TRY )
-
-    method init( existing:Try )
-      prior.init( existing )
-      if (existing.catches) catches = existing.catches.cloned->(as Catches)
-
-    method description->String
-      return "Try($,$)" (%statements,%catches)
 
 endClass
 
@@ -3256,4 +3263,10 @@ class FormattedString : Cmd
     method description->String
       return "FormattedString($,$)" (%format,%args)
 
+endClass
+
+class PushStackTraceCutoff : Cmd
+  METHODS
+    method description->String
+      return "PushStackTraceCutoff"
 endClass

@@ -3194,6 +3194,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( OpAndAssign(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( PreDecrementLocal(_cur_t,_node_arg(-1)->(as Local)), 1 )
             if (not disable_output) _push( Procedure(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+            if (not disable_output) _push( PushStackTraceCutoff(_cur_t), 0 )
             if (not disable_output) _push( Range(_cur_t,_node_arg(-2),_node_arg(-1)), 2 )
             if (not disable_output) _push( ReturnOnException(_cur_t), 0 )
             if (not disable_output) _push( SetGlobalProperty(_cur_t,_node_arg(-2)->(as Property),_node_arg(-1)), 2 )

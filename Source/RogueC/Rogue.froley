@@ -1777,6 +1777,7 @@ parser
   create OpAndAssign(target,operand)
   create PreDecrementLocal(info:Local)  # Internal use
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
+  create PushStackTraceCutoff
   create Range(left,right):Binary
   create ReturnOnException
   create SetGlobalProperty(info:Property,new_value)

@@ -61,8 +61,6 @@ class String
       endUse
 
     method operator+( left:String, right:String )->String
-println "stack:"
-StackTrace()
 throw Exception("Error")
       if (right is null) return operator+( left, "null" )
       if (left) return String().[ reserve(left.count+right.count), print(left), print(right) ]

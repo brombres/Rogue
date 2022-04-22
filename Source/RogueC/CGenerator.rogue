@@ -570,7 +570,7 @@ class CGenerator : Visitor
       writer.indent += 2
 
       if (Program.stack_trace)
-        writer.print ''Rogue_call_stack_add( "''
+        writer.print ''Rogue_call_stack_push( "''
         if (this_procedure.type_context)
           writer.print this_procedure.type_context
           writer.print '.'
@@ -976,6 +976,10 @@ class CGenerator : Visitor
       visible_locals.discard_from( visible_locals_fp.remove_last )
       return cmd
 
+    method on_visit( cmd:PushStackTraceCutoff )
+      writer.println ''Rogue_call_stack_push( "", "" );''   # create dummy frame for stack trace cutoff
+      writer.println "Rogue_call_stack_line = -1;"
+
     method on_visit( cmd:Return )
       print_procedure_cleanup
       writer.print "return"
@@ -1058,6 +1062,7 @@ class CGenerator : Visitor
       writer.print   "Rogue_exception = (RogueObject*)"
       visit( cmd.exception )
       writer.println ';'
+      writer.println "Rogue_call_stack_pop();"
       print_procedure_cleanup
       dispatch_exception( cmd.t )
 
@@ -1075,7 +1080,7 @@ class CGenerator : Visitor
 
     method print_procedure_cleanup
       if (Program.stack_trace)
-        writer.println "Rogue_call_stack_remove_last();"
+        writer.println "Rogue_call_stack_pop();"
       endIf
 
       if (this_procedure.requires_cleanup)
@@ -1413,14 +1418,16 @@ augment
       forEach (type in types)
         if (type.is_aspect) nextIteration
         local m = type.global_methods["init_class()"]
+        if (not m or m.statements.count == 0) nextIteration
         writer.print( m.c_name ).println( "();" )
+        writer.println "if (Rogue_exception) return 0;"
       endForEach
-      writer.println
 
     method Module.generate_c_launch_commands( writer:CWriter )
       local r = routines[ "on_launch()" ]
       if (r and r.statements.count)
         writer.print( r.c_name ).println( "();" )
+        writer.println "if (Rogue_exception) return 0;"
       endIf
 
     method NativeStatement.needs_semicolon->Logical
@@ -1507,18 +1514,22 @@ augment
       endForEach
 
       c_writer.println @|
-                        |void Rogue_launch()
+                        |int Rogue_launch()
                         |{
       c_writer.indent += 2
       Program.generate_c_string_literals( c_writer )
       (forEach in modules).generate_c_class_initialization( c_writer )
+      c_writer.println
       (forEach in modules).generate_c_launch_commands( c_writer )
+      c_writer.println
+      c_writer.println "return 1;"
       c_writer.indent -= 2
       c_writer.println @|}
                         |
                         |int main( int argc, char* argv[] )
                         |{
                         |  Rogue_launch();
+                        |  Rogue_print_exception();
                         |  return 0;
       c_writer.println @|}
 

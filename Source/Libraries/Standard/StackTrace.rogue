@@ -13,11 +13,12 @@ class StackTrace
           if (line == -1) escapeForEach  # indicates point of 'throw'
           frames.add( StackTraceFrame(procedure(i), filename(i), line) )
         endForEach
-
-        forEach (frame in frames)
-          println frame
-        endForEach
       endIf
+
+    method display
+      forEach (frame in frames)
+        println frame
+      endForEach
 
     method filename( index:Int32 )->String
       return native("RogueString_create( Rogue_call_stack[$index].filename, -1, 0 )")->String
