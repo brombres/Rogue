@@ -159,6 +159,13 @@ class CWriter : BufferedPrintWriter
            |  RogueFn_Object fn_on_cleanup;
            |};
            |
+           |typedef struct RogueCallFrame
+           |{
+           |  const char* procedure;
+           |  const char* filename;
+           |  RogueInt32 line;
+           |} RogueCallFrame;
+           |
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
@@ -169,6 +176,8 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_release( void* obj );
            |void* Rogue_retain( void* obj );
            |
+           |void  Rogue_call_stack_add( const char* procedure, const char* filename );
+           |void  Rogue_call_stack_remove_last();
            |void  RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer );
            |
            |void  Rogue_launch();
@@ -176,6 +185,10 @@ class CWriter : BufferedPrintWriter
            |struct RogueObject;
            |
            |extern struct RogueObject* Rogue_exception;  // if non-null then an exception is being thrown
+           |extern RogueCallFrame*     Rogue_call_stack;
+           |extern int                 Rogue_call_stack_count;
+           |extern int                 Rogue_call_stack_capacity;
+           |extern int                 Rogue_call_stack_line;
            |
            |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
            |RogueInt64  Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
@@ -232,6 +245,36 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
+           |void Rogue_call_stack_add( const char* procedure, const char* filename )
+           |{
+           |  if (Rogue_call_stack_count) Rogue_call_stack[ Rogue_call_stack_count-1 ].line = Rogue_call_stack_line;
+           |
+           |  if (Rogue_call_stack_count == Rogue_call_stack_capacity)
+           |  {
+           |    int required_capacity = Rogue_call_stack_capacity << 1;
+           |    if (required_capacity < 32) required_capacity = 32;
+           |
+           |    RogueCallFrame* new_data = (RogueCallFrame*) ROGUE_MALLOC( sizeof(RogueCallFrame) * required_capacity );
+           |    if (Rogue_call_stack)
+           |    {
+           |      memcpy( new_data, Rogue_call_stack, sizeof(RogueCallFrame)*Rogue_call_stack_count );
+           |      ROGUE_FREE( Rogue_call_stack );
+           |    }
+           |    Rogue_call_stack = new_data;
+           |    Rogue_call_stack_capacity = required_capacity;
+           |  }
+           |
+           |  Rogue_call_stack[ Rogue_call_stack_count++ ] = (RogueCallFrame){ procedure, filename };
+           |}
+           |
+           |void Rogue_call_stack_remove_last()
+           |{
+           |  if (--Rogue_call_stack_count)
+           |  {
+           |    Rogue_call_stack_line = Rogue_call_stack[ Rogue_call_stack_count-1 ].line;
+           |  }
+           |}
+           |
            |void RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer )
            |{
            |  if (type->local_pointer_count == type->local_pointer_capacity)
@@ -251,7 +294,11 @@ class CWriter : BufferedPrintWriter
            |  type->local_pointer_stack[ type->local_pointer_count++ ] = local_pointer;
            |}
            |
-           |RogueObject* Rogue_exception = 0;
+           |RogueObject*    Rogue_exception  = 0;
+           |RogueCallFrame* Rogue_call_stack = 0;
+           |int             Rogue_call_stack_count    = 0;
+           |int             Rogue_call_stack_capacity = 0;
+           |int             Rogue_call_stack_line     = 0;
            |
            |RogueInt32 Rogue_mod_Int32( RogueInt32 a, RogueInt32 b )
            |{

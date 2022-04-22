@@ -11,6 +11,8 @@ class CGenerator : Visitor
     visible_locals_fp = Int32[]
     control_stack     = ControlStructure[]
 
+    cur_line          : Int32
+
   METHODS
     method init( writer )
 
@@ -18,6 +20,26 @@ class CGenerator : Visitor
       local result = "_auto_$_$"(base,autoname_index)
       ++autoname_index
       return result
+
+    method dispatch_exception( t:Token )
+      forEach (control in control_stack step -1)
+        if (control.control_type == ControlType.TRY or control.requires_cleanup)
+          writer.print "goto "
+          writer.print control.c_escape_label(this)
+          return
+        endIf
+      endForEach
+
+      writer.print "return"
+      local return_type = this_procedure.return_type
+      if (return_type)
+        writer.print ' '
+        if (return_type.is_compound)
+          writer.print('(').print(return_type.c_name).print("){}")
+        else
+          visit( return_type.cmd_default_value(t) )
+        endIf
+      endIf
 
     method escape_label( control_type=ControlType.UNDEFINED:ControlType )->String
       forEach (scope in control_stack step -1)
@@ -547,6 +569,19 @@ class CGenerator : Visitor
       writer.println( "{" )
       writer.indent += 2
 
+      if (Program.stack_trace)
+        writer.print ''Rogue_call_stack_add( "''
+        if (this_procedure.type_context)
+          writer.print this_procedure.type_context
+          writer.print '.'
+        endIf
+        writer.print this_procedure.signature
+        writer.print ''", "''
+        writer.print File.filename(this_procedure.t.filepath)
+        writer.println ''" );''
+        cur_line = -1
+      endIf
+
       if (this_procedure.return_type and this_procedure.attributes.has_return and
           this_procedure.attributes.requires_cleanup)
         writer.print this_procedure.return_type.c_name
@@ -951,16 +986,9 @@ class CGenerator : Visitor
       writer.println ";"
 
     method on_visit( cmd:ReturnOnException )
-      #{
-      if (escape_needs_jump(cmd,ControlType.THROW))
-        writer.print "if (Rogue_execution_status) goto "
-        writer.print escape_label
-      else
-        writer.print "if (Rogue_execution_status) return"
-        if (this_procedure.return_type) writer.print " 0"
-      endIf
+      writer.print "if (Rogue_exception) "
+      dispatch_exception( cmd.t )
       writer.println ';'
-      }#
 
     method on_visit( cmd:Routine )
       this_module.write_c_routine_header( cmd, writer )
@@ -1008,6 +1036,12 @@ class CGenerator : Visitor
 
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
+        if (Program.stack_trace)
+          if (cur_line != statement.t.line)
+            cur_line = statement.t.line
+            writer.print( "Rogue_call_stack_line = " ).print( cur_line ).println(";")
+          endIf
+        endIf
         visit( statement )
         if (statement.needs_semicolon) writer.println( ';' )
       endForEach
@@ -1021,19 +1055,11 @@ class CGenerator : Visitor
       writer.print "THIS"
 
     method on_visit( cmd:Throw )
-      #{
-      writer.print   "Rogue_exception = "
+      writer.print   "Rogue_exception = (RogueObject*)"
       visit( cmd.exception )
       writer.println ';'
-      writer.println "Rogue_execution_status = ROGUE_EXE_EXCEPTION;"
-      if (escape_needs_jump(cmd,ControlType.THROW))
-        writer.print "goto "
-        writer.print escape_label
-      else
-        writer.print "return"
-        if (this_procedure.return_type) writer.print " 0"
-      endIf
-      }#
+      print_procedure_cleanup
+      dispatch_exception( cmd.t )
 
     method on_visit( cmd:WideningCast )
       print_with_cast( cmd.operand, cmd.to_type )
@@ -1048,6 +1074,10 @@ class CGenerator : Visitor
       visible_locals.add( forEach in cmd.locals )
 
     method print_procedure_cleanup
+      if (Program.stack_trace)
+        writer.println "Rogue_call_stack_remove_last();"
+      endIf
+
       if (this_procedure.requires_cleanup)
         if (Program.gc_auto)
           # Release Object refs
@@ -1729,26 +1759,7 @@ augment
 
       if (exception_passthrough)
         writer.print "if (Rogue_exception) "
-
-        forEach (control in cgen.control_stack step -1)
-          if (control.control_type == ControlType.TRY or control.requires_cleanup)
-            writer.print "goto "
-            writer.print control.c_escape_label(cgen)
-            writer.println ';'
-            return
-          endIf
-        endForEach
-
-        writer.print "return"
-        local return_type = cgen.this_procedure.return_type
-        if (return_type)
-          writer.print ' '
-          if (return_type.is_compound)
-            writer.print('(').print(return_type.c_name).print("){}")
-          else
-            cgen.visit( return_type.cmd_default_value(t) )
-          endIf
-        endIf
+        cgen.dispatch_exception( t )
         writer.println ';'
       endIf
 endAugment

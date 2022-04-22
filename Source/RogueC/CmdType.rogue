@@ -120,11 +120,6 @@ augment
     method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
       return LiteralReal( cmd_t, 0 )
 
-    method TypeString.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralString( cmd_t, null )
-
-    method TypeValue.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralValueUndefined( cmd_t )
 endAugment
 
 # discarding_result

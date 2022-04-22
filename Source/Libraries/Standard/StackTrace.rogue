@@ -1,0 +1,37 @@
+class StackTrace
+  PROPERTIES
+    frames : StackTraceFrame[]
+
+  METHODS
+    method init
+      local n = native("Rogue_call_stack_count")->Int32 - 1  # omit this initializer
+      if (n)
+        frames = StackTraceFrame[]( n )
+
+        forEach (i in 0..<n)
+          local line = line(i)
+          if (line == -1) escapeForEach  # indicates point of 'throw'
+          frames.add( StackTraceFrame(procedure(i), filename(i), line) )
+        endForEach
+
+        forEach (frame in frames)
+          println frame
+        endForEach
+      endIf
+
+    method filename( index:Int32 )->String
+      return native("RogueString_create( Rogue_call_stack[$index].filename, -1, 0 )")->String
+
+    method line( index:Int32 )->Int32
+      return native("Rogue_call_stack[$index].line")->Int32
+
+    method procedure( index:Int32 )->String
+      return native("RogueString_create( Rogue_call_stack[$index].procedure, -1, 0 )")->String
+
+endClass
+
+class StackTraceFrame( procedure:String, filename:String, line:Int32 ) [compound]
+  METHODS
+    method to->String
+      return "[$  $:$]" (procedure, filename, line )
+endClass

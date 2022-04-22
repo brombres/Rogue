@@ -141,8 +141,8 @@ class Resolver : Visitor
       local v = add_local( cmd.t, "context_block", context.require_type, DummyInitialValue )
       insert( SetLocal( v.t, v, context, &initial_assignment ) )
       forEach (context_cmd in cmd.commands)
-        context_cmd = visit( ContextBlockPatcher.patch(v,context_cmd) )
-        if (context_cmd) insert( context_cmd )
+        context_cmd = ContextBlockPatcher.patch( v, context_cmd )
+        insert( context_cmd )
       endForEach
       return GetLocal( v.t, v )
 
@@ -219,7 +219,8 @@ class Resolver : Visitor
         build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,LiteralString(t,format)) ) )
       endIf
 
-      return visit( ContextBlock(t, TypeAccess(t,Program.type_String,Args(t)), build_list) )
+      local result = visit( ContextBlock(t, TypeAccess(t,Program.type_String,Args(t)), build_list) )
+      return result
 
     method on_visit( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context
@@ -683,7 +684,8 @@ class Resolver : Visitor
       endForEach
 
     method insert( cmd:Cmd )
-      current_statements.write( visit(cmd) )
+      cmd = visit( cmd )
+      if (cmd) current_statements.write( cmd )
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m = this_module
@@ -783,7 +785,7 @@ class Resolver : Visitor
     method resolve_call( t:Token, context:Cmd, proc:Procedure, args=null:Cmd )->Cmd
       if (not args) args = CmdList(t)
       convert_args_to_parameter_types( args, proc )
-      return visit( proc.cmd_call(context,args) )
+      return visit( proc.cmd_call(t,context,args) )
 
     method resolve_direct_access( t:Token, context:Cmd, name:String )->Cmd
       local type_context = this_type
@@ -1723,20 +1725,20 @@ endAugment
 # Call
 augment
   METHODS
-    method Cmd.cmd_call( context:Cmd, args:Cmd )->Cmd
+    method Cmd.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
       throw t.error( "[INTERNAL] $.cmd_call() is undefined."(type_name) )
 
-    method GlobalMethod.cmd_call( context:Cmd, args:Cmd )->Cmd
+    method GlobalMethod.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
       return CallGlobalMethod( t, this, args )
 
-    method Method.cmd_call( context:Cmd, args:Cmd )->Cmd
+    method Method.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
       if (context)
         return CallDynamicMethod( t, context, this, args )
       else
         return CallThisDynamicMethod( t, this, args )
       endIf
 
-    method Routine.cmd_call( context:Cmd, args:Cmd )->Cmd
+    method Routine.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
       return CallRoutine( t, this, args )
 endAugment
 
@@ -1841,8 +1843,14 @@ augment
 
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-          assert resolver.control_stack.last is cmd_iterator
           resolver.insert(
+            SetLocal( v_cur,
+              resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
+                  Args(cmd_collection.t,GetLocal(v_index)) ),
+              &initial_assignment
+            )
+          )
+          cmd_iterator.upkeep.add(
             SetLocal( v_cur,
               resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
                   Args(cmd_collection.t,GetLocal(v_index)) )
@@ -1883,8 +1891,7 @@ augment
         assert cur_type
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        assert resolver.control_stack.last is cmd_iterator
-        resolver.insert(
+        cmd_iterator.statements.insert(
           SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
         )
 
@@ -1918,7 +1925,7 @@ augment
 
         local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
         assert resolver.control_stack.last is cmd_iterator
-        resolver.insert(
+        cmd_iterator.statements.insert(
           SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
         )
 
