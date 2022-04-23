@@ -491,7 +491,7 @@ class Resolver : Visitor
         local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
         insert(
           SetLocal( v.t, v,
-          Add( v.t, cmd.loop_count.resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
+          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
           )
         )
         iterator.condition = PreDecrementLocal( v.t, v )

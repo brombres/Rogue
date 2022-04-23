@@ -14,6 +14,44 @@ class String
     data            : Byte[]
 
   GLOBAL METHODS
+    method operator==( a:String, b:String )->Logical
+      if (a is null)     return (b is null)
+      elseIf (b is null) return false
+
+      if (a.hash_code != b.hash_code or a.count != b.count) return false
+      return native("(0==memcmp($a->data->as_utf8,$b->data->as_utf8,$a->data->count))")->Logical
+
+    method operator<>( a:String, b:String )->Int32
+      if (a is b) return 0
+
+      if (a is null)     return -1
+      elseIf (b is null) return  1
+
+      native @|RogueInt32 a_count = $a->data->count;
+              |RogueInt32 b_count = $b->data->count;
+              |
+              |int result;
+              |if (a_count == b_count)
+              |{
+              |  // Strings are same length
+              |  result = memcmp( $a->data->as_utf8, $b->data->as_utf8, a_count );
+              |  if (result == 0) return 0;
+              |}
+              |else
+              |{
+              |  // Strings differ in length.  Compare the same-length parts first.
+              |  if (a_count > b_count) a_count = b_count;
+              |  result = memcmp( $a->data->as_utf8, $b->data->as_utf8, a_count );
+              |  if (result == 0)
+              |  {
+              |    // Equal so far - the shorter string comes before the longer one.
+              |    if (a_count == b_count) return 1;
+              |    return -1;
+              |  }
+              |}
+              |if (result < 0) return -1;
+              |else            return  1;
+
     method operator+( left:String, right:Byte )->String
       if (left) return String().[ reserve(left.count+3), print(left), print(right) ]
       else      return String().[ print("null"), print(right) ]
@@ -64,6 +102,24 @@ class String
       if (right is null) return operator+( left, "null" )
       if (left) return String().[ reserve(left.count+right.count), print(left), print(right) ]
       else      return String().[ reserve(4+right.count), print("null"), print(right) ]
+
+    method operator*( left:String, right:Int32 )->String
+      if (left is null) return operator*( "null", right )
+
+      if (right <= 0) return ""
+      if (right == 1) return left
+
+      local result = String( left.count * right )
+      loop (right) result.print( left )
+      return result
+
+    method operator*( left:Int32, right:String )->String
+      return operator*( right, left )
+
+      #{
+    method operator/( prefix:String, suffix:String )->String
+      return "$/$" (prefix.without_trailing('/'),suffix)
+      }#
 
   METHODS
     method init
@@ -471,6 +527,28 @@ class String
         endUse
       endIf
       return native( "strtod( (char*)$this->data->as_utf8, 0 )" )->Real64
+
+      #{
+    method without_trailing( ch:Character )->String
+      # Like before_suffix() but removes multiple copies of the given character.
+      local result = this
+      local next   = result.before_suffix( ch )
+      while (result != next)
+        result = next
+        next   = result.before_suffix( ch )
+      endWhile
+      return result
+
+    method without_trailing( text:String )->String
+      # Like before_suffix() but removes multiple copies of the given string.
+      local result = this
+      local next   = result.before_suffix( text )
+      while (result != next)
+        result = next
+        next   = result.before_suffix( text )
+      endWhile
+      return result
+      }#
 
     method _round_off
       # Internal use.
