@@ -16,9 +16,7 @@ class StackTrace
       endIf
 
     method display
-      forEach (frame in frames)
-        println frame
-      endForEach
+      println this->String
 
     method filename( index:Int32 )->String
       return native("RogueString_create( Rogue_call_stack[$index].filename, -1, 0 )")->String
@@ -29,6 +27,12 @@ class StackTrace
     method procedure( index:Int32 )->String
       return native("RogueString_create( Rogue_call_stack[$index].procedure, -1, 0 )")->String
 
+    method to->String
+      local result = String()
+      forEach (frame in frames)
+        result.println frame
+      endForEach
+      return result
 endClass
 
 class StackTraceFrame( procedure:String, filename:String, line:Int32 ) [compound]

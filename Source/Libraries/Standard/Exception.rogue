@@ -10,6 +10,11 @@ class Exception
       stack_trace.display
       println message
 
+    method to->String
+      local result = String()
+      result.println message
+      return result
+
   GLOBAL METHODS
     method display( err:Exception )
       if (err) err.display
