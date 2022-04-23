@@ -357,12 +357,19 @@ augment Procedure
 
       use builder = StringBuilder.pool
         builder.print( name )
+
         if (parameters.count)
           builder.print '_'
           forEach (p in parameters)
             builder.print( "_" ).print( p.type.c_name )
           endForEach
         endIf
+
+        if (return_type)
+          builder.print "__"
+          builder.print return_type.c_name
+        endIf
+
         c_signature = builder
         return @c_signature
       endUse
