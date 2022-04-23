@@ -94,6 +94,13 @@ class Resolver : Visitor
       endIf
       return cmd
 
+    method on_visit( cmd:Catch )
+      if (not cmd.v_catch and cmd.var_name)
+        cmd.v_catch = add_local( Local(cmd.t, cmd.var_name, cmd.exception_type) )
+        #trace cmd.v_catch.is_anchored  # FIXME - doublecheck
+      endIf
+      visit_children( cmd )
+
     method on_validate( cmd:CompareEQ )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this, &suppress_error )
       if (result) return validate( LogicalNot(cmd.t,result) )
@@ -621,6 +628,12 @@ class Resolver : Visitor
       endIf
       back_propagate_thrown_exception( exception_type )
       return cmd
+
+    method on_visit( cmd:Try )
+      push_scope( cmd )
+      visit( cmd.statements )
+      pop_scope
+      visit( cmd.catches )
 
     method on( cmd:TypeAccess )->Cmd
       cmd.args = visit( cmd.args )

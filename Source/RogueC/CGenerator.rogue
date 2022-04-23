@@ -1435,7 +1435,6 @@ augment
 
     method Program.generate_c
       apply( CSpecializer() )
-      #apply( EscapeAnalyzer() )
 
       local h_writer = CWriter( File("Test.h"), &header )
 
@@ -1730,20 +1729,6 @@ augment
 
 endAugment
 
-      #{
-    method Use.print_catch_code( cgen:CGenerator )
-      local writer = cgen.writer
-      writer.print   c_escape_label(cgen)
-      writer.println ":;"
-      #writer.println "Rogue_execution_status = ROGUE_EXE_CONTINUE;"
-      #writer.print "if (Rogue_execution_status == "
-      #writer.print control_type.status
-      #writer.println ")"
-      #writer.println "{"
-      #writer.println "  Rogue_execution_status = ROGUE_EXE_CONTINUE;"
-      #writer.println "}"
-      }#
-
 augment
   METHODS
     method ControlStructure.on_begin_scope( cgen:CGenerator )
@@ -1772,6 +1757,44 @@ augment
         writer.print "if (Rogue_exception) "
         cgen.dispatch_exception( t )
         writer.println ';'
+      endIf
+
+    method Try.on_end_scope( cgen:CGenerator )
+      if (catches_escape or catches_exception)
+        local writer = cgen.writer
+        writer.print   c_escape_label(cgen)
+        writer.println ":;"
+        if (catches_exception)
+          if (catches_escape)
+            writer.println "if (Rogue_exception)"
+            writer.println '{'
+            writer.indent += 2
+          endIf
+
+          forEach (catch_block in catches)
+            writer.print   "if (Rogue_exception->type == &Type"
+            writer.print   catch_block.exception_type.c_name
+            writer.println ")"
+            writer.println '{'
+            writer.indent += 2
+
+            writer.print   catch_block.v_catch.c_name
+            writer.print   " = ("
+            writer.print   catch_block.v_catch.type.c_ref_name
+            writer.println ") Rogue_exception;"
+            writer.println "Rogue_exception = 0;"
+
+            cgen.visit( catch_block.statements )
+
+            writer.indent -= 2
+            writer.println '}'
+          endForEach
+
+          if (catches_escape)
+            writer.indent -= 2
+            writer.println '}'
+          endIf
+        endIf
       endIf
 endAugment
 

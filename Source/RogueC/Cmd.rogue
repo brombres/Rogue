@@ -1836,7 +1836,8 @@ endClass
 
 class Try : ControlStructure
   PROPERTIES
-    catches : Catches
+    catches           : Catches
+    catches_exception : Logical
 
   METHODS
     method init( t, statements, catches )
@@ -1847,7 +1848,10 @@ class Try : ControlStructure
       if (existing.catches) catches = existing.catches.cloned->(as Catches)
 
     method catches_exception( of_type:Type )->Logical
-      if (of_type.instance_of((forEach in catches).exception_type)) return true
+      if (of_type.instance_of((forEach in catches).exception_type))
+        catches_exception = true
+        return true
+      endIf
       return false
 
     method description->String
@@ -1859,6 +1863,7 @@ class Catch : ControlStructure
   PROPERTIES
     var_name       : String
     exception_type : Type
+    v_catch        : Local
 
   METHODS
     method init( t, var_name, exception_type, statements:Cmd )

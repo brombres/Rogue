@@ -11,8 +11,8 @@ class Exception
       println message
 
   GLOBAL METHODS
-    method display( ex:Exception )
-      if (ex) ex.display
+    method display( err:Exception )
+      if (err) err.display
 
 endClass
 
