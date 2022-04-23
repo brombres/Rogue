@@ -1574,8 +1574,9 @@ endClass
 
 class Method : Procedure
   PROPERTIES
-    type_context : Type
-    id           : Int32
+    type_context     : Type
+    id               : Int32
+    inheriting_types = Type[]
 
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,

@@ -1478,15 +1478,36 @@ augment
         c_writer.println "switch (((RogueObject*)THIS)->type->id)"
         c_writer.println '{'
         c_writer.indent += 2
+
+        # Put the most frequent type id cases at the end so they can be the 'default:'
+        group.sort(
+          function(a:Method,b:Method)->Logical
+            local a_count = a.inheriting_types.count
+            local b_count = b.inheriting_types.count
+            return (a_count < b_count or (a_count == b_count and a.type_context.id < b.type_context.id))
+          endFunction
+        )
+
         local last_m = group.last
         forEach (m in group)
           if (m is not last_m)
+            m.inheriting_types.sort( (a,b) => (a.id < b.id) )
+            local n = m.inheriting_types.count + 1
             c_writer.print "case "
             c_writer.print m.type_context.id
+            c_writer.print ':'
+            if (n > 1) c_writer.println
+            forEach (inheriting_type at i in m.inheriting_types)
+              c_writer.print "case "
+              c_writer.print inheriting_type.id
+              c_writer.print ':'
+              if (n > i+1) c_writer.println
+            endForEach
+            c_writer.print ' '
           else
-            c_writer.print "default"
+            c_writer.print "default: "
           endIf
-          c_writer.print ": "
+
           if (m.return_type) c_writer.print "return "
           c_writer.print m.c_name
           c_writer.print "(("
@@ -1499,6 +1520,7 @@ augment
           if (m.return_type) c_writer.println ");"
           else               c_writer.println "); return;"
         endForEach
+
         c_writer.indent -= 2
         c_writer.println '}'
         c_writer.indent -= 2
