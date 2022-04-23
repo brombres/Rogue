@@ -471,6 +471,9 @@ class Resolver : Visitor
       if (cmd.operand instanceOf LiteralLogical)
         return LiteralLogical( cmd.t, not cmd.operand->(as LiteralLogical).value )
       endIf
+      if (cmd.operand.type is not Program.type_Logical)
+        cmd.operand = cmd.operand.logicalized( this )
+      endIf
       return cmd
 
     method on_validate( cmd:LogicalOr )->Cmd
@@ -871,13 +874,14 @@ class Resolver : Visitor
 
 
     method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error )->Cmd
-      local m_create = find_procedure( t, type_context, null, "create", args, &require_global, &suppress_error )->(as GlobalMethod)
-      if (m_create) return resolve_call( t, null, m_create, args )
-
-      local m_init = find_procedure( t, type_context, null, "init", args, &suppress_error )->(as Method)
-      if (m_init)
-        convert_args_to_parameter_types( args, m_init )
-        return CreateObject( t, type_context, m_init, args )
+      local m_constructor = find_procedure( t, type_context, null, "constructor", args, &constructor, &suppress_error )
+      if (m_constructor)
+        if (m_constructor instanceOf GlobalMethod)
+          return resolve_call( t, null, m_constructor, args )
+        else
+          convert_args_to_parameter_types( args, m_constructor )
+          return CreateObject( t, type_context, m_constructor as Method, args )
+        endIf
       endIf
 
       if (suppress_error) return null
@@ -939,12 +943,15 @@ class Resolver : Visitor
       endForEach
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &require_global, &suppress_error )->Procedure
+        &constructor, &require_global, &suppress_error )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
       local error_message : String
       use Candidates
-        if (type_context)
+        if (constructor)
+          type_context.collect_methods( "create", Candidates.list, &require_global )
+          type_context.collect_methods( "init", Candidates.list )
+        elseIf (type_context)
           type_context.collect_methods( name, Candidates.list, &=require_global )
         else
           this_module.collect_routines( name, Candidates.list )
@@ -1113,7 +1120,7 @@ class Resolver : Visitor
           if (has_named_arg) m.arrange_args( args )
           contingent
             forEach (arg at i in args)
-              necessary (arg.type is m.parameters[i].type)
+              necessary exact_type_match( arg, m.parameters[i].type )
             endForEach
             Candidates.keep m
           endContingent
@@ -1209,6 +1216,24 @@ class Resolver : Visitor
       endIf
 
       return null
+
+    method exact_type_match( arg:Cmd, param_type:Type )->Logical
+      # Exact in principle but in practice it's a little fuzzy
+      if (arg.type is param_type) return true
+
+      if (arg instanceOf DefaultArg) return true
+
+      local arg_type = arg.type
+      if (arg_type is Program.type_null)
+        return (param_type.is_reference or param_type.attributes.is_optional)
+      endIf
+
+      if (param_type.attributes.is_optional)
+        return arg_type is param_type.properties["value"].type
+      endIf
+
+      return false
+
 
     method does_any_candidate_have_more_specialized_reference_parameters( m1:Procedure )->Logical
       forEach (m2 in Candidates)

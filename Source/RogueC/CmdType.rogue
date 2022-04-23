@@ -467,9 +467,6 @@ augment
     method LiteralLogical.type->Type
       return Program.type_Logical
 
-    #method LiteralNull.type->Type
-      #return @type
-
     method LiteralPi.type->Type
       return Program.type_Real
 
