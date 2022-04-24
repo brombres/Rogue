@@ -24,6 +24,9 @@ class Type : Cmd
     id                : Int32
     m_on_cleanup      : Method
 
+    base_type_lookup_index  : Int32
+    base_type_ids     = Int32[]
+
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
       if (type_args)
@@ -267,6 +270,7 @@ class Type : Cmd
       # Categorize base types
       if (base_class)
         base_class.organize_type
+        if (base_class.contains_reference) attributes.contains_reference = true
       elseIf (this.is_object and this is not Program.type_Object)
         base_class = Program.type_Object
         base_class.organize_type

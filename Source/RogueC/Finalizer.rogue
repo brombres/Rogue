@@ -1,12 +1,9 @@
 module Rogue
 
-class Finalizer : Visitor
-  PROPERTIES
-    next_type_id   = 1
-    next_method_id = 1
-
+class Finalizer : InspectionVisitor
   METHODS
     method apply
+      Program.apply( AssignIDs() )
       Program.apply( this )
 
       forEach (entry in Program.dynamic_methods.entries)
@@ -16,10 +13,16 @@ class Finalizer : Visitor
       endForEach
 
     method on_visit_type( type:Type )
-      if (type.is_aspect) return
+      type.base_type_lookup_index = Program.base_type_lookup.count
+      if (type.base_class)
+        type.base_type_ids.add( type.base_class.id )
+      endIf
+      if (type.aspects)
+        type.base_type_ids.add( (forEach in type.aspects).id )
+      endIf
+      Program.base_type_lookup.add( forEach in type.base_type_ids )
 
-      type.id = next_type_id
-      ++next_type_id
+      if (type.is_aspect) return
       prior.on_visit_type( type )
 
     method on_visit( m:Method )
@@ -27,9 +30,6 @@ class Finalizer : Visitor
 
       if (this_type.is_reference)
         if (m.type_context is this_type)
-          m.id = next_method_id
-          ++next_method_id
-
           if (this_type.base_class)
             local base_m = this_type.base_class.methods[ m.signature ]
             if (base_m) base_m.attributes.is_overridden = true

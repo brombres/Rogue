@@ -153,6 +153,8 @@ class CWriter : BufferedPrintWriter
            |  RogueInt32     local_pointer_count;
            |  RogueInt32     id;
            |  RogueInt32     size;
+           |  RogueInt32*    base_type_ids;
+           |  RogueInt32     base_type_count;
            |  RogueFn_Object fn_init_object;
            |  RogueFn_Object fn_init;
            |  RogueFn_Object fn_gc_trace;
@@ -192,10 +194,11 @@ class CWriter : BufferedPrintWriter
            |extern int                 Rogue_call_stack_capacity;
            |extern int                 Rogue_call_stack_line;
            |
-           |RogueInt32  Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
-           |RogueInt64  Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
-           |RogueReal32 Rogue_mod_Real32( RogueReal32 a, RogueReal32 b );
-           |RogueReal64 Rogue_mod_Real64( RogueReal64 a, RogueReal64 b );
+           |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id );
+           |RogueInt32   Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
+           |RogueInt64   Rogue_mod_Int64( RogueInt64 a, RogueInt64 b );
+           |RogueReal32  Rogue_mod_Real32( RogueReal32 a, RogueReal32 b );
+           |RogueReal64  Rogue_mod_Real64( RogueReal64 a, RogueReal64 b );
         println
 
       else
@@ -307,6 +310,27 @@ class CWriter : BufferedPrintWriter
            |int             Rogue_call_stack_capacity = 0;
            |int             Rogue_call_stack_line     = 0;
            |
+           |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
+           |{
+           |  if ( !obj ) return 0;
+           |  RogueType* type = ((RogueObject*)obj)->type;
+           |  if (type->id == ancestor_id) return 1;
+           |
+           |  RogueInt32* base_ids = type->base_type_ids - 1;
+           |  RogueInt32  count = type->base_type_count;
+           |  while (--count >= 0)
+           |  {
+           |    if (*(++base_ids) == ancestor_id) return 1;
+           |  }
+           |  return 0;
+           |}
+           |
+           |RogueLogical Rogue_is_type( void* obj, RogueType* type )
+           |{
+           |  if ( !obj ) return 0;
+           |  return ((RogueObject*)obj)->type == type;
+           |}
+           |
            |RogueInt32 Rogue_mod_Int32( RogueInt32 a, RogueInt32 b )
            |{
            |  if ((!a && !b) || b == 1) return 0;
@@ -337,19 +361,6 @@ class CWriter : BufferedPrintWriter
            |{
            |  RogueReal64 q = a / b;
            |  return a - (floor(q) * b);
-           |}
-           |
-           |RogueLogical Rogue_instance_of( void* obj, RogueType* ancestor_type )
-           |{
-           |  if ( !obj ) return 0;
-           |  printf("TODO: Rogue_instance_of()\n");
-           |  return 0;
-           |}
-           |
-           |RogueLogical Rogue_is_type( void* obj, RogueType* type )
-           |{
-           |  if ( !obj ) return 0;
-           |  return ((RogueObject*)obj)->type == type;
            |}
         println
 

@@ -344,9 +344,9 @@ endAugment
 
 augment Procedure
   PROPERTIES
-    c_name        : String
-    c_result_name : String
-    c_signature   : String  # for dynamic dispatch
+    c_name          : String
+    c_result_name   : String
+    c_signature     : String  # for dynamic dispatch
 
   METHODS
     method c_name->String

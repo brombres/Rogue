@@ -97,7 +97,6 @@ class Resolver : Visitor
     method on_visit( cmd:Catch )
       if (not cmd.v_catch and cmd.var_name)
         cmd.v_catch = add_local( Local(cmd.t, cmd.var_name, cmd.exception_type) )
-        #trace cmd.v_catch.is_anchored  # FIXME - doublecheck
       endIf
       visit_children( cmd )
 
@@ -880,7 +879,7 @@ class Resolver : Visitor
           return resolve_call( t, null, m_constructor, args )
         else
           convert_args_to_parameter_types( args, m_constructor )
-          return CreateObject( t, type_context, m_constructor as Method, args )
+          return CreateObject( t, type_context, m_constructor->(as Method), args )
         endIf
       endIf
 

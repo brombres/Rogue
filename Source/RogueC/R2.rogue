@@ -4,6 +4,7 @@ $include "Macros.rogue"
 
 $include "AccessAndAssignPatcher.rogue"
 $include "AspectMethodPatcher.rogue"
+$include "AssignIDs.rogue"
 $include "Attributes.rogue"
 $include "BranchAnalyzer.rogue"
 $include "Candidates.rogue"

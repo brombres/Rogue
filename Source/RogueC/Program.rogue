@@ -35,8 +35,10 @@ class Program [singleton]
     is_modified       : Logical
     unorganized_types = Type[]
 
-    unique_strings   = StringTable<<String>>()
-    dynamic_methods  = StringTable<<Method[]>>()
+    unique_strings    = StringTable<<String>>()
+    dynamic_methods   = StringTable<<Method[]>>()
+
+    base_type_lookup  = Int32[]
 
   METHODS
     method init

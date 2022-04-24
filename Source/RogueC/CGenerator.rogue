@@ -763,10 +763,9 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:InstanceOf )
-      writer.print "Rogue_instance_of("
+      writer.print( "Rogue_instance_of(" )
       visit( cmd.operand )
-      writer.print ", &"
-      writer.print( cmd.compare_type.c_name ).print( ')' )
+      writer.print( ", " ).print( cmd.compare_type.id ).print( ')' )
 
     method on_visit( cmd:Is )
       print_parenthesized( cmd.left )
@@ -1365,7 +1364,11 @@ augment
           writer.print   type.id
           writer.print   '', sizeof(''
           writer.print   type.c_name
-          writer.print   ''), ''
+          writer.print   ''), Rogue_base_types+''
+          writer.print   type.base_type_lookup_index
+          writer.print   ", "
+          writer.print   type.base_type_ids.count
+          writer.print   ", "
 
           local m_init_object = type.methods["init_object()"]
           if (m_init_object)
@@ -1455,6 +1458,8 @@ augment
       endForEach
       if (wrote_any) h_writer.println
 
+      h_writer.println "extern RogueInt32 Rogue_base_types[$];" (Program.base_type_lookup.count)
+
       forEach (str in Program.unique_strings)
         h_writer.print   "extern RogueString* "
         h_writer.print   str
@@ -1466,6 +1471,21 @@ augment
       #-------------------------------------------------------------------------
 
       local c_writer = CWriter( File("Test.c") )
+
+      c_writer.println "RogueInt32 Rogue_base_types[$] =" (Program.base_type_lookup.count)
+      c_writer.println "{"
+      c_writer.indent += 2
+      forEach (id at index in Program.base_type_lookup)
+        if (index > 0)
+          c_writer.print ','
+          if (index % 20 == 0) c_writer.println
+        endIf
+        c_writer.print id
+      endForEach
+      if (Program.base_type_lookup.count % 20 == 0) c_writer.println
+      c_writer.indent -= 2
+      c_writer.println "};"
+      c_writer.println
 
       (forEach in modules).generate_c_code( c_writer )
 

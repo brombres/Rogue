@@ -1,0 +1,24 @@
+module Rogue
+
+class AssignIDs : InspectionVisitor
+  PROPERTIES
+    next_type_id   = 1
+    next_method_id = 1
+
+  METHODS
+    method on_visit_type( type:Type )
+      type.id = next_type_id
+      ++next_type_id
+      prior.on_visit_type( type )
+
+    method on_visit( m:Method )
+      if (m.type_context.is_aspect) return
+
+      if (this_type.is_reference)
+        if (m.type_context is this_type)
+          m.id = next_method_id
+          ++next_method_id
+        endIf
+      endIf
+
+endClass
