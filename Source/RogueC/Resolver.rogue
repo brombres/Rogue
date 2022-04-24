@@ -189,9 +189,9 @@ class Resolver : Visitor
     method on_visit( cmd:Escape )
       contingent
         forEach (scope in control_stack step -1)
-          sufficient (scope.control_type == cmd.control_type)
+          sufficient (scope.catches_escape(cmd.control_type))
         endForEach
-        throw cmd.t.error( "No enclosing '$' to escape from."(cmd.control_type.name) )
+        throw cmd.t.error( "No enclosing '$' to escape from."(cmd.control_type.control_type_name) )
       endContingent
 
     method on( cmd:ForEach )->Cmd
@@ -388,13 +388,14 @@ class Resolver : Visitor
         return LiteralLogical( cmd.t, false )  # no way
       endIf
 
-    method on_visit( cmd:Iterator )
+    method on( cmd:Iterator )->Cmd
       push_scope( cmd )
       cmd.condition = visit( cmd.condition )
       cmd.statements = visit( cmd.statements )
       cmd.upkeep = visit( cmd.upkeep )
       cmd.control = visit( cmd.control )
       pop_scope
+      return cmd
 
     method on( cmd:LiteralList )->Cmd
       if (cmd.count == 0) throw cmd.t.error( "[INTERNAL] TODO: Empty LiteralList -> ValueList" )
@@ -631,11 +632,12 @@ class Resolver : Visitor
       back_propagate_thrown_exception( exception_type )
       return cmd
 
-    method on_visit( cmd:Try )
+    method on( cmd:Try )->Cmd
       push_scope( cmd )
       visit( cmd.statements )
       pop_scope
       visit( cmd.catches )
+      return cmd
 
     method on( cmd:TypeAccess )->Cmd
       cmd.args = visit( cmd.args )

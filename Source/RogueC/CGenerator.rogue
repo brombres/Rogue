@@ -1065,6 +1065,12 @@ class CGenerator : Visitor
       print_procedure_cleanup
       dispatch_exception( cmd.t )
 
+    method on_visit( cmd:Try )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+      # .catches are handled in on_end_scope
+
     method on_visit( cmd:WideningCast )
       print_with_cast( cmd.operand, cmd.to_type )
 
@@ -1825,7 +1831,14 @@ augment
             writer.println ") Rogue_exception;"
             writer.println "Rogue_exception = 0;"
 
+            cgen.push_scope( catch_block )
             cgen.visit( catch_block.statements )
+            cgen.pop_scope
+
+            if (catch_block.@catches_escape)
+              writer.print   catch_block.c_escape_label(cgen)
+              writer.println ":;"
+            endIf
 
             writer.indent -= 2
             writer.println '}'

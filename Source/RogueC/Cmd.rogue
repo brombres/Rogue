@@ -1872,6 +1872,7 @@ class Catch : ControlStructure
     var_name       : String
     exception_type : Type
     v_catch        : Local
+    catches_escape : Logical
 
   METHODS
     method init( t, var_name, exception_type, statements:Cmd )
@@ -1881,6 +1882,17 @@ class Catch : ControlStructure
       prior.init( existing )
       var_name = existing.var_name
       if (existing.exception_type) exception_type = existing.exception_type.cloned
+
+    method catches_escape->Logical
+      return @catches_escape
+
+    method catches_escape( escape_type:ControlType )->Logical
+      if (escape_type == ControlType.TRY)
+        catches_escape = true
+        return true
+      else
+        return false
+      endIf
 
     method description->String
       return "Catch($,$,$)" (%var_name,%exception_type,%statements)
@@ -3259,6 +3271,14 @@ class EscapeLoop : Escape
       return "EscapeLoop"
 endClass
 
+class EscapeTry : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.TRY
+
+    method description->String
+      return "EscapeTry"
+endClass
 
 class FormattedString : Cmd
   PROPERTIES
@@ -3284,11 +3304,3 @@ class PushStackTraceCutoff : Cmd
       return "PushStackTraceCutoff"
 endClass
 
-class EscapeTry : Escape
-  METHODS
-    method control_type->ControlType
-      return ControlType.TRY
-
-    method description->String
-      return "EscapeTry"
-endClass
