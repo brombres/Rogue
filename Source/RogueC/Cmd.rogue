@@ -3303,3 +3303,43 @@ class PushStackTraceCutoff : Cmd
       return "PushStackTraceCutoff"
 endClass
 
+
+class Which : Conditional
+  PROPERTIES
+    cases : Cmd
+
+  METHODS
+    method init( t, condition, cases, statements )
+
+    method init( existing:Which )
+      prior.init( existing )
+      if (existing.cases) cases = existing.cases.cloned
+
+    method description->String
+      return "Which($,$,$)" (%condition,%cases,%statements)
+
+endClass
+
+class WhichCase : Cmd
+  PROPERTIES
+    args       : Cmd
+    statements : Cmd
+
+  METHODS
+    method init( t, args, statements )
+
+    method init( existing:WhichCase )
+      prior.init( existing )
+      if (existing.args) args = existing.args.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "WhichCase($,$)" (%args,%statements)
+
+endClass
+
+class WhichCases : CmdList
+  METHODS
+    method description->String
+      return "WhichCases" + list_description
+endClass

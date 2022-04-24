@@ -685,4 +685,20 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:Which )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.cases)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:WhichCase )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
 endClass

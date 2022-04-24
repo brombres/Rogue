@@ -154,6 +154,78 @@ class String
       data[data.count] = 0
       is_ascii = (count == data.count)
 
+    method after( index:Int32 )->String
+      # Returns the substring of this string that occurs after
+      # the given index.
+      #
+      # Equivalent to `from(index+1)`.
+      return from(index+1)
+
+    method after_any( ch:Character, &ignore_case )->String
+      local i = locate_last( ch, &=ignore_case )
+      if (i.exists) return from( i.value+1 )
+      else          return this
+
+    method after_any( st:String, &ignore_case )->String
+      local i = locate_last( st, &=ignore_case )
+      if (i.exists) return from( i.value+st.count )
+      else          return this
+
+    method after_first( ch:Character, &ignore_case )->String
+      local i = locate( ch, &=ignore_case )
+      if (i.exists) return from( i.value+1 )
+      else          return ""
+
+    method after_first( st:String, &ignore_case )->String
+      local i = locate( st, &=ignore_case )
+      if (i.exists) return from( i.value+st.count )
+      else          return ""
+
+    method after_last( ch:Character, &ignore_case )->String
+      local i = locate_last( ch, &=ignore_case )
+      if (i.exists) return from( i.value+1 )
+      else          return ""
+
+    method after_last( st:String, &ignore_case )->String
+      local i = locate_last( st, &=ignore_case )
+      if (i.exists) return from( i.value+st.count )
+      else          return ""
+
+    method after_prefix( ch:Character, &ignore_case )->String
+      if (begins_with(ch,&=ignore_case)) return after_first( ch, &=ignore_case )
+      else                               return this
+
+    method after_prefix( st:String, &ignore_case )->String
+      if (begins_with(st,&=ignore_case)) return after_first( st, &=ignore_case )
+      else                               return this
+
+    method before( index:Int32 )->String
+      # Returns the substring of this string that occur before
+      # the given index.
+      #
+      # Equivalent to ''leftmost(index)''.
+      return from(0,index-1)
+
+    method before_first( ch:Character, &ignore_case )->String
+      local i = locate( ch, &=ignore_case )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method before_first( st:String, &ignore_case )->String
+      local i = locate( st, &=ignore_case )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method before_last( ch:Character, &ignore_case )->String
+      local i = locate_last( ch, &=ignore_case )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
+    method before_last( st:String, &ignore_case )->String
+      local i = locate_last( st, &=ignore_case )
+      if (i.exists) return from( 0, i.value-1 )
+      else          return this
+
     method before_suffix( ch:Character, &ignore_case )->String
       if (ends_with(ch,&=ignore_case)) return before_last( ch, &=ignore_case )
       else                             return this
@@ -171,8 +243,29 @@ class String
 
     method begins_with( other:String, &ignore_case )->Logical
       return (count >= other.count and contains_at(other,0,&=ignore_case))
+
+    method byte( byte_index:Int32 )->Byte
+      return data[byte_index]
+
+    method byte_count->Int32
+      return data.count
+
     method capacity->Int32
       return data.capacity
+
+    method capitalized->String
+      if (count == 0) return this
+
+      # Find the first letter
+      forEach (ch at index in this)
+        if (ch.is_letter)
+          if (ch.is_uppercase) return this  # Already capitalized
+          return this.leftmost(index) + Character(ch + ('A'-'a')) + this.from( index+1 )
+        endIf
+      endForEach
+
+      # No letters found
+      return this
 
     method clear->this
       if (is_immutable) return this
@@ -186,6 +279,50 @@ class String
 
     method cloned->String
       return String( this )
+
+    method clipped( &left=0:Int32, &right=0:Int32 )->String
+      return from( left, count-(right+1) )
+
+    method compare_to( other:String, &ignore_case )->Int32
+      if (other is null) return 1
+      if (this is other) return 0
+
+      if (ignore_case)
+        native @|RogueInt32 other_count = $other->data->count;
+                |RogueInt32 limit = $this->data->count;
+                |
+                |RogueInt32 result;
+                |if (limit == other_count)
+                |{
+                |  // Strings are same length
+                |  #ifdef ROGUE_PLATFORM_WINDOWS
+                |    result = strnicmp( $this->data->as_utf8, $other->data->as_utf8, limit );
+                |  #else
+                |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );
+                |  #endif
+                |  if (result == 0) return 0;
+                |}
+                |else
+                |{
+                |  // Strings differ in length.  Compare the part that matches first.
+                |  if (limit > other_count) limit = other_count;
+                |  #ifdef ROGUE_PLATFORM_WINDOWS
+                |    result = strnicmp( $this->data->as_utf8, $other->data->as_utf8, limit );
+                |  #else
+                |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );
+                |  #endif
+                |  if (result == 0)
+                |  {
+                |    // Equal so far - the shorter string comes before the longer one.
+                |    if (limit == other_count) return 1;
+                |    return -1;
+                |  }
+                |}
+                |if (result < 0) return -1;
+                |else            return 1;
+      else
+        return this <> other
+      endIf
 
     method contains( ch:Character, &ignore_case )->Logical
       return locate(ch,&=ignore_case)?
@@ -207,6 +344,39 @@ class String
         return native("(0 == memcmp($this->data->as_utf8 + $cursor_offset, $substring->data->as_utf8, $other_count))")->Logical
       endIf
 
+    method count->Int32
+      return @count
+
+    method count( look_for:Character )->Int32
+      local result = 0
+      if (look_for < 128)
+        native @|int n = $this->data->count;
+                |char* src = $this->data->as_utf8 + n;
+                |while (--n >= 0)
+                |{
+                |  if (*(--src) == $look_for) ++$result;
+                |}
+        return result
+
+      else
+        forEach (ch in this)
+          if (ch == look_for) ++result
+        endForEach
+
+      endIf
+
+      return result
+
+    method count( look_for:String )->Int32
+      local result = 0
+      local n = look_for.count
+      local pos = locate( look_for )
+      while (pos.exists)
+        ++result
+        pos = locate( look_for, pos.value + n )
+      endWhile
+      return result
+
     method ends_with( ch:Character, &ignore_case )->Logical
       if (ignore_case)
         return (count > 0 and this[count-1].to_lowercase == ch.to_lowercase)
@@ -217,6 +387,13 @@ class String
     method ends_with( other:String, &ignore_case )->Logical
       local other_count = other.count
       return (count >= other_count and other_count > 0 and contains_at(other,count-other_count,&=ignore_case))
+
+    method equals( other:String, &ignore_case )->Logical
+      if (ignore_case)
+        return 0 == compare_to( other, &ignore_case )
+      else
+        return this == other
+      endIf
 
     method first->Character
       return this[0]
@@ -258,33 +435,6 @@ class String
       local i = locate_last( st, &=ignore_case )
       if (i.exists) return from( i.value )
       else          return ""
-
-    method before( index:Int32 )->String
-      # Returns the substring of this string that occur before
-      # the given index.
-      #
-      # Equivalent to ''leftmost(index)''.
-      return from(0,index-1)
-
-    method before_first( ch:Character, &ignore_case )->String
-      local i = locate( ch, &=ignore_case )
-      if (i.exists) return from( 0, i.value-1 )
-      else          return this
-
-    method before_first( st:String, &ignore_case )->String
-      local i = locate( st, &=ignore_case )
-      if (i.exists) return from( 0, i.value-1 )
-      else          return this
-
-    method before_last( ch:Character, &ignore_case )->String
-      local i = locate_last( ch, &=ignore_case )
-      if (i.exists) return from( 0, i.value-1 )
-      else          return this
-
-    method before_last( st:String, &ignore_case )->String
-      local i = locate_last( st, &=ignore_case )
-      if (i.exists) return from( 0, i.value-1 )
-      else          return this
 
     method get( index:Int32 )->Character
       cursor = index
@@ -331,6 +481,21 @@ class String
       endIf
       return @hash_code
 
+    method indented( spaces:Int32 )->String
+      local lines = split( '\n' )
+      local builder = String( count + lines.count*2 )
+      use indent = String.pool
+        loop (spaces) indent.print(' ')
+
+        forEach (line in lines)
+          if (builder.count) builder.println
+          if (spaces> 0)      builder.print( indent ).print( line )
+          elseIf (spaces < 0) builder.print( line.rightmost(spaces) )
+        endForEach
+      endUse
+
+      return builder
+
     method insert( ch:Character )->this
       local i1 = data.count
       print( ch )   # put new UTF8 bytes on end
@@ -343,6 +508,19 @@ class String
 
     method last->Character
       return this[ count-1 ]
+
+    method leftmost( n:Int32 )->String
+      if (n >= 0) return from( 0, n-1 )
+      else        return from( 0, (count + n) - 1 )
+
+    method leftmost_common_substring_count( other:String, max_count=null:Int32? )->Int32
+      if (other is null) return false
+      local max = count.or_smaller(other.count)
+      if (max_count.exists) max = max.or_smaller( max_count.value )
+      forEach (i in 0..<max)
+        if (this[i] != other[i]) return i
+      endForEach
+      return max
 
     method locate( ch:Character, optional_i1=null:Int32?, &ignore_case )->Int32?
       local i = 0
@@ -579,11 +757,6 @@ class String
 
       return this
 
-    method _check_to_string( value:Real64, decimal_places:Int32, buffer:String )->Logical
-      buffer.clear
-      buffer.print( value, decimal_places )
-      return (buffer->Real64 == value)
-
     method print( value:Real64, decimal_places:Int32 )->this
       if (is_immutable) return this
 
@@ -693,6 +866,23 @@ class String
       result.print( forEach in this step -1 )
       return result
 
+    method rightmost( n:Int32 )->String
+      local this_count = count
+      if (n < 0) return from( -n, this_count-1 )
+      else       return from( this_count-n, this_count-1 )
+
+    method rightmost_common_substring_count( other:String )->Int32
+      if (other is null) return false
+      local max = count.or_smaller(other.count)
+      local this_i =  count - 1
+      local other_i = other.count - 1
+      forEach (i in 0..<max)
+        if (this[this_i] != other[other_i]) return i
+        --this_i
+        --other_i
+      endForEach
+      return max
+
     method set_cursor( character_index:Int32 )->Int32
       # Sets this string's cursor_offset (in bytes) and cursor_index (in characters)
       if (is_ascii)
@@ -741,6 +931,63 @@ class String
 
      return cursor_offset
 
+    method split( separator:Character, &ignore_case )->String[]
+      local result = String[]
+
+      local i1 = 0
+      local i2 = locate( separator, i1, &=ignore_case )
+      while (i2.exists)
+        result.add( from(i1,i2.value-1) )
+        i1 = i2.value + 1
+        i2 = locate( separator, i1, &=ignore_case )
+      endWhile
+
+      result.add( from(i1) )
+
+      return result
+
+    method split( separator:String, &ignore_case )->String[]
+      local result = String[]
+      local separator_count = separator.count
+
+      local i1 = 0
+      local i2 = locate( separator, i1, &=ignore_case )
+      while (i2.exists)
+        result.add( from(i1,i2.value-1) )
+        i1 = i2.value + separator_count
+        i2 = locate( separator, i1, &=ignore_case )
+      endWhile
+
+      result.add( from(i1) )
+
+      return result
+
+    method split->String[]
+      # Splits the string on whitespace
+
+      local result = String[]
+      local start = -1
+      local current = 0
+      forEach (ch in this)
+        which (ch)
+          case ' ', '\t', '\n':
+            if start >= 0
+              result.add( this.from(start, current-1) )
+              start = -1
+            endIf
+          others:
+            if start < 0
+              start = current
+            endIf
+        endWhich
+        ++current
+      endForEach
+
+      if start >= 0
+        result.add( this.from(start, current-1) )
+      endIf
+
+      return result
     method to->Real64
       if (count == 0) return 0
       if (this.contains(','))
@@ -772,6 +1019,11 @@ class String
         next   = result.before_suffix( text )
       endWhile
       return result
+
+    method _check_to_string( value:Real64, decimal_places:Int32, buffer:String )->Logical
+      buffer.clear
+      buffer.print( value, decimal_places )
+      return (buffer->Real64 == value)
 
     method _round_off
       # Internal use.

@@ -23,6 +23,7 @@ tokens Keywords
 KEYWORD_AND             and
 KEYWORD_AUGMENT         augment
 KEYWORD_BLOCK           block
+KEYWORD_CASE            case        [structural]
 KEYWORD_CATCH           catch       [structural]
 KEYWORD_CLASS           class       [structural]
 KEYWORD_DEFINITIONS     DEFINITIONS [structural]
@@ -73,6 +74,7 @@ KEYWORD_NO_ACTION       noAction
 KEYWORD_NOT             not
 KEYWORD_NULL            null
 KEYWORD_OR              or
+KEYWORD_OTHERS          others      [structural]
 KEYWORD_PI              pi
 KEYWORD_PROPERTIES      PROPERTIES  [structural]
 KEYWORD_RETURN          return
@@ -1156,6 +1158,7 @@ parser
   onPeek "forEach" forEach_loop:       return
   onPeek "if"      if_statement:       return
   onPeek "loop"    loop:               return
+  onPeek "which"   which_conditional:  return
   onPeek "while"   while_loop:         return
   onPeek "try"     try_catch:          return
   onPeek "use"     use:                return
@@ -1307,6 +1310,37 @@ parser
       else              single_line_statements
     endOn
     produce Loop(loop_count,statements)
+  endOn
+
+- which_conditional
+  on "which"
+    expression
+    must_consume_eols
+    beginList
+      while (nextIs("case"))
+        on "case"
+          consume_eols
+          beginList
+            expression
+            while (consume(','))
+              consume_eols
+              expression
+            endWhile
+            if (not consume(':')) mustConsume EOL
+          createList Args
+          multi_line_statements
+          create WhichCase(args,statements)
+        endOn
+      endWhile
+    createList WhichCases
+    on "others"
+      if (not consume(':')) mustConsume EOL
+      multi_line_statements
+    elseOnOthers
+      createNull
+    endOn
+    mustConsume "endWhich"
+    produce Which(condition,cases,statements):Conditional
   endOn
 
 - while_loop

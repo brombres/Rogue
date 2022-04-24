@@ -228,6 +228,10 @@ class Character [primitive]
       return value->Character
 
   METHODS
+    method is_letter->Logical
+      return (this >= 'a' and this <= 'z') or
+             (this >= 'A' and this <= 'Z')
+
     method is_lowercase->Logical
       return (this >= 'a' and this <= 'z')
 

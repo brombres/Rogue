@@ -494,5 +494,14 @@ class Visitor
     method on_visit_children( cmd:FormattedString )
       cmd.args = visit(cmd.args)
 
+    method on_visit_children( cmd:Which )
+      cmd.condition = visit(cmd.condition)
+      cmd.cases = visit(cmd.cases)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:WhichCase )
+      cmd.args = visit(cmd.args)
+      cmd.statements = visit(cmd.statements)
+
 endClass
 

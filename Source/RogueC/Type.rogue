@@ -86,15 +86,18 @@ class Type : Cmd
       module_context = existing.module_context
 
     method add( m:GlobalMethod )
+      local existing = global_methods[m.signature]
+      if (existing and existing.type_context is m.type_context)
+        throw m.t.error( "Global method $ is already defined."(m.dev_signature) )
+      endIf
       global_methods[ m.signature ] = m
-      # TODO: check for existing methods
 
     method add( m:Method )
-      assert m
-      assert m.signature
-      assert methods
+      local existing = methods[m.signature]
+      if (existing and existing.type_context is m.type_context)
+        throw m.t.error( "Method $ is already defined."(m.dev_signature) )
+      endIf
       methods[ m.signature ] = m
-      # TODO: check for existing methods
 
     method add_extended_property( p:Property )
       local base_p = properties[p.name]
