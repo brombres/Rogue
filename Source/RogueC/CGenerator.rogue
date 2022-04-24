@@ -23,7 +23,7 @@ class CGenerator : Visitor
 
     method dispatch_exception( t:Token )
       forEach (control in control_stack step -1)
-        if (control.control_type == ControlType.TRY or control.requires_cleanup)
+        if (control.catches_exception or control.requires_cleanup)
           writer.print "goto "
           writer.print control.c_escape_label(this)
           return
@@ -1807,16 +1807,15 @@ augment
         writer.print   c_escape_label(cgen)
         writer.println ":;"
         if (catches_exception)
-          if (catches_escape)
-            writer.println "if (Rogue_exception)"
-            writer.println '{'
-            writer.indent += 2
-          endIf
+          writer.println "if (Rogue_exception)"
+          writer.println '{'
+          writer.indent += 2
 
-          forEach (catch_block in catches)
-            writer.print   "if (Rogue_exception->type == &Type"
-            writer.print   catch_block.exception_type.c_name
-            writer.println ")"
+          forEach (catch_block at i in catches)
+            if (i > 0) writer.print "else "
+            writer.print   "if (Rogue_instance_of(Rogue_exception, "
+            writer.print   catch_block.exception_type.id
+            writer.println "))"
             writer.println '{'
             writer.indent += 2
 
@@ -1832,10 +1831,16 @@ augment
             writer.println '}'
           endForEach
 
-          if (catches_escape)
-            writer.indent -= 2
-            writer.println '}'
-          endIf
+          writer.println "else"
+          writer.println '{'
+          writer.indent += 2
+          cgen.dispatch_exception( t )
+          writer.println ';'
+          writer.indent -= 2
+          writer.println '}'
+
+          writer.indent -= 2
+          writer.println '}'
         endIf
       endIf
 endAugment

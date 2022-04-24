@@ -43,6 +43,7 @@ KEYWORD_ESCAPE_BLOCK    escapeBlock
 KEYWORD_ESCAPE_FOR_EACH escapeForEach
 KEYWORD_ESCAPE_IF       escapeIf
 KEYWORD_ESCAPE_LOOP     escapeLoop
+KEYWORD_ESCAPE_TRY      escapeTry
 KEYWORD_ESCAPE_WHILE    escapeWhile
 KEYWORD_EXPORT          export
 KEYWORD_FALSE           false
@@ -1208,6 +1209,7 @@ parser
   on "escapeForEach"              -> EscapeForEach:Escape
   on "escapeIf"                   -> EscapeIf:Escape
   on "escapeLoop"                 -> EscapeLoop:Escape
+  on "escapeTry"                  -> EscapeTry:Escape
   on "escapeWhile"                -> EscapeWhile:Escape
   on "noAction":                     return
   on @"print"   args              -> Access(name=content,args)

@@ -1798,6 +1798,12 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
+            if (_next_t.type == TokenType.KEYWORD_ESCAPE_TRY)
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( EscapeTry(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.type == TokenType.KEYWORD_ESCAPE_WHILE)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( EscapeWhile(_cur_t), 0 )

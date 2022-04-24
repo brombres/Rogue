@@ -929,6 +929,14 @@ class ControlStructure : Cmd
       if (existing.locals) locals = existing.locals.cloned
       if (existing.statements) statements = existing.statements.cloned
 
+    method catches_escape( escape_type:ControlType )->Logical
+      if (@control_type != escape_type) return false
+      catches_escape = true
+      return true
+
+    method catches_exception->Logical
+      return false
+
     method control_type->ControlType
       return @control_type
 
@@ -992,11 +1000,6 @@ class Iterator : Conditional
       prior.init( existing )
       if (existing.control)        control = existing.control.cloned
       if (existing.upkeep)         upkeep  = existing.upkeep.cloned
-
-    method catches_escape( escape_type:ControlType )->Logical
-      if (@control_type != escape_type) return false
-      catches_escape = true
-      return true
 
     method description->String
       return "Iterator($,$,$,$)" (%control,%condition,%statements,%upkeep)
@@ -1846,7 +1849,11 @@ class Try : ControlStructure
 
     method init( existing:Try )
       prior.init( existing )
+      catches_exception = existing.catches_exception
       if (existing.catches) catches = existing.catches.cloned->(as Catches)
+
+    method catches_exception->Logical
+      return @catches_exception
 
     method catches_exception( of_type:Type )->Logical
       if (of_type.instance_of((forEach in catches).exception_type))
@@ -3275,4 +3282,13 @@ class PushStackTraceCutoff : Cmd
   METHODS
     method description->String
       return "PushStackTraceCutoff"
+endClass
+
+class EscapeTry : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.TRY
+
+    method description->String
+      return "EscapeTry"
 endClass
