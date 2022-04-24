@@ -412,7 +412,7 @@ augment Program
             else                      builder.print "GT"
           elseIf (ch == '<')
             if (iterator.peek == '<') builder.print '_'; iterator.read
-            else                      builder.print "GT"
+            else                      builder.print "LT"
           elseIf (ch == '+')
             if (iterator.peek == '+') builder.print "INC"; iterator.read
             else                      builder.print "PLUS"

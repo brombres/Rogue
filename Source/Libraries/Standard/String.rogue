@@ -23,6 +23,10 @@ class String
         return String( data, count )
       endIf
 
+    method exists( string:String )->Logical
+      # Returns false if the string is null or empty; otherwise returns true.
+      return (string and string.count?)
+
     method operator==( a:String, b:String )->Logical
       if (a is null)     return (b is null)
       elseIf (b is null) return false
@@ -125,10 +129,8 @@ class String
     method operator*( left:Int32, right:String )->String
       return operator*( right, left )
 
-      #{
     method operator/( prefix:String, suffix:String )->String
       return "$/$" (prefix.without_trailing('/'),suffix)
-      }#
 
   METHODS
     method init
@@ -751,7 +753,6 @@ class String
       endIf
       return native( "strtod( (char*)$this->data->as_utf8, 0 )" )->Real64
 
-      #{
     method without_trailing( ch:Character )->String
       # Like before_suffix() but removes multiple copies of the given character.
       local result = this
@@ -771,7 +772,6 @@ class String
         next   = result.before_suffix( text )
       endWhile
       return result
-      }#
 
     method _round_off
       # Internal use.

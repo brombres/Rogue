@@ -218,6 +218,8 @@ class Resolver : Visitor
           local st = LiteralString( t, format.leftmost(i) )
           format .= rightmost(-(i+1))
           build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,st) ) )
+        else
+          format .= rightmost( -1 )
         endIf
         build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,arg) ) )
       endForEach
