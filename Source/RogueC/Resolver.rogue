@@ -682,6 +682,52 @@ class Resolver : Visitor
 
       return result
 
+    method on( cmd:Which )->Cmd
+      if (cmd.is_resolved) return cmd
+      cmd.is_resolved = true
+
+      push_scope( cmd )
+      visit_children( cmd )
+      pop_scope
+
+      cmd.condition.require_type
+
+      contingent
+        forEach (cmd_case in cmd.cases)
+          necessary ((forEach in cmd_case.args) instanceOf LiteralPrimitive)
+        endForEach
+        local cmd_switch = Switch( cmd.t, cmd.condition, cmd.cases, cmd.statements )
+        cmd_switch.catches_escape = cmd.catches_escape
+        cmd_switch.exception_passthrough = cmd.exception_passthrough
+        return validate( cmd_switch )
+      endContingent
+
+      # Convert to use Ifs
+      if (cmd.cases.count == 0) return cmd.statements
+
+      local v_value = add_local( cmd.t, "which_value", cmd.condition.require_type )
+      insert( SetLocal(v_value, cmd.condition, &initial_assignment) )
+
+      local cmd_if = which_case_if( v_value, cmd.cases[0] )
+      local result = cmd_if
+      forEach (cmd_case in cmd.cases from 1)
+        cmd_if.cmd_else = which_case_if( v_value, cmd_case )
+        cmd_if .= cmd_else
+      endForEach
+
+      if (cmd.statements)
+        cmd_if.cmd_else = If( cmd.statements.t, null, cmd.statements, null, ControlType.WHICH )
+      endIf
+
+      return visit( result )
+
+    method which_case_if( v_value:Local, cmd_case:WhichCase )->If
+      local condition = CompareEQ( cmd_case.t, GetLocal(v_value), cmd_case.args[0] ) : Cmd
+      forEach (arg in cmd_case.args from 1)
+        condition = LogicalOr( condition.t, condition, CompareEQ(arg.t,GetLocal(v_value),arg) )
+      endForEach
+      return If( cmd_case.t, condition, cmd_case.statements, null, ControlType.WHICH )
+
     method on( cmd:While )->Cmd
       local iterator = Iterator( cmd.t, cmd.statements, ControlType.WHILE )
 
@@ -1274,18 +1320,6 @@ class Resolver : Visitor
 
 
 endClass
-
-      #{
-      local resolved_context = visit( context )
-      local context_type = resolved_context.require_type
-
-        local v_context = resolver.add_local( t, "context", context_type )
-        resolver.insert( SetLocal(v_context, resolved_context, &initial_assignment) )
-        AccessAndAssignPatcher.patch( cmd, GetLocal(v_context) )
-
-        return resolver.visit( Assign(t, context, cmd.operand )
-      endIf
-      }#
 
 # resolve_access_and_assign
 augment

@@ -12,6 +12,7 @@ enum ControlType( control_type_name:String )
   THROW( "throw" )
   TRY( "try" )
   USE( "use" )
+  WHICH( "which" )
   WHILE( "while" )
 
   METHODS

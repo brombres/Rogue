@@ -399,7 +399,13 @@ class Literal : Cmd
       return "Literal"
 endClass
 
-class LiteralCharacter : Literal
+class LiteralPrimitive : Literal
+  METHODS
+    method description->String
+      return "LiteralPrimitive"
+endClass
+
+class LiteralCharacter : LiteralPrimitive
   PROPERTIES
     value : Character
 
@@ -419,7 +425,7 @@ class LiteralCharacter : Literal
 
 endClass
 
-class LiteralInteger : Literal
+class LiteralInteger : LiteralPrimitive
   GLOBAL METHODS
     method create( t:Token, content:String, base:Int32 )->LiteralInteger
       contingent
@@ -484,7 +490,7 @@ class LiteralInt64 : LiteralInteger
 
 endClass
 
-class LiteralReal : Literal
+class LiteralReal : LiteralPrimitive
   PROPERTIES
     value : Real64
 
@@ -1189,8 +1195,8 @@ class If : Conditional
     cmd_else : If
 
   METHODS
-    method init( t, condition, statements:Cmd, cmd_else )
-      prior.init( t, condition, statements, ControlType.IF )
+    method init( t, condition, statements:Cmd, cmd_else, control_type=ControlType.IF:ControlType )
+      prior.init( t, condition, statements, control_type )
 
     method init( existing:If )
       prior.init( existing )
@@ -1251,7 +1257,7 @@ class BitwiseNot : Unary
 
 endClass
 
-class LiteralLogical : Literal
+class LiteralLogical : LiteralPrimitive
   PROPERTIES
     value : Logical
 
@@ -3279,6 +3285,15 @@ class EscapeTry : Escape
       return "EscapeTry"
 endClass
 
+class EscapeWhich : Escape
+  METHODS
+    method description->String
+      return "EscapeWhich"
+
+    method control_type->ControlType
+      return ControlType.WHICH
+endClass
+
 class FormattedString : Cmd
   PROPERTIES
     format : String
@@ -3303,13 +3318,14 @@ class PushStackTraceCutoff : Cmd
       return "PushStackTraceCutoff"
 endClass
 
-
 class Which : Conditional
   PROPERTIES
-    cases : Cmd
+    cases       : WhichCases
+    is_resolved : Logical
 
   METHODS
     method init( t, condition, cases, statements )
+      prior.init( t, condition, statements, ControlType.WHICH )
 
     method init( existing:Which )
       prior.init( existing )
@@ -3342,4 +3358,25 @@ class WhichCases : CmdList
   METHODS
     method description->String
       return "WhichCases" + list_description
+
+    method get( index:Int32 )->WhichCase
+      return list[index]->(as WhichCase)
+endClass
+
+
+class Switch : Conditional
+  PROPERTIES
+    cases : WhichCases
+
+  METHODS
+    method init( t, condition, cases, statements )
+      control_type = ControlType.WHICH
+
+    method init( existing:Switch )
+      prior.init( existing )
+      if (existing.cases) cases = existing.cases.cloned
+
+    method description->String
+      return "Switch($,$,$)" (%condition,%cases,%statements)
+
 endClass

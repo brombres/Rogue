@@ -352,6 +352,16 @@ class CGenerator : Visitor
       writer.print " - "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:BitShiftLeft )
+      print_parenthesized( cmd.left )
+      writer.print " << "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitShiftRightX )
+      print_parenthesized( cmd.left )
+      writer.print " >> "
+      print_parenthesized( cmd.right )
+
     method on_visit( cmd:BitwiseAnd )
       print_parenthesized( cmd.left )
       writer.print " & "
@@ -1027,16 +1037,6 @@ class CGenerator : Visitor
       writer.print( " = " )
       visit( cmd.new_value )
 
-    method on_visit( cmd:BitShiftLeft )
-      print_parenthesized( cmd.left )
-      writer.print " << "
-      print_parenthesized( cmd.right )
-
-    method on_visit( cmd:BitShiftRightX )
-      print_parenthesized( cmd.left )
-      writer.print " >> "
-      print_parenthesized( cmd.right )
-
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
         if (Program.stack_trace)
@@ -1053,6 +1053,40 @@ class CGenerator : Visitor
       print_parenthesized( cmd.left )
       writer.print " - "
       print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Switch )
+      on_enter( cmd )
+
+      writer.print "switch ("
+      visit( cmd.condition )
+      writer.println ')'
+      writer.println '{'
+      writer.indent  += 2
+      forEach (cmd_case in cmd.cases)
+        forEach (arg in cmd_case.args)
+          writer.print "case "
+          visit( arg )
+          writer.println ':'
+        endForEach
+        writer.println '{'
+        writer.indent  += 2
+        visit( cmd_case.statements )
+        writer.println "break;"
+        writer.indent  -= 2
+        writer.println '}'
+      endForEach
+      if (cmd.statements)
+        writer.println "default:"
+        writer.println '{'
+        writer.indent  += 2
+        visit( cmd.statements )
+        writer.indent  -= 2
+        writer.println '}'
+      endIf
+      writer.indent  -= 2
+      writer.println '}'
+
+      on_leave( cmd )
 
     method on_visit( cmd:This )
       writer.print "THIS"
