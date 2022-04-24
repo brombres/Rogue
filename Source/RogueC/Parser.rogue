@@ -79,6 +79,14 @@ class Parser : ParserCore
     method include_filepath
       Program.include( marked_token, buffer->String )
 
+    method swap
+      if (not disable_output)
+        local a = _cmd_stack.remove_last
+        local b = _cmd_stack.remove_last
+        _cmd_stack.add( a )
+        _cmd_stack.add( b )
+      endIf
+
     method uses_attribute_no_include
       _attribute_no_include = true
 

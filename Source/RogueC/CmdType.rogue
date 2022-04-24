@@ -75,6 +75,8 @@ augment
         throw t.error( "[INTERNAL] Unhandled primitive conversion." )
       endIf
 
+      if (this_type.instance_of(target_type)) return WideningCast( t, this, target_type )
+
       # See if this_type has a to->TargetType method.
       local result = resolver.resolve_call( t, this_type, this, "to_$"(target_type), null, &suppress_error )
       if (result) return result

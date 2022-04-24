@@ -964,7 +964,6 @@ class String
 
     method split->String[]
       # Splits the string on whitespace
-
       local result = String[]
       local start = -1
       local current = 0
@@ -988,6 +987,67 @@ class String
       endIf
 
       return result
+
+    method substring( i1:Int32 )->String
+      return from( i1 )
+
+    method substring( i1:Int32, n:Int32 )->String
+      if (n < 0)
+        n = (count - i1) + n
+        if (n <= 0) return ""
+      endIf
+      return from( i1, i1+(n-1) )
+
+    method substring( span:Span )->String
+      return substring( span.index, span.count )
+
+    method to->Byte[]
+      return data.cloned
+
+    method to->Character[]
+      local result = Character[]( count )
+      forEach (ch in this) result.add( ch )
+      return result
+
+    method to->Int32( base=10:Int32 )
+      if (count == 0) return 0
+      if (this.contains(','))
+        use builder = String.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Int32
+        endUse
+      endIf
+      return native( "(RogueInt32)strtol( (char*)$this->data->as_utf8, 0, $base )" )->Int32
+
+    method to->Int64( base=10:Int32 )
+      if (count == 0) return 0
+      if (this.contains(','))
+        use builder = String.pool
+          forEach (ch in this)
+            if (ch != ',') builder.print ch
+          endForEach
+          return builder->Int64
+        endUse
+      endIf
+      return native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
+
+    method to->Object
+      return this
+
+    method to->Real32
+      if (count == 0) return 0
+      if (this.contains(','))
+        use filtered = String.pool
+          forEach (ch in this)
+            if (ch != ',') filtered.print ch
+          endForEach
+          return filtered->Real64
+        endUse
+      endIf
+      return native( "strtof( (char*)$this->data->as_utf8, 0 )" )->Real64
+
     method to->Real64
       if (count == 0) return 0
       if (this.contains(','))

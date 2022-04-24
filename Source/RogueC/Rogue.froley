@@ -1072,9 +1072,16 @@ parser
 
 - method
   on "method"
-    procedure_name
-    procedure_parameters
-    procedure_return_type
+    on @"to"
+      create Identifier(name=content)
+      procedure_return_type
+      procedure_parameters
+      call swap
+    elseOnOthers
+      procedure_name
+      procedure_parameters
+      procedure_return_type
+    endOn
     procedure_attributes
     consume(':')
     multi_line_statements

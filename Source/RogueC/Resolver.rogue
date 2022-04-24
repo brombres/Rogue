@@ -555,6 +555,7 @@ class Resolver : Visitor
       return cmd.dispatch_resolve_op_and_assign( cmd, this )
 
     method on_visit( cmd:Procedure )
+      cmd.is_resolved = true
       autoname_index = 0
 
       visible_locals_fp.add( visible_locals.count )

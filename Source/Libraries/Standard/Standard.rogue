@@ -7,6 +7,7 @@ $include Standard/ObjectPool
 $include Standard/Optional
 $include Standard/Primitives
 $include Standard/PrintWriter
+$include Standard/Span
 $include Standard/StackTrace
 $include Standard/String
 $include Standard/System
