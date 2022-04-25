@@ -79,12 +79,19 @@ class Parser : ParserCore
     method include_filepath
       Program.include( marked_token, buffer->String )
 
+    method join_adjacent_literal_strings
+      if (not disable_output and _cmd_stack.count >= 2)
+        local a = _cmd_stack[_cmd_stack.count-2]->(as LiteralString)
+        local b = _cmd_stack.remove_last->(as LiteralString)  # we already know b is a literal string
+        a.value += b.value
+      endIf
+
     method swap
-      if (not disable_output)
-        local a = _cmd_stack.remove_last
+      if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
-        _cmd_stack.add( a )
+        local a = _cmd_stack.remove_last
         _cmd_stack.add( b )
+        _cmd_stack.add( a )
       endIf
 
     method uses_attribute_no_include

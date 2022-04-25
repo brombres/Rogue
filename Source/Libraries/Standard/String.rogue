@@ -1060,6 +1060,150 @@ class String
       endIf
       return native( "strtod( (char*)$this->data->as_utf8, 0 )" )->Real64
 
+    method to_lowercase->String
+      local has_uc = false
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z') has_uc = true; escapeForEach
+      endForEach
+
+      if (not has_uc) return this
+
+      local result = String( count )
+      forEach (ch in this)
+        if (ch >= 'A' and ch <= 'Z') result.print( ((ch-'A')+'a')->Character )
+        else                         result.print( ch )
+      endForEach
+      return result
+
+      #{
+    method to_escaped_ascii( additional_characters_to_escape="":String )->String
+      use builder = String.pool
+        (forEach in this).print_escaped_ascii( builder, additional_characters_to_escape )
+        if (builder == this) return this  # no escapes
+        else                 return builder.cloned
+      endUse
+      }#
+
+      #{
+    method to_plain_ascii->String
+      # Converts or strips any non-ASCII Unicode.
+      # - Converts letters with diacritical marks to plain ASCII letters (ä -> a).
+      # - Converts some other letter-like symbols into letters.
+      # - Strips out any other characters with Unicode values greater than 127.
+
+      # Make one pass to see if there's anything that needs converting or removing.
+      contingent
+        forEach (ch in this)
+          sufficient (ch & !0x7F)
+        endForEach
+        return this  # no changes required
+      endContingent
+
+      # Original Unicode
+      #              ''¡¢£ ¥¦ ¨         ²³´µ  ¸¹     ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ ØÙÚÛÜÝÞßàáâãäåæ''
+      #              ''çèéêëìíîïðñòóôõö øùúûüýþÿĀāĂăĄąĆćĈĉĊċČčĎďĐđĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħ''...
+      #              ''ĨĩĪīĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚśŜŝŞşŠšŢţŤťŦŧ''...
+      #              ''ŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſ''
+      local lookup = ''!cL Y| "         23'u  ,1     ?AAAAAAACEEEEIIIIENOOOOO OUUUUYPsaaaaaaa''...
+                     ''ceeeeiiiienooooo ouuuuypyAaAaAaCcCcCcCcDdDdEeEeEeEeEeGgGgGgGgHhHh''...
+                     ''IiIiIiIiIiIiJjKkkLlLlLlLlLlNnNnNnnNnOoOoOoOoRrRrRrSsSsSsSsTtTtTt''...
+                     ''UuUuUuUuUuUuWwYyYZzZzZzs''
+
+      local result = String( count )
+      forEach (ch in this)
+        if (ch & !0x7F)
+          which (ch)
+            case 'Æ': result.print "AE"
+            case 'æ': result.print "ae"
+            case 'Œ': result.print "OE"
+            case 'œ': result.print "oe"
+            others
+              if (ch >= 161 and ch <= 383)
+                local ch2 = lookup[ ch-161 ]
+                if (ch2 != ' ') result.print ch2
+              endIf
+          endWhich
+        else
+          result.print ch
+        endIf
+      endForEach
+      return result
+      }#
+
+    method to_uppercase->String
+      local has_lc = false
+      forEach (ch in this)
+        if (ch >= 'a' and ch <= 'z') has_lc = true; escapeForEach
+      endForEach
+
+      if (not has_lc) return this
+
+      local result = String( count )
+      forEach (ch in this)
+        if (ch >= 'a' and ch <= 'z') result.print( ((ch-'a')+'A')->Character )
+        else                         result.print( ch )
+      endForEach
+      return result
+
+    method to_utf8->Byte[]
+      return this->Byte[]
+
+    method trimmed->String
+      # Trim white spaces on both ends
+      local i1 = 0
+      local i2 = count - 1
+
+      while (i1 <= i2)
+        if     (this[i1] <= ' ') ++i1
+        elseIf (this[i2] <= ' ') --i2
+        else                     escapeWhile
+      endWhile
+
+      if (i1 > i2) return ""
+      if (i1 == 0 and i2 == count-1) return this
+      return from( i1, i2 )
+
+    method unleft( n:Int32 )->String
+      # "abc".unleft(1) -> bc
+      if (n <= 0) return this
+      else        return from( n )
+
+    method unright( n:Int32 )->String
+      # "abc".unright(1) -> ab
+      if (n <= 0) return this
+      else        return from( 0, (count - n) - 1 )
+
+    method up_to_first( ch:Character, &ignore_case )->String
+      local i = locate( ch, &=ignore_case )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_first( st:String, &ignore_case )->String
+      local i = locate( st, &=ignore_case )
+      if (i.exists) return from( 0, i.value+(st.count-1) )
+      else          return this
+
+    method up_to_last( ch:Character, &ignore_case )->String
+      local i = locate_last( ch, &=ignore_case )
+      if (i.exists) return from( 0, i.value )
+      else          return this
+
+    method up_to_last( st:String, &ignore_case )->String
+      local i = locate_last( st, &=ignore_case )
+      if (i.exists) return from( 0, i.value+(st.count-1) )
+      else          return this
+
+    method with_trailing( ch:Character )->String
+      # Returns a string that ends with the given character. If this string already ends with the
+      # given character then this string is returned unchanged.
+      if (this.ends_with(ch)) return this
+      return this + ch
+
+    method with_trailing( text:String )->String
+      # Returns a string that ends with the given text. If this string already ends with the given
+      # text then this string is returned unchanged.
+      if (this.ends_with(text)) return this
+      return this + text
     method without_trailing( ch:Character )->String
       # Like before_suffix() but removes multiple copies of the given character.
       local result = this

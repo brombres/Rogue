@@ -177,7 +177,11 @@ scanner
   endIf
 
   if (consume("..."))
-    while (hasAnother and not consume('\n')) read
+    while (hasAnother and not consume('\n'))
+      if (not (consume(' ') or consume('\t')))
+        syntaxError "End of line expected."
+      endIf
+    endWhile
     restart
   endIf
 
@@ -683,7 +687,16 @@ parser
   syntaxError "Identifier expected."
 
 - string
-  on STRING -> LiteralString(value=content):Literal
+  on STRING
+    create LiteralString(value=content):Literal
+    while (nextIs(STRING))
+      on STRING
+        create LiteralString(value=content):Literal
+        call join_adjacent_literal_strings
+      endOn
+    endWhile
+    return
+  endOn
   syntaxError "Literal string expected."
 
 - module_attributes
@@ -1612,6 +1625,12 @@ parser
 - term
   on STRING
     create LiteralString(value=content):Literal
+    while (nextIs(STRING))
+      on STRING
+        create LiteralString(value=content):Literal
+        call join_adjacent_literal_strings
+      endOn
+    endWhile
     if (nextIs('('))
       args
       produce FormattedString(format:String,args)

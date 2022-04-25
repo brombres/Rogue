@@ -231,7 +231,9 @@ class ScannerCore [abstract]
             endIf
             if (_scanner.consume("..."))
               while ((_scanner.has_another and (not _scanner.consume('\n'))))
-                _scanner.read
+                if ((not (_scanner.consume(' ') or _scanner.consume('\t'))))
+                  _throw_syntax_error("End of line expected.")
+                endIf
               endWhile
               return false
             endIf

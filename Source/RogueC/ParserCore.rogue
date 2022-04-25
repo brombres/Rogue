@@ -164,6 +164,8 @@ class ParserCore [abstract]
 
     method parse_module_id [abstract]
 
+    method join_adjacent_literal_strings [abstract]
+
     method class_attribute_essential [abstract]
 
     method swap [abstract]
@@ -908,6 +910,16 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.STRING)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( LiteralString(_cur_t,_cur_t.content), 0 )
+                while ((_next_t.type == TokenType.STRING))
+                  if (_next_t.type == TokenType.STRING)
+                    temporarily _cur_t = _on_t
+                      if (not disable_output) _push( LiteralString(_cur_t,_cur_t.content), 0 )
+                      this.ip = ip
+                      join_adjacent_literal_strings
+                      ip = this.ip
+                    endTemporarily
+                  endIf
+                endWhile
                 return
               endTemporarily
             endIf
@@ -2866,6 +2878,16 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.STRING)
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( LiteralString(_cur_t,_cur_t.content), 0 )
+                while ((_next_t.type == TokenType.STRING))
+                  if (_next_t.type == TokenType.STRING)
+                    temporarily _cur_t = _on_t
+                      if (not disable_output) _push( LiteralString(_cur_t,_cur_t.content), 0 )
+                      this.ip = ip
+                      join_adjacent_literal_strings
+                      ip = this.ip
+                    endTemporarily
+                  endIf
+                endWhile
                 if ((_next_t.type == TokenType.SYMBOL_OPEN_PAREN))
                   _execute(ip_args)
                   _pop_frame
