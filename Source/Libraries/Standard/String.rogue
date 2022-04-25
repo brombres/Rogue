@@ -1075,16 +1075,15 @@ class String
       endForEach
       return result
 
-      #{
+#{
     method to_escaped_ascii( additional_characters_to_escape="":String )->String
       use builder = String.pool
         (forEach in this).print_escaped_ascii( builder, additional_characters_to_escape )
         if (builder == this) return this  # no escapes
         else                 return builder.cloned
       endUse
-      }#
+}#
 
-      #{
     method to_plain_ascii->String
       # Converts or strips any non-ASCII Unicode.
       # - Converts letters with diacritical marks to plain ASCII letters (ä -> a).
@@ -1128,7 +1127,6 @@ class String
         endIf
       endForEach
       return result
-      }#
 
     method to_uppercase->String
       local has_lc = false

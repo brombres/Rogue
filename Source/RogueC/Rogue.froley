@@ -20,37 +20,40 @@ PLACEHOLDER    $placeholder  [content]
 ----------------------------------------------------------------------
 tokens Keywords
 ----------------------------------------------------------------------
-KEYWORD_AND             and
-KEYWORD_AUGMENT         augment
-KEYWORD_BLOCK           block
-KEYWORD_CASE            case        [structural]
-KEYWORD_CATCH           catch       [structural]
-KEYWORD_CLASS           class       [structural]
-KEYWORD_DEFINITIONS     DEFINITIONS [structural]
-KEYWORD_DOWN_TO         downTo
-KEYWORD_ELSE            else        [structural]
-KEYWORD_ELSE_IF         elseIf      [structural]
-KEYWORD_END_BLOCK       endBlock    [structural]
-KEYWORD_END_CLASS       endClass    [structural]
-KEYWORD_END_FOR_EACH    endForEach  [structural]
-KEYWORD_END_IF          endIf       [structural]
-KEYWORD_END_LOOP        endLoop     [structural]
-KEYWORD_END_ROUTINE     endRoutine  [structural]
-KEYWORD_END_TRY         endTry      [structural]
-KEYWORD_END_USE         endUse      [structural]
-KEYWORD_END_WHICH       endWhich    [structural]
-KEYWORD_END_WHILE       endWhile    [structural]
-KEYWORD_ESCAPE_BLOCK    escapeBlock
-KEYWORD_ESCAPE_FOR_EACH escapeForEach
-KEYWORD_ESCAPE_IF       escapeIf
-KEYWORD_ESCAPE_LOOP     escapeLoop
-KEYWORD_ESCAPE_TRY      escapeTry
-KEYWORD_ESCAPE_WHICH    escapeWhich
-KEYWORD_ESCAPE_WHILE    escapeWhile
-KEYWORD_EXPORT          export
-KEYWORD_FALSE           false
-KEYWORD_FOR_EACH        forEach
-KEYWORD_GLOBAL          global
+KEYWORD_AND               and
+KEYWORD_AUGMENT           augment
+KEYWORD_BLOCK             block
+KEYWORD_CASE              case          [structural]
+KEYWORD_CATCH             catch         [structural]
+KEYWORD_CLASS             class         [structural]
+KEYWORD_CONTINGENT        contingent
+KEYWORD_DEFINITIONS       DEFINITIONS   [structural]
+KEYWORD_DOWN_TO           downTo
+KEYWORD_ELSE              else          [structural]
+KEYWORD_ELSE_IF           elseIf        [structural]
+KEYWORD_END_BLOCK         endBlock      [structural]
+KEYWORD_END_CLASS         endClass      [structural]
+KEYWORD_END_CONTINGENT    endContingent [structural]
+KEYWORD_END_FOR_EACH      endForEach    [structural]
+KEYWORD_END_IF            endIf         [structural]
+KEYWORD_END_LOOP          endLoop       [structural]
+KEYWORD_END_ROUTINE       endRoutine    [structural]
+KEYWORD_END_TRY           endTry        [structural]
+KEYWORD_END_USE           endUse        [structural]
+KEYWORD_END_WHICH         endWhich      [structural]
+KEYWORD_END_WHILE         endWhile      [structural]
+KEYWORD_ESCAPE_BLOCK      escapeBlock
+KEYWORD_ESCAPE_CONTINGENT escapeContingent
+KEYWORD_ESCAPE_FOR_EACH   escapeForEach
+KEYWORD_ESCAPE_IF         escapeIf
+KEYWORD_ESCAPE_LOOP       escapeLoop
+KEYWORD_ESCAPE_TRY        escapeTry
+KEYWORD_ESCAPE_WHICH      escapeWhich
+KEYWORD_ESCAPE_WHILE      escapeWhile
+KEYWORD_EXPORT            export
+KEYWORD_FALSE             false
+KEYWORD_FOR_EACH          forEach
+KEYWORD_GLOBAL            global
 KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
 KEYWORD_IF              if
@@ -71,6 +74,7 @@ KEYWORD_NATIVE_SECTION  NATIVE      [structural]
 KEYWORD_NATIVE          native
 KEYWORD_NATIVE_HEADER   nativeHeader
 KEYWORD_NATIVE_CODE     nativeCode
+KEYWORD_NECESSARY       necessary
 KEYWORD_NO_ACTION       noAction
 KEYWORD_NOT             not
 KEYWORD_NULL            null
@@ -80,11 +84,14 @@ KEYWORD_PI              pi
 KEYWORD_PROPERTIES      PROPERTIES  [structural]
 KEYWORD_RETURN          return
 KEYWORD_ROUTINE         routine     [structural]
+KEYWORD_SATISFIED       satisfied   [structural]
+KEYWORD_SUFFICIENT      sufficient
 KEYWORD_THIS            this
 KEYWORD_THROW           throw
 KEYWORD_TRUE            true
 KEYWORD_TRY             try
 KEYWORD_UNDEFINED       undefined
+KEYWORD_UNSATISFIED     unsatisfied [structural]
 KEYWORD_USE             use
 KEYWORD_USES            uses        [structural]
 KEYWORD_WHICH           which
@@ -1174,15 +1181,16 @@ parser
   produceList Statements
 
 - control_structure
-  on     "local"   local_declarations: return
-  onPeek "block"   block:              return
-  onPeek "forEach" forEach_loop:       return
-  onPeek "if"      if_statement:       return
-  onPeek "loop"    loop:               return
-  onPeek "which"   which_conditional:  return
-  onPeek "while"   while_loop:         return
-  onPeek "try"     try_catch:          return
-  onPeek "use"     use:                return
+  on     "local"      local_declarations: return
+  onPeek "block"      block:              return
+  onPeek "contingent" contingent:         return
+  onPeek "forEach"    forEach_loop:       return
+  onPeek "if"         if_statement:       return
+  onPeek "loop"       loop:               return
+  onPeek "which"      which_conditional:  return
+  onPeek "while"      while_loop:         return
+  onPeek "try"        try_catch:          return
+  onPeek "use"        use:                return
   statement
 
 - args
@@ -1230,16 +1238,19 @@ parser
 
 - statement
   on "escapeBlock"                -> EscapeBlock:Escape
+  on "escapeContingent"           -> EscapeContingent:Escape
   on "escapeForEach"              -> EscapeForEach:Escape
   on "escapeIf"                   -> EscapeIf:Escape
   on "escapeLoop"                 -> EscapeLoop:Escape
   on "escapeTry"                  -> EscapeTry:Escape
   on "escapeWhich"                -> EscapeWhich:Escape
   on "escapeWhile"                -> EscapeWhile:Escape
+  on "necessary" expression       -> Necessary(condition)
   on "noAction":                     return
   on @"print"   args              -> Access(name=content,args)
   on @"println" args              -> Access(name=content,args)
   on "return" optional_expression -> Return(result)
+  on "sufficient" expression      -> Sufficient(condition)
   on "throw" expression           -> Throw(exception)
 
   onPeek "nativeHeader"
@@ -1319,6 +1330,23 @@ parser
     mustConsume "endBlock"
   endOn
   produce Block(statements):ControlStructure
+
+- contingent
+  on "contingent"
+    multi_line_statements
+    on "satisfied"
+      multi_line_statements
+    elseOnOthers
+      createNull
+    endOn
+    on "unsatisfied"
+      multi_line_statements
+    elseOnOthers
+      createNull
+    endOn
+    mustConsume "endContingent"
+    produce Contingent(statements,satisfied_statements,unsatisfied_statements):ControlStructure
+  endOn
 
 - loop
   on "loop"

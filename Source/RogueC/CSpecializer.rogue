@@ -293,13 +293,22 @@ endAugment
 augment ControlStructure
   PROPERTIES
     c_escape_label      : String
+    c_necessary_label   : String
+    c_sufficient_label  : String
 
   METHODS
-    method c_escape_label( cgen:CGenerator )->String
-      if (not @c_escape_label)
-        @c_escape_label = cgen.autoname("escape")
-      endIf
-      return @c_escape_label
+    method c_escape_label( cgen:CGenerator, control_type=ControlType.UNDEFINED:ControlType )->String
+      which (control_type)
+        case ControlType.NECESSARY
+          if (not @c_necessary_label) @c_necessary_label = cgen.autoname("necessary")
+          return @c_necessary_label
+        case ControlType.SUFFICIENT
+          if (not @c_sufficient_label) @c_sufficient_label = cgen.autoname("sufficient")
+          return @c_sufficient_label
+        others
+          if (not @c_escape_label) @c_escape_label = cgen.autoname("escape")
+          return @c_escape_label
+      endWhich
 
 endAugment
 

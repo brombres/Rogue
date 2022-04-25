@@ -44,7 +44,7 @@ class CGenerator : Visitor
     method escape_label( control_type=ControlType.UNDEFINED:ControlType )->String
       forEach (scope in control_stack step -1)
         if (scope.catches_escape(control_type))
-          return scope.c_escape_label(this)
+          return scope.c_escape_label(this,control_type)
         endIf
       endForEach
       return null
@@ -109,90 +109,6 @@ class CGenerator : Visitor
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " += "
-      visit( cmd.operand )
-
-    method on_visit( cmd:SubtractAndAssignLocal )
-      writer.print '('
-      writer.print cmd.info.c_name
-      writer.print " -= "
-      print_parenthesized( cmd.operand )
-      writer.print ')'
-
-    method on_visit( cmd:SubtractAndAssignGlobalProperty )
-      writer.print( cmd.info.c_name )
-      writer.print( " -= " )
-      visit( cmd.operand )
-
-    method on_visit( cmd:SubtractAndAssignProperty )
-      visit( cmd.context )
-      if (cmd.context.type.is_reference) writer.print "->"
-      else                               writer.print "."
-      writer.print( cmd.info.c_name )
-      writer.print " -= "
-      visit( cmd.operand )
-
-    method on_visit( cmd:SubtractAndAssignThisProperty )
-      writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
-      else                        writer.print "."
-      writer.print( cmd.info.c_name )
-      writer.print " -= "
-      visit( cmd.operand )
-
-    method on_visit( cmd:MultiplyAndAssignLocal )
-      writer.print '('
-      writer.print cmd.info.c_name
-      writer.print " *= "
-      print_parenthesized( cmd.operand )
-      writer.print ')'
-
-    method on_visit( cmd:MultiplyAndAssignGlobalProperty )
-      writer.print( cmd.info.c_name )
-      writer.print( " *= " )
-      visit( cmd.operand )
-
-    method on_visit( cmd:MultiplyAndAssignProperty )
-      visit( cmd.context )
-      if (cmd.context.type.is_reference) writer.print "->"
-      else                               writer.print "."
-      writer.print( cmd.info.c_name )
-      writer.print " *= "
-      visit( cmd.operand )
-
-    method on_visit( cmd:MultiplyAndAssignThisProperty )
-      writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
-      else                        writer.print "."
-      writer.print( cmd.info.c_name )
-      writer.print " *= "
-      visit( cmd.operand )
-
-    method on_visit( cmd:DivideAndAssignLocal )
-      writer.print '('
-      writer.print cmd.info.c_name
-      writer.print " /= "
-      print_parenthesized( cmd.operand )
-      writer.print ')'
-
-    method on_visit( cmd:DivideAndAssignGlobalProperty )
-      writer.print( cmd.info.c_name )
-      writer.print( " /= " )
-      visit( cmd.operand )
-
-    method on_visit( cmd:DivideAndAssignProperty )
-      visit( cmd.context )
-      if (cmd.context.type.is_reference) writer.print "->"
-      else                               writer.print "."
-      writer.print( cmd.info.c_name )
-      writer.print " /= "
-      visit( cmd.operand )
-
-    method on_visit( cmd:DivideAndAssignThisProperty )
-      writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
-      else                        writer.print "."
-      writer.print( cmd.info.c_name )
-      writer.print " /= "
       visit( cmd.operand )
 
     method on_visit( cmd:BitwiseAndAndAssignLocal )
@@ -562,12 +478,20 @@ class CGenerator : Visitor
       writer.print " >= "
       print_parenthesized( cmd.right )
 
-    method on_visit( cmd:Divide )
-      writer.print '('
-      print_parenthesized( cmd.left )
-      writer.print " / "
-      print_parenthesized( cmd.right )
-      writer.print ')'
+    method on_visit( cmd:Contingent )
+      on_enter( cmd )
+      visit( cmd.statements )
+      if (cmd.catches_sufficient)
+        writer.print escape_label(ControlType.SUFFICIENT)
+        writer.println ":;"
+      endIf
+      visit( cmd.satisfied_statements )
+      if (cmd.catches_necessary)
+        writer.print escape_label(ControlType.NECESSARY)
+        writer.println ":;"
+      endIf
+      visit( cmd.unsatisfied_statements )
+      on_leave( cmd )
 
     method on_enter( cmd:ControlStructure )
       push_scope( cmd )
@@ -685,6 +609,64 @@ class CGenerator : Visitor
       writer.print cmd.of_type.c_name
       writer.print " )"
 
+    method on_visit( cmd:DecrementGlobalProperty )
+      writer.print "--"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementLocal )
+      writer.print "--"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementProperty )
+      writer.print "--"
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementThisProperty )
+      writer.print "--"
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:Divide )
+      writer.print '('
+      print_parenthesized( cmd.left )
+      writer.print " / "
+      print_parenthesized( cmd.right )
+      writer.print ')'
+
+    method on_visit( cmd:DivideAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " /= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:DivideAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " /= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " /= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " /= "
+      visit( cmd.operand )
+
     method on_visit( cmd:Escape )
       writer.print "goto "
       writer.print escape_label(cmd.control_type)
@@ -746,6 +728,29 @@ class CGenerator : Visitor
         visit( cmd.cmd_else )
       endIf
       on_leave( cmd )
+
+    method on_visit( cmd:IncrementGlobalProperty )
+      writer.print "++"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementLocal )
+      writer.print "++"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementProperty )
+      writer.print "++"
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementThisProperty )
+      writer.print "++"
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
 
     method on_visit( cmd:InlineWhich )
       # a:x || b:y || c
@@ -815,7 +820,7 @@ class CGenerator : Visitor
       on_leave( cmd )
 
     method on_visit( cmd:LiteralCharacter )
-      if (cmd.value >= 32)
+      if (cmd.value >= 32 and cmd.value <= 126)
         writer.print '\''
         which (cmd.value)
           case '\\': writer.print '\\'
@@ -900,12 +905,46 @@ class CGenerator : Visitor
       writer.print " * "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:MultiplyAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " *= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:MultiplyAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " *= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " *= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " *= "
+      visit( cmd.operand )
+
     method on_visit( cmd:NativeExpression )
       print_native_code( cmd.t, cmd.content )
 
     method on_visit( cmd:NativeStatement )
       print_native_code( cmd.t, cmd.content )
       writer.println
+
+    method on_visit( cmd:Necessary )
+      writer.print "if (!("
+      visit( cmd.condition )
+      writer.print ")) goto "
+      writer.print escape_label(cmd.control_type)
 
     method on_visit( cmd:Negate )
       writer.print '-'
@@ -919,52 +958,6 @@ class CGenerator : Visitor
       writer.print ","
       visit( cmd.right )
       writer.print ')'
-
-    method on_visit( cmd:DecrementGlobalProperty )
-      writer.print "--"
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:DecrementLocal )
-      writer.print "--"
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:DecrementProperty )
-      writer.print "--"
-      visit( cmd.context )
-      if (cmd.context.type.is_reference) writer.print "->"
-      else                               writer.print "."
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:DecrementThisProperty )
-      writer.print "--"
-      writer.print "THIS"
-      assert this_type
-      if (this_type.is_reference) writer.print "->"
-      else                        writer.print "."
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:IncrementGlobalProperty )
-      writer.print "++"
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:IncrementLocal )
-      writer.print "++"
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:IncrementProperty )
-      writer.print "++"
-      visit( cmd.context )
-      if (cmd.context.type.is_reference) writer.print "->"
-      else                               writer.print "."
-      writer.print( cmd.info.c_name )
-
-    method on_visit( cmd:IncrementThisProperty )
-      writer.print "++"
-      writer.print "THIS"
-      assert this_type
-      if (this_type.is_reference) writer.print "->"
-      else                        writer.print "."
-      writer.print( cmd.info.c_name )
 
     method on_visit( cmd:PreDecrementLocal )
       writer.print "--"
@@ -1053,6 +1046,40 @@ class CGenerator : Visitor
       print_parenthesized( cmd.left )
       writer.print " - "
       print_parenthesized( cmd.right )
+
+    method on_visit( cmd:SubtractAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " -= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:SubtractAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " -= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:SubtractAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " -= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:SubtractAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " -= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:Sufficient )
+      writer.print "if ("
+      visit( cmd.condition )
+      writer.print ") goto "
+      writer.print escape_label(cmd.control_type)
 
     method on_visit( cmd:Switch )
       on_enter( cmd )

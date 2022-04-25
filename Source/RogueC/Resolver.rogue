@@ -155,6 +155,32 @@ class Resolver : Visitor
     method on( cmd:ContextDirectAccess )->Cmd
       return resolve_direct_access( cmd.t, cmd.context, cmd.name )
 
+    method on( cmd:Contingent )->Cmd
+      if (cmd.is_resolved) return cmd
+
+      local outer_scope = Block( cmd.t, Statements(cmd.t,cmd), ControlType.CONTINGENT )
+      # This wrapper catches escapeContingent in any section.
+
+      cmd.control_type = ControlType.UNDEFINED
+
+      if (cmd.unsatisfied_statements)
+        local statements = which{ cmd.satisfied_statements || cmd.statements }
+        statements.add( EscapeContingent(cmd.t) )
+      endIf
+
+      push_scope( outer_scope )
+
+      push_scope( cmd )
+      cmd.statements = visit( cmd.statements )
+      pop_scope
+
+      cmd.satisfied_statements = visit( cmd.satisfied_statements )
+      cmd.unsatisfied_statements = visit( cmd.unsatisfied_statements )
+
+      pop_scope
+
+      return outer_scope
+
     method on( cmd:ControlStructure )->Cmd
       push_scope( cmd )
       visit_content( cmd )
@@ -518,6 +544,17 @@ class Resolver : Visitor
       this_module.native_code.add( cmd.content )
       return null
 
+    method on_visit( cmd:Necessary )
+      visit_children( cmd )
+      cmd.condition .= logicalized( this )
+
+      contingent
+        forEach (scope in control_stack step -1)
+          sufficient (scope.catches_escape(cmd.control_type))
+        endForEach
+        throw cmd.t.error( "No enclosing 'contingent' to escape from." )
+      endContingent
+
     method on( cmd:Negate )->Cmd
       visit_children( cmd )
       local operand = cmd.operand
@@ -625,6 +662,17 @@ class Resolver : Visitor
 
     method on( cmd:Stepper )->Cmd
       return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+
+    method on_visit( cmd:Sufficient )
+      visit_children( cmd )
+      cmd.condition .= logicalized( this )
+
+      contingent
+        forEach (scope in control_stack step -1)
+          sufficient (scope.catches_escape(cmd.control_type))
+        endForEach
+        throw cmd.t.error( "No enclosing 'contingent' to escape from." )
+      endContingent
 
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )

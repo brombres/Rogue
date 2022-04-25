@@ -708,4 +708,23 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
+    method on_visit_children( cmd:Contingent )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.satisfied_statements)
+      if (result?) return result
+      result = visit(cmd.unsatisfied_statements)
+      return result
+
+    method on_visit_children( cmd:Necessary )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      return result
+
+    method on_visit_children( cmd:Sufficient )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      return result
+
 endClass

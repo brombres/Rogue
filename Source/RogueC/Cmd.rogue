@@ -934,6 +934,9 @@ class ControlStructure : Cmd
       if (existing.locals) locals = existing.locals.cloned
       if (existing.statements) statements = existing.statements.cloned
 
+    method catches_escape->Logical
+      return @catches_escape
+
     method catches_escape( escape_type:ControlType )->Logical
       if (@control_type != escape_type) return false
       catches_escape = true
@@ -1146,11 +1149,11 @@ endClass
 
 class Block : ControlStructure
   METHODS
-    method init( t )
-      prior.init( t, ControlType.BLOCK )
+    method init( t, control_type=ControlType.BLOCK )
+      prior.init( t, control_type )
 
-    method init( t, statements:Cmd )
-      prior.init( t, statements, ControlType.BLOCK )
+    method init( t, statements:Cmd, control_type=ControlType.BLOCK )
+      prior.init( t, statements, control_type )
 
     method init( existing:Block )
       prior.init( existing )
@@ -1877,7 +1880,6 @@ class Catch : ControlStructure
     var_name       : String
     exception_type : Type
     v_catch        : Local
-    catches_escape : Logical
 
   METHODS
     method init( t, var_name, exception_type, statements:Cmd )
@@ -1887,9 +1889,6 @@ class Catch : ControlStructure
       prior.init( existing )
       var_name = existing.var_name
       if (existing.exception_type) exception_type = existing.exception_type.cloned
-
-    method catches_escape->Logical
-      return @catches_escape
 
     method catches_escape( escape_type:ControlType )->Logical
       if (escape_type == ControlType.TRY)
@@ -3379,4 +3378,85 @@ class Switch : Conditional
     method description->String
       return "Switch($,$,$)" (%condition,%cases,%statements)
 
+endClass
+
+class Contingent : ControlStructure
+  PROPERTIES
+    satisfied_statements   : Cmd
+    unsatisfied_statements : Cmd
+    catches_necessary      : Logical
+    catches_sufficient     : Logical
+    is_resolved            : Logical
+
+  METHODS
+    method init( t, statements, satisfied_statements, unsatisfied_statements )
+      control_type = ControlType.CONTINGENT
+
+    method init( existing:Contingent )
+      prior.init( existing )
+      is_resolved = existing.is_resolved
+      if (existing.satisfied_statements) satisfied_statements = existing.satisfied_statements.cloned
+      if (existing.unsatisfied_statements) unsatisfied_statements = existing.unsatisfied_statements.cloned
+
+    method catches_escape( escape_type:ControlType )->Logical
+      if (escape_type == ControlType.NECESSARY)
+        catches_necessary = true
+        return true
+      elseIf (escape_type == ControlType.SUFFICIENT)
+        catches_sufficient = true
+        return true
+      else
+        return false
+      endIf
+
+    method description->String
+      return "Contingent($,$,$)" (%statements,%satisfied_statements,%unsatisfied_statements)
+
+endClass
+
+class Necessary : Cmd
+  PROPERTIES
+    condition : Cmd
+
+  METHODS
+    method init( t, condition )
+
+    method init( existing:Necessary )
+      prior.init( existing )
+      if (existing.condition) condition = existing.condition.cloned
+
+    method control_type->ControlType
+      return ControlType.NECESSARY
+
+    method description->String
+      return "Necessary($)" (%condition)
+
+endClass
+
+class Sufficient : Cmd
+  PROPERTIES
+    condition : Cmd
+
+  METHODS
+    method init( t, condition )
+
+    method init( existing:Sufficient )
+      prior.init( existing )
+      if (existing.condition) condition = existing.condition.cloned
+
+    method control_type->ControlType
+      return ControlType.SUFFICIENT
+
+    method description->String
+      return "Sufficient($)" (%condition)
+
+endClass
+
+class EscapeContingent : Escape
+  METHODS
+    method control_type->ControlType
+      return ControlType.CONTINGENT
+
+    method description->String
+      return "EscapeContingent"
 endClass

@@ -8,7 +8,7 @@ class PrintWriter [aspect]
     method close
       flush
 
-    method flush         [abstract]
+    method flush                                               [abstract]
 
     method print( value:Byte )->this                           [abstract]
     method print( value:Character )->this                      [abstract]
@@ -20,7 +20,6 @@ class PrintWriter [aspect]
     method print( value:Real64, decimal_places:Int32 )->this   [abstract]
     method print( value:Real32 )->this                         [abstract]
     method print( value:String )->this                         [abstract]
-    method print( buffer:StringBuilder )->this                 [abstract]
     method println->this                                       [abstract]
     method println( value:Byte )->this                         [abstract]
     method println( value:Character )->this                    [abstract]
@@ -42,7 +41,7 @@ endClass
 
 class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
   PROPERTIES
-    $buffer = StringBuilder()
+    $buffer = String()
 
   METHODS
     method close
@@ -51,7 +50,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
     method flush
       flush( $buffer )
 
-    method flush( buffer:StringBuilder ) [abstract]
+    method flush( buffer:String ) [abstract]
 
     method indent->Int32
       return $buffer.indent
@@ -96,10 +95,6 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
     method print( value:String )->this
       $buffer.print( value )
       if ($buffer.count > 1024) flush
-      return this
-
-    method print( value:StringBuilder )->this
-      $buffer.print( value )
       return this
 
     method println->this
@@ -152,10 +147,9 @@ class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
       flush
       output.close
 
-    method flush( buffer:StringBuilder )
+    method flush( buffer:String )
       output.write( buffer.utf8 )
       buffer.clear
       output.flush
 endClass
-
 }#

@@ -77,7 +77,7 @@ class ScannerCore [abstract]
     _scan_pattern_16 = ScanPattern( "[0-9a-fA-F]" )
     _scan_pattern_17 = ScanPattern( "[ ]*" )
     _scan_table_0 = ScanTable("glb/Hgo+IkAnQkBIJFImgQgtgQ4qgRxcgSIhgSRegSp9gTBdgTIpgTQ6gTYsgWg8gWougXh8gg5bghg9gh4+giR7gi4ogjAlgjIrgjg/gkI7gkgvgkp+glAAAAEAAgEnRgMACgJ8TltQBAAjAP8CZFhpbv8BZVz/AWZg/wFpZP8Bbmj/AWVsBQD/AW5y/wFjdv8BbHr/AXV+/wFkgQL/AWWBBgYABwE9gQxAACYDPoEWLYEYPYEaCAAnADsACQE9gSA8AAsADAE9gSgoAA0BPYEuPwAOAA8AEAARAzqBPjyBQD6BThIA/wE8gUT/ATqBSCEBPYFMQwD/AT6BUv8COoFYPoFeMgE9gVxEAP8BOoFiNAE9gWZFABMAJAM+gXI9gXQ8gXYUACAAJQAtAy6CAFuCCj2CDBUCPIIGPoIIFgAXABgARgA5AnyCFD2CFhkAQQAqAV2CHBoAHAE9giIbAB4CPYIqPoIsHQAfACkAKwAsAT2CNj4ALgIrgj49gkAvADoAMAE6gkYxADYANwE9gk49ADgBPYJUQgA=")
-    _scan_table_1 = ScanTable("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")
+    _scan_table_1 = ScanTable("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")
     _scan_table_2 = ScanTable("YgABRwT/AUwI/wFPDP8BQhD/AUEU/wFMGP8BIBz/AlAiTUj/AVIm/wFPKv8BUC7/AUUy/wFSNv8BVDr/AUk+/wFFQv8BU0YBAP8BRUz/AVRQ/wFIVP8BT1j/AURc/wFTYAIA")
     _scan_table_3 = ScanTable("EgABMAT/A2IMYw54EAEAAgADAA==")
 
@@ -561,195 +561,216 @@ class ScannerCore [abstract]
                   _add( TokenType.KEYWORD_CLASS )
                   return false
                 case 8
-                  _add( TokenType.KEYWORD_DEFINITIONS )
+                  _add( TokenType.KEYWORD_CONTINGENT )
                   return false
                 case 9
-                  _add( TokenType.KEYWORD_DOWN_TO )
+                  _add( TokenType.KEYWORD_DEFINITIONS )
                   return false
                 case 10
-                  _add( TokenType.KEYWORD_ELSE )
+                  _add( TokenType.KEYWORD_DOWN_TO )
                   return false
                 case 11
-                  _add( TokenType.KEYWORD_ELSE_IF )
+                  _add( TokenType.KEYWORD_ELSE )
                   return false
                 case 12
-                  _add( TokenType.KEYWORD_END_BLOCK )
+                  _add( TokenType.KEYWORD_ELSE_IF )
                   return false
                 case 13
-                  _add( TokenType.KEYWORD_END_CLASS )
+                  _add( TokenType.KEYWORD_END_BLOCK )
                   return false
                 case 14
-                  _add( TokenType.KEYWORD_END_FOR_EACH )
+                  _add( TokenType.KEYWORD_END_CLASS )
                   return false
                 case 15
-                  _add( TokenType.KEYWORD_END_IF )
+                  _add( TokenType.KEYWORD_END_CONTINGENT )
                   return false
                 case 16
-                  _add( TokenType.KEYWORD_END_LOOP )
+                  _add( TokenType.KEYWORD_END_FOR_EACH )
                   return false
                 case 17
-                  _add( TokenType.KEYWORD_END_ROUTINE )
+                  _add( TokenType.KEYWORD_END_IF )
                   return false
                 case 18
-                  _add( TokenType.KEYWORD_END_TRY )
+                  _add( TokenType.KEYWORD_END_LOOP )
                   return false
                 case 19
-                  _add( TokenType.KEYWORD_END_USE )
+                  _add( TokenType.KEYWORD_END_ROUTINE )
                   return false
                 case 20
-                  _add( TokenType.KEYWORD_END_WHICH )
+                  _add( TokenType.KEYWORD_END_TRY )
                   return false
                 case 21
-                  _add( TokenType.KEYWORD_END_WHILE )
+                  _add( TokenType.KEYWORD_END_USE )
                   return false
                 case 22
-                  _add( TokenType.KEYWORD_ESCAPE_BLOCK )
+                  _add( TokenType.KEYWORD_END_WHICH )
                   return false
                 case 23
-                  _add( TokenType.KEYWORD_ESCAPE_FOR_EACH )
+                  _add( TokenType.KEYWORD_END_WHILE )
                   return false
                 case 24
-                  _add( TokenType.KEYWORD_ESCAPE_IF )
+                  _add( TokenType.KEYWORD_ESCAPE_BLOCK )
                   return false
                 case 25
-                  _add( TokenType.KEYWORD_ESCAPE_LOOP )
+                  _add( TokenType.KEYWORD_ESCAPE_CONTINGENT )
                   return false
                 case 26
-                  _add( TokenType.KEYWORD_ESCAPE_TRY )
+                  _add( TokenType.KEYWORD_ESCAPE_FOR_EACH )
                   return false
                 case 27
-                  _add( TokenType.KEYWORD_ESCAPE_WHICH )
+                  _add( TokenType.KEYWORD_ESCAPE_IF )
                   return false
                 case 28
-                  _add( TokenType.KEYWORD_ESCAPE_WHILE )
+                  _add( TokenType.KEYWORD_ESCAPE_LOOP )
                   return false
                 case 29
-                  _add( TokenType.KEYWORD_EXPORT )
+                  _add( TokenType.KEYWORD_ESCAPE_TRY )
                   return false
                 case 30
-                  _add( TokenType.KEYWORD_FALSE )
+                  _add( TokenType.KEYWORD_ESCAPE_WHICH )
                   return false
                 case 31
-                  _add( TokenType.KEYWORD_FOR_EACH )
+                  _add( TokenType.KEYWORD_ESCAPE_WHILE )
                   return false
                 case 32
-                  _add( TokenType.KEYWORD_GLOBAL )
+                  _add( TokenType.KEYWORD_EXPORT )
                   return false
                 case 33
-                  _add( TokenType.KEYWORD_GLOBAL_PROPERTIES )
+                  _add( TokenType.KEYWORD_FALSE )
                   return false
                 case 34
-                  _add( TokenType.KEYWORD_GLOBAL_METHODS )
+                  _add( TokenType.KEYWORD_FOR_EACH )
                   return false
                 case 35
-                  _add( TokenType.KEYWORD_IF )
+                  _add( TokenType.KEYWORD_GLOBAL )
                   return false
                 case 36
-                  _add( TokenType.KEYWORD_IMPORT )
+                  _add( TokenType.KEYWORD_GLOBAL_PROPERTIES )
                   return false
                 case 37
-                  _add( TokenType.KEYWORD_INCLUDE )
+                  _add( TokenType.KEYWORD_GLOBAL_METHODS )
                   return false
                 case 38
-                  _add( TokenType.KEYWORD_INSTANCE_OF )
+                  _add( TokenType.KEYWORD_IF )
                   return false
                 case 39
-                  _add( TokenType.KEYWORD_IS )
+                  _add( TokenType.KEYWORD_IMPORT )
                   return false
                 case 40
-                  _add( TokenType.KEYWORD_IS_COMPOUND )
+                  _add( TokenType.KEYWORD_INCLUDE )
                   return false
                 case 41
-                  _add( TokenType.KEYWORD_IS_PRIMITIVE )
+                  _add( TokenType.KEYWORD_INSTANCE_OF )
                   return false
                 case 42
-                  _add( TokenType.KEYWORD_IS_REFERENCE )
+                  _add( TokenType.KEYWORD_IS )
                   return false
                 case 43
-                  _add( TokenType.KEYWORD_IS_TYPE )
+                  _add( TokenType.KEYWORD_IS_COMPOUND )
                   return false
                 case 44
-                  _add( TokenType.KEYWORD_LOCAL )
+                  _add( TokenType.KEYWORD_IS_PRIMITIVE )
                   return false
                 case 45
-                  _add( TokenType.KEYWORD_LOOP )
+                  _add( TokenType.KEYWORD_IS_REFERENCE )
                   return false
                 case 46
-                  _add( TokenType.KEYWORD_METHOD )
+                  _add( TokenType.KEYWORD_IS_TYPE )
                   return false
                 case 47
-                  _add( TokenType.KEYWORD_METHODS )
+                  _add( TokenType.KEYWORD_LOCAL )
                   return false
                 case 48
-                  _add( TokenType.KEYWORD_MODULE )
+                  _add( TokenType.KEYWORD_LOOP )
                   return false
                 case 49
-                  _add( TokenType.KEYWORD_NATIVE_SECTION )
+                  _add( TokenType.KEYWORD_METHOD )
                   return false
                 case 50
-                  _add( TokenType.KEYWORD_NATIVE )
+                  _add( TokenType.KEYWORD_METHODS )
                   return false
                 case 51
-                  _add( TokenType.KEYWORD_NATIVE_HEADER )
+                  _add( TokenType.KEYWORD_MODULE )
                   return false
                 case 52
-                  _add( TokenType.KEYWORD_NATIVE_CODE )
+                  _add( TokenType.KEYWORD_NATIVE_SECTION )
                   return false
                 case 53
-                  _add( TokenType.KEYWORD_NO_ACTION )
+                  _add( TokenType.KEYWORD_NATIVE )
                   return false
                 case 54
-                  _add( TokenType.KEYWORD_NOT )
+                  _add( TokenType.KEYWORD_NATIVE_HEADER )
                   return false
                 case 55
-                  _add( TokenType.KEYWORD_NULL )
+                  _add( TokenType.KEYWORD_NATIVE_CODE )
                   return false
                 case 56
-                  _add( TokenType.KEYWORD_OR )
+                  _add( TokenType.KEYWORD_NECESSARY )
                   return false
                 case 57
-                  _add( TokenType.KEYWORD_OTHERS )
+                  _add( TokenType.KEYWORD_NO_ACTION )
                   return false
                 case 58
-                  _add( TokenType.KEYWORD_PI )
+                  _add( TokenType.KEYWORD_NOT )
                   return false
                 case 59
-                  _add( TokenType.KEYWORD_PROPERTIES )
+                  _add( TokenType.KEYWORD_NULL )
                   return false
                 case 60
-                  _add( TokenType.KEYWORD_RETURN )
+                  _add( TokenType.KEYWORD_OR )
                   return false
                 case 61
-                  _add( TokenType.KEYWORD_ROUTINE )
+                  _add( TokenType.KEYWORD_OTHERS )
                   return false
                 case 62
-                  _add( TokenType.KEYWORD_THIS )
+                  _add( TokenType.KEYWORD_PI )
                   return false
                 case 63
-                  _add( TokenType.KEYWORD_THROW )
+                  _add( TokenType.KEYWORD_PROPERTIES )
                   return false
                 case 64
-                  _add( TokenType.KEYWORD_TRUE )
+                  _add( TokenType.KEYWORD_RETURN )
                   return false
                 case 65
-                  _add( TokenType.KEYWORD_TRY )
+                  _add( TokenType.KEYWORD_ROUTINE )
                   return false
                 case 66
-                  _add( TokenType.KEYWORD_UNDEFINED )
+                  _add( TokenType.KEYWORD_SATISFIED )
                   return false
                 case 67
-                  _add( TokenType.KEYWORD_USE )
+                  _add( TokenType.KEYWORD_SUFFICIENT )
                   return false
                 case 68
-                  _add( TokenType.KEYWORD_USES )
+                  _add( TokenType.KEYWORD_THIS )
                   return false
                 case 69
-                  _add( TokenType.KEYWORD_WHICH )
+                  _add( TokenType.KEYWORD_THROW )
                   return false
                 case 70
-                  _add( TokenType.KEYWORD_WHILE )
+                  _add( TokenType.KEYWORD_TRUE )
                   return false
                 case 71
+                  _add( TokenType.KEYWORD_TRY )
+                  return false
+                case 72
+                  _add( TokenType.KEYWORD_UNDEFINED )
+                  return false
+                case 73
+                  _add( TokenType.KEYWORD_UNSATISFIED )
+                  return false
+                case 74
+                  _add( TokenType.KEYWORD_USE )
+                  return false
+                case 75
+                  _add( TokenType.KEYWORD_USES )
+                  return false
+                case 76
+                  _add( TokenType.KEYWORD_WHICH )
+                  return false
+                case 77
+                  _add( TokenType.KEYWORD_WHILE )
+                  return false
+                case 78
                   _add( TokenType.KEYWORD_XOR )
                   return false
                 others

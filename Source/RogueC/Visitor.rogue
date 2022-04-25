@@ -508,5 +508,16 @@ class Visitor
       cmd.cases = visit(cmd.cases)->(as WhichCases)
       cmd.statements = visit(cmd.statements)
 
+    method on_visit_children( cmd:Contingent )
+      cmd.statements = visit(cmd.statements)
+      cmd.satisfied_statements = visit(cmd.satisfied_statements)
+      cmd.unsatisfied_statements = visit(cmd.unsatisfied_statements)
+
+    method on_visit_children( cmd:Necessary )
+      cmd.condition = visit(cmd.condition)
+
+    method on_visit_children( cmd:Sufficient )
+      cmd.condition = visit(cmd.condition)
+
 endClass
 
