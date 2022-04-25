@@ -204,6 +204,10 @@ class Resolver : Visitor
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
 
     method on_validate( cmd:CreateObject )->Cmd
+      if (cmd.of_type.attributes.is_abstract)
+        throw cmd.t.error( "Abstract type $ cannot be instantiated."(cmd.of_type) )
+      endIf
+
       if (cmd.m_init and cmd.m_init.throws)
         back_propagate_thrown_exception( cmd.m_init.throws )
       endIf
@@ -838,12 +842,21 @@ class Resolver : Visitor
           if (def) return visit( def.cloned )
         endIf
 
+        local is_fallback = false
         local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
-        if (match) return resolve_call( t, context, match, args )
+        if (match)
+          if (match.attributes.is_fallback)
+            is_fallback = true
+          else
+            return resolve_call( t, context, match, args )
+          endIf
+        endIf
 
-        # Check in Global
-        match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
-        if (match) return resolve_call( t, GetSingleton(t,Program.type_Global), match, args )
+        if (not is_fallback)
+          # Check in Global
+          local g_match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
+          if (g_match) return resolve_call( t, GetSingleton(t,Program.type_Global), g_match, args )
+        endIf
 
         if (not is_global)
           if (type_context and not args)
@@ -860,6 +873,10 @@ class Resolver : Visitor
           if (p)
             return validate( GetGlobalProperty(t,p) )
           endIf
+        endIf
+
+        if (is_fallback)
+          return resolve_call( t, context, match, args )
         endIf
 
         if (suppress_error) return null->(as Cmd)

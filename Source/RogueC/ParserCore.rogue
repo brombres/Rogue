@@ -510,9 +510,21 @@ class ParserCore [abstract]
             else                    _push_list( Attributes(_list_t) )
             return
           case ip_procedure_attribute
+            if (_next_t.content and _next_t.content == "abstract")
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( AttributeAbstract(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.content and _next_t.content == "append")
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( AttributeAppend(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
+            if (_next_t.content and _next_t.content == "fallback")
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( AttributeFallback(_cur_t), 0 )
                 return
               endTemporarily
             endIf
@@ -522,7 +534,7 @@ class ParserCore [abstract]
                 return
               endTemporarily
             endIf
-            _throw_syntax_error("Illegal procedure attribute. Expected one or more of [append insert].")
+            _throw_syntax_error("Illegal procedure attribute. Expected one or more of [abstract append fallback insert].")
             return
           case ip_procedure_body
             _execute(ip_multi_line_statements)
@@ -960,6 +972,12 @@ class ParserCore [abstract]
             else                    _push_list( Attributes(_list_t) )
             return
           case ip_class_attribute
+            if (_next_t.content and _next_t.content == "abstract")
+              temporarily _cur_t = _on_t
+                if (not disable_output) _push( AttributeAbstract(_cur_t), 0 )
+                return
+              endTemporarily
+            endIf
             if (_next_t.content and _next_t.content == "compound")
               temporarily _cur_t = _on_t
                 if (not disable_output) _push( AttributeCompound(_cur_t), 0 )
@@ -985,7 +1003,7 @@ class ParserCore [abstract]
               if (not disable_output) _push( AttributeAspect(_cur_t), 0 )
               return
             endIf
-            _throw_syntax_error("Illegal class attribute. Expected one or more of [aspect compound essential primitive singleton].")
+            _throw_syntax_error("Illegal class attribute. Expected one or more of [abstract aspect compound essential primitive singleton].")
             return
           case ip_class
             _execute(ip_constructor_properties)
@@ -1609,6 +1627,17 @@ class ParserCore [abstract]
           case ip_property_declaration
             if (_next_t.type == TokenType.IDENTIFIER)
               temporarily _cur_t = _on_t
+                _execute(ip_optional_initial_value)
+                _pop_frame
+                if (not disable_output) _push( null, 0 )
+                if (not disable_output) _push( Property(_cur_t,_cur_t.content,_node_arg(-2),_node_arg(-1)->(as Type)), 2 )
+                return
+              endTemporarily
+            elseIf (_next_t.type == TokenType.PLACEHOLDER)
+              temporarily _cur_t = _on_t
+                if ((not disable_output))
+                  _throw_syntax_error
+                endIf
                 _execute(ip_optional_initial_value)
                 _pop_frame
                 if (not disable_output) _push( null, 0 )

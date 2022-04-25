@@ -548,9 +548,11 @@ parser
   produceList Attributes
 
 - procedure_attribute
-  on @"append" -> AttributeAppend
-  on @"insert" -> AttributeInsert
-  syntaxError "Illegal procedure attribute. Expected one or more of [append insert]."
+  on @"abstract" -> AttributeAbstract
+  on @"append"   -> AttributeAppend
+  on @"fallback" -> AttributeFallback
+  on @"insert"   -> AttributeInsert
+  syntaxError "Illegal procedure attribute. Expected one or more of [abstract append fallback insert]."
 
 - procedure_body
   multi_line_statements
@@ -733,6 +735,7 @@ parser
   produceList Attributes
 
 - class_attribute
+  on @"abstract"  -> AttributeAbstract
   on @"compound"  -> AttributeCompound
   on @"singleton" -> AttributeSingleton
   if (consume @"essential")
@@ -743,7 +746,7 @@ parser
   elseIf (consume @"aspect")
     produce AttributeAspect
   endIf
-  syntaxError "Illegal class attribute. Expected one or more of [aspect compound essential primitive singleton]."
+  syntaxError "Illegal class attribute. Expected one or more of [abstract aspect compound essential primitive singleton]."
 
 - class
   constructor_properties
@@ -1149,6 +1152,11 @@ parser
 
 - property_declaration
   on IDENTIFIER
+    optional_initial_value
+    createNull
+    produce Property( name=content, initial_value, type:Type )
+  elseOn PLACEHOLDER
+    if (not disable_output) syntaxError
     optional_initial_value
     createNull
     produce Property( name=content, initial_value, type:Type )

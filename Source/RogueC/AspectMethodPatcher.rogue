@@ -11,7 +11,9 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
     method patch( this_type, m:Method )
       m.module_context = this_type.module_context
       m.type_context   = this_type
-      if (m.attributes.returns_this) m.return_type = this_type
+      if (m.attributes.returns_this)
+        m.return_type = this_type
+      endIf
       visit( m )
 
     method on_visit( cmd:This )

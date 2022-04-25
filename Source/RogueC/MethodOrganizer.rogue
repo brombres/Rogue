@@ -63,6 +63,9 @@ class MethodOrganizer : Visitor
 
     method on_visit( cmd:Routine )
       cmd.organize( this )
+      if (cmd.attributes.is_abstract)
+        throw cmd.t.error( "Routines cannot be [abstract]." )
+      endIf
 
     method on_visit_children( cmd:Statements )
       forEach (element in writer=cmd.list.rewriter)

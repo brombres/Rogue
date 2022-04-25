@@ -3460,3 +3460,15 @@ class EscapeContingent : Escape
     method description->String
       return "EscapeContingent"
 endClass
+
+class AttributeAbstract : Cmd
+  METHODS
+    method description->String
+      return "AttributeAbstract"
+endClass
+
+class AttributeFallback : Cmd
+  METHODS
+    method description->String
+      return "AttributeFallback"
+endClass

@@ -11,5 +11,6 @@ $include Standard/Span
 $include Standard/StackTrace
 $include Standard/String
 $include Standard/System
+$include Standard/Writer
 
 uses Math [export]
