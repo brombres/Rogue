@@ -108,6 +108,7 @@ endAugment
 augment
   METHODS
     method Type.cmd_default_value( cmd_t:Token )->Cmd
+      if (is_compound) return EmptyCompound( cmd_t, this )
       return LiteralNull( cmd_t, this )
 
     method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
@@ -404,6 +405,9 @@ augment
     method Description.type->Type
       return Program.type_String
     }#
+
+    method EmptyCompound.type->Type
+      return of_type
 
     #{
     method EmptyList.type->Type

@@ -727,4 +727,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.condition)
       return result
 
+    method on_visit_children( cmd:EmptyCompound )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
 endClass

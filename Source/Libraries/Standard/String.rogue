@@ -1267,18 +1267,18 @@ class String
                  |  RogueInt32 character_count = RogueString_utf8_character_count( cstring, byte_count );
                  |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, must_free );
                  |
-                 |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
-                 |  RogueByteList* data = ROGUE_CREATE_OBJECT( RogueByteList );
+                 |  RogueString* result = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
+                 |  RogueByteList* data = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |  result->data = data;
                  |
                  |  data->as_utf8        = (char*) cstring;
                  |  data->count          = byte_count;
                  |  data->capacity       = byte_count + 1;
-                 |  data->is_borrowed    = !must_free;
+                 |  data->is_borrowed    = (must_free <= 0);
                  |  data->element_size   = 1;
                  |
                  |  result->count        = character_count;
-                 |  result->is_immutable = !must_free;
+                 |  result->is_immutable = (must_free <= 0);
                  |  result->hash_code    = -1;
                  |  result->is_ascii     = (character_count == byte_count);
                  |  return result;
@@ -1301,10 +1301,28 @@ class String
                  |    return RogueString_create( cstring, byte_count, must_free );
                  |  }
                  |
-                 |  RogueString* result = ROGUE_CREATE_OBJECT( RogueString );
-                 |  RogueString__init__RogueInt32( result, utf8_byte_count );
+                 |  RogueString* result = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
+                 |  RogueByteList* data;
+                 |  #ifdef ROGUE_GC_AUTO
+                 |    result->refcount = 1; // keep this object alive if init fn triggers a GC
+                 |    data = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    --result->refcount;   // other code maybe retained this obj so don't just set back to 0.
+                 |  #else
+                 |    data = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |  #endif
+                 |  result->data = data;
                  |
-                 |  char* utf8 = result->data->as_utf8;
+                 |  data->as_utf8        = (char*) ROGUE_MALLOC( utf8_byte_count+1 );
+                 |  data->count          = utf8_byte_count;
+                 |  data->capacity       = utf8_byte_count + 1;
+                 |  data->is_borrowed    = 0;
+                 |  data->element_size   = 1;
+                 |
+                 |  result->count        = byte_count;   // ASCII 256 bytes == characters
+                 |  result->is_immutable = (must_free <= 0);
+                 |  result->hash_code    = -1;
+                 |
+                 |  char* utf8 = data->as_utf8;
                  |  int dest_i = 0;
                  |  for (i=-1; ++i<byte_count; )
                  |  {
@@ -1324,11 +1342,7 @@ class String
                  |  }
                  |  utf8[ utf8_byte_count ] = 0;
                  |
-                 |  result->data->count = utf8_byte_count;
-                 |  result->count       = byte_count;
-                 |  result->hash_code   = -1;
-                 |
-                 |  if (must_free) ROGUE_FREE( (void*)cstring );
+                 |  if (must_free > 0) ROGUE_FREE( (void*)cstring );
                  |
                  |  return result;
                  |}
@@ -1402,11 +1416,5 @@ class String
                  |}
                  |
 
-endClass
-
-class StringPool : ObjectPool<<String>>
-  METHODS
-    method on_end_use( builder:String )
-      available.add( builder.clear )
 endClass
 

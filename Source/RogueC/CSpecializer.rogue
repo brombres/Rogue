@@ -391,6 +391,13 @@ augment Program
     unique_c_names = Set<<String>>()
 
   METHODS
+    method init
+      <append>
+      # Reserve these type names that are already used by the C runtime. Any Rogue class named
+      # e.g. "Rogue::ObjectList" will become "RogueObjectList2" etc.
+      unique_c_names.add( "RogueCallFrame" )
+      unique_c_names.add( "RogueObjectList" )
+
     method to_c_name( name:String )->String
       loop
         if (name.ends_with("[]"))

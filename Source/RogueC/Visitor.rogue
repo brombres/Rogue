@@ -519,5 +519,8 @@ class Visitor
     method on_visit_children( cmd:Sufficient )
       cmd.condition = visit(cmd.condition)
 
+    method on_visit_children( cmd:EmptyCompound )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
 endClass
 

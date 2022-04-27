@@ -3371,6 +3371,7 @@ class ParserCore [abstract]
             if (not disable_output) _push( CreateCompound(_cur_t), 0 )
             if (not disable_output) _push( DefaultArg(_cur_t,_node_arg(-1)), 1 )
             if (not disable_output) _push( DummyInitialValue(_cur_t), 0 )
+            if (not disable_output) _push( EmptyCompound(_cur_t,_node_arg(-1)->(as Type)), 1 )
             if (not disable_output) _push( Escape(_cur_t), 0 )
             if (not disable_output) _push( ForEachControl(_cur_t,_string_arg(-3),_node_arg(-2)->(as ForEachAt),_node_arg(-1)->(as ForEachCollection)), 3 )
             if (not disable_output) _push( Iterator(_cur_t,_node_arg(-4),_node_arg(-3),_node_arg(-2),_node_arg(-1)), 4 )

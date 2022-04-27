@@ -667,6 +667,11 @@ class CGenerator : Visitor
       writer.print " /= "
       visit( cmd.operand )
 
+    method on_visit( cmd:EmptyCompound )
+      writer.print '('
+      writer.print cmd.of_type.c_name
+      writer.print "){}"
+
     method on_visit( cmd:Escape )
       writer.print "goto "
       writer.print escape_label(cmd.control_type)
@@ -1407,15 +1412,14 @@ augment
             writer.print   ' '
             writer.print   type.c_name
             writer.println "_singleton = 0;"
-            writer.println
           endIf
 
           forEach (p in type.global_properties)
             writer.print p.type.c_ref_name
             writer.print ' '
             writer.print p.c_name
-            if (p.type.is_compound) writer.println "= {};"
-            else                    writer.println "= 0;"
+            if (p.type.is_compound) writer.println " = {};"
+            else                    writer.println " = 0;"
           endForEach
 
           writer.print   "RogueType Type"
@@ -1622,6 +1626,108 @@ augment
       endForEach
 
       c_writer.println @|
+                        |void  Rogue_collect_garbage()
+                        |{
+      c_writer.indent += 2
+      c_writer.println   @|if (RogueMM_bytes_allocated_since_gc < ROGUE_MM_GC_THRESHOLD && !RogueMM_gc_request) return;
+                          |RogueMM_bytes_allocated_since_gc = 0;
+                          |RogueMM_gc_request = 0;
+                          |
+                          |RogueObject*  ref;
+                          |RogueObject** refptr;
+                          |int i;
+                          |int write_i;
+                          |
+                          |// Trace all retained objects (positive refcount)
+                          |for (i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
+                          |{
+                          |  if ((ref=(RogueObject*)*(++refptr)) && ref->refcount > 0) ref->type->fn_gc_trace(ref);
+                          |}
+                          |
+                          |// Trace singletons
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          if (type.attributes.is_singleton)
+            c_writer.print   "if ((ref = (RogueObject*)"
+            c_writer.print   type.c_name
+            c_writer.println "_singleton) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+          endIf
+        endForEach
+      endForEach
+      c_writer.println
+
+      c_writer.println "// Trace globals"
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          forEach (p in type.global_properties)
+            if (p.type.is_reference)
+              c_writer.print   "if ((ref = (RogueObject*)"
+              c_writer.print   p.c_name
+              c_writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+            elseIf (p.type.contains_reference)
+              use path = WorkList<<String>>
+                path.add( "if ((ref = (RogueObject*)(" )
+                path.add( p.c_name )
+                c_writer.print_gc_checks( path, p.type )
+              endUse
+            endIf
+          endForEach
+        endForEach
+      endForEach
+      c_writer.println
+
+      if (Program.gc_auto)
+        c_writer.println @|// Trace stack
+                          |void** v;
+                          |
+                          |for (i=TypeRogueObject.local_pointer_count, v=TypeRogueObject.local_pointer_stack-1; --i>=0; )
+                          |{
+                          |  if ((ref=(RogueObject*)(*(RogueObject**)*(++v))) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);
+                          |}
+        forEach (type in (forEach in Program.modules).types)
+          if (type.is_compound and type.contains_reference)
+            c_writer.print   "for (i=Type"
+            c_writer.print   type.c_name
+            c_writer.print   ".local_pointer_count, v=Type"
+            c_writer.print   type.c_name
+            c_writer.println ".local_pointer_stack; --i>=0; ++v )"
+            c_writer.println '{'
+            use path = WorkList<<String>>
+              path.add( "  if ((ref=(RogueObject*)((*((" )
+              path.add( type.c_ref_name )
+              path.add( "*)(*v)))" )
+              c_writer.print_gc_checks( path, type )
+            endUse
+            c_writer.println '}'
+          endIf
+        endForEach
+        c_writer.println
+      endIf
+
+      c_writer.println @|// Free unreferenced objects while resetting the traced flag.
+                        |for (write_i=-1,i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(++refptr);
+                        |  if (ref->refcount >= 0)
+                        |  {
+                        |    // Untraced == unreferenced
+                        |    Rogue_destroy_object( ref );
+                        |  }
+                        |  else
+                        |  {
+                        |    // Still referenced. Reset flag.
+                        |    ref->refcount = ~ref->refcount;
+                        |    RogueMM_objects.data[++write_i] = ref;
+                        |  }
+                        |}
+                        |RogueMM_objects.count = write_i + 1;
+                        |//printf("New object count:%d\n",RogueMM_objects.count);
+                        |
+
+      c_writer.indent -= 2
+      c_writer.println @|}
+
+      c_writer.println @|
                         |int Rogue_launch()
                         |{
       c_writer.indent += 2
@@ -1637,6 +1743,8 @@ augment
                         |int main( int argc, char* argv[] )
                         |{
                         |  Rogue_launch();
+                        |  RogueMM_gc_request = 1;
+                        |  Rogue_collect_garbage();
                         |  Rogue_print_exception();
                         |  return 0;
       c_writer.println @|}
@@ -1649,7 +1757,7 @@ augment
           writer.print   entry.value
           writer.print   " = RogueString_create( "
           writer.print_literal_c_string( entry.key )
-          writer.println ", -1, 0 );"
+          writer.println ", -1, -1 );"
         endForEach
         writer.println
       endIf
@@ -1719,6 +1827,8 @@ augment
         writer.println '{'
         writer.indent += 2
 
+        #writer.println ''printf("Tracing $\\n");''(name)  #FIXME
+
         if (is_reference)
           writer.println "((RogueObject*)THIS)->refcount = ~((RogueObject*)THIS)->refcount;"
         endIf
@@ -1740,11 +1850,11 @@ augment
               writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
-                path.add( "if ((ref = (RogueObject*)((" )
+                path.add( "if ((ref = (RogueObject*)(((" )
                 path.add( c_name )
                 path.add( "*)THIS)->" )
                 path.add( p.c_name )
-                print_gc_checks( path, p, writer )
+                writer.print_gc_checks( path, p.type )
               endUse
             endIf
           endForEach
@@ -1773,23 +1883,6 @@ augment
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )
       cgen.visit_methods( this )
-
-    method Type.print_gc_checks( path:String[], p:Property, writer:CWriter )
-      forEach (p2 in p.type.properties)
-        if (p2.type.is_reference)
-          writer.print( forEach in path )
-          writer.print   '.'
-          writer.print   p2.c_name
-          writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
-        elseIf (p2.type.contains_reference)
-          path.add( p2.c_name )
-          path.add( '.' )
-          print_gc_checks( path, p2, writer )
-          path.remove_last
-          path.remove_last
-        endIf
-      endForEach
-
 
     method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
       if (m.return_type)

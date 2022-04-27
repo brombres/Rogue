@@ -3472,3 +3472,19 @@ class AttributeFallback : Cmd
     method description->String
       return "AttributeFallback"
 endClass
+
+class EmptyCompound : Cmd
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method init( t, of_type )
+
+    method init( existing:EmptyCompound )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+
+    method description->String
+      return "EmptyCompound($)" (%of_type)
+
+endClass

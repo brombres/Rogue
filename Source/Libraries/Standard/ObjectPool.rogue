@@ -1,4 +1,4 @@
-class ObjectPool<<$DataType>> [singleton]
+class ObjectPool<<$DataType>>
   PROPERTIES
     available = $DataType[]
 
@@ -11,3 +11,10 @@ class ObjectPool<<$DataType>> [singleton]
       # override with desired object cleanup
       if ($DataType instanceOf ListType) object.clear
 endClass
+
+class StringPool : ObjectPool<<String>>
+  METHODS
+    method on_end_use( builder:String )
+      available.add( builder.clear )
+endClass
+

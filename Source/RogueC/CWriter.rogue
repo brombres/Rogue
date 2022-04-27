@@ -14,9 +14,15 @@ class CWriter : BufferedPrintWriter
                  |#define TEST_H
                  |
         println "// Test.h"
+        println
+
+        if (Program.gc_auto)
+          println "#define ROGUE_GC_AUTO"
+          println
+        endIf
+
         println ...
-          @|
-           |// Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
+          @|// Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
            |// are now only defined if the platform is active.
            |#if defined(__APPLE__)
            |  #if defined(TARGET_IPHONE_SIMULATOR)
@@ -110,6 +116,10 @@ class CWriter : BufferedPrintWriter
            |  typedef uint32_t         RogueUInt32;
            |#endif
            |
+           |#if !defined(ROGUE_MM_GC_THRESHOLD)
+           |  #define ROGUE_MM_GC_THRESHOLD (32 * 1024 * 1024)
+           |#endif
+           |
            |//------------------------------------------------------------------------------
            |// Classes
            |//------------------------------------------------------------------------------
@@ -124,6 +134,12 @@ class CWriter : BufferedPrintWriter
            |#if !defined(ROGUE_CREATE_OBJECT)
            |  #define ROGUE_CREATE_OBJECT( TypeName ) \
            |      ((TypeName*)Rogue_create_object(&Type##TypeName))
+           |#endif
+           |
+           |#if !defined(ROGUE_NEW_OBJECT)
+           |  // Creates an untracked Rogue object
+           |  #define ROGUE_NEW_OBJECT( TypeName ) \
+           |      ((TypeName*)Rogue_new_object(&Type##TypeName))
            |#endif
            |
            |#if !defined(ROGUE_SINGLETON)
@@ -143,6 +159,8 @@ class CWriter : BufferedPrintWriter
            |
            |typedef struct RogueType RogueType;
            |typedef void (*RogueFn_Object)(void*);
+           |
+           |typedef struct RogueObject RogueObject;
            |
            |struct RogueType
            |{
@@ -168,23 +186,32 @@ class CWriter : BufferedPrintWriter
            |  RogueInt32 line;
            |} RogueCallFrame;
            |
+           |typedef struct RogueObjectList
+           |{
+           |  RogueObject** data;
+           |  RogueInt32    count;
+           |  RogueInt32    capacity;
+           |} RogueObjectList;
+           |
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |void* Rogue_create_object( void* type );
-           |void  Rogue_destroy_object( void* obj );
-           |void* Rogue_singleton( void* type, void* singleton_ref );
-           |
+           |int   Rogue_launch();
+           |void  Rogue_collect_garbage();
            |void* Rogue_release( void* obj );
            |void* Rogue_retain( void* obj );
+           |
+           |void* Rogue_create_object( void* type );
+           |void  Rogue_destroy_object( void* obj );
+           |void* Rogue_new_object( void* type );
+           |void* Rogue_singleton( void* type, void* singleton_ref );
            |
            |void  Rogue_print_exception();
            |
            |void  Rogue_call_stack_push( const char* procedure, const char* filename );
            |void  Rogue_call_stack_pop();
            |void  RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer );
-           |
-           |int   Rogue_launch();
+           |void  RogueObjectList_add( RogueObjectList* list, void* obj );
            |
            |struct RogueObject;
            |
@@ -193,6 +220,10 @@ class CWriter : BufferedPrintWriter
            |extern int                 Rogue_call_stack_count;
            |extern int                 Rogue_call_stack_capacity;
            |extern int                 Rogue_call_stack_line;
+           |
+           |extern int RogueMM_bytes_allocated_since_gc;
+           |extern int RogueMM_gc_request;  // 0:none, !0:requested
+           |extern RogueObjectList RogueMM_objects;
            |
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id );
            |RogueInt32   Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
@@ -214,12 +245,28 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |void* Rogue_create_object( void* _type )
            |{
+           |  #ifdef ROGUE_GC_AUTO
+           |    if (RogueMM_bytes_allocated_since_gc >= ROGUE_MM_GC_THRESHOLD) Rogue_collect_garbage();
+           |  #endif
            |  RogueType*  type = (RogueType*) _type;
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->type = type;
-           |  if (type->fn_init_object) type->fn_init_object( obj );
-           |  // refcount starts at 0
+           |
+           |  RogueObjectList_add( &RogueMM_objects, obj );
+           |  RogueMM_bytes_allocated_since_gc += type->size;
+           |
+           |  if (type->fn_init_object)
+           |  {
+           |    #ifdef ROGUE_GC_AUTO
+           |      obj->refcount = 1; // keep this object alive if init fn triggers a GC
+           |      type->fn_init_object( obj );
+           |      --obj->refcount;   // other code maybe retained this obj so don't just set back to 0.
+           |    #else
+           |      type->fn_init_object( obj );
+           |    #endif
+           |  }
+           |
            |  return obj;
            |}
            |
@@ -229,11 +276,28 @@ class CWriter : BufferedPrintWriter
            |  ROGUE_FREE( obj );
            |}
            |
+           |void* Rogue_new_object( void* _type )
+           |{
+           |  // Create a Rogue object that is not tracked by the GC.
+           |  RogueType*  type = (RogueType*) _type;
+           |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
+           |  memset( obj, 0, type->size );
+           |  obj->type = type;
+           |
+           |  if (type->fn_init_object)
+           |  {
+           |    type->fn_init_object( obj );
+           |  }
+           |
+           |  return obj;
+           |}
+           |
            |void* Rogue_singleton( void* _type, void* singleton_ref )
            |{
            |  if (*((RogueObject**)singleton_ref)) return *((RogueObject**)singleton_ref);
            |  RogueType* type = (RogueType*) _type;
            |  RogueObject* obj = Rogue_create_object( type );
+           |  (*((RogueObject**)singleton_ref)) = obj;
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
            |  return obj;
            |}
@@ -304,11 +368,35 @@ class CWriter : BufferedPrintWriter
            |  type->local_pointer_stack[ type->local_pointer_count++ ] = local_pointer;
            |}
            |
-           |RogueObject*    Rogue_exception  = 0;
-           |RogueCallFrame* Rogue_call_stack = 0;
-           |int             Rogue_call_stack_count    = 0;
-           |int             Rogue_call_stack_capacity = 0;
-           |int             Rogue_call_stack_line     = 0;
+           |void RogueObjectList_add( RogueObjectList* list, void* obj )
+           |{
+           |  if (list->count == list->capacity)
+           |  {
+           |    int required_capacity = list->capacity << 1;
+           |    if (required_capacity < 1024) required_capacity = 1024;
+           |
+           |    RogueObject** new_data = (RogueObject**) ROGUE_MALLOC( sizeof(RogueObject*) * required_capacity );
+           |    if (list->data)
+           |    {
+           |      memcpy( new_data, list->data, sizeof(RogueObject*)*list->count );
+           |      ROGUE_FREE( list->data );
+           |    }
+           |    list->data = new_data;
+           |    list->capacity = required_capacity;
+           |  }
+           |
+           |  list->data[ list->count++ ] = (RogueObject*)obj;
+           |}
+           |
+           |RogueObject*     Rogue_exception  = 0;
+           |RogueCallFrame*  Rogue_call_stack = 0;
+           |int              Rogue_call_stack_count    = 0;
+           |int              Rogue_call_stack_capacity = 0;
+           |int              Rogue_call_stack_line     = 0;
+           |
+           |int              RogueMM_bytes_allocated_since_gc = 0;
+           |int              RogueMM_gc_request               = 0;
+           |RogueObjectList  RogueMM_objects                  = {};
            |
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
            |{
@@ -368,6 +456,22 @@ class CWriter : BufferedPrintWriter
 
     method close if (is_header) println @|#endif // TEST_H
       prior.close
+
+    method print_gc_checks( path:String[], type:Type )
+      forEach (p2 in type.properties)
+        if (p2.type.is_reference)
+          print( forEach in path )
+          print   '.'
+          print   p2.c_name
+          println ")) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+        elseIf (p2.type.contains_reference)
+          path.add( p2.c_name )
+          path.add( '.' )
+          print_gc_checks( path, p2.type )
+          path.remove_last
+          path.remove_last
+        endIf
+      endForEach
 
     method print_hex_pair( value:Int32 )
       print "\\x"

@@ -298,8 +298,9 @@ class Type : Cmd
 
       # Check attributes
       if (attributes.is_singleton)
-        if (is_aspect) throw t.error( "Aspects cannot have singletons." )
-
+        if (is_aspect)    throw t.error( "Aspects cannot have singletons." )
+        if (is_compound)  throw t.error( "Compounds cannot have singletons." )
+        if (is_primitive) throw t.error( "Primitives cannot have singletons." )
         attributes.is_anchored = true # any SetSingleton command will disprove this
       endIf
 
