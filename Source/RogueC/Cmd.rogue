@@ -3488,3 +3488,37 @@ class EmptyCompound : Cmd
       return "EmptyCompound($)" (%of_type)
 
 endClass
+
+class Augment : Cmd
+  PROPERTIES
+    target_type : Type
+    sections    : Cmd
+
+  METHODS
+    method init( t, target_type, sections )
+
+    method init( existing:Augment )
+      prior.init( existing )
+      if (existing.target_type) target_type = existing.target_type.cloned
+      if (existing.sections) sections = existing.sections.cloned
+
+    method description->String
+      return "Augment($,$)" (%target_type,%sections)
+
+endClass
+
+class BatchAugment : Cmd
+  PROPERTIES
+    sections : Cmd
+
+  METHODS
+    method init( t, sections )
+
+    method init( existing:BatchAugment )
+      prior.init( existing )
+      if (existing.sections) sections = existing.sections.cloned
+
+    method description->String
+      return "BatchAugment($)" (%sections)
+
+endClass

@@ -484,8 +484,7 @@ class Resolver : Visitor
       forEach (decl in cmd.declarations)
         local v = decl->(as Local)
         if (v.initial_value)
-          #local cmd_assign = visit( Assign(v.t, Access(v.t,v.name), v.initial_value) )
-          local cmd_assign = validate( SetLocal(v.t, v, v.initial_value, &initial_assignment) )
+          local cmd_assign = validate( SetLocal(v.t, v, visit(v.initial_value), &initial_assignment) )
           if (is_multiple_declaration) result.add( cmd_assign )
           else                         return cmd_assign
         endIf

@@ -56,7 +56,8 @@ class CGenerator : Visitor
       return null
 
     method print_with_cast( cmd:Cmd, to_type:Type )
-      if (cmd.type is to_type)
+      local cmd_type = cmd.type
+      if (cmd_type is to_type)
         visit( cmd )
       else
         writer.print "(("
@@ -312,68 +313,72 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:CallDynamicMethod )
+      local info = cmd.info
       if (cmd.context.type.is_aspect)
-        local group = Program.dynamic_methods[cmd.info.signature]
+        local group = Program.dynamic_methods[info.signature]
         if (group.count == 1)
-          writer.print( group.first.c_name )
+          info = group.first
+          writer.print( info.c_name )
         else
           writer.print "Rogue_dispatch_"
-          writer.print( cmd.info.c_signature )
+          writer.print( info.c_signature )
         endIf
       else
         if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
           writer.print "Rogue_dispatch_"
-          writer.print( cmd.info.c_signature )
+          writer.print( info.c_signature )
         else
-          writer.print( cmd.info.c_name )
+          writer.print( info.c_name )
         endIf
       endIf
 
       if (cmd.args.count == 0)
         writer.print '('
-        print_with_cast( cmd.context, cmd.info.type_context )
+        print_with_cast( cmd.context, info.type_context )
         writer.print ')'
       else
         writer.print "( "
-        print_with_cast( cmd.context, cmd.info.type_context )
+        print_with_cast( cmd.context, info.type_context )
 
         forEach (arg at i in cmd.args)
           writer.print ", "
-          local p = cmd.info.parameters[i]
+          local p = info.parameters[i]
           print_with_cast( arg, p.type )
         endForEach
         writer.print " )"
       endIf
 
     method on_visit( cmd:CallThisDynamicMethod )
+      local info = cmd.info
       if (this_type.is_aspect)
-        local group = Program.dynamic_methods[cmd.info.signature]
+        local group = Program.dynamic_methods[info.signature]
         if (group.count == 1)
-          writer.print( group.first.c_name )
+          info = group.first
+          writer.print( info.c_name )
         else
           writer.print "Rogue_dispatch_"
-          writer.print( cmd.info.c_signature )
+          writer.print( info.c_signature )
         endIf
       else
-        if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
+        if (info.attributes.dynamic_dispatch and info.attributes.is_overridden)
           writer.print "Rogue_dispatch_"
-          writer.print( cmd.info.c_signature )
+          writer.print( info.c_signature )
         else
-          writer.print( cmd.info.c_name )
+          writer.print( info.c_name )
         endIf
       endIf
 
       if (cmd.args.count == 0)
         writer.print '('
-        print_with_cast( "THIS", this_type, cmd.info.type_context )
+        print_with_cast( "THIS", this_type, info.type_context )
         writer.print ')'
       else
         writer.print "( "
-        print_with_cast( "THIS", this_type, cmd.info.type_context )
+        print_with_cast( "THIS", this_type, info.type_context )
         if (cmd.args.count)
           forEach (arg at i in cmd.args)
             writer.print ", "
-            local p = cmd.info.parameters[i]
+            local p = info.parameters[i]
             print_with_cast( arg, p.type )
           endForEach
         endIf
