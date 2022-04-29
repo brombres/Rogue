@@ -14,12 +14,87 @@ class Parser : ParserCore
     _attribute_no_include = false
     _attribute_essential  = false
 
+    augment_t            : Token
+    augment_context_name : String
+
   METHODS
     method preprocess
       processed_tokens = Token[]( _tokens.count * 1.2 )
       parse( ip_preprocess )
       _tokens.clear
       _tokens.add( processed_tokens )
+
+    method set_augment_context_name
+      if (not collecting_templates) return
+
+      local i1 = _saved_positions.last.position
+      local i2 = _position - 1
+      augment_t = _tokens[i1]
+
+      use builder = StringBuilder.pool
+        local depth = 0
+        forEach (t at i in _tokens.from(i1,i2))
+          which (t.type)
+            case TokenType.EOL
+              if (depth > 0) throw t.error( "Expected '>>', found end of line." )
+              escapeForEach
+            case TokenType.SYMBOL_COLON
+              if (depth > 0)
+                escapeForEach
+              endIf
+            case TokenType.SYMBOL_LTLT
+              ++depth
+            case TokenType.SYMBOL_GTGT
+              --depth
+              if (depth < 0)  throw t.error( "Unexpected '>>'." )
+              if (depth == 0)
+                builder.print ">>"
+                escapeForEach
+              endIf
+          endWhich
+          builder.print t->String
+        endForEach
+        if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
+        augment_context_name = builder
+      endUse
+
+    method batch_augment_create_method
+      if (not collecting_templates) return
+
+      local i1 = _saved_positions.last.position
+      local i2 = _position - 1
+      local tokens = _tokens.from( i1, i2 ).to_list
+
+      local name = augment_context_name
+      local m = Program.current_module
+      local base_name = name.before_first('<')
+      if (base_name.contains(':'))
+        local module_name = base_name.before_last( "::" )
+        if (module_name == "") module_name = "Rogue"
+        m = Program.get_module( augment_t, module_name )
+        name .= after_last("::")
+      endIf
+
+      # Create a special aspect that will be incorporated into the designated class
+      local aspect_name = "$-$-augment-$"(m.name,base_name,m.next_augment_id)
+      ++m.next_augment_id
+
+      if (not m.augments.contains(name)) m.augments[name] = String[]
+      m.augments[name].add( aspect_name )
+
+      # Wrap tokens:
+      #     METHODS
+      #       method <tokens>
+      #   endClass
+      tokens.insert( tokens.last.cloned(TokenType.KEYWORD_METHOD,null) )
+      tokens.insert( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.insert( tokens.last.cloned(TokenType.KEYWORD_METHODS,null) )
+      tokens.insert( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.add( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS,null) )
+      tokens.add( tokens.last.cloned(TokenType.EOL,null) )
+
+      m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
 
     method class_attribute_essential
       _attribute_essential = true
@@ -113,41 +188,7 @@ class Parser : ParserCore
       local i2 = _position - 1
       local tokens = _tokens.from( i1, i2 ).to_list
 
-      assert tokens.count
-      local augment_t = tokens.first
-
-      # Scan the name
-      local name : String
-      use builder = StringBuilder.pool
-        local depth = 0
-        forEach (t at i in tokens)
-          which (t.type)
-            case TokenType.EOL
-              if (depth > 0) throw t.error( "Expected '>>', found end of line." )
-              tokens.discard( 0, i+1 )
-              escapeForEach
-            case TokenType.SYMBOL_COLON
-              if (depth > 0)
-                tokens.discard( 0, i+1 )
-                escapeForEach
-              endIf
-            case TokenType.SYMBOL_LTLT
-              ++depth
-            case TokenType.SYMBOL_GTGT
-              --depth
-              if (depth < 0)  throw t.error( "Unexpected '>>'." )
-              if (depth == 0)
-                builder.print ">>"
-                tokens.discard( 0, i+1 )
-                escapeForEach
-              endIf
-          endWhich
-          builder.print t->String
-        endForEach
-        if (depth > 0) throw augment_t.error( "Unterminated '<<'." )
-        name = builder
-      endUse
-
+      local name = augment_context_name
       local m = Program.current_module
       local base_name = name.before_first('<')
       if (base_name.contains(':'))

@@ -506,25 +506,29 @@ parser
   on "augment"
     if (consume(EOL))
       # Batch Augment
-      syntaxError "TODO: batch augment"
-      #is_batch_augment = true
-      #class_sections
-      #is_batch_augment = false
-      #mustConsume "endAugment"
-      #produce BatchAugment(sections)
+      ++disable_output
+      is_batch_augment = true
+      class_sections
+      is_batch_augment = false
+      mustConsume "endAugment"
+      --disable_output
     else
       # Standard Type Augment
-      savePosition  # collect tokens
       ++disable_output
 
+      savePosition  # collect tokens
       type
+      call set_augment_context_name
+      discardPosition
+
+      savePosition  # collect tokens
       must_consume_eols
       class_sections
       mustConsume "endAugment"
       call on_parsed_augment
+      discardPosition
 
       --disable_output
-      discardPosition
     endIf
     return
   endOn
@@ -1132,6 +1136,15 @@ parser
 
 - method
   on "method"
+    if (is_batch_augment)
+      savePosition
+      type
+      call set_augment_context_name
+      discardPosition
+      mustConsume '.'
+      savePosition
+    endIf
+
     on @"to"
       create Identifier(name=content)
       procedure_return_type
@@ -1145,8 +1158,14 @@ parser
     procedure_attributes
     consume(':')
     multi_line_statements
-    create LocalScope(statements):ControlStructure
-    produce Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+
+    if (is_batch_augment)
+      call batch_augment_create_method
+      discardPosition
+    else
+      create LocalScope(statements):ControlStructure
+      produce Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    endIf
   endOn
 
 - global_method

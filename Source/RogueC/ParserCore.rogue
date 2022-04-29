@@ -141,6 +141,7 @@ class ParserCore [abstract]
     output           = StringBuilder()
 
     disable_output         : Int32
+    is_batch_augment       : Logical
     procedure_returns_this : Logical
 
   METHODS
@@ -164,6 +165,8 @@ class ParserCore [abstract]
 
     method on_parsed_class [abstract]
 
+    method set_augment_context_name [abstract]
+
     method on_parsed_augment [abstract]
 
     method parse_module_id [abstract]
@@ -173,6 +176,8 @@ class ParserCore [abstract]
     method class_attribute_essential [abstract]
 
     method swap [abstract]
+
+    method batch_augment_create_method [abstract]
 
     method store_statement_args [abstract]
 
@@ -446,12 +451,23 @@ class ParserCore [abstract]
             if (_next_t.type == TokenType.KEYWORD_AUGMENT)
               temporarily _cur_t = _on_t
                 if (_consume(TokenType.EOL))
-                  _throw_syntax_error("TODO: batch augment")
-                else
-                  _save_position
                   ++disable_output
+                  is_batch_augment = true
+                  _execute(ip_class_sections)
+                  _pop_frame
+                  is_batch_augment = false
+                  if (not _consume(TokenType.KEYWORD_END_AUGMENT)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_AUGMENT )
+                  --disable_output
+                else
+                  ++disable_output
+                  _save_position
                   _execute(ip_type)
                   _pop_frame
+                  this.ip = ip
+                  set_augment_context_name
+                  ip = this.ip
+                  _discard_position
+                  _save_position
                   _execute(ip_must_consume_eols)
                   _pop_frame
                   _execute(ip_class_sections)
@@ -460,8 +476,8 @@ class ParserCore [abstract]
                   this.ip = ip
                   on_parsed_augment
                   ip = this.ip
-                  --disable_output
                   _discard_position
+                  --disable_output
                 endIf
                 return
               endTemporarily
@@ -1577,6 +1593,17 @@ class ParserCore [abstract]
           case ip_method
             if (_next_t.type == TokenType.KEYWORD_METHOD)
               temporarily _cur_t = _on_t
+                if (is_batch_augment)
+                  _save_position
+                  _execute(ip_type)
+                  _pop_frame
+                  this.ip = ip
+                  set_augment_context_name
+                  ip = this.ip
+                  _discard_position
+                  if (not _consume(TokenType.SYMBOL_PERIOD)) _throw_syntax_error( &expected=TokenType.SYMBOL_PERIOD )
+                  _save_position
+                endIf
                 if (_next_t.content and _next_t.content == "to")
                   temporarily _cur_t = _on_t
                     if (not disable_output) _push( Identifier(_cur_t,_cur_t.content), 0 )
@@ -1601,9 +1628,16 @@ class ParserCore [abstract]
                 _consume(TokenType.SYMBOL_COLON)
                 _execute(ip_multi_line_statements)
                 _pop_frame
-                if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
-                if (not disable_output) _push( Method(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
-                return
+                if (is_batch_augment)
+                  this.ip = ip
+                  batch_augment_create_method
+                  ip = this.ip
+                  _discard_position
+                else
+                  if (not disable_output) _push( LocalScope(_cur_t,_node_arg(-1)), 1 )
+                  if (not disable_output) _push( Method(_cur_t,_string_arg(-5),_node_arg(-4)->(as Parameters),_node_arg(-3)->(as Type),_node_arg(-2)->(as Attributes),_node_arg(-1)->(as LocalScope)), 5 )
+                  return
+                endIf
               endTemporarily
             endIf
             return
