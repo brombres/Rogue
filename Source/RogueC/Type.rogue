@@ -8,6 +8,7 @@ class Type : Cmd
     name              : String
     base_class        : Type
     aspects           : Type[]
+    extended_types    = Type[]
     attributes        : Attributes
     definitions       = StringTable<<Cmd>>()
     global_properties = StringTable<<Property>>()
@@ -25,7 +26,11 @@ class Type : Cmd
     m_on_cleanup      : Method
 
     base_type_lookup_index  : Int32
-    base_type_ids     = Int32[]
+    base_type_ids           = Int32[]
+
+    is_type_organized  : Logical
+    methods_organizing : Logical
+    methods_organized  : Logical
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
@@ -263,8 +268,8 @@ class Type : Cmd
       organize_methods
 
     method organize_type
-      if (attributes.is_type_organized) return
-      attributes.is_type_organized = true
+      if (is_type_organized) return
+      is_type_organized = true
 
       TypeOrganizer( module_context ).visit( this, class_def )
 
@@ -274,9 +279,11 @@ class Type : Cmd
       if (base_class)
         base_class.organize_type
         if (base_class.contains_reference) attributes.contains_reference = true
+        base_class.extended_types.add( this )
       elseIf (this.is_object and this is not Program.type_Object)
         base_class = Program.type_Object
         base_class.organize_type
+        base_class.extended_types.add( this )
       endIf
 
       if (aspects)
@@ -294,6 +301,8 @@ class Type : Cmd
           aspects.clear
           aspects.add( aspect_list )
         endUse
+
+        (forEach in aspects).extended_types.add( this )
       endIf
 
       # Check attributes
@@ -350,8 +359,8 @@ class Type : Cmd
 
 
     method organize_methods
-      if (attributes.is_organized) return
-      attributes.is_organized = true
+      if (methods_organizing) return
+      methods_organizing = true
       organize_type
 
       MethodOrganizer( module_context ).visit( this, class_def )
@@ -411,6 +420,34 @@ class Type : Cmd
         endUse
       endIf
 
+      inherit_methods
+
+      # Compounds get to->String and description->String. description() calls to->String by default.
+      if (is_compound)
+        block m = methods["description()"]
+          if (not m)
+            m = Method( t, this, "description" )
+            m.return_type = Program.type_String
+            m.statements.add( Return(t,Access(t,"to_String")) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        block m = methods["to_String()"]
+          if (not m)
+            m = Method( t, this, "to_String" )
+            m.return_type = Program.type_String
+            m.statements.add( Return(t,LiteralString(t,name)) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+      endIf
+
+      methods_organized = true
+
+    method inherit_methods( &missing_only )
       # Inherit base class methods
       if (base_class)
         local has_init = false
@@ -448,7 +485,9 @@ class Type : Cmd
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods)
             if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
-              incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
+              if (not missing_only or not methods.contains(aspect_m.signature))
+                incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
+              endIf
             endIf
           endForEach
         endForEach
@@ -457,7 +496,9 @@ class Type : Cmd
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods)
             if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
-              incorporate( aspect_m )
+              if (not missing_only or not methods.contains(aspect_m.signature))
+                incorporate( aspect_m )
+              endIf
             endIf
           endForEach
         endForEach
@@ -478,28 +519,6 @@ class Type : Cmd
         endForEach
       endIf
 
-      # Compounds get to->String and description->String. description() calls to->String by default.
-      if (is_compound)
-        block m = methods["description()"]
-          if (not m)
-            m = Method( t, this, "description" )
-            m.return_type = Program.type_String
-            m.statements.add( Return(t,Access(t,"to_String")) )
-            m.organize
-            methods[ m.signature ] = m
-          endIf
-        endBlock
-
-        block m = methods["to_String()"]
-          if (not m)
-            m = Method( t, this, "to_String" )
-            m.return_type = Program.type_String
-            m.statements.add( Return(t,LiteralString(t,name)) )
-            m.organize
-            methods[ m.signature ] = m
-          endIf
-        endBlock
-      endIf
 
     method precision_index->Int32
       return 10 # Objects etc.

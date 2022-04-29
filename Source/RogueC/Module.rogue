@@ -18,6 +18,8 @@ class Module
     native_headers = String[]
     native_code    = String[]
 
+    is_organized   : Logical
+
   METHODS
     method init( t, name )
       attributes = Attributes(t)
@@ -89,8 +91,8 @@ class Module
       return result
 
     method organize_methods
-      if (attributes.is_organized) return
-      attributes.is_organized = true
+      if (is_organized) return
+      is_organized = true
 
       # Instantiate any essential templates
       forEach (t in templates)
