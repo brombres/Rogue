@@ -40,7 +40,9 @@ class Template
       type.class_def = Parser( template_tokens ).parse( Parser.ip_class )->(as Class)
 
       incorporate_augments( type, name, replacements )        # e.g. List
-      incorporate_augments( type, type.name, replacements )   # e.g. Byte[]
+      if (type.name != name)
+        incorporate_augments( type, type.name, replacements )   # e.g. Byte[]
+      endIf
 
       if (is_first_unorganized_type) Program.organize_types
       Program.is_modified = true

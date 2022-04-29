@@ -173,7 +173,7 @@ class Type : Cmd
     method description->String
       return "$" (%name)
 
-    method incorporate( aspect_m:Method )
+    method incorporate( aspect_m:Method, &is_augment )
       aspect_m .= cloned
       AspectMethodPatcher.patch( this, aspect_m )
 
@@ -211,7 +211,7 @@ class Type : Cmd
           methods[ aspect_m.signature ] = aspect_m
         elseIf (aspect_m.attributes.is_append)
           existing_m.statements.add( forEach in aspect_m.statements )
-        elseIf (existing_m.type_context is not this)
+        elseIf (existing_m.type_context is not this or is_augment)
           methods[ aspect_m.signature ] = aspect_m
         endIf
       else
@@ -448,7 +448,7 @@ class Type : Cmd
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods)
             if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
-              incorporate( aspect_m )
+              incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
             endIf
           endForEach
         endForEach
