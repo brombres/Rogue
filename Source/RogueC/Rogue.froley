@@ -21,7 +21,7 @@ PLACEHOLDER    $placeholder  [content]
 tokens Keywords
 ----------------------------------------------------------------------
 KEYWORD_AND               and
-KEYWORD_AUGMENT           augment
+KEYWORD_AUGMENT           augment       [structural]
 KEYWORD_BLOCK             block
 KEYWORD_CASE              case          [structural]
 KEYWORD_CATCH             catch         [structural]
@@ -31,6 +31,7 @@ KEYWORD_DEFINITIONS       DEFINITIONS   [structural]
 KEYWORD_DOWN_TO           downTo
 KEYWORD_ELSE              else          [structural]
 KEYWORD_ELSE_IF           elseIf        [structural]
+KEYWORD_END_AUGMENT       endAugment    [structural]
 KEYWORD_END_BLOCK         endBlock      [structural]
 KEYWORD_END_CLASS         endClass      [structural]
 KEYWORD_END_CONTINGENT    endContingent [structural]
@@ -487,20 +488,47 @@ parser
   if (not hasAnother) return
 
   if (nextIs("class"))
-    savePosition
-    ++disable_output
+    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    ++disable_output # Pass 2: also disable output; just parse to get past
 
     consume("class")
     identifier
     template_parameters
     class
-    call on_parsed_class
+    call on_parsed_class  # Pass 1: stores template tokens. Pass 2: does nothing.
 
     --disable_output
     discardPosition
 
     return
   endIf
+
+  on "augment"
+    if (consume(EOL))
+      # Batch Augment
+      syntaxError "TODO: batch augment"
+      #is_batch_augment = true
+      #class_sections
+      #is_batch_augment = false
+      #mustConsume "endAugment"
+      #produce BatchAugment(sections)
+    else
+      # Standard Type Augment
+      savePosition  # collect tokens
+      ++disable_output
+
+      type
+      must_consume_eols
+      class_sections
+      mustConsume "endAugment"
+      call on_parsed_augment
+
+      --disable_output
+      discardPosition
+    endIf
+    return
+  endOn
+
 
   on "module"
     call parse_module_id
@@ -660,9 +688,18 @@ parser
 - template_arg_tokens
   savePosition
   while (hasAnother and not nextIs(',') and not nextIs(">>"))
-    read
+    if (nextIs('<<')) nested_template_args
+    else              read
   endWhile
   produceTokenList
+
+- nested_template_args
+  read  # <<
+  while (hasAnother and not nextIs(">>"))
+    if (nextIs('<<')) nested_template_args
+    else              read
+  endWhile
+  mustConsume ">>"
 
 - pathed_name
   savePosition
@@ -807,7 +844,7 @@ parser
 - class_sections
   beginList
   if (not consume(';'))
-    while (not nextIs("endClass")) class_section
+    while (not nextIs("endClass") and not nextIs("endAugment")) class_section
   endIf
   produceList
 

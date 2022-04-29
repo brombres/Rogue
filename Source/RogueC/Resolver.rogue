@@ -1371,6 +1371,7 @@ class Resolver : Visitor
       return false
 
     method arg_type_is_compatible( arg_type:Type, param_type:Type )->Logical
+      if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
       if (arg_type is param_type) return true
       if (arg_type.instance_of(param_type)) return true
       if (arg_type.is_primitive and param_type.is_primitive) return true

@@ -28,100 +28,101 @@ class ParserCore [abstract]
     ip_remaining_type = 15
     ip_type_args = 16
     ip_template_arg_tokens = 17
-    ip_pathed_name = 18
-    ip_optional_type = 19
-    ip_identifier = 20
-    ip_string = 21
-    ip_module_attributes = 22
-    ip_module_attribute = 23
-    ip_class_attributes = 24
-    ip_class_attribute = 25
-    ip_class = 26
-    ip_placeholder = 27
-    ip_template_parameters = 28
-    ip_constructor_properties = 29
-    ip_base_types = 30
-    ip_attributes = 31
-    ip_class_sections = 32
-    ip_class_section = 33
-    ip_native_code_blocks = 34
-    ip_native_code_block = 35
-    ip_definition = 36
-    ip_forEach_loop = 37
-    ip_forEach_control = 38
-    ip_inline_forEach = 39
-    ip_forEach_optional_at = 40
-    ip_forEach_collection = 41
-    ip_if_statement = 42
-    ip_if_statement_multi_line_elseIf_else = 43
-    ip_if_statement_single_line_elseIf_else = 44
-    ip_inline_which = 45
-    ip_inline_which_case = 46
-    ip_method = 47
-    ip_global_method = 48
-    ip_global_properties = 49
-    ip_properties = 50
-    ip_property_declaration = 51
-    ip_multi_line_statements = 52
-    ip_single_line_statements = 53
-    ip_control_structure = 54
-    ip_args = 55
-    ip_arg = 56
-    ip_statement = 57
-    ip_local_declarations = 58
-    ip_local_declaration = 59
-    ip_block = 60
-    ip_contingent = 61
-    ip_loop = 62
-    ip_which_conditional = 63
-    ip_while_loop = 64
-    ip_try_catch = 65
-    ip_catches = 66
-    ip_catch_clause = 67
-    ip_use = 68
-    ip_used_resource = 69
-    ip_module_path = 70
-    ip_uses_attributes = 71
-    ip_uses_attribute = 72
-    ip_access_args = 73
-    ip_optional_expression = 74
-    ip_expression = 75
-    ip_logical_xor = 76
-    ip_logical_xor__inner = 77
-    ip_logical_or = 78
-    ip_logical_or__inner = 79
-    ip_logical_and = 80
-    ip_logical_and__inner = 81
-    ip_comparison = 82
-    ip_comparison__inner = 83
-    ip_reference_comparison = 84
-    ip_bitwise_xor = 85
-    ip_bitwise_xor__inner = 86
-    ip_bitwise_or = 87
-    ip_bitwise_or__inner = 88
-    ip_bitwise_and = 89
-    ip_bitwise_and__inner = 90
-    ip_bitwise_shift = 91
-    ip_bitwise_shift__inner = 92
-    ip_add_subtract = 93
-    ip_add_subtract__inner = 94
-    ip_multiply_divide_mod = 95
-    ip_multiply_divide_mod__inner = 96
-    ip_power = 97
-    ip_power__inner = 98
-    ip_pre_unary = 99
-    ip_post_unary = 100
-    ip_post_unary__inner = 101
-    ip_access = 102
-    ip_access_inner = 103
-    ip_context_block_command = 104
-    ip_term = 105
-    ip_native_code = 106
-    ip_literal_list = 107
-    ip_preprocess = 108
-    ip_process_another = 109
-    ip_collect_meta_filepath = 110
-    ip_additional_node_types = 111
+    ip_nested_template_args = 18
+    ip_pathed_name = 19
+    ip_optional_type = 20
+    ip_identifier = 21
+    ip_string = 22
+    ip_module_attributes = 23
+    ip_module_attribute = 24
+    ip_class_attributes = 25
+    ip_class_attribute = 26
+    ip_class = 27
+    ip_placeholder = 28
+    ip_template_parameters = 29
+    ip_constructor_properties = 30
+    ip_base_types = 31
+    ip_attributes = 32
+    ip_class_sections = 33
+    ip_class_section = 34
+    ip_native_code_blocks = 35
+    ip_native_code_block = 36
+    ip_definition = 37
+    ip_forEach_loop = 38
+    ip_forEach_control = 39
+    ip_inline_forEach = 40
+    ip_forEach_optional_at = 41
+    ip_forEach_collection = 42
+    ip_if_statement = 43
+    ip_if_statement_multi_line_elseIf_else = 44
+    ip_if_statement_single_line_elseIf_else = 45
+    ip_inline_which = 46
+    ip_inline_which_case = 47
+    ip_method = 48
+    ip_global_method = 49
+    ip_global_properties = 50
+    ip_properties = 51
+    ip_property_declaration = 52
+    ip_multi_line_statements = 53
+    ip_single_line_statements = 54
+    ip_control_structure = 55
+    ip_args = 56
+    ip_arg = 57
+    ip_statement = 58
+    ip_local_declarations = 59
+    ip_local_declaration = 60
+    ip_block = 61
+    ip_contingent = 62
+    ip_loop = 63
+    ip_which_conditional = 64
+    ip_while_loop = 65
+    ip_try_catch = 66
+    ip_catches = 67
+    ip_catch_clause = 68
+    ip_use = 69
+    ip_used_resource = 70
+    ip_module_path = 71
+    ip_uses_attributes = 72
+    ip_uses_attribute = 73
+    ip_access_args = 74
+    ip_optional_expression = 75
+    ip_expression = 76
+    ip_logical_xor = 77
+    ip_logical_xor__inner = 78
+    ip_logical_or = 79
+    ip_logical_or__inner = 80
+    ip_logical_and = 81
+    ip_logical_and__inner = 82
+    ip_comparison = 83
+    ip_comparison__inner = 84
+    ip_reference_comparison = 85
+    ip_bitwise_xor = 86
+    ip_bitwise_xor__inner = 87
+    ip_bitwise_or = 88
+    ip_bitwise_or__inner = 89
+    ip_bitwise_and = 90
+    ip_bitwise_and__inner = 91
+    ip_bitwise_shift = 92
+    ip_bitwise_shift__inner = 93
+    ip_add_subtract = 94
+    ip_add_subtract__inner = 95
+    ip_multiply_divide_mod = 96
+    ip_multiply_divide_mod__inner = 97
+    ip_power = 98
+    ip_power__inner = 99
+    ip_pre_unary = 100
+    ip_post_unary = 101
+    ip_post_unary__inner = 102
+    ip_access = 103
+    ip_access_inner = 104
+    ip_context_block_command = 105
+    ip_term = 106
+    ip_native_code = 107
+    ip_literal_list = 108
+    ip_preprocess = 109
+    ip_process_another = 110
+    ip_collect_meta_filepath = 111
+    ip_additional_node_types = 112
 
   PROPERTIES
     _tokens          : Token[]
@@ -140,7 +141,6 @@ class ParserCore [abstract]
     output           = StringBuilder()
 
     disable_output         : Int32
-    is_batch_augment       : Logical
     procedure_returns_this : Logical
 
   METHODS
@@ -163,6 +163,8 @@ class ParserCore [abstract]
       output.clear
 
     method on_parsed_class [abstract]
+
+    method on_parsed_augment [abstract]
 
     method parse_module_id [abstract]
 
@@ -424,29 +426,6 @@ class ParserCore [abstract]
             if ((not (_position < _limit)))
               return
             endIf
-            if (_next_t.type == TokenType.KEYWORD_AUGMENT)
-              temporarily _cur_t = _on_t
-                if (_consume(TokenType.EOL))
-                  is_batch_augment = true
-                  _execute(ip_class_sections)
-                  _pop_frame
-                  is_batch_augment = false
-                  if (not _consume(TokenType.KEYWORD_END_AUGMENT)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_AUGMENT )
-                  if (not disable_output) _push( BatchAugment(_cur_t,_node_arg(-1)), 1 )
-                  return
-                else
-                  _execute(ip_type)
-                  _pop_frame
-                  _execute(ip_must_consume_eols)
-                  _pop_frame
-                  _execute(ip_class_sections)
-                  _pop_frame
-                  if (not _consume(TokenType.KEYWORD_END_AUGMENT)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_AUGMENT )
-                  if (not disable_output) _push( Augment(_cur_t,_node_arg(-2)->(as Type),_node_arg(-1)), 2 )
-                  return
-                endIf
-              endTemporarily
-            endIf
             if ((_next_t.type == TokenType.KEYWORD_CLASS))
               _save_position
               ++disable_output
@@ -463,6 +442,29 @@ class ParserCore [abstract]
               --disable_output
               _discard_position
               return
+            endIf
+            if (_next_t.type == TokenType.KEYWORD_AUGMENT)
+              temporarily _cur_t = _on_t
+                if (_consume(TokenType.EOL))
+                  _throw_syntax_error("TODO: batch augment")
+                else
+                  _save_position
+                  ++disable_output
+                  _execute(ip_type)
+                  _pop_frame
+                  _execute(ip_must_consume_eols)
+                  _pop_frame
+                  _execute(ip_class_sections)
+                  _pop_frame
+                  if (not _consume(TokenType.KEYWORD_END_AUGMENT)) _throw_syntax_error( &expected=TokenType.KEYWORD_END_AUGMENT )
+                  this.ip = ip
+                  on_parsed_augment
+                  ip = this.ip
+                  --disable_output
+                  _discard_position
+                endIf
+                return
+              endTemporarily
             endIf
             if (_next_t.type == TokenType.KEYWORD_MODULE)
               temporarily _cur_t = _on_t
@@ -885,10 +887,27 @@ class ParserCore [abstract]
           case ip_template_arg_tokens
             _save_position
             while ((((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_COMMA))) and (not (_next_t.type == TokenType.SYMBOL_GTGT))))
-              _read
+              if ((_next_t.type == TokenType.SYMBOL_LTLT))
+                _execute(ip_nested_template_args)
+                _pop_frame
+              else
+                _read
+              endIf
             endWhile
             if (disable_output) _discard_position
             else                _create_token_list
+            return
+          case ip_nested_template_args
+            _read
+            while (((_position < _limit) and (not (_next_t.type == TokenType.SYMBOL_GTGT))))
+              if ((_next_t.type == TokenType.SYMBOL_LTLT))
+                _execute(ip_nested_template_args)
+                _pop_frame
+              else
+                _read
+              endIf
+            endWhile
+            if (not _consume(TokenType.SYMBOL_GTGT)) _throw_syntax_error( &expected=TokenType.SYMBOL_GTGT )
             return
           case ip_pathed_name
             _save_position
@@ -1133,7 +1152,7 @@ class ParserCore [abstract]
           case ip_class_sections
             _begin_list
             if ((not _consume(TokenType.SYMBOL_SEMICOLON)))
-              while ((not (_next_t.type == TokenType.KEYWORD_END_CLASS)))
+              while (((not (_next_t.type == TokenType.KEYWORD_END_CLASS)) and (not (_next_t.type == TokenType.KEYWORD_END_AUGMENT))))
                 _execute(ip_class_section)
                 _pop_frame
               endWhile

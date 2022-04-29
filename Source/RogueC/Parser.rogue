@@ -106,6 +106,74 @@ class Parser : ParserCore
         Program.include( marked_token, filepath, &is_optional )
       endIf
 
+    method on_parsed_augment
+      if (not collecting_templates) return
+
+      local i1 = _saved_positions.last.position
+      local i2 = _position - 1
+      local tokens = _tokens.from( i1, i2 ).to_list
+
+      assert tokens.count
+      local augment_t = tokens.first
+
+      # Scan the name
+      local name : String
+      use builder = StringBuilder.pool
+        local depth = 0
+        forEach (t at i in tokens)
+          which (t.type)
+            case TokenType.EOL
+              if (depth > 0) throw t.error( "Expected '>>', found end of line." )
+              tokens.discard( 0, i+1 )
+              escapeForEach
+            case TokenType.SYMBOL_COLON
+              if (depth > 0)
+                tokens.discard( 0, i+1 )
+                escapeForEach
+              endIf
+            case TokenType.SYMBOL_LTLT
+              ++depth
+            case TokenType.SYMBOL_GTGT
+              --depth
+              if (depth < 0)  throw t.error( "Unexpected '>>'." )
+              if (depth == 0)
+                builder.print ">>"
+                tokens.discard( 0, i+1 )
+                escapeForEach
+              endIf
+          endWhich
+          builder.print t->String
+        endForEach
+        if (depth > 0) throw augment_t.error( "Unterminated '<<'." )
+        name = builder
+      endUse
+
+      local m = Program.current_module
+      local base_name = name.before_first('<')
+      if (base_name.contains(':'))
+        local module_name = base_name.before_last( "::" )
+        if (module_name == "") module_name = "Rogue"
+        m = Program.get_module( augment_t, module_name )
+        name .= after_last("::")
+      endIf
+
+      # Create a special aspect that will be incorporated into the designated class
+      local aspect_name = "$-$-augment-$"(m.name,base_name,m.next_augment_id)
+      ++m.next_augment_id
+
+      if (not m.augments.contains(name)) m.augments[name] = String[]
+      m.augments[name].add( aspect_name )
+
+      # Change 'endAugment' to 'endClass'
+      forEach (t at i in tokens step -1)
+        if (t.type == TokenType.KEYWORD_END_AUGMENT)
+          tokens[i] = t.cloned(TokenType.KEYWORD_END_CLASS,null)
+          escapeForEach
+        endIf
+      endForEach
+
+      m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
+
     method on_parsed_class
       local attributes = 0
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL
@@ -115,8 +183,7 @@ class Parser : ParserCore
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
-      local tokens = Token[]( (i2-i1)+1 )
-      tokens.add( _tokens[forEach in i1..i2] )
+      local tokens = _tokens.from( i1, i2 ).to_list
 
       assert tokens.count
       local class_t = tokens.first

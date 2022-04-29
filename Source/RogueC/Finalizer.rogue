@@ -3,6 +3,15 @@ module Rogue
 class Finalizer : InspectionVisitor
   METHODS
     method apply
+      # Remove special aspects that implement augments
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          if (type.aspects)
+            type.aspects.discard( $.attributes.is_augment )
+          endIf
+        endForEach
+      endForEach
+
       Program.apply( AssignIDs() )
       Program.apply( this )
 

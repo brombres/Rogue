@@ -8,6 +8,8 @@ class Module
     used_modules      = UsedModule[]
     global_statements : Statements
     templates         = StringTable<<Template>>()
+    augments          = StringTable<<String[]>>()
+    next_augment_id   = 0
     types             = StringTable<<Type>>()
     routines          = StringTable<<Routine>>()
 

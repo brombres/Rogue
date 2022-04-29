@@ -732,16 +732,4 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.of_type)
       return result
 
-    method on_visit_children( cmd:Augment )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.target_type)
-      if (result?) return result
-      result = visit(cmd.sections)
-      return result
-
-    method on_visit_children( cmd:BatchAugment )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.sections)
-      return result
-
 endClass

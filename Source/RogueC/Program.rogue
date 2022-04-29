@@ -33,6 +33,7 @@ class Program [singleton]
     type_Exception    : Type
 
     is_modified       : Logical
+    is_organizing     : Logical
     unorganized_types = Type[]
 
     unique_strings    = StringTable<<String>>()
@@ -148,6 +149,31 @@ class Program [singleton]
         # First parser pass collects class templates but does not build an AST
         Parser(tokens).[collecting_templates=true,disable_output=1].parse
       endTemporarily
+
+    method organize_types
+      if (is_organizing) return
+      is_organizing = true
+
+      local i1 = 0
+      while (i1 < unorganized_types.count)
+        local i = i1
+        while (i < unorganized_types.count)
+          unorganized_types[i].organize_type
+          ++i
+        endWhile
+
+        i = i1
+        local limit = unorganized_types.count
+        while (i < limit)
+          unorganized_types[i].organize_methods
+          ++i
+        endWhile
+
+        i1 = limit
+      endWhile
+
+      unorganized_types.clear
+      is_organizing = false
 
     method resolve
       (forEach in modules.values).collect_used_modules

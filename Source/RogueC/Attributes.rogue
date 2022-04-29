@@ -30,6 +30,7 @@ class Attribute
     REQUIRES_CLEANUP   = (1:<<:25)
     ABSTRACT           = (1:<<:26)
     FALLBACK           = (1:<<:27)
+    AUGMENT            = (1:<<:28)
 endClass
 
 class Attributes : CmdList
@@ -61,6 +62,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( requires_cleanup,     Attribute.REQUIRES_CLEANUP )
   ROGUE_ATTRIBUTE( is_abstract,          Attribute.ABSTRACT )
   ROGUE_ATTRIBUTE( is_fallback,          Attribute.FALLBACK )
+  ROGUE_ATTRIBUTE( is_augment,           Attribute.AUGMENT )
 
   PROPERTIES
     flags : Int32
