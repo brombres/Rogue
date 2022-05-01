@@ -54,6 +54,8 @@ KEYWORD_ESCAPE_WHILE      escapeWhile
 KEYWORD_EXPORT            export
 KEYWORD_FALSE             false
 KEYWORD_FOR_EACH          forEach
+KEYWORD_FUNCTION          function
+KEYWORD_FUNCTION_TYPE     Function
 KEYWORD_GLOBAL            global
 KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
@@ -658,7 +660,12 @@ parser
   if (nextIs("<<") or nextIs("[]") or nextIs('?')) remaining_type
 
 - type
-  pathed_name
+  on '('
+    mustConsume "Function"
+    mustConsume ')'
+  elseOnOthers
+    pathed_name
+  endOn
   remaining_type
 
 - remaining_type
@@ -1844,7 +1851,15 @@ parser
   on "false"              -> LiteralLogical(value="false":Logical):LiteralPrimitive
   on "null"               -> LiteralNull:Literal
   on "pi"                 -> LiteralPi:Literal
-  on "this"               -> This
+  on "this"
+    create This
+    if (nextIs('('))
+      create Identifier(name="call")
+      args
+      produce ContextAccess(context,name:String,args)
+    endIf
+    return
+  endOn
   onPeek "which" inline_which: return
   on '(', expression, ')':     return
   onPeek '[' literal_list :    return

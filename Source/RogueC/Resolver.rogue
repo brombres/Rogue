@@ -879,9 +879,10 @@ class Resolver : Visitor
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
 
           type_context = this_type  # may be null
-          if (not args)
-            local v = find_local( name )
-            if (v) return validate( GetLocal(t,v) )
+          local v = find_local( name )
+          if (v)
+            if (args) return resolve_access( t, GetLocal(t,v), "call", args, &=suppress_error )
+            else      return validate( GetLocal(t,v) )
           endIf
         endIf
 
@@ -911,8 +912,13 @@ class Resolver : Visitor
           if (type_context and not args)
             local p = type_context.properties[ name ]
             if (p)
-              if (context) return validate( GetProperty(t,context,p) )
-              else         return validate( GetThisProperty(t,p) )
+              if (args)
+                match = find_method( t, p.type, context, name, args, &require_global=is_global, &suppress_error )
+              endIf
+
+              local cmd_get_p = which{ context:GetProperty(t,context,p)->(as Cmd) || GetThisProperty(t,p)->(as Cmd) }
+              if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+              else      return validate( cmd_get_p )
             endIf
           endIf
         endIf
@@ -920,7 +926,9 @@ class Resolver : Visitor
         if (type_context)
           local p = type_context.global_properties[ name ]
           if (p)
-            return validate( GetGlobalProperty(t,p) )
+            local cmd_get_p = GetGlobalProperty(t,p)
+            if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+            else      return validate( cmd_get_p )
           endIf
         endIf
 
