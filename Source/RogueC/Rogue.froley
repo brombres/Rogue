@@ -661,8 +661,18 @@ parser
 
 - type
   on '('
-    mustConsume "Function"
-    mustConsume ')'
+    on "Function"
+      function_type_args
+      function_return_type
+      mustConsume ')'
+      produce FunctionType(param_types:TypeList,return_type:Type):Type
+    elseOnOthers
+      syntaxError
+    endOn
+  elseOn "Function"
+    function_type_args
+    function_return_type
+    produce FunctionType(param_types:TypeList,return_type:Type):Type
   elseOnOthers
     pathed_name
   endOn
@@ -679,6 +689,19 @@ parser
       create Type(core_type:Type,optional="true":Logical)
     endOn
   endWhile
+
+- function_type_args
+  beginList
+    if (consume('(') and not consume(')'))
+      type
+      while (consume(',')) type
+      mustConsume ')'
+    endIf
+  produceList TypeList
+
+- function_return_type
+  on "->" type: return
+  produceNull
 
 - remaining_template_access
   type_args

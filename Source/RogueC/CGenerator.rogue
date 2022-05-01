@@ -888,7 +888,7 @@ class CGenerator : Visitor
       print_parenthesized( cmd.operand )
 
     method on_visit( cmd:Method )
-      if (cmd.type_context is not this_type) return
+      if (cmd.type_context is not this_type or cmd.attributes.is_abstract) return
 
       this_type.write_c_method_header( cmd, writer )
       writer.println
@@ -1818,7 +1818,7 @@ augment
       endForEach
 
       forEach (m in methods)
-        if (m.type_context is this)
+        if (m.type_context is this and not m.attributes.is_abstract)
           write_c_method_header( m, writer )
           writer.println ';'
         endIf

@@ -76,7 +76,7 @@ class Attributes : CmdList
       flags |= cmd.attribute_flags
 
     method add( flags:Int32 )
-      flags |= flags
+      this.flags |= flags
 
     method contains( flags:Int32 )->Logical
       return (flags & flags)?

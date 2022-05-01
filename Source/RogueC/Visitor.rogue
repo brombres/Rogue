@@ -535,5 +535,9 @@ class Visitor
       cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
       cmd.args = visit(cmd.args)
 
+    method on_visit_children( cmd:FunctionType )
+      cmd.param_types = visit(cmd.param_types)->(as TypeList)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+
 endClass
 

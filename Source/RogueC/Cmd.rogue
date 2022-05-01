@@ -3601,3 +3601,51 @@ class TemplatedMethodContextAccess : Cmd
       return "TemplatedMethodContextAccess($,$,$,$)" (%context,%name,%type_args,%args)
 
 endClass
+
+class FunctionType : Type
+  PROPERTIES
+    param_types : TypeList
+    return_type : Type
+
+  GLOBAL METHODS
+    method create( t:Token, param_types:TypeList, return_type:Type )->FunctionType
+      use builder = StringBuilder.pool
+        builder.print "(Function("
+        forEach (arg at i in param_types)
+          if (i > 0) builder.print ','
+          builder.print arg
+        endForEach
+        builder.print ')'
+        if (return_type) builder.print return_type
+        builder.print ')'
+        local name = builder->String
+
+        local type = Program.current_module.find_type( name, &extended_search )->(as FunctionType)
+        if (type) return type
+        type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
+        type.ensure_definition
+        return type
+      endUse
+
+  METHODS
+    method init( t, name:String, attributes:Int32, param_types, return_type )
+      prior.init( t, name, attributes, null )
+      this.attributes.is_defined = true
+
+      local m_call = Method( t, this, "call" )
+      forEach (param_type at i in param_types)
+        m_call.parameters.add( Local(param_type.t,"arg"+i,param_type) )
+      endForEach
+      m_call.return_type = return_type
+      m_call.attributes.add( Attribute.ABSTRACT )
+      m_call.organize
+
+    method init( existing:FunctionType )
+      prior.init( existing )
+      if (existing.param_types) param_types = existing.param_types.cloned
+      if (existing.return_type) return_type = existing.return_type.cloned
+
+    method description->String
+      return name
+endClass
+

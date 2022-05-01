@@ -755,4 +755,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:FunctionType )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.param_types)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      return result
+
 endClass

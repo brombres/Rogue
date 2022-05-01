@@ -604,4 +604,3 @@ class TypeString : BuiltInType
     method init( t:Token )
       prior.init( t, "String", Attribute.OBJECT )
 endClass
-
