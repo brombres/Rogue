@@ -168,6 +168,9 @@ class TokenList : Cmd
       prior.init( existing )
       tokens = existing.tokens.cloned
 
+    method add( token:Token )
+      tokens.add( token )
+
     method description->String
       return "TokenList($)"(tokens)
 
@@ -1971,6 +1974,21 @@ class TemplateArgs : CmdList
 
     method get( index:Int32 )->TokenList
       return list[index]->(as TokenList)
+
+    method to->String
+      return this->String("")
+
+    method to->String( name:String )
+      use builder = StringBuilder.pool
+        builder.print name
+        builder.print "<<"
+        forEach (token_list at i in this)
+          if (i) builder.print ','
+          builder.print ((forEach in token_list.tokens)->String)
+        endForEach
+        builder.print ">>"
+        return builder->String
+      endUse
 endClass
 
 class AttributeAspect : Cmd
@@ -3486,5 +3504,100 @@ class EmptyCompound : Cmd
 
     method description->String
       return "EmptyCompound($)" (%of_type)
+
+endClass
+
+class MethodTemplate : Cmd
+  PROPERTIES
+    name         : String
+    placeholders : Cmd
+    _tokens      : TokenList
+
+  METHODS
+    method init( t, name, placeholders, _tokens )
+
+    method init( existing:MethodTemplate )
+      prior.init( existing )
+      name = existing.name
+      if (existing.placeholders) placeholders = existing.placeholders.cloned
+      if (existing._tokens) _tokens = existing._tokens.cloned
+
+    method description->String
+      return "MethodTemplate($,$,$)" (%name,%placeholders,%_tokens)
+
+    method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
+      local placeholders = Token[]
+      forEach (p in this.placeholders)
+        placeholders.add( p.t )
+      endForEach
+      local name = type_args->String( name )
+      local replacements = Template.replacements( placeholders, type_args )
+      local tokens = Template.make_replacements( _tokens, replacements )
+      local parser = Parser( tokens )
+      parser._cmd_stack.add( Identifier(t,name) )
+      local m = parser.parse( Parser.ip_method_template )->(as Method)
+      m.module_context = type_context.module_context
+      m.type_context   = type_context
+      m.organize
+
+      type_context.method_template_instances[ name ] = m
+
+      local sig = m.signature
+      if (not type_context.methods.contains(sig)) type_context.methods[ sig ] = m
+      if (type_context.methods_organized)
+        forEach (type in type_context.extended_types)
+          if (type.methods_organized)
+            if (not type.methods[sig])
+              type.methods[ sig ] = m
+            endIf
+          endIf
+        endForEach
+      endIf
+
+      return m
+
+endClass
+
+class TemplatedAccess : Cmd
+  PROPERTIES
+    module_context : Module
+    type_context   : Type
+    name           : String
+    type_args      : TemplateArgs
+    args           : Cmd
+
+  METHODS
+    method init( t, name, type_args, args )
+
+    method init( existing:TemplatedAccess )
+      prior.init( existing )
+      name = existing.name
+      if (existing.type_args) type_args = existing.type_args.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "TemplatedAccess($,$,$)" (%name,%type_args,%args)
+
+endClass
+
+class TemplatedMethodContextAccess : Cmd
+  PROPERTIES
+    context   : Cmd
+    name      : String
+    type_args : TemplateArgs
+    args      : Cmd
+
+  METHODS
+    method init( t, context, name, type_args, args )
+
+    method init( existing:TemplatedMethodContextAccess )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      name = existing.name
+      if (existing.type_args) type_args = existing.type_args.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "TemplatedMethodContextAccess($,$,$,$)" (%context,%name,%type_args,%args)
 
 endClass

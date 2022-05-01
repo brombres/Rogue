@@ -522,5 +522,18 @@ class Visitor
     method on_visit_children( cmd:EmptyCompound )
       cmd.of_type = visit(cmd.of_type)->(as Type)
 
+    method on_visit_children( cmd:MethodTemplate )
+      cmd.placeholders = visit(cmd.placeholders)
+      cmd._tokens = visit(cmd._tokens)->(as TokenList)
+
+    method on_visit_children( cmd:TemplatedAccess )
+      cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:TemplatedMethodContextAccess )
+      cmd.context = visit(cmd.context)
+      cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
+      cmd.args = visit(cmd.args)
+
 endClass
 

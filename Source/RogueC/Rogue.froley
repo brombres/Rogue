@@ -673,6 +673,25 @@ parser
     endOn
   endWhile
 
+- remaining_template_access
+  type_args
+
+  if (nextIs("[]") or nextIs('?'))
+    # We now know we're parsing a templated type, not a templated method.
+    create Type(name:String,type_args:TemplateArgs)
+    while (nextIs("[]") or nextIs('?'))
+      on "[]"
+        create Type(element_type:Type)
+      elseOn '?'
+        create Type(core_type:Type,optional="true":Logical)
+      endOn
+    endWhile
+    return
+  endIf
+
+  access_args
+  produce TemplatedAccess( name:String, type_args:TemplateArgs, args )
+
 - type_args
   consume("<<")
   beginList
@@ -1152,21 +1171,60 @@ parser
       call swap
     elseOnOthers
       procedure_name
+      is_def = false
+      if (nextIs("<<"))
+        savePosition
+        consume "<<"
+        is_def = nextIs(PLACEHOLDER)
+        restorePosition
+
+        if (is_def)
+          # Method template definition, e.g. method name<<$Type>>(...)
+          is_method_template = true
+          template_parameters
+          savePosition
+          ++disable_output
+        else
+          # Method template instance, e.g. method name<<Int32>>(...)
+          type_args
+          call join  # name + <<type-args>>
+        endIf
+      endIf
       procedure_parameters
       procedure_return_type
     endOn
+
     procedure_attributes
     consume(':')
     multi_line_statements
 
     if (is_batch_augment)
+      if (is_method_template)
+        is_method_template = false
+        --disable_output
+        discardPosition
+      endIf
       call batch_augment_create_method
       discardPosition
+    elseIf (is_method_template)
+      is_method_template = false
+      --disable_output
+      createTokenList
+      create MethodTemplate(name:String,placeholders,_tokens:TokenList)
     else
       create LocalScope(statements):ControlStructure
       produce Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
     endIf
   endOn
+
+- method_template
+  procedure_parameters
+  procedure_return_type
+  procedure_attributes
+  consume(':')
+  multi_line_statements
+  create LocalScope(statements):ControlStructure
+  produce Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
 
 - global_method
   on "method"
@@ -1675,8 +1733,14 @@ parser
       create ContextDirectAccess(context,name:String)
     elseOnOthers
       procedure_name
-      access_args
-      create ContextAccess(context,name:String,args)
+      if (nextIs("<<"))
+        type_args
+        access_args
+        create TemplatedMethodContextAccess(context,name:String,type_args:TemplateArgs,args)
+      else
+        access_args
+        create ContextAccess(context,name:String,args)
+      endIf
     endOn
     access_inner
   elseOn "->"
@@ -1745,7 +1809,10 @@ parser
     produce Access( name:String, args )
   elseOnPeek IDENTIFIER
     pathed_name
-    if (nextIs("<<") or nextIs("[]"))
+    if (nextIs("<<"))
+      remaining_template_access
+      return
+    elseIf (nextIs("[]"))
       remaining_type
       access_args
       produce TypeAccess( of_type:Type, args )

@@ -61,6 +61,13 @@ class MethodOrganizer : Visitor
         )
       endIf
 
+    method on_visit( cmd:MethodTemplate )
+      local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
+      if (this_type.method_templates.contains(name))
+        throw cmd.t.error( "Type $ already defines method template $."(this_type,name) )
+      endIf
+      this_type.method_templates[name] = cmd
+
     method on_visit( cmd:Routine )
       cmd.organize( this )
       if (cmd.attributes.is_abstract)
@@ -78,6 +85,10 @@ class MethodOrganizer : Visitor
           endIf
         endIf
       endForEach
+
+    method on_visit( cmd:TemplatedAccess )
+      cmd.module_context = this_module
+      cmd.type_context = this_type
 
     method on_visit( cmd:This )
       assert this_procedure

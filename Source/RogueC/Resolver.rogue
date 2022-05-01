@@ -677,6 +677,56 @@ class Resolver : Visitor
         throw cmd.t.error( "No enclosing 'contingent' to escape from." )
       endContingent
 
+    method on( cmd:TemplatedAccess )->Cmd
+      local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+      local type_template = cmd.module_context.templates[ type_template_name ]
+      if (type_template)
+        return visit( TypeAccess(cmd.t, Type(cmd.t,cmd.name,cmd.type_args), cmd.args) )
+      else
+        # Assume templated method call
+        local name = cmd.type_args->String( cmd.name )
+        local proc = cmd.type_context.method_template_instances[name]
+        if (not proc)
+          if (cmd.type_context.has_method_named(name))
+            # The developer explicitly defined this method template instance,
+            # e.g. "method alpha<<Int32>>(...)".
+            return resolve_call( cmd.t, cmd.type_context, null, name, cmd.args )
+          endIf
+
+          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local m_template = cmd.type_context.method_templates[ t_name ]
+          if (not m_template)
+            throw cmd.t.error( "No such method template $.$."(cmd.type_context,t_name) )
+          endIf
+          proc = m_template.instantiate( cmd.type_args, cmd.type_context )
+        endIf
+        local result = resolve_call( cmd.t, null, proc, cmd.args )
+        return result
+      endIf
+
+    method on( cmd:TemplatedMethodContextAccess )->Cmd
+      local context = visit( cmd.context )
+      local type_context = context.require_type
+
+      local name = cmd.type_args->String( cmd.name )
+      local proc = type_context.method_template_instances[name]
+      if (not proc)
+        if (type_context.has_method_named(name))
+          # The developer explicitly defined this method template instance,
+          # e.g. "method alpha<<Int32>>(...)".
+          return resolve_call( cmd.t, type_context, context, name, cmd.args )
+        endIf
+
+        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+        local m_template = type_context.method_templates[ t_name ]
+        if (not m_template)
+          throw cmd.t.error( "No such method template $.$."(type_context,t_name) )
+        endIf
+        proc = m_template.instantiate( cmd.type_args, type_context )
+      endIf
+      local result = resolve_call( cmd.t, context, proc, cmd.args )
+      return result
+
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
       local exception_type = cmd.exception.require_type
@@ -842,7 +892,7 @@ class Resolver : Visitor
         endIf
 
         local is_fallback = false
-        local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+        local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
         if (match)
           if (match.attributes.is_fallback)
             is_fallback = true
@@ -902,12 +952,12 @@ class Resolver : Visitor
         local def = type_context.definitions[ name ]
         if (def) return visit( def.cloned )
 
-        local match = find_procedure( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+        local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
         if (match) return resolve_call( t, context, match, args )
 
         if (suppress_error) return null->(as Cmd)
 
-        find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+        find_method( t, type_context, context, name, args, &require_global=is_global )  # throw an error
 
       endTemporarily
       return null  # never reached
@@ -1056,6 +1106,36 @@ class Resolver : Visitor
         args[i] = arg.resolve_conversion_to(proc.parameters[i].type, this)
       endForEach
 
+    method find_method( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
+        &constructor, &require_global, &suppress_error )->Procedure
+      # Wraps find_procedure() and expands it by also instantiating method templates
+      # as needed.
+      if (not type_context or constructor or require_global)
+        return find_procedure( t, type_context, context, name, args, &=constructor,
+                               &=require_global, &=suppress_error )
+      endIf
+
+      local proc = find_procedure( t, type_context, context, name, args, &=constructor,
+                               &=require_global, &suppress_error )
+      if (proc) return proc
+
+      if (args and args.count)
+        # Attempt to infer the template type args from the arg types.
+        local t_name    = "$<<$>>"(name,args.count)
+        local m_template = type_context.method_templates[ t_name ]
+        if (m_template)
+          args = visit( args )
+          local type_args = TemplateArgs(t)
+          type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
+          return m_template.instantiate( type_args, type_context )
+        endIf
+      endIf
+
+      # No luck with method templates
+      return find_procedure( t, type_context, context, name, args, &=constructor,
+                               &=require_global, &=suppress_error )
+
+
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
         &constructor, &require_global, &suppress_error )->Procedure
       # 'context' is only passed for error description purposes.
@@ -1073,7 +1153,7 @@ class Resolver : Visitor
 
         if (Candidates.count)
           local result = refine_candidates( type_context, args )
-          if (result)         return result.[resolve]
+          if (result) return result.[resolve]
         elseIf (suppress_error)
           return null
         endIf

@@ -6,6 +6,7 @@ class Procedure : Cmd
   PROPERTIES
     module_context : Module
     name           : String
+    base_name      : String   # without any <<template-args>>
     signature      : String
     parameters     : Parameters
     return_type    : Type
@@ -109,6 +110,13 @@ class Procedure : Cmd
 
         return true
       endUse
+
+    method base_name->String
+      if (not @base_name)
+        if (name.contains("<<:")) @base_name = name  # operator:<<:, operator:<<:=
+        else                      @base_name = name.before_first("<<")
+      endIf
+      return @base_name
 
     method description->String
       return which{ signature || name }

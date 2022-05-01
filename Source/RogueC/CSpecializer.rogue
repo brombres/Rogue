@@ -365,7 +365,7 @@ augment Procedure
       if (@c_signature) return @c_signature
 
       use builder = StringBuilder.pool
-        builder.print( name )
+        builder.print( Program.to_c_name(name) )
 
         if (parameters.count)
           builder.print '_'

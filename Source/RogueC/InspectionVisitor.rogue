@@ -732,4 +732,27 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.of_type)
       return result
 
+    method on_visit_children( cmd:MethodTemplate )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.placeholders)
+      if (result?) return result
+      result = visit(cmd._tokens)
+      return result
+
+    method on_visit_children( cmd:TemplatedAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_args)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:TemplatedMethodContextAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.type_args)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
 endClass

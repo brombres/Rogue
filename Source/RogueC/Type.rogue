@@ -22,6 +22,9 @@ class Type : Cmd
     _template         : Template
     class_def         : Cmd
 
+    method_templates          = StringTable<<MethodTemplate>>()
+    method_template_instances = StringTable<<Procedure>>()
+
     id                : Int32
     m_on_cleanup      : Method
 
@@ -36,16 +39,7 @@ class Type : Cmd
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
       if (type_args)
         if (type_args.count)
-          use builder = StringBuilder.pool
-            builder.print name
-            builder.print "<<"
-            forEach (token_list at i in type_args)
-              if (i) builder.print ','
-              builder.print ((forEach in token_list.tokens)->String)
-            endForEach
-            builder.print ">>"
-            name = builder->String
-          endUse
+          name = type_args->String(name)
         else
           type_args = null
         endIf
@@ -121,12 +115,12 @@ class Type : Cmd
       organize_methods
 
       forEach (m in global_methods)
-        if (m.name == m_name) list.add( m )
+        if (m.base_name == m_name) list.add( m )
       endForEach
 
       if (not require_global)
         forEach (m in methods)
-          if (m.name == m_name) list.add( m )
+          if (m.base_name == m_name) list.add( m )
         endForEach
       endIf
 
@@ -177,6 +171,12 @@ class Type : Cmd
 
     method description->String
       return "$" (%name)
+
+    method has_method_named( name:String )->Logical
+      forEach (m in methods)
+        if (m.name == name) return true
+      endForEach
+      return false
 
     method incorporate( aspect_m:Method, &is_augment )
       aspect_m .= cloned
