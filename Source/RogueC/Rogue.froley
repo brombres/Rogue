@@ -662,7 +662,7 @@ parser
     procedure_parameters
     procedure_return_type
     on "with"
-      args
+      with_values
     elseOnOthers
       createNull
     endOn
@@ -673,8 +673,29 @@ parser
     else
       single_line_statements
     endIf
-    produce FunctionDefinition(parameters:Parameters,return_type:Type,with_values,statements)
+    produce FunctionDefinition(parameters:Parameters,return_type:Type,with_values:WithValues,statements)
   endOn
+
+- with_values
+  beginList
+    if (consume('('))
+      with_value
+      while (consume(',')) consume_eols; with_value
+      mustConsume(')')
+    else
+      with_value
+      while (consume(',')) consume_eols; with_value
+    endIf
+  produceList WithValues
+
+- with_value
+  identifier
+  on '='
+    expression
+  elseOnOthers
+    createNull
+  endOn
+  produce WithValue(name:String,value)
 
 - id_or_type
   pathed_name
@@ -1344,12 +1365,12 @@ parser
 - single_line_statements
   beginList
 
-  if (consume(EOL)) produceList Statements
+  if (consume(EOL) or (nextHasAttribute(structural) and not nextIs(';'))) produceList Statements
   statement
   while (consume(';'))
     if (not nextIs(EOL)) statement
   endWhile
-  must_consume_eols
+  consume_eols
 
   produceList Statements
 

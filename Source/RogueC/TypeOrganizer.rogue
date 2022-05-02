@@ -165,44 +165,8 @@ class TypeOrganizer : Visitor
 
     method collect( t:Token, p:Property )
       visit( p )
-
       assert this_type
-      p.type_context = this_type
-
-      if (not p.type)
-        if (p.initial_value)
-          p.type = p.initial_value.type
-          if (not p.type)
-            throw p.t.error(
-              ''Cannot implicitly determine type of property "$" from initial value. ''(p.name) +
-              ''Add an explicit ': Type' at the end of the line.''
-            )
-          endIf
-        else
-          throw p.t.error( ''Property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
-        endIf
-      endIf
-
-      p.type.organize_type
-
-      if (this_type.is_compound and p.type.is_compound)
-        if (p.type.contains_embedded_compound(this_type))
-          throw t.error(
-              "Circular compound definition - $ directly or indirectly contains an embedded $, so $ cannot contain a $."...
-              (p.type,this_type,this_type,p.type)
-          )
-        endIf
-      endIf
-
-      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
-        this_type.attributes.contains_reference = true
-      endIf
-
-      local existing_p = this_type.properties[p.name]
-      if (existing_p and existing_p.type_context is this_type)
-        throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
-      endIf
-      this_type.properties[ p.name ] = p
+      this_type.add_property( p )
 
     method collect_global( t:Token, p:Property )
       visit( p )

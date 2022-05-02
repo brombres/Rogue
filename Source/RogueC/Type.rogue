@@ -98,6 +98,44 @@ class Type : Cmd
       endIf
       methods[ m.signature ] = m
 
+    method add_property( p:Property )
+      p.type_context = this
+
+      if (not p.type)
+        if (p.initial_value)
+          p.type = p.initial_value.type
+          if (not p.type)
+            throw p.t.error(
+              ''Cannot implicitly determine type of property "$" from initial value. ''(p.name) +
+              ''Add an explicit ': Type' at the end of the line.''
+            )
+          endIf
+        else
+          throw p.t.error( ''Property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
+        endIf
+      endIf
+
+      p.type.organize_type
+
+      if (this.is_compound and p.type.is_compound)
+        if (p.type.contains_embedded_compound(this))
+          throw p.t.error(
+              "Circular compound definition - $ directly or indirectly contains an embedded $, so $ cannot contain a $."...
+              (p.type,this,this,p.type)
+          )
+        endIf
+      endIf
+
+      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
+        this.attributes.contains_reference = true
+      endIf
+
+      local existing_p = this.properties[p.name]
+      if (existing_p and existing_p.type_context is this)
+        throw p.t.error( ''Type $ already defines a property called "$".''(this,p.name) )
+      endIf
+      this.properties[ p.name ] = p
+
     method add_extended_property( p:Property )
       local base_p = properties[p.name]
       if (base_p)

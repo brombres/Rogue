@@ -433,8 +433,9 @@ augment Program
             if (iterator.peek == '+') builder.print "INC"; iterator.read
             else                      builder.print "PLUS"
           elseIf (ch == '-')
-            if (iterator.peek == '-') builder.print "DEC"; iterator.read
-            else                      builder.print "MINUS"
+            if (iterator.peek == '-')     builder.print "DEC"; iterator.read
+            elseIf (iterator.peek == '>') builder.print "RETURNS"; iterator.read
+            else                          builder.print "MINUS"
           else
             which (ch)
               case '?': builder.print "Q"

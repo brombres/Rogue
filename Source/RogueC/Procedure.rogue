@@ -8,6 +8,7 @@ class Procedure : Cmd
     name           : String
     base_name      : String   # without any <<template-args>>
     signature      : String
+    full_signature : String
     parameters     : Parameters
     return_type    : Type
     attributes     : Attributes
@@ -52,6 +53,7 @@ class Procedure : Cmd
       if (body) statements = body.statements
       module_context = existing.module_context
       signature = existing.signature
+      full_signature = existing.@full_signature
       is_organized = existing.is_organized
       is_resolved  = existing.is_resolved
       min_args     = existing.min_args
@@ -149,6 +151,13 @@ class Procedure : Cmd
         builder.print ")"
         return builder->String
       endUse
+
+    method full_signature->String
+      if (not @full_signature)
+        full_signature = signature
+        if (return_type) full_signature = "$->$"(@full_signature,return_type)
+      endIf
+      return @full_signature
 
     method has_parameter_named( name:String )->Logical
       return locate_parameter( name )?

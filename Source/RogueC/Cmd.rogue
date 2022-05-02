@@ -3613,10 +3613,16 @@ class FunctionType : Type
         builder.print "(Function("
         forEach (arg at i in param_types)
           if (i > 0) builder.print ','
+          builder.print arg.module_context
+          builder.print "::"
           builder.print arg
         endForEach
         builder.print ')'
-        if (return_type) builder.print return_type
+        if (return_type)
+          builder.print "->"
+          builder.print return_type.module_context
+          builder.print return_type
+        endIf
         builder.print ')'
         local name = builder->String
 
@@ -3653,7 +3659,7 @@ class FunctionDefinition : Cmd
   PROPERTIES
     parameters  : Parameters
     return_type : Type
-    with_values : Cmd
+    with_values : WithValues
     statements  : Cmd
 
   METHODS
@@ -3669,4 +3675,31 @@ class FunctionDefinition : Cmd
     method description->String
       return "FunctionDefinition($,$,$,$)" (%parameters,%return_type,%with_values,%statements)
 
+endClass
+
+class WithValue : Cmd
+  PROPERTIES
+    name  : String
+    value : Cmd
+
+  METHODS
+    method init( t, name, value )
+
+    method init( existing:WithValue )
+      prior.init( existing )
+      name = existing.name
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "WithValue($,$)" (%name,%value)
+
+endClass
+
+class WithValues : CmdList
+  METHODS
+    method description->String
+      return "WithValues" + list_description
+
+    method get( index:Int32 )->WithValue
+      return list[index]->(as WithValue)
 endClass

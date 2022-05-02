@@ -44,8 +44,7 @@ class Finalizer : InspectionVisitor
             if (base_m) base_m.attributes.is_overridden = true
           endIf
 
-          local full_sig = m.signature
-          if (m.return_type) full_sig += "->" + m.return_type
+          local full_sig = m.full_signature
           local methods = Program.dynamic_methods[full_sig]
           if (not methods)
             methods = Method[]

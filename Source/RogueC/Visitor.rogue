@@ -542,8 +542,11 @@ class Visitor
     method on_visit_children( cmd:FunctionDefinition )
       cmd.parameters = visit(cmd.parameters)->(as Parameters)
       cmd.return_type = visit(cmd.return_type)->(as Type)
-      cmd.with_values = visit(cmd.with_values)
+      cmd.with_values = visit(cmd.with_values)->(as WithValues)
       cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:WithValue )
+      cmd.value = visit(cmd.value)
 
 endClass
 

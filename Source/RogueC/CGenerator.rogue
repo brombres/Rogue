@@ -314,8 +314,9 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallDynamicMethod )
       local info = cmd.info
-      if (cmd.context.type.is_aspect)
-        local group = Program.dynamic_methods[info.signature]
+      if (cmd.context.type.is_aspect or info.attributes.is_abstract)
+        local group = Program.dynamic_methods[info.full_signature]
+        assert group
         if (group.count == 1)
           info = group.first
           writer.print( info.c_name )
@@ -350,8 +351,8 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallThisDynamicMethod )
       local info = cmd.info
-      if (this_type.is_aspect)
-        local group = Program.dynamic_methods[info.signature]
+      if (this_type.is_aspect or info.attributes.is_abstract)
+        local group = Program.dynamic_methods[info.full_signature]
         if (group.count == 1)
           info = group.first
           writer.print( info.c_name )
