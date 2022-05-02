@@ -508,7 +508,12 @@ class Type : Cmd
       if (not this.attributes.is_abstract)
         forEach (m in methods)
           if (m.attributes.is_abstract)
-            throw m.t.error( "[abstract] methods can only be declared in an [abstract] class." )
+            if (m.type_context is this)
+              throw m.t.error( "Method $ can only be declared [abstract] in an [abstract] class."(m) )
+            else
+              throw m.t.error( "Inherited abstract method $.$ be overridden or class $ must be declared [abstract]."...
+                               (m.type_context,m,this) )
+            endIf
           endIf
         endForEach
 
@@ -522,6 +527,12 @@ class Type : Cmd
 
     method precision_index->Int32
       return 10 # Objects etc.
+
+    method resolve( resolver=null:Resolver )
+      ensure resolver
+      temporarily resolver.this_module=module_context, resolver.this_procedure=null
+        resolver.visit_type( this )
+      endTemporarily
 
     method to->Character
       return Cmd.to_character(name)

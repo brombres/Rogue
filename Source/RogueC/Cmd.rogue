@@ -3620,7 +3620,7 @@ class FunctionType : Type
         builder.print ')'
         local name = builder->String
 
-        local type = Program.current_module.find_type( name, &extended_search )->(as FunctionType)
+        local type = Program.default_module.find_type( name )->(as FunctionType)
         if (type) return type
         type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
         type.ensure_definition
@@ -3629,7 +3629,7 @@ class FunctionType : Type
 
   METHODS
     method init( t, name:String, attributes:Int32, param_types, return_type )
-      prior.init( t, name, attributes, null )
+      prior.init( t, Program.default_module, name, attributes, null )
       this.attributes.is_defined = true
 
       local m_call = Method( t, this, "call" )
@@ -3649,3 +3649,24 @@ class FunctionType : Type
       return name
 endClass
 
+class FunctionDefinition : Cmd
+  PROPERTIES
+    parameters  : Parameters
+    return_type : Type
+    with_values : Cmd
+    statements  : Cmd
+
+  METHODS
+    method init( t, parameters, return_type, with_values, statements )
+
+    method init( existing:FunctionDefinition )
+      prior.init( existing )
+      if (existing.parameters) parameters = existing.parameters.cloned
+      if (existing.return_type) return_type = existing.return_type.cloned->(as Type)
+      if (existing.with_values) with_values = existing.with_values.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "FunctionDefinition($,$,$,$)" (%parameters,%return_type,%with_values,%statements)
+
+endClass

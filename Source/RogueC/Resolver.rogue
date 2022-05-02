@@ -260,6 +260,34 @@ class Resolver : Visitor
       local result = visit( ContextBlock(t, TypeAccess(t,Program.type_String,Args(t)), build_list) )
       return result
 
+    method on( cmd:FunctionDefinition )->Cmd
+      local param_types = TypeList(cmd.t)
+      if (not cmd.parameters) cmd.parameters = Parameters(cmd.t)
+
+      forEach (p in cmd.parameters)
+        if (not p.type)
+          if (p.attributes.is_default_parameter) p.type = Program.type_Logical
+          else throw p.t.error( "Missing parameter ':Type'." )
+        endIf
+        param_types.add( p.type )
+      endForEach
+
+      local base_type = FunctionType( cmd.t, param_types, cmd.return_type )
+      local type = Type( cmd.t, Program.default_module, "$_$"(base_type,Program.default_module.types.count),
+                         Attribute.OBJECT|Attribute.SINGLETON )
+      type.base_class = base_type
+      type.attributes.is_defined = true
+
+      local m_call = Method( cmd.t, type, "call" )
+      m_call.parameters = cmd.parameters
+      m_call.return_type = cmd.return_type
+      m_call.body = LocalScope( cmd.t, cmd.statements )
+      m_call.statements = cmd.statements
+      m_call.organize
+
+      type.resolve
+      return validate( GetSingleton(cmd.t,type) )
+
     method on_visit( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context
         on_visit( cmd->(as Procedure) )

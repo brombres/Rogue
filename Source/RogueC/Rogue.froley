@@ -36,6 +36,7 @@ KEYWORD_END_BLOCK         endBlock      [structural]
 KEYWORD_END_CLASS         endClass      [structural]
 KEYWORD_END_CONTINGENT    endContingent [structural]
 KEYWORD_END_FOR_EACH      endForEach    [structural]
+KEYWORD_END_FUNCTION      endFunction   [structural]
 KEYWORD_END_IF            endIf         [structural]
 KEYWORD_END_LOOP          endLoop       [structural]
 KEYWORD_END_ROUTINE       endRoutine    [structural]
@@ -99,6 +100,7 @@ KEYWORD_USE             use
 KEYWORD_USES            uses        [structural]
 KEYWORD_WHICH           which
 KEYWORD_WHILE           while
+KEYWORD_WITH            with
 KEYWORD_XOR             xor
 
 ----------------------------------------------------------------------
@@ -654,6 +656,25 @@ parser
     produceNull
   endIf
   type
+
+- function_definition
+  on "function"
+    procedure_parameters
+    procedure_return_type
+    on "with"
+      args
+    elseOnOthers
+      createNull
+    endOn
+    consume ':'
+    if (consume(EOL))
+      multi_line_statements
+      mustConsume "endFunction"
+    else
+      single_line_statements
+    endIf
+    produce FunctionDefinition(parameters:Parameters,return_type:Type,with_values,statements)
+  endOn
 
 - id_or_type
   pathed_name
@@ -1895,6 +1916,8 @@ parser
     inline_forEach
     return
   endOn
+
+  onPeek "function" function_definition: return
 
   on "native"
     native_code

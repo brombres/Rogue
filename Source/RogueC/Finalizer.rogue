@@ -35,7 +35,7 @@ class Finalizer : InspectionVisitor
       prior.on_visit_type( type )
 
     method on_visit( m:Method )
-      if (m.type_context.is_aspect) return
+      if (m.type_context.is_aspect or m.attributes.is_abstract) return
 
       if (this_type.is_reference)
         if (m.type_context is this_type)
