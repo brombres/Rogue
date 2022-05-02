@@ -316,8 +316,7 @@ class CGenerator : Visitor
       local info = cmd.info
       if (cmd.context.type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.full_signature]
-        assert group
-        if (group.count == 1)
+        if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
           writer.print( info.c_name )
         else
@@ -353,7 +352,7 @@ class CGenerator : Visitor
       local info = cmd.info
       if (this_type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.full_signature]
-        if (group.count == 1)
+        if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
           writer.print( info.c_name )
         else
@@ -1528,7 +1527,7 @@ augment
 
       local wrote_any = false
       forEach (group in Program.dynamic_methods)
-        if (group.count == 1) nextIteration
+        if (group.count == 1 and not group.first.attributes.is_placeholder) nextIteration
         write_c_dispatch_method_header( group, h_writer )
         h_writer.println ';'
         wrote_any = true
@@ -1566,11 +1565,27 @@ augment
 
       (forEach in modules).generate_c_code( c_writer )
 
+      local cgen = CGenerator( c_writer )
       forEach (group in Program.dynamic_methods)
-        if (group.count == 1) nextIteration
+        if (group.count == 1 and not group.first.attributes.is_placeholder) nextIteration
         write_c_dispatch_method_header( group, c_writer )
         c_writer.println
         c_writer.println '{'
+
+        if (group.count == 1 and group.first.attributes.is_placeholder)
+          # No concrete methods exist; only abstract methods and aspect methods.
+          # Write a no-op.
+          local m = group.first
+          if (m.return_type)
+            c_writer.print "  return "
+            cgen.visit( m.return_type.cmd_default_value(m.t) )
+            c_writer.println ';'
+          endIf
+          c_writer.println '}'
+          c_writer.println
+          nextIteration
+        endIf
+
         c_writer.indent += 2
         c_writer.println "switch (((RogueObject*)THIS)->type->id)"
         c_writer.println '{'

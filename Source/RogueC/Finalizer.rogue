@@ -15,9 +15,22 @@ class Finalizer : InspectionVisitor
       Program.apply( AssignIDs() )
       Program.apply( this )
 
-      forEach (entry in Program.dynamic_methods.entries)
-        if (entry.value.count > 1)
-          (forEach in entry.value).attributes.dynamic_dispatch = true
+      forEach (method_group in Program.dynamic_methods)
+        # Remove aspect methods and abstract methods, keeping at least one
+        # of them if there are no concrete methods.
+        local first = method_group.first
+        forEach (m in writer=method_group.rewriter)
+          if (not (m.type_context.is_aspect or m.attributes.is_abstract))
+            writer.write( m )
+          endIf
+        endForEach
+        if (method_group.is_empty)
+          first.attributes.is_placeholder = true
+          method_group.add( first )
+        endIf
+
+        if (method_group.count > 1)
+          (forEach in method_group).attributes.dynamic_dispatch = true
         endIf
       endForEach
 
@@ -35,8 +48,7 @@ class Finalizer : InspectionVisitor
       prior.on_visit_type( type )
 
     method on_visit( m:Method )
-      if (m.type_context.is_aspect or m.attributes.is_abstract) return
-
+      #if (m.type_context.is_aspect or m.attributes.is_abstract) return
       if (this_type.is_reference)
         if (m.type_context is this_type)
           if (this_type.base_class)
