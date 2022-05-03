@@ -133,6 +133,34 @@ augment
       endIf
 endAugment
 
+# can_trigger_gc
+# Valid only for resolved node types
+augment
+  METHODS
+    method Cmd.can_trigger_gc->Logical
+      return Program.gc_auto  # default is true for auto gc; false for manual gc
+
+    method Binary.can_trigger_gc->Logical
+      return false
+
+    method GetLocal.can_trigger_gc->Logical
+      return false
+
+    method GetGlobal.can_trigger_gc->Logical
+      return false
+
+    method GetThisProperty.can_trigger_gc->Logical
+      return false
+
+    method Literal.can_trigger_gc->Logical
+      return false
+
+    method Unary.can_trigger_gc->Logical
+      return false
+
+endAugment
+
+
 # cmd_default_value()
 augment
   METHODS

@@ -993,13 +993,30 @@ class CGenerator : Visitor
       writer.println "Rogue_call_stack_line = -1;"
 
     method on_visit( cmd:Return )
-      print_procedure_cleanup
-      writer.print "return"
-      if (cmd.result)
+      if (cmd.result and cmd.result.can_trigger_gc)
+        local result_name = autoname("result")
+        writer.print cmd.result.type.c_ref_name
         writer.print ' '
+        writer.print result_name
+        writer.print " = "
         visit( cmd.result )
+        writer.println ';'
+
+        print_procedure_cleanup
+
+        writer.print "return "
+        writer.print result_name
+        writer.println ';'
+
+      else
+        print_procedure_cleanup
+        writer.print "return"
+        if (cmd.result)
+          writer.print ' '
+          visit( cmd.result )
+        endIf
+        writer.println ';'
       endIf
-      writer.println ";"
 
     method on_visit( cmd:ReturnOnException )
       writer.print "if (Rogue_exception) "
