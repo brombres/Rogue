@@ -131,6 +131,7 @@ SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
 SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
+SYMBOL_FAT_ARROW             =>
 SYMBOL_GE                    >=
 SYMBOL_GT                    >
 SYMBOL_GTGT                  >>  [structural]
@@ -661,7 +662,7 @@ parser
   on "function"
     procedure_parameters
     procedure_return_type
-    on "with"
+    onPeek "with"
       with_values
     elseOnOthers
       createNull
@@ -677,16 +678,18 @@ parser
   endOn
 
 - with_values
-  beginList
-    if (consume('('))
-      with_value
-      while (consume(',')) consume_eols; with_value
-      mustConsume(')')
-    else
-      with_value
-      while (consume(',')) consume_eols; with_value
-    endIf
-  produceList WithValues
+  on "with"
+    beginList
+      if (consume('('))
+        with_value
+        while (consume(',')) consume_eols; with_value
+        mustConsume(')')
+      else
+        with_value
+        while (consume(',')) consume_eols; with_value
+      endIf
+    produceList WithValues
+  endOn
 
 - with_value
   identifier
@@ -736,7 +739,11 @@ parser
   beginList
     if (consume('(') and not consume(')'))
       type
-      while (consume(',')) type
+      if (nextIs(':')) syntaxError "Function type specifications must omit parameter names."
+      while (consume(','))
+        type
+        if (nextIs(':')) syntaxError "Function type specifications must omit parameter names."
+      endWhile
       mustConsume ')'
     endIf
   produceList TypeList
@@ -1926,7 +1933,39 @@ parser
     return
   endOn
   onPeek "which" inline_which: return
-  on '(', expression, ')':     return
+
+  # Parenthesized expression or generic function definition
+  on '('
+    on ')'
+      # No-params generic function
+      beginList   # empty args
+      createList IDList
+      remaining_generic_function_definition
+    elseOnOthers
+      savePosition
+      expression
+      if (consume(')'))
+        if (not (nextIs("with") or nextIs("=>")))
+          # good to go as expression grouping
+          discardPosition
+          return
+        endIf
+      endIf
+
+      # Generic function
+      restorePosition
+      beginList
+        identifier
+        while (consume(","))
+          identifier
+        endWhile
+        mustConsume ')'
+      createList IDList
+      remaining_generic_function_definition
+      return
+    endOn
+  endOn
+
   onPeek '[' literal_list :    return
   on "[]"
     beginList
@@ -1946,6 +1985,16 @@ parser
   endOn
 
   syntaxError
+
+- remaining_generic_function_definition
+  onPeek "with"
+    with_values
+  elseOnOthers
+    createNull
+  endOn
+  mustConsume '=>'
+  single_line_statements
+  produce GenericFunctionDefinition(parameters:IDList,with_values:WithValues,statements)
 
 - native_code
   if consume("(")
@@ -2067,6 +2116,7 @@ parser
   create EmptyCompound(of_type:Type)
   create Escape
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)
+  create FunctionReturnValue(operand)
   create Iterator(control,condition,statements,upkeep):Conditional
   create GetGlobalProperty(info:Property)
   create GetLocal(info:Local)

@@ -308,6 +308,9 @@ class Resolver : Visitor
         return validate( GetSingleton(cmd.t,type) )
       endIf
 
+    method on( cmd:GenericFunctionDefinition )->Cmd
+      return cmd
+
     method on_visit( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context
         on_visit( cmd->(as Procedure) )
@@ -699,13 +702,21 @@ class Resolver : Visitor
       cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
       return cmd
 
+    method on( cmd:FunctionReturnValue )->Cmd
+      local operand = visit(cmd.operand)
+      if (operand.type)
+        return Return(operand.t,operand)
+      else
+        return operand
+      endIf
+
     method on_visit( cmd:Statements )
       temporarily current_statements = cmd.list.rewriter
         forEach (statement in current_statements)
           statement = visit( statement )
           if (statement)
             #if (statement.type) statement = DiscardResult( statement.t, statement )
-            if (statement.type) statement = statement.discarding_result
+            #if (statement.type) statement = statement.discarding_result
             if (statement) current_statements.write( statement )
           endIf
         endForEach
@@ -1345,7 +1356,7 @@ class Resolver : Visitor
           if (has_named_arg) m.arrange_args( args )
           contingent
             forEach (arg at i in args)
-              necessary (arg_type_is_compatible(arg.require_type,m.parameters[i].type))
+              necessary (arg_type_is_compatible(arg,m.parameters[i].type))
             endForEach
             Candidates.keep m
           endContingent
@@ -1506,7 +1517,8 @@ class Resolver : Visitor
 
       return false
 
-    method arg_type_is_compatible( arg_type:Type, param_type:Type )->Logical
+    method arg_type_is_compatible( arg:Cmd, param_type:Type )->Logical
+      local arg_type = arg.require_type
       if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
       if (arg_type is param_type) return true
       if (arg_type.instance_of(param_type)) return true
@@ -1516,7 +1528,13 @@ class Resolver : Visitor
         if (arg_type is Program.type_null)
           return true
         endIf
-        return arg_type_is_compatible( arg_type, param_type.properties//value.type )
+        return arg_type_is_compatible( arg, param_type.properties//value.type )
+      endIf
+      if (arg_type is Program.type_GenericFn)
+        if (param_type not instanceOf FunctionType) return false
+        block arg=arg->(as GenericFunctionDefinition), param_type=param_type->(as FunctionType)
+          return arg.parameters.count == param_type.param_types.count
+        endBlock
       endIf
       return false
 

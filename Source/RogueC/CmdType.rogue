@@ -93,6 +93,35 @@ augment
 
       throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
 
+    method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
+      local fn_type = target_type->(as FunctionType)
+      if (not fn_type)
+        if (suppress_error) return null
+        throw t.error( "Generic function is incompatible with type $."(target_type) )
+      endIf
+
+      local params = Parameters(t)
+      forEach (param_name at i in parameters)
+        params.add( Local(t,param_name,fn_type.param_types[i]) )
+      endForEach
+
+      if (fn_type.return_type)
+        if (statements.count)
+          local statement = statements.remove_last
+          if (statement.type)
+            # Turn the last value into a return
+            statements.add( Return(statement.t,statement) )
+          else
+            # After the last statement is resolved it may have a type. Have to wait and see.
+            statements.add( FunctionReturnValue(statement.t,statement) )
+          endIf
+        else
+          statements.add( fn_type.return_type.cmd_default_value(t) )
+        endIf
+      endIf
+
+      local fn_def = resolver.visit( FunctionDefinition(t,params,fn_type.return_type,with_values,statements) )
+      return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error )
 
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
       if (target_type.attributes.is_optional)
@@ -413,6 +442,9 @@ augment
     method EmptyList.type->Type
       return Program.type_Value
       }#
+
+    method GenericFunctionDefinition.type->Type
+      return Program.type_GenericFn
 
     method GetGlobalProperty.type->Type
       return info.@type

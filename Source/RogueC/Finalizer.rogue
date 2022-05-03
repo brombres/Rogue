@@ -34,6 +34,9 @@ class Finalizer : InspectionVisitor
         endIf
       endForEach
 
+    method on_visit( cmd:GenericFunctionDefinition )
+      throw cmd.t.error( "Generic functions must be passed as an argument or assigned to a variable with specialized Function type." )
+
     method on_visit_type( type:Type )
       type.base_type_lookup_index = Program.base_type_lookup.count
       if (type.base_class)

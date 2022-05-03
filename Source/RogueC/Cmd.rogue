@@ -3703,3 +3703,48 @@ class WithValues : CmdList
     method get( index:Int32 )->WithValue
       return list[index]->(as WithValue)
 endClass
+
+class GenericFunctionDefinition : Cmd
+  PROPERTIES
+    parameters  : IDList
+    with_values : WithValues
+    statements  : Cmd
+
+  METHODS
+    method init( t, parameters, with_values, statements )
+
+    method init( existing:GenericFunctionDefinition )
+      prior.init( existing )
+      if (existing.parameters) parameters = existing.parameters.cloned
+      if (existing.with_values) with_values = existing.with_values.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "GenericFunctionDefinition($,$,$)" (%parameters,%with_values,%statements)
+
+endClass
+
+class IDList : CmdList
+  METHODS
+    method description->String
+      return "IDList" + list_description
+
+    method get( index:Int32 )->Identifier
+      return list[index]->(as Identifier)
+endClass
+
+class FunctionReturnValue : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:FunctionReturnValue )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "FunctionReturnValue($)" (%operand)
+
+endClass
