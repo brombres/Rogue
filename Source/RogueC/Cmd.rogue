@@ -3748,3 +3748,23 @@ class FunctionReturnValue : Cmd
       return "FunctionReturnValue($)" (%operand)
 
 endClass
+
+class ConvertToTypeWithArgs : Cmd
+  PROPERTIES
+    operand : Cmd
+    to_type : Type
+    args    : Cmd
+
+  METHODS
+    method init( t, operand, to_type, args )
+
+    method init( existing:ConvertToTypeWithArgs )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.to_type) to_type = existing.to_type.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "ConvertToTypeWithArgs($,$,$)" (%operand,%to_type,%args)
+
+endClass

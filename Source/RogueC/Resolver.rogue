@@ -203,6 +203,10 @@ class Resolver : Visitor
 
       throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
 
+    method on( cmd:ConvertToTypeWithArgs )->Cmd
+      local m_name = "to_" + cmd.to_type.name
+      return visit( ContextAccess(cmd.t, cmd.operand, m_name, cmd.args) )
+
     method on_validate( cmd:CreateObject )->Cmd
       if (cmd.of_type.attributes.is_abstract)
         throw cmd.t.error( "Abstract type $ cannot be instantiated."(cmd.of_type) )

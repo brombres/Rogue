@@ -792,4 +792,13 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.operand)
       return result
 
+    method on_visit_children( cmd:ConvertToTypeWithArgs )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
 endClass

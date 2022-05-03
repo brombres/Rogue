@@ -556,5 +556,10 @@ class Visitor
     method on_visit_children( cmd:FunctionReturnValue )
       cmd.operand = visit(cmd.operand)
 
+    method on_visit_children( cmd:ConvertToTypeWithArgs )
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
+      cmd.args = visit(cmd.args)
+
 endClass
 

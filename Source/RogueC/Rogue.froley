@@ -1824,7 +1824,12 @@ parser
     access_inner
   elseOn "->"
     type
-    create ConvertToType(operand,to_type:Type)
+    if (nextIs('('))
+      args
+      create ConvertToTypeWithArgs( operand, to_type:Type, args )
+    else
+      create ConvertToType(operand,to_type:Type)
+    endIf
     access_inner
   elseOn '['
     expression
