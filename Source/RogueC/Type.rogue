@@ -554,6 +554,19 @@ class Type : Cmd
           methods[ m.signature ] = m
         endBlock
 
+        # operator==(EnumType)->Logical
+        block
+          local m = methods[ "operator==" ]
+          if (not m)
+            m = Method( t, this, "operator==" )
+            m.parameters.add( Local(t,"other",this) )
+            m.return_type = Program.type_Logical
+            m.statements.add( Return(t,CompareEQ(t,Access(t,"value"),ContextAccess(t,Access(t,"other"),"value"))) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
         # to->Int32
         block
           local m = methods[ "to_Int32()" ]
