@@ -22,6 +22,8 @@ class Type : Cmd
     _template         : Template
     class_def         : Cmd
 
+    categories        : Category[]
+
     method_templates          = StringTable<<MethodTemplate>>()
     method_template_instances = StringTable<<Procedure>>()
 
@@ -31,9 +33,11 @@ class Type : Cmd
     base_type_lookup_index  : Int32
     base_type_ids           = Int32[]
 
-    is_type_organized  : Logical
-    methods_organizing : Logical
-    methods_organized  : Logical
+    is_type_organized    : Logical
+    methods_organizing   : Logical
+    methods_organized    : Logical
+    definitions_resolved : Logical
+    is_resolved          : Logical
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
@@ -83,6 +87,7 @@ class Type : Cmd
       c_name = existing.@c_name
       attributes = existing.attributes
       module_context = existing.module_context
+      if (existing.categories) categories = existing.categories.cloned
 
     method add( m:GlobalMethod )
       local existing = global_methods[m.signature]
@@ -289,6 +294,9 @@ class Type : Cmd
     method is_compound->Logical
       return attributes.is_compound
 
+    method is_enum->Logical
+      return attributes.is_enum
+
     method is_object->Logical
       return attributes.is_object
 
@@ -312,6 +320,12 @@ class Type : Cmd
       TypeOrganizer( module_context ).visit( this, class_def )
 
       ensure_definition
+
+      if (is_enum)
+        if (base_class or aspects)
+          throw t.error( "Rogue does not currently support enums with base types." )
+        endIf
+      endIf
 
       # Categorize base types
       if (base_class)
@@ -472,15 +486,137 @@ class Type : Cmd
           endIf
         endBlock
 
-        block m = methods["to_String()"]
-          if (not m)
-            m = Method( t, this, "to_String" )
-            m.return_type = Program.type_String
-            m.statements.add( Return(t,LiteralString(t,name)) )
+        if (not is_enum)
+          block m = methods["to_String()"]
+            if (not m)
+              m = Method( t, this, "to_String" )
+              m.return_type = Program.type_String
+              m.statements.add( Return(t,LiteralString(t,name)) )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+        endIf
+      endIf
+
+      # Enums
+      if (is_enum)
+        # create(Int32) constructor
+        block
+          local m = GlobalMethod( t, this, "create" )
+          m.parameters.add( Local(t,"value",Program.type_Int32) )
+          m.return_type = this
+          m.statements.add( Return(t, CreateCompound(t,this)) )
+          m.attributes.is_generated = true
+          m.organize
+          global_methods[ m.signature ] = m
+        endBlock
+
+        # create(String) constructor
+        block
+          local m = GlobalMethod( t, this, "create" )
+          m.parameters.add( Local(t,"name",Program.type_String) )
+          m.return_type = this
+          m.statements.add(
+            ForEach( t,
+              ForEachInControl( t, "category", null,
+                ForEachCollection(t,null,Access(t,"categories"),null,null) ),
+              Statements( t,
+                If( t, CompareEQ(t,Access(t,"name"),Access(t,"category")),
+                  Statements( t, Return(t,Access(t,"category")) ), null
+                )
+              )
+            )
+          )
+          m.statements.add( Return(t,TypeAccess(t,this,Args(t,LiteralInt32(t,0)))) )
+          m.attributes.is_generated = true
+          m.organize
+          global_methods[ m.signature ] = m
+        endBlock
+
+        # name()->String
+        block
+          local m = Method( t, this, "name" )
+          m.return_type = Program.type_String
+
+          local cmd_cases = WhichCases(t)
+          local cmd_which = Which( t, Access(t,"value"), cmd_cases, Statements(t) )
+          forEach (category in categories)
+            local t = category.t
+            local args = Args(t)
+            args.add( EnumValue(t,this,category.name) )
+            cmd_cases.add( WhichCase(t,args,Statements(t,Return(t,LiteralString(t,category.name)))) )
+          endForEach
+          cmd_which.statements.add( Return(t,FormattedString(t,name+"($)",Args(t,Access(t,"value")))) )
+          m.statements.add( cmd_which )
+
+          m.organize
+          methods[ m.signature ] = m
+        endBlock
+
+        # to->Int32
+        block
+          local m = methods[ "to_Int32()" ]
+          if (not m or m.type_context is not this)
+            m = Method( t, this, "to_Int32" )
+            m.return_type = Program.type_Int32
+            m.statements.add( Return(t,Access(t,"value")) )
             m.organize
             methods[ m.signature ] = m
           endIf
         endBlock
+
+        # to->String
+        block
+          local m = methods[ "to_String()" ]
+          if (not m or m.type_context is not this)
+            m = Method( t, this, "to_String" )
+            m.return_type = Program.type_String
+
+            local cmd_cases = WhichCases(t)
+            local cmd_which = Which( t, Access(t,"value"), cmd_cases, Statements(t) )
+            forEach (category in categories)
+              local t = category.t
+              local args = Args(t)
+              args.add( EnumValue(t,this,category.name) )
+              cmd_cases.add( WhichCase(t,args,Statements(t,Return(t,LiteralString(t,category.name)))) )
+            endForEach
+            cmd_which.statements.add( Return(t,FormattedString(t,name+"($)",Args(t,Access(t,"value")))) )
+            m.statements.add( cmd_which )
+
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        # Create a getter method with hard-coded results for each property of each category
+        block
+          forEach (p at i in class_def->(as Class).constructor_properties)
+            if (not p.type) throw p.t.error( "Enum property '$' must specify a ':Type'."(p.name) )
+            local m = Method( t, this, p.name )
+            m.return_type = p.type
+
+            local cmd_cases = WhichCases(t)
+            local cmd_which = Which( t, Access(t,"value"), cmd_cases, Statements(t) )
+            forEach (category in categories)
+              if (category.args[i])
+                local args = Args(category.t)
+                args.add( EnumValue(category.t,this,category.name) )
+                cmd_cases.add( WhichCase(category.t,args,Statements(category.t,Return(category.t,category.args[i]))) )
+              endIf
+            endForEach
+            if (p.initial_value)
+              cmd_which.statements.add( Return(p.t,p.initial_value) )
+            else
+              cmd_which.statements.add( Return(p.t,p.type.cmd_default_value(p.t)) )
+            endIf
+            m.statements.add( cmd_which )
+
+            m.organize
+            methods[ m.signature ] = m
+          endForEach
+        endBlock
+
       endIf
 
       methods_organized = true
@@ -518,13 +654,17 @@ class Type : Cmd
       endIf
 
       # Incorporate aspect methods
+      local this_is_abstract = this.attributes.is_abstract
+
       if (aspects)
         # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
           forEach (aspect_m in incorporated_aspect.methods)
             if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
               if (not missing_only or not methods.contains(aspect_m.signature))
-                incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
+                if (this_is_abstract or not aspect_m.attributes.is_abstract)
+                  incorporate( aspect_m, &is_augment=incorporated_aspect.attributes.is_augment )
+                endIf
               endIf
             endIf
           endForEach
@@ -535,11 +675,27 @@ class Type : Cmd
           forEach (aspect_m in incorporated_aspect.methods)
             if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
               if (not missing_only or not methods.contains(aspect_m.signature))
-                incorporate( aspect_m )
+                if (this_is_abstract or not aspect_m.attributes.is_abstract)
+                  incorporate( aspect_m )
+                endIf
               endIf
             endIf
           endForEach
         endForEach
+
+        # Create an error if no implementation of an abstract aspect method has been supplied.
+        if (not this_is_abstract)
+          forEach (incorporated_aspect in aspects)
+            forEach (aspect_m in incorporated_aspect.methods)
+              if (aspect_m.attributes.is_abstract and not methods.contains(aspect_m.signature))
+                throw aspect_m.t.error(
+                  "Class $ must either be declared [abstract] or else supply a definition for abstract aspect method $." ...
+                  (this,aspect_m) )
+              endIf
+            endForEach
+          endForEach
+        endIf
+
       endIf
 
       # Any [abstract] methods require an [abstract] class.
@@ -567,6 +723,8 @@ class Type : Cmd
       return 10 # Objects etc.
 
     method resolve( resolver=null:Resolver )
+      if (is_resolved) return
+
       ensure resolver
       temporarily resolver.this_module=module_context, resolver.this_procedure=null
         resolver.visit_type( this )

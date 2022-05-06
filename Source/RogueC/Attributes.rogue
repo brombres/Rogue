@@ -30,6 +30,7 @@ class Attribute
     FALLBACK           = (1:<<:25)
     AUGMENT            = (1:<<:26)
     PLACEHOLDER        = (1:<<:27)
+    ENUM               = (1:<<:28)
 endClass
 
 class Attributes : CmdList
@@ -61,6 +62,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_fallback,          Attribute.FALLBACK )
   ROGUE_ATTRIBUTE( is_augment,           Attribute.AUGMENT )
   ROGUE_ATTRIBUTE( is_placeholder,       Attribute.PLACEHOLDER )
+  ROGUE_ATTRIBUTE( is_enum,              Attribute.ENUM )
 
   PROPERTIES
     flags : Int32

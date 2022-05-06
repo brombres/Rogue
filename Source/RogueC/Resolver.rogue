@@ -26,15 +26,52 @@ class Resolver : Visitor
       endTemporarily
 
     method visit_type( type:Type )
+      if (type.is_resolved) return
       type.organize_methods
+      type.is_resolved = true  # prevent recursion
+
       if (type.is_aspect) return
 
       prior.visit_type( type )
+
+    method on_visit_type( type:Type )
+      resolve_definitions( type )
+      prior.on_visit_type( type )
+
       type.m_on_cleanup = type.methods["on_cleanup()"]
       if (type.m_on_cleanup)
         if (type.m_on_cleanup.return_type)
           throw type.m_on_cleanup.t.error( "on_cleanup() cannot return a value." )
         endIf
+      endIf
+
+    method resolve_definitions( type:Type )
+      if (type.definitions_resolved) return
+      type.definitions_resolved = true
+
+      if (type.is_enum)
+        # Resolve enum category values
+        temporarily this_type = type
+          use entries = WorkList<<TableEntry<<String,Cmd>>>>
+            # Resolve each category value to an Int32
+            forEach (entry in type.definitions.entries)
+              local enum_value_def = entry.value->(as EnumValueDef)
+              assert enum_value_def
+              local value = visit( enum_value_def.value )
+              if (value not instanceOf LiteralInt32)
+                throw value.t.error( "Category value must resolve to a literal integer." )
+              endIf
+              entry.value = value
+              entries.add( entry )
+            endForEach
+
+            # Wrap each def in EnumName(value)
+            forEach (entry in entries)
+              local t = entry.value.t
+              entry.value = TypeAccess(t,type,Args(t,entry.value))
+            endForEach
+          endUse
+        endTemporarily
       endIf
 
     method add_local( v:Local )->Local
@@ -283,6 +320,11 @@ class Resolver : Visitor
 
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
+
+    method on( cmd:EnumValue )->Cmd
+      local def = visit(cmd.of_type.definitions[cmd.name])->(as CreateCompound)
+      assert def and def.args and def.args.count
+      return def.args.first  # Integer value
 
     method on_visit( cmd:Escape )
       contingent
@@ -1019,7 +1061,11 @@ class Resolver : Visitor
 
         if (type_context)
           type_context.organize_methods
+          resolve_definitions( type_context )
           local def = type_context.definitions[ name ]
+          if (def) return visit( def.cloned )
+        elseIf (this_type)
+          local def = this_type.definitions[ name ]
           if (def) return visit( def.cloned )
         endIf
 
@@ -1051,15 +1097,28 @@ class Resolver : Visitor
               if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
               else      return validate( cmd_get_p )
             endIf
+
           endIf
         endIf
 
         if (type_context)
-          local p = type_context.global_properties[ name ]
-          if (p)
-            local cmd_get_p = GetGlobalProperty(t,p)
-            if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
-            else      return validate( cmd_get_p )
+          local result = resolve_global_access( t, type_context, name, args, &=suppress_error )
+          if (result) return result
+        else
+          if (this_type)
+            local result = resolve_global_access( t, this_type, name, args, &=suppress_error )
+            if (result) return result
+          endIf
+          local result = resolve_global_access( t, Program.type_Global, name, args, &=suppress_error )
+          if (result) return result
+
+          if (not args)
+            # Global property
+            local p = Program.type_Global.properties[ name ]
+            if (p)
+              local cmd_get_p = GetProperty( t, GetSingleton(t,Program.type_Global), p )
+              return validate( cmd_get_p )
+            endIf
           endIf
         endIf
 
@@ -1073,6 +1132,15 @@ class Resolver : Visitor
 
       endTemporarily
       return null  # never reached
+
+    method resolve_global_access( t:Token, type_context:Type, name:String, args:Cmd, &suppress_error )->Cmd
+      local p = type_context.global_properties[ name ]
+      if (p)
+        local cmd_get_p = GetGlobalProperty(t,p)
+        if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+        else      return validate( cmd_get_p )
+      endIf
+      return null
 
     method resolve_call( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m = this_module
@@ -1088,6 +1156,7 @@ class Resolver : Visitor
         local is_global = context and context.is_type_context
 
         type_context.organize_methods
+        resolve_definitions( type_context )
         local def = type_context.definitions[ name ]
         if (def) return visit( def.cloned )
 
@@ -1175,12 +1244,18 @@ class Resolver : Visitor
 
       endTemporarily
 
-
     method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error )->Cmd
       local m_constructor = find_procedure( t, type_context, null, "constructor", args, &constructor, &suppress_error )
       if (m_constructor)
         if (m_constructor instanceOf GlobalMethod)
-          return resolve_call( t, null, m_constructor, args )
+          if (type_context.is_enum and m_constructor.signature=="create(Rogue::Int32)")
+            convert_args_to_parameter_types( args, m_constructor )
+            assert args instanceOf Args
+            assert type_context
+            return CreateCompound( t, m_constructor.type_context, args->(as Args) )
+          else
+            return resolve_call( t, null, m_constructor, args )
+          endIf
         else
           convert_args_to_parameter_types( args, m_constructor )
           return CreateObject( t, type_context, m_constructor->(as Method), args )

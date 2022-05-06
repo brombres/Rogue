@@ -1,4 +1,37 @@
-class Console [singleton]
+class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
+  DEFINITIONS
+    UP_ARROW    = 17
+    DOWN_ARROW  = 18
+    RIGHT_ARROW = 19
+    LEFT_ARROW  = 20
+
+  METHODS
+    method height->Int32
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return (info.srWindow.Bottom - info.srWindow.Top) + 1;
+              |  else return 24;
+              |#else
+              |  struct winsize sz;
+              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+              |
+              |  return sz.ws_row;
+              |#endif
+
+    method width->Int32
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return info.dwSize.X;
+              |  else return 80;
+              |#else
+              |  struct winsize sz;
+              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+              |
+              |  return sz.ws_col;
+              |#endif
+
   NATIVE
     nativeHeader
      @|#if defined(ROGUE_PLATFORM_WINDOWS)
@@ -32,32 +65,5 @@ class Console [singleton]
        |    }
        |  }
        |}
-
-  METHODS
-    method height->Int32
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
-              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
-              |  CONSOLE_SCREEN_BUFFER_INFO info;
-              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return (info.srWindow.Bottom - info.srWindow.Top) + 1;
-              |  else return 24;
-              |#else
-              |  struct winsize sz;
-              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
-              |
-              |  return sz.ws_row;
-              |#endif
-
-    method width->Int32
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
-              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
-              |  CONSOLE_SCREEN_BUFFER_INFO info;
-              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return info.dwSize.X;
-              |  else return 80;
-              |#else
-              |  struct winsize sz;
-              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
-              |
-              |  return sz.ws_col;
-              |#endif
 
 endClass

@@ -1,4 +1,4 @@
-class PrintWriter [aspect]
+class PrintWriter [abstract aspect]
   GLOBAL METHODS
     method create( writer:Writer<<Byte>> )->PrintWriter
       return BufferedPrintWriter( writer )
@@ -7,29 +7,29 @@ class PrintWriter [aspect]
     method close
       flush
 
-    method flush                                               [abstract]
+    method flush                                         [abstract]
 
-    method print( value:Byte )->this                           [abstract]
-    method print( value:Character )->this                      [abstract]
-    method print( value:Int32 )->this                          [abstract]
-    method print( value:Logical )->this                        [abstract]
-    method print( value:Int64 )->this                          [abstract]
-    method print( value:Object )->this                         [abstract]
-    method print( value:Real64 )->this                         [abstract]
-    method print( value:Real64, decimal_places:Int32 )->this   [abstract]
-    method print( value:Real32 )->this                         [abstract]
-    method print( value:String )->this                         [abstract]
-    method println->this                                       [abstract]
-    method println( value:Byte )->this                         [abstract]
-    method println( value:Character )->this                    [abstract]
-    method println( value:Int32 )->this                        [abstract]
-    method println( value:Logical )->this                      [abstract]
-    method println( value:Int64 )->this                        [abstract]
-    method println( value:Real64 )->this                       [abstract]
-    method println( value:Real64, decimal_places:Int32 )->this [abstract]
-    method println( value:Real32 )->this                       [abstract]
-    method println( value:Object )->this                       [abstract]
-    method println( value:String )->this                       [abstract]
+    method print( value:Byte )                           [abstract]
+    method print( value:Character )                      [abstract]
+    method print( value:Int32 )                          [abstract]
+    method print( value:Logical )                        [abstract]
+    method print( value:Int64 )                          [abstract]
+    method print( value:Object )                         [abstract]
+    method print( value:Real64 )                         [abstract]
+    method print( value:Real64, decimal_places:Int32 )   [abstract]
+    method print( value:Real32 )                         [abstract]
+    method print( value:String )                         [abstract]
+    method println                                       [abstract]
+    method println( value:Byte )                         [abstract]
+    method println( value:Character )                    [abstract]
+    method println( value:Int32 )                        [abstract]
+    method println( value:Logical )                      [abstract]
+    method println( value:Int64 )                        [abstract]
+    method println( value:Real64 )                       [abstract]
+    method println( value:Real64, decimal_places:Int32 ) [abstract]
+    method println( value:Real32 )                       [abstract]
+    method println( value:Object )                       [abstract]
+    method println( value:String )                       [abstract]
 
     method println( text:String, wrap:Logical )
       println text.word_wrapped( Console.width )
@@ -38,7 +38,7 @@ class PrintWriter [aspect]
       println text.word_wrapped( Console.width.or_smaller(wrap) )
 endClass
 
-class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
+class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
   PROPERTIES
     $buffer = String()
 
@@ -52,84 +52,83 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [aspect]
     method flush( buffer:String ) [abstract]
 
     method indent->Int32
-      return $buffer.indent
+      $buffer.indent
 
-    method print( value:Byte )->this
+    method print( value:Byte )
       $buffer.print( value )
-      return this
 
-    method print( value:Character )->this
+    method print( value:Character )
       $buffer.print( value )
       if (value == '\n') flush
-      return this
 
-    method print( value:Int32 )->this
+    method print( value:Int32 )
       $buffer.print( value )
-      return this
 
-    method print( value:Logical )->this
+    method print( value:Logical )
       $buffer.print( value )
-      return this
 
-    method print( value:Int64 )->this
+    method print( value:Int64 )
       $buffer.print( value )
-      return this
 
-    method print( value:Real64, decimal_places:Int32 )->this
+    method print( value:Real64, decimal_places:Int32 )
       $buffer.print( value, decimal_places )
-      return this
 
-    method print( value:Object )->this
+    method print( value:Object )
       $buffer.print( value )
-      return this
 
-    method print( value:Real64 )->this
+    method print( value:Real64 )
       $buffer.print( value )
-      return this
 
-    method print( value:Real32 )->this
+    method print( value:Real32 )
       $buffer.print( value->Real64 )
-      return this
 
-    method print( value:String )->this
+    method print( value:String )
       $buffer.print( value )
       if ($buffer.count > 1024) flush
-      return this
 
-    method println->this
+    method println
       $buffer.print( '\n' )
       flush
-      return this
 
-    method println( value:Byte )->this
-      return print( value ).println
+    method println( value:Byte )
+      print( value )
+      println
 
-    method println( value:Character )->this
-      return print( value ).println
+    method println( value:Character )
+      print( value )
+      println
 
-    method println( value:Int32 )->this
-      return print( value ).println
+    method println( value:Int32 )
+      print( value )
+      println
 
-    method println( value:Logical )->this
-      return print( value ).println
+    method println( value:Logical )
+      print( value )
+      println
 
-    method println( value:Int64 )->this
-      return print( value ).println
+    method println( value:Int64 )
+      print( value )
+      println
 
-    method println( value:Real64 )->this
-      return print( value ).println
+    method println( value:Real64 )
+      print( value )
+      println
 
-    method println( value:Real64, decimal_places:Int32 )->this
-      return print( value, decimal_places ).println
+    method println( value:Real64, decimal_places:Int32 )
+      print( value, decimal_places )
+      println
 
-    method println( value:Real32 )->this
-      return print( value ).println
+    method println( value:Real32 )
+      print( value )
+      println
 
-    method println( value:Object )->this
-      return print( value ).println
+    method println( value:Object )
+      print( value )
+      println
 
-    method println( value:String )->this
-      return print( value ).println
+    method println( value:String )
+      print( value )
+      println
 
     method set_indent( new_indent:Int32 )
       $buffer.indent = new_indent

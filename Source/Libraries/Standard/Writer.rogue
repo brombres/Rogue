@@ -2,7 +2,7 @@
 # Writer.rogue
 #==============================================================================
 
-class Writer<<$DataType>> [aspect]
+class Writer<<$DataType>> [abstract aspect]
   PROPERTIES
     position : Int32
 

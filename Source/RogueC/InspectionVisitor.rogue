@@ -801,4 +801,28 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:Category )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:EnumValueDef )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:CreateCompound )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:EnumValue )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
 endClass

@@ -143,6 +143,9 @@ augment
     method Binary.can_trigger_gc->Logical
       return false
 
+    method CreateCompound.can_trigger_gc->Logical
+      return of_type.contains_reference
+
     method GetLocal.can_trigger_gc->Logical
       return false
 

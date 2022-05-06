@@ -223,11 +223,21 @@ class Parser : ParserCore
       m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
 
     method on_parsed_class
+      create_type_template
+
+    method on_parsed_enum
+      local _template = create_type_template
+      if (_template)
+        _template.attributes.is_enum = true
+        _template.attributes.is_compound = true
+      endIf
+
+    method create_type_template->Template
       local attributes = 0
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL
       _attribute_essential = false
 
-      if (not collecting_templates) return
+      if (not collecting_templates) return null
 
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
@@ -256,7 +266,9 @@ class Parser : ParserCore
         throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
       endIf
 
-      m.templates[extended_name] = Template( class_t, name, placeholders, tokens, attributes )
+      local result = Template( class_t, name, placeholders, tokens, attributes )
+      m.templates[extended_name] = result
+      return result
 
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module

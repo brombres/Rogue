@@ -2119,22 +2119,6 @@ class AttributeCompound : Cmd
       return "AttributeCompound"
 endClass
 
-class CreateCompound : Cmd
-  PROPERTIES
-    of_type : Type
-
-  METHODS
-    method init( t )
-
-    method init( t, of_type )
-
-    method init( existing:CreateCompound )
-      prior.init( existing )
-
-    method description->String
-      return "CreateCompound"
-endClass
-
 class IsType : Cmd
   PROPERTIES
     operand : Cmd
@@ -2332,7 +2316,7 @@ class TypeAccess : Cmd
     args    : Cmd
 
   METHODS
-    method init( t, of_type, args )
+    method init( t, of_type, args=null )
 
     method init( existing:TypeAccess )
       prior.init( existing )
@@ -3766,5 +3750,77 @@ class ConvertToTypeWithArgs : Cmd
 
     method description->String
       return "ConvertToTypeWithArgs($,$,$)" (%operand,%to_type,%args)
+
+endClass
+
+class Category : Cmd
+  PROPERTIES
+    name  : String
+    args  : Cmd
+    value : Cmd
+
+  METHODS
+    method init( t, name, args, value )
+
+    method init( existing:Category )
+      prior.init( existing )
+      name = existing.name
+      if (existing.args) args = existing.args.cloned
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "Category($,$,$)" (%name,%args,%value)
+
+endClass
+
+class EnumValueDef : Cmd
+  PROPERTIES
+    value : Cmd
+
+  METHODS
+    method init( t, value )
+
+    method init( existing:EnumValueDef )
+      prior.init( existing )
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "EnumValueDef($)" (%value)
+
+endClass
+
+class CreateCompound : Cmd
+  PROPERTIES
+    of_type : Type
+    args    : Args
+
+  METHODS
+    method init( t, of_type, args=null )
+
+    method init( existing:CreateCompound )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "CreateCompound($,$)" (%of_type,%args)
+
+endClass
+
+class EnumValue : Cmd
+  PROPERTIES
+    of_type : Type
+    name    : String
+
+  METHODS
+    method init( t, of_type, name )
+
+    method init( existing:EnumValue )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      name = existing.name
+
+    method description->String
+      return "EnumValue($,$)" (%of_type,%name)
 
 endClass

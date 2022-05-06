@@ -1,6 +1,6 @@
 module Rogue
 
-class Finalizer : InspectionVisitor
+class Finalizer : Visitor
   METHODS
     method apply
       # Remove special aspects that implement augments
@@ -33,6 +33,17 @@ class Finalizer : InspectionVisitor
           (forEach in method_group).attributes.dynamic_dispatch = true
         endIf
       endForEach
+
+    method on( cmd:GetProperty )->Cmd
+      if (cmd.info.type_context.is_enum)
+        if (cmd.info.name == "value")
+          local create_compound = cmd.context->(as CreateCompound)
+          if (create_compound)
+            return create_compound.args.first
+          endIf
+        endIf
+      endIf
+      return cmd
 
     method on_visit( cmd:GenericFunctionDefinition )
       throw cmd.t.error( "Generic functions must be passed as an argument or assigned to a variable with specialized Function type." )
@@ -75,5 +86,8 @@ class Finalizer : InspectionVisitor
 
     method on_visit( p:Property )
       p.initial_value = null
+
+    method on_visit( cmd:TypeContext )
+      throw cmd.t.error( "Unused type context." )
 
 endClass

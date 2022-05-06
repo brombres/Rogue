@@ -1,0 +1,53 @@
+class Reader<<$DataType>> [abstract aspect]
+  PROPERTIES
+    position : Int32
+
+  METHODS
+    method close
+      noAction
+
+    method description->String
+      local buffer = $DataType[]
+      while (has_another) buffer.add( read )
+      return buffer->String
+
+    method has_another->Logical [abstract]
+
+    method peek->$DataType [abstract]
+
+    method on_use->this
+      return this
+
+    method on_end_use
+      close
+
+    method position->Int32 [fallback]
+      return @position
+
+    method read->$DataType [abstract]
+
+    method read( buffer:$DataType[], limit:Int32 )->Int32
+      forEach (n in 0..<limit)
+        if (not has_another) close; return n
+        buffer.add( read )
+      endForEach
+      if (not has_another) close
+      return limit
+
+    method reset
+      seek( 0 )
+
+    method seek( pos:Int32 )
+      local delta = pos - position
+      if (delta < 0) throw UnsupportedOperationError( "seek( <backwards position> )" )
+      skip( delta )
+
+    method skip( n:Int32 )
+      forEach (1..n) read
+
+    method to->$DataType[]
+      local result = $DataType[]()
+      result.add( forEach in this )
+      return result
+endClass
+

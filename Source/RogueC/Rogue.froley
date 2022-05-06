@@ -25,6 +25,7 @@ KEYWORD_AUGMENT           augment       [structural]
 KEYWORD_BLOCK             block
 KEYWORD_CASE              case          [structural]
 KEYWORD_CATCH             catch         [structural]
+KEYWORD_CATEGORIES        CATEGORIES    [structural]
 KEYWORD_CLASS             class         [structural]
 KEYWORD_CONTINGENT        contingent
 KEYWORD_DEFINITIONS       DEFINITIONS   [structural]
@@ -35,6 +36,7 @@ KEYWORD_END_AUGMENT       endAugment    [structural]
 KEYWORD_END_BLOCK         endBlock      [structural]
 KEYWORD_END_CLASS         endClass      [structural]
 KEYWORD_END_CONTINGENT    endContingent [structural]
+KEYWORD_END_ENUM          endEnum       [structural]
 KEYWORD_END_FOR_EACH      endForEach    [structural]
 KEYWORD_END_FUNCTION      endFunction   [structural]
 KEYWORD_END_IF            endIf         [structural]
@@ -44,6 +46,7 @@ KEYWORD_END_TRY           endTry        [structural]
 KEYWORD_END_USE           endUse        [structural]
 KEYWORD_END_WHICH         endWhich      [structural]
 KEYWORD_END_WHILE         endWhile      [structural]
+KEYWORD_ENUM              enum          [structural]
 KEYWORD_ESCAPE_BLOCK      escapeBlock
 KEYWORD_ESCAPE_CONTINGENT escapeContingent
 KEYWORD_ESCAPE_FOR_EACH   escapeForEach
@@ -500,7 +503,23 @@ parser
     identifier
     template_parameters
     class
-    call on_parsed_class  # Pass 1: stores template tokens. Pass 2: does nothing.
+    call on_parsed_class  # Pass 1: stores class template tokens. Pass 2: does nothing.
+
+    --disable_output
+    discardPosition
+
+    return
+  endIf
+
+  if (nextIs("enum"))
+    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    ++disable_output # Pass 2: also disable output; just parse to get past
+
+    consume("enum")
+    identifier
+    template_parameters
+    enum
+    call on_parsed_enum  # Pass 1: stores enum template tokens. Pass 2: does nothing.
 
     --disable_output
     discardPosition
@@ -899,6 +918,18 @@ parser
   endIf
   produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
 
+- enum
+  constructor_properties
+  base_types
+  class_attributes
+  if (consume(';'))
+    createNull
+  else
+    enum_sections
+    mustConsume "endEnum"
+  endIf
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
   syntaxError "'$Placeholder' name expected."
@@ -946,7 +977,11 @@ parser
 - class_sections
   beginList
   if (not consume(';'))
-    while (not nextIs("endClass") and not nextIs("endAugment")) class_section
+    consume_eols
+    while (not nextIs("endClass") and not nextIs("endAugment"))
+      class_section
+      consume_eols
+    endWhile
   endIf
   produceList
 
@@ -995,7 +1030,52 @@ parser
     endWhile
     return
   endOn
-  if (not nextIs("endClass")) syntaxError
+  syntaxError
+
+- enum_sections
+  beginList
+  if (not consume(';'))
+    categories  # default section is CATEGORIES
+
+    consume_eols
+    while (not nextIs("endEnum"))
+      enum_section
+      consume_eols
+    endWhile
+  endIf
+  produceList
+
+- enum_section
+  on "CATEGORIES"
+    categories
+    return
+  endOn
+  class_section
+
+- categories
+  consume_eols
+  while (nextIs(IDENTIFIER))
+    category
+    while (consume(','))
+      consume_eols
+      category
+    endWhile
+    consume_eols
+  endWhile
+
+- category
+  onPeek IDENTIFIER
+    identifier
+    if (nextIs('(')) args
+    else             createNull
+    on "="
+      expression
+    elseOnOthers
+      createNull
+    endOn
+    produce Category(name:String,args,value)
+  endOn
+  identifier  # syntax error
 
 - native_code_blocks
   consume_eols
@@ -2114,10 +2194,12 @@ parser
   create ConvertToReal64(operand):Convert
   create CreateObject(of_type:Type,args)
   create CreateObject(of_type:Type,info:Local)
-  create CreateCompound
+  create CreateCompound(of_type:Type,args:Args)
   create DefaultArg(operand):Unary
   #create DiscardResult(operand)
   create DummyInitialValue
+  create EnumValue(of_type:Type,name:String)
+  create EnumValueDef(value)
   create EmptyCompound(of_type:Type)
   create Escape
   create ForEachControl(name:String,optional_at:ForEachAt,collection:ForEachCollection)

@@ -28,7 +28,11 @@ class Template
 
       Program.unorganized_types.add( type )
       local is_first_unorganized_type = (Program.unorganized_types.count == 1)
-      type.class_def = Parser( template_tokens ).parse( Parser.ip_class )->(as Class)
+      if (type.attributes.is_enum)
+        type.class_def = Parser( template_tokens ).parse( Parser.ip_enum )->(as Class)
+      else
+        type.class_def = Parser( template_tokens ).parse( Parser.ip_class )->(as Class)
+      endIf
 
       incorporate_augments( type, name, replacements )        # e.g. List
       if (type.name != name)

@@ -598,14 +598,21 @@ class CGenerator : Visitor
       on_leave( cmd )
 
     method on_visit( cmd:CreateCompound )
-      # This command only exists in the compound's primary create() global method.
-      writer.print( "(" ).print( this_type.c_name ).print( ") " )
+      writer.print( "(" ).print( cmd.of_type.c_name ).print( ") " )
       writer.print '{'
-      forEach (param at i in this_procedure.parameters)
-        if (i > 0) writer.print ','
-        writer.print(' ').print(param.c_name)
-      endForEach
-      writer.print " }"
+      if (cmd.args)
+        forEach (arg at i in cmd.args)
+          if (i > 0) writer.print ','
+          visit(arg)
+        endForEach
+      else
+        # Command is embedded in the compound's primary create() method. Pass in the create() params.
+        forEach (param at i in this_procedure.parameters)
+          if (i > 0) writer.print ','
+          writer.print(' ').print(param.c_name)
+        endForEach
+      endIf
+      writer.print "}"
 
     method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
@@ -1375,7 +1382,7 @@ augment
         writer.println( forEach in type.native_header )
 
         if (type.is_reference or type.contains_reference or type is Program.type_Object)
-          writer.print( "void " ).print( type.c_name ).println( "_gc_trace( void* THIS );" )
+          writer.[ print("void "), print(type.c_name), println("_gc_trace( void* THIS );") ]
           writer.println
         endIf
 
@@ -1875,6 +1882,7 @@ augment
           forEach (p in properties)
             sufficient (p.type.is_reference)
           endForEach
+          escapeContingent
 
         satisfied
           writer.println

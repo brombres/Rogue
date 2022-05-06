@@ -1,5 +1,12 @@
+#class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
 class Global [singleton]
   METHODS
+    #{
+    method flush( buffer:String )
+      console.[ print(buffer), flush ]
+      buffer.clear
+      }#
+
     method print( value:Byte )
       native @|printf( "%d", $value );
 

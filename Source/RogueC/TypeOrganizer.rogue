@@ -8,6 +8,14 @@ class TypeOrganizer : Visitor
       # Called when instantiating a template
       visit( class_def )
 
+    method on_visit( cmd:Category )
+      if (not this_type.is_enum)
+        throw cmd.t.error( "Only enums can have a CATEGORIES section." )
+      endIf
+
+      ensure this_type.categories
+      this_type.categories.add( cmd )
+
     method on_visit( cmd:Class )
       cmd.attributes.flags |= this_type.attributes.flags
       this_type.attributes = cmd.attributes
@@ -15,7 +23,11 @@ class TypeOrganizer : Visitor
         this_type.attributes.is_object = true
       endIf
 
-      if (cmd.constructor_properties)
+      if (this_type.is_enum)
+        collect( cmd.t, Property(cmd.t, "value", null, Program.type_Int32) )
+        ensure this_type.categories
+
+      elseIf (cmd.constructor_properties)
         if (this_type.is_object)
           # Turn parameters into properties
           forEach (v in cmd.constructor_properties)
@@ -28,7 +40,6 @@ class TypeOrganizer : Visitor
 
         elseIf (this_type.is_compound)
           # Turn parameters into properties.
-          # Make a create() global method as the "primary constructor".
           forEach (v in cmd.constructor_properties)
             if (not v.type) throw v.t.error( "Missing ':Type'." )
             local p = Property( v.t, v.name, v.initial_value, v.type )
@@ -74,6 +85,64 @@ class TypeOrganizer : Visitor
       endForEach
 
       visit_children( cmd )
+
+      if (this_type.is_enum)
+        # Create DEFINITIONS for each category
+        local class_def = this_type.class_def->(as Class)
+        assert class_def
+        if (not class_def.constructor_properties) class_def.constructor_properties = Parameters(this_type.t)
+        local enum_properties = class_def.constructor_properties
+
+        local ordinal = 0 : Int32?
+        local prev_name   : String
+        forEach (category in this_type.categories)
+          local t = category.t
+
+          if (not category.args) category.args = Args(t)
+          local args = category.args
+          forEach (p at i in enum_properties)
+            if (args.count == i)
+              if (p.initial_value)
+                args.add( null )
+              else
+                throw t.error( "Category '$' does not specify value for property '$'."(category.name,p.name) )
+              endIf
+            endIf
+          endForEach
+
+          local value = category.value
+          if (value)
+            if (value instanceOf LiteralInt32)
+              ordinal = value->(as LiteralInt32).value + 1
+            else
+              ordinal = null
+            endIf
+          else
+            if (ordinal)
+              value = LiteralInt32(t,ordinal.value)
+              ordinal = ordinal.value + 1
+            else
+              value = Add( t, ContextAccess(t,TypeContext(t,this_type),prev_name), LiteralInt32(t,1) )
+            endIf
+          endIf
+
+          local name = category.name
+          if (this_type.definitions.contains(name))
+            throw t.error( "Duplicate category '$'."(name) )
+          endIf
+          this_type.definitions[ name ] = EnumValueDef(t,value)
+          prev_name = name
+        endForEach
+
+        # create global 'categories:EnumType[]'
+        block
+          local list = LiteralList( this_type.t )
+          forEach (category in this_type.categories)
+            list.add( Access(category.t,category.name) )
+          endForEach
+          collect_global( list.t, Property(list.t,"categories",list,Type(list.t,this_type)) )
+        endBlock
+      endIf
 
     method on( cmd:Access )->Cmd
       visit_children( cmd )

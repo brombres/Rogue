@@ -21,3 +21,17 @@ class Exception
 
 endClass
 
+class Error : Exception;
+
+class UnsupportedOperationError : Error
+  METHODS
+    method init
+
+    #{ TODO
+    method init( type_context_name=type_name:String, method_signature=$methodSignature:String )
+      message = "Class $ does not support operation $." (type_context_name,method_signature)
+      }#
+
+    method init( operation_name:String )
+      message = "Unsupported operation: $." (operation_name)
+endClass
