@@ -1,6 +1,11 @@
 module Rogue
 uses Utility/WorkList
 
+$localMacro FOLD_CONSTANTS(m,Type,op)
+  method on_fold_constants( cmd:Type )->Cmd
+    return m<<op>>( cmd )
+$endMacro
+
 class Resolver : Visitor
   GLOBAL PROPERTIES
     nesting = 0
@@ -74,12 +79,71 @@ class Resolver : Visitor
 
       return context.resolve_access_and_assign( cmd.operand, this )
 
+    method on_fold_constants( cmd:Cmd )->Cmd
+      return cmd
+
+    FOLD_CONSTANTS( fold_numerical_constants, Add,            + )
+    FOLD_CONSTANTS( fold_numerical_constants, Subtract,       - )
+    FOLD_CONSTANTS( fold_numerical_constants, Multiply,       * )
+    FOLD_CONSTANTS( fold_numerical_constants, Divide,         / )
+    FOLD_CONSTANTS( fold_numerical_constants, Mod,            % )
+    FOLD_CONSTANTS( fold_numerical_constants, Power,          ^ )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseAnd,     & )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseOr,      | )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseXor,     ~ )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftLeft,   :<<:  )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRight,  :>>:  )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRightX, :>>>: )
+    FOLD_CONSTANTS( fold_logical_constants,   LogicalAnd,     and )
+    FOLD_CONSTANTS( fold_logical_constants,   LogicalOr,      or  )
+    FOLD_CONSTANTS( fold_logical_constants,   LogicalXor,     xor )
+
+    method fold_bitwise_constants<<$op>>( cmd:Binary )->Cmd
+      if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
+        block left=cmd.left->(as LiteralInt32), right=cmd.right->(as LiteralInt32)
+          if (left and right) return LiteralInt32( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
+          if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralCharacter), right=cmd.right->(as LiteralCharacter)
+          if (left and right) return LiteralCharacter( cmd.t, left.value $op right.value )
+        endBlock
+      endIf
+      return cmd
+
+    method fold_logical_constants<<$op>>( cmd:Binary )->Cmd
+      if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
+        block left=cmd.left->(as LiteralLogical), right=cmd.right->(as LiteralLogical)
+          if (left and right) return LiteralLogical( cmd.t, left.value $op right.value )
+        endBlock
+      endIf
+      return cmd
+
+    method fold_numerical_constants<<$op>>( cmd:Binary )->Cmd
+      if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
+        block left=cmd.left->(as LiteralInt32), right=cmd.right->(as LiteralInt32)
+          if (left and right) return LiteralInt32( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralReal64), right=cmd.right->(as LiteralReal64)
+          if (left and right) return LiteralReal64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralReal32), right=cmd.right->(as LiteralReal32)
+          if (left and right) return LiteralReal32( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
+          if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
+        endBlock
+      endIf
+      return cmd
+
     method on( cmd:Assign )->Cmd
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
 
     method on_validate( cmd:Binary )->Cmd
-      return cmd.left.require_type.resolve_binary_op( cmd, this )
+      local result = cmd.left.require_type.resolve_binary_op(cmd,this)
+      return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
 
     method on( cmd:BitShiftRight )->Cmd
       return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "bit_shift_right",
@@ -664,6 +728,10 @@ class Resolver : Visitor
       visit_children( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
+
+    method on_visit_children( cmd:Property )
+      # skip initial_value since it will be out of context
+      cmd.type = visit(cmd.type)->(as Type)
 
     method pop_scope
       control_stack.remove_last
