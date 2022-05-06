@@ -63,6 +63,13 @@ class Resolver : Visitor
               endIf
               entry.value = value
               entries.add( entry )
+
+              forEach (category in type.categories)
+                if (category.name == entry.key)
+                  category.ordinal = value->(as LiteralInt32).value
+                  escapeForEach
+                endIf
+              endForEach
             endForEach
 
             # Wrap each def in EnumName(value)
@@ -962,10 +969,29 @@ class Resolver : Visitor
       cmd.is_resolved = true
 
       push_scope( cmd )
-      visit_children( cmd )
-      pop_scope
+      cmd.condition = visit( cmd.condition )
+      local condition_type = cmd.condition.require_type
+      local is_enum = condition_type.is_enum
 
-      cmd.condition.require_type
+      cmd.cases = visit(cmd.cases)->(as WhichCases)
+      cmd.statements = visit(cmd.statements)
+
+      if (is_enum)
+        # Convert enum cases to integer cases so we can use switch
+        cmd.condition = visit( ContextAccess(cmd.t,cmd.condition,"value") )
+        forEach (cmd_case in cmd.cases)
+          forEach (arg at i in cmd_case.args)
+            local create_compound = arg->(as CreateCompound)
+            if (create_compound and create_compound.of_type is condition_type)
+              cmd_case.args[i] = create_compound.args.first
+            else
+              cmd_case.args[i] = visit( ContextAccess(cmd.t,arg,"value") )
+            endIf
+          endForEach
+        endForEach
+      endIf
+
+      pop_scope
 
       contingent
         forEach (cmd_case in cmd.cases)

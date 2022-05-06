@@ -3755,21 +3755,23 @@ endClass
 
 class Category : Cmd
   PROPERTIES
-    name  : String
-    args  : Cmd
-    value : Cmd
+    name    : String
+    args    : Cmd
+    value   : Cmd
+    ordinal : Int32  # final resolved 'value'
 
   METHODS
-    method init( t, name, args, value )
+    method init( t, name, args, value, ordinal=0 )
 
     method init( existing:Category )
       prior.init( existing )
       name = existing.name
       if (existing.args) args = existing.args.cloned
       if (existing.value) value = existing.value.cloned
+      ordinal = existing.ordinal
 
     method description->String
-      return "Category($,$,$)" (%name,%args,%value)
+      return "Category($,$,$,$)" (%name,%args,%value,ordinal)
 
 endClass
 
