@@ -58,11 +58,9 @@ class Finalizer : Visitor
       endIf
       Program.base_type_lookup.add( forEach in type.base_type_ids )
 
-      if (type.is_aspect) return
       prior.on_visit_type( type )
 
     method on_visit( m:Method )
-      #if (m.type_context.is_aspect or m.attributes.is_abstract) return
       if (this_type.is_reference)
         if (m.type_context is this_type)
           if (this_type.base_class)
@@ -70,11 +68,11 @@ class Finalizer : Visitor
             if (base_m) base_m.attributes.is_overridden = true
           endIf
 
-          local full_sig = m.full_signature
-          local methods = Program.dynamic_methods[full_sig]
+          local dynamic_sig = m.dynamic_signature
+          local methods = Program.dynamic_methods[dynamic_sig]
           if (not methods)
             methods = Method[]
-            Program.dynamic_methods[full_sig] = methods
+            Program.dynamic_methods[dynamic_sig] = methods
           endIf
           methods.add( m )
         else

@@ -23,6 +23,8 @@ endClass
 
 class Error : Exception;
 
+class IOError : Error;
+
 class UnsupportedOperationError : Error
   METHODS
     method init

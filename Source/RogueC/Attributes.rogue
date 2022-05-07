@@ -2,9 +2,9 @@ module Rogue
 
 class Attribute
   DEFINITIONS
-    GENERATED          = 1
-    PRIMITIVE          = (1:<<:1)
-    COMPOUND           = (1:<<:2)
+    PRIMITIVE          = (1:<<:0)
+    COMPOUND           = (1:<<:1)
+    ENUM               = (1:<<:2)
     OBJECT             = (1:<<:3)
     ASPECT             = (1:<<:4)
     EXPORT             = (1:<<:5)
@@ -30,13 +30,13 @@ class Attribute
     FALLBACK           = (1:<<:25)
     AUGMENT            = (1:<<:26)
     PLACEHOLDER        = (1:<<:27)
-    ENUM               = (1:<<:28)
+    COLLECTED          = (1:<<:28)
 endClass
 
 class Attributes : CmdList
-  ROGUE_ATTRIBUTE( is_generated,         Attribute.GENERATED )
   ROGUE_ATTRIBUTE( is_primitive,         Attribute.PRIMITIVE )
   ROGUE_ATTRIBUTE( is_compound,          Attribute.COMPOUND )
+  ROGUE_ATTRIBUTE( is_enum,              Attribute.ENUM )
   ROGUE_ATTRIBUTE( is_object,            Attribute.OBJECT )
   ROGUE_ATTRIBUTE( is_aspect,            Attribute.ASPECT )
   ROGUE_ATTRIBUTE( is_exported,          Attribute.EXPORT )
@@ -62,7 +62,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_fallback,          Attribute.FALLBACK )
   ROGUE_ATTRIBUTE( is_augment,           Attribute.AUGMENT )
   ROGUE_ATTRIBUTE( is_placeholder,       Attribute.PLACEHOLDER )
-  ROGUE_ATTRIBUTE( is_enum,              Attribute.ENUM )
+  ROGUE_ATTRIBUTE( is_collected,         Attribute.COLLECTED )
 
   PROPERTIES
     flags : Int32

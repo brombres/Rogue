@@ -315,7 +315,8 @@ class CGenerator : Visitor
     method on_visit( cmd:CallDynamicMethod )
       local info = cmd.info
       if (cmd.context.type.is_aspect or info.attributes.is_abstract)
-        local group = Program.dynamic_methods[info.full_signature]
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        assert group
         if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
           writer.print( info.c_name )
@@ -351,7 +352,7 @@ class CGenerator : Visitor
     method on_visit( cmd:CallThisDynamicMethod )
       local info = cmd.info
       if (this_type.is_aspect or info.attributes.is_abstract)
-        local group = Program.dynamic_methods[info.full_signature]
+        local group = Program.dynamic_methods[info.dynamic_signature]
         if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
           writer.print( info.c_name )
@@ -1355,60 +1356,52 @@ augment
       endForEach
       writer.print( ")" )
 
-    method Module.generate_c_class_structs( writer:CWriter )
-      forEach (type in types)
-        if (type.is_object or type.is_compound)
-          writer.print   "struct "
-          writer.print   type.c_name
-          writer.println
-          writer.println '{'
-          writer.indent  += 2
-          if (type.is_object)
-            writer.println "RogueType* type;"
-            writer.println "RogueInt32 refcount;"
-          endIf
-          forEach (p in type.properties)
-            writer.print   p.type.c_name
-            if (p.type.is_reference) writer.print '*'
-            writer.print   ' '
-            writer.print   p.c_name
-            writer.println ';'
-          endForEach
-          writer.println (forEach in type.native_properties)
-          writer.indent  -= 2
-          writer.println "};"
-          writer.println
+    method Type.generate_c_native_headers( writer:CWriter )
+      writer.println( forEach in this.native_header )
+
+    method Type.generate_c_class_structs( writer:CWriter )
+      if (this.is_object or this.is_compound)
+        writer.print   "struct "
+        writer.print   this.c_name
+        writer.println
+        writer.println '{'
+        writer.indent  += 2
+        if (this.is_object)
+          writer.println "RogueType* type;"
+          writer.println "RogueInt32 refcount;"
         endIf
-        writer.println( forEach in type.native_header )
-
-        if (type.is_reference or type.contains_reference or type is Program.type_Object)
-          writer.[ print("void "), print(type.c_name), println("_gc_trace( void* THIS );") ]
-          writer.println
-        endIf
-
-      endForEach
-
-    method Module.generate_c_class_typedefs( writer:CWriter )
-      writer.println "typedef struct RogueType RogueType;"
-
-      forEach (type in types)
-        if (type.is_object or type.is_compound)
-          writer.print   "typedef struct "
-          writer.print   type.c_name
+        forEach (p in this.properties)
+          writer.print   p.type.c_name
+          if (p.type.is_reference) writer.print '*'
           writer.print   ' '
-          writer.print   type.c_name
-          writer.println ";"
-        endIf
-      endForEach
-      writer.println
+          writer.print   p.c_name
+          writer.println ';'
+        endForEach
+        writer.println (forEach in this.native_properties)
+        writer.indent  -= 2
+        writer.println "};"
+        writer.println
+      endIf
 
-      forEach (type in types)
-        if (type.is_object or type.is_compound)
-          writer.print "extern RogueType Type"
-          writer.print type.c_name
-          writer.println ";"
-        endIf
-      endForEach
+      if (this.is_reference or this.contains_reference or this is Program.type_Object)
+        writer.[ print("void "), print(this.c_name), println("_gc_trace( void* THIS );") ]
+        writer.println
+      endIf
+
+    method Type.generate_c_class_typedefs( writer:CWriter )
+      if (this.is_object or this.is_compound)
+        writer.print   "typedef struct "
+        writer.print   this.c_name
+        writer.print   ' '
+        writer.print   this.c_name
+        writer.println ";"
+      endIf
+
+      if (this.is_object or this.is_compound)
+        writer.print "extern RogueType Type"
+        writer.print this.c_name
+        writer.println ";"
+      endIf
       writer.println
 
     method Module.generate_c_header( writer:CWriter )
@@ -1422,8 +1415,6 @@ augment
         writer.println ";"
       endForEach
       writer.println
-
-      (forEach in types).generate_c_header( writer )
 
     method Module.generate_c_code( writer:CWriter )
       if (native_code.count)
@@ -1539,15 +1530,27 @@ augment
     method Program.generate_c
       apply( CSpecializer() )
 
+      # Collect a list of all types in dependency order.
+      local types = Type[]
+      forEach (m in modules)
+        (forEach in m.types).collect_compounds_and_primitives( types )
+      endForEach
+      forEach (m in modules)
+        (forEach in m.types).collect_object_types( types )
+      endForEach
+
       local h_writer = CWriter( File("Test.h"), &header )
 
       h_writer.println ...
         @|//------------------------------------------------------------------------------
          |// Generated
          |//------------------------------------------------------------------------------
-      (forEach in modules).generate_c_class_typedefs( h_writer )
-      (forEach in modules).generate_c_class_structs( h_writer )
+      h_writer.println "typedef struct RogueType RogueType;"
+      (forEach in types).generate_c_class_typedefs( h_writer )
+      (forEach in types).generate_c_native_headers( h_writer )
+      (forEach in types).generate_c_class_structs( h_writer )
       (forEach in modules).generate_c_header( h_writer )
+      (forEach in types).generate_c_header( h_writer )
 
       local wrote_any = false
       forEach (group in Program.dynamic_methods)

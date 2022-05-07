@@ -27,7 +27,7 @@ class Resolver : Visitor
 
     method visit_type( type:Type )
       if (type.is_resolved) return
-      type.organize_methods
+      type.organize
       type.is_resolved = true  # prevent recursion
 
       if (type.is_aspect) return
@@ -36,6 +36,7 @@ class Resolver : Visitor
 
     method on_visit_type( type:Type )
       resolve_definitions( type )
+
       prior.on_visit_type( type )
 
       type.m_on_cleanup = type.methods["on_cleanup()"]
@@ -747,7 +748,7 @@ class Resolver : Visitor
       cmd.operand.require_type.organize
       local op_method_name = "operator" + cmd.symbol
 
-      target_type.organize_methods
+      target_type.organize
 
       # TargetType.operator+=(target:TargetType,operand:OperandType)
       local args = Args(cmd.t,target,cmd.operand)
@@ -1086,7 +1087,7 @@ class Resolver : Visitor
         endIf
 
         if (type_context)
-          type_context.organize_methods
+          type_context.organize
           resolve_definitions( type_context )
           local def = type_context.definitions[ name ]
           if (def) return visit( def.cloned )
@@ -1181,7 +1182,7 @@ class Resolver : Visitor
 
         local is_global = context and context.is_type_context
 
-        type_context.organize_methods
+        type_context.organize
         resolve_definitions( type_context )
         local def = type_context.definitions[ name ]
         if (def) return visit( def.cloned )
@@ -2555,12 +2556,12 @@ augment
         local args_left_right = Args( t, cmd.left, cmd.right )
 
         if (left_type.is_primitive)
-          right_type.organize_methods
+          right_type.organize
           local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
         else
-          left_type.organize_methods
+          left_type.organize
           local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
@@ -2595,12 +2596,12 @@ augment
         local args_left_right = Args( t, cmd.left, cmd.right )
 
         if (left_type.is_primitive)
-          right_type.organize_methods
+          right_type.organize
           local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
         else
-          left_type.organize_methods
+          left_type.organize
           local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
@@ -2636,7 +2637,7 @@ augment
         local op_method_name = "operator" + cmd.symbol
         local arg = Args( t, cmd.operand )
 
-        type.organize_methods
+        type.organize
 
         # OperandType.operator++(operand:OperandType)
         local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
@@ -2680,7 +2681,7 @@ augment
         local op_method_name = "operator" + cmd.symbol
         local arg = Args( t, cmd.operand )
 
-        type.organize_methods
+        type.organize
         local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
         if (m) return resolver.resolve_call( cmd.t, null, m, arg )
 

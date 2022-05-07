@@ -45,7 +45,7 @@ class Transformer : Visitor
             writer.list[i] = null
           endForEach
 
-          cmd_foreach.statements = LocalScope( statements.t, statements )
+          cmd_foreach.statements = statements
           writer.list[ cur_statement_index ] = cmd_foreach
           writer.write_index = cur_statement_index + 1
         endWhile

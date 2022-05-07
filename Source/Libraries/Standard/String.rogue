@@ -137,6 +137,7 @@ class String
       init( 20 )
 
     method init( existing:String )
+      if (is_immutable) return
       count = existing.count
       hash_code = existing.hash_code
       is_ascii = existing.is_ascii
@@ -144,15 +145,18 @@ class String
       data[count] = 0
 
     method init( byte_capacity:Int32 )
+      if (is_immutable) return
       data = Byte[]( byte_capacity + 1 )
       data[0] = 0
       is_ascii = true
 
-    method init( data, count )
+    method init( data, count:Int32 )
       # 'data' must be valid UTF-8.
+      if (is_immutable) return
       data.reserve(1)
       data[data.count] = 0
       is_ascii = (count == data.count)
+      hash_code = -1
 
     method after( index:Int32 )->String
       # Returns the substring of this string that occurs after
@@ -1221,6 +1225,125 @@ class String
         next   = result.before_suffix( text )
       endWhile
       return result
+
+    method word_wrapped( width:Int32, allow_break_after=null:String )->String[]
+      # Returns a word-wrapped version of this string as a list of lines.
+      # Existing newlines characters will cause a new line to begin
+      # immediately.  Spaces immediately following existing newline
+      # characters are preserved.
+      return word_wrapped( width, String(), allow_break_after )->String.split('\n')
+
+    method word_wrapped( width:Int32, buffer:String, allow_break_after=null:String )->String
+      # Prints a word-wrapped version of this string to the given
+      # String.  Existing newlines characters will cause a new line to
+      # begin immediately.  Spaces immediately following existing newline
+      # characters are preserved.
+      local i1, i2 : Int32
+      local len = count
+
+      if (len == 0) return buffer
+
+      if (width <= 0)
+        # Print with no wrapping
+        buffer.print( this )
+        return buffer
+      endIf
+
+      local w = width
+      local initial_indent = 0
+      forEach (ch in this)
+        if (ch != ' ') escapeForEach
+        ++initial_indent
+        --w
+        ++i1
+      endForEach
+
+      if (w <= 0)
+        w = width
+        initial_indent = 0
+        buffer.println
+      else
+        loop (width-w) buffer.print ' '
+      endIf
+
+      local needs_newline = false
+      while (i2 < len)
+
+        # find first \n, last space, or last break-after character
+        while ((i2-i1) < w and i2 < len and this[i2] != '\n') i2++
+
+        if ((i2-i1) == w)
+          # No \n in allowed width
+          if (i2 >= len)
+            # The rest of the text will fit as-is.
+            i2 = len
+          elseIf (this[i2] != '\n')
+            # Look for the last space within the given width
+            while (this[i2]!=' ' and i2>i1) i2--
+
+            if (i2 == i1)
+              # Not found - move cursor to end and look for the last break-after
+              # character.
+              i2 = i1 + w
+              if (allow_break_after)
+                while (i2 > i1 and not allow_break_after.contains(this[i2-1]) and i2>i1) i2--
+                if (i2 == i1)
+                  # Could not find a break - just use the first 'w' characters.
+                  i2 = i1 + w
+                endIf
+              endIf
+            endIf
+          endIf
+        endIf
+
+        if (needs_newline)
+          buffer.println
+          if (initial_indent)
+            loop (initial_indent) buffer.print( ' ' )
+          endIf
+        endIf
+
+        forEach (i in i1..(i2-1)) buffer.print( this[i] )
+        needs_newline = true
+
+        if (i2 == len)
+          return buffer
+        else
+          which (this[i2])
+            case ' ':
+              # Discard trailing spaces
+              while (i2<len and this[i2]==' ') i2++
+
+              if (i2<len and this[i2]=='\n') i2++
+
+              i1 = i2
+
+            case '\n':
+              ++i2
+
+              w = width
+              initial_indent = 0
+              forEach (i in i2..<len)
+                if (this[i] != ' ') escapeForEach
+                ++initial_indent
+                --w
+                ++i2
+              endForEach
+
+              if (w <= 0)
+                w = width
+                initial_indent = 0
+              else
+                loop (width-w) buffer.print ' '
+              endIf
+          endWhich
+
+          i1 = i2
+
+        endIf
+      endWhile
+
+      return buffer
 
     method _check_to_string( value:Real64, decimal_places:Int32, buffer:String )->Logical
       buffer.clear

@@ -115,6 +115,9 @@ class List<<$DataType>> : ListType
               |$<<element_type>>* ptr = (($<<element_type>>*)$this->data) + ($i1 - 1);
               |while (--n >= 0) *(++ptr) = $value;
 
+    method first->$DataType
+      return this[0]
+
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
         native @|return $this->as_logicals[$index];
@@ -124,6 +127,11 @@ class List<<$DataType>> : ListType
 
     method is_empty->Logical
       return count == 0
+
+    method remove_first->$DataType
+      local result = this[0]
+      shift( -1 )
+      return result
 
     method remove_last->$DataType
       --count

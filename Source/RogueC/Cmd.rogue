@@ -107,7 +107,15 @@ class CmdList : Cmd
 
     method init( existing:CmdList )
       prior.init( existing )
+
+      # Start with shallow clone
       list = existing.list.cloned
+
+      # Turn into deep clone
+      localize list
+      forEach (cmd at i in list)
+        if (cmd) list[i] = cmd.cloned
+      endForEach
 
     method add( cmd:Cmd )
       @list.add( cmd )

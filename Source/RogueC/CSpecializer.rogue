@@ -370,13 +370,13 @@ augment Procedure
         if (parameters.count)
           builder.print '_'
           forEach (p in parameters)
-            builder.print( "_" ).print( p.type.c_name )
+            builder.print( "_" ).print( p.type.c_sig_name )
           endForEach
         endIf
 
         if (return_type)
           builder.print "__"
-          builder.print return_type.c_name
+          builder.print return_type.c_sig_name
         endIf
 
         c_signature = builder
@@ -507,8 +507,9 @@ endAugment
 
 augment Type
   PROPERTIES
-    c_name : String   # e.g. RogueString
-    c_ref_name : String   # e.g. RogueString*
+    c_name     : String   # e.g. RogueString (RogueObject for aspects)
+    c_ref_name : String   # e.g. RogueString* (RogueObject* for aspects)
+    c_sig_name : String   # e.g. RogueString (RogueString for aspects too)
 
   METHODS
     method c_ref_name->String
@@ -525,6 +526,15 @@ augment Type
         @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
       endIf
       return @c_name
+
+    method c_sig_name->String
+      if (@c_sig_name) return @c_sig_name
+      if (is_aspect)
+        @c_sig_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
+      else
+        @c_sig_name = c_name
+      endIf
+      return @c_sig_name
 
 endAugment
 
