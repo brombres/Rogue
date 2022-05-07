@@ -1378,36 +1378,57 @@ class String
       endIf
 
   NATIVE
-    nativeHeader @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free );
-                  |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int must_free );
+    nativeHeader @|#define ROGUE_STRING_COPY      0
+                  |#define ROGUE_STRING_BORROW    1
+                  |#define ROGUE_STRING_ADOPT     2
+                  |#define ROGUE_STRING_PERMANENT 3
+                  |
+                  |RogueString* RogueString_create( const char* cstring, int byte_count, int usage );
+                  |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
                   |RogueInt32   RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash );
                   |const char*  RogueString_to_c_string( RogueString* st );
                   |RogueInt32   RogueString_utf8_character_count( const char* cstring, int byte_count );
 
-    nativeCode  @|RogueString* RogueString_create( const char* cstring, int byte_count, int must_free )
+    nativeCode  @|RogueString* RogueString_create( const char* cstring, int byte_count, int usage )
                  |{
+                 |  // Creates an immutable String object.
+                 |  //
+                 |  // usage
+                 |  //   COPY      - Make a copy of 'cstring'.
+                 |  //   BORROW    - Use externally-malloc'd 'cstring' but don't free it on GC.
+                 |  //   ADOPT     - Use externally-malloc'd 'cstring' and free() it on GC.
+                 |  //   PERMANENT - Like BORROW but new String is not tracked by the GC.
                  |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                  |  RogueInt32 character_count = RogueString_utf8_character_count( cstring, byte_count );
-                 |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, must_free );
+                 |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, usage );
                  |
-                 |  RogueString* result = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
-                 |  RogueByteList* data = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT);
+                 |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
+                 |  RogueByteList* data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |  result->data = data;
+                 |
+                 |  if (usage == ROGUE_STRING_COPY)
+                 |  {
+                 |    char* string_data = ROGUE_MALLOC( byte_count + 1 );
+                 |    memcpy( string_data, data, byte_count );
+                 |    string_data[byte_count] = 0;
+                 |    cstring = string_data;
+                 |  }
                  |
                  |  data->as_utf8        = (char*) cstring;
                  |  data->count          = byte_count;
                  |  data->capacity       = byte_count + 1;
-                 |  data->is_borrowed    = (must_free <= 0);
+                 |  data->is_borrowed    = (usage == ROGUE_STRING_BORROW || is_permanent);
                  |  data->element_size   = 1;
                  |
                  |  result->count        = character_count;
-                 |  result->is_immutable = (must_free <= 0);
+                 |  result->is_immutable = 1;
                  |  result->hash_code    = -1;
                  |  result->is_ascii     = (character_count == byte_count);
                  |  return result;
                  |}
                  |
-                 |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int must_free )
+                 |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage )
                  |{
                  |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                  |
@@ -1421,17 +1442,18 @@ class String
                  |
                  |  if (utf8_byte_count == byte_count)
                  |  {
-                 |    return RogueString_create( cstring, byte_count, must_free );
+                 |    return RogueString_create( cstring, byte_count, usage );
                  |  }
                  |
-                 |  RogueString* result = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
+                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT);
+                 |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
                  |  RogueByteList* data;
                  |  #ifdef ROGUE_GC_AUTO
                  |    result->refcount = 1; // keep this object alive if init fn triggers a GC
-                 |    data = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |    --result->refcount;   // other code maybe retained this obj so don't just set back to 0.
                  |  #else
-                 |    data = (must_free==-1) ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |  #endif
                  |  result->data = data;
                  |
@@ -1442,7 +1464,7 @@ class String
                  |  data->element_size   = 1;
                  |
                  |  result->count        = byte_count;   // ASCII 256 bytes == characters
-                 |  result->is_immutable = (must_free <= 0);
+                 |  result->is_immutable = 1;
                  |  result->hash_code    = -1;
                  |
                  |  char* utf8 = data->as_utf8;
@@ -1465,7 +1487,8 @@ class String
                  |  }
                  |  utf8[ utf8_byte_count ] = 0;
                  |
-                 |  if (must_free > 0) ROGUE_FREE( (void*)cstring );
+                 |  // We've had to allocate a new buffer so free the original if it needs it.
+                 |  if (usage == ROGUE_STRING_ADOPT) ROGUE_FREE( (void*)cstring );
                  |
                  |  return result;
                  |}

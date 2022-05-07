@@ -19,13 +19,13 @@ class StackTrace
       println this->String
 
     method filename( index:Int32 )->String
-      return native("RogueString_create( Rogue_call_stack[$index].filename, -1, 0 )")->String
+      return native("RogueString_create( Rogue_call_stack[$index].filename, -1, ROGUE_STRING_BORROW )")->String
 
     method line( index:Int32 )->Int32
       return native("Rogue_call_stack[$index].line")->Int32
 
     method procedure( index:Int32 )->String
-      return native("RogueString_create( Rogue_call_stack[$index].procedure, -1, 0 )")->String
+      return native("RogueString_create( Rogue_call_stack[$index].procedure, -1, ROGUE_STRING_BORROW )")->String
 
     method to->String
       local result = String()

@@ -7,21 +7,22 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
   GLOBAL METHODS
     method input( prompt=null:String )->String
+      # Returns null on End-Of-Input
       if (prompt) Global.[ print(prompt), flush ]
 
       native @|char st[4096];
               |if (!fgets( st, 4096, stdin ))
               |{
               |  clearerr( stdin );
-                 throw IOError( "End of Input." )
+                 return null
       native @|}
               |
               |// discard \n
               |int len = strlen( st );
               |if (len) st[--len] = 0;
               |else st[0] = 0;
-              |
-              |return RogueString_create( st, len, 1 );
+
+      return native("RogueString_create( st, len, ROGUE_STRING_COPY )")->String
 
   PROPERTIES
     immediate_mode = false

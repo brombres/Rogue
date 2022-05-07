@@ -1805,7 +1805,7 @@ augment
           writer.print   entry.value
           writer.print   " = RogueString_create( "
           writer.print_literal_c_string( entry.key )
-          writer.println ", -1, -1 );"
+          writer.println ", -1, ROGUE_STRING_PERMANENT );"
         endForEach
         writer.println
       endIf
