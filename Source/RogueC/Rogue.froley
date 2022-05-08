@@ -1856,14 +1856,14 @@ parser
 - bitwise_and [binary]
   on '&' -> BitwiseAnd
 
+- add_subtract [binary]
+  on "+" -> Add
+  on "-" -> Subtract
+
 - bitwise_shift [binary]
   on ":<<:"  -> BitShiftLeft
   on ":>>:"  -> BitShiftRight
   on ":>>>:" -> BitShiftRightX
-
-- add_subtract [binary]
-  on "+" -> Add
-  on "-" -> Subtract
 
 - multiply_divide_mod [binary]
   on "*" -> Multiply

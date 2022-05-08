@@ -94,6 +94,26 @@ class List<<$DataType>> : ListType
         count = index
       endIf
 
+    method ensure_capacity( desired_capacity:Int32 )
+      reserve( desired_capacity - count )
+
+    method expand( additional_count:Int32 )
+      # Adds 'additional_count' items to this list, each with the default
+      # value of null/0/false.
+      reserve( additional_count )
+      count += additional_count
+
+    method expand_to_count( minimum_count:Int32 )
+      # Expands the list if necessary to have at least 'minimum_count' elements.
+      if (count < minimum_count)
+        ensure_capacity( minimum_count )
+        count = minimum_count
+      endIf
+
+    method expand_to_include( index:Int32 )
+      # Expands the list if necessary to include the specified index.
+      expand_to_count( index + 1 )
+
     method fill( value:$DataType, i1=0:Int32, count=null:Int32? )
       local n = which{ count || this.count }
 
@@ -174,6 +194,12 @@ class List<<$DataType>> : ListType
               |$this->as_bytes = new_data;
 
       capacity = required_capacity
+
+    method resize( new_count:Int32 )
+      if (count != new_count)
+        expand_to_count( new_count )
+        discard_from( new_count )
+      endIf
 
     method set( index:Int32, value:$DataType )
       if ($DataType isType Logical)

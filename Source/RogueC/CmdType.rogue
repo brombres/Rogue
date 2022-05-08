@@ -533,6 +533,17 @@ augment
     method LiteralInt64.type->Type
       return Program.type_Int64
 
+    method LiteralList.type->Type
+      contingent
+        necessary count
+        local common_type = this[0].type
+        necessary common_type
+        necessary common_type == (forEach in this).type
+        return Type( common_type.t, common_type )  # list of common_type
+      unsatisfied
+        return null
+      endContingent
+
     method LiteralLogical.type->Type
       return Program.type_Logical
 
