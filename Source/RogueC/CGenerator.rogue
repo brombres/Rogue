@@ -21,6 +21,32 @@ class CGenerator : Visitor
       ++autoname_index
       return result
 
+    method collect_tracked_local_types( list:Type[] )
+      # Check for object refs
+      forEach (p in this_procedure.parameters)
+        if (p.type.is_reference)
+          if (not p.is_anchored and not Program.type_Object.attributes.is_collected)
+            list.add( Program.type_Object )
+            Program.type_Object.attributes.is_collected = true
+          endIf
+        elseIf (p.type.is_compound and p.type.contains_reference and not p.type.attributes.is_collected)
+          list.add( p.type )
+          p.type.attributes.is_collected = true
+        endIf
+      endForEach
+
+      forEach (v in this_procedure.locals)
+        if (v.type.is_reference and not Program.type_Object.attributes.is_collected)
+          list.add( Program.type_Object )
+          Program.type_Object.attributes.is_collected = true
+        elseIf (v.type.is_compound and v.type.contains_reference and not v.type.attributes.is_collected)
+          list.add( v.type )
+          v.type.attributes.is_collected = true
+        endIf
+      endForEach
+
+      (forEach in list).attributes.is_collected = false  # reset
+
     method dispatch_exception( t:Token )
       forEach (control in control_stack step -1)
         if (control.catches_exception or control.requires_cleanup)
@@ -547,6 +573,16 @@ class CGenerator : Visitor
       endIf
 
       if (this_procedure.requires_cleanup and Program.gc_auto)
+        use tracked_local_types = WorkList<<Type>>
+          collect_tracked_local_types( tracked_local_types )
+          forEach (type at i in tracked_local_types)
+            writer.[ print("RogueInt32 _auto_local_pointer_fp_"), print(i), print(" = Type") ]
+            if (type.is_reference) writer.print "RogueObject"
+            else                   writer.print type.c_name
+            writer.println ".local_pointer_count;"
+          endForEach
+        endUse
+
         forEach (p in this_procedure.parameters)
           if (not p.is_anchored)
             if (p.type.is_reference)
@@ -1186,54 +1222,14 @@ class CGenerator : Visitor
 
       if (this_procedure.requires_cleanup)
         if (Program.gc_auto)
-          # Release Object refs
-          local pop_count = 0
-          forEach (p in this_procedure.parameters)
-            if (not p.is_anchored)
-              if (p.type.is_reference) ++pop_count
-            endIf
-          endForEach
-          forEach (v in this_procedure.locals)
-            if (v.type.is_reference) ++pop_count
-          endForEach
-          if (pop_count)
-            writer.print   "TypeRogueObject.local_pointer_count -= "
-            writer.print   pop_count
-            writer.println ';'
-          endIf
-
-          # Release compounds with refs
-          use unique_compound_types = WorkList<<Type>>
-            forEach (p in this_procedure.parameters)
-              if (not p.is_anchored)
-                if (p.type.is_compound and p.type.contains_reference)
-                  if (not unique_compound_types.contains(p.type)) unique_compound_types.add( p.type )
-                endIf
-              endIf
-            endForEach
-            forEach (v in this_procedure.locals)
-              if (v.type.is_compound and v.type.contains_reference)
-                if (not unique_compound_types.contains(v.type)) unique_compound_types.add( v.type )
-              endIf
-            endForEach
-
-            forEach (type in unique_compound_types)
-              pop_count = 0
-              forEach (p in this_procedure.parameters)
-                if (not p.is_anchored)
-                  if (p.type is type) ++pop_count
-                endIf
-              endForEach
-              forEach (p in this_procedure.locals)
-                if (p.type is type) ++pop_count
-              endForEach
-              if (pop_count)
-                writer.print   "Type"
-                writer.print   type.c_name
-                writer.print   ".local_pointer_count -= "
-                writer.print   pop_count
-                writer.println ';'
-              endIf
+          # Release local refs
+          use tracked_local_types = WorkList<<Type>>
+            collect_tracked_local_types( tracked_local_types )
+            forEach (type at i in tracked_local_types)
+              writer.print "Type"
+              if (type.is_reference) writer.print "RogueObject"
+              else                   writer.print type.c_name
+              writer.[ print(".local_pointer_count = _auto_local_pointer_fp_"), print(i), println(';') ]
             endForEach
           endUse
         endIf
@@ -1538,6 +1534,7 @@ augment
       forEach (m in modules)
         (forEach in m.types).collect_object_types( types )
       endForEach
+      (forEach in types).attributes.is_collected = false
 
       local h_writer = CWriter( File("Test.h"), &header )
 
