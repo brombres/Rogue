@@ -1,0 +1,196 @@
+module Rogue
+
+class PropertyOrganizer : Visitor
+  METHODS
+    method init( this_module )
+
+    method visit( this_type, class_def:Cmd )
+      # Called when instantiating a template
+      visit( class_def )
+
+    method on_visit( cmd:Class )
+      if (this_type.is_enum)
+        collect( cmd.t, Property(cmd.t, "value", null, Program.type_Int32) )
+        ensure this_type.categories
+
+      elseIf (cmd.constructor_properties)
+        if (this_type.is_object)
+          # Turn parameters into properties
+          forEach (v in cmd.constructor_properties)
+            if (v.type)
+              local p = Property( v.t, v.name, v.initial_value, v.type )
+              collect( v.t, p )
+              v.type = null  # turn into auto-store parameter
+            endIf
+          endForEach
+
+        elseIf (this_type.is_compound)
+          # Turn parameters into properties.
+          forEach (v in cmd.constructor_properties)
+            if (not v.type) throw v.t.error( "Missing ':Type'." )
+            local p = Property( v.t, v.name, v.initial_value, v.type )
+            collect( v.t, p )
+          endForEach
+
+        elseIf (this_type.is_aspect)
+          throw cmd.constructor_properties.t.error( "Aspects cannot have constructor properties." )
+
+        else
+          throw cmd.constructor_properties.t.error( "Primitives cannot have constructor properties." )
+
+        endIf
+      endIf
+
+      visit_children( cmd )
+
+      if (this_type.is_enum)
+        # Create DEFINITIONS for each category
+        local class_def = this_type.class_def->(as Class)
+        assert class_def
+        if (not class_def.constructor_properties) class_def.constructor_properties = Parameters(this_type.t)
+        local enum_properties = class_def.constructor_properties
+
+        local ordinal = 0 : Int32?
+        local prev_name   : String
+        forEach (category in this_type.categories)
+          local t = category.t
+
+          if (not category.args) category.args = Args(t)
+          local args = category.args
+          forEach (p at i in enum_properties)
+            if (args.count == i)
+              if (p.initial_value)
+                args.add( null )
+              else
+                throw t.error( "Category '$' does not specify value for property '$'."(category.name,p.name) )
+              endIf
+            endIf
+          endForEach
+
+          local value = category.value
+          if (value)
+            if (value instanceOf LiteralInt32)
+              ordinal = value->(as LiteralInt32).value + 1
+            else
+              ordinal = null
+            endIf
+          else
+            if (ordinal)
+              value = LiteralInt32(t,ordinal.value)
+              ordinal = ordinal.value + 1
+            else
+              value = Add( t, ContextAccess(t,TypeContext(t,this_type),prev_name), LiteralInt32(t,1) )
+            endIf
+          endIf
+
+          local name = category.name
+          if (this_type.definitions.contains(name))
+            throw t.error( "Duplicate category '$'."(name) )
+          endIf
+          this_type.definitions[ name ] = EnumValueDef(t,value)
+          prev_name = name
+        endForEach
+
+        # create global 'categories:EnumType[]'
+        block
+          local list = LiteralList( this_type.t )
+          forEach (category in this_type.categories)
+            list.add( Access(category.t,category.name) )
+          endForEach
+          collect_global( list.t, Property(list.t,"categories",list,Type(list.t,this_type)) )
+        endBlock
+      endIf
+
+    method on( cmd:GlobalPropertyDeclarations )->Cmd
+      local type = cmd.type
+      if (type)
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            p.type = type
+            collect_global( decl.t, p )
+          else
+            throw decl.t.error( "Global properties cannot be native." )
+          endIf
+        endForEach
+      else
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            collect_global( p.t, p )
+          else
+            local c_property = decl->(as NativeCProperty)
+            if (c_property)
+              throw c_property.t.error( "Global properties cannot be native." )
+            endIf
+          endIf
+        endForEach
+      endIf
+      return null
+
+    method on( cmd:PropertyDeclarations )->Cmd
+      local type = cmd.type
+      if (type)
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            p.type = type
+            collect( decl.t, p )
+          else
+            throw decl.t.error( "Native properties must be on individual lines." )
+          endIf
+        endForEach
+      else
+        forEach (decl in cmd.declarations)
+          local p = decl->(as Property)
+          if (p)
+            collect( p.t, p )
+          else
+            local c_property = decl->(as NativeCProperty)
+            if (c_property)
+              this_type.native_properties.add( c_property.expression )
+            endIf
+          endIf
+        endForEach
+      endIf
+      return null
+
+    method collect( t:Token, p:Property )
+      visit( p )
+      assert this_type
+      this_type.add_property( p )
+
+    method collect_global( t:Token, p:Property )
+      visit( p )
+
+      assert this_type
+      p.type_context = this_type
+      p.attributes.is_global = true
+
+      if (not p.type)
+        if (p.initial_value)
+          p.type = p.initial_value.type
+          if (not p.type)
+            throw p.t.error(
+            ''Cannot implicitly determine type of global property "$" from initial value. ''(p.name) +
+              ''Add an explicit ': Type' at the end of the line.''
+            )
+          endIf
+        else
+          throw p.t.error( ''Global property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
+        endIf
+      endIf
+
+      p.type.organize_properties
+
+      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
+        p.type.attributes.contains_reference = true
+      endIf
+
+      local existing_p = this_type.global_properties[p.name]
+      if (existing_p and existing_p.type_context is this_type)
+        throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
+      endIf
+      this_type.global_properties[ p.name ] = p
+
+endClass

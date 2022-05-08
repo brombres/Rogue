@@ -167,6 +167,12 @@ class Program [singleton]
         i = i1
         local limit = unorganized_types.count
         while (i < limit)
+          unorganized_types[i].organize_properties
+          ++i
+        endWhile
+
+        i = i1
+        while (i < limit)
           unorganized_types[i].organize_methods
           ++i
         endWhile

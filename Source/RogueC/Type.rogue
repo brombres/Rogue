@@ -34,6 +34,7 @@ class Type : Cmd
     base_type_ids           = Int32[]
 
     is_type_organized    : Logical
+    properties_organized : Logical
     methods_organizing   : Logical
     methods_organized    : Logical
     definitions_resolved : Logical
@@ -120,7 +121,7 @@ class Type : Cmd
         endIf
       endIf
 
-      p.type.organize_type
+      p.type.organize_properties
 
       if (this.is_compound and p.type.is_compound)
         if (p.type.contains_embedded_compound(this))
@@ -334,15 +335,16 @@ class Type : Cmd
 
     method organize
       organize_type
+      organize_properties
       organize_methods
 
     method organize_type
       if (is_type_organized) return
       is_type_organized = true
 
-      TypeOrganizer( module_context ).visit( this, class_def )
-
       ensure_definition
+
+      TypeOrganizer( module_context ).visit( this, class_def )
 
       if (is_enum)
         if (base_class or aspects)
@@ -388,6 +390,14 @@ class Type : Cmd
         attributes.is_anchored = true # any SetSingleton command will disprove this
       endIf
 
+    method organize_properties
+      if (properties_organized) return
+      properties_organized = true
+
+      organize_type
+
+      PropertyOrganizer( module_context ).visit( this, class_def )
+
       # Inherit properties
       if (base_class or aspects)
         use my_properties = WorkList<<Property>>
@@ -432,11 +442,10 @@ class Type : Cmd
         endIf
       endIf
 
-
     method organize_methods
       if (methods_organizing) return
       methods_organizing = true
-      organize_type
+      organize_properties
 
       MethodOrganizer( module_context ).visit( this, class_def )
 
