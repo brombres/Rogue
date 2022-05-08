@@ -1117,8 +1117,10 @@ class Resolver : Visitor
 
         if (not is_fallback)
           # Check in Global
-          local g_match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
-          if (g_match) return resolve_call( t, GetSingleton(t,Program.type_Global), g_match, args )
+          if (not context)
+            local g_match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
+            if (g_match) return resolve_call( t, GetSingleton(t,Program.type_Global), g_match, args )
+          endIf
         endIf
 
         if (not is_global)

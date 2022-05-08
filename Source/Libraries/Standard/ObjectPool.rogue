@@ -15,6 +15,6 @@ endClass
 class StringPool : ObjectPool<<String>>
   METHODS
     method on_end_use( builder:String )
-      available.add( builder.clear )
+      available.add( builder.[clear] )
 endClass
 

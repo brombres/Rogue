@@ -161,7 +161,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       }#
 
     method description->String
-      return String().print( this )
+      return String().[ print(this) ]
       #{
       if (this >= -1 and this <= 9)
         which (this)  # FIXME Int32 description()

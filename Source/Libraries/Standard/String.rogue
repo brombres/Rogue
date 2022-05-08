@@ -1,4 +1,4 @@
-class String
+class String : PrintWriter
   GLOBAL PROPERTIES
     pool = StringPool()
 
@@ -271,15 +271,14 @@ class String
       # No letters found
       return this
 
-    method clear->this
-      if (is_immutable) return this
+    method clear
+      if (is_immutable) return
       data.clear
       data[0] = 0
       count = 0
       indent = 0
       at_newline = true
       hash_code = -1
-      return this
 
     method cloned->String
       return String( this )
@@ -402,6 +401,9 @@ class String
     method first->Character
       return this[0]
 
+    method flush
+      noAction
+
     method from( i1:Int32 )->String
       return from( i1, count-1 )
 
@@ -492,15 +494,15 @@ class String
         loop (spaces) indent.print(' ')
 
         forEach (line in lines)
-          if (builder.count) builder.println
-          if (spaces> 0)      builder.print( indent ).print( line )
+          if (builder.count)  builder.println
+          if (spaces> 0)      builder.[ print(indent), print(line) ]
           elseIf (spaces < 0) builder.print( line.rightmost(spaces) )
         endForEach
       endUse
 
       return builder
 
-    method insert( ch:Character )->this
+    method insert( ch:Character )
       local i1 = data.count
       print( ch )   # put new UTF8 bytes on end
       local n = data.count - i1
@@ -508,7 +510,6 @@ class String
       data.copy( i1+n, n, data, 0 ) # copy bytes to beginning
       data.discard_from(i1+n)
       hash_code = -1
-      return this
 
     method last->Character
       return this[ count-1 ]
@@ -640,11 +641,11 @@ class String
 
       return index
 
-    method print( value:Byte )->this
-      return print( value->Int64 )
+    method print( value:Byte )
+      print( value->Int64 )
 
-    method print( value:Character )->this
-      if (is_immutable) return this
+    method print( value:Character )
+      if (is_immutable) return
       hash_code = -1  # invalidate
 
       if (value == '\n')
@@ -673,56 +674,53 @@ class String
           data.add( '?' )
         endIf
       endIf
-      return this
 
-    method print( value:Int32 )->this
-      return print( value->Int64 )
+    method print( value:Int32 )
+      print( value->Int64 )
 
-    method print( value:Int64 )->this
+    method print( value:Int64 )
       if (value == (1->Int64 :<<: 63))
-        return print( "-9223372036854775808" )
+        print( "-9223372036854775808" )
       elseIf (value < 0)
         print( '-' )
-        return print( -value )
+        print( -value )
       elseIf (value >= 10)
         print( value / 10 )
-        return print( ('0'+(value%10))->Character )
+        print( ('0'+(value%10))->Character )
       else
-        return print( ('0'+value)->Character )
+        print( ('0'+value)->Character )
       endIf
 
-    method print( value:Logical )->this
-      if (is_immutable) return this
+    method print( value:Logical )
+      if (is_immutable) return
       print( which{value:"true" || "false"} )
-      return this
 
-    method print( value:Object )->this
-      if (is_immutable) return this
+    method print( value:Object )
+      if (is_immutable) return
 
       if (value is null)
         print( "null" )
-        return this
+        return
       endIf
 
       print( value->String )
-      return this
 
-    method print( value:Real32 )->this
-      return this.print( value->Real64 ) # FIXME: have custom Real32 version using template methods
+    method print( value:Real32 )
+      this.print( value->Real64 ) # FIXME: have custom Real32 version using template methods
 
-    method print( value:Real64 )->this
-      if (is_immutable) return this
+    method print( value:Real64 )
+      if (is_immutable) return
 
       if (value == 0)
         print( "0.0" )
-        return this
+        return
       elseIf (value.is_infinite)
         if (value < 0) print( "-infinity" )
         else           print( "infinity" )
-        return this
+        return
       elseIf (value.is_NaN)
         print( "NaN" )
-        return this
+        return
       endIf
 
       if (value < 0)
@@ -738,7 +736,8 @@ class String
           ++pow10
         endWhile
 
-        return print( value ).print( 'e' ).print( pow10->Int32 )
+        this.[ print(value), print('e'), print(pow10->Int32) ]
+        return
       endIf
 
       if (value < 0.00001)
@@ -748,7 +747,7 @@ class String
           --pow10
         endWhile
 
-        return print( value ).print( 'e' ).print( pow10->Int32 )
+        this.[ print(value), print('e'), print(pow10->Int32) ]
       endIf
 
       use builder = String.pool
@@ -759,18 +758,16 @@ class String
         print builder
       endUse
 
-      return this
-
-    method print( value:Real64, decimal_places:Int32 )->this
-      if (is_immutable) return this
+    method print( value:Real64, decimal_places:Int32 )
+      if (is_immutable) return
 
       if (value.is_infinite)
         if (value < 0) print( "-infinity" )
         else           print( "infinity" )
-        return this
+        return
       elseIf (value.is_NaN)
         print( "NaN" )
-        return this
+        return
       endIf
 
       use builder = String.pool
@@ -805,17 +802,15 @@ class String
         print( builder )
       endUse
 
-      return this
-
-    method print( value:String )->this
-      if (is_immutable) return this
+    method print( value:String )
+      if (is_immutable) return
 
       if (value is null)
         print( "null" )
-        return this
+        return
       endIf
 
-      if (value.count == 0) return this  # no change
+      if (value.count == 0) return # no change
 
       reserve( value.data.count )  # will include space for null terminator
       native ...
@@ -826,7 +821,48 @@ class String
 
       hash_code = -1;
 
-      return this
+    method println
+      print '\n'
+
+    method println( value:Byte )
+      print value
+      print '\n'
+
+    method println( value:Character )
+      print value
+      print '\n'
+
+    method println( value:Int32 )
+      print value
+      print '\n'
+
+    method println( value:Logical )
+      print value
+      print '\n'
+
+    method println( value:Int64 )
+      print value
+      print '\n'
+
+    method println( value:Real64 )
+      print value
+      print '\n'
+
+    method println( value:Real64, decimal_places:Int32 )
+      print( value, decimal_places )
+      print '\n'
+
+    method println( value:Real32 )
+      print value
+      print '\n'
+
+    method println( value:Object )
+      print value
+      print '\n'
+
+    method println( value:String )
+      print value
+      print '\n'
 
     method remove_first->Character
       local result = this[ 0 ]

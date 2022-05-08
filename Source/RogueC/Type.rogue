@@ -405,6 +405,9 @@ class Type : Cmd
           properties.clear
 
           if (base_class)
+            base_class.organize_properties
+            if (base_class.contains_reference) attributes.contains_reference = true
+
             forEach (p in base_class.properties)
               properties[p.name] = p
             endForEach
@@ -416,12 +419,14 @@ class Type : Cmd
 
           if (aspects)
             forEach (incorporated_aspect in aspects)
+              incorporated_aspect.organize_properties
+
               forEach (p in incorporated_aspect.native_properties step -1)
                 native_properties.insert( p )
               endForEach
 
               forEach (p in incorporated_aspect.properties)
-                add_extended_property( p )
+                add_extended_property( p.cloned.[type_context=this] )
               endForEach
             endForEach
           endIf
