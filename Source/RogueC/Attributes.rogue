@@ -31,6 +31,7 @@ class Attribute
     AUGMENT            = (1:<<:26)
     PLACEHOLDER        = (1:<<:27)
     COLLECTED          = (1:<<:28)
+    HAS_NATIVE_CODE    = (1:<<:29)
 endClass
 
 class Attributes : CmdList
@@ -63,6 +64,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_augment,           Attribute.AUGMENT )
   ROGUE_ATTRIBUTE( is_placeholder,       Attribute.PLACEHOLDER )
   ROGUE_ATTRIBUTE( is_collected,         Attribute.COLLECTED )
+  ROGUE_ATTRIBUTE( has_native_code,      Attribute.HAS_NATIVE_CODE )
 
   PROPERTIES
     flags : Int32

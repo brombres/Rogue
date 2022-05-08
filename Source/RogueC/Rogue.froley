@@ -2216,6 +2216,7 @@ parser
   create LiteralInt64(value:Integer):LiteralInteger
   create LiteralReal32(value:Real):LiteralPrimitive
   create LiteralReal64(value:Real):LiteralPrimitive
+  create LocalDeclaration(info:Local)
   create Logicalized(operand):Unary
   create NativeProperty( expression:String )
   create OpAndAssign(target,operand)

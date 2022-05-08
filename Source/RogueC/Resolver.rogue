@@ -83,6 +83,7 @@ class Resolver : Visitor
       endIf
 
     method add_local( v:Local )->Local
+      insert( LocalDeclaration(v.t,v) )
       this_procedure.locals.add( v )
       assert control_stack.count
       control_stack.last.locals.add( v )
@@ -715,6 +716,14 @@ class Resolver : Visitor
     method on( cmd:NativeCode )->Cmd
       this_module.native_code.add( cmd.content )
       return null
+
+    method on_visit( cmd:NativeExpression )
+      this_procedure.attributes.has_native_code = true
+      visit_children( cmd )
+
+    method on_visit( cmd:NativeStatement )
+      this_procedure.attributes.has_native_code = true
+      visit_children( cmd )
 
     method on_visit( cmd:Necessary )
       visit_children( cmd )

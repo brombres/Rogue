@@ -16,6 +16,7 @@ class CSpecializer : Visitor
 
     method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
       local v = Local( t, autoname(base), initial_value, type )
+      insert( LocalDeclaration(t,v) )
       v.c_name = "$_$" (v.name,this_procedure.locals.count)
       this_procedure.locals.add( v )
       assert control_stack.count

@@ -559,18 +559,18 @@ class CGenerator : Visitor
         else                                        writer.println "0;"
       endIf
 
-      # Declare all local parameters.
-      if (this_procedure.locals.count)
-        forEach (v in this_procedure.locals)
-          writer.print( v.type.c_ref_name ).print( ' ' )
-          writer.print( v.c_name )
-          writer.print( " = " )
-          if (v.type.is_compound) writer.print "{}"
-          else                    writer.print "0"
-          writer.println( ';' )
-        endForEach
-        writer.println
-      endIf
+      # Declare all local variables.
+      #if (this_procedure.locals.count)
+      #  forEach (v in this_procedure.locals)
+      #    writer.print( v.type.c_ref_name ).print( ' ' )
+      #    writer.print( v.c_name )
+      #    writer.print( " = " )
+      #    if (v.type.is_compound) writer.print "{}"
+      #    else                    writer.print "0"
+      #    writer.println( ';' )
+      #  endForEach
+      #  writer.println
+      #endIf
 
       if (this_procedure.requires_cleanup and Program.gc_auto)
         use tracked_local_types = WorkList<<Type>>
@@ -581,6 +581,14 @@ class CGenerator : Visitor
             else                   writer.print type.c_name
             writer.println ".local_pointer_count;"
           endForEach
+
+          # If there's any native code, possibly with conditional compilation blocks,
+          # suppress any warnings for unused frame pointers.
+          if (this_procedure.attributes.has_native_code)
+            forEach (i of tracked_local_types)
+              writer.[ print("(void)_auto_local_pointer_fp_"), print(i), println(';') ]
+            endForEach
+          endIf
         endUse
 
         forEach (p in this_procedure.parameters)
@@ -599,19 +607,19 @@ class CGenerator : Visitor
           endIf
         endForEach
 
-        forEach (v in this_procedure.locals)
-          if (v.type.is_reference)
-            writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
-            writer.print   v.c_name
-            writer.println " );"
-          elseIf (v.type.contains_reference)
-            writer.print   "RogueType_local_pointer_stack_add( &Type"
-            writer.print   v.type.c_name
-            writer.print   ", &"
-            writer.print   v.c_name
-            writer.println " );"
-          endIf
-        endForEach
+        #forEach (v in this_procedure.locals)
+        #  if (v.type.is_reference)
+        #    writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+        #    writer.print   v.c_name
+        #    writer.println " );"
+        #  elseIf (v.type.contains_reference)
+        #    writer.print   "RogueType_local_pointer_stack_add( &Type"
+        #    writer.print   v.type.c_name
+        #    writer.print   ", &"
+        #    writer.print   v.c_name
+        #    writer.println " );"
+        #  endIf
+        #endForEach
         writer.println
       endIf
 
@@ -912,6 +920,28 @@ class CGenerator : Visitor
       if (not c_id) trace cmd.value
       assert c_id
       writer.print( c_id )
+
+    method on_visit( cmd:LocalDeclaration )
+      local v = cmd.info
+      writer.print( v.type.c_ref_name ).print( ' ' )
+      writer.print( v.c_name )
+      writer.print( " = " )
+      if (v.type.is_compound) writer.print "{}"
+      else                    writer.print "0"
+
+      if (v.type.is_reference)
+        writer.println ';'
+        writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+        writer.print   v.c_name
+        writer.print   " )"
+      elseIf (v.type.contains_reference)
+        writer.println ';'
+        writer.print   "RogueType_local_pointer_stack_add( &Type"
+        writer.print   v.type.c_name
+        writer.print   ", &"
+        writer.print   v.c_name
+        writer.print   " )"
+      endIf
 
     method on_visit( cmd:LogicalAnd )
       print_parenthesized( cmd.left )

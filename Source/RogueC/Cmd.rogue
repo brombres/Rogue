@@ -3834,3 +3834,19 @@ class EnumValue : Cmd
       return "EnumValue($,$)" (%of_type,%name)
 
 endClass
+
+class LocalDeclaration : Cmd
+  PROPERTIES
+    info : Local
+
+  METHODS
+    method init( t, info )
+
+    method init( existing:LocalDeclaration )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+
+    method description->String
+      return "LocalDeclaration($)" (%info)
+
+endClass
