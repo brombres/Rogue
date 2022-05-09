@@ -1515,7 +1515,19 @@ augment
             writer.print '0'
           endIf
 
-          writer.print ", 0" # fn_on_cleanup
+          # fn_on_cleanup
+          writer.print ", "
+          if (type.is_object)
+            local m = type.methods["on_cleanup()"]
+            if (m)
+              writer.print "(RogueFn_Object)"
+              writer.print m.c_name
+            else
+              writer.print '0'
+            endIf
+          else
+            writer.print '0'
+          endIf
 
           writer.println '' };''
         endForEach
@@ -1779,7 +1791,30 @@ augment
         c_writer.println
       endIf
 
-      c_writer.println @|// Free unreferenced objects while resetting the traced flag.
+      c_writer.println @|// Find unreferenced objects requiring cleanup, trace them, and move them to
+                        |// the end of the regular list.
+                        |
+                        |// We can't delete them yet because they could added themselves back to the object
+                        |// graph during cleanup. They'll be deleted from the regular list the next time
+                        |// they're unreferenced with no chance to clean up again.
+                        |int cleanup_count = 0;
+                        |int end_i = RogueMM_objects_requiring_cleanup.count;
+                        |refptr = RogueMM_objects_requiring_cleanup.data + end_i;
+                        |for (i=end_i; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(--refptr);
+                        |  if (ref->refcount >= 0)
+                        |  {
+                        |    ++cleanup_count;
+                        |    ref->type->fn_gc_trace( ref );
+                        |
+                        |    RogueObjectList_add( &RogueMM_objects, ref );
+                        |    *refptr = RogueMM_objects_requiring_cleanup.data[--end_i];
+                        |  }
+                        |}
+                        |RogueMM_objects_requiring_cleanup.count -= cleanup_count;
+                        |
+                        |// Free unreferenced objects and reset the traced flag on referenced objects.
                         |for (write_i=-1,i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
                         |{
                         |  ref = (RogueObject*) *(++refptr);
@@ -1796,6 +1831,25 @@ augment
                         |  }
                         |}
                         |RogueMM_objects.count = write_i + 1;
+                        |
+                        |end_i = RogueMM_objects_requiring_cleanup.count;
+                        |refptr = RogueMM_objects_requiring_cleanup.data + end_i;
+                        |for (i=end_i; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref->refcount = ~ref->refcount;
+                        |}
+                        |
+                        |// Call on_cleanup() on formerly-unreferenced objects at the end of the
+                        |// regular list.
+                        |end_i  = RogueMM_objects.count;
+                        |refptr = RogueMM_objects.data + end_i;
+                        |for (i=cleanup_count; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref->type->fn_on_cleanup( ref );
+                        |}
+                        |
                         |//printf("New object count:%d\n",RogueMM_objects.count);
                         |
 

@@ -224,6 +224,7 @@ class CWriter : BufferedPrintWriter
            |extern int RogueMM_bytes_allocated_since_gc;
            |extern int RogueMM_gc_request;  // 0:none, !0:requested
            |extern RogueObjectList RogueMM_objects;
+           |extern RogueObjectList RogueMM_objects_requiring_cleanup;
            |
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id );
            |RogueInt32   Rogue_mod_Int32( RogueInt32 a, RogueInt32 b );
@@ -253,7 +254,8 @@ class CWriter : BufferedPrintWriter
            |  memset( obj, 0, type->size );
            |  obj->type = type;
            |
-           |  RogueObjectList_add( &RogueMM_objects, obj );
+           |  if (type->fn_on_cleanup) RogueObjectList_add( &RogueMM_objects_requiring_cleanup, obj );
+           |  else                     RogueObjectList_add( &RogueMM_objects, obj );
            |  RogueMM_bytes_allocated_since_gc += type->size;
            |
            |  if (type->fn_init_object)
@@ -272,7 +274,7 @@ class CWriter : BufferedPrintWriter
            |
            |void Rogue_destroy_object( void* obj )
            |{
-           |  printf( "Destroy object %s\n", ((RogueObject*)obj)->type->name );
+           |  //printf( "Destroy object %s\n", ((RogueObject*)obj)->type->name );
            |  ROGUE_FREE( obj );
            |}
            |
@@ -394,9 +396,10 @@ class CWriter : BufferedPrintWriter
            |int              Rogue_call_stack_capacity = 0;
            |int              Rogue_call_stack_line     = 0;
            |
-           |int              RogueMM_bytes_allocated_since_gc = 0;
-           |int              RogueMM_gc_request               = 0;
-           |RogueObjectList  RogueMM_objects                  = {};
+           |int              RogueMM_bytes_allocated_since_gc  = 0;
+           |int              RogueMM_gc_request                = 0;
+           |RogueObjectList  RogueMM_objects                   = {};
+           |RogueObjectList  RogueMM_objects_requiring_cleanup = {};
            |
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
            |{
