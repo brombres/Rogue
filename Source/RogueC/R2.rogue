@@ -91,6 +91,7 @@ class RogueC
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
         option( "--libraries=", &alias="-L", &multi )
+        option( "--main" )
         option( "--real=", &alias="-r" )
         #option( "--setting=", &alias="-s" )
       ].parse( args )
@@ -118,6 +119,11 @@ class RogueC
         endIf
         Program.gc_threshold = value
       endIf
+
+      if (command//options//main)
+        Program.generate_main = true
+      endIf
+
 
       return command
 
@@ -149,6 +155,9 @@ class RogueC
                |    Specify paths RogueC should look through for '$include' and 'uses' directives.
                |    This option can be listed multiple times. Both ';' and ':' can be used as a
                |    path separator on quoted paths.
+               |
+               |  --main
+               |    Generates a main() function with the C output.
                |
                |  --real=32, -r 32
                |    Specifies that the 'Real' datatype should be Real32 instead of Real64.
