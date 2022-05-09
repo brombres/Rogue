@@ -86,12 +86,39 @@ class RogueC
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().
       [
-        #option( "--flag",      &alias="-f" )
+        option( "--debug" )
+        option( "--gc=" )
+        option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
         option( "--libraries=", &alias="-L", &multi )
         option( "--real=", &alias="-r" )
         #option( "--setting=", &alias="-s" )
       ].parse( args )
+
+      if (command//options.contains("debug"))
+        Program.stack_trace = true
+      endIf
+
+      if (command//options.contains("gc"))
+        which (command//options//gc->String)
+          case "auto":   Program.gc_auto = true
+          case "manual": Program.gc_auto = false
+          others
+            throw Program.t.error( "Valid --gc modes are 'auto' and 'manual'." )
+        endWhich
+      endIf
+
+      if (command//options.contains("gc-threshold"))
+        local option = command//options["gc-threshold"]->String
+        local value = option->Int32
+        if (option.ends_with("m",&ignore_case) or option.ends_with("mb",&ignore_case))
+          value *= 1024*1024
+        elseIf (option.ends_with("k",&ignore_case) or option.ends_with("kb",&ignore_case))
+          value *= 1024
+        endIf
+        Program.gc_threshold = value
+      endIf
+
       return command
 
     method print_usage
@@ -101,6 +128,22 @@ class RogueC
                |OPTIONS
                |  --help, -h, -?
                |    Show this help text.
+               |
+               |  --gc=[auto|manual]
+               |    Sets garbage collection mode:
+               |      --gc=auto   - Collects after every [--gc-threshold] number of bytes have
+               |                    been allocated (default 1 MB). This is slower than 'manual'
+               |                    due to the extra overhead of tracking local variables.
+               |      --gc=manual - Rogue_collect_garbage() should be called by the C framework
+               |                    at a regular interval (such as after every frame) outside of
+               |                    any calls into Rogue code. Or: never call GC for programs
+               |                    that complete a task and then halt; this will allow them to
+               |                    execute as fast as possible. Calling Rogue_collect_garbage()
+               |                    only results in a GC if the --gc-threshold has been reached.
+               |
+               |  --gc-threshold={number}[MB|K]
+               |    Sets the GC threshold in bytes (default), megabytes, or kilobytes. '1048576',
+               |    '1024K', and '1MB' are all equivalent. The default is 1MB.
                |
                |  --libraries="path1;path2", -L path1:path2
                |    Specify paths RogueC should look through for '$include' and 'uses' directives.
