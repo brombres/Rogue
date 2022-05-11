@@ -8,6 +8,11 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
     method patch( this_type, cmd:Cmd )
       visit( cmd )
 
+    method patch( this_type, m:GlobalMethod )
+      m.module_context = this_type.module_context
+      m.type_context   = this_type
+      visit( m )
+
     method patch( this_type, m:Method )
       m.module_context = this_type.module_context
       m.type_context   = this_type

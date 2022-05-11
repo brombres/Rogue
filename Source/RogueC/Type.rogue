@@ -244,6 +244,52 @@ class Type : Cmd
       endForEach
       return false
 
+    method incorporate_global( aspect_m:GlobalMethod, &is_augment )
+      aspect_m .= cloned
+      AspectMethodPatcher.patch( this, aspect_m )
+
+      local existing_m = global_methods[ aspect_m.signature ]
+      if (existing_m)
+        if (existing_m.return_type? xor aspect_m.return_type?)
+          if (existing_m.return_type?)
+            throw aspect_m.t.error( "Return type mismatch - existing global method $ does not return a value."...
+                (existing_m.context_signature) )
+          else
+            throw aspect_m.t.error( "Return type mismatch - existing global method $ returns a value."...
+                (existing_m.context_signature) )
+          endIf
+        endIf
+        if (existing_m.return_type and existing_m.return_type is not aspect_m.return_type)
+          throw aspect_m.t.error( "Return type mismatch - aspect method return type $ does not match existing return type $."...
+          (aspect_m.return_type,existing_m.return_type) )
+        endIf
+
+        forEach (aspect_p at i in aspect_m.parameters)
+          local existing_p = existing_m.parameters[i]
+          if (aspect_p.name != existing_p.name)
+            throw aspect_m.t.error(
+              "Parameter name mismatch - aspect parameter '$' must be named '$' as in the existing method."...
+              (aspect_p.name,existing_p.name)
+            )
+          endIf
+        endForEach
+
+      endIf
+
+      if (existing_m)
+        if (aspect_m.attributes.is_insert)
+          aspect_m.statements.add( forEach in existing_m.statements )
+          existing_m.body = aspect_m.body
+          existing_m.statements = aspect_m.statements
+        elseIf (aspect_m.attributes.is_append)
+          existing_m.statements.add( forEach in aspect_m.statements )
+        elseIf (existing_m.type_context is not this or is_augment)
+          global_methods[ aspect_m.signature ] = aspect_m
+        endIf
+      else
+        global_methods[ aspect_m.signature ] = aspect_m
+      endIf
+
     method incorporate( aspect_m:Method, &is_augment )
       aspect_m .= cloned
       AspectMethodPatcher.patch( this, aspect_m )
@@ -703,9 +749,54 @@ class Type : Cmd
         endForEach
       endIf
 
-      # Incorporate aspect methods
       local this_is_abstract = this.attributes.is_abstract
 
+      # Incorporate augment global methods
+      if (aspects)
+        # Incorporate non-insert, non-append methods first
+        forEach (incorporated_aspect in aspects)
+          if (incorporated_aspect.attributes.is_augment)
+            forEach (aspect_m in incorporated_aspect.global_methods)
+              if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
+                if (not missing_only or not global_methods.contains(aspect_m.signature))
+                  if (this_is_abstract or not aspect_m.attributes.is_abstract)
+                    incorporate_global( aspect_m, &is_augment )
+                  endIf
+                endIf
+              endIf
+            endForEach
+          endIf
+        endForEach
+
+        # Incorporate [insert] and [append] methods
+        forEach (incorporated_aspect in aspects)
+          if (incorporated_aspect.attributes.is_augment)
+            forEach (aspect_m in incorporated_aspect.global_methods)
+              if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+                if (not missing_only or not global_methods.contains(aspect_m.signature))
+                  if (this_is_abstract or not aspect_m.attributes.is_abstract)
+                    incorporate_global( aspect_m )
+                  endIf
+                endIf
+              endIf
+            endForEach
+          endIf
+        endForEach
+
+        # Create an error if no implementation of an abstract aspect method has been supplied.
+        if (not this_is_abstract)
+          forEach (incorporated_aspect in aspects)
+            forEach (aspect_m in incorporated_aspect.global_methods)
+              if (aspect_m.attributes.is_abstract and not global_methods.contains(aspect_m.signature))
+                throw aspect_m.t.error(
+                "Illegal abstract global method $ in class $." (aspect_m,this) )
+              endIf
+            endForEach
+          endForEach
+        endIf
+      endIf
+
+      # Incorporate aspect/augment object methods
       if (aspects)
         # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
