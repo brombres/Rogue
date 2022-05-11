@@ -57,17 +57,7 @@ class Visitor
       return cmd
 
     method visit( m:Module )
-      visit_routines( m )
       visit_types( m )
-
-    method visit_routines( m:Module )
-      temporarily this_module = m
-        forEach(r in m.routines)
-          temporarily this_procedure = r
-            visit( r )
-          endTemporarily
-        endForEach
-      endTemporarily
 
     method visit_types( m:Module )
       temporarily this_module = m
@@ -221,12 +211,6 @@ class Visitor
 
     method on_visit_children( cmd:Return )
       cmd.result = visit(cmd.result)
-
-    method on_visit_children( cmd:Routine )
-      cmd.parameters = visit(cmd.parameters)->(as Parameters)
-      cmd.return_type = visit(cmd.return_type)->(as Type)
-      cmd.attributes = visit(cmd.attributes)->(as Attributes)
-      cmd.body = visit(cmd.body)->(as LocalScope)
 
     method on_visit_children( cmd:CallProcedure )
       cmd.args = visit(cmd.args)

@@ -431,20 +431,6 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
-    method on_visit( cmd:CallRoutine )
-      writer.print( cmd.info.c_name )
-      if (cmd.args.count)
-        writer.print "( "
-        forEach (arg at i in cmd.args)
-          if (i) writer.print ", "
-          local p = cmd.info.parameters[i]
-          print_with_cast( arg, p.type )
-        endForEach
-        writer.print " )"
-      else
-        writer.print "()"
-      endIf
-
     method on_visit( cmd:ConvertToByte )
       writer.print "((RogueByte)"
       print_parenthesized( cmd.operand )
@@ -1097,16 +1083,6 @@ class CGenerator : Visitor
       dispatch_exception( cmd.t )
       writer.println ';'
 
-    method on_visit( cmd:Routine )
-      this_module.write_c_routine_header( cmd, writer )
-      writer.println
-
-      on_enter_procedure( cmd.body )
-      visit( cmd.statements )
-      on_leave_procedure( cmd.body )
-
-      writer.println
-
     method on_visit( cmd:SetGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " = " )
@@ -1361,31 +1337,6 @@ augment
     method ReturnOnException.needs_semicolon->Logical
       return false
 
-    method Module.write_c_routine_header( r:Routine, writer:CWriter )
-      if (r.return_type)
-        writer.print( r.return_type.c_name )
-        if (r.return_type.is_reference) writer.print '*'
-      else
-        writer.print "void"
-      endIf
-      writer.print ' '
-      writer.print( r.c_name )
-      writer.print( "(" )
-      if (r.parameters.count)
-        forEach (p at i in r.parameters)
-          block p = p->(as Local)
-            if (i) writer.print ", "
-            writer.print( p.type.c_name )
-            if (p.type.is_reference) writer.print '*'
-            writer.print ' '
-            writer.print( p.c_name )
-          endBlock
-        endForEach
-      else
-        writer.print( "void" )
-      endIf
-      writer.print( ")" )
-
     method Type.generate_c_native_headers( writer:CWriter )
       writer.println( forEach in this.native_header )
 
@@ -1439,12 +1390,6 @@ augment
         writer.println forEach in native_headers
         writer.println
       endIf
-
-      forEach (r in routines)
-        write_c_routine_header( r, writer )
-        writer.println ";"
-      endForEach
-      writer.println
 
     method Module.generate_c_code( writer:CWriter )
       if (native_code.count)
@@ -1548,8 +1493,6 @@ augment
         (forEach in types).generate_c_code( writer )
       endIf
 
-      CGenerator(writer).visit_routines( this )
-
     method Module.generate_c_class_initialization( writer:CWriter )
       forEach (type in types)
         if (type.is_aspect) nextIteration
@@ -1560,7 +1503,9 @@ augment
       endForEach
 
     method Module.generate_c_launch_commands( writer:CWriter )
-      local r = routines[ "on_launch()" ]
+      local type_Routine = find_type( "Routine" )
+      assert type_Routine
+      local r = type_Routine.global_methods[ "on_launch()" ]
       if (r and r.statements.count)
         writer.print( r.c_name ).println( "();" )
         writer.println "if (Rogue_exception) return 0;"

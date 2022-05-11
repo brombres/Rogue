@@ -1257,13 +1257,6 @@ class CallProcedure : Cmd
 
 endClass
 
-class CallRoutine : CallProcedure
-  METHODS
-    method description->String
-      return "CallRoutine($,$)" (%info,%args)
-
-endClass
-
 class BitwiseNot : Unary
   METHODS
     method description->String
@@ -1547,17 +1540,6 @@ class LiteralNull : Literal
 
     method description->String
       return "LiteralNull"
-endClass
-
-class Routine : Procedure
-  METHODS
-    method organize( organizer=null:MethodOrganizer )
-      if (is_organized) return
-
-      ensure organizer( module_context )
-      prior.organize( organizer )
-
-      module_context.add( this )
 endClass
 
 class GlobalMethod : Procedure

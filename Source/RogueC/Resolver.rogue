@@ -1405,9 +1405,6 @@ class Resolver : Visitor
           type_context.collect_methods( "init", Candidates.list )
         elseIf (type_context)
           type_context.collect_methods( name, Candidates.list, &=require_global )
-          this_module.collect_routines( name, Candidates.list )
-        else
-          this_module.collect_routines( name, Candidates.list )
         endIf
 
         if (Candidates.count)
@@ -2239,8 +2236,6 @@ augment
         return CallThisDynamicMethod( t, this, args )
       endIf
 
-    method Routine.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
-      return CallRoutine( t, this, args )
 endAugment
 
 # ForEach

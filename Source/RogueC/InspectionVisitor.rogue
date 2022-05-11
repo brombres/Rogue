@@ -12,17 +12,7 @@ class InspectionVisitor<<$ReturnType>>
 
   METHODS
     method visit( m:Module )
-      visit_routines( m )
       visit_types( m )
-
-    method visit_routines( m:Module )
-      temporarily this_module = m
-        forEach(r in m.routines)
-          temporarily this_procedure = r
-            visit( r )
-          endTemporarily
-        endForEach
-      endTemporarily
 
     method visit_types( m:Module )
       temporarily this_module = m

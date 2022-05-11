@@ -295,7 +295,7 @@ class Parser : ParserCore
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS) )
 
       local m = Program.current_module
-      if (m.templates["Routine<<0>>"])
+      #if (m.templates["Routine<<0>>"])
         # Make this an augment of class Routine
 
         # Create a special aspect that will be incorporated into the designated class
@@ -308,12 +308,14 @@ class Parser : ParserCore
         attributes |= Attribute.ASPECT | Attribute.AUGMENT
         m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, attributes )
 
+        #{
       else
         # Make this into class Routine
         local new_template = Template( def_t, "Routine", &placeholders=Token[], tokens, attributes )
         m.templates["Routine<<0>>"] = new_template
 
       endIf
+      }#
 
 
     method parse_module_id

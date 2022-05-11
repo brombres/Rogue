@@ -6,13 +6,12 @@ class Module
     name : String
 
     used_modules      = UsedModule[]
-    implicit_context = Type[]
+    implicit_context  = Type[]
     global_statements : Statements
     templates         = StringTable<<Template>>()
     augments          = StringTable<<String[]>>()
     next_augment_id   = 0
     types             = StringTable<<Type>>()
-    routines          = StringTable<<Routine>>()
 
     attributes        : Attributes
 
@@ -27,25 +26,12 @@ class Module
       Program.modules[ name ] = this
       ensure global_statements(t)
 
-    method add( r:Routine )
-      routines[ r.signature ] = r
-
-    method collect_routines( r_name:String, list:Procedure[], &is_limited )
-      if (attributes.is_visiting) return
-
-      organize_methods
-
-      forEach (r in routines)
-        if (r.name == r_name) list.add( r )
-      endForEach
-
-      temporarily attributes.is_visiting = true
-        forEach (used_m in used_modules)
-          if (not is_limited or used_m.is_exported)
-            used_m.m.collect_routines( r_name, list, &is_limited )
-          endIf
-        endForEach
-      endTemporarily
+      # Each module gets a Routine class to store routines as GLOBAL METHODS.
+      local tokens = Token[]
+      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
+      local new_template = Template( t, "Routine", &placeholders=Token[], tokens, 0 )
+      templates["Routine<<0>>"] = new_template
 
     method collect_used_modules
       # Ensure we have a flat list of all modules we should search for types in.
@@ -116,11 +102,13 @@ class Module
         endIf
       endForEach
 
-      local r = routines[ "on_launch()" ]
+      # Add global statements to Routine.on_launch()
+      local type_Routine = find_type( "Routine" )
+      local r = type_Routine.global_methods[ "on_launch()" ]
       if (not r)
-        r = Routine( t, this, "on_launch" )
+        r = GlobalMethod( t, type_Routine, "on_launch" )
         r.organize
-        routines[ r.signature ] = r
+        type_Routine.global_methods[ r.signature ] = r
       endIf
       r.statements.add( forEach in global_statements )
 

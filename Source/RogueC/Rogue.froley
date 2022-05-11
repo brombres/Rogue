@@ -2189,7 +2189,6 @@ parser
   create CallDynamicMethod(context,args):CallProcedure
   create CallGlobalMethod(args):CallProcedure
   create CallProcedure(args)
-  create CallRoutine(args):CallProcedure
   create CallStaticMethod(context,args):CallProcedure
   create CallThisDynamicMethod(args):CallProcedure
   create CallThisStaticMethod(args):CallProcedure
