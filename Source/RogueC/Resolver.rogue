@@ -1083,7 +1083,7 @@ class Resolver : Visitor
           type_context = context.require_type
 
         else
-          is_global = this_procedure.attributes.is_global
+          is_global = this_procedure.is_global
           local type = this_module.find_type( name, &extended_search )
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
 
@@ -2174,7 +2174,7 @@ augment
 
         if (resolver.this_procedure.is_method)
           throw t.error( "No such local, property, or global property '$', or setter set_$(), in current context."(name,name) )
-        elseIf (resolver.this_procedure.attributes.is_global)
+        elseIf (resolver.this_procedure.is_global)
           throw t.error( "No such local or global property '$' in current context."(name) )
         else
           throw t.error( "No such local '$' in current context."(name) )

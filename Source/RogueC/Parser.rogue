@@ -233,7 +233,7 @@ class Parser : ParserCore
       endIf
 
     method create_type_template->Template
-      local attributes = 0
+      local attributes : Int64
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL
       _attribute_essential = false
 
@@ -271,7 +271,7 @@ class Parser : ParserCore
       return result
 
     method on_parsed_routine
-      local attributes = 0
+      local attributes : Int64
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL
       _attribute_essential = false
 

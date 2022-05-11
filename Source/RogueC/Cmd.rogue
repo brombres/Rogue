@@ -1549,12 +1549,10 @@ class GlobalMethod : Procedure
   METHODS
     method init( t:Token, type_context, name:String )
       prior.init( t, type_context.module_context, name, null, null, null, null )
-      this.attributes.is_global = true
 
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
                  attributes=null:Attributes, body=null:LocalScope )
       prior.init( t, name, parameters, return_type, attributes, body )
-      this.attributes.is_global = true
 
     method init( existing:GlobalMethod )
       prior.init( existing )
@@ -1562,6 +1560,9 @@ class GlobalMethod : Procedure
 
     method context_signature->String
       return "$::$.$"(module_context,type_context,signature)
+
+    method is_global->Logical
+      return true
 
     method organize( organizer=null:MethodOrganizer )
       if (is_organized) return
@@ -3608,7 +3609,7 @@ class FunctionType : Type
       endUse
 
   METHODS
-    method init( t, name:String, attributes:Int32, param_types, return_type )
+    method init( t, name:String, attributes:Int64, param_types, return_type )
       prior.init( t, Program.default_module, name, attributes, null )
       this.attributes.is_defined = true
 

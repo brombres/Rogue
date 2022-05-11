@@ -162,6 +162,9 @@ class Procedure : Cmd
     method has_parameter_named( name:String )->Logical
       return locate_parameter( name )?
 
+    method is_global->Logical
+      return false
+
     method is_method->Logical
       return this instanceOf Method
 

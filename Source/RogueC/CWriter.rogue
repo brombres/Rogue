@@ -261,7 +261,7 @@ class CWriter : BufferedPrintWriter
            |  if (type->fn_init_object)
            |  {
            |    #ifdef ROGUE_GC_AUTO
-           |      obj->refcount = 1; // keep this object alive if init fn triggers a GC
+           |      obj->refcount = 1; // keeps this object alive if init() triggers a GC
            |      type->fn_init_object( obj );
            |      --obj->refcount;   // other code maybe retained this obj so don't just set back to 0.
            |    #else

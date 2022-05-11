@@ -75,10 +75,10 @@ class Type : Cmd
       return type
 
   METHODS
-    method init( t, name, attributes:Int32, type_args=null:TemplateArgs, &unlisted )
+    method init( t, name, attributes:Int64, type_args=null:TemplateArgs, &unlisted )
       init( t, Program.current_module, name, attributes, type_args, &=unlisted )
 
-    method init( t, module_context, name, attributes:Int32, type_args=null, &unlisted )
+    method init( t, module_context, name, attributes:Int64, type_args=null, &unlisted )
       if (not unlisted) module_context.types[ name ] = this
       this.attributes = Attributes( t, attributes )
 

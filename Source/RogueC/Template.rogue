@@ -9,7 +9,7 @@ class Template
     attributes   : Attributes
 
   METHODS
-    method init( t, name, placeholders, tokens, attributes:Int32 )
+    method init( t, name, placeholders, tokens, attributes:Int64 )
       this.attributes = Attributes( t )
       this.attributes.flags = attributes
 
