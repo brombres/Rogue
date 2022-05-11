@@ -564,20 +564,27 @@ parser
     produce DefineModule(name:String,attributes:Attributes)
   endOn
 
-  on "routine"
+  if (nextIs("routine"))
+    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    ++disable_output # Pass 2: also disable output; just parse to get past
+
+    consume "routine"
     procedure_name
     procedure_parameters
     procedure_return_type
     procedure_attributes
     if (consume(':'))
       single_line_statements
+      store_routine
     else
       multi_line_statements
+      store_routine
       mustConsume "endRoutine"
     endIf
-    create LocalScope(statements):ControlStructure
-    produce Routine(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
-  endOn
+
+    return
+
+  endIf
 
   on "uses" string uses_attributes -> UsesModule(path,attributes:Attributes)
 
@@ -586,6 +593,12 @@ parser
   endIf
 
   procedure_body
+
+- store_routine
+  call on_parsed_routine  # Pass 1: stores routine as class template tokens. Pass 2: does nothing.
+
+  --disable_output
+  discardPosition
 
 - procedure_attributes
   beginList

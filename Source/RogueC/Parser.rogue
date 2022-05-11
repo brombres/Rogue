@@ -270,6 +270,52 @@ class Parser : ParserCore
       m.templates[extended_name] = result
       return result
 
+    method on_parsed_routine
+      local attributes = 0
+      if (_attribute_essential) attributes |= Attribute.ESSENTIAL
+      _attribute_essential = false
+
+      if (not collecting_templates) return
+
+      local i1 = _saved_positions.last.position
+      local i2 = _position - 1
+      local tokens = _tokens.from( i1, i2 ).to_list
+
+      assert tokens.count
+      local def_t = tokens.first
+
+      # 'routine' -> 'method'
+      def_t .= cloned( TokenType.KEYWORD_METHOD )
+      tokens[0] = def_t
+
+      tokens.insert( def_t.cloned(TokenType.EOL) )
+      tokens.insert( def_t.cloned(TokenType.KEYWORD_GLOBAL_METHODS) )
+      tokens.insert( def_t.cloned(TokenType.EOL) )
+      tokens.add( tokens.last.cloned(TokenType.EOL,null) )
+      tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS) )
+
+      local m = Program.current_module
+      if (m.templates["Routine<<0>>"])
+        # Make this an augment of class Routine
+
+        # Create a special aspect that will be incorporated into the designated class
+        local aspect_name = "$-Routine-augment-$"(m.name,m.next_augment_id)
+        ++m.next_augment_id
+
+        if (not m.augments.contains("Routine")) m.augments["Routine"] = String[]
+        m.augments["Routine"].add( aspect_name )
+
+        attributes |= Attribute.ASPECT | Attribute.AUGMENT
+        m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, attributes )
+
+      else
+        # Make this into class Routine
+        local new_template = Template( def_t, "Routine", &placeholders=Token[], tokens, attributes )
+        m.templates["Routine<<0>>"] = new_template
+
+      endIf
+
+
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module
       # so that we can store class templates in the appropriate module.
