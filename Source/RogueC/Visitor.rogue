@@ -77,7 +77,7 @@ class Visitor
       endTemporarily
 
     method visit_type( type:Type )
-      temporarily this_type = type
+      temporarily this_module=type.module_context, this_type=type
         on_visit_type( type )
       endTemporarily
 
@@ -88,7 +88,7 @@ class Visitor
     method visit_global_methods( type:Type )
       temporarily this_type = type
         forEach (m in type.global_methods)
-          temporarily this_procedure = m
+          temporarily this_module=m.module_context, this_procedure=m
             visit( m )
           endTemporarily
         endForEach
@@ -97,9 +97,11 @@ class Visitor
     method visit_methods( type:Type )
       temporarily this_type = type
         forEach (m in type.methods)
-          temporarily this_procedure = m
-            visit( m )
-          endTemporarily
+          if (m.type_context is type)
+            temporarily this_module=m.module_context, this_procedure=m
+              visit( m )
+            endTemporarily
+          endIf
         endForEach
       endTemporarily
 
