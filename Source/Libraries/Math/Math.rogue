@@ -7,6 +7,9 @@ class Math
     E = 2.718281828459045
 
   GLOBAL METHODS
+    method test
+      random_test
+
     method acos( n:Real64 )->Real64
       return native('acos($n)')->Real64
 

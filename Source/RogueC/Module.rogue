@@ -6,6 +6,7 @@ class Module
     name : String
 
     used_modules      = UsedModule[]
+    implicit_contexts = Type[]
     global_statements : Statements
     templates         = StringTable<<Template>>()
     augments          = StringTable<<String[]>>()
@@ -48,6 +49,8 @@ class Module
 
     method collect_used_modules
       # Ensure we have a flat list of all modules we should search for types in.
+      uses_module( Program.default_module )
+
       temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
           if (used_m.is_exported) used_m.m.collect_used_modules( this )
@@ -109,6 +112,9 @@ class Module
       endIf
       r.statements.add( forEach in global_statements )
 
+    method to->String
+      return name
+
     method uses_module( m:Module, &is_exported )
       if (m is this) return
       # happens when this is the default module because all modules implicitly "use" default module
@@ -122,5 +128,8 @@ class Module
 endClass
 
 class UsedModule( m:Module, is_exported:Logical ) [compound]
+  METHODS
+    method to->String
+      return m.name
 endClass
 
