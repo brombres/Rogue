@@ -6,7 +6,7 @@ class Module
     name : String
 
     used_modules      = UsedModule[]
-    implicit_contexts = Type[]
+    implicit_context = Type[]
     global_statements : Statements
     templates         = StringTable<<Template>>()
     augments          = StringTable<<String[]>>()
@@ -56,6 +56,18 @@ class Module
           if (used_m.is_exported) used_m.m.collect_used_modules( this )
         endForEach
       endTemporarily
+
+      # Every module has type Rogue::Global as an implicit context.
+      implicit_context.add( Program.type_Global )
+
+      # Add each class ModuleName::Routine to list of implicit contexts if it exists.
+      # Each routine is converted in to a global method of its module's Routine class.
+      local type_Routine = find_type( "Routine" )
+      if (type_Routine) implicit_context.add( type_Routine )
+      forEach (used_m in used_modules)
+        type_Routine = used_m.m.find_type( "Routine" )
+        if (type_Routine) implicit_context.add( type_Routine )
+      endForEach
 
     method collect_used_modules( target:Module )
       if (attributes.is_visiting) return

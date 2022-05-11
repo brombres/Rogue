@@ -1115,12 +1115,13 @@ class Resolver : Visitor
           endIf
         endIf
 
-        if (not is_fallback)
-          # Check in Global
-          if (not context)
-            local g_match = find_procedure( t, Program.type_Global, null, name, args, &suppress_error )
-            if (g_match) return resolve_call( t, GetSingleton(t,Program.type_Global), g_match, args )
-          endIf
+        if (not is_fallback and not context)
+          # Check for a matching method in implicit context types (Global, Routine, ...)
+          assert this_module
+          forEach (implicit_type in this_module.implicit_context)
+            local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
+            if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
+          endForEach
         endIf
 
         if (not is_global)
@@ -1142,13 +1143,18 @@ class Resolver : Visitor
         if (type_context)
           local result = resolve_global_access( t, type_context, name, args, &=suppress_error )
           if (result) return result
+
         else
           if (this_type)
             local result = resolve_global_access( t, this_type, name, args, &=suppress_error )
             if (result) return result
           endIf
-          local result = resolve_global_access( t, Program.type_Global, name, args, &=suppress_error )
-          if (result) return result
+
+          assert this_module
+          forEach (implicit_type in this_module.implicit_context)
+            local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
+            if (result) return result
+          endForEach
 
           if (not args)
             # Global property
