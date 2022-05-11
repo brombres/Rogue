@@ -1371,15 +1371,19 @@ augment
       writer.print ' '
       writer.print( r.c_name )
       writer.print( "(" )
-      forEach (p at i in r.parameters)
-        block p = p->(as Local)
-          if (i) writer.print ", "
-          writer.print( p.type.c_name )
-          if (p.type.is_reference) writer.print '*'
-          writer.print ' '
-          writer.print( p.c_name )
-        endBlock
-      endForEach
+      if (r.parameters.count)
+        forEach (p at i in r.parameters)
+          block p = p->(as Local)
+            if (i) writer.print ", "
+            writer.print( p.type.c_name )
+            if (p.type.is_reference) writer.print '*'
+            writer.print ' '
+            writer.print( p.c_name )
+          endBlock
+        endForEach
+      else
+        writer.print( "void" )
+      endIf
       writer.print( ")" )
 
     method Type.generate_c_native_headers( writer:CWriter )
@@ -1578,7 +1582,7 @@ augment
       endForEach
       (forEach in types).attributes.is_collected = false
 
-      local h_writer = CWriter( File("Test.h"), &header )
+      local h_writer = CWriter( File(Program.output_filepath+".h"), &header )
 
       h_writer.println ...
         @|//------------------------------------------------------------------------------
@@ -1612,7 +1616,7 @@ augment
 
       #-------------------------------------------------------------------------
 
-      local c_writer = CWriter( File("Test.c") )
+      local c_writer = CWriter( File(Program.output_filepath+".c") )
 
       c_writer.println "RogueInt32 Rogue_base_types[$] =" (Program.base_type_lookup.count)
       c_writer.println "{"
@@ -2028,15 +2032,19 @@ augment
       writer.print ' '
       writer.print( m.c_name )
       writer.print( "(" )
-      forEach (p at i in m.parameters)
-        block p = p->(as Local)
-          if (i) writer.print ", "
-          writer.print( p.type.c_name )
-          if (p.type.is_reference) writer.print '*'
-          writer.print ' '
-          writer.print( p.c_name )
-        endBlock
-      endForEach
+      if (m.parameters.count)
+        forEach (p at i in m.parameters)
+          block p = p->(as Local)
+            if (i) writer.print ", "
+            writer.print( p.type.c_name )
+            if (p.type.is_reference) writer.print '*'
+            writer.print ' '
+            writer.print( p.c_name )
+          endBlock
+        endForEach
+      else
+        writer.print "void"
+      endIf
       writer.print( ")" )
 
     method Type.write_c_method_header( m:Method, writer:CWriter )

@@ -13,7 +13,7 @@ class CWriter : BufferedPrintWriter
         println @|#ifndef TEST_H
                  |#define TEST_H
                  |
-        println "// Test.h"
+        println "// $.h"(File.filename(Program.output_filepath))
         println
 
         if (Program.gc_auto)
@@ -196,8 +196,8 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |int   Rogue_launch();
-           |void  Rogue_collect_garbage();
+           |int   Rogue_launch(void);
+           |void  Rogue_collect_garbage(void);
            |void* Rogue_release( void* obj );
            |void* Rogue_retain( void* obj );
            |
@@ -206,10 +206,10 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_new_object( void* type );
            |void* Rogue_singleton( void* type, void* singleton_ref );
            |
-           |void  Rogue_print_exception();
+           |void  Rogue_print_exception(void);
            |
            |void  Rogue_call_stack_push( const char* procedure, const char* filename );
-           |void  Rogue_call_stack_pop();
+           |void  Rogue_call_stack_pop(void);
            |void  RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer );
            |void  RogueObjectList_add( RogueObjectList* list, void* obj );
            |
@@ -235,9 +235,9 @@ class CWriter : BufferedPrintWriter
 
       else
         # Writing .c file
-        println  "// Test.c"
+        println  "// $.c"(File.filename(Program.output_filepath))
         println
-        println ''#include "Test.h"''
+        println ''#include "$.h"''(File.filename(Program.output_filepath))
         println  "#include <stdio.h>"
         println
         println ...
@@ -316,7 +316,7 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
-           |void Rogue_print_exception()
+           |void Rogue_print_exception(void)
            |{
            |  RogueException__display__RogueException( (RogueException*)Rogue_exception );
            |}
@@ -343,7 +343,7 @@ class CWriter : BufferedPrintWriter
            |  Rogue_call_stack[ Rogue_call_stack_count++ ] = (RogueCallFrame){ procedure, filename };
            |}
            |
-           |void Rogue_call_stack_pop()
+           |void Rogue_call_stack_pop(void)
            |{
            |  if (--Rogue_call_stack_count)
            |  {

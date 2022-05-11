@@ -92,6 +92,7 @@ class RogueC
         option( "--help",       &aliases=["-h","-?"] )
         option( "--libraries=", &alias="-L", &multi )
         option( "--main" )
+        option( "--output=" )
         option( "--real=", &alias="-r" )
         #option( "--setting=", &alias="-s" )
       ].parse( args )
@@ -124,6 +125,20 @@ class RogueC
         Program.generate_main = true
       endIf
 
+      if (command//args.count > 0)
+        if (command//options//output)
+            local filepath = command//options//output->String
+            if (File.is_folder(filepath))
+              filepath /= command//args.first->String.before_suffix( ".rogue" )
+            else
+              local parent = File.folder( filepath )
+              if (String.exists(parent)) File.create_folder( parent )
+            endIf
+            Program.output_filepath = filepath
+        else
+          Program.output_filepath = command//args.first->String.before_suffix( ".rogue" )
+        endIf
+      endIf
 
       return command
 
@@ -158,6 +173,10 @@ class RogueC
                |
                |  --main
                |    Generates a main() function with the C output.
+               |
+               |  --output=<filepath>
+               |   Specify the destination folder and/or the base filename for generated C
+               |   output.
                |
                |  --real=32, -r 32
                |    Specifies that the 'Real' datatype should be Real32 instead of Real64.

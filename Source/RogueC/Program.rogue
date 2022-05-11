@@ -10,6 +10,7 @@ class Program [singleton]
     gc_auto           = true
     gc_threshold      = 1024*1024 : Int32
     generate_main     = false
+    output_filepath   : String
     stack_trace       = false
     real_bits         : Int32 # Set with --real=32 compile option
 
