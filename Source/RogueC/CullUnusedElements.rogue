@@ -1,0 +1,190 @@
+module Rogue
+
+class CullUnusedElements : InspectionVisitor
+  PROPERTIES
+    is_modified = true
+
+  METHODS
+    method apply
+      # Mark used types and methods
+      forEach (m in Program.modules)
+        if (m.attributes.is_essential)
+          (forEach in m.types).attributes.is_essential = true
+        endIf
+        if (m.attributes.is_api)
+          (forEach in m.types).attributes.is_api = true
+        endIf
+
+        # [essential] routines require [essential] Routine classes
+        local type_Routine = m.find_type("Routine")
+        if (type_Routine)
+          forEach (r in type_Routine.global_methods)
+            if (r.attributes.is_essential or r.attributes.is_api)
+              type_Routine.attributes.is_essential = true
+              escapeForEach
+            endIf
+          endForEach
+        endIf
+
+        forEach (type in m.types)
+          if (type.attributes.is_api)
+            (forEach in type.global_methods).attributes.is_essential = true
+            (forEach in type.methods).attributes.is_essential = true
+          endIf
+          if (type.m_init_class and type.m_init_class.statements.count)
+            type.m_init_class.attributes.is_essential = true
+          endIf
+        endForEach
+      endForEach
+
+      Program.type_Logical.attributes.is_essential   = true
+      Program.type_Byte.attributes.is_essential      = true
+      Program.type_Character.attributes.is_essential = true
+      Program.type_Int32.attributes.is_essential     = true
+      Program.type_Int64.attributes.is_essential     = true
+      Program.type_Real32.attributes.is_essential    = true
+      Program.type_Real64.attributes.is_essential    = true
+      Program.type_Real.attributes.is_essential      = true
+      Program.type_String.attributes.is_essential    = true
+
+      while (is_modified)
+        is_modified = false
+        Program.apply( this )
+
+        forEach (type in (forEach in Program.modules).types)
+          type.attributes.is_visiting = false
+          (forEach in type.global_methods).attributes.is_visiting = false
+          (forEach in type.methods).attributes.is_visiting = false
+        endForEach
+      endWhile
+
+      # Cull unused types and methods
+      forEach (mod in Program.modules)
+        use unused_type_names = WorkList<<String>>
+          forEach (type in mod.types)
+            if (not type.attributes.is_used)
+              unused_type_names.add( type.name )
+            endIf
+          endForEach
+          mod.types.remove( forEach in unused_type_names )
+        endUse
+
+        forEach (type in mod.types)
+          use unused_global_method_sigs = WorkList<<String>>
+            forEach (m in type.global_methods)
+              if (not m.attributes.is_used)
+                unused_global_method_sigs.add( m.signature )
+              endIf
+            endForEach
+            type.global_methods.remove( forEach in unused_global_method_sigs )
+          endUse
+
+          use unused_method_sigs = WorkList<<String>>
+            forEach (m in type.methods)
+              if (not m.attributes.is_used)
+                unused_method_sigs.add( m.signature )
+              endIf
+            endForEach
+            type.methods.remove( forEach in unused_method_sigs )
+          endUse
+        endForEach
+      endForEach
+
+    method on_visit( m:Module ) [override]
+      assert( m.m_on_launch )
+      if (m.m_on_launch.statements.count)
+        visit( m.m_on_launch )
+      endIf
+
+      forEach (type in m.types)
+        if (type.attributes.is_essential) visit_type( type )
+      endForEach
+
+    method on_visit_type( type:Type ) [override]
+      if (type.attributes.is_visiting or type.attributes.is_aspect) return
+      type.attributes.is_visiting = true
+
+      if (not type.attributes.is_used)
+        type.attributes.is_used = true
+        is_modified = true
+      endIf
+
+      if (type.base_class) visit_type( type.base_class )
+      if (type.aspects)
+        visit_type( forEach in type.aspects )
+      endIf
+
+      local m_init_object = type.methods["init_object()"]
+      if (m_init_object and m_init_object.statements.count)
+        temporarily this_procedure = m_init_object
+          visit( m_init_object )
+        endTemporarily
+      endIf
+
+      visit_type( (forEach in type.global_properties).type )
+      visit_type( (forEach in type.properties).type )
+
+      temporarily this_type = type
+        forEach (m in type.global_methods)
+          if ((m.attributes.is_essential or m.attributes.is_api))
+            temporarily this_module=m.module_context, this_procedure=m
+              visit( m )
+            endTemporarily
+          endIf
+        endForEach
+      endTemporarily
+
+      temporarily this_type = type
+        forEach (m in type.methods)
+          if (m.type_context is type)
+            if ((m.attributes.is_essential or m.attributes.is_api))
+              temporarily this_module=m.module_context, this_procedure=m
+                visit( m )
+              endTemporarily
+            endIf
+          endIf
+        endForEach
+      endTemporarily
+
+    method on_visit( cmd:CallProcedure )
+      visit( cmd.info )
+
+    method on_visit( cmd:CallDynamicMethod )
+      forEach (m in Program.dynamic_methods[cmd.info.dynamic_signature])
+        if (not m.type_context.is_aspect and not m.attributes.is_abstract and m.type_context.attributes.is_used)
+          visit( m )
+        endIf
+      endForEach
+
+    method on_visit( cmd:CallThisDynamicMethod )
+      forEach (m in Program.dynamic_methods[cmd.info.dynamic_signature])
+        if (not m.type_context.is_aspect and not m.attributes.is_abstract and m.type_context.attributes.is_used)
+          visit( m )
+        endIf
+      endForEach
+
+    method on_visit( cmd:CreateObject )
+      visit( cmd.m_init )
+
+    method on_visit( cmd:CreateObjectAndSetLocal )
+      visit( cmd.of_type )
+
+    method on( m:Procedure )->Logical
+      if (m.attributes.is_visiting or m.attributes.is_abstract) return false
+      m.attributes.is_visiting = true
+
+      if (not m.attributes.is_used)
+        m.attributes.is_used = true
+        is_modified = true
+      endIf
+
+      visit_type( m.type_context )
+      visit( (forEach in m.locals).type )
+
+      visit_children( m )
+      return false
+
+    method on_visit( cmd:Type )
+      visit_type( cmd )
+
+endClass

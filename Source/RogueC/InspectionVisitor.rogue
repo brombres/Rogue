@@ -12,6 +12,11 @@ class InspectionVisitor<<$ReturnType>>
 
   METHODS
     method visit( m:Module )
+      temporarily this_module = m
+        on_visit( m )
+      endTemporarily
+
+    method on_visit( m:Module )
       visit_types( m )
 
     method visit_types( m:Module )

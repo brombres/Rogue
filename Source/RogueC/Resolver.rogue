@@ -2231,9 +2231,17 @@ augment
 
     method Method.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
       if (context)
-        return CallDynamicMethod( t, context, this, args )
+        if (type_context.is_reference)
+          return CallDynamicMethod( t, context, this, args )
+        else
+          return CallStaticMethod( t, context, this, args )
+        endIf
       else
-        return CallThisDynamicMethod( t, this, args )
+        if (type_context.is_reference)
+          return CallThisDynamicMethod( t, this, args )
+        else
+          return CallThisStaticMethod( t, this, args )
+        endIf
       endIf
 
 endAugment

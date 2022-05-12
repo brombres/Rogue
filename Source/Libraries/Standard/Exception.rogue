@@ -1,4 +1,4 @@
-class Exception
+class Exception [essential]
   PROPERTIES
     message     : String
     stack_trace = StackTrace()
@@ -16,8 +16,8 @@ class Exception
       return result
 
   GLOBAL METHODS
-    method display( err:Exception )
-      if (err) err.display
+    method display( err:Exception ) [essential]
+      #if (err) err.display
 
 endClass
 

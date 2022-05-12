@@ -32,6 +32,8 @@ class Attribute
     PLACEHOLDER        = (Int64(1):<<:27)
     COLLECTED          = (Int64(1):<<:28)
     HAS_NATIVE_CODE    = (Int64(1):<<:29)
+    USED               = (Int64(1):<<:30)
+    API                = (Int64(1):<<:31)
 endClass
 
 class Attributes : CmdList
@@ -65,6 +67,8 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_placeholder,       Attribute.PLACEHOLDER )
   ROGUE_ATTRIBUTE( is_collected,         Attribute.COLLECTED )
   ROGUE_ATTRIBUTE( has_native_code,      Attribute.HAS_NATIVE_CODE )
+  ROGUE_ATTRIBUTE( is_used,              Attribute.USED )
+  ROGUE_ATTRIBUTE( is_api,               Attribute.API )
 
   PROPERTIES
     flags : Int64

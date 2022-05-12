@@ -11,7 +11,9 @@ class Module
     templates         = StringTable<<Template>>()
     augments          = StringTable<<String[]>>()
     next_augment_id   = 0
+
     types             = StringTable<<Type>>()
+    m_on_launch       : GlobalMethod
 
     attributes        : Attributes
 
@@ -111,6 +113,7 @@ class Module
         type_Routine.global_methods[ r.signature ] = r
       endIf
       r.statements.add( forEach in global_statements )
+      m_on_launch = r
 
     method to->String
       return name

@@ -375,6 +375,25 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
+    method on_visit( cmd:CallStaticMethod )
+      writer.print( cmd.info.c_name )
+
+      if (cmd.args.count == 0)
+        writer.print '('
+        print_with_cast( cmd.context, cmd.info.type_context )
+        writer.print ')'
+      else
+        writer.print "( "
+        print_with_cast( cmd.context, cmd.info.type_context )
+
+        forEach (arg at i in cmd.args)
+          writer.print ", "
+          local p = cmd.info.parameters[i]
+          print_with_cast( arg, p.type )
+        endForEach
+        writer.print " )"
+      endIf
+
     method on_visit( cmd:CallThisDynamicMethod )
       local info = cmd.info
       if (this_type.is_aspect or info.attributes.is_abstract)

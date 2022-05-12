@@ -28,6 +28,7 @@ class Type : Cmd
     method_template_instances = StringTable<<Procedure>>()
 
     id                : Int32
+    m_init_class      : GlobalMethod
     m_on_cleanup      : Method
 
     base_type_lookup_index  : Int32
@@ -514,6 +515,7 @@ class Type : Cmd
           m.organize
           global_methods[ m.signature ] = m
         endIf
+        m_init_class = m
 
         use my_properties = WorkList<<Property>>
           my_properties.add( forEach in global_properties )

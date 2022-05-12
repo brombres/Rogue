@@ -12,27 +12,18 @@ class Finalizer : Visitor
         endForEach
       endForEach
 
-      Program.apply( AssignIDs() )
-      Program.apply( this )
-
+      BuildDynamicMethodTable().apply
+      CullUnusedElements().apply
+      Program.dynamic_methods.clear
+      BuildDynamicMethodTable().apply  # Rebuild using new, slimmer program
       forEach (method_group in Program.dynamic_methods)
-        # Remove aspect methods and abstract methods, keeping at least one
-        # of them if there are no concrete methods.
-        local first = method_group.first
-        forEach (m in writer=method_group.rewriter)
-          if (not (m.type_context.is_aspect or m.attributes.is_abstract))
-            writer.write( m )
-          endIf
-        endForEach
-        if (method_group.is_empty)
-          first.attributes.is_placeholder = true
-          method_group.add( first )
-        endIf
-
         if (method_group.count > 1)
           (forEach in method_group).attributes.dynamic_dispatch = true
         endIf
       endForEach
+
+      Program.apply( AssignIDs() )
+      Program.apply( this )
 
     method on( cmd:GetProperty )->Cmd
       if (cmd.info.type_context.is_enum)
@@ -67,14 +58,6 @@ class Finalizer : Visitor
             local base_m = this_type.base_class.methods[ m.signature ]
             if (base_m) base_m.attributes.is_overridden = true
           endIf
-
-          local dynamic_sig = m.dynamic_signature
-          local methods = Program.dynamic_methods[dynamic_sig]
-          if (not methods)
-            methods = Method[]
-            Program.dynamic_methods[dynamic_sig] = methods
-          endIf
-          methods.add( m )
         else
           assert (not m.inheriting_types.contains(this_type))
           m.inheriting_types.add( this_type )
