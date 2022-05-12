@@ -12,7 +12,7 @@ class ObjectPool<<$DataType>>
       if ($DataType instanceOf ListType) object.clear
 endClass
 
-class StringPool : ObjectPool<<String>>
+class StringPool : ObjectPool<<String>> [singleton]
   METHODS
     method on_end_use( builder:String )
       available.add( builder.[clear] )

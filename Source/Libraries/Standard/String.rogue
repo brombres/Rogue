@@ -1,7 +1,4 @@
 class String : PrintWriter
-  GLOBAL PROPERTIES
-    pool = StringPool()
-
   PROPERTIES
     count           : Int32  # in whole characters
     cursor_offset   : Int32  # in bytes
@@ -78,7 +75,7 @@ class String : PrintWriter
       else      return String().[ print("null"), print(right) ]
 
     method operator+( left:String, right:Int64 )->String
-      use builder = String.pool
+      use builder = StringPool
         builder.print( right )
         if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
@@ -91,21 +88,21 @@ class String : PrintWriter
     method operator+( left:String, right:Object )->String
       if (right is null) return operator+( left, "null" )
 
-      use builder = String.pool
+      use builder = StringPool
         builder.print( right->String )
         if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
 
     method operator+( left:String, right:Real32 )->String
-      use builder = String.pool
+      use builder = StringPool
         builder.print( right )
         if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
 
     method operator+( left:String, right:Real64 )->String
-      use builder = String.pool
+      use builder = StringPool
         builder.print( right )
         if (left) return String().[ reserve(left.count+builder.count), print(left), print(builder) ]
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
@@ -490,7 +487,7 @@ class String : PrintWriter
     method indented( spaces:Int32 )->String
       local lines = split( '\n' )
       local builder = String( count + lines.count*2 )
-      use indent = String.pool
+      use indent = StringPool
         loop (spaces) indent.print(' ')
 
         forEach (line in lines)
@@ -750,7 +747,7 @@ class String : PrintWriter
         this.[ print(value), print('e'), print(pow10->Int32) ]
       endIf
 
-      use builder = String.pool
+      use builder = StringPool
         forEach (n in 1..18)
           if (_check_to_string(value,n,builder)) escapeForEach
         endForEach
@@ -770,7 +767,7 @@ class String : PrintWriter
         return
       endIf
 
-      use builder = String.pool
+      use builder = StringPool
         if (value < 0 )
           builder.print( '-' )
           value = -value
@@ -893,7 +890,7 @@ class String : PrintWriter
       # Reverses the characters in this mutable String.
       if (is_immutable) return
 
-      use builder=String.pool
+      use builder = StringPool
         builder.reserve( count )
         builder.print( forEach in this step -1 )
         clear
@@ -1052,7 +1049,7 @@ class String : PrintWriter
     method to->Int32( base=10:Int32 )
       if (count == 0) return 0
       if (this.contains(','))
-        use builder = String.pool
+        use builder = StringPool
           forEach (ch in this)
             if (ch != ',') builder.print ch
           endForEach
@@ -1064,7 +1061,7 @@ class String : PrintWriter
     method to->Int64( base=10:Int32 )
       if (count == 0) return 0
       if (this.contains(','))
-        use builder = String.pool
+        use builder = StringPool
           forEach (ch in this)
             if (ch != ',') builder.print ch
           endForEach
@@ -1079,7 +1076,7 @@ class String : PrintWriter
     method to->Real32
       if (count == 0) return 0
       if (this.contains(','))
-        use filtered = String.pool
+        use filtered = StringPool
           forEach (ch in this)
             if (ch != ',') filtered.print ch
           endForEach
@@ -1091,7 +1088,7 @@ class String : PrintWriter
     method to->Real64
       if (count == 0) return 0
       if (this.contains(','))
-        use filtered = String.pool
+        use filtered = StringPool
           forEach (ch in this)
             if (ch != ',') filtered.print ch
           endForEach
@@ -1117,7 +1114,7 @@ class String : PrintWriter
 
 #{
     method to_escaped_ascii( additional_characters_to_escape="":String )->String
-      use builder = String.pool
+      use builder = StringPool
         (forEach in this).print_escaped_ascii( builder, additional_characters_to_escape )
         if (builder == this) return this  # no escapes
         else                 return builder.cloned

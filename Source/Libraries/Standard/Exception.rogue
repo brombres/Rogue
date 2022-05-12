@@ -7,8 +7,8 @@ class Exception [essential]
     method init( message )
 
     method display
-      stack_trace.display
-      println message
+      #stack_trace.display
+      #println message
 
     method to->String
       local result = String()
@@ -17,7 +17,7 @@ class Exception [essential]
 
   GLOBAL METHODS
     method display( err:Exception ) [essential]
-      #if (err) err.display
+      if (err) err.display
 
 endClass
 
