@@ -1,14 +1,17 @@
 class Exception [essential]
   PROPERTIES
     message     : String
-    stack_trace = StackTrace()
+    stack_trace : StackTrace
 
   METHODS
+    method init_object
+      if (DEBUG) stack_trace = StackTrace()
+
     method init( message )
 
     method display
-      #stack_trace.display
-      #println message
+      if (DEBUG) stack_trace.display
+      println message
 
     method to->String
       local result = String()

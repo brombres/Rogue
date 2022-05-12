@@ -99,9 +99,15 @@ class RogueC
         #option( "--setting=", &alias="-s" )
       ].parse( args )
 
+      local debug_t : Token
       if (command//options.contains("debug"))
+        Program.debug_mode  = true
         Program.stack_trace = true
+        debug_t = Program.t.cloned( TokenType.KEYWORD_TRUE )
+      else
+        debug_t = Program.t.cloned( TokenType.KEYWORD_FALSE )
       endIf
+      Program.definitions["DEBUG"] = Token[].[add(debug_t)]
 
       if (command//options.contains("gc"))
         which (command//options//gc->String)
