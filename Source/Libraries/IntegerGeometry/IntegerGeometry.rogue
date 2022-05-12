@@ -1,0 +1,3 @@
+module IntegerGeometry
+
+$include "IntegerGeometry/XY.rogue"

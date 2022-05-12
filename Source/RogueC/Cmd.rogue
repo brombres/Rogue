@@ -1349,24 +1349,6 @@ class ConvertToReal64 : Convert
 
 endClass
 
-class UsesModule : Cmd
-  PROPERTIES
-    path       : Cmd
-    attributes : Attributes
-
-  METHODS
-    method init( t, path, attributes )
-
-    method init( existing:UsesModule )
-      prior.init( existing )
-      if (existing.path) path = existing.path.cloned
-      if (existing.attributes) attributes = existing.attributes.cloned
-
-    method description->String
-      return "UsesModule($,$)" (%path,%attributes)
-
-endClass
-
 class AttributeExport : Cmd
   METHODS
     method description->String

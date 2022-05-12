@@ -220,10 +220,6 @@ class Visitor
     method on_visit_children( cmd:CallProcedure )
       cmd.args = visit(cmd.args)
 
-    method on_visit_children( cmd:UsesModule )
-      cmd.path = visit(cmd.path)
-      cmd.attributes = visit(cmd.attributes)->(as Attributes)
-
     method on_visit_children( cmd:DefineModule )
       cmd.attributes = visit(cmd.attributes)->(as Attributes)
 

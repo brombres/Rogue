@@ -1552,11 +1552,11 @@ augment
         @|//------------------------------------------------------------------------------
          |// Generated
          |//------------------------------------------------------------------------------
+      (forEach in modules).generate_c_header( h_writer )
       h_writer.println "typedef struct RogueType RogueType;"
       (forEach in types).generate_c_class_typedefs( h_writer )
       (forEach in types).generate_c_native_headers( h_writer )
       (forEach in types).generate_c_class_structs( h_writer )
-      (forEach in modules).generate_c_header( h_writer )
       (forEach in types).generate_c_header( h_writer )
 
       local wrote_any = false

@@ -647,13 +647,6 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.resource)
       return result
 
-    method on_visit_children( cmd:UsesModule )->$ReturnType
-      local result : $ReturnType
-      result = visit(cmd.path)
-      if (result?) return result
-      result = visit(cmd.attributes)
-      return result
-
     method on_visit_children( cmd:While )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.condition)

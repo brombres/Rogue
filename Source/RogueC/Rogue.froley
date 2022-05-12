@@ -586,7 +586,18 @@ parser
 
   endIf
 
-  on "uses" string uses_attributes -> UsesModule(path,attributes:Attributes)
+  on "uses"
+    saved_setting = 0
+    saved_setting = disable_output
+    disable_output = 0
+
+    string
+    uses_attributes
+
+    disable_output = saved_setting
+    call on_uses_module
+    return
+  endOn
 
   if (nextHasAttribute(structural))
     syntaxError
@@ -2152,6 +2163,7 @@ parser
     return
 
   elseOn "uses"
+    # Call: $include XYZ
     call rewrite_cur_token
     collect_meta_filepath
     savePosition

@@ -222,6 +222,15 @@ class Parser : ParserCore
 
       m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
 
+    method on_uses_module
+      assert _cmd_stack.count >= 2
+      local attributes = _cmd_stack.remove_last->(as Attributes)
+      local path = _cmd_stack.remove_last
+      if (collecting_templates)
+        local m = Program.get_module( path.t, File.filename(path) )
+        Program.current_module.uses_module( m, &is_exported=attributes.is_exported )
+      endIf
+
     method on_parsed_class
       create_type_template
 

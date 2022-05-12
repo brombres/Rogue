@@ -50,6 +50,7 @@ class Type : Cmd
           type_args = null
         endIf
       endIf
+
       local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
       type = Type( t, name, 0, type_args )

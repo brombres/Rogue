@@ -28,6 +28,10 @@ class Module
       Program.modules[ name ] = this
       ensure global_statements(t)
 
+      if (name != "Rogue")
+        uses_module( Program.default_module )
+      endIf
+
       # Each module gets a Routine class to store routines as GLOBAL METHODS.
       local tokens = Token[]
       tokens.add( t.cloned(TokenType.EOL) )
@@ -37,8 +41,6 @@ class Module
 
     method collect_used_modules
       # Ensure we have a flat list of all modules we should search for types in.
-      uses_module( Program.default_module )
-
       temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
           if (used_m.is_exported) used_m.m.collect_used_modules( this )

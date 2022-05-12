@@ -28,9 +28,5 @@ class Collector : Visitor
       Program.current_module.global_statements.add( forEach in cmd )
       return null
 
-    method on( cmd:UsesModule )->Cmd
-      local m = Program.get_module( cmd.t, File.filename(cmd.path) )
-      Program.current_module.uses_module( m, &is_exported=cmd.attributes.is_exported )
-      return null
 endClass
 

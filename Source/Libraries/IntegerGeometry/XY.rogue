@@ -1,0 +1,8 @@
+module IntegerGeometry
+
+class XY( x:Int32, y:Int32 ) [compound]
+  METHODS
+    method to->String
+      return "($,$)"(x,y)
+endClass
+

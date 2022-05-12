@@ -28,11 +28,14 @@ class Template
 
       Program.unorganized_types.add( type )
       local is_first_unorganized_type = (Program.unorganized_types.count == 1)
-      if (type.attributes.is_enum)
-        type.class_def = Parser( template_tokens ).parse( Parser.ip_enum )->(as Class)
-      else
-        type.class_def = Parser( template_tokens ).parse( Parser.ip_class )->(as Class)
-      endIf
+      local parser = Parser( template_tokens )
+      temporarily Program.current_module = type.module_context
+        if (type.attributes.is_enum)
+          type.class_def = parser.parse( Parser.ip_enum )->(as Class)
+        else
+          type.class_def = parser.parse( Parser.ip_class )->(as Class)
+        endIf
+      endTemporarily
 
       incorporate_augments( type, name, replacements )        # e.g. List
       if (type.name != name)
@@ -59,7 +62,9 @@ class Template
           augment_type.attributes.is_defined = true
           Program.unorganized_types.add( augment_type )
 
-          augment_type.class_def = Parser( augment_tokens ).parse( Parser.ip_class )
+          temporarily Program.current_module = type.module_context
+            augment_type.class_def = Parser( augment_tokens ).parse( Parser.ip_class )
+          endTemporarily
         endForEach
       endIf
 
