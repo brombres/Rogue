@@ -2347,17 +2347,11 @@ augment
 
         if (cmd_control.name)
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
-          resolver.insert(
+          cmd_iterator.statements.insert(
             SetLocal( v_cur,
               resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
                   Args(cmd_collection.t,GetLocal(v_index)) ),
               &initial_assignment
-            )
-          )
-          cmd_iterator.upkeep.add(
-            SetLocal( v_cur,
-              resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
-                  Args(cmd_collection.t,GetLocal(v_index)) )
             )
           )
         endIf

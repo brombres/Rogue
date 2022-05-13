@@ -1271,7 +1271,6 @@ class CGenerator : Visitor
           endIf
 
           local marker = code.from(i1.value+3,i2.value-1)
-trace marker
           code = code.leftmost(i1.value) + native_replacement(t,marker,&type) + code.from(i2.value+2)
           i1 = code.locate("$<<",i1)
         endWhile
