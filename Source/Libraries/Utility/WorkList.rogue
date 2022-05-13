@@ -1,4 +1,4 @@
-class WorkList<<$DataType>> [singleton]
+class WorkList<<$DataType>> : WorkList<<$DataType,Default>> [singleton]
   # WorkList<<T>> provides an efficient alternative to allocating local lists
   # of type T in frequent and/or recursive calls.
   #
@@ -18,6 +18,27 @@ class WorkList<<$DataType>> [singleton]
   #       dirs.shuffle
   #       forEach (dir in dirs) ...
   #     endUse
+endClass
+
+class WorkList<<$DataType,$Category>> [singleton]
+  # Multiple worklists can be used concurrently as long as they specify a different
+  # $Category as a template parameter. Example:
+  #
+  #   uses WorkList
+  #
+  #   use numbers = WorkList<<Int32>>
+  #     numbers.add( forEach in 1..10 )
+  #
+  #     use evens = WorkList<<Int32,Filtered>>
+  #       forEach (n in numbers)
+  #         if (n % 2 == 0) evens.add( n )
+  #       endForEach
+  #       @trace evens
+  #     endUse
+  #
+  #   endUse
+  #
+  # A WorkList without an explicit category uses category 'Default'.
 
   PROPERTIES
     frame    = $DataType[]  # current "frame"
