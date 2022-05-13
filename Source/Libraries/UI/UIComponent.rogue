@@ -477,6 +477,9 @@ class UIComponent : Node<<UIComponent>>
     method request_layout
       is_modified = true  # class Node setter auto-propagates this up the hierarchy
 
+    method set_content_offset( content_offset:XY )
+      if (first_child) first_child.display_offset = content_offset.floor
+
     method set_default_height( h:Int32 )
       if (not is_fixed_height) height = h
 
@@ -517,8 +520,8 @@ class UIComponent : Node<<UIComponent>>
         endWhile
       endIf
 
-    method set_content_offset( content_offset:XY )
-      if (first_child) first_child.display_offset = content_offset.floor
+    #method set_position( pos:XY )
+    #  @position = pos - (size * anchor.position).floor
 
     method set_weight( w:Real64 )
       UIAttributes.set_weight( this, XY(w) )

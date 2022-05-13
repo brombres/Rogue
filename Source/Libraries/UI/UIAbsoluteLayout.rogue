@@ -11,6 +11,7 @@ class UIAbsoluteLayout : UILayout
 
     method add( component:UIComponent, position:XY )
       prior.add( component )
+      component.position = position
 
     method clamp_content
       # Content will be prevented from going offscreen
