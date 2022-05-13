@@ -549,7 +549,7 @@ class Type : Cmd
             if (p.initial_value)
               local initial_value = p.initial_value.cloned
               AspectMethodPatcher.patch( this, initial_value )  # fix 'this' type
-              m.statements.insert( SetThisProperty(p.t,p,initial_value) )
+              m.statements.insert( Assign(p.t,Access(p.t,p.name),initial_value) )
             endIf
           endForEach
           if (base_class)
