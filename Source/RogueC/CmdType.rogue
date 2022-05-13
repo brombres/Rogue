@@ -218,6 +218,9 @@ augment
 
     method This.is_anchored->Logical
       return true
+
+    method WideningCast.is_anchored->Logical
+      return operand.is_anchored
 endAugment
 
 # is_literal
