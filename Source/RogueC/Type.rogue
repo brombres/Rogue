@@ -62,7 +62,9 @@ class Type : Cmd
       local name = element_type.name + "[]"
       local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
-      type = Type( t, name, 0, null )
+
+      # Default module contains the List template
+      type = Type( t, Program.default_module, name, 0, null )
       type.ensure_definition
       return type
 
