@@ -174,7 +174,7 @@ class Procedure : Cmd
       endForEach
       return null
 
-    method organize( organizer=null:MethodOrganizer )
+    method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
       if (is_organized) return
       is_organized = true
 

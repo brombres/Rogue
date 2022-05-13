@@ -1546,13 +1546,13 @@ class GlobalMethod : Procedure
     method is_global->Logical
       return true
 
-    method organize( organizer=null:MethodOrganizer )
+    method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
       if (is_organized) return
 
       ensure organizer( module_context )
       prior.organize( organizer )
 
-      @type_context.add( this )
+      if (not skip_add_to_type) @type_context.add( this )
 
     method type_context->Type
       return @type_context
@@ -1584,7 +1584,7 @@ class Method : Procedure
     method context_signature->String
       return "$::$.$"(module_context,@type_context,signature)
 
-    method organize( organizer=null:MethodOrganizer )
+    method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
       if (is_organized) return
 
       ensure organizer( module_context )
@@ -1592,7 +1592,7 @@ class Method : Procedure
         prior.organize( organizer )
       endTemporarily
 
-      @type_context.add( this )
+      if (not skip_add_to_type) @type_context.add( this )
 
     method type_context->Type
       return @type_context
@@ -3813,5 +3813,32 @@ class LocalDeclaration : Cmd
 
     method description->String
       return "LocalDeclaration($)" (%info)
+
+endClass
+
+class Methods : CmdList
+  METHODS
+    method description->String
+      return "Methods" + list_description
+
+    method get( index:Int32 )->Method
+      return list[index]->(as Method)
+endClass
+
+class StateDef : Cmd
+  PROPERTIES
+    name    : String
+    methods : Methods
+
+  METHODS
+    method init( t, name, methods )
+
+    method init( existing:StateDef )
+      prior.init( existing )
+      name = existing.name
+      if (existing.methods) methods = existing.methods.cloned
+
+    method description->String
+      return "StateDef($,$)" (%name,%methods)
 
 endClass

@@ -88,4 +88,12 @@ class TypeOrganizer : Visitor
       this_type.native_header.add( cmd )
       return null
 
+    method on( cmd:StateDef )->Cmd
+      if (this_type.definitions.contains(cmd.name))
+        throw cmd.t.error( "Multiple definitions of '$' in type $."(cmd.name,this_type) )
+      endIf
+      this_type.definitions[cmd.name] = LiteralInt32( cmd.t, this_type.states.count )
+      this_type.states.add( cmd )
+      return null
+
 endClass

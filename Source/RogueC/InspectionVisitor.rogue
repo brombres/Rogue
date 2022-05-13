@@ -820,4 +820,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.info)
       return result
 
+    method on_visit_children( cmd:StateDef )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.methods)
+      return result
+
 endClass

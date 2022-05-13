@@ -21,6 +21,7 @@ class Type : Cmd
     type_args         : TemplateArgs
     _template         : Template
     class_def         : Cmd
+    states            = StateDef[]
 
     categories        : Category[]
 
@@ -488,6 +489,11 @@ class Type : Cmd
         endUse
       endIf
 
+      if (states.count and not properties.contains("state"))
+        local t = states.first.t
+        properties//state = Property( t, "state", LiteralInt32(t,0), Program.type_Int32 ).[ type_context=this ]
+      endIf
+
       if (this.instance_of(Program.type_ListType))
         local p_element_type = properties["element_type"]
         assert p_element_type
@@ -561,6 +567,145 @@ class Type : Cmd
       endIf
 
       inherit_methods
+
+      # Add state methods
+      if (states.count)
+        use state_methods = WorkList<<StateMethod>>
+          forEach (state in states)
+            state_methods.add( StateMethod(state,forEach in state.methods) )
+          endForEach
+
+          forEach (sm in state_methods)
+            sm.m.module_context = module_context
+            sm.m.type_context = this
+            sm.m.organize( &skip_add_to_type )
+          endForEach
+
+          local has_enter = false
+          local has_leave = false
+          forEach (sm in state_methods)
+            if (sm.m.signature == "ENTER()")
+              has_enter = true
+              escapeForEach
+            endIf
+          endForEach
+          forEach (sm in state_methods)
+            if (sm.m.signature == "LEAVE()")
+              has_leave = true
+              escapeForEach
+            endIf
+          endForEach
+
+          if (has_enter)
+            block m = methods["ENTER()"]
+              if (not m)
+                m = Method( t, this, "ENTER" )
+                m.organize
+                methods[ m.signature ] = m
+              endIf
+            endBlock
+          endIf
+
+          if (has_leave)
+            block m = methods["LEAVE()"]
+              if (not m)
+                m = Method( t, this, "LEAVE" )
+                m.organize
+                methods[ m.signature ] = m
+              endIf
+            endBlock
+          endIf
+
+          block m = methods["set_state(Rogue::Int32)"]
+            if (not m)
+              m = Method( t, this, "set_state" )
+              m.parameters.add( Local(t,"new_state",null,Program.type_Int32) )
+              if (has_leave) m.statements.add( Access(t,"LEAVE") )
+              m.statements.add( Assign(t,DirectAccess(t,"state"),Access(t,"new_state")) )
+              if (has_enter) m.statements.add( Access(t,"ENTER") )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
+          while (not state_methods.is_empty)
+            use variations = WorkList<<StateMethod,Variations>>
+              local state_m = state_methods.remove_last
+              variations.add( state_m )
+              local existing_m = methods[state_m.m.signature]
+              forEach (sm at i in state_methods step -1)
+                if (sm.m.signature == state_m.m.signature)
+                  state_methods.remove_at( i )
+                  variations.add( sm )
+                endIf
+              endForEach
+
+              variations.reverse
+
+              # Make sure all variations have the same parameters
+              forEach (sm in variations from 1)
+                contingent
+                  necessary (sm.m.parameters.count == state_m.m.parameters.count)
+                  forEach (param at i in sm.m.parameters)
+                    local param2 = state_m.m.parameters[i]
+                    necessary (param.name == param2.name)
+                    necessary (param.type is param2.type)
+                  endForEach
+                  necessary (sm.m.return_type is state_m.m.return_type)
+                unsatisfied
+                  throw sm.m.t.error( "Each state's implementation of $() must have consistent parameters and return type."(sm.m.name) )
+                endContingent
+              endForEach
+
+              # All states must define each method or else a base definition must exist outside of STATES.
+              if (not existing_m and variations.count < states.count)
+                local m = state_m.m
+                throw m.t.error( "Definition of $() missing for some states. Either all states must define $() or a general definition of $() must exist outside of the STATES section." (m.name,m.name,m.name) )
+              endIf
+
+              local cmd_case_others : Cmd
+              if (existing_m)
+                if (existing_m.type_context is this)
+                  cmd_case_others = existing_m.statements
+                else
+                  # Call the prior implementation as the default
+                  cmd_case_others = Statements(existing_m.t)
+                  local args = Args(existing_m.t)
+                  forEach (param in existing_m.parameters)
+                    args.add( Access(param.t,param.name) )
+                  endForEach
+                  cmd_case_others = Statements(existing_m.t)
+                  local cmd_call = CallThisStaticMethod( existing_m.t, existing_m, args ) : Cmd
+                  if (existing_m.return_type) cmd_call = Return( cmd_call.t, cmd_call )
+                  cmd_case_others.add( cmd_call )
+                  existing_m = null
+                endIf
+              else
+                cmd_case_others = variations.remove_last.m.statements
+              endIf
+
+              # Merge method statements from various states
+              local t = which{ existing_m:existing_m.t || state_m.m.t }
+              local cmd_cases = WhichCases(t)
+              local cmd_which = Which( t, Access(t,"state"), cmd_cases, cmd_case_others )
+              forEach (sm in variations)
+                local m = sm.m
+                local args = Args(m.t)
+                args.add( Access(m.t,sm.state_def.name) )
+                cmd_cases.add( WhichCase(m.t,args,m.statements) )
+              endForEach
+
+              if (not existing_m)
+                existing_m = state_m.m
+                methods[existing_m.signature] = existing_m
+              endIf
+              existing_m.body.statements = Statements(t,cmd_which)
+              existing_m.statements = existing_m.body.statements
+            endUse
+
+          endWhile
+        endUse
+      endIf
 
       # Compounds get to->String and description->String. description() calls to->String by default.
       if (is_compound)
@@ -885,6 +1030,9 @@ class Type : Cmd
 
     method to->String: return name
 
+endClass
+
+class StateMethod( state_def:StateDef, m:Method ) [compound]
 endClass
 
 class BuiltInType : Type;

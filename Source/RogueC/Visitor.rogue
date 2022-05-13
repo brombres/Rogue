@@ -565,5 +565,8 @@ class Visitor
     method on_visit_children( cmd:LocalDeclaration )
       cmd.info = visit(cmd.info)->(as Local)
 
+    method on_visit_children( cmd:StateDef )
+      cmd.methods = visit(cmd.methods)->(as Methods)
+
 endClass
 

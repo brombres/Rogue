@@ -92,6 +92,7 @@ KEYWORD_PROPERTIES      PROPERTIES  [structural]
 KEYWORD_RETURN          return
 KEYWORD_ROUTINE         routine     [structural]
 KEYWORD_SATISFIED       satisfied   [structural]
+KEYWORD_STATES          STATES      [structural]
 KEYWORD_SUFFICIENT      sufficient
 KEYWORD_THIS            this
 KEYWORD_THROW           throw
@@ -136,7 +137,7 @@ SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_FAT_ARROW             =>
 SYMBOL_GE                    >=
-SYMBOL_GT                    >
+SYMBOL_GT                    >   [structural]
 SYMBOL_GTGT                  >>  [structural]
 SYMBOL_LE                    <=
 SYMBOL_LEFT_SHIFT            :<<:
@@ -149,6 +150,7 @@ SYMBOL_MINUS_MINUS           --
 SYMBOL_NE                    !=
 SYMBOL_OPEN_CURLY            {
 SYMBOL_OPEN_SQUARE           [
+SYMBOL_OPEN_SQUARE_GT        [>
 SYMBOL_OPEN_PAREN            (
 SYMBOL_PERCENT               %
 SYMBOL_PERIOD                .
@@ -1054,8 +1056,28 @@ parser
       consume_eols
     endWhile
     return
+  elseOn "STATES"
+    consume_eols
+    while (nextIs('>'))
+      state
+      consume_eols
+    endWhile
+    return
   endOn
   syntaxError
+
+- state
+  on '>'
+    identifier  # state name
+    consume_eols
+    beginList
+      while (nextIs("method"))
+        method
+        consume_eols
+      endWhile
+    createList Methods
+    produce StateDef(name:String,methods:Methods)
+  endOn
 
 - enum_sections
   beginList
@@ -1957,6 +1979,12 @@ parser
       mustConsume ']'
     createList
     create ContextBlock(context,commands)
+  elseOn "[>"
+    beginList
+      expression
+    createList Args
+    mustConsume ']'
+    produce ContextAccess(context,name="set_state":String,args)
   endOn
 
 - context_block_command
@@ -2088,6 +2116,14 @@ parser
   endOn
 
   onPeek "function" function_definition: return
+
+  on "[>"
+    beginList
+      expression
+    createList Args
+    mustConsume ']'
+    produce Access(name="set_state":String,args)
+  endOn
 
   on "native"
     native_code
