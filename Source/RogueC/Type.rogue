@@ -491,7 +491,7 @@ class Type : Cmd
 
       if (states.count and not properties.contains("state"))
         local t = states.first.t
-        properties//state = Property( t, "state", LiteralInt32(t,0), Program.type_Int32 ).[ type_context=this ]
+        properties//state = Property( t, "state", LiteralInt32(t,-1), Program.type_Int32 ).[ type_context=this ]
       endIf
 
       if (this.instance_of(Program.type_ListType))
@@ -620,7 +620,20 @@ class Type : Cmd
             if (not m)
               m = Method( t, this, "set_state" )
               m.parameters.add( Local(t,"new_state",null,Program.type_Int32) )
-              if (has_leave) m.statements.add( Access(t,"LEAVE") )
+
+              local cmd_else : If
+              if (has_leave)
+                cmd_else = If( t, null, Statements(t,Access(t,"LEAVE")), null )
+              endIf
+
+              m.statements.add(
+                If( t,
+                  CompareEQ(t,Access(t,"new_state"),LiteralInt32(t,-1)),
+                  Statements(t,Assign(t,Access(t,"new_state"),LiteralInt32(t,0))),
+                  cmd_else
+                )
+              )
+
               m.statements.add( Assign(t,DirectAccess(t,"state"),Access(t,"new_state")) )
               if (has_enter) m.statements.add( Access(t,"ENTER") )
               m.organize
