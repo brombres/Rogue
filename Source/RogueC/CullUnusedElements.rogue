@@ -121,6 +121,15 @@ class CullUnusedElements : InspectionVisitor
         endTemporarily
       endIf
 
+      if (type.attributes.is_singleton)
+        local m_init = type.methods["init()"]
+        if (m_init and m_init.statements.count)
+          temporarily this_procedure = m_init
+            visit( m_init )
+          endTemporarily
+        endIf
+      endIf
+
       visit_type( (forEach in type.global_properties).type )
       visit_type( (forEach in type.properties).type )
 
@@ -176,6 +185,9 @@ class CullUnusedElements : InspectionVisitor
 
     method on_visit( cmd:CreateObjectAndSetLocal )
       visit( cmd.of_type )
+
+      #method on_visit( cmd:GetSingleton )
+      #visit( cmd.of_type )
 
     method on( m:Procedure )->Logical
       if (m.attributes.is_visiting or m.attributes.is_abstract) return false
