@@ -1737,6 +1737,29 @@ augment
     method Cmd.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
       throw t.error( "Illegal assignment target." )
 
+    method Access.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
+
+      local context_type = resolver.this_type
+
+      block p = context_type.properties[ name ]
+        if (p)
+          operand = AccessAndAssignPatcher.patch( operand, GetThisProperty(t,p) )
+          operand = resolver.visit(operand).resolve_conversion_to( p.type, resolver )
+          return resolver.visit( SetThisProperty(t, p, operand) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          operand = AccessAndAssignPatcher.patch( operand, GetGlobalProperty(t,p) )
+          operand = resolver.visit(operand).resolve_conversion_to( p.type, resolver )
+          return resolver.visit( SetGlobalProperty(t, p, operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_access_and_assign( operand, resolver )  # generate error
+
     method ContextAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
 
@@ -1761,7 +1784,7 @@ augment
       block p = context_type.global_properties[ name ]
         if (p)
           operand = AccessAndAssignPatcher.patch( operand, GetGlobalProperty(t,p) )
-          operand = operand.resolve_conversion_to( p.type, resolver )
+          operand = resolver.visit(operand).resolve_conversion_to( p.type, resolver )
           return resolver.visit( SetGlobalProperty(t, p, operand) )
         endIf
       endBlock
