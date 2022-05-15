@@ -34,6 +34,7 @@ class Attribute
     HAS_NATIVE_CODE    = (Int64(1):<<:29)
     USED               = (Int64(1):<<:30)
     API                = (Int64(1):<<:31)
+    PRIMARY            = (Int64(1):<<:32)
 endClass
 
 class Attributes : CmdList
@@ -69,6 +70,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( has_native_code,      Attribute.HAS_NATIVE_CODE )
   ROGUE_ATTRIBUTE( is_used,              Attribute.USED )
   ROGUE_ATTRIBUTE( is_api,               Attribute.API )
+  ROGUE_ATTRIBUTE( is_primary,           Attribute.PRIMARY )
 
   PROPERTIES
     flags : Int64

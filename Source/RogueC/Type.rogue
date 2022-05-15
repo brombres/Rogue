@@ -755,6 +755,7 @@ class Type : Cmd
           m.parameters.add( Local(t,"value",Program.type_Int32) )
           m.return_type = this
           m.statements.add( Return(t, CreateCompound(t,this)) )
+          m.attributes.is_primary = true
           m.organize
           global_methods[ m.signature ] = m
         endBlock

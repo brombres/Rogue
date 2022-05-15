@@ -29,6 +29,7 @@ class MethodOrganizer : Visitor
         elseIf (this_type.is_compound)
           # Generate a create() global method as the "primary constructor".
           local m_create = GlobalMethod( cmd.t, "create", &return_type=this_type )
+          m_create.attributes.is_primary = true
           m_create.parameters.add( forEach in cmd.constructor_properties )
           m_create.statements.add( Return(cmd.t, CreateCompound(cmd.t,this_type)) )
           on( m_create )

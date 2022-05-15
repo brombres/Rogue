@@ -1292,7 +1292,7 @@ class Resolver : Visitor
       local m_constructor = find_procedure( t, type_context, null, "constructor", args, &constructor, &suppress_error )
       if (m_constructor)
         if (m_constructor instanceOf GlobalMethod)
-          if (type_context.is_enum and m_constructor.signature=="create(Rogue::Int32)")
+          if (m_constructor.attributes.is_primary)
             convert_args_to_parameter_types( args, m_constructor )
             assert args instanceOf Args
             assert type_context
@@ -1400,6 +1400,7 @@ class Resolver : Visitor
       visit( args )  # resolve args to determine types
       local error_message : String
       use Candidates
+        type_context.organize
         if (constructor)
           type_context.collect_methods( "create", Candidates.list, &require_global )
           type_context.collect_methods( "init", Candidates.list )
