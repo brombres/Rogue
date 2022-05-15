@@ -25,6 +25,23 @@ class Finalizer : Visitor
       Program.apply( AssignIDs() )
       Program.apply( this )
 
+    method on_visit( cmd:CallDynamicMethod )
+      ensure_dynamic_dispatch( cmd.info->(as Method) )
+      visit_children( cmd )
+
+    method on_visit( cmd:CallThisDynamicMethod )
+      ensure_dynamic_dispatch( cmd.info->(as Method) )
+      visit_children( cmd )
+
+    method ensure_dynamic_dispatch( m:Method )
+      if (m.type_context.is_aspect or m.attributes.is_abstract)
+        if (not Program.dynamic_methods.contains(m.dynamic_signature))
+          m.attributes.dynamic_dispatch = true
+          m.attributes.is_placeholder = true
+          Program.dynamic_methods[m.dynamic_signature] = Method[][m]
+        endIf
+      endIf
+
     method on( cmd:GetProperty )->Cmd
       if (cmd.info.type_context.is_enum)
         if (cmd.info.name == "value")

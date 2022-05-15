@@ -282,6 +282,7 @@ class Type : Cmd
       endIf
 
       if (existing_m)
+        existing_m.attributes.flags |= aspect_m.attributes.flags
         if (aspect_m.attributes.is_insert)
           aspect_m.statements.add( forEach in existing_m.statements )
           existing_m.body = aspect_m.body
@@ -471,6 +472,7 @@ class Type : Cmd
           if (aspects)
             forEach (incorporated_aspect in aspects)
               incorporated_aspect.organize_properties
+              if (incorporated_aspect.contains_reference) attributes.contains_reference = true
 
               forEach (p in incorporated_aspect.native_properties step -1)
                 native_properties.insert( p )
