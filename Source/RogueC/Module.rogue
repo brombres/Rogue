@@ -43,9 +43,11 @@ class Module
       # Ensure we have a flat list of all modules we should search for types in.
       temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
-          if (used_m.is_exported) used_m.m.collect_used_modules( this )
+          used_m.m.collect_exported_modules( this )
         endForEach
       endTemporarily
+
+      (forEach in used_modules).m.attributes.is_collected = false
 
       # Every module has type Rogue::Global as an implicit context.
       implicit_context.add( Program.type_Global )
@@ -59,14 +61,15 @@ class Module
         if (type_Routine) implicit_context.add( type_Routine )
       endForEach
 
-    method collect_used_modules( target:Module )
-      if (attributes.is_visiting) return
+    method collect_exported_modules( target:Module )
+      if (attributes.is_visiting or attributes.is_collected) return
+      attributes.is_collected = true
 
       temporarily attributes.is_visiting = true
         forEach (used_m in used_modules)
           if (used_m.is_exported)
             target.uses_module( used_m.m )
-            used_m.m.collect_used_modules( target )
+            used_m.m.collect_exported_modules( target )
           endIf
         endForEach
       endTemporarily
