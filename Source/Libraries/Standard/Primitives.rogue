@@ -4,6 +4,32 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       return value
 
   METHODS
+    method abs->Real64
+      if (this >= 0) return this
+      else           return -this
+
+    method acos->Real64
+      return native("acos($this)")->Real64
+
+    method atan->Real64
+      return native("atan($this)")->Real64
+
+    method atan2( x:Real64 )->Real64
+      # Equivalent to atan2(this,x)
+      return native("atan2($this,$x)")->Real64
+
+    method asin->Real64
+      return native("asin($this)")->Real64
+
+    method ceiling->Real64
+      return native("ceil($this)")->Real64
+
+    method cos->Real64
+      return native("cos($this)")->Real64
+
+    method exp->Real64
+      return native("exp($this)")->Real64
+
     method floor->Real64
       return native("floor($this)")->Real64
 
@@ -16,15 +42,78 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
 
     method is_NaN->Logical
       return (this != this)
+
+    method lerp( a:Int32, b:Int32 )->Int32
+      # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method lerp( a:Real64, b:Real64 )->Real64
+      # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method log->Real64
+      return native("log($this)")->Real64
+
+    method log2->Real64
+      return native("log2($this)")->Real64
+
+    method log10->Real64
+      return native("log10($this)")->Real64
+
     method operator%( other:Real64 )->Real64
       local q = this / other
       return this - q.floor * other
+
+    method sin->Real64
+      return native("sin($this)")->Real64
+
+    method sqrt->Real64
+      return native("sqrt($this)")->Real64
+
+    method tan->Real64
+      return native("tan($this)")->Real64
+
 endClass
 
 class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
+  GLOBAL METHODS
+    method create( value:Real32 )->Real32
+      return value
+
   METHODS
+    method abs->Real32
+      if (this >= 0) return this
+      else           return -this
+
+    method acos->Real32
+      return native("acosf($this)")->Real32
+
+    method atan->Real32
+      return native("atanf($this)")->Real32
+
+    method atan2( x:Real32 )->Real32
+      # Equivalent to atan2(this,x)
+      return native("atan2f($this,$x)")->Real32
+
+    method asin->Real32
+      return native("asinf($this)")->Real32
+
+    method ceiling->Real32
+      return native("ceilf($this)")->Real32
+
+    method cos->Real32
+      return native("cosf($this)")->Real32
+
+    method exp->Real32
+      return native("expf($this)")->Real32
+
     method floor->Real32
       return native("floorf($this)")->Real32
+
+    method integer_bits->Int64
+      return native("*((RogueInt64*)&$this)")->Int64
 
     method is_infinite->Logical
       # Returns true for positive OR negative infinity
@@ -33,9 +122,38 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
     method is_NaN->Logical
       return (this != this)
 
+    method lerp( a:Int32, b:Int32 )->Int32
+      # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method lerp( a:Real32, b:Real32 )->Real32
+      # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method log->Real32
+      return native("logf($this)")->Real32
+
+    method log2->Real32
+      return native("log2f($this)")->Real32
+
+    method log10->Real32
+      return native("log10f($this)")->Real32
+
     method operator%( other:Real32 )->Real32
       local q = this / other
       return this - q.floor * other
+
+    method sin->Real32
+      return native("sinf($this)")->Real32
+
+    method sqrt->Real32
+      return native("sqrtf($this)")->Real32
+
+    method tan->Real32
+      return native("tanf($this)")->Real32
+
 endClass
 
 class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
