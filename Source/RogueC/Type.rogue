@@ -215,15 +215,19 @@ class Type : Cmd
     method ensure_definition
       if (attributes.is_defined) return
 
+      local template_module = module_context
+
       local template_name : String
       if (name.ends_with(']'))
         template_name = "List<<1>>"
+        template_module = Program.default_module
         local tokens = Token[]
         tokens.add( forEach in Scanner(t.filepath,name.leftmost(-2),t.line,t.column).tokenize )
         tokens.remove_last  # EOL
         type_args = TemplateArgs(t).[ add(TokenList(t,tokens)) ]
       elseIf (name.ends_with('?'))
         template_name = "Optional<<1>>"
+        template_module = Program.default_module
         local tokens = Token[]
         tokens.add( forEach in Scanner(t.filepath,name.leftmost(-1),t.line,t.column).tokenize )
         tokens.remove_last  # EOL
@@ -233,11 +237,11 @@ class Type : Cmd
         template_name = "$<<$>>"(name.before_first('<'),type_arg_count)
       endIf
 
-      local template = module_context.templates[template_name]
+      local template = template_module.templates[template_name]
       if (template)
         template.generate( this )
       else
-        throw t.error( "Reference to undefined class '$::$'."(module_context,name) )
+        throw t.error( "Reference to undefined class '$::$'."(template_module,name) )
       endIf
 
     method description->String

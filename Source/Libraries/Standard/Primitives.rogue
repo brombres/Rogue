@@ -142,10 +142,12 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       if (nbits <= 0) return this
       nbits &= 31
       return (this :>>: nbits) | (this :<<: (32-nbits))
+      }#
 
     method sqrt->Int32
       return native("sqrt($this)")->Int32
 
+      #{
     method th->String
       return this->Int64.th
 

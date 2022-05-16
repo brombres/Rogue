@@ -1,7 +1,87 @@
 module IntegerGeometry
 
 class XY( x:Int32, y:Int32 ) [compound]
+  DEFINITIONS
+    zero = XY(0,0)
+
   METHODS
+    method is_zero->Logical
+      return x == 0 and y == 0
+
+    method magnitude->Int32
+      return (x*x + y*y).sqrt
+
+    method magnitude_squared->Int32
+      return x*x + y*y
+
+    method max->Int32
+      return which{ x>=y:x || y }
+
+    method min->Int32
+      return which{ x<=y:x || y }
+
+    method max( other:XY )->XY
+      # Returns an XY containing the max X and the max Y of 'this' and 'other'.
+      local max_x = which{ x>=other.x:x || other.x }
+      local max_y = which{ y>=other.y:y || other.y }
+      return XY( max_x, max_y )
+
+    method min( other:XY )->XY
+      # Returns an XY containing the min X and the min Y of 'this' and 'other'.
+      local min_x = which{ x<=other.x:x || other.x }
+      local min_y = which{ y<=other.y:y || other.y }
+      return XY( min_x, min_y )
+
+    method normal->XY
+      # Returns the normal of this vector.
+      return XY( -y, x )
+
+    method operator==( other:XY )->Logical
+      return x == other.x and y == other.y
+
+    method operator+( other:XY )->XY
+      return XY( x+other.x, y+other.y )
+
+    method operator-()->XY
+      return XY( -x, -y )
+
+    method operator-( other:XY )->XY
+      return XY( x-other.x, y-other.y )
+
+    method operator*( other:XY )->XY
+      return XY( x*other.x, y*other.y )
+
+    method operator*( value:Int32 )->XY
+      return XY( x*value, y*value )
+
+    method operator/( other:XY )->XY
+      return XY( which{other.x:x/other.x || 0}, which{other.y:y/other.y || 0} )
+
+    method operator/( value:Int32 )->XY
+      if (value == 0) return this
+      return XY( x/value, y/value )
+
+    method operator%( other:XY )->XY
+      return XY( x%other.x, y%other.y )
+
+    method operator%( value:Int32 )->XY
+      if (value == 0) return this
+      return XY( x%value, y%value )
+
+    method operator^( other:XY )->XY
+      return XY( x^other.x, y^other.y )
+
+    method operator^( value:Int32 )->XY
+      return XY( x^value, y^value )
+
+    method or_larger( other:XY )->XY
+      # Returns the largest X and the largest Y between this value and the other value.
+      return XY( this.x.or_larger(other.x), this.y.or_larger(other.y) )
+
+    method or_smaller( other:XY )->XY
+      # Returns the smaller X and the smaller Y between this value and the other value.
+      return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
     method to->String
       return "($,$)"(x,y)
 endClass

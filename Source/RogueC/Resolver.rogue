@@ -1451,7 +1451,7 @@ class Resolver : Visitor
 
             case 1
               mesg = "Call to "
-              if (context)       mesg += context.type + "."
+              if (type_context)  mesg += type_context + "."
               elseIf (this_type) mesg += this_type + "."
 
               mesg += sig
@@ -1463,7 +1463,7 @@ class Resolver : Visitor
             others
               mesg = "Ambiguous call to "
               if (require_global) mesg += "global "
-              if (context)        mesg += context.type + "."
+              if (type_context)   mesg += type_context + "."
               elseIf (this_type)  mesg += this_type + "."
 
               mesg += sig
