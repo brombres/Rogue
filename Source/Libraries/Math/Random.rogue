@@ -34,13 +34,13 @@ class Random [singleton]
       state = _state
       _advance_state
 
-    method chance( p:Real64 )->Logical
+    method chance( p:Real )->Logical
       # Has a proportional chance 'p' to return true (0 < p < 1.0).
       # Example:
       #   Random.chance(0.75)  # returns true 75% of the time statistically speaking.
-      return (real64 < p)
+      return (real < p)
 
-    method gaussian->Real64
+    method gaussian->Real
       # Returns a random number from a normal distribution of avg=0, stddev=1
       # 68.2% chance of being between -1..1
       # 95.45% chance of being between -2..2
@@ -48,17 +48,17 @@ class Random [singleton]
       # 99.994% chance of being -4..4
       # Real number precision limits the results to [-8.5,8.5]
       # From: https://stackoverflow.com/a/218600/135791
-      local u1 = 1.0 - real64
-      local u2 = 1.0 - real64
+      local u1 = 1.0 - real
+      local u2 = 1.0 - real
       return Math.sqrt(-2.0 * Math.log(u1)) * Math.sin(pi * 2 * u2)
 
-    method real64->Real64
+    method real->Real
       # Returns a random number 0 < n < 1.0
-      return (_advance_state->Real64 + 1.0) / 281474976710657.0
+      return (_advance_state->Real + 1.0) / 281474976710657.0
 
-    method real64( low:Real64, high:Real64 )->Real64
+    method real( low:Real, high:Real )->Real
       # Returns a random number low < n < high
-      return (real64 * (high-low)) + low
+      return (real * (high-low)) + low
 
     method int64->Int64
       # Returns a normalized, evenly distributed random integer in
@@ -69,7 +69,7 @@ class Random [singleton]
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^31-1] inclusive.
-      return (real64 * (2.0^31))->Int32
+      return (real * (2.0^31))->Int32
 
     method int32( limit:Int32 )->Int32
       # Returns an evenly distributed random integer in
@@ -86,11 +86,11 @@ class Random [singleton]
 
     method byte->Byte
       # Returns a random byte between 0 and 255.
-      return (real64 * 256)->Byte
+      return (real * 256)->Byte
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.
-      return (real64 > 0.5)
+      return (real > 0.5)
 
     method _advance_state->Int64
       # Calculates the next raw random integer.
