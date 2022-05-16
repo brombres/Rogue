@@ -194,10 +194,6 @@ class Resolver : Visitor
       local result = cmd.left.require_type.resolve_binary_op(cmd,this)
       return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
 
-    method on( cmd:BitShiftRight )->Cmd
-      return resolve_access( cmd.t, TypeContext(cmd.t,Program.type_Math), "bit_shift_right",
-                             Args(cmd.t,cmd.left,cmd.right) )
-
     method on( cmd:Block )->Cmd
       return visit( ControlStructure(cmd.t,cmd.statements,ControlType.BLOCK) )
 
@@ -2567,13 +2563,16 @@ augment
       local left_type = cmd.left.require_type
       local right_type = cmd.right.require_type
 
-      if (left_type.is_primitive and right_type.is_primitive)
-        local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
-        if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
-        if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
-        return cmd
+      if (not cmd.requires_operator_method)
+        if (left_type.is_primitive and right_type.is_primitive)
+          local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
+          if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
+          if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+          return cmd
+        endIf
+      endIf
 
-      elseIf (cmd.symbol is null)
+      if (cmd.symbol is null)
         throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
 
       else
@@ -2584,23 +2583,24 @@ augment
           right_type.organize
           local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
-
-        else
-          left_type.organize
-          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
-
-          local arg = Args( t, cmd.right )
-          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
-          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
         endIf
+
+        left_type.organize
+        local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+        if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+        local arg = Args( t, cmd.right )
+        m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
+        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
 
         use message = StringBuilder.pool
           message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
           message.println "Define one of the following methods to support the operation:\n"
           message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
           message.println "  $.$($)" (left_type,op_method_name,right_type)
-          message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+          if (left_type is not right_type)
+            message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+          endIf
           throw cmd.t.error( message )
         endUse
       endIf

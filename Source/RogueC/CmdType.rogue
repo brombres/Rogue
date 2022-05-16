@@ -343,6 +343,19 @@ augment
 
 endAugment
 
+# requires_operator_method
+augment
+  METHODS
+    method Cmd.requires_operator_method->Logical
+      return false
+
+    method BitShiftRight.requires_operator_method->Logical
+      return true
+
+    method Mod.requires_operator_method->Logical
+      return true
+endAugment
+
 # symbol()
 augment
   METHODS

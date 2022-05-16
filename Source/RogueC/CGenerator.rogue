@@ -979,17 +979,6 @@ class CGenerator : Visitor
 
       writer.println
 
-    method on_visit( cmd:Mod )
-      if (cmd.type is Program.type_Real64)     writer.print "Rogue_mod_Real64"
-      elseIf (cmd.type is Program.type_Real32) writer.print "Rogue_mod_Real32"
-      elseIf (cmd.type is Program.type_Int64)  writer.print "Rogue_mod_Int64"
-      else                                     writer.print "Rogue_mod_Int32"
-      writer.print '('
-      visit( cmd.left )
-      writer.print ','
-      visit( cmd.right )
-      writer.print ')'
-
     method on_visit( cmd:Multiply )
       print_parenthesized( cmd.left )
       writer.print " * "
