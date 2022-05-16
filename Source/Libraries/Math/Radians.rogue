@@ -1,0 +1,108 @@
+module Math
+
+class Radians( value:Real ) [compound]
+  GLOBAL METHODS
+    method create( degrees:Degrees )->Radians
+      return Radians( (degrees.value / 180.0) * pi )
+
+    method operator?( radians:Radians )->Logical
+      return radians.value?
+
+  METHODS
+    method clamped( min:Radians, max:Radians )->Radians
+      local delta_min_max = min.delta_to( max ).value
+      local delta_this_min = this.delta_to( min ).value
+      local delta_this_max = this.delta_to( max ).value
+      if (delta_min_max > 0)
+        if (delta_this_min <= 0 and delta_this_max >= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      else
+        if (delta_this_min >= 0 and delta_this_max <= 0) return this  # already inside range
+        if (delta_this_min.abs <= delta_this_max.abs) return min  # clamp to min
+        return max  # clamp to max
+      endIf
+
+    method cos->Real
+      value.cos
+
+    method delta_to( other:Radians )->Radians
+      # Returns the smallest number of radians necessary to get from this
+      # angle to the specified other angle.  For example, Radians(pi*3/2).delta_to(Radians(0))
+      # yields Radians(pi/2), since turning pi/2 radians will get you to 0 radians
+      # "faster" than turning -pi*3/2 radians.
+      local diff = other.value - this.value
+      diff %= 2*pi
+      if (diff > pi) diff = -(2*pi - diff)
+      return Radians(diff)
+
+    method operator-()->Radians
+      return Radians( -this.value )
+
+    method operator+( radians:Real )->Radians
+      return Radians( this.value + radians )
+
+    method operator-( radians:Real )->Radians
+      return Radians( this.value - radians )
+
+    method operator*( radians:Real )->Radians
+      return Radians( this.value * radians )
+
+    method operator/( radians:Real )->Radians
+      return Radians( this.value / radians )
+
+    method operator%( radians:Real )->Radians
+      return Radians( this.value % radians )
+
+    method operator^( radians:Real )->Radians
+      return Radians( this.value ^ radians )
+
+    method operator+( other:Radians )->Radians
+      return Radians( this.value + other.value )
+
+    method operator-( other:Radians )->Radians
+      return Radians( this.value - other.value )
+
+    method operator*( other:Radians )->Radians
+      return Radians( this.value * other.value )
+
+    method operator/( other:Radians )->Radians
+      return Radians( this.value / other.value )
+
+    method operator%( other:Radians )->Radians
+      return Radians( this.value % other.value )
+
+    method operator^( other:Radians )->Radians
+      return Radians( this.value ^ other.value )
+
+    method operator==( other:Degrees )->Logical
+      return value == other.value
+
+    method operator==( other_value:Real )->Logical
+      return value == other_value
+
+    method operator<>( other:Degrees )->Logical
+      return value - other.value
+
+    method operator<>( other_value:Real )->Logical
+      return value - other_value
+
+    method sin->Real
+      value.sin
+
+    method tan->Real
+      value.tan
+
+    method description->String
+      return "" + value
+
+    method to->Degrees
+      return Degrees( this )
+endClass
+
+augment Random
+  METHODS
+    method radians->Radians
+      return Radians( real * 2 * pi )
+endAugment
+
