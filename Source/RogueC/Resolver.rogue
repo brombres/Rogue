@@ -1495,7 +1495,7 @@ class Resolver : Visitor
 
         endIf
 
-        error_message = mesg
+        error_message = mesg.replacing( "Routine.", "" )
       endUse
       throw t.error( error_message )
 
