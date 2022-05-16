@@ -155,8 +155,12 @@ class PropertyOrganizer : Visitor
       endIf
       return null
 
+    method on_visit( cmd:This )
+      cmd.this_type = this_type
+
     method collect( t:Token, p:Property )
       visit( p )
+      p.initial_value = visit( p.initial_value )
       assert this_type
       this_type.add_property( p )
 

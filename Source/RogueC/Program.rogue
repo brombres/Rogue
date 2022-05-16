@@ -207,7 +207,7 @@ class Program [singleton]
       (forEach in modules).organize_methods
 
       apply( Transformer() )
-      apply( Resolver() )
+      Resolver().apply
       Finalizer().apply
 
     method set_real_bits( @real_bits )

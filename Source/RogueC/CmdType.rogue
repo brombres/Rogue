@@ -243,6 +243,12 @@ augment
     method Access.is_simple->Logical
       return args is null or args.count == 0
 
+    method ContextDirectAccess.is_simple->Logical
+      return context.is_simple
+
+    method DirectAccess.is_simple->Logical
+      return true
+
     method GetLocal.is_simple->Logical
       return true
 

@@ -20,6 +20,9 @@ class Resolver : Visitor
     autoname_index = 0
 
   METHODS
+    method apply
+      Program.apply( this )
+
     method visit( m:Module, proc:Procedure )
       temporarily this_module=m, this_procedure=proc
         visit( proc )
@@ -917,6 +920,11 @@ class Resolver : Visitor
       local result = resolve_call( cmd.t, context, proc, cmd.args )
       return result
 
+    method on_visit( cmd:This )
+      if (this_procedure.is_global)
+        throw cmd.t.error( "Illegal use of 'this' in a global context. 'this' can only be used in the context of an instance object." )
+      endIf
+
     method on( cmd:Throw )->Cmd
       cmd.exception = visit( cmd.exception )
       local exception_type = cmd.exception.require_type
@@ -1740,25 +1748,8 @@ augment
     method Access.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
 
-      local context_type = resolver.this_type
-
-      block p = context_type.properties[ name ]
-        if (p)
-          operand = AccessAndAssignPatcher.patch( operand, GetThisProperty(t,p) )
-          operand = resolver.visit(operand).resolve_conversion_to( p.type, resolver )
-          return resolver.visit( SetThisProperty(t, p, operand) )
-        endIf
-      endBlock
-
-      block p = context_type.global_properties[ name ]
-        if (p)
-          operand = AccessAndAssignPatcher.patch( operand, GetGlobalProperty(t,p) )
-          operand = resolver.visit(operand).resolve_conversion_to( p.type, resolver )
-          return resolver.visit( SetGlobalProperty(t, p, operand) )
-        endIf
-      endBlock
-
-      return prior.resolve_access_and_assign( operand, resolver )  # generate error
+      operand = AccessAndAssignPatcher.patch( operand, this.cloned )
+      return resolver.visit( Assign(t, this, operand) )
 
     method ContextAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
@@ -1766,30 +1757,25 @@ augment
       context = resolver.visit( context )
       local context_type = context.require_type.[ organize ]
 
-      block p = context_type.properties[ name ]
-        if (p)
-          if (context.is_simple)
-            operand = AccessAndAssignPatcher.patch( operand, context.cloned )
-            return resolver.visit( Assign(t, context, operand) )
-          else
-            local v_context = resolver.add_local( t, "context", context.require_type )
-            resolver.insert( SetLocal(v_context, context, &initial_assignment) )
-            local context_access = ContextAccess( t, GetLocal(v_context), name )
-            operand = AccessAndAssignPatcher.patch( operand, context_access.cloned )
-            return resolver.visit( Assign(t, context_access, operand) )
-          endIf
-        endIf
-      endBlock
+      local v_context = resolver.add_local( t, "context", context_type )
+      resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+      local context_access = ContextAccess( t, GetLocal(v_context), name )
+      operand = AccessAndAssignPatcher.patch( operand, context_access.cloned )
+      return resolver.visit( Assign(t, context_access, operand) )
 
-      block p = context_type.global_properties[ name ]
-        if (p)
-          operand = AccessAndAssignPatcher.patch( operand, GetGlobalProperty(t,p) )
-          operand = resolver.visit(operand).resolve_conversion_to( p.type, resolver )
-          return resolver.visit( SetGlobalProperty(t, p, operand) )
-        endIf
-      endBlock
+    method DirectAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      operand = AccessAndAssignPatcher.patch( operand, this.cloned )
+      return resolver.visit( Assign(t, this, operand) )
 
-      return prior.resolve_access_and_assign( operand, resolver )  # generate error
+    method ContextDirectAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      local v_context = resolver.add_local( t, "context", context_type )
+      resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+      local context_access = ContextDirectAccess( t, GetLocal(v_context), name )
+      operand = AccessAndAssignPatcher.patch( operand, context_access.cloned )
+      return resolver.visit( Assign(t, context_access, operand) )
 
     method TypeAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
       return ContextAccess( t, resolver.visit(this), args ).resolve_access_and_assign( operand, resolver )
@@ -2165,7 +2151,7 @@ endAugment
 augment
   METHODS
     method Cmd.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal target for assignment." )
+      throw t.error( "Illegal assignment target." )
 
     method Access.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)

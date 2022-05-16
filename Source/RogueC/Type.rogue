@@ -533,7 +533,13 @@ class Type : Cmd
 
           forEach (p in my_properties step -1)
             if (not p.initial_value) p.initial_value = p.type.cmd_default_value( p.t )
-            m.statements.insert( SetGlobalProperty(p.t,p,p.initial_value) )
+            m.statements.insert(
+              Assign(
+                p.t,
+                ContextAccess(p.t,TypeContext(p.t,this),p.name),
+                p.initial_value
+              )
+            )
           endForEach
         endUse
 

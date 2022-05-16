@@ -16,6 +16,6 @@ class AccessAndAssignPatcher : Visitor [singleton]
     method on( cmd:AccessAndAssignContext )->Cmd
       if (context) return context  # patching
       context = cmd.context        # finding
-      return context
+      return cmd
 
 endClass

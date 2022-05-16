@@ -23,7 +23,20 @@ class Finalizer : Visitor
       endForEach
 
       Program.apply( AssignIDs() )
+
       Program.apply( this )
+
+      # Collect list of inheriting types for each method
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+          forEach (m in type.methods)
+            if (m.type_context is not type)
+              assert (not m.inheriting_types.contains(type))
+              m.inheriting_types.add( type )
+            endIf
+          endForEach
+        endForEach
+      endForEach
 
     method on_visit( cmd:CallDynamicMethod )
       ensure_dynamic_dispatch( cmd.info->(as Method) )
@@ -70,14 +83,9 @@ class Finalizer : Visitor
 
     method on_visit( m:Method )
       if (this_type.is_reference)
-        if (m.type_context is this_type)
-          if (this_type.base_class)
-            local base_m = this_type.base_class.methods[ m.signature ]
-            if (base_m) base_m.attributes.is_overridden = true
-          endIf
-        else
-          assert (not m.inheriting_types.contains(this_type))
-          m.inheriting_types.add( this_type )
+        if (this_type.base_class)
+          local base_m = this_type.base_class.methods[ m.signature ]
+          if (base_m) base_m.attributes.is_overridden = true
         endIf
       endIf
       visit_children( m )
