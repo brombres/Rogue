@@ -327,6 +327,14 @@ augment
 
       if (cmd instanceOf LiteralLogical or type is Program.type_Logical) return cmd
 
+      if (cmd instanceOf LiteralPrimitive)
+        if (type is Program.type_Real64)    return LiteralLogical( cmd.t, cmd->(as LiteralReal64).value? )
+        if (type is Program.type_Real32)    return LiteralLogical( cmd.t, cmd->(as LiteralReal32).value? )
+        if (type is Program.type_Int64)     return LiteralLogical( cmd.t, cmd->(as LiteralInt64).value? )
+        if (type is Program.type_Int32)     return LiteralLogical( cmd.t, cmd->(as LiteralInt32).value? )
+        if (type is Program.type_Character) return LiteralLogical( cmd.t, cmd->(as LiteralCharacter).value? )
+      endIf
+
       if (type.is_primitive) return Logicalized(cmd.t,cmd)
       if (type.attributes.is_optional) return resolver.visit( ContextAccess(cmd.t,cmd,"exists",null) )
 

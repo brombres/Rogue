@@ -668,11 +668,21 @@ class Resolver : Visitor
       return cmd
 
     method on_validate( cmd:LogicalNot )->Cmd
+      if (cmd.operand instanceOf LogicalNot)
+        # not not x -> x?
+        return validate( cmd.operand->(as LogicalNot).operand.logicalized(this) )
+      endIf
+
       if (cmd.operand instanceOf LiteralLogical)
         return LiteralLogical( cmd.t, not cmd.operand->(as LiteralLogical).value )
       endIf
+
       if (cmd.operand.type is not Program.type_Logical)
         cmd.operand = cmd.operand.logicalized( this )
+        if (cmd.operand instanceOf Logicalized)
+          # Was not converted into a method call - simplify
+          cmd.operand = cmd.operand->(as Logicalized).operand
+        endIf
       endIf
       return cmd
 
