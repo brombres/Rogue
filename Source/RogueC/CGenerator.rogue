@@ -1313,8 +1313,9 @@ class CGenerator : Visitor
 
           forEach (p in this_type.properties)
             if (name == p.name)
-              if (type) return p.type.c_ref_name
-              else      return "THIS->" + p.c_name
+              if (type)                       return p.type.c_ref_name
+              elseIf (this_type.is_reference) return "THIS->" + p.c_name
+              else                            return "THIS." + p.c_name
             endIf
           endForEach
         endIf

@@ -36,6 +36,13 @@ class XY( x:Int32, y:Int32 ) [compound]
       # Returns the normal of this vector.
       return XY( -y, x )
 
+    method normalized->XY
+      local msq = x*x + y*y
+      if (msq <= 0) return XY(0,0)
+      local m = msq.sqrt
+      if (m) return XY( x/m, y/m )
+      else   return XY.zero
+
     method operator==( other:XY )->Logical
       return x == other.x and y == other.y
 

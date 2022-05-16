@@ -2,4 +2,5 @@ module IntegerGeometry
 
 $include "IntegerGeometry/Anchor.rogue"
 $include "IntegerGeometry/Box.rogue"
+$include "IntegerGeometry/Line.rogue"
 $include "IntegerGeometry/XY.rogue"
