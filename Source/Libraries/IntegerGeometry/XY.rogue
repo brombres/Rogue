@@ -93,3 +93,15 @@ class XY( x:Int32, y:Int32 ) [compound]
       return "($,$)"(x,y)
 endClass
 
+module Math
+uses IntegerGeometry
+
+augment Random
+  METHODS
+    method xy->XY
+      return XY( real, real )
+
+    method xy( limit:XY )->XY
+      return XY( real(limit.x), real(limit.y) )
+endAugment
+

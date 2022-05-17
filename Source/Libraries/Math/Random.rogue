@@ -50,11 +50,15 @@ class Random [singleton]
       # From: https://stackoverflow.com/a/218600/135791
       local u1 = 1.0 - real
       local u2 = 1.0 - real
-      return Math.sqrt(-2.0 * Math.log(u1)) * Math.sin(pi * 2 * u2)
+      return (-2.0 * u1.log).sqrt * (pi * 2 * u2).sin
 
     method real->Real
       # Returns a random number 0 < n < 1.0
       return (_advance_state->Real + 1.0) / 281474976710657.0
+
+    method real( limit:Real )->Real
+      # Returns a random number 0 < n < limit
+      return real * limit
 
     method real( low:Real, high:Real )->Real
       # Returns a random number low < n < high
