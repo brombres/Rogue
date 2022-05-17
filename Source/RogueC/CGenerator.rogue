@@ -1491,6 +1491,15 @@ augment
             writer.print '0'
           endIf
 
+          # fn_on_singleton_change
+          writer.print ", "
+          if (type.m_on_singleton_change)
+            writer.print "(RogueFn_Object_Object)"
+            writer.print type.m_on_singleton_change.c_name
+          else
+            writer.print '0'
+          endIf
+
           writer.println '' };''
         endForEach
         writer.println

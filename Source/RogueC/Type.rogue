@@ -28,9 +28,10 @@ class Type : Cmd
     method_templates          = StringTable<<MethodTemplate>>()
     method_template_instances = StringTable<<Procedure>>()
 
-    id                : Int32
-    m_init_class      : GlobalMethod
-    m_on_cleanup      : Method
+    id                    : Int32
+    m_init_class          : GlobalMethod
+    m_on_singleton_change : GlobalMethod
+    m_on_cleanup          : Method
 
     base_type_lookup_index  : Int32
     base_type_ids           = Int32[]

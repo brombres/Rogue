@@ -12,6 +12,49 @@ class Finalizer : Visitor
         endForEach
       endForEach
 
+      # Collect and preserve certain methods that are implicitly called
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+
+          # on_singleton_change(old_singleton:Type,new_singleton:Type)
+          if (type.attributes.is_singleton)
+            local full_type = "$::$"(type.module_context,type.name)
+            type.m_on_singleton_change = type.global_methods["on_singleton_change($,$)"(full_type,full_type)]
+
+            if (not type.m_on_singleton_change)
+              forEach (m in type.global_methods)
+                if (m.name == "on_singleton_change")
+                  throw m.t.error( "Incorrect signature - expected on_singleton_change(old_singleton:$,new_singleton:$)" ...
+                    (type,type) )
+                endIf
+              endForEach
+            endIf
+
+            if (type.m_on_singleton_change)
+              type.m_on_singleton_change.attributes.is_essential = true
+              if (type.m_on_singleton_change.return_type)
+                throw type.m_on_singleton_change.t.error( "on_singleton_change() cannot return a value." )
+              endIf
+            endIf
+          endIf
+
+          # on_cleanup
+          block m = type.methods["on_cleanup()"]
+            if (m) m.attributes.is_essential = true
+          endBlock
+
+          #{
+          forEach (m in type.methods)
+            if (m.type_context is not type)
+              assert (not m.inheriting_types.contains(type))
+              m.inheriting_types.add( type )
+            endIf
+          endForEach
+          }#
+        endForEach
+      endForEach
+
+      # Cull unused classes and methods
       BuildDynamicMethodTable().apply
       CullUnusedElements().apply
       Program.dynamic_methods.clear

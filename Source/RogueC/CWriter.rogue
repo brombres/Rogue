@@ -159,6 +159,7 @@ class CWriter : BufferedPrintWriter
            |
            |typedef struct RogueType RogueType;
            |typedef void (*RogueFn_Object)(void*);
+           |typedef void (*RogueFn_Object_Object)(void*,void*);
            |
            |typedef struct RogueObject RogueObject;
            |
@@ -177,6 +178,7 @@ class CWriter : BufferedPrintWriter
            |  RogueFn_Object fn_init;
            |  RogueFn_Object fn_gc_trace;
            |  RogueFn_Object fn_on_cleanup;
+           |  RogueFn_Object_Object fn_on_singleton_change;
            |};
            |
            |typedef struct RogueCallFrame
@@ -297,6 +299,7 @@ class CWriter : BufferedPrintWriter
            |  RogueObject* obj = Rogue_create_object( type );
            |  (*((RogueObject**)singleton_ref)) = obj;
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
+           |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj );
            |  return obj;
            |}
            |
