@@ -121,6 +121,7 @@ class Box( position:XY, size:XY ) [compound]
     method height->Int32
       return this.size.y
 
+      #{
     method intersection( rhs:Box )->Box?
       # Returns the intersection of this box with another box.
       local a_x1 = position.x
@@ -144,6 +145,7 @@ class Box( position:XY, size:XY ) [compound]
 
     method intersects( other:Box )->Logical
       return (this & other).exists
+      }#
 
       #{
     method intersects( circle:Circle )->Logical
@@ -183,8 +185,10 @@ class Box( position:XY, size:XY ) [compound]
     method operator/( scale:XY )->Box
       return Box( position/scale, size/scale )
 
+      #{
     method operator&( rhs:Box )->Box?
       return intersection( rhs )
+      }#
 
     method operator|( rhs:Box )->Box
       # Returns the union of this box with another box.

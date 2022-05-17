@@ -11,7 +11,7 @@ class XY( x:Int32, y:Int32 ) [compound]
     method magnitude->Int32
       return (x*x + y*y).sqrt
 
-    method magnitude_squared->Int32
+    method magnitude2->Int32
       return x*x + y*y
 
     method max->Int32

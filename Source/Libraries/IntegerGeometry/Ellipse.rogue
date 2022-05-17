@@ -1,0 +1,8 @@
+module IntegerGeometry
+
+class Ellipse( position:XY, size:XY ) [compound]
+  METHODS
+    method description->String
+      return "(@$, $x$)" (position,size.x,size.y)
+endClass
+

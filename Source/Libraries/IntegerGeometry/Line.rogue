@@ -72,7 +72,7 @@ class Line( a:XY, b:XY ) [compound]
       #{
     method intersects( circle:Circle )->Logical
       local closest_pt = circle.position.clamped( this )
-      return ((circle.position - closest_pt).magnitude_squared <= circle.radius^2)
+      return ((circle.position - closest_pt).magnitude2 <= circle.radius^2)
 
     method intersects( quad:Quad )->Logical
       return quad.intersects( this )
