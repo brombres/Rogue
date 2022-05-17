@@ -96,8 +96,8 @@ class Degrees( value:Real ) [compound]
     method tan->Real
       return ((value / 180.0) * pi).tan
 
-    method description->String
-      return "" + value
+    method to->String
+      return value->String
 
     method to->Radians
       return Radians( this )

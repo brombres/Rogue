@@ -20,6 +20,20 @@ class String : PrintWriter
         return String( data, count )
       endIf
 
+    method create( data:Character[] )->String
+      local utf8_count : Int32
+      native @|for (int i=data->count; --i>=0; )
+              |{
+              |  RogueCharacter ch = data->as_characters[i];
+              |  if (ch <= 0x7F)         ++$utf8_count;
+              |  else if (ch <= 0x7FF)   $utf8_count += 2;
+              |  else if (ch <= 0xFFFF)  $utf8_count += 3;
+              |  else                    $utf8_count += 4;
+              |}
+      local result = String( utf8_count )
+      result.print( forEach in data )
+      return result
+
     method exists( string:String )->Logical
       # Returns false if the string is null or empty; otherwise returns true.
       return (string and string.count?)

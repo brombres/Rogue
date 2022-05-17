@@ -93,8 +93,8 @@ class Radians( value:Real ) [compound]
     method tan->Real
       value.tan
 
-    method description->String
-      return "" + value
+    method to->String
+      return value->String
 
     method to->Degrees
       return Degrees( this )
