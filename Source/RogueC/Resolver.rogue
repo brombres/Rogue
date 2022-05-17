@@ -1352,7 +1352,7 @@ class Resolver : Visitor
       # And fill in default values
       proc.resolve
 
-      if (not proc.arrange_args(args))
+      if (not proc.arrange_args(args,this))
         trace args
         trace proc.parameters
         println StackTrace()
@@ -1547,7 +1547,7 @@ class Resolver : Visitor
 
         forEach (m in Candidates)
           contingent
-            if (m.arrange_args(args)) Candidates.keep m
+            if (m.arrange_args(args,this)) Candidates.keep m
           endContingent
         endForEach
         if (not Candidates.refine) return null
@@ -1557,7 +1557,7 @@ class Resolver : Visitor
       # Filter by compatible and convertible args
       if (arg_count)
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args )
+          if (has_named_arg) m.arrange_args( args, this )
           contingent
             forEach (arg at i in args)
               necessary (arg_type_is_compatible(arg,m.parameters[i].type))
@@ -1582,7 +1582,7 @@ class Resolver : Visitor
       # Filter by exact arg types
       if (arg_count)
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args )
+          if (has_named_arg) m.arrange_args( args, this )
           contingent
             forEach (arg at i in args)
               necessary exact_type_match( arg, m.parameters[i].type )
@@ -1608,7 +1608,7 @@ class Resolver : Visitor
       # Filter by arg categories (reference/primitive/compound)
       if (arg_count)
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args )
+          if (has_named_arg) m.arrange_args( args, this )
           contingent
             forEach (arg at i in args)
               local arg_type = arg.require_type
@@ -1627,7 +1627,7 @@ class Resolver : Visitor
       # Filter out methods where a reference arg type is not instanceOf the corresponding parameter type
       if (arg_count)
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args )
+          if (has_named_arg) m.arrange_args( args, this )
           forEach (arg at i in args)
             local arg_type = arg.type
             local param_type = m.parameters[i].type
@@ -1654,7 +1654,7 @@ class Resolver : Visitor
       # Prefer methods with primitive parameters that are higher precision than the args
       if (arg_count)
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args )
+          if (has_named_arg) m.arrange_args( args, this )
           contingent
             forEach (arg at i in args)
               local arg_type = arg.type
@@ -1673,7 +1673,7 @@ class Resolver : Visitor
       if (arg_count == 1)
         # Prefer methods with a String as the initial parameter; the arg will be to->String'd
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args )
+          if (has_named_arg) m.arrange_args( args, this )
           if (m.parameters.first.type is Program.type_String) Candidates.keep m
         endForEach
         if (Candidates.found_match) return Candidates.match

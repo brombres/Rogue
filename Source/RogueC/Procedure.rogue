@@ -63,7 +63,7 @@ class Procedure : Cmd
     method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
 
-    method arrange_args( args:Cmd )->Logical
+    method arrange_args( args:Cmd, resolver:Resolver )->Logical
       args->(as CmdList).list.discard( $ instanceOf DefaultArg )
       if (args.count > parameters.count) return false
 
@@ -98,7 +98,7 @@ class Procedure : Cmd
           # Fill in empty spots that have default values with placeholder named args.
           forEach (param at i in parameters)
             if (not list[i] and param.initial_value)
-              list[i] = DefaultArg( param.t, param.initial_value )
+              list[i] = DefaultArg( param.t, resolver.visit(param.initial_value) )
             endIf
           endForEach
 
