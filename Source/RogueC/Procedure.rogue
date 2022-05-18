@@ -191,6 +191,10 @@ class Procedure : Cmd
 
       if (attributes.returns_this) return_type = type_context
 
+      if (attributes.is_propagated and is_global)
+        throw t.error( "Routines and global methods cannot be [propagated]." )
+      endIf
+
       if (name == "to" and return_type)
         # to->String -> to_String->String etc.
         name = "to_" + return_type.name

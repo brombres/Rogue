@@ -3850,3 +3850,9 @@ class SetSingleton : Cmd
       return "SetSingleton($,$)" (%of_type,%new_value)
 
 endClass
+
+class AttributePropagated : Cmd
+  METHODS
+    method description->String
+      return "AttributePropagated"
+endClass

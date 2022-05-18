@@ -921,6 +921,10 @@ class Type : Cmd
                 (m.return_type,base_m.return_type) )
             endIf
           else
+            if (base_m.attributes.is_propagated)
+              base_m .= cloned
+              AspectMethodPatcher.patch( this, base_m )
+            endIf
             add( base_m )
           endIf
         endForEach

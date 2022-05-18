@@ -630,11 +630,12 @@ parser
   produceList Attributes
 
 - procedure_attribute
-  on @"abstract"  -> AttributeAbstract
-  on @"append"    -> AttributeAppend
-  on @"essential" -> AttributeEssential
-  on @"fallback"  -> AttributeFallback
-  on @"insert"    -> AttributeInsert
+  on @"abstract"   -> AttributeAbstract
+  on @"append"     -> AttributeAppend
+  on @"essential"  -> AttributeEssential
+  on @"fallback"   -> AttributeFallback
+  on @"insert"     -> AttributeInsert
+  on @"propagated" -> AttributePropagated
   syntaxError "Illegal procedure attribute. Expected one or more of [abstract append fallback insert]."
 
 - procedure_body
