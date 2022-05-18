@@ -1525,9 +1525,6 @@ class LiteralNull : Literal
 endClass
 
 class GlobalMethod : Procedure
-  PROPERTIES
-    type_context : Type
-
   METHODS
     method init( t:Token, type_context, name:String )
       prior.init( t, type_context.module_context, name, null, null, null, null )
@@ -1554,14 +1551,10 @@ class GlobalMethod : Procedure
 
       if (not skip_add_to_type) @type_context.add( this )
 
-    method type_context->Type
-      return @type_context
-
 endClass
 
 class Method : Procedure
   PROPERTIES
-    type_context     : Type
     id               : Int32
     inheriting_types = Type[]
 
@@ -1593,9 +1586,6 @@ class Method : Procedure
       endTemporarily
 
       if (not skip_add_to_type) @type_context.add( this )
-
-    method type_context->Type
-      return @type_context
 
 endClass
 

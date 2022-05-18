@@ -5,6 +5,7 @@ uses Utility/WorkList
 class Procedure : Cmd
   PROPERTIES
     module_context    : Module
+    type_context      : Type
     name              : String
     base_name         : String   # without any <<template-args>>
     signature         : String
@@ -209,7 +210,7 @@ class Procedure : Cmd
                   if (not p.type) p.type = Program.type_Logical
                   if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
                 elseIf (this.is_method)
-                  local prop = this->(as Method).type_context.properties[p.name]
+                  local prop = type_context.properties[p.name]
                   if (prop)
                     p.name = "_auto_store_" + p.name
                     p.type = prop.type
@@ -258,9 +259,6 @@ class Procedure : Cmd
       ensure resolver
 
       resolver.visit( module_context, this )
-
-    method type_context->Type
-      return null
 
 endClass
 
