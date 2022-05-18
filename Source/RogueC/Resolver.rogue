@@ -2159,10 +2159,16 @@ augment
     method Cmd.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       throw t.error( "Illegal assignment target." )
 
+
     method Access.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
         local v = resolver.find_local( name )
         if (v) return resolver.validate( SetLocal(t,v,new_value) )
+
+        local type = resolver.this_module.find_type( name, &extended_search )
+        if (type and type.attributes.is_singleton)
+          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
+        endIf
 
         if (resolver.this_type)
           local args = Args( t, new_value )
@@ -2196,10 +2202,7 @@ augment
           throw t.error( "No such local '$' in current context."(name) )
         endIf
       endIf
-      throw t.error( "Illegal target for assignment." )
-
-    method ContextDirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
-      return resolver.resolve_direct_assignment( t, context, name, new_value )
+      throw t.error( "Illegal assignment target." )
 
     method ContextAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
@@ -2226,7 +2229,10 @@ augment
 
         throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type.name) )
       endIf
-      throw t.error( "Illegal target for assignment." )
+      throw t.error( "Illegal assignment target." )
+
+    method ContextDirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      return resolver.resolve_direct_assignment( t, context, name, new_value )
 
     method DirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       return resolver.resolve_direct_assignment( t, null, name, new_value )
@@ -2234,6 +2240,15 @@ augment
     method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       local result = resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
       return result
+
+    method TypeAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        if (type.attributes.is_singleton)
+          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
+        endIf
+      endIf
+      throw t.error( "Illegal assignment target." )
+
 endAugment
 
 # Call

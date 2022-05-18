@@ -2289,6 +2289,7 @@ parser
   create SetGlobalProperty(info:Property,new_value)
   create SetLocal(info:Local,new_value)
   create SetProperty(context,info:Property,new_value)
+  create SetSingleton(of_type:Type,new_value)
   create SetThisProperty(info:Property,new_value)
   create Stepper(operand)
   create Switch(condition,cases:WhichCases,statements):Conditional

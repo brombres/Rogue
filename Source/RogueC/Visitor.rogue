@@ -568,5 +568,9 @@ class Visitor
     method on_visit_children( cmd:StateDef )
       cmd.methods = visit(cmd.methods)->(as Methods)
 
+    method on_visit_children( cmd:SetSingleton )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.new_value = visit(cmd.new_value)
+
 endClass
 

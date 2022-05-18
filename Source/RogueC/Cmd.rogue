@@ -3842,3 +3842,21 @@ class StateDef : Cmd
       return "StateDef($,$)" (%name,%methods)
 
 endClass
+
+class SetSingleton : Cmd
+  PROPERTIES
+    of_type   : Type
+    new_value : Cmd
+
+  METHODS
+    method init( t, of_type, new_value )
+
+    method init( existing:SetSingleton )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "SetSingleton($,$)" (%of_type,%new_value)
+
+endClass

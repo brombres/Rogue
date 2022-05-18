@@ -1110,6 +1110,13 @@ class CGenerator : Visitor
       writer.print( " = " )
       visit( cmd.new_value )
 
+    method on_visit( cmd:SetSingleton )
+      writer.print "ROGUE_SET_SINGLETON("
+      writer.print cmd.of_type.c_name
+      writer.print ','
+      visit( cmd.new_value )
+      writer.print ")"
+
     method on_visit( cmd:SetThisProperty )
       writer.print( "THIS->" )
       writer.print( cmd.info.c_name )

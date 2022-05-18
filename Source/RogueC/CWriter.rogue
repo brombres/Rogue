@@ -147,6 +147,11 @@ class CWriter : BufferedPrintWriter
            |      ((TypeName*)Rogue_singleton(&Type##TypeName,&TypeName##_singleton))
            |#endif
            |
+           |#if !defined(ROGUE_SET_SINGLETON)
+           |  #define ROGUE_SET_SINGLETON( TypeName, new_singleton ) \
+           |      Rogue_set_singleton(&Type##TypeName,&TypeName##_singleton,new_singleton)
+           |#endif
+           |
            |#if !defined(ROGUE_RELEASE)
            |  // Allow 'obj' to be GC'd if there are no other references to it.
            |  #define ROGUE_RELEASE( obj )  Rogue_release( obj )
@@ -207,6 +212,7 @@ class CWriter : BufferedPrintWriter
            |void  Rogue_destroy_object( void* obj );
            |void* Rogue_new_object( void* type );
            |void* Rogue_singleton( void* type, void* singleton_ref );
+           |void  Rogue_set_singleton( void* type, void* singleton_ref, void* new_singleton );
            |
            |void  Rogue_print_exception(void);
            |
@@ -301,6 +307,14 @@ class CWriter : BufferedPrintWriter
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj );
            |  return obj;
+           |}
+           |
+           |void Rogue_set_singleton( void* _type, void* singleton_ref, void* new_singleton )
+           |{
+           |  RogueObject** ref = (RogueObject**)singleton_ref;
+           |  RogueType* type = (RogueType*) _type;
+           |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( *ref, new_singleton );
+           |  *ref = new_singleton;
            |}
            |
            |void* Rogue_release( void* obj )
