@@ -4,6 +4,6 @@ class Object
       return this->String
 
     method to->String
-      return "Object"
+      return type_name
 endClass
 

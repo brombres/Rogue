@@ -581,6 +581,24 @@ class Type : Cmd
 
       inherit_methods
 
+      if (not is_aspect)
+        # module_name()->String
+        local m = Method( t, this, "module_name" )
+        m.return_type = Program.type_String
+        m.statements.add( Return(t,LiteralString(t,"$"(module_context))) )
+
+        m.organize
+        methods[ m.signature ] = m
+
+        # type_name()->String
+        m = Method( t, this, "type_name" )
+        m.return_type = Program.type_String
+        m.statements.add( Return(t,LiteralString(t,"$"(name))) )
+
+        m.organize
+        methods[ m.signature ] = m
+      endIf
+
       # Add state methods
       if (states.count)
         use state_methods = WorkList<<StateMethod>>
