@@ -50,6 +50,7 @@ class MethodOrganizer : Visitor
     method on_visit( cmd:Method )
       cmd.module_context = this_module
       cmd.type_context = this_type
+      cmd.generate_body
       cmd.organize( this )
       if (this_type.is_compound and cmd.name == "init")
         throw cmd.t.error(

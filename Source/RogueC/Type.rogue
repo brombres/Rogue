@@ -28,6 +28,8 @@ class Type : Cmd
     method_templates          = StringTable<<MethodTemplate>>()
     method_template_instances = StringTable<<Procedure>>()
 
+    name_tokens           : Token[]
+
     id                    : Int32
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
@@ -940,10 +942,11 @@ class Type : Cmd
             endIf
           else
             if (base_m.attributes.is_propagated)
-              base_m .= cloned
-              AspectMethodPatcher.patch( this, base_m )
+              # 'ThisType' -> (actual type)
+              add( base_m.propagated_to(this) )
+            else
+              add( base_m )
             endIf
-            add( base_m )
           endIf
         endForEach
       endIf

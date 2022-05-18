@@ -1557,10 +1557,14 @@ class Method : Procedure
   PROPERTIES
     id               : Int32
     inheriting_types = Type[]
+    source_tokens    : TokenList
 
   METHODS
-    method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
-        attributes=null:Attributes, body=null:LocalScope )
+    method init( t:Token, name:String )
+      init( t, null, name, null, null, null, null )
+
+    method init( t:Token, name:String, parameters:Parameters, return_type:Type,
+        attributes:Attributes, source_tokens, body:LocalScope )
       init( t, null, name, parameters, return_type, attributes, body )
 
     method init( t:Token, module_context:Module, name:String, parameters=null:Parameters, return_type=null:Type,
@@ -1573,9 +1577,38 @@ class Method : Procedure
     method init( existing:Method )
       prior.init( existing )
       type_context = existing.@type_context
+      if (existing.source_tokens) source_tokens = existing.source_tokens.cloned
 
     method context_signature->String
       return "$::$.$"(module_context,@type_context,signature)
+
+    method generate_body
+      if (statements is null)
+        local tokens = source_tokens.tokens
+        contingent
+          sufficient ((forEach in tokens).type == TokenType.KEYWORD_THIS_TYPE)
+          escapeContingent
+
+        satisfied
+          if (not type_context.name_tokens)
+            type_context.name_tokens = Scanner( type_context.name, type_context.name ).tokenize
+            type_context.name_tokens.remove_last  # EOL
+          endIf
+
+          local specialized_tokens = Token[]( tokens.count * 1.1 )
+          forEach (t in tokens)
+            if (t.type == TokenType.KEYWORD_THIS_TYPE)
+              specialized_tokens.add( type_context.name_tokens )
+            else
+              specialized_tokens.add( t )
+            endIf
+          endForEach
+          tokens = specialized_tokens
+        endContingent
+
+        body.statements = Parser(tokens).parse( Parser.ip_multi_line_statements )
+        statements = body.statements
+      endIf
 
     method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
       if (is_organized) return
@@ -1586,6 +1619,15 @@ class Method : Procedure
       endTemporarily
 
       if (not skip_add_to_type) @type_context.add( this )
+
+    method propagated_to( type_context:Type )->Method
+      temporarily body.statements=null, statements=null
+        local propagated_m = this.cloned
+        propagated_m.type_context = type_context
+        propagated_m.generate_body
+        AspectMethodPatcher.patch( type_context, propagated_m )
+        return propagated_m
+      endTemporarily
 
 endClass
 
@@ -3479,12 +3521,13 @@ class MethodTemplate : Cmd
       endForEach
       local name = type_args->String( name )
       local replacements = Template.replacements( placeholders, type_args )
-      local tokens = Template.make_replacements( _tokens, replacements )
+      local tokens = Template.make_replacements( type_context, _tokens, replacements )
       local parser = Parser( tokens )
       parser._cmd_stack.add( Identifier(t,name) )
       local m = parser.parse( Parser.ip_method_template )->(as Method)
       m.module_context = type_context.module_context
       m.type_context   = type_context
+      m.generate_body
       m.organize
 
       type_context.method_template_instances[ name ] = m
@@ -3495,7 +3538,8 @@ class MethodTemplate : Cmd
         forEach (type in type_context.extended_types)
           if (type.methods_organized)
             if (not type.methods[sig])
-              type.methods[ sig ] = m
+              if (m.attributes.is_propagated) type.methods[ sig ] = m.propagated_to( type )
+              else                            type.methods[ sig ] = m
             endIf
           endIf
         endForEach

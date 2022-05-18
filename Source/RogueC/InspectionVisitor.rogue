@@ -832,4 +832,17 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.new_value)
       return result
 
+    method on_visit_children( cmd:Method )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.parameters)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      if (result?) return result
+      result = visit(cmd.body)
+      if (result?) return result
+      result = visit(cmd.source_tokens)
+      return result
+
 endClass

@@ -304,28 +304,17 @@ class Parser : ParserCore
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS) )
 
       local m = Program.current_module
-      #if (m.templates["Routine<<0>>"])
-        # Make this an augment of class Routine
+      # Make this an augment of class Routine
 
-        # Create a special aspect that will be incorporated into the designated class
-        local aspect_name = "$-Routine-augment-$"(m.name,m.next_augment_id)
-        ++m.next_augment_id
+      # Create a special aspect that will be incorporated into the designated class
+      local aspect_name = "$-Routine-augment-$"(m.name,m.next_augment_id)
+      ++m.next_augment_id
 
-        if (not m.augments.contains("Routine")) m.augments["Routine"] = String[]
-        m.augments["Routine"].add( aspect_name )
+      if (not m.augments.contains("Routine")) m.augments["Routine"] = String[]
+      m.augments["Routine"].add( aspect_name )
 
-        attributes |= Attribute.ASPECT | Attribute.AUGMENT
-        m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, attributes )
-
-        #{
-      else
-        # Make this into class Routine
-        local new_template = Template( def_t, "Routine", &placeholders=Token[], tokens, attributes )
-        m.templates["Routine<<0>>"] = new_template
-
-      endIf
-      }#
-
+      attributes |= Attribute.ASPECT | Attribute.AUGMENT
+      m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, attributes )
 
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module
@@ -358,11 +347,13 @@ class Parser : ParserCore
       return prior._peek
 
     method print_stack
-      @trace _list_starts
       @trace _cmd_stack
 
     method print_trace
       @trace _next_t
+
+    method print_stack_trace
+      println StackTrace()
 
     method _read->Token
       if (inserted_tokens.count) return inserted_tokens.remove_last
