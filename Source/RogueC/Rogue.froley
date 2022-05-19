@@ -21,32 +21,33 @@ PLACEHOLDER    $placeholder  [content]
 tokens Keywords
 ----------------------------------------------------------------------
 KEYWORD_AND               and
-KEYWORD_AUGMENT           augment       [structural]
+KEYWORD_AUGMENT           augment        [structural]
 KEYWORD_BLOCK             block
-KEYWORD_CASE              case          [structural]
-KEYWORD_CATCH             catch         [structural]
-KEYWORD_CATEGORIES        CATEGORIES    [structural]
-KEYWORD_CLASS             class         [structural]
+KEYWORD_CASE              case           [structural]
+KEYWORD_CATCH             catch          [structural]
+KEYWORD_CATEGORIES        CATEGORIES     [structural]
+KEYWORD_CLASS             class          [structural]
 KEYWORD_CONTINGENT        contingent
-KEYWORD_DEFINITIONS       DEFINITIONS   [structural]
+KEYWORD_DEFINITIONS       DEFINITIONS    [structural]
 KEYWORD_DOWN_TO           downTo
-KEYWORD_ELSE              else          [structural]
-KEYWORD_ELSE_IF           elseIf        [structural]
-KEYWORD_END_AUGMENT       endAugment    [structural]
-KEYWORD_END_BLOCK         endBlock      [structural]
-KEYWORD_END_CLASS         endClass      [structural]
-KEYWORD_END_CONTINGENT    endContingent [structural]
-KEYWORD_END_ENUM          endEnum       [structural]
-KEYWORD_END_FOR_EACH      endForEach    [structural]
-KEYWORD_END_FUNCTION      endFunction   [structural]
-KEYWORD_END_IF            endIf         [structural]
-KEYWORD_END_LOOP          endLoop       [structural]
-KEYWORD_END_ROUTINE       endRoutine    [structural]
-KEYWORD_END_TRY           endTry        [structural]
-KEYWORD_END_USE           endUse        [structural]
-KEYWORD_END_WHICH         endWhich      [structural]
-KEYWORD_END_WHILE         endWhile      [structural]
-KEYWORD_ENUM              enum          [structural]
+KEYWORD_ELSE              else           [structural]
+KEYWORD_ELSE_IF           elseIf         [structural]
+KEYWORD_END_AUGMENT       endAugment     [structural]
+KEYWORD_END_BLOCK         endBlock       [structural]
+KEYWORD_END_CLASS         endClass       [structural]
+KEYWORD_END_CONTINGENT    endContingent  [structural]
+KEYWORD_END_ENUM          endEnum        [structural]
+KEYWORD_END_FOR_EACH      endForEach     [structural]
+KEYWORD_END_FUNCTION      endFunction    [structural]
+KEYWORD_END_IF            endIf          [structural]
+KEYWORD_END_LOOP          endLoop        [structural]
+KEYWORD_END_ROUTINE       endRoutine     [structural]
+KEYWORD_END_TEMPORARILY   endTemporarily [structural]
+KEYWORD_END_TRY           endTry         [structural]
+KEYWORD_END_USE           endUse         [structural]
+KEYWORD_END_WHICH         endWhich       [structural]
+KEYWORD_END_WHILE         endWhile       [structural]
+KEYWORD_ENUM              enum           [structural]
 KEYWORD_ESCAPE_BLOCK      escapeBlock
 KEYWORD_ESCAPE_CONTINGENT escapeContingent
 KEYWORD_ESCAPE_FOR_EACH   escapeForEach
@@ -94,6 +95,7 @@ KEYWORD_ROUTINE         routine     [structural]
 KEYWORD_SATISFIED       satisfied   [structural]
 KEYWORD_STATES          STATES      [structural]
 KEYWORD_SUFFICIENT      sufficient
+KEYWORD_TEMPORARILY     temporarily
 KEYWORD_THIS            this
 KEYWORD_THIS_TYPE       ThisType
 KEYWORD_THROW           throw
@@ -1535,16 +1537,17 @@ parser
   produceList Statements
 
 - control_structure
-  on     "local"      local_declarations: return
-  onPeek "block"      block:              return
-  onPeek "contingent" contingent:         return
-  onPeek "forEach"    forEach_loop:       return
-  onPeek "if"         if_statement:       return
-  onPeek "loop"       loop:               return
-  onPeek "which"      which_conditional:  return
-  onPeek "while"      while_loop:         return
-  onPeek "try"        try_catch:          return
-  onPeek "use"        use:                return
+  on     "local"       local_declarations: return
+  onPeek "block"       block:              return
+  onPeek "contingent"  contingent:         return
+  onPeek "forEach"     forEach_loop:       return
+  onPeek "if"          if_statement:       return
+  onPeek "loop"        loop:               return
+  onPeek "which"       which_conditional:  return
+  onPeek "while"       while_loop:         return
+  onPeek "temporarily" temporarily:        return
+  onPeek "try"         try_catch:          return
+  onPeek "use"         use:                return
   statement
 
 - args_or_null
@@ -1794,6 +1797,29 @@ parser
     createNull
     type
   endIf
+
+- temporarily
+  on "temporarily"
+    beginList
+      temporary_assignment
+      while (consume(','))
+        consume_eols
+        temporary_assignment
+      endWhile
+    createList TemporaryAssignments
+    must_consume_eols
+    multi_line_statements
+    mustConsume "endTemporarily"
+    produce Temporarily(assignments:TemporaryAssignments,statements):ControlStructure
+  endOn
+
+- temporary_assignment
+  expression
+  on '='
+    expression
+    produce TemporaryAssignment(target,new_value)
+  endOn
+  mustConsume '=' # error
 
 - use
   on "use"

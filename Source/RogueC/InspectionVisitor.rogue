@@ -845,4 +845,18 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.source_tokens)
       return result
 
+    method on_visit_children( cmd:Temporarily )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.assignments)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:TemporaryAssignment )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.target)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
 endClass

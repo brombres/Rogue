@@ -3900,3 +3900,46 @@ class AttributePropagated : Cmd
     method description->String
       return "AttributePropagated"
 endClass
+
+class Temporarily : ControlStructure
+  PROPERTIES
+    assignments : TemporaryAssignments
+
+  METHODS
+    method init( t, assignments, statements )
+
+    method init( existing:Temporarily )
+      prior.init( existing )
+      if (existing.assignments) assignments = existing.assignments.cloned
+
+    method description->String
+      return "Temporarily($,$)" (%assignments,%statements)
+
+endClass
+
+class TemporaryAssignment : Cmd
+  PROPERTIES
+    target    : Cmd
+    new_value : Cmd
+
+  METHODS
+    method init( t, target, new_value )
+
+    method init( existing:TemporaryAssignment )
+      prior.init( existing )
+      if (existing.target) target = existing.target.cloned
+      if (existing.new_value) new_value = existing.new_value.cloned
+
+    method description->String
+      return "TemporaryAssignment($,$)" (%target,%new_value)
+
+endClass
+
+class TemporaryAssignments : CmdList
+  METHODS
+    method description->String
+      return "TemporaryAssignments" + list_description
+
+    method get( index:Int32 )->TemporaryAssignment
+      return list[index]->(as TemporaryAssignment)
+endClass

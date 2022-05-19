@@ -926,6 +926,36 @@ class Resolver : Visitor
       local result = resolve_call( cmd.t, context, proc, cmd.args )
       return result
 
+    method on( cmd:Temporarily )->Cmd
+      if (cmd.assignments.count > 1)
+        local assignment = cmd.assignments.remove_first->(as TemporaryAssignment)
+        local nested_temporarily = Temporarily( cmd.t, cmd.assignments, cmd.statements )
+        cmd.assignments = TemporaryAssignments( cmd.t, assignment )
+        cmd.statements = Statements( cmd.statements.t, nested_temporarily )
+      endIf
+
+      local cmd_block = CleanupBlock( cmd.t, ControlType.TEMPORARILY )
+      push_scope( cmd_block )
+
+      local assignment = cmd.assignments.first->(as TemporaryAssignment)
+      local og_value = visit( assignment.target.cloned )
+      local og_value_type = og_value.require_type
+
+      local v_og_value = add_local( assignment.t, "original_value", og_value_type, DummyInitialValue )
+      cmd_block.statements.add( SetLocal(v_og_value, assignment.target.cloned, &initial_assignment) )
+      cmd_block.statements.add( Assign(assignment.t, assignment.target.cloned, assignment.new_value) )
+
+      local cmd_restore = Assign( assignment.t, assignment.target, GetLocal(v_og_value) )
+      local statements = EndScopePatcher.patch( this, cmd_restore, cmd.statements )
+      cmd_block.statements.add( forEach in statements )
+      cmd_block.cleanup.add( cmd_restore )
+
+      local result = visit( cmd_block )
+
+      pop_scope
+
+      return result
+
     method on_visit( cmd:This )
       if (this_procedure.is_global)
         throw cmd.t.error( "Illegal use of 'this' in a global context. 'this' can only be used in the context of an instance object." )
@@ -1424,7 +1454,11 @@ class Resolver : Visitor
 
         if (Candidates.count)
           local result = refine_candidates( type_context, args )
-          if (result) return result.[resolve]
+          if (result)
+            return result.[resolve]
+          elseIf (constructor and suppress_error)
+            return null
+          endIf
         elseIf (suppress_error)
           return null
         endIf
