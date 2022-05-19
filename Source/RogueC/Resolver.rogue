@@ -651,6 +651,15 @@ class Resolver : Visitor
 
       forEach (decl in cmd.declarations)
         local v = decl->(as Local)
+        contingent
+          forEach (control_structure in control_stack)
+            forEach (existing_v in control_structure.locals)
+              necessary (existing_v.name != v.name)
+            endForEach
+          endForEach
+        unsatisfied
+          throw v.t.error( ''A local variable named "$" already exists in this scope.''(v.name) )
+        endContingent
         add_local( v )
       endForEach
 
