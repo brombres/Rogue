@@ -487,6 +487,39 @@ class Resolver : Visitor
 
       return cmd
 
+    method on( cmd:IfLocal )->Cmd
+      local expression = visit( cmd.expression )
+      local expression_type = expression.require_type
+
+      if (expression_type.attributes.is_optional)
+        if (not expression.is_simple)
+          local v_expression = add_local( cmd.t, "expression", expression_type, DummyInitialValue )
+          insert( SetLocal(v_expression,expression) )
+          expression = GetLocal( v_expression )
+        endIf
+        local cmd_if = If( cmd.t, ContextAccess(cmd.t,expression.cloned,"exists"), Statements(cmd.t), null )
+        push_scope( cmd_if )
+
+        local core_type = expression_type.properties["value"].type
+        local v = add_local( Local(cmd.t, cmd.name, DummyInitialValue, core_type) )
+        cmd_if.statements.add( SetLocal(v,ContextAccess(expression.t,expression,"value"),&initial_assignment) )
+        cmd_if.statements.add( forEach in cmd.statements )
+
+        pop_scope
+        return visit( cmd_if )
+
+      else
+        local cmd_block = ControlStructure( cmd.t, Statements(cmd.t), ControlType.UNDEFINED )
+        push_scope( cmd_block )
+
+        local v = add_local( Local(cmd.t, cmd.name, DummyInitialValue, expression_type) )
+        cmd_block.statements.add( SetLocal(v,expression,&initial_assignment) )
+        cmd_block.statements.add( If(cmd.t, GetLocal(v), cmd.statements, null) )
+
+        pop_scope
+        return visit( cmd_block )
+      endIf
+
     method on( cmd:InlineWhich )->Cmd
       if (cmd.cases.count == 1) return visit( cmd.cases.first )
 

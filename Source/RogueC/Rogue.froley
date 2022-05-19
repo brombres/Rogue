@@ -1262,6 +1262,20 @@ parser
 
 - if_statement
   on "if"
+    if (consume("local"))
+      # if local v = expression
+      identifier
+      mustConsume "="
+      expression
+      consume_eols
+      multi_line_statements
+      if (nextIs("elseIf") or nextIs("else"))
+        syntaxError "if-local cannot contain elseIfs or an else."
+      endIf
+      mustConsume "endIf"
+      produce IfLocal( name:String, expression, statements )
+    endIf
+
     expression
     if (consume(EOL))
       # Multi-line 'if'

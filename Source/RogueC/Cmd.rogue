@@ -3961,3 +3961,23 @@ class As : Cmd
       return "As($,$)" (%operand,%as_type)
 
 endClass
+
+class IfLocal : Cmd
+  PROPERTIES
+    name       : String
+    expression : Cmd
+    statements : Cmd
+
+  METHODS
+    method init( t, name, expression, statements )
+
+    method init( existing:IfLocal )
+      prior.init( existing )
+      name = existing.name
+      if (existing.expression) expression = existing.expression.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "IfLocal($,$,$)" (%name,%expression,%statements)
+
+endClass
