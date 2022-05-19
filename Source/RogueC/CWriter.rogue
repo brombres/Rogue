@@ -234,6 +234,7 @@ class CWriter : BufferedPrintWriter
            |extern RogueObjectList RogueMM_objects;
            |extern RogueObjectList RogueMM_objects_requiring_cleanup;
            |
+           |void*        Rogue_as( void* obj, RogueInt32 recast_type_id );
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id );
         println
 
@@ -413,6 +414,21 @@ class CWriter : BufferedPrintWriter
            |int              RogueMM_gc_request                = 0;
            |RogueObjectList  RogueMM_objects                   = {};
            |RogueObjectList  RogueMM_objects_requiring_cleanup = {};
+           |
+           |void* Rogue_as( void* obj, RogueInt32 recast_type_id )
+           |{
+           |  if ( !obj ) return 0;
+           |  RogueType* type = ((RogueObject*)obj)->type;
+           |  if (type->id == recast_type_id) return obj;
+           |
+           |  RogueInt32* base_ids = type->base_type_ids - 1;
+           |  RogueInt32  count = type->base_type_count;
+           |  while (--count >= 0)
+           |  {
+           |    if (*(++base_ids) == recast_type_id) return obj;
+           |  }
+           |  return 0;
+           |}
            |
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
            |{

@@ -859,4 +859,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.new_value)
       return result
 
+    method on_visit_children( cmd:As )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.as_type)
+      return result
+
 endClass

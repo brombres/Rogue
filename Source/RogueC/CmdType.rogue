@@ -409,25 +409,20 @@ augment
     method Cmd.type->Type
       return null
 
-    #method Access.type->Type
-      #return Program.find_type(name)
-
     method AddAndAssign.type->Type
       return target.type
 
     method AddAndAssignLocal.type->Type
       return info.type
 
+    method As.type->Type
+      return as_type
+
     method Binary.type->Type
       return common_type( t, left.type, right.type )
 
     method CallProcedure.type->Type
       return info.return_type
-
-      #{
-    method CastReal64ToInt32.type->Type
-      return Program.type_Int32
-      }#
 
     method ConvertToByte.type->Type
       return Program.type_Byte
@@ -444,25 +439,11 @@ augment
     method ConvertToLogical.type->Type
       return Program.type_Logical
 
-    #method ConvertToObject.type->Type
-    #  return Program.type_Object
-
     method ConvertToReal32.type->Type
       return Program.type_Real32
 
     method ConvertToReal64.type->Type
       return Program.type_Real64
-
-      #{
-    method ConvertToString.type->Type
-      return Program.type_String
-
-    method ConvertToValue.type->Type
-      return Program.type_Value
-
-    method CastValueToXY.type->Type
-      return Program.type_XY
-      }#
 
     method Compare.type->Type
       return Program.type_Logical
@@ -489,27 +470,8 @@ augment
     method CreateObjectAndSetLocal.type->Type
       return of_type
 
-      #{
-    method CreateXY0.type->Type
-      return Program.type_XY
-
-    method CreateXY1.type->Type
-      return Program.type_XY
-
-    method CreateXY2.type->Type
-      return Program.type_XY
-
-    method Description.type->Type
-      return Program.type_String
-    }#
-
     method EmptyCompound.type->Type
       return of_type
-
-    #{
-    method EmptyList.type->Type
-      return Program.type_Value
-      }#
 
     method GenericFunctionDefinition.type->Type
       return Program.type_GenericFn
@@ -532,14 +494,6 @@ augment
     method GlobalPropertyDeclarations.type->Type
       return @type
 
-
-      #{
-    method ImportModule.type->Type
-      return Program.type_Value
-
-    method IndexedAccess.type->Type
-      return context.type
-}#
     method Is.type->Type
       return Program.type_Logical
 
@@ -592,14 +546,6 @@ augment
 
     method LiteralString.type->Type
       return Program.type_String
-
-      #{
-    method LiteralValueList.type->Type
-      return Program.type_Value
-
-    method LiteralValueUndefined.type->Type
-      return Program.type_Value
-      }#
 
     method Local.type->Type
       return @type

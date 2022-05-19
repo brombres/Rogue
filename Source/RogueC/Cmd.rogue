@@ -3943,3 +3943,21 @@ class TemporaryAssignments : CmdList
     method get( index:Int32 )->TemporaryAssignment
       return list[index]->(as TemporaryAssignment)
 endClass
+
+class As : Cmd
+  PROPERTIES
+    operand : Cmd
+    as_type : Type
+
+  METHODS
+    method init( t, operand, as_type )
+
+    method init( existing:As )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.as_type) as_type = existing.as_type.cloned
+
+    method description->String
+      return "As($,$)" (%operand,%as_type)
+
+endClass

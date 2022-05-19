@@ -138,6 +138,19 @@ class CGenerator : Visitor
       writer.print " += "
       visit( cmd.operand )
 
+    method on_visit( cmd:As )
+      if (cmd.operand.type.instance_of(cmd.as_type))
+        print_with_cast( cmd.operand, cmd.as_type )
+      else
+        writer.print "(("
+        writer.print cmd.as_type.c_ref_name
+        writer.print ")"
+        writer.print( "Rogue_as(" )
+        visit( cmd.operand )
+        writer.print( ", " ).print( cmd.as_type.id ).print( ')' )
+        writer.print ")"
+      endIf
+
     method on_visit( cmd:BitwiseAndAndAssignLocal )
       writer.print '('
       writer.print cmd.info.c_name

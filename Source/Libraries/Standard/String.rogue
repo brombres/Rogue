@@ -1111,6 +1111,9 @@ class String : PrintWriter
       endIf
       return native( "strtod( (char*)$this->data->as_utf8, 0 )" )->Real64
 
+    method to->String
+      return this
+
     method to_lowercase->String
       local has_uc = false
       forEach (ch in this)

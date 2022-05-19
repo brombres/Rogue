@@ -116,6 +116,13 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_access( cmd.t, null, cmd.name, cmd.args )
 
+    method on( cmd:As )->Cmd
+      cmd.operand = visit( cmd.operand )
+      if (not cmd.operand.require_type.is_reference or not cmd.as_type.is_reference)
+        throw cmd.t.error( "'as' can only be used with reference types." )
+      endIf
+      return cmd
+
     method on( cmd:AccessAndAssign )->Cmd
       local context = AccessAndAssignPatcher.find_context(cmd)
 

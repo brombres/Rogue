@@ -21,6 +21,7 @@ PLACEHOLDER    $placeholder  [content]
 tokens Keywords
 ----------------------------------------------------------------------
 KEYWORD_AND               and
+KEYWORD_AS                as
 KEYWORD_AUGMENT           augment        [structural]
 KEYWORD_BLOCK             block
 KEYWORD_CASE              case           [structural]
@@ -2006,6 +2007,21 @@ parser
     endOn
     access_inner
   elseOn "->"
+    if (nextIs('('))
+      savePosition
+      consume '('
+      on "as"
+        discardPosition
+        type
+        mustConsume ')'
+        create As(operand,as_type:Type)
+        access_inner
+        return
+      elseOnOthers
+        restorePosition
+      endOn
+    endIf
+
     type
     if (nextIs('('))
       args
