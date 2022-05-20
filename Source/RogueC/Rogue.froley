@@ -883,8 +883,8 @@ parser
     if (not disable_output) syntaxError
     on PLACEHOLDER -> Identifier(name=content)
   endIf
-  onPeek "ThisType"
-    syntaxError "'ThisType' can only be used as a method return type or in object method bodies."
+  on "ThisType"
+    produce Identifier(name="ThisType":String)
   endOn
   syntaxError "Identifier expected."
 
@@ -1441,7 +1441,6 @@ parser
       createTokenList
       create MethodTemplate(name:String,placeholders,_tokens:TokenList)
     else
-      #call on_begin_method_body
       savePosition
 
       ++disable_output
@@ -1452,7 +1451,6 @@ parser
       createNull
       create LocalScope(statements):ControlStructure
       create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
-      #call on_end_method_body
       return
     endIf
   endOn
@@ -2214,6 +2212,11 @@ parser
   on "native"
     native_code
     return
+  endOn
+
+  on "ThisType"
+    create Type(name="ThisType":String)
+    produce TypeContext(type:Type)
   endOn
 
   syntaxError
