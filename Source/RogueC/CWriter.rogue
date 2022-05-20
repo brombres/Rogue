@@ -558,15 +558,5 @@ class CWriter : BufferedPrintWriter
 
       if (not omit_quotes) print '"'
 
-    method print_with_cast( cmd:String, from_type:Type, to_type:Type )
-      if (from_type is to_type)
-        print cmd
-      else
-        print "(("
-        print to_type.c_ref_name
-        print ")"
-        print cmd
-        print ")"
-      endIf
 endClass
 

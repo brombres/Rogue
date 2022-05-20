@@ -639,8 +639,9 @@ parser
   on @"essential"  -> AttributeEssential
   on @"fallback"   -> AttributeFallback
   on @"insert"     -> AttributeInsert
+  on @"mutating"   -> AttributeMutating
   on @"propagated" -> AttributePropagated
-  syntaxError "Illegal procedure attribute. Expected one or more of [abstract append fallback insert]."
+  syntaxError "Illegal procedure attribute. Expected one or more of [abstract append essential fallback insert mutating propagated]."
 
 - procedure_body
   multi_line_statements

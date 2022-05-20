@@ -2859,7 +2859,7 @@ augment
           )
 
     method Cmd.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target. " + type_name )
+      throw t.error( "Illegal assignment target. " )
 
     method Access.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error

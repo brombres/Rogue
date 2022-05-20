@@ -3981,3 +3981,9 @@ class IfLocal : Cmd
       return "IfLocal($,$,$)" (%name,%expression,%statements)
 
 endClass
+
+class AttributeMutating : Cmd
+  METHODS
+    method description->String
+      return "AttributeMutating"
+endClass

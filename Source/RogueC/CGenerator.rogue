@@ -81,9 +81,14 @@ class CGenerator : Visitor
       endForEach
       return null
 
-    method print_with_cast( cmd:Cmd, to_type:Type )
+    method print_with_cast( cmd:Cmd, to_type:Type, &context_is_mutating, &call_is_mutating )
       local cmd_type = cmd.type
       if (cmd_type is to_type)
+        if (call_is_mutating)
+          if (not context_is_mutating) writer.print '&'
+        else
+          if (context_is_mutating) writer.print '*'
+        endIf
         visit( cmd )
       else
         writer.print "(("
@@ -93,8 +98,21 @@ class CGenerator : Visitor
         writer.print ")"
       endIf
 
-    method print_with_cast( cmd:String, from_type:Type, to_type:Type )
-      writer.print_with_cast( cmd, from_type, to_type )
+    method print_with_cast( cmd:String, from_type:Type, to_type:Type, &context_is_mutating, &call_is_mutating )
+      if (from_type is to_type)
+        if (call_is_mutating)
+          if (not context_is_mutating) writer.print '&'
+        else
+          if (context_is_mutating) writer.print '*'
+        endIf
+        writer.print cmd
+      else
+        writer.print "(("
+        writer.print to_type.c_ref_name
+        writer.print ")"
+        writer.print cmd
+        writer.print ")"
+      endIf
 
     method on_visit( cmd:Cmd )
       throw cmd.t.error("Unsupported operation CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
@@ -132,7 +150,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:AddAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " += "
@@ -173,7 +191,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:BitwiseAndAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " &= "
@@ -201,7 +219,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:BitwiseOrAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " |= "
@@ -229,7 +247,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:BitwiseXorAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " ^= "
@@ -257,7 +275,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:BitShiftLeftAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " <<= "
@@ -285,7 +303,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:BitShiftRightXAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " >>= "
@@ -389,11 +407,12 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:CallStaticMethod )
+      local call_is_mutating = cmd.info.attributes.is_mutating
       writer.print( cmd.info.c_name )
 
       if (cmd.args.count == 0)
         writer.print '('
-        print_with_cast( cmd.context, cmd.info.type_context )
+        print_with_cast( cmd.context, cmd.info.type_context, &=call_is_mutating )
         writer.print ')'
       else
         writer.print "( "
@@ -446,14 +465,17 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:CallThisStaticMethod )
+      local context_is_mutating = this_procedure.attributes.is_mutating
+      local call_is_mutating = cmd.info.attributes.is_mutating
+
       writer.print( cmd.info.c_name )
       if (cmd.args.count == 0)
         writer.print '('
-        print_with_cast( "THIS", this_type, cmd.info.type_context )
+        print_with_cast( "THIS", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
         writer.print ')'
       else
         writer.print "( "
-        print_with_cast( "THIS", this_type, cmd.info.type_context )
+        print_with_cast( "THIS", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
         if (cmd.args.count)
           forEach (arg at i in cmd.args)
             writer.print ", "
@@ -704,7 +726,7 @@ class CGenerator : Visitor
       writer.print "--"
       writer.print "THIS"
       assert this_type
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
@@ -737,7 +759,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:DivideAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " /= "
@@ -772,7 +794,7 @@ class CGenerator : Visitor
     method on_visit( cmd:GetThisProperty )
       writer.print "THIS"
       assert this_type
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
@@ -829,7 +851,7 @@ class CGenerator : Visitor
       writer.print "++"
       writer.print "THIS"
       assert this_type
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
@@ -1021,7 +1043,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:MultiplyAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " *= "
@@ -1133,7 +1155,9 @@ class CGenerator : Visitor
       writer.print ")"
 
     method on_visit( cmd:SetThisProperty )
-      writer.print( "THIS->" )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print( " = " )
       visit( cmd.new_value )
@@ -1177,7 +1201,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:SubtractAndAssignThisProperty )
       writer.print "THIS"
-      if (this_type.is_reference) writer.print "->"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print " -= "
@@ -1224,6 +1248,7 @@ class CGenerator : Visitor
       on_leave( cmd )
 
     method on_visit( cmd:This )
+      if (this_procedure.attributes.is_mutating) writer.print '*'
       writer.print "THIS"
 
     method on_visit( cmd:Throw )
@@ -1325,7 +1350,7 @@ class CGenerator : Visitor
           forEach (p in this_type.properties)
             if (name == p.name)
               if (type)                       return p.type.c_ref_name
-              elseIf (this_type.is_reference) return "THIS->" + p.c_name
+              elseIf (this_type.is_reference or this_procedure.attributes.is_mutating) return "THIS->" + p.c_name
               else                            return "THIS." + p.c_name
             endIf
           endForEach
@@ -2047,7 +2072,7 @@ augment
       writer.print( m.c_name )
       writer.print( "( " )
       writer.print m.type_context.c_name
-      if (m.type_context.is_reference) writer.print '*'
+      if (m.type_context.is_reference or m.attributes.is_mutating) writer.print '*'
       writer.print " THIS"
       forEach (p at i in m.parameters)
         block p = p->(as Local)

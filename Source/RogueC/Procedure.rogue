@@ -195,6 +195,10 @@ class Procedure : Cmd
         throw t.error( "Routines and global methods cannot be [propagated]." )
       endIf
 
+      if (attributes.is_mutating and not type_context.is_compound)
+        throw t.error( "Only compound methods can have the [mutating] attribute." )
+      endIf
+
       if (name == "to" and return_type)
         # to->String -> to_String->String etc.
         name = "to_" + return_type.name

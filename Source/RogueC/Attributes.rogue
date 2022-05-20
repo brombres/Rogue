@@ -36,6 +36,7 @@ class Attribute
     API                = (Int64(1):<<:31)
     PRIMARY            = (Int64(1):<<:32)
     PROPAGATED         = (Int64(1):<<:33)
+    MUTATING           = (Int64(1):<<:34)
 endClass
 
 class Attributes : CmdList
@@ -73,6 +74,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_api,               Attribute.API )
   ROGUE_ATTRIBUTE( is_primary,           Attribute.PRIMARY )
   ROGUE_ATTRIBUTE( is_propagated,        Attribute.PROPAGATED )
+  ROGUE_ATTRIBUTE( is_mutating,          Attribute.MUTATING )
 
   PROPERTIES
     flags : Int64
@@ -131,6 +133,9 @@ augment
 
     method AttributeInsert.attribute_flags->Int64
       return Attribute.INSERT
+
+    method AttributeMutating.attribute_flags->Int64
+      return Attribute.MUTATING
 
     method AttributePrimitive.attribute_flags->Int64
       return Attribute.PRIMITIVE
