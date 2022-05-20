@@ -204,6 +204,8 @@ class Program [singleton]
         endTemporarily
       endForEach
 
+      (forEach in modules).instantiate_essential_and_api_types
+
       (forEach in modules).organize_methods
 
       apply( Transformer() )

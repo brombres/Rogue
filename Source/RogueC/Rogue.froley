@@ -915,8 +915,9 @@ parser
   produceList Attributes
 
 - module_attribute
-  #on "export" -> AttributeExport
-  syntaxError "Illegal module attribute."
+  on @"api"       -> AttributeAPI
+  on @"essential" -> AttributeEssential
+  syntaxError "Illegal module attribute. Expected one or more of [api essential]."
 
 - class_attributes
   beginList

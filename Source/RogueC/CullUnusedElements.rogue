@@ -13,6 +13,7 @@ class CullUnusedElements : InspectionVisitor
         endIf
         if (m.attributes.is_api)
           (forEach in m.types).attributes.is_api = true
+          (forEach in m.types).attributes.is_essential = true
         endIf
 
         # [essential] routines require [essential] Routine classes
@@ -97,7 +98,9 @@ class CullUnusedElements : InspectionVisitor
       endIf
 
       forEach (type in m.types)
-        if (type.attributes.is_essential) visit_type( type )
+        if (type.attributes.is_essential)
+          visit_type( type )
+        endIf
       endForEach
 
     method on_visit_type( type:Type ) [override]

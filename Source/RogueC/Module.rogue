@@ -98,6 +98,27 @@ class Module
 
       return result
 
+    method instantiate_essential_and_api_types
+      if (attributes.is_essential or attributes.is_api)
+        # Instantiate one of each template with 0 type parameters
+        temporarily Program.current_module = this
+          forEach (templ in templates)
+            if (templ.placeholders.count == 0)
+              if (not types.contains(templ.name))
+                  Type( templ.t, templ.name )
+              endIf
+            endIf
+          endForEach
+        endTemporarily
+      endIf
+
+      if (attributes.is_essential)
+        (forEach in types).attributes.is_essential = true
+      endIf
+      if (attributes.is_api)
+        (forEach in types).attributes.is_api = true
+      endIf
+
     method organize_methods
       if (is_organized) return
       is_organized = true
