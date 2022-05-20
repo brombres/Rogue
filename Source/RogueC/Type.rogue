@@ -34,6 +34,7 @@ class Type : Cmd
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
     m_on_cleanup          : Method
+    m_primary_constructor : GlobalMethod   # for compounds; indicates what types are for destructuring assignments
 
     base_type_lookup_index  : Int32
     base_type_ids           = Int32[]

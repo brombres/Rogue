@@ -588,5 +588,8 @@ class Visitor
       cmd.expression = visit(cmd.expression)
       cmd.statements = visit(cmd.statements)
 
+    method on_visit_children( cmd:NamedTupleElement )
+      cmd.value = visit(cmd.value)
+
 endClass
 

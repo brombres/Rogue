@@ -1837,7 +1837,7 @@ endClass
 augment
   METHODS
     method Cmd.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target." )
+      throw t.error( "Illegal assignment target for '.='." )
 
     method Access.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
@@ -1966,10 +1966,10 @@ augment
           )
 
     method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target. " )
+      throw t.error( "Illegal assignment target for '$'."($OpSymbol) )
 
     method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target." )
+      throw t.error( "Illegal assignment target for '$'."($OpSymbol) )
 
     method Access.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
@@ -2247,7 +2247,6 @@ augment
     method Cmd.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       throw t.error( "Illegal assignment target." )
 
-
     method Access.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
         local v = resolver.find_local( name )
@@ -2292,6 +2291,35 @@ augment
       endIf
       throw t.error( "Illegal assignment target." )
 
+    method AnonymousTuple.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      # Destructuring assignment
+      #
+      # (a,b) = Tuple<<...>>(x,y)
+      #   ->
+      # local tuple = Tuple...
+      # a = tuple.x
+      # b = tuple.y
+      local tuple_type = new_value.require_type
+      if (not tuple_type.is_compound)
+        throw t.error( "Destructuring assignments can only be used with tuples." )
+      endIf
+
+      local v_tuple = resolver.add_local( t, "tuple", tuple_type, DummyInitialValue )
+      resolver.insert( SetLocal(t, v_tuple, new_value, &initial_assignment) )
+      local m = tuple_type.m_primary_constructor
+      assert m
+      local params = m.parameters
+      if (params.count != this.count)
+        throw t.error( "Destructuring assignment to $ but $ are required."...
+            ("# variable".pluralized(this.count), params.count) )
+      endIf
+
+      forEach (prop at i in params)
+        resolver.insert( Assign(t,this[i],ContextAccess(t,GetLocal(v_tuple),prop.name)) )
+      endForEach
+
+      return null
+
     method ContextAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       if (not args)
         context = resolver.visit( context )
@@ -2317,7 +2345,8 @@ augment
 
         throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type.name) )
       endIf
-      throw t.error( "Illegal assignment target." )
+
+      return prior.resolve_assignment( t, new_value, resolver )  # throws error
 
     method ContextDirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       return resolver.resolve_direct_assignment( t, context, name, new_value )
@@ -2335,7 +2364,8 @@ augment
           return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
         endIf
       endIf
-      throw t.error( "Illegal assignment target." )
+
+      return prior.resolve_assignment( t, new_value, resolver )  # throws error
 
 endAugment
 
@@ -2859,7 +2889,7 @@ augment
           )
 
     method Cmd.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
-      throw t.error( "Illegal assignment target. " )
+      throw t.error( "Illegal stepper target. " )
 
     method Access.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error

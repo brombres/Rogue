@@ -3993,3 +3993,33 @@ class AttributeAPI : Cmd
     method description->String
       return "AttributeAPI"
 endClass
+
+class AnonymousTuple : CmdList
+  METHODS
+    method description->String
+      return "AnonymousTuple" + list_description
+endClass
+
+class NamedTuple : CmdList
+  METHODS
+    method description->String
+      return "NamedTuple" + list_description
+endClass
+
+class NamedTupleElement : Cmd
+  PROPERTIES
+    name  : String
+    value : Cmd
+
+  METHODS
+    method init( t, name, value )
+
+    method init( existing:NamedTupleElement )
+      prior.init( existing )
+      name = existing.name
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "NamedTupleElement($,$)" (%name,%value)
+
+endClass

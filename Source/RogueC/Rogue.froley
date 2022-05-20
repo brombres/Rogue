@@ -695,9 +695,12 @@ parser
 
 - procedure_parameter
   consume_eols
-  on IDENTIFIER optional_initial_value optional_type -> Local(name=content,initial_value,type:Type)
+  #on IDENTIFIER optional_initial_value optional_type -> Local(name=content,initial_value,type:Type)
   on '&' identifier optional_initial_value optional_type -> Local(name:String,initial_value,type:Type,default_parameter="true":Logical)
-  mustConsume IDENTIFIER  # generate error message
+  identifier
+  optional_initial_value
+  optional_type
+  produce Local(name:String,initial_value,type:Type)
 
 - optional_initial_value
   if (consume('=')) consume_eols; expression
@@ -2168,6 +2171,11 @@ parser
     elseOnOthers
       savePosition
       expression
+      if (nextIs(':'))
+        restorePosition
+        named_tuple
+        return
+      endIf
       if (consume(')'))
         if (not (nextIs("with") or nextIs("=>")))
           # good to go as expression grouping
@@ -2175,6 +2183,13 @@ parser
           return
         endIf
       endIf
+
+      if (consume(','))
+        restorePosition
+        anonymous_tuple
+        return
+      endIf
+
 
       # Generic function
       restorePosition
@@ -2222,6 +2237,43 @@ parser
   endOn
 
   syntaxError
+
+- anonymous_tuple
+  # (x,y,...)
+  # '(' already consumed
+  beginList
+    consume_eols
+    expression
+    consume_eols
+    while (consume(','))
+      consume_eols
+      expression
+      consume_eols
+    endWhile
+    mustConsume ')'
+  createList AnonymousTuple
+
+
+- named_tuple
+  # (a:x,b:y,...)
+  # '(' already consumed
+  beginList
+    named_tuple_element
+    while (consume(','))
+      named_tuple_element
+    endWhile
+    mustConsume ')'
+  createList NamedTuple
+
+- named_tuple_element
+  consume_eols
+  identifier
+  consume_eols
+  mustConsume ':'
+  consume_eols
+  expression
+  consume_eols
+  produce NamedTupleElement(name:String,value)
 
 - remaining_generic_function_definition
   onPeek "with"
