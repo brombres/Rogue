@@ -32,6 +32,7 @@ class MethodOrganizer : Visitor
           m_create.attributes.is_primary = true
           m_create.parameters.add( forEach in cmd.constructor_properties )
           m_create.statements.add( Return(cmd.t, CreateCompound(cmd.t,this_type)) )
+          this_type.m_primary_constructor = m_create
           on( m_create )
         endIf
       endIf
@@ -79,6 +80,7 @@ class MethodOrganizer : Visitor
       endForEach
 
     method on_visit( cmd:TemplatedAccess )
+      assert this_module
       cmd.module_context = this_module
       cmd.type_context = this_type
 

@@ -135,10 +135,12 @@ class Module
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (not r)
         r = GlobalMethod( t, type_Routine, "on_launch" )
+        r.statements.add( forEach in global_statements )
         r.organize
         type_Routine.global_methods[ r.signature ] = r
+      else
+        r.statements.add( forEach in global_statements )
       endIf
-      r.statements.add( forEach in global_statements )
       m_on_launch = r
 
     method to->String
