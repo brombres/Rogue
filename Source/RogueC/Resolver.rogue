@@ -1408,7 +1408,12 @@ class Resolver : Visitor
 
         if (args.count == 0 and Candidates.count == 0)
           # No constructors available and no constructor required.
-          return CreateObject( t, type_context, null, args )
+          if (type_context.is_compound)
+            assert args instanceOf Args
+            return CreateCompound( t, type_context, args->(as Args) )
+          else
+            return CreateObject( t, type_context, null, args )
+          endIf
         endIf
 
         mesg = "No exact match for object constructor $("(type_context)
