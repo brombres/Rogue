@@ -635,6 +635,7 @@ parser
 
 - procedure_attribute
   on @"abstract"   -> AttributeAbstract
+  on @"api"        -> AttributeEssential  # [api] is the same as [essential] for methods
   on @"append"     -> AttributeAppend
   on @"essential"  -> AttributeEssential
   on @"fallback"   -> AttributeFallback
@@ -930,17 +931,16 @@ parser
 
 - class_attribute
   on @"abstract"  -> AttributeAbstract
+  on @"api"       -> AttributeAPI
+  on @"aspect"    -> AttributeAspect
   on @"compound"  -> AttributeCompound
+  on @"primitive" -> AttributePrimitive
   on @"singleton" -> AttributeSingleton
   if (consume @"essential")
     call class_attribute_essential
     produce AttributeEssential
-  elseIf (consume @"primitive")
-    produce AttributePrimitive
-  elseIf (consume @"aspect")
-    produce AttributeAspect
   endIf
-  syntaxError "Illegal class attribute. Expected one or more of [abstract aspect compound essential primitive singleton]."
+  syntaxError "Illegal class attribute. Expected one or more of [abstract api aspect compound essential primitive singleton]."
 
 - class
   constructor_properties

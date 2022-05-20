@@ -3987,3 +3987,9 @@ class AttributeMutating : Cmd
     method description->String
       return "AttributeMutating"
 endClass
+
+class AttributeAPI : Cmd
+  METHODS
+    method description->String
+      return "AttributeAPI"
+endClass

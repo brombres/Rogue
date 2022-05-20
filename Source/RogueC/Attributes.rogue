@@ -122,6 +122,9 @@ augment
     method AttributeAspect.attribute_flags->Int64
       return Attribute.ASPECT
 
+    method AttributeAPI.attribute_flags->Int64
+      return Attribute.API
+
     method AttributeCompound.attribute_flags->Int64
       return Attribute.COMPOUND
 
