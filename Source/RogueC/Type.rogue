@@ -83,6 +83,19 @@ class Type : Cmd
       type.attributes.is_optional = true
       return type
 
+    method create( t:Token, anonymous_elements:AnonymousTupleTypeElements )->Type
+      # Transform into named tuple type with names _1, _2, ...
+      local named_elements = NamedTupleTypeElements( anonymous_elements.t )
+      forEach (type at i in anonymous_elements)
+        named_elements.add( NamedTupleTypeElement(anonymous_elements.t,"_$"(i+1),type) )
+      endForEach
+
+      return Type( t, named_elements )
+
+    method create( t:Token, named_elements:NamedTupleTypeElements )->Type
+      trace "TODO ", named_elements
+      return null
+
   METHODS
     method init( t, name, attributes:Int64, type_args=null:TemplateArgs, &unlisted )
       init( t, Program.current_module, name, attributes, type_args, &=unlisted )

@@ -4095,3 +4095,40 @@ class Identifiers : CmdList
     method description->String
       return "Identifiers" + list_description
 endClass
+
+class AnonymousTupleTypeElements : CmdList
+  METHODS
+    method description->String
+      return "AnonymousTupleTypeElements" + list_description
+
+    method get( index:Int32 )->Type
+      return list[index]->(as Type)
+
+endClass
+
+class NamedTupleTypeElement : Cmd
+  PROPERTIES
+    name    : String
+    of_type : Type
+
+  METHODS
+    method init( t, name, of_type )
+
+    method init( existing:NamedTupleTypeElement )
+      prior.init( existing )
+      name = existing.name
+      if (existing.of_type) of_type = existing.of_type.cloned
+
+    method description->String
+      return "NamedTupleTypeElement($,$)" (%name,%of_type)
+
+endClass
+
+class NamedTupleTypeElements : CmdList
+  METHODS
+    method description->String
+      return "NamedTupleTypeElements" + list_description
+
+    method get( index:Int32 )->NamedTupleTypeElement
+      return list[index]->(as NamedTupleTypeElement)
+endClass

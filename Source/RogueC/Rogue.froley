@@ -768,7 +768,36 @@ parser
       mustConsume ')'
       produce FunctionType(param_types:TypeList,return_type:Type):Type
     elseOnOthers
-      syntaxError
+      # Must be a tuple.
+      savePosition
+      ++disable_output
+      type  # just want to parse through this
+      --disable_output
+      if (nextIs(':'))
+        restorePosition
+        beginList
+          named_tuple_type_element
+          while (consume(','))
+            named_tuple_type_element
+          endWhile
+          mustConsume ')'
+        createList NamedTupleTypeElements
+        produce Type(elements:NamedTupleTypeElements)
+      else
+        restorePosition
+        beginList
+          consume_eols
+          type
+          consume_eols
+          while (consume(','))
+            consume_eols
+            type
+            consume_eols
+          endWhile
+          mustConsume ')'
+        createList AnonymousTupleTypeElements
+        produce Type(elements:AnonymousTupleTypeElements)
+      endIf
     endOn
   elseOn "Function"
     function_type_args
@@ -778,6 +807,15 @@ parser
     pathed_name
   endOn
   remaining_type
+
+- named_tuple_type_element
+  consume_eols
+  identifier
+  consume_eols
+  mustConsume ':'
+  type
+  consume_eols
+  produce NamedTupleTypeElement(name:String,of_type:Type)
 
 - remaining_type
   if (nextIs("<<")) type_args

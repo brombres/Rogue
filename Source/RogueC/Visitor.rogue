@@ -602,5 +602,8 @@ class Visitor
       cmd.locals = visit(cmd.locals)->(as Identifiers)
       cmd.tuple = visit(cmd.tuple)
 
+    method on_visit_children( cmd:NamedTupleTypeElement )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
 endClass
 
