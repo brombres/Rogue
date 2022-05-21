@@ -591,5 +591,16 @@ class Visitor
     method on_visit_children( cmd:NamedTupleElement )
       cmd.value = visit(cmd.value)
 
+    method on_visit_children( cmd:TypedDestructuringLocal )
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:TypedDestructuringLocalDeclarations )
+      cmd.locals = visit(cmd.locals)->(as TypedDestructuringLocals)
+      cmd.tuple = visit(cmd.tuple)
+
+    method on_visit_children( cmd:UntypedDestructuringLocalDeclarations )
+      cmd.locals = visit(cmd.locals)->(as Identifiers)
+      cmd.tuple = visit(cmd.tuple)
+
 endClass
 

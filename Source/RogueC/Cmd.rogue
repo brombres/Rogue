@@ -4023,3 +4023,69 @@ class NamedTupleElement : Cmd
       return "NamedTupleElement($,$)" (%name,%value)
 
 endClass
+
+class TypedDestructuringLocal : Cmd
+  PROPERTIES
+    name : String
+    type : Type
+
+  METHODS
+    method init( t, name, type )
+
+    method init( existing:TypedDestructuringLocal )
+      prior.init( existing )
+      name = existing.name
+      if (existing.type) type = existing.type.cloned
+
+    method description->String
+      return "TypedDestructuringLocal($,$)" (%name,%type)
+
+endClass
+
+class TypedDestructuringLocalDeclarations : Cmd
+  PROPERTIES
+    locals : TypedDestructuringLocals
+    tuple  : Cmd
+
+  METHODS
+    method init( t, locals, tuple )
+
+    method init( existing:TypedDestructuringLocalDeclarations )
+      prior.init( existing )
+      if (existing.locals) locals = existing.locals.cloned
+      if (existing.tuple) tuple = existing.tuple.cloned
+
+    method description->String
+      return "TypedDestructuringLocalDeclarations($,$)" (%locals,%tuple)
+
+endClass
+
+class TypedDestructuringLocals : CmdList
+  METHODS
+    method description->String
+      return "TypedDestructuringLocals" + list_description
+endClass
+
+class UntypedDestructuringLocalDeclarations : Cmd
+  PROPERTIES
+    locals : Identifiers
+    tuple  : Cmd
+
+  METHODS
+    method init( t, locals, tuple )
+
+    method init( existing:UntypedDestructuringLocalDeclarations )
+      prior.init( existing )
+      if (existing.locals) locals = existing.locals.cloned
+      if (existing.tuple) tuple = existing.tuple.cloned
+
+    method description->String
+      return "UntypedDestructuringLocalDeclarations($,$)" (%locals,%tuple)
+
+endClass
+
+class Identifiers : CmdList
+  METHODS
+    method description->String
+      return "Identifiers" + list_description
+endClass

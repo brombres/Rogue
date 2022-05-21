@@ -878,4 +878,23 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.value)
       return result
 
+    method on_visit_children( cmd:TypedDestructuringLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type)
+      return result
+
+    method on_visit_children( cmd:TypedDestructuringLocalDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.locals)
+      if (result?) return result
+      result = visit(cmd.tuple)
+      return result
+
+    method on_visit_children( cmd:UntypedDestructuringLocalDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.locals)
+      if (result?) return result
+      result = visit(cmd.tuple)
+      return result
+
 endClass

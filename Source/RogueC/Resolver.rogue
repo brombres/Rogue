@@ -1067,6 +1067,34 @@ class Resolver : Visitor
 
       return result
 
+    method on( cmd:UntypedDestructuringLocalDeclarations )->Cmd
+      local tuple = visit( cmd.tuple )
+      local tuple_type = tuple.require_type
+      if (not tuple_type.is_compound)
+        throw cmd.t.error( "Destructuring local declarations must be assigned a tuple type or other compound type." )
+      endIf
+
+      local m = tuple_type.m_primary_constructor
+      assert m
+      local params = m.parameters
+      if (params.count != cmd.locals.count)
+        throw cmd.t.error( "$ destructuring local declarations but $ are required."...
+            (cmd.locals.count, params.count) )
+      endIf
+
+      forEach (param at i in params)
+        add_local( Local(param.t, cmd.locals[i]->String, DummyInitialValue, param.type) )
+      endForEach
+
+      local anonymous_tuple = AnonymousTuple( cmd.t )
+      forEach (l in cmd.locals)
+        anonymous_tuple.add( Access(l.t,l->String) )
+      endForEach
+
+      local result = Assign(cmd.t, anonymous_tuple, tuple) : Cmd
+      result = visit( result )
+      return result
+
     method on( cmd:Which )->Cmd
       if (cmd.is_resolved) return cmd
       cmd.is_resolved = true
@@ -2304,8 +2332,15 @@ augment
         throw t.error( "Destructuring assignments can only be used with tuples." )
       endIf
 
-      local v_tuple = resolver.add_local( t, "tuple", tuple_type, DummyInitialValue )
-      resolver.insert( SetLocal(t, v_tuple, new_value, &initial_assignment) )
+      local cmd_read_tuple : Cmd
+      if (new_value.is_simple)
+        cmd_read_tuple = new_value
+      else
+        local v_tuple = resolver.add_local( t, "tuple", tuple_type, DummyInitialValue )
+        resolver.insert( SetLocal(t, v_tuple, new_value, &initial_assignment) )
+        cmd_read_tuple = GetLocal( v_tuple )
+      endIf
+
       local m = tuple_type.m_primary_constructor
       assert m
       local params = m.parameters
@@ -2315,7 +2350,7 @@ augment
       endIf
 
       forEach (prop at i in params)
-        resolver.insert( Assign(t,this[i],ContextAccess(t,GetLocal(v_tuple),prop.name)) )
+        resolver.insert( Assign(t,this[i],ContextAccess(t,cmd_read_tuple.cloned,prop.name)) )
       endForEach
 
       return null

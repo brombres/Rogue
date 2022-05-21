@@ -1683,6 +1683,7 @@ parser
   endIf
 
 - local_declarations
+  onPeek '(' destructuring_local_declarations: return
   beginList
     consume_eols
     local_declaration
@@ -1702,6 +1703,46 @@ parser
     produce Local( name=content, initial_value, type:Type )
   endOn
   mustConsume IDENTIFIER  # throws error
+
+- destructuring_local_declarations
+  on '('
+    beginList
+
+    consume_eols
+    identifier
+    consume_eols
+    on ':'
+      type
+      consume_eols
+      create TypedDestructuringLocal(name:String,type:Type)
+      while (consume(','))
+        consume_eols
+        identifier
+        consume_eols
+        mustConsume ':'
+        consume_eols
+        type
+        consume_eols
+        create TypedDestructuringLocal(name:String,type:Type)
+      endWhile
+      createList TypedDestructuringLocals
+      mustConsume ')'
+      mustConsume '='
+      expression
+      produce    TypedDestructuringLocalDeclarations(locals:TypedDestructuringLocals,tuple)
+    elseOnOthers
+      while (consume(','))
+        consume_eols
+        identifier
+        consume_eols
+      endWhile
+      createList  Identifiers
+      mustConsume ')'
+      mustConsume '='
+      expression
+      produce     UntypedDestructuringLocalDeclarations(locals:Identifiers,tuple)
+    endOn
+  endOn
 
 - block
   on "block"
