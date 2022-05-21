@@ -1030,6 +1030,35 @@ class Resolver : Visitor
       cmd.args = visit( cmd.args )
       return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
 
+    method on( cmd:TypedDestructuringLocalDeclarations )->Cmd
+      local tuple = visit( cmd.tuple )
+      local tuple_type = tuple.require_type
+      if (not tuple_type.is_compound)
+        throw cmd.t.error( "Destructuring local declarations must be assigned a tuple type or other compound type." )
+      endIf
+
+      local m = tuple_type.m_primary_constructor
+      assert m
+      local params = m.parameters
+      if (params.count != cmd.locals.count)
+        throw cmd.t.error( "$ destructuring local declarations but $ are required."...
+            (cmd.locals.count, params.count) )
+      endIf
+
+      forEach (v in cmd.locals)
+        v.type.organize
+        add_local( Local(v.t, v.name, DummyInitialValue, v.type) )
+      endForEach
+
+      local anonymous_tuple = AnonymousTuple( cmd.t )
+      forEach (v in cmd.locals)
+        anonymous_tuple.add( Access(v.t,v.name) )
+      endForEach
+
+      local result = Assign(cmd.t, anonymous_tuple, tuple) : Cmd
+      result = visit( result )
+      return result
+
     method on_validate( cmd:Unary )->Cmd
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
 
@@ -1087,8 +1116,8 @@ class Resolver : Visitor
       endForEach
 
       local anonymous_tuple = AnonymousTuple( cmd.t )
-      forEach (l in cmd.locals)
-        anonymous_tuple.add( Access(l.t,l->String) )
+      forEach (v in cmd.locals)
+        anonymous_tuple.add( Access(v.t,v->String) )
       endForEach
 
       local result = Assign(cmd.t, anonymous_tuple, tuple) : Cmd

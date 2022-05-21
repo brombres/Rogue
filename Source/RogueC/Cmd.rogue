@@ -4040,6 +4040,9 @@ class TypedDestructuringLocal : Cmd
     method description->String
       return "TypedDestructuringLocal($,$)" (%name,%type)
 
+    method type->Type
+      return @type
+
 endClass
 
 class TypedDestructuringLocalDeclarations : Cmd
@@ -4064,6 +4067,9 @@ class TypedDestructuringLocals : CmdList
   METHODS
     method description->String
       return "TypedDestructuringLocals" + list_description
+
+    method get( index:Int32 )->TypedDestructuringLocal
+      return list[index]->(as TypedDestructuringLocal)
 endClass
 
 class UntypedDestructuringLocalDeclarations : Cmd

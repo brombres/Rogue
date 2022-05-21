@@ -346,8 +346,12 @@ class Parser : ParserCore
       if (inserted_tokens.count) return inserted_tokens.last
       return prior._peek
 
+    method print_peek
+      @trace _next_t
+
     method print_stack
       @trace _cmd_stack
+      if (_cmd_stack.count) @trace _cmd_stack.last.type_name
 
     method print_trace
       @trace _next_t
