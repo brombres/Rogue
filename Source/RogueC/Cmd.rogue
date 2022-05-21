@@ -1590,11 +1590,6 @@ class Method : Procedure
           escapeContingent
 
         satisfied
-          if (not type_context.name_tokens)
-            type_context.name_tokens = Scanner( type_context.name, type_context.name ).tokenize
-            type_context.name_tokens.remove_last  # EOL
-          endIf
-
           local specialized_tokens = Token[]( tokens.count * 1.1 )
           forEach (t in tokens)
             if (t.type == TokenType.KEYWORD_THIS_TYPE)
@@ -4004,6 +3999,9 @@ class NamedTuple : CmdList
   METHODS
     method description->String
       return "NamedTuple" + list_description
+
+    method get( index:Int32 )->NamedTupleElement
+      return list[index]->(as NamedTupleElement)
 endClass
 
 class NamedTupleElement : Cmd

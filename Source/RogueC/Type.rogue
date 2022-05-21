@@ -28,6 +28,7 @@ class Type : Cmd
     method_templates          = StringTable<<MethodTemplate>>()
     method_template_instances = StringTable<<Procedure>>()
 
+    pretty_name           : String
     name_tokens           : Token[]
 
     id                    : Int32
@@ -48,6 +49,9 @@ class Type : Cmd
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
+      return Type( t, Program.current_module, name, type_args )
+
+    method create( t:Token, mod:Module, name:String, type_args=null:TemplateArgs )->Type
       if (type_args)
         if (type_args.count)
           name = type_args->String(name)
@@ -56,7 +60,7 @@ class Type : Cmd
         endIf
       endIf
 
-      local type = Program.current_module.find_type( name, &extended_search )
+      local type = mod.find_type( name, &extended_search )
       if (type) return type
       type = Type( t, name, 0, type_args )
       type.ensure_definition
@@ -93,7 +97,79 @@ class Type : Cmd
       return Type( t, named_elements )
 
     method create( t:Token, named_elements:NamedTupleTypeElements )->Type
-      trace "TODO ", named_elements
+      # Example
+      # - NamedTupleTypeElements = [ {a:Int32}, {b:Real64} ]
+      # - Tuple Type = Tuple<<4>> : Tuple<<a,Int32,b,Real64>>
+      # - Provide conversions to/from anonymous tuple type Tuple<<_1,Int32,_2,Real64>>
+      # - All in default module 'Rogue'
+      local is_anonymous = true
+      forEach (element at i in named_elements)
+        # See if elements are named _1, _2, ...
+        if (element.name != "_$"(i+1))
+          is_anonymous = false
+          escapeForEach
+        endIf
+      endForEach
+
+      use builder = StringBuilder.pool
+        builder.print "Tuple<<"
+        forEach (element at i in named_elements)
+          if (i > 0) builder.print ','
+          builder.print element.name
+          builder.print ','
+          builder.print element.of_type.name
+        endForEach
+        builder.print ">>"
+        local tuple_name = builder->String
+
+        local type = Program.default_module.types[ tuple_name ]
+        if (type) return type
+
+        local template_key = "Tuple<<$>>"(named_elements.count*2)
+        local templ = Program.default_module.templates[ template_key ]
+        if (not templ)
+          # Create template e.g.:
+          #   <<$name1,$Type1,$name2,$Type2>>
+          #   ( name1:Type1, name2:Type2, ... ) [compound]
+          #   endClass
+          local placeholders = Token[]
+          forEach (element at i in named_elements)
+            placeholders.add( element.t.cloned(TokenType.PLACEHOLDER, "$name"+(i+1)) )
+            placeholders.add( element.t.cloned(TokenType.PLACEHOLDER, "$Type"+(i+1)) )
+          endForEach
+
+          local tokens = Token[]
+          t = t.cloned( t.type, null )
+          tokens.add( t.cloned(TokenType.SYMBOL_OPEN_PAREN) )            # (
+          forEach (i of named_elements)
+            if (i > 0) tokens.add( t.cloned(TokenType.SYMBOL_COMMA) )    # ,
+            tokens.add( t.cloned(TokenType.PLACEHOLDER, "$name"+(i+1)) ) # $nameN
+            tokens.add( t.cloned(TokenType.SYMBOL_COLON) )               # :
+            tokens.add( t.cloned(TokenType.PLACEHOLDER, "$Type"+(i+1)) ) # $TypeN
+          endForEach
+          tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_PAREN) )           # )
+          tokens.add( t.cloned(TokenType.SYMBOL_OPEN_SQUARE) )           # [
+          tokens.add( t.cloned(TokenType.IDENTIFIER,"compound") )        # compound
+          tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_SQUARE) )          # ]
+          tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+          tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )            # endClass
+          tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+
+          templ = Template( t, "Tuple", placeholders, tokens, Attribute.COMPOUND )
+          Program.default_module.templates[ template_key ] = templ
+        endIf
+
+        # Instantiate the template
+        local template_args = TemplateArgs( t )
+        forEach (element in named_elements)
+          template_args.add( TokenList( element.t, Token[][element.t.cloned(TokenType.IDENTIFIER, element.name)] ) )
+          template_args.add( TokenList( element.t, element.of_type.name_tokens.cloned ) )
+        endForEach
+
+        type = Type( t, Program.default_module, "Tuple", template_args )
+        type.attributes.is_anonymous_tuple = is_anonymous
+        return type
+      endUse
       return null
 
   METHODS
@@ -405,6 +481,12 @@ class Type : Cmd
 
     method is_value_type->Logical
       return attributes.is_primitive or attributes.is_compound
+
+    method name_tokens->Token[]
+      if (@name_tokens) return @name_tokens
+      @name_tokens = Scanner( name, name ).tokenize
+      @name_tokens.remove_last  # EOL
+      return @name_tokens
 
     method organize
       organize_type
@@ -1075,9 +1157,35 @@ class Type : Cmd
         endForEach
       endIf
 
-
     method precision_index->Int32
       return 10 # Objects etc.
+
+    method pretty_name->String
+      if (@pretty_name) return @pretty_name
+      if (name.begins_with("Tuple<<"))
+        use builder = StringBuilder.pool
+          builder.print '('
+          assert m_primary_constructor
+          if (attributes.is_anonymous_tuple)
+            forEach (param at i in m_primary_constructor.parameters)
+              if (i > 0) builder.print ','
+              builder.print param.type.pretty_name
+            endForEach
+          else
+            forEach (param at i in m_primary_constructor.parameters)
+              if (i > 0) builder.print ','
+              builder.print param.name
+              builder.print ':'
+              builder.print param.type.pretty_name
+            endForEach
+          endIf
+          builder.print ')'
+          @pretty_name = builder->String
+        endUse
+      else
+        @pretty_name = name
+      endIf
+      return @pretty_name
 
     method resolve( resolver=null:Resolver )
       if (is_resolved) return
