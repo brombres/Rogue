@@ -3519,7 +3519,7 @@ class MethodTemplate : Cmd
       local tokens = Template.make_replacements( type_context, _tokens, replacements )
       local parser = Parser( tokens )
       parser._cmd_stack.add( Identifier(t,name) )
-      local m = parser.parse( Parser.ip_method_template )->(as Method)
+      local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
       m.module_context = type_context.module_context
       m.type_context   = type_context
       m.generate_body
@@ -3527,6 +3527,7 @@ class MethodTemplate : Cmd
 
       type_context.method_template_instances[ name ] = m
 
+      # Propagate new method template to types that have already organized & inherited methods
       local sig = m.signature
       if (not type_context.methods.contains(sig)) type_context.methods[ sig ] = m
       if (type_context.methods_organized)
@@ -4129,4 +4130,41 @@ class NamedTupleTypeElements : CmdList
 
     method get( index:Int32 )->NamedTupleTypeElement
       return list[index]->(as NamedTupleTypeElement)
+endClass
+
+class GlobalMethodTemplate : Cmd
+  PROPERTIES
+    name         : String
+    placeholders : Cmd
+    _tokens      : TokenList
+
+  METHODS
+    method init( t, name, placeholders, _tokens )
+
+    method init( existing:GlobalMethodTemplate )
+      prior.init( existing )
+      name = existing.name
+      if (existing.placeholders) placeholders = existing.placeholders.cloned
+      if (existing._tokens) _tokens = existing._tokens.cloned
+
+    method description->String
+      return "GlobalMethodTemplate($,$,$)" (%name,%placeholders,%_tokens)
+
+    method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
+      local placeholders = Token[]
+      forEach (p in this.placeholders)
+        placeholders.add( p.t )
+      endForEach
+      local name = type_args->String( name )
+      local replacements = Template.replacements( placeholders, type_args )
+      local tokens = Template.make_replacements( type_context, _tokens, replacements )
+      local parser = Parser( tokens )
+      parser._cmd_stack.add( Identifier(t,name) )
+      local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
+      m.module_context = type_context.module_context
+      m.type_context   = type_context
+      m.organize
+
+      type_context.global_method_template_instances[ name ] = m
+      return m
 endClass

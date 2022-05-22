@@ -25,8 +25,10 @@ class Type : Cmd
 
     categories        : Category[]
 
-    method_templates          = StringTable<<MethodTemplate>>()
-    method_template_instances = StringTable<<Procedure>>()
+    global_method_templates          = StringTable<<GlobalMethodTemplate>>()
+    global_method_template_instances = StringTable<<Procedure>>()
+    method_templates                 = StringTable<<MethodTemplate>>()
+    method_template_instances        = StringTable<<Procedure>>()
 
     pretty_name           : String
     name_tokens           : Token[]
@@ -339,6 +341,12 @@ class Type : Cmd
 
     method description->String
       return "$" (%name)
+
+    method has_global_method_named( name:String )->Logical
+      forEach (m in global_methods)
+        if (m.name == name) return true
+      endForEach
+      return false
 
     method has_method_named( name:String )->Logical
       forEach (m in methods)
@@ -1051,6 +1059,16 @@ class Type : Cmd
 
       # Incorporate augment global methods
       if (aspects)
+        # Merge method templates
+        forEach (incorporated_aspect in aspects)
+          forEach (entry in incorporated_aspect.global_method_templates.entries)
+            global_method_templates[entry.key] = entry.value
+          endForEach
+          forEach (entry in incorporated_aspect.method_templates.entries)
+            method_templates[entry.key] = entry.value
+          endForEach
+        endForEach
+
         # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
           if (incorporated_aspect.attributes.is_augment)

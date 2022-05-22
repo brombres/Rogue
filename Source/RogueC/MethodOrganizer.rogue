@@ -44,6 +44,13 @@ class MethodOrganizer : Visitor
       cmd.type_context = this_type
       cmd.organize( this )
 
+    method on_visit( cmd:GlobalMethodTemplate )
+      local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
+      if (this_type.global_method_templates.contains(name))
+        throw cmd.t.error( "Type $ already defines global method template $."(this_type,name) )
+      endIf
+      this_type.global_method_templates[name] = cmd
+
     method on_visit_children( cmd:Local )
       prior.on_visit_children( cmd )
       cmd.initial_value = visit( cmd.initial_value )

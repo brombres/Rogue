@@ -576,6 +576,7 @@ parser
 
     consume "routine"
     procedure_name
+    if (nextIs("<<")) template_parameters
     procedure_parameters
     procedure_return_type
     procedure_attributes
@@ -613,7 +614,6 @@ parser
 
 - store_routine
   call on_parsed_routine  # Pass 1: stores routine as class template tokens. Pass 2: does nothing.
-
   --disable_output
   discardPosition
 
@@ -1440,10 +1440,12 @@ parser
       procedure_return_type
       procedure_parameters
       call swap
+
     elseOnOthers
       procedure_name
       is_def = false
       if (nextIs("<<"))
+        # Method template
         savePosition
         consume "<<"
         is_def = nextIs(PLACEHOLDER)
@@ -1481,8 +1483,8 @@ parser
       multi_line_statements
       is_method_template = false
       --disable_output
-      createTokenList
-      create MethodTemplate(name:String,placeholders,_tokens:TokenList)
+      createTokenList  # effective discardPosition
+      produce MethodTemplate(name:String,placeholders,_tokens:TokenList)
     else
       savePosition
 
@@ -1498,12 +1500,24 @@ parser
     endIf
   endOn
 
-- method_template
+- global_method_template_instance
   procedure_parameters
   procedure_return_type
   procedure_attributes
   consume(':')
-  #call on_begin_method_body
+  savePosition
+
+  multi_line_statements
+  create LocalScope(statements):ControlStructure
+
+  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+  return
+
+- method_template_instance
+  procedure_parameters
+  procedure_return_type
+  procedure_attributes
+  consume(':')
   savePosition
 
   ++disable_output
@@ -1514,12 +1528,39 @@ parser
   createNull
   create LocalScope(statements):ControlStructure
   create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
-  #call on_end_method_body
   return
 
 - global_method
   on "method"
     procedure_name
+
+    if (nextIs("<<"))
+      is_def = false
+      savePosition
+      consume "<<"
+      is_def = nextIs(PLACEHOLDER)
+      restorePosition
+
+      if (is_def)
+        # Global method template definition, e.g. method name<<$Type>>(...)
+        template_parameters
+        savePosition
+        ++disable_output
+          procedure_parameters
+          procedure_return_type
+          procedure_attributes
+          consume(':')
+          multi_line_statements
+        --disable_output
+        createTokenList  # effective discardPosition
+        produce GlobalMethodTemplate(name:String,placeholders,_tokens:TokenList)
+      else
+        # Global method template instance, e.g. method name<<Int32>>(...)
+        type_args
+        call join  # name + <<type-args>>
+      endIf
+    endIf
+
     procedure_parameters
     procedure_return_type
     procedure_attributes
