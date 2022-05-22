@@ -3556,6 +3556,9 @@ class TemplatedAccess : Cmd
   METHODS
     method init( t, name, type_args, args )
 
+    method init( t, type_context, name, type_args, args )
+      module_context = type_context.module_context
+
     method init( existing:TemplatedAccess )
       prior.init( existing )
       name = existing.name

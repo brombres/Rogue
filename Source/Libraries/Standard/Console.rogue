@@ -134,6 +134,9 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       endForEach
       return String(input_buffer)
 
+    method size->(width:Int32,height:Int32)
+      return (width,height)
+
     method width->Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );

@@ -1341,6 +1341,14 @@ class CGenerator : Visitor
       endForEach
 
       if (this_type)
+        if (name == "ReturnType")
+          if (this_procedure.return_type)
+            return this_procedure.return_type.c_ref_name
+          else
+            throw t.error( "$<<ReturnType>> requested but procedure does not return a value." )
+          endIf
+        endIf
+
         if (this_procedure.is_method)
           if (name == "this")
             if (type) return this_type.c_ref_name

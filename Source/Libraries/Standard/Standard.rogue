@@ -15,3 +15,8 @@ $include Standard/System
 $include Standard/Writer
 
 uses Math [export]
+
+routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
+  # For internal use only - used by the compiler to cast between compatible tuple types.
+  return native("*(($<<ReturnType>>*)&$tuple)")->$NewType
+endRoutine

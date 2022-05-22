@@ -77,6 +77,28 @@ augment
 
       if (this_type.instance_of(target_type)) return WideningCast( t, this, target_type )
 
+      if (this_type.attributes.is_tuple and target_type.attributes.is_tuple)
+        contingent
+          local params1 = this_type.m_primary_constructor.parameters
+          local params2 = target_type.m_primary_constructor.parameters
+          necessary (params1.count == params2.count)
+          forEach (param at i in params1)
+            necessary (param.type is params2[i].type)
+          endForEach
+
+          local template_args = TemplateArgs( t )
+          template_args.add( TokenList(t,this_type.name_tokens) )
+          template_args.add( TokenList(t,target_type.name_tokens) )
+          return resolver.visit(
+            TemplatedAccess( t, Type(t,Program.default_module,"Routine"), "recast_tuple",
+                template_args, Args(t,this) )
+          )
+
+        unsatisfied
+          throw t.error( "Cannot convert $ -> $; these tuple types are incompatible."(this_type,target_type) )
+        endContingent
+      endIf
+
       # See if this_type has a to->TargetType method.
       local result = resolver.resolve_call( t, this_type, this, "to_$"(target_type), null, &suppress_error )
       if (result) return result
