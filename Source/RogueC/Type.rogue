@@ -478,6 +478,19 @@ class Type : Cmd
     method is_aspect->Logical
       return attributes.is_aspect
 
+    method is_compatible_tuple( other_type:Type )->Logical
+      contingent
+        local params1 = this.m_primary_constructor.parameters
+        local params2 = other_type.m_primary_constructor.parameters
+        necessary (params1.count == params2.count)
+        forEach (param at i in params1)
+          necessary (param.type is params2[i].type)
+        endForEach
+        return true
+      unsatisfied
+        return false
+      endContingent
+
     method is_compound->Logical
       return attributes.is_compound
 

@@ -1972,6 +1972,9 @@ class Resolver : Visitor
           return arg.parameters.count == param_type.param_types.count
         endBlock
       endIf
+      if (arg_type.attributes.is_tuple and param_type.attributes.is_tuple)
+        return arg_type.is_compatible_tuple( param_type )
+      endIf
       return false
 
 
