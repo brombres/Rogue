@@ -30,7 +30,6 @@ class Type : Cmd
     method_templates                 = StringTable<<MethodTemplate>>()
     method_template_instances        = StringTable<<Procedure>>()
 
-    pretty_name           : String
     name_tokens           : Token[]
 
     id                    : Int32
@@ -50,13 +49,13 @@ class Type : Cmd
     is_resolved          : Logical
 
   GLOBAL METHODS
-    method create( t:Token, name:String, type_args=null:TemplateArgs )->Type
-      return Type( t, Program.current_module, name, type_args )
+    method create( t:Token, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
+      return Type( t, Program.current_module, name, type_args, &=is_tuple )
 
-    method create( t:Token, mod:Module, name:String, type_args=null:TemplateArgs )->Type
+    method create( t:Token, mod:Module, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
       if (type_args)
         if (type_args.count)
-          name = type_args->String(name)
+          if (not is_tuple) name = type_args->String(name)
         else
           type_args = null
         endIf
@@ -64,7 +63,10 @@ class Type : Cmd
 
       local type = mod.find_type( name, &extended_search )
       if (type) return type
+
       type = Type( t, name, 0, type_args )
+      if (is_tuple) type.attributes.is_tuple = true
+
       type.ensure_definition
       return type
 
@@ -102,7 +104,6 @@ class Type : Cmd
       # Example
       # - NamedTupleTypeElements = [ {a:Int32}, {b:Real64} ]
       # - Tuple Type = Tuple<<4>> : Tuple<<a,Int32,b,Real64>>
-      # - Provide conversions to/from anonymous tuple type Tuple<<_1,Int32,_2,Real64>>
       # - All in default module 'Rogue'
       local is_anonymous = true
       forEach (element at i in named_elements)
@@ -114,17 +115,19 @@ class Type : Cmd
       endForEach
 
       use builder = StringBuilder.pool
-        builder.print "Tuple<<"
+        builder.print '('
         forEach (element at i in named_elements)
           if (i > 0) builder.print ','
-          builder.print element.name
-          builder.print ','
+          if (not is_anonymous)
+            builder.print element.name
+            builder.print ':'
+          endIf
           builder.print element.of_type.name
         endForEach
-        builder.print ">>"
-        local tuple_name = builder->String
+        builder.print ')'
+        local tuple_type_name = builder->String
 
-        local type = Program.default_module.types[ tuple_name ]
+        local type = Program.default_module.types[ tuple_type_name ]
         if (type) return type
 
         local template_key = "Tuple<<$>>"(named_elements.count*2)
@@ -168,7 +171,7 @@ class Type : Cmd
           template_args.add( TokenList( element.t, element.of_type.name_tokens.cloned ) )
         endForEach
 
-        type = Type( t, Program.default_module, "Tuple", template_args )
+        type = Type( t, Program.default_module, tuple_type_name, template_args, &is_tuple )
         type.attributes.is_anonymous_tuple = is_anonymous
         return type
       endUse
@@ -313,7 +316,10 @@ class Type : Cmd
       local template_module = module_context
 
       local template_name : String
-      if (name.ends_with(']'))
+      if (attributes.is_tuple)
+        local type_arg_count = which{ type_args:type_args.count || 0 }
+        template_name = "Tuple<<$>>"(type_arg_count)
+      elseIf (name.ends_with(']'))
         template_name = "List<<1>>"
         template_module = Program.default_module
         local tokens = Token[]
@@ -1179,31 +1185,7 @@ class Type : Cmd
       return 10 # Objects etc.
 
     method pretty_name->String
-      if (@pretty_name) return @pretty_name
-      if (name.begins_with("Tuple<<"))
-        use builder = StringBuilder.pool
-          builder.print '('
-          assert m_primary_constructor
-          if (attributes.is_anonymous_tuple)
-            forEach (param at i in m_primary_constructor.parameters)
-              if (i > 0) builder.print ','
-              builder.print param.type.pretty_name
-            endForEach
-          else
-            forEach (param at i in m_primary_constructor.parameters)
-              if (i > 0) builder.print ','
-              builder.print param.name
-              builder.print ':'
-              builder.print param.type.pretty_name
-            endForEach
-          endIf
-          builder.print ')'
-          @pretty_name = builder->String
-        endUse
-      else
-        @pretty_name = name
-      endIf
-      return @pretty_name
+      return name
 
     method resolve( resolver=null:Resolver )
       if (is_resolved) return

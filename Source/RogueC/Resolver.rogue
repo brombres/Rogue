@@ -994,8 +994,7 @@ class Resolver : Visitor
         endIf
       endIf
 
-      local result = resolve_call( cmd.t, null, m, cmd.args )
-      return result
+      return resolve_call( cmd.t, null, m, cmd.args )
 
     method on( cmd:TemplatedMethodContextAccess )->Cmd
       local context = visit( cmd.context )
@@ -1019,7 +1018,7 @@ class Resolver : Visitor
         endIf
       endIf
 
-      # Object method template
+      # Object Method Template
       if (not m)
         m = type_context.method_template_instances[name]
         if (not m)
@@ -1038,8 +1037,7 @@ class Resolver : Visitor
         endIf
       endIf
 
-      local result = resolve_call( cmd.t, context, m, cmd.args )
-      return result
+      return resolve_call( cmd.t, context, m, cmd.args )
 
     method on( cmd:Temporarily )->Cmd
       if (cmd.assignments.count > 1)
@@ -1430,10 +1428,16 @@ class Resolver : Visitor
       endTemporarily
       return null  # never reached
 
-    method resolve_call( t:Token, context:Cmd, proc:Procedure, args=null:Cmd )->Cmd
-      if (not args) args = CmdList(t)
-      convert_args_to_parameter_types( args, proc )
-      return visit( proc.cmd_call(t,context,args) )
+    method resolve_call( t:Token, context:Cmd, m:Procedure, args=null:Cmd )->Cmd
+      if (not args)
+        args = CmdList(t)
+      else
+        args->(as CmdList).list.discard( $ instanceOf DefaultArg )
+        args = visit(args)
+      endIf
+      confirm_candidate( t, null, m, args )
+      convert_args_to_parameter_types( args, m )
+      return visit( m.cmd_call(t,context,args) )
 
     method resolve_direct_access( t:Token, context:Cmd, name:String )->Cmd
       local type_context = this_type
@@ -1560,8 +1564,6 @@ class Resolver : Visitor
       proc.resolve
 
       if (not proc.arrange_args(args,this))
-        trace args
-        trace proc.parameters
         println StackTrace()
         throw args.t.error( "[INTERNAL] Invalid procedure selected." )
       endIf
@@ -1607,19 +1609,19 @@ class Resolver : Visitor
           args = visit( args )
           local type_args = TemplateArgs(t)
           type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-          return global_m_template.instantiate( type_args, type_context )
-        endIf
+          global_m_template.instantiate( type_args, type_context )
 
-        local m_template = type_context.method_templates[ t_name ]
-        if (m_template)
-          args = visit( args )
-          local type_args = TemplateArgs(t)
-          type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-          return m_template.instantiate( type_args, type_context )
+        else
+          local m_template = type_context.method_templates[ t_name ]
+          if (m_template)
+            args = visit( args )
+            local type_args = TemplateArgs(t)
+            type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
+            m_template.instantiate( type_args, type_context )
+          endIf
         endIf
       endIf
 
-      # No luck with method templates
       return find_procedure( t, type_context, context, name, args, &=constructor,
                                &=require_global, &=suppress_error )
 
@@ -1628,95 +1630,105 @@ class Resolver : Visitor
         &constructor, &require_global, &suppress_error )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
-      local error_message : String
       use Candidates
         type_context.organize
         if (constructor)
           type_context.collect_methods( "create", Candidates.list, &require_global )
           type_context.collect_methods( "init", Candidates.list )
-        elseIf (type_context)
+        else
           type_context.collect_methods( name, Candidates.list, &=require_global )
         endIf
 
-        if (Candidates.count)
-          local result = refine_candidates( type_context, args )
-          if (result)
-            return result.[resolve]
-          elseIf (constructor and suppress_error)
-            return null
-          endIf
-        elseIf (suppress_error)
+        return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global, &=suppress_error )
+      endUse
+
+    method confirm_candidate( t:Token, context:Cmd, m:Procedure, args:Cmd )
+      use Candidates
+        Candidates.add( m )
+        select_candidate( t, m.type_context, context, m.name, args, &require_global=m.is_global )
+      endUse
+
+    method select_candidate( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
+        &constructor, &require_global, &suppress_error )->Procedure
+
+      if (Candidates.count)
+        local result = refine_candidates( type_context, args )
+        if (result)
+          return result.[resolve]
+        elseIf (constructor and suppress_error)
           return null
         endIf
+      elseIf (suppress_error)
+        return null
+      endIf
 
-        # Throw an error
-        local sig = name
-        if (args)
-          sig += '('
-          forEach (arg at i in args)
-            if (i > 0) sig += ','
-            sig += arg.require_type
-          endForEach
-          sig += ')'
-        endIf
+      # Throw an error
+      local sig = name
+      if (args)
+        sig += '('
+        forEach (arg at i in args)
+          if (i > 0) sig += ','
+          sig += arg.require_type
+        endForEach
+        sig += ')'
+      endIf
 
-        local mesg : String
-        if (args or Candidates.count)
-          which (Candidates.count)
-            case 0
-              mesg = "No such "
-              if (require_global) mesg += "global "
-              if (context)        mesg += "method "
-              elseIf (this_type)  mesg += "method or routine "
-              else                mesg += "routine "
+      local mesg : String
+      if (args or Candidates.count)
+        which (Candidates.count)
+          case 0
+            mesg = "No such "
+            if (require_global) mesg += "global "
+            if (context)        mesg += "method "
+            elseIf (this_type)  mesg += "method or routine "
+            else                mesg += "routine "
 
-              if (context)        mesg += context.type + "."
-              elseIf (this_type)  mesg += this_type + "."
+            if (context)        mesg += context.type + "."
+            elseIf (this_type)  mesg += this_type + "."
 
-              mesg += sig + '.'
+            mesg += sig + '.'
 
-            case 1
-              mesg = "Call to "
-              if (type_context)  mesg += type_context + "."
-              elseIf (this_type) mesg += this_type + "."
+          case 1
+            mesg = "Call to "
+            if (type_context)  mesg += type_context + "."
+            elseIf (this_type) mesg += this_type + "."
 
-              mesg += sig
-              if (args) mesg += " has arguments that are"
-              else      mesg += " is"
-              mesg += " incompatible with the best candidate:\n\n"
-              mesg += "  " + Candidates[0].dev_signature
+            mesg += sig
+            if (args) mesg += " has arguments that are"
+            else      mesg += " is"
+            mesg += " incompatible with the best candidate:\n\n"
+            mesg += "  " + Candidates[0].dev_signature
 
-            others
-              mesg = "Ambiguous call to "
-              if (require_global) mesg += "global "
-              if (type_context)   mesg += type_context + "."
-              elseIf (this_type)  mesg += this_type + "."
+          others
+            mesg = "Ambiguous call to "
+            if (require_global) mesg += "global "
+            if (type_context)   mesg += type_context + "."
+            elseIf (this_type)  mesg += this_type + "."
 
-              mesg += sig
-              mesg += ". Candidates:\n\n"
-              forEach (m in Candidates)
-                mesg += "  $\n" (m.dev_signature)
-              endForEach
+            mesg += sig
+            mesg += ". Candidates:\n\n"
+            forEach (m in Candidates)
+              mesg += "  $\n" (m.dev_signature)
+            endForEach
 
-          endWhich
+        endWhich
 
+      else
+        local g = which{ require_global:"global " || "" }
+        if (context)
+          if (args) mesg = "No such $method '$' exists in type '$'." (g,sig,context.type)
+          else      mesg = "No such $property or method '$' exists in type '$'." (g,sig,context.type)
+        elseIf (this_type)
+          if (args) mesg = "No such $method or routine '$'."(g,sig)
+          else      mesg = "No such $variable, method, or routine '$'."(g,sig)
         else
-          local g = which{ require_global:"global " || "" }
-          if (context)
-            if (args) mesg = "No such $method '$' exists in type '$'." (g,sig,context.type)
-            else      mesg = "No such $property or method '$' exists in type '$'." (g,sig,context.type)
-          elseIf (this_type)
-            if (args) mesg = "No such $method or routine '$'."(g,sig)
-            else      mesg = "No such $variable, method, or routine '$'."(g,sig)
-          else
-            if (args) mesg = "No such $routine '$'."(g,sig)
-            else      mesg = "No such $variable or routine '$'."(g,sig)
-          endIf
-
+          if (args) mesg = "No such $routine '$'."(g,sig)
+          else      mesg = "No such $variable or routine '$'."(g,sig)
         endIf
 
-        error_message = mesg.replacing( "Routine.", "" )
-      endUse
+      endIf
+
+      local error_message = mesg.replacing( "Routine.", "" )
       throw t.error( error_message )
 
     method refine_candidates( type_context:Type, args:Cmd )->Procedure

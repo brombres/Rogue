@@ -818,7 +818,7 @@ parser
   produce NamedTupleTypeElement(name:String,of_type:Type)
 
 - remaining_type
-  if (nextIs("<<")) type_args
+  if (nextIs("<<")) template_args
   else              createNull
   create Type(name:String,type_args:TemplateArgs)
   while (nextIs("[]") or nextIs('?'))
@@ -847,7 +847,7 @@ parser
   produceNull
 
 - remaining_template_access
-  type_args
+  template_args
 
   if (nextIs("[]") or nextIs('?'))
     # We now know we're parsing a templated type, not a templated method.
@@ -865,7 +865,7 @@ parser
   access_args
   produce TemplatedAccess( name:String, type_args:TemplateArgs, args )
 
-- type_args
+- template_args
   consume("<<")
   beginList
     consume_eols
@@ -884,18 +884,29 @@ parser
 - template_arg_tokens
   savePosition
   while (hasAnother and not nextIs(',') and not nextIs(">>"))
-    if (nextIs('<<')) nested_template_args
-    else              read
+    if (nextIs('<<'))    nested_specializer_tokens
+    elseIf (nextIs('(')) nested_parens_tokens
+    else                 read
   endWhile
   produceTokenList
 
-- nested_template_args
+- nested_specializer_tokens
   read  # <<
   while (hasAnother and not nextIs(">>"))
-    if (nextIs('<<')) nested_template_args
-    else              read
+    if (nextIs('<<'))    nested_specializer_tokens
+    elseIf (nextIs('(')) nested_parens_tokens
+    else                 read
   endWhile
   mustConsume ">>"
+
+- nested_parens_tokens
+  read  # (
+  while (hasAnother and not nextIs(')'))
+    if (nextIs('<<'))    nested_specializer_tokens
+    elseIf (nextIs('(')) nested_parens_tokens
+    else                 read
+  endWhile
+  mustConsume ')'
 
 - pathed_name
   savePosition
@@ -1459,7 +1470,7 @@ parser
           ++disable_output
         else
           # Method template instance, e.g. method name<<Int32>>(...)
-          type_args
+          template_args
           call join  # name + <<type-args>>
         endIf
       endIf
@@ -1556,7 +1567,7 @@ parser
         produce GlobalMethodTemplate(name:String,placeholders,_tokens:TokenList)
       else
         # Global method template instance, e.g. method name<<Int32>>(...)
-        type_args
+        template_args
         call join  # name + <<type-args>>
       endIf
     endIf
@@ -2134,7 +2145,7 @@ parser
     elseOnOthers
       procedure_name
       if (nextIs("<<"))
-        type_args
+        template_args
         access_args
         create TemplatedMethodContextAccess(context,name:String,type_args:TemplateArgs,args)
       else
