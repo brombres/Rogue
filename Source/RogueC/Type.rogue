@@ -18,7 +18,6 @@ class Type : Cmd
     methods           = StringTable<<Method>>()
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
-    type_args         : TemplateArgs
     _template         : Template
     class_def         : Cmd
     states            = StateDef[]
@@ -75,9 +74,9 @@ class Type : Cmd
       return Type( t, template, name, null )
 
     method create( t:Token, template:Template, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
-      local type = Type( t, template.module_context, name, 0, type_args )
+      local type = Type( t, template.module_context, name, 0 )
       if (is_tuple) type.attributes.is_tuple = true
-      template.generate( type )
+      template.generate( type, type_args )
       return type
 
     method create( t:Token, element_type:Type )->Type
@@ -95,8 +94,10 @@ class Type : Cmd
       local name = core_type.name + "?"
       local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
-      type = Type( t, name, 0, null )
-      type.ensure_definition
+
+      local template = Program.default_module.must_find_template( t, "Optional<<1>>", name )
+      local type_args = TemplateArgs(t).[ add(TokenList(t,core_type.name_tokens)) ]
+      type = Type( t, template, name, type_args )
       type.attributes.is_optional = true
       return type
 
@@ -187,10 +188,10 @@ class Type : Cmd
       return null
 
   METHODS
-    method init( t, name, attributes:Int64, type_args=null:TemplateArgs, &unlisted )
-      init( t, Program.current_module, name, attributes, type_args, &=unlisted )
+    method init( t, name, attributes:Int64, &unlisted )
+      init( t, Program.current_module, name, attributes, &=unlisted )
 
-    method init( t, module_context, name, attributes:Int64, type_args=null, &unlisted )
+    method init( t, module_context, name, attributes:Int64, &unlisted )
       if (not unlisted) module_context.types[ name ] = this
       this.attributes = Attributes( t, attributes )
 
@@ -320,39 +321,11 @@ class Type : Cmd
       return attributes.contains_reference
 
     method ensure_definition
+      # Necessary for built-in types (primitives, String, etc.) that are placeholders
+      # before the standard library is parsed.
       if (attributes.is_defined) return
-
-      local template_module = module_context
-
-      local template_name : String
-      if (attributes.is_tuple)
-        local type_arg_count = which{ type_args:type_args.count || 0 }
-        template_name = "Tuple<<$>>"(type_arg_count)
-      elseIf (name.ends_with(']'))
-        template_name = "List<<1>>"
-        template_module = Program.default_module
-        local tokens = Token[]
-        tokens.add( forEach in Scanner(t.filepath,name.leftmost(-2),t.line,t.column).tokenize )
-        tokens.remove_last  # EOL
-        type_args = TemplateArgs(t).[ add(TokenList(t,tokens)) ]
-      elseIf (name.ends_with('?'))
-        template_name = "Optional<<1>>"
-        template_module = Program.default_module
-        local tokens = Token[]
-        tokens.add( forEach in Scanner(t.filepath,name.leftmost(-1),t.line,t.column).tokenize )
-        tokens.remove_last  # EOL
-        type_args = TemplateArgs(t).[ add(TokenList(t,tokens)) ]
-      else
-        local type_arg_count = which{ type_args:type_args.count || 0 }
-        template_name = "$<<$>>"(name.before_first('<'),type_arg_count)
-      endIf
-
-      local template = template_module.templates[template_name]
-      if (template)
-        template.generate( this )
-      else
-        throw t.error( "Reference to undefined class '$::$'."(template_module,name) )
-      endIf
+      local template = module_context.must_find_template( t, name+"<<0>>", name )
+      template.generate( this )
 
     method description->String
       return "$" (%name)

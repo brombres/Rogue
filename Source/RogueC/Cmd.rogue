@@ -3619,13 +3619,12 @@ class FunctionType : Type
         local type = Program.default_module.find_type( name )->(as FunctionType)
         if (type) return type
         type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
-        type.ensure_definition
         return type
       endUse
 
   METHODS
     method init( t, name:String, attributes:Int64, param_types, return_type )
-      prior.init( t, Program.default_module, name, attributes, null )
+      prior.init( t, Program.default_module, name, attributes )
       this.attributes.is_defined = true
 
       local m_call = Method( t, this, "call" )

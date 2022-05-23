@@ -299,7 +299,7 @@ class Visitor
       cmd.operand = visit(cmd.operand)
 
     method on_visit_children( cmd:Type )
-      cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
+      noAction
 
     method on_visit_children( cmd:CallStaticMethod )
       cmd.context = visit(cmd.context)
