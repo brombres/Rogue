@@ -90,6 +90,7 @@ class MethodOrganizer : Visitor
       assert this_module
       cmd.module_context = this_module
       cmd.type_context = this_type
+      visit_children( cmd )
 
     method on_visit( cmd:This )
       assert this_procedure
