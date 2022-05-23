@@ -77,13 +77,15 @@ class Template
         forEach (t in tokens)
           which (t.type)
             case TokenType.PLACEHOLDER
-              if (replacements)
+              contingent
+                necessary (replacements)
                 local replacement = replacements[t.content]
-                if (replacement)
-                  any_changes = true
-                  processed_tokens.add( forEach in replacement )
-                endIf
-              endIf
+                necessary (replacement)
+                any_changes = true
+                processed_tokens.add( forEach in replacement )
+              unsatisfied
+                processed_tokens.add( t )
+              endContingent
             others
               processed_tokens.add( t )
           endWhich
