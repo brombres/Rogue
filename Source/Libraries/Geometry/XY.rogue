@@ -1,4 +1,4 @@
-module IntegerGeometry
+module Geometry
 
 class XY( x:Int32, y:Int32 ) [compound]
   DEFINITIONS
@@ -94,7 +94,7 @@ class XY( x:Int32, y:Int32 ) [compound]
 endClass
 
 module Math
-uses IntegerGeometry
+uses Geometry
 
 augment Random
   METHODS

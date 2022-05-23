@@ -1,4 +1,4 @@
-module IntegerGeometry
+module Geometry
 
 class Anchor( position:XY ) [compound]
   DEFINITIONS

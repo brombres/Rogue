@@ -1,8 +1,0 @@
-module IntegerGeometry
-
-$include IntegerGeometry/Anchor
-$include IntegerGeometry/Box
-$include IntegerGeometry/Circle
-$include IntegerGeometry/Ellipse
-$include IntegerGeometry/Line
-$include IntegerGeometry/XY

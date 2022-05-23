@@ -1,4 +1,4 @@
-module IntegerGeometry
+module Geometry
 
 class Box( position:XY, size:XY ) [compound]
   GLOBAL METHODS

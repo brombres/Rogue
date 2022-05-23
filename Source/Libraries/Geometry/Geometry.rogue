@@ -1,0 +1,8 @@
+module Geometry
+
+$include Geometry/Anchor
+$include Geometry/Box
+$include Geometry/Circle
+$include Geometry/Ellipse
+$include Geometry/Line
+$include Geometry/XY
