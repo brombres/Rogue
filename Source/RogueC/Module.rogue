@@ -77,13 +77,19 @@ class Module
     method description->String
       return name
 
-    method find_template( name:String, &extended_search )->Template
+    method find_template( t:Token, name:String, type_name:String, &extended_search, &module_resolved )->Template
+      local mod = this
+      if (not module_resolved)
+        (mod,type_name) = split_module_and_type( t, name )
+        if (mod is not this) return mod.find_template( t, name, type_name, &=extended_search, &module_resolved )
+      endIf
+
       local result = templates[ name ]
       if (result) return result
 
       if (extended_search)
         forEach (used_m in used_modules)
-          result = used_m.m.find_template( name )
+          result = used_m.m.find_template( t, name, type_name, &module_resolved )
           if (result) escapeForEach
         endForEach
       endIf
@@ -91,35 +97,43 @@ class Module
       return result
 
     method must_find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
-      local result = find_template( template_name, &=extended_search )
+      local result = find_template( t, template_name, type_name, &=extended_search )
       if (result) return result
-      throw t.error( "Reference to undefined class '$::$'."(this,type_name) )
+      local (mod,type) = split_module_and_type( t, type_name )
+      throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
-    method find_type( name:String, &extended_search )->Type
-      local result = types[ name ]
+    method find_type( t:Token, type_name:String, &extended_search, &module_resolved )->Type
+      local mod = this
+      if (not module_resolved)
+        (mod,type_name) = split_module_and_type( t, type_name )
+        if (mod is not this) return mod.find_type( t, type_name, &=extended_search, &module_resolved )
+      endIf
+
+      local result = types[ type_name ]
       if (result) return result
 
       if (extended_search)
         forEach (used_m in used_modules)
-          result = used_m.m.find_type( name )
+          result = used_m.m.find_type( t, type_name, &module_resolved )
           if (result) return result
         endForEach
       endIf
 
       # Handle non-parameterized templates here by checking for a match with <<0>> template parameters.
-      if (not name.ends_with('>'))  # avoid wasted effort for most type names
-        local template = find_template( name+"<<0>>", &=extended_search )
+      if (not type_name.ends_with('>'))  # avoid wasted effort for most type names
+        local template = find_template( t, type_name+"<<0>>", type_name, &=extended_search, &module_resolved )
         if (template)
-          return Type( template.t, template, name )
+          return Type( template.t, template, type_name )
         endIf
       endIf
 
       return null
 
-    method must_find_type( t:Token, name:String, &extended_search )->Type
-      local result = find_type( name, &=extended_search )
+    method must_find_type( t:Token, type_name:String, &extended_search )->Type
+      local result = find_type( t, type_name, &=extended_search )
       if (result) return result
-      throw t.error( "Reference to undefined class '$::$'."(this,name) )
+      local (mod,type) = split_module_and_type( t, type_name )
+      throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
     method instantiate_essential_and_api_types
       if (attributes.is_essential or attributes.is_api)
@@ -141,6 +155,38 @@ class Module
       if (attributes.is_api)
         (forEach in types).attributes.is_api = true
       endIf
+
+    method split_module_and_type( t:Token, type_name:String )->(Module,String)
+      if (not type_name.contains("::")) return (this,type_name)
+
+      # Find module name, handling e.g. MyModule::Type<<Rogue::Int32>>
+      local first_template_i = type_name.locate( "<<" )  # could be null
+      local last_scope_i = type_name.locate( "::", first_template_i )
+      if (not last_scope_i.exists) return (this,type_name)
+
+      use mod_name = StringBuilder.pool
+        forEach (i in 0..<last_scope_i.value)
+          mod_name.print type_name[i]
+        endForEach
+
+        type_name .= substring( last_scope_i.value + 2 )
+
+        local mod = Program.modules[ mod_name ]
+        if (mod) return (mod,type_name)
+
+        use relative_mod_name = StringBuilder.pool
+          # Try one more thing - if in module Alpha, check Beta::XYZ -> Alpha::Beta::XYZ
+          relative_mod_name.print this.name
+          relative_mod_name.print "::"
+          relative_mod_name.print mod_name
+          mod = Program.modules[ relative_mod_name ]
+          if (mod) return (mod,type_name)
+        endUse
+
+        throw t.error( "No such module '$'. Is there a missing 'uses $' directive?" (mod_name,mod_name) )
+      endUse
+
+      return (this,type_name) # never executed
 
     method organize_methods
       if (is_organized) return

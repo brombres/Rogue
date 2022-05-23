@@ -59,7 +59,7 @@ class Type : Cmd
         endIf
       endIf
 
-      local type = Program.current_module.find_type( name, &extended_search )
+      local type = Program.current_module.find_type( t, name, &extended_search )
       if (type) return type
 
       local template_name = "$<<$>>" (base_name, which{type_args:type_args.count || 0})
@@ -67,7 +67,7 @@ class Type : Cmd
       return Type( t, template, name, type_args, &=is_tuple )
 
     method create( t:Token, module_context:Module, name:String )->Type
-      local type = module_context.find_type( name )
+      local type = module_context.find_type( t, name )
       if (type) return type
 
       local template = Program.current_module.must_find_template( t, name+"<<0>>", name, &extended_search )
@@ -82,7 +82,7 @@ class Type : Cmd
     method create( t:Token, element_type:Type )->Type
       # Creates an ElementType[] / List<<ElementType>>
       local name = element_type.name + "[]"
-      local type = Program.current_module.find_type( name, &extended_search )
+      local type = Program.current_module.find_type( t, name, &extended_search )
       if (type) return type
 
       local type_args = TemplateArgs(t).[ add(TokenList(t,element_type.name_tokens)) ]
@@ -92,7 +92,7 @@ class Type : Cmd
       # 'optional' is always true when this method is called.
       # CoreType -> CoreType? -> Optional<<CoreType>>
       local name = core_type.name + "?"
-      local type = Program.current_module.find_type( name, &extended_search )
+      local type = Program.current_module.find_type( t, name, &extended_search )
       if (type) return type
 
       local template = Program.default_module.must_find_template( t, "Optional<<1>>", name )

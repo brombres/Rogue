@@ -1298,7 +1298,7 @@ class Resolver : Visitor
 
         else
           is_global = this_procedure.is_global
-          local type = this_module.find_type( name, &extended_search )
+          local type = this_module.find_type( t, name, &extended_search )
           if (type) return resolve_type_access( t, type, args, &=suppress_error )
 
           type_context = this_type  # may be null
@@ -2399,7 +2399,7 @@ augment
         local v = resolver.find_local( name )
         if (v) return resolver.validate( SetLocal(t,v,new_value) )
 
-        local type = resolver.this_module.find_type( name, &extended_search )
+        local type = resolver.this_module.find_type( t, name, &extended_search )
         if (type and type.attributes.is_singleton)
           return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
         endIf

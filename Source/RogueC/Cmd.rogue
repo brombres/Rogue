@@ -3616,7 +3616,7 @@ class FunctionType : Type
         builder.print ')'
         local name = builder->String
 
-        local type = Program.default_module.find_type( name )->(as FunctionType)
+        local type = Program.default_module.find_type( t, name )->(as FunctionType)
         if (type) return type
         type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
         return type

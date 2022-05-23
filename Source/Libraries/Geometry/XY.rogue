@@ -93,15 +93,12 @@ class XY( x:Int32, y:Int32 ) [compound]
       return "($,$)"(x,y)
 endClass
 
-module Math
-uses Geometry
-
-augment Random
+augment Math::Random
   METHODS
-    method xy->XY
-      return XY( real, real )
+    method xy( limit:Int32 )->Geometry::XY
+      return Geometry::XY( int32(limit), int32(limit) )
 
-    method xy( limit:XY )->XY
-      return XY( real(limit.x), real(limit.y) )
+    method xy( limit:Geometry::XY )->Geometry::XY
+      return Geometry::XY( int32(limit.x), int32(limit.y) )
 endAugment
 

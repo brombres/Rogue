@@ -1588,7 +1588,7 @@ augment
       endForEach
 
     method Module.generate_c_launch_commands( writer:CWriter )
-      local type_Routine = find_type( "Routine" )
+      local type_Routine = find_type( t, "Routine" )
       assert type_Routine
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (r and r.statements.count)

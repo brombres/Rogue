@@ -17,7 +17,7 @@ class CullUnusedElements : InspectionVisitor
         endIf
 
         # [essential] routines require [essential] Routine classes
-        local type_Routine = m.find_type("Routine")
+        local type_Routine = m.find_type(m.t,"Routine")
         if (type_Routine)
           forEach (r in type_Routine.global_methods)
             if (r.attributes.is_essential or r.attributes.is_api)

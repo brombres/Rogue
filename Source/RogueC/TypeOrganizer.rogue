@@ -68,7 +68,7 @@ class TypeOrganizer : Visitor
         name .= after_last("::")
       endIf
 
-      local type = m.find_type( name, &extended_search )
+      local type = m.find_type( cmd.t, name, &extended_search )
       if (type) return TypeAccess( cmd.t, type, cmd.args )
       return cmd
 
