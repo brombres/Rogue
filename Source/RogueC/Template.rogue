@@ -17,7 +17,7 @@ class Template
     method description->String
       return name
 
-    method generate( type:Type, type_args=null:TemplateArgs )
+    method instantiate( type:Type, type_args=null:TemplateArgs )
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
       type.module_context = module_context
