@@ -329,7 +329,7 @@ class Resolver : Visitor
         return cmd.operand.resolve_conversion_to( cmd.to_type, this )
       endIf
 
-      throw cmd.t.error( "No $->$ conversion is defined."(operand_type.pretty_name,cmd.to_type.pretty_name) )
+      throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
 
     method on( cmd:ConvertToTypeWithArgs )->Cmd
       local m_name = "to_" + cmd.to_type.name
@@ -337,7 +337,7 @@ class Resolver : Visitor
 
     method on_validate( cmd:CreateObject )->Cmd
       if (cmd.of_type.attributes.is_abstract)
-        throw cmd.t.error( "Abstract type $ cannot be instantiated."(cmd.of_type.pretty_name) )
+        throw cmd.t.error( "Abstract type $ cannot be instantiated."(cmd.of_type) )
       endIf
 
       if (cmd.m_init and cmd.m_init.throws)
@@ -466,10 +466,10 @@ class Resolver : Visitor
       if (cmd_call) return cmd_call
 
       if (index_type is Program.type_Int32)
-        throw cmd.t.error( "Type $ has no indexed access method at(Int32) or get(Int32)."(context_type.pretty_name) )
+        throw cmd.t.error( "Type $ has no indexed access method at(Int32) or get(Int32)."(context_type) )
       else
         throw cmd.t.error( "Type $ has no indexed access method at($|Int32) or get($|Int32)."...
-        (context_type.pretty_name,index_type.pretty_name,index_type.pretty_name) )
+        (context_type,index_type,index_type) )
       endIf
 
     method on( cmd:If )->Cmd
@@ -893,7 +893,7 @@ class Resolver : Visitor
         cmd.result = cmd.result.require_value.resolve_conversion_to( this_procedure.return_type, this )
       else
         if (this_procedure.return_type)
-          throw cmd.t.error( "$ return value expected."(this_procedure.return_type.pretty_name) )
+          throw cmd.t.error( "$ return value expected."(this_procedure.return_type) )
         endIf
       endIf
 
@@ -988,7 +988,7 @@ class Resolver : Visitor
           local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
           local m_template = cmd.type_context.method_templates[ t_name ]
           if (not m_template)
-            throw cmd.t.error( "No such method template $.$."(cmd.type_context.pretty_name,t_name) )
+            throw cmd.t.error( "No such method template $.$."(cmd.type_context,t_name) )
           endIf
           m = m_template.instantiate( cmd.type_args, cmd.type_context )
         endIf
@@ -1031,7 +1031,7 @@ class Resolver : Visitor
           local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
           local m_template = type_context.method_templates[ t_name ]
           if (not m_template)
-            throw cmd.t.error( "No such method template $.$."(type_context.pretty_name,t_name) )
+            throw cmd.t.error( "No such method template $.$."(type_context,t_name) )
           endIf
           m = m_template.instantiate( cmd.type_args, type_context )
         endIf
@@ -1461,7 +1461,7 @@ class Resolver : Visitor
         endIf
       endBlock
 
-      throw t.error( "No such property '$' in type $."(name,type_context.pretty_name) )
+      throw t.error( "No such property '$' in type $."(name,type_context) )
 
     method resolve_direct_assignment( t:Token, context:Cmd, name:String, new_value:Cmd )->Cmd
       local type_context = this_type
@@ -1487,7 +1487,7 @@ class Resolver : Visitor
         endIf
       endBlock
 
-      throw t.error( "No such property '$' in type $."(name,type_context.pretty_name) )
+      throw t.error( "No such property '$' in type $."(name,type_context) )
 
     method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error )->Cmd
       temporarily this_module = type.module_context
@@ -2497,7 +2497,7 @@ augment
           return resolver.validate( SetGlobalProperty(t,p,new_value) )
         endIf
 
-        throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type.pretty_name) )
+        throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type) )
       endIf
 
       return prior.resolve_assignment( t, new_value, resolver )  # throws error
@@ -2622,7 +2622,7 @@ augment
       if (has_count and m_get)
         # Collection implements count/at or count/get protocol
         if (not m_get.return_type)
-          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context.pretty_name,m_get.signature) )
+          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
         endIf
 
         local v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
@@ -2665,7 +2665,7 @@ augment
       if (m_read_another)
         # Collection implements read-another protocol.
         if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
-          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context.pretty_name,m_read_another.signature) )
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
         endIf
 
         if (cmd_collection.starting_index)
@@ -2705,7 +2705,7 @@ augment
       if (has_has_another and m_read)
         # Collection implements has-another protocol.
         if (not m_read.return_type)
-          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context.pretty_name,m_read.signature) )
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
         endIf
 
         if (cmd_collection.starting_index)

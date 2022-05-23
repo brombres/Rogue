@@ -1179,9 +1179,6 @@ class Type : Cmd
     method precision_index->Int32
       return 10 # Objects etc.
 
-    method pretty_name->String
-      return name
-
     method resolve( resolver=null:Resolver )
       if (is_resolved) return
 

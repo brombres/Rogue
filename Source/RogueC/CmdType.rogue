@@ -30,7 +30,7 @@ augment Cmd
       elseIf (b.is_compound)
         if (not a.is_compound) return b
       endIf
-      throw t.error( "Incompatible types $ and $."(a.pretty_name,b.pretty_name) )
+      throw t.error( "Incompatible types $ and $."(a,b) )
 
     method common_op_type( t:Token, a:Type, b:Type )->Type
       local type = common_type( t, a, b )
@@ -105,13 +105,13 @@ augment
 
       if (suppress_error) return null
 
-      throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type.pretty_name,target_type.pretty_name,target_type.pretty_name,this_type.pretty_name) )
+      throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
 
     method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
       local fn_type = target_type->(as FunctionType)
       if (not fn_type)
         if (suppress_error) return null
-        throw t.error( "Generic function is incompatible with type $."(target_type.pretty_name) )
+        throw t.error( "Generic function is incompatible with type $."(target_type) )
       endIf
 
       local params = Parameters(t)
