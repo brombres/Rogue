@@ -1543,7 +1543,7 @@ class Resolver : Visitor
           endIf
         endIf
 
-        mesg = "No exact match for object constructor $("(type_context)
+        mesg = "No exact match for ambiguous object constructor $("(type_context)
         forEach (arg at i in args)
           if (i > 0) mesg += ','
           mesg += arg.require_type
@@ -1700,7 +1700,7 @@ class Resolver : Visitor
             mesg += "  " + Candidates[0].dev_signature
 
           others
-            mesg = "Ambiguous call to "
+            mesg = "No exact match for ambiguous call to "
             if (require_global) mesg += "global "
             if (type_context)   mesg += type_context + "."
             elseIf (this_type)  mesg += this_type + "."
@@ -2429,11 +2429,11 @@ augment
         endIf
 
         if (resolver.this_procedure.is_method)
-          throw t.error( "No such local, property, or global property '$', or setter set_$(), in current context."(name,name) )
+          throw t.error( "No such variable '$', or setter set_$(), in current context."(name,name) )
         elseIf (resolver.this_procedure.is_global)
-          throw t.error( "No such local or global property '$' in current context."(name) )
+          throw t.error( "No such local variable or global property '$' in current context."(name) )
         else
-          throw t.error( "No such local '$' in current context."(name) )
+          throw t.error( "No such local variable '$' in current context."(name) )
         endIf
       endIf
       throw t.error( "Illegal assignment target." )

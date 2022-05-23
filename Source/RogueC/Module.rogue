@@ -36,7 +36,7 @@ class Module
       local tokens = Token[]
       tokens.add( t.cloned(TokenType.EOL) )
       tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
-      local new_template = Template( t, "Routine", &placeholders=Token[], tokens, 0 )
+      local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, 0 )
       templates["Routine<<0>>"] = new_template
 
     method collect_used_modules
@@ -54,11 +54,11 @@ class Module
 
       # Add each class ModuleName::Routine to list of implicit contexts if it exists.
       # Each routine is converted in to a global method of its module's Routine class.
-      local type_Routine = find_type( "Routine" )
-      if (type_Routine) implicit_context.add( type_Routine )
+      local type_Routine = Type( t, Program.default_module, "Routine" )
+      implicit_context.add( type_Routine )
       forEach (used_m in used_modules)
-        type_Routine = used_m.m.find_type( "Routine" )
-        if (type_Routine) implicit_context.add( type_Routine )
+        type_Routine = Type( t, used_m.m, "Routine" )
+        implicit_context.add( type_Routine )
       endForEach
 
     method collect_exported_modules( target:Module )
@@ -77,26 +77,49 @@ class Module
     method description->String
       return name
 
-    method find_type( name:String, &extended_search )->Type
-      local result = types[ name ]
+    method find_template( name:String, &extended_search )->Template
+      local result = templates[ name ]
       if (result) return result
-
-      local template = templates[ "$<<0>>"(name) ]
-      if (template)
-        local type = Type( template.tokens.first, this, name, 0 )
-        types[name] = type
-        template.generate( type )
-        return type
-      endIf
 
       if (extended_search)
         forEach (used_m in used_modules)
-          result = used_m.m.find_type( name )
+          result = used_m.m.find_template( name )
           if (result) escapeForEach
         endForEach
       endIf
 
       return result
+
+    method must_find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
+      local result = find_template( template_name, &=extended_search )
+      if (result) return result
+      throw t.error( "Reference to undefined class '$::$'."(this,type_name) )
+
+    method find_type( name:String, &extended_search )->Type
+      local result = types[ name ]
+      if (result) return result
+
+      if (extended_search)
+        forEach (used_m in used_modules)
+          result = used_m.m.find_type( name )
+          if (result) return result
+        endForEach
+      endIf
+
+      # Handle non-parameterized templates here by checking for a match with <<0>> template parameters.
+      if (not name.ends_with('>'))  # avoid wasted effort for most type names
+        local template = find_template( name+"<<0>>", &=extended_search )
+        if (template)
+          return Type( template.t, template, name )
+        endIf
+      endIf
+
+      return null
+
+    method must_find_type( t:Token, name:String, &extended_search )->Type
+      local result = find_type( name, &=extended_search )
+      if (result) return result
+      throw t.error( "Reference to undefined class '$::$'."(this,name) )
 
     method instantiate_essential_and_api_types
       if (attributes.is_essential or attributes.is_api)
@@ -131,7 +154,7 @@ class Module
       endForEach
 
       # Add global statements to Routine.on_launch()
-      local type_Routine = find_type( "Routine" )
+      local type_Routine = Type( t, Program.default_module, "Routine" )
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (not r)
         r = GlobalMethod( t, type_Routine, "on_launch" )

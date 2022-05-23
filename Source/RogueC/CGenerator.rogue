@@ -1986,7 +1986,7 @@ augment
         writer.println '{'
         writer.indent += 2
 
-        #writer.println ''printf("Tracing $\\n");''(name)  #FIXME
+        #writer.println ''printf("Tracing $\\n");''(name)
 
         if (is_reference)
           writer.println "((RogueObject*)THIS)->refcount = ~((RogueObject*)THIS)->refcount;"

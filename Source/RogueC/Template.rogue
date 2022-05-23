@@ -2,14 +2,15 @@ module Rogue
 
 class Template
   PROPERTIES
-    t            : Token
-    name         : String
-    placeholders : Token[]
-    tokens       = Token[]
-    attributes   : Attributes
+    t              : Token
+    module_context : Module
+    name           : String
+    placeholders   : Token[]
+    tokens         = Token[]
+    attributes     : Attributes
 
   METHODS
-    method init( t, name, placeholders, tokens, attributes:Int64 )
+    method init( t, module_context, name, placeholders, tokens, attributes:Int64 )
       this.attributes = Attributes( t )
       this.attributes.flags = attributes
 
@@ -19,6 +20,13 @@ class Template
     method generate( type:Type )
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
+      type.module_context = module_context
+      #module_context.types[ type.name ] = type  conflicts with 'unlisted'
+      #if (type.name=="String")
+      #  println "Instantiating $::$"(module_context,type)
+      #  println StackTrace()
+      #  println
+      #endIf
 
       type._template = this
       local template_tokens = tokens

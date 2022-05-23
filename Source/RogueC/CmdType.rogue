@@ -49,7 +49,7 @@ augment Cmd
       local result = type
       if (result) return result
       println StackTrace()
-      throw t.error( "Value expected ($)."(this) )  # FIXME
+      throw t.error( "Value expected ($)."(this) )  # FIXME (includes dev info)
 
     method require_value->Cmd
       require_type
@@ -82,9 +82,9 @@ augment
           local template_args = TemplateArgs( t )
           template_args.add( TokenList(t,this_type.name_tokens) )
           template_args.add( TokenList(t,target_type.name_tokens) )
+          local type_Routine = Program.default_module.must_find_type( t, "Routine" )
           return resolver.visit(
-            TemplatedAccess( t, Type(t,Program.default_module,"Routine"), "recast_tuple",
-                template_args, Args(t,this) )
+            TemplatedAccess( t, type_Routine, "recast_tuple", template_args, Args(t,this) )
           )
         else
           throw t.error( "Cannot convert $ -> $; these tuple types are incompatible."(this_type,target_type) )

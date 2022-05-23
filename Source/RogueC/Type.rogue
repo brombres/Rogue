@@ -50,9 +50,8 @@ class Type : Cmd
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
-      return Type( t, Program.current_module, name, type_args, &=is_tuple )
+      local base_name = name
 
-    method create( t:Token, mod:Module, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
       if (type_args)
         if (type_args.count)
           if (not is_tuple) name = type_args->String(name)
@@ -61,13 +60,24 @@ class Type : Cmd
         endIf
       endIf
 
-      local type = mod.find_type( name, &extended_search )
+      local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
 
-      type = Type( t, name, 0, type_args )
-      if (is_tuple) type.attributes.is_tuple = true
+      local template_name = "$<<$>>" (base_name, which{type_args:type_args.count || 0})
+      local template = Program.current_module.must_find_template( t, template_name, name, &extended_search )
+      return Type( t, template, name, type_args, &=is_tuple )
 
-      type.ensure_definition
+    method create( t:Token, module_context:Module, name:String )->Type
+      local type = module_context.find_type( name )
+      if (type) return type
+
+      local template = Program.current_module.must_find_template( t, name+"<<0>>", name, &extended_search )
+      return Type( t, template, name, null )
+
+    method create( t:Token, template:Template, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
+      local type = Type( t, template.module_context, name, 0, type_args )
+      if (is_tuple) type.attributes.is_tuple = true
+      template.generate( type )
       return type
 
     method create( t:Token, element_type:Type )->Type
@@ -76,12 +86,11 @@ class Type : Cmd
       local type = Program.current_module.find_type( name, &extended_search )
       if (type) return type
 
-      # Default module contains the List template
-      type = Type( t, Program.default_module, name, 0, null )
-      type.ensure_definition
-      return type
+      local type_args = TemplateArgs(t).[ add(TokenList(t,element_type.name_tokens)) ]
+      return Type( t, Program.default_module.must_find_template(t,"List<<1>>",name), name, type_args )
 
     method create( t:Token, core_type:Type, optional:Logical )->Type
+      # 'optional' is always true when this method is called.
       # CoreType -> CoreType? -> Optional<<CoreType>>
       local name = core_type.name + "?"
       local type = Program.current_module.find_type( name, &extended_search )
@@ -131,8 +140,8 @@ class Type : Cmd
         if (type) return type
 
         local template_key = "Tuple<<$>>"(named_elements.count*2)
-        local templ = Program.default_module.templates[ template_key ]
-        if (not templ)
+        local template = Program.default_module.templates[ template_key ]
+        if (not template)
           # Create template e.g.:
           #   <<$name1,$Type1,$name2,$Type2>>
           #   ( name1:Type1, name2:Type2, ... ) [compound]
@@ -160,8 +169,8 @@ class Type : Cmd
           tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )            # endClass
           tokens.add( t.cloned(TokenType.EOL) )                          # EOL
 
-          templ = Template( t, "Tuple", placeholders, tokens, Attribute.COMPOUND )
-          Program.default_module.templates[ template_key ] = templ
+          template = Template( t, Program.default_module, "Tuple", placeholders, tokens, Attribute.COMPOUND )
+          Program.default_module.templates[ template_key ] = template
         endIf
 
         # Instantiate the template
@@ -171,7 +180,7 @@ class Type : Cmd
           template_args.add( TokenList( element.t, element.of_type.name_tokens.cloned ) )
         endForEach
 
-        type = Type( t, Program.default_module, tuple_type_name, template_args, &is_tuple )
+        type = Type( t, template, tuple_type_name, template_args, &is_tuple )
         type.attributes.is_anonymous_tuple = is_anonymous
         return type
       endUse

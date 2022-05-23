@@ -94,7 +94,7 @@ class Parser : ParserCore
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS,null) )
       tokens.add( tokens.last.cloned(TokenType.EOL,null) )
 
-      m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
+      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
 
     method class_attribute_essential
       _attribute_essential = true
@@ -220,7 +220,7 @@ class Parser : ParserCore
         endIf
       endForEach
 
-      m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
+      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
 
     method on_uses_module
       assert _cmd_stack.count >= 2
@@ -275,7 +275,7 @@ class Parser : ParserCore
         throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
       endIf
 
-      local result = Template( class_t, name, placeholders, tokens, attributes )
+      local result = Template( class_t, m, name, placeholders, tokens, attributes )
       m.templates[extended_name] = result
       return result
 
@@ -314,7 +314,7 @@ class Parser : ParserCore
       m.augments["Routine"].add( aspect_name )
 
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
-      m.templates[aspect_name] = Template( augment_t, aspect_name, Token[], tokens, attributes )
+      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method parse_module_id
       # Doing this natively because we need to also switch context to the parsed module
@@ -351,7 +351,7 @@ class Parser : ParserCore
 
     method print_stack
       @trace _cmd_stack
-      if (_cmd_stack.count) @trace _cmd_stack.last.type_name
+      #if (_cmd_stack.count and _cmd_stack.last) @trace _cmd_stack.last.type_name
 
     method print_trace
       @trace _next_t
