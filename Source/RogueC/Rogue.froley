@@ -114,9 +114,10 @@ KEYWORD_XOR             xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
-META_DEFINE  $define   [meta]
-META_INCLUDE $include  [meta]
-META_JOIN_ID $id       [meta]
+META_DEFINE       $define   [meta]
+META_INCLUDE      $include  [meta]
+META_JOIN_IDS     $id       [meta]
+META_JOIN_STRINGS $string   [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -2469,19 +2470,30 @@ parser
     endOn
 
   elseOn "$id"
-    call begin_join_id
+    call begin_join_ids
       mustConsume '('
       process_another
       while (consume(','))
         process_another
       endWhile
       mustConsume ')'
-    call end_join_id
+    call end_join_ids
     return
 
   elseOn "$include"
     collect_meta_filepath
     call include_filepath
+    return
+
+  elseOn "$string"
+    call begin_join_strings
+      mustConsume '('
+      process_another
+      while (consume(','))
+        process_another
+      endWhile
+      mustConsume ')'
+    call end_join_strings
     return
 
   elseOn "uses"
