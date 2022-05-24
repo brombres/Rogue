@@ -46,10 +46,7 @@ class MethodOrganizer : Visitor
 
     method on_visit( cmd:GlobalMethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
-      if (this_type.global_method_templates.contains(name))
-        throw cmd.t.error( "Type $ already defines global method template $."(this_type,name) )
-      endIf
-      this_type.global_method_templates[name] = cmd
+      this_type.global_method_templates.add( name, cmd )
 
     method on_visit_children( cmd:Local )
       prior.on_visit_children( cmd )
@@ -69,10 +66,7 @@ class MethodOrganizer : Visitor
 
     method on_visit( cmd:MethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
-      if (this_type.method_templates.contains(name))
-        throw cmd.t.error( "Type $ already defines method template $."(this_type,name) )
-      endIf
-      this_type.method_templates[name] = cmd
+      this_type.method_templates.add( name, cmd )
 
     method on_visit_children( cmd:Statements )
       forEach (element in writer=cmd.list.rewriter)

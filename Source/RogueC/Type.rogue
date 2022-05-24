@@ -1,6 +1,7 @@
 module Rogue
 
 uses Utility/WorkList
+uses Utility/ListLookupTable
 
 class Type : Cmd
   PROPERTIES
@@ -24,10 +25,10 @@ class Type : Cmd
 
     categories        : Category[]
 
-    global_method_templates          = StringTable<<GlobalMethodTemplate>>()
-    global_method_template_instances = StringTable<<Procedure>>()
-    method_templates                 = StringTable<<MethodTemplate>>()
-    method_template_instances        = StringTable<<Procedure>>()
+    global_method_templates          = ListLookupTable<<String,GlobalMethodTemplate>>()
+    global_method_template_instances = Set<<String>>()
+    method_templates                 = ListLookupTable<<String,MethodTemplate>>()
+    method_template_instances        = Set<<String>>()
 
     name_tokens           : Token[]
 
@@ -294,12 +295,12 @@ class Type : Cmd
       organize_methods
 
       forEach (m in global_methods)
-        if (m.base_name == m_name) list.add( m )
+        if (m.name == m_name or m.base_name == m_name) list.add( m )
       endForEach
 
       if (not require_global)
         forEach (m in methods)
-          if (m.base_name == m_name) list.add( m )
+          if (m.name == m_name or m.base_name == m_name) list.add( m )
         endForEach
       endIf
 
@@ -1063,10 +1064,10 @@ class Type : Cmd
         # Merge method templates
         forEach (incorporated_aspect in aspects)
           forEach (entry in incorporated_aspect.global_method_templates.entries)
-            global_method_templates[entry.key] = entry.value
+            global_method_templates.add( entry.key, forEach in entry.value )
           endForEach
           forEach (entry in incorporated_aspect.method_templates.entries)
-            method_templates[entry.key] = entry.value
+            method_templates.add( entry.key, forEach in entry.value )
           endForEach
         endForEach
 

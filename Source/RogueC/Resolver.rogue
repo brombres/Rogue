@@ -992,84 +992,50 @@ class Resolver : Visitor
       local name = cmd.type_args->String( cmd.name )
 
       # Global Method Template?
-      local m = cmd.type_context.global_method_template_instances[name]
-      if (not m)
-        if (cmd.type_context.has_global_method_named(name))
-          # The developer explicitly defined this method template instance,
-          # e.g. "method alpha<<Int32>>(...)".
-          return resolve_call( cmd.t, cmd.type_context, null, name, cmd.args )
-        endIf
-
+      if (not cmd.type_context.global_method_template_instances.contains(name))
         local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-        local m_template = cmd.type_context.global_method_templates[ t_name ]
-        if (m_template)
-          m = m_template.instantiate( cmd.type_args, cmd.type_context )
+        local templates = cmd.type_context.global_method_templates[ t_name ]
+        if (templates)
+          (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
         endIf
       endIf
 
       # Object Method Template
-      if (not m)
-        m = cmd.type_context.method_template_instances[name]
-        if (not m)
-          if (cmd.type_context.has_method_named(name))
-            # The developer explicitly defined this method template instance,
-            # e.g. "method alpha<<Int32>>(...)".
-            return resolve_call( cmd.t, cmd.type_context, null, name, cmd.args )
-          endIf
-
-          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-          local m_template = cmd.type_context.method_templates[ t_name ]
-          if (not m_template)
-            throw cmd.t.error( "No such method template $.$."(cmd.type_context,t_name) )
-          endIf
-          m = m_template.instantiate( cmd.type_args, cmd.type_context )
+      if (not cmd.type_context.method_template_instances.contains(name))
+        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+        local templates = cmd.type_context.method_templates[ t_name ]
+        if (templates)
+          (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
         endIf
       endIf
 
-      return resolve_call( cmd.t, null, m, cmd.args )
+      return resolve_call( cmd.t, cmd.type_context, null, name, cmd.args )
 
     method on( cmd:TemplatedMethodContextAccess )->Cmd
       local context = visit( cmd.context )
       local type_context = context.require_type
 
       local name = cmd.type_args->String( cmd.name )
-      local m = type_context.global_method_template_instances[name]
 
       # Global method template
-      if (not m)
-        if (type_context.has_global_method_named(name))
-          # The developer explicitly defined this method template instance,
-          # e.g. "method alpha<<Int32>>(...)".
-          return resolve_call( cmd.t, type_context, context, name, cmd.args )
-        endIf
-
+      if (not type_context.global_method_template_instances.contains(name))
         local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-        local m_template = type_context.global_method_templates[ t_name ]
-        if (m_template)
-          m = m_template.instantiate( cmd.type_args, type_context )
+        local templates = type_context.global_method_templates[ t_name ]
+        if (templates)
+          (forEach in templates).instantiate( cmd.type_args, type_context )
         endIf
       endIf
 
       # Object Method Template
-      if (not m)
-        m = type_context.method_template_instances[name]
-        if (not m)
-          if (type_context.has_method_named(name))
-            # The developer explicitly defined this method template instance,
-            # e.g. "method alpha<<Int32>>(...)".
-            return resolve_call( cmd.t, type_context, context, name, cmd.args )
-          endIf
-
-          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-          local m_template = type_context.method_templates[ t_name ]
-          if (not m_template)
-            throw cmd.t.error( "No such method template $.$."(type_context,t_name) )
-          endIf
-          m = m_template.instantiate( cmd.type_args, type_context )
+      if (not type_context.method_template_instances.contains(name))
+        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+        local templates = type_context.method_templates[ t_name ]
+        if (templates)
+          (forEach in templates).instantiate( cmd.type_args, type_context )
         endIf
       endIf
 
-      return resolve_call( cmd.t, context, m, cmd.args )
+      return resolve_call( cmd.t, type_context, context, name, cmd.args )
 
     method on( cmd:Temporarily )->Cmd
       if (cmd.assignments.count > 1)
@@ -1310,13 +1276,8 @@ class Resolver : Visitor
       if (cmd) current_statements.write( cmd )
 
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      local m = this_module
-      if (name.contains("::"))
-        local m_name = name.before_last("::")
-        m = Program.modules[ m_name ]
-        if (not m) throw t.error( "No such module '$'."(m_name) )
-        name .= after_last("::")
-      endIf
+      local m : Module
+      (m,name) = this_module.split_module_and_type( t, name )
 
       temporarily this_module = m
 
@@ -1433,17 +1394,12 @@ class Resolver : Visitor
       return null
 
     method resolve_call( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
-      local m = this_module
-      if (name.contains("::"))
-        local m_name = name.before_last("::")
-        m = Program.modules[ m_name ]
-        if (not m) throw t.error( "No such module '$'."(m_name) )
-        name .= after_last("::")
-      endIf
+      local m : Module
+      (m,name) = this_module.split_module_and_type( t, name )
 
       temporarily this_module = m
 
-        local is_global = context and context.is_type_context
+        local is_global = this_procedure.is_global and (not context or context.is_type_context)
 
         type_context.organize
         resolve_definitions( type_context )
@@ -1583,7 +1539,7 @@ class Resolver : Visitor
         mesg += "). Candidates:\n\n"
         if (Candidates.count)
           forEach (m in Candidates)
-            mesg += "  $$" (type_context,m.signature.from_first('('))
+            mesg += "  $$\n" (type_context,m.dev_signature.from_first('('))
           endForEach
         else
           mesg += "  $()"(type_context)
@@ -1636,20 +1592,19 @@ class Resolver : Visitor
         # Attempt to infer the template type args from the arg types.
         local t_name    = "$<<$>>"(name,args.count)
 
-        local global_m_template = type_context.global_method_templates[ t_name ]
-        if (global_m_template)
+        local global_templates = type_context.global_method_templates[ t_name ]
+        if (global_templates)
           args = visit( args )
           local type_args = TemplateArgs(t)
           type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-          global_m_template.instantiate( type_args, type_context )
-
+          (forEach in global_templates).instantiate( type_args, type_context )
         else
-          local m_template = type_context.method_templates[ t_name ]
-          if (m_template)
+          local method_templates = type_context.method_templates[ t_name ]
+          if (method_templates)
             args = visit( args )
             local type_args = TemplateArgs(t)
             type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-            m_template.instantiate( type_args, type_context )
+            (forEach in method_templates).instantiate( type_args, type_context )
           endIf
         endIf
       endIf

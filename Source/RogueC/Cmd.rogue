@@ -3513,7 +3513,7 @@ class MethodTemplate : Cmd
       if (existing._tokens) _tokens = existing._tokens.cloned
 
     method description->String
-      return "MethodTemplate($,$,$)" (%name,%placeholders,%_tokens)
+      return "MethodTemplate($,$)" (%name,%placeholders)
 
     method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
       local placeholders = Token[]
@@ -3531,7 +3531,7 @@ class MethodTemplate : Cmd
       m.generate_body
       m.organize
 
-      type_context.method_template_instances[ name ] = m
+      type_context.method_template_instances.add( name )
 
       # Propagate new method template to types that have already organized & inherited methods
       local sig = m.signature
@@ -4156,7 +4156,7 @@ class GlobalMethodTemplate : Cmd
       if (existing._tokens) _tokens = existing._tokens.cloned
 
     method description->String
-      return "GlobalMethodTemplate($,$,$)" (%name,%placeholders,%_tokens)
+      return "GlobalMethodTemplate($,$)" (%name,%placeholders)
 
     method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
       local placeholders = Token[]
@@ -4173,6 +4173,6 @@ class GlobalMethodTemplate : Cmd
       m.type_context   = type_context
       m.organize
 
-      type_context.global_method_template_instances[ name ] = m
+      type_context.global_method_template_instances.add( name )
       return m
 endClass

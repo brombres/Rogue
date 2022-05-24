@@ -126,8 +126,6 @@ class Procedure : Cmd
 
     method dev_signature->String
       use builder = StringBuilder.pool
-        builder.print module_context
-        builder.print "::"
         if (type_context) builder.print( type_context ).print( '.' )
         builder.print name
         builder.print "("
