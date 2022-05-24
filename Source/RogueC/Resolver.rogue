@@ -214,7 +214,38 @@ class Resolver : Visitor
       return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
 
     method on( cmd:Block )->Cmd
-      return visit( ControlStructure(cmd.t,cmd.statements,ControlType.BLOCK) )
+      local cmd_control_structure = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )
+
+      if (cmd.assignments)
+        push_scope( cmd_control_structure )
+        temporarily current_statements = cmd_control_structure.statements->(as Statements).list.rewriter
+          use new_locals = WorkList<<Local>>
+            forEach (decl in cmd.assignments)
+              local assign = decl->(as Assign)
+              if (assign)
+                # a = b
+                local new_value = visit( assign.new_value )
+                new_locals.add( add_local(Local(assign.t,assign.target->String,new_value,new_value.require_type)) )
+              else
+                # a -> a = a
+                local new_value = visit( Access(decl.t,decl->String) )
+                new_locals.add( add_local(Local(decl.t,decl->String,new_value,new_value.require_type)) )
+              endIf
+            endForEach
+
+            forEach (v in new_locals)
+              insert( SetLocal(v,v.initial_value,&initial_assignment) )
+            endForEach
+          endUse
+
+          while (current_statements.has_another)
+            current_statements.write( current_statements.read )
+          endWhile
+        endTemporarily
+        pop_scope
+      endIf
+
+      return visit( cmd_control_structure )
 
     method on_validate( cmd:CallProcedure )->Cmd
       if (cmd.info.throws)
@@ -719,6 +750,7 @@ class Resolver : Visitor
           else                         return cmd_assign
         endIf
       endForEach
+      if (is_multiple_declaration) return result
 
       return null
 

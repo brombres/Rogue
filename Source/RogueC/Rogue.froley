@@ -1863,10 +1863,28 @@ parser
 
 - block
   on "block"
+    if (consume(EOL))
+      createNull  # assignments
+    else
+      beginList
+        block_assignment
+        while (consume(','))
+          block_assignment
+        endWhile
+      createList
+      must_consume_eols
+    endIf
     multi_line_statements
     mustConsume "endBlock"
   endOn
-  produce Block(statements):ControlStructure
+  produce Block(assignments,statements):ControlStructure
+
+- block_assignment
+  identifier
+  on "="
+    expression
+    create Assign(target,new_value)
+  endOn
 
 - contingent
   on "contingent"

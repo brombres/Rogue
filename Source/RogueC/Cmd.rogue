@@ -1159,11 +1159,17 @@ class RangeUpToLessThan : Range
 endClass
 
 class Block : ControlStructure
+  PROPERTIES
+    assignments : Cmd
+
   METHODS
     method init( t, control_type=ControlType.BLOCK )
       prior.init( t, control_type )
 
     method init( t, statements:Cmd, control_type=ControlType.BLOCK )
+      prior.init( t, statements, control_type )
+
+    method init( t, assignments, statements:Cmd, control_type=ControlType.BLOCK )
       prior.init( t, statements, control_type )
 
     method init( existing:Block )

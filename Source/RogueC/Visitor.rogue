@@ -609,5 +609,9 @@ class Visitor
       cmd.placeholders = visit(cmd.placeholders)
       cmd._tokens = visit(cmd._tokens)->(as TokenList)
 
+    method on_visit_children( cmd:Block )
+      cmd.assignments = visit(cmd.assignments)
+      cmd.statements = visit(cmd.statements)
+
 endClass
 
