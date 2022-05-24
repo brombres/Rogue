@@ -116,6 +116,7 @@ tokens Symbols
 ----------------------------------------------------------------------
 META_DEFINE  $define   [meta]
 META_INCLUDE $include  [meta]
+META_JOIN_ID $id       [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -2466,6 +2467,17 @@ parser
     elseOnOthers
       syntaxError "Identifier expected."
     endOn
+
+  elseOn "$id"
+    call begin_join_id
+      mustConsume '('
+      process_another
+      while (consume(','))
+        process_another
+      endWhile
+      mustConsume ')'
+    call end_join_id
+    return
 
   elseOn "$include"
     collect_meta_filepath

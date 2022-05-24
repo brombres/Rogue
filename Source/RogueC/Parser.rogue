@@ -10,6 +10,7 @@ class Parser : ParserCore
     marked_token     : Token
     token_buffer     = Token[]
     inserted_tokens  = Token[]
+    join_start_stack = Int32[]
     collecting_templates  = false
     _attribute_no_include = false
     _attribute_essential  = false
@@ -95,6 +96,21 @@ class Parser : ParserCore
       tokens.add( tokens.last.cloned(TokenType.EOL,null) )
 
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
+
+    method begin_join_id
+      join_start_stack.add( processed_tokens.count )
+
+    method end_join_id
+      local i1 = join_start_stack.remove_last
+      if (i1 >= processed_tokens.count) return
+
+      local t = processed_tokens[i1]
+      if (t.type != TokenType.IDENTIFIER) t .= cloned( TokenType.IDENTIFIER, t->String )
+      forEach (i in i1+1..<processed_tokens.count)
+        t.content += processed_tokens[i]->String
+      endForEach
+      processed_tokens.discard_from( i1 )
+      processed_tokens.add( t )
 
     method class_attribute_essential
       _attribute_essential = true
