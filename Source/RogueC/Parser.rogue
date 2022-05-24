@@ -128,6 +128,26 @@ class Parser : ParserCore
       processed_tokens.discard_from( i1 )
       processed_tokens.add( t )
 
+    method define_macro
+      assert _cmd_stack.count >= 3
+      local tokens = _cmd_stack.remove_last->(as TokenList).tokens
+      local placeholders = _cmd_stack.remove_last->(as Identifiers)
+      local id_node = _cmd_stack.remove_last
+
+      local macros = Program.macros[id_node->String]
+      if (not macros)
+        macros = Macro[]
+        Program.macros[id_node->String] = macros
+      endIf
+
+      forEach (m in macros)
+        if (m.placeholders.count == placeholders.count)
+          throw m.t.error( "A definition of macro $($) already exists."(id_node->String,placeholders.count) )
+        endIf
+      endForEach
+
+      macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
+
     method class_attribute_essential
       _attribute_essential = true
 
@@ -163,18 +183,68 @@ class Parser : ParserCore
 
     method insert_definition
       local def = Program.definitions[ _cur_t->String ]
-      if (def) insert_definition( forEach in def step -1 )
-      else     processed_tokens.add( _cur_t )
+      if (def)
+        if (def.count > 0)
+          --_position
+          _tokens.shift( _position, &delta=def.count-1 )
+          forEach (t at i in def)
+            _tokens[_position+i] = t
+          endForEach
+          _limit += def.count - 1
+          if (_position < _limit) _next_t = _tokens[_position]
+        endIf
+        return
+      endIf
 
-    method insert_definition( t:Token )
-      if (t.type == TokenType.IDENTIFIER)
-        local def = Program.definitions[ t->String ]
-        if (def)
-          insert_definition( forEach in def step -1 )
-          return
+      if (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)
+        local macros = Program.macros[ _cur_t->String ]
+        if (macros)
+          _save_position
+          _execute( ip_macro_args )
+          _pop_frame
+          local args = _cmd_stack.remove_last
+          forEach (m in macros)
+            if (m.placeholders.count == args.count)
+              _discard_position
+
+              # Expand macro here
+              local replacements = StringTable<<Token[]>>()
+              forEach (placeholder at i in m.placeholders)
+                replacements[placeholder->String] = args[i]->(as TokenList).tokens
+              endForEach
+
+              use expanded_tokens = WorkList<<Token>>
+                forEach (t in m.tokens)
+                  if (t.type == TokenType.IDENTIFIER)
+                    local replacement = replacements[ t.content ]
+                    if (replacement)
+                      expanded_tokens.add( forEach in replacement )
+                    else
+                      expanded_tokens.add( t )
+                    endIf
+                  else
+                    expanded_tokens.add( t )
+                  endIf
+                endForEach
+
+                # Insert expanded tokens
+                _tokens.shift( _position, &delta=expanded_tokens.count )
+                forEach (t at i in expanded_tokens)
+                  _tokens[_position+i] = t
+                endForEach
+                _limit += expanded_tokens.count
+                if (_position < _limit) _next_t = _tokens[_position]
+              endUse
+              return
+            endIf
+          endForEach
+
+          # No macro matches arg count
+          _restore_position
         endIf
       endIf
-      inserted_tokens.add( t )
+
+      processed_tokens.add( _cur_t )
 
     method mark_token
       marked_token = _cur_t

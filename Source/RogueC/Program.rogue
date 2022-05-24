@@ -6,6 +6,7 @@ class Program [singleton]
     include_search_paths = String[]
     included_files       = StringTable<<Token[]>>()
     definitions          = StringTable<<Token[]>>()
+    macros               = StringTable<<Macro[]>>()
 
     debug_mode        = false
     gc_auto           = true

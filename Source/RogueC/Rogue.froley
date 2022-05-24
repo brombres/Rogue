@@ -115,9 +115,11 @@ KEYWORD_XOR             xor
 tokens Symbols
 ----------------------------------------------------------------------
 META_DEFINE       $define   [meta]
+META_END_MACRO    $endMacro [meta structural]
 META_INCLUDE      $include  [meta]
 META_JOIN_IDS     $id       [meta]
 META_JOIN_STRINGS $string   [meta]
+META_MACRO        $macro    [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -1686,6 +1688,29 @@ parser
   endIf
   produceList Args
 
+- macro_args
+  # Produces a list of TokenLists
+  beginList
+
+  mustConsume '('
+  consume_eols
+  if (consume(')')) produceList Args
+  consume_eols
+
+  while (hasAnother and not nextHasAttribute(structural))
+    savePosition
+    ++disable_output
+    arg
+    --disable_output
+    createTokenList  # consumes saved position
+    consume_eols
+    consume ','
+    consume_eols
+  endWhile
+  mustConsume ')'
+
+  produceList
+
 - arg
   on '&'
     on '!'
@@ -2483,6 +2508,39 @@ parser
   elseOn "$include"
     collect_meta_filepath
     call include_filepath
+    return
+
+  elseOn "$macro"
+    identifier   # macro name
+
+    # placeholders
+    mustConsume '('
+    beginList
+      identifier
+      while (consume(','))
+        identifier
+      endWhile
+    createList Identifiers
+    mustConsume ')'
+
+    if (nextIs(EOL))
+      consume_eols
+      savePosition
+      while (hasAnother and not nextIs("$endMacro"))
+        read
+      endWhile
+      createTokenList # consumes saved position
+      mustConsume "$endMacro"
+    else
+      savePosition
+      while (hasAnother and not nextIs(EOL))
+        read
+      endWhile
+      createTokenList # consumes saved position
+      consume_eols
+    endIf
+
+    call define_macro
     return
 
   elseOn "$string"
