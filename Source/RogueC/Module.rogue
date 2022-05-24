@@ -157,7 +157,8 @@ class Module
       endIf
 
     method split_module_and_type( t:Token, type_name:String )->(Module,String)
-      if (not type_name.contains("::")) return (this,type_name)
+      if (type_name.begins_with('(') or not type_name.contains("::")) return (this,type_name)
+      # Type names beginning with ( are (tuples) or (Functions)
 
       # Find module name, handling e.g. MyModule::Type<<Rogue::Int32>>
       local first_template_i = type_name.locate( "<<" )  # could be null
