@@ -802,7 +802,7 @@ class Resolver : Visitor
         )
         iterator.condition = PreDecrementLocal( v.t, v )
       else
-        iterator.control = LiteralLogical(cmd.t,true)
+        iterator.condition = LiteralLogical(cmd.t,true)
       endIf
       return visit( iterator )
 
