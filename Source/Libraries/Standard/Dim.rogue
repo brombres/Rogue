@@ -1,0 +1,18 @@
+# 1D
+routine Dim<<$DataType>>( n:Int32 )->$DataType[]
+  return $DataType[].[ expand_to_count(n) ]
+endRoutine
+
+# 2D
+routine Dim<<$DataType>>( n:Int32, o:Int32 )->$DataType[][]
+  local result = $DataType[][](n)
+  forEach (1..n) result.add( Dim<<$DataType>>(o) )
+  return result
+endRoutine
+
+# 3D
+routine Dim<<$DataType>>( n:Int32, o:Int32, p:Int32 )->$DataType[][][]
+  local result = $DataType[][][](n)
+  forEach (1..n) result.add( Dim<<$DataType>>(o,p) )
+  return result
+endRoutine
