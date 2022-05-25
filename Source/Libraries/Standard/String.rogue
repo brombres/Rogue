@@ -1454,13 +1454,20 @@ class String : PrintWriter
                  |
                  |  int is_permanent = (usage == ROGUE_STRING_PERMANENT);
                  |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
-                 |  RogueByteList* data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |  RogueByteList* data;
+                 |  #ifdef ROGUE_GC_AUTO
+                 |    result->refcount = 1;
+                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    --result->refcount;
+                 |  #else
+                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |  #endif
                  |  result->data = data;
                  |
                  |  if (usage == ROGUE_STRING_COPY)
                  |  {
                  |    char* string_data = ROGUE_MALLOC( byte_count + 1 );
-                 |    memcpy( string_data, data, byte_count );
+                 |    memcpy( string_data, cstring, byte_count );
                  |    string_data[byte_count] = 0;
                  |    cstring = string_data;
                  |  }
@@ -1499,9 +1506,9 @@ class String : PrintWriter
                  |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
                  |  RogueByteList* data;
                  |  #ifdef ROGUE_GC_AUTO
-                 |    result->refcount = 1; // keep this object alive if init fn triggers a GC
+                 |    result->refcount = 1;
                  |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
-                 |    --result->refcount;   // other code maybe retained this obj so don't just set back to 0.
+                 |    --result->refcount;
                  |  #else
                  |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |  #endif
