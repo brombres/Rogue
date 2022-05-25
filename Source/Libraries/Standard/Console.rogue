@@ -22,9 +22,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |if (len) st[--len] = 0;
               |else st[0] = 0;
 
-      return native("RogueString_create( st, len, ROGUE_STRING_COPY )")->String
+      return native(''RogueString_create( st, len, ROGUE_STRING_COPY )'')->String
 
   PROPERTIES
+    error          : PrintWriter
+
     immediate_mode = false
     # Set to 'true' to turn off echo and line buffering and to turn on mouse events
 
@@ -75,6 +77,17 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       #FIXME on_exit( function with (console=this) => console.reset_io_mode )
       @show_cursor = true
 
+    method clear( output=Global:PrintWriter )
+      output.[ flush, print("\e[2J"), flush ]
+
+    method clear_to_eol( output=Global:PrintWriter )
+      output.[ flush, print("\e[K"), flush ]
+
+    method error->PrintWriter
+      if (@error) return @error
+      @error = ConsoleErrorPrinter()
+      return @error
+
     method flush( buffer:String )
       write( buffer )
       buffer.clear
@@ -86,6 +99,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       _fill_event_queue
       if ((forEach in events).is_character) return true
       return false
+
+    method has_another_event->Logical
+      if (events.count) return true
+      _fill_event_queue
+      return events.count
 
     method height->Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -99,6 +117,19 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |
               |  return sz.ws_row;
               |#endif
+
+    method move_cursor( dx:Int32, dy:Int32, output=Global:PrintWriter )
+      # Moves the cursor by a delta from its current position
+      output.flush
+      if (dx)
+        if (dx > 0) output.[ print("\e["), print( dx), print('C') ]
+        else        output.[ print("\e["), print(-dx), print('D') ]
+      endIf
+      if (dy)
+        if (dy > 0) output.[ print("\e["), print( dy), print('B') ]
+        else        output.[ print("\e["), print(-dy), print('A') ]
+      endIf
+      output.flush
 
     method peek->Character
       if (has_another)
@@ -133,6 +164,75 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         input_buffer.add( byte )
       endForEach
       return String(input_buffer)
+
+    method reset_input
+      # Allows stdin to be read again after a CTRL+D
+      native @|clearerr( stdin );
+
+    method reset_io_mode
+      immediate_mode = false
+      show_cursor = true
+
+    method restore_cursor_position( output=Global:PrintWriter )
+      output.[ flush, print("\e[u"), flush ]
+
+    method save_cursor_position( output=Global:PrintWriter )
+      output.[ flush, print("\e[s"), flush ]
+
+    method set_cursor( x:Int32, y:Int32, output=Global:PrintWriter )
+      ++x
+      ++y
+      output.[ flush, print("\e["), print(y), print(';'), print(x), print('H'), flush ]
+
+    method set_immediate_mode( setting:Logical )
+      # setting==true: turn off echo and line buffer, turn on mouse events.
+      #                Must call next_is_mouse_event/read_mouse_event
+      if (@immediate_mode != setting)
+        @immediate_mode = setting
+        if (@immediate_mode)
+          # Turn off blocking and line buffering
+          windows_button_state = 0
+          native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+                  |  DWORD mode;
+                  |  GetConsoleMode( h_stdin, &mode );
+                  |  SetConsoleMode( h_stdin, (mode & ~(ENABLE_QUICK_EDIT_MODE)) | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT );
+                  |#else
+                  |  struct termios new_settings;
+                  |  tcgetattr( STDIN_FILENO, &new_settings );
+                  |  new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
+                  |  new_settings.c_cc[VMIN] = 0;
+                  |  new_settings.c_cc[VTIME] = 0;
+                  |  tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+                  |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK );
+
+                     # Enable mouse events
+                     Global.[ flush, print("\e[?1003h"), flush ]
+          native @|#endif
+        else
+          native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+                  |  DWORD mode;
+                  |  GetConsoleMode( h_stdin, &mode );
+                  |  if ($this->windows_in_quick_edit_mode) mode |= ENABLE_QUICK_EDIT_MODE;
+                  |  mode |= (ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT);
+                  |  SetConsoleMode( h_stdin, mode );
+                  |#else
+                  |  tcsetattr( STDIN_FILENO, TCSANOW, &$this->original_terminal_settings );
+                  |  fcntl( STDIN_FILENO, F_SETFL, $this->original_stdin_flags );
+
+                     # Disable mouse events
+                     Global.[ flush, print("\e[?1003l"), flush ]
+          native @|#endif
+        endIf
+      endIf
+
+    method set_show_cursor( setting=true:Logical, output=Global:PrintWriter )
+      if (@show_cursor == setting) return
+      @show_cursor = setting
+
+      # Console.show_cursor = true / false
+      output.[ flush, print("\e[?25"), print(which{setting:'h'||'l'}), flush ]
 
     method size->(width:Int32,height:Int32)
       return (width,height)

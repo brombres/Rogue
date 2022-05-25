@@ -1,5 +1,7 @@
 $include Standard/Dim
 $include Standard/Console
+$include Standard/ConsoleErrorPrinter
+$include Standard/ConsoleStyle
 $include Standard/Exception
 $include Standard/Global
 $include Standard/List
