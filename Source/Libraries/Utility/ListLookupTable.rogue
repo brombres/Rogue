@@ -1,6 +1,14 @@
 class ListLookupTable<<$KeyType,$ValueType>> : Table<<$KeyType,$ValueType[]>>
   # A table with $KeyType keys and lists of $ValueType as values.
   METHODS
+    method add( key:$KeyType, value:$ValueType )->this
+      local entry = find( key )
+
+      if (entry) entry.value.add( value )
+      else       this[ key ] = $ValueType[].[ add(value) ]
+
+      return this
+
     method add( other:ListLookupTable<<$KeyType,$ValueType>> )->ListLookupTable<<$KeyType,$ValueType>>
       forEach (key in other.keys)
         forEach (element in this[key]) other[key] = element
@@ -23,11 +31,6 @@ class ListLookupTable<<$KeyType,$ValueType>> : Table<<$KeyType,$ValueType[]>>
       return entry.value.remove( value )
 
     method set( key:$KeyType, value:$ValueType )->this
-      local entry = find( key )
-
-      if (entry) entry.value.add( value )
-      else       this[ key ] = $ValueType[].add( value )
-
-      return this
+      return add( key, value )
 endClass
 
