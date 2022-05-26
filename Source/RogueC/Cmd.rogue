@@ -1128,41 +1128,6 @@ class ForEachOfControl : ForEachControl
 
 endClass
 
-class CmdRange : Binary
-  METHODS
-    method description->String
-      return "CmdRange($,$)" (%left,%right)
-
-endClass
-
-class CmdRangeDownTo : CmdRange
-  METHODS
-    method description->String
-      return "CmdRangeDownTo($,$)" (%left,%right)
-
-endClass
-
-class CmdRangeDownToGreaterThan : CmdRange
-  METHODS
-    method description->String
-      return "CmdRangeDownToGreaterThan($,$)" (%left,%right)
-
-endClass
-
-class CmdRangeUpTo : CmdRange
-  METHODS
-    method description->String
-      return "CmdRangeUpTo($,$)" (%left,%right)
-
-endClass
-
-class CmdRangeUpToLessThan : CmdRange
-  METHODS
-    method description->String
-      return "CmdRangeUpToLessThan($,$)" (%left,%right)
-
-endClass
-
 class Block : ControlStructure
   PROPERTIES
     assignments : Cmd

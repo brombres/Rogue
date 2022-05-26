@@ -1311,20 +1311,6 @@ parser
     discardPosition
   endIf
 
-  on ".."
-    expression
-    create CmdRangeUpTo(left,right):CmdRange
-  elseOn "..<"
-    expression
-    create CmdRangeUpToLessThan(left,right):CmdRange
-  elseOn "..>"
-    expression
-    create CmdRangeDownToGreaterThan(left,right):CmdRange
-  elseOn "downTo"
-    expression
-    create CmdRangeDownTo(left,right):CmdRange
-  endOn
-
   if (consume(@"from")) expression
   else                  createNull
 
@@ -2723,7 +2709,6 @@ parser
   create PreDecrementLocal(info:Local)  # Internal use
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
   create PushStackTraceCutoff
-  create CmdRange(left,right):Binary
   create CreateRange(start,limit,step_size)
   create ReturnOnException
   create SetGlobalProperty(info:Property,new_value)
