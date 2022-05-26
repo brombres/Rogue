@@ -93,20 +93,4 @@ class MethodOrganizer : Visitor
       endIf
       cmd.this_type = this_type
 
-    method on_visit( cmd:Throw )
-      if (this_procedure.throws is not Program.type_Exception)
-        # Tag this procedure with the most general type of uncaught exception
-        local thrown_type = cmd.exception.type
-        if (not thrown_type) thrown_type = Program.type_Exception # assume general exception
-        forEach (catch_block in catches)
-          if (thrown_type.instance_of(catch_block.exception_type)) return
-        endForEach
-
-        if (not this_procedure.throws or this_procedure.throws.instance_of(thrown_type))
-          this_procedure.throws = thrown_type
-        endIf
-      endIf
-
-      visit_children( cmd )
-
 endClass

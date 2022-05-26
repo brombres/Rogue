@@ -43,14 +43,6 @@ class Finalizer : Visitor
             if (m) m.attributes.is_essential = true
           endBlock
 
-          #{
-          forEach (m in type.methods)
-            if (m.type_context is not type)
-              assert (not m.inheriting_types.contains(type))
-              m.inheriting_types.add( type )
-            endIf
-          endForEach
-          }#
         endForEach
       endForEach
 
@@ -80,6 +72,8 @@ class Finalizer : Visitor
           endForEach
         endForEach
       endForEach
+
+      ExceptionAnalyzer().apply()
 
     method on_visit( cmd:CallDynamicMethod )
       ensure_dynamic_dispatch( cmd.info->(as Method) )

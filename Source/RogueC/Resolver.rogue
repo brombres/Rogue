@@ -247,12 +247,6 @@ class Resolver : Visitor
 
       return visit( cmd_control_structure )
 
-    method on_validate( cmd:CallProcedure )->Cmd
-      if (cmd.info.throws)
-        back_propagate_thrown_exception( cmd.info.throws )
-      endIf
-      return cmd
-
     method on_visit( cmd:Catch )
       if (not cmd.v_catch and cmd.var_name)
         cmd.v_catch = add_local( Local(cmd.t, cmd.var_name, cmd.exception_type) )
@@ -369,10 +363,6 @@ class Resolver : Visitor
     method on_validate( cmd:CreateObject )->Cmd
       if (cmd.of_type.attributes.is_abstract)
         throw cmd.t.error( "Abstract type $ cannot be instantiated."(cmd.of_type) )
-      endIf
-
-      if (cmd.m_init and cmd.m_init.throws)
-        back_propagate_thrown_exception( cmd.m_init.throws )
       endIf
       return cmd
 
@@ -961,8 +951,8 @@ class Resolver : Visitor
           statement = visit( statement )
           if (statement)
             #if (statement.type) statement = DiscardResult( statement.t, statement )
-            #if (statement.type) statement = statement.discarding_result
-            if (statement) current_statements.write( statement )
+            if (statement.type) statement = statement.discarding_result
+            current_statements.write( statement )
           endIf
         endForEach
       endTemporarily
@@ -1072,13 +1062,10 @@ class Resolver : Visitor
         throw cmd.t.error( "Illegal use of 'this' in a global context. 'this' can only be used in the context of an instance object." )
       endIf
 
-    method on( cmd:Throw )->Cmd
-      cmd.exception = visit( cmd.exception )
-      local exception_type = cmd.exception.require_type
-      if (not exception_type.instance_of(Program.type_Exception) or exception_type is Program.type_null)
-        throw cmd.exception.t.error( "Thrown value must be instanceOf type Exception." )
+    method on_validate( cmd:Throw )->Cmd
+      if (not cmd.exception.require_type.instance_of(Program.type_Exception))
+        throw cmd.exception.t.error( "Thrown value must be instanceOf Exception." )
       endIf
-      back_propagate_thrown_exception( exception_type )
       return cmd
 
     method on( cmd:Try )->Cmd
@@ -1261,15 +1248,6 @@ class Resolver : Visitor
       pop_scope
 
       return visit( iterator )
-
-    method back_propagate_thrown_exception( type:Type )
-      forEach (control_structure in control_stack step -1)
-        if (control_structure.catches_exception(type)) return
-        if (control_structure.requires_cleanup)
-          control_structure.catches_escape = true
-          control_structure.exception_passthrough = true
-        endIf
-      endForEach
 
     method insert( cmd:Cmd )
       cmd = visit( cmd )

@@ -205,11 +205,17 @@ augment
     method Cmd.discarding_result->Cmd
       return this  # no change
 
+    method CallProcedure.discarding_result->Cmd
+      result_discarded = true
+      return this
+
+      #{
     method GetLocal.discarding_result->Cmd
       return null
 
     method Literal.discarding_result->Cmd
       return null
+      }#
 endAugment
 
 # is_anchored
@@ -436,6 +442,7 @@ augment
       return common_type( t, left.type, right.type )
 
     method CallProcedure.type->Type
+      if (result_discarded) return null
       return info.return_type
 
     method ConvertToByte.type->Type
