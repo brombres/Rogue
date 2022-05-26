@@ -1,5 +1,6 @@
 $include Standard/Dim
 $include Standard/Console
+$include Standard/ConsoleCursor
 $include Standard/ConsoleErrorPrinter
 $include Standard/ConsoleEvent
 $include Standard/ConsoleMode

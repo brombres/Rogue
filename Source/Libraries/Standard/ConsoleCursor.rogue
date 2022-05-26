@@ -1,0 +1,39 @@
+class ConsoleCursor [compound]
+  # API
+  #   Console.cursor = (x,y)  # (0,0) is top-left
+  #   Console.cursor += (delta_x,delta_y)
+  #   Console.cursor.save_position
+  #   Console.cursor.restore_position
+  #   Console.cursor.hide
+  #   Console.cursor.show
+  GLOBAL PROPERTIES
+    cursor_hidden : Logical
+
+  METHODS
+    method operator+=( delta:(x:Int32,y:Int32), output=Global:PrintWriter )
+      output.flush
+      if (delta.x)
+        if (delta.x > 0) output.[ print("\e["), print( delta.x), print('C') ]
+        else             output.[ print("\e["), print(-delta.x), print('D') ]
+      endIf
+      if (delta.y)
+        if (delta.y > 0) output.[ print("\e["), print( delta.y), print('B') ]
+        else             output.[ print("\e["), print(-delta.y), print('A') ]
+      endIf
+      output.flush
+
+    method restore_position( output=Global:PrintWriter )
+      output.[ flush, print("\e[u"), flush ]
+
+    method save_position( output=Global:PrintWriter )
+      output.[ flush, print("\e[s"), flush ]
+
+    method hide( setting=true:Logical, output=Global:PrintWriter )
+      if (cursor_hidden == setting) return
+      cursor_hidden = setting
+      output.[ flush, print("\e[?25"), print(which{setting:'l'||'h'}), flush ]
+
+    method show( output=Global:PrintWriter )
+      hide( false, output )
+
+endClass

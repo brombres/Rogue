@@ -6,8 +6,8 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     LEFT_ARROW  = 20
 
   PROPERTIES
-    error           : PrintWriter
-    mode            : ConsoleMode   # StandardConsoleMode || ImmediateConsoleMode
+    error   : PrintWriter
+    cursor  : ConsoleCursor
 
     is_end_of_input : Logical
     # Can be set after has_another() returns false in standard line-buffered input mode.
@@ -16,11 +16,11 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     immediate_mode : Logical
     # Set to 'true' to turn off echo and line buffering and to turn on mouse events
 
-    hide_cursor : Logical
+    decode_utf8  = true
+
+    mode        : ConsoleMode   # StandardConsoleMode || ImmediateConsoleMode
 
     windows_in_quick_edit_mode : Logical
-
-    decode_utf8  = true
 
     input_buffer = Byte[]
 
@@ -113,19 +113,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       @mode = StandardConsoleMode()
       return @mode
 
-    method move_cursor( dx:Int32, dy:Int32, output=Global:PrintWriter )
-      # Moves the cursor by a delta from its current position
-      output.flush
-      if (dx)
-        if (dx > 0) output.[ print("\e["), print( dx), print('C') ]
-        else        output.[ print("\e["), print(-dx), print('D') ]
-      endIf
-      if (dy)
-        if (dy > 0) output.[ print("\e["), print( dy), print('B') ]
-        else        output.[ print("\e["), print(-dy), print('A') ]
-      endIf
-      output.flush
-
     method peek->Character
       return mode.peek
 
@@ -153,18 +140,15 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     method reset_io_mode
       immediate_mode = false
-      hide_cursor = false
-
-    method restore_cursor_position( output=Global:PrintWriter )
-      output.[ flush, print("\e[u"), flush ]
-
-    method save_cursor_position( output=Global:PrintWriter )
-      output.[ flush, print("\e[s"), flush ]
+      cursor.show
 
     method set_cursor( x:Int32, y:Int32, output=Global:PrintWriter )
       ++x
       ++y
       output.[ flush, print("\e["), print(y), print(';'), print(x), print('H'), flush ]
+
+    method set_cursor( position:(x:Int32,y:Int32), output=Global:PrintWriter )
+      set_cursor( position.x, position.y, output )
 
     method set_immediate_mode( setting:Logical )
       # setting==true: turn off echo and line buffer, turn on mouse events.
@@ -177,13 +161,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
           @mode = StandardConsoleMode()
         endIf
       endIf
-
-    method set_hide_cursor( setting=true:Logical, output=Global:PrintWriter )
-      if (@hide_cursor == setting) return
-      @hide_cursor = setting
-
-      # Console.hide_cursor = true / false
-      output.[ flush, print("\e[?25"), print(which{setting:'l'||'h'}), flush ]
 
     method size->(width:Int32,height:Int32)
       return (width,height)
