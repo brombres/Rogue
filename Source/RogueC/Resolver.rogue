@@ -683,7 +683,7 @@ class Resolver : Visitor
       endForEach
 
       local t = cmd.t
-      local list_type = Type( t, common_type.name+"[]" )
+      local list_type = Type( t, common_type )
 
       local build_list = CmdList( t )
       forEach (arg in cmd)
@@ -1530,7 +1530,6 @@ class Resolver : Visitor
       proc.resolve
 
       if (not proc.arrange_args(args,this))
-        println StackTrace()
         throw args.t.error( "[INTERNAL] Invalid procedure selected." )
       endIf
 
@@ -2009,6 +2008,7 @@ endAugment
 augment
   METHODS
     method Cmd.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      println t.error( "Unsupported operation" )
       throw UnsupportedOperationError()
 
     method OpAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
@@ -2518,6 +2518,7 @@ endAugment
 augment
   METHODS
     method ForEachControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
+      println t.error( "Unsupported operation" )
       throw UnsupportedOperationError()
 
     method ForEachInControl.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_iterator:Iterator )
@@ -2526,7 +2527,7 @@ augment
       resolver.visit( this )
       resolver.visit( collection )
 
-      collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
+      collection.data.resolve_foreach_in( resolver, cmd_foreach, this, collection, cmd_iterator )
 
       resolver.pop_scope
 
@@ -2538,11 +2539,11 @@ augment
       resolver.visit( this )
       resolver.visit( collection )
 
-      collection.data.resolve_foreach( resolver, cmd_foreach, this, collection, cmd_iterator )
+      collection.data.resolve_foreach_of( resolver, cmd_foreach, this, collection, cmd_iterator )
 
       resolver.pop_scope
 
-    method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method Cmd.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       local collection_type = cmd_collection.data.require_type
 
@@ -2703,7 +2704,7 @@ augment
 
         resolver.visit( cmd_collection )
 
-        resolve_foreach( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        resolve_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
       endIf
 
@@ -2712,7 +2713,7 @@ augment
 
         resolver.visit( cmd_collection )
 
-        resolve_foreach( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        resolve_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
       endIf
 
@@ -2727,11 +2728,12 @@ augment
         throw t.error( builder->String )
       endUse
 
-    method Range.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method Range.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      println t.error( "Unsupported operation" )
       throw UnsupportedOperationError()
 
-    method RangeDownTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method RangeDownTo.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_collection.starting_index)
         throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )
@@ -2758,7 +2760,7 @@ augment
         if (v_index) cmd_iterator.upkeep.add( DecrementLocal(t,v_index) )
       endIf
 
-    method RangeUpTo.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method RangeUpTo.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_collection.starting_index)
         throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )
@@ -2785,7 +2787,7 @@ augment
         if (v_index) cmd_iterator.upkeep.add( IncrementLocal(t,v_index) )
       endIf
 
-    method RangeUpToLessThan.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method RangeUpToLessThan.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_collection.starting_index)
         throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )
@@ -2812,7 +2814,7 @@ augment
         if (v_index) cmd_iterator.upkeep.add( IncrementLocal(t,v_index) )
       endIf
 
-    method Cmd.resolve_foreach( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
+    method Cmd.resolve_foreach_of( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       throw UnsupportedOperationError()
 
@@ -2993,6 +2995,7 @@ endAugment
 augment
   METHODS
     method Cmd.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      println t.error( "Unsupported operation" )
       throw UnsupportedOperationError()
 
     method Decrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
