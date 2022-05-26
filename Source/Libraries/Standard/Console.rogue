@@ -54,7 +54,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  $this->original_terminal_settings.c_lflag |= (ECHO | ECHOE | ICANON);
               |  $this->original_stdin_flags &= ~(O_NONBLOCK);
               |#endif
-      #FIXME on_exit( function with (console=this) => console.reset_io_mode )
 
     method clear( output=Global:PrintWriter )
       output.[ flush, print("\e[2J"), flush ]
@@ -137,10 +136,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       # Allows stdin to be read again after a CTRL+D
       is_end_of_input = false
       native @|clearerr( stdin );
-
-    method reset_io_mode
-      immediate_mode = false
-      cursor.show
 
     method set_cursor( x:Int32, y:Int32, output=Global:PrintWriter )
       ++x

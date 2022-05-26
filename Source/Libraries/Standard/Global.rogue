@@ -1,11 +1,13 @@
 class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
-  #class Global [singleton]
   PROPERTIES
     standard_output : PrintWriter
+    exit_functions  : Function[]
 
   METHODS
     method init
+      native @|signal( SIGINT, RogueGlobal__on_control_c__RogueInt32 );
       configure_standard_output
+      on_exit( () => Global.flush )
 
     method configure_standard_output
       standard_output = Console
@@ -14,73 +16,25 @@ class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
       standard_output.[ print(buffer), flush ]
       buffer.clear
 
-      #{
-    method print( value:Byte )
-      native @|printf( "%d", $value );
+    method on_exit( fn:Function )
+      if (not exit_functions) exit_functions = Function[]
+      exit_functions.add( fn )
 
-    method print( value:Character )
-      native @|printf( "%c", (char)$value );
+  GLOBAL METHODS
+    method call_exit_functions [essential]
+      # Called by the native layer when the program is ending normally or exiting
+      # due to a System.exit(Int32) call.
+      # Ensure these functions won't be called multiple times
+      local functions = Global.exit_functions
+      Global.exit_functions = null
 
-    method print( value:Int32 )
-      native @|printf( "%d", $value );
+      if (functions)
+        forEach (fn in functions)
+          fn()
+        endForEach
+      endIf
 
-    method print( value:Int64 )
-      native @|printf( "%lld", $value );
-
-    method print( value:Logical )
-      native @|printf( "%s", $value?"true":"false" );
-
-    method print( value:Real32 )
-      native @|printf( "%f", $value );
-
-    method print( value:Real64 )
-      native @|printf( "%lf", $value );
-
-    method print( value:Object )
-      if (value) print( value->String )
-      else       print "null"
-
-    method print( value:String )
-      if (value) native @|printf( "%s", $value->data->as_utf8 );
-      else       print( "null" )
-
-    method println
-      print( '\n' )
-
-    method println( value:Byte )
-      print( value )
-      print( '\n' )
-
-    method println( value:Character )
-      print( value )
-      print( '\n' )
-
-    method println( value:Int32 )
-      print( value )
-      print( '\n' )
-
-    method println( value:Int64 )
-      print( value )
-      print( '\n' )
-
-    method println( value:Logical )
-      print( value )
-      print( '\n' )
-
-    method println( value:Object )
-      print( value )
-      print( '\n' )
-
-    method println( value:Real32 )
-      print( value )
-      print( '\n' )
-
-    method println( value:Real64 )
-      print( value )
-      print( '\n' )
-
-    method println( value:String )
-      print( value )
-      print( '\n' )
-      }#
+    method on_control_c( signum:Int32 ) [essential]
+      call_exit_functions
+      native @|exit(1);
 endClass
