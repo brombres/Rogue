@@ -449,7 +449,7 @@ class Parser : ParserCore
       return prior._peek
 
     method print_peek
-      @trace _next_t
+      println "$:$.$: $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
 
     method print_stack
       @trace _cmd_stack

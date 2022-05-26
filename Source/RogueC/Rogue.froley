@@ -770,7 +770,9 @@ parser
       function_type_args
       function_return_type
       mustConsume ')'
-      produce FunctionType(param_types:TypeList,return_type:Type):Type
+      create FunctionType(param_types:TypeList,return_type:Type):Type
+      list_or_optional_type
+      return
     elseOnOthers
       # Must be a tuple.
       savePosition
@@ -786,7 +788,9 @@ parser
           endWhile
           mustConsume ')'
         createList NamedTupleTypeElements
-        produce Type(elements:NamedTupleTypeElements)
+        create Type(elements:NamedTupleTypeElements)
+        list_or_optional_type
+        return
       else
         restorePosition
         beginList
@@ -800,16 +804,24 @@ parser
           endWhile
           mustConsume ')'
         createList AnonymousTupleTypeElements
-        produce Type(elements:AnonymousTupleTypeElements)
+        create Type(elements:AnonymousTupleTypeElements)
+        list_or_optional_type
+        return
       endIf
     endOn
+
   elseOn "Function"
     function_type_args
     function_return_type
-    produce FunctionType(param_types:TypeList,return_type:Type):Type
+    create FunctionType(param_types:TypeList,return_type:Type):Type
+    list_or_optional_type
+    return
+
   elseOnOthers
     pathed_name
+
   endOn
+
   remaining_type
 
 - named_tuple_type_element
@@ -825,6 +837,9 @@ parser
   if (nextIs("<<")) template_args
   else              createNull
   create Type(name:String,type_args:TemplateArgs)
+  list_or_optional_type
+
+- list_or_optional_type
   while (nextIs("[]") or nextIs('?'))
     on "[]"
       create Type(element_type:Type)
@@ -1666,6 +1681,10 @@ parser
   if (nextIs('(')) args
   else             produceNull
 
+- optional_args
+  if (nextIs('(')) args
+  else             createNull
+
 - args
   beginList
 
@@ -2337,6 +2356,20 @@ parser
   endOn
   onPeek "which" inline_which: return
 
+  # '(Function...)' type
+  onPeek '('
+    savePosition
+    on '('
+      on "Function"
+        restorePosition
+        type
+        optional_args
+        produce TypeAccess(of_type:Type,args)
+      endOn
+    endOn
+    restorePosition
+  endOn
+
   # Parenthesized expression or generic function definition
   on '('
     on ')'
@@ -2344,6 +2377,8 @@ parser
       beginList   # empty args
       createList IDList
       remaining_generic_function_definition
+      return
+
     elseOnOthers
       savePosition
       expression
@@ -2410,6 +2445,12 @@ parser
   on "ThisType"
     create Type(name="ThisType":String)
     produce TypeContext(type:Type)
+  endOn
+
+  onPeek "Function"
+    type
+    optional_args
+    produce TypeAccess(of_type:Type,args)
   endOn
 
   syntaxError
