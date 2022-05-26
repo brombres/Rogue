@@ -1,0 +1,72 @@
+class RangeUpTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeUpToIterator<<$DataType>>
+      return RangeUpToIterator<<$DataType>>( start, limit, step )
+endClass
+
+class RangeUpToIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur <= limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+endClass
+
+class RangeUpToLessThan<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeUpToLessThanIterator<<$DataType>>
+      return RangeUpToLessThanIterator<<$DataType>>( start, limit, step )
+endClass
+
+class RangeUpToLessThanIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur < limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+endClass
+
+class RangeDownTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeDownToIterator<<$DataType>>
+      return RangeDownToIterator<<$DataType>>( start, limit, step )
+endClass
+
+class RangeDownToIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur >= limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+endClass
+
+class RangeDownToGreaterThan<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeDownToGreaterThanIterator<<$DataType>>
+      return RangeDownToGreaterThanIterator<<$DataType>>( start, limit, step )
+endClass
+
+class RangeDownToGreaterThanIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur > limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+endClass
+

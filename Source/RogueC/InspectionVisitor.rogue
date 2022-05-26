@@ -915,4 +915,13 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.statements)
       return result
 
+    method on_visit_children( cmd:CreateRange )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.start)
+      if (result?) return result
+      result = visit(cmd.limit)
+      if (result?) return result
+      result = visit(cmd.step_size)
+      return result
+
 endClass

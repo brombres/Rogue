@@ -105,6 +105,11 @@ class CmdList : Cmd
       list.add( element1 )
       list.add( element2 )
 
+    method init( t, element1:Cmd, element2:Cmd, element3:Cmd )
+      list.add( element1 )
+      list.add( element2 )
+      list.add( element3 )
+
     method init( existing:CmdList )
       prior.init( existing )
 
@@ -1123,38 +1128,38 @@ class ForEachOfControl : ForEachControl
 
 endClass
 
-class Range : Binary
+class CmdRange : Binary
   METHODS
     method description->String
-      return "Range($,$)" (%left,%right)
+      return "CmdRange($,$)" (%left,%right)
 
 endClass
 
-class RangeDownTo : Range
+class CmdRangeDownTo : CmdRange
   METHODS
     method description->String
-      return "RangeDownTo($,$)" (%left,%right)
+      return "CmdRangeDownTo($,$)" (%left,%right)
 
 endClass
 
-class RangeDownToGreaterThan : Range
+class CmdRangeDownToGreaterThan : CmdRange
   METHODS
     method description->String
-      return "RangeDownToGreaterThan($,$)" (%left,%right)
+      return "CmdRangeDownToGreaterThan($,$)" (%left,%right)
 
 endClass
 
-class RangeUpTo : Range
+class CmdRangeUpTo : CmdRange
   METHODS
     method description->String
-      return "RangeUpTo($,$)" (%left,%right)
+      return "CmdRangeUpTo($,$)" (%left,%right)
 
 endClass
 
-class RangeUpToLessThan : Range
+class CmdRangeUpToLessThan : CmdRange
   METHODS
     method description->String
-      return "RangeUpToLessThan($,$)" (%left,%right)
+      return "CmdRangeUpToLessThan($,$)" (%left,%right)
 
 endClass
 
@@ -4179,4 +4184,78 @@ class GlobalMethodTemplate : Cmd
 
       type_context.global_method_template_instances.add( name )
       return m
+endClass
+
+class CreateRange : Cmd
+  PROPERTIES
+    start     : Cmd
+    limit     : Cmd
+    step_size : Cmd
+
+  METHODS
+    method init( t, start, limit, step_size )
+
+    method init( existing:CreateRange )
+      prior.init( existing )
+      if (existing.start) start = existing.start.cloned
+      if (existing.limit) limit = existing.limit.cloned
+      if (existing.step_size) step_size = existing.step_size.cloned
+
+    method default_step_size->Int32
+      return 1
+
+    method description->String
+      return "CreateRange($,$,$)" (%start,%limit,%step_size)
+
+    method name->String
+      return "Range"
+
+endClass
+
+class CreateRangeDownTo : CreateRange
+  METHODS
+    method default_step_size->Int32
+      return -1
+
+    method description->String
+      return "CreateRangeDownTo($,$,$)" (%start,%limit,%step_size)
+
+    method name->String
+      return "RangeDownTo"
+endClass
+
+class CreateRangeDownToGreaterThan : CreateRange
+  METHODS
+    method default_step_size->Int32
+      return -1
+
+    method description->String
+      return "CreateRangeDownToGreaterThan($,$,$)" (%start,%limit,%step_size)
+
+    method name->String
+      return "RangeDownToGreaterThan"
+endClass
+
+class CreateRangeUpTo : CreateRange
+  METHODS
+    method default_step_size->Int32
+      return 1
+
+    method description->String
+      return "CreateRangeUpTo($,$,$)" (%start,%limit,%step_size)
+
+    method name->String
+      return "RangeUpTo"
+endClass
+
+class CreateRangeUpToLessThan : CreateRange
+  METHODS
+    method default_step_size->Int32
+      return 1
+
+    method description->String
+      return "CreateRangeUpToLessThan($,$,$)" (%start,%limit,%step_size)
+
+    method name->String
+      return "RangeUpToLessThan"
 endClass

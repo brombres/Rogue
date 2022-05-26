@@ -663,7 +663,7 @@ class String : PrintWriter
         at_newline = true
       elseIf (at_newline)
         if (indent)
-          forEach (i in 1..indent) data.add(' ')
+          loop (indent) data.add(' ')
           count += indent
         endIf
         at_newline = false
@@ -799,12 +799,12 @@ class String : PrintWriter
 
         if (decimal_places != 0)
           builder.print( '.' )
-          forEach (1..decimal_places)
+          loop (decimal_places)
             value *= 10
             local digit = value.floor->Int32
             value -= digit
             builder.print( ('0' + digit)->Character )
-          endForEach
+          endLoop
         endIf
         if (value >= 0.5)
           builder.print( '5' )

@@ -366,6 +366,25 @@ class Resolver : Visitor
       endIf
       return cmd
 
+    method on( cmd:CreateRange )->Cmd
+      visit_children( cmd )
+      local t = cmd.t
+      local common_type = Cmd.common_type( t, cmd.start.require_type, cmd.limit.require_type )
+      if (common_type)
+        if (cmd.step_size) common_type = Cmd.common_type( t, common_type, cmd.step_size.require_type )
+        else               cmd.step_size = LiteralInt32( t, cmd.default_step_size )
+      endIf
+      if (not common_type)
+        throw t.error( "Incompatible types used in range." )
+      endIf
+
+      local start = cmd.start.resolve_conversion_to( common_type, this )
+      local limit = cmd.limit.resolve_conversion_to( common_type, this )
+      local step_size = cmd.step_size.resolve_conversion_to( common_type, this )
+
+      local range_type = Type( t, cmd.name, common_type )
+      return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
+
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
 
@@ -2728,12 +2747,12 @@ augment
         throw t.error( builder->String )
       endUse
 
-    method Range.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method CmdRange.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       println t.error( "Unsupported operation" )
       throw UnsupportedOperationError()
 
-    method RangeDownTo.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method CmdRangeDownTo.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_collection.starting_index)
         throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )
@@ -2760,7 +2779,7 @@ augment
         if (v_index) cmd_iterator.upkeep.add( DecrementLocal(t,v_index) )
       endIf
 
-    method RangeUpTo.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method CmdRangeUpTo.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_collection.starting_index)
         throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )
@@ -2787,7 +2806,7 @@ augment
         if (v_index) cmd_iterator.upkeep.add( IncrementLocal(t,v_index) )
       endIf
 
-    method RangeUpToLessThan.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method CmdRangeUpToLessThan.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                       cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_collection.starting_index)
         throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a range." )

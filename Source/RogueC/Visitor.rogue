@@ -613,5 +613,10 @@ class Visitor
       cmd.assignments = visit(cmd.assignments)
       cmd.statements = visit(cmd.statements)
 
+    method on_visit_children( cmd:CreateRange )
+      cmd.start = visit(cmd.start)
+      cmd.limit = visit(cmd.limit)
+      cmd.step_size = visit(cmd.step_size)
+
 endClass
 

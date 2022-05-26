@@ -223,6 +223,17 @@ class List<<$DataType>> : ListType
         discard_from( count+delta )
       endIf
 
+      #{
+    method shuffle( generator=Random:Random )
+      local n = count
+      forEach (i of this) swap( i, generator.int32(n) )
+      }#
+
+    method swap( i1:Int32, i2:Int32 )
+      local temp = this[i1]
+      this[i1] = this[i2]
+      this[i2] = temp
+
     method to->String
       return description
 

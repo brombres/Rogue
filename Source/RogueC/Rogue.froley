@@ -1313,16 +1313,16 @@ parser
 
   on ".."
     expression
-    create RangeUpTo(left,right):Range
+    create CmdRangeUpTo(left,right):CmdRange
   elseOn "..<"
     expression
-    create RangeUpToLessThan(left,right):Range
+    create CmdRangeUpToLessThan(left,right):CmdRange
   elseOn "..>"
     expression
-    create RangeDownToGreaterThan(left,right):Range
+    create CmdRangeDownToGreaterThan(left,right):CmdRange
   elseOn "downTo"
     expression
-    create RangeDownTo(left,right):Range
+    create CmdRangeDownTo(left,right):CmdRange
   endOn
 
   if (consume(@"from")) expression
@@ -2139,7 +2139,7 @@ parser
   on "<>" -> CompareOp
 
 - reference_comparison
-  bitwise_xor
+  range
   on "is"
     if (consume("not"))
       reference_comparison
@@ -2161,6 +2161,30 @@ parser
   elseOn "isType"
     type
     produce IsType(operand,compare_type:Type)
+  endOn
+
+- range
+  bitwise_xor
+  on ".."
+    expression
+    if (consume(@"step")) expression
+    else                  createNull
+    create CreateRangeUpTo(start,limit,step_size):CreateRange
+  elseOn "..<"
+    expression
+    if (consume(@"step")) expression
+    else                  createNull
+    create CreateRangeUpToLessThan(start,limit,step_size):CreateRange
+  elseOn "..>"
+    expression
+    if (consume(@"step")) expression
+    else                  createNull
+    create CreateRangeDownToGreaterThan(start,limit,step_size):CreateRange
+  elseOn "downTo"
+    expression
+    if (consume(@"step")) expression
+    else                  createNull
+    create CreateRangeDownTo(start,limit,step_size):CreateRange
   endOn
 
 - bitwise_xor [binary]
@@ -2699,7 +2723,8 @@ parser
   create PreDecrementLocal(info:Local)  # Internal use
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
   create PushStackTraceCutoff
-  create Range(left,right):Binary
+  create CmdRange(left,right):Binary
+  create CreateRange(start,limit,step_size)
   create ReturnOnException
   create SetGlobalProperty(info:Property,new_value)
   create SetLocal(info:Local,new_value)
