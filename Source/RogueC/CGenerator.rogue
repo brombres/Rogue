@@ -1909,9 +1909,7 @@ augment
         c_writer.println @|int main( int argc, char* argv[] )
                           |{
                           |  Rogue_launch();
-                          |  RogueMM_gc_request = 1;
-                          |  Rogue_collect_garbage();
-                          |  Rogue_print_exception();
+                          |  Rogue_quit();
                           |  return 0;
         c_writer.println @|}
       endIf

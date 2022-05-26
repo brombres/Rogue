@@ -205,6 +205,8 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |int   Rogue_launch(void);
            |void  Rogue_collect_garbage(void);
+           |void  Rogue_force_gc(void);
+           |void  Rogue_quit(void);
            |void* Rogue_release( void* obj );
            |void* Rogue_retain( void* obj );
            |
@@ -328,6 +330,24 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (obj) ++(((RogueObject*)obj)->refcount);
            |  return obj;
+           |}
+           |
+           |void Rogue_force_gc(void)
+           |{
+           |  RogueMM_gc_request = 1;
+           |  Rogue_collect_garbage();
+           |}
+           |
+           |void Rogue_quit(void)
+           |{
+           |  Rogue_print_exception();  // if any
+           |
+           |  RogueGlobal__call_exit_functions();
+           |
+           |  // Give a few GC's to allow objects requiring clean-up to do so.
+           |  Rogue_force_gc();
+           |  Rogue_force_gc();
+           |  Rogue_force_gc();
            |}
            |
            |void Rogue_print_exception(void)
