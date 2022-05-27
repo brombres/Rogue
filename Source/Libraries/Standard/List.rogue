@@ -223,11 +223,9 @@ class List<<$DataType>> : ListType
         discard_from( count+delta )
       endIf
 
-      #{
     method shuffle( generator=Random:Random )
       local n = count
       forEach (i of this) swap( i, generator.int32(n) )
-      }#
 
     method swap( i1:Int32, i2:Int32 )
       local temp = this[i1]
@@ -242,19 +240,3 @@ class List<<$DataType>> : ListType
       native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
 
 endClass
-
-#{
-class Array<<$DataType>> : Array [native]
-  METHODS
-    method cloned->Array<<$DataType>>
-      local result = Array<<$DataType>>( count )
-      forEach (value at index in this) result[ index ] = value
-      return result
-
-    method get( index:Int32 )->$DataType
-      return this[ index ]  # intercepted by compiler
-
-    method set( index:Int32, new_value:$DataType )
-      this[ index ] = new_value
-endClass
-}#

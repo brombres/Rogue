@@ -18,6 +18,11 @@ class Template
       return name
 
     method instantiate( type:Type, type_args=null:TemplateArgs )
+      if (type.attributes.is_defined)
+        println StackTrace()
+        throw type.t.error( "Template already instantiated" )
+      endIf
+
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
       type.module_context = module_context

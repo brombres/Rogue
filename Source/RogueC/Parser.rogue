@@ -201,7 +201,6 @@ class Parser : ParserCore
         if (macros)
           _save_position
           _execute( ip_macro_args )
-          _pop_frame
           local args = _cmd_stack.remove_last
           forEach (m in macros)
             if (m.placeholders.count == args.count)
