@@ -174,6 +174,89 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       return 0x8000_0000_0000_0000
 
   METHODS
+    #{
+    method format( fmt:String, bits=64:Int32 )->String
+      # fmt
+      #   Semi-C-style "$%,0N" - attributes can come in any order
+      #   '$' - make hexadecimal
+      #   '%' - make binary
+      #   ',' - add commas (decimal formatting only)
+      #   '0' - pad with 0's instead of spaces
+      #   'N' - Minimum digits
+      local is_hex = false
+      local is_binary = false
+      local add_commas = false
+      local zero_fill = false
+      local number_start : Int32?
+      forEach (ch at index in fmt)
+        which (ch)
+          case '$': is_hex = true
+          case '%': is_binary = true
+          case ',': add_commas = true
+          case '0': zero_fill = true
+          others:   number_start = index; escapeForEach
+        endWhich
+      endForEach
+
+      local digits = 0
+      if (number_start.exists) digits = fmt.from( number_start.value )
+
+      if (is_hex)
+        add_commas = false
+        if (this < 0)
+          digits = bits / 4
+        else
+          local n = 1
+          local value = this :>>>: 4
+          while (value) ++n; value = value :>>>: 4
+          digits = digits.or_larger( n )
+        endIf
+
+      elseIf (is_binary)
+        add_commas = false
+        if (this < 0)
+          digits = bits
+        else
+          local n = 1
+          local value = this :>>>: 1
+          while (value) ++n; value = value :>>>: 1
+          digits = digits.or_larger( n )
+        endIf
+
+      endIf
+
+      if (zero_fill) add_commas = false
+
+      local result : String
+      if (is_hex)        result = this->String( digits, &hex )
+      elseIf (is_binary) result = this->String( digits, &binary )
+      else               result = this->String
+
+      if (zero_fill) result = result.right_justified( digits, '0' )
+
+      if (add_commas)
+        local work = result
+        result = ""
+        while (work.count > 3)
+          if (result.count) result = ',' + result
+          result = work.rightmost( 3 ) + result
+          work = work.leftmost( -3 )
+        endWhile
+        if (work.count)
+          if (result.count) result = work + ',' + result
+          else              result = work
+        endIf
+      endIf
+
+      if (result.begins_with("-,"))
+        result = '-' + result.rightmost(-2)
+      endIf
+
+      if (not zero_fill) result = result.right_justified( digits, ' ' )
+
+      return result
+    }#
+
     method operator%( other:Int64 )->Int64
       if ((not this and not other) or other == 1) return 0
 
@@ -429,6 +512,9 @@ class Character [primitive]
     method is_lowercase->Logical
       return (this >= 'a' and this <= 'z')
 
+    method is_number( base=10:Int32 )->Logical
+      return to_number(base)?
+
     method is_uppercase->Logical
       return (this >= 'A' and this <= 'Z')
 
@@ -469,6 +555,16 @@ class Character [primitive]
     method to_lowercase->Character
       if (not is_uppercase) return this
       return Character( this + ('a'-'A') )
+
+    method to_number( base=10:Int32 )->Int32?
+      local value : Int32
+      if (this >= '0' and this <= '9')     value = this - '0'
+      elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
+      elseIf (this >= 'a' and this <= 'z') value = 10 + (this - 'a')
+      else return null
+
+      if (value < base) return value
+      else              return null
 
     method to_uppercase->Character
       if (not is_lowercase) return this

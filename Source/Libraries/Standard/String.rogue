@@ -1,3 +1,13 @@
+# MISSING
+#   method contains_pattern( pattern:String, &ignore_case )->Logical
+#   method decode_base64->Byte[]
+#   method extract_string( format:String, &ignore_case )->String
+#   method extract_strings( format:String, &ignore_case )->String[]
+#   method extract_strings( format:String, results:String[], &ignore_case )->String[]
+#   method _extract_strings( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
+#   method _pattern_match_count( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
+#   method is_false->Logical
+
 class String : PrintWriter
   PROPERTIES
     count           : Int32  # in whole characters
@@ -169,6 +179,9 @@ class String : PrintWriter
       is_ascii = (count == data.count)
       hash_code = -1
 
+    method cloned->String
+      return String( this )
+
     method after( index:Int32 )->String
       # Returns the substring of this string that occurs after
       # the given index.
@@ -291,9 +304,6 @@ class String : PrintWriter
       at_newline = true
       hash_code = -1
 
-    method cloned->String
-      return String( this )
-
     method clipped( &left=0:Int32, &right=0:Int32 )->String
       return from( left, count-(right+1) )
 
@@ -340,6 +350,9 @@ class String : PrintWriter
 
     method contains( ch:Character, &ignore_case )->Logical
       return locate(ch,&=ignore_case)?
+
+    method contains( substring:String, &ignore_case )->Logical
+      return locate(substring,&=ignore_case)?
 
     method contains_at( substring:String, at_index:Int32, &ignore_case )->Logical
       if (at_index < 0 or not substring or substring.count == 0) return false
@@ -521,6 +534,37 @@ class String : PrintWriter
       data.copy( i1+n, n, data, 0 ) # copy bytes to beginning
       data.discard_from(i1+n)
       hash_code = -1
+
+    method is_integer->Logical
+      if (count == 0) return false
+      forEach (ch at index in this)
+        if (ch == '-')
+          if (index > 0) return false
+        elseIf (not ch.is_number)
+          return false
+        endIf
+      endForEach
+      return true
+
+    method is_number->Logical
+      return this.is_real
+
+    method is_real->Logical
+      if (count == 0) return false
+
+      local period_count = 0
+      forEach (ch at index in this)
+        if (ch == '-')
+          if (index > 0) return false
+        elseIf (ch == '.')
+          ++period_count
+          if (period_count == 2) return false
+        elseIf (not ch.is_number)
+          return false
+        endIf
+      endForEach
+
+      return true
 
     method last->Character
       return this[ count-1 ]
@@ -717,7 +761,54 @@ class String : PrintWriter
       print( value->String )
 
     method print( value:Real32 )
-      this.print( value->Real64 ) # FIXME: have custom Real32 version using template methods
+      if (is_immutable) return
+
+      if (value == 0)
+        print( "0.0" )
+        return
+      elseIf (value.is_infinite)
+        if (value < 0) print( "-infinity" )
+        else           print( "infinity" )
+        return
+      elseIf (value.is_NaN)
+        print( "NaN" )
+        return
+      endIf
+
+      if (value < 0)
+        print( '-' )
+        value = -value
+      endIf
+
+      # Display power of 10 exponent for numbers >= 1e16 or <= 1e-4
+      if (value >= 1000000000000000.0)
+        local pow10 = 0
+        while (value >= 10.0)
+          value /= 10.0
+          ++pow10
+        endWhile
+
+        this.[ print(value), print('e'), print(pow10->Int32) ]
+        return
+      endIf
+
+      if (value < 0.00001)
+        local pow10 = 0
+        while (value < 0.1)
+          value *= 10.0
+          --pow10
+        endWhile
+
+        this.[ print(value), print('e'), print(pow10->Int32) ]
+      endIf
+
+      use builder = StringPool
+        forEach (n in 1..4)
+          if (_check_to_string(value,n,builder)) escapeForEach
+        endForEach
+
+        print builder
+      endUse
 
     method print( value:Real64 )
       if (is_immutable) return
@@ -762,7 +853,7 @@ class String : PrintWriter
       endIf
 
       use builder = StringPool
-        forEach (n in 1..18)
+        forEach (n in 1..4)
           if (_check_to_string(value,n,builder)) escapeForEach
         endForEach
 
@@ -1094,7 +1185,7 @@ class String : PrintWriter
           forEach (ch in this)
             if (ch != ',') filtered.print ch
           endForEach
-          return filtered->Real64
+          return filtered->Real32
         endUse
       endIf
       return native( "strtof( (char*)$this->data->as_utf8, 0 )" )->Real64
@@ -1394,6 +1485,11 @@ class String : PrintWriter
       endWhile
 
       return buffer
+
+    method _check_to_string( value:Real32, decimal_places:Int32, buffer:String )->Logical
+      buffer.clear
+      buffer.print( value, decimal_places )
+      return (buffer->Real32 == value)
 
     method _check_to_string( value:Real64, decimal_places:Int32, buffer:String )->Logical
       buffer.clear
