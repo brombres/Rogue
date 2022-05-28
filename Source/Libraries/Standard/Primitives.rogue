@@ -191,17 +191,16 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       --bits
       if (bits) return ((this :>>>: 1) & 0x7fffFFFFffffFFFF) :>>>: bits
       else      return (this :>>>: 1) & 0x7fffFFFFffffFFFF
-#{
-    method print_in_power2_base( base:Int32, digits=16:Int32, buffer:PrintWriter )->PrintWriter
+
+    method print_power_of_2( base:Int32, digits:Int32, buffer:PrintWriter )->PrintWriter
       local bits = 0
       local temp = base
       while (temp > 1) ++bits; temp = temp:>>>:1
 
       local remaining = this :>>: bits
-      if (digits > 1 or remaining) remaining.print_in_power2_base( base, digits-1, buffer )
-      buffer.print( (this & (base-1)).to_digit )
+      if (digits > 1 or remaining) remaining.print_power_of_2( base, digits-1, buffer )
+      buffer.print( (this & (base-1))->Int32.to_digit )
       return buffer
-}#
 
     method real_bits->Real64
       return native("*((RogueReal64*)&$this)")->Real64
@@ -221,6 +220,12 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
         case  9: return "9"
         others:  return String().[ print(this) ]
       endWhich
+
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      if (binary) return print_power_of_2(  2, which{digits||64}, String() )->(as String)
+      if (hex)    return print_power_of_2( 16, which{digits||16}, String() )->(as String)
+      if (octal)  return print_power_of_2(  8, which{digits||22}, String() )->(as String)
+      return this->String
 endClass
 
 class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
@@ -284,6 +289,16 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       --bits
       if (bits) return ((this :>>>: 1) & 0x7fffFFFF) :>>>: bits
       else      return (this :>>>: 1) & 0x7fffFFFF
+
+    method print_power_of_2( base:Int32, digits:Int32, buffer:PrintWriter )->PrintWriter
+      local bits = 0
+      local temp = base
+      while (temp > 1) ++bits; temp = temp:>>>:1
+
+      local remaining = this :>>: bits
+      if (digits > 1 or remaining) remaining.print_power_of_2( base, digits-1, buffer )
+      buffer.print( (this & (base-1)).to_digit )
+      return buffer
 
       #{
     method progress( a:Int32, b:Int32 )->Real64
@@ -360,15 +375,16 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
         others:  return String().[ print(this) ]
       endWhich
 
-      #{
-    method to->String( digits=0:Int32, &hex, &octal, &binary )
-      if (hex)    return to_hex_string( which{digits||8} )
-      if (octal)  return to_octal_string( which{digits||11} )
-      if (binary) return to_binary_string( which{digits||32} )
-      return this
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      if (binary) return print_power_of_2(  2, which{digits||32}, String() )->(as String)
+      if (hex)    return print_power_of_2( 16, which{digits|| 8}, String() )->(as String)
+      if (octal)  return print_power_of_2(  8, which{digits||11}, String() )->(as String)
+      return this->String
 
+      #{
     method to->Value
       return Value( this )
+      }#
 
     method to_digit( &base64 )->Character
       if (base64)
@@ -384,20 +400,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
         return '0'
       endIf
 
-    method to_binary_string( digits=32:Int32 )->String
-      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 2, digits, StringBuilder() )->String
-
-    method to_hex_character->Character
-      if (this < 0 or this > 35) return '0'
-      if (this <= 9) return Character( '0' + this )
-      return Character( 'A' + (this-10) )
-
-    method to_hex_string( digits=8:Int32 )->String
-      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 16, digits, StringBuilder() )->String
-
-    method to_octal_string( digits=11:Int32 )->String
-      return (this->Int64 & 0x00FFFFFFFF).print_in_power2_base( 8, digits, StringBuilder() )->String
-
+      #{
     method to_power_of_two->Int32
       if (this & 0xC0000000 or not this) return this
       local p2 = 1
@@ -452,11 +455,11 @@ class Character [primitive]
             writer.print( "\\" ).print( this )
           elseIf (this >= 256)
             writer.print( "\\[" )
-            this->Int64.print_in_power2_base( 16, 3, writer )
+            this->Int64.print_power_of_2( 16, 3, writer )
             writer.print( ']' )
           elseIf (this < 32 or this >= 127)
             writer.print( "\\x" )
-            this->Int64.print_in_power2_base( 16, 2, writer )
+            this->Int64.print_power_of_2( 16, 2, writer )
           else
             writer.print( this )
           endIf
@@ -580,6 +583,8 @@ class Character [primitive]
           return String().[ print(this) ]
       endWhich
 
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      return this->Int32->String( &=digits, &=binary, &=hex, &=octal )
 endClass
 
 class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
@@ -592,6 +597,12 @@ class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
 
     method to->String
       return this->Int32->String
+
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      if (binary) return this->Int32.print_power_of_2(  2, which{digits||8}, String() )->(as String)
+      if (hex)    return this->Int32.print_power_of_2( 16, which{digits||2}, String() )->(as String)
+      if (octal)  return this->Int32.print_power_of_2(  8, which{digits||3}, String() )->(as String)
+      return this->String
 endClass
 
 class Logical [primitive]
