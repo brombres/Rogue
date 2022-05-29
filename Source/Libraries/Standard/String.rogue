@@ -828,7 +828,7 @@ class String : PrintWriter
 
       use builder = StringPool
         forEach (n in 1..4)
-          if (value.is_to_string_accurate_at(n,builder)) escapeForEach
+          if (value.is_string_accurate_at(n,builder)) escapeForEach
         endForEach
 
         print builder
@@ -878,7 +878,7 @@ class String : PrintWriter
 
       use builder = StringPool
         forEach (n in 1..4)
-          if (value.is_to_string_accurate_at(n,builder)) escapeForEach
+          if (value.is_string_accurate_at(n,builder)) escapeForEach
         endForEach
 
         print builder

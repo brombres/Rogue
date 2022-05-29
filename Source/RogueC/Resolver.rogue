@@ -1513,6 +1513,11 @@ class Resolver : Visitor
       endTemporarily
 
     method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error )->Cmd
+      assert args
+      if (type_context.is_primitive and args.count and args.first.require_type.is_primitive)
+        return args.first.resolve_conversion_to( type_context, this )
+      endIf
+
       local m_constructor = find_procedure( t, type_context, null, "constructor", args, &constructor, &suppress_error )
       if (m_constructor)
         if (m_constructor instanceOf GlobalMethod)

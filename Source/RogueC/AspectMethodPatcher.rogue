@@ -21,6 +21,9 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
       endIf
       visit( m )
 
+    method on_visit( cmd:TemplatedAccess )
+      cmd.module_context = this_type.module_context
+
     method on_visit( cmd:This )
       cmd.this_type = this_type
 endClass

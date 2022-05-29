@@ -1,3 +1,4 @@
+$include Standard/Boxed
 $include Standard/Dim
 $include Standard/Console
 $include Standard/ConsoleCursor
