@@ -32,9 +32,9 @@ class String : PrintWriter
 
     method create( data:Character[] )->String
       local utf8_count : Int32
-      native @|for (int i=data->count; --i>=0; )
+      native @|for (int i=$data->count; --i>=0; )
               |{
-              |  RogueCharacter ch = data->as_characters[i];
+              |  RogueCharacter ch = $data->as_characters[i];
               |  if (ch <= 0x7F)         ++$utf8_count;
               |  else if (ch <= 0x7FF)   $utf8_count += 2;
               |  else if (ch <= 0xFFFF)  $utf8_count += 3;
@@ -295,6 +295,16 @@ class String : PrintWriter
       # No letters found
       return this
 
+    method centered( spaces:Int32, fill=' ':Character )->String
+      if (count >= spaces) return this
+
+      local result = String( spaces )
+      loop ((spaces-count)/2) result.print( fill )
+      result.print( this )
+      forEach (result.count..<spaces) result.print( fill )
+
+      return result
+
     method clear
       if (is_immutable) return
       data.clear
@@ -444,6 +454,8 @@ class String : PrintWriter
       local byte_count = byte_limit - byte_offset
       local result = String( byte_count )
       native @|memcpy( $result->data->as_utf8, $data->as_utf8+$byte_offset, $byte_count );
+      result.data.count = byte_count
+      result.count = (i2 - i1) + 1
       return result
 
     method from_first( ch:Character, &ignore_case )->String
@@ -565,6 +577,18 @@ class String : PrintWriter
       endForEach
 
       return true
+
+    method justified( spaces:Int32, fill=' ':Character )->String
+      local left = (spaces < 0)
+      spaces .= abs
+      if (count >= spaces) return this
+
+      local result = String( spaces)
+      if (left) result.print( this )
+      forEach (count..<spaces) result.print( fill )
+      if (not left) result.print( this )
+
+      return result
 
     method last->Character
       return this[ count-1 ]
@@ -804,7 +828,7 @@ class String : PrintWriter
 
       use builder = StringPool
         forEach (n in 1..4)
-          if (_check_to_string(value,n,builder)) escapeForEach
+          if (value.is_to_string_accurate_at(n,builder)) escapeForEach
         endForEach
 
         print builder
@@ -854,10 +878,53 @@ class String : PrintWriter
 
       use builder = StringPool
         forEach (n in 1..4)
-          if (_check_to_string(value,n,builder)) escapeForEach
+          if (value.is_to_string_accurate_at(n,builder)) escapeForEach
         endForEach
 
         print builder
+      endUse
+
+    method print( value:Real32, decimal_places:Int32 )
+      if (is_immutable) return
+
+      if (value.is_infinite)
+        if (value < 0) print( "-infinity" )
+        else           print( "infinity" )
+        return
+      elseIf (value.is_NaN)
+        print( "NaN" )
+        return
+      endIf
+
+      use builder = StringPool
+        local is_negative = (value < 0)
+        if (is_negative) value = -value
+
+        local whole = value.floor
+        value -= whole
+        while (whole >= 10)
+          builder.print( ('0' + ((whole%10)->Int32))->Character )
+          whole /= 10
+        endWhile
+        builder.print( ('0' + ((whole%10)->Int32))->Character )
+
+        if (is_negative) builder.print( '-' )
+        builder.reverse
+
+        if (decimal_places != 0)
+          builder.print( '.' )
+          loop (decimal_places)
+            value *= 10
+            local digit = value.floor->Int32
+            value -= digit
+            builder.print( ('0' + digit)->Character )
+          endLoop
+        endIf
+        if (value >= 0.5)
+          builder.print( '5' )
+          builder._round_off
+        endIf
+        print( builder )
       endUse
 
     method print( value:Real64, decimal_places:Int32 )
@@ -873,10 +940,8 @@ class String : PrintWriter
       endIf
 
       use builder = StringPool
-        if (value < 0 )
-          builder.print( '-' )
-          value = -value
-        endIf
+        local is_negative = (value < 0)
+        if (is_negative) value = -value
 
         local whole = value.floor
         value -= whole
@@ -886,6 +951,7 @@ class String : PrintWriter
         endWhile
         builder.print( ('0' + ((whole%10)->Int32))->Character )
 
+        if (is_negative) builder.print( '-' )
         builder.reverse
 
         if (decimal_places != 0)
@@ -1485,16 +1551,6 @@ class String : PrintWriter
       endWhile
 
       return buffer
-
-    method _check_to_string( value:Real32, decimal_places:Int32, buffer:String )->Logical
-      buffer.clear
-      buffer.print( value, decimal_places )
-      return (buffer->Real32 == value)
-
-    method _check_to_string( value:Real64, decimal_places:Int32, buffer:String )->Logical
-      buffer.clear
-      buffer.print( value, decimal_places )
-      return (buffer->Real64 == value)
 
     method _round_off
       # Internal use.

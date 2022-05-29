@@ -2701,10 +2701,12 @@ augment
         local cur_type = m_read_another.return_type.properties//value.type
         assert cur_type
 
-        local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        cmd_iterator.statements.insert(
-          SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
-        )
+        if (cmd_control.name)
+          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+          cmd_iterator.statements.insert(
+            SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
+          )
+        endIf
 
         return
       endIf
@@ -2741,11 +2743,13 @@ augment
         local cur_type = m_read.return_type
         assert cur_type
 
-        local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
-        assert resolver.control_stack.last is cmd_iterator
-        cmd_iterator.statements.insert(
-          SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
-        )
+        if (cmd_control.name)
+          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+          assert resolver.control_stack.last is cmd_iterator
+          cmd_iterator.statements.insert(
+            SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
+          )
+        endIf
 
         return
       endIf
@@ -2807,7 +2811,7 @@ augment
           endIf
         endIf
 
-        local v_index_name = cmd_control.name
+        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
         if (down_to)
           local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
@@ -2853,7 +2857,7 @@ augment
           throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-of that uses the has_another protocol." )
         endIf
 
-        local v_index_name = cmd_control.name
+        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
         resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
@@ -2891,7 +2895,7 @@ augment
           throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
         endIf
 
-        local v_index_name = cmd_control.name
+        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
         resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
