@@ -3048,6 +3048,15 @@ augment
         return null
 
       else
+        if (left_type.is_primitive or right_type.is_primitive)
+          if (left_type is Program.type_null or right_type is Program.type_null)
+            # Allow primitive "value is null" comparisons to become "not value" to more easily
+            # implement template types.
+            if (left_type.is_primitive) return resolver.visit( LogicalNot(cmd.t,cmd.left) )
+            else                        return resolver.visit( LogicalNot(cmd.t,cmd.right) )
+          endIf
+        endIf
+
         local args_left_right = Args( t, cmd.left, cmd.right )
 
         if (left_type.is_primitive)

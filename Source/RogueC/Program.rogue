@@ -63,6 +63,7 @@ class Program [singleton]
       real_bits      = 64  # default; calls set_real_bits
 
       type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
+      type_null.attributes.is_defined = true
       type_GenericFn = Type( t, "GenericFn", Attribute.OBJECT, &unlisted )
       type_Global    = Type( t, "Global", Attribute.OBJECT|Attribute.SINGLETON )
       type_ListType  = Type( t, "ListType", Attribute.ASPECT )
