@@ -1431,6 +1431,41 @@ class String : PrintWriter
 
       return result
 
+    method split( group_size:Int32 )->String[]
+      # Splits this string into groups of size 'group_size'. Specify a negative
+      # to begin grouping on the left or positive to begin grouping on the right.
+      #
+      # Examples:
+      #   "ABCDEFGH".split(-3) -> ["ABC","DEF","GH"]
+      #   "ABCDEFGH".split(3)  -> ["AB","CDE","FGH"]
+      #   println 2000->String(&binary).split(4).join(' ')
+      #     # 0000 0000 0000 0000 0000 0111 1101 0000
+      if (group_size == 0) return [this]
+
+      local n = 0
+      if (group_size < 0)
+        group_size .= abs
+      else
+        n = -count % group_size
+      endIf
+
+      local result = String[]( count/group_size )
+      local group : String
+      forEach (ch in this)
+        if (not group)
+          group = String(group_size)
+          result.add( group )
+        endIf
+        group.print( ch )
+        ++n
+        if (n == group_size)
+          group = null
+          n = 0
+        endIf
+      endForEach
+
+      return result
+
     method split->String[]
       # Splits the string on whitespace
       local result = String[]

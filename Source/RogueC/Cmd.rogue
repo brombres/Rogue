@@ -1435,6 +1435,7 @@ class CreateObject : Cmd
       prior.init( existing )
       if (existing.of_type) of_type = existing.of_type.cloned
       if (existing.args) args = existing.args.cloned
+      m_init = existing.m_init
 
     method description->String
       return "CreateObject($,$)" (%of_type,%args)
