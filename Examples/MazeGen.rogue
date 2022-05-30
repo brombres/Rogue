@@ -1,0 +1,121 @@
+local w = Console.width
+local h = Console.height - 2
+if (not (w & 1)) --w
+if (not (h & 1)) --h
+
+MazeGen(w,h).display
+
+class XY( x:Int32, y:Int32 ) [compound]
+  METHODS
+endClass
+
+class MazeGen
+  PROPERTIES
+    width, height : Int32
+    maze = Character[]
+
+    offsets = [ XY(0,-1), XY(-1,0), XY(0,1), XY(1,0) ]
+    walls =
+    [           # ULDR
+      ' '       # ----
+      '\u2501'  # ---R
+      '\u2503'  # --D-
+      '\u250F'  # --DR
+      '\u2501'  # -L--
+      '\u2501'  # -L-R
+      '\u2513'  # -LD-
+      '\u2533'  # -LDR
+      '\u2503'  # U---
+      '\u2517'  # U--R
+      '\u2503'  # U-D-
+      '\u2523'  # U-DR
+      '\u251B'  # UL--
+      '\u253B'  # UL-R
+      '\u252B'  # ULD-
+      '\u254B'  # ULDR
+    ]
+
+  METHODS
+    method init( width:Int32, height:Int32 )
+      generate( width, height )
+
+    method generate( width, height )
+      maze.resize( width * height )
+      maze.fill('#')
+      local start_i = Random.int32((width-2)/2+1) * 2 + 1
+      local start_j = Random.int32((height-2)/2+1) * 2 + 1
+      visit( start_i, start_j, 0, 0 )
+      make_adjoining_walls
+
+    method display
+      local j = 0
+      while (j < height)
+        local i = 0
+        while (i < width)
+          print maze[j*width+i]
+          ++i
+        endWhile
+        println
+        ++j
+      endWhile
+
+    method has_wall( i:Int32, j:Int32 )->Logical
+      if (i < 0 or j < 0 or i >= width or j >= height) return false
+      return maze[j*width+i] != ' '
+
+    method make_adjoining_walls
+      local index = width * height
+      while (index > 0)
+        --index
+        if (maze[index] != ' ')
+          local i = index % width
+          local j = index / width
+          local uldr = 0
+          if (has_wall(i,j-1)) uldr |= 0b1000
+          if (has_wall(i-1,j)) uldr |= 0b0100
+          if (has_wall(i,j+1)) uldr |= 0b0010
+          if (has_wall(i+1,j)) uldr |= 0b0001
+          maze[index] = walls[uldr]
+        endIf
+      endWhile
+
+    method visit( i1:Int32, j1:Int32, di:Int32, dj:Int32 )
+      local i2 = i1 + di:<<:1
+      local j2 = j1 + dj:<<:1
+      if (i2 < 0 or j2 < 0 or i2 >= width or j2 >= height) return
+      if (maze[j2*width+i2] == ' ') return
+      maze[j2*width+i2] = ' '
+
+      if (i1 != i2)
+        local i = i1
+        while (i != i2)
+          maze[j1*width+i] = ' '
+          i += di
+        endWhile
+      else
+        local j = j1
+        while (j != j2)
+          maze[j*width+i1] = ' '
+          j += dj
+        endWhile
+      endIf
+
+      local dirs = random_directions
+      loop 4
+        local dir = dirs & 3
+        dirs = dirs :>>>: 2
+        local offset = offsets[ dir ]
+        visit( i2, j2, offset.x, offset.y )
+      endLoop
+
+    method random_directions->Int32
+      local r1 = Random.int32(4)
+      local r2 = Random.int32(3)
+      local r3 = Random.int32(2)
+      local d1 = r1
+      local d2 = (r1 + r2 + 1) % 4
+      local d3 = (r1 + (r2 + r3 + 1) % 3 + 1) % 4
+      local d4 = (0 + 1 + 2 + 3) - (d1 + d2 + d3)
+      return (d1:<<:6) | (d2:<<:4) | (d3:<<:2) | d4
+      # Returns bits AABBCCDD, where each AA etc. is a direction 0-3.
+endClass
