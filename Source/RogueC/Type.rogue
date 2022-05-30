@@ -863,7 +863,9 @@ class Type : Cmd
         endUse
       endIf
 
-      # Compounds get to->String and description->String. description() calls to->String by default.
+      # Compounds get:
+      # - to->String and description->String. description() calls to->String by default.
+      # - operator==
       if (is_compound)
         block m = methods["description()"]
           if (not m)
@@ -876,11 +878,25 @@ class Type : Cmd
         endBlock
 
         if (not is_enum)
+          # Enums get different versions of to->String and operator==()
           block m = methods["to_String()"]
             if (not m)
               m = Method( t, this, "to_String" )
               m.return_type = Program.type_String
               m.statements.add( Return(t,LiteralString(t,name)) )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
+          block m = methods["operator==($::$)"(module_context,name)]
+            if (not m)
+              m = Method( t, this, "operator==" )
+              m.parameters.add( Local(t,"other",null,this) )
+              m.return_type = Program.type_Logical
+              m.statements.add( Return(t,
+                  NativeExpression( t, "0 == memcmp(&$this,&other,sizeof($<<this>>)", Program.type_Logical )
+              ) )
               m.organize
               methods[ m.signature ] = m
             endIf
@@ -944,7 +960,7 @@ class Type : Cmd
 
         # operator==(EnumType)->Logical
         block
-          local m = methods[ "operator==" ]
+          local m = methods[ "operator==($::$)"(module_context,name) ]
           if (not m)
             m = Method( t, this, "operator==" )
             m.parameters.add( Local(t,"other",this) )
