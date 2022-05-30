@@ -33,6 +33,12 @@ class List<<$DataType>> : ListType
       init
       reserve( capacity )
 
+    method cloned->$DataType[]
+      local result = $DataType[]( count )
+      result.count = count
+      copy( 0, count, result, 0 )
+      return result
+
     method on_cleanup
       native @|if ($this->as_bytes)
               |{
@@ -51,14 +57,27 @@ class List<<$DataType>> : ListType
         native @|(($<<value>>*)($this->data))[$count++] = $value;
       endIf
 
+    method add( other:$DataType[] )
+      reserve(other.count)
+      forEach (value in other) add( value )
+
+    method apply( fn:(Function($DataType)) )
+      forEach (item in this) fn( item )
+
+    method applying( fn:(Function($DataType)) )->$DataType[]
+      return cloned.[ apply(fn) ]
+
     method clear
       discard_from( 0 )
 
-    method cloned->$DataType[]
-      local result = $DataType[]( count )
-      result.count = count
-      copy( 0, count, result, 0 )
-      return result
+    method contains( value:$DataType )->Logical
+      return this.locate( value )?
+
+    method contains( query:(Function($DataType)->Logical) )->Logical
+      return first( query ).exists
+
+    method contains( other:$DataType[] )->Logical
+      return this.locate( other )?
 
     method copy( src_i1:Int32, src_count:Int32, dest:$DataType[], dest_i1:Int32 )
       if (src_count <= 0) return
@@ -86,6 +105,13 @@ class List<<$DataType>> : ListType
       endForEach
       result.print ']'
       return result
+
+    method dim( n:Int32 )
+      clear
+      reserve( n )
+      count = n
+
+#TODO: discard
 
     method discard_from( index:Int32 )
       local n = (count - index)
@@ -124,7 +150,7 @@ class List<<$DataType>> : ListType
       if ($DataType isType Logical or $DataType isType Byte)
         native @|memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
         return
-      elseIf ($DataType isPrimitive or $DataType isReference)
+      elseIf (isPrimitive($DataType) or isReference($DataType))
         if (not value)
           native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
           return
@@ -137,6 +163,13 @@ class List<<$DataType>> : ListType
 
     method first->$DataType
       return this[0]
+
+    method first( query:(Function($DataType)->Logical) )->$DataType?
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+
+      return null
 
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
@@ -157,6 +190,102 @@ class List<<$DataType>> : ListType
       endForEach
       return output
 
+    method locate( value:$DataType, i1=0:Int32 )->Int32?
+      if (isReference($DataType))
+        if (value is null)
+          forEach (i of this from i1)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
+      forEach (i of this from i1)
+        if (value == this[i]) return i
+      endForEach
+      return null
+
+    method locate( query:(Function($DataType)->Logical), i1=0:Int32 )->Int32?
+      forEach (value at index in this from i1)
+        if (query(value)) return index
+      endForEach
+      return null
+
+    method locate( other:$DataType[], i1=0:Int32 )->Int32?
+      local other_count = other.count
+      if (count < other_count) return null
+      forEach (starting_index in i1..(count-other_count))
+
+        contingent
+
+          forEach (i in 0..<other_count)
+            local a = this[ starting_index + i ]
+            local b = other[ i ]
+            if (a is null)
+              necessary (b is null)
+            elseIf (b is null)
+              necessary (a is null)
+            else
+              necessary (a == b)
+            endIf
+          endForEach
+
+        satisfied
+          return starting_index
+        endContingent
+
+      endForEach
+      return null
+
+    method locate_last( value:$DataType, i1=null:Int32? )->Int32?
+      local starting_index = which{ i1 || count-1 }
+      if (isReference($DataType))
+        if (value is null)
+          forEach (i of this from starting_index step -1)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
+      forEach (i of this from starting_index step -1)
+        if (value == this[i]) return i
+      endForEach
+      return null
+
+    method locate_last( query:(Function($DataType)->Logical), i1=null:Int32? )->Int32?
+      local starting_index = which{ i1 || count-1 }
+      forEach (value at index in this from starting_index step -1)
+        if (query(value)) return index
+      endForEach
+      return null
+
+    method locate_last( other:$DataType[], i1=null:Int32? )->Int32?
+      local starting_index = which{ i1 || count-1 }
+      local other_count = other.count
+      if (count < other_count) return null
+      forEach (first_i in starting_index.or_smaller(count-other_count) downTo 0)
+
+        contingent
+
+          forEach (i in 0..<other_count)
+            local a = this[ first_i + i ]
+            local b = other[ i ]
+            if (a is null)
+              necessary (b is null)
+            elseIf (b is null)
+              necessary (a is null)
+            else
+              necessary (a == b)
+            endIf
+          endForEach
+
+        satisfied
+          return first_i
+        endContingent
+
+      endForEach
+      return null
     method remove_first->$DataType
       local result = this[0]
       shift( -1 )
@@ -168,7 +297,7 @@ class List<<$DataType>> : ListType
         native @|RogueLogical result = $this->as_logicals[$count];
                 |$this->as_logicals[$count] = 0;
                 |return result;
-      elseIf ($DataType isCompound)
+      elseIf (isCompound($DataType))
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |memset( (($<<element_type>>*)($this->data)) + $count, 0, sizeof($<<element_type>>) );
                 |return result;

@@ -3,6 +3,17 @@ class Object
     method description->String
       return this->String
 
+    method hash_code->Int32
+      return object_id->Int32
+
+    method object_id->Int64
+      local addr : Int64
+      native "$addr = (RogueInt64)(void*)$this;"
+      return addr
+
+    method operator==( other:Object )->Logical
+      return this is other
+
     method to->String
       return type_name
 endClass
