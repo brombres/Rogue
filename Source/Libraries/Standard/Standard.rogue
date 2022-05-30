@@ -8,6 +8,7 @@ $include Standard/ConsoleMode
 $include Standard/ConsoleStyle
 $include Standard/Exception
 $include Standard/Global
+$include Standard/LineReader
 $include Standard/List
 $include Standard/Object
 $include Standard/ObjectPool
@@ -19,6 +20,7 @@ $include Standard/Reader
 $include Standard/Span
 $include Standard/StackTrace
 $include Standard/String
+$include Standard/StringEncoding
 $include Standard/System
 $include Standard/Writer
 

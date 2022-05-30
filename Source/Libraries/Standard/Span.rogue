@@ -6,6 +6,6 @@ class Span( index:Int32, count:Int32 ) [compound]
     method limit->Int32
       return index + count
 
-    method description->String
+    method to->String
       return "@$ x$"(index,count)
 endClass
