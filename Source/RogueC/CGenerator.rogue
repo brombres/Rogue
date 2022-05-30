@@ -1435,8 +1435,8 @@ augment
         writer.println '{'
         writer.indent  += 2
         if (this.is_object)
-          writer.println "RogueType* type;"
-          writer.println "RogueInt32 refcount;"
+          writer.println "RogueType* __type;"
+          writer.println "RogueInt32 __refcount;"
         endIf
         forEach (p in this.properties)
           writer.print   p.type.c_name
@@ -1698,7 +1698,7 @@ augment
         endIf
 
         c_writer.indent += 2
-        c_writer.println "switch (((RogueObject*)THIS)->type->id)"
+        c_writer.println "switch (((RogueObject*)THIS)->__type->id)"
         c_writer.println '{'
         c_writer.indent += 2
 
@@ -1773,7 +1773,7 @@ augment
                           |// Trace all retained objects (positive refcount)
                           |for (i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
                           |{
-                          |  if ((ref=(RogueObject*)*(++refptr)) && ref->refcount > 0) ref->type->fn_gc_trace(ref);
+                          |  if ((ref=(RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
                           |}
                           |
                           |// Trace singletons
@@ -1782,7 +1782,7 @@ augment
           if (type.attributes.is_singleton)
             c_writer.print   "if ((ref = (RogueObject*)"
             c_writer.print   type.c_name
-            c_writer.println "_singleton) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+            c_writer.println "_singleton) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
           endIf
         endForEach
       endForEach
@@ -1795,7 +1795,7 @@ augment
             if (p.type.is_reference)
               c_writer.print   "if ((ref = (RogueObject*)"
               c_writer.print   p.c_name
-              c_writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+              c_writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
                 path.add( "if ((ref = (RogueObject*)(" )
@@ -1814,7 +1814,7 @@ augment
                           |
                           |for (i=TypeRogueObject.local_pointer_count, v=TypeRogueObject.local_pointer_stack-1; --i>=0; )
                           |{
-                          |  if ((ref=(RogueObject*)(*(RogueObject**)*(++v))) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);
+                          |  if ((ref=(RogueObject*)(*(RogueObject**)*(++v))) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
                           |}
         forEach (type in (forEach in Program.modules).types)
           if (type.is_compound and type.contains_reference)
@@ -1848,10 +1848,10 @@ augment
                         |for (i=end_i; --i>=0; )
                         |{
                         |  ref = (RogueObject*) *(--refptr);
-                        |  if (ref->refcount >= 0)
+                        |  if (ref->__refcount >= 0)
                         |  {
                         |    ++cleanup_count;
-                        |    ref->type->fn_gc_trace( ref );
+                        |    ref->__type->fn_gc_trace( ref );
                         |
                         |    RogueObjectList_add( &RogueMM_objects, ref );
                         |    *refptr = RogueMM_objects_requiring_cleanup.data[--end_i];
@@ -1863,7 +1863,7 @@ augment
                         |for (write_i=-1,i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
                         |{
                         |  ref = (RogueObject*) *(++refptr);
-                        |  if (ref->refcount >= 0)
+                        |  if (ref->__refcount >= 0)
                         |  {
                         |    // Untraced == unreferenced
                         |    Rogue_destroy_object( ref );
@@ -1871,7 +1871,7 @@ augment
                         |  else
                         |  {
                         |    // Still referenced. Reset flag.
-                        |    ref->refcount = ~ref->refcount;
+                        |    ref->__refcount = ~ref->__refcount;
                         |    RogueMM_objects.data[++write_i] = ref;
                         |  }
                         |}
@@ -1882,7 +1882,7 @@ augment
                         |for (i=end_i; --i>=0; )
                         |{
                         |  ref = (RogueObject*) *(--refptr);
-                        |  ref->refcount = ~ref->refcount;
+                        |  ref->__refcount = ~ref->__refcount;
                         |}
                         |
                         |// Call on_cleanup() on formerly-unreferenced objects at the end of the
@@ -1892,7 +1892,7 @@ augment
                         |for (i=cleanup_count; --i>=0; )
                         |{
                         |  ref = (RogueObject*) *(--refptr);
-                        |  ref->type->fn_on_cleanup( ref );
+                        |  ref->__type->fn_on_cleanup( ref );
                         |}
                         |
                         |//printf("New object count:%d\n",RogueMM_objects.count);
@@ -2006,7 +2006,7 @@ augment
         #writer.println ''printf("Tracing $\\n");''(name)
 
         if (is_reference)
-          writer.println "((RogueObject*)THIS)->refcount = ~((RogueObject*)THIS)->refcount;"
+          writer.println "((RogueObject*)THIS)->__refcount = ~((RogueObject*)THIS)->__refcount;"
         endIf
 
         contingent
@@ -2024,7 +2024,7 @@ augment
               writer.print   c_name
               writer.print   "*)THIS)->"
               writer.print   p.c_name
-              writer.println ") && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+              writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
                 path.add( "if ((ref = (RogueObject*)(((" )
@@ -2046,7 +2046,7 @@ augment
             writer.println "*)THIS)->capacity);"
             writer.println @|while (--n >=0)
                             |{
-                            |  if ((ref = *(++cursor)) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);
+                            |  if ((ref = *(++cursor)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
                             |}
           endIf
 

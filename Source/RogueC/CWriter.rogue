@@ -259,7 +259,7 @@ class CWriter : BufferedPrintWriter
            |  RogueType*  type = (RogueType*) _type;
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
-           |  obj->type = type;
+           |  obj->__type = type;
            |
            |  if (type->fn_on_cleanup) RogueObjectList_add( &RogueMM_objects_requiring_cleanup, obj );
            |  else                     RogueObjectList_add( &RogueMM_objects, obj );
@@ -268,9 +268,9 @@ class CWriter : BufferedPrintWriter
            |  if (type->fn_init_object)
            |  {
            |    #ifdef ROGUE_GC_AUTO
-           |      obj->refcount = 1; // keeps this object alive if init() triggers a GC
+           |      obj->__refcount = 1; // keeps this object alive if init() triggers a GC
            |      type->fn_init_object( obj );
-           |      --obj->refcount;   // other code maybe retained this obj so don't just set back to 0.
+           |      --obj->__refcount;   // other code maybe retained this obj so don't just set back to 0.
            |    #else
            |      type->fn_init_object( obj );
            |    #endif
@@ -281,7 +281,7 @@ class CWriter : BufferedPrintWriter
            |
            |void Rogue_destroy_object( void* obj )
            |{
-           |  //printf( "Destroy object %s\n", ((RogueObject*)obj)->type->name );
+           |  //printf( "Destroy object %s\n", ((RogueObject*)obj)->__type->name );
            |  ROGUE_FREE( obj );
            |}
            |
@@ -291,7 +291,7 @@ class CWriter : BufferedPrintWriter
            |  RogueType*  type = (RogueType*) _type;
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
-           |  obj->type = type;
+           |  obj->__type = type;
            |
            |  if (type->fn_init_object)
            |  {
@@ -322,13 +322,13 @@ class CWriter : BufferedPrintWriter
            |
            |void* Rogue_release( void* obj )
            |{
-           |  if (obj) --(((RogueObject*)obj)->refcount);
+           |  if (obj) --(((RogueObject*)obj)->__refcount);
            |  return 0;
            |}
            |
            |void* Rogue_retain( void* obj )
            |{
-           |  if (obj) ++(((RogueObject*)obj)->refcount);
+           |  if (obj) ++(((RogueObject*)obj)->__refcount);
            |  return obj;
            |}
            |
@@ -438,7 +438,7 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_as( void* obj, RogueInt32 recast_type_id )
            |{
            |  if ( !obj ) return 0;
-           |  RogueType* type = ((RogueObject*)obj)->type;
+           |  RogueType* type = ((RogueObject*)obj)->__type;
            |  if (type->id == recast_type_id) return obj;
            |
            |  RogueInt32* base_ids = type->base_type_ids - 1;
@@ -453,7 +453,7 @@ class CWriter : BufferedPrintWriter
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
            |{
            |  if ( !obj ) return 0;
-           |  RogueType* type = ((RogueObject*)obj)->type;
+           |  RogueType* type = ((RogueObject*)obj)->__type;
            |  if (type->id == ancestor_id) return 1;
            |
            |  RogueInt32* base_ids = type->base_type_ids - 1;
@@ -468,7 +468,7 @@ class CWriter : BufferedPrintWriter
            |RogueLogical Rogue_is_type( void* obj, RogueType* type )
            |{
            |  if ( !obj ) return 0;
-           |  return ((RogueObject*)obj)->type == type;
+           |  return ((RogueObject*)obj)->__type == type;
            |}
            |
         println
@@ -484,7 +484,7 @@ class CWriter : BufferedPrintWriter
           print( forEach in path )
           print   '.'
           print   p2.c_name
-          println ")) && ref->refcount >= 0) ref->type->fn_gc_trace(ref);"
+          println ")) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
         elseIf (p2.type.contains_reference)
           path.add( p2.c_name )
           path.add( '.' )
