@@ -1009,8 +1009,10 @@ endClass
 
 class Iterator : Conditional
   PROPERTIES
-    control        : Cmd
-    upkeep         : Cmd
+    control           : Cmd
+    upkeep            : Cmd
+    upkeep_label      : String
+    upkeep_label_used : Logical
 
   METHODS
     method init( t:Token, statements:Cmd, control_type:ControlType )
@@ -1024,10 +1026,11 @@ class Iterator : Conditional
       prior.init( existing )
       if (existing.control)        control = existing.control.cloned
       if (existing.upkeep)         upkeep  = existing.upkeep.cloned
+      upkeep_label = existing.upkeep_label
+      upkeep_label_used = existing.upkeep_label_used
 
     method description->String
       return "Iterator($,$,$,$)" (%control,%condition,%statements,%upkeep)
-
 
 endClass
 
@@ -4223,4 +4226,10 @@ class CreateRangeUpToLessThan : CreateRange
 
     method name->String
       return "RangeUpToLessThan"
+endClass
+
+class NextIteration : Cmd
+  METHODS
+    method description->String
+      return "NextIteration"
 endClass

@@ -701,6 +701,7 @@ class Resolver : Visitor
       endIf
 
     method on( cmd:Iterator )->Cmd
+      if (not cmd.@upkeep_label) cmd.upkeep_label = autoname("upkeep")
       push_scope( cmd )
       cmd.condition = visit( cmd.condition )
       cmd.statements = visit( cmd.statements )
@@ -890,6 +891,16 @@ class Resolver : Visitor
         if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
       endIf
       return cmd
+
+    method on( cmd:NextIteration )->Cmd
+      forEach (control_structure in control_stack step -1)
+        local iterator = control_structure->(as Iterator)
+        if (iterator)
+          iterator.upkeep_label_used = true
+          return cmd
+        endIf
+      endForEach
+      throw cmd.t.error( "No enclosing loop for nextIteration." )
 
     method on( cmd:OpAndAssign )->Cmd
       local target = visit( cmd.target )  # don't alter cmd.target

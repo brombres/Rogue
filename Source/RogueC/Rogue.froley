@@ -84,6 +84,7 @@ KEYWORD_NATIVE          native
 KEYWORD_NATIVE_HEADER   nativeHeader
 KEYWORD_NATIVE_CODE     nativeCode
 KEYWORD_NECESSARY       necessary
+KEYWORD_NEXT_ITERATION  nextIteration
 KEYWORD_NO_ACTION       noAction
 KEYWORD_NOT             not
 KEYWORD_NULL            null
@@ -1747,6 +1748,7 @@ parser
   on "escapeWhich"                -> EscapeWhich:Escape
   on "escapeWhile"                -> EscapeWhile:Escape
   on "necessary" expression       -> Necessary(condition)
+  on "nextIteration"              -> NextIteration
   on "noAction":                     return
   on @"print"   args              -> Access(name=content,args)
   on @"println" args              -> Access(name=content,args)
@@ -1939,6 +1941,7 @@ parser
             if (not consume(':')) mustConsume EOL
           createList Args
           multi_line_statements
+          create LocalScope(statements):ControlStructure
           create WhichCase(args,statements)
         endOn
       endWhile
@@ -1946,6 +1949,7 @@ parser
     on "others"
       if (not consume(':')) mustConsume EOL
       multi_line_statements
+      create LocalScope(statements):ControlStructure
     elseOnOthers
       createNull
     endOn

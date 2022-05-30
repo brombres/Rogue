@@ -919,6 +919,7 @@ class CGenerator : Visitor
       writer.println "{"
       writer.indent += 2
       visit( cmd.statements )
+      if (cmd.upkeep_label_used) writer.[ print(cmd.upkeep_label), print(":;") ]
       visit( cmd.upkeep )
       writer.print   control_label
       writer.println ":;"
@@ -1073,6 +1074,16 @@ class CGenerator : Visitor
     method on_visit( cmd:Negate )
       writer.print '-'
       print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:NextIteration )
+      forEach (control_structure in control_stack step -1)
+        if (control_structure instanceOf Iterator)
+          writer.print "goto "
+          writer.print control_structure->(as Iterator).upkeep_label
+          return
+        endIf
+      endForEach
+      throw cmd.t.error( "[INTERNAL] No enclosing loop for nextIteration." )
 
     method on_visit( cmd:Power )
       writer.print '('
