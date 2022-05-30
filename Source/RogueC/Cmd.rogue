@@ -3948,18 +3948,20 @@ class IfLocal : Cmd
     name       : String
     expression : Cmd
     statements : Cmd
+    else_if    : IfLocal
 
   METHODS
-    method init( t, name, expression, statements )
+    method init( t, name, expression, statements, else_if )
 
     method init( existing:IfLocal )
       prior.init( existing )
       name = existing.name
       if (existing.expression) expression = existing.expression.cloned
       if (existing.statements) statements = existing.statements.cloned
+      if (existing.else_if)    else_if    = existing.else_if.cloned
 
     method description->String
-      return "IfLocal($,$,$)" (%name,%expression,%statements)
+      return "IfLocal($,$,$,$)" (%name,%expression,%statements,%else_if)
 
 endClass
 

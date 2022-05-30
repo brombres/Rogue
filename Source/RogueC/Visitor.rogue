@@ -587,6 +587,7 @@ class Visitor
     method on_visit_children( cmd:IfLocal )
       cmd.expression = visit(cmd.expression)
       cmd.statements = visit(cmd.statements)
+      cmd.else_if    = visit(cmd.else_if)->(as IfLocal)
 
     method on_visit_children( cmd:NamedTupleElement )
       cmd.value = visit(cmd.value)

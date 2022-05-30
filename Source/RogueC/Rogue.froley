@@ -1327,13 +1327,11 @@ parser
       identifier
       mustConsume "="
       expression
-      consume_eols
+      must_consume_eols
       multi_line_statements
-      if (nextIs("elseIf") or nextIs("else"))
-        syntaxError "if-local cannot contain elseIfs or an else."
-      endIf
+      if_local_elseifs_or_else
       mustConsume "endIf"
-      produce IfLocal( name:String, expression, statements )
+      produce IfLocal( name:String, expression, statements, else_if:IfLocal )
     endIf
 
     expression
@@ -1348,6 +1346,29 @@ parser
       if_statement_single_line_elseIf_else
     endIf
     produce If(condition,statements,cmd_else:If):Conditional
+  endOn
+
+- if_local_elseifs_or_else
+  on "elseIf"
+    mustConsume "local"
+    identifier
+    mustConsume "="
+    expression
+    must_consume_eols
+    multi_line_statements
+    if_local_elseifs_or_else
+    produce IfLocal( name:String, expression, statements, else_if:IfLocal )
+
+  elseOn "else"
+    must_consume_eols
+    createNull  # name
+    createNull  # expression
+    multi_line_statements
+    createNull  # else_if
+    produce IfLocal( name:String, expression, statements, else_if:IfLocal )
+
+  elseOnOthers
+    produceNull
   endOn
 
 - if_statement_multi_line_elseIf_else

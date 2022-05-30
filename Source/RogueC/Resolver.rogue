@@ -544,12 +544,23 @@ class Resolver : Visitor
       local expression_type = expression.require_type
 
       if (expression_type.attributes.is_optional)
+        # Let elseIfs/else bind to existing variable names before they are shadowed
+        local nested_else_if : If
+        if (cmd.else_if)
+          local t = cmd.else_if.t
+          if (cmd.else_if.name)
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if))), null )
+          else
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if.statements))), null )
+          endIf
+        endIf
+
         if (not expression.is_simple)
           local v_expression = add_local( cmd.t, "expression", expression_type, DummyInitialValue )
           insert( SetLocal(v_expression,expression) )
           expression = GetLocal( v_expression )
         endIf
-        local cmd_if = If( cmd.t, ContextAccess(cmd.t,expression.cloned,"exists"), Statements(cmd.t), null )
+        local cmd_if = If( cmd.t, ContextAccess(cmd.t,expression.cloned,"exists"), Statements(cmd.t), nested_else_if )
         push_scope( cmd_if )
 
         local core_type = expression_type.properties["value"].type
@@ -564,9 +575,22 @@ class Resolver : Visitor
         local cmd_block = ControlStructure( cmd.t, Statements(cmd.t), ControlType.UNDEFINED )
         push_scope( cmd_block )
 
+        # Let elseIfs/else bind to existing variable names before they are shadowed
+        local nested_else_if : If
+        if (cmd.else_if)
+          local t = cmd.else_if.t
+          if (cmd.else_if.name)
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if))), null )
+          else
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if.statements))), null )
+          endIf
+        endIf
+
         local v = add_local( Local(cmd.t, cmd.name, DummyInitialValue, expression_type) )
         cmd_block.statements.add( SetLocal(v,expression,&initial_assignment) )
-        cmd_block.statements.add( If(cmd.t, GetLocal(v), cmd.statements, null) )
+
+        local cmd_if = If( cmd.t, GetLocal(v), cmd.statements, nested_else_if )
+        cmd_block.statements.add( cmd_if )
 
         pop_scope
         return visit( cmd_block )
