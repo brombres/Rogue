@@ -1,11 +1,5 @@
 # MISSING
-#   method contains_pattern( pattern:String, &ignore_case )->Logical
 #   method decode_base64->Byte[]
-#   method extract_string( format:String, &ignore_case )->String
-#   method extract_strings( format:String, &ignore_case )->String[]
-#   method extract_strings( format:String, results:String[], &ignore_case )->String[]
-#   method _extract_strings( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
-#   method _pattern_match_count( i0:Int32, remaining_count:Int32, format:String, f0:Int32, fcount:Int32,
 #   method is_false->Logical
 
 class String : PrintWriter
