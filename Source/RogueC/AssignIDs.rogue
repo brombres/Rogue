@@ -1,4 +1,4 @@
-module Rogue
+module RogueC
 
 class AssignIDs : InspectionVisitor
   PROPERTIES

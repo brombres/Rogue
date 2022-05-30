@@ -1,4 +1,4 @@
-module Rogue
+module RogueC
 uses Utility/WorkList
 
 $localMacro FOLD_CONSTANTS(m,Type,op)

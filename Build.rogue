@@ -67,7 +67,7 @@ endRoutine
 
 routine rogo_froley
   local froley_src = File( "Source/RogueC/Rogue.froley" )
-  execute "froley $ Source/RogueC"(froley_src.esc)
+  execute "froley --project=RogueC $ Source/RogueC"(froley_src.esc)
 endRoutine
 
 routine rogo_clean

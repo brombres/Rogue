@@ -1,4 +1,4 @@
-module Rogue
+module RogueC
 
 enum ControlType( control_type_name:String )
   UNDEFINED( "undefined" )

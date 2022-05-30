@@ -1,5 +1,5 @@
 # Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
-module Rogue
+module RogueC
 
 class Cmd( t:Token )
   GLOBAL METHODS

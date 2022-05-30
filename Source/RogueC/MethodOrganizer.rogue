@@ -1,4 +1,4 @@
-module Rogue
+module RogueC
 
 class MethodOrganizer : Visitor
   PROPERTIES
