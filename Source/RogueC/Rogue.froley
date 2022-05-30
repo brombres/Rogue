@@ -2163,12 +2163,6 @@ parser
   on "instanceOf"
     type
     produce InstanceOf(operand,compare_type:Type)
-  elseOn "isCompound"
-    produce IsCompound(operand)
-  elseOn "isPrimitive"
-    produce IsPrimitive(operand)
-  elseOn "isReference"
-    produce IsReference(operand)
   elseOn "isType"
     type
     produce IsType(operand,compare_type:Type)
@@ -2487,6 +2481,10 @@ parser
     optional_args
     produce TypeAccess(of_type:Type,args)
   endOn
+
+  on "isCompound"  '(' expression ')' -> IsCompound(operand)
+  on "isPrimitive" '(' expression ')' -> IsPrimitive(operand)
+  on "isReference" '(' expression ')' -> IsReference(operand)
 
   syntaxError
 
