@@ -1,6 +1,6 @@
 class ListType [aspect];
 
-class List<<$DataType>> : ListType
+class List<<$DataType>> : Poolable ListType
   PROPERTIES
     count        : Int32
     capacity     : Int32
@@ -111,7 +111,24 @@ class List<<$DataType>> : ListType
       reserve( n )
       count = n
 
-#TODO: discard
+    method discard( i1:Int32, n=1:Int32 )
+      local i2 = i1 + n
+      copy( i2, (count-i2), this, i1 )
+      discard_from( count-n )
+
+      #{
+    method discard( discard_if:(Function($DataType)->Logical) )
+      # Discards any item that passes the query function.
+      use rewriter = this.rewriter
+        forEach (value in rewriter)
+          if (not discard_if(value)) rewriter.write( value )
+        endForEach
+      endUse
+
+    method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
+      # Returns a copy of the list without any item that passes the query function.
+      return cloned.[ discard(discard_if) ]
+      }#
 
     method discard_from( index:Int32 )
       local n = (count - index)
@@ -286,6 +303,10 @@ class List<<$DataType>> : ListType
 
       endForEach
       return null
+
+    method on_return_to_pool
+      clear
+
     method remove_first->$DataType
       local result = this[0]
       shift( -1 )
@@ -338,6 +359,9 @@ class List<<$DataType>> : ListType
         expand_to_count( new_count )
         discard_from( new_count )
       endIf
+
+    method rewriter->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this )
 
     method set( index:Int32, value:$DataType )
       if ($DataType isType Logical)

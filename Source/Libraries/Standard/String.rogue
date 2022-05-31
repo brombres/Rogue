@@ -2,7 +2,7 @@
 #   method decode_base64->Byte[]
 #   method is_false->Logical
 
-class String : PrintWriter
+class String : Poolable PrintWriter
   PROPERTIES
     count           : Int32  # in whole characters
     cursor_offset   : Int32  # in bytes
@@ -821,6 +821,9 @@ class String : PrintWriter
       local span = locate_pattern( pattern, &=ignore_case )
       if (not span) return false
       return span.value.index == 0 and span.value.count == count
+
+    method on_return_to_pool
+      clear
 
     method print( value:Byte )
       print( value->Int64 )

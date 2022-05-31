@@ -416,7 +416,7 @@ class CGenerator : Visitor
         writer.print ')'
       else
         writer.print "( "
-        print_with_cast( cmd.context, cmd.info.type_context )
+        print_with_cast( cmd.context, cmd.info.type_context, &=call_is_mutating )
 
         forEach (arg at i in cmd.args)
           writer.print ", "
@@ -632,35 +632,24 @@ class CGenerator : Visitor
           endIf
         endUse
 
-        forEach (p in this_procedure.parameters)
-          if (not p.is_anchored)
-            if (p.type.is_reference)
-              writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
-              writer.print   p.c_name
-              writer.println " );"
-            elseIf (p.type.contains_reference)
-              writer.print   "RogueType_local_pointer_stack_add( &Type"
-              writer.print   p.type.c_name
-              writer.print   ", &"
-              writer.print   p.c_name
-              writer.println " );"
+        if (Program.gc_auto)
+          forEach (p in this_procedure.parameters)
+            if (not p.is_anchored)
+              if (p.type.is_reference)
+                writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+                writer.print   p.c_name
+                writer.println " );"
+              elseIf (p.type.contains_reference)
+                writer.print   "RogueType_local_pointer_stack_add( &Type"
+                writer.print   p.type.c_name
+                writer.print   ", &"
+                writer.print   p.c_name
+                writer.println " );"
+              endIf
             endIf
-          endIf
-        endForEach
+          endForEach
+        endIf
 
-        #forEach (v in this_procedure.locals)
-        #  if (v.type.is_reference)
-        #    writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
-        #    writer.print   v.c_name
-        #    writer.println " );"
-        #  elseIf (v.type.contains_reference)
-        #    writer.print   "RogueType_local_pointer_stack_add( &Type"
-        #    writer.print   v.type.c_name
-        #    writer.print   ", &"
-        #    writer.print   v.c_name
-        #    writer.println " );"
-        #  endIf
-        #endForEach
         writer.println
       endIf
 
@@ -981,18 +970,20 @@ class CGenerator : Visitor
         else                    writer.print "0"
       endIf
 
-      if (v.type.is_reference)
-        writer.println ';'
-        writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
-        writer.print   v.c_name
-        writer.print   " )"
-      elseIf (v.type.contains_reference)
-        writer.println ';'
-        writer.print   "RogueType_local_pointer_stack_add( &Type"
-        writer.print   v.type.c_name
-        writer.print   ", &"
-        writer.print   v.c_name
-        writer.print   " )"
+      if (Program.gc_auto)
+        if (v.type.is_reference)
+          writer.println ';'
+          writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+          writer.print   v.c_name
+          writer.print   " )"
+        elseIf (v.type.contains_reference)
+          writer.println ';'
+          writer.print   "RogueType_local_pointer_stack_add( &Type"
+          writer.print   v.type.c_name
+          writer.print   ", &"
+          writer.print   v.c_name
+          writer.print   " )"
+        endIf
       endIf
 
     method on_visit( cmd:LogicalAnd )

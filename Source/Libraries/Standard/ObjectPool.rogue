@@ -9,12 +9,17 @@ class ObjectPool<<$DataType>>
 
     method on_end_use( object:$DataType )
       # override with desired object cleanup
-      if ($DataType instanceOf ListType) object.clear
+      if local poolable = object->(as Poolable)
+        poolable.on_return_to_pool
+      endIf
+      available.add( object )
+endClass
+
+class Poolable [aspect]
+  METHODS
+    method on_return_to_pool
 endClass
 
 class StringPool : ObjectPool<<String>> [singleton]
-  METHODS
-    method on_end_use( builder:String )
-      available.add( builder.[clear] )
 endClass
 
