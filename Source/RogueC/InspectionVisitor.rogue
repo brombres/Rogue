@@ -926,4 +926,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.step_size)
       return result
 
+    method on_visit_children( cmd:New )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_expression)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
 endClass

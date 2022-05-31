@@ -915,6 +915,10 @@ class Resolver : Visitor
       endIf
       return cmd
 
+    method on( cmd:New )->Cmd
+      local context = visit( cmd.type_expression )
+      return visit( TypeAccess(cmd.t, context.require_type, cmd.args) )
+
     method on( cmd:NextIteration )->Cmd
       forEach (control_structure in control_stack step -1)
         local iterator = control_structure->(as Iterator)

@@ -4241,3 +4241,21 @@ class NextIteration : Cmd
     method description->String
       return "NextIteration"
 endClass
+
+class New : Cmd
+  PROPERTIES
+    type_expression : Cmd
+    args            : Args
+
+  METHODS
+    method init( t, type_expression, args )
+
+    method init( existing:New )
+      prior.init( existing )
+      if (existing.type_expression) type_expression = existing.type_expression.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "New($,$)" (%type_expression,%args)
+
+endClass

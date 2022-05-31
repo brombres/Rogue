@@ -84,6 +84,7 @@ KEYWORD_NATIVE          native
 KEYWORD_NATIVE_HEADER   nativeHeader
 KEYWORD_NATIVE_CODE     nativeCode
 KEYWORD_NECESSARY       necessary
+KEYWORD_NEW             new
 KEYWORD_NEXT_ITERATION  nextIteration
 KEYWORD_NO_ACTION       noAction
 KEYWORD_NOT             not
@@ -2490,6 +2491,8 @@ parser
     optional_args
     produce TypeAccess(of_type:Type,args)
   endOn
+
+  on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
 
   on "isCompound"  '(' expression ')' -> IsCompound(operand)
   on "isPrimitive" '(' expression ')' -> IsPrimitive(operand)
