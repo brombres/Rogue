@@ -39,6 +39,7 @@ class Attribute
     MUTATING           = (Int64(1):<<:34)
     ANONYMOUS_TUPLE    = (Int64(1):<<:35)
     TUPLE              = (Int64(1):<<:36)
+    DIRECT_AUTO_STORE  = (Int64(1):<<:37)
 endClass
 
 class Attributes : CmdList
@@ -79,6 +80,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_mutating,          Attribute.MUTATING )
   ROGUE_ATTRIBUTE( is_anonymous_tuple,   Attribute.ANONYMOUS_TUPLE )
   ROGUE_ATTRIBUTE( is_tuple,             Attribute.TUPLE )
+  ROGUE_ATTRIBUTE( is_direct_auto_store, Attribute.DIRECT_AUTO_STORE )
 
   PROPERTIES
     flags : Int64

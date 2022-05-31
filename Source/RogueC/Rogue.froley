@@ -700,12 +700,21 @@ parser
 
 - procedure_parameter
   consume_eols
-  #on IDENTIFIER optional_initial_value optional_type -> Local(name=content,initial_value,type:Type)
-  on '&' identifier optional_initial_value optional_type -> Local(name:String,initial_value,type:Type,default_parameter="true":Logical)
-  identifier
-  optional_initial_value
-  optional_type
-  produce Local(name:String,initial_value,type:Type)
+  on '&' identifier optional_initial_value optional_type -> Local(name:String,initial_value,type:Type,attribute="default":String)
+  on '@'
+    identifier
+    optional_initial_value
+    if (nextIs(':')) syntaxError "Direct @property-set parameter cannot specify a type."
+    createNull # type
+    produce Local(name:String,initial_value,type:Type,attribute="direct-auto-store":String)
+  endOn
+  onPeek IDENTIFIER
+    identifier
+    optional_initial_value
+    optional_type
+    produce Local(name:String,initial_value,type:Type)
+  endOn
+  identifier  # error
 
 - optional_initial_value
   if (consume('=')) consume_eols; expression

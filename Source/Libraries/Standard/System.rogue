@@ -2,6 +2,9 @@ class System [essential]
   NATIVE
     nativeHeader @|#include <sys/time.h>
 
+  DEFINITIONS
+    env = SystemEnvironment
+
 #{
   GLOBAL PROPERTIES
     command_line_arguments = String[]
@@ -199,8 +202,8 @@ class System [essential]
               |#endif
 endClass
 
-#{
 class SystemEnvironment [singleton]
+  #{
   PROPERTIES
     definitions : StringTable<<String>>
     names       : String[]
@@ -255,6 +258,5 @@ class SystemEnvironment [singleton]
 
         native @|unsetenv( (char*)$name->utf8 );
       endIf
+      }#
 endClass
-}#
-

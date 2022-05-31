@@ -2464,8 +2464,13 @@ augment
         if (resolver.this_type)
           local args = Args( t, new_value )
           local m = resolver.find_procedure( t, resolver.this_type, null, "set_"+name, args, &suppress_error )
-          if (m and not m.attributes.is_fallback)
-            return resolver.resolve_access( t, null, m.name, args )
+          if (m)
+            if (not m.attributes.is_fallback)
+              if (m is resolver.this_procedure)
+                throw t.error( "Recursive call to setter. Either write '@$ = value' instead or explicitly call 'set_$(value)' if the recursion was intentional."(name,name) )
+              endIf
+              return resolver.resolve_access( t, null, m.name, args )
+            endIf
           endIf
 
           if (resolver.this_procedure.is_method)
@@ -2538,15 +2543,17 @@ augment
 
         local args = Args( t, new_value )
         local m = resolver.find_procedure( t, context_type, context, "set_"+name, args, &suppress_error )
-        if (m and not m.attributes.is_fallback)
-          return resolver.resolve_access( t, context, "set_"+name, args )
+        if (m)
+          if (not m.attributes.is_fallback)
+            return resolver.resolve_access( t, context, m.name, args )
+          endIf
         endIf
 
         local p = context_type.properties[ name ]
         if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
 
         if (m)
-          return resolver.resolve_access( t, context, "set_"+name, args )
+          return resolver.resolve_access( t, context, m.name, args )
         endIf
 
         p = context_type.global_properties[ name ]

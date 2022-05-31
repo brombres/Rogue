@@ -651,10 +651,15 @@ class Local : Cmd
       ensure attributes(t)
       attributes.is_anchored = true  # always true
 
-    method init( t, name, initial_value, type, &default_parameter )
+    method init( t, name, initial_value, type, attribute=null:String )
       original_name = name
       ensure attributes(t)
-      attributes.is_default_parameter = default_parameter
+      if (attribute)
+        which (attribute)
+          case "default":           attributes.is_default_parameter = true
+          case "direct-auto-store": attributes.is_direct_auto_store = true
+        endWhich
+      endIf
       attributes.is_anchored = true  # always true
 
     method init( existing:Local )

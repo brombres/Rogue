@@ -220,7 +220,11 @@ class Procedure : Cmd
                   if (prop)
                     p.name = "_auto_store_" + p.name
                     p.type = prop.type
-                    statements.insert( Assign(p.t,Access(p.t,prop.name),Access(p.t,p.name)) )
+                    if (p.attributes.is_direct_auto_store)
+                      statements.insert( SetThisProperty(p.t,prop,Access(p.t,p.name)) )
+                    else
+                      statements.insert( Assign(p.t,Access(p.t,prop.name),Access(p.t,p.name)) )
+                    endIf
                   else
                     throw p.t.error( "No corresponding property for auto-store parameter '$'."(p.name) )
                   endIf
