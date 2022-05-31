@@ -619,5 +619,13 @@ class Visitor
       cmd.limit = visit(cmd.limit)
       cmd.step_size = visit(cmd.step_size)
 
+    method on_visit_children( cmd:New )
+      cmd.type_expression = visit(cmd.type_expression)
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:Ensure )
+      cmd.expression = visit(cmd.expression)
+      cmd.args = visit(cmd.args)->(as Args)
+
 endClass
 

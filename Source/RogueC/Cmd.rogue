@@ -4259,3 +4259,21 @@ class New : Cmd
       return "New($,$)" (%type_expression,%args)
 
 endClass
+
+class Ensure : Cmd
+  PROPERTIES
+    expression : Cmd
+    args       : Args
+
+  METHODS
+    method init( t, expression, args )
+
+    method init( existing:Ensure )
+      prior.init( existing )
+      if (existing.expression) expression = existing.expression.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "Ensure($,$)" (%expression,%args)
+
+endClass

@@ -388,6 +388,15 @@ class Resolver : Visitor
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
 
+    method on( cmd:Ensure )->Cmd
+      local t = cmd.expression.t
+      return visit(
+        If( t, LogicalNot(t,cmd.expression.cloned),
+          Statements( t, Assign(t,cmd.expression.cloned,New(t,cmd.expression,cmd.args)) ),
+          null
+        )
+      )
+
     method on( cmd:EnumValue )->Cmd
       local def = visit(cmd.of_type.definitions[cmd.name])->(as CreateCompound)
       assert def and def.args and def.args.count
