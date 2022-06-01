@@ -1064,11 +1064,24 @@ class Resolver : Visitor
       endIf
 
       # Assume templated method call
-      local name = cmd.type_args->String( cmd.name )
+      local name   = cmd.type_args->String( cmd.name )
+      local t_name : String
 
-      # Global Method Template?
+      # Routine template
+      local type_Routine = cmd.module_context.must_find_type( cmd.t, "Routine" )
+      if (type_Routine is not cmd.type_context)
+        if (not type_Routine.global_method_template_instances.contains(name))
+          if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_Routine.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_Routine )
+          endIf
+        endIf
+      endIf
+
+      # Global Method Template
       if (not cmd.type_context.global_method_template_instances.contains(name))
-        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+        if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
         local templates = cmd.type_context.global_method_templates[ t_name ]
         if (templates)
           (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
@@ -1077,7 +1090,7 @@ class Resolver : Visitor
 
       # Object Method Template
       if (not cmd.type_context.method_template_instances.contains(name))
-        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+        if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
         local templates = cmd.type_context.method_templates[ t_name ]
         if (templates)
           (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
@@ -1395,7 +1408,7 @@ class Resolver : Visitor
         endIf
 
         if (not is_global)
-          if (type_context and not args)
+          if (type_context)
             local p = type_context.properties[ name ]
             if (p)
               if (args)
@@ -1691,6 +1704,12 @@ class Resolver : Visitor
           type_context.collect_methods( "init", Candidates.list )
         else
           type_context.collect_methods( name, Candidates.list, &=require_global )
+          if (not context)
+            local type_Routine = type_context.module_context.must_find_type( t, "Routine" )
+            if (type_context is not type_Routine)
+              type_Routine.collect_methods( name, Candidates.list, &require_global )
+            endIf
+          endIf
         endIf
 
         return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global, &=suppress_error )

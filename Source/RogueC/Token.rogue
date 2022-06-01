@@ -13,6 +13,9 @@ class Token( type:TokenType, filepath=null:String, source=null:String,
     method error( message:String )->CompileError
       return CompileError( message, filepath, source, line, column )
 
+    method source_position->String
+      return ''[$:$]''(File.filename(filepath),line)
+
     method to->String
       if (type == TokenType.EOL) return "EOL"
       if (content) return content

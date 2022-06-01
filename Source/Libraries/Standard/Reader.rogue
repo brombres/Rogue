@@ -46,7 +46,7 @@ class Reader<<$DataType>> [abstract aspect]
       forEach (1..n) read
 
     method to->$DataType[]
-      local result = $DataType[]()
+      local result = $DataType[]
       result.add( forEach in this )
       return result
 endClass

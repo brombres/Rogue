@@ -890,7 +890,8 @@ parser
         create Type(core_type:Type,optional="true":Logical)
       endOn
     endWhile
-    return
+    createNull
+    produce TypeAccess(of_type:Type,args)
   endIf
 
   access_args
