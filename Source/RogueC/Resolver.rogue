@@ -135,6 +135,22 @@ class Resolver : Visitor
       endIf
       return cmd
 
+    method on( cmd:Assert )->Cmd
+      if (not Program.debug_mode) return null
+      local t = cmd.expression.t
+      use builder = StringBuilder.pool
+        builder.print "Assertion failed: "
+        builder.print( forEach in cmd.token_list.tokens )
+        return visit(
+          If( t, LogicalNot(t,cmd.expression),
+            Statements( t,
+              Throw( t, Access(t, "AssertionError", Args(t,LiteralString(t,builder->String)) ) )
+            ),
+            null
+          )
+        )
+      endUse
+
     method on( cmd:AccessAndAssign )->Cmd
       local context = AccessAndAssignPatcher.find_context(cmd)
 

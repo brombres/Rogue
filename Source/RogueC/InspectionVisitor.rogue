@@ -940,4 +940,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:Assert )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.token_list)
+      return result
+
 endClass

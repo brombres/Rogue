@@ -4277,3 +4277,21 @@ class Ensure : Cmd
       return "Ensure($,$)" (%expression,%args)
 
 endClass
+
+class Assert : Cmd
+  PROPERTIES
+    expression : Cmd
+    token_list : TokenList
+
+  METHODS
+    method init( t, expression, token_list )
+
+    method init( existing:Assert )
+      prior.init( existing )
+      if (existing.expression) expression = existing.expression.cloned
+      if (existing.token_list) token_list = existing.token_list.cloned
+
+    method description->String
+      return "Assert($,$)" (%expression,%token_list)
+
+endClass

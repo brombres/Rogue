@@ -22,6 +22,7 @@ tokens Keywords
 ----------------------------------------------------------------------
 KEYWORD_AND               and
 KEYWORD_AS                as
+KEYWORD_ASSERT            assert
 KEYWORD_AUGMENT           augment        [structural]
 KEYWORD_BLOCK             block
 KEYWORD_CASE              case           [structural]
@@ -1772,6 +1773,12 @@ parser
   expression
 
 - statement
+  on "assert"
+    savePosition
+    expression
+    createTokenList
+    produce Assert(expression,token_list:TokenList)
+  endOn
   on "ensure" "<<" expression ">>" args -> Ensure(expression,args:Args)
   on "escapeBlock"                -> EscapeBlock:Escape
   on "escapeContingent"           -> EscapeContingent:Escape

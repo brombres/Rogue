@@ -26,6 +26,8 @@ endClass
 
 class Error : Exception;
 
+class AssertionError : Exception;
+
 class IOError : Error;
 
 class UnsupportedOperationError : Error
