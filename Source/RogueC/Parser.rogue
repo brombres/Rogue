@@ -181,6 +181,9 @@ class Parser : ParserCore
       endForEach
       history.remove_last
 
+    method discard_last
+      if (_cmd_stack.count) _cmd_stack.remove_last
+
     method insert_definition
       local def = Program.definitions[ _cur_t->String ]
       if (def)

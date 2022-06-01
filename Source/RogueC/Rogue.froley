@@ -864,15 +864,30 @@ parser
 - function_type_args
   beginList
     if (consume('(') and not consume(')'))
-      type
-      if (nextIs(':')) syntaxError "Function type specifications must omit parameter names."
+      function_type_parameter
       while (consume(','))
-        type
-        if (nextIs(':')) syntaxError "Function type specifications must omit parameter names."
+        function_type_parameter
       endWhile
       mustConsume ')'
     endIf
   produceList TypeList
+
+- function_type_parameter
+  if (nextIs(IDENTIFIER))
+    savePosition
+    identifier
+    if (consume(':'))
+      # name:Type parameter - name is discarded
+      discardPosition
+      call discard_last  # discard identifier
+      type
+      return
+    endIf
+    restorePosition
+  endIf
+
+  # Type only
+  type
 
 - function_return_type
   on "->" type: return
@@ -2411,10 +2426,9 @@ parser
     savePosition
     on '('
       on "Function"
-        restorePosition
-        type
-        optional_args
-        produce TypeAccess(of_type:Type,args)
+        restorePosition  # back to '(Function...'
+        type             # parse '(Function(...)->...)'
+        produce TypeAccess(of_type:Type)
       endOn
     endOn
     restorePosition
@@ -2444,16 +2458,17 @@ parser
           return
         endIf
       endIf
+      restorePosition
 
-      if (consume(','))
-        restorePosition
-        anonymous_tuple
+      savePosition
+      anonymous_tuple
+      if (not nextIs("=>"))
+        discardPosition  # confirmed anonymous_tuple
         return
       endIf
-
+      restorePosition
 
       # Generic function
-      restorePosition
       beginList
         identifier
         while (consume(","))
