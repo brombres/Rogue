@@ -218,7 +218,7 @@ class CWriter : BufferedPrintWriter
            |
            |void  Rogue_print_exception(void);
            |
-           |void  Rogue_call_stack_push( const char* procedure, const char* filename );
+           |void  Rogue_call_stack_push( const char* procedure, const char* filename, int line );
            |void  Rogue_call_stack_pop(void);
            |void  RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer );
            |void  RogueObjectList_add( RogueObjectList* list, void* obj );
@@ -355,9 +355,10 @@ class CWriter : BufferedPrintWriter
            |  RogueException__display__RogueException( (RogueException*)Rogue_exception );
            |}
            |
-           |void Rogue_call_stack_push( const char* procedure, const char* filename )
+           |void Rogue_call_stack_push( const char* procedure, const char* filename, int line )
            |{
            |  if (Rogue_call_stack_count) Rogue_call_stack[ Rogue_call_stack_count-1 ].line = Rogue_call_stack_line;
+           |  Rogue_call_stack_line = line;
            |
            |  if (Rogue_call_stack_count == Rogue_call_stack_capacity)
            |  {
@@ -374,14 +375,14 @@ class CWriter : BufferedPrintWriter
            |    Rogue_call_stack_capacity = required_capacity;
            |  }
            |
-           |  Rogue_call_stack[ Rogue_call_stack_count++ ] = (RogueCallFrame){ procedure, filename };
+           |  Rogue_call_stack[ Rogue_call_stack_count++ ] = (RogueCallFrame){ procedure, filename, line };
            |}
            |
            |void Rogue_call_stack_pop(void)
            |{
            |  if (--Rogue_call_stack_count)
            |  {
-           |    Rogue_call_stack_line = Rogue_call_stack[ Rogue_call_stack_count-1 ].line;
+           |    Rogue_call_stack_line = Rogue_call_stack[ Rogue_call_stack_count ].line;
            |  }
            |}
            |

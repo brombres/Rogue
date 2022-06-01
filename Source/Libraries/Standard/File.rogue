@@ -291,9 +291,8 @@ class File( filepath:String ) [compound]
 
     method exists( filepath:String )->Logical
       filepath = expand_path( filepath )
-      native @|if ( !$filepath ) return false;
-              |
-              |struct stat s;
+      if (not filepath) return false
+      native @|struct stat s;
               |return (stat((char*)$filepath->utf8, &s) == 0);
       }#
 
@@ -351,10 +350,9 @@ class File( filepath:String ) [compound]
 
     method is_folder( filepath:String )->Logical [essential]
       filepath = expand_path( filepath )
+      if (not filepath) return false
 
-      native @|if ( !$filepath ) return false;
-              |
-              |#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
               |  struct stat s;
               |  if (stat((char*)$filepath->utf8, &s) != 0) return false;
               |  return (s.st_mode & S_IFMT) == S_IFDIR;
@@ -839,9 +837,8 @@ class File( filepath:String ) [compound]
 
     method size( filepath:String )->Int64
       filepath = expand_path( filepath )
-      native @|if ( !$filepath ) return 0;
-              |
-              |FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
+      if (not filepath) return 0
+      native @|FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !fp ) return 0;
               |
               |fseek( fp, 0, SEEK_END );

@@ -204,9 +204,9 @@ class List<<$DataType>> : Poolable ListType
 
     method get( index:Int32 )->$DataType
       if ($DataType isType Logical)
-        native @|return $this->as_logicals[$index];
+        return native("$this->as_logicals[$index]")->$DataType
       else
-        native @|return (($<<element_type>>*)($this->data))[$index];
+        return native("(($<<element_type>>*)($this->data))[$index]")->$DataType
       endIf
 
     method get( query:(Function($DataType)->Logical) )->$DataType[]

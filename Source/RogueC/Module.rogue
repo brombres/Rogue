@@ -204,7 +204,8 @@ class Module
       local type_Routine = Type( t, Program.default_module, "Routine" )
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (not r)
-        r = GlobalMethod( t, type_Routine, "on_launch" )
+        local launch_t = which{ global_statements.count:global_statements.first.t || t }
+        r = GlobalMethod( launch_t, type_Routine, "on_launch" )
         r.statements.add( forEach in global_statements )
         r.organize
         type_Routine.global_methods[ r.signature ] = r

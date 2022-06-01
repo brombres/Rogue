@@ -577,6 +577,7 @@ class CGenerator : Visitor
       writer.indent += 2
 
       if (Program.stack_trace)
+        cur_line = this_procedure.t.line
         writer.print ''Rogue_call_stack_push( "''
         if (this_procedure.type_context)
           writer.print this_procedure.type_context
@@ -585,8 +586,9 @@ class CGenerator : Visitor
         writer.print this_procedure.signature
         writer.print ''", "''
         writer.print File.filename(this_procedure.t.filepath)
-        writer.println ''" );''
-        cur_line = -1
+        writer.print   ''", ''
+        writer.print   cur_line
+        writer.println '' );''
       endIf
 
       if (this_procedure.return_type and this_procedure.attributes.has_return and
@@ -1105,8 +1107,7 @@ class CGenerator : Visitor
       return cmd
 
     method on_visit( cmd:PushStackTraceCutoff )
-      writer.println ''Rogue_call_stack_push( "", "" );''   # create dummy frame for stack trace cutoff
-      writer.println "Rogue_call_stack_line = -1;"
+      writer.println ''Rogue_call_stack_push( "", "", -1 );''   # create dummy frame for stack trace cutoff
 
     method on_visit( cmd:Return )
       if (cmd.result and cmd.result.can_trigger_gc)
@@ -1175,7 +1176,7 @@ class CGenerator : Visitor
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
         if (Program.stack_trace)
-          if (cur_line != statement.t.line)
+          if (statement.t.line != cur_line)
             cur_line = statement.t.line
             writer.print( "Rogue_call_stack_line = " ).print( cur_line ).println(";")
           endIf
