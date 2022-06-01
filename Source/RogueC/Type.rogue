@@ -87,6 +87,9 @@ class Type : Cmd
     method create( t:Token, element_type:Type )->Type
       # Creates an ElementType[] / List<<ElementType>>
       local name = element_type.name + "[]"
+      if (name.ends_with("[][][][][][][][][]"))
+        throw t.error( "Rogue does not support list types with more than 8 dimensions. Possible infinite template generation. For example, if type $DataType[] directly or indirectly uses type $DataType[][], then type Int32[][] will use type Int32[][][] and so on." )
+      endIf
       local type = Program.current_module.find_type( t, name, &extended_search )
       if (type) return type
 

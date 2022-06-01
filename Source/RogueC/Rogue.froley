@@ -891,7 +891,7 @@ parser
         create Type(core_type:Type,optional="true":Logical)
       endOn
     endWhile
-    createNull
+    access_args
     produce TypeAccess(of_type:Type,args)
   endIf
 
@@ -2353,6 +2353,7 @@ parser
     pathed_name
     produce DirectAccess( name:String )
   endOn
+
   onPeek @"operator"
     procedure_name
     access_args
@@ -2553,7 +2554,7 @@ parser
   elseOnOthers
     createNull
   endOn
-  mustConsume '=>'
+  mustConsume "=>"
   single_line_statements
   produce GenericFunctionDefinition(parameters:IDList,with_values:WithValues,statements)
 
