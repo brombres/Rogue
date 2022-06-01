@@ -23,6 +23,7 @@ $include Standard/StackTrace
 $include Standard/String
 $include Standard/StringEncoding
 $include Standard/System
+$include Standard/Table
 $include Standard/WorkList
 $include Standard/Writer
 
