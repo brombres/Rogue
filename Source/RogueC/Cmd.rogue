@@ -4319,3 +4319,48 @@ class TypedLiteralList : Cmd
       return "TypedLiteralList($,$)" (%of_type,%list)
 
 endClass
+
+class LiteralTable : CmdList
+  METHODS
+    method description->String
+      return "LiteralTable" + list_description
+
+    method get( index:Int32 )->LiteralTableEntry
+      return list[index]->(as LiteralTableEntry)
+endClass
+
+class LiteralTableEntry : Cmd
+  PROPERTIES
+    key   : Cmd
+    value : Cmd
+
+  METHODS
+    method init( t, key, value )
+
+    method init( existing:LiteralTableEntry )
+      prior.init( existing )
+      if (existing.key) key = existing.key.cloned
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "LiteralTableEntry($,$)" (%key,%value)
+
+endClass
+
+class TypedLiteralTable : Cmd
+  PROPERTIES
+    of_type : Type
+    table   : LiteralTable
+
+  METHODS
+    method init( t, of_type, table )
+
+    method init( existing:TypedLiteralTable )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      if (existing.table) table = existing.table.cloned
+
+    method description->String
+      return "TypedLiteralTable($,$)" (%of_type,%table)
+
+endClass

@@ -954,4 +954,18 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.list)
       return result
 
+    method on_visit_children( cmd:LiteralTableEntry )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.key)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:TypedLiteralTable )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.table)
+      return result
+
 endClass

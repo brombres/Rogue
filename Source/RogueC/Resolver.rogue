@@ -759,7 +759,10 @@ class Resolver : Visitor
       return cmd
 
     method on( cmd:LiteralList )->Cmd
-      if (cmd.count == 0) throw cmd.t.error( "[INTERNAL] TODO: Empty LiteralList -> ValueList" )
+      if (cmd.count == 0)
+        throw cmd.t.error( "Cannot determine type of empty literal list. Write e.g. 'Int32[]' "...
+                           "for an empty Int32 list or '@[]' for an empty Value list." )
+      endIf
 
       visit_children( cmd )
 
@@ -774,10 +777,37 @@ class Resolver : Visitor
 
       local build_list = CmdList( t )
       forEach (arg in cmd)
-        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(t,arg) ) )
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
       endForEach
 
       return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt32(t,cmd.count))), build_list) )
+
+    method on( cmd:LiteralTable )->Cmd
+      if (cmd.count == 0)
+        throw cmd.t.error( "Cannot determine type of empty literal table. Write e.g. '[String:Int32]' "...
+                           "for an empty table of String-to-Int32 mappings or '@{}' for an empty Value table." )
+      endIf
+
+      visit_children( cmd )
+
+      local t = cmd.t
+      local common_key_type : Type
+      local common_value_type : Type
+      forEach (arg at i in cmd)
+        local key_type = arg.key.require_type
+        local value_type = arg.value.require_type
+        common_key_type = which{ common_key_type:Cmd.common_type(t,common_key_type,key_type) || key_type }
+        common_value_type = which{ common_value_type:Cmd.common_type(t,common_value_type,value_type) || value_type }
+      endForEach
+
+      local table_type = Type( t, common_key_type, common_value_type )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "set", Args(arg.t,arg.key,arg.value) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,table_type,Args(t)), build_list) )
 
     method on( cmd:LocalDeclarations )->Cmd
       if (cmd.@type)
@@ -1227,11 +1257,20 @@ class Resolver : Visitor
 
       local build_list = CmdList( t )
       forEach (arg in cmd.list)
-        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(t,arg) ) )
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
       endForEach
 
       return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt32(t,cmd.list.count))), build_list) )
 
+    method on( cmd:TypedLiteralTable )->Cmd
+      local t = cmd.table.t
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.table)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "set", Args(arg.t,arg.key,arg.value) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t)), build_list) )
 
     method on_validate( cmd:Unary )->Cmd
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
@@ -1589,7 +1628,7 @@ class Resolver : Visitor
           if (type.attributes.is_singleton)
             return GetSingleton(t,type)
           else
-            if (type.name.ends_with(']'))
+            if (type.name.ends_with(']') or type.name.begins_with('['))  # List or Table (Int32[], [String:Int32])
               return resolve_access( t, null, type.name, Args(t) )
             else
               return TypeContext(t,type)

@@ -2511,10 +2511,23 @@ parser
     if (nextIs(':'))
       restorePosition
       type  # [Key:Value] table
+      if (nextIs('{'))
+        literal_table
+        create TypedLiteralTable( of_type:Type, table:LiteralTable )
+      else
+        access_args
+        create TypeAccess( of_type:Type, args )
+      endIf
+      return
     else
       restorePosition
       literal_list
+      return
     endIf
+  endOn
+
+  onPeek '{'
+    literal_table
     return
   endOn
 
@@ -2660,6 +2673,34 @@ parser
   # a Type is on the stack
   literal_list
   produce TypedLiteralList(of_type:Type,list)
+
+- literal_table
+  on '{'
+    beginList
+    consume_eols
+    if (consume('}')) produceList LiteralTable
+    literal_table_entry
+    consume_eols
+    while (not nextIs('}'))
+      if (consume(',')) consume_eols
+      literal_table_entry
+      consume_eols
+    endWhile
+    mustConsume( '}' )
+    produceList LiteralTable
+  endOn
+
+- literal_table_entry
+  on IDENTIFIER
+    create LiteralString(value=content):Literal
+  elseOnOthers
+    expression
+  endOn
+
+  mustConsume ':'
+
+  expression
+  produce LiteralTableEntry(key,value)
 
 - preprocess
   while (hasAnother)

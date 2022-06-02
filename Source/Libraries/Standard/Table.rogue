@@ -24,12 +24,12 @@ class Table<<$KeyType,$ValueType>>
 
       bins = Dim<<TableEntry<<$KeyType,$ValueType>>>>( bin_count )
 
-    method init( other:Table<<$KeyType,$ValueType>> )
+    method init( other:[$KeyType:$ValueType] )
       bin_mask = other.bin_mask
       if (not bins) bins = Dim<<TableEntry<<$KeyType,$ValueType>>>>( other.bins.count )
       add( other )
 
-    method add( other:Table<<$KeyType,$ValueType>> )
+    method add( other:[$KeyType:$ValueType] )
       local cur = other.first_entry
       while (cur)
         this[ cur.key ] = cur.value
@@ -50,8 +50,8 @@ class Table<<$KeyType,$ValueType>>
       cur_entry = null
       count = 0
 
-    method cloned->Table<<$KeyType,$ValueType>>
-      return Table<<$KeyType,$ValueType>>( this )
+    method cloned->[$KeyType:$ValueType]
+      return [$KeyType:$ValueType]( this )
 
     method contains( key:$KeyType )->Logical
       return find(key)?
@@ -170,7 +170,7 @@ class Table<<$KeyType,$ValueType>>
       endWhile
       return result
 
-    method operator==( other:Table<<$KeyType,$ValueType>> )->Logical
+    method operator==( other:[$KeyType:$ValueType] )->Logical
       if (count != other.count) return false
 
       local cur = first_entry
@@ -307,7 +307,7 @@ class Table<<$KeyType,$ValueType>>
       last_entry.next_entry = null
 
     method sorted( compare_fn:(Function(TableEntry<<$KeyType,$ValueType>>,TableEntry<<$KeyType,$ValueType>>)->Logical) ) ...
-        ->Table<<$KeyType,$ValueType>>
+        ->[$KeyType:$ValueType]
       return cloned.[ sort(compare_fn) ]
 
     method to->String
