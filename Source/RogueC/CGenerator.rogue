@@ -1898,8 +1898,18 @@ augment
                         |{
       c_writer.indent += 2
       Program.generate_c_string_literals( c_writer )
+
       (forEach in modules).generate_c_class_initialization( c_writer )
       c_writer.println
+
+      c_writer.println @|int i;
+                        |for (i=1; i<Rogue_argc; ++i)
+                        |{
+                        |  RogueSystem___add_command_line_argument__RogueString(
+                        |    RogueString_create(Rogue_argv[i],-1,ROGUE_STRING_PERMANENT)
+                        |  );
+                        |}
+
       (forEach in modules).generate_c_launch_commands( c_writer )
       c_writer.println
       c_writer.println "return 1;"
@@ -1911,6 +1921,7 @@ augment
         c_writer.println
         c_writer.println @|int main( int argc, char* argv[] )
                           |{
+                          |  Rogue_configure( argc, argv );
                           |  Rogue_launch();
                           |  Rogue_quit();
                           |  return 0;

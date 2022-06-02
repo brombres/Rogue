@@ -1,24 +1,24 @@
 class System [essential]
   NATIVE
     nativeHeader @|#include <sys/time.h>
+                  |extern int    Rogue_argc;
+                  |extern char** Rogue_argv;
+                  |
+                  |#ifndef PATH_MAX
+                  |  #define PATH_MAX 4096
+                  |#endif
+
+    nativeCode   @|int    Rogue_argc = 0;
+                  |char** Rogue_argv = 0;
 
   DEFINITIONS
     env = SystemEnvironment
 
-#{
   GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
-}#
 
   GLOBAL METHODS
-#{
-    method env->SystemEnvironment
-      return SystemEnvironment
-
-    method environment->SystemEnvironment
-      return SystemEnvironment
-
     method executable_filepath->String
       if (@executable_filepath) return @executable_filepath
 
@@ -28,7 +28,7 @@ class System [essential]
               |  {
               |    strcpy( buffer, "rogue.exe" );
               |  }
-              |  RogueSystem_executable_filepath = RogueString_create_from_utf8( buffer, -1 );
+              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT );
               |
               |#elif defined(__APPLE__)
               |  char buffer[PATH_MAX];
@@ -39,7 +39,7 @@ class System [essential]
               |    raw_filepath[0] = 0;
               |  }
               |  realpath( raw_filepath, buffer );
-              |  RogueSystem_executable_filepath = RogueString_create_from_utf8( buffer, -1 );
+              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT );
               |
               |#else
               |  // Linux
@@ -51,17 +51,16 @@ class System [essential]
               |    strcpy( raw_filepath, "/proc/self/exe" );
               |  #endif
               |  if (0 == realpath( raw_filepath, buffer )) strcpy( buffer, "" );
-              |  RogueSystem_executable_filepath = RogueString_create_from_utf8( buffer, -1 );
+              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT );
               |#endif
 
       return @executable_filepath
 
     method exit( result_code=0:Int32 )
-      $if (target("C++"))
-        native @|Rogue_quit();
-                |exit( $result_code );
-      $endIf
+      native @|Rogue_quit();
+              |exit( $result_code );
 
+      #{
     method find_program( name:String )->String
       # Returns the executable filepath of the given program or else null.
       # Uses 'where' on Windows and 'which' on other platforms.
@@ -158,76 +157,76 @@ class System [essential]
               |$return_val = (RogueInt32) WEXITSTATUS($return_val);
               |#endif
       return return_val
+}#
 
-    method sleep( seconds:Real64 )
+    method sleep( seconds:Real )
       # Suspends execution of this program for the specified number of seconds.
-      local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
+      #local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
+      local s = Int32(seconds)
+      local ms = Int32((seconds*1000) % 1000)
 
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
-               local ms = (seconds * 1000)->Int32
-      native @|if ($do_exit) ROGUE_EXIT;
+              |//if (do_exit) ROGUE_EXIT;
               |Sleep( $ms );
-              |if ($do_exit) ROGUE_ENTER;
+              |//if (do_exit) ROGUE_ENTER;
               |#else
-               local nanoseconds = Int32( seconds.fractional_part * 1000000000.0 )
-               seconds = seconds.whole_part
-      native @|timespec sleep_time;
-              |sleep_time.tv_sec = (time_t) $seconds;
-              |sleep_time.tv_nsec = (long) $nanoseconds;
-              |if ($do_exit) ROGUE_EXIT;
+      native @|struct timespec sleep_time;
+              |sleep_time.tv_sec = (time_t) $s;
+              |sleep_time.tv_nsec = (long) ($ms * 1000000);
+              |//if (do_exit) ROGUE_EXIT;
               |nanosleep( &sleep_time, NULL );
-              |if ($do_exit) ROGUE_ENTER;
+              |//if (do_exit) ROGUE_ENTER;
               |#endif
 
     method sync_storage
       noAction
-}#
 
-    method time->Real64
+    method time->Real
+      local time_seconds_x1000 : Int64
+
       native @|#if defined(_WIN32)
               |  struct __timeb64 time_struct;
-              |  RogueReal64 time_seconds;
               |  _ftime64_s( &time_struct );
-              |  time_seconds = (RogueReal64) time_struct.time;
-              |  time_seconds += time_struct.millitm / 1000.0;
-              |  return time_seconds;
+              |  $time_seconds_x1000 = ((RogueInt64) time_struct.time) * 1000;
+              |  $time_seconds_x1000 += time_struct.millitm;
               |
               |#else
               |  struct timeval time_struct;
-              |  RogueReal64 time_seconds;
               |  gettimeofday( &time_struct, 0 );
-              |  time_seconds = (RogueReal64) time_struct.tv_sec;
-              |  time_seconds += (time_struct.tv_usec / 1000000.0);
-              |  return time_seconds;
+              |  $time_seconds_x1000 = ((RogueInt64) time_struct.tv_sec) * 1000;
+              |  $time_seconds_x1000 += (time_struct.tv_usec / 1000);
               |#endif
+
+      return time_seconds_x1000 / 1000.0
+
+    method _add_command_line_argument( arg:String ) [essential]
+      command_line_arguments.add( arg )
 endClass
 
 class SystemEnvironment [singleton]
-  #{
   PROPERTIES
-    definitions : StringTable<<String>>
+    definitions : [String:String]
     names       : String[]
 
-  METHODS
-    method get( index:Int32 )->String
-      return names[index]
+  NATIVE
+    nativeHeader @|extern char **environ;
 
+  METHODS
     method contains( name:String )->Logical
       return definitions.contains(name)
 
     method count->Int32
       return definitions.count
 
-    method definitions->StringTable<<String>>
+    method definitions->[String:String]
       if (@definitions) return @definitions
 
-      nativeHeader extern "C" char **environ;
 
-      @definitions = StringTable<<String>>()
+      @definitions = [String:String]
 
       native "char** env = environ;"
       while (native("*env")->Logical)
-        local parts = native("RogueString_create_from_utf8( *(env++) )")->String.split('=')
+        local parts = native("RogueString_create( *(env++), -1, ROGUE_STRING_COPY )")->String.split('=')
         local name  = parts.first
         local value = which{ parts.count==2:parts.last || "" }
         @definitions[name] = value
@@ -235,15 +234,14 @@ class SystemEnvironment [singleton]
 
       return @definitions
 
+    method get( index:Int32 )->String
+      return names[index]
+
     method get( name:String )->String
       return definitions[name]
 
-    method listing->String[]
-      return names
-
     method names->String[]
       if (@names) return @names
-
       @names = definitions.keys.to_list
       return @names
 
@@ -251,12 +249,11 @@ class SystemEnvironment [singleton]
       if (value and value.count)
         if (@definitions) @definitions[name] = value
         if (@names and not @names.contains(name)) @names.add( name )
-        native @|setenv( (char*)$name->utf8, (char*)$value->utf8, 1 );
+        native @|setenv( (char*)$name->utf8, (char*)$value->data->as_utf8, 1 );
       else
         if (@definitions) @definitions.remove( name )
         if (@names) @names.remove( name )
 
         native @|unsetenv( (char*)$name->utf8 );
       endIf
-      }#
 endClass

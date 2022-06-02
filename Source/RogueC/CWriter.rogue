@@ -203,6 +203,7 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
+           |void  Rogue_configure( int argc, char** argv );
            |int   Rogue_launch(void);
            |void  Rogue_collect_garbage(void);
            |void  Rogue_force_gc(void);
@@ -251,6 +252,12 @@ class CWriter : BufferedPrintWriter
           @|//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
+           |void  Rogue_configure( int argc, char** argv )
+           |{
+           |  Rogue_argc = argc;
+           |  Rogue_argv = argv;
+           |}
+           |
            |void* Rogue_create_object( void* _type )
            |{
            |  #ifdef ROGUE_GC_AUTO
