@@ -825,6 +825,16 @@ parser
       endIf
     endOn
 
+  elseOn '['
+    # [Key:Value] -> Table<<Key,Value>>
+    type
+    mustConsume ':'
+    type
+    mustConsume ']'
+    create Type(key_type:Type,value_type:Type)
+    list_or_optional_type
+    return
+
   elseOn "Function"
     function_type_args
     function_return_type
@@ -2494,7 +2504,19 @@ parser
     endOn
   endOn
 
-  onPeek '[' literal_list :    return
+  onPeek '['
+    savePosition
+    consume '['
+    expression
+    if (nextIs(':'))
+      restorePosition
+      type  # [Key:Value] table
+    else
+      restorePosition
+      literal_list
+    endIf
+    return
+  endOn
 
   on "[]"
     beginList
