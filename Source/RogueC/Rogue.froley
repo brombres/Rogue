@@ -16,6 +16,7 @@ STRING         string        [content]
 IDENTIFIER     identifier    [content]
 SYMBOL_DOLLAR  $
 PLACEHOLDER    $placeholder  [content]
+GENERIC_FN_ARG $arg          [content]
 
 ----------------------------------------------------------------------
 tokens Keywords
@@ -225,7 +226,8 @@ scanner
   endMatch
 
   if (scan('$'))
-    if (scan([_a-zA-Z0-9]*)) produce PLACEHOLDER
+    if (scan([_a-zA-Z][_a-zA-Z0-9]*)) produce PLACEHOLDER
+    if (scan([0-9]*)) produce GENERIC_FN_ARG
     produce SYMBOL_DOLLAR
   endIf
 
@@ -1767,6 +1769,11 @@ parser
   produceList
 
 - arg
+  call on_begin_arg # detect use of '$' and '$1' etc. generic fn args
+  arg_inner
+  call on_end_arg
+
+- arg_inner
   on '&'
     on '!'
       identifier
@@ -2505,6 +2512,14 @@ parser
   on "native"
     native_code
     return
+  endOn
+
+  on '$'
+    call on_generic_fn_arg
+    produce GenericFnArg  # token will contain necessary info
+  elseOn GENERIC_FN_ARG
+    call on_generic_fn_arg
+    produce GenericFnArg
   endOn
 
   on "ThisType"

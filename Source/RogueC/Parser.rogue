@@ -16,8 +16,11 @@ class Parser : ParserCore
     _attribute_no_include = false
     _attribute_essential  = false
 
-    augment_t            : Token
-    augment_context_name : String
+    augment_t             : Token
+    augment_context_name  : String
+
+    generic_fn_args_depth : Int32
+    generic_fn_args_used  : Int32
 
   METHODS
     method preprocess
@@ -290,6 +293,40 @@ class Parser : ParserCore
       processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
       if (not _attribute_no_include)
         Program.include( marked_token, filepath, &is_optional )
+      endIf
+
+    method on_begin_arg
+      ++generic_fn_args_depth
+
+    method on_generic_fn_arg
+      if (_cur_t.type == TokenType.SYMBOL_DOLLAR)
+        generic_fn_args_used |= 1
+      else
+        local n = _cur_t.content.rightmost(-1)->Int32
+        if (n == 0 or n > 5) throw _cur_t.error( "Only $1..$5 can be used as implicit function arguments." )
+        generic_fn_args_used |= (1:<<:n)
+      endIf
+      if ((generic_fn_args_used & !1) and (generic_fn_args_used & 1))
+        throw _cur_t.error( "Cannot mix single arg ('$') and multiple arg ('$N') implicit function argument syntax." )
+      endIf
+
+    method on_end_arg
+      --generic_fn_args_depth
+      if (generic_fn_args_used and not disable_output and generic_fn_args_depth == 0)
+        local arg = _cmd_stack.remove_last
+        local n = 0
+        if (generic_fn_args_used > 1)
+          local bits = generic_fn_args_used :>>>: 1
+          while (bits)
+            ++n
+            if (not (bits & 1))
+              throw arg.t.error( "Missing usage of implicit function argument $$. Multiple implicit function arguments must be contiguous and include $1." ('$',n,'$') )
+            endIf
+            bits = bits:>>>:1
+          endWhile
+        endIf
+        _cmd_stack.add( ImplicitFunctionGenerator.apply(arg,n) )
+        generic_fn_args_used = 0
       endIf
 
     method on_parsed_augment

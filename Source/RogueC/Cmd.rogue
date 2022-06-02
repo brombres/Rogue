@@ -4295,3 +4295,9 @@ class Assert : Cmd
       return "Assert($,$)" (%expression,%token_list)
 
 endClass
+
+class GenericFnArg : Cmd
+  METHODS
+    method description->String
+      return "GenericFnArg"
+endClass

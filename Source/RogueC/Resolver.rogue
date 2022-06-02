@@ -1757,7 +1757,17 @@ class Resolver : Visitor
         sig += '('
         forEach (arg at i in args)
           if (i > 0) sig += ','
-          sig += arg.require_type
+          if (arg instanceOf GenericFunctionDefinition)
+            local def = arg->(as GenericFunctionDefinition)
+            sig += "function("
+            forEach (param at j in def.parameters)
+              if (j > 0) sig += ','
+              sig += param->String
+            endForEach
+            sig += ')'
+          else
+            sig += arg.require_type
+          endIf
         endForEach
         sig += ')'
       endIf
