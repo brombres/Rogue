@@ -523,18 +523,16 @@ class Resolver : Visitor
       local context_type = context.require_type
       local index_type   = index.require_type
 
-      local cmd_call = resolve_access( cmd.t, context, "at", Args(cmd.t,index), &suppress_error )
-      if (cmd_call) return cmd_call
-
-      cmd_call = resolve_access( cmd.t, context, "get", Args(cmd.t,index), &suppress_error )
-      if (cmd_call) return cmd_call
-
       if (index_type is Program.type_Int32)
-        throw cmd.t.error( "Type $ has no indexed access method at(Int32) or get(Int32)."(context_type) )
-      else
-        throw cmd.t.error( "Type $ has no indexed access method at($|Int32) or get($|Int32)."...
-        (context_type,index_type,index_type) )
+        local cmd_call = resolve_access( cmd.t, context, "at", Args(cmd.t,index), &suppress_error )
+        if (cmd_call) return cmd_call
       endIf
+
+      local cmd_call = resolve_access( cmd.t, context, "get", Args(cmd.t,index), &suppress_error )
+      if (cmd_call) return cmd_call
+
+      throw cmd.t.error( "Type $ has no indexed access method at(Int32) or get($|Int32)."...
+        (context_type,index_type) )
 
     method on( cmd:If )->Cmd
       push_scope( cmd )

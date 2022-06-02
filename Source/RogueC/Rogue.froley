@@ -177,6 +177,7 @@ SYMBOL_RIGHT_SHIFT_X         :>>>:
 SYMBOL_RIGHT_SHIFT_X_EQUALS  :>>>:=
 SYMBOL_SEMICOLON             ;  [structural]
 SYMBOL_SLASH                 /
+SYMBOL_SLASH_SLASH           //
 SYMBOL_TILDE                 ~
 SYMBOL_VERTICAL_BAR          |
 
@@ -2330,6 +2331,14 @@ parser
   elseOn '['
     expression
     mustConsume(']')
+    create IndexedAccess(context,index)
+    access_inner
+  elseOn "//"
+    on IDENTIFIER
+      create LiteralString(value=content):Literal
+    elseOnOthers
+      identifier # throws an error
+    endOn
     create IndexedAccess(context,index)
     access_inner
   elseOn ".["
