@@ -1367,12 +1367,12 @@ parser
     expression
     if (consume(EOL))
       # Multi-line 'if'
-      multi_line_statements
+      scoped_multi_line_statements
       if_statement_multi_line_elseIf_else
       mustConsume 'endIf'
     else
       # Single-line 'if'
-      single_line_statements
+      scoped_single_line_statements
       if_statement_single_line_elseIf_else
     endIf
     produce If(condition,statements,cmd_else:If):Conditional
@@ -1385,7 +1385,7 @@ parser
     mustConsume "="
     expression
     must_consume_eols
-    multi_line_statements
+    scoped_multi_line_statements
     if_local_elseifs_or_else
     produce IfLocal( name:String, expression, statements, else_if:IfLocal )
 
@@ -1393,7 +1393,7 @@ parser
     must_consume_eols
     createNull  # name
     createNull  # expression
-    multi_line_statements
+    scoped_multi_line_statements
     createNull  # else_if
     produce IfLocal( name:String, expression, statements, else_if:IfLocal )
 
@@ -1408,7 +1408,7 @@ parser
     if (consume(EOL))
       # This elseIf is multi-line; good to keep going
       discardPosition
-      multi_line_statements
+      scoped_multi_line_statements
       if_statement_multi_line_elseIf_else
       produce If(condition,statements,cmd_else:If):Conditional
     else
@@ -1421,7 +1421,7 @@ parser
       # This else is multi-line; good to keep going
       discardPosition
       createNull
-      multi_line_statements
+      scoped_multi_line_statements
       createNull
       produce If(condition,statements,cmd_else:If):Conditional
     else
@@ -1445,7 +1445,7 @@ parser
     else
       # This elseIf is single line; keep going
       discardPosition
-      single_line_statements
+      scoped_single_line_statements
       if_statement_single_line_elseIf_else
       produce If(condition,statements,cmd_else:If):Conditional
     endIf
@@ -1458,7 +1458,7 @@ parser
       # This else is single line; keep going
       discardPosition
       createNull
-      single_line_statements
+      scoped_single_line_statements
       createNull
       produce If(condition,statements,cmd_else:If):Conditional
     endIf
@@ -1568,6 +1568,14 @@ parser
     endIf
   endOn
 
+- scoped_single_line_statements
+  single_line_statements
+  produce LocalScope(statements):ControlStructure
+
+- scoped_multi_line_statements
+  multi_line_statements
+  produce LocalScope(statements):ControlStructure
+
 - global_method_template_instance
   procedure_parameters
   procedure_return_type
@@ -1575,8 +1583,7 @@ parser
   consume(':')
   savePosition
 
-  multi_line_statements
-  create LocalScope(statements):ControlStructure
+  scoped_multi_line_statements
 
   create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
   return
@@ -1633,8 +1640,7 @@ parser
     procedure_return_type
     procedure_attributes
     consume(':')
-    multi_line_statements
-    create LocalScope(statements):ControlStructure
+    scoped_multi_line_statements
     produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
   endOn
 
@@ -2003,16 +2009,14 @@ parser
             endWhile
             if (not consume(':')) mustConsume EOL
           createList Args
-          multi_line_statements
-          create LocalScope(statements):ControlStructure
+          scoped_multi_line_statements
           create WhichCase(args,statements)
         endOn
       endWhile
     createList WhichCases
     on "others"
       if (not consume(':')) mustConsume EOL
-      multi_line_statements
-      create LocalScope(statements):ControlStructure
+      scoped_multi_line_statements
     elseOnOthers
       createNull
     endOn
