@@ -631,5 +631,9 @@ class Visitor
       cmd.expression = visit(cmd.expression)
       cmd.token_list = visit(cmd.token_list)->(as TokenList)
 
+    method on_visit_children( cmd:TypedLiteralList )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.list = visit(cmd.list)
+
 endClass
 

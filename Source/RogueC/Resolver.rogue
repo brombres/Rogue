@@ -1222,6 +1222,17 @@ class Resolver : Visitor
       result = visit( result )
       return result
 
+    method on( cmd:TypedLiteralList )->Cmd
+      local t = cmd.list.t
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.list)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(t,arg) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt32(t,cmd.list.count))), build_list) )
+
+
     method on_validate( cmd:Unary )->Cmd
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
 

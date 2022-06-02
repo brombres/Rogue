@@ -627,6 +627,9 @@ augment
     method TypeContext.type->Type
       return @type
 
+    method TypedLiteralList.type->Type
+      return of_type
+
     method Unary.type->Type
       return operand.type
 

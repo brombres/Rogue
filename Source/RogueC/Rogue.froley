@@ -908,8 +908,8 @@ parser
         create Type(core_type:Type,optional="true":Logical)
       endOn
     endWhile
-    access_args
-    produce TypeAccess(of_type:Type,args)
+    type_access_or_typed_literal_list
+    return
   endIf
 
   access_args
@@ -2384,6 +2384,7 @@ parser
     procedure_name
     access_args
     produce Access( name:String, args )
+
   elseOnPeek IDENTIFIER
     pathed_name
     if (nextIs("<<"))
@@ -2391,16 +2392,17 @@ parser
       return
     elseIf (nextIs("[]"))
       remaining_type
-      access_args
-      produce TypeAccess( of_type:Type, args )
+      type_access_or_typed_literal_list
+      return
     elseIf (nextIs('?'))
       on '?'
         if (nextIs('('))
           createNull
           create Type(name:String,type_args:TemplateArgs)
           create Type(core_type:Type,optional="true":Logical)
-          access_args
-          produce TypeAccess( of_type:Type, args )
+          remaining_type
+          type_access_or_typed_literal_list
+          return
         else
           createNull
           create Access( name:String, args )
@@ -2493,6 +2495,7 @@ parser
   endOn
 
   onPeek '[' literal_list :    return
+
   on "[]"
     beginList
     produceList LiteralList
@@ -2544,6 +2547,14 @@ parser
   on "isReference" '(' expression ')' -> IsReference(operand)
 
   syntaxError
+
+- type_access_or_typed_literal_list
+  if (nextIs('['))
+    remaining_typed_literal_list
+  else
+    access_args
+    produce TypeAccess( of_type:Type, args )
+  endIf
 
 - anonymous_tuple
   # (x,y,...)
@@ -2622,6 +2633,11 @@ parser
     mustConsume( ']' )
     produceList LiteralList
   endOn
+
+- remaining_typed_literal_list
+  # a Type is on the stack
+  literal_list
+  produce TypedLiteralList(of_type:Type,list)
 
 - preprocess
   while (hasAnother)

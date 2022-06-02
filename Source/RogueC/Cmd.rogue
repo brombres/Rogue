@@ -4301,3 +4301,21 @@ class GenericFnArg : Cmd
     method description->String
       return "GenericFnArg"
 endClass
+
+class TypedLiteralList : Cmd
+  PROPERTIES
+    of_type : Type
+    list    : Cmd
+
+  METHODS
+    method init( t, of_type, list )
+
+    method init( existing:TypedLiteralList )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+      if (existing.list) list = existing.list.cloned
+
+    method description->String
+      return "TypedLiteralList($,$)" (%of_type,%list)
+
+endClass
