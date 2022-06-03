@@ -17,6 +17,7 @@ $include Standard/ObjectPool
 $include Standard/Optional
 $include Standard/Primitives
 $include Standard/PrintWriter
+$include Standard/Process
 $include Standard/Quicksort
 $include Standard/Range
 $include Standard/Reader
