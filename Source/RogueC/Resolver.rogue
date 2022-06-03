@@ -2778,11 +2778,15 @@ augment
 
         local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-        if (down_to)
-          local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
-          resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+        if (cmd_collection.starting_index)
+          resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
-          resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          if (down_to)
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
+            resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+          else
+            resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          endIf
         endIf
 
         if (cmd_collection.step_size)
@@ -3003,11 +3007,15 @@ augment
 
         local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
         local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
-        if (down_to)
-          local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
-          resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+        if (cmd_collection.starting_index)
+          resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
         else
-          resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          if (down_to)
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
+            resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+          else
+            resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          endIf
         endIf
 
         if (cmd_collection.step_size)
@@ -3242,20 +3250,18 @@ augment
 
         local args_left_right = Args( t, cmd.left, cmd.right )
 
-        if (left_type.is_primitive)
-          right_type.organize
-          local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+        left_type.organize
+        right_type.organize
 
-        else
-          left_type.organize
-          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+        local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+        if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
-          local arg = Args( t, cmd.right )
-          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
-          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
-        endIf
+        m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
+        if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+        local arg = Args( t, cmd.right )
+        m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
+        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
 
         if (suppress_error) return null
 

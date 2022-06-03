@@ -168,6 +168,8 @@ class CSpecializer : Visitor
         endContingent
 
         return GetLocal(t,v)
+      else
+        visit_children( cmd )
       endIf
       return cmd
 
@@ -207,6 +209,8 @@ class CSpecializer : Visitor
         endContingent
 
         return GetLocal(t,v)
+      else
+        visit_children( cmd )
       endIf
       return cmd
 
