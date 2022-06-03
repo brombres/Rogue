@@ -13,6 +13,7 @@ class List<<$DataType>> : Poolable ListType
             |{
             |  void*           data;
             |  RogueObject**   as_objects;
+            |  RogueString**   as_strings;
             |  RogueReal64*    as_real64s;
             |  RogueReal32*    as_real32s;
             |  RogueInt64*     as_int64s;
