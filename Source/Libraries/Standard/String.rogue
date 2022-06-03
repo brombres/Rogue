@@ -63,7 +63,10 @@ class String : Poolable PrintWriter
               |{
               |  // Strings are same length
               |  result = memcmp( $a->data->as_utf8, $b->data->as_utf8, a_count );
-              |  if (result == 0) return 0;
+              |  if (result == 0)
+              |  {
+                   return 0
+      native @|  }
               |}
               |else
               |{
@@ -73,12 +76,12 @@ class String : Poolable PrintWriter
               |  if (result == 0)
               |  {
               |    // Equal so far - the shorter string comes before the longer one.
-              |    if (a_count == b_count) return 1;
-              |    return -1;
-              |  }
+                   if (native("a_count == b_count")->Logical) return 1
+                   return -1
+      native @|  }
               |}
-              |if (result < 0) return -1;
-              |else            return  1;
+               if (native("result < 0")->Logical) return -1
+               else                               return 1
 
     method operator+( left:String, right:Byte )->String
       if (left) return String().[ reserve(left.count+3), print(left), print(right) ]

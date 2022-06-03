@@ -1,6 +1,7 @@
 class File( filepath:String ) [compound]
   NATIVE
     nativeHeader @|#include <stdio.h>
+                  |#include <sys/stat.h>
 
   METHODS
     #{
@@ -288,32 +289,35 @@ class File( filepath:String ) [compound]
     method esc( filepath:String )->String
       # File.esc(filepath) is shorthand for File.shell_escaped(File.conventional_filepath(filepath))
       return File.shell_escaped( File.conventional_filepath(filepath) )
-
-    method exists( filepath:String )->Logical
-      filepath = expand_path( filepath )
-      if (not filepath) return false
-      native @|struct stat s;
-              |return (stat((char*)$filepath->utf8, &s) == 0);
       }#
+
+    method exists->Logical
+      local filepath = resolved.filepath
+      native @|struct stat s;
+      return native("(stat((char*)$filepath->data->as_utf8, &s) == 0)")->Logical
+
 
       #{
     method extension( filepath:String )->String
       return File.filename( filepath ).after_last( '.' )
+      }#
 
-    method filename( filepath:String )->String
-      filepath = expand_path( filepath )
+    method filename->File
+      local filepath = resolved.filepath
       local i = filepath.locate_last( '/' )
-      if (not i?) return filepath
-      return filepath.from( i.value+1 )
+      if (not i?) return this
+      return File( filepath.from(i.value+1) )
 
+      #{
     method fix_slashes( filepath:String )->String
       # Filepaths are always manipulated using forward slashes. Use .conventional_filepath() to
       # turn a file or filepath into a Windows-style version for display.
       if (System.is_windows) return filepath.replacing( '\\', '/' )
       else                   return filepath
+      }#
 
-    method folder( filepath:String )->String
-      filepath = expand_path( filepath )
+    method folder->File
+      local filepath = resolved.filepath
 
       # Replace multiple slashes with single slashes
       while (filepath.contains("//")) filepath = filepath.replacing( "//", "/" )
@@ -321,14 +325,15 @@ class File( filepath:String ) [compound]
       # Discard trailing slash
       if (filepath.ends_with('/')) filepath = filepath.leftmost( -1 )
 
-      if (filepath.count == 0) return ""
+      if (filepath.count == 0) return File("")
 
       local i1 = filepath.locate_last( '/' )
-      if (not i1?) return ""
-      if (i1.value == 0) return filepath.leftmost(1)  # /abc -> /
+      if (not i1?) return File("")
+      if (i1.value == 0) return File(filepath.leftmost(1))  # /abc -> /
 
-      return filepath.from( 0, i1.value-1 )
+      return File( filepath.from(0, i1.value-1) )
 
+      #{
     method has_byte_order_mark( filepath:String )->Logical
       if (not File.exists(filepath)) return false
       if (File.size(filepath) < 3)  return false
@@ -553,117 +558,20 @@ class File( filepath:String ) [compound]
       endIf
       return String( bytes, encoding )
 
-    method matches_wildcard_pattern( filepath:String, pattern:String, &ignore_case )->Logical
-      # Determines whether or not the given filepath matches the given
-      # semi-Unix/Dos-style 'wildcard pattern'.  'pattern' is a
-      # regular text string that may contain the following special
-      # characters:
-      #
-      # *    - Matches any number of characters but does not match '/'
-      # **   - Matches any number of characters including slashes
-      # ***/ - Matches any number of characters and a slash or else nothing.
-      # ?  - Matches any one character except '/'
-      #
-      # Note: A filepath with a ./ prefix is checked with and without the prefix.
-      filepath = expand_path( filepath )
+    }#
 
-      # Check non-wildcard characters at the end of pattern first as an easy out
-      local last_wildcard = -1
-      forEach (ch at i in pattern step -1)
-        if (ch == '*')
-          last_wildcard = i
-          if (i>0 and i+1<pattern.count and pattern[i-1]=='*' and pattern[i+1]=='/') ++last_wildcard
-          escapeForEach
-        elseIf (ch == '?')
-          last_wildcard = i
-          escapeForEach
-        endIf
-      endForEach
+    #{
+    method operator==( pattern:WildcardPattern )->Logical
+      return pattern.matches( resolved.filepath )
+      }#
 
-      if (last_wildcard != -1)
-        local end_count = pattern.count - (last_wildcard+1)
-        if (end_count > 0)
-          if (end_count > filepath.count) return false
+    method operator/( other:File )->File
+      return File( resolved.filepath / other.resolved.filepath )
 
-          local i = last_wildcard + 1
-          forEach (ch in filepath from filepath.count-end_count)
-            local pattern_ch = pattern[i]
-            if (ignore_case)
-              ch = ch.to_lowercase
-              pattern_ch = pattern_ch.to_lowercase
-            endIf
-            if (ch != pattern_ch) return false
-            ++i
-          endForEach
-        endIf
-      endIf
+    method operator/( other_filepath:String )->File
+      return File( resolved.filepath / File(other_filepath).resolved.filepath )
 
-      if (_matches_wildcard_pattern(filepath,0,filepath.count,pattern,0,pattern.count,&=ignore_case)) return true
-
-      if (filepath.count <= 2 or not filepath.begins_with("./")) return false
-
-      # Try ignoring the ./ prefix on the filepath
-      return (_matches_wildcard_pattern(filepath,2,filepath.count-2,pattern,0,pattern.count,&=ignore_case))
-
-    method _matches_wildcard_pattern( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32,
-       &ignore_case )->Logical
-      # f0     - starting index in filepath
-      # fcount - remaining filepath count
-      # p0     - starting index in pattern
-      # pcount - remaining pattern count
-      if (pcount == 0) return (fcount == 0)
-
-      local remaining_pattern = pattern
-      local r0 = p0 + 1
-      local rcount = pcount - 1
-      local ch = pattern[p0]
-      which (ch)
-        case '*':
-          if (rcount >= 2 and remaining_pattern[r0] == '*' and remaining_pattern[r0+1] == '/')
-            # '**/' - match any characters (including '/') and ending with '/' or else match zero characters.
-
-            # Match 0 characters (skip '**/' entirely)
-            if (_matches_wildcard_pattern(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2,&=ignore_case)) return true
-
-            # Match 0+ characters for '**' and leave '/' to end pattern (matches 1+ total)
-            ++r0
-            --rcount
-            forEach (n in 0..fcount)
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount,&=ignore_case)) return true
-            endForEach
-          elseIf (rcount and remaining_pattern[r0] == '*')
-            # '**' - match any characters including '/'
-            ++r0
-            --rcount
-            forEach (n in 0..fcount)
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount,&=ignore_case)) return true
-            endForEach
-          else
-            # Single asterisk - match any characters except '/'
-            forEach (n in 0..<fcount)
-              ch = filepath[ f0+n ]
-              if (_matches_wildcard_pattern(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount, &=ignore_case)) return true
-              if (ch == '/') return false
-            endForEach
-            return _matches_wildcard_pattern( "", 0, 0, remaining_pattern, r0, rcount, &=ignore_case )
-          endIf
-
-        case '?':
-          if (fcount == 0) return false
-          ch = filepath[ f0 ]
-          if (ch == '/') return false
-          return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount, &=ignore_case )
-
-        others:
-          if (fcount == 0) return false
-          local filepath_ch = filepath[f0]
-          if (ignore_case) ch = ch.to_lowercase; filepath_ch = filepath_ch.to_lowercase
-          if (ch == filepath_ch)
-            return _matches_wildcard_pattern( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount, &=ignore_case )
-          endIf
-      endWhich
-      return false
-
+    #{
     method options->FileOptions
       return FileOptions()
 
@@ -699,7 +607,6 @@ class File( filepath:String ) [compound]
     method resolved->File
       local filepath = this.filepath
 
-      #{
       if (System.is_windows)
         local n = filepath.count('%')
         while (n >= 2)
@@ -712,23 +619,20 @@ class File( filepath:String ) [compound]
         endWhile
       endIf
 
-      if (System.is_windows) return filepath.replacing( '\\', '/' )
-      else                   return filepath
+      if (System.is_windows) filepath = filepath.replacing( '\\', '/' )
 
       if (filepath == "~" or filepath.begins_with("~/"))
         local home_folder : String
         if (System.is_windows)
-          home_folder = System.environment//HOMEDRIVE + System.environment//HOMEPATH
+          home_folder = System.env//HOMEDRIVE + System.env//HOMEPATH
         else
-          home_folder = System.environment//HOME
+          home_folder = System.env//HOME
         endIf
         if (home_folder and home_folder.count)
           filepath = home_folder + filepath.rightmost(-1)
-          return filepath
+          return File(filepath)
         endIf
       endIf
-      }#
-
       return File(filepath)
 
       #{
@@ -1393,163 +1297,13 @@ class FileWriter : Writer<<Byte>>
 endClass
 
 
-class FDReader : Reader<<Byte>>
-  GLOBAL METHODS
-    method stderr->FDReader
-      return FDReader( native("STDERR_FILENO")->Int32, &!auto_close )
-
-    method stdin->FDReader
-      return FDReader( native("STDIN_FILENO")->Int32, &!auto_close )
-
-  PROPERTIES
-    fd              : Int32
-    position        : Int32
-    buffer_position : Int32
-    auto_close      : Logical
-    buffer          = Byte[](1024)
-
-  METHODS
-    method init( fd, auto_close=true )
-
-    method on_cleanup
-      if (auto_close) close
-
-    method buffer_more->Logical
-      # Used by Process which needs to keep buffering from both the stdout and stderr of a process
-      # to make sure the process doesn't get blocked.
-      if (fd < 0) return false
-
-      buffer.reserve( 1024 )
-      local cur_count = buffer.count
-
-      local n : Int32
-      native @|$n = (RogueInt32) read( $fd, $buffer->data->as_bytes+$cur_count, 1024 );
-      if (n <= 0)
-        if (auto_close) close
-        fd = -1
-        return false
-      endIf
-      buffer.count += n
-
-      return true
-
-    method close
-      if (fd >= 0)
-        native @|close( $fd );
-        fd = -1
-      endIf
-
-    method is_open->Logical
-      return fd != -1
-
-    method has_another->Logical
-      return (fd >= 0 or buffer_position < buffer.count)
-
-    method peek->Byte
-      if (not has_another) return 0
-
-      if (buffer_position == buffer.count)
-        buffer.clear
-        buffer_position = 0
-        if (not buffer_more) return 0
-      endIf
-
-      return buffer[ buffer_position ]
-
-    method read->Byte
-      if (not has_another) return 0
-
-      local result = peek
-
-      ++position
-      ++buffer_position
-
-      return result
-
-endClass
-
-
-class FDWriter : Writer<<Byte>>
-  GLOBAL METHODS
-    method stdout->FDWriter
-      return FDWriter( native("STDOUT_FILENO")->Int32, &!auto_close )
-
-  PROPERTIES
-    fd         : Int32
-    auto_close : Logical
-    error      : Logical
-    buffer     = Byte[](1024)
-
-  METHODS
-    method init( fd, auto_close=true )
-
-    method on_cleanup
-      if (auto_close) close
-
-    method close
-      flush
-
-      if (fd != -1)
-        native @|close( $fd );
-        fd = -1
-      endIf
-
-    method flush
-      if (buffer.count == 0 or fd == -1) return
-
-      native @|if (-1 == write( $fd, $buffer->data->as_bytes, $buffer->count ))
-              |{
-              |  if ($auto_close) close( $fd );
-              |  $fd = -1;
-              |}
-
-      buffer.clear
-
-    method write( ch:Byte )
-      ++position
-      buffer.add( ch )
-      if (buffer.count == 1024) flush
-
-    method write( bytes:Byte[] )
-      if (fd == -1 or bytes.count == 0) return
-
-      if (bytes.count < 1024)
-        forEach (byte in bytes) write( byte )
-      else
-        flush
-        position += bytes.count
-        native @|if (-1 == write( $fd, $bytes->data->as_bytes, $bytes->count ))
-                |{
-                |  if ($auto_close) close( $fd );
-                |  $fd = -1;
-                |}
-      endIf
-
-    method write( data:String )
-      if (fd == -1 or data.count == 0) return
-
-      if (data.count < 1024)
-        forEach (i in 0..<data.byte_count) write( data.byte(i) )
-      else
-        flush
-        position += data.byte_count
-        native @|if (-1 == write( $fd, $data->utf8, $data->byte_count ))
-                |{
-                |  if ($auto_close) close( $fd );
-                |  $fd = -1;
-                |}
-      endIf
-
-    method write( builder:StringBuilder )
-      write( builder.utf8 )
-endClass
 
 class FilePattern( pattern:String ) [compound]
   METHODS
     method matches( st:String )->Logical
       return File.matches_wildcard_pattern( st, pattern )
 
-    method description->String
+    method to->String
       return pattern
 endClass
 
