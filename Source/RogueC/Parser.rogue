@@ -151,6 +151,15 @@ class Parser : ParserCore
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
 
+    method check_target
+      local t = _read
+      if (t.type != TokenType.STRING) throw t.error( "Literal string expected." )
+      if (Program.targets.contains(t.content))
+        processed_tokens.add( t.cloned(TokenType.KEYWORD_TRUE,null) )
+      else
+        processed_tokens.add( t.cloned(TokenType.KEYWORD_FALSE,null) )
+      endIf
+
     method class_attribute_essential
       _attribute_essential = true
 

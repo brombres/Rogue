@@ -99,7 +99,7 @@ class RogueC
         option( "--main" )
         option( "--output=" )
         option( "--real=", &alias="-r" )
-        #option( "--setting=", &alias="-s" )
+        option( "--target=", &alias="-t", &multi )
       ].parse( args )
 
       local debug_t : Token
@@ -135,6 +135,20 @@ class RogueC
       if (command//options//main)
         Program.generate_main = true
       endIf
+
+      if (command//options//target)
+        forEach (target_option in command//options//target)
+          local targets = target_option->String.replacing(';',',')
+          if (not System.is_windows) targets .= replacing(':',',')
+          forEach (target in targets.split(',') )
+            if (target.begins_with('"') or target.begins_with('\''))
+              target = target.leftmost(-1).rightmost(-1)
+            endIf
+            Program.targets[target] = target
+          endForEach
+        endForEach
+      endIf
+      if (not Program.targets.count) Program.targets//C = "C"
 
       if (command//args.count > 0)
         if (command//options//output)
@@ -172,15 +186,14 @@ class RogueC
                |                    that complete a task and then halt; this will allow them to
                |                    execute as fast as possible. Calling Rogue_collect_garbage()
                |                    only results in a GC if the --gc-threshold has been reached.
-               |
                |  --gc-threshold={number}[MB|K]
-               |    Sets the GC threshold in bytes (default), megabytes, or kilobytes. '1048576',
-               |    '1024K', and '1MB' are all equivalent. The default is 1MB.
+               |    Sets the GC threshold in bytes (default), megabytes, or kilobytes.
+               |    '1048576', '1024K', and '1MB' are all equivalent. The default is 1MB.
                |
                |  --libraries="path1;path2", -L path1:path2
-               |    Specify paths RogueC should look through for '$include' and 'uses' directives.
-               |    This option can be listed multiple times. Both ';' and ':' can be used as a
-               |    path separator on quoted paths.
+               |    Specify paths RogueC should look through for '$include' and 'uses'
+               |    directives. This option can be listed multiple times. Both ';' and ':' can
+               |    be used as a path separator on quoted paths.
                |
                |  --main
                |    Generates a main() function with the C output.
@@ -192,6 +205,13 @@ class RogueC
                |  --real=32, -r 32
                |    Specifies that the 'Real' datatype should be Real32 instead of Real64.
                |    This affects the type of floating point literals (2.54, pi) as well.
+               |
+               |  --target=Target1,"Target2",..., -t Target
+               |    Specify arbitrary target languages, platforms, operating systems,
+               |    frameworks, etc. that can be checked during compile time with '$target("C")'
+               |    etc. This option can be listed multiple times. If no targets are given, a
+               |    default target of "C" is used.
+
 
 endClass
 

@@ -125,6 +125,7 @@ META_INCLUDE      $include  [meta]
 META_JOIN_IDS     $id       [meta]
 META_JOIN_STRINGS $string   [meta]
 META_MACRO        $macro    [meta]
+META_TARGET       $target   [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -2779,6 +2780,14 @@ parser
 
     call define_macro
     return
+
+  elseOn "$target"
+    on '('
+      call check_target
+      mustConsume ')'
+    elseOnOthers
+      call check_target
+    endOn
 
   elseOn "$string"
     call begin_join_strings

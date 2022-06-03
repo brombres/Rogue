@@ -15,13 +15,12 @@ class String : Poolable PrintWriter
     data            : Byte[]
 
   GLOBAL METHODS
-    method create( data:Byte[] )->String
-      local count = native("RogueString_utf8_character_count($data->as_utf8,$data->count)")->Int32
-      if (count == -1)
-        # Not valid UTF-8 - treat as ASCII-256
-        return native("RogueString_create_from_ascii256( $data->as_utf8, $data->count, 1 )")->String
+    method create( data:Byte[], encoding=StringEncoding.AUTODETECT:StringEncoding )->String
+      if (encoding != StringEncoding.ASCII_256)
+        local count = native("RogueString_utf8_character_count($data->as_utf8,$data->count)")->Int32
+        if (count != -1) return String( data, count )
       else
-        return String( data, count )
+        return native("RogueString_create_from_ascii256( $data->as_utf8, $data->count, 1 )")->String
       endIf
 
     method create( data:Character[] )->String
