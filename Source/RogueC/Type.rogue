@@ -382,15 +382,17 @@ class Type : Cmd
           (aspect_m.return_type,existing_m.return_type) )
         endIf
 
-        forEach (aspect_p at i in aspect_m.parameters)
-          local existing_p = existing_m.parameters[i]
-          if (aspect_p.name != existing_p.name)
-            throw aspect_m.t.error(
-              "Parameter name mismatch - aspect parameter '$' must be named '$' as in the existing method."...
-              (aspect_p.name,existing_p.name)
-            )
-          endIf
-        endForEach
+        if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+          forEach (aspect_p at i in aspect_m.parameters)
+            local existing_p = existing_m.parameters[i]
+            if (aspect_p.name != existing_p.name)
+              throw aspect_m.t.error(
+                "Parameter name mismatch - aspect parameter '$' must be named '$' as in the existing method."...
+                (aspect_p.name,existing_p.name)
+              )
+            endIf
+          endForEach
+        endIf
 
       endIf
 
@@ -429,15 +431,17 @@ class Type : Cmd
           (aspect_m.return_type,existing_m.return_type) )
         endIf
 
-        forEach (aspect_p at i in aspect_m.parameters)
-          local existing_p = existing_m.parameters[i]
-          if (aspect_p.name != existing_p.name)
-            throw aspect_m.t.error(
-              "Parameter name mismatch - aspect parameter '$' must be named '$' as in the existing method."...
-              (aspect_p.name,existing_p.name)
-            )
-          endIf
-        endForEach
+        if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
+          forEach (aspect_p at i in aspect_m.parameters)
+            local existing_p = existing_m.parameters[i]
+            if (aspect_p.name != existing_p.name)
+              throw aspect_m.t.error(
+                "Parameter name mismatch - aspect parameter '$' must be named '$' as in the existing method."...
+                (aspect_p.name,existing_p.name)
+              )
+            endIf
+          endForEach
+        endIf
 
       endIf
 

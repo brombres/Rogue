@@ -1,0 +1,148 @@
+class FDReader : Reader<<Byte>>
+  GLOBAL METHODS
+    method stderr->FDReader
+      return FDReader( native("STDERR_FILENO")->Int32, &!auto_close )
+
+    method stdin->FDReader
+      return FDReader( native("STDIN_FILENO")->Int32, &!auto_close )
+
+  PROPERTIES
+    fd              : Int32
+    position        : Int32
+    buffer_position : Int32
+    auto_close      : Logical
+    buffer          = Byte[](1024)
+
+  METHODS
+    method init( fd, auto_close=true )
+
+    method on_cleanup
+      if (auto_close) close
+
+    method buffer_more->Logical
+      # Used by Process which needs to keep buffering from both the stdout and stderr of a process
+      # to make sure the process doesn't get blocked.
+      if (fd < 0) return false
+
+      buffer.reserve( 1024 )
+      local cur_count = buffer.count
+
+      local n : Int32
+      native @|$n = (RogueInt32) read( $fd, $buffer->as_bytes+$cur_count, 1024 );
+      if (n <= 0)
+        if (auto_close) close
+        fd = -1
+        return false
+      endIf
+      buffer.count += n
+
+      return true
+
+    method close
+      if (fd >= 0)
+        native @|close( $fd );
+        fd = -1
+      endIf
+
+    method is_open->Logical
+      return fd != -1
+
+    method has_another->Logical
+      return (fd >= 0 or buffer_position < buffer.count)
+
+    method peek->Byte
+      if (not has_another) return 0
+
+      if (buffer_position == buffer.count)
+        buffer.clear
+        buffer_position = 0
+        if (not buffer_more) return 0
+      endIf
+
+      return buffer[ buffer_position ]
+
+    method read->Byte
+      if (not has_another) return 0
+
+      local result = peek
+
+      ++position
+      ++buffer_position
+
+      return result
+
+endClass
+
+
+class FDWriter : Writer<<Byte>>
+  GLOBAL METHODS
+    method stdout->FDWriter
+      return FDWriter( native("STDOUT_FILENO")->Int32, &!auto_close )
+
+  PROPERTIES
+    fd         : Int32
+    auto_close : Logical
+    error      : Logical
+    buffer     = Byte[](1024)
+
+  METHODS
+    method init( fd, auto_close=true )
+
+    method on_cleanup
+      if (auto_close) close
+
+    method close
+      flush
+
+      if (fd != -1)
+        native @|close( $fd );
+        fd = -1
+      endIf
+
+    method flush
+      if (buffer.count == 0 or fd == -1) return
+
+      native @|if (-1 == write( $fd, $buffer->as_bytes, $buffer->count ))
+              |{
+              |  if ($auto_close) close( $fd );
+              |  $fd = -1;
+              |}
+
+      buffer.clear
+
+    method write( ch:Byte )
+      ++position
+      buffer.add( ch )
+      if (buffer.count == 1024) flush
+
+    method write( bytes:Byte[] )
+      if (fd == -1 or bytes.count == 0) return
+
+      if (bytes.count < 1024)
+        forEach (byte in bytes) write( byte )
+      else
+        flush
+        position += bytes.count
+        native @|if (-1 == write( $fd, $bytes->data->as_bytes, $bytes->count ))
+                |{
+                |  if ($auto_close) close( $fd );
+                |  $fd = -1;
+                |}
+      endIf
+
+    method write( text:String )
+      if (fd == -1 or text.count == 0) return
+
+      if (text.count < 1024)
+        forEach (i in 0..<text.byte_count) write( text.byte(i) )
+      else
+        flush
+        position += text.byte_count
+        native @|if (-1 == write( $fd, $text->data->as_utf8, $text->data->count ))
+                |{
+                |  if ($auto_close) close( $fd );
+                |  $fd = -1;
+                |}
+      endIf
+
+endClass

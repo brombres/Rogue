@@ -165,7 +165,7 @@ class String : Poolable PrintWriter
       data[0] = 0
       is_ascii = true
 
-    method init( data, count:Int32 )
+    method init( data, count )
       # 'data' must be valid UTF-8.
       if (is_immutable) return
       data.reserve(1)
@@ -550,6 +550,7 @@ class String : Poolable PrintWriter
       cursor = index
       if (is_ascii) return data[index]
 
+      local result : Character
       native ...
         @|
          |char* utf8 = $data->as_utf8;
@@ -562,28 +563,29 @@ class String : Poolable PrintWriter
          |  {
          |    if (ch & 0x10)
          |    {
-         |      return ((ch&7)<<18)
+         |      $result = ((ch&7)<<18)
          |          | ((utf8[offset+1] & 0x3F) << 12)
          |          | ((utf8[offset+2] & 0x3F) << 6)
          |          | (utf8[offset+3] & 0x3F);
          |    }
          |    else
          |    {
-         |      return ((ch&15)<<12)
+         |      $result = ((ch&15)<<12)
          |          | ((utf8[offset+1] & 0x3F) << 6)
          |          | (utf8[offset+2] & 0x3F);
          |    }
          |  }
          |  else
          |  {
-         |    return ((ch&31)<<6)
+         |    $result = ((ch&31)<<6)
          |        | (utf8[offset+1] & 0x3F);
          |  }
          |}
          |else
          |{
-         |  return ch;
+         |  $result = ch;
          |}
+      return result
 
     method hash_code->Int32
       if (@hash_code == -1)
@@ -1367,8 +1369,10 @@ class String : Poolable PrintWriter
          |{
          |  $cursor_index = 0;
          |  $cursor_offset = 0;
-         |  return 0;
-         |}
+            return 0
+
+      native ...
+        @|}
          |else if ($character_index >= $count - 1 || $cursor_index > $count-1 || $cursor_offset > $data->count-1)
          |{
          |  c_offset = $data->count;

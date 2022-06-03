@@ -169,7 +169,7 @@ class Procedure : Cmd
 
     method locate_parameter( name:String )->Int32?
       forEach (param at i in parameters)
-        if (param.name == name) return i
+        if (param.original_name == name) return i
       endForEach
       return null
 

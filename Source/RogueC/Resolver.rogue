@@ -1681,7 +1681,7 @@ class Resolver : Visitor
           if (i > 0) mesg += ','
           mesg += arg.require_type
         endForEach
-        mesg += "). Candidates:\n\n"
+        mesg += "). $:\n\n"("Candidate".pluralized(Candidates.count))
         if (Candidates.count)
           forEach (m in Candidates)
             mesg += "  $$\n" (type_context,m.dev_signature.from_first('('))
@@ -2280,6 +2280,9 @@ augment
 
     method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
       throw t.error( "Illegal assignment target for '$'."($OpSymbol) )
+
+    method DirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      return Access(t,name).resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )
 
     method Access.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
@@ -3367,6 +3370,9 @@ augment
 
     method Cmd.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       throw t.error( "Illegal stepper target. " )
+
+    method DirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      return Access( t, name ).resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )
 
     method Access.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error

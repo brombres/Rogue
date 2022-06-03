@@ -7,6 +7,7 @@ $include Standard/ConsoleEvent
 $include Standard/ConsoleMode
 $include Standard/ConsoleStyle
 $include Standard/Exception
+$include Standard/FileDescriptorIO
 $include Standard/Global
 $include Standard/LineReader
 $include Standard/List

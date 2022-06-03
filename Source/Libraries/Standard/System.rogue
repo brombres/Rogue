@@ -78,52 +78,52 @@ class System [essential]
 
     method is_android->Logical
       native @|#if defined(ROGUE_PLATFORM_ANDROID)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method is_cygwin->Logical
       native @|#if defined(ROGUE_PLATFORM_CYGWIN)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method is_ios->Logical
       native @|#if defined(ROGUE_PLATFORM_IOS)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method is_linux->Logical
       native @|#if defined(ROGUE_PLATFORM_LINUX)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method is_macos->Logical
       native @|#if defined(ROGUE_PLATFORM_MACOS)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method is_web->Logical
       native @|#if defined(ROGUE_PLATFORM_WEB)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method is_windows->Logical
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
-              |  return 1;
-              |#else
-              |  return 0;
-              |#endif
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
 
     method os->String
       # Returns one of:
