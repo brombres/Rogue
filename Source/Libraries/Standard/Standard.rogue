@@ -28,7 +28,7 @@ $include Standard/String
 $include Standard/StringEncoding
 $include Standard/System
 $include Standard/Table
-$include Standard/WildcardPattern
+$include Standard/FilePattern
 $include Standard/WorkList
 $include Standard/Writer
 

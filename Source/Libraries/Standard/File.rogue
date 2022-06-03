@@ -560,11 +560,6 @@ class File( filepath:String ) [compound]
 
     }#
 
-    #{
-    method operator==( pattern:WildcardPattern )->Logical
-      return pattern.matches( resolved.filepath )
-      }#
-
     method operator/( other:File )->File
       return File( resolved.filepath / other.resolved.filepath )
 
