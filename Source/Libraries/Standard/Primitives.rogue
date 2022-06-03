@@ -511,6 +511,10 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
     method sqrt->Int32
       return this->Real.sqrt->Int32
 
+    method to->Int64( unsigned:Logical )
+      if (unsigned) return this->Int64 & 0x0FFFFffff
+      else          return this->Int64
+
     method th->String
       # Returns Nst, Nnd, Nrd, Nth as appropriate
       # Example:

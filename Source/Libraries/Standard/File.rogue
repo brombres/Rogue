@@ -540,25 +540,36 @@ class File( filepath:String ) [compound]
               |  }
               |}
               |#endif // Windows vs Mac/Linux
+                       }#
 
-    method load_as_bytes( filepath:String )->Byte[]
-      filepath = expand_path( filepath )
-      local count = size( filepath )
+    method load_as_bytes( &discard_bom )->Byte[]
+      # discard_bom
+      #   Discard the Byte Order Marker, if it exists.
+      local count = size
       local bytes = Byte[]( count )
-      local infile = reader( filepath )
-      forEach (1..count) bytes.add( infile.read )
-      infile.close
-      return bytes
+      use reader = this.reader
+        if (count >= 3 and discard_bom)
+          # Discard byte order marker if it exists
+          local b0 = reader.read
+          local b1 = reader.read
+          local b2 = reader.read
+          if (b0 == 0xEF and b1 == 0xBB and b2 == 0xBF)
+            count -= 3
+          else
+            bytes = Byte[]( count )
+            bytes.add( b0 )
+            bytes.add( b1 )
+            bytes.add( b2 )
+          endIf
+        endIf
 
-    method load_as_string( filepath:String, encoding=StringEncoding.AUTODETECT:StringEncoding )->String
-      local bytes = load_as_bytes( filepath )
-      if (bytes.count >= 3 and bytes[0] == 0xEF and bytes[1] == 0xBB and bytes[2] == 0xBF)
-        # Discard Byte Order Marker (BOM)
-        bytes.discard( 0, 3 )
-      endIf
+        ensure<<bytes>>( count )
+        reader.read( bytes, count )
+      endUse
+
+    method load_as_string( encoding=StringEncoding.AUTODETECT:StringEncoding )->String
+      local bytes = load_as_bytes( &discard_bom )
       return String( bytes, encoding )
-
-    }#
 
     method operator/( other:File )->File
       return File( resolved.filepath / other.resolved.filepath )
@@ -582,11 +593,12 @@ class File( filepath:String ) [compound]
 
     method print_writer( filepath:String )->PrintWriter
       return PrintWriter( writer(filepath) )
+      }#
 
-    method reader( filepath:String )->FileReader
-      filepath = expand_path( filepath )
-      return FileReader( filepath )
+    method reader->FileReader
+      return FileReader( resolved.filepath )
 
+      #{
     method rebuilder( filepath:String )->LineRebuilder
       filepath = expand_path( filepath )
       return LineRebuilder( File(filepath) )
@@ -733,19 +745,20 @@ class File( filepath:String ) [compound]
         endIf
 
       endContingent
+      }#
 
-    method size( filepath:String )->Int64
-      filepath = expand_path( filepath )
-      if (not filepath) return 0
-      native @|FILE* fp = fopen( (char*)$filepath->utf8, "rb" );
+    method size->Int64
+      local filepath = resolved.filepath
+      local size : Int64
+      native @|FILE* fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
               |if ( !fp ) return 0;
               |
               |fseek( fp, 0, SEEK_END );
-              |RogueInt64 size = (RogueInt64) ftell( fp );
+              |$size = (RogueInt64) ftell( fp );
               |fclose( fp );
-              |
-              |return size;
+      return size;
 
+              #{
     method symlink( filepath:String, target:String )
       filepath = expand_path( filepath )
       target = expand_path( target )

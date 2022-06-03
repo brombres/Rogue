@@ -25,17 +25,20 @@ class FileReader : Reader<<Byte>>
       position = 0
       count = 0
 
-    method fp->Int64 [macro]
+    method fp->Int64
       return native("$this->fp")->Int64
 
     method has_another->Logical
       return (position < count)
 
-    method open( filepath )->Logical
+    method on_use->this
+      return this
+
+    method on_end_use( this_reader:FileReader )
       close
 
-      filepath = File.fix_slashes( filepath )
-      filepath = File.expand_path( filepath )
+    method open( filepath )->Logical
+      close
 
       native @|$this->fp = fopen( (char*)$filepath->utf8, "rb" );
               |if ( !$this->fp ) return false;
@@ -137,8 +140,6 @@ class FileWriter : Writer<<Byte>>
       close
 
     method close
-      $if (target("Web")) nativeHeader extern "C" void Rogue_sync_local_storage();
-
       flush
 
       if (fp)
@@ -154,15 +155,18 @@ class FileWriter : Writer<<Byte>>
 
       buffer.clear
 
-    method fp->Int64 [macro]
+    method fp->Int64
       return native( "$this->fp" )->Int64
+
+    method on_use->this
+      return this
+
+    method on_end_use( this_writer:FileWriter )
+      close
 
     method open( filepath, append=false:Logical )->Logical
       close
       error = false
-
-      filepath = File.expand_path( filepath )
-      filepath = File.fix_slashes( filepath )
 
       if (append)
         native @|$this->fp = fopen( (char*)$filepath->utf8, "ab" );

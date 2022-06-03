@@ -361,16 +361,7 @@ class Resolver : Visitor
 
     method on( cmd:ConvertToType )->Cmd
       cmd.operand = visit( cmd.operand )
-      local operand_type = cmd.operand.require_type
-
-      local cmd_call = resolve_access( cmd.t, cmd.operand, "to_$"(cmd.to_type.name), Args(cmd.t), &suppress_error )
-      if (cmd_call) return cmd_call
-
-      if (operand_type.is_primitive and cmd.to_type.is_primitive)
-        return cmd.operand.resolve_conversion_to( cmd.to_type, this )
-      endIf
-
-      throw cmd.t.error( "No $->$ conversion is defined."(operand_type,cmd.to_type) )
+      return cmd.operand.resolve_conversion_to( cmd.to_type, this )
 
     method on( cmd:ConvertToTypeWithArgs )->Cmd
       local m_name = "to_" + cmd.to_type.name
@@ -858,6 +849,10 @@ class Resolver : Visitor
       if (is_multiple_declaration) return result
 
       return null
+
+    method on_visit_children( cmd:Local )
+      # Overriding to prevent visiting initial_value; not necessary
+      cmd.type = visit(cmd.type)->(as Type)
 
     method on_validate( cmd:LogicalAnd )->Cmd
       if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)

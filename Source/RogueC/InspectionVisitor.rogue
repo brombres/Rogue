@@ -459,6 +459,8 @@ class InspectionVisitor<<$ReturnType>>
     method on_visit_children( cmd:Local )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.type)
+      if (result?) return result
+      result = visit(cmd.initial_value)
       return result
 
     method on_visit_children( cmd:LocalDeclarations )->$ReturnType

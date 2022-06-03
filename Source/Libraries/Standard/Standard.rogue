@@ -1,4 +1,7 @@
+$include Standard/BitIO
+$include Standard/ByteList
 $include Standard/Boxed
+$include Standard/DataIO
 $include Standard/Dim
 $include Standard/Console
 $include Standard/ConsoleCursor
@@ -9,6 +12,7 @@ $include Standard/ConsoleStyle
 $include Standard/Exception
 $include Standard/File
 $include Standard/FileDescriptorIO
+$include Standard/FileIO
 $include Standard/Global
 $include Standard/LineReader
 $include Standard/List
@@ -26,6 +30,7 @@ $include Standard/Span
 $include Standard/StackTrace
 $include Standard/String
 $include Standard/StringEncoding
+$include Standard/StringList
 $include Standard/System
 $include Standard/Table
 $include Standard/FilePattern
