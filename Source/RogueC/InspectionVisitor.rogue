@@ -970,4 +970,21 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.table)
       return result
 
+    method on_visit_children( cmd:BriefTrace )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expressions)
+      return result
+
+    method on_visit_children( cmd:TracedExpression )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.token_list)
+      return result
+
+    method on_visit_children( cmd:VerboseTrace )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expressions)
+      return result
+
 endClass

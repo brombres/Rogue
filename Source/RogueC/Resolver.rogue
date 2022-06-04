@@ -113,8 +113,8 @@ class Resolver : Visitor
       return null
 
     method on( cmd:Access )->Cmd
-      cmd.args = visit( cmd.args )
-      return resolve_access( cmd.t, null, cmd.name, cmd.args )
+      local args = visit( cmd.args )
+      return resolve_access( cmd.t, null, cmd.name, args )
 
     method on( cmd:AnonymousTuple )->Cmd
       # Determine Tuple type
@@ -262,6 +262,45 @@ class Resolver : Visitor
       endIf
 
       return visit( cmd_control_structure )
+
+    method on( cmd:BriefTrace )->Cmd
+      return resolve_trace( cmd.t, cmd.expressions )
+
+    method on( cmd:VerboseTrace )->Cmd
+      return resolve_trace( cmd.t, cmd.expressions, &verbose )
+
+    method resolve_trace( t:Token, expressions:TracedExpressions, &verbose )->Cmd
+      local args = Args(t)
+      local format = StringBuilder()
+
+      if (verbose)
+        format.print '['
+        if (this_type.name != "Routine")
+          format.[ print(this_type.name), print('.') ]
+        endIf
+        format.[ print(this_procedure.name), print("() ") ]
+        format.[ print(File.filename(t.filepath)), print(':'), print(t.line), print("] ") ]
+      endIf
+
+      forEach (arg at i in expressions)
+        if (i > 0) format.print ' '
+        if (arg.expression instanceOf LiteralString)
+          format.print arg.expression->String
+        elseIf (arg.expression instanceOf FormattedString)
+          format.print "$"
+          args.add( arg.expression )
+        else
+          format.print( (forEach in arg.token_list.tokens)->String )
+          format.print ":$"
+          args.add( arg.expression )
+        endIf
+      endForEach
+
+      if (args.count)
+        return visit( Access( t, "println", Args(t,FormattedString(t,format->String,args)) ) )
+      else
+        return visit( Access( t, "println", LiteralString(t,format->String) ) )
+      endIf
 
     method on_visit( cmd:Catch )
       if (not cmd.v_catch and cmd.var_name)

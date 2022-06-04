@@ -4364,3 +4364,62 @@ class TypedLiteralTable : Cmd
       return "TypedLiteralTable($,$)" (%of_type,%table)
 
 endClass
+
+class BriefTrace : Cmd
+  PROPERTIES
+    expressions : TracedExpressions
+
+  METHODS
+    method init( t, expressions )
+
+    method init( existing:BriefTrace )
+      prior.init( existing )
+      if (existing.expressions) expressions = existing.expressions.cloned
+
+    method description->String
+      return "BriefTrace($)" (%expressions)
+
+endClass
+
+class TracedExpression : Cmd
+  PROPERTIES
+    expression : Cmd
+    token_list : TokenList
+
+  METHODS
+    method init( t, expression, token_list )
+
+    method init( existing:TracedExpression )
+      prior.init( existing )
+      if (existing.expression) expression = existing.expression.cloned
+      if (existing.token_list) token_list = existing.token_list.cloned
+
+    method description->String
+      return "TracedExpression($,$)" (%expression,%token_list)
+
+endClass
+
+class TracedExpressions : CmdList
+  METHODS
+    method description->String
+      return "TracedExpressions" + list_description
+
+    method get( index:Int32 )->TracedExpression
+      return list[index]->(as TracedExpression)
+endClass
+
+class VerboseTrace : Cmd
+  PROPERTIES
+    expressions : TracedExpressions
+
+  METHODS
+    method init( t, expressions )
+
+    method init( existing:VerboseTrace )
+      prior.init( existing )
+      if (existing.expressions) expressions = existing.expressions.cloned
+
+    method description->String
+      return "VerboseTrace($)" (%expressions)
+
+endClass

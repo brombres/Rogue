@@ -105,6 +105,7 @@ KEYWORD_TEMPORARILY     temporarily
 KEYWORD_THIS            this
 KEYWORD_THIS_TYPE       ThisType
 KEYWORD_THROW           throw
+KEYWORD_TRACE           trace
 KEYWORD_TRUE            true
 KEYWORD_TRY             try
 KEYWORD_UNDEFINED       undefined
@@ -179,6 +180,7 @@ SYMBOL_RIGHT_SHIFT_X_EQUALS  :>>>:=
 SYMBOL_SEMICOLON             ;  [structural]
 SYMBOL_SLASH                 /
 SYMBOL_SLASH_SLASH           //
+SYMBOL_BRIEF_TRACE           @trace
 SYMBOL_TILDE                 ~
 SYMBOL_VERTICAL_BAR          |
 
@@ -1835,6 +1837,13 @@ parser
   on @"println" args              -> Access(name=content,args)
   on "return" optional_expression -> Return(result)
   on "sufficient" expression      -> Sufficient(condition)
+  onPeek "trace"
+    verbose_trace
+    return
+  elseOnPeek "@trace"
+    brief_trace
+    return
+  endOn
   on "throw" expression           -> Throw(exception)
 
   onPeek "nativeHeader"
@@ -1886,6 +1895,34 @@ parser
     args
     call store_statement_args
   endIf
+
+- verbose_trace
+  on "trace"
+    beginList
+    while (not nextIs(EOL))
+      savePosition
+      expression
+      createTokenList
+      create TracedExpression(expression,token_list:TokenList)
+      consume ','
+    endWhile
+    createList TracedExpressions
+    create VerboseTrace(expressions:TracedExpressions)
+  endOn
+
+- brief_trace
+  on "@trace"
+    beginList
+    while (not nextIs(EOL))
+      savePosition
+      expression
+      createTokenList
+      create TracedExpression(expression,token_list:TokenList)
+      consume ','
+    endWhile
+    createList TracedExpressions
+    create BriefTrace(expressions:TracedExpressions)
+  endOn
 
 - local_declarations
   onPeek '(' destructuring_local_declarations: return
