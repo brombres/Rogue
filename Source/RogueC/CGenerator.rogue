@@ -962,6 +962,10 @@ class CGenerator : Visitor
       assert c_id
       writer.print( c_id )
 
+    method on_visit_children( cmd:Local )
+      # Overriding to prevent visiting initial_value
+      cmd.type = visit(cmd.type)->(as Type)
+
     method on_visit( cmd:LocalDeclaration )
       local v = cmd.info
       writer.print( v.type.c_ref_name ).print( ' ' )

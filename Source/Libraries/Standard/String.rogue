@@ -19,9 +19,8 @@ class String : Poolable PrintWriter
       if (encoding != StringEncoding.ASCII_256)
         local count = native("RogueString_utf8_character_count($data->as_utf8,$data->count)")->Int32
         if (count != -1) return String( data, count )
-      else
-        return native("RogueString_create_from_ascii256( $data->as_utf8, $data->count, 1 )")->String
       endIf
+      return native("RogueString_create_from_ascii256( $data->as_utf8, $data->count, 1 )")->String
 
     method create( data:Character[] )->String
       local utf8_count : Int32
@@ -36,6 +35,9 @@ class String : Poolable PrintWriter
       local result = String( utf8_count )
       result.print( forEach in data )
       return result
+
+    method create( file:File )->String
+      return file.load_as_string
 
     method exists( string:String )->Logical
       # Returns false if the string is null or empty; otherwise returns true.

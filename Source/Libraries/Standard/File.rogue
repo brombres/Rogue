@@ -566,6 +566,7 @@ class File( filepath:String ) [compound]
         ensure<<bytes>>( count )
         reader.read( bytes, count )
       endUse
+      return bytes
 
     method load_as_string( encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       local bytes = load_as_bytes( &discard_bom )
@@ -751,8 +752,8 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       local size : Int64
       native @|FILE* fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
-              |if ( !fp ) return 0;
-              |
+               if (native("!fp")->Logical) return 0
+      native @|
               |fseek( fp, 0, SEEK_END );
               |$size = (RogueInt64) ftell( fp );
               |fclose( fp );

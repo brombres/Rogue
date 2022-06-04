@@ -91,7 +91,7 @@ routine compile_rogue
   local flags = Build.ROGUEC_FLAGS
   if (flags != "") flags += " "
   flags += which{ Build.RELEASE_MODE:"--release" || "--debug" }
-  execute "roguec $ $ --main --output=$ --target=Console,C++,$"...
+  execute "roguec $ $ --gc=manual --main --output=$ --target=Console,C++,$"...
           (File.esc(src_filepath),flags,File.esc(cpp_filepath),System.os)
 endRoutine
 

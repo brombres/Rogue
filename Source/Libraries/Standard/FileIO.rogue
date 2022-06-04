@@ -26,7 +26,7 @@ class FileReader : Reader<<Byte>>
       count = 0
 
     method fp->Int64
-      return native("$this->fp")->Int64
+      return native("(RogueInt64)$this->fp")->Int64
 
     method has_another->Logical
       return (position < count)
@@ -40,9 +40,9 @@ class FileReader : Reader<<Byte>>
     method open( filepath )->Logical
       close
 
-      native @|$this->fp = fopen( (char*)$filepath->utf8, "rb" );
-              |if ( !$this->fp ) return false;
-              |
+      native @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
+               if (native("!$this->fp")->Logical) return false
+      native @|
               |fseek( $this->fp, 0, SEEK_END );
               |$count = (RogueInt32) ftell( $this->fp );
               |fseek( $this->fp, 0, SEEK_SET );
@@ -57,7 +57,7 @@ class FileReader : Reader<<Byte>>
       if (position == count) return 0
 
       if (buffer_position == buffer.count)
-        native @|$buffer->count = (RogueInt32) fread( $buffer->data->as_bytes, 1, 1024, $this->fp );
+        native @|$buffer->count = (RogueInt32) fread( $buffer->as_bytes, 1, 1024, $this->fp );
         buffer_position = 0
       endIf
 
@@ -81,7 +81,8 @@ class FileReader : Reader<<Byte>>
       local total_read = 0
       local n = (buffer.count - buffer_position).or_smaller( limit )
       if (n > 0)
-        native @|memcpy( $result->data->as_bytes + $result->count, $buffer->data->as_bytes+$buffer_position, $n );
+        native @|memcpy( $result->as_bytes + $result->count, $buffer->as_bytes+$buffer_position, $n );
+        result.count += n
         buffer_position += n
         position += n
         total_read += n
@@ -90,7 +91,7 @@ class FileReader : Reader<<Byte>>
 
       if (limit > 0)
         # fread directly from file
-        native @|$n = (RogueInt32) fread( $result->data->as_bytes+$result->count, 1, $limit, $this->fp );
+        native @|$n = (RogueInt32) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
         total_read += n
         position += n
       endIf
@@ -150,13 +151,13 @@ class FileWriter : Writer<<Byte>>
     method flush
       if (buffer.count == 0 or not fp) return
 
-      native @|fwrite( $buffer->data->as_bytes, 1, $buffer->count, $this->fp );
+      native @|fwrite( $buffer->as_bytes, 1, $buffer->count, $this->fp );
               |fflush( $this->fp );
 
       buffer.clear
 
     method fp->Int64
-      return native( "$this->fp" )->Int64
+      return native( "(RogueInt64)$this->fp" )->Int64
 
     method on_use->this
       return this
@@ -169,9 +170,9 @@ class FileWriter : Writer<<Byte>>
       error = false
 
       if (append)
-        native @|$this->fp = fopen( (char*)$filepath->utf8, "ab" );
+        native @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "ab" );
       else
-        native @|$this->fp = fopen( (char*)$filepath->utf8, "wb" );
+        native @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "wb" );
       endIf
 
       native "$this->error = !($this->fp);"
@@ -210,7 +211,7 @@ class FileWriter : Writer<<Byte>>
 
       flush
       position += bytes.count
-      native @|fwrite( $bytes->data->as_bytes, 1, $bytes->count, $this->fp );
+      native @|fwrite( $bytes->as_bytes, 1, $bytes->count, $this->fp );
 
     method write( data:String )
       if (not fp) return
