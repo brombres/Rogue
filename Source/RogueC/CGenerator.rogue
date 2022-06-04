@@ -950,6 +950,9 @@ class CGenerator : Visitor
     method on_visit( cmd:LiteralNull )
       writer.print 0
 
+    method on_visit( cmd:LiteralNullOptional )
+      writer.[ print("("), print(cmd.optional_type.c_name), print(") {}") ]
+
     method on_visit( cmd:LiteralPi )
       writer.print pi
 

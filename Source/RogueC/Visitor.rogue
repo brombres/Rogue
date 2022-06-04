@@ -654,5 +654,8 @@ class Visitor
     method on_visit_children( cmd:VerboseTrace )
       cmd.expressions = visit(cmd.expressions)->(as TracedExpressions)
 
+    method on_visit_children( cmd:LiteralNullOptional )
+      cmd.optional_type = visit(cmd.optional_type)->(as Type)
+
 endClass
 

@@ -139,8 +139,7 @@ augment
 
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
       if (target_type.attributes.is_optional)
-        of_type = target_type.properties//value.type
-        return resolver.visit( TypeAccess( t, target_type, Args(t,this,LiteralLogical(t,false)) ) )
+        return resolver.validate( LiteralNullOptional(t,target_type) )
       else
         of_type = target_type
         return this
@@ -605,6 +604,9 @@ augment
     method LiteralNull.type->Type
       if (of_type) return of_type
       return Program.type_null
+
+    method LiteralNullOptional.type->Type
+      return optional_type
 
     method PreDecrementLocal.type->Type
       return info.type

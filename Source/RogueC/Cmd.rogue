@@ -4423,3 +4423,19 @@ class VerboseTrace : Cmd
       return "VerboseTrace($)" (%expressions)
 
 endClass
+
+class LiteralNullOptional : Literal
+  PROPERTIES
+    optional_type : Type
+
+  METHODS
+    method init( t, optional_type )
+
+    method init( existing:LiteralNullOptional )
+      prior.init( existing )
+      if (existing.optional_type) optional_type = existing.optional_type.cloned
+
+    method description->String
+      return "LiteralNullOptional($)" (%optional_type)
+
+endClass
