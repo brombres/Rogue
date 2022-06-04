@@ -92,13 +92,12 @@ class FileReader : Reader<<Byte>>
       if (limit > 0)
         # fread directly from file
         native @|$n = (RogueInt32) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
+        result.count += n
         total_read += n
         position += n
       endIf
 
       if (position == count) close
-
-      result.count += total_read
 
       return total_read
 

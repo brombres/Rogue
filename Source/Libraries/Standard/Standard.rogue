@@ -10,9 +10,7 @@ $include Standard/ConsoleEvent
 $include Standard/ConsoleMode
 $include Standard/ConsoleStyle
 $include Standard/Exception
-$include Standard/File
-$include Standard/FileDescriptorIO
-$include Standard/FileIO
+$include Standard/FilePattern
 $include Standard/Global
 $include Standard/LineReader
 $include Standard/List
@@ -33,7 +31,6 @@ $include Standard/StringEncoding
 $include Standard/StringList
 $include Standard/System
 $include Standard/Table
-$include Standard/FilePattern
 $include Standard/WorkList
 $include Standard/Writer
 
