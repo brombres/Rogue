@@ -299,7 +299,7 @@ class Resolver : Visitor
       if (args.count)
         return visit( Access( t, "println", Args(t,FormattedString(t,format->String,args)) ) )
       else
-        return visit( Access( t, "println", LiteralString(t,format->String) ) )
+        return visit( Access( t, "println", Args(t,LiteralString(t,format->String)) ) )
       endIf
 
     method on_visit( cmd:Catch )
