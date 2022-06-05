@@ -3640,18 +3640,52 @@ class FunctionDefinition : Cmd
     with_values : WithValues
     statements  : Cmd
 
+    fn_type     : Type
+    base_type   : Type
+
   METHODS
     method init( t, parameters, return_type, with_values, statements )
 
     method init( existing:FunctionDefinition )
       prior.init( existing )
-      if (existing.parameters) parameters = existing.parameters.cloned
+      if (existing.parameters)  parameters  = existing.parameters.cloned
       if (existing.return_type) return_type = existing.return_type.cloned->(as Type)
       if (existing.with_values) with_values = existing.with_values.cloned
-      if (existing.statements) statements = existing.statements.cloned
+      if (existing.statements)  statements  = existing.statements.cloned
+      if (existing.fn_type)     fn_type     = existing.fn_type.cloned
+      if (existing.base_type)   base_type   = existing.base_type.cloned
 
     method description->String
       return "FunctionDefinition($,$,$,$)" (%parameters,%return_type,%with_values,%statements)
+
+    method resolve_type->Type
+      if (fn_type) return fn_type
+
+      local param_types = TypeList(t)
+      if (not parameters) parameters = Parameters(t)
+
+      forEach (p in parameters)
+        if (not p.type)
+          if (p.attributes.is_default_parameter) p.type = Program.type_Logical
+          else throw p.t.error( "Missing parameter ':Type'." )
+        endIf
+        param_types.add( p.type )
+      endForEach
+
+      base_type = FunctionType( t, param_types, return_type )
+      fn_type = Type( t, Program.default_module, "$_$"(base_type,Program.default_module.types.count),
+                         Attribute.OBJECT|Attribute.SINGLETON )
+      fn_type.base_class = base_type
+      fn_type.attributes.is_defined = true
+
+      local m_call = Method( t, fn_type, "call" )
+      m_call.parameters = parameters
+      m_call.return_type = return_type
+      m_call.body = LocalScope( t, statements )
+      m_call.statements = statements
+      m_call.organize
+
+      return fn_type
 
 endClass
 

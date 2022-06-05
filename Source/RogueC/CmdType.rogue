@@ -493,6 +493,9 @@ augment
     method EmptyCompound.type->Type
       return of_type
 
+    method FunctionDefinition.type->Type
+      return resolve_type
+
     method GenericFunctionDefinition.type->Type
       return Program.type_GenericFn
 
