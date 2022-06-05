@@ -88,10 +88,10 @@ class Radians( value:Real ) [compound]
       return value - other_value
 
     method sin->Real
-      value.sin
+      return value.sin
 
     method tan->Real
-      value.tan
+      return value.tan
 
     method to->String
       return value->String
