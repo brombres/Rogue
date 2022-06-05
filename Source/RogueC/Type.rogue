@@ -1071,8 +1071,13 @@ class Type : Cmd
         endForEach
 
         forEach (base_m in base_class.methods)
-          if (has_init and base_m.name == "init") nextIteration
           local m = methods[ base_m.signature ]
+
+          if (has_init and base_m.name == "init")
+            if (m) m.overridden_method = base_m
+            nextIteration
+          endIf
+
           if (m)
             if (m.return_type? xor base_m.return_type?)
               if (m.return_type?)
@@ -1085,10 +1090,11 @@ class Type : Cmd
               throw m.t.error( "Return type mismatch - override return type $ is not instanceOf overridden return type $."...
                 (m.return_type,base_m.return_type) )
             endIf
+            m.overridden_method = base_m
           else
             if (base_m.attributes.is_propagated)
               # 'ThisType' -> (actual type)
-              add( base_m.propagated_to(this) )
+              add( base_m.propagated_to(this).[overridden_method=m] )
             else
               add( base_m )
             endIf

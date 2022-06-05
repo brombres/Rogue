@@ -992,4 +992,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.optional_type)
       return result
 
+    method on_visit_children( cmd:CallPriorMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
 endClass

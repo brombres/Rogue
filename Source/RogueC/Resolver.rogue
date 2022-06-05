@@ -302,6 +302,21 @@ class Resolver : Visitor
         return visit( Access( t, "println", Args(t,LiteralString(t,format->String)) ) )
       endIf
 
+    method on( cmd:CallPriorMethod )->Cmd
+      local args = which{ cmd.args || Args(cmd.t) }
+
+      local m = find_method( cmd.t, this_type, null, cmd.name, args )
+      if (not m.overridden_method)
+        throw cmd.t.error( "Invalid prior call - $ does not override any base class methods. " ...
+            "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
+      endIf
+
+      args.list.discard( $ instanceOf DefaultArg )
+      visit( args )
+      convert_args_to_parameter_types( args, m.overridden_method )
+
+      return validate( CallThisStaticMethod(cmd.t, m.overridden_method, args) )
+
     method on_visit( cmd:Catch )
       if (not cmd.v_catch and cmd.var_name)
         cmd.v_catch = add_local( Local(cmd.t, cmd.var_name, cmd.exception_type) )

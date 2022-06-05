@@ -26,6 +26,8 @@ class Procedure : Cmd
     throws            : Type
     # Most general type of exception that this procedure throws (or null)
 
+    overridden_method : Procedure
+
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )

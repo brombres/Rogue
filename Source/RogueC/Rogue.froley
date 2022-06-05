@@ -68,54 +68,55 @@ KEYWORD_FUNCTION_TYPE     Function
 KEYWORD_GLOBAL            global
 KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
-KEYWORD_IF              if
-KEYWORD_IMPORT          import
-KEYWORD_INCLUDE         include
-KEYWORD_INSTANCE_OF     instanceOf
-KEYWORD_IS              is
-KEYWORD_IS_COMPOUND     isCompound
-KEYWORD_IS_PRIMITIVE    isPrimitive
-KEYWORD_IS_REFERENCE    isReference
-KEYWORD_IS_TYPE         isType
-KEYWORD_LOCAL           local
-KEYWORD_LOOP            loop
-KEYWORD_METHOD          method      [structural]
-KEYWORD_METHODS         METHODS     [structural]
-KEYWORD_MODULE          module      [structural]
-KEYWORD_NATIVE_SECTION  NATIVE      [structural]
-KEYWORD_NATIVE          native
-KEYWORD_NATIVE_HEADER   nativeHeader
-KEYWORD_NATIVE_CODE     nativeCode
-KEYWORD_NECESSARY       necessary
-KEYWORD_NEW             new
-KEYWORD_NEXT_ITERATION  nextIteration
-KEYWORD_NO_ACTION       noAction
-KEYWORD_NOT             not
-KEYWORD_NULL            null
-KEYWORD_OR              or
-KEYWORD_OTHERS          others      [structural]
-KEYWORD_PI              pi
-KEYWORD_PROPERTIES      PROPERTIES  [structural]
-KEYWORD_RETURN          return
-KEYWORD_ROUTINE         routine     [structural]
-KEYWORD_SATISFIED       satisfied   [structural]
-KEYWORD_STATES          STATES      [structural]
-KEYWORD_SUFFICIENT      sufficient
-KEYWORD_TEMPORARILY     temporarily
-KEYWORD_THIS            this
-KEYWORD_THIS_TYPE       ThisType
-KEYWORD_THROW           throw
-KEYWORD_TRACE           trace
-KEYWORD_TRUE            true
-KEYWORD_TRY             try
-KEYWORD_UNDEFINED       undefined
-KEYWORD_UNSATISFIED     unsatisfied [structural]
-KEYWORD_USE             use
-KEYWORD_USES            uses        [structural]
-KEYWORD_WHICH           which
-KEYWORD_WHILE           while
-KEYWORD_WITH            with
-KEYWORD_XOR             xor
+KEYWORD_IF                if
+KEYWORD_IMPORT            import
+KEYWORD_INCLUDE           include
+KEYWORD_INSTANCE_OF       instanceOf
+KEYWORD_IS                is
+KEYWORD_IS_COMPOUND       isCompound
+KEYWORD_IS_PRIMITIVE      isPrimitive
+KEYWORD_IS_REFERENCE      isReference
+KEYWORD_IS_TYPE           isType
+KEYWORD_LOCAL             local
+KEYWORD_LOOP              loop
+KEYWORD_METHOD            method      [structural]
+KEYWORD_METHODS           METHODS     [structural]
+KEYWORD_MODULE            module      [structural]
+KEYWORD_NATIVE_SECTION    NATIVE      [structural]
+KEYWORD_NATIVE            native
+KEYWORD_NATIVE_HEADER     nativeHeader
+KEYWORD_NATIVE_CODE       nativeCode
+KEYWORD_NECESSARY         necessary
+KEYWORD_NEW               new
+KEYWORD_NEXT_ITERATION    nextIteration
+KEYWORD_NO_ACTION         noAction
+KEYWORD_NOT               not
+KEYWORD_NULL              null
+KEYWORD_OR                or
+KEYWORD_OTHERS            others      [structural]
+KEYWORD_PI                pi
+KEYWORD_PRIOR             prior
+KEYWORD_PROPERTIES        PROPERTIES  [structural]
+KEYWORD_RETURN            return
+KEYWORD_ROUTINE           routine     [structural]
+KEYWORD_SATISFIED         satisfied   [structural]
+KEYWORD_STATES            STATES      [structural]
+KEYWORD_SUFFICIENT        sufficient
+KEYWORD_TEMPORARILY       temporarily
+KEYWORD_THIS              this
+KEYWORD_THIS_TYPE         ThisType
+KEYWORD_THROW             throw
+KEYWORD_TRACE             trace
+KEYWORD_TRUE              true
+KEYWORD_TRY               try
+KEYWORD_UNDEFINED         undefined
+KEYWORD_UNSATISFIED       unsatisfied [structural]
+KEYWORD_USE               use
+KEYWORD_USES              uses        [structural]
+KEYWORD_WHICH             which
+KEYWORD_WHILE             while
+KEYWORD_WITH              with
+KEYWORD_XOR               xor
 
 ----------------------------------------------------------------------
 tokens Symbols
@@ -2480,6 +2481,17 @@ parser
   on "false"              -> LiteralLogical(value="false":Logical):LiteralPrimitive
   on "null"               -> LiteralNull:Literal
   on "pi"                 -> LiteralPi:Literal
+
+  on "prior"
+    mustConsume '.'
+    identifier
+    if (nextIs('(')) access_args
+    else             createNull
+    create CallPriorMethod( name:String, args:Args )
+    access_inner
+    return
+  endOn
+
   on "this"
     create This
     if (nextIs('('))

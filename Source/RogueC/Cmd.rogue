@@ -4439,3 +4439,21 @@ class LiteralNullOptional : Literal
       return "LiteralNullOptional($)" (%optional_type)
 
 endClass
+
+class CallPriorMethod : Cmd
+  PROPERTIES
+    name : String
+    args : Args
+
+  METHODS
+    method init( t, name, args )
+
+    method init( existing:CallPriorMethod )
+      prior.init( existing )
+      name = existing.name
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "CallPriorMethod($,$)" (%name,%args)
+
+endClass
