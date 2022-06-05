@@ -314,10 +314,14 @@ class List<<$DataType>> : Poolable ListType
           forEach (i in 0..<other_count)
             local a = this[ starting_index + i ]
             local b = other[ i ]
-            if (a is null)
-              necessary (b is null)
-            elseIf (b is null)
-              necessary (a is null)
+            if (isReference($DataType))
+              if (a is null)
+                necessary (b is null)
+              elseIf (b is null)
+                necessary (a is null)
+              else
+                necessary (a == b)
+              endIf
             else
               necessary (a == b)
             endIf
@@ -364,10 +368,14 @@ class List<<$DataType>> : Poolable ListType
           forEach (i in 0..<other_count)
             local a = this[ first_i + i ]
             local b = other[ i ]
-            if (a is null)
-              necessary (b is null)
-            elseIf (b is null)
-              necessary (a is null)
+            if (isReference($DataType))
+              if (a is null)
+                necessary (b is null)
+              elseIf (b is null)
+                necessary (a is null)
+              else
+                necessary (a == b)
+              endIf
             else
               necessary (a == b)
             endIf
@@ -491,15 +499,15 @@ class List<<$DataType>> : Poolable ListType
       if ($DataType isType Logical)
         native @|RogueLogical result = $this->as_logicals[$count];
                 |$this->as_logicals[$count] = 0;
-                |return result;
+                 return native("result")->$DataType
       elseIf (isCompound($DataType))
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |memset( (($<<element_type>>*)($this->data)) + $count, 0, sizeof($<<element_type>>) );
-                |return result;
+                 return native("result")->$DataType
       else
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |(($<<element_type>>*)($this->data))[$count] = 0;
-                |return result;
+                 return native("result")->$DataType
       endIf
 
     method remove_random( generator=Random:Random )->$DataType

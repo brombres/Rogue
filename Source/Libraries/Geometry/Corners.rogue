@@ -1,0 +1,11 @@
+module Geometry
+
+class Corners( top_left:XY, bottom_right:XY ) [compound]
+  GLOBAL METHODS
+    method create( bounds:Box )->Corners
+      return Corners( bounds.position, bounds.position+bounds.size )
+
+  METHODS
+    method to->Box
+      return Box( top_left, bottom_right-top_left )
+endClass

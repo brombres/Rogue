@@ -914,7 +914,7 @@ class Type : Cmd
               m.parameters.add( Local(t,"other",null,this) )
               m.return_type = Program.type_Logical
               m.statements.add( Return(t,
-                  NativeExpression( t, "0 == memcmp(&$this,&other,sizeof($<<this>>)", Program.type_Logical )
+                  NativeExpression( t, "0 == memcmp(&$this,&$other,sizeof($<<this>>))", Program.type_Logical )
               ) )
               m.organize
               methods[ m.signature ] = m

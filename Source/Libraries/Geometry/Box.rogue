@@ -2,6 +2,9 @@ module Geometry
 
 class Box( position:XY, size:XY ) [compound]
   GLOBAL METHODS
+    method create( corners:Corners )->Box
+      return corners->Box
+
     method create( x:Int32, y:Int32, width:Int32, height:Int32 )->Box
       return Box( XY(x,y), XY(width,height) )
 
@@ -42,6 +45,20 @@ class Box( position:XY, size:XY ) [compound]
       local br = top_left.or_larger( bottom_right )
       return Box( tl, br - tl )
 
+    method operator&( lhs:Box?, rhs:Box? )->Box?
+      if (not lhs or not rhs) return null
+      return lhs.value.intersection( rhs.value )
+
+    method operator|( lhs:Box?, rhs:Box? )->Box?
+      # Returns the union of this box with another box.
+      if (not lhs or lhs.value.size.is_zero) return rhs
+      if (not rhs or rhs.value.size.is_zero) return lhs
+
+      local tl = lhs.value.position.min( rhs.value.position )
+      local br = lhs.value.bottom_right.max( rhs.value.bottom_right )
+
+      return Box( tl, br-tl )
+
   METHODS
     method at( anchor:Anchor )->XY
       return position + anchor * size
@@ -51,17 +68,6 @@ class Box( position:XY, size:XY ) [compound]
 
     method at( u:Real, v:Real )->XY
       return position + XY(u,v) * size
-
-    method at( grid_index:XY, grid_size:XY )->Box
-      # Example:
-      #   at( XY(i,j), XY(3,3) ) returns the bounds of one of the following grid cells:
-      #
-      #   (0,0) | (1,0) | (2,0)
-      #   ------+-------+------
-      #   (0,1) | (1,1) | (2,1)
-      #   ------+-------+------
-      #   (0,2) | (1,2) | (2,2)
-      return from_corners( at(grid_index/grid_size), at((grid_index+XY(1,1))/grid_size) )
 
       #{
     method at_random->XY
@@ -76,6 +82,17 @@ class Box( position:XY, size:XY ) [compound]
 
     method bottom_right->XY
       return (position + size)
+
+    method cell( grid_index:XY, grid_size:XY )->Box
+      # Example:
+      #   at( XY(i,j), XY(3,3) ) returns the bounds of one of the following grid cells:
+      #
+      #   (0,0) | (1,0) | (2,0)
+      #   ------+-------+------
+      #   (0,1) | (1,1) | (2,1)
+      #   ------+-------+------
+      #   (0,2) | (1,2) | (2,2)
+      return from_corners( at(grid_index/grid_size), at((grid_index+XY(1,1))/grid_size) )
 
     method center->XY
       return this.at(0.5,0.5)
@@ -107,10 +124,6 @@ class Box( position:XY, size:XY ) [compound]
 
     method cropped( left:Int32, top:Int32, right:Int32, bottom:Int32 )->Box
       return Box( XY(x+left,y+top), XY(width-(left+right),height-(top+bottom)).or_larger(XY.zero) )
-
-    method description->String
-      return "[$,$ $x$]" (position.x,position.y,size.x,size.y)
-      #return "[@$,$ $x$]" (x.format(".2"),y.format(".2"),width.format(".2"),height.format(".2"))
 
     method expanded( delta:Int32 )->Box
       return cropped( -delta )
@@ -183,16 +196,15 @@ class Box( position:XY, size:XY ) [compound]
     method operator/( scale:XY )->Box
       return Box( position/scale, size/scale )
 
-    method operator&( rhs:Box )->Box?
-      return intersection( rhs )
+    method operator&( rhs:Box? )->Box?
+      return intersection( rhs.value )
 
-    method operator|( rhs:Box )->Box
+    method operator|( rhs:Box? )->Box?
       # Returns the union of this box with another box.
-      if (size.is_zero) return rhs
-      if (rhs.size.is_zero) return this
+      if (not rhs or rhs.value.size.is_zero) return this
 
-      local tl = position.min( rhs.position )
-      local br = bottom_right.max( rhs.bottom_right )
+      local tl = position.min( rhs.value.position )
+      local br = bottom_right.max( rhs.value.bottom_right )
 
       return Box( tl, br-tl )
 
@@ -236,6 +248,9 @@ class Box( position:XY, size:XY ) [compound]
     method to->Quad
       return Quad( this )
       }#
+
+    method to->String
+      return "[$,$ $x$]" (position.x,position.y,size.x,size.y)
 
       #{
     method to->Value( &integer )
@@ -289,3 +304,16 @@ class Box( position:XY, size:XY ) [compound]
       return position.y + this.size.y
 
 endClass
+
+augment Box?
+  GLOBAL METHODS
+    method operator&( lhs:Box?, rhs:Box? )->Box?
+      if (not lhs or not rhs) return null
+      return lhs.value & rhs
+
+    method operator|( lhs:Box?, rhs:Box? )->Box?
+      # Returns the union of this box with another box.
+      if (not lhs or lhs.value.size.is_zero) return rhs
+      return lhs.value | rhs
+endAugment
+

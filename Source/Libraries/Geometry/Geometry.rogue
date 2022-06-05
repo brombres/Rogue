@@ -3,6 +3,7 @@ module Geometry
 $include Geometry/Anchor
 $include Geometry/Box
 $include Geometry/Circle
+$include Geometry/Corners
 $include Geometry/Ellipse
 $include Geometry/Line
 $include Geometry/XY

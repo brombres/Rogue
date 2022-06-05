@@ -715,22 +715,20 @@ class Resolver : Visitor
       cmd.right = visit( cmd.right )
       local left_type = cmd.left.require_type
       local right_type = cmd.right.require_type
-      if (left_type.is_primitive or right_type.is_primitive)
-        return validate( CompareEQ(cmd.t,cmd.left,cmd.right) )
-      else
-        return cmd
+      if (not left_type.is_reference or not right_type.is_reference)
+        throw cmd.t.error( "Use '==' instead of 'is' to compare primitives and compounds." )
       endIf
+      return cmd
 
     method on( cmd:IsNot )->Cmd
       cmd.left = visit( cmd.left )
       cmd.right = visit( cmd.right )
       local left_type = cmd.left.require_type
       local right_type = cmd.right.require_type
-      if (left_type.is_primitive or right_type.is_primitive)
-        return validate( CompareNE(cmd.t,cmd.left,cmd.right) )
-      else
-        return cmd
+      if (not left_type.is_reference or not right_type.is_reference)
+        throw cmd.t.error( "Use '==' instead of 'is' to compare primitives and compounds." )
       endIf
+      return cmd
 
     method on( cmd:InstanceOf )->Cmd
       cmd.operand = visit( cmd.operand )

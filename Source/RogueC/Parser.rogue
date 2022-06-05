@@ -353,6 +353,9 @@ class Parser : ParserCore
         if (module_name == "") module_name = "Rogue"
         m = Program.get_module( augment_t, module_name )
         name .= after_last("::")
+      elseIf (name.begins_with('[') or name.ends_with(']') or name.ends_with('?'))
+        # Tables, Lists, and Optional types all go in the standard module namespace
+        m = Program.default_module
       endIf
 
       # Create a special aspect that will be incorporated into the designated class
