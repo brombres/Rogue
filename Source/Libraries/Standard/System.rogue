@@ -20,8 +20,13 @@ class System [essential]
   GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
+    execution_start_time   = System.time : Real
 
   GLOBAL METHODS
+    method elapsed_ms->Int32
+      # Execution time in milliseconds.
+      return ((System.time - execution_start_time) * 1000)->Int32
+
     method executable_filepath->String
       if (@executable_filepath) return @executable_filepath
 
@@ -180,6 +185,10 @@ class System [essential]
 
     method sync_storage
       noAction
+
+    method ticks->Int32
+      # Execution time in 1/60th second ticks.
+      return (elapsed_ms * 6) / 100
 
     method time->Real
       local time_seconds_x1000 : Int64
