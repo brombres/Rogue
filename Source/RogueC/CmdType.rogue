@@ -471,6 +471,9 @@ augment
     method CompareOp.type->Type
       return Program.type_Int32
 
+    method ContextBlock.type->Type
+      return context.type
+
     method ContextAccess.type->Type
       local context_type = context.type
       if (not context_type) return null
