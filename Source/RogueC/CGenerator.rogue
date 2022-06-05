@@ -960,6 +960,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:LiteralReal )
       writer.print cmd.value
+      if (Program.real_bits == 32) writer.print 'f'
 
     method on_visit( cmd:LiteralString )
       local c_id = Program.unique_strings[cmd.value]
