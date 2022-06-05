@@ -189,6 +189,10 @@ class CullUnusedElements : InspectionVisitor
     method on_visit( cmd:CreateObjectAndSetLocal )
       visit( cmd.of_type )
 
+    method on_visit( cmd:GetGlobalProperty )
+      visit( cmd.info.type_context )
+      visit( cmd.info )
+
       #method on_visit( cmd:GetSingleton )
       #visit( cmd.of_type )
 
