@@ -1127,9 +1127,9 @@ class Resolver : Visitor
 
     method on( cmd:TemplatedAccess )->Cmd
       local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
-      local type_template = cmd.module_context.templates[ type_template_name ]
+      local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
       if (type_template)
-        return visit( TypeAccess(cmd.t, Type(cmd.t,cmd.name,cmd.type_args), cmd.args) )
+        return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.type_args), cmd.args) )
       endIf
 
       # Assume templated method call
@@ -1443,6 +1443,7 @@ class Resolver : Visitor
     method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m : Module
       (m,name) = this_module.split_module_and_type( t, name )
+      if (not m) m = this_module
 
       temporarily this_module = m
 
@@ -1561,6 +1562,7 @@ class Resolver : Visitor
     method resolve_call( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
       local m : Module
       (m,name) = this_module.split_module_and_type( t, name )
+      if (not m) m = this_module
 
       temporarily this_module = m
 
