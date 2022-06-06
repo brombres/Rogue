@@ -3484,16 +3484,16 @@ class MethodTemplate : Cmd
   PROPERTIES
     name         : String
     placeholders : Cmd
-    _tokens      : TokenList
+    token_list   : TokenList
 
   METHODS
-    method init( t, name, placeholders, _tokens )
+    method init( t, name, placeholders, token_list )
 
     method init( existing:MethodTemplate )
       prior.init( existing )
       name = existing.name
       if (existing.placeholders) placeholders = existing.placeholders.cloned
-      if (existing._tokens) _tokens = existing._tokens.cloned
+      if (existing.token_list) token_list = existing.token_list.cloned
 
     method description->String
       return "MethodTemplate($,$)" (%name,%placeholders)
@@ -3505,7 +3505,7 @@ class MethodTemplate : Cmd
       endForEach
       local name = type_args->String( name )
       local replacements = Template.replacements( placeholders, type_args )
-      local tokens = Template.make_replacements( type_context, _tokens, replacements )
+      local tokens = Template.make_replacements( type_context, token_list, replacements )
       local parser = Parser( tokens )
       parser._cmd_stack.add( Identifier(t,name) )
       local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
@@ -4163,16 +4163,16 @@ class GlobalMethodTemplate : Cmd
   PROPERTIES
     name         : String
     placeholders : Cmd
-    _tokens      : TokenList
+    token_list   : TokenList
 
   METHODS
-    method init( t, name, placeholders, _tokens )
+    method init( t, name, placeholders, token_list )
 
     method init( existing:GlobalMethodTemplate )
       prior.init( existing )
       name = existing.name
       if (existing.placeholders) placeholders = existing.placeholders.cloned
-      if (existing._tokens) _tokens = existing._tokens.cloned
+      if (existing.token_list) token_list = existing.token_list.cloned
 
     method description->String
       return "GlobalMethodTemplate($,$)" (%name,%placeholders)
@@ -4184,7 +4184,7 @@ class GlobalMethodTemplate : Cmd
       endForEach
       local name = type_args->String( name )
       local replacements = Template.replacements( placeholders, type_args )
-      local tokens = Template.make_replacements( type_context, _tokens, replacements )
+      local tokens = Template.make_replacements( type_context, token_list, replacements )
       local parser = Parser( tokens )
       parser._cmd_stack.add( Identifier(t,name) )
       local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)

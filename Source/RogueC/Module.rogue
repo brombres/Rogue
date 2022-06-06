@@ -108,6 +108,7 @@ class Module
 
       local (mod,type) = split_module_and_type( t, type_name )
       if (mod is null) mod = this
+println StackTrace()
       throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
     method find_type( t:Token, type_name:String, &extended_search )->Type

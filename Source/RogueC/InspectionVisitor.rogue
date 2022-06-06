@@ -727,7 +727,7 @@ class InspectionVisitor<<$ReturnType>>
       local result : $ReturnType
       result = visit(cmd.placeholders)
       if (result?) return result
-      result = visit(cmd._tokens)
+      result = visit(cmd.token_list)
       return result
 
     method on_visit_children( cmd:TemplatedAccess )->$ReturnType
@@ -909,7 +909,7 @@ class InspectionVisitor<<$ReturnType>>
       local result : $ReturnType
       result = visit(cmd.placeholders)
       if (result?) return result
-      result = visit(cmd._tokens)
+      result = visit(cmd.token_list)
       return result
 
     method on_visit_children( cmd:Block )->$ReturnType

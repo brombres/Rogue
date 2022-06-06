@@ -83,10 +83,12 @@ class Type : Cmd
 
     method create( t:Token, template:Template, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
       # 'name' should already include <<type,args>>
-      local type = template.module_context.find_type( t, name, &extended_search )
-      if (type) return type
+      if (type_args)
+        local type = template.module_context.find_type( t, name, &extended_search )
+        if (type) return type
+      endIf
 
-      type = Type( t, template.module_context, name, 0 )
+      local type = Type( t, template.module_context, name, 0 )
       if (is_tuple) type.attributes.is_tuple = true
       template.instantiate( type, type_args )
       return type
@@ -105,7 +107,7 @@ class Type : Cmd
 
     method create( t:Token, key_type:Type, value_type:Type )->Type
       # Creates type [KeyType:ValueType] AKA Table<<KeyType,ValueType>>
-      local name = "[$:$]"(key_type,value_type)
+      local name = "[$::$:$::$]"(key_type.module_context,key_type,value_type.module_context,value_type)
 
       local type = Program.current_module.find_type( t, name, &extended_search )
       if (type) return type
@@ -159,6 +161,8 @@ class Type : Cmd
             builder.print element.name
             builder.print ':'
           endIf
+          builder.print element.of_type.module_context.name
+          builder.print "::"
           builder.print element.of_type.name
         endForEach
         builder.print ')'

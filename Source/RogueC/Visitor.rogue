@@ -512,7 +512,7 @@ class Visitor
 
     method on_visit_children( cmd:MethodTemplate )
       cmd.placeholders = visit(cmd.placeholders)
-      cmd._tokens = visit(cmd._tokens)->(as TokenList)
+      cmd.token_list = visit(cmd.token_list)->(as TokenList)
 
     method on_visit_children( cmd:TemplatedAccess )
       cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
@@ -609,7 +609,7 @@ class Visitor
 
     method on_visit_children( cmd:GlobalMethodTemplate )
       cmd.placeholders = visit(cmd.placeholders)
-      cmd._tokens = visit(cmd._tokens)->(as TokenList)
+      cmd.token_list = visit(cmd.token_list)->(as TokenList)
 
     method on_visit_children( cmd:Block )
       cmd.assignments = visit(cmd.assignments)
