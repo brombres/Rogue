@@ -201,7 +201,7 @@ class Module
       endForEach
 
       # Add global statements to Routine.on_launch()
-      local type_Routine = Type( t, Program.default_module, "Routine" )
+      local type_Routine = Type( t, this, "Routine" )
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (not r)
         local launch_t = which{ global_statements.count:global_statements.first.t || t }
