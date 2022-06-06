@@ -85,12 +85,16 @@ class CSpecializer : Visitor
     method on( cmd:CreateObject )->Cmd
       visit_children( cmd )
 
-      local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
-      insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
-      if (cmd.m_init)
-        insert( validate(CallDynamicMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
+      if (Program.gc_auto or cmd.m_init)
+        local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
+        insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
+        if (cmd.m_init)
+          insert( validate(CallDynamicMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
+        endIf
+        return GetLocal(cmd.t,v)
+      else
+        return cmd
       endIf
-      return GetLocal(cmd.t,v)
 
     method on_visit( cmd:If )
       control_stack.add( cmd )

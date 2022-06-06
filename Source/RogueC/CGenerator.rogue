@@ -691,6 +691,11 @@ class CGenerator : Visitor
       endIf
       writer.print "}"
 
+    method on_visit( cmd:CreateObject )
+      writer.print "ROGUE_CREATE_OBJECT( "
+      writer.print cmd.of_type.c_name
+      writer.print " )"
+
     method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
       writer.print " = "
