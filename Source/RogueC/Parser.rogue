@@ -151,6 +151,12 @@ class Parser : ParserCore
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
 
+    method clone
+      if (disable_output or _cmd_stack.is_empty) return
+      local cmd = _cmd_stack.last
+      if (cmd) _cmd_stack.add( cmd.cloned )
+      else     _cmd_stack.add( cmd )
+
     method check_target
       local t = _read
       if (t.type != TokenType.STRING) throw t.error( "Literal string expected." )

@@ -78,6 +78,7 @@ KEYWORD_IS_PRIMITIVE      isPrimitive
 KEYWORD_IS_REFERENCE      isReference
 KEYWORD_IS_TYPE           isType
 KEYWORD_LOCAL             local
+KEYWORD_LOCALIZE          localize
 KEYWORD_LOOP              loop
 KEYWORD_METHOD            method      [structural]
 KEYWORD_METHODS           METHODS     [structural]
@@ -1724,6 +1725,7 @@ parser
 
 - control_structure
   on     "local"       local_declarations: return
+  onPeek "localize"    localize:           return
   onPeek "block"       block:              return
   onPeek "contingent"  contingent:         return
   onPeek "forEach"     forEach_loop:       return
@@ -1946,6 +1948,23 @@ parser
     produce Local( name=content, initial_value, type:Type )
   endOn
   mustConsume IDENTIFIER  # throws error
+
+- localize
+  on "localize"
+    beginList
+      identifier
+
+      call clone
+      createNull
+      create Access(name:String,args)
+
+      createNull
+      create Local(name:String,initial_value,type:Type)
+    createList
+
+    createNull
+    produce LocalDeclarations( declarations, type:Type )
+  endOn
 
 - destructuring_local_declarations
   on '('
