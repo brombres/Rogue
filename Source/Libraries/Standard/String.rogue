@@ -149,7 +149,7 @@ class String : Poolable PrintWriter
       return operator*( right, left )
 
     method operator/( prefix:String, suffix:String )->String
-      return "$/$" (prefix.without_trailing('/'),suffix)
+      return "$/$" (prefix.without_suffix('/'),suffix)
 
   METHODS
     method init
@@ -253,7 +253,7 @@ class String : Poolable PrintWriter
       else          return this
 
     method before_suffix( ch:Character, &ignore_case )->String
-      if (ends_with(ch,&=ignore_case)) return before_last( ch, &=ignore_case )
+      if (ends_with(ch,&=ignore_case)) return leftmost(-1)
       else                             return this
 
     method before_suffix( st:String, &ignore_case )->String
@@ -1703,18 +1703,31 @@ class String : Poolable PrintWriter
       if (i.exists) return from( 0, i.value+(st.count-1) )
       else          return this
 
-    method with_trailing( ch:Character )->String
+    method with_prefix( ch:Character )->String
+      # Returns a string that begins with the given character. If this string already begins with the
+      # given character then this string is returned unchanged.
+      if (this.begins_with(ch)) return this
+      return ch + this
+
+    method with_prefix( text:String )->String
+      # Returns a string that begins with the given text. If this string already begins with the given
+      # text then this string is returned unchanged.
+      if (this.begins_with(text)) return this
+      return text + this
+
+    method with_suffix( ch:Character )->String
       # Returns a string that ends with the given character. If this string already ends with the
       # given character then this string is returned unchanged.
       if (this.ends_with(ch)) return this
       return this + ch
 
-    method with_trailing( text:String )->String
+    method with_suffix( text:String )->String
       # Returns a string that ends with the given text. If this string already ends with the given
       # text then this string is returned unchanged.
       if (this.ends_with(text)) return this
       return this + text
-    method without_trailing( ch:Character )->String
+
+    method without_suffix( ch:Character )->String
       # Like before_suffix() but removes multiple copies of the given character.
       local result = this
       local next   = result.before_suffix( ch )
@@ -1724,7 +1737,7 @@ class String : Poolable PrintWriter
       endWhile
       return result
 
-    method without_trailing( text:String )->String
+    method without_suffix( text:String )->String
       # Like before_suffix() but removes multiple copies of the given string.
       local result = this
       local next   = result.before_suffix( text )
