@@ -4,6 +4,10 @@ class XY( x:Int32, y:Int32 ) [compound]
   DEFINITIONS
     zero = XY(0,0)
 
+  GLOBAL METHODS
+    method create( n:Int32 )->XY
+      return XY(n,n)
+
   METHODS
     method is_zero->Logical
       return x == 0 and y == 0
