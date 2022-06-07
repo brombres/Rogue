@@ -432,7 +432,7 @@ augment Program
           elseIf (ch == ':')
             # "::" -> ""
             if (iterator.peek == ':') iterator.read
-            else                      builder.print ':'
+            else                      builder.print '_'
           else
             which (ch)
               case '?': builder.print "Q"
@@ -519,6 +519,11 @@ augment Type
       if (@c_name) return @c_name
       if (is_aspect)
         @c_name = "RogueObject"
+      elseIf (attributes.is_tuple)
+        @c_name = Program.unique_c_name( "$Tuple$"(module_context.c_name,Program.to_c_name(name)) )
+      elseIf (name.begins_with('['))
+        # [KeyType:ValueType] Table
+        @c_name = Program.unique_c_name( "$Table$"(module_context.c_name,Program.to_c_name(name)) )
       else
         @c_name = Program.unique_c_name( module_context.c_name + Program.to_c_name(name) )
       endIf
