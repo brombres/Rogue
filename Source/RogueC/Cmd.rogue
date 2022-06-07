@@ -184,6 +184,9 @@ class TokenList : Cmd
     method add( token:Token )
       tokens.add( token )
 
+    method clear
+      tokens.clear
+
     method description->String
       return "TokenList($)"(tokens)
 
@@ -1526,7 +1529,7 @@ class GlobalMethod : Procedure
       type_context = existing.@type_context
 
     method context_signature->String
-      return "$::$.$"(module_context,type_context,signature)
+      return "$.$"(type_context.scoped_name,signature)
 
     method is_global->Logical
       return true
@@ -1568,7 +1571,7 @@ class Method : Procedure
       if (existing.source_tokens) source_tokens = existing.source_tokens.cloned
 
     method context_signature->String
-      return "$::$.$"(module_context,@type_context,signature)
+      return "$.$"(@type_context.scoped_name,signature)
 
     method generate_body
       if (statements is null)
@@ -1965,7 +1968,10 @@ class TemplateArgs : CmdList
       return list[index]->(as TokenList)
 
     method to->String
-      return this->String("")
+      use builder = StringBuilder.pool
+        builder.print( (forEach in this).tokens )
+        return builder->String
+      endUse
 
     method to->String( name:String )
       use builder = StringBuilder.pool
@@ -1973,7 +1979,39 @@ class TemplateArgs : CmdList
         builder.print "<<"
         forEach (token_list at i in this)
           if (i) builder.print ','
-          builder.print ((forEach in token_list.tokens)->String)
+          use token_string = StringBuilder.pool
+            token_string.print((forEach in token_list.tokens)->String)
+            local type_entry = Program.current_module.type_arg_lookup.find( token_string )
+            if (type_entry)
+              if (type_entry.value)
+                # This token string has already been identified as a type
+                builder.print( type_entry.value.scoped_name )
+                token_list = TokenList( token_list.t, type_entry.value.name_tokens )
+                this[i] = token_list
+              else
+                # Already identified as NOT a type
+                builder.print token_string
+              endIf
+            else
+              # Determine if this token string represents a type and, if so, create lookup table entry
+              local type = Program.current_module.find_type( t, token_string, &extended_search )
+              if (not type)
+                try
+                  type = Parser( token_list.tokens ).parse( Parser.ip_type )->(as Type)
+                catch (Exception)
+                  # not a type
+                endTry
+              endIf
+              if (type)
+                token_list = TokenList( token_list.t, type.name_tokens )
+                this[i] = token_list
+                token_string.clear
+                token_string.print( (forEach in token_list.tokens)->String )
+              endIf
+              builder.print token_string
+              Program.current_module.type_arg_lookup[token_string] = type
+            endIf
+          endUse
         endForEach
         builder.print ">>"
         return builder->String
@@ -3590,11 +3628,9 @@ class FunctionType : Type
     method create( t:Token, param_types:TypeList, return_type:Type )->FunctionType
       use builder = StringBuilder.pool
         builder.print "(Function("
-        forEach (arg at i in param_types)
+        forEach (arg_type at i in param_types)
           if (i > 0) builder.print ','
-          builder.print arg.module_context
-          builder.print "::"
-          builder.print arg
+          builder.print arg_type.scoped_name
         endForEach
         builder.print ')'
         if (return_type)

@@ -30,6 +30,7 @@ class Type : Cmd
     method_templates                 = ListLookupTable<<String,MethodTemplate>>()
     method_template_instances        = Set<<String>>()
 
+    scoped_name           : String
     name_tokens           : Token[]
 
     id                    : Int32
@@ -161,9 +162,7 @@ class Type : Cmd
             builder.print element.name
             builder.print ':'
           endIf
-          builder.print element.of_type.module_context.name
-          builder.print "::"
-          builder.print element.of_type.name
+          builder.print element.of_type.scoped_name
         endForEach
         builder.print ')'
         local tuple_type_name = builder->String
@@ -529,17 +528,9 @@ class Type : Cmd
     method name_tokens->Token[]
       if (@name_tokens) return @name_tokens
 
-      local full_name : String
-      if (name.begins_with('(') or name.begins_with('[') or name.ends_with('?'))
-        # Type names beginning with ( are (tuples) or (Functions)
-        # Type names beginning with [ are [KeyType:ValueType] tables
-        # Type names ending with ? are optional types
-        full_name = name
-      else
-        full_name = "$::$"(module_context.name,name)
-      endIf
+      localize scoped_name
 
-      @name_tokens = Scanner( full_name, full_name ).tokenize
+      @name_tokens = Scanner( scoped_name, scoped_name ).tokenize
       @name_tokens.remove_last  # EOL
       return @name_tokens
 
@@ -1254,6 +1245,26 @@ class Type : Cmd
       temporarily resolver.this_module=module_context, resolver.this_procedure=null
         resolver.visit_type( this )
       endTemporarily
+
+    method scoped_name->String
+      if (@scoped_name) return @scoped_name
+
+      if (name.begins_with('(') or name.begins_with('[') or name.ends_with('?'))
+        # Type names beginning with ( are (tuples) or (Functions)
+        # Type names beginning with [ are [KeyType:ValueType] tables
+        # Type names ending with ? are optional types
+        # None of the above use an explicit scope.
+        @scoped_name = name
+      else
+        use builder = StringBuilder.pool
+          builder.print module_context.name
+          builder.print "::"
+          builder.print name
+          @scoped_name = builder
+        endUse
+      endIf
+
+      return @scoped_name
 
     method to->Character
       return Cmd.to_character(name)

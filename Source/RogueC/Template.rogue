@@ -44,7 +44,7 @@ class Template
         endIf
       endTemporarily
 
-      incorporate_augments( type, name, replacements )        # e.g. List
+      incorporate_augments( type, name, replacements )          # e.g. List
       if (type.name != name)
         incorporate_augments( type, type.name, replacements )   # e.g. Byte[]
       endIf
