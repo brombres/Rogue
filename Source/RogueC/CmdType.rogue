@@ -428,6 +428,11 @@ augment
     method Cmd.type->Type
       return null
 
+    method Access.type->Type
+      local type = Program.current_module.find_type( t, name, &extended_search )
+      if (type and (args or type.attributes.is_singleton)) return type
+      return null
+
     method AddAndAssign.type->Type
       return target.type
 

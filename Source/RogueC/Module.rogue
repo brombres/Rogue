@@ -118,6 +118,7 @@ class Module
         # Explicit module given
         local result = mod.types[ isolated_type_name ]
         if (result) return result
+        extended_search = false
 
       else
         local result = this.types[ isolated_type_name ]
@@ -134,10 +135,21 @@ class Module
       endIf
 
       # Handle non-parameterized templates here by checking for a match with <<0>> template parameters.
-      if (not isolated_type_name.ends_with('>'))  # avoid wasted effort for most type names
-        local template = mod.templates[ isolated_type_name+"<<0>>" ]
+      if (not isolated_type_name.ends_with('>'))
+        local template_name = isolated_type_name + "<<0>>"
+
+        local template = mod.templates[ template_name ]
         if (template)
           return Type( template.t, template, isolated_type_name )
+        endIf
+
+        if (extended_search)
+          forEach (used_m in used_modules)
+            template = used_m.m.templates[ template_name ]
+            if (template)
+              return Type( template.t, template, isolated_type_name )
+            endIf
+          endForEach
         endIf
       endIf
 
