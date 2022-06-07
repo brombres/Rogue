@@ -2337,6 +2337,7 @@ parser
   on "!"   -> BitwiseNot
   on "not" -> LogicalNot
   on "-"   -> Negate
+  on "%"   -> Describe
 
 - post_unary [postUnary]
   on '?'   -> Logicalize

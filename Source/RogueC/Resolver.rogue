@@ -446,6 +446,14 @@ class Resolver : Visitor
       local range_type = Type( t, cmd.name, common_type )
       return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
 
+    method on( cmd:Describe )->Cmd
+      local operand = visit( cmd.operand )
+      if (operand.require_type.is_reference)
+        return visit( Access(cmd.t, "describe", Args(cmd.t,operand)) )
+      else
+        return visit( ContextAccess(cmd.t, operand, "description") )
+      endIf
+
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
 

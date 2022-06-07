@@ -4527,3 +4527,10 @@ class CallPriorMethod : Cmd
       return "CallPriorMethod($,$)" (%name,%args)
 
 endClass
+
+class Describe : Unary
+  METHODS
+    method description->String
+      return "Describe($)" (%operand)
+
+endClass
