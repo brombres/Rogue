@@ -327,21 +327,26 @@ class Parser : ParserCore
 
     method on_end_arg
       --generic_fn_args_depth
-      if (generic_fn_args_used and not disable_output and generic_fn_args_depth == 0)
-        local arg = _cmd_stack.remove_last
-        local n = 0
-        if (generic_fn_args_used > 1)
-          local bits = generic_fn_args_used :>>>: 1
-          while (bits)
-            ++n
-            if (not (bits & 1))
-              throw arg.t.error( "Missing usage of implicit function argument $$. Multiple implicit function arguments must be contiguous and include $1." ('$',n,'$') )
-            endIf
-            bits = bits:>>>:1
-          endWhile
+      if (generic_fn_args_used and generic_fn_args_depth == 0)
+        if (not disable_output)
+          local arg = _cmd_stack.remove_last
+          local n = 0
+          if (generic_fn_args_used > 1)
+            local bits = generic_fn_args_used :>>>: 1
+            while (bits)
+              ++n
+              if (not (bits & 1))
+                throw arg.t.error( "Missing usage of implicit function argument $$. Multiple implicit function arguments must be contiguous and include $1." ('$',n,'$') )
+              endIf
+              bits = bits:>>>:1
+            endWhile
+          endIf
+          generic_fn_args_used = 0
+          arg = ImplicitFunctionGenerator.apply(arg,n)
+          _cmd_stack.add( arg )
+        else
+          generic_fn_args_used = 0
         endIf
-        _cmd_stack.add( ImplicitFunctionGenerator.apply(arg,n) )
-        generic_fn_args_used = 0
       endIf
 
     method on_parsed_augment

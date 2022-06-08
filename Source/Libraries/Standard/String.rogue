@@ -332,8 +332,8 @@ class String : Poolable PrintWriter
                 |  #else
                 |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );
                 |  #endif
-                |  if (result == 0) return 0;
-                |}
+                   if (native("result == 0")->Logical) return 0
+        native @|}
                 |else
                 |{
                 |  // Strings differ in length.  Compare the part that matches first.
@@ -346,12 +346,12 @@ class String : Poolable PrintWriter
                 |  if (result == 0)
                 |  {
                 |    // Equal so far - the shorter string comes before the longer one.
-                |    if (limit == other_count) return 1;
-                |    return -1;
-                |  }
+                     if (native("limit == other_count")->Logical) return  1
+                     else                                         return -1
+        native @|  }
                 |}
-                |if (result < 0) return -1;
-                |else            return 1;
+                 if (native("result < 0")->Logical) return -1
+                 else                               return 1
       else
         return this <> other
       endIf

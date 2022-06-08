@@ -870,14 +870,17 @@ class File( filepath:String ) [compound]
         return destination_filepath
 
       endIf
+      }#
 
-    method without_trailing_separator( filepath:String )->String
+    method without_trailing_separator->File
       # Removes trailing slash on anything except "/"
-      while (filepath.count > 1 and File.ends_with_separator(filepath))
-        filepath = filepath.leftmost( -1 )
+      local filepath = resolved.filepath
+      while (filepath.count > 1 and filepath.ends_with('/'))
+        filepath .= leftmost( -1 )
       endWhile
-      return filepath
+      return File(filepath)
 
+      #{
     method writer( filepath:String )->FileWriter
       filepath = expand_path( filepath )
       return FileWriter( filepath )

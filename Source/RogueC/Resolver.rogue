@@ -963,9 +963,10 @@ class Resolver : Visitor
           throw cmd.t.error( "Type $ has multiple methods named '$'. A unique method name is required."(context_type,name) )
         endIf
 
+        local m = methods.first
         local params = Parameters(cmd.t)
         local args   = Args( cmd.t )
-        forEach (p in methods.first.parameters)
+        forEach (p in m.parameters)
           params.add( Local(cmd.t,p.name,null,p.type) )
           args.add( Access(cmd.t,p.name) )
         endForEach
@@ -973,9 +974,11 @@ class Resolver : Visitor
         local with_values = WithValues(cmd.t)
         with_values.add( WithValue(cmd.t,"_THIS",This(cmd.t,this_type)) )
 
-        local statements = Statements( cmd.t, ContextAccess(cmd.t,Access(cmd.t,"_THIS"),cmd.name,args) )
+        local cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name,args ) : Cmd
+        if (m.return_type) cmd_call = Return( cmd.t, cmd_call )
+        local statements = Statements( cmd.t, cmd_call )
 
-        local fn_def = FunctionDefinition( cmd.t, params, methods.first.return_type, with_values, statements )
+        local fn_def = FunctionDefinition( cmd.t, params, m.return_type, with_values, statements )
         return visit( fn_def )
       endUse
 
@@ -2182,8 +2185,21 @@ class Resolver : Visitor
 
     method arg_type_is_compatible( arg:Cmd, param_type:Type )->Logical
       local arg_type = arg.require_type
-      if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
+
       if (arg_type is param_type) return true
+
+      if (arg_type is Program.type_GenericFn)
+        if (param_type not instanceOf FunctionType) return false
+        block arg=arg->(as GenericFunctionDefinition), param_type=param_type->(as FunctionType)
+          return arg.parameters.count == param_type.param_types.count
+        endBlock
+      endIf
+
+      if (arg_type.attributes.is_tuple and param_type.attributes.is_tuple)
+        return arg_type.is_compatible_tuple( param_type )
+      endIf
+
+      if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
       if (arg_type.instance_of(param_type)) return true
       if (arg_type.is_primitive and param_type.is_primitive) return true
       if (param_type is Program.type_String) return true
@@ -2192,15 +2208,6 @@ class Resolver : Visitor
           return true
         endIf
         return arg_type_is_compatible( arg, param_type.properties//value.type )
-      endIf
-      if (arg_type is Program.type_GenericFn)
-        if (param_type not instanceOf FunctionType) return false
-        block arg=arg->(as GenericFunctionDefinition), param_type=param_type->(as FunctionType)
-          return arg.parameters.count == param_type.param_types.count
-        endBlock
-      endIf
-      if (arg_type.attributes.is_tuple and param_type.attributes.is_tuple)
-        return arg_type.is_compatible_tuple( param_type )
       endIf
       return false
 
