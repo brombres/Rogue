@@ -419,7 +419,7 @@ class File( filepath:String ) [compound]
       return join(String[][part1, part2, part3, part4, part5, part6])
 }#
 
-    method listing( folder:String, filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path,
+    method listing( filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path,
                     &files, &folders, &unsorted )->String[]
       # Use the filepattern '**' for a recursive listing.
       local options : FileListingOption
@@ -430,7 +430,7 @@ class File( filepath:String ) [compound]
       if (folders)          options |= FileListingOption.FOLDERS
       if (unsorted)         options |= FileListingOption.UNSORTED
 
-      return FileListing( File(folder), filepattern, options ).filepaths
+      return FileListing( this, filepattern, options ).filepaths
 
     method load_as_bytes( &discard_bom )->Byte[]
       # discard_bom

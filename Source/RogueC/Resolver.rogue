@@ -949,6 +949,36 @@ class Resolver : Visitor
         on_visit( cmd->(as Procedure) )
       endTemporarily
 
+    method on( cmd:MethodInvocationFunction )->Cmd
+      local context = visit( cmd.context )
+      local context_type = context.require_type
+      local name = cmd.name
+      use methods = WorkList<<Procedure>>
+        forEach (m in context_type.methods.values)
+          if (m.name == name) methods.add( m )
+        endForEach
+        if (methods.count == 0)
+          throw cmd.t.error( "Type $ has no method named '$'."(context_type,name) )
+        elseIf (methods.count > 1)
+          throw cmd.t.error( "Type $ has multiple methods named '$'. A unique method name is required."(context_type,name) )
+        endIf
+
+        local params = Parameters(cmd.t)
+        local args   = Args( cmd.t )
+        forEach (p in methods.first.parameters)
+          params.add( Local(cmd.t,p.name,null,p.type) )
+          args.add( Access(cmd.t,p.name) )
+        endForEach
+
+        local with_values = WithValues(cmd.t)
+        with_values.add( WithValue(cmd.t,"_THIS",This(cmd.t,this_type)) )
+
+        local statements = Statements( cmd.t, ContextAccess(cmd.t,Access(cmd.t,"_THIS"),cmd.name,args) )
+
+        local fn_def = FunctionDefinition( cmd.t, params, methods.first.return_type, with_values, statements )
+        return visit( fn_def )
+      endUse
+
     method on( cmd:NamedTuple )->Cmd
       # Determine Tuple type
       visit_children( cmd )

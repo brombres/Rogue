@@ -27,7 +27,7 @@ class FileListing
 
   METHODS
     method init( folder:File, pattern:FilePattern?, options )
-#{
+      #{
       folder  = File( fix(folder->String) ).resolved
       if (pattern)
         pattern = FilePattern( File(fix(pattern.value->String)).resolved )
@@ -40,7 +40,7 @@ class FileListing
 
         if (options & FileListingOption.FILES)
           if (options & FileListingOption.ABSOLUTE) filepath = File.absolute_filepath( filepath )
-          if (options.is_omitting_path) filepath = File.filename( filepath )
+          if (options.is_omitting_path) filepath = File(filepath).filename->String
           filepaths.add( filepath )
         endIf
         return

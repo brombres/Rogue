@@ -2431,6 +2431,9 @@ parser
       mustConsume ']'
     createList
     create ContextBlock(context,commands)
+  elseOn "=>"
+    identifier
+    produce MethodInvocationFunction(context,name:String)
   elseOn "[>"
     beginList
       expression
