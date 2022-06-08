@@ -308,14 +308,6 @@ class File( filepath:String ) [compound]
       if (not i?) return this
       return File( filepath.from(i.value+1) )
 
-      #{
-    method fix_slashes( filepath:String )->String
-      # Filepaths are always manipulated using forward slashes. Use .conventional_filepath() to
-      # turn a file or filepath into a Windows-style version for display.
-      if (System.is_windows) return filepath.replacing( '\\', '/' )
-      else                   return filepath
-      }#
-
     method folder->File
       local filepath = resolved.filepath
 
@@ -334,17 +326,6 @@ class File( filepath:String ) [compound]
       return File( filepath.from(0, i1.value-1) )
 
       #{
-    method has_byte_order_mark( filepath:String )->Logical
-      if (not File.exists(filepath)) return false
-      if (File.size(filepath) < 3)  return false
-      local has_bom = true
-      local reader = reader( filepath )
-      if (reader.read != 0xEF) has_bom = false
-      if (reader.read != 0xBB) has_bom = false
-      if (reader.read != 0xBF) has_bom = false
-      reader.close
-      return has_bom
-
     method is_different_than( filepath:String, other_filepath:String )->Logical
       filepath = expand_path( filepath )
       other_filepath = expand_path( other_filepath )

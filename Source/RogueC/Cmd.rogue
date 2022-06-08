@@ -4534,3 +4534,9 @@ class Describe : Unary
       return "Describe($)" (%operand)
 
 endClass
+
+class AttributeBitflags : Cmd
+  METHODS
+    method description->String
+      return "AttributeBitflags"
+endClass

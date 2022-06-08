@@ -1,0 +1,8 @@
+enum FileListing [bitflags]
+  IGNORE_HIDDEN
+  ABSOLUTE
+  OMIT_PATH
+  FILES
+  FOLDERS
+  UNSORTED
+endEnum

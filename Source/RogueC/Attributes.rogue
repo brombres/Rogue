@@ -40,6 +40,7 @@ class Attribute
     ANONYMOUS_TUPLE    = (Int64(1):<<:35)
     TUPLE              = (Int64(1):<<:36)
     DIRECT_AUTO_STORE  = (Int64(1):<<:37)
+    BITFLAGS           = (Int64(1):<<:38)
 endClass
 
 class Attributes : CmdList
@@ -81,6 +82,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_anonymous_tuple,   Attribute.ANONYMOUS_TUPLE )
   ROGUE_ATTRIBUTE( is_tuple,             Attribute.TUPLE )
   ROGUE_ATTRIBUTE( is_direct_auto_store, Attribute.DIRECT_AUTO_STORE )
+  ROGUE_ATTRIBUTE( bitflags,             Attribute.BITFLAGS )
 
   PROPERTIES
     flags : Int64
@@ -130,6 +132,9 @@ augment
 
     method AttributeAPI.attribute_flags->Int64
       return Attribute.API
+
+    method AttributeBitflags.attribute_flags->Int64
+      return Attribute.BITFLAGS
 
     method AttributeCompound.attribute_flags->Int64
       return Attribute.COMPOUND

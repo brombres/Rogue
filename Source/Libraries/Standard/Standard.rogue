@@ -10,6 +10,7 @@ $include Standard/ConsoleEvent
 $include Standard/ConsoleMode
 $include Standard/ConsoleStyle
 $include Standard/Exception
+$include Standard/FileListingOptions
 $include Standard/FilePattern
 $include Standard/Global
 $include Standard/LineReader

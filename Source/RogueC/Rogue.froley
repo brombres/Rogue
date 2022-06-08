@@ -1073,10 +1073,25 @@ parser
   endIf
   produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
 
+- enum_attributes
+  beginList
+    on '['
+      while (hasAnother and not nextIs(']'))
+        enum_attribute
+        consume ','
+      endWhile
+      mustConsume(']')
+    endOn
+  produceList Attributes
+
+- enum_attribute
+  on @"bitflags"  -> AttributeBitflags
+  syntaxError "Illegal enum attribute. Expected [bitflags]."
+
 - enum
   constructor_properties
   base_types
-  class_attributes
+  enum_attributes
   if (consume(';'))
     createNull
   else

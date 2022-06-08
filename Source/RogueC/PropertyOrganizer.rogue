@@ -51,6 +51,8 @@ class PropertyOrganizer : Visitor
         local enum_properties = class_def.constructor_properties
 
         local ordinal = 0 : Int32?
+        if (this_type.attributes.bitflags) ordinal = 1
+
         local prev_name   : String
         forEach (category in this_type.categories)
           local t = category.t
@@ -70,14 +72,14 @@ class PropertyOrganizer : Visitor
           local value = category.value
           if (value)
             if (value instanceOf LiteralInt32)
-              ordinal = value->(as LiteralInt32).value + 1
+              ordinal = advance_ordinal( value->(as LiteralInt32).value, &bitflags=this_type.attributes.bitflags )
             else
               ordinal = null
             endIf
           else
             if (ordinal)
               value = LiteralInt32(t,ordinal.value)
-              ordinal = ordinal.value + 1
+              ordinal = advance_ordinal( ordinal.value, &bitflags=this_type.attributes.bitflags )
             else
               value = Add( t, ContextAccess(t,TypeContext(t,this_type),prev_name), LiteralInt32(t,1) )
             endIf
@@ -99,6 +101,15 @@ class PropertyOrganizer : Visitor
           endForEach
           collect_global( list.t, Property(list.t,"categories",list,Type(list.t,this_type)) )
         endBlock
+      endIf
+
+    method advance_ordinal( ordinal:Int32, &bitflags )->Int32
+      if (bitflags)
+        local next_value = 1
+        while (next_value <= ordinal and next_value >= 0) next_value = next_value :<<: 1
+        return next_value
+      else
+        return ordinal + 1
       endIf
 
     method on( cmd:GlobalPropertyDeclarations )->Cmd
