@@ -2201,10 +2201,11 @@ class String : Poolable PrintWriter
       return -1
 
   NATIVE
-    nativeHeader @|#define ROGUE_STRING_COPY      0
-                  |#define ROGUE_STRING_BORROW    1
-                  |#define ROGUE_STRING_ADOPT     2
-                  |#define ROGUE_STRING_PERMANENT 3
+    nativeHeader @|#define ROGUE_STRING_COPY           0
+                  |#define ROGUE_STRING_BORROW         1
+                  |#define ROGUE_STRING_ADOPT          2
+                  |#define ROGUE_STRING_PERMANENT      3
+                  |#define ROGUE_STRING_PERMANENT_COPY 4
                   |
                   |RogueString* RogueString_create( const char* cstring, int byte_count, int usage );
                   |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
@@ -2217,15 +2218,16 @@ class String : Poolable PrintWriter
                  |  // Creates an immutable String object.
                  |  //
                  |  // usage
-                 |  //   COPY      - Make a copy of 'cstring'.
-                 |  //   BORROW    - Use externally-malloc'd 'cstring' but don't free it on GC.
-                 |  //   ADOPT     - Use externally-malloc'd 'cstring' and free() it on GC.
-                 |  //   PERMANENT - Like BORROW but new String is not tracked by the GC.
+                 |  //   COPY           - Make a copy of 'cstring'.
+                 |  //   BORROW         - Use externally-malloc'd 'cstring' but don't free it on GC.
+                 |  //   ADOPT          - Use externally-malloc'd 'cstring' and free() it on GC.
+                 |  //   PERMANENT      - Like BORROW but new String is not tracked by the GC.
+                 |  //   PERMANENT_COPY - Like COPY but new String is not tracked by the GC.
                  |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                  |  RogueInt32 character_count = RogueString_utf8_character_count( cstring, byte_count );
                  |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, usage );
                  |
-                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT);
+                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT) || (usage == ROGUE_STRING_PERMANENT_COPY);
                  |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
                  |  RogueByteList* data;
                  |  #ifdef ROGUE_GC_AUTO
@@ -2237,7 +2239,7 @@ class String : Poolable PrintWriter
                  |  #endif
                  |  result->data = data;
                  |
-                 |  if (usage == ROGUE_STRING_COPY)
+                 |  if (usage == ROGUE_STRING_COPY || usage == ROGUE_STRING_PERMANENT_COPY)
                  |  {
                  |    char* string_data = ROGUE_MALLOC( byte_count + 1 );
                  |    memcpy( string_data, cstring, byte_count );
@@ -2275,7 +2277,7 @@ class String : Poolable PrintWriter
                  |    return RogueString_create( cstring, byte_count, usage );
                  |  }
                  |
-                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT);
+                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT) || (usage == ROGUE_STRING_PERMANENT_COPY);
                  |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
                  |  RogueByteList* data;
                  |  #ifdef ROGUE_GC_AUTO

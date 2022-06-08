@@ -36,7 +36,7 @@ class System [essential]
               |  {
               |    strcpy( buffer, "rogue.exe" );
               |  }
-              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT );
+              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT_COPY );
               |
               |#elif defined(__APPLE__)
               |  char buffer[PATH_MAX];
@@ -47,7 +47,7 @@ class System [essential]
               |    raw_filepath[0] = 0;
               |  }
               |  realpath( raw_filepath, buffer );
-              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT );
+              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT_COPY );
               |
               |#else
               |  // Linux
@@ -59,7 +59,7 @@ class System [essential]
               |    strcpy( raw_filepath, "/proc/self/exe" );
               |  #endif
               |  if (0 == realpath( raw_filepath, buffer )) strcpy( buffer, "" );
-              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT );
+              |  $executable_filepath = RogueString_create( buffer, -1, ROGUE_STRING_PERMANENT_COPY );
               |#endif
 
       return @executable_filepath
