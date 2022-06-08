@@ -4541,7 +4541,7 @@ class AttributeBitflags : Cmd
       return "AttributeBitflags"
 endClass
 
-class MethodInvocationFunction : Cmd
+class CallbackFunction : Cmd
   PROPERTIES
     context : Cmd
     name    : String
@@ -4549,12 +4549,12 @@ class MethodInvocationFunction : Cmd
   METHODS
     method init( t, context, name )
 
-    method init( existing:MethodInvocationFunction )
+    method init( existing:CallbackFunction )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
       name = existing.name
 
     method description->String
-      return "MethodInvocationFunction($,$)" (%context,%name)
+      return "CallbackFunction($,$)" (%context,%name)
 
 endClass

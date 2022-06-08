@@ -997,7 +997,7 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
-    method on_visit_children( cmd:MethodInvocationFunction )->$ReturnType
+    method on_visit_children( cmd:CallbackFunction )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.context)
       return result

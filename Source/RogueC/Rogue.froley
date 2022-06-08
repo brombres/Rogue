@@ -2433,7 +2433,7 @@ parser
     create ContextBlock(context,commands)
   elseOn "=>"
     identifier
-    produce MethodInvocationFunction(context,name:String)
+    produce CallbackFunction(context,name:String)
   elseOn "[>"
     beginList
       expression
