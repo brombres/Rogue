@@ -13,35 +13,35 @@ class FileListing
                   |  #include <dirent.h>
                   |#endif
 
-  #{
   PROPERTIES
-    folder            : String
-    pattern           : String
-    options           : FileOptions
+    pattern           : FilePattern
+    options           : FileListingOption
     path_segments     : String[]
     pattern_segments  : String[]
 
     filepath_segments = String[]
     empty_segments    = String[]
-    results           = String[]
+    filepaths         = String[]
 
     callback          : Function(String)
 
   METHODS
-    method init( folder, pattern=null, options )
-      folder  = fix(folder)
-      pattern = fix(pattern)
-      if (folder)  folder  = File.expand_path( folder )
-      if (pattern) pattern = File.expand_path( pattern )
+    method init( folder:File, pattern:FilePattern?, options )
+#{
+      folder  = File( fix(folder->String) ).resolved
+      if (pattern)
+        pattern = FilePattern( File(fix(pattern.value->String)).resolved )
+      endIf
 
-      if (File.exists(folder) and not File.is_folder(folder))
+      if (folder.exists and not folder.is_folder)
         # We have a single file instead of a folder
-        local filepath = folder
-        if (options.is_ignoring_hidden and filepath.begins_with('.')) return
-        if (options.keeping_files)
-          if (options.is_absolute) filepath = File.absolute_filepath( filepath )
+        local filepath = folder->String
+        if ((options & FileListingOption.IGNORE_HIDDEN) and filepath.begins_with('.')) return
+
+        if (options & FileListingOption.FILES)
+          if (options & FileListingOption.ABSOLUTE) filepath = File.absolute_filepath( filepath )
           if (options.is_omitting_path) filepath = File.filename( filepath )
-          results.add( filepath )
+          filepaths.add( filepath )
         endIf
         return
       endIf
@@ -103,11 +103,11 @@ class FileListing
         if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
           filepath = filepath.after_first( adjusted_folder )
         endIf
-        results.add( filepath )
+        filepaths.add( filepath )
         return
       endIf
 
-      forEach (filepath in writer=results.rewriter)
+      forEach (filepath in writer=filepaths.rewriter)
         contingent
           if (pattern.count)
             # Directories were recursed into based on the pattern, but some files could have been added
@@ -125,7 +125,7 @@ class FileListing
       endForEach
 
       if (not options.is_unsorted)
-        results.sort( (a,b) => (a.compare_to(b,&ignore_case) < 0) )
+        filepaths.sort( (a,b) => (a.compare_to(b,&ignore_case) < 0) )
       endIf
 
     method collect( filename:String )
@@ -134,7 +134,7 @@ class FileListing
       filepath_segments.[ clear, add(path_segments), add(filename) ]
       local filepath = filepath_segments.join( "/" )
       if (File.is_folder(filepath))
-        if (options.keeping_folders) results.add( filepath )
+        if (options.keeping_folders) filepaths.add( filepath )
         if (pattern_segments.count)
           # Implied recursion because we have more pattern segments
           path_segments.add( filename )
@@ -161,7 +161,7 @@ class FileListing
           path_segments.remove_last
         endIf
       else
-        if (options.keeping_files) results.add( filepath )
+        if (options.keeping_files) filepaths.add( filepath )
       endIf
 
     method fix( pattern:String )->String
@@ -176,7 +176,6 @@ class FileListing
       pattern = parts.join( "**/" )
 
       return pattern
-      }#
 
   GLOBAL METHODS
     method _listing( folder:File, collector:Function(String) )
@@ -259,6 +258,7 @@ class FileListing
               |  }
               |}
               |#endif // Windows vs Mac/Linux
+                       }#
 
 endClass
 

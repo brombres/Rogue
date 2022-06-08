@@ -2,18 +2,20 @@ class File( filepath:String ) [compound]
   NATIVE
     nativeHeader @|#include <stdio.h>
                   |#include <sys/stat.h>
+                  |
+                  |#if !defined(ROGUE_PLATFORM_WINDOWS)
+                  |  #include <dirent.h>
+                  |#endif
 
   METHODS
-    #{
     method abs->File
-      #local file = expanded
-      local file = this
-      if (not exists(filepath))
-        local parent = folder( filepath )
-        if (parent.count == 0) parent = "."
-        return "$/$" (absolute_filepath(parent),filename(filepath))
+      if (not this.exists)
+        local parent = this.folder
+        if (parent.filepath.count == 0) parent = File(".")
+        return "$/$" (parent.abs,this.filename)
       endIf
 
+      local filepath = resolved.filepath
       local return_value : String
 
       native @|#if defined(_WIN32)
@@ -21,12 +23,13 @@ class File( filepath:String ) [compound]
               |  char long_name[PATH_MAX+4];
               |  char full_name[PATH_MAX+4];
               |
-              |  strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->utf8 );
+              |  strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->data->as_utf8 );
               |
               |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
               |  {
-              |    $return_value = RogueString_create_from_utf8( full_name, -1 );
-              |  }
+              |    $return_value = RogueString_create( full_name, -1, ROGUE_STRING_COPY );
+                   return_value .= replacing( '\\', '/' )
+      native @|  }
               |}
               |#else
               |{
@@ -34,19 +37,17 @@ class File( filepath:String ) [compound]
               |  int new_dir_fd;
               |  char filename[PATH_MAX];
               |  char c_filepath[ PATH_MAX ];
-              |  bool is_folder;
-              |
-              |  is_folder = RogueFile__is_folder__String( $filepath );
-              |
-              |  int len = $filepath->byte_count;
+                 localize is_folder
+      native @|
+              |  int len = $filepath->data->count;
               |  if (len >= PATH_MAX) len = PATH_MAX - 1;
-              |  memcpy( c_filepath, (char*)$filepath->utf8, len );
+              |  memcpy( c_filepath, (char*)$filepath->data->as_utf8, len );
               |  c_filepath[len] = 0;
               |
               |  // A way to get back to the starting folder when finished.
               |  original_dir_fd = open( ".", O_RDONLY );
               |
-              |  if (is_folder)
+              |  if ($is_folder)
               |  {
               |    filename[0] = 0;
               |  }
@@ -70,7 +71,7 @@ class File( filepath:String ) [compound]
               |    if ( r != 0 ) break;
               |    char* r2 = getcwd( c_filepath, PATH_MAX );
               |    if ( r2 == 0 ) break;
-              |    if ( !is_folder )
+              |    if ( !$is_folder )
               |    {
               |      strcat( c_filepath, "/" );
               |      strcat( c_filepath, filename );
@@ -78,20 +79,18 @@ class File( filepath:String ) [compound]
               |    r = fchdir( original_dir_fd );
               |    if ( r != 0 ) break;
               |
-              |    $return_value = RogueString_create_from_utf8( c_filepath, -1 );
-              |  } while (false);
+              |    $return_value = RogueString_create( c_filepath, -1, ROGUE_STRING_COPY );
+              |  } while (0);
               |
               |  if (original_dir_fd >= 0) close( original_dir_fd );
               |  if (new_dir_fd >= 0) close( new_dir_fd );
               |}
               |#endif
 
-      if (return_value is null)
-        throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
-      endIf
+      if (return_value) return return_value
+      throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
 
-      return fix_slashes( return_value )
-
+    #{
     method before_wildcard_pattern( filepath:String )->String
       # Example: alpha/beta/image*.png -> alpha/beta
       while (filepath.contains('?') or filepath.contains('*'))
@@ -264,9 +263,9 @@ class File( filepath:String ) [compound]
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
-              |  return (0 == mkdir((char*)$filepath->utf8));
+              |  return (0 == mkdir((char*)$filepath->data->as_utf8));
               |#else
-              |  return (0 == mkdir((char*)$filepath->utf8, 0777));
+              |  return (0 == mkdir((char*)$filepath->data->as_utf8, 0777));
               |#endif
 
     method delete( filepath:String )->Logical
@@ -274,9 +273,9 @@ class File( filepath:String ) [compound]
       filepath = expand_path( filepath )
       if (is_folder(filepath))
         delete( forEach in listing(filepath,FilePattern("*")) )  # Recursively delete nested content
-        return (0 == native( "rmdir( (const char*) $filepath->utf8 )")->Int32)
+        return (0 == native( "rmdir( (const char*) $filepath->data->as_utf8 )")->Int32)
       endIf
-      return (0 == native( "unlink( (const char*) $filepath->utf8 )")->Int32)
+      return (0 == native( "unlink( (const char*) $filepath->data->as_utf8 )")->Int32)
 
     method ends_with_separator( filepath:String )->Logical
       # \ is a valid filename character on macOS and Linux, so can't just blindly check for that
@@ -333,23 +332,24 @@ class File( filepath:String ) [compound]
       if (File.size(filepath) != File.size(other_filepath))      return true
       if (File.crc32(filepath) != File.crc32(other_filepath))    return true
       return false
+      }#
 
-    method is_folder( filepath:String )->Logical [essential]
-      filepath = expand_path( filepath )
-      if (not filepath) return false
+    method is_folder->Logical
+      local filepath = resolved.filepath
 
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
               |  struct stat s;
-              |  if (stat((char*)$filepath->utf8, &s) != 0) return false;
-              |  return (s.st_mode & S_IFMT) == S_IFDIR;
-              |#else
-              |  DIR* dir = opendir( (char*)$filepath->utf8 );
-              |  if ( !dir ) return 0;
-              |
+                 if (native("stat((char*)$filepath->data->as_utf8, &s) != 0")->Logical) return false
+                 return native("(s.st_mode & S_IFMT) == S_IFDIR)")->Logical
+      native @|#else
+              |  DIR* dir = opendir( (char*)$filepath->data->as_utf8 );
+                 if (native("!dir")->Logical) return false
+      native @|
               |  closedir( dir );
-              |  return 1;
-              |#endif
+                 return true
+      native @|#endif
 
+              #{
     method is_hidden( filepath:String )->Logical
       local filename = File.filename( expand_path(filepath) )
       if (not filename.begins_with('.'))       return false
@@ -417,30 +417,20 @@ class File( filepath:String ) [compound]
 
     method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
       return join(String[][part1, part2, part3, part4, part5, part6])
+}#
 
-    method listing( folder:String, filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path, &files, &folders, &unsorted )->String[]
+    method listing( folder:String, filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path,
+                    &files, &folders, &unsorted )->String[]
       # Use the filepattern '**' for a recursive listing.
-      local options = FileOptions()
-      if (ignore_hidden)    options = options.ignore_hidden
-      if (absolute)         options = options.absolute
-      if (omit_path)        options = options.omit_path
-      if (files)            options = options.files
-      if (folders)          options = options.folders
-      if (unsorted)         options = options.unsorted
-      return listing( folder, filepattern, options )
+      local options : FileListingOption
+      if (ignore_hidden)    options |= FileListingOption.IGNORE_HIDDEN
+      if (absolute)         options |= FileListingOption.ABSOLUTE
+      if (omit_path)        options |= FileListingOption.OMIT_PATH
+      if (files)            options |= FileListingOption.FILES
+      if (folders)          options |= FileListingOption.FOLDERS
+      if (unsorted)         options |= FileListingOption.UNSORTED
 
-    method listing( folder:String, filepattern:String, &ignore_hidden, &absolute, &omit_path, &files, &folders )->String[]
-      # Use the filepattern '**' for a recursive listing.
-      return listing( folder, FilePattern(filepattern), &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders )
-
-    method listing( folder:String, filepattern=null:FilePattern?, options:FileOptions )->String[]
-      # Use the filepattern '**' for a recursive listing.
-      return FileListing( folder, which{filepattern:filepattern.value->String||null}, options ).results
-
-    method listing( folder:String, filepattern:String, options:FileOptions )->String[]
-      # Use the filepattern '**' for a recursive listing.
-      return FileListing( folder, filepattern, options ).results
-      }#
+      return FileListing( File(folder), filepattern, options ).filepaths
 
     method load_as_bytes( &discard_bom )->Byte[]
       # discard_bom
@@ -479,8 +469,8 @@ class File( filepath:String ) [compound]
       return File( resolved.filepath / File(other_filepath).resolved.filepath )
 
     #{
-    method options->FileOptions
-      return FileOptions()
+    method options->FileListingOption
+      return FileListingOption()
 
     method parent( filepath:String, level=1:Int32 )->String
       filepath = expand_path( filepath )
@@ -508,7 +498,7 @@ class File( filepath:String ) [compound]
       old_filepath = expand_path( old_filepath )
       new_filepath = expand_path( new_filepath )
       if (not File.exists(old_filepath)) return false
-      native @|rename( $old_filepath->utf8, $new_filepath->utf8 );
+      native @|rename( $old_filepath->data->as_utf8, $new_filepath->data->as_utf8 );
       return File.exists( new_filepath )
       }#
 
@@ -772,7 +762,7 @@ class File( filepath:String ) [compound]
       filepath = expand_path( filepath )
       # Returns the last modified time since Jan 1, 1970
       native @|#if defined(_WIN32)
-              |  HANDLE handle = CreateFile( (const char*)$filepath->utf8, 0, 0, NULL, OPEN_EXISTING,
+              |  HANDLE handle = CreateFile( (const char*)$filepath->data->as_utf8, 0, 0, NULL, OPEN_EXISTING,
               |      FILE_ATTRIBUTE_NORMAL, NULL );
               |  if (handle != INVALID_HANDLE_VALUE)
               |  {
@@ -791,7 +781,7 @@ class File( filepath:String ) [compound]
               |  }
               |
               |#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
-              |  int file_id = open( (const char*)$filepath->utf8, O_RDONLY );
+              |  int file_id = open( (const char*)$filepath->data->as_utf8, O_RDONLY );
               |  if (file_id >= 0)
               |  {
               |    struct stat info;
@@ -898,90 +888,3 @@ class File( filepath:String ) [compound]
     }#
 
 endClass
-
-#{
-class FileOptions( flags=0:Int32 ) [compound]
-  ENUMERATE
-    FLAG_RECURSIVE          = 1
-    FLAG_OMIT_PATH          = 2
-    FLAG_ABSOLUTE           = 4
-    FLAG_FILES              = 8
-    FLAG_FOLDERS            = 16
-    FLAG_BOTH               = 24
-    FLAG_IGNORE_HIDDEN      = 32
-    FLAG_UNSORTED           = 64
-
-  METHODS
-    method absolute->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_ABSOLUTE )
-
-    method ignore_hidden->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_IGNORE_HIDDEN )
-
-    method is_ignoring_hidden->Logical [macro]
-      return (this.flags & FileOptions.FLAG_IGNORE_HIDDEN)
-
-    method keeping_files_and_folders->Logical
-      local f = (flags & FLAG_BOTH)
-      return (f == 0) or (f == FLAG_BOTH)
-
-    method keeping_files->Logical
-      return (flags & FLAG_FILES) or not (flags & FLAG_BOTH)
-
-    method keeping_folders->Logical
-      return (flags & FLAG_FOLDERS) or not (flags & FLAG_BOTH)
-
-    method is_absolute->Logical [macro]
-      return (this.flags & FileOptions.FLAG_ABSOLUTE)
-
-    method files->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_FILES )
-
-    method folders->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_FOLDERS )
-
-    method include_path->FileOptions [macro]
-      return FileOptions( this.flags & !FileOptions.FLAG_OMIT_PATH )
-
-    method includes_path->Logical [macro]
-      return ((this.flags & FileOptions.FLAG_OMIT_PATH) == 0)
-
-    method is_limited->Logical [macro]
-      return (not (this.flags & FileOptions.FLAG_RECURSIVE))
-
-    method is_omitting_path->Logical [macro]
-      return (this.flags & FileOptions.FLAG_OMIT_PATH)
-
-    method is_recursive->Logical [macro]
-      return (this.flags & FileOptions.FLAG_RECURSIVE)
-
-    method is_relative->Logical [macro]
-      return (not (this.flags & FileOptions.FLAG_ABSOLUTE))
-
-    method is_showing_hidden->Logical [macro]
-      return (not (this.flags & FileOptions.FLAG_IGNORE_HIDDEN))
-
-    method is_unsorted->Logical [macro]
-      return (this.flags & FileOptions.FLAG_UNSORTED)
-
-    method limited->FileOptions [macro]
-      return FileOptions( this.flags & !FileOptions.FLAG_RECURSIVE )
-
-    method omit_path->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_OMIT_PATH )
-
-    method relative->FileOptions [macro]
-      return FileOptions( this.flags & !FileOptions.FLAG_ABSOLUTE )
-
-    method recursive->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_RECURSIVE )
-
-    method show_hidden->FileOptions [macro]
-      return FileOptions( this.flags & !FileOptions.FLAG_IGNORE_HIDDEN )
-
-    method unsorted->FileOptions [macro]
-      return FileOptions( this.flags | FileOptions.FLAG_UNSORTED )
-
-endClass
-
-}#
