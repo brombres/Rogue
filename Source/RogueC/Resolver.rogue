@@ -527,7 +527,7 @@ class Resolver : Visitor
           if (not arg) arg = visit( Access(with_value.t,with_value.name) )
           local p = Property( with_value.t, with_value.name, null, arg.require_type )
           type.add_property( p )
-          m_init.parameters.add( Local(with_value.t, with_value.name, arg.require_value, null) )
+          m_init.parameters.add( Local(with_value.t, with_value.name, arg.require_value.cloned, null) )
           args.add( arg )
         endForEach
         m_init.organize
