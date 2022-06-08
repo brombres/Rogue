@@ -1,0 +1,264 @@
+enum FileListingOption [bitflags]
+  IGNORE_HIDDEN
+  ABSOLUTE
+  OMIT_PATH
+  FILES
+  FOLDERS
+  UNSORTED
+endEnum
+
+class FileListing
+  NATIVE
+    nativeHeader @|#if !defined(ROGUE_PLATFORM_WINDOWS)
+                  |  #include <dirent.h>
+                  |#endif
+
+  #{
+  PROPERTIES
+    folder            : String
+    pattern           : String
+    options           : FileOptions
+    path_segments     : String[]
+    pattern_segments  : String[]
+
+    filepath_segments = String[]
+    empty_segments    = String[]
+    results           = String[]
+
+    callback          : Function(String)
+
+  METHODS
+    method init( folder, pattern=null, options )
+      folder  = fix(folder)
+      pattern = fix(pattern)
+      if (folder)  folder  = File.expand_path( folder )
+      if (pattern) pattern = File.expand_path( pattern )
+
+      if (File.exists(folder) and not File.is_folder(folder))
+        # We have a single file instead of a folder
+        local filepath = folder
+        if (options.is_ignoring_hidden and filepath.begins_with('.')) return
+        if (options.keeping_files)
+          if (options.is_absolute) filepath = File.absolute_filepath( filepath )
+          if (options.is_omitting_path) filepath = File.filename( filepath )
+          results.add( filepath )
+        endIf
+        return
+      endIf
+
+      callback = this=>collect
+
+      if (pattern is null)
+        # If no pattern is specified the treat the folder as a possible pattern
+        local path_segments = File.without_trailing_separator( File.fix_slashes(folder) ).split( '/' )
+        local pattern_segments = String[]
+        local first_wildcard_i = path_segments.locate( (p) => (p.contains('*') or p.contains('?')) )
+        if (first_wildcard_i)
+          forEach (p in path_segments from first_wildcard_i.value)
+            pattern_segments.add( p )
+          endForEach
+          path_segments.discard_from( first_wildcard_i.value )
+        endIf
+        if (path_segments.is_empty) folder = "."
+        else                        folder = path_segments.join( "/" )
+        if (pattern_segments.is_empty) pattern = "*"
+        else                           pattern = pattern_segments.join( "/" )
+      endIf
+
+      if (options.is_absolute) folder = File.absolute_filepath( folder )
+
+      folder = File.ensure_ends_with_separator( folder )
+
+      local filepath_pattern = folder + pattern
+      local file_exists = false
+      if (File.exists(filepath_pattern))
+        if (File.is_folder(filepath_pattern))
+          pattern += "/*"
+        else
+          # 'pattern' refers to a single file (non-folder)
+          if (pattern.count > 0) file_exists = true
+        endIf
+      endIf
+
+      path_segments = File.fix_slashes(folder).split( '/' )
+      if (path_segments.first == ".") path_segments.remove_first
+      if (path_segments.count and path_segments.last == "") path_segments.remove_last  # folder ended with "/"
+
+      pattern_segments = File.fix_slashes(pattern).split( '/' )
+
+      if (not file_exists) File._listing( folder, callback )
+
+      # Process the results
+      filepath_segments.[ clear, add(path_segments), add(pattern_segments) ]
+      pattern = filepath_segments.join( "/" )
+
+      # Need special handling for omitting the folder when it starts with "./"
+      local adjusted_folder = folder
+      if (options.is_omitting_path and folder.begins_with("./") and folder.count>2)
+        adjusted_folder = folder.rightmost( -2 )
+      endIf
+
+      if (file_exists)
+        local filepath = filepath_pattern
+        if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+          filepath = filepath.after_first( adjusted_folder )
+        endIf
+        results.add( filepath )
+        return
+      endIf
+
+      forEach (filepath in writer=results.rewriter)
+        contingent
+          if (pattern.count)
+            # Directories were recursed into based on the pattern, but some files could have been added
+            # earlier that don't match the wildcard pattern.
+            necessary (File.matches_wildcard_pattern(filepath,pattern))
+          endIf
+
+          if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+            filepath = filepath.after_first( adjusted_folder )
+          endIf
+
+        satisfied
+          writer.write( filepath )
+        endContingent
+      endForEach
+
+      if (not options.is_unsorted)
+        results.sort( (a,b) => (a.compare_to(b,&ignore_case) < 0) )
+      endIf
+
+    method collect( filename:String )
+      if (options.is_ignoring_hidden and filename.begins_with('.')) return
+      if (pattern_segments.count and not File.matches_wildcard_pattern(filename,pattern_segments.first)) return
+      filepath_segments.[ clear, add(path_segments), add(filename) ]
+      local filepath = filepath_segments.join( "/" )
+      if (File.is_folder(filepath))
+        if (options.keeping_folders) results.add( filepath )
+        if (pattern_segments.count)
+          # Implied recursion because we have more pattern segments
+          path_segments.add( filename )
+          if (pattern_segments.first.begins_with("**"))
+            # Once we encounter `**`, switch to recursively collecting everything
+            # and let the top-level filter decide which ones match
+            local saved_options = options
+            options = options.recursive
+            local saved_segments = pattern_segments
+            pattern_segments = empty_segments
+            File._listing( filepath, callback )
+            pattern_segments = saved_segments
+            options = saved_options
+          else
+            local saved_segment = pattern_segments.remove_first
+            File._listing( filepath, callback )
+            pattern_segments.insert( saved_segment )
+          endIf
+
+          path_segments.remove_last
+        elseIf (options.is_recursive)
+          path_segments.add( filename )
+          File._listing( filepath, callback )
+          path_segments.remove_last
+        endIf
+      else
+        if (options.keeping_files) results.add( filepath )
+      endIf
+
+    method fix( pattern:String )->String
+      # Without this fix, "**Alpha*" would not match "Source/Alpha.rogue"
+      if (not (pattern and pattern.contains("**"))) return pattern
+
+      # Replace **[^/] with **/*
+      local parts = pattern.split( "**/" )
+      forEach (part at index in parts)
+        parts[index] = part.replacing( "**", "**/*" )
+      endForEach
+      pattern = parts.join( "**/" )
+
+      return pattern
+      }#
+
+  GLOBAL METHODS
+    method _listing( folder:File, collector:Function(String) )
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+
+      local search_folder = folder/"*"
+
+      native @|{
+              |  WIN32_FIND_DATA entry;
+              |  HANDLE dir;
+              |
+              |  dir = FindFirstFile( $search_folder.filepath->data->as_utf8, &entry );
+              |
+              |  if (dir != INVALID_HANDLE_VALUE)
+              |  {
+              |    do
+              |    {
+              |      int keep = 1;
+              |      if (entry.cFileName[0] == '.')
+              |      {
+              |        switch (entry.cFileName[1])
+              |        {
+              |          case 0:   // '.' / this folder
+              |            keep = 0;
+              |            break;
+              |          case '.':
+              |            keep = entry.cFileName[2] != 0;  // ".." / Parent Folder
+              |            break;
+              |        }
+              |      }
+              |      if (keep)
+              |      {
+                       block
+                         local entry = native("RogueString_create(entry.cFileName,-1,ROGUE_STRING_COPY)")->String
+                         collector( entry )
+                       endBlock
+      native @|      }
+              |    }
+              |    while (FindNextFile(dir,&entry));
+              |
+              |    FindClose( dir );
+              |  }
+              |}
+              |#else
+              |// Mac/Linux
+              |{
+              |  DIR* dir;
+              |  struct dirent* entry;
+              |
+              |  dir = opendir( (const char*) $folder.filepath->data->as_utf8 );
+              |  if (dir)
+              |  {
+              |    entry = readdir( dir );
+              |    while (entry)
+              |    {
+              |      int keep = 1;
+              |      if (entry->d_name[0] == '.')
+              |      {
+              |        switch (entry->d_name[1])
+              |        {
+              |          case 0:   // '.' / this folder
+              |            keep = 0;
+              |            break;
+              |          case '.':
+              |            keep = entry->d_name[2] != 0;  // ".." / Parent Folder
+              |            break;
+              |        }
+              |      }
+              |      if (keep)
+              |      {
+                       block
+                         local entry = native("RogueString_create(entry->d_name,-1,ROGUE_STRING_COPY)")->String
+                         collector( entry )
+                       endBlock
+      native @|
+              |      }
+              |      entry = readdir( dir );
+              |    }
+              |    closedir( dir );
+              |  }
+              |}
+              |#endif // Windows vs Mac/Linux
+
+endClass
+
