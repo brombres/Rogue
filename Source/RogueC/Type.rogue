@@ -970,6 +970,18 @@ class Type : Cmd
           global_methods[ m.signature ] = m
         endBlock
 
+        # operator?()->Logical
+        block
+          local m = methods[ "operator?()" ]
+          if (not m or m.type_context is not this)
+            m = Method( t, this, "operator?" )
+            m.return_type = Program.type_Logical
+            m.statements.add( Return(t,Logicalize(t,Access(t,"value"))) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
         # name()->String
         block
           local m = Method( t, this, "name" )
