@@ -992,7 +992,7 @@ class Type : Cmd
 
         # operator==(EnumType)->Logical
         block
-          local m = methods[ "operator==($::$)"(module_context,name) ]
+          local m = methods[ "operator==($)"(scoped_name) ]
           if (not m)
             m = Method( t, this, "operator==" )
             m.parameters.add( Local(t,"other",this) )
@@ -1065,6 +1065,63 @@ class Type : Cmd
             methods[ m.signature ] = m
           endForEach
         endBlock
+
+        if (attributes.bitflags)
+          # operator&(EnumType)->EnumType
+          block
+            local m = methods[ "operator&($)"(scoped_name) ]
+            if (not m)
+              m = Method( t, this, "operator&" )
+              m.parameters.add( Local(t,"flag",this) )
+              m.return_type = this
+              m.statements.add(
+                Return( t,
+                  TypeAccess( t, this,
+                    Args( t,
+                      BitwiseAnd( t, Access(t,"value"), ContextAccess(t,Access(t,"flag"),"value") )
+                    )
+                  )
+                )
+              )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
+          # operator|(EnumType)->EnumType
+          block
+            local m = methods[ "operator|($)"(scoped_name) ]
+            if (not m)
+              m = Method( t, this, "operator|" )
+              m.parameters.add( Local(t,"flag",this) )
+              m.return_type = this
+              m.statements.add(
+                Return( t,
+                  TypeAccess( t, this,
+                    Args( t,
+                      BitwiseOr( t, Access(t,"value"), ContextAccess(t,Access(t,"flag"),"value") )
+                    )
+                  )
+                )
+              )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
+          # operator!()->EnumType
+          block
+            local m = methods[ "operator!()" ]
+            if (not m)
+              m = Method( t, this, "operator!" )
+              m.return_type = this
+              m.statements.add( Return(t,TypeAccess(t,this,Args(t,BitwiseNot(t,Access(t,"value"))))) )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
+        endIf
 
       endIf
 
