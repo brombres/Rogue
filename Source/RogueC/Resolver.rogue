@@ -178,9 +178,9 @@ class Resolver : Visitor
     FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftLeft,   :<<:  )
     FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRight,  :>>:  )
     FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRightX, :>>>: )
-    FOLD_CONSTANTS( fold_logical_constants,   LogicalAnd,     and )
-    FOLD_CONSTANTS( fold_logical_constants,   LogicalOr,      or  )
-    FOLD_CONSTANTS( fold_logical_constants,   LogicalXor,     xor )
+    #FOLD_CONSTANTS( fold_logical_constants,   LogicalAnd,     and )
+    #FOLD_CONSTANTS( fold_logical_constants,   LogicalOr,      or  )
+    #FOLD_CONSTANTS( fold_logical_constants,   LogicalXor,     xor )
 
     method fold_bitwise_constants<<$op>>( cmd:Binary )->Cmd
       if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
@@ -892,7 +892,9 @@ class Resolver : Visitor
       # Overriding to prevent visiting initial_value; not necessary
       cmd.type = visit(cmd.type)->(as Type)
 
-    method on_validate( cmd:LogicalAnd )->Cmd
+    method on( cmd:LogicalAnd )->Cmd
+      cmd.left  = visit( cmd.left ).logicalized( this )
+      cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
         return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value and cmd.right->(as LiteralLogical).value )
       endIf
@@ -917,9 +919,19 @@ class Resolver : Visitor
       endIf
       return cmd
 
-    method on_validate( cmd:LogicalOr )->Cmd
+    method on( cmd:LogicalOr )->Cmd
+      cmd.left  = visit( cmd.left ).logicalized( this )
+      cmd.right = visit( cmd.right ).logicalized( this )
       if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
         return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value or cmd.right->(as LiteralLogical).value )
+      endIf
+      return cmd
+
+    method on( cmd:LogicalXor )->Cmd
+      cmd.left  = visit( cmd.left ).logicalized( this )
+      cmd.right = visit( cmd.right ).logicalized( this )
+      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value xor cmd.right->(as LiteralLogical).value )
       endIf
       return cmd
 

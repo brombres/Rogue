@@ -1,9 +1,10 @@
 enum FileListingOption [bitflags]
-  IGNORE_HIDDEN
   ABSOLUTE
-  OMIT_PATH
   FILES
   FOLDERS
+  IGNORE_HIDDEN
+  OMIT_PATH
+  RECURSIVE
   UNSORTED
 endEnum
 
@@ -26,21 +27,23 @@ class FileListing
     callback          : Function(String)
 
   METHODS
-    method init( folder:File, pattern:FilePattern?, options )
-      #{
-      folder  = File( fix(folder->String) ).resolved
-      if (pattern)
-        pattern = FilePattern( File(fix(pattern.value->String)).resolved )
+    method init( folder_or_filepath:File, _pattern:FilePattern?, options )
+      folder_or_filepath = File( fix(folder_or_filepath->String) ).resolved.without_trailing_separator
+
+      local pattern : String?
+      if (_pattern)
+        pattern = _pattern->String
+        pattern = File( fix(_pattern.value->String) ).resolved->String
       endIf
 
-      if (folder.exists and not folder.is_folder)
+      if (folder_or_filepath.exists and not folder_or_filepath.is_folder)
         # We have a single file instead of a folder
-        local filepath = folder->String
+        local filepath = folder_or_filepath->String
         if ((options & FileListingOption.IGNORE_HIDDEN) and filepath.begins_with('.')) return
 
         if (options & FileListingOption.FILES)
-          if (options & FileListingOption.ABSOLUTE) filepath = File.absolute_filepath( filepath )
-          if (options.is_omitting_path) filepath = File(filepath).filename->String
+          if (options & FileListingOption.ABSOLUTE) filepath = File(filepath).abs->String
+          if ((options & FileListingOption.OMIT_PATH)) filepath = File(filepath).filename->String
           filepaths.add( filepath )
         endIf
         return
@@ -48,11 +51,13 @@ class FileListing
 
       callback = this=>collect
 
-      if (pattern is null)
+      local folder = folder_or_filepath->String
+
+      if (not pattern)
         # If no pattern is specified the treat the folder as a possible pattern
-        local path_segments = File.without_trailing_separator( File.fix_slashes(folder) ).split( '/' )
+        local path_segments = folder.split( '/' )
         local pattern_segments = String[]
-        local first_wildcard_i = path_segments.locate( (p) => (p.contains('*') or p.contains('?')) )
+        local first_wildcard_i = path_segments.locate( $.contains('*') or $.contains('?') )
         if (first_wildcard_i)
           forEach (p in path_segments from first_wildcard_i.value)
             pattern_segments.add( p )
@@ -65,28 +70,26 @@ class FileListing
         else                           pattern = pattern_segments.join( "/" )
       endIf
 
-      if (options.is_absolute) folder = File.absolute_filepath( folder )
+      if (options & FileListingOption.ABSOLUTE) folder = File(folder).abs
 
-      folder = File.ensure_ends_with_separator( folder )
-
-      local filepath_pattern = folder + pattern
+      local filepath_pattern = folder/pattern
       local file_exists = false
-      if (File.exists(filepath_pattern))
-        if (File.is_folder(filepath_pattern))
-          pattern += "/*"
+      if (File(filepath_pattern).exists)
+        if (File(filepath_pattern).is_folder)
+          pattern = pattern.value + "/*"
         else
           # 'pattern' refers to a single file (non-folder)
-          if (pattern.count > 0) file_exists = true
+          if (pattern.value.count > 0) file_exists = true
         endIf
       endIf
 
-      path_segments = File.fix_slashes(folder).split( '/' )
+      path_segments = folder->String.split( '/' )
       if (path_segments.first == ".") path_segments.remove_first
       if (path_segments.count and path_segments.last == "") path_segments.remove_last  # folder ended with "/"
 
-      pattern_segments = File.fix_slashes(pattern).split( '/' )
+      pattern_segments = pattern.value.split( '/' )
 
-      if (not file_exists) File._listing( folder, callback )
+      if (not file_exists) _listing( File(folder), callback )
 
       # Process the results
       filepath_segments.[ clear, add(path_segments), add(pattern_segments) ]
@@ -94,13 +97,13 @@ class FileListing
 
       # Need special handling for omitting the folder when it starts with "./"
       local adjusted_folder = folder
-      if (options.is_omitting_path and folder.begins_with("./") and folder.count>2)
+      if ((options & FileListingOption.OMIT_PATH) and folder.begins_with("./") and folder.count>2)
         adjusted_folder = folder.rightmost( -2 )
       endIf
 
       if (file_exists)
         local filepath = filepath_pattern
-        if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+        if ((options & FileListingOption.OMIT_PATH) and filepath.begins_with(adjusted_folder))
           filepath = filepath.after_first( adjusted_folder )
         endIf
         filepaths.add( filepath )
@@ -109,13 +112,13 @@ class FileListing
 
       forEach (filepath in writer=filepaths.rewriter)
         contingent
-          if (pattern.count)
+          if (pattern.value.count)
             # Directories were recursed into based on the pattern, but some files could have been added
             # earlier that don't match the wildcard pattern.
-            necessary (File.matches_wildcard_pattern(filepath,pattern))
+            necessary (filepath == FilePattern(pattern.value))
           endIf
 
-          if (options.is_omitting_path and filepath.begins_with(adjusted_folder))
+          if ((options & FileListingOption.OMIT_PATH) and filepath.begins_with(adjusted_folder))
             filepath = filepath.after_first( adjusted_folder )
           endIf
 
@@ -124,17 +127,17 @@ class FileListing
         endContingent
       endForEach
 
-      if (not options.is_unsorted)
-        filepaths.sort( (a,b) => (a.compare_to(b,&ignore_case) < 0) )
+      if (not (options & FileListingOption.UNSORTED))
+        filepaths.sort( $1.compare_to($2,&ignore_case) < 0 )
       endIf
 
     method collect( filename:String )
-      if (options.is_ignoring_hidden and filename.begins_with('.')) return
-      if (pattern_segments.count and not File.matches_wildcard_pattern(filename,pattern_segments.first)) return
+      if ((options & FileListingOption.IGNORE_HIDDEN) and filename.begins_with('.')) return
+      if (pattern_segments.count and filename != FilePattern(pattern_segments.first)) return
       filepath_segments.[ clear, add(path_segments), add(filename) ]
       local filepath = filepath_segments.join( "/" )
-      if (File.is_folder(filepath))
-        if (options.keeping_folders) filepaths.add( filepath )
+      if (File(filepath).is_folder)
+        if (options & FileListingOption.FOLDERS) filepaths.add( filepath )
         if (pattern_segments.count)
           # Implied recursion because we have more pattern segments
           path_segments.add( filename )
@@ -142,26 +145,26 @@ class FileListing
             # Once we encounter `**`, switch to recursively collecting everything
             # and let the top-level filter decide which ones match
             local saved_options = options
-            options = options.recursive
+            options = FileListingOption.RECURSIVE
             local saved_segments = pattern_segments
             pattern_segments = empty_segments
-            File._listing( filepath, callback )
+            FileListing._listing( File(filepath), callback )
             pattern_segments = saved_segments
             options = saved_options
           else
             local saved_segment = pattern_segments.remove_first
-            File._listing( filepath, callback )
+            FileListing._listing( File(filepath), callback )
             pattern_segments.insert( saved_segment )
           endIf
 
           path_segments.remove_last
-        elseIf (options.is_recursive)
+        elseIf (options & FileListingOption.RECURSIVE)
           path_segments.add( filename )
-          File._listing( filepath, callback )
+          FileListing._listing( File(filepath), callback )
           path_segments.remove_last
         endIf
       else
-        if (options.keeping_files) filepaths.add( filepath )
+        if (options & FileListingOption.FILES) filepaths.add( filepath )
       endIf
 
     method fix( pattern:String )->String
@@ -180,14 +183,12 @@ class FileListing
   GLOBAL METHODS
     method _listing( folder:File, collector:Function(String) )
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
-
-      local search_folder = folder/"*"
-
-      native @|{
+              |{
               |  WIN32_FIND_DATA entry;
               |  HANDLE dir;
               |
-              |  dir = FindFirstFile( $search_folder.filepath->data->as_utf8, &entry );
+                 local search_folder = folder/"*"
+      native @|  dir = FindFirstFile( $search_folder.filepath->data->as_utf8, &entry );
               |
               |  if (dir != INVALID_HANDLE_VALUE)
               |  {
@@ -258,7 +259,6 @@ class FileListing
               |  }
               |}
               |#endif // Windows vs Mac/Linux
-                       }#
 
 endClass
 
