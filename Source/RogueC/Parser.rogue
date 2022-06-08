@@ -528,6 +528,9 @@ class Parser : ParserCore
     method rewrite_token
       processed_tokens.add( _read )
 
+    method set_cur_token
+      _cur_t = _next_t
+
     method store_statement_args
       if (disable_output) return
 

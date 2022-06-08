@@ -849,11 +849,11 @@ parser
     return
 
   elseOnOthers
+    call set_cur_token
     pathed_name
+    remaining_type
 
   endOn
-
-  remaining_type
 
 - named_tuple_type_element
   consume_eols
