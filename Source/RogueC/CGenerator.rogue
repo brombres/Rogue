@@ -1017,6 +1017,11 @@ class CGenerator : Visitor
       writer.print " || "
       print_parenthesized( cmd.right )
 
+    method on_visit( cmd:LogicalXor )
+      print_parenthesized( cmd.left )
+      writer.print " ^ "
+      print_parenthesized( cmd.right )
+
     method on_visit( cmd:Logicalized )
       writer.print "!!"
       print_parenthesized( cmd.operand )
