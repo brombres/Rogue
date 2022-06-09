@@ -225,6 +225,11 @@ class Resolver : Visitor
       local new_value = visit( cmd.new_value ).require_value
       return cmd.target.resolve_assignment( cmd.t, new_value, this )
 
+    method on_visit( cmd:Binary )
+      visit_children( cmd )
+      cmd.left.require_type
+      cmd.right.require_type
+
     method on_validate( cmd:Binary )->Cmd
       local result = cmd.left.require_type.resolve_binary_op(cmd,this)
       return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
@@ -324,16 +329,24 @@ class Resolver : Visitor
       visit_children( cmd )
 
     method on_validate( cmd:CompareEQ )->Cmd
-      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this, &suppress_error )
-      if (result) return validate( LogicalNot(cmd.t,result) )
-      if (cmd.left.type.is_primitive and cmd.right.type.is_primitive) return cmd
-      return cmd.left.require_type.resolve_compare_op( cmd, "operator==", this )
+      local left_type = cmd.left.type
+      if (left_type.is_primitive and cmd.right.type.is_primitive) return cmd
+
+      local result = left_type.resolve_compare_op( cmd, "operator==", this, &suppress_error )
+      if (result) return result
+
+      result = left_type.resolve_compare_op( cmd, "operator<>", this )
+      return validate( LogicalNot(cmd.t,result) )
 
     method on_validate( cmd:CompareNE )->Cmd
-      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this, &suppress_error )
-      if (result) return result.logicalized( this )
-      if (cmd.left.type.is_primitive and cmd.right.type.is_primitive) return cmd
-      return LogicalNot( cmd.t, cmd.left.require_type.resolve_compare_op( cmd, "operator==", this ) )
+      local left_type = cmd.left.type
+      if (left_type.is_primitive and cmd.right.type.is_primitive) return cmd
+
+      local result = left_type.resolve_compare_op( cmd, "operator==", this, &suppress_error )
+      if (result) return validate( LogicalNot(cmd.t,result) )
+
+      result = left_type.resolve_compare_op( cmd, "operator<>", this )
+      return result.logicalized( this )
 
     method on_validate( cmd:CompareLT )->Cmd
       local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
@@ -1838,7 +1851,7 @@ class Resolver : Visitor
 
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error )->Procedure
+        &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
       use Candidates
@@ -1856,7 +1869,8 @@ class Resolver : Visitor
           endIf
         endIf
 
-        return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global, &=suppress_error )
+        return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global,
+            &=suppress_error, &=exact_arg_types )
       endUse
 
     method confirm_candidate( t:Token, context:Cmd, m:Procedure, args:Cmd )
@@ -1866,13 +1880,13 @@ class Resolver : Visitor
       endUse
 
     method select_candidate( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error )->Procedure
+        &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
 
       if (Candidates.count)
-        local result = refine_candidates( type_context, args )
+        local result = refine_candidates( type_context, args, &=exact_arg_types )
         if (result)
           return result.[resolve]
-        elseIf (constructor and suppress_error)
+        elseIf (suppress_error and (constructor or exact_arg_types))
           return null
         endIf
       elseIf (suppress_error)
@@ -1958,7 +1972,7 @@ class Resolver : Visitor
       local error_message = mesg.replacing( "Routine.", "" )
       throw t.error( error_message )
 
-    method refine_candidates( type_context:Type, args:Cmd )->Procedure
+    method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types )->Procedure
       local arg_count = which{ args:args.count || 0 }
 
       local has_named_arg = false
@@ -2013,30 +2027,32 @@ class Resolver : Visitor
 
       endIf
 
-      # Filter by compatible and convertible args
-      if (arg_count)
+      if (not exact_arg_types)
+        # Filter by compatible and convertible args
+        if (arg_count)
+          forEach (m in Candidates)
+            if (has_named_arg) m.arrange_args( args, this )
+            contingent
+              forEach (arg at i in args)
+                necessary (arg_type_is_compatible(arg,m.parameters[i].type))
+              endForEach
+              Candidates.keep m
+            endContingent
+          endForEach
+          if (Candidates.found_match) return Candidates.match
+          if (not Candidates.refine) return null
+        else
+          if (Candidates.found_match) return Candidates.match
+        endIf
+
+        # Filter out candidates that don't have the same module context as the first candidate
+        local priority_module_context = Candidates[0].module_context
         forEach (m in Candidates)
-          if (has_named_arg) m.arrange_args( args, this )
-          contingent
-            forEach (arg at i in args)
-              necessary (arg_type_is_compatible(arg,m.parameters[i].type))
-            endForEach
-            Candidates.keep m
-          endContingent
+          if (m.module_context is priority_module_context) Candidates.keep m
         endForEach
         if (Candidates.found_match) return Candidates.match
-        if (not Candidates.refine) return null
-      else
-        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
       endIf
-
-      # Filter out candidates that don't have the same module context as the first candidate
-      local priority_module_context = Candidates[0].module_context
-      forEach (m in Candidates)
-        if (m.module_context is priority_module_context) Candidates.keep m
-      endForEach
-      if (Candidates.found_match) return Candidates.match
-      Candidates.refine
 
       # Filter by exact arg types
       if (arg_count)
@@ -2052,6 +2068,8 @@ class Resolver : Visitor
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
       endIf
+
+      if (exact_arg_types) return null
 
       # Filter by fewest parameters (omitting calls with excess default args)
       if (arg_count)
@@ -3284,6 +3302,7 @@ augment
         local op_method_name = "operator" + cmd.symbol
         local args_left_right = Args( t, cmd.left, cmd.right )
 
+        #{
         if (left_type.is_primitive)
           right_type.organize
           local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
@@ -3297,6 +3316,30 @@ augment
         local arg = Args( t, cmd.right )
         m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
         if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+        }#
+
+        left_type.organize
+        right_type.organize
+
+        local exact_arg_types = true
+        loop 2
+          # LeftType.op(LeftType,RightType)  [global]
+          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          # RightType.op(LeftType,RightType)  [global]
+          m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          # LeftType.op(RightType)
+          local arg = Args( t, cmd.right )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+
+          exact_arg_types = false
+        endLoop
 
         use message = StringBuilder.pool
           message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
@@ -3337,15 +3380,25 @@ augment
         left_type.organize
         right_type.organize
 
-        local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-        if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+        local exact_arg_types = true
+        loop 2
+          # LeftType.op(LeftType,RightType)  [global]
+          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
-        m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-        if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+          # RightType.op(LeftType,RightType)  [global]
+          m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
-        local arg = Args( t, cmd.right )
-        m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
-        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+          # LeftType.op(RightType)
+          local arg = Args( t, cmd.right )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+
+          exact_arg_types = false
+        endLoop
 
         if (suppress_error) return null
 
@@ -3376,13 +3429,18 @@ augment
 
         type.organize
 
-        # OperandType.operator++(operand:OperandType)
-        local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
-        if (m) return resolver.resolve_call( cmd.t, null, m, arg )
+        local exact_arg_types = true
+        loop 2
+          # OperandType.operator++(operand:OperandType)
+          local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, arg )
 
-        # OperandType.operator++
-        m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
-        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+          # OperandType.operator++
+          m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+
+          exact_arg_types = false
+        endLoop
 
         if (cmd.symbol == "++")
           return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
@@ -3419,11 +3477,17 @@ augment
         local arg = Args( t, cmd.operand )
 
         type.organize
-        local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error )
-        if (m) return resolver.resolve_call( cmd.t, null, m, arg )
 
-        m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error )
-        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+        local exact_arg_types = true
+        loop 2
+          local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, arg )
+
+          m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+
+          exact_arg_types = false
+        endLoop
 
         if (suppress_error) return null
 
