@@ -91,34 +91,29 @@ class File( filepath:String ) [compound]
       throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
 
     #{
-    method before_wildcard_pattern( filepath:String )->String
-      # Example: alpha/beta/image*.png -> alpha/beta
-      while (filepath.contains('?') or filepath.contains('*'))
-        filepath = File.folder( filepath )
-      endWhile
-      return filepath
-
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter
       filepath = expand_path( filepath )
       return CharacterToUTF8ByteWriter( File.writer(filepath) )
+      }#
 
-    method common_path( filepath_a:String, filepath_b:String )->String
-      local a = filepath_a
-      local b = filepath_b
+    method common_folder( other:File )->File
+      local a = resolved.filepath
+      local b = other.resolved.filepath
 
       if (a == b) return a
 
       # Remove trailing '/'
-      while (a.count > 1 and a.ends_with('/')) a = a.leftmost( -1 )
-      while (b.count > 1 and b.ends_with('/')) b = b.leftmost( -1 )
+      while (a.count > 1 and a.ends_with('/')) a .= leftmost( -1 )
+      while (b.count > 1 and b.ends_with('/')) b .= leftmost( -1 )
 
       while ((a.count > 0 or b.count > 0) and a != b)
-        if (a.count > b.count) a = File.folder( a )
-        else                   b = File.folder( b )
+        if (a.count > b.count) a = File( a ).folder
+        else                   b = File( b ).folder
       endWhile
 
-      return a  # 'a' and 'b' are the same at this point
+      return File(a)  # 'a' and 'b' are the same at this point, possibly ""
 
+      #{
     method contains( filepath:String, filename:String )->Logical
       return (File.listing( filepath, filename ).count > 0)
 
@@ -321,16 +316,22 @@ class File( filepath:String ) [compound]
       return native("(stat((char*)$filepath->data->as_utf8, &s) == 0)")->Logical
 
 
-      #{
-    method extension( filepath:String )->String
-      return File.filename( filepath ).after_last( '.' )
-      }#
+    method extension->String
+      return filename.after_last( '.' )
 
     method filename->String
       local filepath = resolved.filepath
       local i = filepath.locate_last( '/' )
       if (not i?) return this
       return filepath.from( i.value+1 )
+
+    method filepath_before_pattern->String
+      # Example: alpha/beta/image*.png -> alpha/beta
+      local filepath = resolved.filepath
+      while (filepath.contains('?') or filepath.contains('*'))
+        filepath = File(filepath).folder
+      endWhile
+      return filepath
 
     method folder->String
       local filepath = resolved.filepath
@@ -348,16 +349,6 @@ class File( filepath:String ) [compound]
       if (i1.value == 0) return File(filepath.leftmost(1))  # /abc -> /
 
       return filepath.from(0, i1.value-1)
-
-      #{
-    method is_different_than( filepath:String, other_filepath:String )->Logical
-      filepath = expand_path( filepath )
-      other_filepath = expand_path( other_filepath )
-      if (File.exists(filepath) xor File.exists(other_filepath)) return true
-      if (File.size(filepath) != File.size(other_filepath))      return true
-      if (File.crc32(filepath) != File.crc32(other_filepath))    return true
-      return false
-      }#
 
     method is_folder->Logical
       local filepath = resolved.filepath
@@ -488,6 +479,17 @@ class File( filepath:String ) [compound]
     method load_as_string( encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       local bytes = load_as_bytes( &discard_bom )
       return String( bytes, encoding )
+
+    method operator==( other:File )->Logical
+      local file = resolved
+      other .= resolved
+
+      if (file.exists xor other.exists) return false
+      if (not file.exists) return true
+
+      if (file.size != other.size)      return false
+      if (file.crc32 != other.crc32)    return false
+      return true
 
     method operator/( other:File )->File
       return File( resolved.filepath / other.resolved.filepath )
