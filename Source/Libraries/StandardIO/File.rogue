@@ -502,10 +502,8 @@ class File( filepath:String ) [compound]
       if (level == 1) return File(folder)
       return File(folder).parent( level-1 )
 
-      #{
-    method print_writer( filepath:String )->PrintWriter
-      return PrintWriter( writer(filepath) )
-      }#
+    method print_writer( &append )->PrintWriter
+      return PrintWriter( writer(&=append) )
 
     method reader->FileReader
       return FileReader( resolved.filepath )
@@ -861,14 +859,7 @@ class File( filepath:String ) [compound]
       endWhile
       return File(filepath)
 
-      #{
-    method writer( filepath:String )->FileWriter
-      filepath = expand_path( filepath )
-      return FileWriter( filepath )
-
-    method append_writer( filepath:String )->FileWriter
-      filepath = expand_path( filepath )
-      return FileWriter( filepath, &append=true )
-    }#
+    method writer( &append )->FileWriter
+      return FileWriter( resolved.filepath, &=append )
 
 endClass
