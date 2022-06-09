@@ -1079,6 +1079,49 @@ class Type : Cmd
         endBlock
 
         if (attributes.bitflags)
+          # Each CATEGORY gets .is_category()->Logical and .set_is_category(setting:Logical) methods.
+          forEach (category in categories)
+            # .is_category()->Logical
+            block
+              local m_name = "is_" + category.name.to_lowercase
+              local m = methods[ "$()"(m_name) ]
+              if (not m)
+                m = Method( t, this, m_name )
+                m.return_type = Program.type_Logical
+                m.statements.add(
+                  Return( t,
+                    Logicalize( t,
+                      BitwiseAnd( t, Access(t,"value"), EnumValue(t,this,category.name) )
+                    )
+                  )
+                )
+                m.organize
+                methods[ m.signature ] = m
+              endIf
+            endBlock
+
+            # .set_is_category(Logical)->Logical
+            block
+              local m_name = "set_is_" + category.name.to_lowercase
+              local m = methods[ "$(Rogue::Logical)"(m_name) ]
+              if (not m)
+                m = Method( t, this, m_name )
+                m.attributes.is_mutating = true
+                m.parameters.add( Local(t,"setting",Program.type_Logical) )
+                m.statements.add(
+                  If( t, Access(t,"setting"),
+                    Statements( t, BitwiseOrAndAssign(t, Access(t,"value"), EnumValue(t,this,category.name)) ),
+                    If( t, null,
+                      Statements( t, BitwiseAndAndAssign(t, Access(t,"value"), BitwiseNot(t,EnumValue(t,this,category.name))) ),
+                      null )
+                  )
+                )
+                m.organize
+                methods[ m.signature ] = m
+              endIf
+            endBlock
+          endForEach
+
           # operator&(EnumType)->EnumType
           block
             local m = methods[ "operator&($)"(scoped_name) ]
