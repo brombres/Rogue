@@ -29,8 +29,9 @@ class FileListing
   METHODS
     method init( folder_or_filepath:File, _pattern:FilePattern?, options )
       folder_or_filepath = File( fix(folder_or_filepath->String) ).resolved.without_trailing_separator
-      if (not (options & (FileListingOption.FILES | FileListingOption.FOLDERS)))
-        options |= FileListingOption.FILES | FileListingOption.FOLDERS
+      if (not options.is_files and not options.is_folders)
+        options.is_files = true
+        options.is_folders = true
       endIf
 
       local pattern : String?
@@ -42,11 +43,11 @@ class FileListing
       if (folder_or_filepath.exists and not folder_or_filepath.is_folder)
         # We have a single file instead of a folder
         local filepath = folder_or_filepath->String
-        if ((options & FileListingOption.IGNORE_HIDDEN) and filepath.begins_with('.')) return
+        if (options.is_ignore_hidden and filepath.begins_with('.')) return
 
-        if (options & FileListingOption.FILES)
-          if (options & FileListingOption.ABSOLUTE) filepath = File(filepath).abs->String
-          if ((options & FileListingOption.OMIT_PATH)) filepath = File(filepath).filename->String
+        if (options.is_files)
+          if (options.is_absolute)    filepath = File(filepath).abs->String
+          if ((options.is_omit_path)) filepath = File(filepath).filename->String
           filepaths.add( filepath )
         endIf
         return
@@ -58,6 +59,10 @@ class FileListing
 
       if (not pattern)
         # If no pattern is specified the treat the folder as a possible pattern
+        if (options.is_recursive and not folder.ends_with("**"))
+          folder /= "**"
+        endIf
+
         local path_segments = folder.split( '/' )
         local pattern_segments = String[]
         local first_wildcard_i = path_segments.locate( $.contains('*') or $.contains('?') )
@@ -73,7 +78,7 @@ class FileListing
         else                           pattern = pattern_segments.join( "/" )
       endIf
 
-      if (options & FileListingOption.ABSOLUTE) folder = File(folder).abs
+      if (options.is_absolute) folder = File(folder).abs
 
       local filepath_pattern = folder/pattern
       local file_exists = false
@@ -102,13 +107,13 @@ class FileListing
 
       # Need special handling for omitting the folder when it starts with "./"
       local adjusted_folder = folder
-      if ((options & FileListingOption.OMIT_PATH) and folder.begins_with("./") and folder.count>2)
+      if ((options.is_omit_path) and folder.begins_with("./") and folder.count>2)
         adjusted_folder = folder.rightmost( -2 )
       endIf
 
       if (file_exists)
         local filepath = filepath_pattern
-        if ((options & FileListingOption.OMIT_PATH) and filepath.begins_with(adjusted_folder))
+        if ((options.is_omit_path) and filepath.begins_with(adjusted_folder))
           filepath = filepath.after_first( adjusted_folder )
         endIf
         filepaths.add( filepath )
@@ -123,7 +128,7 @@ class FileListing
             necessary (filepath == FilePattern(pattern.value))
           endIf
 
-          if ((options & FileListingOption.OMIT_PATH) and filepath.begins_with(adjusted_folder))
+          if ((options.is_omit_path) and filepath.begins_with(adjusted_folder))
             filepath = filepath.after_first( adjusted_folder )
           endIf
 
@@ -132,19 +137,19 @@ class FileListing
         endContingent
       endForEach
 
-      if (not (options & FileListingOption.UNSORTED))
+      if (not options.is_unsorted)
         filepaths.sort( $1.compare_to($2,&ignore_case) < 0 )
       endIf
 
     method collect( filename:String )
-      if ((options & FileListingOption.IGNORE_HIDDEN) and filename.begins_with('.')) return
+      if ((options.is_ignore_hidden) and filename.begins_with('.')) return
       if (pattern_segments.count and filename != FilePattern(pattern_segments.first)) return
 
       filepath_segments.[ clear, add(path_segments), add(filename) ]
 
       local filepath = filepath_segments.join( "/" )
       if (File(filepath).is_folder)
-        if (options & FileListingOption.FOLDERS) filepaths.add( filepath )
+        if (options.is_folders) filepaths.add( filepath )
         if (pattern_segments.count)
           # Implied recursion because we have more pattern segments
           path_segments.add( filename )
@@ -152,7 +157,7 @@ class FileListing
             # Once we encounter `**`, switch to recursively collecting everything
             # and let the top-level filter decide which ones match
             local saved_options = options
-            options = FileListingOption.RECURSIVE
+            options.is_recursive = true
             local saved_segments = pattern_segments
             pattern_segments = empty_segments
             FileListing._listing( File(filepath), callback )
@@ -165,13 +170,13 @@ class FileListing
           endIf
 
           path_segments.remove_last
-        elseIf (options & FileListingOption.RECURSIVE)
+        elseIf (options.is_recursive)
           path_segments.add( filename )
           FileListing._listing( File(filepath), callback )
           path_segments.remove_last
         endIf
       else
-        if (options & FileListingOption.FILES) filepaths.add( filepath )
+        if (options.is_files) filepaths.add( filepath )
       endIf
 
     method fix( pattern:String )->String

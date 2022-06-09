@@ -423,14 +423,13 @@ class File( filepath:String ) [compound]
         &files, &folders, &unsorted, &recursive )->String[]
       # Use the filepattern '**' for a recursive listing.
       local options : FileListingOption
-      if (ignore_hidden)    options |= FileListingOption.IGNORE_HIDDEN
-      if (absolute)         options |= FileListingOption.ABSOLUTE
-      if (omit_path)        options |= FileListingOption.OMIT_PATH
-      if (files)            options |= FileListingOption.FILES
-      if (folders)          options |= FileListingOption.FOLDERS
-      if (unsorted)         options |= FileListingOption.UNSORTED
-      if (recursive)        options |= FileListingOption.RECURSIVE
-
+      options.is_ignore_hidden = ignore_hidden
+      options.is_absolute      = absolute
+      options.is_omit_path     = omit_path
+      options.is_files         = files
+      options.is_folders       = folders
+      options.is_unsorted      = unsorted
+      options.is_recursive     = recursive
       return FileListing( this, filepattern, options ).filepaths
 
     method load_as_bytes( &discard_bom )->Byte[]
