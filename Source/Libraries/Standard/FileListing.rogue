@@ -29,6 +29,9 @@ class FileListing
   METHODS
     method init( folder_or_filepath:File, _pattern:FilePattern?, options )
       folder_or_filepath = File( fix(folder_or_filepath->String) ).resolved.without_trailing_separator
+      if (not (options & (FileListingOption.FILES | FileListingOption.FOLDERS)))
+        options |= FileListingOption.FILES | FileListingOption.FOLDERS
+      endIf
 
       local pattern : String?
       if (_pattern)
@@ -89,7 +92,9 @@ class FileListing
 
       pattern_segments = pattern.value.split( '/' )
 
-      if (not file_exists) _listing( File(folder), callback )
+      if (not file_exists)
+        _listing( File(folder), callback )
+      endIf
 
       # Process the results
       filepath_segments.[ clear, add(path_segments), add(pattern_segments) ]
@@ -134,7 +139,9 @@ class FileListing
     method collect( filename:String )
       if ((options & FileListingOption.IGNORE_HIDDEN) and filename.begins_with('.')) return
       if (pattern_segments.count and filename != FilePattern(pattern_segments.first)) return
+
       filepath_segments.[ clear, add(path_segments), add(filename) ]
+
       local filepath = filepath_segments.join( "/" )
       if (File(filepath).is_folder)
         if (options & FileListingOption.FOLDERS) filepaths.add( filepath )
