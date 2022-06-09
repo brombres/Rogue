@@ -1519,7 +1519,10 @@ class Resolver : Visitor
         if (context)
           context = visit( context )
           is_global = context.is_type_context
-          type_context = context.require_type
+          type_context = context.type
+          if (not type_context)
+            throw t.error( "Nil value used as call context." )
+          endIf
 
         else
           is_global = this_procedure.is_global
