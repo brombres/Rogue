@@ -47,7 +47,7 @@ class FileListing
 
         if (options.is_files)
           if (options.is_absolute)    filepath = File(filepath).abs->String
-          if ((options.is_omit_path)) filepath = File(filepath).filename->String
+          if ((options.is_omit_path)) filepath = File(filepath).filename
           filepaths.add( filepath )
         endIf
         return

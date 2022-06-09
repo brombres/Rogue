@@ -10,9 +10,9 @@ class File( filepath:String ) [compound]
   METHODS
     method abs->File
       if (not this.exists)
-        local parent = this.folder
-        if (parent.filepath.count == 0) parent = File(".")
-        return "$/$" (parent.abs,this.filename)
+        local parent = this.parent
+        if (parent.filepath.count == 0) return File("."/filepath).abs
+        return parent.abs / filename
       endIf
 
       local filepath = resolved.filepath
@@ -301,13 +301,13 @@ class File( filepath:String ) [compound]
       return File.filename( filepath ).after_last( '.' )
       }#
 
-    method filename->File
+    method filename->String
       local filepath = resolved.filepath
       local i = filepath.locate_last( '/' )
       if (not i?) return this
-      return File( filepath.from(i.value+1) )
+      return filepath.from( i.value+1 )
 
-    method folder->File
+    method folder->String
       local filepath = resolved.filepath
 
       # Replace multiple slashes with single slashes
@@ -316,13 +316,13 @@ class File( filepath:String ) [compound]
       # Discard trailing slash
       if (filepath.ends_with('/')) filepath = filepath.leftmost( -1 )
 
-      if (filepath.count == 0) return File("")
+      if (filepath.count == 0) return ""
 
       local i1 = filepath.locate_last( '/' )
-      if (not i1?) return File("")
+      if (not i1?) return ""
       if (i1.value == 0) return File(filepath.leftmost(1))  # /abc -> /
 
-      return File( filepath.from(0, i1.value-1) )
+      return filepath.from(0, i1.value-1)
 
       #{
     method is_different_than( filepath:String, other_filepath:String )->Logical
@@ -468,20 +468,12 @@ class File( filepath:String ) [compound]
     method operator/( other_filepath:String )->File
       return File( resolved.filepath / File(other_filepath).resolved.filepath )
 
-    #{
-    method options->FileListingOption
-      return FileListingOption()
-
-    method parent( filepath:String, level=1:Int32 )->String
-      filepath = expand_path( filepath )
+    method parent( level=1:Int32 )->File
       if (level <= 0) return filepath
-      if (level == 1) return folder( filepath )
-      return parent( folder(filepath), level-1 )
+      if (level == 1) return File(folder)
+      return File(folder).parent( level-1 )
 
-    method path( filepath:String )->String
-      filepath = expand_path( filepath )
-      return folder( filepath )
-
+      #{
     method print_writer( filepath:String )->PrintWriter
       return PrintWriter( writer(filepath) )
       }#
