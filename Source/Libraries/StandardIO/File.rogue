@@ -350,7 +350,12 @@ class File( filepath:String ) [compound]
 
       return filepath.from(0, i1.value-1)
 
+    method has_parent->Logical
+      return resolved.folder.count > 0
+
     method is_folder->Logical
+      if (filepath == "") return false
+
       local filepath = resolved.filepath
 
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
@@ -509,15 +514,11 @@ class File( filepath:String ) [compound]
       return FileReader( resolved.filepath )
 
       #{
-    method rebuilder( filepath:String )->LineRebuilder
-      filepath = expand_path( filepath )
-      return LineRebuilder( File(filepath) )
-
-    method rename( old_filepath:String, new_filepath:String )->Logical
-      old_filepath = expand_path( old_filepath )
-      new_filepath = expand_path( new_filepath )
-      if (not File.exists(old_filepath)) return false
-      native @|rename( $old_filepath->data->as_utf8, $new_filepath->data->as_utf8 );
+    method rename( destination:File )->Logical
+      if (not this.exists) return false
+      local source_filepath = resolved.filepath
+      local destination_filepath = destination.resolved.filepath
+      native @|rename( $source_filepath->data->as_utf8, $new_filepath->data->as_utf8 );
       return File.exists( new_filepath )
       }#
 
@@ -798,58 +799,47 @@ class File( filepath:String ) [compound]
       else
         System.run "touch $" (filepath)
       endIf
+      }#
 
-    method with_destination( filepath:String, destination_filepath:String )->String
+    method with_destination( destination:File )->File
       # Uses console-style filename and folder rules to modify a source filepath
-      # given a destination filepath, with one big difference: if the destination
-      # filepath does not include a folder then the source folder from the
-      # source filepath is used instead. Use an explicit "./" prefix to specify
-      # the current folder as the destination folder.
+      # given a destination filepath.
       #
-      #
-      # File( "path1/filename1" ).with_destination( "path2/filename2" ) -> "path2/filename2"
-      # File( "path1/filename1" ).with_destination( "path2" )           -> "path2/filename1"
-      # File( "path1/filename1" ).with_destination( "filename2" )       -> "path1/filename2"
-      # File( "filename1" ).with_destination( "path2/filename2" )       -> "path2/filename2"
-      # File( "filename1" ).with_destination( "path2" )                 -> "path2/filename1"
-      # File( "filename1" ).with_destination( "filename2" )             -> "filename2"
-      # File( "path1" ).with_destination( "path2/filename2" )           -> "path2/filename2"
-      # File( "path1" ).with_destination( "path2" )                     -> "path2/path1"
-      # File( "path1" ).with_destination( "filename2" )                 -> "filename2"
+      # File( "folder1/filename1" ).with_destination( File("folder2/filename2") ) -> "folder2/filename2"
+      # File( "folder1/filename1" ).with_destination( File("folder2") )           -> "folder2/filename1"
+      # File( "folder1/filename1" ).with_destination( File("filename2") )         -> "filename2"
+      # File( "filename1" ).with_destination( File("folder2/filename2") )         -> "folder2/filename2"
+      # File( "filename1" ).with_destination( File("folder2") )                   -> "folder2/filename1"
+      # File( "filename1" ).with_destination( File("filename2") )                 -> "filename2"
+      # File( "folder1" ).with_destination( File("folder2/filename2") )           -> "folder2/filename2"
+      # File( "folder1" ).with_destination( File("folder2") )                     -> "folder2/folder1"
+      # File( "folder1" ).with_destination( File("filename2") )                   -> "filename2" (folder1 renamed to filename2)
       #
       # Definitions
       # - path:     .exists and .is_folder
       # - filename: not .exists or (.exists and not .is_folder)
-      filepath = File.without_trailing_separator( File.expand_path(filepath) )
-      destination_filepath = File.without_trailing_separator( File.expand_path(destination_filepath) )
+      if (destination.is_folder)
+        # File( "folder1" ).with_destination( "folder2" )           -> "folder2/folder1"
+        # File( "folder1/filename1" ).with_destination( "folder2" ) -> "folder2/filename1"
+        # File( "filename1" ).with_destination( "folder2" )         -> "folder2/filename1"
+        return destination / this.filename
 
-      if (File.is_folder(destination_filepath))
-        if (File.is_folder(filepath))
-          # File( "path1" ).with_destination( "path2" ) -> "path2/path1"
-          return join( destination_filepath, filepath )
-        else
-          # File( "path1/filename1" ).with_destination( "path2" ) -> "path2/filename1"
-          # File( "filename1" ).with_destination( "path2" )       -> "path2/filename1"
-          return join( destination_filepath, File.filename(filepath) )
-        endIf
+      elseIf (destination.parent.is_folder or this.is_folder)
+        # File( "folder1/filename1" ).with_destination( File("folder2/filename2") ) -> "folder2/filename2"
+        # File( "filename1" ).with_destination( File("folder2/filename2") )         -> "folder2/filename2"
+        # File( "folder1" ).with_destination( File("folder2/filename2") )           -> "folder2/filename2"
+        # File( "folder1" ).with_destination( File("filename2") )                   -> "filename2"
+        return destination
 
-      elseIf (File.is_folder(File.folder(destination_filepath)) or File.is_folder(filepath))
-        # File( "path1/filename1" ).with_destination( "path2/filename2" ) -> "path2/filename2"
-        # File( "filename1" ).with_destination( "path2/filename2" )       -> "path2/filename2"
-        # File( "path1" ).with_destination( "path2/filename2" )           -> "path2/filename2"
-        # File( "path1" ).with_destination( "filename2" )                 -> "filename2"
-        return destination_filepath
-
-      elseIf (File.is_folder(File.folder(filepath)))
-        # File( "path1/filename1" ).with_destination( "filename2" )       -> "path1/filename2"
-        return join( File.folder(filepath), destination_filepath )
+      elseIf (this.parent.is_folder)
+        # File( "folder1/filename1" ).with_destination( "filename2" ) -> "filename2"
+        return destination
 
       else
         # File( "filename1" ).with_destination( "filename2" ) -> "filename2"
-        return destination_filepath
+        return destination
 
       endIf
-      }#
 
     method without_trailing_separator->File
       # Removes trailing slash on anything except "/"
