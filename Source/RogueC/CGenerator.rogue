@@ -1506,15 +1506,7 @@ augment
 
       if (types.count)
         forEach (type in types)
-          if (type.is_primitive or type.is_aspect) nextIteration
-
-          if (type.attributes.is_singleton)
-            writer.print   type.c_name
-            if (type.is_reference) writer.print '*'
-            writer.print   ' '
-            writer.print   type.c_name
-            writer.println "_singleton = 0;"
-          endIf
+          if (type.is_primitive) nextIteration
 
           forEach (p in type.global_properties)
             writer.print p.type.c_ref_name
@@ -1523,6 +1515,16 @@ augment
             if (p.type.is_compound) writer.println " = {};"
             else                    writer.println " = 0;"
           endForEach
+
+          if (type.is_aspect) nextIteration
+
+          if (type.attributes.is_singleton)
+            writer.print   type.c_name
+            if (type.is_reference) writer.print '*'
+            writer.print   ' '
+            writer.print   type.c_name
+            writer.println "_singleton = 0;"
+          endIf
 
           writer.print   "RogueType Type"
           writer.print   type.c_name
@@ -1611,7 +1613,6 @@ augment
 
     method Module.generate_c_class_initialization( writer:CWriter )
       forEach (type in types)
-        if (type.is_aspect) nextIteration
         local m = type.global_methods["init_class()"]
         if (not m or m.statements.count == 0) nextIteration
         writer.print( m.c_name ).println( "();" )
@@ -1992,18 +1993,6 @@ augment
       return false
 
     method Type.generate_c_header( writer:CWriter )
-      if (is_aspect) return
-
-      if (attributes.is_singleton)
-        writer.print   "extern "
-        writer.print   c_name
-        if (is_reference) writer.print '*'
-        writer.print   ' '
-        writer.print   c_name
-        writer.println "_singleton;"
-        writer.println
-      endIf
-
       forEach (p in global_properties)
         writer.print "extern "
         writer.print p.type.c_ref_name
@@ -2019,6 +2008,18 @@ augment
         endIf
       endForEach
 
+      if (is_aspect) return
+
+      if (attributes.is_singleton)
+        writer.print   "extern "
+        writer.print   c_name
+        if (is_reference) writer.print '*'
+        writer.print   ' '
+        writer.print   c_name
+        writer.println "_singleton;"
+        writer.println
+      endIf
+
       forEach (m in methods)
         if (m.type_context is this and not m.attributes.is_abstract)
           write_c_method_header( m, writer )
@@ -2027,9 +2028,7 @@ augment
       endForEach
 
     method Type.generate_c_code( writer:CWriter )
-      if (is_aspect) return
-
-      if (is_reference or contains_reference or this is Program.type_Object)
+      if ((is_reference or contains_reference or this is Program.type_Object) and not is_aspect)
         writer.print( "void " ).print( c_name ).println( "_gc_trace( void* THIS )" )
         writer.println '{'
         writer.indent += 2
@@ -2090,7 +2089,8 @@ augment
 
       local cgen = CGenerator( writer )
       cgen.visit_global_methods( this )
-      cgen.visit_methods( this )
+
+      if (not is_aspect) cgen.visit_methods( this )
 
     method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
       if (m.return_type)

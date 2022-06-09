@@ -668,7 +668,7 @@ class Type : Cmd
       endIf
 
       # Add init_class() for global property initialization
-      if (not is_aspect)
+      block
         local m = global_methods["init_class()"]
         if (not m)
           m = GlobalMethod( t, this, "init_class" )
@@ -691,8 +691,7 @@ class Type : Cmd
             )
           endForEach
         endUse
-
-      endIf
+      endBlock
 
       # Add init_object() methods for new initial property assignments
       if (is_object)

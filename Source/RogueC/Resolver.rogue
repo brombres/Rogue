@@ -33,14 +33,15 @@ class Resolver : Visitor
       type.organize
       type.is_resolved = true  # prevent recursion
 
-      if (type.is_aspect) return
-
       prior.visit_type( type )
 
     method on_visit_type( type:Type )
       resolve_definitions( type )
 
-      prior.on_visit_type( type )
+      visit_global_methods( type )
+      if (type.is_aspect) return
+
+      visit_methods( type )
 
       type.m_on_cleanup = type.methods["on_cleanup()"]
       if (type.m_on_cleanup)

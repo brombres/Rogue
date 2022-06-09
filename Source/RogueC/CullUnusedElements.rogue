@@ -104,13 +104,33 @@ class CullUnusedElements : InspectionVisitor
       endForEach
 
     method on_visit_type( type:Type ) [override]
-      if (type.attributes.is_visiting or type.attributes.is_aspect) return
+      if (type.attributes.is_visiting) return
       type.attributes.is_visiting = true
 
-      if (not type.attributes.is_used)
-        type.attributes.is_used = true
-        is_modified = true
-      endIf
+      contingent
+        sufficient (not type.is_aspect)
+        sufficient (type.global_properties.count)
+        sufficient (type.global_methods.count > 1)  # generated init_class() doesn't count
+      satisfied
+        if (not type.attributes.is_used)
+          type.attributes.is_used = true
+          is_modified = true
+        endIf
+      endContingent
+
+      visit_type( (forEach in type.global_properties).type )
+
+      temporarily this_type = type
+        forEach (m in type.global_methods)
+          if ((m.attributes.is_essential or m.attributes.is_api))
+            temporarily this_module=m.module_context, this_procedure=m
+              visit( m )
+            endTemporarily
+          endIf
+        endForEach
+      endTemporarily
+
+      if (type.attributes.is_aspect) return
 
       if (type.base_class) visit_type( type.base_class )
       if (type.aspects)
@@ -133,18 +153,7 @@ class CullUnusedElements : InspectionVisitor
         endIf
       endIf
 
-      visit_type( (forEach in type.global_properties).type )
       visit_type( (forEach in type.properties).type )
-
-      temporarily this_type = type
-        forEach (m in type.global_methods)
-          if ((m.attributes.is_essential or m.attributes.is_api))
-            temporarily this_module=m.module_context, this_procedure=m
-              visit( m )
-            endTemporarily
-          endIf
-        endForEach
-      endTemporarily
 
       temporarily this_type = type
         forEach (m in type.methods)
