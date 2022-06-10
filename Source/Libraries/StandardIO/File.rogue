@@ -1,3 +1,5 @@
+uses Utility/WorkList
+
 class File( filepath:String ) [compound]
   NATIVE
     nativeHeader @|#include <stdio.h>
@@ -113,59 +115,67 @@ class File( filepath:String ) [compound]
 
       return File(a)  # 'a' and 'b' are the same at this point, possibly ""
 
-      #{
-    method contains( filepath:String, filename:String )->Logical
-      return (File.listing( filepath, filename ).count > 0)
+    method contains( pattern:FilePattern )->Logical
+      # Returns true if this folder contains a file with the given pattern.
+      if (not is_folder) return false
+      return listing( pattern ).count > 0
 
-    method copy( from_filepath:String, to_filepath:String, &if_newer, &if_different, &dry_run, &verbose )->Logical
-      from_filepath = expand_path( from_filepath )
-      to_filepath = expand_path( to_filepath )
-
-      if (not exists(from_filepath))
-        throw Error( "Source file for copy() does not exist: " + from_filepath )
-      endIf
-
-      if (is_folder(from_filepath))
-        throw Error( "First argument must be a file; cannot copy() from folder: " + from_filepath )
-      endIf
-
-      if (is_folder(to_filepath))
-        to_filepath /= filename(from_filepath)
-      else
-        local containing_folder = folder( to_filepath )
-        if (containing_folder != "" and not is_folder(containing_folder))
-          File.create_folder( containing_folder )
-          if (not is_folder(containing_folder))
-            throw Error( "Cannot copy() to nonexistent folder: " + containing_folder )
-          endIf
+    method copy( destination:File, &if_different, &dry_run, &verbose, &ignore_hidden )->Int32?
+      # Copies a file or the contents of a folder to a specified file or folder.
+      # Returns the count of files copied or null on an error.
+      if (this.is_folder)
+        if (not destination.is_folder and destination.exists)
+          println "Cannot copy the contents of folder $ to file $."(this,destination)
+          return null
         endIf
+
+        if (not destination.exists)
+          if (dry_run) return this.listing( FilePattern("**"), &=ignore_hidden, &files ).count
+          destination.create_folder
+        endIf
+
+        local result = 0
+        forEach (filepath in listing(&=ignore_hidden))
+          local file = File( filepath )
+          local dest = destination
+          if (file.is_folder) dest /= file.filename
+          local n = file.copy( dest, &=if_different, &=dry_run, &=verbose, &=ignore_hidden )
+          if (not n) return null
+          result += n.value
+        endForEach
+        return result
       endIf
 
-      contingent
-        sufficient (if_newer and is_newer_than(from_filepath,to_filepath))
-        sufficient (if_different and is_different_than(from_filepath,to_filepath))
-        necessary (not if_newer and not if_different)
+      local dest = this.with_destination( destination )
+      if (if_different and this == dest) return 0
 
-      satisfied
-        if (dry_run) return true
+      if (verbose) println "$ -> $" (this,dest)
 
-        if (verbose) println "Copying $ -> $" (from_filepath,to_filepath)
-        local reader = File.reader( from_filepath )
-        local writer = File.writer( to_filepath )
-        local file_buffer = Byte[]( 1024 )
-        while (reader.has_another)
-          reader.read( file_buffer.[clear], 1024 )
-          writer.write( file_buffer )
-        endWhile
-        writer.close
+      if (dry_run) return 1
 
-        return true
+      if (dest.has_parent)
+        if (not dest.parent.create_folder) return null
+      endIf
 
-      unsatisfied
-        return false
+      try
+        local reader = reader
+        local writer = dest.writer
 
-      endContingent
-      }#
+        use file_buffer = WorkList<<Byte>>
+          file_buffer.reserve( 1024 )
+          while (reader.has_another)
+            reader.read( file_buffer.[clear], 1024 )
+            writer.write( file_buffer )
+          endWhile
+          writer.close
+        endUse
+
+      catch (error:IOError)
+        println error
+        return null
+      endTry
+
+      return 1
 
     method conventional_filepath->String
       if (System.is_windows) return filepath.replacing( '/', '\\' )
