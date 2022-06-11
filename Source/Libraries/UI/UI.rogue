@@ -125,7 +125,7 @@ class UI [abstract]
           temporarily clip = dirty_bounds
             dirty_bounds = null
             on_draw
-            #layers.draw( clip.value )  # FIXME
+            layers.draw( clip.value )
             after_draw
           endTemporarily
         endIf
@@ -288,7 +288,7 @@ class UI [abstract]
         endIf
         on_update
         if (actions) actions .= update
-        #layers.update
+        layers.update
         after_update
       endTemporarily
 

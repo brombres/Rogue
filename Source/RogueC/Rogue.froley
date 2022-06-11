@@ -226,7 +226,7 @@ scanner
 
   match input
     produceAny Symbols
-    case '\n': produce EOL
+    case '\n': call mark_beginning_of_line; produce EOL
     case '"':  tokenize_string
     case "'":  tokenize_character_or_string
     case "''": tokenize_two_quote_string
@@ -245,19 +245,22 @@ scanner
   syntaxError
 
 - scan_comment
-  if (consume('#'))
-    if (consume('{'))
+  if (scan('#'))
+    if (scan('{'))
       count = 1
       while (hasAnother)
         ch = read
+        collect ch
         if (ch == '\n')
+          saved_buffer = buffer
           create EOL
+          buffer = saved_buffer
         elseIf (ch == '#')
-          if (consume('{')) ++count
+          if (scan('{')) ++count
         elseIf (ch == '}')
-          if (consume('#'))
+          if (scan('#'))
             --count
-            if (count == 0) restart
+            if (count == 0) call process_comment; restart
           endIf
         endIf
       endWhile
@@ -265,7 +268,9 @@ scanner
     else
       # Single line comment
       if scan [^\n]*
+        call process_comment
         consume '\n'
+        call mark_beginning_of_line
         produce EOL
       endIf
     endIf
@@ -273,7 +278,9 @@ scanner
   elseIf (consume({"----"[-]*}) or consume({"===="[=]*}))
     # HR comments
     scan [^\n]*
+    call process_comment
     consume '\n'
+    call mark_beginning_of_line
     produce EOL
 
   else
