@@ -831,6 +831,67 @@ class String : Poolable PrintWriter
     method on_return_to_pool
       clear
 
+    method pluralized( quantity:Int32 )->String
+      # Returns a pluralized form of this string.
+      #
+      # This string may be of the form "singlar" or "singlar/plural",
+      # where both singular and plural parts may contain a "#"
+      # to indicate where the given ''quantity'' should be inserted.
+      #
+      # If the string only contains the "singular" part, first a
+      # substring of the form "(s)" or "(es)" (etc.) is looked for.
+      # If that exists, it is included in the result if the string
+      # is plural and omitted if the string is singular.
+      #
+      # If there is no "(s)" (etc.) then either "s" or "es" is
+      # inserted after the last letter - "es" is used only when the
+      # last letter is an "s" already.
+      #
+      # Examples:
+      #
+      #   "cat".pluralized(1)   # returns: cat
+      #   "cat".pluralized(2)   # returns: cats
+      #   "My # glass.".pluralized(1)  # returns: My 1 glass.
+      #   "My # glass.".pluralized(2)  # returns: My 2 glasses.
+      #   "a thief./# thieves".pluralized(1)   # returns: a thief.
+      #   "a thief./# thieves".pluralized(40)  # returns: 40 thieves.
+      #   "# match(es) found".pluralized(1)    # returns: 1 match found
+      #   "# match(es) found".pluralized(0)    # returns: 0 matches found
+      local st = this.replacing( "#", ""+quantity )
+
+      if (st.contains('/'))
+        if (quantity == 1) return st.before_first( '/' )
+        else               return st.after_last( '/' )
+
+      else
+        local alt1 = st.locate('(')
+        if (alt1.exists)
+          local alt2 = st.locate(')',alt1.value+1)
+          if (not alt2.exists) return this
+
+          if (quantity == 1)
+            return st.before(alt1.value) + st.after(alt2.value)
+          endIf
+
+          # plural
+          return "$$$" (st.before(alt1.value),st.from(alt1.value+1,alt2.value-1),st.after(alt2.value))
+        else
+          if (quantity == 1) return st
+
+          # plural
+          local index = 0
+          local i = st.count
+          while (i > 0)
+            --i
+            if (st[i].is_letter) index = i; escapeWhile
+          endWhile
+
+          if (st[index] == 's') return "$es$" (st.before(index+1),st.after(index))
+          else                  return "$s$" (st.before(index+1),st.after(index))
+        endIf
+
+      endIf
+
     method print( value:Byte )
       print( value->Int64 )
 

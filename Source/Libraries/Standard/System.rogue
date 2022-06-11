@@ -190,7 +190,10 @@ class System [essential]
       # Execution time in 1/60th second ticks.
       return (elapsed_ms * 6) / 100
 
-    method time->Real
+    method time->Real64
+      return time_ms / Real64(1000)
+
+    method time_ms->Int64
       local time_seconds_x1000 : Int64
 
       native @|#if defined(_WIN32)
@@ -206,7 +209,7 @@ class System [essential]
               |  $time_seconds_x1000 += (time_struct.tv_usec / 1000);
               |#endif
 
-      return time_seconds_x1000 / 1000.0
+      return time_seconds_x1000
 
     method _add_command_line_argument( arg:String ) [essential]
       command_line_arguments.add( arg )

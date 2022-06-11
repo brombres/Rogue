@@ -2,6 +2,7 @@ $include Standard/BitIO
 $include Standard/ByteList
 $include Standard/Boxed
 $include Standard/DataIO
+$include Standard/Date
 $include Standard/Dim
 $include Standard/Console
 $include Standard/ConsoleCursor
@@ -32,6 +33,9 @@ $include Standard/StringEncoding
 $include Standard/StringList
 $include Standard/System
 $include Standard/Table
+$include Standard/Time
+$include Standard/TimeInterval
+$include Standard/Timestamp
 $include Standard/WorkList
 $include Standard/Writer
 

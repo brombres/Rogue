@@ -1909,8 +1909,9 @@ class Resolver : Visitor
         local result = refine_candidates( type_context, args, &=exact_arg_types )
         if (result)
           return result.[resolve]
-        elseIf (suppress_error and (constructor or exact_arg_types))
-          return null
+        elseIf (suppress_error)
+          if (constructor or exact_arg_types) return null
+          if (not args) return null
         endIf
       elseIf (suppress_error)
         return null
