@@ -1,0 +1,113 @@
+module Geometry
+
+class RealXY( x:Real, y:Real ) [compound]
+  DEFINITIONS
+    zero = RealXY(0,0)
+
+  GLOBAL METHODS
+    method create( n:Real )->RealXY
+      return RealXY(n,n)
+
+  METHODS
+    method is_zero->Logical
+      return x == 0 and y == 0
+
+    method magnitude->Real
+      return (x*x + y*y).sqrt
+
+    method magnitude2->Real
+      return x*x + y*y
+
+    method max->Real
+      return which{ x>=y:x || y }
+
+    method min->Real
+      return which{ x<=y:x || y }
+
+    method max( other:RealXY )->RealXY
+      # Returns an RealXY containing the max X and the max Y of 'this' and 'other'.
+      local max_x = which{ x>=other.x:x || other.x }
+      local max_y = which{ y>=other.y:y || other.y }
+      return RealXY( max_x, max_y )
+
+    method min( other:RealXY )->RealXY
+      # Returns an RealXY containing the min X and the min Y of 'this' and 'other'.
+      local min_x = which{ x<=other.x:x || other.x }
+      local min_y = which{ y<=other.y:y || other.y }
+      return RealXY( min_x, min_y )
+
+    method normal->RealXY
+      # Returns the normal of this vector.
+      return RealXY( -y, x )
+
+    method normalized->RealXY
+      local msq = x*x + y*y
+      if (msq <= 0) return RealXY(0,0)
+      local m = msq.sqrt
+      if (m) return RealXY( x/m, y/m )
+      else   return RealXY.zero
+
+    method operator==( other:RealXY )->Logical
+      return x == other.x and y == other.y
+
+    method operator+( other:RealXY )->RealXY
+      return RealXY( x+other.x, y+other.y )
+
+    method operator-()->RealXY
+      return RealXY( -x, -y )
+
+    method operator-( other:RealXY )->RealXY
+      return RealXY( x-other.x, y-other.y )
+
+    method operator*( other:RealXY )->RealXY
+      return RealXY( x*other.x, y*other.y )
+
+    method operator*( value:Real )->RealXY
+      return RealXY( x*value, y*value )
+
+    method operator/( other:RealXY )->RealXY
+      return RealXY( x/other.x, y/other.y )
+
+    method operator/( value:Real )->RealXY
+      return RealXY( x/value, y/value )
+
+    method operator%( other:RealXY )->RealXY
+      return RealXY( x%other.x, y%other.y )
+
+    method operator%( value:Real )->RealXY
+      if (value == 0) return this
+      return RealXY( x%value, y%value )
+
+    method operator^( other:RealXY )->RealXY
+      return RealXY( x^other.x, y^other.y )
+
+    method operator^( value:Real )->RealXY
+      return RealXY( x^value, y^value )
+
+    method or_larger( other:RealXY )->RealXY
+      # Returns the largest X and the largest Y between this value and the other value.
+      return RealXY( this.x.or_larger(other.x), this.y.or_larger(other.y) )
+
+    method or_smaller( other:RealXY )->RealXY
+      # Returns the smaller X and the smaller Y between this value and the other value.
+      return RealXY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
+    method to->String
+      return "($,$)"(x,y)
+
+    method xv->RealXY
+      return RealXY(x,0)
+
+    method yv->RealXY
+      return RealXY(0,y)
+endClass
+
+augment Math::Random
+  METHODS
+    method real_xy( limit:Real )->Geometry::RealXY
+      return Geometry::RealXY( real(limit), real(limit) )
+
+    method real_xy( limit:Geometry::RealXY )->Geometry::RealXY
+      return Geometry::RealXY( real(limit.x), real(limit.y) )
+endAugment
+

@@ -95,6 +95,12 @@ class XY( x:Int32, y:Int32 ) [compound]
 
     method to->String
       return "($,$)"(x,y)
+
+    method xv->XY
+      return XY(x,0)
+
+    method yv->XY
+      return XY(0,y)
 endClass
 
 augment Math::Random
