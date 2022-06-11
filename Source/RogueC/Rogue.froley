@@ -2495,7 +2495,8 @@ parser
       return
     elseIf (nextIs('?'))
       on '?'
-        if (nextIs('('))
+        if (nextIs('(') or nextIs('?') or nextIs("[]"))
+          # Optional type constructor / optional type / optional list type
           createNull
           create Type(name:String,type_args:TemplateArgs)
           create Type(core_type:Type,optional="true":Logical)
@@ -2503,6 +2504,7 @@ parser
           type_access_or_typed_literal_list
           return
         else
+          # Logicalize
           createNull
           create Access( name:String, args )
           produce Logicalize(operand):Unary
