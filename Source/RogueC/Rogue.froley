@@ -122,13 +122,15 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
-META_DEFINE       $define   [meta]
-META_END_MACRO    $endMacro [meta structural]
-META_INCLUDE      $include  [meta]
-META_JOIN_IDS     $id       [meta]
-META_JOIN_STRINGS $string   [meta]
-META_MACRO        $macro    [meta]
-META_TARGET       $target   [meta]
+META_DEFINE          $define        [meta]
+META_END_LOCAL_MACRO $endLocalMacro [meta structural]
+META_END_MACRO       $endMacro      [meta structural]
+META_INCLUDE         $include       [meta]
+META_JOIN_IDS        $id            [meta]
+META_JOIN_STRINGS    $string        [meta]
+META_LOCAL_MACRO     $localMacro    [meta]
+META_MACRO           $macro         [meta]
+META_TARGET          $target        [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -657,8 +659,9 @@ parser
   on @"fallback"   -> AttributeFallback
   on @"insert"     -> AttributeInsert
   on @"mutating"   -> AttributeMutating
+  on @"override"   -> AttributeOverride
   on @"propagated" -> AttributePropagated
-  syntaxError "Illegal procedure attribute. Expected one or more of [abstract append essential fallback insert mutating propagated]."
+  syntaxError "Illegal procedure attribute. Expected one or more of [abstract api append essential fallback insert mutating override propagated]."
 
 - procedure_body
   multi_line_statements
@@ -2833,6 +2836,39 @@ parser
   elseOn "$include"
     collect_meta_filepath
     call include_filepath
+    return
+
+  elseOn "$localMacro"
+    identifier   # macro name
+
+    # placeholders
+    mustConsume '('
+    beginList
+      identifier
+      while (consume(','))
+        identifier
+      endWhile
+    createList Identifiers
+    mustConsume ')'
+
+    if (nextIs(EOL))
+      consume_eols
+      savePosition
+      while (hasAnother and not nextIs("$endMacro"))
+        read
+      endWhile
+      createTokenList # consumes saved position
+      mustConsume "$endMacro"
+    else
+      savePosition
+      while (hasAnother and not nextIs(EOL))
+        read
+      endWhile
+      createTokenList # consumes saved position
+      consume_eols
+    endIf
+
+    call define_macro
     return
 
   elseOn "$macro"

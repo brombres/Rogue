@@ -4558,3 +4558,9 @@ class CallbackFunction : Cmd
       return "CallbackFunction($,$)" (%context,%name)
 
 endClass
+
+class AttributeOverride : Cmd
+  METHODS
+    method description->String
+      return "AttributeOverride"
+endClass

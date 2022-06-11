@@ -1326,6 +1326,21 @@ class Type : Cmd
 
       endIf
 
+      # Verify that every [override] method is indeed overriding a prior method.
+      forEach (m in methods)
+        if (m.attributes.is_override)
+          if (not m.overridden_method)
+            throw m.t.error( "Method $ does not override any prior definition. Check for signature type errors or remove the [override] attribute." )
+          endIf
+        endIf
+      endForEach
+
+      forEach (m in global_methods)
+        if (m.attributes.is_override)
+          throw m.t.error( "A global method cannot [override] a prior definition." )
+        endIf
+      endForEach
+
       # Any [abstract] methods require an [abstract] class.
       if (not this.attributes.is_abstract)
         forEach (m in methods)

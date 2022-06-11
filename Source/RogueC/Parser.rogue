@@ -22,6 +22,8 @@ class Parser : ParserCore
     generic_fn_args_depth : Int32
     generic_fn_args_used  : Int32
 
+    local_macros          : StringTable<<Macro[]>>
+
   METHODS
     method preprocess
       processed_tokens = Token[]( _tokens.count * 1.2 )
@@ -149,6 +151,47 @@ class Parser : ParserCore
         endIf
       endForEach
 
+      if (local_macros)
+        local local_group = local_macros[id_node->String]
+        if (local_group)
+          forEach (m in local_group)
+            if (m.placeholders.count == placeholders.count)
+              throw m.t.error( "A local definition of macro $($) already exists."(id_node->String,placeholders.count) )
+            endIf
+          endForEach
+        endIf
+      endIf
+
+      macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
+
+    method define_local_macro
+      assert _cmd_stack.count >= 3
+      local tokens = _cmd_stack.remove_last->(as TokenList).tokens
+      local placeholders = _cmd_stack.remove_last->(as Identifiers)
+      local id_node = _cmd_stack.remove_last
+
+      ensure local_macros
+      local macros = local_macros[id_node->String]
+      if (not macros)
+        macros = Macro[]
+        local_macros[id_node->String] = macros
+      endIf
+
+      local global_group = Program.macros[ id_node->String ]
+      if (global_group)
+        forEach (m in global_group)
+          if (m.placeholders.count == placeholders.count)
+            throw m.t.error( "A global definition of local macro $($) already exists."(id_node->String,placeholders.count) )
+          endIf
+        endForEach
+      endIf
+
+      forEach (m in macros)
+        if (m.placeholders.count == placeholders.count)
+          throw m.t.error( "A definition of local macro $($) already exists."(id_node->String,placeholders.count) )
+        endIf
+      endForEach
+
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
 
     method clone
@@ -218,53 +261,57 @@ class Parser : ParserCore
       endIf
 
       if (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)
-        local macros = Program.macros[ _cur_t->String ]
-        if (macros)
-          _save_position
-          _execute( ip_macro_args )
-          local args = _cmd_stack.remove_last
-          forEach (m in macros)
-            if (m.placeholders.count == args.count)
-              _discard_position
-
-              # Expand macro here
-              local replacements = StringTable<<Token[]>>()
-              forEach (placeholder at i in m.placeholders)
-                replacements[placeholder->String] = args[i]->(as TokenList).tokens
-              endForEach
-
-              use expanded_tokens = WorkList<<Token>>
-                forEach (t in m.tokens)
-                  if (t.type == TokenType.IDENTIFIER)
-                    local replacement = replacements[ t.content ]
-                    if (replacement)
-                      expanded_tokens.add( forEach in replacement )
-                    else
-                      expanded_tokens.add( t )
-                    endIf
-                  else
-                    expanded_tokens.add( t )
-                  endIf
-                endForEach
-
-                # Insert expanded tokens
-                _tokens.shift( _position, &delta=expanded_tokens.count )
-                forEach (t at i in expanded_tokens)
-                  _tokens[_position+i] = t
-                endForEach
-                _limit += expanded_tokens.count
-                if (_position < _limit) _next_t = _tokens[_position]
-              endUse
-              return
-            endIf
-          endForEach
-
-          # No macro matches arg count
-          _restore_position
-        endIf
+        if (expand_macro(Program.macros[_cur_t->String])) return
+        if (local_macros and expand_macro(local_macros[_cur_t->String])) return
       endIf
 
       processed_tokens.add( _cur_t )
+
+    method expand_macro( macros:Macro[] )->Logical
+      if (not macros) return false
+
+      _save_position
+      _execute( ip_macro_args )
+      local args = _cmd_stack.remove_last
+      forEach (m in macros)
+        if (m.placeholders.count == args.count)
+          _discard_position
+
+          # Expand macro here
+          local replacements = StringTable<<Token[]>>()
+          forEach (placeholder at i in m.placeholders)
+            replacements[placeholder->String] = args[i]->(as TokenList).tokens
+          endForEach
+
+          use expanded_tokens = WorkList<<Token>>
+            forEach (t in m.tokens)
+              if (t.type == TokenType.IDENTIFIER)
+                local replacement = replacements[ t.content ]
+                if (replacement)
+                  expanded_tokens.add( forEach in replacement )
+                else
+                  expanded_tokens.add( t )
+                endIf
+              else
+                expanded_tokens.add( t )
+              endIf
+            endForEach
+
+            # Insert expanded tokens
+            _tokens.shift( _position, &delta=expanded_tokens.count )
+            forEach (t at i in expanded_tokens)
+              _tokens[_position+i] = t
+            endForEach
+            _limit += expanded_tokens.count
+            if (_position < _limit) _next_t = _tokens[_position]
+          endUse
+          return true
+        endIf
+      endForEach
+
+      # No macro matches arg count
+      _restore_position
+      return false
 
     method mark_token
       marked_token = _cur_t
