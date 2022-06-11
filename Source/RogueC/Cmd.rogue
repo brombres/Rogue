@@ -4564,3 +4564,21 @@ class AttributeOverride : Cmd
     method description->String
       return "AttributeOverride"
 endClass
+
+class SwapValues : Cmd
+  PROPERTIES
+    a : Cmd
+    b : Cmd
+
+  METHODS
+    method init( t, a, b )
+
+    method init( existing:SwapValues )
+      prior.init( existing )
+      if (existing.a) a = existing.a.cloned
+      if (existing.b) b = existing.b.cloned
+
+    method description->String
+      return "SwapValues($,$)" (%a,%b)
+
+endClass

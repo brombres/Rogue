@@ -1192,6 +1192,25 @@ class Resolver : Visitor
         throw cmd.t.error( "No enclosing 'contingent' to escape from." )
       endContingent
 
+    method on( cmd:SwapValues )->Cmd
+      local a = visit( cmd.a )
+      local b = visit( cmd.b )
+      local a_type = a.require_type
+      if (a_type is not b.require_type)
+        throw cmd.t.error( "Cannot swap values with mismatched types." )
+      endIf
+
+      local statements = Statements( cmd.t )
+      local scope = Block( cmd.t, statements )
+      push_scope( scope )
+      local v_temp = add_local( cmd.t, "temp", a_type, DummyInitialValue )
+      statements.add( SetLocal( v_temp, cmd.a.cloned, &initial_assignment) )
+      statements.add( Assign(cmd.t, cmd.a, cmd.b) )
+      statements.add( Assign(cmd.t, cmd.b.cloned, GetLocal(v_temp)) )
+      pop_scope
+
+      return visit( scope )
+
     method on( cmd:TemplatedAccess )->Cmd
       local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
       local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )

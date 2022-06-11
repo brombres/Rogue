@@ -103,6 +103,7 @@ KEYWORD_ROUTINE           routine     [structural]
 KEYWORD_SATISFIED         satisfied   [structural]
 KEYWORD_STATES            STATES      [structural]
 KEYWORD_SUFFICIENT        sufficient
+KEYWORD_SWAP_VALUES       swapValues
 KEYWORD_TEMPORARILY       temporarily
 KEYWORD_THIS              this
 KEYWORD_THIS_TYPE         ThisType
@@ -1865,6 +1866,7 @@ parser
   on @"println" args              -> Access(name=content,args)
   on "return" optional_expression -> Return(result)
   on "sufficient" expression      -> Sufficient(condition)
+  on "swapValues" '(' expression ',' expression ')' -> SwapValues(a,b)
   onPeek "trace"
     verbose_trace
     return

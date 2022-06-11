@@ -1002,4 +1002,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.context)
       return result
 
+    method on_visit_children( cmd:SwapValues )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.a)
+      if (result?) return result
+      result = visit(cmd.b)
+      return result
+
 endClass
