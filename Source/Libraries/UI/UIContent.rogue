@@ -1,0 +1,53 @@
+module UI
+
+class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
+  PROPERTIES
+    cur_group = UIModifier()
+
+  METHODS
+    method init
+      prior.init
+      prior.add( cur_group )
+
+    method init( component:UIComponent )
+      prior.init( component )
+      prior.add( cur_group )
+
+    method init( text:String )
+      init( create_text(text) )
+
+    method add( component:UIComponent ) [override]
+      flush
+      cur_group.add( component )
+
+    method begin_new_group
+      if (cur_group.count)
+        cur_group = UIModifier()
+        prior.add( cur_group )
+      endIf
+
+    method create_text( text:String )->UIComponent
+      return UIText( text )
+
+    method flush( buffer:String )
+      if (buffer.count)
+        local text = buffer.cloned
+        buffer.clear
+        cur_group.add( create_text(text) )
+      endIf
+
+    method prepare_layout
+      flush
+      prior.prepare_layout
+
+    method set_font( new_font:UIFont )
+      flush
+      if (new_font != cur_group.font) begin_new_group
+      cur_group.font = new_font
+
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 ) [override]
+      flush
+      prior.update_subcomponent_widths( subcomponents, container_width )
+
+endClass
+

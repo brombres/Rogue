@@ -1,0 +1,70 @@
+module UI
+
+class UIVerticalLayout : UILayout
+  METHODS
+    method measure_content_height( subcomponents:UIComponent[] )->Int32?
+      local total_w = 0.0
+      forEach (component in subcomponents)
+        local h = component.measure_height( null )
+        if (not h) return null
+        total_w += h.value
+      endForEach
+      return total_w
+
+    method measure_content_width( subcomponents:UIComponent[] )->Int32?
+      local max_w = 0.0
+      forEach (component in subcomponents)
+        local w = component.measure_width( null )
+        if (not w) return null
+        max_w .= or_larger( w.value )
+      endForEach
+      return max_w
+
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
+      use subcomponent_heights = WorkList<<Int32?>>
+        local fixed_w     = 0.0
+        local flex_count  = 0
+        local flex_weight = 0.0
+        forEach (component in subcomponents)
+          local h = component.measure_height( null )
+          subcomponent_heights.add( h )
+          if (h)
+            fixed_w += h.value
+          else
+            ++flex_count
+            flex_weight += component.weight.y
+          endIf
+        endForEach
+
+        local excess_w = Int32( (container_height - fixed_w).clamped_low(0) )
+        local remaining_w = excess_w
+        forEach (component at i in subcomponents)
+          local h = subcomponent_heights[i]
+          local new_h : Int32
+          if (h)
+            new_h = component.size.y
+          else
+            new_h = which{ flex_count==1:remaining_w || (excess_w*(component.weight.y/flex_weight)) }
+            remaining_w -= new_h
+            --flex_count
+          endIf
+          component.update_layout_height( new_h )
+        endForEach
+      endUse
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+      local cursor = container.position
+      local w = container.size.x
+      forEach (component in subcomponents)
+        component.update_layout_placement( Box(cursor, XY(w,component.size.y)) )
+        cursor += component.size.yv
+      endForEach
+endClass
+
+class UIGeneratedVerticalLayout : UIVerticalLayout
+  # Special subclass for operator overrides
+  METHODS
+    method operator/( rhs:UIComponent )->UIComponent [override]
+      add( rhs )
+      return this
+endClass

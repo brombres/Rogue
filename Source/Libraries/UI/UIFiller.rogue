@@ -1,0 +1,10 @@
+module UI
+
+class UIFiller : UIComponent
+  GLOBAL METHODS
+    method h->UIFiller
+      return UIFiller().[ fixed_height=1 ]
+
+    method v->UIFiller
+      return UIFiller().[ fixed_width=1 ]
+endClass

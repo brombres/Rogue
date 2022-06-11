@@ -1,0 +1,7 @@
+module UI
+
+class UIFlowPlacement( container:UIComponent, position:XY, max_width:Int32 ) [compound]
+  METHODS
+    method place( component:UIComponent )
+      container.add( component )
+endClass

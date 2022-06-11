@@ -1,0 +1,20 @@
+module UI
+
+class UILabel : UIComponent
+  PROPERTIES
+    text : String
+
+  METHODS
+    method init( text )
+      alignment = Anchor.CENTER
+
+    method init( text, font:UIFont )
+      alignment = Anchor.CENTER
+      set_font( font )
+
+    method _extended_description( table:Value )
+      prior._extended_description( table )
+      table//text = text
+
+endClass
+

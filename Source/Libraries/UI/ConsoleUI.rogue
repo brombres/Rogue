@@ -1,0 +1,247 @@
+module ConsoleUI
+
+uses UI [export]
+uses Utility/TextCanvas
+
+class ConsoleUI : UI
+  GLOBAL PROPERTIES
+    bold_font      : ConsoleUIFont
+    inverse_font   : ConsoleUIFont
+    underline_font : ConsoleUIFont
+
+  PROPERTIES
+    mouse_position : XY?
+    button_pressed = Dim<<Logical>>(2)
+    is_running     : Logical
+
+  METHODS
+    method init
+      prior.init
+      if (not bold_font)
+        bold_font = default_font.cloned.[ bold=true ]
+        inverse_font = default_font.cloned.[ inverse=true ]
+        underline_font = default_font.cloned.[ underline=true ]
+      endIf
+
+    method default_font->ConsoleUIFont
+      return ConsoleUIFont
+
+    method draw
+      prior.draw
+      ConsoleUICanvas.display( bounds.position )
+      Console.set_cursor( 0, bounds.y2 )
+
+    method handle( e:PointerEvent )
+      if (mouse_position.exists) e.delta = e.position - mouse_position.value
+      mouse_position = e.position
+      prior.handle( e )
+
+    method handle( type:Int32, index:Int32, e:ConsoleEvent )
+      # Only called when e is a pointer or scroll event
+      local pos = XY( e.x, e.y )
+      Pointer.position = pos
+      Pointer.positions.[clear].add( pos )
+      handle( PointerEvent(type,pos,XY(0,0),index) )
+
+    method on_resize
+      Console.clear
+      ConsoleUICanvas.resize( UI.size.x, UI.size.y )
+      prior.on_resize
+
+    method on_update
+      loop 512
+        if (Console.immediate_mode and Console.has_another_event)
+          local event = Console.read_event
+          which (event.type)
+            case ConsoleEventType.CHARACTER
+              local unicode = event.unicode
+              local (keycode,is_shifted) = Keycode.unicode_to_keycode( unicode )
+              local syscode            = which{ keycode==Keycode.UNICODE:unicode->Int32 || 0 }
+              local modifier_key_state = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
+              Keyboard.key_pressed[ keycode ] = true
+              Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = is_shifted
+              Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = is_shifted
+              handle( KeyEvent(keycode,syscode,&is_press,&!is_repeat,&=modifier_key_state) )
+              Keyboard.key_pressed[ keycode ] = false
+              Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = false
+              Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = false
+              handle( KeyEvent(keycode,syscode,&!is_press,&!is_repeat,&=modifier_key_state) )
+              handle( TextEvent(unicode,null) )
+
+            case ConsoleEventType.POINTER_PRESS_LEFT
+              send_release_event( PointerEvent.RIGHT, event )
+              button_pressed[ PointerEvent.LEFT ] = true
+              handle( PointerEvent.PRESS, PointerEvent.LEFT, event )
+
+            case ConsoleEventType.POINTER_PRESS_RIGHT
+              send_release_event( PointerEvent.LEFT, event )
+              button_pressed[ PointerEvent.RIGHT ] = true
+              handle( PointerEvent.PRESS, PointerEvent.RIGHT, event )
+
+            case ConsoleEventType.POINTER_RELEASE
+              send_release_event( PointerEvent.LEFT, event )
+              send_release_event( PointerEvent.RIGHT, event )
+
+            case ConsoleEventType.POINTER_MOVE
+              handle( PointerEvent.MOVE, 0, event )
+
+            case ConsoleEventType.SCROLL_UP
+              handle( ScrollEvent(XY(0,-1)) )
+
+            case ConsoleEventType.SCROLL_DOWN
+              handle( ScrollEvent(XY(0, 1)) )
+
+          endWhich
+        else
+          escapeLoop
+        endIf
+      endLoop
+
+    method run
+      System.sleep(0.2)  # helps prevent initial screen corruption
+      Console.immediate_mode = true
+      Console.show_cursor = false
+      Console.clear
+
+      try
+        is_running = true
+        while (is_running)
+          update( Console.bounds )
+          draw
+
+          # If it needs a redraw right after drawing then we're animating
+          if (dirty_bounds) System.sleep( 1.0/60.0 )
+          else              System.sleep( 0.1 )
+        endWhile
+
+        Console.immediate_mode = false
+        Console.show_cursor = true
+
+      catch (error:Error)
+        Console.immediate_mode = false
+        Console.show_cursor = true
+        Console.clear
+        println error
+      endTry
+
+    method send_release_event( index:Int32, event:ConsoleEvent )
+      if (not button_pressed[index]) return
+      button_pressed[index] = false
+      handle( PointerEvent.RELEASE, index, event )
+
+    method set_clip( @clip )
+      if (clip) ConsoleUICanvas.clip = clip.value
+endClass
+
+class ConsoleUICanvas : TextCanvas [singleton]
+  METHODS
+    method init
+      prior.init( Console.width, Console.height )
+endClass
+
+class ConsoleUIFont : UIFont [singleton]
+  PROPERTIES
+    is_bold      : Logical
+    is_inverse   : Logical
+    is_underline : Logical
+    color        : Int32?
+    bg_color     : Int32?
+
+  METHODS
+    method init
+      prior.init( "ConsoleUIFont" )
+
+    method cloned->ConsoleUIFont
+      return ConsoleUIFont().[
+        bold      = is_bold
+        inverse   = is_inverse
+        underline = is_underline
+        color     = color
+        bg_color  = bg_color
+      ]
+
+    method draw( text:String, position:XY ) [override]
+      ConsoleUICanvas.set_cursor( position )
+      if (is_bold)      ConsoleUICanvas.style.bold
+      if (is_inverse)   ConsoleUICanvas.style.inverse
+      if (is_underline) ConsoleUICanvas.style.underline
+      if (color)    ConsoleUICanvas.style.fg( color.value )
+      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      ConsoleUICanvas.print text
+      if (color)    ConsoleUICanvas.style.fg_default
+      if (bg_color) ConsoleUICanvas.style.bg_default
+      if (is_bold)      ConsoleUICanvas.style.bold_off
+      if (is_inverse)   ConsoleUICanvas.style.inverse_off
+      if (is_underline) ConsoleUICanvas.style.underline_off
+
+    method height->Int32
+      return 1
+
+    method measure( ch:Character )->XY
+      which (ch)
+        case '\n': return XY(0,1)
+        case '\t': return XY(2,1)
+        others
+          if (ch < 32) return XY.zero
+          else         return XY(1,1)
+      endWhich
+
+    method set_bold( is_bold )
+    method set_inverse( is_inverse )
+    method set_underline( is_underline )
+endClass
+
+
+class ConsoleUIInverseFill : UIComponent
+  METHODS
+    method on_draw
+      ConsoleUICanvas.style.inverse
+      ConsoleUICanvas.fill( display_bounds, ' ' )
+      ConsoleUICanvas.style.inverse_off
+endClass
+
+
+class ConsoleUIFrame : UIBorder
+  PROPERTIES
+    color    : Int32?
+    bg_color : Int32?
+
+  METHODS
+    method init_object
+      padding = 1
+
+    method on_draw
+      if (color)    ConsoleUICanvas.style.fg( color.value )
+      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
+      ConsoleUICanvas.fill( display_bounds, "\[250C]\[2500]\[2510]\[2502] \[2502]\[2514]\[2500]\[2518]" )
+      if (color)    ConsoleUICanvas.style.fg_default
+      if (bg_color) ConsoleUICanvas.style.bg_default
+endClass
+
+
+class ConsoleUITitleFrame : ConsoleUIFrame
+  PROPERTIES
+    title   : UIComponent
+    content : UIComponent
+
+  METHODS
+    method init( content )
+
+    method init( title, content )
+
+    method init( title:String, content=null:UIComponent )
+      init( UILabel(title).[anchor=Anchor.CENTER,font=ConsoleUI.inverse_font], content )
+
+    method on_prepare_layout
+      if (count) return
+
+      local header = ConsoleUIInverseFill().[ fixed_height=1 ]
+      if (title) header.add( title )
+
+      local vbox = UILayout.v
+      vbox.add( header )
+      if (content) vbox.add( content )
+      else         vbox.add( UIFiller() )
+      add( vbox )
+endClass
+

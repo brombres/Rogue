@@ -1,0 +1,13 @@
+module UI
+
+class UIStackLayout : UILayout
+  METHODS
+endClass
+
+class UIGeneratedStackLayout : UIStackLayout
+  # Special subclass for operator overrides
+  METHODS
+    method operator|( rhs:UIComponent )->UIComponent [override]
+      add( rhs )
+      return this
+endClass

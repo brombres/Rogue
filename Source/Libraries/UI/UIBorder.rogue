@@ -1,0 +1,16 @@
+module UI
+
+class UIBorder : UIComponent
+  PROPERTIES
+    left_padding, top_padding, right_padding, bottom_padding : Int32
+
+  METHODS
+    method set_padding( value:Int32 )
+      left_padding   = value
+      right_padding  = value
+      top_padding    = value
+      bottom_padding = value
+
+    method to_inner_bounds( bounds:Box )->Box [override]
+      return bounds.cropped( left_padding, top_padding, right_padding, bottom_padding )
+endClass
