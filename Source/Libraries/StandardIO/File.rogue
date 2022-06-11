@@ -747,10 +747,14 @@ class File( filepath:String ) [compound]
       endIf
 
       return change_count
+      }#
 
-    method timestamp( filepath:String )->Real64
-      filepath = expand_path( filepath )
-      # Returns the last modified time since Jan 1, 1970
+    method timestamp->Timestamp
+      # Returns the last modified time.
+
+      local ms : Int64
+      local filepath = resolved.filepath
+
       native @|#if defined(_WIN32)
               |  HANDLE handle = CreateFile( (const char*)$filepath->data->as_utf8, 0, 0, NULL, OPEN_EXISTING,
               |      FILE_ATTRIBUTE_NORMAL, NULL );
@@ -765,7 +769,7 @@ class File( filepath:String ) [compound]
               |      result /= 10000; // convert from Crazyseconds to Milliseconds
               |      result -= 11644473600000;  // base on Jan 1, 1970 instead of Jan 1, 1601 (?!)
               |      CloseHandle(handle);
-              |      return result / 1000.0;
+              |      $ms = result;
               |    }
               |    CloseHandle(handle);
               |  }
@@ -787,16 +791,15 @@ class File( filepath:String ) [compound]
               |      result *= 1000;  // convert to ms
               |#endif
               |      close(file_id);
-              |      return result / 1000.0;
+              |      $ms = result;
               |    }
               |    close(file_id);
               |  }
               |
               |#else
-              |# error Must define File.timestamp() for this OS.
+              |  #error Must define File.timestamp() for this OS.
               |#endif
-              |return 0.0;
-      }#
+      return Timestamp(ms)
 
     method to->String
       return filepath
