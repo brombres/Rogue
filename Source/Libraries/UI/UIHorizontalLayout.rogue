@@ -44,7 +44,7 @@ class UIHorizontalLayout : UILayout
           if (w)
             new_w = component.size.x
           else
-            new_w = which{ flex_count==1:remaining_w || (excess_w*(component.weight.x/flex_weight)) }
+            new_w = which{ flex_count==1:remaining_w || (excess_w*(component.weight.x/flex_weight))->Int32 }
             remaining_w -= new_w
             --flex_count
           endIf

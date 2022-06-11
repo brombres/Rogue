@@ -174,7 +174,7 @@ class UIFlowLayout : UILayout
       if (alignment.position.x == 0.0) return  # already left-justified
 
       max_width -= subcomponents[ forEach in i1..i2 ].size.x
-      local delta = (max_width * alignment.position.x)
+      local delta = (max_width * alignment.position.x) :>>>: 1
       if (delta)
         forEach (i in i1..i2)
           subcomponents[i].position += XY(delta,0)

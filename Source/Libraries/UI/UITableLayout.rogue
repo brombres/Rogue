@@ -70,7 +70,7 @@ class UITableLayout : UILayout
       resize( columns.count, rows.count+1 )
 
     method column( i:Int32 )->UITableColumnInfo
-      if (i < 0 or i >= columns.count) throw OutOfBoundsError( i, columns.count )
+      assert (i >= 0 and i < columns.count)
       return columns[i]
 
     method draw_subcomponents( draw_bounds:Box )
@@ -183,7 +183,7 @@ class UITableLayout : UILayout
       _advance_next_empty
 
     method row( j:Int32 )->UITableRowInfo
-      if (j < 0 or j >= rows.count) throw OutOfBoundsError( j, rows.count )
+      assert (j > 0 and j < rows.count)
       return rows[j]
 
     method set( i:Int32, j:Int32, component:UIComponent )
@@ -210,7 +210,7 @@ class UITableLayout : UILayout
 
     method set_span( i:Int32, j:Int32, new_span:XY )
       local index = index_of(i,j)
-      require index.exists
+      assert index.exists
       local old_span = cell_span[index.value]
       if (old_span.max > 1)
         # Reset the old span shadow to contain spans of 1 before zeroing the new shadow
@@ -224,7 +224,7 @@ class UITableLayout : UILayout
 
     method span( i:Int32, j:Int32 )->XY
       local index = index_of(i,j)
-      require index
+      assert index
       return cell_span[index.value]
 
     method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )

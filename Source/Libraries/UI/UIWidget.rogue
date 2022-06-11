@@ -40,7 +40,6 @@ class UIWidget : UIComponent
     method is_targeted->Logical
       return (widget_state == UIWidgetState.TARGETED)
 
-      #{ FIXME PointerEvent
     method on( e:PointerEvent )
       if (is_disabled) return
 
@@ -78,7 +77,6 @@ class UIWidget : UIComponent
           endIf
         endIf
       endIf
-      }#
 
     method on_select
 

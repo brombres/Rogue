@@ -44,7 +44,7 @@ class UIVerticalLayout : UILayout
           if (h)
             new_h = component.size.y
           else
-            new_h = which{ flex_count==1:remaining_w || (excess_w*(component.weight.y/flex_weight)) }
+            new_h = which{ flex_count==1:remaining_w || (excess_w*(component.weight.y/flex_weight))->Int32 }
             remaining_w -= new_h
             --flex_count
           endIf

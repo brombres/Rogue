@@ -16,7 +16,7 @@ UI_ATTRIBUTE( anchor, Anchor, Anchor.CENTER, UIAnchorAttribute )
 UI_ATTRIBUTE( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
 UI_INHERITED_ATTRIBUTE( font, UIFont, UI.current.default_font, UIFontAttribute )
 UI_FN_ATTRIBUTE( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
-UI_ATTRIBUTE( weight, XY, XY(1,1), UIWeightAttribute )
+UI_ATTRIBUTE( weight, RealXY, RealXY(1,1), UIWeightAttribute )
 
 class UIComponent : Node<<UIComponent>>
   DEFINITIONS
@@ -518,8 +518,8 @@ class UIComponent : Node<<UIComponent>>
     #method set_position( pos:XY )
     #  @position = pos - (size * anchor)
 
-    method set_weight( w:Int32 )
-      UIAttributes.set_weight( this, XY(w) )
+    method set_weight( w:Real )
+      UIAttributes.set_weight( this, RealXY(w) )
 
     method set_width( w:Int32 )
       if (w == size.x) return
