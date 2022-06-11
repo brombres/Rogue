@@ -43,7 +43,7 @@ class UI [abstract]
     last_update_ms : Int32
     is_initialized : Logical
 
-    layers = UIStackLayout()
+    layers = UIComponent[]
 
     pointer_focus  : UIComponent
     keyboard_focus : UIComponent
@@ -80,9 +80,13 @@ class UI [abstract]
 
     method add( layer:UIComponent )
       layers.add( layer )
+      layer.request_layout
 
     method apply( fn:Function(UIComponent)->Logical )->Logical
-      return layers.apply( fn )
+      forEach (layer in layers)
+        if (not layer.apply(fn)) return false
+      endForEach
+      return true
 
     method at( xp:Real, yp:Real )->XY
       return XY( size.x*xp, size.y*yp )
@@ -125,7 +129,7 @@ class UI [abstract]
           temporarily clip = dirty_bounds
             dirty_bounds = null
             on_draw
-            layers.draw( clip.value )
+            (forEach in layers).draw( clip.value )
             after_draw
           endTemporarily
         endIf
@@ -242,7 +246,7 @@ class UI [abstract]
       noAction
 
     method perform_layout
-      layers.update_layout( bounds )
+      (forEach in layers).update_layout( bounds )
 
     method release_focus
       release_keyboard_focus
@@ -258,7 +262,7 @@ class UI [abstract]
       layers.remove( layer )
 
     method request_layout
-      layers.is_modified = true
+      (forEach in layers).is_modified = true
 
     method request_redraw
       dirty_bounds = bounds
@@ -271,7 +275,7 @@ class UI [abstract]
       @bounds = new_bounds
       request_layout
       on_resize
-      layers.handle_resize
+      (forEach in layers).handle_resize
       after_resize
 
     method set_clip( @clip )
@@ -281,6 +285,7 @@ class UI [abstract]
       return bounds.size
 
     method update
+      update( bounds )
       temporarily UI.current = this
         if (not is_initialized)
           is_initialized = true
@@ -288,14 +293,24 @@ class UI [abstract]
         endIf
         on_update
         if (actions) actions .= update
-        layers.update
+        (forEach in layers).update
         after_update
       endTemporarily
 
     method update( bounds:Box )
-      # Must update before layout so that new components created in update() can be measured in
-      # update_layout()
-      update
+      # Must update before layout so that new components created in update() can be
+      # measured in update_layout()
+      temporarily UI.current = this
+        if (not is_initialized)
+          is_initialized = true
+          on_init
+        endIf
+        on_update
+        if (actions) actions .= update
+        (forEach in layers).update
+        after_update
+      endTemporarily
+
       update_layout( bounds )
 
     method update_layout( new_bounds:Box )
@@ -307,9 +322,13 @@ class UI [abstract]
           on_update_layout
         endIf
 
-        if (layers.count and (bounds_changed or layers.is_modified))
+        contingent
+          sufficient ((forEach in layers).is_modified)
+          sufficient (bounds_changed)
+          escapeContingent
+        satisfied
           perform_layout
-        endIf
+        endContingent
       endTemporarily
 
 endClass
