@@ -2453,7 +2453,7 @@ augment
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
 
           # TargetType.operator+(operand:OperandType)
-          local arg = Args(t,t,operand)
+          local arg = Args(t,operand)
           m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
 
@@ -2524,7 +2524,7 @@ augment
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
 
           # TargetType.operator%(operand:OperandType)
-          local arg = Args(t,t,operand)
+          local arg = Args(t,operand)
           m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
 
@@ -2552,7 +2552,7 @@ augment
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
 
           # TargetType.operator+(operand:OperandType)
-          local arg = Args(t,t,operand)
+          local arg = Args(t,operand)
           m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
 
@@ -2593,7 +2593,7 @@ augment
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
 
           # TargetType.operator+(operand:OperandType)
-          local arg = Args(t,t,operand)
+          local arg = Args(t,operand)
           m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
 
