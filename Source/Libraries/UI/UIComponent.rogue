@@ -435,13 +435,11 @@ class UIComponent : Node<<UIComponent>>
     method on_resize
       noAction
 
-#{
     method operator+( rhs:UIComponent )->UIComponent
       return UIGeneratedHorizontalLayout( this ).[ add(rhs) ]
 
     method operator/( rhs:UIComponent )->UIComponent
       return UIGeneratedVerticalLayout( this ).[ add(rhs) ]
-}#
 
     method operator|( rhs:UIComponent )->UIComponent
       return UIGeneratedStackLayout( this ).[ add(rhs) ]

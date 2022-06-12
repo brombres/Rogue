@@ -344,6 +344,11 @@ augment
       local cmd = resolver.visit( this )
       local type = cmd.require_type
 
+      if (cmd instanceOf TypeContext)
+        # Not a logicalization but an optional type
+        return TypeContext( t, Type(t, type, &optional) )
+      endIf
+
       if (cmd instanceOf LiteralLogical or type is Program.type_Logical) return cmd
 
       if (cmd instanceOf LiteralPrimitive)
