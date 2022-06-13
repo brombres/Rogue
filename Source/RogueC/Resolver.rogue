@@ -1235,6 +1235,7 @@ class Resolver : Visitor
       endIf
 
       # Global Method Template
+      assert cmd.type_context
       if (not cmd.type_context.global_method_template_instances.contains(name))
         if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
         local templates = cmd.type_context.global_method_templates[ t_name ]

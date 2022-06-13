@@ -96,4 +96,10 @@ class TypeOrganizer : Visitor
       this_type.states.add( cmd )
       return null
 
+    method on_visit( cmd:TemplatedAccess )
+      assert this_module
+      cmd.module_context = this_module
+      cmd.type_context = this_type
+      visit_children( cmd )
+
 endClass

@@ -3591,6 +3591,8 @@ class TemplatedAccess : Cmd
       name = existing.name
       if (existing.type_args) type_args = existing.type_args.cloned
       if (existing.args) args = existing.args.cloned
+      module_context = existing.module_context
+      type_context = existing.type_context
 
     method description->String
       return "TemplatedAccess($,$,$)" (%name,%type_args,%args)
