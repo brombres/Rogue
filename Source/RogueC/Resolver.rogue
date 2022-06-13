@@ -3262,9 +3262,6 @@ augment
 
         cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
 
-        local cur_type = m_read.return_type
-        assert cur_type
-
         cmd_iterator.statements.insert(
           resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read )
         )

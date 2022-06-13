@@ -143,9 +143,15 @@ class Program [singleton]
         endForEach
       endIf
 
-      if (found)           filepath = found
-      elseIf (is_optional) return
-      else                 throw t.error( "Include not found: $"(filepath) )
+      if (found)
+        local folder = File( filepath ).folder
+        if (String.exists(folder)) add_include_search_path( folder )
+        filepath = found
+      elseIf (is_optional)
+        return
+      else
+        throw t.error( "Include not found: $"(filepath) )
+      endIf
 
       if (included_files.contains(filepath)) return
       included_files[ filepath ] = null # placeholder
