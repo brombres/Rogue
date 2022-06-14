@@ -2563,19 +2563,20 @@ augment
       local op_method_name = "operator" + $OpSymbol
 
       context = resolver.visit( context )
+      local target = resolver.visit( this )
       local context_type = context.require_type.[ organize ]
 
       block p = context_type.properties[ name ]
         if (p)
           # TargetType.operator+(target:TargetType,operand:OperandType)
-          local args = Args(t,context,operand)
+          local args = Args(t,target,operand)
           local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
 
           # TargetType.operator+(operand:OperandType)
           local arg = Args(t,operand)
-          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
-          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
 
           operand = operand.resolve_conversion_to(p.type, resolver)
           return resolver.validate( $OpProperty(t,context,p,operand) )
@@ -2605,21 +2606,22 @@ augment
 
       context = resolver.visit( context )
       local context_type = context.require_type.[ organize ]
+      local target = resolver.visit( this )
 
       block p = context_type.properties[ name ]
         if (p)
           # TargetType.operator+(target:TargetType,operand:OperandType)
-          local args = Args(t,context,operand)
+          local args = Args(t,target,operand)
           local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
           if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
 
           # TargetType.operator+(operand:OperandType)
           local arg = Args(t,operand)
-          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
-          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
 
           if (context.is_simple)
-            return resolver.visit( Assign(t, context, $OpName(t,context.cloned,operand)) )
+            return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
           else
             local v_context = resolver.add_local( t, "context", context.require_type )
             resolver.insert( SetLocal(v_context, context, &initial_assignment) )
