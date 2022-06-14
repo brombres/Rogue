@@ -9,8 +9,8 @@ class Random [singleton]
   #
   # You may create a Random object with a 'seed' value; generators
   # created with the same seed always return the same sequence of random
-  # numbers. If a seed is not specified then the current System.time
-  # (times 1000) is used.
+  # numbers. If a seed is not specified then the current System.time_ms
+  # is used.
   #
   # Underneath, the Random operates on a 48-bit integer using the linear
   # congruence formula with the "drand48" parameters:
@@ -25,7 +25,7 @@ class Random [singleton]
 
   METHODS
     method init
-      reset( (Rogue::System.time * 1000)->Int64 )
+      reset( Rogue::System.time_ms )
 
     method init( seed:Int64 )
       reset( seed )
@@ -54,7 +54,7 @@ class Random [singleton]
 
     method real->Real
       # Returns a random number 0 < n < 1.0
-      return (_advance_state->Real + 1.0) / 281474976710657.0
+      return ((_advance_state & 0x7fff_ffff)->Real + 1.0) / 2147483649.0
 
     method real( limit:Real )->Real
       # Returns a random number 0 < n < limit
@@ -67,13 +67,13 @@ class Random [singleton]
     method int64->Int64
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^63-1] inclusive.
-      local result = int32->Int64 :<<: 32
-      return (result | (int32->Int64 & 0x0FFFFffff))
+      local result = _advance_state->Int64 :<<: 32
+      return (result | (_advance_state->Int64 & 0x0FFFFffff))
 
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^31-1] inclusive.
-      return (real * (2.0^31))->Int32
+      return _advance_state & 0x7fff_ffff
 
     method int32( limit:Int32 )->Int32
       # Returns an evenly distributed random integer in
@@ -90,13 +90,13 @@ class Random [singleton]
 
     method byte->Byte
       # Returns a random byte between 0 and 255.
-      return (real * 256)->Byte
+      return ((_advance_state:>>>:8) & 0xff)->Byte
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.
-      return (real > 0.5)
+      return (_advance_state & 8)?
 
-    method _advance_state->Int64
+    method _advance_state->Int32
       # Calculates the next raw random integer.
       state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
       return state
