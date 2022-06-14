@@ -668,30 +668,35 @@ class Type : Cmd
       endIf
 
       # Add init_class() for global property initialization
-      block
-        local m = global_methods["init_class()"]
-        if (not m)
-          m = GlobalMethod( t, this, "init_class" )
-          m.organize
-          global_methods[ m.signature ] = m
-        endIf
-        m_init_class = m
+      if (is_object)  # object class, not aspect class
+        block
+          local m = global_methods["init_class()"]
+          if (not m)
+            m = GlobalMethod( t, this, "init_class" )
+            m.organize
+            global_methods[ m.signature ] = m
+          endIf
+          m_init_class = m
 
-        use my_properties = WorkList<<Property>>
-          my_properties.add( forEach in global_properties )
+          if (global_properties.count)
+            m.attributes.is_essential = true
+            use my_properties = WorkList<<Property>>
+              my_properties.add( forEach in global_properties )
 
-          forEach (p in my_properties step -1)
-            if (not p.initial_value) p.initial_value = p.type.cmd_default_value( p.t )
-            m.statements.insert(
-              Assign(
-                p.t,
-                ContextAccess(p.t,TypeContext(p.t,this),p.name),
-                p.initial_value
-              )
-            )
-          endForEach
-        endUse
-      endBlock
+              forEach (p in my_properties step -1)
+                if (not p.initial_value) p.initial_value = p.type.cmd_default_value( p.t )
+                m.statements.insert(
+                  Assign(
+                    p.t,
+                    ContextAccess(p.t,TypeContext(p.t,this),p.name),
+                    p.initial_value
+                  )
+                )
+              endForEach
+            endUse
+          endIf
+        endBlock
+      endIf
 
       # Add init_object() methods for new initial property assignments
       if (is_object)
