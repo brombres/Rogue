@@ -829,6 +829,8 @@ class Type : Cmd
 
               variations.reverse
 
+              (forEach in variations).m.generate_body
+
               # Make sure all variations have the same parameters
               forEach (sm in variations from 1)
                 contingent
@@ -1404,6 +1406,9 @@ class Type : Cmd
 endClass
 
 class StateMethod( state_def:StateDef, m:Method ) [compound]
+  METHODS
+    method to->String
+      return "StateMethod($,$,$)"(%state_def,m,%m.body)
 endClass
 
 class BuiltInType : Type;
