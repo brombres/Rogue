@@ -102,13 +102,13 @@ augment Byte[]
       while ((result.count & 3) != 0) result.print('=')
       return result
 
-    method to_hex_string( &uppercase, &lowercase )->String
+    method to->String( hex:Logical, &uppercase, &lowercase )
       # Returns a string of hexadecimal digit pairs encoding each byte.
       # Uppercase by default unless &lowercase is specified.
       #
       # Example:
       #
-      #   println Byte[][0,127,160,255].to_hex_string  # "007FA0FF"
+      #   println Byte[][0,127,160,255]->String(&hex) # "007FA0FF"
       local buffer = String( count*2 )
       if (lowercase)
         forEach (b in this)
