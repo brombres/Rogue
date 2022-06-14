@@ -156,6 +156,12 @@ class Action
       return start_next
 endClass
 
+class IndefiniteAction : Action
+  METHODS
+    method init_object
+      duration = INDEFINITE
+endClass
+
 
 class ActionList : Action
   # Contains nested actions
