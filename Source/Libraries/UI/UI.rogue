@@ -50,10 +50,18 @@ class UI [abstract]
 
   METHODS
     method init
-      temporarily UI.current = this
-        is_initialized = true
-        on_init
-      endTemporarily
+      activate
+
+      is_initialized = true
+      on_init
+
+    method activate
+      UI.current = this
+
+    method add( layer:UIComponent )
+      layers.add( layer )
+      layer.request_layout
+
 
       #{
     method after( e:KeyEvent )
@@ -77,10 +85,6 @@ class UI [abstract]
 
     method after_update
       noAction
-
-    method add( layer:UIComponent )
-      layers.add( layer )
-      layer.request_layout
 
     method apply( fn:Function(UIComponent)->Logical )->Logical
       forEach (layer in layers)
@@ -124,16 +128,16 @@ class UI [abstract]
       return 16
 
     method draw
-      temporarily UI.current = this
-        if (dirty_bounds)
-          temporarily clip = dirty_bounds
-            dirty_bounds = null
-            on_draw
-            (forEach in layers).draw( clip.value )
-            after_draw
-          endTemporarily
-        endIf
-      endTemporarily
+      activate
+
+      if (dirty_bounds)
+        temporarily clip = dirty_bounds
+          dirty_bounds = null
+          on_draw
+          (forEach in layers).draw( clip.value )
+          after_draw
+        endTemporarily
+      endIf
 
       #{
     method find( pos:XY )->UIComponent
@@ -285,51 +289,52 @@ class UI [abstract]
       return bounds.size
 
     method update
+      activate
+
       update( bounds )
-      temporarily UI.current = this
-        if (not is_initialized)
-          is_initialized = true
-          on_init
-        endIf
-        on_update
-        if (actions) actions .= update
-        (forEach in layers).update
-        after_update
-      endTemporarily
+
+      if (not is_initialized)
+        is_initialized = true
+        on_init
+      endIf
+      on_update
+      if (actions) actions .= update
+      (forEach in layers).update
+      after_update
 
     method update( bounds:Box )
       # Must update before layout so that new components created in update() can be
       # measured in update_layout()
-      temporarily UI.current = this
-        if (not is_initialized)
-          is_initialized = true
-          on_init
-        endIf
-        on_update
-        if (actions) actions .= update
-        (forEach in layers).update
-        after_update
-      endTemporarily
+      activate
+
+      if (not is_initialized)
+        is_initialized = true
+        on_init
+      endIf
+      on_update
+      if (actions) actions .= update
+      (forEach in layers).update
+      after_update
 
       update_layout( bounds )
 
     method update_layout( new_bounds:Box )
-      temporarily UI.current = this
-        local bounds_changed = (bounds != new_bounds)
-        if (bounds_changed)
-          bounds = new_bounds
-          if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire View
-          on_update_layout
-        endIf
+      activate
 
-        contingent
-          sufficient ((forEach in layers).is_modified)
-          sufficient (bounds_changed)
-          escapeContingent
-        satisfied
-          perform_layout
-        endContingent
-      endTemporarily
+      local bounds_changed = (bounds != new_bounds)
+      if (bounds_changed)
+        bounds = new_bounds
+        if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire View
+        on_update_layout
+      endIf
+
+      contingent
+        sufficient ((forEach in layers).is_modified)
+        sufficient (bounds_changed)
+        escapeContingent
+      satisfied
+        perform_layout
+      endContingent
 
 endClass
 
