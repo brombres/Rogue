@@ -640,9 +640,14 @@ class Type : Cmd
         endUse
       endIf
 
-      if (states.count and not properties.contains("state"))
-        local t = states.first.t
-        properties//state = Property( t, "state", LiteralInt32(t,-1), Program.type_Int32 ).[ type_context=this ]
+      if (states.count)
+        if (properties.contains("state"))
+          local p = properties//state
+          throw p.t.error( "Because this class contains STATES it cannot have a property named 'state'." )
+        else
+          local t = states.first.t
+          properties//state = Property( t, "state", LiteralInt32(t,-1), Program.type_Int32 ).[ type_context=this ]
+        endIf
       endIf
 
       if (this.instance_of(Program.type_ListType))
