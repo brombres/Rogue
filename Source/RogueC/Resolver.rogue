@@ -291,12 +291,20 @@ class Resolver : Visitor
       forEach (arg at i in expressions)
         if (i > 0) format.print ' '
         if (arg.expression instanceOf LiteralString)
-          format.print arg.expression->String
+          local st = arg.expression->String
+          format.print st
+          loop st.count('$')
+            args.add( LiteralCharacter(arg.expression.t,'$') )
+          endLoop
         elseIf (arg.expression instanceOf FormattedString)
           format.print "$"
           args.add( arg.expression )
         else
-          format.print( (forEach in arg.token_list.tokens)->String )
+          forEach (t2 in arg.token_list.tokens)
+            local st = t2->String
+            if (st == "$") args.add( LiteralCharacter(t2,'$') )
+            format.print( st )
+          endForEach
           format.print ":$"
           args.add( arg.expression )
         endIf
@@ -1089,6 +1097,9 @@ class Resolver : Visitor
         endIf
       endForEach
       throw cmd.t.error( "No enclosing loop for nextIteration." )
+
+    method on( cmd:NotInstanceOf )->Cmd
+      return visit( LogicalNot(cmd.t, InstanceOf(cmd.t,cmd.operand,cmd.compare_type)) )
 
     method on( cmd:OpAndAssign )->Cmd
       local target = visit( cmd.target )  # don't alter cmd.target

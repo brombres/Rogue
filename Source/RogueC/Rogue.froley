@@ -2305,6 +2305,10 @@ parser
   on "instanceOf"
     type
     produce InstanceOf(operand,compare_type:Type)
+  elseOn "not"
+    mustConsume "instanceOf"
+    type
+    produce NotInstanceOf(operand,compare_type:Type)
   elseOn "isType"
     type
     produce IsType(operand,compare_type:Type)

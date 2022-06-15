@@ -4584,3 +4584,21 @@ class SwapValues : Cmd
       return "SwapValues($,$)" (%a,%b)
 
 endClass
+
+class NotInstanceOf : Cmd
+  PROPERTIES
+    operand      : Cmd
+    compare_type : Type
+
+  METHODS
+    method init( t, operand, compare_type )
+
+    method init( existing:NotInstanceOf )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.compare_type) compare_type = existing.compare_type.cloned
+
+    method description->String
+      return "NotInstanceOf($,$)" (%operand,%compare_type)
+
+endClass

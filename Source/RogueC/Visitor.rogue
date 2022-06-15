@@ -667,5 +667,9 @@ class Visitor
       cmd.a = visit(cmd.a)
       cmd.b = visit(cmd.b)
 
+    method on_visit_children( cmd:NotInstanceOf )
+      cmd.operand = visit(cmd.operand)
+      cmd.compare_type = visit(cmd.compare_type)->(as Type)
+
 endClass
 
