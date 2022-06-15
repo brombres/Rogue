@@ -288,31 +288,38 @@ class List<<$DataType>> : Poolable ListType
 
       return null
 
-    method locate( value:$DataType, i1=0:Int32 )->Int32?
+    method locate( value:$DataType, i1=null:Int32? )->Int32?
+      if (not i1) i1 = 0
+
       if (isReference($DataType))
         if (value is null)
-          forEach (i of this from i1)
+          forEach (i of this from i1.value)
             if (value is this[i]) return i
           endForEach
           return null
         endIf
       endIf
 
-      forEach (i of this from i1)
+      forEach (i of this from i1.value)
         if (value == this[i]) return i
       endForEach
       return null
 
-    method locate( query:(Function($DataType)->Logical), i1=0:Int32 )->Int32?
-      forEach (value at index in this from i1)
+    method locate( query:(Function($DataType)->Logical), i1=null:Int32? )->Int32?
+      if (not i1) i1 = 0
+
+      forEach (value at index in this from i1.value)
         if (query(value)) return index
       endForEach
+
       return null
 
-    method locate( other:$DataType[], i1=0:Int32 )->Int32?
+    method locate( other:$DataType[], i1=null:Int32? )->Int32?
+      if (not i1) i1 = 0
+
       local other_count = other.count
       if (count < other_count) return null
-      forEach (starting_index in i1..(count-other_count))
+      forEach (starting_index in i1.value..(count-other_count))
 
         contingent
 
