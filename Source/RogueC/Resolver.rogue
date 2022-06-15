@@ -312,16 +312,32 @@ class Resolver : Visitor
       local args = which{ cmd.args || Args(cmd.t) }
 
       local m = find_method( cmd.t, this_type, null, cmd.name, args )
-      if (not m.overridden_method)
-        throw cmd.t.error( "Invalid prior call - $ does not override any base class methods. " ...
-            "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
+      local prior_m = m.overridden_method
+
+      if (not prior_m)
+        if (cmd.name == "init")
+          # Initializers are a special case.
+          local base_type = this_type.base_class
+          while (base_type and not prior_m)
+            prior_m = find_method( cmd.t, base_type, null, "init", args, &suppress_error )
+            base_type .= base_class
+          endWhile
+
+          if (not prior_m)
+            throw cmd.t.error( "Invalid prior call - no ancestor of $ defines a compatible initializer."(this_type) )
+          endIf
+
+        else
+          throw cmd.t.error( "Invalid prior call - $ does not override any base class methods. " ...
+              "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
+        endIf
       endIf
 
       args.list.discard( $ instanceOf DefaultArg )
       visit( args )
-      convert_args_to_parameter_types( args, m.overridden_method )
+      convert_args_to_parameter_types( args, prior_m )
 
-      return validate( CallThisStaticMethod(cmd.t, m.overridden_method, args) )
+      return validate( CallThisStaticMethod(cmd.t, prior_m, args) )
 
     method on_visit( cmd:Catch )
       if (not cmd.v_catch and cmd.var_name)
