@@ -97,6 +97,11 @@ class List<<$DataType>> : Poolable ListType
                 |);
       endIf
 
+    method count( query:Function($DataType)->Logical )->Int32
+      local n = 0
+      if (query(forEach in this)) ++n
+      return n
+
     method description->String
       local result = String()
       result.print '['
