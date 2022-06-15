@@ -1,4 +1,4 @@
-class ObjectPool<<$DataType>>
+class ObjectPool<<$DataType>> [singleton]
   PROPERTIES
     available = $DataType[]
 
