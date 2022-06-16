@@ -65,11 +65,17 @@ class RealXY( x:Real, y:Real ) [compound]
     method operator*( value:Real )->RealXY
       return RealXY( x*value, y*value )
 
+    method operator*( other:XY )->RealXY
+      return RealXY( x*other.x, y*other.y )
+
     method operator/( other:RealXY )->RealXY
       return RealXY( x/other.x, y/other.y )
 
     method operator/( value:Real )->RealXY
       return RealXY( x/value, y/value )
+
+    method operator/( other:XY )->RealXY
+      return RealXY( x/other.x, y/other.y )
 
     method operator%( other:RealXY )->RealXY
       return RealXY( x%other.x, y%other.y )

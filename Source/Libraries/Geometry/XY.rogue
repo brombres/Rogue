@@ -65,12 +65,25 @@ class XY( x:Int32, y:Int32 ) [compound]
     method operator*( value:Int32 )->XY
       return XY( x*value, y*value )
 
+    method operator*( value:Real )->XY
+      return XY( (x*value).floor, (y*value).floor )
+
+    method operator*( other:RealXY )->RealXY
+      return RealXY( x*other.x, y*other.y )
+
     method operator/( other:XY )->XY
       return XY( which{other.x:x/other.x || 0}, which{other.y:y/other.y || 0} )
 
     method operator/( value:Int32 )->XY
-      if (value == 0) return this
+      if (value == 0) return XY.zero
       return XY( x/value, y/value )
+
+    method operator/( value:Real )->XY
+      if (value == 0) return XY.zero
+      return XY( (x/value).floor, (y/value).floor )
+
+    method operator/( other:RealXY )->RealXY
+      return this->RealXY / other
 
     method operator%( other:XY )->XY
       return XY( x%other.x, y%other.y )
@@ -95,6 +108,9 @@ class XY( x:Int32, y:Int32 ) [compound]
 
     method to->String
       return "($,$)"(x,y)
+
+    method to->RealXY
+      return RealXY(x,y)
 
     method xv->XY
       return XY(x,0)
