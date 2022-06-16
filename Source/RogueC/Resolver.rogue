@@ -317,10 +317,15 @@ class Resolver : Visitor
       endIf
 
     method on( cmd:CallPriorMethod )->Cmd
+      if (not this_type.base_class)
+        throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )
+      endIf
+
       local args = which{ cmd.args || Args(cmd.t) }
 
-      local m = find_method( cmd.t, this_type, null, cmd.name, args )
-      local prior_m = m.overridden_method
+      local m = find_method( cmd.t, this_type.base_class, null, cmd.name, args )
+      local prior_m = m
+      if (m.type_context is this_type) m = m.overridden_method
 
       if (not prior_m)
         if (cmd.name == "init")
