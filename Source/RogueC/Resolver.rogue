@@ -2219,6 +2219,18 @@ class Resolver : Visitor
         Candidates.refine
       endBlock
 
+      # Prefer extended class methods over base class methods
+      forEach (m in Candidates)
+        contingent
+          forEach (m2 in Candidates)
+            sufficient (m2.type_context.instance_of(m.type_context) and not m.type_context.instance_of(m2.type_context))
+          endForEach
+          Candidates.keep m
+        endContingent
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      Candidates.refine
+
       if (arg_count == 1)
         # Prefer methods with a String as the initial parameter; the arg will be to->String'd
         forEach (m in Candidates)
