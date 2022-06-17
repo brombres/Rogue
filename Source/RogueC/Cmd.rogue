@@ -674,7 +674,8 @@ class Local : Cmd
       attributes = existing.attributes.cloned
 
     method description->String
-      return "Local($,$,$)" (%name,%initial_value,%type)
+      return "Local($,$)" (%name,%type)
+      #return "Local($,$,$)" (%name,%initial_value,%type)
 
 endClass
 

@@ -2454,10 +2454,91 @@ augment
       throw t.error( "Illegal assignment target for '$'."($OpSymbol) )
 
     method DirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
-      return Access(t,name).resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      local v = resolver.find_local( name )
+      if (v)
+        # TargetType.operator+(target:TargetType,operand:OperandType)
+        local context = GetLocal(t,v)
+        local args = Args(t,context,operand)
+        local m = resolver.find_procedure( t, v.type, null, op_method_name, args, &require_global, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, null, m, args) )
+
+        # TargetType.operator+(operand:OperandType)
+        local arg = Args(t,operand)
+        m = resolver.find_procedure( t, v.type, context, op_method_name, arg, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, context, m, arg) )
+
+        operand = operand.resolve_conversion_to(v.type, resolver)
+        return resolver.validate( $OpLocal(t,v,operand) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local context = GetThisProperty(t,p)
+          local args = Args(t,context,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, context, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpThisProperty(t,p,operand) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpGlobal(t,p,operand) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local context = GetSingleton(t,Program.type_Global)
+          local args = Args(t,GetProperty(t,context,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p,operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
 
     method Access.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+      contingent
+        local get_name = name + "()"
+        sufficient resolver.this_type.methods[ get_name ]
+        sufficient resolver.this_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient resolver.this_type.has_method_named( set_name )
+        sufficient resolver.this_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
 
       # There was no e.g. operator+= method. Check for operator+ and convert if present:
       #  'target += value' -> 'target = target + value'
@@ -2533,6 +2614,18 @@ augment
     method Access.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
 
+      contingent
+        local get_name = name + "()"
+        sufficient resolver.this_type.methods[ get_name ]
+        sufficient resolver.this_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient resolver.this_type.has_method_named( set_name )
+        sufficient resolver.this_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
+
       # There was no e.g. operator%= method. Check for operator% and convert if present:
       #  'target %= value' -> 'target = target % value'
       local op_method_name = "operator" + $OpSymbol
@@ -2603,13 +2696,25 @@ augment
     method ContextAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
 
+      context = resolver.visit( context )
+      local target = resolver.visit( this )
+      local context_type = context.require_type.[ organize ]
+
       # There was no e.g. operator+= method. Check for operator+ and convert if present:
       #  'target += value' -> 'target = target + value'
       local op_method_name = "operator" + $OpSymbol
 
-      context = resolver.visit( context )
-      local target = resolver.visit( this )
-      local context_type = context.require_type.[ organize ]
+      contingent
+        local get_name = name + "()"
+        sufficient context_type.methods[ get_name ]
+        sufficient context_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient context_type.has_method_named( set_name )
+        sufficient context_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
 
       block p = context_type.properties[ name ]
         if (p)
@@ -2645,13 +2750,110 @@ augment
     method ContextAccess.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
       if (args) return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
 
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+      local target = resolver.visit( this )
+
       # There was no e.g. operator+= method. Check for operator+ and convert if present:
       #  'target += value' -> 'target = target + value'
       local op_method_name = "operator" + $OpSymbol
 
+      contingent
+        local get_name = name + "()"
+        sufficient context_type.methods[ get_name ]
+        sufficient context_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient context_type.has_method_named( set_name )
+        sufficient context_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
+
+      block p = context_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,target,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
+
+          if (context.is_simple)
+            return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+          else
+            local v_context = resolver.add_local( t, "context", context.require_type )
+            resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+            local context_access = ContextAccess( t, GetLocal(v_context), name )
+            return resolver.visit( Assign(t, context_access, $OpName(t,context_access.cloned,operand)) )
+          endIf
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          return SetGlobalProperty( t, p, $OpName(t,GetGlobalProperty(t,p),operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
+
+    method ContextDirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local target = resolver.visit( this )
+      local context_type = context.require_type.[ organize ]
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      block p = context_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,target,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpProperty(t,context,p,operand) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpGlobal(t,p,operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+    method ContextDirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
       context = resolver.visit( context )
       local context_type = context.require_type.[ organize ]
       local target = resolver.visit( this )
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
 
       block p = context_type.properties[ name ]
         if (p)
@@ -3371,22 +3573,6 @@ augment
         local op_method_name = "operator" + cmd.symbol
         local args_left_right = Args( t, cmd.left, cmd.right )
 
-        #{
-        if (left_type.is_primitive)
-          right_type.organize
-          local m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
-        endIf
-
-        left_type.organize
-        local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global, &suppress_error )
-        if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
-
-        local arg = Args( t, cmd.right )
-        m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error )
-        if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
-        }#
-
         left_type.organize
         right_type.organize
 
@@ -3594,11 +3780,24 @@ augment
     method Cmd.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       throw t.error( "Illegal stepper target. " )
 
-    method DirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
-      return Access( t, name ).resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )
-
     method Access.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
       if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+      contingent
+        local get_name = name + "()"
+        sufficient resolver.this_type.methods[ get_name ]
+        sufficient resolver.this_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient resolver.this_type.has_method_named( set_name )
+        sufficient resolver.this_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        if ($Step == 1)
+          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+        else
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+        endIf
+      endContingent
 
       local v = resolver.find_local( name )
       if (v)
@@ -3631,6 +3830,22 @@ augment
       context = resolver.visit( context )
       local context_type = context.require_type.[ organize ]
 
+      contingent
+        local get_name = name + "()"
+        sufficient context_type.methods[ get_name ]
+        sufficient context_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient context_type.has_method_named( set_name )
+        sufficient context_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        if ($Step == 1)
+          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+        else
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+        endIf
+      endContingent
+
       block p = context_type.properties[ name ]
         if (p)
           return resolver.validate( $OpProperty(t,context,p) )
@@ -3640,6 +3855,51 @@ augment
       block p = context_type.global_properties[ name ]
         if (p)
           return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+    method ContextDirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      block p = context_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,context,p) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+
+    method DirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      local v = resolver.find_local( name )
+      if (v)
+        return resolver.validate( $OpLocal(t,v) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpThisProperty(t,p) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p) )
         endIf
       endBlock
 
