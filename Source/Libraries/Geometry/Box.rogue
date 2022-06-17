@@ -1,6 +1,6 @@
 module Geometry
 
-class Box( position:XY, size:XY ) [compound]
+class Box( position:XY, size:XY ) [essential compound]
   GLOBAL METHODS
     method create( corners:Corners )->Box
       return corners->Box

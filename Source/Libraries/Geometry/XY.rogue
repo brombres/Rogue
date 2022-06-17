@@ -1,6 +1,6 @@
 module Geometry
 
-class XY( x:Int32, y:Int32 ) [compound]
+class XY( x:Int32, y:Int32 ) [essential compound]
   DEFINITIONS
     zero = XY(0,0)
 

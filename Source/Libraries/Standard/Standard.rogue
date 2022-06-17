@@ -36,6 +36,7 @@ $include Standard/Table
 $include Standard/Time
 $include Standard/TimeInterval
 $include Standard/Timestamp
+$include Standard/Value
 $include Standard/WorkList
 $include Standard/Writer
 

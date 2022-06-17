@@ -1,0 +1,141 @@
+uses Geometry
+
+class Value [compound]
+  DEFINITIONS
+    # Internal use.
+    TYPE_UNDEFINED =  0
+    TYPE_NULL      =  1
+    TYPE_LOGICAL   =  2
+    TYPE_BYTE      =  3
+    TYPE_CHARACTER =  4
+    TYPE_INT32     =  5
+    TYPE_INT64     =  6
+    TYPE_REAL32    =  7
+    TYPE_REAL64    =  8
+    TYPE_XY        =  9
+    TYPE_BOX       = 10
+    TYPE_OBJECT    = 11
+    TYPE_STRING    = 12
+    TYPE_LIST      = 13
+    TYPE_TABLE     = 14
+
+  PROPERTIES
+    # All properties should be considered INTERNAL USE ONLY because they are
+    # tricky - .type must be checked to know which property is valid.
+    type      : Int32
+    object    : Object # Can't be mixed into the union due to GC constraints
+
+    box       : Box       [faux]
+    byte      : Byte      [faux]
+    character : Character [faux]
+    int32     : Int32     [faux]
+    int64     : Int64     [faux]
+    logical   : Logical   [faux]
+    real      : Real      [faux]
+    real32    : Real32    [faux]
+    real64    : Real32    [faux]
+    string    : Object    [faux]
+    xy        : XY        [faux]
+
+    native @|union
+            |{
+            |  GeometryBox    box;
+            |  RogueByte      byte;
+            |  RogueCharacter character;
+            |  RogueInt32     int32;
+            |  RogueInt64     int64;
+            |  RogueLogical   logical;
+            |  RogueReal      real;
+            |  RogueReal32    real32;
+            |  RogueReal64    real64;
+            |  RogueString*   string;
+            |  GeometryXY     xy;
+            |};
+
+  GLOBAL METHODS
+    method create->Value
+      return native( "(RogueValue) { 0 }" )->Value  # undefined
+
+    method create( value:Logical )->Value
+      return native( "(RogueValue) {  2, 0, {.logical=$value} }" )->Value
+
+    method create( value:Byte )->Value
+      return native( "(RogueValue) {  3, 0, {.byte=$value} }" )->Value
+
+    method create( value:Character )->Value
+      return native( "(RogueValue) {  4, 0, {.character=$value} }" )->Value
+
+    method create( value:Int32 )->Value
+      return native( "(RogueValue) {  5, 0, {.int32=$value} }" )->Value
+
+    method create( value:Int64 )->Value
+      return native( "(RogueValue) {  6, 0, {.int64=$value} }" )->Value
+
+    method create( value:Real32 )->Value
+      return native( "(RogueValue) {  7, 0, {.real32=$value} }" )->Value
+
+    method create( value:Real64 )->Value
+      return native( "(RogueValue) {  8, 0, {.real64=$value} }" )->Value
+
+    method create( value:XY )->Value
+      return native( "(RogueValue) {  9, 0, {.xy=$value} }" )->Value
+
+    method create( value:Box )->Value
+      return native( "(RogueValue) { 10, 0, {.box=$value} }" )->Value
+
+    method create( value:Object )->Value
+      if (value) return native( "(RogueValue) { 11, $value }" )->Value
+      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+
+    method create( value:String )->Value
+      if (value) return native( "(RogueValue) { 12, (RogueObject*)$value }" )->Value
+      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+
+    method create( value:Value[] )->Value
+      if (value) return native( "(RogueValue) { 13, (RogueObject*)$value }" )->Value
+      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+
+    method create( value:[String:Value] )->Value
+      if (value) return native( "(RogueValue) { 14, (RogueObject*)$value }" )->Value
+      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+
+  METHODS
+    method to->String
+      which (type)
+        case TYPE_UNDEFINED: return ""
+        case TYPE_NULL:      return "null"
+        case TYPE_LOGICAL:   return logical->String
+        case TYPE_BYTE:      return byte->String
+        case TYPE_CHARACTER: return character->String
+        case TYPE_INT32:     return int32->String
+        case TYPE_INT64:     return int64->String
+        case TYPE_REAL32:    return real32->String
+        case TYPE_REAL64:    return real64->String
+        case TYPE_XY:        return xy->String
+        case TYPE_BOX:       return box->String
+        case TYPE_OBJECT:    return object->String
+        case TYPE_STRING:    return object->String
+        case TYPE_LIST:      return object->(as Value[])->String
+        case TYPE_TABLE:     return object->(as [String:Value])->String
+        others:              return ""
+      endWhich
+
+      #{
+        case TYPE_UNDEFINED
+        case TYPE_NULL
+        case TYPE_LOGICAL
+        case TYPE_BYTE
+        case TYPE_CHARACTER
+        case TYPE_INT32
+        case TYPE_INT64
+        case TYPE_REAL32
+        case TYPE_REAL64
+        case TYPE_XY
+        case TYPE_BOX
+        case TYPE_OBJECT
+        case TYPE_STRING
+        case TYPE_LIST
+        case TYPE_TABLE
+          }#
+endClass
+
