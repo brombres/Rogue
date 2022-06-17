@@ -208,8 +208,9 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |void  Rogue_configure( int argc, char** argv );
            |int   Rogue_launch(void);
+           |void  Rogue_check_gc(void);
            |void  Rogue_collect_garbage(void);
-           |void  Rogue_force_gc(void);
+           |void  Rogue_request_gc(void);
            |void  Rogue_quit(void);
            |void* Rogue_release( void* obj );
            |void* Rogue_retain( void* obj );
@@ -342,22 +343,28 @@ class CWriter : BufferedPrintWriter
            |  return obj;
            |}
            |
-           |void Rogue_force_gc(void)
+           |void Rogue_check_gc(void)
            |{
-           |  RogueMM_gc_request = 1;
-           |  Rogue_collect_garbage();
+           |  if (RogueMM_bytes_allocated_since_gc >= ROGUE_MM_GC_THRESHOLD || RogueMM_gc_request) Rogue_collect_garbage();
            |}
+           |
+           |void Rogue_request_gc(void)
+           |{
+              if (Program.gc_auto) println @|  Rogue_collect_garbage();
+              else                 println @|  RogueMM_gc_request = 1;
+        println ...
+          @|}
            |
            |void Rogue_quit(void)
            |{
-           |  Rogue_print_exception();  // if any
+           |  Rogue_print_exception();  // Only has an effect if there is a pending exception
            |
            |  RogueGlobal__call_exit_functions();
            |
-           |  // Give a few GC's to allow objects requiring clean-up to do so.
-           |  Rogue_force_gc();
-           |  Rogue_force_gc();
-           |  Rogue_force_gc();
+           |  // Issue a few GC's to allow objects requiring clean-up to do so.
+           |  Rogue_collect_garbage();
+           |  Rogue_collect_garbage();
+           |  Rogue_collect_garbage();
            |}
            |
            |void Rogue_print_exception(void)

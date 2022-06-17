@@ -1786,8 +1786,7 @@ augment
                         |void  Rogue_collect_garbage()
                         |{
       c_writer.indent += 2
-      c_writer.println   @|if (RogueMM_bytes_allocated_since_gc < ROGUE_MM_GC_THRESHOLD && !RogueMM_gc_request) return;
-                          |RogueMM_bytes_allocated_since_gc = 0;
+      c_writer.println   @|RogueMM_bytes_allocated_since_gc = 0;
                           |RogueMM_gc_request = 0;
                           |
                           |RogueObject*  ref;
