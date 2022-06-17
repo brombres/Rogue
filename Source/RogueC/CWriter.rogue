@@ -115,8 +115,11 @@ class CWriter : BufferedPrintWriter
            |  typedef uint64_t         RogueUInt64;
            |  typedef uint32_t         RogueUInt32;
            |#endif
-           |
-           |#if !defined(ROGUE_MM_GC_THRESHOLD)
+        if (Program.real_bits == 32) println "typedef RogueReal32 RogueReal;"
+        else                         println "typedef RogueReal64 RogueReal;"
+
+        println ...
+          @|#if !defined(ROGUE_MM_GC_THRESHOLD)
            |  #define ROGUE_MM_GC_THRESHOLD (32 * 1024 * 1024)
            |#endif
            |

@@ -119,6 +119,7 @@ class PropertyOrganizer : Visitor
           local p = decl->(as Property)
           if (p)
             p.type = type
+            p.attributes.flags |= cmd.attributes.flags
             collect_global( decl.t, p )
           else
             throw decl.t.error( "Global properties cannot be native." )
@@ -128,6 +129,7 @@ class PropertyOrganizer : Visitor
         forEach (decl in cmd.declarations)
           local p = decl->(as Property)
           if (p)
+            p.attributes.flags |= cmd.attributes.flags
             collect_global( p.t, p )
           else
             local c_property = decl->(as NativeCProperty)
@@ -146,6 +148,7 @@ class PropertyOrganizer : Visitor
           local p = decl->(as Property)
           if (p)
             p.type = type
+            p.attributes.flags |= cmd.attributes.flags
             collect( decl.t, p )
           else
             throw decl.t.error( "Native properties must be on individual lines." )
@@ -155,6 +158,7 @@ class PropertyOrganizer : Visitor
         forEach (decl in cmd.declarations)
           local p = decl->(as Property)
           if (p)
+            p.attributes.flags |= cmd.attributes.flags
             collect( p.t, p )
           else
             local c_property = decl->(as NativeCProperty)

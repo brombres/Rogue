@@ -1459,11 +1459,13 @@ augment
           writer.println "RogueInt32 __refcount;"
         endIf
         forEach (p in this.properties)
-          writer.print   p.type.c_name
-          if (p.type.is_reference) writer.print '*'
-          writer.print   ' '
-          writer.print   p.c_name
-          writer.println ';'
+          if (not p.attributes.is_faux)
+            writer.print   p.type.c_name
+            if (p.type.is_reference) writer.print '*'
+            writer.print   ' '
+            writer.print   p.c_name
+            writer.println ';'
+          endIf
         endForEach
         writer.println (forEach in this.native_properties)
         writer.indent  -= 2
@@ -1509,11 +1511,13 @@ augment
           if (type.is_primitive) nextIteration
 
           forEach (p in type.global_properties)
-            writer.print p.type.c_ref_name
-            writer.print ' '
-            writer.print p.c_name
-            if (p.type.is_compound) writer.println " = {};"
-            else                    writer.println " = 0;"
+            if (not p.attributes.is_faux)
+              writer.print p.type.c_ref_name
+              writer.print ' '
+              writer.print p.c_name
+              if (p.type.is_compound) writer.println " = {};"
+              else                    writer.println " = 0;"
+            endIf
           endForEach
 
           if (type.is_aspect) nextIteration

@@ -4603,3 +4603,9 @@ class NotInstanceOf : Cmd
       return "NotInstanceOf($,$)" (%operand,%compare_type)
 
 endClass
+
+class AttributeFaux : Cmd
+  METHODS
+    method description->String
+      return "AttributeFaux"
+endClass

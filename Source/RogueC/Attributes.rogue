@@ -42,6 +42,7 @@ class Attribute
     DIRECT_AUTO_STORE  = (Int64(1):<<:37)
     BITFLAGS           = (Int64(1):<<:38)
     OVERRIDE           = (Int64(1):<<:39)
+    FAUX               = (Int64(1):<<:40)
 endClass
 
 class Attributes : CmdList
@@ -85,6 +86,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( is_direct_auto_store, Attribute.DIRECT_AUTO_STORE )
   ROGUE_ATTRIBUTE( bitflags,             Attribute.BITFLAGS )
   ROGUE_ATTRIBUTE( is_override,          Attribute.OVERRIDE )
+  ROGUE_ATTRIBUTE( is_faux,              Attribute.FAUX )
 
   PROPERTIES
     flags : Int64
@@ -146,6 +148,9 @@ augment
 
     method AttributeExport.attribute_flags->Int64
       return Attribute.EXPORT
+
+    method AttributeFaux.attribute_flags->Int64
+      return Attribute.FAUX
 
     method AttributeInsert.attribute_flags->Int64
       return Attribute.INSERT

@@ -1143,18 +1143,6 @@ parser
     endWhile
   produceList TypeList
 
-- attributes
-  beginList
-    if (not consume('[')) produceList
-    if (consume(']')) produceList
-    while (hasAnother and not nextIs(']'))
-      identifier
-      if (consume(',')) consume_eols
-      else              consume_eols; consume(',')
-    endWhile
-    mustConsume ']'
-  produceList Attributes
-
 - class_sections
   beginList
   if (not consume(';'))
@@ -1696,7 +1684,7 @@ parser
     endWhile
   createList
   optional_type
-  attributes
+  global_property_attributes
   produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes )
 
 - properties
@@ -1709,7 +1697,7 @@ parser
     endWhile
   createList
   optional_type
-  attributes
+  property_attributes
   produce PropertyDeclarations( declarations, type:Type, attributes:Attributes )
 
 - property_declaration
@@ -1727,6 +1715,35 @@ parser
     produce NativeCProperty( expression:String ):NativeProperty
   endOn
   mustConsume IDENTIFIER  # throws error
+
+- global_property_attributes
+  beginList
+    on '['
+      while (hasAnother and not nextIs(']'))
+        global_property_attribute
+        consume ','
+      endWhile
+      mustConsume(']')
+    endOn
+  produceList Attributes
+
+- global_property_attribute
+  syntaxError "Illegal global property attribute."
+
+- property_attributes
+  beginList
+    on '['
+      while (hasAnother and not nextIs(']'))
+        property_attribute
+        consume ','
+      endWhile
+      mustConsume(']')
+    endOn
+  produceList Attributes
+
+- property_attribute
+  on @"faux" -> AttributeFaux
+  syntaxError "Illegal property attribute. Expected [faux]."
 
 - multi_line_statements
   consume_eols_and_semicolons
