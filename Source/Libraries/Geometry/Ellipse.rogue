@@ -2,7 +2,7 @@ module Geometry
 
 class Ellipse( position:XY, size:XY ) [compound]
   METHODS
-    method description->String
+    method to->String
       return "(@$, $x$)" (position,size.x,size.y)
 endClass
 

@@ -136,4 +136,7 @@ class Line( a:XY, b:XY ) [compound]
       return Ray( a, (b-a).normalized )
       }#
 
+    method to->String
+      return "[$->$]"(a,b)
+
 endClass
