@@ -31,6 +31,7 @@ KEYWORD_CATCH             catch          [structural]
 KEYWORD_CATEGORIES        CATEGORIES     [structural]
 KEYWORD_CLASS             class          [structural]
 KEYWORD_CONTINGENT        contingent
+KEYWORD_DEFAULT_VALUE     defaultValue
 KEYWORD_DEFINITIONS       DEFINITIONS    [structural]
 KEYWORD_DOWN_TO           downTo
 KEYWORD_ELSE              else           [structural]
@@ -2682,6 +2683,8 @@ parser
     mustConsume ']'
     produce Access(name="set_state":String,args)
   endOn
+
+  on "defaultValue" "<<" type ">>" -> DefaultValue(of_type:Type)
 
   on "native"
     native_code

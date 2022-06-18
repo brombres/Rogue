@@ -489,6 +489,9 @@ class Resolver : Visitor
       local range_type = Type( t, cmd.name, common_type )
       return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
 
+    method on( cmd:DefaultValue )->Cmd
+      return visit( cmd.of_type.cmd_default_value(cmd.t) )
+
     method on( cmd:Describe )->Cmd
       local operand = visit( cmd.operand )
       if (operand.require_type.is_reference)

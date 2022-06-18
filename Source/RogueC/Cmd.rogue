@@ -4609,3 +4609,19 @@ class AttributeFaux : Cmd
     method description->String
       return "AttributeFaux"
 endClass
+
+class DefaultValue : Cmd
+  PROPERTIES
+    of_type : Type
+
+  METHODS
+    method init( t, of_type )
+
+    method init( existing:DefaultValue )
+      prior.init( existing )
+      if (existing.of_type) of_type = existing.of_type.cloned
+
+    method description->String
+      return "DefaultValue($)" (%of_type)
+
+endClass
