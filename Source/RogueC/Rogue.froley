@@ -2723,10 +2723,10 @@ parser
 
   on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
 
-  on "isCompound"  '(' expression ')' -> IsCompound(operand)
-  on "isEnum"      '(' expression ')' -> IsEnum(operand)
-  on "isPrimitive" '(' expression ')' -> IsPrimitive(operand)
-  on "isReference" '(' expression ')' -> IsReference(operand)
+  on "isCompound"  "<<" expression ">>" -> IsCompound(operand)
+  on "isEnum"      "<<" expression ">>" -> IsEnum(operand)
+  on "isPrimitive" "<<" expression ">>" -> IsPrimitive(operand)
+  on "isReference" "<<" expression ">>" -> IsReference(operand)
 
   syntaxError
 
