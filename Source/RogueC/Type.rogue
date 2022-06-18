@@ -946,6 +946,7 @@ class Type : Cmd
               methods[ m.signature ] = m
             endIf
           endBlock
+
         endIf
       endIf
 

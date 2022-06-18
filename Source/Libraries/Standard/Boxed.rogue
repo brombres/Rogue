@@ -17,7 +17,7 @@ class Boxed<<$DataType>>( value:$DataType ) : Boxed
     method to->$DataType
       return value
 
-    method description->String
+    method to->String
       return value->String
 
 endClass

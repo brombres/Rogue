@@ -4646,3 +4646,9 @@ class IsEnum : Cmd
       return "IsEnum($)" (%operand)
 
 endClass
+
+class AttributePreferred : Cmd
+  METHODS
+    method description->String
+      return "AttributePreferred"
+endClass

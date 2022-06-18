@@ -43,6 +43,7 @@ class Attribute
     BITFLAGS           = (Int64(1):<<:38)
     OVERRIDE           = (Int64(1):<<:39)
     FAUX               = (Int64(1):<<:40)
+    PREFERRED          = (Int64(1):<<:41)
 endClass
 
 class Attributes : CmdList
@@ -87,6 +88,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE( bitflags,             Attribute.BITFLAGS )
   ROGUE_ATTRIBUTE( is_override,          Attribute.OVERRIDE )
   ROGUE_ATTRIBUTE( is_faux,              Attribute.FAUX )
+  ROGUE_ATTRIBUTE( is_preferred,         Attribute.PREFERRED )
 
   PROPERTIES
     flags : Int64
@@ -160,6 +162,9 @@ augment
 
     method AttributeOverride.attribute_flags->Int64
       return Attribute.OVERRIDE
+
+    method AttributePreferred.attribute_flags->Int64
+      return Attribute.PREFERRED
 
     method AttributePrimitive.attribute_flags->Int64
       return Attribute.PRIMITIVE
