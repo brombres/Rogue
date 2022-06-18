@@ -103,6 +103,10 @@ augment
         return resolver.validate( WideningCast(t,this,target_type) )
       endIf
 
+      if (this_type.instance_of(Program.type_Value))
+        return resolver.visit( TemplatedMethodContextAccess(t,this,"to",target_type,null) )
+      endIf
+
       if (suppress_error) return null
 
       throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )

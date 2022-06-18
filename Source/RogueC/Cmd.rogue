@@ -3615,6 +3615,9 @@ class TemplatedMethodContextAccess : Cmd
   METHODS
     method init( t, context, name, type_args, args )
 
+    method init( t, context, name, type_arg:Type, args )
+      init( t, context, name, TemplateArgs(t).[ add(TokenList(t,type_arg.name_tokens)) ], args )
+
     method init( existing:TemplatedMethodContextAccess )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
