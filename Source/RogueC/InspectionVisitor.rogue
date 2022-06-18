@@ -1021,4 +1021,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.of_type)
       return result
 
+    method on_visit_children( cmd:IsEnum )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
 endClass

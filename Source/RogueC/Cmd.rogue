@@ -4630,3 +4630,19 @@ class DefaultValue : Cmd
       return "DefaultValue($)" (%of_type)
 
 endClass
+
+class IsEnum : Cmd
+  PROPERTIES
+    operand : Cmd
+
+  METHODS
+    method init( t, operand )
+
+    method init( existing:IsEnum )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+
+    method description->String
+      return "IsEnum($)" (%operand)
+
+endClass

@@ -797,6 +797,10 @@ class Resolver : Visitor
       local operand = visit( cmd.operand )
       return LiteralLogical( cmd.t, operand.require_type.is_compound )
 
+    method on( cmd:IsEnum )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_enum )
+
     method on( cmd:IsPrimitive )->Cmd
       local operand = visit( cmd.operand )
       return LiteralLogical( cmd.t, operand.require_type.is_primitive )
