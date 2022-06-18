@@ -922,8 +922,29 @@ class Type : Cmd
           endIf
         endBlock
 
+        block m = methods["to_Value()"]
+          if (not m)
+            m = Method( t, this, "to_Value" )
+            m.return_type = Program.type_String
+            m.statements.add( Return(t,TypeAccess(t,Program.type_Value,Args(t,Access(t,"to_Object")))) )
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
         if (not is_enum)
-          # Enums get different versions of to->String and operator==()
+          # Enums get different versions of to->String/to->Object and operator==()
+          block m = methods["to_Object()"]
+            if (not m)
+              local boxed_type = Type( t, "Boxed", this )
+              m = Method( t, this, "to_Object" )
+              m.return_type = boxed_type
+              m.statements.add( Return(t,TypeAccess(t,boxed_type,Args(t,This(t,this)))) )
+              m.organize
+              methods[ m.signature ] = m
+            endIf
+          endBlock
+
           block m = methods["to_String()"]
             if (not m)
               m = Method( t, this, "to_String" )
@@ -1059,6 +1080,16 @@ class Type : Cmd
             cmd_which.statements.add( Return(t,FormattedString(t,name+"($)",Args(t,Access(t,"value")))) )
             m.statements.add( cmd_which )
 
+            m.organize
+            methods[ m.signature ] = m
+          endIf
+        endBlock
+
+        block m = methods["to_Object()"]
+          if (not m)
+            m = Method( t, this, "to_Object" )
+            m.return_type = Program.type_Object
+            m.statements.add( Return(t,Access(t,"to_String")) )
             m.organize
             methods[ m.signature ] = m
           endIf
