@@ -2086,6 +2086,11 @@ class InlineWhich : Cmd
   METHODS
     method init( t, cases )
 
+    method init( t, a:Cmd, b:Cmd )
+      cases = InlineWhichCases( t )
+      cases.add( InlineWhichCase(a.t,a,null) )
+      cases.add( InlineWhichCase(b.t,b,null) )
+
     method init( existing:InlineWhich )
       prior.init( existing )
       if (existing.cases) cases = existing.cases.cloned

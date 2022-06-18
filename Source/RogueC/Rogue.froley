@@ -1534,13 +1534,23 @@ parser
       savePosition
     endIf
 
-    on @"to"
-      create Identifier(name=content)
-      procedure_return_type
-      procedure_parameters
-      call swap
+    next_is_to_type = false
+    if (nextIs(@"to"))
+      savePosition
+      consume @"to"
+      next_is_to_type = not nextIs("<<")
+      restorePosition
+    endIf
 
-    elseOnOthers
+    if next_is_to_type
+      on @"to"
+        create Identifier(name=content)
+        procedure_return_type
+        procedure_parameters
+        call swap
+      endOn
+
+    else
       procedure_name
       is_def = false
       if (nextIs("<<"))
@@ -1564,7 +1574,7 @@ parser
       endIf
       procedure_parameters
       procedure_return_type
-    endOn
+    endIf
 
     procedure_attributes
     consume(':')
