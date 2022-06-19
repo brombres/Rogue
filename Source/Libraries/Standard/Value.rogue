@@ -34,7 +34,6 @@ class Value [compound]
     real      : Real      [faux]
     real32    : Real32    [faux]
     real64    : Real32    [faux]
-    string    : Object    [faux]
     xy        : XY        [faux]
 
     native @|union
@@ -48,7 +47,6 @@ class Value [compound]
             |  RogueReal      real;
             |  RogueReal32    real32;
             |  RogueReal64    real64;
-            |  RogueString*   string;
             |  GeometryXY     xy;
             |};
 
@@ -99,6 +97,16 @@ class Value [compound]
       if (value) return native( "(RogueValue) { 14, (RogueObject*)$value }" )->Value
       else       return native( "(RogueValue) { 1 }" )->Value  # null value
 
+    method list->Value
+      # Convenience syntax: @[] is equivalent to Value.list()
+      local data = Value[]
+      return native( "(RogueValue) { 13, (RogueObject*)$data }" )->Value
+
+    method table->Value
+      # Convenience syntax: @{} is equivalent to Value.table()
+      local data = [String:Value]
+      return native( "(RogueValue) { 14, (RogueObject*)$data }" )->Value
+
   METHODS
     method add( value:Value )
       which (type)
@@ -106,7 +114,6 @@ class Value [compound]
           object->(as Value[]).add( value )
       endWhich
 
-      #{
     method add_all( value:Value )
       which (type)
         case TYPE_LIST
@@ -114,7 +121,6 @@ class Value [compound]
           list.reserve( value.count )
           list.add( forEach in value )
       endWhich
-      }#
 
     method count->Int32
       which (type)
@@ -128,14 +134,32 @@ class Value [compound]
           return 0
       endWhich
 
-      #{
     method get( index:Int32 )->Value
       which (type)
         case TYPE_LIST
           local list = object->(as Value[])
-          if (index < 0 or index >= count) return undefined
+          if (index < 0 or index >= list.count) return undefined
+          return list[index]
+
+        case TYPE_STRING
+          local st = object->(as String)
+          if (index < 0 or index >= st.count) return undefined
+          return st[index]
+
+        case TYPE_TABLE
+          local table = object->(as [String:Value])
+          if (index < 0 or index >= table.count) return undefined
+          return table.at(index)
+
+        others
+          return undefined
       endWhich
-      }#
+
+    method set( key:String, value:Value )
+      which (type)
+        case TYPE_TABLE
+          object->(as [String:Value])[ key ] = value
+      endWhich
 
     method to->Box
       which (type)

@@ -503,6 +503,12 @@ class Resolver : Visitor
     method on( cmd:DirectAccess )->Cmd
       return resolve_direct_access( cmd.t, null, cmd.name )
 
+    method on( cmd:EmptyValueList )->Cmd
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "list" ) )
+
+    method on( cmd:EmptyValueTable )->Cmd
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "table" ) )
+
     method on( cmd:Ensure )->Cmd
       local t = cmd.expression.t
       return visit(

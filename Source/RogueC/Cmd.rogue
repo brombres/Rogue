@@ -4661,3 +4661,15 @@ class LiteralUndefined : Cmd
     method description->String
       return "LiteralUndefined"
 endClass
+
+class EmptyValueList : Cmd
+  METHODS
+    method description->String
+      return "EmptyValueList"
+endClass
+
+class EmptyValueTable : Cmd
+  METHODS
+    method description->String
+      return "EmptyValueTable"
+endClass

@@ -155,6 +155,8 @@ SYMBOL_DOTDOTGT              ..>
 SYMBOL_DOT_OPEN_SQUARE       .[
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
+SYMBOL_EMPTY_VALUE_LIST      @[]
+SYMBOL_EMPTY_VALUE_TABLE     @{}
 SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_FAT_ARROW             =>
@@ -164,7 +166,6 @@ SYMBOL_GTGT                  >>  [structural]
 SYMBOL_LE                    <=
 SYMBOL_LEFT_SHIFT            :<<:
 SYMBOL_LEFT_SHIFT_EQUALS     :<<:=
-SYMBOL_LITERAL_OPEN_SQUARE   @[
 SYMBOL_LT                    <
 SYMBOL_LTLT                  <<
 SYMBOL_MINUS                 -
@@ -2704,6 +2705,9 @@ parser
     native_code
     return
   endOn
+
+  on "@[]" -> EmptyValueList
+  on "@{}" -> EmptyValueTable
 
   on '$'
     call on_generic_fn_arg
