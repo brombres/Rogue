@@ -100,6 +100,43 @@ class Value [compound]
       else       return native( "(RogueValue) { 1 }" )->Value  # null value
 
   METHODS
+    method add( value:Value )
+      which (type)
+        case TYPE_LIST
+          object->(as Value[]).add( value )
+      endWhich
+
+      #{
+    method add_all( value:Value )
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Value[])
+          list.reserve( value.count )
+          list.add( forEach in value )
+      endWhich
+      }#
+
+    method count->Int32
+      which (type)
+        case TYPE_STRING
+          return object->(as String).count
+        case TYPE_LIST
+          return object->(as Value[]).count
+        case TYPE_TABLE
+          return object->(as [String:Value]).count
+        others
+          return 0
+      endWhich
+
+      #{
+    method get( index:Int32 )->Value
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Value[])
+          if (index < 0 or index >= count) return undefined
+      endWhich
+      }#
+
     method to->Box
       which (type)
         case TYPE_BOX:       return box

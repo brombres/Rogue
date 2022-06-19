@@ -1425,6 +1425,9 @@ class Resolver : Visitor
     method on_validate( cmd:Unary )->Cmd
       return cmd.operand.require_type.resolve_unary_op( cmd, this )
 
+    method on( cmd:LiteralUndefined )->Cmd
+      return visit( TypeAccess(cmd.t,Program.type_Value,Args(cmd.t)) )
+
     method on( cmd:Use )->Cmd
       if (cmd.resources.count > 1)
         local res = cmd.resources.remove_first->(as UsedResource)

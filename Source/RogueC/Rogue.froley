@@ -2686,6 +2686,8 @@ parser
     return
   endOn
 
+  on "undefined" -> LiteralUndefined
+
   onPeek "function" function_definition: return
 
   on "[>"

@@ -4655,3 +4655,9 @@ class AttributePreferred : Cmd
     method description->String
       return "AttributePreferred"
 endClass
+
+class LiteralUndefined : Cmd
+  METHODS
+    method description->String
+      return "LiteralUndefined"
+endClass
