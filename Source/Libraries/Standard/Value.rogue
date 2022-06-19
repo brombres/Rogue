@@ -155,6 +155,14 @@ class Value [compound]
           return undefined
       endWhich
 
+    method get( key:String )->Value
+      which (type)
+        case TYPE_TABLE
+          return object->(as [String:Value])[ key ]
+        others
+          return undefined
+      endWhich
+
     method set( key:String, value:Value )
       which (type)
         case TYPE_TABLE
