@@ -107,13 +107,9 @@ class Finalizer : Visitor
       throw cmd.t.error( "Generic functions must be passed as an argument or assigned to a variable with specialized Function type." )
 
     method on_visit_type( type:Type )
+      type.collect_base_type_ids
+
       type.base_type_lookup_index = Program.base_type_lookup.count
-      if (type.base_class)
-        type.base_type_ids.add( type.base_class.id )
-      endIf
-      if (type.aspects)
-        type.base_type_ids.add( (forEach in type.aspects).id )
-      endIf
       Program.base_type_lookup.add( forEach in type.base_type_ids )
 
       prior.on_visit_type( type )

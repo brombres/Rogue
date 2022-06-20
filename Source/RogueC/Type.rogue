@@ -247,6 +247,9 @@ class Type : Cmd
       endIf
       methods[ m.signature ] = m
 
+    method add_base_type_id( id:Int32 )
+      if (not base_type_ids.contains(id)) base_type_ids.add( id )
+
     method add_property( p:Property )
       p.type_context = this
 
@@ -297,6 +300,22 @@ class Type : Cmd
 
     method cloned->this
       return this
+
+    method collect_base_type_ids
+      if (base_type_ids.count) return
+
+      if (base_class)
+        base_class.collect_base_type_ids
+        add_base_type_id( base_class.id )
+        add_base_type_id( forEach in base_class.base_type_ids )
+      endIf
+
+      if (aspects)
+        forEach (a in aspects)
+          a.collect_base_type_ids
+          add_base_type_id( a.id )
+        endForEach
+      endIf
 
     method collect_compounds_and_primitives( type_list:Type[] )
       if (attributes.is_visiting or attributes.is_collected) return
