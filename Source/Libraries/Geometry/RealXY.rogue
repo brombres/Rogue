@@ -8,6 +8,27 @@ class RealXY( x:Real, y:Real ) [compound]
     method create( n:Real )->RealXY
       return RealXY(n,n)
 
+    method create( xy:XY )->RealXY
+      return RealXY(xy.x,xy.y)
+
+    method operator*( a:Real, b:RealXY )->RealXY
+      return RealXY( a*b.x, a*b.y )
+
+    method operator*( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x*b.x, a.x*b.y )
+
+    method operator/( a:Real, b:RealXY )->RealXY
+      return RealXY( a/b.x, a/b.y )
+
+    method operator/( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x/b.x, a.x/b.y )
+
+    method operator%( a:Real, b:RealXY )->RealXY
+      return RealXY( a%b.x, a%b.y )
+
+    method operator%( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x%b.x, a.x%b.y )
+
   METHODS
     method is_zero->Logical
       return x == 0 and y == 0

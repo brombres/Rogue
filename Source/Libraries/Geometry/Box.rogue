@@ -63,11 +63,11 @@ class Box( position:XY, size:XY ) [essential compound]
     method at( anchor:Anchor )->XY
       return position + anchor * size
 
-    method at( proportional_position:XY )->XY
-      return position + proportional_position * size
+    method at( proportional_position:RealXY )->XY
+      return position + XY( proportional_position * RealXY(size) )
 
     method at( u:Real, v:Real )->XY
-      return position + XY(u,v) * size
+      return position + XY(u*size.x,v*size.y)
 
       #{
     method at_random->XY
@@ -92,7 +92,10 @@ class Box( position:XY, size:XY ) [essential compound]
       #   (0,1) | (1,1) | (2,1)
       #   ------+-------+------
       #   (0,2) | (1,2) | (2,2)
-      return from_corners( at(grid_index/grid_size), at((grid_index+XY(1,1))/grid_size) )
+      return from_corners(
+        position + (grid_index*size)/grid_size,
+        position + ((grid_index+XY(1,1))*size)/grid_size
+      )
 
     method center->XY
       return this.at(0.5,0.5)

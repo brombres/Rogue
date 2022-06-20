@@ -8,6 +8,27 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method create( n:Int32 )->XY
       return XY(n,n)
 
+    method create( real_xy:RealXY )->XY
+      return XY( real_xy.x.floor, real_xy.y.floor )
+
+    method operator*( a:Int32, b:XY )->XY
+      return XY( a*b.x, a*b.y )
+
+    method operator*( a:RealXY, b:XY )->XY
+      return XY( a.x*b.x, a.x*b.y )
+
+    method operator/( a:Int32, b:XY )->XY
+      return XY( a/b.x, a/b.y )
+
+    method operator/( a:RealXY, b:XY )->XY
+      return XY( a.x/b.x, a.x/b.y )
+
+    method operator%( a:Int32, b:XY )->XY
+      return XY( a%b.x, a%b.y )
+
+    method operator%( a:RealXY, b:XY )->XY
+      return XY( a.x%b.x, a.x%b.y )
+
   METHODS
     method is_zero->Logical
       return x == 0 and y == 0
