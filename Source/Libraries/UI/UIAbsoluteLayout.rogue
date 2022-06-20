@@ -8,9 +8,11 @@ class UIAbsoluteLayout : UILayout
   METHODS
     method add( component:UIComponent )
       prior.add( component )
+      if (not component.has_anchor) component.anchor = Anchor.TOP_LEFT
 
     method add( component:UIComponent, position:XY )
       prior.add( component )
+      if (not component.has_anchor) component.anchor = Anchor.TOP_LEFT
       component.position = position
 
     method clamp_content
