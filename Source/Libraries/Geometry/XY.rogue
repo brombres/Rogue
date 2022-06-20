@@ -127,6 +127,9 @@ class XY( x:Int32, y:Int32 ) [essential compound]
       # Returns the smaller X and the smaller Y between this value and the other value.
       return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
 
+    method sign->XY
+      return XY( x.sign, y.sign )
+
     method to->String
       return "($,$)"(x,y)
 

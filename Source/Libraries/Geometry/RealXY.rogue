@@ -119,6 +119,9 @@ class RealXY( x:Real, y:Real ) [compound]
       # Returns the smaller X and the smaller Y between this value and the other value.
       return RealXY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
 
+    method sign->RealXY
+      return RealXY( x.sign, y.sign )
+
     method to->String
       return "($,$)"(x,y)
 
