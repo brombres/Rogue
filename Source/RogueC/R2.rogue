@@ -115,11 +115,14 @@ class RogueC
 
       if (command//options.contains("define"))
         forEach (def in command//options//define)
-          local parts = def->String.split(':')
-          if (parts.count == 1) parts.add( "true" )
-          local tokens = Scanner( "Command Line Option", parts[1] ).tokenize
-          tokens.remove_last  # EOL
-          Program.definitions[parts[0]] = tokens
+          block def = def->String
+            local key   = def.before_first(':')
+            local value = def.after_first(':')
+            if (value == "") value = "true"
+            local tokens = Scanner( "Command Line Option", value ).tokenize
+            tokens.remove_last  # EOL
+            Program.definitions[key] = tokens
+          endBlock
         endForEach
       endIf
 
