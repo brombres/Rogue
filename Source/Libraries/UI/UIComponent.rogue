@@ -40,12 +40,18 @@ class UIComponent : Node<<UIComponent>>
 
   METHODS
     method init
+      on_init
 
     method init( content:UIComponent )
       add( content )
+      on_init
 
     method init( size )
       fixed_size = size
+      on_init
+
+    method on_init
+      noAction
 
 #{
     method after( e:KeyEvent )

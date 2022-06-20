@@ -11,6 +11,7 @@ class UIWidget : UIComponent
 
   METHODS
     method init
+      prior.init
 
     method init( size:XY )
       prior.init( size )

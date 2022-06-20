@@ -7,10 +7,12 @@ class UILabel : UIComponent
   METHODS
     method init( text )
       alignment = Anchor.CENTER
+      prior.init
 
     method init( text, font:UIFont )
       alignment = Anchor.CENTER
       set_font( font )
+      prior.init
 
     method _extended_description( table:Value )
       prior._extended_description( table )

@@ -226,8 +226,10 @@ class ConsoleUITitleFrame : ConsoleUIFrame
 
   METHODS
     method init( content )
+      on_init
 
     method init( title, content )
+      on_init
 
     method init( title:String, content=null:UIComponent )
       init( UILabel(title).[anchor=Anchor.CENTER,font=ConsoleUI.inverse_font], content )

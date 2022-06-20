@@ -6,6 +6,7 @@ class UIText : UIComponent
 
   METHODS
     method init( @text )
+      prior.init
       if (@text.count > 1)
         local i = @text.locate( '\n' )
         if (i)
