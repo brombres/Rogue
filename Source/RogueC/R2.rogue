@@ -92,6 +92,7 @@ class RogueC
       local command = CommandLineParser().
       [
         option( "--debug" )
+        option( "--define=", &alias="-D", &multi )
         option( "--gc=" )
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
@@ -111,6 +112,16 @@ class RogueC
         debug_t = Program.t.cloned( TokenType.KEYWORD_FALSE )
       endIf
       Program.definitions["DEBUG"] = Token[].[add(debug_t)]
+
+      if (command//options.contains("define"))
+        forEach (def in command//options//define)
+          local parts = def->String.split(':')
+          if (parts.count == 1) parts.add( "true" )
+          local tokens = Scanner( "Command Line Option", parts[1] ).tokenize
+          tokens.remove_last  # EOL
+          Program.definitions[parts[0]] = tokens
+        endForEach
+      endIf
 
       if (command//options.contains("gc"))
         which (command//options//gc->String)
@@ -172,6 +183,17 @@ class RogueC
                |  rogue [OPTIONS] <filepath>
                |
                |OPTIONS
+               |  --debug
+               |    Compile in debug mode:
+               |    1. 'DEBUG' is defined as 'true' instead of 'false'.
+               |    2. Call history is tracked, which allows for stack frame display at the cost
+               |       of additional overhead.
+               |
+               |  --define="name[:value]", -D "name[:value]"
+               |    Adds a single preprocessor define.
+               |    Defining "name:value" is equivalent to: $define name value
+               |    Defining "name" is equivalent to:       $define name true
+               |
                |  --help, -h, -?
                |    Show this help text.
                |
