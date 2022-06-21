@@ -46,6 +46,7 @@ KEYWORD_END_FUNCTION      endFunction    [structural]
 KEYWORD_END_IF            endIf          [structural]
 KEYWORD_END_LOOP          endLoop        [structural]
 KEYWORD_END_ROUTINE       endRoutine     [structural]
+KEYWORD_END_SUBCLASS      endSubclass    [structural]
 KEYWORD_END_TEMPORARILY   endTemporarily [structural]
 KEYWORD_END_TRY           endTry         [structural]
 KEYWORD_END_USE           endUse         [structural]
@@ -104,6 +105,7 @@ KEYWORD_RETURN            return
 KEYWORD_ROUTINE           routine     [structural]
 KEYWORD_SATISFIED         satisfied   [structural]
 KEYWORD_STATES            STATES      [structural]
+KEYWORD_SUBCLASS          subclass
 KEYWORD_SUFFICIENT        sufficient
 KEYWORD_SWAP_VALUES       swapValues
 KEYWORD_TEMPORARILY       temporarily
@@ -641,6 +643,20 @@ parser
 
   procedure_body
 
+- subclass
+  if (nextIs("subclass"))
+    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    ++disable_output # Pass 2: also disable output; just parse to get past
+
+    consume "subclass"
+    class_sections
+    mustConsume "endSubclass"
+    call on_parsed_subclass  # Pass 1: stores class template tokens & replaces access with generated type name.
+                             # Pass 2: does nothing.
+    --disable_output
+    discardPosition
+  endIf
+
 - store_routine
   call on_parsed_routine  # Pass 1: stores routine as class template tokens. Pass 2: does nothing.
   --disable_output
@@ -944,7 +960,8 @@ parser
   endIf
 
   access_args
-  produce TemplatedAccess( name:String, type_args:TemplateArgs, args )
+  create TemplatedAccess( name:String, type_args:TemplateArgs, args )
+  subclass
 
 - template_args
   consume("<<")
@@ -1151,7 +1168,7 @@ parser
   beginList
   if (not consume(';'))
     consume_eols
-    while (not nextIs("endClass") and not nextIs("endAugment"))
+    while (not nextIs("endClass") and not nextIs("endAugment") and not nextIs("endSubclass"))
       class_section
       consume_eols
     endWhile
@@ -2015,6 +2032,7 @@ parser
       call clone
       createNull
       create Access(name:String,args)
+      subclass
 
       createNull
       create Local(name:String,initial_value,type:Type)
@@ -2556,13 +2574,17 @@ parser
       endOn
     else
       access_args
-      produce Access( name:String, args )
+      create Access( name:String, args )
+      subclass
+      return
     endIf
   endOn
   onPeek PLACEHOLDER
     id_or_type
     access_args
-    produce Access( name:String, args )
+    create Access( name:String, args )
+    subclass
+    return
   endOn
   on "true"               -> LiteralLogical(value="true":Logical):LiteralPrimitive
   on "false"              -> LiteralLogical(value="false":Logical):LiteralPrimitive
@@ -2742,7 +2764,8 @@ parser
     remaining_typed_literal_list
   else
     access_args
-    produce TypeAccess( of_type:Type, args )
+    create TypeAccess( of_type:Type, args )
+    subclass
   endIf
 
 - anonymous_tuple

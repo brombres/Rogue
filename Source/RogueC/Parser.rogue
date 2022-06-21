@@ -490,6 +490,75 @@ class Parser : ParserCore
       m.templates[extended_name] = result
       return result
 
+    method on_parsed_subclass
+      local i1 = _saved_positions.last.position
+      local i2 = _position - 1
+      local class_t = _tokens[i1]  # 'subclass'
+
+      local m = Program.current_module
+      local hash = "$:$:$" (File.abs(class_t.filepath),class_t.line,class_t.column)
+
+      if (collecting_templates)
+        local name = "AnonymousSubclass" + Program.anonymous_class_names.count
+        Program.anonymous_class_names[ hash ] = name
+
+        local tokens = _tokens.from( i1+1, i2 ).to_list
+        tokens.add( tokens.remove_last.cloned(TokenType.KEYWORD_END_CLASS) ) # 'endSubclass' -> 'endClass'
+
+        local result = Template( class_t, m, name, Token[], tokens, 0 )
+        m.templates["$<<0>>"(name)] = result
+
+      else
+        local name = Program.anonymous_class_names[ hash ]
+        local template = m.templates["$<<0>>"(name)]
+        local tokens = template.tokens
+
+        tokens.insert( class_t.cloned(TokenType.EOL) )
+
+        # Patch name and insert base class
+        assert _cmd_stack.count >= 1
+        local access = _cmd_stack.last
+
+        if (access instanceOf Access)
+          block access = access->(as Access)
+            template.name = access.name + template.name
+            name = template.name
+            m.templates["$<<0>>"(name)] = template
+            tokens.insert( class_t.cloned(TokenType.IDENTIFIER,access.name) )
+            tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
+            access.name = name
+          endBlock
+        elseIf (access instanceOf TemplatedAccess)
+          block access = access->(as TemplatedAccess)
+            local type_template_name = "$<<$>>"(access.name,access.type_args.count)
+            local type_template = m.find_template( access.t, type_template_name, access.name, &extended_search )
+            local of_type : Type
+            if (type_template)
+              of_type = Type( access.t,type_template,access.type_args )
+            else
+              throw class_t.error( "Reference to undefined type '$::$'."(m,access.type_args->String(access.name)) )
+            endIf
+            forEach (t in of_type.name_tokens step -1)
+              tokens.insert( t )
+            endForEach
+            tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
+            _cmd_stack.remove_last
+            _cmd_stack.add( TypeAccess(access.t, Type(access.t,type_template,access.type_args), access.args) )
+          endBlock
+        elseIf (access instanceOf TypeAccess)
+          block access = access->(as TypeAccess)
+            forEach (t in access.of_type.name_tokens step -1)
+              tokens.insert( t )
+            endForEach
+            tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
+            access.of_type = Type( class_t, name )
+          endBlock
+        else
+          throw class_t.error( "[INTERNAL] Unhandled subclass for $."(access.type_name) )
+        endIf
+
+      endIf
+
     method on_parsed_routine
       local attributes : Int64
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL
