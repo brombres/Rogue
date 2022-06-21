@@ -83,6 +83,11 @@ class Box( position:XY, size:XY ) [essential compound]
     method bottom_right->XY
       return (position + size)
 
+    method bottommost( height:Int32 )->Box
+      if (height < 0) height = size.y + height
+      local h = height.or_smaller(size.y)
+      return Box( position+XY(0,size.y-h), size.x, h )
+
     method cell( grid_index:XY, grid_size:XY )->Box
       # Example:
       #   at( XY(i,j), XY(3,3) ) returns the bounds of one of the following grid cells:
@@ -178,6 +183,10 @@ class Box( position:XY, size:XY ) [essential compound]
     method left->Int32
       return this.position.x
 
+    method leftmost( width:Int32 )->Box
+      if (width < 0) width = size.x + width
+      return Box( position, width.or_smaller(size.x), size.y )
+
     method operator==( other:Box )->Logical
       return (position == other.position and size == other.size)
 
@@ -227,6 +236,11 @@ class Box( position:XY, size:XY ) [essential compound]
     method right->Int32
       return this.position.x + this.size.x
 
+    method rightmost( width:Int32 )->Box
+      if (width < 0) width = size.x + width
+      local w = width.or_smaller(size.x)
+      return Box( position+XY(size.x-w,0), w, size.y )
+
       #{
     method rotated( angle:Degrees )->Quad
       return this.rotated( angle->Radians )
@@ -272,6 +286,10 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method top_right->XY
       return (position + XY(size.x,0))
+
+    method topmost( height:Int32 )->Box
+      if (height < 0) height = size.y + height
+      return Box( position, size.x, height.or_smaller(size.y) )
 
     method with_height( new_height:Int32 )->Box
       return Box( this.position, this.size.x, new_height )
