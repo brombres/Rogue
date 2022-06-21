@@ -14,7 +14,7 @@ augment Build
     PROJECT           = "R2"
     LAUNCHER_NAME     = PROJECT.to_lowercase : String
 
-    RELEASE_MODE      = false
+    RELEASE_MODE      = true
     LAUNCHER_FOLDER   = "/usr/local/bin"  # for Mac/Linux
     ROGUEC_FLAGS      = "--gc=manual"
     CPP_FLAGS_UNIX    = ""
@@ -87,6 +87,7 @@ routine rogo_rebuild
 endRoutine
 
 routine compile_rogue
+  local stopwatch = Stopwatch()
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local cpp_filepath = "Build/$-$.cpp" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS
@@ -94,9 +95,11 @@ routine compile_rogue
   flags += which{ Build.RELEASE_MODE:"--release" || "--debug" }
   execute "roguec $ $ --gc=manual --main --output=$ --target=Console,C++,$"...
           (File.esc(src_filepath),flags,File.esc(cpp_filepath),System.os)
+  println stopwatch
 endRoutine
 
 routine compile_cpp
+  local stopwatch = Stopwatch()
   local cpp_filepath = File.esc( "Build/$-$.cpp" (Build.PROJECT,System.os) )
   local exe_filepath = File.esc( exe_filepath )
   if (System.is_windows)
@@ -117,6 +120,7 @@ routine compile_cpp
       (flags,File.esc(cpp_filepath),File.esc(exe_filepath),libs)
     execute cc
   endIf
+  println stopwatch
 endRoutine
 
 routine rogo_install
