@@ -47,6 +47,7 @@ class Finalizer : Visitor
       endForEach
 
       # Cull unused classes and methods
+      Program.dynamic_methods.clear
       BuildDynamicMethodTable().apply
       CullUnusedElements().apply
       Program.dynamic_methods.clear
