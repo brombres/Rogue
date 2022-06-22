@@ -20,6 +20,7 @@ class Scanner : ScannerCore, Poolable
     method init( _filepath, _scanner )
       prior.init( _filepath, _scanner )
       beginning_of_line = _scanner.location
+      tokens.reserve( _scanner.count / 3 )
 
     method on_return_to_pool
       @_filepath = null

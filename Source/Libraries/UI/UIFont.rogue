@@ -20,11 +20,14 @@ class UIFont [abstract]
       endIf
       draw( text, position )
 
-    method draw( text:String, container:UIComponent )
+    method draw( text:String, bounds:Box, anchor=Anchor.CENTER:Anchor  )
       local text_size = measure( text )
       local position  = Box(text_size).positioned_within(
-          container.display_bounds, container.alignment ).position
+        bounds, anchor ).position
       draw( text, position )
+
+    method draw( text:String, container:UIComponent )
+      draw( text, container.display_bounds, container.alignment )
 
     method height->Int32                              [abstract]
 
