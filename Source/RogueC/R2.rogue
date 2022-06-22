@@ -39,6 +39,7 @@ $include "Type.rogue"
 $include "EndScopePatcher.rogue"
 uses RogueC
 uses Utility/CommandLineParser
+uses Utility/ObjectPool
 
 try
   RogueC( System.command_line_arguments )

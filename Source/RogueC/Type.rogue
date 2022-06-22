@@ -553,9 +553,12 @@ class Type : Cmd
 
       localize scoped_name
 
-      @name_tokens = Scanner( scoped_name, scoped_name ).tokenize
-      @name_tokens.remove_last  # EOL
-      return @name_tokens
+      use scanner = ObjectPool<<Scanner>>
+        scanner.init( scoped_name, scoped_name )
+        @name_tokens = scanner.tokenize
+        @name_tokens.remove_last  # EOL
+        return @name_tokens
+      endUse
 
     method organize
       organize_type
@@ -690,7 +693,11 @@ class Type : Cmd
       methods_organizing = true
       organize_properties
 
-      MethodOrganizer( module_context ).visit( this, class_def )
+      use organizer = ObjectPool<<MethodOrganizer>>
+        temporarily organizer.this_module = module_context
+          organizer.visit( this, class_def )
+        endTemporarily
+      endUse
 
       # Organize base types
       if (base_class) base_class.organize_methods
@@ -1459,13 +1466,14 @@ class Type : Cmd
     method precision_index->Int32
       return 10 # Objects etc.
 
-    method resolve( resolver=null:Resolver )
+    method resolve
       if (is_resolved) return
 
-      ensure resolver
-      temporarily resolver.this_module=module_context, resolver.this_procedure=null
-        resolver.visit_type( this )
-      endTemporarily
+      use resolver = ObjectPool<<Resolver>>
+        temporarily resolver.this_module=module_context, resolver.this_procedure=null
+          resolver.visit_type( this )
+        endTemporarily
+      endUse
 
     method scoped_name->String
       if (@scoped_name) return @scoped_name

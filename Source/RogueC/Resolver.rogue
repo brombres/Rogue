@@ -6,10 +6,7 @@ $localMacro FOLD_CONSTANTS(m,Type,op)
     return m<<op>>( cmd )
 $endMacro
 
-class Resolver : Visitor
-  GLOBAL PROPERTIES
-    nesting = 0
-
+class Resolver : Poolable, Visitor
   PROPERTIES
     visible_locals    = Local[]
     visible_locals_fp = Int32[]
@@ -20,6 +17,16 @@ class Resolver : Visitor
     autoname_index = 0
 
   METHODS
+    method reset
+      visible_locals.clear
+      visible_locals_fp.clear
+      control_stack.clear
+      current_statements = null
+      autoname_index = 0
+
+    method on_return_to_pool
+      reset
+
     method visit( m:Module, proc:Procedure )
       temporarily this_module=m, this_procedure=proc
         visit( proc )
@@ -37,11 +44,11 @@ class Resolver : Visitor
 
     method visit_global_method( type:Type, signature:String )
       local m = type.global_methods[ signature ]
-      if (m) m.resolve( this )
+      if (m) m.resolve
 
     method visit_method( type:Type, signature:String )
       local m = type.methods[ signature ]
-      if (m) m.resolve( this )
+      if (m) m.resolve
 
     method resolve_definitions( type:Type )
       if (type.definitions_resolved) return
@@ -1851,7 +1858,7 @@ class Resolver : Visitor
 
     method convert_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
-      proc.resolve( this )
+      proc.resolve
 
       if (not proc.arrange_args(args,this))
         throw args.t.error( "[INTERNAL] Invalid procedure selected." )

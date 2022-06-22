@@ -1535,11 +1535,10 @@ class GlobalMethod : Procedure
     method is_global->Logical
       return true
 
-    method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
+    method organize( &skip_add_to_type )
       if (is_organized) return
 
-      ensure organizer( module_context )
-      prior.organize( organizer )
+      prior.organize
 
       if (not skip_add_to_type) @type_context.add( this )
 
@@ -1597,13 +1596,14 @@ class Method : Procedure
         statements = body.statements
       endIf
 
-    method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
+    method organize( &skip_add_to_type )
       if (is_organized) return
 
-      ensure organizer( module_context )
-      temporarily organizer.this_type = @type_context
-        prior.organize( organizer )
-      endTemporarily
+      use organizer = ObjectPool<<MethodOrganizer>>
+        temporarily organizer.this_module=module_context, organizer.this_type=@type_context
+          prior.organize( organizer )
+        endTemporarily
+      endUse
 
       # Add to dynamic method table
       local dynamic_sig = dynamic_signature

@@ -175,7 +175,7 @@ class Procedure : Cmd
       endForEach
       return null
 
-    method organize( organizer=null:MethodOrganizer, &skip_add_to_type )
+    method organize( &skip_add_to_type )
       if (is_organized) return
       is_organized = true
 
@@ -259,18 +259,20 @@ class Procedure : Cmd
 
       endIf
 
-      if (not organizer) organizer = MethodOrganizer( module_context )
-      temporarily organizer.this_type=type_context, organizer.this_procedure=this
-        organizer.visit_children( this )
-      endTemporarily
+      use organizer = ObjectPool<<MethodOrganizer>>
+        temporarily organizer.this_module=module_context, organizer.this_type=type_context, organizer.this_procedure=this
+          organizer.visit_children( this )
+        endTemporarily
+      endUse
 
-    method resolve( resolver=null:Resolver )
+    method resolve
       if (not is_organized) organize
 
       if (is_resolved) return
-      ensure resolver
 
-      resolver.visit( module_context, this )
+      use resolver = ObjectPool<<Resolver>>
+        resolver.visit( module_context, this )
+      endUse
 
 endClass
 

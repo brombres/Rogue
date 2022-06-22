@@ -1,11 +1,15 @@
 module RogueC
 
-class MethodOrganizer : Visitor
+class MethodOrganizer : Visitor, Poolable
   PROPERTIES
     catches = Catch[]
 
   METHODS
-    method init( this_module )
+    method reset
+      catches.clear
+
+    method on_return_to_pool
+      reset
 
     method visit( this_type, class_def:Cmd )
       # Called when instantiating a template
@@ -42,7 +46,7 @@ class MethodOrganizer : Visitor
     method on_visit( cmd:GlobalMethod )
       cmd.module_context = this_module
       cmd.type_context = this_type
-      cmd.organize( this )
+      cmd.organize
 
     method on_visit( cmd:GlobalMethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
@@ -56,7 +60,7 @@ class MethodOrganizer : Visitor
       cmd.module_context = this_module
       cmd.type_context = this_type
       cmd.generate_body
-      cmd.organize( this )
+      cmd.organize
       if (this_type.is_compound and cmd.name == "init")
         throw cmd.t.error(
             "Compounds and primitives cannot have init() methods. Add global method create$->$ instead." ...
