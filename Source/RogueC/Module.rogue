@@ -224,9 +224,9 @@ class Module
       is_organized = true
 
       # Instantiate any essential templates
-      forEach (t in templates)
-        if (t.attributes.is_essential)
-          Type( t.tokens.first, t.name )
+      forEach (template in templates)
+        if (template.attributes.is_essential and template.placeholders.count == 0)
+          Type( template.tokens.first, template.name )
         endIf
       endForEach
 
@@ -239,6 +239,10 @@ class Module
         r.statements.add( forEach in global_statements )
         r.organize
         type_Routine.global_methods[ r.signature ] = r
+        if (r.statements.count)
+          r.attributes.is_essential = true
+          type_Routine.attributes.is_essential = true
+        endIf
       else
         r.statements.add( forEach in global_statements )
       endIf

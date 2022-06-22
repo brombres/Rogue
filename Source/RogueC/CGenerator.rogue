@@ -1947,6 +1947,21 @@ augment
                         |    RogueString_create(Rogue_argv[i],-1,ROGUE_STRING_PERMANENT)
                         |  );
                         |}
+                        |
+
+      # Instantiate essential singletons
+      local any_essential_singletons = false
+      forEach (mod in modules)
+        forEach (type in mod.types)
+          if (type.attributes.is_singleton and type.attributes.is_essential)
+            any_essential_singletons = true
+            c_writer.print "ROGUE_SINGLETON("
+            c_writer.print type.c_name
+            c_writer.println ");"
+          endIf
+        endForEach
+      endForEach
+      if (any_essential_singletons) c_writer.println
 
       (forEach in modules).generate_c_launch_commands( c_writer )
       c_writer.println

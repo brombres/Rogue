@@ -77,6 +77,16 @@ class Program [singleton]
       type_Value     = Type( t, "Value", Attribute.COMPOUND )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
 
+      type_Logical.attributes.is_essential   = true
+      type_Byte.attributes.is_essential      = true
+      type_Character.attributes.is_essential = true
+      type_Int32.attributes.is_essential     = true
+      type_Int64.attributes.is_essential     = true
+      type_Real32.attributes.is_essential    = true
+      type_Real64.attributes.is_essential    = true
+      type_Real.attributes.is_essential      = true
+      type_String.attributes.is_essential    = true
+
     method add_include_search_path( path:String )
       if (not include_search_paths.contains(path))
         include_search_paths.add( path )
@@ -222,7 +232,7 @@ class Program [singleton]
       (forEach in modules).organize_methods
 
       apply( Transformer() )
-      Resolver().apply
+      ResolveUsedElements().apply
       Finalizer().apply
 
     method set_real_bits( @real_bits )

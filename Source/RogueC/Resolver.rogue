@@ -20,9 +20,6 @@ class Resolver : Visitor
     autoname_index = 0
 
   METHODS
-    method apply
-      Program.apply( this )
-
     method visit( m:Module, proc:Procedure )
       temporarily this_module=m, this_procedure=proc
         visit( proc )
@@ -38,17 +35,13 @@ class Resolver : Visitor
     method on_visit_type( type:Type )
       resolve_definitions( type )
 
-      visit_global_methods( type )
-      if (type.is_aspect) return
+    method visit_global_method( type:Type, signature:String )
+      local m = type.global_methods[ signature ]
+      if (m) m.resolve( this )
 
-      visit_methods( type )
-
-      type.m_on_cleanup = type.methods["on_cleanup()"]
-      if (type.m_on_cleanup)
-        if (type.m_on_cleanup.return_type)
-          throw type.m_on_cleanup.t.error( "on_cleanup() cannot return a value." )
-        endIf
-      endIf
+    method visit_method( type:Type, signature:String )
+      local m = type.methods[ signature ]
+      if (m) m.resolve( this )
 
     method resolve_definitions( type:Type )
       if (type.definitions_resolved) return
@@ -1348,10 +1341,9 @@ class Resolver : Visitor
       local cmd_restore = Assign( assignment.t, assignment.target, GetLocal(v_og_value) )
 
       cmd_block.statements.add( forEach in cmd.statements )
+      cmd_block.cleanup.add( cmd_restore.cloned )
       local result = visit( cmd_block )
       result = EndScopePatcher.patch( this, cmd_restore, result )
-
-      cmd_block.cleanup.add( cmd_restore )
 
       pop_scope
 
@@ -1459,10 +1451,9 @@ class Resolver : Visitor
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
 
       cmd_block.statements.add( forEach in cmd.statements )
+      cmd_block.cleanup.add( cmd_call.cloned )
       local result = visit( cmd_block ) : Cmd
       result = EndScopePatcher.patch( this, cmd_call, result )
-
-      cmd_block.cleanup.add( cmd_call )
 
       pop_scope
 
@@ -1860,7 +1851,7 @@ class Resolver : Visitor
 
     method convert_args_to_parameter_types( args:Cmd, proc:Procedure )
       # And fill in default values
-      proc.resolve
+      proc.resolve( this )
 
       if (not proc.arrange_args(args,this))
         throw args.t.error( "[INTERNAL] Invalid procedure selected." )

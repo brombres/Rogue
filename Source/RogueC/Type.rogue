@@ -570,6 +570,9 @@ class Type : Cmd
 
       TypeOrganizer( module_context ).visit( this, class_def )
 
+      if (module_context.attributes.is_essential or module_context.attributes.is_api) attributes.is_essential = true
+      if (module_context.attributes.is_api) attributes.is_api = true
+
       if (is_enum)
         if (base_class or aspects)
           throw t.error( "Rogue does not currently support enums with base types." )
@@ -706,7 +709,7 @@ class Type : Cmd
         m_init_class = m
 
         if (global_properties.count)
-          m.attributes.is_essential = true
+          m.attributes.is_essential = true  # init_class()
           use my_properties = WorkList<<Property>>
             my_properties.add( forEach in global_properties )
 
@@ -1244,7 +1247,34 @@ class Type : Cmd
 
       endIf
 
+      block
+        local m = methods["on_cleanup()"]
+        if (m and m.return_type)
+          throw m.t.error( "on_cleanup() cannot return a value." )
+        endIf
+      endBlock
+
       Transformer().visit_type( this )
+
+      # Any [essential] routine makes class Routine [essential] as well
+      if (this.name == "Routine")
+        forEach (r in global_methods)
+          if (r.attributes.is_essential or r.attributes.is_api)
+            this.attributes.is_essential = true
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (attributes.is_singleton)
+        local m = methods["init()"]
+        if (m) m.attributes.is_essential = true
+      endIf
+
+      if (attributes.is_api)
+        (forEach in global_methods.values).attributes.is_essential = true
+        (forEach in methods.values).attributes.is_essential = true
+      endIf
 
       methods_organized = true
 

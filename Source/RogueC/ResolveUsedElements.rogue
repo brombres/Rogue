@@ -1,44 +1,22 @@
 module RogueC
 
-class CullUnusedElements : InspectionVisitor
+class ResolveUsedElements : InspectionVisitor
   PROPERTIES
-    is_modified = true
+    is_modified : Logical
 
   METHODS
     method apply
-      ResolveUsedElements().apply
+      is_modified = true
+      while (is_modified)
+        is_modified = false
+        Program.apply( this )
 
-      # Cull unused types and methods
-      forEach (mod in Program.modules)
-        use unused_type_names = WorkList<<String>>
-          forEach (type in mod.types)
-            if (not type.attributes.is_used)
-              unused_type_names.add( type.name )
-            endIf
-          endForEach
-          mod.types.remove( forEach in unused_type_names )
-        endUse
-
-        forEach (type in mod.types)
-          use unused_global_method_sigs = WorkList<<String>>
-            forEach (m in type.global_methods)
-              if (not m.attributes.is_used)
-                unused_global_method_sigs.add( m.signature )
-              endIf
-            endForEach
-            type.global_methods.remove( forEach in unused_global_method_sigs )
-          endUse
-
-          use unused_method_sigs = WorkList<<String>>
-            forEach (m in type.methods)
-              if (not m.attributes.is_used)
-                unused_method_sigs.add( m.signature )
-              endIf
-            endForEach
-            type.methods.remove( forEach in unused_method_sigs )
-          endUse
+        forEach (type in (forEach in Program.modules).types)
+          type.attributes.is_visiting = false
+          (forEach in type.global_methods).attributes.is_visiting = false
+          (forEach in type.methods).attributes.is_visiting = false
         endForEach
-      endForEach
+      endWhile
 
     method on_visit( mod:Module ) [override]
       assert( mod.m_on_launch )

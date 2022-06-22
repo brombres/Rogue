@@ -30,8 +30,15 @@ endRoutine
 
 routine rogo_run
   #execute "$ Test.rogue" (File.esc(exe_filepath))
+  local stopwatch = Stopwatch()
   execute ''$ --real=32 Test.rogue Standard StandardIO --main --debug --gc=manual --libraries=Source/Libraries'' (File.esc(exe_filepath))
-  execute "gcc -Wall Test.c -o test && ./test"
+  println stopwatch
+
+  stopwatch.restart
+  execute "gcc -Wall Test.c -o test"
+  println stopwatch
+
+  execute "./test"
 endRoutine
 
 routine rogo_link

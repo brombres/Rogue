@@ -256,6 +256,7 @@ class Procedure : Cmd
             endIf
           endBlock
         endForEach
+
       endIf
 
       if (not organizer) organizer = MethodOrganizer( module_context )
@@ -267,7 +268,6 @@ class Procedure : Cmd
       if (not is_organized) organize
 
       if (is_resolved) return
-      is_resolved = true
       ensure resolver
 
       resolver.visit( module_context, this )
