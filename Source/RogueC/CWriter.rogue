@@ -118,8 +118,14 @@ class CWriter : BufferedPrintWriter
         if (Program.real_bits == 32) println "typedef RogueReal32 RogueReal;"
         else                         println "typedef RogueReal64 RogueReal;"
 
+        println "#define ROGUE_TYPE_PRIMITIVE $" (Attribute.PRIMITIVE)
+        println "#define ROGUE_TYPE_COMPOUND  $" (Attribute.COMPOUND)
+        println "#define ROGUE_TYPE_ENUM      $" (Attribute.ENUM)
+        println "#define ROGUE_TYPE_OBJECT    $" (Attribute.OBJECT)
+
         println ...
-          @|#if !defined(ROGUE_MM_GC_THRESHOLD)
+          @|
+           |#if !defined(ROGUE_MM_GC_THRESHOLD)
            |  #define ROGUE_MM_GC_THRESHOLD (32 * 1024 * 1024)
            |#endif
            |
@@ -175,13 +181,16 @@ class CWriter : BufferedPrintWriter
            |{
            |  const char*    module_name;
            |  const char*    name;
+           |  RogueInt32     index;
+           |  RogueInt32     id;
+           |  RogueInt32     attributes;
            |  void**         local_pointer_stack; // Objects + compounds with embedded refs
            |  RogueInt32     local_pointer_capacity;
            |  RogueInt32     local_pointer_count;
-           |  RogueInt32     id;
            |  RogueInt32     size;
            |  RogueInt32*    base_type_ids;
            |  RogueInt32     base_type_count;
+           |  RogueObject*   type_info;
            |  RogueFn_Object fn_init_object;
            |  RogueFn_Object fn_init;
            |  RogueFn_Object fn_gc_trace;
