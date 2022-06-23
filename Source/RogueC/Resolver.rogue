@@ -3357,7 +3357,7 @@ augment
         return
       endIf
 
-      if (collection_type.methods.contains("iterator()"))
+      if (collection_type.methods.contains("iterator()") or collection_type.global_methods.contains("iterator()"))
         cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "iterator" )
 
         resolver.visit( cmd_collection )
@@ -3366,7 +3366,7 @@ augment
         return
       endIf
 
-      if (collection_type.methods.contains("reader()"))
+      if (collection_type.methods.contains("reader()") or collection_type.global_methods.contains("reader()"))
         cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "reader" )
 
         resolver.visit( cmd_collection )
@@ -3552,7 +3552,7 @@ augment
         return
       endIf
 
-      if (collection_type.methods.contains("iterator()"))
+      if (collection_type.methods.contains("iterator()") or collection_type.global_methods.contains("iterator()"))
         cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "iterator" )
 
         resolver.visit( cmd_collection )
@@ -3561,7 +3561,7 @@ augment
         return
       endIf
 
-      if (collection_type.methods.contains("reader()"))
+      if (collection_type.methods.contains("reader()") or collection_type.global_methods.contains("reader()"))
         cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "reader" )
 
         resolver.visit( cmd_collection )
