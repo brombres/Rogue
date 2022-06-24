@@ -53,12 +53,35 @@ catch (error:Error)
   System.exit 1
 endTry
 
+# Custom main() that doesn't do GC at the end
+nativeCode
+int main( int argc, const char* argv[] )
+{
+  try
+  {
+    Rogue_configure( argc, argv );
+    Rogue_launch();
+
+    RogueGlobal__call_exit_functions( (RogueClassGlobal*) ROGUE_SINGLETON(Global) );
+  }
+  catch (RogueException* err)
+  {
+    printf( "Uncaught exception\n" );
+    RogueException__display( err );
+    return 1;
+  }
+
+  return 0;
+}
+endNativeCode
+
 class RogueC
   PROPERTIES
     command : Value
 
   METHODS
     method init( args:String[] )
+      Analytics.total_time.start
       command = parse_args( args )
 
       if (command//options//help or command//args.count == 0)
