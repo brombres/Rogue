@@ -122,6 +122,7 @@ class CWriter : BufferedPrintWriter
         println "#define ROGUE_TYPE_COMPOUND  $" (Attribute.COMPOUND)
         println "#define ROGUE_TYPE_ENUM      $" (Attribute.ENUM)
         println "#define ROGUE_TYPE_OBJECT    $" (Attribute.OBJECT)
+        println "#define ROGUE_TYPE_ASPECT    $" (Attribute.ASPECT)
 
         println ...
           @|
@@ -179,11 +180,12 @@ class CWriter : BufferedPrintWriter
            |
            |struct RogueType
            |{
-           |  const char*    module_name;
            |  const char*    name;
            |  RogueInt32     index;
            |  RogueInt32     id;
+           |  RogueInt32     module_name_index;
            |  RogueInt32     attributes;
+           |  RogueInt32     method_data_index;
            |  void**         local_pointer_stack; // Objects + compounds with embedded refs
            |  RogueInt32     local_pointer_capacity;
            |  RogueInt32     local_pointer_count;

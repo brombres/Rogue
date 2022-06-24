@@ -2270,11 +2270,17 @@ class String : Poolable PrintWriter
                   |
                   |RogueString* RogueString_create( const char* cstring, int byte_count, int usage );
                   |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
+                  |RogueString* RogueString_create_permanent( const char* cstring );
+                  |RogueString* RogueString_create_string_table_entry( const char* cstring );
                   |RogueInt32   RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash );
                   |const char*  RogueString_to_c_string( RogueString* st );
                   |RogueInt32   RogueString_utf8_character_count( const char* cstring, int byte_count );
+                  |
+                  |extern RogueInt32 Rogue_string_table_count;
 
-    nativeCode  @|RogueString* RogueString_create( const char* cstring, int byte_count, int usage )
+    nativeCode  @|RogueInt32 Rogue_string_table_count = 0;
+                 |
+                 |RogueString* RogueString_create( const char* cstring, int byte_count, int usage )
                  |{
                  |  // Creates an immutable String object.
                  |  //
@@ -2383,6 +2389,18 @@ class String : Poolable PrintWriter
                  |  // We've had to allocate a new buffer so free the original if it needs it.
                  |  if (usage == ROGUE_STRING_ADOPT) ROGUE_FREE( (void*)cstring );
                  |
+                 |  return result;
+                 |}
+                 |
+                 |RogueString* RogueString_create_permanent( const char* cstring )
+                 |{
+                 |  return RogueString_create( cstring, -1, ROGUE_STRING_PERMANENT );
+                 |}
+                 |
+                 |RogueString* RogueString_create_string_table_entry( const char* cstring )
+                 |{
+                 |  RogueString* result = RogueString_create_permanent( cstring );
+                 |  Rogue_string_table[ Rogue_string_table_count++ ] = result;
                  |  return result;
                  |}
                  |

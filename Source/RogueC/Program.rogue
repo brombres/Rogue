@@ -44,8 +44,12 @@ class Program [singleton]
     is_organizing     : Logical
     unorganized_types = Type[]
 
-    unique_strings    = StringTable<<String>>()
+    unique_strings       = StringTable<<String>>()
+    string_table_indices = StringTable<<Int32>>()
+
     dynamic_methods   = StringTable<<Method[]>>()
+    all_methods       = Procedure[]
+    all_types         = Type[]
 
     base_type_lookup  = Int32[]
 

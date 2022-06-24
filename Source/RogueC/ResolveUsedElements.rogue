@@ -31,16 +31,10 @@ class ResolveUsedElements : InspectionVisitor
       if (type.attributes.is_visiting) return
       type.attributes.is_visiting = true
 
-      contingent
-        sufficient (not type.is_aspect)
-        sufficient (type.global_properties.count)
-        sufficient (type.global_methods.count > 1)  # generated init_class() doesn't count
-      satisfied
-        if (not type.attributes.is_used)
-          type.attributes.is_used = true
-          is_modified = true
-        endIf
-      endContingent
+      if (not type.attributes.is_used)
+        type.attributes.is_used = true
+        is_modified = true
+      endIf
 
       visit_type( (forEach in type.global_properties).type )
 

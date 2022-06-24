@@ -1,0 +1,257 @@
+class MethodInfo
+  GLOBAL PROPERTIES
+    method_table : MethodInfo[]
+
+  #{
+  GLOBAL METHODS
+    method _get_method_name ( method_index : Int32 ) -> String
+      local name = _method_name_strings[method_index]
+      if (not name)
+        native @|int name_index = Rogue_method_info_table[Rogue_method_info_index[$method_index]][0];
+                |if (name_index >= 0) $name = RogueString_create_from_utf8(Rogue_method_name_strings[name_index]);
+        require(name)
+        _method_name_strings[method_index] = name
+      endIf
+      return name
+      }#
+
+  PROPERTIES
+    type_context    : TypeInfo
+    name            : String
+    signature       : String
+    parameter_types = TypeInfo[]
+    return_type     : TypeInfo
+
+    #{
+    base_name           : String
+    signature           : String
+    fn_ptr              : IntPtr
+    parameter_count     : Int32
+    call_handler        : Int32
+    _first_param_name   : Int32
+    _first_param_type   : Int32
+    _return_type        : Int32
+    }#
+
+  GLOBAL METHODS
+    method init_class
+      method_table = Dim<<MethodInfo>>( native("Rogue_method_count")->Int32 )
+
+    method create( method_index:Int32 )->MethodInfo
+      local m = method_table[method_index]
+      if (m) return m
+
+      m = MethodInfo()
+      local data_index = native("Rogue_method_info[$method_index]")->Int32
+
+      m.name = native("Rogue_string_table[ Rogue_method_data[$data_index] ]")->String
+
+      local n = native("Rogue_method_data[++$data_index]")->Int32
+      m.parameter_types.reserve( n )
+      loop n
+        m.parameter_types.add( TypeInfo[ native("Rogue_method_data[++$data_index]")->Int32 ] )
+      endLoop
+      local return_type_index = native("Rogue_method_data[++$data_index]")->Int32
+      if (return_type_index >= 0) m.return_type = TypeInfo[return_type_index]
+
+      local sig_len = m.name.count + 2           # name()
+      sig_len += (m.parameter_types.count - 1)   # commas
+      sig_len += (forEach in m.parameter_types).name.count  # param type names
+      if (m.return_type)
+        sig_len += m.return_type.name.count + 2  # ->ReturnType
+      endIf
+
+      local sig = String(sig_len)
+      sig.print m.name
+      sig.print '('
+      forEach (param_type at i in m.parameter_types)
+        if (i > 0) sig.print ','
+        sig.print param_type.module_name
+        sig.print "::"
+        sig.print param_type.name
+      endForEach
+      sig.print ')'
+      if (m.return_type)
+        sig.print "->"
+        sig.print m.return_type.module_name
+        sig.print "::"
+        sig.print m.return_type.name
+      endIf
+      m.signature = sig
+
+      method_table[method_index] = m
+      return m
+
+  METHODS
+    method init
+      noAction
+
+    #{
+    method init( index, parameter_count, _first_param_name, _first_param_type, _return_type, call_handler )
+      fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
+
+    method base_name->String
+      if (@base_name) return @base_name
+      @base_name = name.before_first('<')
+      return @base_name
+
+    method name->String
+      if (@name) return @name
+      @name = _get_method_name(index)
+      return @name
+
+    method return_type->TypeInfo
+      if (_return_type == -1) return null
+      return TypeInfo.get(_return_type)
+
+    method parameter_name( index:Int32 )->String [essential]
+      if (index < 0 or index >= parameter_count) return null
+      return native( "Rogue_literal_strings[ Rogue_method_param_names[$_first_param_name + $index] ]" )->String
+
+    method parameter_type( index:Int32 )->TypeInfo [essential]
+      if (index < 0 or index >= parameter_count) return null
+      return TypeInfo.get( native("Rogue_method_param_types[$_first_param_type + $index]")->Int32 )
+
+    method signature->String
+      if (@signature) return @signature
+      local buffer = StringBuilder().print( name ).print( '(' )
+      forEach (i in 0..<parameter_count)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( parameter_type(i).name )
+      endForEach
+      buffer.print( ')' )
+      signature = buffer->String
+      return @signature
+
+    method call( args:Value )->Value
+      if (args is null) args = UndefinedValue
+      return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
+
+    method call( context:Object, args:Value )->Value
+      if (args is not null and not args.is_null)
+        args.insert( Value(context) )
+        local result = call( args )
+        args.remove_first
+        return result
+      else
+        return call( @[ Value(context) ] )
+      endIf
+
+    # Class methods
+    method call ()
+      _check_noreturn()
+      _check_count(0)
+      native "((void (*)())($this->fn_ptr))();"
+
+    method call<<$T1>> (t1:$T1)
+      _check_noreturn()
+      _check_count(1)
+      native "((void (*)($(t1.type)))($this->fn_ptr))($t1);"
+
+    method call<<$T1,$T2>> (t1:$T1,t2:$T2)
+      _check_noreturn()
+      _check_count(2)
+      native "((void (*)($(t1.type),$(t2.type)))($this->fn_ptr))($t1,$t2);"
+
+    method call<<$T1,$T2,$T3>> (t1:$T1,t2:$T2,t3:$T3)
+      _check_noreturn()
+      _check_count(3)
+      native "((void (*)($(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($t1,$t2,$t3);"
+
+    method call<<$T1,$T2,$T3,$T4>> (t1:$T1,t2:$T2,t3:$T3,t4:$T4)
+      _check_noreturn()
+      _check_count(4)
+      native "((void (*)($(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($t1,$t2,$t3,$t4);"
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
+      _check_noreturn()
+      _check_count(5)
+      native "((void (*)($(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($t1,$t2,$t3,$t4,$t5);"
+
+    # Object methods
+    method call (o:Object)
+      _check_noreturn()
+      _check_count(0)
+      native "((void (*)(RogueObject*))($this->fn_ptr))($o);"
+
+    method call<<$T1>> (o:Object,t1:$T1)
+      _check_noreturn()
+      _check_count(1)
+      native "((void (*)(RogueObject*,$(t1.type)))($this->fn_ptr))($o,$t1);"
+
+    method call<<$T1,$T2>> (o:Object,t1:$T1,t2:$T2)
+      _check_noreturn()
+      _check_count(2)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type)))($this->fn_ptr))($o,$t1,$t2);"
+
+    method call<<$T1,$T2,$T3>> (o:Object,t1:$T1,t2:$T2,t3:$T3)
+      _check_noreturn()
+      _check_count(3)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type)))($this->fn_ptr))($o,$t1,$t2,$t3);"
+
+    method call<<$T1,$T2,$T3,$T4>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4)
+      _check_noreturn()
+      _check_count(4)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4);"
+
+    method call<<$T1,$T2,$T3,$T4,$T5>> (o:Object,t1:$T1,t2:$T2,t3:$T3,t4:$T4,t5:$T5)
+      _check_noreturn()
+      _check_count(5)
+      native "((void (*)(RogueObject*,$(t1.type),$(t2.type),$(t3.type),$(t4.type),$(t5.type)))($this->fn_ptr))($o,$t1,$t2,$t3,$t4,$t5);"
+
+    method returns<<$RT>> () -> MethodCallerReturning<<$RT>>
+      _check_return<<$RT>>()
+      return MethodCallerReturning<<$RT>>(this)
+      }#
+
+    method to->String
+      return signature
+
+      #{
+  METHODS  # helper methods
+    method _check_count (c : Int32)
+      if (c != parameter_count) throw Error("$ arguments passed to method taking $." (c, "# argument".pluralized(parameter_count)))
+
+    method _check_return<<$RT>> ()
+      if (_return_type == -1)
+        throw Error("Method does not return a value; Do not specify one using '->' or 'returns<<...>>'.")
+      else
+        if (isReference($RT))
+          if (not return_type.is_subclass(<<$RT>>))
+            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
+          endIf
+        else
+          if (<<$RT>> is not return_type)
+            throw Error("Wrong return type specified.  Use .call(...)->$." (return_type.name))
+          endIf
+        endIf
+      endIf
+
+    method _check_noreturn ()
+      if (_return_type != -1)
+        throw Error("Explicit return type required.  Use .call(...)->$." (return_type.name))
+      endIf
+
+}#
+
+
+  GLOBAL METHODS
+    method dispatch_global_method( method_id:Int32, args:Value )->Value
+      # CAUTION: compiler relies on these specific parameter names
+      #
+      # Send a @[list] (or 'undefined') as the value args.
+
+      # <Compiler will insert generated code here>
+
+      return undefined
+
+    method dispatch_method( method_id:Int32, object:Value, args:Value )->Value
+      # CAUTION: compiler relies on these specific parameter names
+      #
+      # Send a @[list] (or 'undefined') as the value args.
+
+      # <Compiler will insert generated code here>
+
+      return undefined
+endClass
+

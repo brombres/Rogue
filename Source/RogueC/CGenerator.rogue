@@ -1327,7 +1327,7 @@ class CGenerator : Visitor
             forEach (type at i in tracked_local_types)
               writer.print "Type"
               if (type.is_reference) writer.print "RogueObject"
-              else                   writer.print type.c_name
+              else                   writer.print type.c_sig_name
               writer.[ print(".local_pointer_count = _auto_local_pointer_fp_"), print(i), println(';') ]
             endForEach
           endUse
@@ -1533,17 +1533,9 @@ augment
       return false
 
     method Program.generate_c
-      apply( CSpecializer() )
+      CSpecializer().apply
 
-      # Collect a list of all types in dependency order.
-      local types = Type[]
-      forEach (m in modules)
-        (forEach in m.types).collect_compounds_and_primitives( types )
-      endForEach
-      forEach (m in modules)
-        (forEach in m.types).collect_object_types( types )
-      endForEach
-      (forEach in types).attributes.is_collected = false
+      local types = Program.all_types
 
       local h_writer = CWriter( File(Program.output_filepath+".h"), &header )
 
@@ -1567,12 +1559,18 @@ augment
       endForEach
       if (wrote_any) h_writer.println
 
-      local type_count = 0
-      if (not (forEach in types).is_aspect) ++type_count
       h_writer.println "extern RogueInt32 Rogue_type_count;"
-      h_writer.println "extern RogueType* Rogue_types[$];"(type_count)
+      h_writer.println "extern RogueType* Rogue_types[$];"(types.count)
 
       h_writer.println "extern RogueInt32 Rogue_base_types[$];" (Program.base_type_lookup.count)
+
+      if (Program.default_module.types.contains("MethodInfo"))
+        h_writer.println "extern RogueInt32 Rogue_method_count;"
+        h_writer.println "extern RogueInt32 Rogue_method_info[];"
+        h_writer.println "extern RogueInt32 Rogue_method_data[];"
+      endIf
+
+      h_writer.println "extern RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
 
       forEach (str in Program.unique_strings)
         h_writer.print   "extern RogueString* "
@@ -1586,97 +1584,164 @@ augment
 
       local c_writer = CWriter( File(Program.output_filepath+".c") )
 
-      c_writer.println "RogueInt32 Rogue_type_count = $;" (type_count)
+      local method_info : Int32[]
+      local method_data : Int32[]
+      if (Program.default_module.types.contains("MethodInfo"))
+        c_writer.println
+        c_writer.println "RogueInt32 Rogue_method_count = $;"(Program.all_methods.count)
+
+        local string_indices = Program.string_table_indices
+        method_info = Int32[]
+        method_data = Int32[]
+        forEach (m in Program.all_methods)
+          method_info.add( method_data.count )
+          method_data.add( string_indices[m.name] )
+          method_data.add( m.parameters.count )
+          method_data.add( (forEach in m.parameters).type.index )
+          method_data.add( which{m.return_type:m.return_type.index || -1} )
+        endForEach
+
+        forEach (type in all_types)
+          type.method_data_index = method_data.count
+          method_data.add( type.global_methods.count )
+          method_data.add( (forEach in type.global_methods).index )
+          method_data.add( type.methods.count )
+          method_data.add( (forEach in type.methods).index )
+        endForEach
+
+        block
+          local column = 0;
+          c_writer.println "RogueInt32 Rogue_method_info[$] ="(method_info.count)
+          c_writer.println "{"
+          c_writer.indent += 2
+          forEach (value at index in method_info)
+            if (index > 0) c_writer.print ','
+            if (column == 30)
+              c_writer.println
+              column = 0
+            endIf
+            c_writer.print value
+            ++column
+          endForEach
+          c_writer.println
+          c_writer.indent -= 2
+          c_writer.println "};"
+          c_writer.println
+        endBlock
+
+        block
+          local column = 0;
+          c_writer.println "RogueInt32 Rogue_method_data[$] ="(method_data.count)
+          c_writer.println "{"
+          c_writer.indent += 2
+          forEach (value at index in method_data)
+            if (index > 0) c_writer.print ','
+            if (column == 30)
+              c_writer.println
+              column = 0
+            endIf
+            c_writer.print value
+            ++column
+          endForEach
+          c_writer.println
+          c_writer.indent -= 2
+          c_writer.println "};"
+          c_writer.println
+        endBlock
+
+      endIf
+
+      c_writer.println "RogueInt32 Rogue_type_count = $;" (types.count)
+
+      local including_type_info = Program.default_module.types.contains("TypeInfo")
 
       block
-        local index = 0
         forEach (type in types)
-          if (not type.is_aspect)
-            c_writer.print   "RogueType Type"
-            c_writer.print   type.c_name
-            c_writer.print   '' = { "''
-            c_writer.print   type.module_context.name
-            c_writer.print   ''", "''
-            c_writer.print   type.name
-            c_writer.print   ''", ''
-            c_writer.print   index
-            c_writer.print   ", "
-            c_writer.print   type.id
-            c_writer.print   ", "
-            c_writer.print   type.attributes.flags->Int32
+          c_writer.print   "RogueType Type"
+          c_writer.print   type.c_sig_name
+          c_writer.print   '' = { "''
+          c_writer.print   type.name
+          c_writer.print   ''", ''
+          c_writer.print   type.index
+          c_writer.print   ", "
+          c_writer.print   type.id
+          c_writer.print   ", "
+          if (including_type_info) c_writer.print Program.string_table_indices[type.module_context.name]
+          else                     c_writer.print '0'
+          c_writer.print   ", "
+          c_writer.print   type.attributes.flags->Int32
+          c_writer.print   ", "
+          c_writer.print   type.method_data_index
 
-            ++index
-
-            if (type.is_primitive)
-              c_writer.println "};"
-              nextIteration
-            endIf
-
-            c_writer.print   ", 0, " # local_pointer_stack
-            c_writer.print   "0, " # local_pointer_capacity
-            c_writer.print   "0, " # local_pointer_count
-            c_writer.print   ''sizeof(''
-            c_writer.print   type.c_name
-            c_writer.print   ''), Rogue_base_types+''
-            c_writer.print   type.base_type_lookup_index
-            c_writer.print   ", "
-            c_writer.print   type.base_type_ids.count
-            c_writer.print   ", "
-            c_writer.print   "0, "   # type_info
-
-            local m_init_object = type.methods["init_object()"]
-            if (m_init_object)
-              c_writer.print   ''(RogueFn_Object)''
-              c_writer.print   m_init_object.c_name
-            else
-              c_writer.print   "0"
-            endIf
-            c_writer.print ", "
-
-            local default_constructor = type.methods["init()"]
-            if (default_constructor)
-              c_writer.print   ''(RogueFn_Object)''
-              c_writer.print   default_constructor.c_name
-            else
-              c_writer.print   "0"
-            endIf
-
-            # fn_gc_trace
-            c_writer.print ", "
-            if (type.is_object)
-              c_writer.print "(RogueFn_Object)"
-              if (type.contains_reference) c_writer.print type.c_name
-              else                         c_writer.print "RogueObject"
-              c_writer.print "_gc_trace"
-            else
-              c_writer.print '0'
-            endIf
-
-            # fn_on_cleanup
-            c_writer.print ", "
-            if (type.is_object)
-              local m = type.methods["on_cleanup()"]
-              if (m)
-                c_writer.print "(RogueFn_Object)"
-                c_writer.print m.c_name
-              else
-                c_writer.print '0'
-              endIf
-            else
-              c_writer.print '0'
-            endIf
-
-            # fn_on_singleton_change
-            c_writer.print ", "
-            if (type.m_on_singleton_change)
-              c_writer.print "(RogueFn_Object_Object)"
-              c_writer.print type.m_on_singleton_change.c_name
-            else
-              c_writer.print '0'
-            endIf
-
-            c_writer.println '' };''
+          if (type.is_primitive or type.is_aspect)
+            c_writer.println "};"
+            nextIteration
           endIf
+
+          c_writer.print   ", 0, " # local_pointer_stack
+          c_writer.print   "0, "   # local_pointer_capacity
+          c_writer.print   "0, "   # local_pointer_count
+          c_writer.print   ''sizeof(''
+          c_writer.print   type.c_name
+          c_writer.print   ''), Rogue_base_types+''
+          c_writer.print   type.base_type_lookup_index
+          c_writer.print   ", "
+          c_writer.print   type.base_type_ids.count
+          c_writer.print   ", "
+          c_writer.print   "0, "   # type_info
+
+          local m_init_object = type.methods["init_object()"]
+          if (m_init_object)
+            c_writer.print   ''(RogueFn_Object)''
+            c_writer.print   m_init_object.c_name
+          else
+            c_writer.print   "0"
+          endIf
+          c_writer.print ", "
+
+          local default_constructor = type.methods["init()"]
+          if (default_constructor)
+            c_writer.print   ''(RogueFn_Object)''
+            c_writer.print   default_constructor.c_name
+          else
+            c_writer.print   "0"
+          endIf
+
+          # fn_gc_trace
+          c_writer.print ", "
+          if (type.is_object)
+            c_writer.print "(RogueFn_Object)"
+            if (type.contains_reference) c_writer.print type.c_name
+            else                         c_writer.print "RogueObject"
+            c_writer.print "_gc_trace"
+          else
+            c_writer.print '0'
+          endIf
+
+          # fn_on_cleanup
+          c_writer.print ", "
+          if (type.is_object)
+            local m = type.methods["on_cleanup()"]
+            if (m)
+              c_writer.print "(RogueFn_Object)"
+              c_writer.print m.c_name
+            else
+              c_writer.print '0'
+            endIf
+          else
+            c_writer.print '0'
+          endIf
+
+          # fn_on_singleton_change
+          c_writer.print ", "
+          if (type.m_on_singleton_change)
+            c_writer.print "(RogueFn_Object_Object)"
+            c_writer.print type.m_on_singleton_change.c_name
+          else
+            c_writer.print '0'
+          endIf
+
+          c_writer.println '' };''
 
           forEach (p in type.global_properties)
             if (not p.attributes.is_faux)
@@ -1711,7 +1776,7 @@ augment
       endBlock
 
       block
-        c_writer.println "RogueType* Rogue_types[$] = "(type_count)
+        c_writer.println "RogueType* Rogue_types[$] = "(types.count)
         c_writer.println "{"
         c_writer.indent += 2
         local row_count = 0
@@ -1820,6 +1885,8 @@ augment
         c_writer.println '}'
         c_writer.println
       endForEach
+
+      c_writer.println "RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
 
       forEach (str in Program.unique_strings)
         c_writer.print   "RogueString* "
@@ -2026,9 +2093,9 @@ augment
       if (Program.unique_strings.count)
         forEach (entry in Program.unique_strings.entries)
           writer.print   entry.value
-          writer.print   " = RogueString_create( "
+          writer.print   " = RogueString_create_string_table_entry( "
           writer.print_literal_c_string( entry.key )
-          writer.println ", -1, ROGUE_STRING_PERMANENT );"
+          writer.println ");"
         endForEach
         writer.println
       endIf

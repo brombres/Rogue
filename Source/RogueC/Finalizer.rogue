@@ -58,9 +58,37 @@ class Finalizer : Visitor
         endIf
       endForEach
 
+      # Collect all global and object methods
+      block
+        Program.all_methods.reserve( 1000 )
+        forEach (mod in Program.modules.values)
+          forEach (type in mod.types.values)
+            forEach (m in type.global_methods.values)
+              Program.all_methods.add( m )
+            endForEach
+            forEach (m in type.methods.values)
+              if (m.type_context is type) Program.all_methods.add( m )
+            endForEach
+          endForEach
+        endForEach
+      endBlock
+      forEach (m at index in Program.all_methods) m.index = index
+
       Program.apply( AssignIDs() )
 
       Program.apply( this )
+
+      # Collect a list of all types in dependency order.
+      local types = Type[]
+      forEach (m in Program.modules)
+        (forEach in m.types).collect_compounds_and_primitives( types )
+      endForEach
+      forEach (m in Program.modules)
+        (forEach in m.types).collect_reference_types( types )
+      endForEach
+      (forEach in types).attributes.is_collected = false
+      forEach (type at index in types) type.index = index
+      Program.all_types = types
 
       # Collect list of inheriting types for each method
       forEach (mod in Program.modules)

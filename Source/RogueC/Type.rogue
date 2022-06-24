@@ -33,7 +33,10 @@ class Type : Cmd
     scoped_name           : String
     name_tokens           : Token[]
 
-    id                    : Int32
+    id    : Int32     # used for dynamic dispatch tables; introspection data may not exist for all type ids
+    index : Int32     # index of type in lookup table; used for introspection
+    method_data_index : Int32
+
     m_init_class          : GlobalMethod
     m_on_singleton_change : GlobalMethod
     m_on_cleanup          : Method
@@ -328,12 +331,12 @@ class Type : Cmd
       endIf
       attributes.is_visiting = false
 
-    method collect_object_types( type_list:Type[] )
+    method collect_reference_types( type_list:Type[] )
       if (attributes.is_visiting or attributes.is_collected) return
       attributes.is_visiting = true  # use as 'is_collected' flag; will be reset externally
-      (forEach in global_properties).type.collect_object_types( type_list )
-      (forEach in properties).type.collect_object_types( type_list )
-      if (this.is_object)
+      (forEach in global_properties).type.collect_reference_types( type_list )
+      (forEach in properties).type.collect_reference_types( type_list )
+      if (this.is_reference)
         type_list.add( this )
         attributes.is_collected = true
       endIf

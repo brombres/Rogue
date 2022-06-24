@@ -1546,7 +1546,6 @@ endClass
 
 class Method : Procedure
   PROPERTIES
-    id               : Int32
     inheriting_types = Type[]
     source_tokens    : TokenList
 

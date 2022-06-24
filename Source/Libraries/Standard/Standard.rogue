@@ -17,6 +17,7 @@ $include Standard/Global
 $include Standard/LineReader
 $include Standard/List
 $include Standard/ListRewriter
+$include Standard/MethodInfo
 $include Standard/Object
 $include Standard/ObjectPool
 $include Standard/Optional
