@@ -171,12 +171,20 @@ class Program [singleton]
       included_files[ filepath ] = null # placeholder
 
       temporarily current_module = Program.default_module
+        Analytics.tokenization.start
         local tokens = Scanner( File(filepath) ).tokenize
+        Analytics.tokenization.stop
+
+        Analytics.preprocessing.start
         Parser( tokens ).preprocess
+        Analytics.preprocessing.stop
+
         included_files[filepath] = tokens
 
         # First parser pass collects class templates but does not build an AST
+        Analytics.parse_templates.start
         Parser(tokens).[collecting_templates=true,disable_output=1].parse
+        Analytics.parse_templates.stop
       endTemporarily
 
     method organize_types
@@ -214,9 +222,12 @@ class Program [singleton]
       (forEach in modules.values).collect_used_modules
 
       # We've collected all class templates.
+      Analytics.ensure_definitions.start
       (forEach in (forEach in modules.values).types).ensure_definition
+      Analytics.ensure_definitions.stop
 
       # Reparse the tokens for each file.
+      Analytics.main_parse.start
       forEach (file_tokens in included_files)
         temporarily current_module = Program.default_module
           local elements = Parser(file_tokens).parse
@@ -226,14 +237,27 @@ class Program [singleton]
           endIf
         endTemporarily
       endForEach
+      Analytics.main_parse.stop
 
+      Analytics.instantiate_essential.start
       (forEach in modules).instantiate_essential_and_api_types
+      Analytics.instantiate_essential.stop
 
+      Analytics.organize_methods.start
       (forEach in modules).organize_methods
+      Analytics.organize_methods.stop
 
+      Analytics.tranform.start
       apply( Transformer() )
+      Analytics.tranform.stop
+
+      Analytics.resolve_used_elements.start
       ResolveUsedElements().apply
+      Analytics.resolve_used_elements.stop
+
+      Analytics.finalize.start
       Finalizer().apply
+      Analytics.finalize.stop
 
     method set_real_bits( @real_bits )
       definitions//Real = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]

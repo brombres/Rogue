@@ -212,7 +212,8 @@ SYMBOL_ACCESS_EQUALS         .=
 scanner
 ----------------------------------------------------------------------
 - tokenize_another
-  consume [ \r\t]*                 # whitespace
+  consume [ \r\t]* # whitespace
+
   markPosition
   scan_comment
 

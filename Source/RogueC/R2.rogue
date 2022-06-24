@@ -3,6 +3,7 @@ module RogueC
 $include "Macros.rogue"
 
 $include "AccessAndAssignPatcher.rogue"
+$include "Analytics.rogue"
 $include "AspectMethodPatcher.rogue"
 $include "AssignIDs.rogue"
 $include "Attributes.rogue"
@@ -111,7 +112,13 @@ class RogueC
       Program.include( forEach in command//args )
       Program.include( "Standard" )
       Program.resolve
+
+      Analytics.generate_c.start
       Program.generate_c
+      Analytics.generate_c.stop
+      Analytics.total_time.stop
+
+      #if ($defined(DEBUG)) Analytics.display
 
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().
