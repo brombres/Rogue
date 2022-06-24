@@ -44,7 +44,8 @@ class MethodInfo
       m = MethodInfo()
       local data_index = native("Rogue_method_info[$method_index]")->Int32
 
-      m.name = native("Rogue_string_table[ Rogue_method_data[$data_index] ]")->String
+      m.type_context = TypeInfo[ native("Rogue_method_data[$data_index]")->Int32 ]
+      m.name = native("Rogue_string_table[ Rogue_method_data[++$data_index] ]")->String
 
       local n = native("Rogue_method_data[++$data_index]")->Int32
       m.parameter_types.reserve( n )

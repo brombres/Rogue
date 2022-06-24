@@ -1595,6 +1595,7 @@ augment
         method_data = Int32[]
         forEach (m in Program.all_methods)
           method_info.add( method_data.count )
+          method_data.add( m.type_context.index )
           method_data.add( string_indices[m.name] )
           method_data.add( m.parameters.count )
           method_data.add( (forEach in m.parameters).type.index )
