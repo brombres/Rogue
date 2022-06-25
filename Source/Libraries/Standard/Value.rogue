@@ -130,8 +130,10 @@ class Value [compound]
           return object->(as Value[]).count
         case TYPE_TABLE
           return object->(as [String:Value]).count
-        others
+        case TYPE_UNDEFINED
           return 0
+        others
+          return 1
       endWhich
 
     method get( index:Int32 )->Value
@@ -152,6 +154,7 @@ class Value [compound]
           return table.at(index)
 
         others
+          if (index == 0) return this
           return undefined
       endWhich
 
@@ -161,6 +164,22 @@ class Value [compound]
           return object->(as [String:Value])[ key ]
         others
           return undefined
+      endWhich
+
+    method is_collection->Logical
+      which (type)
+        case TYPE_STRING, TYPE_LIST, TYPE_TABLE
+          return true
+        others
+          return false
+      endWhich
+
+    method set( index:Int32, value:Value )
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Value[])
+          if (index < 0 or index >= list.count) return
+          list[index] = value
       endWhich
 
     method set( key:String, value:Value )
@@ -221,7 +240,7 @@ class Value [compound]
       which (type)
         case TYPE_BYTE:      return byte->Int64
         case TYPE_CHARACTER: return character->Int64
-        case TYPE_INT32:     return Int64->Int64
+        case TYPE_INT32:     return int32->Int64
         case TYPE_INT64:     return int64->Int64
         case TYPE_REAL32:    return real32->Int64
         case TYPE_REAL64:    return real64->Int64
@@ -271,7 +290,7 @@ class Value [compound]
       which (type)
         case TYPE_BYTE:      return byte->Real64
         case TYPE_CHARACTER: return character->Real64
-        case TYPE_INT32:     return Real64->Real64
+        case TYPE_INT32:     return real64->Real64
         case TYPE_INT64:     return int64->Real64
         case TYPE_REAL32:    return real32->Real64
         case TYPE_REAL64:    return real64->Real64
