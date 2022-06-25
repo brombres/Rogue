@@ -91,20 +91,23 @@ augment
         endIf
       endIf
 
+      return resolve_via_conversion_methods( this, this_type, target_type, resolver, &=suppress_error )
+
+    method Cmd.resolve_via_conversion_methods( cmd:Cmd, this_type:Type, target_type:Type, resolver:Resolver, &suppress_error )->Cmd
       # See if this_type has a to->TargetType method.
-      local result = resolver.resolve_call( t, this_type, this, "to_$"(target_type), null, &suppress_error )
+      local result = resolver.resolve_call( t, this_type, cmd, "to_$"(target_type), null, &suppress_error )
       if (result) return result
 
-      # Look for a TargetType(this) constructor.
-      result = resolver.resolve_type_access( t, target_type, Args(t,this), &suppress_error )
+      # Look for a TargetType(cmd) constructor.
+      result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error )
       if (result) return result
 
       if (this_type.instance_of(target_type))
-        return resolver.validate( WideningCast(t,this,target_type) )
+        return resolver.validate( WideningCast(t,cmd,target_type) )
       endIf
 
       if (this_type.instance_of(Program.type_Value))
-        return resolver.visit( TemplatedMethodContextAccess(t,this,"to",target_type,null) )
+        return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
       endIf
 
       if (suppress_error) return null
@@ -144,9 +147,11 @@ augment
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
-      else
+      elseIf (target_type.is_reference)
         of_type = target_type
         return this
+      else
+        return resolve_via_conversion_methods( this, Program.type_null, target_type, resolver, &=suppress_error )
       endIf
 endAugment
 
