@@ -20,7 +20,7 @@ class Procedure : Cmd
     is_resolved       = false
 
     min_args          : Int32
-    index             : Int32
+    index             = -1
 
     locals            = Local[]
 

@@ -1267,7 +1267,7 @@ class CGenerator : Visitor
         writer.println '{'
         writer.indent  += 2
         visit( cmd_case.statements )
-        writer.println "break;"
+        if (cmd_case.statements.count and cmd_case.statements.last not instanceOf Return) writer.println "break;"
         writer.indent  -= 2
         writer.println '}'
       endForEach
@@ -1663,6 +1663,7 @@ augment
           c_writer.print   '' = { "''
           c_writer.print   type.name
           c_writer.print   ''", ''
+          assert type.index >= 0
           c_writer.print   type.index
           c_writer.print   ", "
           c_writer.print   type.id

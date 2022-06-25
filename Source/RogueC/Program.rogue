@@ -55,6 +55,12 @@ class Program [singleton]
 
     anonymous_class_names = StringTable<<String>>()
 
+    using_method_introspection : Logical
+    m_call_global         : Procedure
+    m_call_object         : Procedure
+    cmd_call_global_cases : WhichCases
+    cmd_call_object_cases : WhichCases
+
   METHODS
     method init
       Program = this  # update singleton reference

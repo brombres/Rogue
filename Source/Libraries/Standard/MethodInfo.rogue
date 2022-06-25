@@ -16,6 +16,8 @@ class MethodInfo
       }#
 
   PROPERTIES
+    method_index    : Int32
+    is_global       : Logical
     type_context    : TypeInfo
     name            : String
     signature       : String
@@ -37,11 +39,13 @@ class MethodInfo
     method init_class
       method_table = Dim<<MethodInfo>>( native("Rogue_method_count")->Int32 )
 
-    method create( method_index:Int32 )->MethodInfo
+    method create( method_index:Int32, is_global=false:Logical )->MethodInfo
       local m = method_table[method_index]
       if (m) return m
 
       m = MethodInfo()
+      m.method_index = method_index
+      m.is_global = is_global
       local data_index = native("Rogue_method_info[$method_index]")->Int32
 
       m.type_context = TypeInfo[ native("Rogue_method_data[$data_index]")->Int32 ]
@@ -87,43 +91,26 @@ class MethodInfo
     method init
       noAction
 
+    method call( context_or_args:Value )->Value
+      # Call this global or object method.
+      #
+      # context_or_args
+      #   Global methods: a single arg, a @[list], or 'undefined'.
+      #   Object methods: call context
+      if (is_global) return call_global_method( method_index, context_or_args )
+      else           return call_object_method( context_or_args, method_index, undefined )
+
+    method call( context:Value, args:Value )->Value
+      # Call this object method.
+      #
+      # context
+      #   The context object to call the method on.
+      #
+      # args
+      #   A single arg, a @[list], or 'undefined'.
+      return call_object_method( context, method_index, args )
+
     #{
-    method init( index, parameter_count, _first_param_name, _first_param_type, _return_type, call_handler )
-      fn_ptr = native("(intptr_t)Rogue_dynamic_method_table[$this->index]")->IntPtr
-
-    method base_name->String
-      if (@base_name) return @base_name
-      @base_name = name.before_first('<')
-      return @base_name
-
-    method name->String
-      if (@name) return @name
-      @name = _get_method_name(index)
-      return @name
-
-    method return_type->TypeInfo
-      if (_return_type == -1) return null
-      return TypeInfo.get(_return_type)
-
-    method parameter_name( index:Int32 )->String [essential]
-      if (index < 0 or index >= parameter_count) return null
-      return native( "Rogue_literal_strings[ Rogue_method_param_names[$_first_param_name + $index] ]" )->String
-
-    method parameter_type( index:Int32 )->TypeInfo [essential]
-      if (index < 0 or index >= parameter_count) return null
-      return TypeInfo.get( native("Rogue_method_param_types[$_first_param_type + $index]")->Int32 )
-
-    method signature->String
-      if (@signature) return @signature
-      local buffer = StringBuilder().print( name ).print( '(' )
-      forEach (i in 0..<parameter_count)
-        if (i > 0) buffer.print( ',' )
-        buffer.print( parameter_type(i).name )
-      endForEach
-      buffer.print( ')' )
-      signature = buffer->String
-      return @signature
-
     method call( args:Value )->Value
       if (args is null) args = UndefinedValue
       return call( native("$this->fn_ptr")->IntPtr, call_handler, args )
@@ -237,19 +224,20 @@ class MethodInfo
 
 
   GLOBAL METHODS
-    method dispatch_global_method( method_id:Int32, args:Value )->Value
-      # CAUTION: compiler relies on these specific parameter names
+    method call_global_method( method_index:Int32, args:Value )->Value [essential]
+      # args
+      #   A single arg, a @[list], or 'undefined'.
       #
-      # Send a @[list] (or 'undefined') as the value args.
-
       # <Compiler will insert generated code here>
 
       return undefined
 
-    method dispatch_method( method_id:Int32, object:Value, args:Value )->Value
-      # CAUTION: compiler relies on these specific parameter names
+    method call_object_method( context:Value, method_index:Int32, args:Value )->Value [essential]
+      # context
+      #   The context object to call the method on.
       #
-      # Send a @[list] (or 'undefined') as the value args.
+      # args
+      #   A single arg, a @[list], or 'undefined'.
 
       # <Compiler will insert generated code here>
 

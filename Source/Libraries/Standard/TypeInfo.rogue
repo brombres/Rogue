@@ -78,7 +78,12 @@ class TypeInfo
       return native("Rogue_type_count")->Int32
 
     method get( index:Int32 )->TypeInfo
-      return native("RogueType_type_info( Rogue_types[$index] )")->TypeInfo
+      if (index < 0 or index >= native("Rogue_type_count")->Int32)
+        println "No such type: TypeInfo[$]. Valid types are 0..$."(index,count)
+        return null
+      else
+        return native("RogueType_type_info( Rogue_types[$index] )")->TypeInfo
+      endIf
 
     #{
     method get ( name : String ) -> TypeInfo
@@ -134,14 +139,14 @@ class TypeInfo
 
   METHODS
     method init [essential]
-      local data_index = read_methods( method_data_index, global_methods )
+      local data_index = read_methods( method_data_index, global_methods, &is_global )
       data_index = read_methods( data_index, methods )
 
-    method read_methods( data_index:Int32, list:MethodInfo[] )->Int32
+    method read_methods( data_index:Int32, list:MethodInfo[], &is_global )->Int32
       local n = native("Rogue_method_data[$data_index]")->Int32;
       ++data_index
       loop n
-        list.add( MethodInfo(native("Rogue_method_data[$data_index]")->Int32) )
+        list.add( MethodInfo(native("Rogue_method_data[$data_index]")->Int32, &=is_global) )
         ++data_index
       endLoop
       return data_index
@@ -340,6 +345,9 @@ class TypeInfo
     method instance_of( other:TypeInfo )->Logical
       return native( "RogueType_instance_of( &Rogue_types[$index], &Rogue_types[$other->index] )" )->Logical
       }#
+
+    method is_aspect->Logical
+      return (attributes & native("ROGUE_TYPE_ASPECT")->Int32)
 
     method is_compound->Logical
       return (attributes & native("ROGUE_TYPE_COMPOUND")->Int32)
