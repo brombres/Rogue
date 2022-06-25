@@ -1421,7 +1421,7 @@ parser
       # Multi-line 'if'
       scoped_multi_line_statements
       if_statement_multi_line_elseIf_else
-      mustConsume 'endIf'
+      mustConsume "endIf"
     else
       # Single-line 'if'
       scoped_single_line_statements
@@ -1429,6 +1429,26 @@ parser
     endIf
     produce If(condition,statements,cmd_else:If):Conditional
   endOn
+
+- print_peek_8
+  savePosition
+  println ""
+  call print_peek
+  read
+  call print_peek
+  read
+  call print_peek
+  read
+  call print_peek
+  read
+  call print_peek
+  read
+  call print_peek
+  read
+  call print_peek
+  read
+  call print_peek
+  restorePosition
 
 - if_local_elseifs_or_else
   on "elseIf"
@@ -2620,7 +2640,9 @@ parser
       on "Function"
         restorePosition  # back to '(Function...'
         type             # parse '(Function(...)->...)'
-        produce TypeAccess(of_type:Type)
+        list_or_optional_type
+        access_args
+        produce TypeAccess(of_type:Type,args)
       endOn
     endOn
     restorePosition
