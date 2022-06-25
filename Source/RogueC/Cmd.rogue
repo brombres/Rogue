@@ -3728,8 +3728,9 @@ class FunctionDefinition : Cmd
       endForEach
 
       base_type = FunctionType( t, param_types, return_type )
-      fn_type = Type( t, Program.default_module, "$_$"(base_type,Program.default_module.types.count),
-                         Attribute.OBJECT|Attribute.SINGLETON )
+      fn_type = Type( t, Program.default_module,
+                      "Function_$"(Program.default_module.types.count),
+                      Attribute.OBJECT|Attribute.SINGLETON )
       fn_type.base_class = base_type
       fn_type.attributes.is_defined = true
 
