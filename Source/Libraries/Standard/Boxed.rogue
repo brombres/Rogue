@@ -4,6 +4,9 @@ class Boxed [abstract]
 
     method size->Int32  [abstract]
 
+    method to->String
+      return description
+
 endClass
 
 class Boxed<<$DataType>>( value:$DataType ) : Boxed
@@ -11,14 +14,14 @@ class Boxed<<$DataType>>( value:$DataType ) : Boxed
     method address->Int64
       return native( "(void*)&$value" )->Int64
 
+    method description->String
+      return value->String
+
     method size->Int32
       return native( "(RogueInt32)(int)sizeof($value)" )->Int32
 
     method to->$DataType
       return value
-
-    method to->String
-      return value->String
 
 endClass
 
