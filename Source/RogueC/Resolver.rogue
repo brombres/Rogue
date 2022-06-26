@@ -494,6 +494,7 @@ class Resolver : Poolable, Visitor
       return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
 
     method on( cmd:DefaultValue )->Cmd
+      cmd.of_type.organize
       return visit( cmd.of_type.cmd_default_value(cmd.t) )
 
     method on( cmd:Describe )->Cmd
@@ -1064,6 +1065,7 @@ class Resolver : Poolable, Visitor
         args.add( element.value )
       endForEach
       local tuple_type = Type( cmd.t, type_elements )
+      tuple_type.organize
       return validate( CreateCompound(cmd.t, tuple_type, args) )
 
     method on( cmd:NativeHeader )->Cmd
