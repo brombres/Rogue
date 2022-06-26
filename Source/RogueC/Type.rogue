@@ -19,12 +19,13 @@ class Type : Cmd
     methods           = StringTable<<Method>>()
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
-    _template         : Template
     class_def         : Cmd
     states            = StateDef[]
 
     categories        : Category[]
 
+    type_template                    : Template
+    type_args                        : TemplateArgs
     global_method_templates          = ListLookupTable<<String,GlobalMethodTemplate>>()
     global_method_template_instances = Set<<String>>()
     method_templates                 = ListLookupTable<<String,MethodTemplate>>()
@@ -94,7 +95,9 @@ class Type : Cmd
 
       local type = Type( t, template.module_context, name, 0 )
       if (is_tuple) type.attributes.is_tuple = true
-      template.instantiate( type, type_args )
+      type.type_template = template
+      type.type_args     = type_args
+      if (template.attributes.is_essential) type.ensure_definition
       return type
 
     method create( t:Token, element_type:Type )->Type
@@ -270,7 +273,7 @@ class Type : Cmd
         endIf
       endIf
 
-      p.type.organize_properties
+      p.type.[ ensure_definition, organize_properties ]
 
       if (this.is_compound and p.type.is_compound)
         if (p.type.contains_embedded_compound(this))
@@ -343,6 +346,7 @@ class Type : Cmd
       attributes.is_visiting = false
 
     method collect_methods( m_name:String, list:Procedure[], &require_global )
+      ensure_definition
       organize_methods
 
       forEach (m in global_methods)
@@ -377,11 +381,9 @@ class Type : Cmd
       return attributes.contains_reference
 
     method ensure_definition
-      # Necessary for built-in types (primitives, String, etc.) that are placeholders
-      # before the standard library is parsed.
       if (attributes.is_defined) return
-      local template = module_context.must_find_template( t, name+"<<0>>", name )
-      template.instantiate( this )
+      if (not type_template) type_template = module_context.must_find_template( t, name+"<<0>>", name )
+      type_template.instantiate( this, type_args )
 
     method description->String
       return "$" (%name)
@@ -564,6 +566,7 @@ class Type : Cmd
       endUse
 
     method organize
+      ensure_definition
       organize_type
       organize_properties
       organize_methods
@@ -571,8 +574,6 @@ class Type : Cmd
     method organize_type
       if (is_type_organized) return
       is_type_organized = true
-
-      ensure_definition
 
       TypeOrganizer( module_context ).visit( this, class_def )
 
@@ -587,17 +588,19 @@ class Type : Cmd
 
       # Categorize base types
       if (base_class)
+        base_class.ensure_definition
         base_class.organize_type
         if (base_class.contains_reference) attributes.contains_reference = true
         base_class.extended_types.add( this )
       elseIf (this.is_object and this is not Program.type_Object)
         base_class = Program.type_Object
+        base_class.ensure_definition
         base_class.organize_type
         base_class.extended_types.add( this )
       endIf
 
       if (aspects)
-        (forEach in aspects).organize_type
+        (forEach in aspects).[ensure_definition, organize_type]
 
         # Build flat list of incorporated aspects. Each aspect will already have
         # a flat list of its own base aspects.
@@ -638,7 +641,7 @@ class Type : Cmd
           properties.clear
 
           if (base_class)
-            base_class.organize_properties
+            base_class.[ ensure_definition, organize_properties ]
             if (base_class.contains_reference) attributes.contains_reference = true
 
             forEach (p in base_class.properties)
@@ -652,7 +655,7 @@ class Type : Cmd
 
           if (aspects)
             forEach (incorporated_aspect in aspects)
-              incorporated_aspect.organize_properties
+              incorporated_aspect.[ ensure_definition, organize_properties ]
               if (incorporated_aspect.contains_reference) attributes.contains_reference = true
 
               forEach (p in incorporated_aspect.native_properties step -1)

@@ -200,7 +200,7 @@ class PropertyOrganizer : Visitor
         endIf
       endIf
 
-      p.type.organize_properties
+      p.type.[ ensure_definition, organize_properties ]
 
       if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
         p.type.attributes.contains_reference = true

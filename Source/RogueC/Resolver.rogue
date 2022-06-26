@@ -34,6 +34,7 @@ class Resolver : Poolable, Visitor
 
     method visit_type( type:Type )
       if (type.is_resolved) return
+      type.ensure_definition
       type.organize
       type.is_resolved = true  # prevent recursion
 
@@ -1375,8 +1376,13 @@ class Resolver : Poolable, Visitor
       return cmd
 
     method on( cmd:TypeAccess )->Cmd
+      cmd.of_type.organize
       cmd.args = visit( cmd.args )
       return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
+
+    method on( cmd:TypeContext )->Cmd
+      cmd.@type.organize
+      return validate( cmd )
 
     method on( cmd:TypedDestructuringLocalDeclarations )->Cmd
       local tuple = visit( cmd.tuple )
@@ -1782,6 +1788,8 @@ class Resolver : Poolable, Visitor
       throw t.error( "No such property '$' in type $."(name,type_context) )
 
     method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error )->Cmd
+      type.organize
+
       temporarily this_module = type.module_context
 
         if (args)
@@ -1829,6 +1837,7 @@ class Resolver : Poolable, Visitor
       use Candidates
         type_context.collect_methods( "create", Candidates.list )
         type_context.collect_methods( "init", Candidates.list )
+        Candidates.organize
 
         if (args.count == 0 and Candidates.count == 0)
           # No constructors available and no constructor required.
@@ -1939,6 +1948,7 @@ class Resolver : Poolable, Visitor
             endIf
           endIf
         endIf
+        Candidates.organize
 
         return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global,
             &=suppress_error, &=exact_arg_types )
@@ -3165,6 +3175,7 @@ augment
     method Cmd.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       local collection_type = cmd_collection.data.require_type
+      collection_type.organize
 
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")
@@ -3392,6 +3403,7 @@ augment
         throw cmd_control.optional_at.t.error( "forEach 'at' cannot be used in conjunction with 'of'." )
       endIf
       local collection_type = cmd_collection.data.require_type
+      collection_type.organize
 
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")

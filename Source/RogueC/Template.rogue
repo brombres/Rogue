@@ -27,7 +27,6 @@ class Template
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
 
-      type._template = this
       local template_tokens = tokens
 
       local replacements = Template.replacements( placeholders, type_args )

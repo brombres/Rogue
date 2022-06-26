@@ -24,6 +24,7 @@ class TypeOrganizer : Visitor
       endIf
 
       forEach (base_type in cmd.base_types)
+        base_type.ensure_definition
         base_type.organize_type
 
         if (base_type.instance_of(this_type))

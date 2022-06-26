@@ -36,6 +36,12 @@ class Candidates [singleton]
       matches = work_list_beta.on_use
       return this
 
+    method organize
+      forEach (m in list)
+        (forEach in m.parameters).type.organize
+        if (m.return_type) m.return_type.organize
+      endForEach
+
     method on_end_use
       work_list_alpha.on_end_use
       work_list_beta.on_end_use
