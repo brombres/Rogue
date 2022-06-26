@@ -212,23 +212,31 @@ SYMBOL_ACCESS_EQUALS         .=
 scanner
 ----------------------------------------------------------------------
 - tokenize_another
-  consume [ \r\t]* # whitespace
+  ch = peek
+  if (ch == ' ' or ch == '\r' or ch == '\t') consume [ \r\t]* # whitespace
 
   markPosition
-  scan_comment
+  ch = peek
+  if (ch == '#' or (ch == '-' and nextIs("----")) or (ch == '=' and nextIs("====")))
+    scan_comment
+  endIf
 
   if (not hasAnother)
     create EOL
     halt
   endIf
 
-  if (consume("..."))
+  if (ch == '.' and consume("..."))
     while (hasAnother and not consume('\n'))
       if (not (consume(' ') or consume('\t')))
         syntaxError "End of line expected."
       endIf
     endWhile
     restart
+  endIf
+
+  if ((ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_')
+    scan_id_or_keyword
   endIf
 
   match input
@@ -240,13 +248,13 @@ scanner
     case "@|": tokenize_verbatim_string
   endMatch
 
-  if (scan('$'))
+  if (ch == '$')
+    scan('$')
     if (scan([_a-zA-Z][_a-zA-Z0-9]*)) produce PLACEHOLDER
     if (scan([0-9]*)) produce GENERIC_FN_ARG
     produce SYMBOL_DOLLAR
   endIf
 
-  scan_id_or_keyword
   scan_number
 
   syntaxError
