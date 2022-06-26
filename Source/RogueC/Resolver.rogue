@@ -132,7 +132,10 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:As )->Cmd
       cmd.operand = visit( cmd.operand )
-      if (not cmd.operand.require_type.is_reference or not cmd.as_type.is_reference)
+      local type = cmd.operand.require_type
+      type.organize
+      cmd.as_type.organize
+      if (not type.is_reference or not cmd.as_type.is_reference)
         throw cmd.t.error( "'as' can only be used with reference types." )
       endIf
       return cmd

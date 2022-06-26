@@ -62,6 +62,9 @@ augment
   METHODS
     method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd
       local this_type = require_type
+      this_type.organize
+      target_type.organize
+
       if (this_type is target_type) return this
 
       if (this_type.is_primitive and target_type.is_primitive)
@@ -116,10 +119,13 @@ augment
 
     method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
       local fn_type = target_type->(as FunctionType)
+
       if (not fn_type)
         if (suppress_error) return null
         throw t.error( "Generic function is incompatible with type $."(target_type) )
       endIf
+
+      fn_type.organize
 
       local params = Parameters(t)
       forEach (param_name at i in parameters)
@@ -145,6 +151,7 @@ augment
       return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error )
 
     method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
+      target_type.organize
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
       elseIf (target_type.is_reference)
