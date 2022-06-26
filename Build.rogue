@@ -14,8 +14,7 @@ augment Build
     PROJECT           = "R2"
     LAUNCHER_NAME     = PROJECT.to_lowercase : String
 
-    #RELEASE_MODE      = true
-    RELEASE_MODE      = false
+    RELEASE_MODE      = true
     LAUNCHER_FOLDER   = "/usr/local/bin"  # for Mac/Linux
     ROGUEC_FLAGS      = "--gc=manual"
     CPP_FLAGS_UNIX    = ""
