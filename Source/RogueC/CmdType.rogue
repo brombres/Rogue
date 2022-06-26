@@ -48,8 +48,9 @@ augment Cmd
     method require_type->Type
       local result = type
       if (result) return result
-      println StackTrace()
-      throw t.error( "Value expected ($)."(this) )  # FIXME (includes dev info)
+      #println StackTrace()
+      #throw t.error( "Value expected ($)."(this) )
+      throw t.error( "Value expected." )
 
     method require_value->Cmd
       require_type

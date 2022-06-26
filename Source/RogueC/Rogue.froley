@@ -2781,6 +2781,12 @@ parser
     produce TypeAccess(of_type:Type,args)
   endOn
 
+  on "<<"
+    type
+    mustConsume ">>"
+    produce GetTypeInfo(of_type:Type)
+  endOn
+
   on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
 
   on "isCompound"  "<<" expression ">>" -> IsCompound(operand)
@@ -3128,6 +3134,7 @@ parser
   create Stepper(operand)
   create Switch(condition,cases:WhichCases,statements):Conditional
   create TypeContext(type:Type)
+  create TypeIndex(of_type:Type)
   create WideningCast(operand,to_type:Type)
 
   create ResolvedOpAndAssignLocal(info:Local,operand)

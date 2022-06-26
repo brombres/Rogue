@@ -600,6 +600,10 @@ class Resolver : Poolable, Visitor
     method on( cmd:GenericFunctionDefinition )->Cmd
       return cmd
 
+    method on( cmd:GetTypeInfo )->Cmd
+      cmd.of_type.organize
+      return visit( IndexedAccess( cmd.t, Access(cmd.t,"TypeInfo"), TypeIndex(cmd.t,cmd.of_type) ) )
+
     method on_visit( cmd:GlobalMethod )
       temporarily this_type = cmd.type_context
         on_visit( cmd->(as Procedure) )

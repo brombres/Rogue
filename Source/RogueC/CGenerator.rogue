@@ -1302,6 +1302,9 @@ class CGenerator : Visitor
       on_leave( cmd )
       # .catches are handled in on_end_scope
 
+    method on_visit( cmd:TypeIndex )
+      writer.print( cmd.of_type.index )
+
     method on_visit( cmd:WideningCast )
       print_with_cast( cmd.operand, cmd.to_type )
 

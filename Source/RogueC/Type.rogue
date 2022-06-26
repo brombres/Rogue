@@ -776,7 +776,6 @@ class Type : Cmd
         local m = Method( t, this, "module_name" )
         m.return_type = Program.type_String
         m.statements.add( Return(t,LiteralString(t,"$"(module_context))) )
-
         m.organize
         methods[ m.signature ] = m
 
@@ -784,9 +783,16 @@ class Type : Cmd
         m = Method( t, this, "type_name" )
         m.return_type = Program.type_String
         m.statements.add( Return(t,LiteralString(t,"$"(name))) )
-
         m.organize
         methods[ m.signature ] = m
+
+        # type_info()->TypeInfo
+        local gm = GlobalMethod( t, this, "type_info" )
+        gm.return_type = Program.default_module.must_find_type( t, "TypeInfo" )
+        gm.statements.add( Return(t,GetTypeInfo(t,this)) )
+        gm.organize
+        global_methods[ gm.signature ] = gm
+
       endIf
 
       # Add state methods

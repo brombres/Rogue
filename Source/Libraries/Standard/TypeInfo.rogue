@@ -341,7 +341,30 @@ class TypeInfo
         endIf
       endForEach
       return null
+      }#
 
+    method find_global_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return find_method( global_methods, name_or_sig, arg_count )
+
+    method find_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return find_method( methods, name_or_sig, arg_count )
+
+    method find_method( method_list:MethodInfo[], name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      if (name_or_sig.contains('('))
+        forEach (m in method_list)
+          if (m.signature == name_or_sig) return m
+        endForEach
+      endIf
+
+      forEach (m in method_list)
+        if (m.name == name_or_sig and (not arg_count.exists or m.parameter_types.count == arg_count.value))
+          return m
+        endIf
+      endForEach
+
+      return null
+
+      #{
     method instance_of( other:TypeInfo )->Logical
       return native( "RogueType_instance_of( &Rogue_types[$index], &Rogue_types[$other->index] )" )->Logical
       }#
