@@ -37,6 +37,7 @@ class UIComponent : Node<<UIComponent>>
     flags      : Int32
     attributes : UIAttribute
     actions    : Action
+    entities   : Entity[]
 
   METHODS
     method init
@@ -52,6 +53,10 @@ class UIComponent : Node<<UIComponent>>
 
     method on_init
       noAction
+
+    method add( entity:Entity )
+      ensure<<entities>>
+      entities.add( entity )
 
 #{
     method after( e:KeyEvent )

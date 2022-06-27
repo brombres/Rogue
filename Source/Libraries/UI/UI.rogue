@@ -1,5 +1,6 @@
 module UI
 
+uses Entities       [export]
 uses Geometry       [export]
 uses Utility/Action [export]
 

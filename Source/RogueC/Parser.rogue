@@ -563,7 +563,11 @@ class Parser : ParserCore, Poolable
       local m = Program.current_module
       local extended_name = "$<<$>>"(name,placeholders.count)
       if (m.templates[extended_name])
-        throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
+        if (placeholders.count)
+          throw tokens.first.error( "A $-parameter template '$' already exists."(placeholders.count,name) )
+        else
+          throw tokens.first.error( "A class named '$' already exists."(name) )
+        endIf
       endIf
 
       local result = Template( class_t, m, name, placeholders, tokens, attributes )

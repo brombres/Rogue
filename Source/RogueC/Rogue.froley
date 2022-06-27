@@ -15,7 +15,7 @@ REAL_NUMBER    real          [content]
 STRING         string        [content]
 IDENTIFIER     identifier    [content]
 SYMBOL_DOLLAR  $
-PLACEHOLDER    $placeholder  [content]
+PLACEHOLDER($directive or $placeholder)  [content]
 GENERIC_FN_ARG $arg          [content]
 
 ----------------------------------------------------------------------
@@ -1043,7 +1043,9 @@ parser
 - identifier
   on IDENTIFIER  -> Identifier(name=content)
   if (nextIs(PLACEHOLDER))
-    if (not disable_output) syntaxError
+    if (not disable_output)
+      syntaxError "Unrecognized $directive or unexpected $placeholder."
+    endIf
     on PLACEHOLDER -> Identifier(name=content)
   endIf
   on "ThisType"
