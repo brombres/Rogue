@@ -134,8 +134,10 @@ META_INCLUDE         $include       [meta]
 META_JOIN_IDS        $id            [meta]
 META_JOIN_STRINGS    $string        [meta]
 META_LOCAL_MACRO     $localMacro    [meta]
+META_LOWERCASE       $lowercase     [meta]
 META_MACRO           $macro         [meta]
 META_TARGET          $target        [meta]
+META_UPPERCASE       $uppercase     [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -2985,6 +2987,17 @@ parser
     call define_macro
     return
 
+  elseOn "$lowercase"
+    call begin_join_lowercase
+      mustConsume '('
+      process_another
+      while (consume(',') or not nextIs(')'))
+        process_another
+      endWhile
+      mustConsume ')'
+    call end_join_lowercase
+    return
+
   elseOn "$macro"
     identifier   # macro name
 
@@ -3035,6 +3048,17 @@ parser
       endWhile
       mustConsume ')'
     call end_join_strings
+    return
+
+  elseOn "$uppercase"
+    call begin_join_uppercase
+      mustConsume '('
+      process_another
+      while (consume(',') or not nextIs(')'))
+        process_another
+      endWhile
+      mustConsume ')'
+    call end_join_uppercase
     return
 
   elseOn "uses"
