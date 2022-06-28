@@ -663,9 +663,9 @@ parser
     consume "subclass"
     class_sections
     mustConsume "endSubclass"
+    --disable_output
     call on_parsed_subclass  # Pass 1: stores class template tokens & replaces access with generated type name.
                              # Pass 2: does nothing.
-    --disable_output
     discardPosition
   endIf
 

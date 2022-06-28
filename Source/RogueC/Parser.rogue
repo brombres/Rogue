@@ -575,6 +575,10 @@ class Parser : ParserCore, Poolable
       return result
 
     method on_parsed_subclass
+      if (disable_output and not collecting_templates)
+        return
+      endIf
+
       local i1 = _saved_positions.last.position
       local i2 = _position - 1
       local class_t = _tokens[i1]  # 'subclass'
@@ -638,7 +642,7 @@ class Parser : ParserCore, Poolable
             access.of_type = Type( class_t, name )
           endBlock
         else
-          throw class_t.error( "[INTERNAL] Unhandled subclass for $."(access.type_name) )
+          throw class_t.error( "[INTERNAL] Unhandled context node for subclass: $."(access.type_name) )
         endIf
 
       endIf
