@@ -3,15 +3,15 @@ module Entities
 uses Geometry [export]
 uses Utility/Node
 
-$macro ENTITY_ATTRIBUTE( name, value )
+$macro ENTITY_ATTRIBUTE( NAME, is_name, value )
   DEFINITIONS
-    $id($uppercase(ATTRIBUTE_ name)) = value
+    $id(ATTRIBUTE_ NAME) = value
 
   METHODS
-    method $id(is_ name)->Logical
+    method is_name->Logical
       return (attributes & (value))
 
-    method $id(set_is_ name)( setting:Logical )
+    method $id(set_ is_name)( setting:Logical )
       if (setting) attributes |= (value)
       else         attributes &= !(value)
 $endMacro
@@ -20,6 +20,16 @@ $include Entities/Entity
 
 class Entities : Entity[]
   METHODS
+    method needs_redraw( callback=null:Function(Box) )->Logical
+      local any_dirty = false
+      forEach (entity in this)
+        if (entity.needs_redraw(callback))
+          if (not callback) return true
+          any_dirty = true
+        endIf
+      endForEach
+      return any_dirty
+
     method draw( origin:XY )
       forEach (entity in this)
         if (not entity.is_hidden) entity.draw( origin )

@@ -1,9 +1,10 @@
 module Entities
 
 class Entity : Node<<Entity>>
-  ENTITY_ATTRIBUTE( hidden, (1:<<:0) )
-  ENTITY_ATTRIBUTE( dying,  (1:<<:1) )
-  ENTITY_ATTRIBUTE( dead,   (1:<<:2) )
+  ENTITY_ATTRIBUTE( HIDDEN,   is_hidden, (1:<<:0) )
+  ENTITY_ATTRIBUTE( DYING,    is_dying,  (1:<<:1) )
+  ENTITY_ATTRIBUTE( DEAD,     is_dead,   (1:<<:2) )
+  ENTITY_ATTRIBUTE( IS_DIRTY, is_dirty,  (1:<<:3) )  # needs redraw?
 
   PROPERTIES
     position       : XY
@@ -13,6 +14,9 @@ class Entity : Node<<Entity>>
     attributes     : Int32
     actions        : Action
 
+    prev_position  : XY
+    prev_size      : XY
+
   METHODS
     method draw( origin:XY )
       temporarily position = origin + position
@@ -20,12 +24,28 @@ class Entity : Node<<Entity>>
         on_draw
       endTemporarily
 
+      prev_position = position
+      prev_size = size
+
+    method needs_redraw->Logical
+      return (is_dirty or position != prev_position or size != prev_size)
+
+    method needs_redraw( callback:Function(Box) )->Logical
+      if (not needs_redraw) return false
+
+      is_dirty = false
+      if (callback) callback( display_bounds )
+      return true
+
     method on_draw
       # Draw at origin 'position' or within 'display_bounds'
       noAction
 
     method on_update
       noAction
+
+    method request_redraw
+      is_dirty = true
 
     method update
       if (actions) actions .= update

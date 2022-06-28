@@ -108,6 +108,21 @@ class UIComponent : Node<<UIComponent>>
     method can_split_x( max_width:Int32 )->Logical
       return false
 
+    method needs_redraw( callback=null:Function(Box) )->Logical
+      local any_dirty = (entities and entities.needs_redraw(callback))
+      if (any_dirty and not callback) return true
+
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawable( subcomponents )
+        forEach (component in subcomponents)
+          if (component.needs_redraw(callback))
+            if (not callback) return true
+            any_dirty = true
+          endIf
+        endForEach
+      endUse
+      return any_dirty
+
     method clear_modified
       (forEach in children).clear_modified
       @is_modified = false

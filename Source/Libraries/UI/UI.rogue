@@ -106,6 +106,19 @@ class UI [abstract]
       dispatch_message( message )
       }#
 
+    method needs_redraw( callback=null:Function(Box) )->Logical
+      activate
+      local any_dirty = (entities and entities.needs_redraw(callback))
+      if (any_dirty and not callback) return true
+
+      forEach (layer in layers)
+        if (layer.needs_redraw(callback))
+          if (not callback) return true
+          any_dirty = true
+        endIf
+      endForEach
+      return any_dirty
+
     method clear
       layers.clear
       clear_focus
