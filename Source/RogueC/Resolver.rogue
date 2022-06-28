@@ -407,6 +407,9 @@ class Resolver : Poolable, Visitor
       if (result) return result
       return cmd  # resolved primitive comparison
 
+    method on( cmd:ConditionalContext )->Cmd
+      return visit( cmd.context )
+
     method on( cmd:ContextAccess )->Cmd
       visit( cmd.args )
       local result = resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
@@ -652,6 +655,20 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       return cmd
+
+    method on( cmd:IfConditionalContext )->Cmd
+      local cmd_if = If( cmd.t, null, cmd.statements, null )
+      local context = visit( cmd.conditional_context.context )
+      local context_type = context.require_type
+      if (context.is_simple)
+        cmd_if.condition = context.cloned
+      else
+        local v_context = add_local( cmd.t, "conditional_context", context_type, DummyInitialValue )
+        insert( SetLocal(v_context,context) )
+        cmd_if.condition = GetLocal( v_context )
+        cmd.conditional_context.context = GetLocal( v_context )
+      endIf
+      return visit( cmd_if )
 
     method on( cmd:IfLocal )->Cmd
       local expression = visit( cmd.expression )

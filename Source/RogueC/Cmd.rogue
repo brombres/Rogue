@@ -4047,7 +4047,7 @@ class IfLocal : Cmd
     else_if    : IfLocal
 
   METHODS
-    method init( t, name, expression, statements, else_if )
+    method init( t, name, expression, statements, else_if=null )
 
     method init( existing:IfLocal )
       prior.init( existing )
@@ -4718,5 +4718,39 @@ class TypeIndex : Cmd
 
     method type->Type
       return Program.type_Int32
+
+endClass
+
+class ConditionalContext : Cmd
+  PROPERTIES
+    context : Cmd
+
+  METHODS
+    method init( t, context )
+
+    method init( existing:ConditionalContext )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+
+    method description->String
+      return "ConditionalContext($)" (%context)
+
+endClass
+
+class IfConditionalContext : Cmd
+  PROPERTIES
+    conditional_context : ConditionalContext
+    statements          : Cmd
+
+  METHODS
+    method init( t, conditional_context, statements )
+
+    method init( existing:IfConditionalContext )
+      prior.init( existing )
+      if (existing.conditional_context) conditional_context = existing.conditional_context.cloned
+      if (existing.statements) statements = existing.statements.cloned
+
+    method description->String
+      return "IfConditionalContext($,$)" (%conditional_context,%statements)
 
 endClass
