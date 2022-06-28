@@ -155,6 +155,9 @@ class System [essential]
       native @|#endif
       return result
 
+    method request_gc
+      native @|Rogue_request_gc();
+
     method run( command:String )->Int32
       local return_val = 0
       native @|$return_val = system( (char*)$command->data->as_utf8 );
