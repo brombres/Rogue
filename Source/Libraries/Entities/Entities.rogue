@@ -1,0 +1,30 @@
+module Entities
+
+uses Geometry [export]
+uses Utility/Node
+
+$macro ENTITY_ATTRIBUTE( name, value )
+  DEFINITIONS
+    $id($uppercase(ATTRIBUTE_ name)) = value
+
+  METHODS
+    method $id(is_ name)->Logical
+      return (attributes & (value))
+
+    method $id(set_is_ name)( setting:Logical )
+      if (setting) attributes |= (value)
+      else         attributes &= !(value)
+$endMacro
+
+$include Entities/Entity
+
+class Entities : Entity[]
+  METHODS
+    method draw( origin:XY )
+      forEach (entity in this)
+        if (not entity.is_hidden) entity.draw( origin )
+      endForEach
+
+    method update
+      (forEach in this).update
+endClass

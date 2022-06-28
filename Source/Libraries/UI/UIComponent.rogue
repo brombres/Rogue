@@ -37,7 +37,7 @@ class UIComponent : Node<<UIComponent>>
     flags      : Int32
     attributes : UIAttribute
     actions    : Action
-    entities   : Entity[]
+    entities   : Entities
 
   METHODS
     method init
@@ -572,6 +572,7 @@ class UIComponent : Node<<UIComponent>>
 
     method update
       on_update
+      entities?.update
       if (actions) actions .= update
       update_subcomponents
       after_update

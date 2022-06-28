@@ -1,0 +1,34 @@
+module Entities
+
+class Entity : Node<<Entity>>
+  ENTITY_ATTRIBUTE( hidden, (1:<<:0) )
+  ENTITY_ATTRIBUTE( dying,  (1:<<:1) )
+  ENTITY_ATTRIBUTE( dead,   (1:<<:2) )
+
+  PROPERTIES
+    position       : XY
+    size           : XY
+    display_bounds : Box
+    anchor         = Anchor.CENTER : Anchor
+    attributes     : Int32
+    actions        : Action
+
+  METHODS
+    method draw( origin:XY )
+      temporarily position = origin + position
+        display_bounds = Box( origin+position, size ).relative_to( anchor )
+        on_draw
+      endTemporarily
+
+    method on_draw
+      # Draw at origin 'position' or within 'display_bounds'
+      noAction
+
+    method on_update
+      noAction
+
+    method update
+      if (actions) actions .= update
+      on_update
+
+endClass

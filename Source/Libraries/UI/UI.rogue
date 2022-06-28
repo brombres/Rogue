@@ -37,6 +37,7 @@ class UI [abstract]
 
   PROPERTIES
     actions        : Action
+    entities       : Entities
 
     bounds         : Box
     dirty_bounds   : Box?
@@ -58,6 +59,10 @@ class UI [abstract]
 
     method activate
       UI.current = this
+
+    method add( entity:Entity )
+      ensure<<entities>>
+      entities.add( entity )
 
     method add( layer:UIComponent )
       layers.add( layer )
@@ -294,15 +299,6 @@ class UI [abstract]
 
       update( bounds )
 
-      if (not is_initialized)
-        is_initialized = true
-        on_init
-      endIf
-      on_update
-      if (actions) actions .= update
-      (forEach in layers).update
-      after_update
-
     method update( bounds:Box )
       # Must update before layout so that new components created in update() can be
       # measured in update_layout()
@@ -313,6 +309,7 @@ class UI [abstract]
         on_init
       endIf
       on_update
+      entities?.update
       if (actions) actions .= update
       (forEach in layers).update
       after_update
