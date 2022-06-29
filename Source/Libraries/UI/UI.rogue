@@ -1,6 +1,18 @@
 module UI
 
-uses Entities       [export]
+$macro UI_ATTRIBUTE( NAME, is_name, value )
+  DEFINITIONS
+    $id(ATTRIBUTE_ NAME) = value
+
+  METHODS
+    method is_name->Logical
+      return (attributes & (value))
+
+    method $id(set_ is_name)( setting:Logical )
+      if (setting) attributes |= (value)
+      else         attributes &= !(value)
+$endMacro
+
 uses Geometry       [export]
 uses Utility/Action [export]
 
@@ -9,10 +21,11 @@ uses Utility/Action [export]
 #$include "Pointer.rogue"
 
 $include UI/UIAbsoluteLayout
-$include UI/UIAttributes
+$include UI/UIDynamicProperties
 $include UI/UIBorder
 $include UI/UIComponent
 $include UI/UIContent
+$include UI/UIEntity
 $include UI/UIFiller
 $include UI/UIFlowLayout
 $include UI/UIFont
@@ -37,7 +50,6 @@ class UI [abstract]
 
   PROPERTIES
     actions        : Action
-    entities       : Entities
 
     bounds         : Box
     dirty_bounds   : Box?
@@ -59,10 +71,6 @@ class UI [abstract]
 
     method activate
       UI.current = this
-
-    method add( entity:Entity )
-      ensure<<entities>>
-      entities.add( entity )
 
     method add( layer:UIComponent )
       layers.add( layer )
@@ -108,12 +116,11 @@ class UI [abstract]
 
     method needs_redraw( callback=null:Function(Box) )->Logical
       activate
-      local any_dirty = (entities and entities.needs_redraw(callback))
-      if (any_dirty and not callback) return true
+      local any_dirty = false
 
+      local origin = bounds.position
       forEach (layer in layers)
-        if (layer.needs_redraw(callback))
-          if (not callback) return true
+        if (layer.needs_redraw(origin,callback))
           any_dirty = true
         endIf
       endForEach
@@ -322,9 +329,13 @@ class UI [abstract]
         on_init
       endIf
       on_update
-      entities?.update
       if (actions) actions .= update
       (forEach in layers).update
+
+      forEach (layer in layers step -1)
+        if (layer.discard( $.is_dead ) is null) layers.remove( layer )
+      endForEach
+
       after_update
 
       update_layout( bounds )

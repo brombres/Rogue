@@ -75,7 +75,7 @@ class UITableLayout : UILayout
 
     method draw_subcomponents( draw_bounds:Box )
       use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
+        (forEach in children).collect_drawable_components( subcomponents )
 
         local column_count = columns.count
         forEach (j of rows)
@@ -86,6 +86,10 @@ class UITableLayout : UILayout
             endIf
           endForEach
         endForEach
+
+        subcomponents.clear
+        (forEach in children).collect_drawable_entities( subcomponents )
+        (forEach in subcomponents).draw( draw_bounds )
       endUse
 
     method get( i:Int32, j:Int32 )->UIComponent

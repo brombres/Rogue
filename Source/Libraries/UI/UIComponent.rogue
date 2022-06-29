@@ -3,41 +3,50 @@ module UI
 uses Utility/Node
 uses Utility/WorkList
 
-# Make sure the UI_ATTRIBUTE macro gets included first
-$include UI/UIAttributes
+# Make sure the UI_DYNAMIC_PROPERTY macro gets included first
+$include UI/UIDynamicProperties
 
-# The following attribute macros inject appropriate code into UIComponent and UIAttributes.
-# For example, given UI_ATTRIBUTE(anchor,...) we can set component.anchor = Anchor.XYZ and
+# The following attribute macros inject appropriate code into UIComponent and UIDynamicProperties.
+# For example, given UI_DYNAMIC_PROPERTY(anchor,...) we can set component.anchor = Anchor.XYZ and
 # fetch component.anchor->Anchor.
-UI_INHERITED_ATTRIBUTE( alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute )
+UI_INHERITED_DYNAMIC_PROPERTY( alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute )
 # 'alignment' affects text within this component and subcomponents. Unlike 'anchor',
 # 'alignment' is inherited by child components until a new alignment is set.
-UI_ATTRIBUTE( anchor, Anchor, Anchor.CENTER, UIAnchorAttribute )
-UI_ATTRIBUTE( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
-UI_INHERITED_ATTRIBUTE( font, UIFont, UI.current.default_font, UIFontAttribute )
-UI_FN_ATTRIBUTE( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
-UI_ATTRIBUTE( weight, RealXY, RealXY(1,1), UIWeightAttribute )
+UI_DYNAMIC_PROPERTY( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
+UI_INHERITED_DYNAMIC_PROPERTY( font, UIFont, UI.current.default_font, UIFontAttribute )
+UI_FN_DYNAMIC_PROPERTY( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
+UI_DYNAMIC_PROPERTY( weight, RealXY, RealXY(1,1), UIWeightAttribute )
 
 class UIComponent : Node<<UIComponent>>
   DEFINITIONS
-    FLAG_FIXED_WIDTH           = 1
-    FLAG_FIXED_HEIGHT          = 2
-    FLAG_SHRINK_TO_FIT_WIDTH   = 4
-    FLAG_SHRINK_TO_FIT_HEIGHT  = 8
-    FLAG_WIDTH_MASK            = (FLAG_FIXED_WIDTH  | FLAG_SHRINK_TO_FIT_WIDTH)
-    FLAG_HEIGHT_MASK           = (FLAG_FIXED_HEIGHT | FLAG_SHRINK_TO_FIT_HEIGHT)
-    FLAG_SIZE_MASK             = (FLAG_WIDTH_MASK   | FLAG_HEIGHT_MASK)
-    FLAG_HIDDEN                = 16
-    FLAG_DISABLE_INPUT         = 32
-    FLAG_DISABLE_CLIP          = 64
+    ATTRIBUTE_FIXED_WIDTH           = 1
+    ATTRIBUTE_FIXED_HEIGHT          = 2
+    ATTRIBUTE_SHRINK_TO_FIT_WIDTH   = 4
+    ATTRIBUTE_SHRINK_TO_FIT_HEIGHT  = 8
+    ATTRIBUTE_WIDTH_MASK            = (ATTRIBUTE_FIXED_WIDTH  | ATTRIBUTE_SHRINK_TO_FIT_WIDTH)
+    ATTRIBUTE_HEIGHT_MASK           = (ATTRIBUTE_FIXED_HEIGHT | ATTRIBUTE_SHRINK_TO_FIT_HEIGHT)
+    ATTRIBUTE_SIZE_MASK             = (ATTRIBUTE_WIDTH_MASK   | ATTRIBUTE_HEIGHT_MASK)
+    ATTRIBUTE_DISABLE_INPUT         = (1:<<:4)
+    ATTRIBUTE_DISABLE_CLIP          = (1:<<:5)
+    ATTRIBUTE_HIDDEN                = (1:<<:6)  # not visible, not updated, no events sent
+
+    UI_ATTRIBUTE( IS_DIRTY, is_dirty,  (1:<<:7) )  # needs redraw?
+    UI_ATTRIBUTE( GHOST,    is_ghost,  (1:<<:8) )  # visible, updated & drawn, no events sent
+    UI_ATTRIBUTE( DEAD,     is_dead,   (1:<<:9) )  # will automatically be removed from the UI
 
   PROPERTIES
-    position   : XY
-    size       : XY
-    flags      : Int32
-    attributes : UIAttribute
-    actions    : Action
-    entities   : Entities
+    position          : XY
+    size              : XY
+    display_position  : XY
+    attributes        : Int32
+    anchor            = Anchor.TOP_LEFT : Anchor
+    properties        : UIDynamicProperty
+    actions           : Action
+
+    prev_display_position : XY
+    prev_size             : XY
+
+    fixed_size : XY [faux]
 
   METHODS
     method init
@@ -53,10 +62,6 @@ class UIComponent : Node<<UIComponent>>
 
     method on_init
       noAction
-
-    method add( entity:Entity )
-      ensure<<entities>>
-      entities.add( entity )
 
 #{
     method after( e:KeyEvent )
@@ -108,21 +113,6 @@ class UIComponent : Node<<UIComponent>>
     method can_split_x( max_width:Int32 )->Logical
       return false
 
-    method needs_redraw( callback=null:Function(Box) )->Logical
-      local any_dirty = (entities and entities.needs_redraw(callback))
-      if (any_dirty and not callback) return true
-
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
-        forEach (component in subcomponents)
-          if (component.needs_redraw(callback))
-            if (not callback) return true
-            any_dirty = true
-          endIf
-        endForEach
-      endUse
-      return any_dirty
-
     method clear_modified
       (forEach in children).clear_modified
       @is_modified = false
@@ -130,11 +120,28 @@ class UIComponent : Node<<UIComponent>>
     method clip->Box
       return UI.current.clip.value
 
-    method collect_drawable( list:UIComponent[] )
+    method collect_drawables( list:UIComponent[] )
+      # Collects drawable entities and regular components
       if (is_drawable)
         list.add( this )
       else
-        (forEach in children).collect_drawable( list )
+        (forEach in children).collect_drawables( list )
+      endIf
+
+    method collect_drawable_entities( list:UIComponent[] )
+      # Collects drawable entities and regular components
+      if (is_drawable and is_entity)
+        list.add( this )
+      else
+        (forEach in children).collect_drawables( list )
+      endIf
+
+    method collect_drawable_components( list:UIComponent[] )
+      # Collects drawable regular components but not entities
+      if (is_drawable and not is_entity)
+        list.add( this )
+      else
+        (forEach in children).collect_drawable_components( list )
       endIf
 
       #{
@@ -199,10 +206,6 @@ class UIComponent : Node<<UIComponent>>
     method display_bounds->Box
       return Box( display_position, size )
 
-    method display_position->XY
-      if (parent) return position + parent.content_position + display_offset
-      else        return position + display_offset
-
     method draw( clip_bounds:Box )
       if (is_hidden) return
 
@@ -215,36 +218,39 @@ class UIComponent : Node<<UIComponent>>
           on_draw
           local inner_bounds = clip_bounds & to_inner_bounds(display_bounds)
           if (inner_bounds)
-              draw_subcomponents( inner_bounds.value )
+            draw_subcomponents( inner_bounds.value )
           endIf
           after_draw
         endTemporarily
       endIf
 
+      prev_display_position = position
+      prev_size = size
+
     method draw_subcomponents( draw_bounds:Box )
       use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
+        (forEach in children).collect_drawables( subcomponents )
         forEach (component in subcomponents)
           component.draw( draw_bounds )
         endForEach
       endUse
 
     method enable_clip( setting:Logical )
-      if (setting) flags &= !UIComponent.FLAG_DISABLE_CLIP
-      else         flags |=  UIComponent.FLAG_DISABLE_CLIP
+      if (setting) attributes &= !UIComponent.ATTRIBUTE_DISABLE_CLIP
+      else         attributes |=  UIComponent.ATTRIBUTE_DISABLE_CLIP
 
     method enable_input( setting:Logical )
-      if (setting) flags &= !UIComponent.FLAG_DISABLE_INPUT
-      else         flags |=  UIComponent.FLAG_DISABLE_INPUT
+      if (setting) attributes &= !UIComponent.ATTRIBUTE_DISABLE_INPUT
+      else         attributes |=  UIComponent.ATTRIBUTE_DISABLE_INPUT
 
     method expand_to_fill
-      flags &= !(FLAG_WIDTH_MASK|FLAG_HEIGHT_MASK)  # turn off fixed and shrink flags
+      attributes &= !(ATTRIBUTE_WIDTH_MASK|ATTRIBUTE_HEIGHT_MASK)  # turn off fixed and shrink attributes
 
     method expand_to_fill_height
-      flags &= !FLAG_HEIGHT_MASK  # turn off fixed and shrink flags
+      attributes &= !ATTRIBUTE_HEIGHT_MASK  # turn off fixed and shrink attributes
 
     method expand_to_fill_width
-      flags &= !FLAG_WIDTH_MASK   # turn off fixed and shrink flags
+      attributes &= !ATTRIBUTE_WIDTH_MASK   # turn off fixed and shrink attributes
 
     method find( pos:XY )->UIComponent
       # The algorithm looks a little unusual because we want to find the
@@ -330,7 +336,7 @@ class UIComponent : Node<<UIComponent>>
 
     method handle_resize
       on_resize
-      UIAttributes.on_resize( this )
+      UIDynamicProperties.on_resize( this )
       (forEach in children).handle_resize
       after_resize
 
@@ -343,6 +349,10 @@ class UIComponent : Node<<UIComponent>>
     method height->Int32
       return this.size.y
 
+    method hide
+      is_dirty = true
+      attributes |= ATTRIBUTE_HIDDEN
+
     method inner_display_bounds->Box
       return to_inner_bounds( display_bounds )
 
@@ -352,43 +362,46 @@ class UIComponent : Node<<UIComponent>>
     method is_drawable->Logical
       return true
 
+    method is_entity->Logical
+      return false
+
     method is_expand_to_fill_height->Logical
-      return not (@flags & FLAG_HEIGHT_MASK)
+      return not (@attributes & ATTRIBUTE_HEIGHT_MASK)
 
     method is_expand_to_fill_width->Logical
-      return not (@flags & FLAG_WIDTH_MASK)
+      return not (@attributes & ATTRIBUTE_WIDTH_MASK)
 
     method is_fixed_height->Logical
-      return (flags & FLAG_FIXED_HEIGHT)
+      return (attributes & ATTRIBUTE_FIXED_HEIGHT)
 
     method is_fixed_width->Logical
-      return (flags & FLAG_FIXED_WIDTH)
+      return (attributes & ATTRIBUTE_FIXED_WIDTH)
 
     method is_clip_disabled->Logical
-      if (this.flags & UIComponent.FLAG_DISABLE_CLIP) return true
+      if (this.attributes & UIComponent.ATTRIBUTE_DISABLE_CLIP) return true
       if (parent) return parent.is_clip_disabled
       return false
 
+    method is_hidden->Logical
+      return (@attributes & ATTRIBUTE_HIDDEN)?
+
     method is_input_enabled->Logical
-      return not (this.flags & UIComponent.FLAG_DISABLE_INPUT)
+      return not (this.attributes & UIComponent.ATTRIBUTE_DISABLE_INPUT)
 
     method is_input_disabled->Logical
-      return (this.flags & UIComponent.FLAG_DISABLE_INPUT)
+      return (this.attributes & UIComponent.ATTRIBUTE_DISABLE_INPUT)
 
     method is_modifier->Logical
       return true
 
     method is_shrink_to_fit_height->Logical
-      return (@flags & FLAG_SHRINK_TO_FIT_HEIGHT)?
+      return (@attributes & ATTRIBUTE_SHRINK_TO_FIT_HEIGHT)?
 
     method is_shrink_to_fit_width->Logical
-      return (@flags & FLAG_SHRINK_TO_FIT_WIDTH)?
-
-    method is_hidden->Logical
-      return (@flags & FLAG_HIDDEN)?
+      return (@attributes & ATTRIBUTE_SHRINK_TO_FIT_WIDTH)?
 
     method is_visible->Logical
-      return not (@flags & FLAG_HIDDEN)?
+      return not (@attributes & ATTRIBUTE_HIDDEN)?
 
     method content_offset->XY
       if (first_child) return first_child.display_offset
@@ -422,6 +435,31 @@ class UIComponent : Node<<UIComponent>>
         endIf
       endForEach
       return result
+
+    method needs_redraw->Logical
+      return (is_dirty or display_position != prev_display_position or size != prev_size)
+
+    method needs_redraw( origin:XY, callback:Function(Box) )->Logical
+      origin += position + display_offset
+      display_position = Box( origin, size ).relative_to( anchor ).position
+
+      local any_dirty = false
+
+      if (needs_redraw)
+        is_dirty = true
+        any_dirty = true
+        if (callback) callback( display_bounds )
+      endIf
+
+      use subcomponents = WorkList<<UIComponent>>
+        (forEach in children).collect_drawables( subcomponents )
+        forEach (component in subcomponents)
+          if (component.needs_redraw(origin,callback))
+            any_dirty = true
+          endIf
+        endForEach
+      endUse
+      return any_dirty
 
 #{
     method on( e:KeyEvent )
@@ -483,17 +521,8 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
     method request_redraw
-      # Marks this component and its screen area as needing to be redrawn
-      request_redraw( display_bounds )
-
-    method request_redraw( redraw_bounds:Box )
-      if (redraw_bounds.size.is_zero) return
-
-      if (UI.current.dirty_bounds)
-        UI.current.dirty_bounds = UI.current.dirty_bounds.value | redraw_bounds
-      else
-        UI.current.dirty_bounds = redraw_bounds
-      endIf
+      # Marks this component and its children as needing to be redrawn
+      apply( (node) => node.is_dirty=true; return true )
 
     method request_layout
       is_modified = true  # class Node setter auto-propagates this up the hierarchy
@@ -512,15 +541,15 @@ class UIComponent : Node<<UIComponent>>
       if (not is_fixed_width) width = w
 
     method set_fixed_height( h:Int32 )
-      flags = (flags & !FLAG_HEIGHT_MASK) | FLAG_FIXED_HEIGHT
+      attributes = (attributes & !ATTRIBUTE_HEIGHT_MASK) | ATTRIBUTE_FIXED_HEIGHT
       size = XY( size.x, h )
 
     method set_fixed_size( new_fixed_size:XY )
-      flags = (flags & !FLAG_SIZE_MASK) | FLAG_FIXED_WIDTH | FLAG_FIXED_HEIGHT
+      attributes = (attributes & !ATTRIBUTE_SIZE_MASK) | ATTRIBUTE_FIXED_WIDTH | ATTRIBUTE_FIXED_HEIGHT
       size = new_fixed_size
 
     method set_fixed_width( w:Int32 )
-      flags = (flags & !FLAG_WIDTH_MASK) | FLAG_FIXED_WIDTH
+      attributes = (attributes & !ATTRIBUTE_WIDTH_MASK) | ATTRIBUTE_FIXED_WIDTH
       size = XY( w, size.y )
 
     method set_height( h:Int32 )
@@ -528,6 +557,8 @@ class UIComponent : Node<<UIComponent>>
       size = XY( size.x, h )
 
     method set_is_modified( setting:Logical )
+      # When the structure of this component has been modified, request a layout and
+      # a redraw.
       if (setting) request_redraw
       if (@is_modified == setting) return
       @is_modified = setting
@@ -539,29 +570,26 @@ class UIComponent : Node<<UIComponent>>
         endWhile
       endIf
 
-    #method set_position( pos:XY )
-    #  @position = pos - (size * anchor)
-
     method set_weight( w:Real )
-      UIAttributes.set_weight( this, RealXY(w) )
+      UIDynamicProperties.set_weight( this, RealXY(w) )
 
     method set_width( w:Int32 )
       if (w == size.x) return
       size = XY( w, size.y )
 
-    method set_is_visible( setting:Logical )
-      if (setting) flags = (flags & !FLAG_HIDDEN)
-      else         flags = (flags |  FLAG_HIDDEN)
+    method show
+      is_dirty = true
+      attributes &= !ATTRIBUTE_HIDDEN
 
     method shrink_to_fit
       shrink_to_fit_width
       shrink_to_fit_height
 
     method shrink_to_fit_height
-      flags = (flags & !FLAG_HEIGHT_MASK) | FLAG_SHRINK_TO_FIT_HEIGHT
+      attributes = (attributes & !ATTRIBUTE_HEIGHT_MASK) | ATTRIBUTE_SHRINK_TO_FIT_HEIGHT
 
     method shrink_to_fit_width
-      flags = (flags & !FLAG_WIDTH_MASK) | FLAG_SHRINK_TO_FIT_WIDTH
+      attributes = (attributes & !ATTRIBUTE_WIDTH_MASK) | ATTRIBUTE_SHRINK_TO_FIT_WIDTH
 
     method split_after( i:Int32 )->UIComponent
       return null
@@ -587,7 +615,6 @@ class UIComponent : Node<<UIComponent>>
 
     method update
       on_update
-      entities?.update
       if (actions) actions .= update
       update_subcomponents
       after_update
@@ -611,7 +638,7 @@ class UIComponent : Node<<UIComponent>>
       width = which{ measure_width(container_width) || container_width }
 
       use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
+        (forEach in children).collect_drawable_components( subcomponents )
         update_subcomponent_widths( subcomponents, to_inner_bounds(Box(size)).size.x )
       endUse
 
@@ -622,7 +649,7 @@ class UIComponent : Node<<UIComponent>>
       # Shrink to fit content width
       local result : Int32?
       use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
+        (forEach in children).collect_drawable_components( subcomponents )
         result = measure_content_width( subcomponents )
       endUse
 
@@ -638,7 +665,7 @@ class UIComponent : Node<<UIComponent>>
       height = which{ measure_height(container_height) || container_height }
 
       use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
+        (forEach in children).collect_drawable_components( subcomponents )
         update_subcomponent_heights( subcomponents, to_inner_bounds(Box(size)).size.y )
       endUse
 
@@ -649,7 +676,7 @@ class UIComponent : Node<<UIComponent>>
       # Shrink to fit content height
       local result : Int32?
       use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( subcomponents )
+        (forEach in children).collect_drawable_components( subcomponents )
         result = measure_content_height( subcomponents )
       endUse
 
@@ -663,7 +690,7 @@ class UIComponent : Node<<UIComponent>>
 
     method update_subcomponent_placement( container:Box )
       use list = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable( list )
+        (forEach in children).collect_drawable_components( list )
         update_subcomponent_placement( list, container )
       endUse
 
