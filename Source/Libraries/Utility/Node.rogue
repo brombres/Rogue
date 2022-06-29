@@ -111,6 +111,18 @@ class Node<<$ExtendedNodeType>>
       endIf
       return this->(as $ExtendedNodeType)
 
+    method discard( fn:Function($ExtendedNodeType)->Logical )->$ExtendedNodeType
+      # Discards (detaches) any node in this tree that match the query.
+      # fn(node) should return true to discard that node, false to keep it.
+      # Returns the original root or null if the root has been discarded.
+      if fn(this->(as $ExtendedNodeType))
+        detach
+        return null
+      else
+        (forEach in children).discard( fn )
+        return this->(as $ExtendedNodeType)
+      endIf
+
     method dispatch_on<<$VisitorType>>( visitor:$VisitorType )->$ExtendedNodeType [propagated]
       if (ThisType instanceOf $ExtendedNodeType)
         return visitor.on( this )
