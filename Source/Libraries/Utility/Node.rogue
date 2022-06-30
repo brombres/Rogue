@@ -113,7 +113,7 @@ class Node<<$ExtendedNodeType>>
       # Discards (detaches) any node in this tree that match the query.
       # fn(node) should return true to discard that node, false to keep it.
       # Returns the original root or null if the root has been discarded.
-      if fn(this->(as $ExtendedNodeType))
+      if (fn(this->(as $ExtendedNodeType)))
         detach
         return null
       else

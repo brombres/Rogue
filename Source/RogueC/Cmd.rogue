@@ -4565,17 +4565,19 @@ class CallbackFunction : Cmd
   PROPERTIES
     context : Cmd
     name    : String
+    param_types : TypeList
 
   METHODS
-    method init( t, context, name )
+    method init( t, context, name, param_types )
 
     method init( existing:CallbackFunction )
       prior.init( existing )
       if (existing.context) context = existing.context.cloned
+      if (existing.param_types) param_types = existing.param_types.cloned
       name = existing.name
 
     method description->String
-      return "CallbackFunction($,$)" (%context,%name)
+      return "CallbackFunction($,$,$)" (%context,%name,%param_types)
 
 endClass
 

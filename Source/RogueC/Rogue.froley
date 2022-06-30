@@ -831,7 +831,7 @@ parser
 - type
   on '('
     on "Function"
-      function_type_args
+      function_param_types
       function_return_type
       mustConsume ')'
       create FunctionType(param_types:TypeList,return_type:Type):Type
@@ -885,7 +885,7 @@ parser
     return
 
   elseOn "Function"
-    function_type_args
+    function_param_types
     function_return_type
     create FunctionType(param_types:TypeList,return_type:Type):Type
     list_or_optional_type
@@ -922,7 +922,7 @@ parser
     endOn
   endWhile
 
-- function_type_args
+- function_param_types
   beginList
     if (consume('(') and not consume(')'))
       function_type_parameter
@@ -2526,7 +2526,9 @@ parser
     create ContextBlock(context,commands)
   elseOn "=>"
     identifier
-    produce CallbackFunction(context,name:String)
+    if (nextIs('(')) function_param_types
+    else             createNull
+    produce CallbackFunction(context,name:String,param_types:TypeList)
   elseOn "[>"
     beginList
       expression

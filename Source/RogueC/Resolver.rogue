@@ -1049,12 +1049,24 @@ class Resolver : Poolable, Visitor
       local name = cmd.name
       use methods = WorkList<<Procedure>>
         forEach (m in context_type.methods.values)
-          if (m.name == name) methods.add( m )
+          contingent
+            necessary (m.name == name)
+            sufficient (not cmd.param_types)
+            necessary (m.parameters.count == cmd.param_types.count)
+            forEach (param_type at i in cmd.param_types)
+              necessary (param_type is m.parameters[i].type)
+            endForEach
+          satisfied
+            methods.add( m )
+          endContingent
         endForEach
+
         if (methods.count == 0)
           throw cmd.t.error( "Type $ has no method named '$'."(context_type,name) )
         elseIf (methods.count > 1)
-          throw cmd.t.error( "Type $ has multiple methods named '$'. A unique method name is required."(context_type,name) )
+          throw cmd.t.error(
+            "Type $ has multiple methods named '$'. Specify a signature such as $(Int32,Logical) to disambiguate."...
+            (context_type,name,name) )
         endIf
 
         local m = methods.first

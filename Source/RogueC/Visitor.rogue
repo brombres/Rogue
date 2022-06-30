@@ -662,6 +662,7 @@ class Visitor
 
     method on_visit_children( cmd:CallbackFunction )
       cmd.context = visit(cmd.context)
+      cmd.param_types = visit(cmd.param_types)->(as TypeList)
 
     method on_visit_children( cmd:SwapValues )
       cmd.a = visit(cmd.a)

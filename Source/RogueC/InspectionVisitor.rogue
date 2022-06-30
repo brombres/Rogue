@@ -1000,6 +1000,8 @@ class InspectionVisitor<<$ReturnType>>
     method on_visit_children( cmd:CallbackFunction )->$ReturnType
       local result : $ReturnType
       result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.param_types)
       return result
 
     method on_visit_children( cmd:SwapValues )->$ReturnType
