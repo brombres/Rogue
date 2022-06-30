@@ -30,9 +30,10 @@ class UIComponent : Node<<UIComponent>>
     ATTRIBUTE_DISABLE_CLIP          = (1:<<:5)
     ATTRIBUTE_HIDDEN                = (1:<<:6)  # not visible, not updated, no events sent
 
-    UI_ATTRIBUTE( IS_DIRTY, is_dirty,  (1:<<:7) )  # needs redraw?
-    UI_ATTRIBUTE( GHOST,    is_ghost,  (1:<<:8) )  # visible, updated & drawn, no events sent
-    UI_ATTRIBUTE( DEAD,     is_dead,   (1:<<:9) )  # will automatically be removed from the UI
+    UI_ATTRIBUTE( NEEDS_LAYOUT, needs_layout, (1:<<:7) )   # needs layout
+    UI_ATTRIBUTE( IS_DIRTY,     is_dirty,     (1:<<:8) )   # needs redraw?
+    UI_ATTRIBUTE( GHOST,        is_ghost,     (1:<<:9) )   # visible, updated & drawn, no events sent
+    UI_ATTRIBUTE( DEAD,         is_dead,      (1:<<:10) )  # will automatically be removed from the UI
 
   PROPERTIES
     position          : XY
@@ -43,8 +44,8 @@ class UIComponent : Node<<UIComponent>>
     properties        : UIDynamicProperty
     actions           : Action
 
-    prior_display_position : XY
-    prior_size             : XY
+    last_display_position : XY
+    last_size             : XY
 
     fixed_size : XY [faux]
 
@@ -113,10 +114,6 @@ class UIComponent : Node<<UIComponent>>
     method can_split_x( max_width:Int32 )->Logical
       return false
 
-    method clear_modified
-      (forEach in children).clear_modified
-      @is_modified = false
-
     method clip->Box
       return UI.current.clip.value
 
@@ -163,6 +160,13 @@ class UIComponent : Node<<UIComponent>>
       if (parent) return position + parent.content_position + display_offset
       else        return position + display_offset
 
+    method die
+      hide            # marks this node as dirty so the last display bounds can be repaired
+      is_dead = true  # marks this node as eligible for detaching once the display is repaired
+
+    method discard_dead->UIComponent
+      return discard( $.is_dead and not $.is_dirty )
+
 #{
     method dispatch( e:KeyEvent )
       # Send input events to children in reverse order because the top layer comes last
@@ -207,9 +211,6 @@ class UIComponent : Node<<UIComponent>>
       return Box( display_position, size )
 
     method draw( clip_bounds:Box )
-      prior_display_position = display_position
-      prior_size = size
-
       if (is_hidden) return
 
       localize display_bounds
@@ -279,11 +280,6 @@ class UIComponent : Node<<UIComponent>>
         if (result) return result
       endForEach
       return null
-
-    method footprint( bounds:Box )->Box
-      # Adjusts the given display bounds box to include any area outside of the nominal
-      # area that are drawn over by this component and may need to be repaired later.
-      return bounds
 
 #{
     method handle( e:KeyEvent )
@@ -442,7 +438,7 @@ class UIComponent : Node<<UIComponent>>
       return result
 
     method needs_redraw->Logical
-      return (is_dirty or display_position != prior_display_position or size != prior_size)
+      return (is_dirty or display_position != last_display_position or size != last_size)
 
     method needs_redraw( origin:XY, callback:Function(Box) )->Logical
       origin += position + display_offset
@@ -451,11 +447,10 @@ class UIComponent : Node<<UIComponent>>
       local any_dirty = false
 
       if (needs_redraw)
-        is_dirty = true
         any_dirty = true
         if (callback)
-          callback( footprint( Box(prior_display_position,size) ) )
-          callback( footprint( Box(display_position,size) ) )
+          if (not last_size.is_zero) callback( Box(last_display_position,last_size) )
+          if (not size.is_zero and not is_hidden) callback( Box(display_position,size) )
         endIf
       endIf
 
@@ -529,11 +524,16 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
     method request_redraw
-      # Marks this component and its children as needing to be redrawn
-      apply( (node) => node.is_dirty=true )
+      is_dirty = true
 
     method request_layout
-      is_modified = true  # class Node setter auto-propagates this up the hierarchy
+      if (parent) parent.request_layout
+      else        needs_layout = true
+
+    method save_display_state
+      last_display_position = display_position
+      last_size = size
+      is_dirty = false
 
     method set_content_offset( content_offset:XY )
       if (first_child) first_child.display_offset = content_offset
@@ -563,20 +563,6 @@ class UIComponent : Node<<UIComponent>>
     method set_height( h:Int32 )
       if (h == size.y) return
       size = XY( size.x, h )
-
-    method set_is_modified( setting:Logical )
-      # When the structure of this component has been modified, request a layout and
-      # a redraw.
-      if (setting) request_redraw
-      if (@is_modified == setting) return
-      @is_modified = setting
-      if (setting)
-        local cur = parent
-        while (cur)
-          cur.@is_modified = true
-          cur .= parent
-        endWhile
-      endIf
 
     method set_weight( w:Real )
       UIDynamicProperties.set_weight( this, RealXY(w) )
@@ -629,13 +615,13 @@ class UIComponent : Node<<UIComponent>>
 
     method update_layout( new_bounds:Box )
       # Only called on a top-level UIComponent
+      needs_layout = false
       prepare_layout
       dispatch_on_update_layout
       update_layout_width( new_bounds.size.x )
       update_layout_height( new_bounds.size.y )
       update_layout_placement( new_bounds )
       dispatch_after_update_layout
-      clear_modified
 
     method update_layout_placement( container:Box )
       local anchor = this.anchor

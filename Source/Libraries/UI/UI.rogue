@@ -160,9 +160,10 @@ class UI [abstract]
           dirty_bounds = null
           on_draw
           (forEach in layers).draw( clip.value )
-          (forEach in layers).apply( (component) => component.is_dirty=false )
           after_draw
         endTemporarily
+
+        (forEach in layers).apply( $.save_display_state )
       endIf
 
       #{
@@ -292,7 +293,7 @@ class UI [abstract]
       layers.remove( layer )
 
     method request_layout
-      (forEach in layers).is_modified = true
+      (forEach in layers).request_layout
 
     method request_redraw
       dirty_bounds = bounds
@@ -333,7 +334,7 @@ class UI [abstract]
       (forEach in layers).update
 
       forEach (layer in layers step -1)
-        if (layer.discard( $.is_dead ) is null) layers.remove( layer )
+        if (layer.discard_dead is null) layers.remove( layer )
       endForEach
 
       after_update
@@ -346,7 +347,7 @@ class UI [abstract]
       local bounds_changed = (bounds != new_bounds)
       if (bounds_changed)
         bounds = new_bounds
-        if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire View
+        if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire UI
         on_update_layout
       endIf
 
