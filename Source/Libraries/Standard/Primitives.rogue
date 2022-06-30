@@ -515,6 +515,17 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
       if (unsigned) return this->Int64 & 0x0FFFFffff
       else          return this->Int64
 
+    method to_power_of_2->Int32
+      if (this < 0) return 1
+
+      local p2 = 1
+      loop (30)
+        if (p2 >= this) return p2
+        p2 :<<:= 1
+      endLoop
+
+      return 1
+
     method th->String
       # Returns Nst, Nnd, Nrd, Nth as appropriate
       # Example:
