@@ -34,12 +34,10 @@ class Node<<$ExtendedNodeType>>
         cur.@next = new_sibling
       endIf
 
-    method apply( fn:Function($ExtendedNodeType)->Logical )->Logical
+    method apply( fn:Function($ExtendedNodeType) )
       # Recursively traverse this node and all its children, calling fn(node) on each.
-      # If fn(node) ever returns false then the traversal will abort.
-      if not fn(this->(as $ExtendedNodeType)) return false
-      if (not (forEach in children).apply(fn)) return false
-      return true
+      fn( this->(as $ExtendedNodeType) )
+      (forEach in children).apply(fn)
 
     method children->NodeIterator<<$ExtendedNodeType>>
       return NodeIterator<<$ExtendedNodeType>>( first_child )

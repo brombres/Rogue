@@ -100,11 +100,8 @@ class UI [abstract]
     method after_update
       noAction
 
-    method apply( fn:Function(UIComponent)->Logical )->Logical
-      forEach (layer in layers)
-        if (not layer.apply(fn)) return false
-      endForEach
-      return true
+    method apply( fn:Function(UIComponent) )
+      (forEach in layers).apply( fn )
 
     method at( xp:Real, yp:Real )->XY
       return XY( size.x*xp, size.y*yp )
@@ -156,11 +153,14 @@ class UI [abstract]
     method draw
       activate
 
+      if (needs_redraw) request_redraw
+
       if (dirty_bounds)
         temporarily clip = dirty_bounds
           dirty_bounds = null
           on_draw
           (forEach in layers).draw( clip.value )
+          (forEach in layers).apply( (component) => component.is_dirty=false )
           after_draw
         endTemporarily
       endIf

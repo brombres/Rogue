@@ -43,8 +43,8 @@ class UIComponent : Node<<UIComponent>>
     properties        : UIDynamicProperty
     actions           : Action
 
-    prev_display_position : XY
-    prev_size             : XY
+    prior_display_position : XY
+    prior_size             : XY
 
     fixed_size : XY [faux]
 
@@ -207,6 +207,9 @@ class UIComponent : Node<<UIComponent>>
       return Box( display_position, size )
 
     method draw( clip_bounds:Box )
+      prior_display_position = display_position
+      prior_size = size
+
       if (is_hidden) return
 
       localize display_bounds
@@ -223,9 +226,6 @@ class UIComponent : Node<<UIComponent>>
           after_draw
         endTemporarily
       endIf
-
-      prev_display_position = position
-      prev_size = size
 
     method draw_subcomponents( draw_bounds:Box )
       use subcomponents = WorkList<<UIComponent>>
@@ -279,6 +279,11 @@ class UIComponent : Node<<UIComponent>>
         if (result) return result
       endForEach
       return null
+
+    method footprint( bounds:Box )->Box
+      # Adjusts the given display bounds box to include any area outside of the nominal
+      # area that are drawn over by this component and may need to be repaired later.
+      return bounds
 
 #{
     method handle( e:KeyEvent )
@@ -437,7 +442,7 @@ class UIComponent : Node<<UIComponent>>
       return result
 
     method needs_redraw->Logical
-      return (is_dirty or display_position != prev_display_position or size != prev_size)
+      return (is_dirty or display_position != prior_display_position or size != prior_size)
 
     method needs_redraw( origin:XY, callback:Function(Box) )->Logical
       origin += position + display_offset
@@ -448,7 +453,10 @@ class UIComponent : Node<<UIComponent>>
       if (needs_redraw)
         is_dirty = true
         any_dirty = true
-        if (callback) callback( display_bounds )
+        if (callback)
+          callback( footprint( Box(prior_display_position,size) ) )
+          callback( footprint( Box(display_position,size) ) )
+        endIf
       endIf
 
       use subcomponents = WorkList<<UIComponent>>
@@ -522,7 +530,7 @@ class UIComponent : Node<<UIComponent>>
 
     method request_redraw
       # Marks this component and its children as needing to be redrawn
-      apply( (node) => node.is_dirty=true; return true )
+      apply( (node) => node.is_dirty=true )
 
     method request_layout
       is_modified = true  # class Node setter auto-propagates this up the hierarchy
