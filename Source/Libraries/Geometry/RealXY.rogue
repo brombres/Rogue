@@ -30,6 +30,12 @@ class RealXY( x:Real, y:Real ) [compound]
       return RealXY( a.x%b.x, a.x%b.y )
 
   METHODS
+    method cross( other:XY )->Real
+      return x * other.y - y * other.x
+
+    method dot( other:XY )->Real
+      return x * other.x + y * other.y
+
     method is_zero->Logical
       return x == 0 and y == 0
 
@@ -118,6 +124,9 @@ class RealXY( x:Real, y:Real ) [compound]
     method or_smaller( other:RealXY )->RealXY
       # Returns the smaller X and the smaller Y between this value and the other value.
       return RealXY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
+    method product->Real
+      return x * y
 
     method sign->RealXY
       return RealXY( x.sign, y.sign )

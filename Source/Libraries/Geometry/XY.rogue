@@ -30,6 +30,12 @@ class XY( x:Int32, y:Int32 ) [essential compound]
       return XY( a.x%b.x, a.x%b.y )
 
   METHODS
+    method cross( other:XY )->Int32
+      return x * other.y - y * other.x
+
+    method dot( other:XY )->Int32
+      return x * other.x + y * other.y
+
     method is_zero->Logical
       return x == 0 and y == 0
 
@@ -126,6 +132,9 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method or_smaller( other:XY )->XY
       # Returns the smaller X and the smaller Y between this value and the other value.
       return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
+    method product->Int32
+      return x * y
 
     method sign->XY
       return XY( x.sign, y.sign )
