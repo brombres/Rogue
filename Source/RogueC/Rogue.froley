@@ -160,8 +160,8 @@ SYMBOL_DOTDOTGT              ..>
 SYMBOL_DOT_OPEN_SQUARE       .[
 SYMBOL_DOUBLE_VERTICAL_BAR   ||  [structural]
 SYMBOL_EMPTY_SQUARE_BRACKETS []
-SYMBOL_EMPTY_VALUE_LIST      @[]
-SYMBOL_EMPTY_VALUE_TABLE     @{}
+SYMBOL_VALUE_LIST            @[
+SYMBOL_VALUE_TABLE           @{
 SYMBOL_EQ                    ==
 SYMBOL_EQUALS                =
 SYMBOL_FAT_ARROW             =>
@@ -2777,8 +2777,15 @@ parser
     return
   endOn
 
-  on "@[]" -> EmptyValueList
-  on "@{}" -> EmptyValueTable
+  on "@["
+    value_list
+    return
+  endOn
+
+  on "@{"
+    value_table
+    return
+  endOn
 
   on '$'
     call on_generic_fn_arg
@@ -2813,6 +2820,61 @@ parser
   on "isReference" "<<" expression ">>" -> IsReference(operand)
 
   syntaxError
+
+- value_expression
+  on '{' value_table: return
+  on '[' value_list:  return
+  expression
+
+- value_list
+  consume_eols
+  if (consume(']')) produce EmptyValueList
+
+  beginList
+    value_expression
+    consume_eols
+    while (consume(',') or not nextIs(']'))
+      consume_eols
+      value_expression
+      consume_eols
+    endWhile
+    mustConsume ']'
+  createList Args
+
+  produce ValueList(args)
+
+- value_table
+  consume_eols
+  if (consume('}')) produce EmptyValueTable
+
+  beginList
+    key_value_pair
+    consume_eols
+    while (consume(',') or not nextIs('}'))
+      key_value_pair
+    endWhile
+    mustConsume '}'
+  createList LiteralTable
+
+  produce ValueTable(args:LiteralTable)
+
+- key_value_pair
+  consume_eols
+  on IDENTIFIER
+    create LiteralString(name=content)
+  elseOn STRING
+    create LiteralString(name=content)
+  elseOnOthers
+    syntaxError "Identifier or literal string expected."
+  endOn
+  consume_eols
+
+  mustConsume ':'
+  consume_eols
+
+  value_expression
+  create LiteralTableEntry(key,value)
+  consume_eols
 
 - type_access_or_typed_literal_list
   if (nextIs('['))

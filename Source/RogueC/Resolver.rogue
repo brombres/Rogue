@@ -1538,6 +1538,28 @@ class Resolver : Poolable, Visitor
       result = visit( result )
       return result
 
+    method on( cmd:ValueList )->Cmd
+      local t = cmd.t
+      local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Value), "list" )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.args)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
+      endForEach
+
+      return visit( ContextBlock(t, cmd_list, build_list) )
+
+    method on( cmd:ValueTable )->Cmd
+      local t = cmd.t
+      local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Value), "table" )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.args)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "set", Args(arg.t,arg.key,arg.value) ) )
+      endForEach
+
+      return visit( ContextBlock(t, cmd_table, build_list) )
+
     method on( cmd:Which )->Cmd
       if (cmd.is_resolved) return cmd
       cmd.is_resolved = true

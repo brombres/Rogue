@@ -4756,3 +4756,35 @@ class IfConditionalContext : Cmd
       return "IfConditionalContext($,$)" (%conditional_context,%statements)
 
 endClass
+
+class ValueList : Cmd
+  PROPERTIES
+    args : Cmd
+
+  METHODS
+    method init( t, args )
+
+    method init( existing:ValueList )
+      prior.init( existing )
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "ValueList($)" (%args)
+
+endClass
+
+class ValueTable : Cmd
+  PROPERTIES
+    args : LiteralTable
+
+  METHODS
+    method init( t, args )
+
+    method init( existing:ValueTable )
+      prior.init( existing )
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "ValueTable($)" (%args)
+
+endClass

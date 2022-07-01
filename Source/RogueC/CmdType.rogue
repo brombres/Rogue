@@ -523,6 +523,12 @@ augment
     method EmptyCompound.type->Type
       return of_type
 
+    method EmptyValueList.type->Type
+      return Program.type_Value
+
+    method EmptyValueTable.type->Type
+      return Program.type_Value
+
     method FunctionDefinition.type->Type
       return resolve_type
 
@@ -667,6 +673,12 @@ augment
 
     method Unary.type->Type
       return operand.type
+
+    method ValueList.type->Type
+      return Program.type_Value
+
+    method ValueTable.type->Type
+      return Program.type_Value
 
     method WideningCast.type->Type
       return to_type

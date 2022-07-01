@@ -691,5 +691,11 @@ class Visitor
       cmd.conditional_context = visit(cmd.conditional_context)->(as ConditionalContext)
       cmd.statements = visit(cmd.statements)
 
+    method on_visit_children( cmd:ValueList )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:ValueTable )
+      cmd.args = visit(cmd.args)->(as LiteralTable)
+
 endClass
 
