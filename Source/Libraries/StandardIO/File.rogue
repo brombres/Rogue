@@ -1,5 +1,3 @@
-uses Utility/WorkList
-
 class File( filepath:String ) [compound]
   NATIVE
     nativeHeader @|#include <stdio.h>
