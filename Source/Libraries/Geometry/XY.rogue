@@ -77,6 +77,10 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator==( other:XY )->Logical
       return x == other.x and y == other.y
 
+    method operator<>( other:XY )->Int32
+      if (x == other.x) return y <> other.y
+      else              return x <> other.x
+
     method operator+( other:XY )->XY
       return XY( x+other.x, y+other.y )
 

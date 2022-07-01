@@ -4,20 +4,38 @@ class Value [compound]
   DEFINITIONS
     # Internal use.
     TYPE_UNDEFINED =  0
-    TYPE_NULL      =  1
-    TYPE_LOGICAL   =  2
-    TYPE_BYTE      =  3
-    TYPE_CHARACTER =  4
-    TYPE_INT32     =  5
-    TYPE_INT64     =  6
-    TYPE_REAL32    =  7
-    TYPE_REAL64    =  8
+    TYPE_BYTE      =  1
+    TYPE_CHARACTER =  2
+    TYPE_INT32     =  3
+    TYPE_INT64     =  4
+    TYPE_REAL32    =  5
+    TYPE_REAL64    =  6
+    TYPE_LOGICAL   =  7
+    TYPE_NULL      =  8
     TYPE_XY        =  9
     TYPE_BOX       = 10
     TYPE_OBJECT    = 11
     TYPE_STRING    = 12
     TYPE_LIST      = 13
     TYPE_TABLE     = 14
+
+  NATIVE
+    nativeHeader
+      @|#define ROGUE_VALUE_TYPE_UNDEFINED 0
+       |#define ROGUE_VALUE_TYPE_BYTE      1
+       |#define ROGUE_VALUE_TYPE_CHARACTER 2
+       |#define ROGUE_VALUE_TYPE_INT32     3
+       |#define ROGUE_VALUE_TYPE_INT64     4
+       |#define ROGUE_VALUE_TYPE_REAL32    5
+       |#define ROGUE_VALUE_TYPE_REAL64    6
+       |#define ROGUE_VALUE_TYPE_LOGICAL   7
+       |#define ROGUE_VALUE_TYPE_NULL      8
+       |#define ROGUE_VALUE_TYPE_XY        9
+       |#define ROGUE_VALUE_TYPE_BOX       10
+       |#define ROGUE_VALUE_TYPE_OBJECT    11
+       |#define ROGUE_VALUE_TYPE_STRING    12
+       |#define ROGUE_VALUE_TYPE_LIST      13
+       |#define ROGUE_VALUE_TYPE_TABLE     14
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -52,60 +70,60 @@ class Value [compound]
 
   GLOBAL METHODS
     method create->Value
-      return native( "(RogueValue) { 0 }" )->Value  # undefined
+      return native( "(RogueValue) { ROGUE_VALUE_TYPE_UNDEFINED }" )->Value  # undefined
 
     method create( value:Logical )->Value
-      return native( "(RogueValue) {  2, 0, {.logical=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_LOGICAL, 0, {.logical=$value} }" )->Value
 
     method create( value:Byte )->Value
-      return native( "(RogueValue) {  3, 0, {.byte=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_BYTE, 0, {.byte=$value} }" )->Value
 
     method create( value:Character )->Value
-      return native( "(RogueValue) {  4, 0, {.character=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_CHARACTER, 0, {.character=$value} }" )->Value
 
     method create( value:Int32 )->Value
-      return native( "(RogueValue) {  5, 0, {.int32=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Value
 
     method create( value:Int64 )->Value
-      return native( "(RogueValue) {  6, 0, {.int64=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Value
 
     method create( value:Real32 )->Value
-      return native( "(RogueValue) {  7, 0, {.real32=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Value
 
     method create( value:Real64 )->Value
-      return native( "(RogueValue) {  8, 0, {.real64=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Value
 
     method create( value:XY )->Value
-      return native( "(RogueValue) {  9, 0, {.xy=$value} }" )->Value
+      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Value
 
     method create( value:Box )->Value
-      return native( "(RogueValue) { 10, 0, {.box=$value} }" )->Value
+      return native( "(RogueValue) { ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Value
 
     method create( value:Object )->Value [preferred]
-      if (value) return native( "(RogueValue) { 11, $value }" )->Value
-      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_OBJECT, $value }" )->Value
+      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create( value:String )->Value
-      if (value) return native( "(RogueValue) { 12, (RogueObject*)$value }" )->Value
-      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_STRING, (RogueObject*)$value }" )->Value
+      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create( value:Value[] )->Value
-      if (value) return native( "(RogueValue) { 13, (RogueObject*)$value }" )->Value
-      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_LIST, (RogueObject*)$value }" )->Value
+      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create( value:[String:Value] )->Value
-      if (value) return native( "(RogueValue) { 14, (RogueObject*)$value }" )->Value
-      else       return native( "(RogueValue) { 1 }" )->Value  # null value
+      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$value }" )->Value
+      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method list->Value
       # Convenience syntax: @[] is equivalent to Value.list()
       local data = Value[]
-      return native( "(RogueValue) { 13, (RogueObject*)$data }" )->Value
+      return native( "(RogueValue) { ROGUE_VALUE_TYPE_LIST, (RogueObject*)$data }" )->Value
 
     method table->Value
       # Convenience syntax: @{} is equivalent to Value.table()
       local data = [String:Value]
-      return native( "(RogueValue) { 14, (RogueObject*)$data }" )->Value
+      return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$data }" )->Value
 
   METHODS
     method add( value:Value )
@@ -120,6 +138,22 @@ class Value [compound]
           local list = object->(as Value[])
           list.reserve( value.count )
           list.add( forEach in value )
+      endWhich
+
+    method contains( value:Value )->Logical
+      which (type)
+        case TYPE_STRING
+          which (value.type)
+            case TYPE_CHARACTER: return object->(as String).contains( value.character )
+            case TYPE_STRING:    return object->(as String).contains( value.object->(as String) )
+            others:              return false
+          endWhich
+        case TYPE_LIST
+          return object->(as Value[]).contains( value )
+        case TYPE_TABLE
+          return object->(as [String:Value]).contains( value->String )
+        others
+          return false
       endWhich
 
     method count->Int32
@@ -172,6 +206,91 @@ class Value [compound]
           return true
         others
           return false
+      endWhich
+
+    method locate( value:Value, i1=null:Int32? )->Int32?
+      which (type)
+        case TYPE_STRING
+          which (value.type)
+            case TYPE_CHARACTER: return object->(as String).locate( value.character, i1 )
+            case TYPE_STRING:    return object->(as String).locate( value.object->(as String), i1 )
+            others:              return null
+          endWhich
+        case TYPE_LIST
+          return object->(as Value[]).locate( value, i1 )
+        others
+          return null
+      endWhich
+
+    method locate_last( value:Value, i1=null:Int32? )->Int32?
+      which (type)
+        case TYPE_STRING
+          which (value.type)
+            case TYPE_CHARACTER: return object->(as String).locate_last( value.character, i1 )
+            case TYPE_STRING:    return object->(as String).locate_last( value.object->(as String), i1 )
+            others:              return null
+          endWhich
+        case TYPE_LIST
+          return object->(as Value[]).locate_last( value, i1 )
+        others
+          return null
+      endWhich
+
+    method operator<>( other:Value )->Int32
+      if (type == TYPE_UNDEFINED) return (other.type == TYPE_UNDEFINED)
+
+      if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
+        # Both are primitives
+        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return real64 <> other.real64
+        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return real32 <> other.real32
+        return int64 <> other.int64
+      endIf
+
+      if (type != other.type) return type <> other.type
+
+      which (type)
+        case TYPE_LOGICAL
+          return logical <> other.logical
+        case TYPE_NULL
+          return 0  # equal
+        case TYPE_XY
+          return xy <> other.xy
+        case TYPE_BOX
+          if (box.size == other.box.size) return box.position <> other.box.position
+          else                            return box.size <> other.box.size
+        case TYPE_OBJECT
+          if (object == other.object) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_STRING
+          return object->(as String) <> other.object->(as String)
+        case TYPE_LIST
+          if (object->(as Value[]) == other.object->(as Value[])) return 0
+          return object.object_id <> other.object.object_id
+        case TYPE_TABLE
+          if (object->(as [String:Value]) == other.object->(as [String:Value])) return 0
+          return object.object_id <> other.object.object_id
+        others
+          return type <> other.type
+      endWhich
+
+    method remove( value:Value )->Value
+      which (type)
+        case TYPE_LIST
+          return object->(as Value[]).remove( value )
+        case TYPE_TABLE
+          return object->(as [String:Value]).remove( value )
+        others
+          return undefined
+      endWhich
+
+    method remove_at( index:Int32 )->Value
+      which (type)
+        case TYPE_LIST
+          return object->(as Value[]).remove_at( index )
+        case TYPE_TABLE
+          return object->(as [String:Value]).remove_at( index )
+        others
+          return undefined
       endWhich
 
     method set( index:Int32, value:Value )
