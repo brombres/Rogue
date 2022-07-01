@@ -4410,16 +4410,16 @@ class TypedLiteralList : Cmd
 
 endClass
 
-class LiteralTable : CmdList
+class KeyValuePairList : CmdList
   METHODS
     method description->String
-      return "LiteralTable" + list_description
+      return "KeyValuePairList" + list_description
 
-    method get( index:Int32 )->LiteralTableEntry
-      return list[index]->(as LiteralTableEntry)
+    method get( index:Int32 )->KeyValuePair
+      return list[index]->(as KeyValuePair)
 endClass
 
-class LiteralTableEntry : Cmd
+class KeyValuePair : Cmd
   PROPERTIES
     key   : Cmd
     value : Cmd
@@ -4427,20 +4427,20 @@ class LiteralTableEntry : Cmd
   METHODS
     method init( t, key, value )
 
-    method init( existing:LiteralTableEntry )
+    method init( existing:KeyValuePair )
       prior.init( existing )
       if (existing.key) key = existing.key.cloned
       if (existing.value) value = existing.value.cloned
 
     method description->String
-      return "LiteralTableEntry($,$)" (%key,%value)
+      return "KeyValuePair($,$)" (%key,%value)
 
 endClass
 
 class TypedLiteralTable : Cmd
   PROPERTIES
     of_type : Type
-    table   : LiteralTable
+    table   : KeyValuePairList
 
   METHODS
     method init( t, of_type, table )
@@ -4775,7 +4775,7 @@ endClass
 
 class ValueTable : Cmd
   PROPERTIES
-    args : LiteralTable
+    args : KeyValuePairList
 
   METHODS
     method init( t, args )

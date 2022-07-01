@@ -2730,7 +2730,7 @@ parser
       type  # [Key:Value] table
       if (nextIs('{'))
         literal_table
-        create TypedLiteralTable( of_type:Type, table:LiteralTable )
+        create TypedLiteralTable( of_type:Type, table:KeyValuePairList )
       else
         access_args
         create TypeAccess( of_type:Type, args )
@@ -2854,9 +2854,9 @@ parser
       key_value_pair
     endWhile
     mustConsume '}'
-  createList LiteralTable
+  createList KeyValuePairList
 
-  produce ValueTable(args:LiteralTable)
+  produce ValueTable(args:KeyValuePairList)
 
 - key_value_pair
   consume_eols
@@ -2873,7 +2873,7 @@ parser
   consume_eols
 
   value_expression
-  create LiteralTableEntry(key,value)
+  create KeyValuePair(key,value)
   consume_eols
 
 - type_access_or_typed_literal_list
@@ -2972,7 +2972,7 @@ parser
   on '{'
     beginList
     consume_eols
-    if (consume('}')) produceList LiteralTable
+    if (consume('}')) produceList KeyValuePairList
     literal_table_entry
     consume_eols
     while (not nextIs('}'))
@@ -2981,7 +2981,7 @@ parser
       consume_eols
     endWhile
     mustConsume( '}' )
-    produceList LiteralTable
+    produceList KeyValuePairList
   endOn
 
 - literal_table_entry
@@ -2994,7 +2994,7 @@ parser
   mustConsume ':'
 
   expression
-  produce LiteralTableEntry(key,value)
+  produce KeyValuePair(key,value)
 
 - preprocess
   while (hasAnother)

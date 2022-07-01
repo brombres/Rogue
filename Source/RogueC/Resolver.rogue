@@ -891,7 +891,7 @@ class Resolver : Poolable, Visitor
 
       return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt32(t,cmd.count))), build_list) )
 
-    method on( cmd:LiteralTable )->Cmd
+    method on( cmd:KeyValuePairList )->Cmd
       if (cmd.count == 0)
         throw cmd.t.error( "Cannot determine type of empty literal table. Write e.g. '[String:Int32]' "...
                            "for an empty table of String-to-Int32 mappings or '@{}' for an empty Value table." )
