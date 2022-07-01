@@ -39,6 +39,7 @@ class UIComponent : Node<<UIComponent>>
     position          : XY
     size              : XY
     display_position  : XY
+    z_index           : Int32
     attributes        : Int32
     anchor            = Anchor.TOP_LEFT : Anchor
     properties        : UIDynamicProperty
@@ -46,6 +47,7 @@ class UIComponent : Node<<UIComponent>>
 
     last_display_position : XY
     last_size             : XY
+    last_z_index          : Int32
 
     fixed_size : XY [faux]
 
@@ -118,7 +120,7 @@ class UIComponent : Node<<UIComponent>>
       return UI.current.clip.value
 
     method collect_drawables( list:UIComponent[] )
-      # Collects drawable entities and regular components
+      # Collects drawable entities and regular components.
       if (is_drawable)
         list.add( this )
       else
@@ -126,7 +128,7 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
     method collect_drawable_entities( list:UIComponent[] )
-      # Collects drawable entities and regular components
+      # Collects drawable entities but not regular components.
       if (is_drawable and is_entity)
         list.add( this )
       else
@@ -231,6 +233,7 @@ class UIComponent : Node<<UIComponent>>
     method draw_subcomponents( draw_bounds:Box )
       use subcomponents = WorkList<<UIComponent>>
         (forEach in children).collect_drawables( subcomponents )
+        subcomponents.sort( $1.z_index <= $2.z_index )
         forEach (component in subcomponents)
           component.draw( draw_bounds )
         endForEach
@@ -438,7 +441,7 @@ class UIComponent : Node<<UIComponent>>
       return result
 
     method needs_redraw->Logical
-      return (is_dirty or display_position != last_display_position or size != last_size)
+      return (is_dirty or display_position != last_display_position or size != last_size or z_index != last_z_index)
 
     method needs_redraw( origin:XY, callback:Function(Box) )->Logical
       origin += position + display_offset
@@ -533,6 +536,7 @@ class UIComponent : Node<<UIComponent>>
     method save_display_state
       last_display_position = display_position
       last_size = size
+      last_z_index = z_index
       is_dirty = false
 
     method set_content_offset( content_offset:XY )
