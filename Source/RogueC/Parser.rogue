@@ -15,6 +15,7 @@ class Parser : ParserCore, Poolable
     collecting_templates  = false
     _attribute_no_include = false
     _attribute_essential  = false
+    is_api                = false
 
     augment_t             : Token
     augment_context_name  : String
@@ -23,6 +24,7 @@ class Parser : ParserCore, Poolable
     generic_fn_args_used  : Int32
 
     local_macros          : StringTable<<Macro[]>>
+
 
   METHODS
     method init
@@ -147,7 +149,9 @@ class Parser : ParserCore, Poolable
       tokens.add( tokens.last.cloned(TokenType.KEYWORD_END_CLASS,null) )
       tokens.add( tokens.last.cloned(TokenType.EOL,null) )
 
-      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
+      local attributes = Attribute.ASPECT | Attribute.AUGMENT
+      if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
+      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method begin_join_ids
       id_start_stack.add( processed_tokens.count )
@@ -511,7 +515,9 @@ class Parser : ParserCore, Poolable
         endIf
       endForEach
 
-      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, Attribute.ASPECT|Attribute.AUGMENT )
+      local attributes = Attribute.ASPECT | Attribute.AUGMENT
+      if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
+      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method on_uses_module
       assert _cmd_stack.count >= 2
@@ -570,6 +576,7 @@ class Parser : ParserCore, Poolable
         endIf
       endIf
 
+      if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       local result = Template( class_t, m, name, placeholders, tokens, attributes )
       m.templates[extended_name] = result
       return result
@@ -593,7 +600,9 @@ class Parser : ParserCore, Poolable
         local tokens = _tokens.from( i1+1, i2 ).to_list
         tokens.add( tokens.remove_last.cloned(TokenType.KEYWORD_END_CLASS) ) # 'endSubclass' -> 'endClass'
 
-        local result = Template( class_t, m, name, Token[], tokens, 0 )
+        local attributes = 0
+        if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
+        local result = Template( class_t, m, name, Token[], tokens, attributes )
         m.templates["$<<0>>"(name)] = result
 
       else
@@ -649,7 +658,9 @@ class Parser : ParserCore, Poolable
 
     method on_parsed_routine
       local attributes : Int64
-      if (_attribute_essential) attributes |= Attribute.ESSENTIAL
+      if (_attribute_essential)
+        attributes |= Attribute.ESSENTIAL
+      endIf
       _attribute_essential = false
 
       if (not collecting_templates) return
@@ -682,6 +693,7 @@ class Parser : ParserCore, Poolable
       m.augments["Routine"].add( aspect_name )
 
       attributes |= Attribute.ASPECT | Attribute.AUGMENT
+      if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method parse_module_id

@@ -91,7 +91,7 @@ class MethodInfo
     method init
       noAction
 
-    method call( context_or_args:Value )->Value
+    method call( context_or_args=undefined:Value )->Value
       # Call this global or object method.
       #
       # context_or_args

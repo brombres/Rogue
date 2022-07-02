@@ -500,6 +500,8 @@ class File( filepath:String ) [compound]
       if (file.exists xor other.exists) return false
       if (not file.exists) return true
 
+      if (filepath == other.filepath)   return true
+
       if (file.size != other.size)      return false
       if (file.crc32 != other.crc32)    return false
       return true

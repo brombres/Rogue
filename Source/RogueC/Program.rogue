@@ -4,7 +4,7 @@ class Program [singleton]
   PROPERTIES
     t                    = Token( TokenType.EOI, "R2" )
     include_search_paths = String[]
-    included_files       = StringTable<<Token[]>>()
+    included_files       = StringTable<<IncludedFile>>()
     definitions          = StringTable<<Token[]>>()
     macros               = StringTable<<Macro[]>>()
     targets              = StringTable<<String>>()
@@ -16,6 +16,8 @@ class Program [singleton]
     output_filepath   : String
     stack_trace       = false
     real_bits         : Int32 # Set with --real=32 compile option
+    api_patterns      = String[]
+    api_filepaths     = Set<<String>>()
 
     modules           = StringTable<<Module>>()
     default_module    : Module
@@ -155,10 +157,10 @@ class Program [singleton]
         return null
       endIf
 
-    method include( filepath:String )
-      include( t, filepath )
+    method include( filepath:String, &api )
+      include( t, filepath, &=api )
 
-    method include( t:Token, filepath:String, &is_optional )
+    method include( t:Token, filepath:String, &api, &is_optional )
       local found = find_include( t, filepath )
       if (not found)
         forEach (path in include_search_paths)
@@ -177,8 +179,10 @@ class Program [singleton]
         throw t.error( "Include not found: $"(filepath) )
       endIf
 
+      if (api) api_filepaths.add( filepath )
+
       if (included_files.contains(filepath)) return
-      included_files[ filepath ] = null # placeholder
+      included_files[ filepath ] = IncludedFile(null,null,false) # placeholder
 
       temporarily current_module = Program.default_module
         Analytics.tokenization.start
@@ -189,11 +193,11 @@ class Program [singleton]
         Parser( tokens ).preprocess
         Analytics.preprocessing.stop
 
-        included_files[filepath] = tokens
+        included_files[filepath] = IncludedFile( filepath, tokens, api )
 
         # First parser pass collects class templates but does not build an AST
         Analytics.parse_templates.start
-        Parser(tokens).[collecting_templates=true,disable_output=1].parse
+        Parser(tokens).[collecting_templates=true,disable_output=1,is_api=api].parse
         Analytics.parse_templates.stop
       endTemporarily
 
@@ -238,9 +242,10 @@ class Program [singleton]
 
       # Reparse the tokens for each file.
       Analytics.main_parse.start
-      forEach (file_tokens in included_files)
+      forEach (included_file in included_files)
+        local file_tokens = included_file.tokens
         temporarily current_module = Program.default_module
-          local elements = Parser(file_tokens).parse
+          local elements = Parser(file_tokens).[ is_api=included_file.is_api] .parse
           if (elements)
             local collector = Collector()
             collector.visit( forEach in elements )
@@ -275,3 +280,6 @@ class Program [singleton]
       else                 type_Real = type_Real32
 
 endClass
+
+class IncludedFile( filepath:String, tokens:Token[], is_api:Logical ) [compound];
+

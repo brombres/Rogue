@@ -109,8 +109,20 @@ class RogueC
         Program.real_bits = real_bits
       endIf
 
-      Program.include( forEach in command//args )
+      local api_includes = command//options//api.contains(true)
+
+      Program.include( forEach in command//args, &api=api_includes )
       Program.include( "Standard" )
+
+      forEach (option in command//options//api)
+        if (option == Value(true)) nextIteration
+        if (option->String.ends_with(".rogue"))
+          Program.include( option->String, &api )
+        else
+          Program.api_patterns.add( option->String )
+        endIf
+      endForEach
+
       Program.resolve
 
       Analytics.generate_c.start
@@ -123,6 +135,7 @@ class RogueC
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().
       [
+        option( "--api=", &optional, &multi )
         option( "--debug" )
         option( "--define=", &alias="-D", &multi )
         option( "--gc=" )
@@ -218,6 +231,17 @@ class RogueC
                |  rogue [OPTIONS] <filepath>
                |
                |OPTIONS
+               |  --api, --api=[Module::]ClassName, --api="Filename.rogue"
+               |    --api
+               |      All routines and classes in the files specified on the command line are
+               |      marked [essential api], ensuring those routines, classes, and methods are
+               |      available to introspection.
+               |    --api=[Module::]ClassName, --api="Module::*", --api="*::*", --api="*"
+               |      Marks the specified class or classes as [essential api].
+               |    --api="Filename.rogue"
+               |      The specified file is included and its routines and classes are marked
+               |      [essential api].
+               |
                |  --debug
                |    Compile in debug mode:
                |    1. 'DEBUG' is defined as 'true' instead of 'false'.

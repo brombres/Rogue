@@ -71,6 +71,9 @@ class Template
           temporarily Program.current_module = type.module_context
             augment_type.class_def = Parser( augment_tokens ).parse( Parser.ip_class )
           endTemporarily
+
+          if (augment_type.attributes.is_api)       type.attributes.is_api       = true
+          if (augment_type.attributes.is_essential) type.attributes.is_essential = true
         endForEach
       endIf
 
