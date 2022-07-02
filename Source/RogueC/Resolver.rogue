@@ -2214,6 +2214,8 @@ class Resolver : Poolable, Visitor
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
+      else
+        if (Candidates.count == 1) return Candidates[0]
       endIf
 
       if (exact_arg_types) return null

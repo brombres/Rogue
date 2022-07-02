@@ -225,8 +225,27 @@ class Module
 
       # Instantiate any essential templates
       forEach (template in templates)
-        if (template.attributes.is_essential and template.placeholders.count == 0)
-          Type( template.tokens.first, template.name )
+        if (template.placeholders.count == 0)
+          if (not template.attributes.is_essential)
+            if (not template.attributes.is_aspect)
+              forEach (pattern in Program.api_patterns)
+                contingent
+                  if (pattern.contains("::"))
+                    necessary (FilePattern(pattern).matches("$::$"(name,template.name)))
+                  else
+                    necessary (FilePattern(pattern).matches(template.name))
+                  endIf
+                satisfied
+                  template.attributes.is_api = true
+                  template.attributes.is_essential = true
+                endContingent
+              endForEach
+            endIf
+          endIf
+
+          if (template.attributes.is_essential)
+            Type( template.tokens.first, template.name )
+          endIf
         endIf
       endForEach
 

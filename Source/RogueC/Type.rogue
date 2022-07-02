@@ -1278,6 +1278,21 @@ class Type : Cmd
 
       Transformer().visit_type( this )
 
+      if (not is_aspect)
+        forEach (pattern in Program.api_patterns)
+          contingent
+            if (pattern.contains("::"))
+              necessary (FilePattern(pattern).matches(scoped_name))
+            else
+              necessary (FilePattern(pattern).matches(name))
+            endIf
+          satisfied
+            this.attributes.is_api = true
+            this.attributes.is_essential = true
+          endContingent
+        endForEach
+      endIf
+
       # Any [essential] routine makes class Routine [essential] as well
       if (this.name == "Routine")
         forEach (r in global_methods)
