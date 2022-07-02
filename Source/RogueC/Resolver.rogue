@@ -62,20 +62,21 @@ class Resolver : Poolable, Visitor
             # Resolve each category value to an Int32
             forEach (entry in type.definitions.entries)
               local enum_value_def = entry.value->(as EnumValueDef)
-              assert enum_value_def
-              local value = visit( enum_value_def.value )
-              if (value not instanceOf LiteralInt32)
-                throw value.t.error( "Category value must resolve to a literal integer." )
-              endIf
-              entry.value = value
-              entries.add( entry )
-
-              forEach (category in type.categories)
-                if (category.name == entry.key)
-                  category.ordinal = value->(as LiteralInt32).value
-                  escapeForEach
+              if (enum_value_def)  # versus a regular definition that is not an enum category
+                local value = visit( enum_value_def.value )
+                if (value not instanceOf LiteralInt32)
+                  throw value.t.error( "Category value must resolve to a literal integer." )
                 endIf
-              endForEach
+                entry.value = value
+                entries.add( entry )
+
+                forEach (category in type.categories)
+                  if (category.name == entry.key)
+                    category.ordinal = value->(as LiteralInt32).value
+                    escapeForEach
+                  endIf
+                endForEach
+              endIf
             endForEach
 
             # Wrap each def in EnumName(value)
@@ -1598,6 +1599,25 @@ class Resolver : Poolable, Visitor
         forEach (cmd_case in cmd.cases)
           necessary ((forEach in cmd_case.args) instanceOf LiteralPrimitive)
         endForEach
+
+        if (is_enum)
+          # Detect duplicate case values from alternate names and auto-generated code.
+          local used_cases = Logical[]
+          forEach (cmd_case in cmd.cases)
+            forEach (arg in cmd_case.args)
+              local n = arg->(as LiteralInt32)
+              if (n)
+                used_cases.expand_to_include( n.value )
+                if (used_cases[n.value])
+                  throw arg.t.error( "Illegal duplicate category value - each enum category must have a unique value. Use DEFINITIONS to support alternate names, e.g. 'CATEGORIES / WHITE, GRAY', 'DEFINITIONS / GREY=GRAY'." )
+                else
+                  used_cases[n.value] = true
+                endIf
+              endIf
+            endForEach
+          endForEach
+        endIf
+
         local cmd_switch = Switch( cmd.t, cmd.condition, cmd.cases, cmd.statements )
         cmd_switch.catches_escape = cmd.catches_escape
         cmd_switch.exception_passthrough = cmd.exception_passthrough

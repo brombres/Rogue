@@ -1067,11 +1067,11 @@ class Type : Cmd
           m.return_type = Program.type_String
 
           local cmd_cases = WhichCases(t)
-          local cmd_which = Which( t, Access(t,"value"), cmd_cases, Statements(t) )
+          local cmd_which = Which( t, This(t,this), cmd_cases, Statements(t) )
           forEach (category in categories)
             local t = category.t
             local args = Args(t)
-            args.add( EnumValue(t,this,category.name) )
+            args.add( Access(t,category.name) )
             cmd_cases.add( WhichCase(t,args,Statements(t,Return(t,LiteralString(t,category.name)))) )
           endForEach
           cmd_which.statements.add( Return(t,FormattedString(t,name+"($)",Args(t,Access(t,"value")))) )
@@ -1114,11 +1114,11 @@ class Type : Cmd
             m.return_type = Program.type_String
 
             local cmd_cases = WhichCases(t)
-            local cmd_which = Which( t, Access(t,"value"), cmd_cases, Statements(t) )
+            local cmd_which = Which( t, This(t,this), cmd_cases, Statements(t) )
             forEach (category in categories)
               local t = category.t
               local args = Args(t)
-              args.add( EnumValue(t,this,category.name) )
+              args.add( Access(t,category.name) )
               cmd_cases.add( WhichCase(t,args,Statements(t,Return(t,LiteralString(t,category.name)))) )
             endForEach
             cmd_which.statements.add( Return(t,FormattedString(t,name+"($)",Args(t,Access(t,"value")))) )
@@ -1147,11 +1147,11 @@ class Type : Cmd
             m.return_type = p.type
 
             local cmd_cases = WhichCases(t)
-            local cmd_which = Which( t, Access(t,"value"), cmd_cases, Statements(t) )
+            local cmd_which = Which( t, This(t,this), cmd_cases, Statements(t) )
             forEach (category in categories)
               if (category.args[i])
                 local args = Args(category.t)
-                args.add( EnumValue(category.t,this,category.name) )
+                args.add( Access(category.t,category.name) )
                 cmd_cases.add( WhichCase(category.t,args,Statements(category.t,Return(category.t,category.args[i]))) )
               endIf
             endForEach
