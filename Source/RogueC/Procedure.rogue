@@ -201,8 +201,9 @@ class Procedure : Cmd
       endIf
 
       if (name == "to" and return_type)
-        # to->String -> to_String->String etc.
-        name = "to_" + return_type.name
+        # to->String -> to<<String>>()->String etc.
+        local type_arg = TemplateArgs( t, return_type )
+        name = type_arg->String("to")
       endIf
 
       if (not signature)

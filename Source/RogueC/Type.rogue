@@ -960,17 +960,17 @@ class Type : Cmd
           if (not m)
             m = Method( t, this, "description" )
             m.return_type = Program.type_String
-            m.statements.add( Return(t,Access(t,"to_String")) )
+            m.statements.add( Return(t,Access(t,"to<<Rogue::String>>")) )
             m.organize
             methods[ m.signature ] = m
           endIf
         endBlock
 
-        block m = methods["to_Value()"]
+        block m = methods["to<<Rogue::Value>>()"]
           if (not m)
-            m = Method( t, this, "to_Value" )
+            m = Method( t, this, "to<<Rogue::Value>>" )
             m.return_type = Program.type_String
-            m.statements.add( Return(t,TypeAccess(t,Program.type_Value,Args(t,Access(t,"to_Object")))) )
+            m.statements.add( Return(t,TypeAccess(t,Program.type_Value,Args(t,Access(t,"to<<Rogue::Object>>")))) )
             m.organize
             methods[ m.signature ] = m
           endIf
@@ -978,10 +978,10 @@ class Type : Cmd
 
         if (not is_enum)
           # Enums get different versions of to->String/to->Object and operator==()
-          block m = methods["to_Object()"]
+          block m = methods["to<<Rogue::Object>>()"]
             if (not m)
               local boxed_type = Type( t, "Boxed", this )
-              m = Method( t, this, "to_Object" )
+              m = Method( t, this, "to<<Rogue::Object>>" )
               m.return_type = boxed_type
               m.statements.add( Return(t,TypeAccess(t,boxed_type,Args(t,This(t,this)))) )
               m.organize
@@ -989,9 +989,9 @@ class Type : Cmd
             endIf
           endBlock
 
-          block m = methods["to_String()"]
+          block m = methods["to<<Rogue::String>>()"]
             if (not m)
-              m = Method( t, this, "to_String" )
+              m = Method( t, this, "to<<Rogue::String>>" )
               m.return_type = Program.type_String
               m.statements.add( Return(t,LiteralString(t,name)) )
               m.organize
@@ -1096,9 +1096,9 @@ class Type : Cmd
 
         # to->Int32
         block
-          local m = methods[ "to_Int32()" ]
+          local m = methods[ "to<<Rogue::Int32>>()" ]
           if (not m or m.type_context is not this)
-            m = Method( t, this, "to_Int32" )
+            m = Method( t, this, "to<<Rogue::Int32>>" )
             m.return_type = Program.type_Int32
             m.statements.add( Return(t,Access(t,"value")) )
             m.organize
@@ -1108,9 +1108,9 @@ class Type : Cmd
 
         # to->String
         block
-          local m = methods[ "to_String()" ]
+          local m = methods[ "to<<Rogue::String>>()" ]
           if (not m or m.type_context is not this)
-            m = Method( t, this, "to_String" )
+            m = Method( t, this, "to<<Rogue::String>>" )
             m.return_type = Program.type_String
 
             local cmd_cases = WhichCases(t)
@@ -1129,11 +1129,11 @@ class Type : Cmd
           endIf
         endBlock
 
-        block m = methods["to_Object()"]
+        block m = methods["to<<Rogue::Object>>()"]
           if (not m)
-            m = Method( t, this, "to_Object" )
+            m = Method( t, this, "to<<Rogue::Object>>" )
             m.return_type = Program.type_Object
-            m.statements.add( Return(t,Access(t,"to_String")) )
+            m.statements.add( Return(t,Access(t,"to<<Rogue::String>>")) )
             m.organize
             methods[ m.signature ] = m
           endIf

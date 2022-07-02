@@ -468,7 +468,8 @@ class Resolver : Poolable, Visitor
       return cmd.operand.resolve_conversion_to( cmd.to_type, this )
 
     method on( cmd:ConvertToTypeWithArgs )->Cmd
-      local m_name = "to_" + cmd.to_type.name
+      local type_arg = TemplateArgs( cmd.t, cmd.to_type )
+      local m_name = type_arg->String("to")
       return visit( ContextAccess(cmd.t, cmd.operand, m_name, cmd.args) )
 
     method on_validate( cmd:CreateObject )->Cmd
@@ -1345,21 +1346,25 @@ class Resolver : Poolable, Visitor
 
       local name = cmd.type_args->String( cmd.name )
 
-      # Global method template
-      if (not type_context.global_method_template_instances.contains(name))
-        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-        local templates = type_context.global_method_templates[ t_name ]
-        if (templates)
-          (forEach in templates).instantiate( cmd.type_args, type_context )
+      type_context.organize
+      local m = find_procedure( cmd.t, type_context, context, name, cmd.args, &suppress_error, &exact_arg_types )
+      if (not m)
+        # Global method template
+        if (not type_context.global_method_template_instances.contains(name))
+          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_context.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_context )
+          endIf
         endIf
-      endIf
 
-      # Object Method Template
-      if (not type_context.method_template_instances.contains(name))
-        local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-        local templates = type_context.method_templates[ t_name ]
-        if (templates)
-          (forEach in templates).instantiate( cmd.type_args, type_context )
+        # Object Method Template
+        if (not type_context.method_template_instances.contains(name))
+          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_context.method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_context )
+          endIf
         endIf
       endIf
 

@@ -221,16 +221,20 @@ class ResolveUsedElements : InspectionVisitor
         local value_args_info = which{ m.is_global:dispatch_params[1] || dispatch_params[2] }
         forEach (p at i in m.parameters)
           local cmd = IndexedAccess( t, GetLocal(t,value_args_info), LiteralInt32(t,i) ) : Cmd # args[i]
-          cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
+          if (p.type is not Program.type_Value)
+            cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
+          endIf
           args.add( cmd )
         endForEach
 
         if (m.is_global)
           cmd_call = CallGlobalMethod( t, m, args )
         else
-          cmd_call = CallStaticMethod( t,
-            TemplatedMethodContextAccess(t,GetLocal(t,dispatch_params[0]),"to",m.type_context,Args(t)),
-            m, args )
+          cmd_call = GetLocal( t, dispatch_params[0] )
+          if (m.type_context is not Program.type_Value)
+            cmd_call = CallStaticMethod( t,
+              TemplatedMethodContextAccess(t,cmd_call,"to",m.type_context,Args(t)), m, args )
+          endIf
         endIf
 
         if (m.return_type)
