@@ -1339,11 +1339,15 @@ class CGenerator : Visitor
 
     method print_native_code( t:Token, code:String )
       if (code.contains("return"))
-        local i1 = code.locate( "return" ).value - 1
-        local i2 = i1 + 7
-        if (not ((i1 >= 0 and code[i1].is_identifier(&start)) or (i2 < code.count and code[i2].is_identifier(&start))))
-          throw t.error( "Illegal 'return' in native code. Returns must be executed in Rogue code." )
-        endIf
+        local i = code.locate( "return" )
+        while (i)
+          local i1 = i.value - 1
+          local i2 = i1 + 7
+          if (not ((i1 >= 0 and code[i1].is_identifier(&start)) or (i2 < code.count and code[i2].is_identifier)))
+            throw t.error( "Illegal 'return' in native code. Returns must be executed in Rogue code." )
+          endIf
+          i = code.locate( "return", i.value+1 )
+        endWhile
       endIf
 
       block
