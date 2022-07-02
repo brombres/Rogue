@@ -3655,6 +3655,7 @@ class FunctionType : Type
         if (return_type)
           builder.print "->"
           builder.print return_type.module_context
+          builder.print "::"
           builder.print return_type
         endIf
         builder.print ')'
