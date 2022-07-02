@@ -1621,9 +1621,9 @@ parser
           savePosition
           ++disable_output
         else
-          # Method template instance, e.g. method name<<Int32>>(...)
+          # Method template instance, e.g. method name<<Rogue::Int32>>(...)
           template_args
-          call join  # name + <<type-args>>
+          call join_template_args  # name + <<type-args>>
         endIf
       endIf
       procedure_parameters

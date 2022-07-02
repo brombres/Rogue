@@ -55,6 +55,7 @@ class Type : Cmd
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
+      # Standard type Name<<TypeArgs>> unless &is_tuple
       local base_name = name
 
       if (type_args)
@@ -73,10 +74,12 @@ class Type : Cmd
       return Type( t, template, name, type_args, &=is_tuple )
 
     method create( t:Token, name:String, template_arg:Type )->Type
+      # TypeName<<TypeArg>>
       local type_args = TemplateArgs(t).[ add(TokenList(t,template_arg.name_tokens)) ]
       return Type( t, name, type_args )
 
     method create( t:Token, module_context:Module, name:String )->Type
+      # Module::TypeName
       local type = module_context.find_type( t, name )
       if (type) return type
 

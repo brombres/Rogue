@@ -131,7 +131,7 @@ class Parser : ParserCore, Poolable
       endIf
 
       # Create a special aspect that will be incorporated into the designated class
-      local aspect_name = "$-$-augment-$"(m.name,base_name,m.next_augment_id)
+      local aspect_name = "Augment_$_$_$"(m.next_augment_id,m.name,base_name)
       ++m.next_augment_id
 
       if (not m.augments.contains(name)) m.augments[name] = String[]
@@ -414,6 +414,13 @@ class Parser : ParserCore, Poolable
         _cmd_stack.add( Identifier(b.t, a->String + b->String) )
       endIf
 
+    method join_template_args
+      if (not disable_output and _cmd_stack.count >= 2)
+        local b = _cmd_stack.remove_last
+        local a = _cmd_stack.remove_last
+        _cmd_stack.add( Identifier(b.t, b->(as TemplateArgs)->String(a->String)) )
+      endIf
+
     method join_adjacent_literal_strings
       if (not disable_output and _cmd_stack.count >= 2)
         local a = _cmd_stack[_cmd_stack.count-2]->(as LiteralString)
@@ -501,7 +508,7 @@ class Parser : ParserCore, Poolable
       endIf
 
       # Create a special aspect that will be incorporated into the designated class
-      local aspect_name = "$-$-augment-$"(m.name,base_name,m.next_augment_id)
+      local aspect_name = "Augment_$_$_$"(m.next_augment_id,m.name,base_name)
       ++m.next_augment_id
 
       if (not m.augments.contains(name)) m.augments[name] = String[]
@@ -686,7 +693,7 @@ class Parser : ParserCore, Poolable
       # Make this an augment of class Routine
 
       # Create a special aspect that will be incorporated into the designated class
-      local aspect_name = "$-Routine-augment-$"(m.name,m.next_augment_id)
+      local aspect_name = "Augment_$_Routine_$"(m.next_augment_id,m.name)
       ++m.next_augment_id
 
       if (not m.augments.contains("Routine")) m.augments["Routine"] = String[]
