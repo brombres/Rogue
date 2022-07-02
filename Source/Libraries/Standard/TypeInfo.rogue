@@ -85,6 +85,14 @@ class TypeInfo
         return native("RogueType_type_info( Rogue_types[$index] )")->TypeInfo
       endIf
 
+    method get( name:String )->TypeInfo
+      forEach (i in 0..<count)
+        if (native("0 == strcmp($name->data->as_utf8, Rogue_types[$i]->name)")->Logical)
+          return TypeInfo[i]
+        endIf
+      endForEach
+      return null
+
     #{
     method get ( name : String ) -> TypeInfo
       local result = RuntimeTypeInfoLookup[ name ]
