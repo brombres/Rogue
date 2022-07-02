@@ -1970,6 +1970,14 @@ endClass
 
 class TemplateArgs : CmdList
   METHODS
+    method init( t )
+
+    method init( t, type_arg:Type )
+      add( TokenList(t,type_arg.name_tokens) )
+
+    method init( existing:CmdList )
+      prior.init( existing )
+
     method description->String
       return "TemplateArgs" + list_description
 
