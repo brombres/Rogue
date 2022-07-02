@@ -50,43 +50,45 @@ augment Byte[]
               |          if (b & 8)
               |          {
               |            // 1111_1xxx is illegal
-              |            return false;
+              |            goto return_false;
               |          }
               |          else
               |          {
               |            // 1111_0xxx
-              |            if (n < 2) return false;
-              |            if ((*(++src) & 0xC0) != 0x80) return false;
-              |            if ((*(++src) & 0xC0) != 0x80) return false;
-              |            if ((*(++src) & 0xC0) != 0x80) return false;
+              |            if (n < 2) goto return_false;
+              |            if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |            if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |            if ((*(++src) & 0xC0) != 0x80) goto return_false;
               |            n -= 3;
               |          }
               |        }
               |        else
               |        {
               |          // 1110_xxxx
-              |          if (n < 1) return false;
-              |          if ((*(++src) & 0xC0) != 0x80) return false;
-              |          if ((*(++src) & 0xC0) != 0x80) return false;
+              |          if (n < 1) goto return_false;
+              |          if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |          if ((*(++src) & 0xC0) != 0x80) goto return_false;
               |          n -= 2;
               |        }
               |      }
               |      else
               |      {
               |        // 110x_xxxx
-              |        if (--n < 0) return false;
-              |        if ((*(++src) & 0xC0) != 0x80) return false;
+              |        if (--n < 0) goto return_false;
+              |        if ((*(++src) & 0xC0) != 0x80) goto return_false;
               |      }
               |    }
               |    else
               |    {
               |      // 10xx_xxxx is an illegal first byte of UTF8
-              |      return false;
+              |      goto return_false;
               |    }
               |  //else 0xxx_xxxx is fine
               |  }
               |}
               |return true;
+              |return_false:
+              |return false;
 
     method to_base64->String
       local base64_count = ((count+2) / 3) * 4

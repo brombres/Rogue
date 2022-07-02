@@ -80,8 +80,13 @@ class List<<$DataType>> : Poolable ListType
     method contains( other:$DataType[] )->Logical
       return this.locate( other )?
 
+    method copy( dest:$DataType[], dest_i1=0:Int32 )
+      copy( 0, count, dest, dest_i1 )
+
     method copy( src_i1:Int32, src_count:Int32, dest:$DataType[], dest_i1:Int32 )
       if (src_count <= 0) return
+
+      dest.expand_to_count( dest_i1 + src_count )
 
       if (this is dest)
         native @|memmove(

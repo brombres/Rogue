@@ -189,7 +189,7 @@ class DataWriter : Writer<<Byte>>
 
     method write( list:Byte[] )
       if (output_bytes)
-        output_bytes.reserve( list.count ).data.set( position, list.data, 0, list.count )
+        list.copy( output_bytes, position )
         skip( list.count )
       else
         output.write( forEach in list )

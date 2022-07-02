@@ -77,17 +77,19 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       return mode.has_another_event
 
     method height->Int32
+      local result : Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
-              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return (info.srWindow.Bottom - info.srWindow.Top) + 1;
-              |  else return 24;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) $result = (info.srWindow.Bottom - info.srWindow.Top) + 1;
+              |  else $result = 24;
               |#else
               |  struct winsize sz;
               |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
               |
-              |  return sz.ws_row;
+              |  $result = sz.ws_row;
               |#endif
+      return result
 
     method input( prompt=null:String )->String
       # Returns null on End-Of-Input
@@ -161,17 +163,19 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
       return (width,height)
 
     method width->Int32
+      local result : Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
               |  CONSOLE_SCREEN_BUFFER_INFO info;
-              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) return info.dwSize.X;
-              |  else return 80;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) $result = info.dwSize.X;
+              |  else $result = 80;
               |#else
               |  struct winsize sz;
               |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
               |
-              |  return sz.ws_col;
+              |  $result = sz.ws_col;
               |#endif
+      return result
 
     method write( value:String )
       native @|#ifdef ROGUE_PLATFORM_ANDROID

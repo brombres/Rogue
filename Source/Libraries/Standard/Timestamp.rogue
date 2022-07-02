@@ -147,6 +147,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
     method gmt_time_zone_offset->Int32
       # From:
       # https://stackoverflow.com/a/44063597/135791
+      local result : Int32
       native@|    time_t gmt, rawtime = time(NULL);
              |    struct tm *ptm;
              |
@@ -160,7 +161,8 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
              |    ptm->tm_isdst = -1;
              |    gmt = mktime(ptm);
              |
-             |    return ((int)difftime(rawtime, gmt)) / 3600;
+             |    $result = ((int)difftime(rawtime, gmt)) / 3600;
+      return result
 
     method month_name_to_index( month_name:String )->Int32
       # January->1, December->12
