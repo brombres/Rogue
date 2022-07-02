@@ -2462,6 +2462,10 @@ parser
 
 - post_unary [postUnary]
   on '?'   -> Logicalize
+  if (nextIs('('))
+    args
+    produce ContextAccess(context,name="call",args)
+  endIf
 
 - access
   term
