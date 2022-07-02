@@ -3249,6 +3249,16 @@ augment
     method ForEachOfControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
       if (optional_at) throw optional_at.t.error( "'at' cannot be used in a forEach-of." )
 
+      if (collection.starting_index)
+        if (collection.step_size)
+          collection.step_size = resolver.visit( collection.step_size )
+          local cmd_step = collection.step_size->(as LiteralInt32)
+          if (cmd_step.value < 0)
+            throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
+          endIf
+        endIf
+      endIf
+
       local cmd_iterator = Iterator( cmd_foreach.t, cmd_foreach.statements, ControlType.FOR_EACH )
       resolver.push_scope( cmd_iterator )
 
