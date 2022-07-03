@@ -33,6 +33,7 @@ class CSpecializer : Visitor
       local v = Local( t, autoname(base), initial_value, type )
       insert( LocalDeclaration(t,v) )
       v.c_name = "$_$" (v.name,this_procedure.locals.count)
+      v.index = this_procedure.locals.count
       this_procedure.locals.add( v )
       assert control_stack.count
       control_stack.last.locals.add( v )
@@ -156,9 +157,9 @@ class CSpecializer : Visitor
     method on_visit( cmd:LiteralString )
       collect_literal_string( cmd.value )
 
-    method on_visit_children( cmd:Local )
-      # Overriding to prevent visiting initial_value
+    method on_visit( cmd:Local )
       cmd.type = visit(cmd.type)->(as Type)
+      if (not cmd.c_name) cmd.c_name = "$_$"(cmd.name,cmd.index)
 
     method on( cmd:LogicalAnd )->Cmd
       if (cmd.left.needs_decomposition or cmd.right.needs_decomposition)
@@ -338,6 +339,10 @@ endAugment
 augment Local
   PROPERTIES
     c_name : String
+
+  METHODS
+    method init( existing:Local ) [append]
+      c_name = existing.c_name
 endAugment
 
 augment LogicalAnd
@@ -366,14 +371,14 @@ augment Procedure
   PROPERTIES
     c_name          : String
     c_result_name   : String
-    c_signature     : String  # for dynamic dispatch
+    c_dynamic_signature : String  # for dynamic dispatch
 
   METHODS
     method c_name->String
       throw UnsupportedOperationError()
 
-    method c_signature->String
-      if (@c_signature) return @c_signature
+    method c_dynamic_signature->String
+      if (@c_dynamic_signature) return @c_dynamic_signature
 
       use builder = StringBuilder.pool
         builder.print( Program.to_c_name(name) )
@@ -390,8 +395,8 @@ augment Procedure
           builder.print return_type.c_sig_name
         endIf
 
-        c_signature = builder
-        return @c_signature
+        c_dynamic_signature = builder
+        return @c_dynamic_signature
       endUse
 
 endAugment

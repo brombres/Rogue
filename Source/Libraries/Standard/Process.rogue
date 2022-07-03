@@ -427,16 +427,16 @@ class WindowsProcess : Process
               |$this->startup_info.dwFlags |= STARTF_USESTDHANDLES;
               |
               |if ( !CreateProcess(
-              |    NULL,                  // lpApplicationName
-              |    $arg_string->utf8,     // lpCommandLine
-              |    NULL,                  // lpProcessAttributes
-              |    NULL,                  // lpThreadAttributes
-              |    TRUE,                  // bInheritHandles
-              |    0,                     // dwCreationFlags  (CREATE_NO_WINDOW?)
-              |    NULL,                  // lpEnvironment
-              |    NULL,                  // lpCurrentDirectory
-              |    &$this->startup_info,  // lpStartupInfo
-              |    &$this->process_info   // lpProcessInformation
+              |    NULL,                       // lpApplicationName
+              |    $arg_string->data->as_utf8, // lpCommandLine
+              |    NULL,                       // lpProcessAttributes
+              |    NULL,                       // lpThreadAttributes
+              |    TRUE,                       // bInheritHandles
+              |    0,                          // dwCreationFlags  (CREATE_NO_WINDOW?)
+              |    NULL,                       // lpEnvironment
+              |    NULL,                       // lpCurrentDirectory
+              |    &$this->startup_info,       // lpStartupInfo
+              |    &$this->process_info        // lpProcessInformation
               |))
               |{
                  return false

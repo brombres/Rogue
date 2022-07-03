@@ -261,11 +261,11 @@ class SystemEnvironment [singleton]
       if (value and value.count)
         if (@definitions) @definitions[name] = value
         if (@names and not @names.contains(name)) @names.add( name )
-        native @|setenv( (char*)$name->utf8, (char*)$value->data->as_utf8, 1 );
+        native @|setenv( (char*)$name->data->as_utf8, (char*)$value->data->as_utf8, 1 );
       else
         if (@definitions) @definitions.remove( name )
         if (@names) @names.remove( name )
 
-        native @|unsetenv( (char*)$name->utf8 );
+        native @|unsetenv( (char*)$name->data->as_utf8 );
       endIf
 endClass

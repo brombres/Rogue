@@ -115,7 +115,7 @@ class TypeInfo
       native @|for (int i=Rogue_type_count; --i>=0; )
               |{
               |  RogueType* cur_type = &Rogue_types[ i ];
-              |  if (RogueType_name_equals( cur_type, (char*) $name->utf8 ))
+              |  if (RogueType_name_equals( cur_type, (char*) $name->data->as_utf8 ))
               |  {
               |    $result = RogueType_type_info( cur_type );
               |    break;

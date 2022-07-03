@@ -86,9 +86,9 @@ augment Byte[]
               |  //else 0xxx_xxxx is fine
               |  }
               |}
-              |return true;
-              |return_false:
-              |return false;
+               return true
+      native @|return_false:
+               return false
 
     method to_base64->String
       local base64_count = ((count+2) / 3) * 4

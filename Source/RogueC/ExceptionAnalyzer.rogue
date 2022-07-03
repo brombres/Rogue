@@ -38,30 +38,25 @@ class ExceptionAnalyzer : InspectionVisitor
       local group = Program.dynamic_methods[reference_m.dynamic_signature]
       if (not group) return
 
-      local common_exception_type : Type
-      forEach (m in group)
-        if (m.throws)
-          if (m.throws is not common_exception_type)
-            if (common_exception_type)
-              if (not m.throws.instance_of(common_exception_type))
-                if (common_exception_type.instance_of(m.throws)) common_exception_type = m.throws
-                else                                             common_exception_type = Program.type_Exception
+      forEach (m1 at i in group)
+        forEach (m2 in group from i+1)
+          if (m2 is m1) nextIteration
+          if (m1.throws is not m2.throws)
+            if (m1.type_context.instance_of(m2.type_context) or m2.type_context.instance_of(m1.type_context))
+              if (m1.throws)
+                if (m2.throws)
+                  m1.throws = Program.type_Exception
+                  m2.throws = Program.type_Exception
+                else
+                  m2.throws = m1.throws
+                endIf
+              else
+                m1.throws = m2.throws
               endIf
-            else
-              common_exception_type = m.throws
             endIf
           endIf
-        endIf
-      endForEach
-
-      if (common_exception_type)
-        forEach (m in group)
-          if (m.throws is not common_exception_type)
-            m.throws = common_exception_type
-            is_modified = true
-          endIf
         endForEach
-      endIf
+      endForEach
 
     method on_visit( cmd:CallProcedure )
       if (cmd.info.throws)

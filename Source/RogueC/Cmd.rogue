@@ -647,6 +647,7 @@ class Local : Cmd
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
+    index         : Int32
 
   METHODS
     method init( t, name, type )
@@ -668,6 +669,7 @@ class Local : Cmd
     method init( existing:Local )
       prior.init( existing )
       name = existing.name
+      index = existing.index
       original_name = existing.original_name
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned

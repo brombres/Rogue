@@ -379,12 +379,12 @@ class CGenerator : Visitor
           writer.print( info.c_name )
         else
           writer.print "Rogue_dispatch_"
-          writer.print( info.c_signature )
+          writer.print( info.c_dynamic_signature )
         endIf
       else
         if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
           writer.print "Rogue_dispatch_"
-          writer.print( info.c_signature )
+          writer.print( info.c_dynamic_signature )
         else
           writer.print( info.c_name )
         endIf
@@ -436,12 +436,12 @@ class CGenerator : Visitor
           writer.print( info.c_name )
         else
           writer.print "Rogue_dispatch_"
-          writer.print( info.c_signature )
+          writer.print( info.c_dynamic_signature )
         endIf
       else
         if (info.attributes.dynamic_dispatch and info.attributes.is_overridden)
           writer.print "Rogue_dispatch_"
-          writer.print( info.c_signature )
+          writer.print( info.c_dynamic_signature )
         else
           writer.print( info.c_name )
         endIf
@@ -2117,7 +2117,7 @@ augment
         writer.print "void"
       endIf
       writer.print " Rogue_dispatch_"
-      writer.print( m.c_signature )
+      writer.print( m.c_dynamic_signature )
       writer.print( "( void* THIS" )
       forEach (p at i in m.parameters)
         writer.print ", "
@@ -2330,10 +2330,12 @@ augment
             writer.println '{'
             writer.indent += 2
 
-            writer.print   catch_block.v_catch.c_name
-            writer.print   " = ("
-            writer.print   catch_block.v_catch.type.c_ref_name
-            writer.println ") Rogue_exception;"
+            if (catch_block.v_catch)
+              writer.print   catch_block.v_catch.c_name
+              writer.print   " = ("
+              writer.print   catch_block.v_catch.type.c_ref_name
+              writer.println ") Rogue_exception;"
+            endIf
             writer.println "Rogue_exception = 0;"
 
             cgen.push_scope( catch_block )

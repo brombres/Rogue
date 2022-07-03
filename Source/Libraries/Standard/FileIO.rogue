@@ -217,6 +217,6 @@ class FileWriter : Writer<<Byte>>
 
       flush
       position += data.byte_count
-      native @|fwrite( $data->utf8, 1, $data->byte_count, $this->fp );
+      native @|fwrite( $data->data->as_utf8, 1, $data->data->count, $this->fp );
 
 endClass

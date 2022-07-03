@@ -227,8 +227,10 @@ class MethodInfo
     method call_global_method( method_index:Int32, args:Value )->Value [essential]
       # args
       #   A single arg, a @[list], or 'undefined'.
-      #
-      # <Compiler will insert generated code here>
+      try
+        # <Compiler will insert generated code here>
+      catch (Exception)
+      endTry
 
       return undefined
 
@@ -238,8 +240,10 @@ class MethodInfo
       #
       # args
       #   A single arg, a @[list], or 'undefined'.
-
-      # <Compiler will insert generated code here>
+      try
+        # <Compiler will insert generated code here>
+      catch (Exception)
+      endTry
 
       return undefined
 endClass

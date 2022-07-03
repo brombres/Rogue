@@ -180,6 +180,8 @@ class File( filepath:String ) [compound]
       else                   return filepath
 
     method crc32->Int32
+      nativeHeader @|extern const RogueUInt32 Rogue_crc32_table[256];
+
       nativeCode...
         @|const RogueUInt32 Rogue_crc32_table[256] =
          |{

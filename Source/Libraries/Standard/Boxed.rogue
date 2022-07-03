@@ -1,7 +1,5 @@
 class Boxed [abstract]
   METHODS
-    method address->Int64 [abstract]
-
     method size->Int32  [abstract]
 
     method to->String
@@ -11,9 +9,6 @@ endClass
 
 class Boxed<<$DataType>>( value:$DataType ) : Boxed
   METHODS
-    method address->Int64
-      return native( "(void*)&$value" )->Int64
-
     method description->String
       return value->String
 

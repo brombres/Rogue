@@ -31,10 +31,10 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
       # e.g. 19 -> 2019.
       if (year < 100) year = (Timestamp.now.year/100)*100 + year
       native @|time_t cur_seconds = 0;
-              |tm* zero_date = localtime( &cur_seconds );
+              |struct tm* zero_date = localtime( &cur_seconds );
               |
-              |tm cur_date;
-              |memcpy( &cur_date, zero_date, sizeof(tm) );
+              |struct tm cur_date;
+              |memcpy( &cur_date, zero_date, sizeof(struct tm) );
               |
               |cur_date.tm_year = $year - 1900;
               |cur_date.tm_mon  = $month - 1;

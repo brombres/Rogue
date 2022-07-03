@@ -57,7 +57,6 @@ class Procedure : Cmd
       if (body) statements = body.statements
       module_context = existing.module_context
       signature = existing.signature
-      dynamic_signature = existing.@dynamic_signature
       is_organized = existing.is_organized
       is_resolved  = existing.is_resolved
       min_args     = existing.min_args

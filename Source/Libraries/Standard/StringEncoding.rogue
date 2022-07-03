@@ -2,6 +2,8 @@ enum StringEncoding
   UTF8           = 0
   ASCII          = 1
   ASCII_256      = 2
-  EXTENDED_ASCII = 2
   AUTODETECT     = 3
+
+  DEFINITIONS
+    EXTENDED_ASCII = ASCII_256
 endEnum

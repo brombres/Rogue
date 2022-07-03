@@ -355,14 +355,14 @@ class List<<$DataType>> : Poolable ListType
       local starting_index = which{ i1 || count-1 }
       if (isReference<<$DataType>>)
         if (value is null)
-          forEach (i of this from starting_index step -1)
-            if (value is this[i]) return i
+          forEach (i in starting_index downTo 0)
+            if (not this[i]) return i
           endForEach
           return null
         endIf
       endIf
 
-      forEach (i of this from starting_index step -1)
+      forEach (i in starting_index downTo 0)
         if (value == this[i]) return i
       endForEach
       return null

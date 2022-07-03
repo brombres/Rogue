@@ -123,7 +123,7 @@ class FDWriter : Writer<<Byte>>
       else
         flush
         position += bytes.count
-        native @|if (-1 == write( $fd, $bytes->data->as_bytes, $bytes->count ))
+        native @|if (-1 == write( $fd, $bytes->as_bytes, $bytes->count ))
                 |{
                 |  if ($auto_close) close( $fd );
                 |  $fd = -1;

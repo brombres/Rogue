@@ -31,7 +31,8 @@ endRoutine
 routine rogo_run
   #execute "$ Test.rogue" (File.esc(exe_filepath))
   local stopwatch = Stopwatch()
-  execute ''$ --real=32 Test.rogue --api --main --debug --gc=manual --libraries=Source/Libraries'' (File.esc(exe_filepath))
+  #execute ''$ --real=32 Test.rogue --main --debug --gc=manual --libraries=Source/Libraries'' (File.esc(exe_filepath))
+  execute ''$ --real=32 Test.rogue --api=Rogue::* --main --debug --gc=manual --libraries=Source/Libraries'' (File.esc(exe_filepath))
   println stopwatch
 
   stopwatch.restart
