@@ -73,7 +73,7 @@ class Time( total_ms:Int64 ) [compound]
     method operator-( other:Time )->Time
       return Time( total_ms - other.total_ms )
 
-    method operator<>( other:Time )->Int32
+    method operator<>( other:Time )->Int64
       return (total_ms <> other.total_ms)
 
     method to->String

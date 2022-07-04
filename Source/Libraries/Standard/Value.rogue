@@ -241,9 +241,9 @@ class Value [compound]
 
       if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
         # Both are primitives
-        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return real64 <> other.real64
-        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return real32 <> other.real32
-        return int64 <> other.int64
+        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (real64 <> other.real64).sign
+        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (real32 <> other.real32).sign
+        return (int64 <> other.int64).sign
       endIf
 
       if (type != other.type) return type <> other.type

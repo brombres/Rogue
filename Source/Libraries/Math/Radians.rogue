@@ -81,11 +81,11 @@ class Radians( value:Real ) [compound]
     method operator==( other_value:Real )->Logical
       return value == other_value
 
-    method operator<>( other:Degrees )->Logical
-      return value - other.value
+    method operator<>( other:Degrees )->Real64
+      return value <> other.value
 
-    method operator<>( other_value:Real )->Logical
-      return value - other_value
+    method operator<>( other_value:Real )->Real64
+      return value <> other_value
 
     method sin->Real
       return value.sin

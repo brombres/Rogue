@@ -29,7 +29,7 @@ class TimeInterval( total_ms:Int64 ) [compound]
     method milliseconds->Int32
       return Int32( (this.total_ms.abs % 1000) * total_ms.sign )
 
-    method operator<>( other:TimeInterval )->Logical
+    method operator<>( other:TimeInterval )->Int64
       return (total_ms <> other.total_ms)
 
     method operator==( other:TimeInterval )->Logical

@@ -368,7 +368,7 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
     method operator-( interval:DateInterval )->Date
       return this + DateInterval( -interval.years, -interval.months, -interval.days )
 
-    method operator<>( other:Date )->Logical
+    method operator<>( other:Date )->Int32
       # For Dates the hash code contains all necessary info so we can use it to compare safely
       return (hash_code <> other.hash_code)
 

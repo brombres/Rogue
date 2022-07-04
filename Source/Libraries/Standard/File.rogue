@@ -118,7 +118,7 @@ class File( filepath:String ) [compound]
       if (not is_folder) return false
       return listing( pattern ).count > 0
 
-    method copy( destination:File, &if_different, &dry_run, &verbose, &ignore_hidden )->Int32?
+    method copy( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
       # Copies a file or the contents of a folder to a specified file or folder.
       # Returns the count of files copied or null on an error.
       if (this.is_folder)
@@ -137,7 +137,7 @@ class File( filepath:String ) [compound]
           local file = File( filepath )
           local dest = destination
           if (file.is_folder) dest /= file.filename
-          local n = file.copy( dest, &=if_different, &=dry_run, &=verbose, &=ignore_hidden )
+          local n = file.copy( dest, &=if_different, &if_newer, &=dry_run, &=verbose, &=ignore_hidden )
           if (not n) return null
           result += n.value
         endForEach
@@ -146,6 +146,7 @@ class File( filepath:String ) [compound]
 
       local dest = this.with_destination( destination )
       if (if_different and this == dest) return 0
+      if (if_newer and this.timestamp <= destination.timestamp) return 0
 
       if (verbose) println "$ -> $" (this,dest)
 
@@ -641,17 +642,19 @@ class File( filepath:String ) [compound]
               |fclose( fp );
       return size;
 
-              #{
-    method symlink( filepath:String, target:String )
-      filepath = expand_path( filepath )
-      target = expand_path( target )
+    method symlink( target:File )
+      # Symlinks this File to the target file.
+      # Unix-style example: File("/usr/local/bin/cmdlauncher").symlink(File("/opt/myapp/bin/cmd"))
+      local file = resolved
+      target .= resolved
       if (System.is_windows)
-        local option = which{ File.is_folder(filepath):"/D " || "" }
-        Process.run( "mklink $$ $" (option,File.esc(filepath),File.esc(target)) )
+        local option = which{ file.is_folder:"/D " || "" }
+        Process.run( "mklink $$ $" (option,file.esc,target.esc) )
       else
-        Process.run( "ln -s $ $" (File.esc(target),File.esc(filepath)) )
+        Process.run( "ln -s $ $" (target.esc,file.esc) )
       endIf
 
+              #{
     method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only,
         &exclude:Function(String)->Logical )->Int32
       if (dry_run) verbose = true

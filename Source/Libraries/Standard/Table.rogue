@@ -422,7 +422,7 @@ class TableEntry<<$KeyType,$ValueType>>
       value = _value
       hash = _hash
 
-    method description->String
+    method to->String
       return "($:$)" (key, value)
 
     # Support tuple-like protocol for destructuring assignment
@@ -461,7 +461,7 @@ class TableEntriesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Val
       cur = cur.next_entry
       return result
 
-    method description->String
+    method to->String
       return to_list->String
 
     method to->TableEntry<<$KeyType,$ValueType>>[]( result=null:TableEntry<<$KeyType,$ValueType>>[] )
@@ -503,7 +503,7 @@ class TableKeysIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$ValueT
       cur = cur.next_entry
       return result
 
-    method description->String
+    method to->String
       return to_list->String
 
     method to->$KeyType[]( result=null:$KeyType[] )
@@ -545,7 +545,7 @@ class TableValuesIterator<<$KeyType,$ValueType>>( cur:TableEntry<<$KeyType,$Valu
       cur = cur.next_entry
       return result
 
-    method description->String
+    method to->String
       return to_list->String
 
     method to->$ValueType[]( result=null:$ValueType[] )

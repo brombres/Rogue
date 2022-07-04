@@ -284,7 +284,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
     method operator-( other:Timestamp )->TimeInterval
       return TimeInterval( value - other.value )
 
-    method operator<>( other:Timestamp )->Logical
+    method operator<>( other:Timestamp )->Int64
       return (value <> other.value)
 
     method operator==( other:Timestamp )->Logical
