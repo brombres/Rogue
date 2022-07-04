@@ -16,6 +16,7 @@ $include Standard/FileDescriptorIO
 $include Standard/FileIO
 $include Standard/FileListing
 $include Standard/FilePattern
+$include Standard/Files
 $include Standard/Global
 $include Standard/LineReader
 $include Standard/List

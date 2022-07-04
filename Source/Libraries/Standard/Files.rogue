@@ -1,0 +1,171 @@
+class Files
+  # Manages a set of filepath strings.
+  PROPERTIES
+    base_folder : String
+    filepaths   = [String:String]()
+
+  METHODS
+    method init( base_folder:String, &allow_pattern=true, &include_folders )
+      base_folder = File(base_folder).resolved.filepath
+      this.base_folder = base_folder
+
+      if (allow_pattern)
+        # Treat the folder as a possible pattern
+        local path_segments = this.base_folder.split('/')
+        use pattern_segments = WorkList<<String>>
+          local first_wildcard_i = path_segments.locate( $.contains('*') or $.contains('?') )
+          if (first_wildcard_i)
+            forEach (p in path_segments from first_wildcard_i.value)
+              pattern_segments.add( p )
+            endForEach
+            path_segments.discard_from( first_wildcard_i.value )
+          endIf
+          if (pattern_segments.count)
+            if (path_segments.is_empty) this.base_folder = "./"
+            else                        this.base_folder = path_segments.join( "/" )
+            local pattern : String
+            if (pattern_segments.is_empty) pattern = "*"
+            else                           pattern = pattern_segments.join( "/" )
+            init( this.base_folder, FilePattern(pattern), &=include_folders )
+            return
+          endIf
+        endUse
+      endIf
+
+      if (this.base_folder == "") this.base_folder = "./"
+      if (this.base_folder.begins_with("./") and this.base_folder.count > 2)
+        this.base_folder = this.base_folder.rightmost( -2 )
+      endIf
+      this.base_folder /= ""  # Adds trailing /
+
+    method init( base_folder:String, pattern:FilePattern, &ignore_hidden=true, &include_folders )
+      init( base_folder, &!allow_pattern )
+      add( pattern, &=ignore_hidden, &=include_folders )
+
+    method add( pattern:FilePattern, &ignore_hidden=true, &include_folders )
+      add( pattern->String, &=ignore_hidden, &=include_folders )
+
+    method add( pattern:String, &ignore_hidden=true, &include_folders )
+      local target = base_folder/pattern
+      if (File(target).exists and not File(target).is_folder)
+        filepaths[target] = target
+      else
+        forEach (listing_filepath in File(base_folder).listing(FilePattern(pattern),&=ignore_hidden))
+          if (not filepaths.contains(listing_filepath))
+            if (include_folders or not File(listing_filepath).is_folder)
+              filepaths[listing_filepath] = listing_filepath
+            endIf
+          endIf
+        endForEach
+      endIf
+
+    method any_newer_than( filepath:String )->Logical
+      if (not File(filepath).exists) return true
+      local timestamp = newest_timestamp
+      if (not timestamp.exists) return false
+      return (timestamp.value > File(filepath).timestamp)
+
+    method contains( file:File )->Logical
+      return filepaths.contains( file.resolved.filepath )
+
+    method contains( filepath:String )->Logical
+      return filepaths.contains( filepath )
+
+      #{
+    method copy( to_folder:String, &if_newer, &if_different )
+      File.create_folder( to_folder )
+      to_folder += File.separator
+      forEach (filepath in filepaths.values)
+        local to_filepath = to_folder + relative_filepath(filepath)
+        File.copy( filepath, to_filepath, &=if_newer, &=if_different )
+      endForEach
+      }#
+
+    method count->Int32
+      return filepaths.count
+
+    method delete( &verbose, &dry_run )
+      forEach (filepath in filepaths.values)
+        if (verbose) print "Deleting " + filepath
+        if (not dry_run) File.delete( filepath )
+      endForEach
+
+    method get( index:Int32 )->String
+      return filepaths[ index ]
+
+    method newest_timestamp->Timestamp?
+      local result : Timestamp?
+      forEach (filepath in filepaths.values)
+        if (File(filepath).exists)
+          local timestamp = File(filepath).timestamp
+          if (not result.exists or timestamp > result.value) result = timestamp
+        endIf
+      endForEach
+      return result
+
+    method oldest_timestamp->Timestamp?
+      local result : Timestamp?
+      forEach (filepath in filepaths.values)
+        if (File(filepath).exists)
+          local timestamp = File(filepath).timestamp
+          if (not result.exists or timestamp < result.value) result = timestamp
+        endIf
+      endForEach
+      return result
+
+    method relative_filepath( filepath:String )->String
+      if (base_folder.count == 0) return filepath
+      if (not filepath.begins_with(base_folder)) return filepath
+      return filepath.after_first( base_folder )
+
+    method relative_files->File[]
+      local result = File[]( count )
+      result.add( File(relative_filepath(forEach in this)) )
+      return result
+
+    method relative_filepaths->String[]
+      local result = String[]( count )
+      result.add( relative_filepath(forEach in this) )
+      return result
+
+    method remove( pattern:FilePattern )
+      # Removes files from this listing but not from the filesystem - use delete() for that.
+      return remove( pattern.pattern )
+
+    method remove( pattern:String )
+      # Removes files from this listing but not from the filesystem - use delete() for that.
+      if (pattern.contains('*') or pattern.contains('?'))
+        block pattern = FilePattern(pattern)
+          forEach (filepath in filepaths.values)
+            if (pattern == filepath or pattern == relative_filepath(filepath))
+              filepaths.remove( filepath )
+            endIf
+          endForEach
+        endBlock
+      else
+        filepaths.remove( pattern )
+      endIf
+
+    method remove( query:Function(String)->Logical )
+      # Removes files from this listing but not from the filesystem - use delete() for that.
+      forEach (filepath in filepaths.values)
+        if (query(filepath)) filepaths.remove( filepath )
+      endForEach
+
+    method remove( files:Files )
+      # Removes files from this listing but not from the filesystem - use delete() for that.
+      forEach (filepath in files)
+        filepaths.remove( filepath )
+      endForEach
+
+    method to->File[]
+      local result = File[]( filepaths.count )
+      result.add( File(forEach in filepaths.values) )
+      return result
+
+    method to->String
+      return filepaths.values->String
+
+    method to->String[]
+      return filepaths.values->String[]
+endClass
