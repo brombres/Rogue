@@ -322,6 +322,14 @@ class Resolver : Poolable, Visitor
         return visit( Access( t, "println", Args(t,LiteralString(t,format->String)) ) )
       endIf
 
+    method on_visit( cmd:CallMethodPointer )
+      visit_children( cmd )
+      forEach (arg at i in cmd.args)
+        local param_type = cmd.param_types[i]
+        if (param_type.is_reference) param_type = Program.type_Object
+        cmd.args[i] = arg.resolve_conversion_to( param_type, this )
+      endForEach
+
     method on( cmd:CallPriorMethod )->Cmd
       if (not this_type.base_class)
         throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )

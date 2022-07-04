@@ -1060,4 +1060,15 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:CallMethodPointer )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.pointer)
+      if (result?) return result
+      result = visit(cmd.param_types)
+      if (result?) return result
+      result = visit(cmd.args)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      return result
+
 endClass

@@ -3182,6 +3182,7 @@ parser
 - additional_node_types
   create CallDynamicMethod(context,args):CallProcedure
   create CallGlobalMethod(args):CallProcedure
+  create CallMethodPointer(pointer,param_types:TypeList,args,return_type:Type)
   create CallProcedure(args)
   create CallStaticMethod(context,args):CallProcedure
   create CallThisDynamicMethod(args):CallProcedure

@@ -88,6 +88,17 @@ class Finalizer : Visitor
 
       ExceptionAnalyzer().apply()
 
+      if (Program.cmd_call_global_cases)
+        # Reorder introspection call dispatcher to use sequential case numbers
+        Program.cmd_call_global_cases.list.sort(
+        (a,b) => a->(as WhichCase).args[0]->(as LiteralInt32).value <
+                 b->(as WhichCase).args[0]->(as LiteralInt32).value )
+
+        Program.cmd_call_object_cases.list.sort(
+          (a,b) => a->(as WhichCase).args[0]->(as LiteralInt32).value <
+                   b->(as WhichCase).args[0]->(as LiteralInt32).value )
+      endIf
+
     method on_visit( cmd:CallDynamicMethod )
       ensure_dynamic_dispatch( cmd.info->(as Method) )
       visit_children( cmd )

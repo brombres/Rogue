@@ -50,6 +50,7 @@ class Program [singleton]
     string_table_indices = StringTable<<Int32>>()
 
     dynamic_methods   = StringTable<<Method[]>>()
+    call_signatures   = StringTable<<Procedure[]>>()
     all_methods       = Procedure[]
     all_types         = Type[]
 
@@ -62,6 +63,7 @@ class Program [singleton]
     m_call_object         : Procedure
     cmd_call_global_cases : WhichCases
     cmd_call_object_cases : WhichCases
+    handled_call_indices  : Logical[]
 
   METHODS
     method init

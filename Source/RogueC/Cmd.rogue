@@ -2296,8 +2296,8 @@ class NamedArg : Cmd
   PROPERTIES
     name       : String
     value      : Cmd
-    is_zero    : Logical
-    is_forward : Logical
+    is_zero    : Logical   # &!param
+    is_forward : Logical   # &=param
 
   METHODS
     method init( t, name, value, &zero, &forward )
@@ -4797,5 +4797,33 @@ class ValueTable : Cmd
 
     method description->String
       return "ValueTable($)" (%args)
+
+endClass
+
+class CallMethodPointer : Cmd
+  PROPERTIES
+    info        : Procedure
+    pointer     : Cmd
+    param_types : TypeList
+    args        : Cmd
+    return_type : Type
+
+  METHODS
+    method init( t, pointer, param_types, args, return_type )
+
+    method init( t, info, pointer, param_types, args, return_type )
+
+    method init( existing:CallMethodPointer )
+      prior.init( existing )
+      if (existing.pointer) pointer = existing.pointer.cloned
+      if (existing.param_types) param_types = existing.param_types.cloned
+      if (existing.args) args = existing.args.cloned
+      if (existing.return_type) return_type = existing.return_type.cloned
+
+    method description->String
+      return "CallMethodPointer($,$,$,$)" (%pointer,%param_types,%args,%return_type)
+
+    method type->Type
+      return return_type
 
 endClass

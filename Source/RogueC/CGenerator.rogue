@@ -406,6 +406,25 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
+    method on_visit( cmd:CallMethodPointer )
+      writer.print "(("
+      writer.print cmd.info.c_call_signature
+      writer.print ")(void*)"
+      visit( cmd.pointer )
+      writer.print ")("
+      forEach (arg at i in cmd.args)
+        if (i > 0) writer.print ','
+        local param_type = cmd.param_types[i]
+        if (param_type.is_reference)
+          writer.print "((RogueObject*)"
+          visit( arg )
+          writer.print ')'
+        else
+          visit( arg )
+        endIf
+      endForEach
+      writer.print ')'
+
     method on_visit( cmd:CallStaticMethod )
       local call_is_mutating = cmd.info.attributes.is_mutating
       writer.print( cmd.info.c_name )
@@ -1575,6 +1594,42 @@ augment
         h_writer.println "extern RogueInt32 Rogue_method_count;"
         h_writer.println "extern RogueInt32 Rogue_method_info[];"
         h_writer.println "extern RogueInt32 Rogue_method_data[];"
+        h_writer.println "extern void* Rogue_method_pointers[];"
+        h_writer.println
+        forEach (group in Program.call_signatures.values)
+          if (group.is_empty) nextIteration  # all methods were unused and culled out
+          local m = group.first  # any one of the group will suffice
+
+          h_writer.print "typedef "
+          if (m.return_type)
+            if (m.return_type.is_reference) h_writer.print "void*"
+            else                            h_writer.print m.return_type.c_ref_name
+          else
+            h_writer.print "void"
+          endIf
+          h_writer.print " (*"
+          h_writer.print m.c_call_signature
+          h_writer.print ")("
+
+          local i = 0
+          if (not m.is_global)
+            if (m.type_context.is_reference)
+              h_writer.print "RogueObject"
+            else
+              h_writer.print m.type_context.c_name
+            endIf
+            if (m.type_context.is_reference or m.attributes.is_mutating) h_writer.print '*'
+            ++i
+          endIf
+          forEach (param in m.parameters)
+            if (i > 0) h_writer.print ','
+            if (param.type.is_reference) h_writer.print "RogueObject*"
+            else                         h_writer.print param.type.c_ref_name
+            ++i
+          endForEach
+          h_writer.println ");"
+        endForEach
+        h_writer.println
       endIf
 
       h_writer.println "extern RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
@@ -1607,6 +1662,9 @@ augment
           method_data.add( m.parameters.count )
           method_data.add( (forEach in m.parameters).type.index )
           method_data.add( which{m.return_type:m.return_type.index || -1} )
+          method_data.add( m.call_index )
+          method_data.add( (m.attributes.flags:>>>:32)->Int32 )
+          method_data.add( m.attributes.flags->Int32 )
         endForEach
 
         forEach (type in all_types)
@@ -1657,6 +1715,20 @@ augment
           c_writer.println
         endBlock
 
+        block
+          c_writer.println "void* Rogue_method_pointers[$] ="(Program.all_methods.count)
+          c_writer.println "{"
+          c_writer.indent += 2
+          forEach (m at index in Program.all_methods)
+            if (index > 0) c_writer.println ','
+            c_writer.print m.c_name
+          endForEach
+          c_writer.println
+          c_writer.indent -= 2
+          c_writer.println "};"
+          c_writer.println
+        endBlock
+
       endIf
 
       c_writer.println "RogueInt32 Rogue_type_count = $;" (types.count)
@@ -1678,9 +1750,9 @@ augment
           if (including_type_info) c_writer.print Program.string_table_indices[type.module_context.name]
           else                     c_writer.print '0'
           c_writer.print   ", "
-          c_writer.print   type.attributes.flags->Int32
-          c_writer.print   ", "
           c_writer.print   type.method_data_index
+          c_writer.print   ", "
+          c_writer.print   type.attributes.flags
 
           if (type.is_primitive or type.is_aspect)
             c_writer.println "};"

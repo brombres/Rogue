@@ -20,6 +20,7 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
         m.return_type = this_type
       endIf
       visit( m )
+      m.add_to_call_signature_group
 
     method on_visit( cmd:TemplatedAccess )
       cmd.module_context = this_type.module_context

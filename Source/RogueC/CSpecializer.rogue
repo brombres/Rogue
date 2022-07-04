@@ -372,19 +372,61 @@ augment Procedure
     c_name          : String
     c_result_name   : String
     c_dynamic_signature : String  # for dynamic dispatch
+    c_call_signature    : String
 
   METHODS
     method c_name->String
       throw UnsupportedOperationError()
+
+    method c_call_signature->String
+      if (@c_call_signature) return @c_call_signature
+
+      use builder = StringBuilder.pool
+        builder.print "Rogue_m"
+        if (attributes.is_mutating) builder.print 'm'
+        builder.print '_'
+
+        if (not is_global)
+          builder.print '_'
+          if (type_context.is_reference)
+            builder.print "RogueObject"
+          else
+            builder.print type_context.c_name
+          endIf
+        endIf
+
+        if (parameters.count)
+          forEach (p in parameters)
+            builder.print( "_" )
+            if (p.type.is_reference)
+              builder.print "RogueObject"
+            else
+              builder.print p.type.c_sig_name
+            endIf
+          endForEach
+        endIf
+
+        if (return_type)
+          builder.print "__"
+          if (return_type.is_reference)
+            builder.print "RogueObject"
+          else
+            builder.print return_type.c_sig_name
+          endIf
+        endIf
+
+        c_call_signature = builder
+      endUse
+
+      return @c_call_signature
 
     method c_dynamic_signature->String
       if (@c_dynamic_signature) return @c_dynamic_signature
 
       use builder = StringBuilder.pool
         builder.print( Program.to_c_name(name) )
-
+        builder.print '_'
         if (parameters.count)
-          builder.print '_'
           forEach (p in parameters)
             builder.print( "_" ).print( p.type.c_sig_name )
           endForEach
@@ -396,8 +438,9 @@ augment Procedure
         endIf
 
         c_dynamic_signature = builder
-        return @c_dynamic_signature
       endUse
+
+      return @c_dynamic_signature
 
 endAugment
 

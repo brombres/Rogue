@@ -8,8 +8,9 @@ class Procedure : Cmd
     type_context      : Type
     name              : String
     base_name         : String   # without any <<template-args>>
-    signature         : String
-    dynamic_signature : String
+    signature         : String   # m(arg:Types)
+    dynamic_signature : String   # m(arg:Types)->ReturnType
+    call_signature    : String   # (arg:Types)->ReturnType
     parameters        : Parameters
     return_type       : Type
     attributes        : Attributes
@@ -21,6 +22,7 @@ class Procedure : Cmd
 
     min_args          : Int32
     index             = -1
+    call_index        = -1    # call signature index
 
     locals            = Local[]
 
@@ -62,6 +64,7 @@ class Procedure : Cmd
       min_args     = existing.min_args
       locals.add( (forEach in existing.locals).cloned )
       throws       = existing.throws
+      call_index   = existing.call_index
 
     method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
@@ -153,10 +156,44 @@ class Procedure : Cmd
         return builder->String
       endUse
 
+    method call_signature->String
+      if (not @call_signature)
+        use builder = StringBuilder.pool
+          builder.print '('
+          local i = 0
+          if (not is_global)
+            if (type_context.is_reference)
+              builder.print "Rogue::Object"
+            else
+              builder.print type_context.module_context
+              builder.print "::"
+              builder.print type_context.name
+            endIf
+            ++i
+          endIf
+          forEach (p in parameters)
+            if (i) builder.print ','
+            if (p.type.is_reference)
+              builder.print("Rogue::Object")
+            else
+              builder.print( p.type.module_context.name )
+              builder.print("::")
+              builder.print( p.type.name )
+            endIf
+            ++i
+          endForEach
+          builder.print ')'
+          if (return_type) builder.[ print("->"), print(return_type.module_context), print("::"), print(return_type) ]
+          if (attributes.is_mutating) builder.print("[mutating]")
+          @call_signature = builder->String
+        endUse
+      endIf
+      return @call_signature
+
     method dynamic_signature->String
       if (not @dynamic_signature)
         dynamic_signature = signature
-        if (return_type) dynamic_signature = "$->$"(@dynamic_signature,return_type)
+        if (return_type) dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
       endIf
       return @dynamic_signature
 
@@ -265,6 +302,21 @@ class Procedure : Cmd
           organizer.visit_children( this )
         endTemporarily
       endUse
+
+      add_to_call_signature_group
+
+    method add_to_call_signature_group
+      block
+        local group = Program.call_signatures[call_signature]
+        if (group)
+          call_index = group.first.call_index
+        else
+          call_index = Program.call_signatures.count
+          group = Procedure[]
+          Program.call_signatures[call_signature] = group
+        endIf
+        group.add(this)
+      endBlock
 
     method resolve
       if (not is_organized) organize

@@ -40,4 +40,8 @@ class CullUnusedElements : InspectionVisitor
         endForEach
       endForEach
 
+      forEach (group at i in Program.call_signatures.values)
+        group.remove( not $.attributes.is_used or $.type_context.is_aspect )
+      endForEach
+
 endClass
