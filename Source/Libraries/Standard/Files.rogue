@@ -71,15 +71,23 @@ class Files
     method contains( filepath:String )->Logical
       return filepaths.contains( filepath )
 
-      #{
-    method copy( to_folder:String, &if_newer, &if_different )
-      File.create_folder( to_folder )
-      to_folder += File.separator
+    method copy( to_folder:File, &if_newer, &if_different, &verbose, &dry_run )
+      if (verbose)
+        forEach (filepath in filepaths.values)
+          local to_filepath = to_folder / relative_filepath(filepath)
+          if (File(filepath).copy(File(to_filepath), &=if_newer, &=if_different, &dry_run))
+            println "Copying $ -> $"(base_folder,to_folder)
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      to_folder .= resolved
+      if (not dry_run) to_folder.create_folder
       forEach (filepath in filepaths.values)
-        local to_filepath = to_folder + relative_filepath(filepath)
-        File.copy( filepath, to_filepath, &=if_newer, &=if_different )
+        local to_filepath = to_folder / relative_filepath(filepath)
+        File(filepath).copy( File(to_filepath), &=if_newer, &=if_different, &=verbose, &=dry_run )
       endForEach
-      }#
 
     method count->Int32
       return filepaths.count
