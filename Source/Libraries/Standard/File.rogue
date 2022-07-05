@@ -138,22 +138,22 @@ class File( filepath:String ) [compound]
           local dest = destination
           if (file.is_folder) dest /= file.filename
           local n = file.copy( dest, &=if_different, &if_newer, &=dry_run, &=verbose, &=ignore_hidden )
-          if (not n) return null
+          if (not n) return 0
           result += n.value
         endForEach
         return result
       endIf
 
       local dest = this.with_destination( destination )
+      if (if_newer and not this.is_newer_than(destination)) return 0
       if (if_different and this == dest) return 0
-      if (if_newer and this.timestamp <= destination.timestamp) return 0
 
       if (verbose) println "$ -> $" (this,dest)
 
       if (dry_run) return 1
 
       if (dest.has_parent)
-        if (not dest.parent.create_folder) return null
+        if (not dest.parent.create_folder) return 0
       endIf
 
       try
@@ -171,7 +171,7 @@ class File( filepath:String ) [compound]
 
       catch (error:IOError)
         println error
-        return null
+        return 0
       endTry
 
       return 1
@@ -387,14 +387,12 @@ class File( filepath:String ) [compound]
       if (not filename.begins_with('.'))       return false
       if (filename == "." or filename == "..") return false
       return true
-
-    method is_newer_than( filepath:String, other_filepath:String )->Logical
-      filepath = expand_path( filepath )
-      other_filepath = expand_path( other_filepath )
-      if (not File.exists(filepath))       return false
-      if (not File.exists(other_filepath)) return true
-      return (File.timestamp(filepath).floor > File.timestamp(other_filepath).floor)
       }#
+
+    method is_newer_than( other:File )->Logical
+      if (not this.exists)  return false
+      if (not other.exists) return true
+      return (this.timestamp > other.timestamp)
 
       #{
     method is_valid_utf8( filepath:String )->Logical
@@ -497,6 +495,7 @@ class File( filepath:String ) [compound]
       return String( bytes, encoding )
 
     method operator==( other:File )->Logical
+      # Returns true if 'this' and 'other' both exist, are the same size, and have the same CRC32.
       local file = resolved
       other .= resolved
 
