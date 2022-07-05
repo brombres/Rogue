@@ -1,8 +1,8 @@
 class Files
   # Manages a set of filepath strings.
   PROPERTIES
-    base_folder : String
-    filepaths   = [String:String]()
+    base_folder  : String
+    filepath_set = [String:String]()
 
   METHODS
     method init( base_folder:String, &allow_pattern=true, &include_folders )
@@ -48,12 +48,12 @@ class Files
     method add( pattern:String, &ignore_hidden=true, &include_folders )
       local target = base_folder/pattern
       if (File(target).exists and not File(target).is_folder)
-        filepaths[target] = target
+        filepath_set[target] = target
       else
         forEach (listing_filepath in File(base_folder).listing(FilePattern(pattern),&=ignore_hidden))
-          if (not filepaths.contains(listing_filepath))
+          if (not filepath_set.contains(listing_filepath))
             if (include_folders or not File(listing_filepath).is_folder)
-              filepaths[listing_filepath] = listing_filepath
+              filepath_set[listing_filepath] = listing_filepath
             endIf
           endIf
         endForEach
@@ -66,16 +66,16 @@ class Files
       return (timestamp.value > File(filepath).timestamp)
 
     method contains( file:File )->Logical
-      return filepaths.contains( file.resolved.filepath )
+      return filepath_set.contains( file.resolved.filepath )
 
     method contains( filepath:String )->Logical
-      return filepaths.contains( filepath )
+      return filepath_set.contains( filepath )
 
-    method copy( to_folder:File, &if_newer, &if_different, &verbose, &dry_run )
+    method copy_to( to_folder:File, &if_newer, &if_different, &verbose, &dry_run )
       if (verbose)
-        forEach (filepath in filepaths.values)
+        forEach (filepath in filepath_set.values)
           local to_filepath = to_folder / relative_filepath(filepath)
-          if (File(filepath).copy(File(to_filepath), &=if_newer, &=if_different, &dry_run))
+          if (File(filepath).copy_to(File(to_filepath), &=if_newer, &=if_different, &dry_run))
             println "Copying $ -> $"(base_folder,to_folder)
             escapeForEach
           endIf
@@ -84,26 +84,34 @@ class Files
 
       to_folder .= resolved
       if (not dry_run) to_folder.create_folder
-      forEach (filepath in filepaths.values)
+      forEach (filepath in filepath_set.values)
         local to_filepath = to_folder / relative_filepath(filepath)
-        File(filepath).copy( File(to_filepath), &=if_newer, &=if_different, &=verbose, &=dry_run )
+        File(filepath).copy_to( File(to_filepath), &=if_newer, &=if_different, &=verbose, &=dry_run )
       endForEach
 
     method count->Int32
-      return filepaths.count
+      return filepath_set.count
 
     method delete( &verbose, &dry_run )
-      forEach (filepath in filepaths.values)
+      forEach (filepath in filepath_set.values)
         if (verbose) print "Deleting " + filepath
         if (not dry_run) File.delete( filepath )
       endForEach
 
+    method files->File[]
+      local result = File[]( count )
+      result.add( File(forEach in filepath_set.values) )
+      return result
+
+    method filepaths->TableValuesIterator<<String,String>>
+      return filepath_set.values
+
     method get( index:Int32 )->String
-      return filepaths[ index ]
+      return filepath_set[ index ]
 
     method newest_timestamp->Timestamp?
       local result : Timestamp?
-      forEach (filepath in filepaths.values)
+      forEach (filepath in filepath_set.values)
         if (File(filepath).exists)
           local timestamp = File(filepath).timestamp
           if (not result.exists or timestamp > result.value) result = timestamp
@@ -113,7 +121,7 @@ class Files
 
     method oldest_timestamp->Timestamp?
       local result : Timestamp?
-      forEach (filepath in filepaths.values)
+      forEach (filepath in filepath_set.values)
         if (File(filepath).exists)
           local timestamp = File(filepath).timestamp
           if (not result.exists or timestamp < result.value) result = timestamp
@@ -144,36 +152,121 @@ class Files
       # Removes files from this listing but not from the filesystem - use delete() for that.
       if (pattern.contains('*') or pattern.contains('?'))
         block pattern = FilePattern(pattern)
-          forEach (filepath in filepaths.values)
+          forEach (filepath in filepath_set.values)
             if (pattern == filepath or pattern == relative_filepath(filepath))
-              filepaths.remove( filepath )
+              filepath_set.remove( filepath )
             endIf
           endForEach
         endBlock
       else
-        filepaths.remove( pattern )
+        filepath_set.remove( pattern )
       endIf
 
     method remove( query:Function(String)->Logical )
       # Removes files from this listing but not from the filesystem - use delete() for that.
-      forEach (filepath in filepaths.values)
-        if (query(filepath)) filepaths.remove( filepath )
+      forEach (filepath in filepath_set.values)
+        if (query(filepath)) filepath_set.remove( filepath )
       endForEach
 
     method remove( files:Files )
       # Removes files from this listing but not from the filesystem - use delete() for that.
       forEach (filepath in files)
-        filepaths.remove( filepath )
+        filepath_set.remove( filepath )
       endForEach
 
+    method sync_to( dest_folder:File, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
+      if (dry_run) verbose = true
+      dest_folder .= resolved
+
+      if (not dest_folder.exists and not dry_run)
+        dest_folder.create_folder
+        if (not dest_folder.is_folder)
+          Console.error.println( "ERROR: File.sync_to() can not create destination folder $" (dest_folder) )
+          return 0
+        endIf
+      endIf
+
+      dest_folder /= ""
+      local dest_name = dest_folder.filepath
+      if (dest_name.begins_with("./")) dest_name = dest_name.from( 2 )
+
+      if (dest_name == base_folder)
+        Console.error.println( "ERROR: File.sync_to() has the same source and destination folders ($)."...
+            (dest_folder.filepath.leftmost(-1)) )
+        return 0
+      endIf
+
+      local width = 0
+      width = width.or_larger( (forEach in filepath_set.values).count )
+      width -= base_folder.count
+
+      local dest_files = Files( dest_folder )
+      if (not keep_unused) dest_files.add( "**" )
+      local printed_header = false
+      local change_count = 0
+      forEach (src_filepath in filepath_set.values)
+        local relative_filepath = relative_filepath( src_filepath )
+        local dest_filepath = dest_name + relative_filepath
+        dest_files.remove( dest_filepath )
+        local folder = File( dest_filepath ).folder
+        while (dest_files.contains(folder))
+          dest_files.remove( folder )
+          folder = File(folder).folder
+        endWhile
+
+        contingent
+          sufficient (not File(dest_filepath).exists)
+          necessary  (not missing_only)
+          sufficient (File(src_filepath).size != File(dest_filepath).size)
+          necessary  (File(src_filepath).crc32 != File(dest_filepath).crc32)
+
+        satisfied
+          ++change_count
+
+          if (verbose)
+            if (not printed_header)
+              printed_header = true
+              local src = base_folder
+              if (src.count) src = src.leftmost( -1 )
+              else           src = "."
+              local dest = dest_folder.filepath.leftmost( -1 )
+              Console.println( "Copying $ -> $" (src,dest) )
+            endIf
+            Console.[ print("  "), println(relative_filepath) ]
+          endIf
+
+          if (not dry_run)
+            File( src_filepath ).copy_to( File(dest_filepath) )
+          endIf
+
+        endContingent
+      endForEach
+
+      if (not keep_unused)
+        printed_header = false
+        forEach (filepath in dest_files.filepath_set.values)
+          if (verbose)
+            if (not printed_header)
+              printed_header = true
+              Console.println( "Deleting unused files in " + dest_files.base_folder )
+            endIf
+            Console.[ print("  "), println(dest_files.relative_filepath(filepath)) ]
+          endIf
+          if (not dry_run) File(filepath).delete
+          ++change_count
+        endForEach
+      endIf
+
+      return change_count
+
     method to->File[]
-      local result = File[]( filepaths.count )
-      result.add( File(forEach in filepaths.values) )
+      local result = File[]( filepath_set.count )
+      result.add( File(forEach in filepath_set.values) )
       return result
 
     method to->String
-      return filepaths.values->String
+      return filepath_set.values->String
 
     method to->String[]
-      return filepaths.values->String[]
+      return filepath_set.values->String[]
 endClass

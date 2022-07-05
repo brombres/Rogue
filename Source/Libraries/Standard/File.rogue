@@ -118,7 +118,7 @@ class File( filepath:String ) [compound]
       if (not is_folder) return false
       return listing( pattern ).count > 0
 
-    method copy( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
+    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
       # Copies a file or the contents of a folder to a specified file or folder.
       # Returns the count of files copied or null on an error.
       if (this.is_folder)
@@ -137,7 +137,7 @@ class File( filepath:String ) [compound]
           local file = File( filepath )
           local dest = destination
           if (file.is_folder) dest /= file.filename
-          local n = file.copy( dest, &=if_different, &if_newer, &=dry_run, &=verbose, &=ignore_hidden )
+          local n = file.copy_to( dest, &=if_different, &if_newer, &=dry_run, &=verbose, &=ignore_hidden )
           if (not n) return 0
           result += n.value
         endForEach
@@ -652,106 +652,6 @@ class File( filepath:String ) [compound]
       else
         Process.run( "ln -s $ $" (target.esc,file.esc) )
       endIf
-
-              #{
-    method sync_from( source_folder:String, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only,
-        &exclude:Function(String)->Logical )->Int32
-      if (dry_run) verbose = true
-      source_folder = expand_path( source_folder )
-      dest_folder = expand_path( dest_folder )
-      return sync_from( Files(source_folder).add("**"), dest_folder, &=verbose, &=keep_unused, &=dry_run, &=missing_only, &=exclude )
-
-    method sync_from( source_files:Files, dest_folder:String, &verbose, &keep_unused, &dry_run, &missing_only,
-        &exclude:Function(String)->Logical )->Int32
-      if (dry_run) verbose = true
-      dest_folder = File.fix_slashes( dest_folder )
-      dest_folder = expand_path( dest_folder )
-
-      if (not exists(dest_folder) and not dry_run)
-        create_folder( dest_folder )
-        if (not is_folder(dest_folder))
-          Console.error.println( "ERROR: File.sync_from() can not create destination folder $" (dest_folder) )
-          return 0
-        endIf
-      endIf
-
-      dest_folder = ensure_ends_with_separator( dest_folder )
-      local dest_name = dest_folder
-      if (dest_name.begins_with("./")) dest_name = dest_name.from( 2 )
-
-      if (dest_name == source_files.base_folder)
-        Console.error.println( "ERROR: File.sync_from() has the same source and destination folders ($)."...
-          (dest_folder.leftmost(-1)) )
-        return 0
-      endIf
-
-      local width = 0
-      width = width.or_larger( (forEach in source_files).count )
-      width -= source_files.base_folder.count
-
-      local dest_files = Files( dest_folder )
-      if (not keep_unused) dest_files.add( "**" )
-      local printed_header = false
-      local change_count = 0
-      forEach (src_filepath in source_files)
-        local relative_filepath = source_files.relative_filepath( src_filepath )
-        local dest_filepath = dest_name + relative_filepath
-        dest_files.remove( dest_filepath )
-        local folder = File.folder( dest_filepath )
-        while (dest_files.contains(folder))
-          dest_files.remove( folder )
-          folder = File.folder( folder )
-        endWhile
-
-        contingent
-          sufficient (not File.exists(dest_filepath))
-          necessary  (not missing_only)
-          sufficient (File.size(src_filepath) != File.size(dest_filepath))
-          necessary  (File.crc32(src_filepath) != File.crc32(dest_filepath))
-
-        satisfied
-          if (not exclude or not exclude(dest_filepath))
-            ++change_count
-
-            if (verbose)
-              if (not printed_header)
-                printed_header = true
-                local src = source_files.base_folder
-                if (src.count) src = src.leftmost( -1 )
-                else           src = "."
-                local dest = dest_folder.leftmost( -1 )
-                Console.println( "Copying $ -> $" (src,dest) )
-              endIf
-              Console.print( "  " ).println( relative_filepath )
-            endIf
-
-            if (not dry_run)
-              File.copy( src_filepath, dest_filepath )
-            endIf
-          endIf
-
-        endContingent
-      endForEach
-
-      if (not keep_unused)
-        printed_header = false
-        forEach (filepath in dest_files)
-          if (not exclude or not exclude(filepath))
-            if (verbose)
-              if (not printed_header)
-                printed_header = true
-                Console.println( "Deleting unused files in " + dest_files.base_folder )
-              endIf
-              Console.print( "  " ).println( dest_files.relative_filepath(filepath) )
-            endIf
-            if (not dry_run) delete( filepath )
-            ++change_count
-          endIf
-        endForEach
-      endIf
-
-      return change_count
-      }#
 
     method timestamp->Timestamp
       # Returns the last modified time.
