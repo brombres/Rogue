@@ -1544,7 +1544,7 @@ struct RogueClassWriter_Character_; // Writer<<Character>>
 struct RogueClassCharacterToUTF8ByteWriter; // CharacterToUTF8ByteWriter
 struct RogueClassLineRebuilder; // LineRebuilder
 struct RogueClassBufferedPrintWriter_builder_; // BufferedPrintWriter<<builder>>
-struct RogueClassFunction_6408; // Function_6408
+struct RogueClassFunction_6410; // Function_6410
 struct RogueClassBoxed_TableKeysIterator_String_Value__; // Boxed<<TableKeysIterator<<String,Value>>>>
 struct RogueClassBoxedIntrospector_TableKeysIterator_String_Value__; // BoxedIntrospector<<TableKeysIterator<<String,Value>>>>
 struct RogueClassOptionalBoxed_String_; // Boxed<<String?>>
@@ -1555,7 +1555,7 @@ struct RogueClassOptionalBoxed_Int32_; // Boxed<<Int32?>>
 struct RogueClassOptionalBoxedIntrospector_Int32_; // BoxedIntrospector<<Int32?>>
 struct RogueClassOptionalBoxed_Byte_; // Boxed<<Byte?>>
 struct RogueClassOptionalBoxedIntrospector_Byte_; // BoxedIntrospector<<Byte?>>
-struct RogueClassFunction_7090; // Function_7090
+struct RogueClassFunction_7092; // Function_7092
 struct RogueUnixConsoleMouseEventType_List; // UnixConsoleMouseEventType[]
 struct RogueClassBoxed_ConsoleEvent_; // Boxed<<ConsoleEvent>>
 struct RogueClassBoxedIntrospector_ConsoleEvent_; // BoxedIntrospector<<ConsoleEvent>>
@@ -8340,7 +8340,7 @@ struct RogueClassBufferedPrintWriter_builder_ : RogueObject
 {
 };
 
-struct RogueClassFunction_6408 : RogueObject
+struct RogueClassFunction_6410 : RogueObject
 {
   // PROPERTIES
   RogueClassTable_String_String_* mappings;
@@ -8427,7 +8427,7 @@ struct RogueClassOptionalBoxedIntrospector_Byte_ : RogueObject
 
 };
 
-struct RogueClassFunction_7090 : RogueObject
+struct RogueClassFunction_7092 : RogueObject
 {
   // PROPERTIES
   RogueClassConsole* console;
@@ -10062,7 +10062,7 @@ extern RogueType* RogueTypeWriter_Character_;
 extern RogueType* RogueTypeCharacterToUTF8ByteWriter;
 extern RogueType* RogueTypeLineRebuilder;
 extern RogueType* RogueTypeBufferedPrintWriter_builder_;
-extern RogueType* RogueTypeFunction_6408;
+extern RogueType* RogueTypeFunction_6410;
 extern RogueType* RogueTypeBoxed_TableKeysIterator_String_Value__;
 extern RogueType* RogueTypeBoxedIntrospector_TableKeysIterator_String_Value__;
 extern RogueType* RogueTypeOptionalBoxed_String_;
@@ -10073,7 +10073,7 @@ extern RogueType* RogueTypeOptionalBoxed_Int32_;
 extern RogueType* RogueTypeOptionalBoxedIntrospector_Int32_;
 extern RogueType* RogueTypeOptionalBoxed_Byte_;
 extern RogueType* RogueTypeOptionalBoxedIntrospector_Byte_;
-extern RogueType* RogueTypeFunction_7090;
+extern RogueType* RogueTypeFunction_7092;
 extern RogueType* RogueTypeUnixConsoleMouseEventType_List;
 extern RogueType* RogueTypeBoxed_ConsoleEvent_;
 extern RogueType* RogueTypeBoxedIntrospector_ConsoleEvent_;
@@ -16909,19 +16909,19 @@ ROGUE_EXPORT_C RogueString* Rogue_Function_String_RETURNSString___type_name( Rog
 ROGUE_EXPORT_C RogueString* Rogue_Function_String_RETURNSString___call__String( RogueClass_Function_String_RETURNSString_* THIS, RogueString* param1_0 );
 ROGUE_EXPORT_C RogueClassCharacterToUTF8ByteWriter* RogueCharacterToUTF8ByteWriter__init_object( RogueClassCharacterToUTF8ByteWriter* THIS );
 ROGUE_EXPORT_C RogueString* RogueCharacterToUTF8ByteWriter__type_name( RogueClassCharacterToUTF8ByteWriter* THIS );
-ROGUE_EXPORT_C RogueClassCharacterToUTF8ByteWriter* RogueCharacterToUTF8ByteWriter__init__Writer_Byte_( RogueClassCharacterToUTF8ByteWriter* THIS, RogueClassWriter_Byte_* _auto_6395_0 );
+ROGUE_EXPORT_C RogueClassCharacterToUTF8ByteWriter* RogueCharacterToUTF8ByteWriter__init__Writer_Byte_( RogueClassCharacterToUTF8ByteWriter* THIS, RogueClassWriter_Byte_* _auto_6397_0 );
 ROGUE_EXPORT_C RogueClassLineRebuilder* RogueLineRebuilder__init_object( RogueClassLineRebuilder* THIS );
 ROGUE_EXPORT_C RogueString* RogueLineRebuilder__description( RogueClassLineRebuilder* THIS );
 ROGUE_EXPORT_C RogueString* RogueLineRebuilder__type_name( RogueClassLineRebuilder* THIS );
 ROGUE_EXPORT_C void RogueLineRebuilder__close( RogueClassLineRebuilder* THIS );
 ROGUE_EXPORT_C RogueLogical RogueLineRebuilder__has_another( RogueClassLineRebuilder* THIS );
 ROGUE_EXPORT_C RogueClassLineRebuilder* RogueLineRebuilder__init__String( RogueClassLineRebuilder* THIS, RogueString* string_0 );
-ROGUE_EXPORT_C RogueClassLineRebuilder* RogueLineRebuilder__init__File( RogueClassLineRebuilder* THIS, RogueClassFile* _auto_6407_0 );
+ROGUE_EXPORT_C RogueClassLineRebuilder* RogueLineRebuilder__init__File( RogueClassLineRebuilder* THIS, RogueClassFile* _auto_6409_0 );
 ROGUE_EXPORT_C void RogueLineRebuilder__save( RogueClassLineRebuilder* THIS );
-ROGUE_EXPORT_C RogueClassFunction_6408* RogueFunction_6408__init_object( RogueClassFunction_6408* THIS );
-ROGUE_EXPORT_C RogueString* RogueFunction_6408__type_name( RogueClassFunction_6408* THIS );
-ROGUE_EXPORT_C RogueString* RogueFunction_6408__call__String( RogueClassFunction_6408* THIS, RogueString* line_0 );
-ROGUE_EXPORT_C RogueClassFunction_6408* RogueFunction_6408__init__Table_String_String_( RogueClassFunction_6408* THIS, RogueClassTable_String_String_* _auto_6409_0 );
+ROGUE_EXPORT_C RogueClassFunction_6410* RogueFunction_6410__init_object( RogueClassFunction_6410* THIS );
+ROGUE_EXPORT_C RogueString* RogueFunction_6410__type_name( RogueClassFunction_6410* THIS );
+ROGUE_EXPORT_C RogueString* RogueFunction_6410__call__String( RogueClassFunction_6410* THIS, RogueString* line_0 );
+ROGUE_EXPORT_C RogueClassFunction_6410* RogueFunction_6410__init__Table_String_String_( RogueClassFunction_6410* THIS, RogueClassTable_String_String_* _auto_6411_0 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_String_Value__* RogueBoxed_TableKeysIterator_String_Value____init_object( RogueClassBoxed_TableKeysIterator_String_Value__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_String_Value____description( RogueClassBoxed_TableKeysIterator_String_Value__* THIS );
 ROGUE_EXPORT_C void RogueBoxed_TableKeysIterator_String_Value____unpack__Value( RogueClassBoxed_TableKeysIterator_String_Value__* THIS, RogueClassValue* values_0 );
@@ -16929,11 +16929,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_String_Value____type_na
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_String_Value____address( RogueClassBoxed_TableKeysIterator_String_Value__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_String_Value____size( RogueClassBoxed_TableKeysIterator_String_Value__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_String_Value____type( RogueClassBoxed_TableKeysIterator_String_Value__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_Value__* RogueBoxed_TableKeysIterator_String_Value____init__TableKeysIterator_String_Value_( RogueClassBoxed_TableKeysIterator_String_Value__* THIS, RogueClassTableKeysIterator_String_Value_ _auto_6514_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_Value__* RogueBoxed_TableKeysIterator_String_Value____init__TableKeysIterator_String_Value_( RogueClassBoxed_TableKeysIterator_String_Value__* THIS, RogueClassTableKeysIterator_String_Value_ _auto_6516_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_String_Value_ RogueBoxed_TableKeysIterator_String_Value____to_TableKeysIterator_String_Value_( RogueClassBoxed_TableKeysIterator_String_Value__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* RogueBoxedIntrospector_TableKeysIterator_String_Value____init_object( RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_String_Value____type_name( RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* RogueBoxedIntrospector_TableKeysIterator_String_Value____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* THIS, RogueObject* _auto_6515_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* RogueBoxedIntrospector_TableKeysIterator_String_Value____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* THIS, RogueObject* _auto_6517_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* RogueBoxedIntrospector_TableKeysIterator_String_Value____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* RogueBoxedIntrospector_TableKeysIterator_String_Value____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_Value__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_String_* RogueOptionalBoxed_String___init_object( RogueClassOptionalBoxed_String_* THIS );
@@ -16943,11 +16943,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_String___type_name( RogueClassOpt
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_String___address( RogueClassOptionalBoxed_String_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_String___size( RogueClassOptionalBoxed_String_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_String___type( RogueClassOptionalBoxed_String_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_String_* RogueOptionalBoxed_String___init__OptionalString( RogueClassOptionalBoxed_String_* THIS, RogueOptionalString _auto_6520_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_String_* RogueOptionalBoxed_String___init__OptionalString( RogueClassOptionalBoxed_String_* THIS, RogueOptionalString _auto_6522_0 );
 ROGUE_EXPORT   RogueOptionalString RogueOptionalOptionalBoxed_String___to_String( RogueClassOptionalBoxed_String_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_String___init_object( RogueClassOptionalBoxedIntrospector_String_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_String___type_name( RogueClassOptionalBoxedIntrospector_String_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_String___init__Object( RogueClassOptionalBoxedIntrospector_String_* THIS, RogueObject* _auto_6521_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_String___init__Object( RogueClassOptionalBoxedIntrospector_String_* THIS, RogueObject* _auto_6523_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_String___set__String_Value( RogueClassOptionalBoxedIntrospector_String_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_String_* RogueOptionalBoxedIntrospector_String___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_String_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_StringEncoding_* RogueBoxed_StringEncoding___init_object( RogueClassBoxed_StringEncoding_* THIS );
@@ -16957,11 +16957,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_StringEncoding___type_name( RogueClassBox
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_StringEncoding___address( RogueClassBoxed_StringEncoding_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_StringEncoding___size( RogueClassBoxed_StringEncoding_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_StringEncoding___type( RogueClassBoxed_StringEncoding_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_StringEncoding_* RogueBoxed_StringEncoding___init__StringEncoding( RogueClassBoxed_StringEncoding_* THIS, RogueClassStringEncoding _auto_6527_0 );
+ROGUE_EXPORT   RogueClassBoxed_StringEncoding_* RogueBoxed_StringEncoding___init__StringEncoding( RogueClassBoxed_StringEncoding_* THIS, RogueClassStringEncoding _auto_6529_0 );
 ROGUE_EXPORT   RogueClassStringEncoding RogueBoxed_StringEncoding___to_StringEncoding( RogueClassBoxed_StringEncoding_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncoding___init_object( RogueClassBoxedIntrospector_StringEncoding_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_StringEncoding___type_name( RogueClassBoxedIntrospector_StringEncoding_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncoding___init__Object( RogueClassBoxedIntrospector_StringEncoding_* THIS, RogueObject* _auto_6528_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncoding___init__Object( RogueClassBoxedIntrospector_StringEncoding_* THIS, RogueObject* _auto_6530_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncoding___set__String_Value( RogueClassBoxedIntrospector_StringEncoding_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringEncoding_* RogueBoxedIntrospector_StringEncoding___set__PropertyInfo_Value( RogueClassBoxedIntrospector_StringEncoding_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Int32_* RogueOptionalBoxed_Int32___init_object( RogueClassOptionalBoxed_Int32_* THIS );
@@ -16971,11 +16971,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Int32___type_name( RogueClassOpti
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Int32___address( RogueClassOptionalBoxed_Int32_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Int32___size( RogueClassOptionalBoxed_Int32_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Int32___type( RogueClassOptionalBoxed_Int32_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Int32_* RogueOptionalBoxed_Int32___init__OptionalInt32( RogueClassOptionalBoxed_Int32_* THIS, RogueOptionalInt32 _auto_6749_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Int32_* RogueOptionalBoxed_Int32___init__OptionalInt32( RogueClassOptionalBoxed_Int32_* THIS, RogueOptionalInt32 _auto_6751_0 );
 ROGUE_EXPORT   RogueOptionalInt32 RogueOptionalOptionalBoxed_Int32___to_Int32( RogueClassOptionalBoxed_Int32_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32___init_object( RogueClassOptionalBoxedIntrospector_Int32_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Int32___type_name( RogueClassOptionalBoxedIntrospector_Int32_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32___init__Object( RogueClassOptionalBoxedIntrospector_Int32_* THIS, RogueObject* _auto_6750_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32___init__Object( RogueClassOptionalBoxedIntrospector_Int32_* THIS, RogueObject* _auto_6752_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32___set__String_Value( RogueClassOptionalBoxedIntrospector_Int32_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Int32_* RogueOptionalBoxedIntrospector_Int32___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Int32_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Byte_* RogueOptionalBoxed_Byte___init_object( RogueClassOptionalBoxed_Byte_* THIS );
@@ -16985,17 +16985,17 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Byte___type_name( RogueClassOptio
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Byte___address( RogueClassOptionalBoxed_Byte_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Byte___size( RogueClassOptionalBoxed_Byte_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Byte___type( RogueClassOptionalBoxed_Byte_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Byte_* RogueOptionalBoxed_Byte___init__OptionalByte( RogueClassOptionalBoxed_Byte_* THIS, RogueOptionalByte _auto_7085_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Byte_* RogueOptionalBoxed_Byte___init__OptionalByte( RogueClassOptionalBoxed_Byte_* THIS, RogueOptionalByte _auto_7087_0 );
 ROGUE_EXPORT   RogueOptionalByte RogueOptionalOptionalBoxed_Byte___to_Byte( RogueClassOptionalBoxed_Byte_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte___init_object( RogueClassOptionalBoxedIntrospector_Byte_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Byte___type_name( RogueClassOptionalBoxedIntrospector_Byte_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte___init__Object( RogueClassOptionalBoxedIntrospector_Byte_* THIS, RogueObject* _auto_7086_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte___init__Object( RogueClassOptionalBoxedIntrospector_Byte_* THIS, RogueObject* _auto_7088_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte___set__String_Value( RogueClassOptionalBoxedIntrospector_Byte_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Byte_* RogueOptionalBoxedIntrospector_Byte___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Byte_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
-ROGUE_EXPORT_C RogueClassFunction_7090* RogueFunction_7090__init_object( RogueClassFunction_7090* THIS );
-ROGUE_EXPORT_C RogueString* RogueFunction_7090__type_name( RogueClassFunction_7090* THIS );
-ROGUE_EXPORT_C void RogueFunction_7090__call( RogueClassFunction_7090* THIS );
-ROGUE_EXPORT_C RogueClassFunction_7090* RogueFunction_7090__init__Console( RogueClassFunction_7090* THIS, RogueClassConsole* _auto_7091_0 );
+ROGUE_EXPORT_C RogueClassFunction_7092* RogueFunction_7092__init_object( RogueClassFunction_7092* THIS );
+ROGUE_EXPORT_C RogueString* RogueFunction_7092__type_name( RogueClassFunction_7092* THIS );
+ROGUE_EXPORT_C void RogueFunction_7092__call( RogueClassFunction_7092* THIS );
+ROGUE_EXPORT_C RogueClassFunction_7092* RogueFunction_7092__init__Console( RogueClassFunction_7092* THIS, RogueClassConsole* _auto_7093_0 );
 ROGUE_EXPORT_C RogueUnixConsoleMouseEventType_List* RogueUnixConsoleMouseEventType_List__init_object( RogueUnixConsoleMouseEventType_List* THIS );
 ROGUE_EXPORT_C RogueUnixConsoleMouseEventType_List* RogueUnixConsoleMouseEventType_List__init( RogueUnixConsoleMouseEventType_List* THIS );
 ROGUE_EXPORT_C RogueString* RogueUnixConsoleMouseEventType_List__description( RogueUnixConsoleMouseEventType_List* THIS );
@@ -17020,11 +17020,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_ConsoleEvent___type_name( RogueClassBoxed
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_ConsoleEvent___address( RogueClassBoxed_ConsoleEvent_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_ConsoleEvent___size( RogueClassBoxed_ConsoleEvent_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_ConsoleEvent___type( RogueClassBoxed_ConsoleEvent_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_ConsoleEvent_* RogueBoxed_ConsoleEvent___init__ConsoleEvent( RogueClassBoxed_ConsoleEvent_* THIS, RogueClassConsoleEvent _auto_7152_0 );
+ROGUE_EXPORT   RogueClassBoxed_ConsoleEvent_* RogueBoxed_ConsoleEvent___init__ConsoleEvent( RogueClassBoxed_ConsoleEvent_* THIS, RogueClassConsoleEvent _auto_7154_0 );
 ROGUE_EXPORT   RogueClassConsoleEvent RogueBoxed_ConsoleEvent___to_ConsoleEvent( RogueClassBoxed_ConsoleEvent_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEvent_* RogueBoxedIntrospector_ConsoleEvent___init_object( RogueClassBoxedIntrospector_ConsoleEvent_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_ConsoleEvent___type_name( RogueClassBoxedIntrospector_ConsoleEvent_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEvent_* RogueBoxedIntrospector_ConsoleEvent___init__Object( RogueClassBoxedIntrospector_ConsoleEvent_* THIS, RogueObject* _auto_7153_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEvent_* RogueBoxedIntrospector_ConsoleEvent___init__Object( RogueClassBoxedIntrospector_ConsoleEvent_* THIS, RogueObject* _auto_7155_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEvent_* RogueBoxedIntrospector_ConsoleEvent___set__String_Value( RogueClassBoxedIntrospector_ConsoleEvent_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEvent_* RogueBoxedIntrospector_ConsoleEvent___set__PropertyInfo_Value( RogueClassBoxedIntrospector_ConsoleEvent_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_ConsoleEventType_* RogueBoxed_ConsoleEventType___init_object( RogueClassBoxed_ConsoleEventType_* THIS );
@@ -17034,11 +17034,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_ConsoleEventType___type_name( RogueClassB
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_ConsoleEventType___address( RogueClassBoxed_ConsoleEventType_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_ConsoleEventType___size( RogueClassBoxed_ConsoleEventType_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_ConsoleEventType___type( RogueClassBoxed_ConsoleEventType_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_ConsoleEventType_* RogueBoxed_ConsoleEventType___init__ConsoleEventType( RogueClassBoxed_ConsoleEventType_* THIS, RogueClassConsoleEventType _auto_7157_0 );
+ROGUE_EXPORT   RogueClassBoxed_ConsoleEventType_* RogueBoxed_ConsoleEventType___init__ConsoleEventType( RogueClassBoxed_ConsoleEventType_* THIS, RogueClassConsoleEventType _auto_7159_0 );
 ROGUE_EXPORT   RogueClassConsoleEventType RogueBoxed_ConsoleEventType___to_ConsoleEventType( RogueClassBoxed_ConsoleEventType_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEventType_* RogueBoxedIntrospector_ConsoleEventType___init_object( RogueClassBoxedIntrospector_ConsoleEventType_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_ConsoleEventType___type_name( RogueClassBoxedIntrospector_ConsoleEventType_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEventType_* RogueBoxedIntrospector_ConsoleEventType___init__Object( RogueClassBoxedIntrospector_ConsoleEventType_* THIS, RogueObject* _auto_7158_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEventType_* RogueBoxedIntrospector_ConsoleEventType___init__Object( RogueClassBoxedIntrospector_ConsoleEventType_* THIS, RogueObject* _auto_7160_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEventType_* RogueBoxedIntrospector_ConsoleEventType___set__String_Value( RogueClassBoxedIntrospector_ConsoleEventType_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ConsoleEventType_* RogueBoxedIntrospector_ConsoleEventType___set__PropertyInfo_Value( RogueClassBoxedIntrospector_ConsoleEventType_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Span_* RogueOptionalBoxed_Span___init_object( RogueClassOptionalBoxed_Span_* THIS );
@@ -17048,11 +17048,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Span___type_name( RogueClassOptio
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Span___address( RogueClassOptionalBoxed_Span_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Span___size( RogueClassOptionalBoxed_Span_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Span___type( RogueClassOptionalBoxed_Span_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Span_* RogueOptionalBoxed_Span___init__OptionalSpan( RogueClassOptionalBoxed_Span_* THIS, RogueOptionalSpan _auto_7380_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Span_* RogueOptionalBoxed_Span___init__OptionalSpan( RogueClassOptionalBoxed_Span_* THIS, RogueOptionalSpan _auto_7382_0 );
 ROGUE_EXPORT   RogueOptionalSpan RogueOptionalOptionalBoxed_Span___to_Span( RogueClassOptionalBoxed_Span_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Span_* RogueOptionalBoxedIntrospector_Span___init_object( RogueClassOptionalBoxedIntrospector_Span_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Span___type_name( RogueClassOptionalBoxedIntrospector_Span_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Span_* RogueOptionalBoxedIntrospector_Span___init__Object( RogueClassOptionalBoxedIntrospector_Span_* THIS, RogueObject* _auto_7381_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Span_* RogueOptionalBoxedIntrospector_Span___init__Object( RogueClassOptionalBoxedIntrospector_Span_* THIS, RogueObject* _auto_7383_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Span_* RogueOptionalBoxedIntrospector_Span___set__String_Value( RogueClassOptionalBoxedIntrospector_Span_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Span_* RogueOptionalBoxedIntrospector_Span___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Span_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_Span_* RogueBoxed_Span___init_object( RogueClassBoxed_Span_* THIS );
@@ -17062,11 +17062,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_Span___type_name( RogueClassBoxed_Span_* 
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_Span___address( RogueClassBoxed_Span_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_Span___size( RogueClassBoxed_Span_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_Span___type( RogueClassBoxed_Span_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_Span_* RogueBoxed_Span___init__Span( RogueClassBoxed_Span_* THIS, RogueClassSpan _auto_7382_0 );
+ROGUE_EXPORT   RogueClassBoxed_Span_* RogueBoxed_Span___init__Span( RogueClassBoxed_Span_* THIS, RogueClassSpan _auto_7384_0 );
 ROGUE_EXPORT   RogueClassSpan RogueBoxed_Span___to_Span( RogueClassBoxed_Span_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Span_* RogueBoxedIntrospector_Span___init_object( RogueClassBoxedIntrospector_Span_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_Span___type_name( RogueClassBoxedIntrospector_Span_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_Span_* RogueBoxedIntrospector_Span___init__Object( RogueClassBoxedIntrospector_Span_* THIS, RogueObject* _auto_7383_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_Span_* RogueBoxedIntrospector_Span___init__Object( RogueClassBoxedIntrospector_Span_* THIS, RogueObject* _auto_7385_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Span_* RogueBoxedIntrospector_Span___set__String_Value( RogueClassBoxedIntrospector_Span_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Span_* RogueBoxedIntrospector_Span___set__PropertyInfo_Value( RogueClassBoxedIntrospector_Span_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_StringIterator_* RogueBoxed_StringIterator___init_object( RogueClassBoxed_StringIterator_* THIS );
@@ -17076,11 +17076,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_StringIterator___type_name( RogueClassBox
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_StringIterator___address( RogueClassBoxed_StringIterator_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_StringIterator___size( RogueClassBoxed_StringIterator_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_StringIterator___type( RogueClassBoxed_StringIterator_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_StringIterator_* RogueBoxed_StringIterator___init__StringIterator( RogueClassBoxed_StringIterator_* THIS, RogueClassStringIterator _auto_7395_0 );
+ROGUE_EXPORT   RogueClassBoxed_StringIterator_* RogueBoxed_StringIterator___init__StringIterator( RogueClassBoxed_StringIterator_* THIS, RogueClassStringIterator _auto_7397_0 );
 ROGUE_EXPORT   RogueClassStringIterator RogueBoxed_StringIterator___to_StringIterator( RogueClassBoxed_StringIterator_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringIterator_* RogueBoxedIntrospector_StringIterator___init_object( RogueClassBoxedIntrospector_StringIterator_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_StringIterator___type_name( RogueClassBoxedIntrospector_StringIterator_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringIterator_* RogueBoxedIntrospector_StringIterator___init__Object( RogueClassBoxedIntrospector_StringIterator_* THIS, RogueObject* _auto_7396_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringIterator_* RogueBoxedIntrospector_StringIterator___init__Object( RogueClassBoxedIntrospector_StringIterator_* THIS, RogueObject* _auto_7398_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringIterator_* RogueBoxedIntrospector_StringIterator___set__String_Value( RogueClassBoxedIntrospector_StringIterator_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_StringIterator_* RogueBoxedIntrospector_StringIterator___set__PropertyInfo_Value( RogueClassBoxedIntrospector_StringIterator_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_ListIterator_String__* RogueBoxed_ListIterator_String____init_object( RogueClassBoxed_ListIterator_String__* THIS );
@@ -17090,11 +17090,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_ListIterator_String____type_name( RogueCl
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_ListIterator_String____address( RogueClassBoxed_ListIterator_String__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_ListIterator_String____size( RogueClassBoxed_ListIterator_String__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_ListIterator_String____type( RogueClassBoxed_ListIterator_String__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_ListIterator_String__* RogueBoxed_ListIterator_String____init__ListIterator_String_( RogueClassBoxed_ListIterator_String__* THIS, RogueClassListIterator_String_ _auto_7404_0 );
+ROGUE_EXPORT   RogueClassBoxed_ListIterator_String__* RogueBoxed_ListIterator_String____init__ListIterator_String_( RogueClassBoxed_ListIterator_String__* THIS, RogueClassListIterator_String_ _auto_7406_0 );
 ROGUE_EXPORT   RogueClassListIterator_String_ RogueBoxed_ListIterator_String____to_ListIterator_String_( RogueClassBoxed_ListIterator_String__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_String__* RogueBoxedIntrospector_ListIterator_String____init_object( RogueClassBoxedIntrospector_ListIterator_String__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_ListIterator_String____type_name( RogueClassBoxedIntrospector_ListIterator_String__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_String__* RogueBoxedIntrospector_ListIterator_String____init__Object( RogueClassBoxedIntrospector_ListIterator_String__* THIS, RogueObject* _auto_7405_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_String__* RogueBoxedIntrospector_ListIterator_String____init__Object( RogueClassBoxedIntrospector_ListIterator_String__* THIS, RogueObject* _auto_7407_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_String__* RogueBoxedIntrospector_ListIterator_String____set__String_Value( RogueClassBoxedIntrospector_ListIterator_String__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_String__* RogueBoxedIntrospector_ListIterator_String____set__PropertyInfo_Value( RogueClassBoxedIntrospector_ListIterator_String__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_Geometry__XY_* RogueBoxed_Geometry__XY___init_object( RogueClassBoxed_Geometry__XY_* THIS );
@@ -17104,11 +17104,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_Geometry__XY___type_name( RogueClassBoxed
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_Geometry__XY___address( RogueClassBoxed_Geometry__XY_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_Geometry__XY___size( RogueClassBoxed_Geometry__XY_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_Geometry__XY___type( RogueClassBoxed_Geometry__XY_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_Geometry__XY_* RogueBoxed_Geometry__XY___init__Geometry__XY( RogueClassBoxed_Geometry__XY_* THIS, RogueClassGeometry__XY _auto_7413_0 );
+ROGUE_EXPORT   RogueClassBoxed_Geometry__XY_* RogueBoxed_Geometry__XY___init__Geometry__XY( RogueClassBoxed_Geometry__XY_* THIS, RogueClassGeometry__XY _auto_7415_0 );
 ROGUE_EXPORT   RogueClassGeometry__XY RogueBoxed_Geometry__XY___to_Geometry__XY( RogueClassBoxed_Geometry__XY_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__XY_* RogueBoxedIntrospector_Geometry__XY___init_object( RogueClassBoxedIntrospector_Geometry__XY_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_Geometry__XY___type_name( RogueClassBoxedIntrospector_Geometry__XY_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__XY_* RogueBoxedIntrospector_Geometry__XY___init__Object( RogueClassBoxedIntrospector_Geometry__XY_* THIS, RogueObject* _auto_7414_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__XY_* RogueBoxedIntrospector_Geometry__XY___init__Object( RogueClassBoxedIntrospector_Geometry__XY_* THIS, RogueObject* _auto_7416_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__XY_* RogueBoxedIntrospector_Geometry__XY___set__String_Value( RogueClassBoxedIntrospector_Geometry__XY_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__XY_* RogueBoxedIntrospector_Geometry__XY___set__PropertyInfo_Value( RogueClassBoxedIntrospector_Geometry__XY_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_Geometry__Line_* RogueBoxed_Geometry__Line___init_object( RogueClassBoxed_Geometry__Line_* THIS );
@@ -17118,11 +17118,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_Geometry__Line___type_name( RogueClassBox
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_Geometry__Line___address( RogueClassBoxed_Geometry__Line_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_Geometry__Line___size( RogueClassBoxed_Geometry__Line_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_Geometry__Line___type( RogueClassBoxed_Geometry__Line_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_Geometry__Line_* RogueBoxed_Geometry__Line___init__Geometry__Line( RogueClassBoxed_Geometry__Line_* THIS, RogueClassGeometry__Line _auto_7417_0 );
+ROGUE_EXPORT   RogueClassBoxed_Geometry__Line_* RogueBoxed_Geometry__Line___init__Geometry__Line( RogueClassBoxed_Geometry__Line_* THIS, RogueClassGeometry__Line _auto_7419_0 );
 ROGUE_EXPORT   RogueClassGeometry__Line RogueBoxed_Geometry__Line___to_Geometry__Line( RogueClassBoxed_Geometry__Line_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__Line_* RogueBoxedIntrospector_Geometry__Line___init_object( RogueClassBoxedIntrospector_Geometry__Line_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_Geometry__Line___type_name( RogueClassBoxedIntrospector_Geometry__Line_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__Line_* RogueBoxedIntrospector_Geometry__Line___init__Object( RogueClassBoxedIntrospector_Geometry__Line_* THIS, RogueObject* _auto_7418_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__Line_* RogueBoxedIntrospector_Geometry__Line___init__Object( RogueClassBoxedIntrospector_Geometry__Line_* THIS, RogueObject* _auto_7420_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__Line_* RogueBoxedIntrospector_Geometry__Line___set__String_Value( RogueClassBoxedIntrospector_Geometry__Line_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Geometry__Line_* RogueBoxedIntrospector_Geometry__Line___set__PropertyInfo_Value( RogueClassBoxedIntrospector_Geometry__Line_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassPlugin__auto_1035* RoguePlugin__auto_1035__init_object( RogueClassPlugin__auto_1035* THIS );
@@ -17139,11 +17139,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_ThreadMode___type_name( RogueClassBoxed_T
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_ThreadMode___address( RogueClassBoxed_ThreadMode_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_ThreadMode___size( RogueClassBoxed_ThreadMode_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_ThreadMode___type( RogueClassBoxed_ThreadMode_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_ThreadMode_* RogueBoxed_ThreadMode___init__ThreadMode( RogueClassBoxed_ThreadMode_* THIS, RogueClassThreadMode _auto_7451_0 );
+ROGUE_EXPORT   RogueClassBoxed_ThreadMode_* RogueBoxed_ThreadMode___init__ThreadMode( RogueClassBoxed_ThreadMode_* THIS, RogueClassThreadMode _auto_7453_0 );
 ROGUE_EXPORT   RogueClassThreadMode RogueBoxed_ThreadMode___to_ThreadMode( RogueClassBoxed_ThreadMode_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ThreadMode_* RogueBoxedIntrospector_ThreadMode___init_object( RogueClassBoxedIntrospector_ThreadMode_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_ThreadMode___type_name( RogueClassBoxedIntrospector_ThreadMode_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_ThreadMode_* RogueBoxedIntrospector_ThreadMode___init__Object( RogueClassBoxedIntrospector_ThreadMode_* THIS, RogueObject* _auto_7452_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_ThreadMode_* RogueBoxedIntrospector_ThreadMode___init__Object( RogueClassBoxedIntrospector_ThreadMode_* THIS, RogueObject* _auto_7454_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ThreadMode_* RogueBoxedIntrospector_ThreadMode___set__String_Value( RogueClassBoxedIntrospector_ThreadMode_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ThreadMode_* RogueBoxedIntrospector_ThreadMode___set__PropertyInfo_Value( RogueClassBoxedIntrospector_ThreadMode_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueMethodTemplateOverloads_List* RogueMethodTemplateOverloads_List__init_object( RogueMethodTemplateOverloads_List* THIS );
@@ -17170,11 +17170,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Real64___type_name( RogueClassOpt
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Real64___address( RogueClassOptionalBoxed_Real64_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Real64___size( RogueClassOptionalBoxed_Real64_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Real64___type( RogueClassOptionalBoxed_Real64_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Real64_* RogueOptionalBoxed_Real64___init__OptionalReal64( RogueClassOptionalBoxed_Real64_* THIS, RogueOptionalReal64 _auto_10040_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Real64_* RogueOptionalBoxed_Real64___init__OptionalReal64( RogueClassOptionalBoxed_Real64_* THIS, RogueOptionalReal64 _auto_10042_0 );
 ROGUE_EXPORT   RogueOptionalReal64 RogueOptionalOptionalBoxed_Real64___to_Real64( RogueClassOptionalBoxed_Real64_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real64___init_object( RogueClassOptionalBoxedIntrospector_Real64_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Real64___type_name( RogueClassOptionalBoxedIntrospector_Real64_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real64___init__Object( RogueClassOptionalBoxedIntrospector_Real64_* THIS, RogueObject* _auto_10041_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real64___init__Object( RogueClassOptionalBoxedIntrospector_Real64_* THIS, RogueObject* _auto_10043_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real64___set__String_Value( RogueClassOptionalBoxedIntrospector_Real64_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Real64_* RogueOptionalBoxedIntrospector_Real64___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Real64_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassNativeCodeToken* RogueNativeCodeToken__init_object( RogueClassNativeCodeToken* THIS );
@@ -17182,7 +17182,7 @@ ROGUE_EXPORT_C RogueString* RogueNativeCodeToken__to_String( RogueClassNativeCod
 ROGUE_EXPORT_C RogueString* RogueNativeCodeToken__type_name( RogueClassNativeCodeToken* THIS );
 ROGUE_EXPORT_C RogueClassToken* RogueNativeCodeToken__cloned( RogueClassNativeCodeToken* THIS );
 ROGUE_EXPORT_C RogueString* RogueNativeCodeToken__quoted_name( RogueClassNativeCodeToken* THIS );
-ROGUE_EXPORT_C RogueClassNativeCodeToken* RogueNativeCodeToken__init__TokenType_String( RogueClassNativeCodeToken* THIS, RogueClassTokenType* _auto_10514_0, RogueString* _auto_10513_1 );
+ROGUE_EXPORT_C RogueClassNativeCodeToken* RogueNativeCodeToken__init__TokenType_String( RogueClassNativeCodeToken* THIS, RogueClassTokenType* _auto_10516_0, RogueString* _auto_10515_1 );
 ROGUE_EXPORT_C RogueTableEntry_String_Token_List__List* RogueTableEntry_String_Token_List__List__init_object( RogueTableEntry_String_Token_List__List* THIS );
 ROGUE_EXPORT_C RogueTableEntry_String_Token_List__List* RogueTableEntry_String_Token_List__List__init( RogueTableEntry_String_Token_List__List* THIS );
 ROGUE_EXPORT_C RogueString* RogueTableEntry_String_Token_List__List__description( RogueTableEntry_String_Token_List__List* THIS );
@@ -17206,11 +17206,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_UsesAttributes___type_name( RogueClassBox
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_UsesAttributes___address( RogueClassBoxed_UsesAttributes_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_UsesAttributes___size( RogueClassBoxed_UsesAttributes_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_UsesAttributes___type( RogueClassBoxed_UsesAttributes_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_UsesAttributes_* RogueBoxed_UsesAttributes___init__UsesAttributes( RogueClassBoxed_UsesAttributes_* THIS, RogueClassUsesAttributes _auto_10698_0 );
+ROGUE_EXPORT   RogueClassBoxed_UsesAttributes_* RogueBoxed_UsesAttributes___init__UsesAttributes( RogueClassBoxed_UsesAttributes_* THIS, RogueClassUsesAttributes _auto_10700_0 );
 ROGUE_EXPORT   RogueClassUsesAttributes RogueBoxed_UsesAttributes___to_UsesAttributes( RogueClassBoxed_UsesAttributes_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_UsesAttributes_* RogueBoxedIntrospector_UsesAttributes___init_object( RogueClassBoxedIntrospector_UsesAttributes_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_UsesAttributes___type_name( RogueClassBoxedIntrospector_UsesAttributes_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_UsesAttributes_* RogueBoxedIntrospector_UsesAttributes___init__Object( RogueClassBoxedIntrospector_UsesAttributes_* THIS, RogueObject* _auto_10699_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_UsesAttributes_* RogueBoxedIntrospector_UsesAttributes___init__Object( RogueClassBoxedIntrospector_UsesAttributes_* THIS, RogueObject* _auto_10701_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_UsesAttributes_* RogueBoxedIntrospector_UsesAttributes___set__String_Value( RogueClassBoxedIntrospector_UsesAttributes_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_UsesAttributes_* RogueBoxedIntrospector_UsesAttributes___set__PropertyInfo_Value( RogueClassBoxedIntrospector_UsesAttributes_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_IncludeAttributes_* RogueBoxed_IncludeAttributes___init_object( RogueClassBoxed_IncludeAttributes_* THIS );
@@ -17220,11 +17220,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_IncludeAttributes___type_name( RogueClass
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_IncludeAttributes___address( RogueClassBoxed_IncludeAttributes_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_IncludeAttributes___size( RogueClassBoxed_IncludeAttributes_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_IncludeAttributes___type( RogueClassBoxed_IncludeAttributes_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_IncludeAttributes_* RogueBoxed_IncludeAttributes___init__IncludeAttributes( RogueClassBoxed_IncludeAttributes_* THIS, RogueClassIncludeAttributes _auto_10700_0 );
+ROGUE_EXPORT   RogueClassBoxed_IncludeAttributes_* RogueBoxed_IncludeAttributes___init__IncludeAttributes( RogueClassBoxed_IncludeAttributes_* THIS, RogueClassIncludeAttributes _auto_10702_0 );
 ROGUE_EXPORT   RogueClassIncludeAttributes RogueBoxed_IncludeAttributes___to_IncludeAttributes( RogueClassBoxed_IncludeAttributes_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_IncludeAttributes_* RogueBoxedIntrospector_IncludeAttributes___init_object( RogueClassBoxedIntrospector_IncludeAttributes_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_IncludeAttributes___type_name( RogueClassBoxedIntrospector_IncludeAttributes_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_IncludeAttributes_* RogueBoxedIntrospector_IncludeAttributes___init__Object( RogueClassBoxedIntrospector_IncludeAttributes_* THIS, RogueObject* _auto_10701_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_IncludeAttributes_* RogueBoxedIntrospector_IncludeAttributes___init__Object( RogueClassBoxedIntrospector_IncludeAttributes_* THIS, RogueObject* _auto_10703_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_IncludeAttributes_* RogueBoxedIntrospector_IncludeAttributes___set__String_Value( RogueClassBoxedIntrospector_IncludeAttributes_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_IncludeAttributes_* RogueBoxedIntrospector_IncludeAttributes___set__PropertyInfo_Value( RogueClassBoxedIntrospector_IncludeAttributes_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_VersionNumber_* RogueBoxed_VersionNumber___init_object( RogueClassBoxed_VersionNumber_* THIS );
@@ -17234,11 +17234,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_VersionNumber___type_name( RogueClassBoxe
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_VersionNumber___address( RogueClassBoxed_VersionNumber_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_VersionNumber___size( RogueClassBoxed_VersionNumber_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_VersionNumber___type( RogueClassBoxed_VersionNumber_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_VersionNumber_* RogueBoxed_VersionNumber___init__VersionNumber( RogueClassBoxed_VersionNumber_* THIS, RogueClassVersionNumber _auto_10702_0 );
+ROGUE_EXPORT   RogueClassBoxed_VersionNumber_* RogueBoxed_VersionNumber___init__VersionNumber( RogueClassBoxed_VersionNumber_* THIS, RogueClassVersionNumber _auto_10704_0 );
 ROGUE_EXPORT   RogueClassVersionNumber RogueBoxed_VersionNumber___to_VersionNumber( RogueClassBoxed_VersionNumber_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_VersionNumber_* RogueBoxedIntrospector_VersionNumber___init_object( RogueClassBoxedIntrospector_VersionNumber_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_VersionNumber___type_name( RogueClassBoxedIntrospector_VersionNumber_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_VersionNumber_* RogueBoxedIntrospector_VersionNumber___init__Object( RogueClassBoxedIntrospector_VersionNumber_* THIS, RogueObject* _auto_10703_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_VersionNumber_* RogueBoxedIntrospector_VersionNumber___init__Object( RogueClassBoxedIntrospector_VersionNumber_* THIS, RogueObject* _auto_10705_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_VersionNumber_* RogueBoxedIntrospector_VersionNumber___set__String_Value( RogueClassBoxedIntrospector_VersionNumber_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_VersionNumber_* RogueBoxedIntrospector_VersionNumber___set__PropertyInfo_Value( RogueClassBoxedIntrospector_VersionNumber_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_FilePattern_* RogueBoxed_FilePattern___init_object( RogueClassBoxed_FilePattern_* THIS );
@@ -17248,11 +17248,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_FilePattern___type_name( RogueClassBoxed_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_FilePattern___address( RogueClassBoxed_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_FilePattern___size( RogueClassBoxed_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_FilePattern___type( RogueClassBoxed_FilePattern_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_FilePattern_* RogueBoxed_FilePattern___init__FilePattern( RogueClassBoxed_FilePattern_* THIS, RogueClassFilePattern _auto_10834_0 );
+ROGUE_EXPORT   RogueClassBoxed_FilePattern_* RogueBoxed_FilePattern___init__FilePattern( RogueClassBoxed_FilePattern_* THIS, RogueClassFilePattern _auto_10836_0 );
 ROGUE_EXPORT   RogueClassFilePattern RogueBoxed_FilePattern___to_FilePattern( RogueClassBoxed_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___init_object( RogueClassBoxedIntrospector_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_FilePattern___type_name( RogueClassBoxedIntrospector_FilePattern_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___init__Object( RogueClassBoxedIntrospector_FilePattern_* THIS, RogueObject* _auto_10835_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___init__Object( RogueClassBoxedIntrospector_FilePattern_* THIS, RogueObject* _auto_10837_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___set__String_Value( RogueClassBoxedIntrospector_FilePattern_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FilePattern_* RogueBoxedIntrospector_FilePattern___set__PropertyInfo_Value( RogueClassBoxedIntrospector_FilePattern_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_FilePattern_* RogueOptionalBoxed_FilePattern___init_object( RogueClassOptionalBoxed_FilePattern_* THIS );
@@ -17262,11 +17262,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_FilePattern___type_name( RogueCla
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_FilePattern___address( RogueClassOptionalBoxed_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_FilePattern___size( RogueClassOptionalBoxed_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_FilePattern___type( RogueClassOptionalBoxed_FilePattern_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_FilePattern_* RogueOptionalBoxed_FilePattern___init__OptionalFilePattern( RogueClassOptionalBoxed_FilePattern_* THIS, RogueOptionalFilePattern _auto_10836_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_FilePattern_* RogueOptionalBoxed_FilePattern___init__OptionalFilePattern( RogueClassOptionalBoxed_FilePattern_* THIS, RogueOptionalFilePattern _auto_10838_0 );
 ROGUE_EXPORT   RogueOptionalFilePattern RogueOptionalOptionalBoxed_FilePattern___to_FilePattern( RogueClassOptionalBoxed_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_FilePattern_* RogueOptionalBoxedIntrospector_FilePattern___init_object( RogueClassOptionalBoxedIntrospector_FilePattern_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_FilePattern___type_name( RogueClassOptionalBoxedIntrospector_FilePattern_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_FilePattern_* RogueOptionalBoxedIntrospector_FilePattern___init__Object( RogueClassOptionalBoxedIntrospector_FilePattern_* THIS, RogueObject* _auto_10837_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_FilePattern_* RogueOptionalBoxedIntrospector_FilePattern___init__Object( RogueClassOptionalBoxedIntrospector_FilePattern_* THIS, RogueObject* _auto_10839_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_FilePattern_* RogueOptionalBoxedIntrospector_FilePattern___set__String_Value( RogueClassOptionalBoxedIntrospector_FilePattern_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_FilePattern_* RogueOptionalBoxedIntrospector_FilePattern___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_FilePattern_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_FileOptions_* RogueBoxed_FileOptions___init_object( RogueClassBoxed_FileOptions_* THIS );
@@ -17276,16 +17276,16 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_FileOptions___type_name( RogueClassBoxed_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_FileOptions___address( RogueClassBoxed_FileOptions_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_FileOptions___size( RogueClassBoxed_FileOptions_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_FileOptions___type( RogueClassBoxed_FileOptions_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_FileOptions_* RogueBoxed_FileOptions___init__FileOptions( RogueClassBoxed_FileOptions_* THIS, RogueClassFileOptions _auto_10838_0 );
+ROGUE_EXPORT   RogueClassBoxed_FileOptions_* RogueBoxed_FileOptions___init__FileOptions( RogueClassBoxed_FileOptions_* THIS, RogueClassFileOptions _auto_10840_0 );
 ROGUE_EXPORT   RogueClassFileOptions RogueBoxed_FileOptions___to_FileOptions( RogueClassBoxed_FileOptions_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___init_object( RogueClassBoxedIntrospector_FileOptions_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_FileOptions___type_name( RogueClassBoxedIntrospector_FileOptions_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___init__Object( RogueClassBoxedIntrospector_FileOptions_* THIS, RogueObject* _auto_10839_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___init__Object( RogueClassBoxedIntrospector_FileOptions_* THIS, RogueObject* _auto_10841_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___set__String_Value( RogueClassBoxedIntrospector_FileOptions_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_FileOptions_* RogueBoxedIntrospector_FileOptions___set__PropertyInfo_Value( RogueClassBoxedIntrospector_FileOptions_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassMethodCallerReturning_Int32_* RogueMethodCallerReturning_Int32___init_object( RogueClassMethodCallerReturning_Int32_* THIS );
 ROGUE_EXPORT_C RogueString* RogueMethodCallerReturning_Int32___type_name( RogueClassMethodCallerReturning_Int32_* THIS );
-ROGUE_EXPORT_C RogueClassMethodCallerReturning_Int32_* RogueMethodCallerReturning_Int32___init__MethodInfo( RogueClassMethodCallerReturning_Int32_* THIS, RogueClassMethodInfo* _auto_12057_0 );
+ROGUE_EXPORT_C RogueClassMethodCallerReturning_Int32_* RogueMethodCallerReturning_Int32___init__MethodInfo( RogueClassMethodCallerReturning_Int32_* THIS, RogueClassMethodInfo* _auto_12059_0 );
 ROGUE_EXPORT_C RogueInt32 RogueMethodCallerReturning_Int32___call__Object( RogueClassMethodCallerReturning_Int32_* THIS, RogueObject* o_0 );
 ROGUE_EXPORT_C RogueClassBoxed_VMScopeManager_* RogueBoxed_VMScopeManager___init_object( RogueClassBoxed_VMScopeManager_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxed_VMScopeManager___description( RogueClassBoxed_VMScopeManager_* THIS );
@@ -17294,11 +17294,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_VMScopeManager___type_name( RogueClassBox
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_VMScopeManager___address( RogueClassBoxed_VMScopeManager_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_VMScopeManager___size( RogueClassBoxed_VMScopeManager_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_VMScopeManager___type( RogueClassBoxed_VMScopeManager_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_VMScopeManager_* RogueBoxed_VMScopeManager___init__VMScopeManager( RogueClassBoxed_VMScopeManager_* THIS, RogueClassVMScopeManager _auto_12173_0 );
+ROGUE_EXPORT   RogueClassBoxed_VMScopeManager_* RogueBoxed_VMScopeManager___init__VMScopeManager( RogueClassBoxed_VMScopeManager_* THIS, RogueClassVMScopeManager _auto_12175_0 );
 ROGUE_EXPORT   RogueClassVMScopeManager RogueBoxed_VMScopeManager___to_VMScopeManager( RogueClassBoxed_VMScopeManager_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_VMScopeManager_* RogueBoxedIntrospector_VMScopeManager___init_object( RogueClassBoxedIntrospector_VMScopeManager_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_VMScopeManager___type_name( RogueClassBoxedIntrospector_VMScopeManager_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_VMScopeManager_* RogueBoxedIntrospector_VMScopeManager___init__Object( RogueClassBoxedIntrospector_VMScopeManager_* THIS, RogueObject* _auto_12174_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_VMScopeManager_* RogueBoxedIntrospector_VMScopeManager___init__Object( RogueClassBoxedIntrospector_VMScopeManager_* THIS, RogueObject* _auto_12176_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_VMScopeManager_* RogueBoxedIntrospector_VMScopeManager___set__String_Value( RogueClassBoxedIntrospector_VMScopeManager_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_VMScopeManager_* RogueBoxedIntrospector_VMScopeManager___set__PropertyInfo_Value( RogueClassBoxedIntrospector_VMScopeManager_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueCyProperty_List* RogueCyProperty_List__init_object( RogueCyProperty_List* THIS );
@@ -17325,11 +17325,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_String_String_List____t
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_String_String_List____address( RogueClassBoxed_TableKeysIterator_String_String_List__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_String_String_List____size( RogueClassBoxed_TableKeysIterator_String_String_List__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_String_String_List____type( RogueClassBoxed_TableKeysIterator_String_String_List__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_String_List__* RogueBoxed_TableKeysIterator_String_String_List____init__TableKeysIterator_String_String_List_( RogueClassBoxed_TableKeysIterator_String_String_List__* THIS, RogueClassTableKeysIterator_String_String_List_ _auto_13146_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_String_List__* RogueBoxed_TableKeysIterator_String_String_List____init__TableKeysIterator_String_String_List_( RogueClassBoxed_TableKeysIterator_String_String_List__* THIS, RogueClassTableKeysIterator_String_String_List_ _auto_13148_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_String_String_List_ RogueBoxed_TableKeysIterator_String_String_List____to_TableKeysIterator_String_String_List_( RogueClassBoxed_TableKeysIterator_String_String_List__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* RogueBoxedIntrospector_TableKeysIterator_String_String_List____init_object( RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_String_String_List____type_name( RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* RogueBoxedIntrospector_TableKeysIterator_String_String_List____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* THIS, RogueObject* _auto_13147_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* RogueBoxedIntrospector_TableKeysIterator_String_String_List____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* THIS, RogueObject* _auto_13149_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* RogueBoxedIntrospector_TableKeysIterator_String_String_List____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* RogueBoxedIntrospector_TableKeysIterator_String_String_List____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_String_List__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Character_* RogueOptionalBoxed_Character___init_object( RogueClassOptionalBoxed_Character_* THIS );
@@ -17339,20 +17339,20 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Character___type_name( RogueClass
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Character___address( RogueClassOptionalBoxed_Character_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Character___size( RogueClassOptionalBoxed_Character_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Character___type( RogueClassOptionalBoxed_Character_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Character_* RogueOptionalBoxed_Character___init__OptionalCharacter( RogueClassOptionalBoxed_Character_* THIS, RogueOptionalCharacter _auto_13153_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Character_* RogueOptionalBoxed_Character___init__OptionalCharacter( RogueClassOptionalBoxed_Character_* THIS, RogueOptionalCharacter _auto_13155_0 );
 ROGUE_EXPORT   RogueOptionalCharacter RogueOptionalOptionalBoxed_Character___to_Character( RogueClassOptionalBoxed_Character_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_Character___init_object( RogueClassOptionalBoxedIntrospector_Character_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Character___type_name( RogueClassOptionalBoxedIntrospector_Character_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_Character___init__Object( RogueClassOptionalBoxedIntrospector_Character_* THIS, RogueObject* _auto_13154_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_Character___init__Object( RogueClassOptionalBoxedIntrospector_Character_* THIS, RogueObject* _auto_13156_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_Character___set__String_Value( RogueClassOptionalBoxedIntrospector_Character_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Character_* RogueOptionalBoxedIntrospector_Character___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Character_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassMethodCallerReturning_Logical_* RogueMethodCallerReturning_Logical___init_object( RogueClassMethodCallerReturning_Logical_* THIS );
 ROGUE_EXPORT_C RogueString* RogueMethodCallerReturning_Logical___type_name( RogueClassMethodCallerReturning_Logical_* THIS );
-ROGUE_EXPORT_C RogueClassMethodCallerReturning_Logical_* RogueMethodCallerReturning_Logical___init__MethodInfo( RogueClassMethodCallerReturning_Logical_* THIS, RogueClassMethodInfo* _auto_13569_0 );
+ROGUE_EXPORT_C RogueClassMethodCallerReturning_Logical_* RogueMethodCallerReturning_Logical___init__MethodInfo( RogueClassMethodCallerReturning_Logical_* THIS, RogueClassMethodInfo* _auto_13571_0 );
 ROGUE_EXPORT_C RogueLogical RogueMethodCallerReturning_Logical___call__Object( RogueClassMethodCallerReturning_Logical_* THIS, RogueObject* o_0 );
 ROGUE_EXPORT_C RogueClassMethodCallerReturning_Value_* RogueMethodCallerReturning_Value___init_object( RogueClassMethodCallerReturning_Value_* THIS );
 ROGUE_EXPORT_C RogueString* RogueMethodCallerReturning_Value___type_name( RogueClassMethodCallerReturning_Value_* THIS );
-ROGUE_EXPORT_C RogueClassMethodCallerReturning_Value_* RogueMethodCallerReturning_Value___init__MethodInfo( RogueClassMethodCallerReturning_Value_* THIS, RogueClassMethodInfo* _auto_13731_0 );
+ROGUE_EXPORT_C RogueClassMethodCallerReturning_Value_* RogueMethodCallerReturning_Value___init__MethodInfo( RogueClassMethodCallerReturning_Value_* THIS, RogueClassMethodInfo* _auto_13733_0 );
 ROGUE_EXPORT_C RogueClassValue* RogueMethodCallerReturning_Value___call__Object( RogueClassMethodCallerReturning_Value_* THIS, RogueObject* o_0 );
 ROGUE_EXPORT_C RogueClassQueryToGenericFunctionConversionVisitor* RogueQueryToGenericFunctionConversionVisitor__init_object( RogueClassQueryToGenericFunctionConversionVisitor* THIS );
 ROGUE_EXPORT_C RogueString* RogueQueryToGenericFunctionConversionVisitor__type_name( RogueClassQueryToGenericFunctionConversionVisitor* THIS );
@@ -17360,7 +17360,7 @@ ROGUE_EXPORT_C RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visi
 ROGUE_EXPORT_C RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdThisContext( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdThisContext* cmd_0 );
 ROGUE_EXPORT_C RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdReadLocal( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdReadLocal* cmd_0 );
 ROGUE_EXPORT_C RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__visit__CmdImplicitAccess( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmdImplicitAccess* cmd_0 );
-ROGUE_EXPORT_C void RogueQueryToGenericFunctionConversionVisitor__convert__Cmd_CmdCreateFunction( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmd* cmd_0, RogueClassCmdCreateFunction* _auto_13738_1 );
+ROGUE_EXPORT_C void RogueQueryToGenericFunctionConversionVisitor__convert__Cmd_CmdCreateFunction( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmd* cmd_0, RogueClassCmdCreateFunction* _auto_13740_1 );
 ROGUE_EXPORT_C RogueClassCmd* RogueQueryToGenericFunctionConversionVisitor__convert_to_fn_with_arg__Cmd( RogueClassQueryToGenericFunctionConversionVisitor* THIS, RogueClassCmd* cmd_0 );
 ROGUE_EXPORT_C RogueClassCmdLiteralReal32* RogueCmdLiteralReal32__init_object( RogueClassCmdLiteralReal32* THIS );
 ROGUE_EXPORT_C RogueString* RogueCmdLiteralReal32__to_String( RogueClassCmdLiteralReal32* THIS );
@@ -17374,7 +17374,7 @@ ROGUE_EXPORT_C RogueInt32 RogueCmdLiteralReal32__to_Int32( RogueClassCmdLiteralR
 ROGUE_EXPORT_C RogueLogical RogueCmdLiteralReal32__to_Logical( RogueClassCmdLiteralReal32* THIS );
 ROGUE_EXPORT_C RogueClassType* Rogue_CmdLiteralReal32__type( RogueClassCmdLiteralReal32* THIS );
 ROGUE_EXPORT_C void RogueCmdLiteralReal32__write_cpp__CPPWriter_Logical( RogueClassCmdLiteralReal32* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-ROGUE_EXPORT_C RogueClassCmdLiteralReal32* RogueCmdLiteralReal32__init__Token_Real32( RogueClassCmdLiteralReal32* THIS, RogueClassToken* _auto_14019_0, RogueReal32 _auto_14018_1 );
+ROGUE_EXPORT_C RogueClassCmdLiteralReal32* RogueCmdLiteralReal32__init__Token_Real32( RogueClassCmdLiteralReal32* THIS, RogueClassToken* _auto_14021_0, RogueReal32 _auto_14020_1 );
 ROGUE_EXPORT_C RogueClassCmdLiteralByte* RogueCmdLiteralByte__init_object( RogueClassCmdLiteralByte* THIS );
 ROGUE_EXPORT_C RogueString* RogueCmdLiteralByte__to_String( RogueClassCmdLiteralByte* THIS );
 ROGUE_EXPORT_C RogueString* RogueCmdLiteralByte__type_name( RogueClassCmdLiteralByte* THIS );
@@ -17387,7 +17387,7 @@ ROGUE_EXPORT_C RogueInt32 RogueCmdLiteralByte__to_Int32( RogueClassCmdLiteralByt
 ROGUE_EXPORT_C RogueLogical RogueCmdLiteralByte__to_Logical( RogueClassCmdLiteralByte* THIS );
 ROGUE_EXPORT_C RogueClassType* Rogue_CmdLiteralByte__type( RogueClassCmdLiteralByte* THIS );
 ROGUE_EXPORT_C void RogueCmdLiteralByte__write_cpp__CPPWriter_Logical( RogueClassCmdLiteralByte* THIS, RogueClassCPPWriter* writer_0, RogueLogical is_statement_1 );
-ROGUE_EXPORT_C RogueClassCmdLiteralByte* RogueCmdLiteralByte__init__Token_Byte( RogueClassCmdLiteralByte* THIS, RogueClassToken* _auto_14021_0, RogueByte _auto_14020_1 );
+ROGUE_EXPORT_C RogueClassCmdLiteralByte* RogueCmdLiteralByte__init__Token_Byte( RogueClassCmdLiteralByte* THIS, RogueClassToken* _auto_14023_0, RogueByte _auto_14022_1 );
 ROGUE_EXPORT_C RogueClassInjectCmdBeforeReturnVisitor* RogueInjectCmdBeforeReturnVisitor__init_object( RogueClassInjectCmdBeforeReturnVisitor* THIS );
 ROGUE_EXPORT_C RogueString* RogueInjectCmdBeforeReturnVisitor__type_name( RogueClassInjectCmdBeforeReturnVisitor* THIS );
 ROGUE_EXPORT_C RogueClassCmd* RogueInjectCmdBeforeReturnVisitor__visit__CmdReturn( RogueClassInjectCmdBeforeReturnVisitor* THIS, RogueClassCmdReturn* cmd_return_0 );
@@ -17395,11 +17395,11 @@ ROGUE_EXPORT_C RogueClassCmd* RogueInjectCmdBeforeReturnVisitor__visit__CmdTry( 
 ROGUE_EXPORT_C RogueClassCmd* RogueInjectCmdBeforeReturnVisitor__visit__CmdThrow( RogueClassInjectCmdBeforeReturnVisitor* THIS, RogueClassCmdThrow* cmd_throw_0 );
 ROGUE_EXPORT_C RogueClassCmd* RogueInjectCmdBeforeReturnVisitor__visit__CmdEscape( RogueClassInjectCmdBeforeReturnVisitor* THIS, RogueClassCmdEscape* cmd_escape_0 );
 ROGUE_EXPORT_C RogueClassCmd* RogueInjectCmdBeforeReturnVisitor__visit__CmdTemporarily( RogueClassInjectCmdBeforeReturnVisitor* THIS, RogueClassCmdTemporarily* cmd_temporarily_0 );
-ROGUE_EXPORT_C RogueClassInjectCmdBeforeReturnVisitor* RogueInjectCmdBeforeReturnVisitor__init__Cmd( RogueClassInjectCmdBeforeReturnVisitor* THIS, RogueClassCmd* _auto_14305_0 );
+ROGUE_EXPORT_C RogueClassInjectCmdBeforeReturnVisitor* RogueInjectCmdBeforeReturnVisitor__init__Cmd( RogueClassInjectCmdBeforeReturnVisitor* THIS, RogueClassCmd* _auto_14307_0 );
 ROGUE_EXPORT_C RogueClassConvertReturnToEscapeVisitor* RogueConvertReturnToEscapeVisitor__init_object( RogueClassConvertReturnToEscapeVisitor* THIS );
 ROGUE_EXPORT_C RogueString* RogueConvertReturnToEscapeVisitor__type_name( RogueClassConvertReturnToEscapeVisitor* THIS );
 ROGUE_EXPORT_C RogueClassCmd* RogueConvertReturnToEscapeVisitor__visit__CmdReturn( RogueClassConvertReturnToEscapeVisitor* THIS, RogueClassCmdReturn* cmd_return_0 );
-ROGUE_EXPORT_C RogueClassConvertReturnToEscapeVisitor* RogueConvertReturnToEscapeVisitor__init__Method_String_String_CmdControlStructure( RogueClassConvertReturnToEscapeVisitor* THIS, RogueClassMethod* _auto_14317_0, RogueString* _auto_14316_1, RogueString* _auto_14315_2, RogueClassCmdControlStructure* _auto_14314_3 );
+ROGUE_EXPORT_C RogueClassConvertReturnToEscapeVisitor* RogueConvertReturnToEscapeVisitor__init__Method_String_String_CmdControlStructure( RogueClassConvertReturnToEscapeVisitor* THIS, RogueClassMethod* _auto_14319_0, RogueString* _auto_14318_1, RogueString* _auto_14317_2, RogueClassCmdControlStructure* _auto_14316_3 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Property_* RogueOptionalBoxed_Property___init_object( RogueClassOptionalBoxed_Property_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Property___description( RogueClassOptionalBoxed_Property_* THIS );
 ROGUE_EXPORT_C void RogueOptionalBoxed_Property___unpack__Value( RogueClassOptionalBoxed_Property_* THIS, RogueClassValue* values_0 );
@@ -17407,11 +17407,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Property___type_name( RogueClassO
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Property___address( RogueClassOptionalBoxed_Property_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Property___size( RogueClassOptionalBoxed_Property_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Property___type( RogueClassOptionalBoxed_Property_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Property_* RogueOptionalBoxed_Property___init__OptionalProperty( RogueClassOptionalBoxed_Property_* THIS, RogueOptionalProperty _auto_14324_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Property_* RogueOptionalBoxed_Property___init__OptionalProperty( RogueClassOptionalBoxed_Property_* THIS, RogueOptionalProperty _auto_14326_0 );
 ROGUE_EXPORT   RogueOptionalProperty RogueOptionalOptionalBoxed_Property___to_Property( RogueClassOptionalBoxed_Property_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Property_* RogueOptionalBoxedIntrospector_Property___init_object( RogueClassOptionalBoxedIntrospector_Property_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Property___type_name( RogueClassOptionalBoxedIntrospector_Property_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Property_* RogueOptionalBoxedIntrospector_Property___init__Object( RogueClassOptionalBoxedIntrospector_Property_* THIS, RogueObject* _auto_14325_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Property_* RogueOptionalBoxedIntrospector_Property___init__Object( RogueClassOptionalBoxedIntrospector_Property_* THIS, RogueObject* _auto_14327_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Property_* RogueOptionalBoxedIntrospector_Property___set__String_Value( RogueClassOptionalBoxedIntrospector_Property_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Property_* RogueOptionalBoxedIntrospector_Property___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Property_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_String_State__* RogueBoxed_TableKeysIterator_String_State____init_object( RogueClassBoxed_TableKeysIterator_String_State__* THIS );
@@ -17421,11 +17421,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_String_State____type_na
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_String_State____address( RogueClassBoxed_TableKeysIterator_String_State__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_String_State____size( RogueClassBoxed_TableKeysIterator_String_State__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_String_State____type( RogueClassBoxed_TableKeysIterator_String_State__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_State__* RogueBoxed_TableKeysIterator_String_State____init__TableKeysIterator_String_State_( RogueClassBoxed_TableKeysIterator_String_State__* THIS, RogueClassTableKeysIterator_String_State_ _auto_14326_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_State__* RogueBoxed_TableKeysIterator_String_State____init__TableKeysIterator_String_State_( RogueClassBoxed_TableKeysIterator_String_State__* THIS, RogueClassTableKeysIterator_String_State_ _auto_14328_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_String_State_ RogueBoxed_TableKeysIterator_String_State____to_TableKeysIterator_String_State_( RogueClassBoxed_TableKeysIterator_String_State__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_State__* RogueBoxedIntrospector_TableKeysIterator_String_State____init_object( RogueClassBoxedIntrospector_TableKeysIterator_String_State__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_String_State____type_name( RogueClassBoxedIntrospector_TableKeysIterator_String_State__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_State__* RogueBoxedIntrospector_TableKeysIterator_String_State____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_State__* THIS, RogueObject* _auto_14327_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_State__* RogueBoxedIntrospector_TableKeysIterator_String_State____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_State__* THIS, RogueObject* _auto_14329_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_State__* RogueBoxedIntrospector_TableKeysIterator_String_State____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_State__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_State__* RogueBoxedIntrospector_TableKeysIterator_String_State____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_State__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Cmd_* RogueOptionalBoxed_Cmd___init_object( RogueClassOptionalBoxed_Cmd_* THIS );
@@ -17435,11 +17435,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Cmd___type_name( RogueClassOption
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Cmd___address( RogueClassOptionalBoxed_Cmd_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Cmd___size( RogueClassOptionalBoxed_Cmd_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Cmd___type( RogueClassOptionalBoxed_Cmd_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Cmd_* RogueOptionalBoxed_Cmd___init__OptionalCmd( RogueClassOptionalBoxed_Cmd_* THIS, RogueOptionalCmd _auto_14628_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Cmd_* RogueOptionalBoxed_Cmd___init__OptionalCmd( RogueClassOptionalBoxed_Cmd_* THIS, RogueOptionalCmd _auto_14630_0 );
 ROGUE_EXPORT   RogueOptionalCmd RogueOptionalOptionalBoxed_Cmd___to_Cmd( RogueClassOptionalBoxed_Cmd_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Cmd_* RogueOptionalBoxedIntrospector_Cmd___init_object( RogueClassOptionalBoxedIntrospector_Cmd_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Cmd___type_name( RogueClassOptionalBoxedIntrospector_Cmd_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Cmd_* RogueOptionalBoxedIntrospector_Cmd___init__Object( RogueClassOptionalBoxedIntrospector_Cmd_* THIS, RogueObject* _auto_14629_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Cmd_* RogueOptionalBoxedIntrospector_Cmd___init__Object( RogueClassOptionalBoxedIntrospector_Cmd_* THIS, RogueObject* _auto_14631_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Cmd_* RogueOptionalBoxedIntrospector_Cmd___set__String_Value( RogueClassOptionalBoxedIntrospector_Cmd_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Cmd_* RogueOptionalBoxedIntrospector_Cmd___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Cmd_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxed_TableValuesIterator_String_MethodTemplateOverloads____init_object( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
@@ -17449,11 +17449,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableValuesIterator_String_MethodTemplate
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableValuesIterator_String_MethodTemplateOverloads____address( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableValuesIterator_String_MethodTemplateOverloads____size( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableValuesIterator_String_MethodTemplateOverloads____type( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxed_TableValuesIterator_String_MethodTemplateOverloads____init__TableValuesIterator_String_MethodTemplateOverloads_( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS, RogueClassTableValuesIterator_String_MethodTemplateOverloads_ _auto_14630_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxed_TableValuesIterator_String_MethodTemplateOverloads____init__TableValuesIterator_String_MethodTemplateOverloads_( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS, RogueClassTableValuesIterator_String_MethodTemplateOverloads_ _auto_14632_0 );
 ROGUE_EXPORT   RogueClassTableValuesIterator_String_MethodTemplateOverloads_ RogueBoxed_TableValuesIterator_String_MethodTemplateOverloads____to_TableValuesIterator_String_MethodTemplateOverloads_( RogueClassBoxed_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads____init_object( RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads____type_name( RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* THIS, RogueObject* _auto_14631_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* THIS, RogueObject* _auto_14633_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads____set__String_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* RogueBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_MethodTemplateOverloads__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_MethodTemplateOverloads_* RogueOptionalBoxed_MethodTemplateOverloads___init_object( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS );
@@ -17463,11 +17463,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_MethodTemplateOverloads___type_na
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_MethodTemplateOverloads___address( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_MethodTemplateOverloads___size( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_MethodTemplateOverloads___type( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_MethodTemplateOverloads_* RogueOptionalBoxed_MethodTemplateOverloads___init__OptionalMethodTemplateOverloads( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS, RogueOptionalMethodTemplateOverloads _auto_14636_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_MethodTemplateOverloads_* RogueOptionalBoxed_MethodTemplateOverloads___init__OptionalMethodTemplateOverloads( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS, RogueOptionalMethodTemplateOverloads _auto_14638_0 );
 ROGUE_EXPORT   RogueOptionalMethodTemplateOverloads RogueOptionalOptionalBoxed_MethodTemplateOverloads___to_MethodTemplateOverloads( RogueClassOptionalBoxed_MethodTemplateOverloads_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* RogueOptionalBoxedIntrospector_MethodTemplateOverloads___init_object( RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_MethodTemplateOverloads___type_name( RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* RogueOptionalBoxedIntrospector_MethodTemplateOverloads___init__Object( RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* THIS, RogueObject* _auto_14637_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* RogueOptionalBoxedIntrospector_MethodTemplateOverloads___init__Object( RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* THIS, RogueObject* _auto_14639_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* RogueOptionalBoxedIntrospector_MethodTemplateOverloads___set__String_Value( RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* RogueOptionalBoxedIntrospector_MethodTemplateOverloads___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_MethodTemplateOverloads_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableEntriesIterator_String_Token_List__* RogueBoxed_TableEntriesIterator_String_Token_List____init_object( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS );
@@ -17477,11 +17477,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableEntriesIterator_String_Token_List___
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableEntriesIterator_String_Token_List____address( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableEntriesIterator_String_Token_List____size( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableEntriesIterator_String_Token_List____type( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableEntriesIterator_String_Token_List__* RogueBoxed_TableEntriesIterator_String_Token_List____init__TableEntriesIterator_String_Token_List_( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS, RogueClassTableEntriesIterator_String_Token_List_ _auto_14638_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableEntriesIterator_String_Token_List__* RogueBoxed_TableEntriesIterator_String_Token_List____init__TableEntriesIterator_String_Token_List_( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS, RogueClassTableEntriesIterator_String_Token_List_ _auto_14640_0 );
 ROGUE_EXPORT   RogueClassTableEntriesIterator_String_Token_List_ RogueBoxed_TableEntriesIterator_String_Token_List____to_TableEntriesIterator_String_Token_List_( RogueClassBoxed_TableEntriesIterator_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* RogueBoxedIntrospector_TableEntriesIterator_String_Token_List____init_object( RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableEntriesIterator_String_Token_List____type_name( RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* RogueBoxedIntrospector_TableEntriesIterator_String_Token_List____init__Object( RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* THIS, RogueObject* _auto_14639_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* RogueBoxedIntrospector_TableEntriesIterator_String_Token_List____init__Object( RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* THIS, RogueObject* _auto_14641_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* RogueBoxedIntrospector_TableEntriesIterator_String_Token_List____set__String_Value( RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* RogueBoxedIntrospector_TableEntriesIterator_String_Token_List____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableEntriesIterator_String_Token_List__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_TableEntry_String_Token_List__* RogueOptionalBoxed_TableEntry_String_Token_List____init_object( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS );
@@ -17491,11 +17491,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_TableEntry_String_Token_List____t
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_TableEntry_String_Token_List____address( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_TableEntry_String_Token_List____size( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_TableEntry_String_Token_List____type( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_TableEntry_String_Token_List__* RogueOptionalBoxed_TableEntry_String_Token_List____init__OptionalTableEntry_String_Token_List_( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS, RogueOptionalTableEntry_String_Token_List_ _auto_14641_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_TableEntry_String_Token_List__* RogueOptionalBoxed_TableEntry_String_Token_List____init__OptionalTableEntry_String_Token_List_( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS, RogueOptionalTableEntry_String_Token_List_ _auto_14643_0 );
 ROGUE_EXPORT   RogueOptionalTableEntry_String_Token_List_ RogueOptionalOptionalBoxed_TableEntry_String_Token_List____to_TableEntry_String_Token_List_( RogueClassOptionalBoxed_TableEntry_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* RogueOptionalBoxedIntrospector_TableEntry_String_Token_List____init_object( RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_TableEntry_String_Token_List____type_name( RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* RogueOptionalBoxedIntrospector_TableEntry_String_Token_List____init__Object( RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* THIS, RogueObject* _auto_14642_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* RogueOptionalBoxedIntrospector_TableEntry_String_Token_List____init__Object( RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* THIS, RogueObject* _auto_14644_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* RogueOptionalBoxedIntrospector_TableEntry_String_Token_List____set__String_Value( RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* RogueOptionalBoxedIntrospector_TableEntry_String_Token_List____set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_TableEntry_String_Token_List__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_String_Cmd__* RogueBoxed_TableKeysIterator_String_Cmd____init_object( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS );
@@ -17505,11 +17505,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_String_Cmd____type_name
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_String_Cmd____address( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_String_Cmd____size( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_String_Cmd____type( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_Cmd__* RogueBoxed_TableKeysIterator_String_Cmd____init__TableKeysIterator_String_Cmd_( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS, RogueClassTableKeysIterator_String_Cmd_ _auto_14814_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_Cmd__* RogueBoxed_TableKeysIterator_String_Cmd____init__TableKeysIterator_String_Cmd_( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS, RogueClassTableKeysIterator_String_Cmd_ _auto_14816_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_String_Cmd_ RogueBoxed_TableKeysIterator_String_Cmd____to_TableKeysIterator_String_Cmd_( RogueClassBoxed_TableKeysIterator_String_Cmd__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* RogueBoxedIntrospector_TableKeysIterator_String_Cmd____init_object( RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_String_Cmd____type_name( RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* RogueBoxedIntrospector_TableKeysIterator_String_Cmd____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* THIS, RogueObject* _auto_14815_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* RogueBoxedIntrospector_TableKeysIterator_String_Cmd____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* THIS, RogueObject* _auto_14817_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* RogueBoxedIntrospector_TableKeysIterator_String_Cmd____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* RogueBoxedIntrospector_TableKeysIterator_String_Cmd____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_Cmd__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Type_* RogueOptionalBoxed_Type___init_object( RogueClassOptionalBoxed_Type_* THIS );
@@ -17519,11 +17519,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Type___type_name( RogueClassOptio
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Type___address( RogueClassOptionalBoxed_Type_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Type___size( RogueClassOptionalBoxed_Type_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Type___type( RogueClassOptionalBoxed_Type_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Type_* RogueOptionalBoxed_Type___init__OptionalType( RogueClassOptionalBoxed_Type_* THIS, RogueOptionalType _auto_14885_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Type_* RogueOptionalBoxed_Type___init__OptionalType( RogueClassOptionalBoxed_Type_* THIS, RogueOptionalType _auto_14887_0 );
 ROGUE_EXPORT   RogueOptionalType RogueOptionalOptionalBoxed_Type___to_Type( RogueClassOptionalBoxed_Type_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Type_* RogueOptionalBoxedIntrospector_Type___init_object( RogueClassOptionalBoxedIntrospector_Type_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Type___type_name( RogueClassOptionalBoxedIntrospector_Type_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Type_* RogueOptionalBoxedIntrospector_Type___init__Object( RogueClassOptionalBoxedIntrospector_Type_* THIS, RogueObject* _auto_14886_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Type_* RogueOptionalBoxedIntrospector_Type___init__Object( RogueClassOptionalBoxedIntrospector_Type_* THIS, RogueObject* _auto_14888_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Type_* RogueOptionalBoxedIntrospector_Type___set__String_Value( RogueClassOptionalBoxedIntrospector_Type_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Type_* RogueOptionalBoxedIntrospector_Type___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Type_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Method_* RogueOptionalBoxed_Method___init_object( RogueClassOptionalBoxed_Method_* THIS );
@@ -17533,11 +17533,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Method___type_name( RogueClassOpt
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Method___address( RogueClassOptionalBoxed_Method_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Method___size( RogueClassOptionalBoxed_Method_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Method___type( RogueClassOptionalBoxed_Method_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Method_* RogueOptionalBoxed_Method___init__OptionalMethod( RogueClassOptionalBoxed_Method_* THIS, RogueOptionalMethod _auto_14887_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Method_* RogueOptionalBoxed_Method___init__OptionalMethod( RogueClassOptionalBoxed_Method_* THIS, RogueOptionalMethod _auto_14889_0 );
 ROGUE_EXPORT   RogueOptionalMethod RogueOptionalOptionalBoxed_Method___to_Method( RogueClassOptionalBoxed_Method_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Method_* RogueOptionalBoxedIntrospector_Method___init_object( RogueClassOptionalBoxedIntrospector_Method_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Method___type_name( RogueClassOptionalBoxedIntrospector_Method_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Method_* RogueOptionalBoxedIntrospector_Method___init__Object( RogueClassOptionalBoxedIntrospector_Method_* THIS, RogueObject* _auto_14888_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Method_* RogueOptionalBoxedIntrospector_Method___init__Object( RogueClassOptionalBoxedIntrospector_Method_* THIS, RogueObject* _auto_14890_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Method_* RogueOptionalBoxedIntrospector_Method___set__String_Value( RogueClassOptionalBoxedIntrospector_Method_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Method_* RogueOptionalBoxedIntrospector_Method___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Method_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableValuesIterator_String_CyProperty__* RogueBoxed_TableValuesIterator_String_CyProperty____init_object( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS );
@@ -17547,11 +17547,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableValuesIterator_String_CyProperty____
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableValuesIterator_String_CyProperty____address( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableValuesIterator_String_CyProperty____size( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableValuesIterator_String_CyProperty____type( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_CyProperty__* RogueBoxed_TableValuesIterator_String_CyProperty____init__TableValuesIterator_String_CyProperty_( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS, RogueClassTableValuesIterator_String_CyProperty_ _auto_15062_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_CyProperty__* RogueBoxed_TableValuesIterator_String_CyProperty____init__TableValuesIterator_String_CyProperty_( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS, RogueClassTableValuesIterator_String_CyProperty_ _auto_15064_0 );
 ROGUE_EXPORT   RogueClassTableValuesIterator_String_CyProperty_ RogueBoxed_TableValuesIterator_String_CyProperty____to_TableValuesIterator_String_CyProperty_( RogueClassBoxed_TableValuesIterator_String_CyProperty__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* RogueBoxedIntrospector_TableValuesIterator_String_CyProperty____init_object( RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableValuesIterator_String_CyProperty____type_name( RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* RogueBoxedIntrospector_TableValuesIterator_String_CyProperty____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* THIS, RogueObject* _auto_15063_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* RogueBoxedIntrospector_TableValuesIterator_String_CyProperty____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* THIS, RogueObject* _auto_15065_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* RogueBoxedIntrospector_TableValuesIterator_String_CyProperty____set__String_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* RogueBoxedIntrospector_TableValuesIterator_String_CyProperty____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_CyProperty__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_CyProperty_* RogueOptionalBoxed_CyProperty___init_object( RogueClassOptionalBoxed_CyProperty_* THIS );
@@ -17561,11 +17561,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_CyProperty___type_name( RogueClas
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_CyProperty___address( RogueClassOptionalBoxed_CyProperty_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_CyProperty___size( RogueClassOptionalBoxed_CyProperty_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_CyProperty___type( RogueClassOptionalBoxed_CyProperty_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_CyProperty_* RogueOptionalBoxed_CyProperty___init__OptionalCyProperty( RogueClassOptionalBoxed_CyProperty_* THIS, RogueOptionalCyProperty _auto_15068_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_CyProperty_* RogueOptionalBoxed_CyProperty___init__OptionalCyProperty( RogueClassOptionalBoxed_CyProperty_* THIS, RogueOptionalCyProperty _auto_15070_0 );
 ROGUE_EXPORT   RogueOptionalCyProperty RogueOptionalOptionalBoxed_CyProperty___to_CyProperty( RogueClassOptionalBoxed_CyProperty_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyProperty_* RogueOptionalBoxedIntrospector_CyProperty___init_object( RogueClassOptionalBoxedIntrospector_CyProperty_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_CyProperty___type_name( RogueClassOptionalBoxedIntrospector_CyProperty_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyProperty_* RogueOptionalBoxedIntrospector_CyProperty___init__Object( RogueClassOptionalBoxedIntrospector_CyProperty_* THIS, RogueObject* _auto_15069_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyProperty_* RogueOptionalBoxedIntrospector_CyProperty___init__Object( RogueClassOptionalBoxedIntrospector_CyProperty_* THIS, RogueObject* _auto_15071_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyProperty_* RogueOptionalBoxedIntrospector_CyProperty___set__String_Value( RogueClassOptionalBoxedIntrospector_CyProperty_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyProperty_* RogueOptionalBoxedIntrospector_CyProperty___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_CyProperty_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableValuesIterator_Type_CyClass__* RogueBoxed_TableValuesIterator_Type_CyClass____init_object( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS );
@@ -17575,11 +17575,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableValuesIterator_Type_CyClass____type_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableValuesIterator_Type_CyClass____address( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableValuesIterator_Type_CyClass____size( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableValuesIterator_Type_CyClass____type( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_Type_CyClass__* RogueBoxed_TableValuesIterator_Type_CyClass____init__TableValuesIterator_Type_CyClass_( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS, RogueClassTableValuesIterator_Type_CyClass_ _auto_15070_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_Type_CyClass__* RogueBoxed_TableValuesIterator_Type_CyClass____init__TableValuesIterator_Type_CyClass_( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS, RogueClassTableValuesIterator_Type_CyClass_ _auto_15072_0 );
 ROGUE_EXPORT   RogueClassTableValuesIterator_Type_CyClass_ RogueBoxed_TableValuesIterator_Type_CyClass____to_TableValuesIterator_Type_CyClass_( RogueClassBoxed_TableValuesIterator_Type_CyClass__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_CyClass____init_object( RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableValuesIterator_Type_CyClass____type_name( RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_CyClass____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* THIS, RogueObject* _auto_15071_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_CyClass____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* THIS, RogueObject* _auto_15073_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_CyClass____set__String_Value( RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_CyClass____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableValuesIterator_Type_CyClass__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_CyClass_* RogueOptionalBoxed_CyClass___init_object( RogueClassOptionalBoxed_CyClass_* THIS );
@@ -17589,11 +17589,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_CyClass___type_name( RogueClassOp
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_CyClass___address( RogueClassOptionalBoxed_CyClass_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_CyClass___size( RogueClassOptionalBoxed_CyClass_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_CyClass___type( RogueClassOptionalBoxed_CyClass_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_CyClass_* RogueOptionalBoxed_CyClass___init__OptionalCyClass( RogueClassOptionalBoxed_CyClass_* THIS, RogueOptionalCyClass _auto_15076_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_CyClass_* RogueOptionalBoxed_CyClass___init__OptionalCyClass( RogueClassOptionalBoxed_CyClass_* THIS, RogueOptionalCyClass _auto_15078_0 );
 ROGUE_EXPORT   RogueOptionalCyClass RogueOptionalOptionalBoxed_CyClass___to_CyClass( RogueClassOptionalBoxed_CyClass_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyClass_* RogueOptionalBoxedIntrospector_CyClass___init_object( RogueClassOptionalBoxedIntrospector_CyClass_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_CyClass___type_name( RogueClassOptionalBoxedIntrospector_CyClass_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyClass_* RogueOptionalBoxedIntrospector_CyClass___init__Object( RogueClassOptionalBoxedIntrospector_CyClass_* THIS, RogueObject* _auto_15077_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyClass_* RogueOptionalBoxedIntrospector_CyClass___init__Object( RogueClassOptionalBoxedIntrospector_CyClass_* THIS, RogueObject* _auto_15079_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyClass_* RogueOptionalBoxedIntrospector_CyClass___set__String_Value( RogueClassOptionalBoxedIntrospector_CyClass_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyClass_* RogueOptionalBoxedIntrospector_CyClass___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_CyClass_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* RogueBoxed_TableValuesIterator_String_CyMethod_List____init_object( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS );
@@ -17603,11 +17603,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableValuesIterator_String_CyMethod_List_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableValuesIterator_String_CyMethod_List____address( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableValuesIterator_String_CyMethod_List____size( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableValuesIterator_String_CyMethod_List____type( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* RogueBoxed_TableValuesIterator_String_CyMethod_List____init__TableValuesIterator_String_CyMethod_List_( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS, RogueClassTableValuesIterator_String_CyMethod_List_ _auto_15078_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* RogueBoxed_TableValuesIterator_String_CyMethod_List____init__TableValuesIterator_String_CyMethod_List_( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS, RogueClassTableValuesIterator_String_CyMethod_List_ _auto_15080_0 );
 ROGUE_EXPORT   RogueClassTableValuesIterator_String_CyMethod_List_ RogueBoxed_TableValuesIterator_String_CyMethod_List____to_TableValuesIterator_String_CyMethod_List_( RogueClassBoxed_TableValuesIterator_String_CyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_CyMethod_List____init_object( RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableValuesIterator_String_CyMethod_List____type_name( RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_CyMethod_List____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* THIS, RogueObject* _auto_15079_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_CyMethod_List____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* THIS, RogueObject* _auto_15081_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_CyMethod_List____set__String_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_CyMethod_List____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_CyMethod_List__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_CyMethod_List_* RogueOptionalBoxed_CyMethod_List___init_object( RogueClassOptionalBoxed_CyMethod_List_* THIS );
@@ -17617,11 +17617,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_CyMethod_List___type_name( RogueC
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_CyMethod_List___address( RogueClassOptionalBoxed_CyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_CyMethod_List___size( RogueClassOptionalBoxed_CyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_CyMethod_List___type( RogueClassOptionalBoxed_CyMethod_List_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_CyMethod_List_* RogueOptionalBoxed_CyMethod_List___init__OptionalCyMethod_List( RogueClassOptionalBoxed_CyMethod_List_* THIS, RogueOptionalCyMethod_List _auto_15084_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_CyMethod_List_* RogueOptionalBoxed_CyMethod_List___init__OptionalCyMethod_List( RogueClassOptionalBoxed_CyMethod_List_* THIS, RogueOptionalCyMethod_List _auto_15086_0 );
 ROGUE_EXPORT   RogueOptionalCyMethod_List RogueOptionalOptionalBoxed_CyMethod_List___to_CyMethod_List( RogueClassOptionalBoxed_CyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyMethod_List_* RogueOptionalBoxedIntrospector_CyMethod_List___init_object( RogueClassOptionalBoxedIntrospector_CyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_CyMethod_List___type_name( RogueClassOptionalBoxedIntrospector_CyMethod_List_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyMethod_List_* RogueOptionalBoxedIntrospector_CyMethod_List___init__Object( RogueClassOptionalBoxedIntrospector_CyMethod_List_* THIS, RogueObject* _auto_15085_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyMethod_List_* RogueOptionalBoxedIntrospector_CyMethod_List___init__Object( RogueClassOptionalBoxedIntrospector_CyMethod_List_* THIS, RogueObject* _auto_15087_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyMethod_List_* RogueOptionalBoxedIntrospector_CyMethod_List___set__String_Value( RogueClassOptionalBoxedIntrospector_CyMethod_List_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CyMethod_List_* RogueOptionalBoxedIntrospector_CyMethod_List___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_CyMethod_List_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableValuesIterator_Type_PyClass__* RogueBoxed_TableValuesIterator_Type_PyClass____init_object( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS );
@@ -17631,11 +17631,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableValuesIterator_Type_PyClass____type_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableValuesIterator_Type_PyClass____address( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableValuesIterator_Type_PyClass____size( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableValuesIterator_Type_PyClass____type( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_Type_PyClass__* RogueBoxed_TableValuesIterator_Type_PyClass____init__TableValuesIterator_Type_PyClass_( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS, RogueClassTableValuesIterator_Type_PyClass_ _auto_15314_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_Type_PyClass__* RogueBoxed_TableValuesIterator_Type_PyClass____init__TableValuesIterator_Type_PyClass_( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS, RogueClassTableValuesIterator_Type_PyClass_ _auto_15316_0 );
 ROGUE_EXPORT   RogueClassTableValuesIterator_Type_PyClass_ RogueBoxed_TableValuesIterator_Type_PyClass____to_TableValuesIterator_Type_PyClass_( RogueClassBoxed_TableValuesIterator_Type_PyClass__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_PyClass____init_object( RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableValuesIterator_Type_PyClass____type_name( RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_PyClass____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* THIS, RogueObject* _auto_15315_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_PyClass____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* THIS, RogueObject* _auto_15317_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_PyClass____set__String_Value( RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* RogueBoxedIntrospector_TableValuesIterator_Type_PyClass____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableValuesIterator_Type_PyClass__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_PyClass_* RogueOptionalBoxed_PyClass___init_object( RogueClassOptionalBoxed_PyClass_* THIS );
@@ -17645,11 +17645,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_PyClass___type_name( RogueClassOp
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_PyClass___address( RogueClassOptionalBoxed_PyClass_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_PyClass___size( RogueClassOptionalBoxed_PyClass_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_PyClass___type( RogueClassOptionalBoxed_PyClass_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_PyClass_* RogueOptionalBoxed_PyClass___init__OptionalPyClass( RogueClassOptionalBoxed_PyClass_* THIS, RogueOptionalPyClass _auto_15320_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_PyClass_* RogueOptionalBoxed_PyClass___init__OptionalPyClass( RogueClassOptionalBoxed_PyClass_* THIS, RogueOptionalPyClass _auto_15322_0 );
 ROGUE_EXPORT   RogueOptionalPyClass RogueOptionalOptionalBoxed_PyClass___to_PyClass( RogueClassOptionalBoxed_PyClass_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyClass_* RogueOptionalBoxedIntrospector_PyClass___init_object( RogueClassOptionalBoxedIntrospector_PyClass_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_PyClass___type_name( RogueClassOptionalBoxedIntrospector_PyClass_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyClass_* RogueOptionalBoxedIntrospector_PyClass___init__Object( RogueClassOptionalBoxedIntrospector_PyClass_* THIS, RogueObject* _auto_15321_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyClass_* RogueOptionalBoxedIntrospector_PyClass___init__Object( RogueClassOptionalBoxedIntrospector_PyClass_* THIS, RogueObject* _auto_15323_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyClass_* RogueOptionalBoxedIntrospector_PyClass___set__String_Value( RogueClassOptionalBoxedIntrospector_PyClass_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyClass_* RogueOptionalBoxedIntrospector_PyClass___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_PyClass_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* RogueBoxed_TableValuesIterator_String_PyMethod_List____init_object( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS );
@@ -17659,11 +17659,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableValuesIterator_String_PyMethod_List_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableValuesIterator_String_PyMethod_List____address( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableValuesIterator_String_PyMethod_List____size( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableValuesIterator_String_PyMethod_List____type( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* RogueBoxed_TableValuesIterator_String_PyMethod_List____init__TableValuesIterator_String_PyMethod_List_( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS, RogueClassTableValuesIterator_String_PyMethod_List_ _auto_15322_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* RogueBoxed_TableValuesIterator_String_PyMethod_List____init__TableValuesIterator_String_PyMethod_List_( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS, RogueClassTableValuesIterator_String_PyMethod_List_ _auto_15324_0 );
 ROGUE_EXPORT   RogueClassTableValuesIterator_String_PyMethod_List_ RogueBoxed_TableValuesIterator_String_PyMethod_List____to_TableValuesIterator_String_PyMethod_List_( RogueClassBoxed_TableValuesIterator_String_PyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_PyMethod_List____init_object( RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableValuesIterator_String_PyMethod_List____type_name( RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_PyMethod_List____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* THIS, RogueObject* _auto_15323_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_PyMethod_List____init__Object( RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* THIS, RogueObject* _auto_15325_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_PyMethod_List____set__String_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* RogueBoxedIntrospector_TableValuesIterator_String_PyMethod_List____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableValuesIterator_String_PyMethod_List__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_PyMethod_List_* RogueOptionalBoxed_PyMethod_List___init_object( RogueClassOptionalBoxed_PyMethod_List_* THIS );
@@ -17673,11 +17673,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_PyMethod_List___type_name( RogueC
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_PyMethod_List___address( RogueClassOptionalBoxed_PyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_PyMethod_List___size( RogueClassOptionalBoxed_PyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_PyMethod_List___type( RogueClassOptionalBoxed_PyMethod_List_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_PyMethod_List_* RogueOptionalBoxed_PyMethod_List___init__OptionalPyMethod_List( RogueClassOptionalBoxed_PyMethod_List_* THIS, RogueOptionalPyMethod_List _auto_15328_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_PyMethod_List_* RogueOptionalBoxed_PyMethod_List___init__OptionalPyMethod_List( RogueClassOptionalBoxed_PyMethod_List_* THIS, RogueOptionalPyMethod_List _auto_15330_0 );
 ROGUE_EXPORT   RogueOptionalPyMethod_List RogueOptionalOptionalBoxed_PyMethod_List___to_PyMethod_List( RogueClassOptionalBoxed_PyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyMethod_List_* RogueOptionalBoxedIntrospector_PyMethod_List___init_object( RogueClassOptionalBoxedIntrospector_PyMethod_List_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_PyMethod_List___type_name( RogueClassOptionalBoxedIntrospector_PyMethod_List_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyMethod_List_* RogueOptionalBoxedIntrospector_PyMethod_List___init__Object( RogueClassOptionalBoxedIntrospector_PyMethod_List_* THIS, RogueObject* _auto_15329_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyMethod_List_* RogueOptionalBoxedIntrospector_PyMethod_List___init__Object( RogueClassOptionalBoxedIntrospector_PyMethod_List_* THIS, RogueObject* _auto_15331_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyMethod_List_* RogueOptionalBoxedIntrospector_PyMethod_List___set__String_Value( RogueClassOptionalBoxedIntrospector_PyMethod_List_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_PyMethod_List_* RogueOptionalBoxedIntrospector_PyMethod_List___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_PyMethod_List_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_Value_* RogueOptionalBoxed_Value___init_object( RogueClassOptionalBoxed_Value_* THIS );
@@ -17687,11 +17687,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_Value___type_name( RogueClassOpti
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_Value___address( RogueClassOptionalBoxed_Value_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_Value___size( RogueClassOptionalBoxed_Value_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_Value___type( RogueClassOptionalBoxed_Value_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_Value_* RogueOptionalBoxed_Value___init__OptionalValue( RogueClassOptionalBoxed_Value_* THIS, RogueOptionalValue _auto_16003_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_Value_* RogueOptionalBoxed_Value___init__OptionalValue( RogueClassOptionalBoxed_Value_* THIS, RogueOptionalValue _auto_16005_0 );
 ROGUE_EXPORT   RogueOptionalValue RogueOptionalOptionalBoxed_Value___to_Value( RogueClassOptionalBoxed_Value_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value___init_object( RogueClassOptionalBoxedIntrospector_Value_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_Value___type_name( RogueClassOptionalBoxedIntrospector_Value_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value___init__Object( RogueClassOptionalBoxedIntrospector_Value_* THIS, RogueObject* _auto_16004_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value___init__Object( RogueClassOptionalBoxedIntrospector_Value_* THIS, RogueObject* _auto_16006_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value___set__String_Value( RogueClassOptionalBoxedIntrospector_Value_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_Value_* RogueOptionalBoxedIntrospector_Value___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_Value_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_UnixConsoleMouseEventType_* RogueBoxed_UnixConsoleMouseEventType___init_object( RogueClassBoxed_UnixConsoleMouseEventType_* THIS );
@@ -17701,11 +17701,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_UnixConsoleMouseEventType___type_name( Ro
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_UnixConsoleMouseEventType___address( RogueClassBoxed_UnixConsoleMouseEventType_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_UnixConsoleMouseEventType___size( RogueClassBoxed_UnixConsoleMouseEventType_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_UnixConsoleMouseEventType___type( RogueClassBoxed_UnixConsoleMouseEventType_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_UnixConsoleMouseEventType_* RogueBoxed_UnixConsoleMouseEventType___init__UnixConsoleMouseEventType( RogueClassBoxed_UnixConsoleMouseEventType_* THIS, RogueClassUnixConsoleMouseEventType _auto_16416_0 );
+ROGUE_EXPORT   RogueClassBoxed_UnixConsoleMouseEventType_* RogueBoxed_UnixConsoleMouseEventType___init__UnixConsoleMouseEventType( RogueClassBoxed_UnixConsoleMouseEventType_* THIS, RogueClassUnixConsoleMouseEventType _auto_16418_0 );
 ROGUE_EXPORT   RogueClassUnixConsoleMouseEventType RogueBoxed_UnixConsoleMouseEventType___to_UnixConsoleMouseEventType( RogueClassBoxed_UnixConsoleMouseEventType_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* RogueBoxedIntrospector_UnixConsoleMouseEventType___init_object( RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_UnixConsoleMouseEventType___type_name( RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* RogueBoxedIntrospector_UnixConsoleMouseEventType___init__Object( RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* THIS, RogueObject* _auto_16417_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* RogueBoxedIntrospector_UnixConsoleMouseEventType___init__Object( RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* THIS, RogueObject* _auto_16419_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* RogueBoxedIntrospector_UnixConsoleMouseEventType___set__String_Value( RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* RogueBoxedIntrospector_UnixConsoleMouseEventType___set__PropertyInfo_Value( RogueClassBoxedIntrospector_UnixConsoleMouseEventType_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_String_Logical__* RogueBoxed_TableKeysIterator_String_Logical____init_object( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS );
@@ -17715,11 +17715,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_String_Logical____type_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_String_Logical____address( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_String_Logical____size( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_String_Logical____type( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_Logical__* RogueBoxed_TableKeysIterator_String_Logical____init__TableKeysIterator_String_Logical_( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS, RogueClassTableKeysIterator_String_Logical_ _auto_16733_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_String_Logical__* RogueBoxed_TableKeysIterator_String_Logical____init__TableKeysIterator_String_Logical_( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS, RogueClassTableKeysIterator_String_Logical_ _auto_16735_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_String_Logical_ RogueBoxed_TableKeysIterator_String_Logical____to_TableKeysIterator_String_Logical_( RogueClassBoxed_TableKeysIterator_String_Logical__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* RogueBoxedIntrospector_TableKeysIterator_String_Logical____init_object( RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_String_Logical____type_name( RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* RogueBoxedIntrospector_TableKeysIterator_String_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* THIS, RogueObject* _auto_16734_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* RogueBoxedIntrospector_TableKeysIterator_String_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* THIS, RogueObject* _auto_16736_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* RogueBoxedIntrospector_TableKeysIterator_String_Logical____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* RogueBoxedIntrospector_TableKeysIterator_String_Logical____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_String_Logical__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassContainsImplicitAccessVisitor* RogueContainsImplicitAccessVisitor__init_object( RogueClassContainsImplicitAccessVisitor* THIS );
@@ -17733,11 +17733,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_ListIterator_CmdSelectCase____type_name( 
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_ListIterator_CmdSelectCase____address( RogueClassBoxed_ListIterator_CmdSelectCase__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_ListIterator_CmdSelectCase____size( RogueClassBoxed_ListIterator_CmdSelectCase__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_ListIterator_CmdSelectCase____type( RogueClassBoxed_ListIterator_CmdSelectCase__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_ListIterator_CmdSelectCase__* RogueBoxed_ListIterator_CmdSelectCase____init__ListIterator_CmdSelectCase_( RogueClassBoxed_ListIterator_CmdSelectCase__* THIS, RogueClassListIterator_CmdSelectCase_ _auto_22480_0 );
+ROGUE_EXPORT   RogueClassBoxed_ListIterator_CmdSelectCase__* RogueBoxed_ListIterator_CmdSelectCase____init__ListIterator_CmdSelectCase_( RogueClassBoxed_ListIterator_CmdSelectCase__* THIS, RogueClassListIterator_CmdSelectCase_ _auto_22482_0 );
 ROGUE_EXPORT   RogueClassListIterator_CmdSelectCase_ RogueBoxed_ListIterator_CmdSelectCase____to_ListIterator_CmdSelectCase_( RogueClassBoxed_ListIterator_CmdSelectCase__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* RogueBoxedIntrospector_ListIterator_CmdSelectCase____init_object( RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_ListIterator_CmdSelectCase____type_name( RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* RogueBoxedIntrospector_ListIterator_CmdSelectCase____init__Object( RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* THIS, RogueObject* _auto_22481_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* RogueBoxedIntrospector_ListIterator_CmdSelectCase____init__Object( RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* THIS, RogueObject* _auto_22483_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* RogueBoxedIntrospector_ListIterator_CmdSelectCase____set__String_Value( RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* RogueBoxedIntrospector_ListIterator_CmdSelectCase____set__PropertyInfo_Value( RogueClassBoxedIntrospector_ListIterator_CmdSelectCase__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxed_CmdSelectCase_* RogueOptionalBoxed_CmdSelectCase___init_object( RogueClassOptionalBoxed_CmdSelectCase_* THIS );
@@ -17747,11 +17747,11 @@ ROGUE_EXPORT_C RogueString* RogueOptionalBoxed_CmdSelectCase___type_name( RogueC
 ROGUE_EXPORT_C RogueInt64 RogueOptionalBoxed_CmdSelectCase___address( RogueClassOptionalBoxed_CmdSelectCase_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueOptionalBoxed_CmdSelectCase___size( RogueClassOptionalBoxed_CmdSelectCase_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* RogueOptional_Boxed_CmdSelectCase___type( RogueClassOptionalBoxed_CmdSelectCase_* THIS );
-ROGUE_EXPORT   RogueClassOptionalBoxed_CmdSelectCase_* RogueOptionalBoxed_CmdSelectCase___init__OptionalCmdSelectCase( RogueClassOptionalBoxed_CmdSelectCase_* THIS, RogueOptionalCmdSelectCase _auto_22484_0 );
+ROGUE_EXPORT   RogueClassOptionalBoxed_CmdSelectCase_* RogueOptionalBoxed_CmdSelectCase___init__OptionalCmdSelectCase( RogueClassOptionalBoxed_CmdSelectCase_* THIS, RogueOptionalCmdSelectCase _auto_22486_0 );
 ROGUE_EXPORT   RogueOptionalCmdSelectCase RogueOptionalOptionalBoxed_CmdSelectCase___to_CmdSelectCase( RogueClassOptionalBoxed_CmdSelectCase_* THIS );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CmdSelectCase_* RogueOptionalBoxedIntrospector_CmdSelectCase___init_object( RogueClassOptionalBoxedIntrospector_CmdSelectCase_* THIS );
 ROGUE_EXPORT_C RogueString* RogueOptionalBoxedIntrospector_CmdSelectCase___type_name( RogueClassOptionalBoxedIntrospector_CmdSelectCase_* THIS );
-ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CmdSelectCase_* RogueOptionalBoxedIntrospector_CmdSelectCase___init__Object( RogueClassOptionalBoxedIntrospector_CmdSelectCase_* THIS, RogueObject* _auto_22485_0 );
+ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CmdSelectCase_* RogueOptionalBoxedIntrospector_CmdSelectCase___init__Object( RogueClassOptionalBoxedIntrospector_CmdSelectCase_* THIS, RogueObject* _auto_22487_0 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CmdSelectCase_* RogueOptionalBoxedIntrospector_CmdSelectCase___set__String_Value( RogueClassOptionalBoxedIntrospector_CmdSelectCase_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassOptionalBoxedIntrospector_CmdSelectCase_* RogueOptionalBoxedIntrospector_CmdSelectCase___set__PropertyInfo_Value( RogueClassOptionalBoxedIntrospector_CmdSelectCase_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_Int32_Logical__* RogueBoxed_TableKeysIterator_Int32_Logical____init_object( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS );
@@ -17761,11 +17761,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_Int32_Logical____type_n
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_Int32_Logical____address( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_Int32_Logical____size( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_Int32_Logical____type( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_Int32_Logical__* RogueBoxed_TableKeysIterator_Int32_Logical____init__TableKeysIterator_Int32_Logical_( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS, RogueClassTableKeysIterator_Int32_Logical_ _auto_23015_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_Int32_Logical__* RogueBoxed_TableKeysIterator_Int32_Logical____init__TableKeysIterator_Int32_Logical_( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS, RogueClassTableKeysIterator_Int32_Logical_ _auto_23017_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_Int32_Logical_ RogueBoxed_TableKeysIterator_Int32_Logical____to_TableKeysIterator_Int32_Logical_( RogueClassBoxed_TableKeysIterator_Int32_Logical__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* RogueBoxedIntrospector_TableKeysIterator_Int32_Logical____init_object( RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_Int32_Logical____type_name( RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* RogueBoxedIntrospector_TableKeysIterator_Int32_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* THIS, RogueObject* _auto_23016_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* RogueBoxedIntrospector_TableKeysIterator_Int32_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* THIS, RogueObject* _auto_23018_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* RogueBoxedIntrospector_TableKeysIterator_Int32_Logical____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* RogueBoxedIntrospector_TableKeysIterator_Int32_Logical____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_Int32_Logical__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_Type_Logical__* RogueBoxed_TableKeysIterator_Type_Logical____init_object( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS );
@@ -17775,11 +17775,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_Type_Logical____type_na
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_Type_Logical____address( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_Type_Logical____size( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_Type_Logical____type( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_Type_Logical__* RogueBoxed_TableKeysIterator_Type_Logical____init__TableKeysIterator_Type_Logical_( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS, RogueClassTableKeysIterator_Type_Logical_ _auto_23278_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_Type_Logical__* RogueBoxed_TableKeysIterator_Type_Logical____init__TableKeysIterator_Type_Logical_( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS, RogueClassTableKeysIterator_Type_Logical_ _auto_23280_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_Type_Logical_ RogueBoxed_TableKeysIterator_Type_Logical____to_TableKeysIterator_Type_Logical_( RogueClassBoxed_TableKeysIterator_Type_Logical__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* RogueBoxedIntrospector_TableKeysIterator_Type_Logical____init_object( RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_Type_Logical____type_name( RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* RogueBoxedIntrospector_TableKeysIterator_Type_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* THIS, RogueObject* _auto_23279_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* RogueBoxedIntrospector_TableKeysIterator_Type_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* THIS, RogueObject* _auto_23281_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* RogueBoxedIntrospector_TableKeysIterator_Type_Logical____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* RogueBoxedIntrospector_TableKeysIterator_Type_Logical____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_Type_Logical__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_TableKeysIterator_Method_Logical__* RogueBoxed_TableKeysIterator_Method_Logical____init_object( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS );
@@ -17789,11 +17789,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_TableKeysIterator_Method_Logical____type_
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_TableKeysIterator_Method_Logical____address( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_TableKeysIterator_Method_Logical____size( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_TableKeysIterator_Method_Logical____type( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS );
-ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_Method_Logical__* RogueBoxed_TableKeysIterator_Method_Logical____init__TableKeysIterator_Method_Logical_( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS, RogueClassTableKeysIterator_Method_Logical_ _auto_23404_0 );
+ROGUE_EXPORT   RogueClassBoxed_TableKeysIterator_Method_Logical__* RogueBoxed_TableKeysIterator_Method_Logical____init__TableKeysIterator_Method_Logical_( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS, RogueClassTableKeysIterator_Method_Logical_ _auto_23406_0 );
 ROGUE_EXPORT   RogueClassTableKeysIterator_Method_Logical_ RogueBoxed_TableKeysIterator_Method_Logical____to_TableKeysIterator_Method_Logical_( RogueClassBoxed_TableKeysIterator_Method_Logical__* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* RogueBoxedIntrospector_TableKeysIterator_Method_Logical____init_object( RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_TableKeysIterator_Method_Logical____type_name( RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* RogueBoxedIntrospector_TableKeysIterator_Method_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* THIS, RogueObject* _auto_23405_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* RogueBoxedIntrospector_TableKeysIterator_Method_Logical____init__Object( RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* THIS, RogueObject* _auto_23407_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* RogueBoxedIntrospector_TableKeysIterator_Method_Logical____set__String_Value( RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* RogueBoxedIntrospector_TableKeysIterator_Method_Logical____set__PropertyInfo_Value( RogueClassBoxedIntrospector_TableKeysIterator_Method_Logical__* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_Date_* RogueBoxed_Date___init_object( RogueClassBoxed_Date_* THIS );
@@ -17803,11 +17803,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_Date___type_name( RogueClassBoxed_Date_* 
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_Date___address( RogueClassBoxed_Date_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_Date___size( RogueClassBoxed_Date_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_Date___type( RogueClassBoxed_Date_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_Date_* RogueBoxed_Date___init__Date( RogueClassBoxed_Date_* THIS, RogueClassDate _auto_25471_0 );
+ROGUE_EXPORT   RogueClassBoxed_Date_* RogueBoxed_Date___init__Date( RogueClassBoxed_Date_* THIS, RogueClassDate _auto_25483_0 );
 ROGUE_EXPORT   RogueClassDate RogueBoxed_Date___to_Date( RogueClassBoxed_Date_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Date_* RogueBoxedIntrospector_Date___init_object( RogueClassBoxedIntrospector_Date_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_Date___type_name( RogueClassBoxedIntrospector_Date_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_Date_* RogueBoxedIntrospector_Date___init__Object( RogueClassBoxedIntrospector_Date_* THIS, RogueObject* _auto_25472_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_Date_* RogueBoxedIntrospector_Date___init__Object( RogueClassBoxedIntrospector_Date_* THIS, RogueObject* _auto_25484_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Date_* RogueBoxedIntrospector_Date___set__String_Value( RogueClassBoxedIntrospector_Date_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Date_* RogueBoxedIntrospector_Date___set__PropertyInfo_Value( RogueClassBoxedIntrospector_Date_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_Time_* RogueBoxed_Time___init_object( RogueClassBoxed_Time_* THIS );
@@ -17817,11 +17817,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_Time___type_name( RogueClassBoxed_Time_* 
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_Time___address( RogueClassBoxed_Time_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_Time___size( RogueClassBoxed_Time_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_Time___type( RogueClassBoxed_Time_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_Time_* RogueBoxed_Time___init__Time( RogueClassBoxed_Time_* THIS, RogueClassTime _auto_25473_0 );
+ROGUE_EXPORT   RogueClassBoxed_Time_* RogueBoxed_Time___init__Time( RogueClassBoxed_Time_* THIS, RogueClassTime _auto_25485_0 );
 ROGUE_EXPORT   RogueClassTime RogueBoxed_Time___to_Time( RogueClassBoxed_Time_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Time_* RogueBoxedIntrospector_Time___init_object( RogueClassBoxedIntrospector_Time_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_Time___type_name( RogueClassBoxedIntrospector_Time_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_Time_* RogueBoxedIntrospector_Time___init__Object( RogueClassBoxedIntrospector_Time_* THIS, RogueObject* _auto_25474_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_Time_* RogueBoxedIntrospector_Time___init__Object( RogueClassBoxedIntrospector_Time_* THIS, RogueObject* _auto_25486_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Time_* RogueBoxedIntrospector_Time___set__String_Value( RogueClassBoxedIntrospector_Time_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Time_* RogueBoxedIntrospector_Time___set__PropertyInfo_Value( RogueClassBoxedIntrospector_Time_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_Timestamp_* RogueBoxed_Timestamp___init_object( RogueClassBoxed_Timestamp_* THIS );
@@ -17831,11 +17831,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_Timestamp___type_name( RogueClassBoxed_Ti
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_Timestamp___address( RogueClassBoxed_Timestamp_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_Timestamp___size( RogueClassBoxed_Timestamp_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_Timestamp___type( RogueClassBoxed_Timestamp_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_Timestamp_* RogueBoxed_Timestamp___init__Timestamp( RogueClassBoxed_Timestamp_* THIS, RogueClassTimestamp _auto_25477_0 );
+ROGUE_EXPORT   RogueClassBoxed_Timestamp_* RogueBoxed_Timestamp___init__Timestamp( RogueClassBoxed_Timestamp_* THIS, RogueClassTimestamp _auto_25489_0 );
 ROGUE_EXPORT   RogueClassTimestamp RogueBoxed_Timestamp___to_Timestamp( RogueClassBoxed_Timestamp_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Timestamp_* RogueBoxedIntrospector_Timestamp___init_object( RogueClassBoxedIntrospector_Timestamp_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_Timestamp___type_name( RogueClassBoxedIntrospector_Timestamp_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_Timestamp_* RogueBoxedIntrospector_Timestamp___init__Object( RogueClassBoxedIntrospector_Timestamp_* THIS, RogueObject* _auto_25478_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_Timestamp_* RogueBoxedIntrospector_Timestamp___init__Object( RogueClassBoxedIntrospector_Timestamp_* THIS, RogueObject* _auto_25490_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Timestamp_* RogueBoxedIntrospector_Timestamp___set__String_Value( RogueClassBoxedIntrospector_Timestamp_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_Timestamp_* RogueBoxedIntrospector_Timestamp___set__PropertyInfo_Value( RogueClassBoxedIntrospector_Timestamp_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxed_DateInterval_* RogueBoxed_DateInterval___init_object( RogueClassBoxed_DateInterval_* THIS );
@@ -17845,11 +17845,11 @@ ROGUE_EXPORT_C RogueString* RogueBoxed_DateInterval___type_name( RogueClassBoxed
 ROGUE_EXPORT_C RogueInt64 RogueBoxed_DateInterval___address( RogueClassBoxed_DateInterval_* THIS );
 ROGUE_EXPORT_C RogueInt32 RogueBoxed_DateInterval___size( RogueClassBoxed_DateInterval_* THIS );
 ROGUE_EXPORT_C RogueTypeInfo* Rogue_Boxed_DateInterval___type( RogueClassBoxed_DateInterval_* THIS );
-ROGUE_EXPORT   RogueClassBoxed_DateInterval_* RogueBoxed_DateInterval___init__DateInterval( RogueClassBoxed_DateInterval_* THIS, RogueClassDateInterval _auto_25487_0 );
+ROGUE_EXPORT   RogueClassBoxed_DateInterval_* RogueBoxed_DateInterval___init__DateInterval( RogueClassBoxed_DateInterval_* THIS, RogueClassDateInterval _auto_25499_0 );
 ROGUE_EXPORT   RogueClassDateInterval RogueBoxed_DateInterval___to_DateInterval( RogueClassBoxed_DateInterval_* THIS );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_DateInterval_* RogueBoxedIntrospector_DateInterval___init_object( RogueClassBoxedIntrospector_DateInterval_* THIS );
 ROGUE_EXPORT_C RogueString* RogueBoxedIntrospector_DateInterval___type_name( RogueClassBoxedIntrospector_DateInterval_* THIS );
-ROGUE_EXPORT_C RogueClassBoxedIntrospector_DateInterval_* RogueBoxedIntrospector_DateInterval___init__Object( RogueClassBoxedIntrospector_DateInterval_* THIS, RogueObject* _auto_25488_0 );
+ROGUE_EXPORT_C RogueClassBoxedIntrospector_DateInterval_* RogueBoxedIntrospector_DateInterval___init__Object( RogueClassBoxedIntrospector_DateInterval_* THIS, RogueObject* _auto_25500_0 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_DateInterval_* RogueBoxedIntrospector_DateInterval___set__String_Value( RogueClassBoxedIntrospector_DateInterval_* THIS, RogueString* name_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C RogueClassBoxedIntrospector_DateInterval_* RogueBoxedIntrospector_DateInterval___set__PropertyInfo_Value( RogueClassBoxedIntrospector_DateInterval_* THIS, RogueClassPropertyInfo* property_info_0, RogueClassValue* new_value_1 );
 ROGUE_EXPORT_C void RogueObject__init_object( RogueObject* THIS );
@@ -17921,7 +17921,7 @@ ROGUE_EXPORT_C RogueClassNoSuchMethodError* RogueNoSuchMethodError___throw( Rogu
 ROGUE_EXPORT_C RogueClassVMNextIterationException* RogueVMNextIterationException__init_object( RogueClassVMNextIterationException* THIS );
 ROGUE_EXPORT_C RogueString* RogueVMNextIterationException__type_name( RogueClassVMNextIterationException* THIS );
 ROGUE_EXPORT_C RogueClassVMNextIterationException* RogueVMNextIterationException___throw( RogueClassVMNextIterationException* THIS );
-ROGUE_EXPORT_C RogueClassVMNextIterationException* RogueVMNextIterationException__init__Token( RogueClassVMNextIterationException* THIS, RogueClassToken* _auto_13543_0 );
+ROGUE_EXPORT_C RogueClassVMNextIterationException* RogueVMNextIterationException__init__Token( RogueClassVMNextIterationException* THIS, RogueClassToken* _auto_13545_0 );
 ROGUE_EXPORT_C RogueClassSyntaxError* RogueSyntaxError__init_object( RogueClassSyntaxError* THIS );
 ROGUE_EXPORT_C RogueString* RogueSyntaxError__type_name( RogueClassSyntaxError* THIS );
 ROGUE_EXPORT_C RogueClassSyntaxError* RogueSyntaxError___throw( RogueClassSyntaxError* THIS );
