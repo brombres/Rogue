@@ -1808,14 +1808,14 @@ class String : Poolable PrintWriter
       endWhile
       return result
 
-    method word_wrapped( width:Int32, allow_break_after=null:String )->String[]
+    method word_wrap( width:Int32, allow_break_after=null:String )->String[]
       # Returns a word-wrapped version of this string as a list of lines.
       # Existing newlines characters will cause a new line to begin
       # immediately.  Spaces immediately following existing newline
       # characters are preserved.
-      return word_wrapped( width, String(), allow_break_after )->String.split('\n')
+      return word_wrapped( width, allow_break_after )->String.split('\n')
 
-    method word_wrapped( width:Int32, buffer:String, allow_break_after=null:String )->String
+    method word_wrapped( width:Int32, buffer=String():String, allow_break_after=null:String )->String
       # Prints a word-wrapped version of this string to the given
       # String.  Existing newlines characters will cause a new line to
       # begin immediately.  Spaces immediately following existing newline
