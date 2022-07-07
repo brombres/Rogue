@@ -593,25 +593,16 @@ class File( filepath:String ) [compound]
         result.println( line )
       endForEach
       save( filepath, result->String, &bom=has_bom )
+      }#
 
-    method save( filepath:String, data:Byte[] )->Logical
-      filepath = expand_path( filepath )
-      local outfile = writer( filepath )
+    method save( data:Byte[] )->Logical
+      local outfile = resolved.writer
       outfile.write( data )
       outfile.close
       return not outfile.error
 
-    method save( filepath:String, data:String, &bom )->Logical
-      filepath = expand_path( filepath )
-      local outfile = writer( filepath )
-      if (bom) outfile.[ write(0xEF), write(0xBB), write(0xBF) ]
-      outfile.write( data )
-      outfile.close
-      return not outfile.error
-
-    method save( filepath:String, data:StringBuilder, &bom )->Logical
-      filepath = expand_path( filepath )
-      local outfile = writer( filepath )
+    method save( data:String, &bom )->Logical
+      local outfile = resolved.writer
       if (bom) outfile.[ write(0xEF), write(0xBB), write(0xBF) ]
       outfile.write( data )
       outfile.close
@@ -628,7 +619,6 @@ class File( filepath:String ) [compound]
       if (ch < 32 or ch == 127) return false
       if (any_os or System.is_windows) return not ''"*:<>?/\\|''.contains( ch )
       return ch != '/'
-      }#
 
     method size->Int64
       local filepath = resolved.filepath

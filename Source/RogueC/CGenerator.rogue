@@ -870,6 +870,13 @@ class CGenerator : Visitor
       else                        writer.print "."
       writer.print( cmd.info.c_name )
 
+    method on_visit( cmd:InlineAssignment )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print '='
+      visit( cmd.value )
+      writer.print ')'
+
     method on_visit( cmd:InlineWhich )
       # a:x || b:y || c
       # ->

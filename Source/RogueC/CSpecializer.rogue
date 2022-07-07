@@ -83,9 +83,10 @@ class CSpecializer : Visitor
           local v = context.intermediate_v
           if (not v or not v.is_anchored)
             v = add_local( context.t, "anchored_context", context.type, DummyInitialValue )
-            insert( SetLocal(context.t,v,context,&initial_assignment) )
+            cmd.context = InlineAssignment( context.t, v, context )
+          else
+            cmd.context = GetLocal(context.t,v)
           endIf
-          cmd.context = GetLocal(context.t,v)
         endIf
       endIf
       return on( cmd->(as CallProcedure) )
@@ -98,8 +99,7 @@ class CSpecializer : Visitor
         forEach (arg at i in cmd.args)
           if ((arg.type.is_reference or arg.type.contains_reference) and not arg.is_anchored)
             local v = add_local( arg.t, "anchored_arg_"+i, arg.type )
-            insert( SetLocal(arg.t,v,arg,&initial_assignment) )
-            cmd.args[i] = GetLocal(arg.t,v)
+            cmd.args[i] = InlineAssignment( arg.t, v, arg )
           endIf
         endForEach
       endIf
@@ -118,6 +118,23 @@ class CSpecializer : Visitor
       else
         return cmd
       endIf
+
+    method on( cmd:CallStaticMethod )->Cmd
+      # Anchor the object context if necessary
+      local context = cmd.context
+      if (Program.gc_auto)
+        if ((context.type.is_reference or context.type.contains_reference) and not context.is_anchored)
+          context = visit( context )
+          local v = context.intermediate_v
+          if (not v or not v.is_anchored)
+            v = add_local( context.t, "anchored_context", context.type, DummyInitialValue )
+            cmd.context = InlineAssignment( context.t, v, context )
+          else
+            cmd.context = GetLocal(context.t,v)
+          endIf
+        endIf
+      endIf
+      return on( cmd->(as CallProcedure) )
 
     method on( cmd:ControlStructure )->Cmd
       control_stack.add( cmd )

@@ -4827,3 +4827,21 @@ class CallMethodPointer : Cmd
       return return_type
 
 endClass
+
+class InlineAssignment : Cmd
+  PROPERTIES
+    info  : Local
+    value : Cmd
+
+  METHODS
+    method init( t, info, value )
+
+    method init( existing:InlineAssignment )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.value) value = existing.value.cloned
+
+    method description->String
+      return "InlineAssignment($,$)" (%info,%value)
+
+endClass

@@ -1,12 +1,13 @@
 module RogueC
 
-class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
+class NeedsDecomposition : InspectionVisitor<<Logical>> [singleton]
   METHODS
     method on( cmd:CallProcedure )->Logical
       if (cmd.info.throws?) return true          # call throws exception
       visit_content( cmd )
       return visit_children( cmd )
 
+      #{
     method on( cmd:InlineWhich )->Logical
       forEach (wcase in cmd.cases)
         # which{ a || b }
@@ -17,24 +18,13 @@ class DecompositionAnalyzer : InspectionVisitor<<Logical>> [singleton]
       endForEach
       visit_content( cmd )
       return visit_children( cmd )
+      }#
 endClass
 
 augment
   METHODS
-    method Cmd.is_retained->Logical
-      return false
-
     method Cmd.needs_decomposition->Logical
-      return DecompositionAnalyzer.visit( this )
-
-    method CallProcedure.is_retained->Logical
-      return true  # any reference return type is already retained
-
-    method Local.is_retained->Logical
-      return attributes.is_retained
-
-    method SetLocal.is_retained->Logical
-      return info.attributes.is_retained
+      return NeedsDecomposition.visit( this )
 
 endAugment
 
