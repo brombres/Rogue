@@ -112,7 +112,19 @@ class RogueC
       local api_includes = command//options//api.contains(true)
 
       Program.include( forEach in command//args, &api=api_includes )
-      Program.include( "Standard" )
+
+      local rogue_folder = File( File( System.executable_filepath ).folder )
+      if (not (rogue_folder/"Libraries").exists)
+        if ((rogue_folder/"Source/Libraries").exists)
+          rogue_folder /= "Source/Libraries"
+        else
+          rogue_folder .= parent
+          if ((rogue_folder/"Source/Libraries").exists) rogue_folder /= "Source/Libraries"
+          else                                          rogue_folder = File(".")
+        endIf
+      endIf
+
+      Program.include( (rogue_folder/"Standard").filepath )
 
       forEach (option in command//options//api)
         if (option == Value(true)) nextIteration
