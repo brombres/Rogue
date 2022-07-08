@@ -1,16 +1,18 @@
 class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
   PROPERTIES
     standard_output : PrintWriter
+    standard_error  : PrintWriter
     exit_functions  : Function[]
 
   METHODS
     method init
-      native @|signal( SIGINT, RogueGlobal__on_control_c__RogueInt32 );
+      native @|signal( SIGINT, (void*)RogueGlobal__on_control_c__RogueInt32 );
       configure_standard_output
       on_exit( () => Global.flush )
 
     method configure_standard_output
       standard_output = Console
+      standard_error  = Console.error
 
     method flush( buffer:String )
       standard_output.[ print(buffer), flush ]
@@ -36,5 +38,5 @@ class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
 
     method on_control_c( signum:Int32 ) [essential]
       call_exit_functions
-      native @|exit(1);
+      System.exit 1
 endClass

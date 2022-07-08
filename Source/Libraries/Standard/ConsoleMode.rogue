@@ -150,7 +150,7 @@ class ImmediateConsoleMode : ConsoleMode
               |  DWORD mode;
               |  GetConsoleMode( h_stdin, &mode );
               |  SetConsoleMode( h_stdin, (mode & ~(ENABLE_QUICK_EDIT_MODE)) | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT );
-              |#else
+              |#elif !defined(ROGUE_PLATFORM_EMBEDDED)
               |  struct termios new_settings;
               |  tcgetattr( STDIN_FILENO, &new_settings );
               |  new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);

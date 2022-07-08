@@ -27,7 +27,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     next_input_character : Int32?
     _input_bytes         = Byte[]
 
-    native @|#if !defined(ROGUE_PLATFORM_WINDOWS)
+    native @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
             |  struct termios original_terminal_settings;
             |  int            original_stdin_flags;
             |#endif
@@ -46,7 +46,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |  GetConsoleMode( h_stdin, &mode );
                  windows_in_quick_edit_mode = native("!!(mode & ENABLE_QUICK_EDIT_MODE)")->Logical
 
-      native @|#else
+      native @|#elif !defined(ROGUE_PLATFORM_EMBEDDED)
               |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
               |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
               |
@@ -209,7 +209,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
      @|#if defined(ROGUE_PLATFORM_WINDOWS)
       |  #include <io.h>
       |  #define ROGUE_READ_CALL _read
-      |#else
+      |#elif !defined(ROGUE_PLATFORM_EMBEDDED)
       |  #include <fcntl.h>
       |  #include <termios.h>
       |  #include <unistd.h>
@@ -228,6 +228,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     nativeCode
       @|void Rogue_fwrite( const char* utf8, int byte_count, int out )
        |{
+       |  #if !defined(ROGUE_PLATFORM_EMBEDDED)
        |  while (byte_count)
        |  {
        |    int n = (int) write( out, utf8, byte_count );
@@ -237,6 +238,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
        |      byte_count -= n;
        |    }
        |  }
+       |  #endif
        |}
 
 endClass

@@ -3,7 +3,7 @@ class File( filepath:String ) [compound]
     nativeHeader @|#include <stdio.h>
                   |#include <sys/stat.h>
                   |
-                  |#if !defined(ROGUE_PLATFORM_WINDOWS)
+                  |#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 

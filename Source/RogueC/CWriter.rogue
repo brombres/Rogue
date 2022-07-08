@@ -45,7 +45,7 @@ class CWriter : BufferedPrintWriter
            |  #endif
            |#endif
            |
-           |#if !defined(ROGUE_PLATFORM_IOS) && !defined(ROGUE_PLATFORM_MACOS)
+           |#if !defined(ROGUE_PLATFORM_IOS) && !defined(ROGUE_PLATFORM_MACOS) && !defined(ROGUE_PLATFORM_PLAYDATE)
            |  #if defined(_WIN32)
            |  #  define ROGUE_PLATFORM_WINDOWS 1
            |  #elif defined(__ANDROID__)

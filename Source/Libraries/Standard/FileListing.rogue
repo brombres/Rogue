@@ -10,7 +10,7 @@ endEnum
 
 class FileListing
   NATIVE
-    nativeHeader @|#if !defined(ROGUE_PLATFORM_WINDOWS)
+    nativeHeader @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 
