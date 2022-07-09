@@ -190,10 +190,18 @@ class PropertyOrganizer : Visitor
         if (p.initial_value)
           p.type = p.initial_value.type
           if (not p.type)
-            throw p.t.error(
-            ''Cannot implicitly determine type of global property "$" from initial value. ''(p.name) +
-              ''Add an explicit ': Type' at the end of the line.''
-            )
+            if ((p.initial_value instanceOf ContextAccess and p.initial_value->(as ContextAccess).args) or
+                (p.initial_value instanceOf TemplatedAccess and p.initial_value->(as TemplatedAccess).args))
+              throw p.t.error(
+                ''Cannot implicitly determine type of property "$" from initial value. ''(p.name) +
+                ''Add an explicit ': Type' at the end of the line and/or add any necessary '$include' and 'uses' directives.''
+              )
+            else
+              throw p.t.error(
+                ''Cannot implicitly determine type of property "$" from initial value. ''(p.name) +
+                ''Add an explicit ': Type' at the end of the line.''
+              )
+            endIf
           endIf
         else
           throw p.t.error( ''Global property "$" must have an initial assignment or a declared ': Type'.''(p.name) )
