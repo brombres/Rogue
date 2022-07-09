@@ -297,6 +297,13 @@ class Type : Cmd
       endIf
       this.properties[ p.name ] = p
 
+    method add_global_property_augment( p:Property )
+      local existing_p = global_properties[p.name]
+      if (existing_p)
+        throw p.t.error( "A global property named '$' already exists."(p.name) )
+      endIf
+      global_properties[p.name] = p
+
     method add_extended_property( p:Property )
       local base_p = properties[p.name]
       if (base_p)
@@ -665,10 +672,18 @@ class Type : Cmd
                 native_properties.insert( p )
               endForEach
 
+              if (incorporated_aspect.attributes.is_augment)
+                forEach (p in incorporated_aspect.global_properties)
+                  add_global_property_augment( p.cloned.[type_context=this] )
+                endForEach
+              endIf
+
               forEach (p in incorporated_aspect.properties)
                 add_extended_property( p.cloned.[type_context=this] )
               endForEach
             endForEach
+
+            aspects.discard( $.attributes.is_augment )
           endIf
 
           forEach (p in my_properties)
