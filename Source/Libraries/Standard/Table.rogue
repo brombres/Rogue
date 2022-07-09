@@ -180,7 +180,7 @@ class Table<<$KeyType,$ValueType>>
 
       return true
 
-    method print_to( buffer:String)->String
+    method print_to( buffer:String )->String
       buffer.print( '{' )
       local cur = first_entry
       local i = 0

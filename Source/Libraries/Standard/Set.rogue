@@ -1,0 +1,40 @@
+class Set<<$DataType>> : [$DataType:$DataType]
+  METHODS
+    method add( value:$DataType )
+      this[value] = value
+
+    method cloned->ThisType
+      return ThisType( this )
+
+    method difference( other:Set<<$DataType>> )
+      remove( forEach in other.values )
+
+    method intersection( other:Set<<$DataType>> )
+      remove( forEach in ((this - other) | (other - this)) )
+
+    method operator|( other:Set<<$DataType>> )->Set<<$DataType>>
+      return cloned.[ union(other) ]
+
+    method operator&( other:Set<<$DataType>> )->Set<<$DataType>>
+      return cloned.[ intersection(other) ]
+
+    method operator-( other:Set<<$DataType>> )->Set<<$DataType>>
+      return cloned.[ difference(other) ]
+
+    method print_to( buffer:String )->String
+      buffer.print( '{' )
+      local cur = first_entry
+      local i = 0
+      while (cur)
+        if (i > 0) buffer.print( ',' )
+        buffer.print( cur.key )
+        cur = cur.next_entry
+        ++i
+      endWhile
+      buffer.print( '}' )
+      return buffer
+
+    method union( other:Set<<$DataType>> )
+      add( forEach in other.values )
+
+endClass

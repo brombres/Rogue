@@ -31,6 +31,7 @@ $include Standard/Process
 $include Standard/Quicksort
 $include Standard/Range
 $include Standard/Reader
+$include Standard/Set
 $include Standard/Span
 $include Standard/StackTrace
 $include Standard/String
