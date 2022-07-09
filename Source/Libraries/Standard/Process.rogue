@@ -541,7 +541,7 @@ class WindowsProcessReader : Reader<<Byte>>
               |$success = true;
               |ERROR_EXIT:
               |#endif
-      if (not success) throw Error("Process reader could not be initialized.")
+      if (not success) Global.error.println("Process reader could not be initialized.")
 
     method close
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -629,9 +629,7 @@ class WindowsProcessWriter : Writer<<Byte>>
               |$success = true;
               |ERROR_EXIT:
               |#endif
-      if (not success)
-        throw Error("Process reader could not be initialized.")
-      endIf
+      if (not success) Global.error.println("Process reader could not be initialized.")
 
     method close
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -673,10 +671,10 @@ class WindowsProcessWriter : Writer<<Byte>>
       endIf
 
     method seek( pos:Int32 )
-      throw UnsupportedOperationError()
+      Global.error.println "Unsupported operation $.seek(Int32)."(type_name)
 
     method seek_end()
-      throw UnsupportedOperationError()
+      Global.error.println "Unsupported operation $.seek_end()."(type_name)
 
     method skip( n:Int32 )
       seek( position + n )

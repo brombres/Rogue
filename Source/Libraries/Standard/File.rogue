@@ -88,7 +88,8 @@ class File( filepath:String ) [compound]
               |#endif
 
       if (return_value) return return_value
-      throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
+      Global.error.println( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
+      return this
 
     #{
     method character_writer( filepath:String )->CharacterToUTF8ByteWriter
