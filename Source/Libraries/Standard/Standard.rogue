@@ -1,7 +1,5 @@
-$include Standard/BitIO
 $include Standard/ByteList
 $include Standard/Boxed
-$include Standard/DataIO
 $include Standard/Date
 $include Standard/Dim
 $include Standard/Console
@@ -16,7 +14,6 @@ $include Standard/FileDescriptorIO
 $include Standard/FileIO
 $include Standard/FileListing
 $include Standard/FilePattern
-$include Standard/Files
 $include Standard/Global
 $include Standard/LineReader
 $include Standard/List
@@ -27,11 +24,9 @@ $include Standard/ObjectPool
 $include Standard/Optional
 $include Standard/Primitives
 $include Standard/PrintWriter
-$include Standard/Process
 $include Standard/Quicksort
 $include Standard/Range
 $include Standard/Reader
-$include Standard/Set
 $include Standard/Span
 $include Standard/StackTrace
 $include Standard/String
