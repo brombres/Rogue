@@ -69,6 +69,13 @@ class ExceptionAnalyzer : InspectionVisitor
       propagate_exceptions_among_dynamic_methods( cmd.info )
       on_visit( cmd->(as CallProcedure) )
 
+    method on( cmd:CleanupBlock )->Logical
+      control_stack.add( cmd )
+      visit( cmd.statements )
+      control_stack.remove_last
+      visit( cmd.cleanup )
+      return false
+
     method on( cmd:ControlStructure )->Logical
       control_stack.add( cmd )
       visit_children( cmd )

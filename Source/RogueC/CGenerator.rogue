@@ -2370,9 +2370,14 @@ augment
 
     method ControlStructure.on_end_scope( cgen:CGenerator )
       if (catches_escape)
-        local writer = cgen.writer
-        writer.print   c_escape_label(cgen)
-        writer.println ":;"
+        cgen.writer.print   c_escape_label(cgen)
+        cgen.writer.println ":;"
+      endIf
+
+      if (exception_passthrough)
+        cgen.writer.print "if (Rogue_exception) "
+        cgen.dispatch_exception( t )
+        cgen.writer.println ';'
       endIf
 
     method CleanupBlock.on_end_scope( cgen:CGenerator )
