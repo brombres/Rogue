@@ -27,6 +27,10 @@ class Template
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
 
+      if (type.name == "Value" and type.module_context is Program.default_module)
+        Program.type_Value = type
+      endIf
+
       local template_tokens = tokens
 
       local replacements = Template.replacements( placeholders, type_args )

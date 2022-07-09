@@ -98,7 +98,7 @@ augment
       return resolve_via_conversion_methods( this, this_type, target_type, resolver, &=suppress_error )
 
     method Cmd.resolve_via_conversion_methods( cmd:Cmd, this_type:Type, target_type:Type, resolver:Resolver, &suppress_error )->Cmd
-      if (this_type is Program.type_Value)
+      if (this_type is Program.@type_Value)
         return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
       endIf
 
@@ -243,6 +243,9 @@ augment
 
     method GetLocal.is_anchored->Logical
       return info.is_anchored
+
+    method InlineAssignment.is_anchored->Logical
+      return true
 
     method LiteralString.is_anchored->Logical
       return true

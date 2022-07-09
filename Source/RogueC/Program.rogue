@@ -88,7 +88,6 @@ class Program [singleton]
       type_Math      = Type( t, get_module(t,"Math"), "Math", Attribute.OBJECT )
       type_Object    = Type( t, "Object", Attribute.OBJECT )
       type_String    = TypeString( t )
-      type_Value     = Type( t, "Value", Attribute.COMPOUND )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
 
       type_Logical.attributes.is_essential   = true
@@ -281,6 +280,11 @@ class Program [singleton]
       definitions//Real = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64) type_Real = type_Real64
       else                 type_Real = type_Real32
+
+    method type_Value->Type
+      if (@type_Value) return @type_Value
+      type_Value = default_module.must_find_type( t, "Value" )
+      return @type_Value
 
 endClass
 

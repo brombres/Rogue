@@ -1514,7 +1514,7 @@ augment
         writer.println
       endIf
 
-      if (this.is_reference or this.contains_reference or this is Program.type_Object)
+      if ((this.is_reference or this.contains_reference or this is Program.type_Object) and not is_aspect)
         writer.[ print("void "), print(this.c_name), println("_gc_trace( void* THIS );") ]
         writer.println
       endIf

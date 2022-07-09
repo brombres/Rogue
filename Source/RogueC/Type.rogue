@@ -988,16 +988,6 @@ class Type : Cmd
           endIf
         endBlock
 
-        block m = methods["to<<Rogue::Value>>()"]
-          if (not m)
-            m = Method( t, this, "to<<Rogue::Value>>" )
-            m.return_type = Program.type_String
-            m.statements.add( Return(t,TypeAccess(t,Program.type_Value,Args(t,Access(t,"to<<Rogue::Object>>")))) )
-            m.organize
-            methods[ m.signature ] = m
-          endIf
-        endBlock
-
         if (not is_enum)
           # Enums get different versions of to->String/to->Object and operator==()
           block m = methods["to<<Rogue::Object>>()"]

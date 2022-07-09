@@ -236,7 +236,7 @@ class ResolveUsedElements : InspectionVisitor
         endIf
         forEach (p at i in m.parameters)
           local cmd = IndexedAccess( t, GetLocal(t,value_args_info), LiteralInt32(t,i) ) : Cmd # args[i]
-          if (p.type is not Program.type_Value)
+          if (p.type is not Program.@type_Value)
             cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
           endIf
           param_types.add( p.type )

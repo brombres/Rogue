@@ -2365,7 +2365,7 @@ class Resolver : Poolable, Visitor
         # Prefer methods with single Value parameter; the arg will be to->Value'd
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
-          if (m.parameters.first.type is Program.type_Value) Candidates.keep m
+          if (m.parameters.first.type is Program.@type_Value) Candidates.keep m
         endForEach
         if (Candidates.found_match) return Candidates.match
         Candidates.refine
@@ -2441,7 +2441,7 @@ class Resolver : Poolable, Visitor
       if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
       if (arg_type.instance_of(param_type)) return true
       if (arg_type.is_primitive and param_type.is_primitive) return true
-      if (param_type is Program.type_String or param_type is Program.type_Object or param_type is Program.type_Value) return true
+      if (param_type is Program.type_String or param_type is Program.type_Object or param_type is Program.@type_Value) return true
       if (param_type.attributes.is_optional and not arg_type.attributes.is_optional)
         if (arg_type is Program.type_null)
           return true
