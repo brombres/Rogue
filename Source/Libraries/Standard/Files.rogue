@@ -181,7 +181,7 @@ class Files
       if (not dest_folder.exists and not dry_run)
         dest_folder.create_folder
         if (not dest_folder.is_folder)
-          Global.standard_error.println( "ERROR: File.sync_to() can not create destination folder $" (dest_folder) )
+          Global.error.println( "ERROR: File.sync_to() can not create destination folder $" (dest_folder) )
           return 0
         endIf
       endIf
@@ -191,7 +191,7 @@ class Files
       if (dest_name.begins_with("./")) dest_name = dest_name.from( 2 )
 
       if (dest_name == base_folder)
-        Global.standard_error.println( "ERROR: File.sync_to() has the same source and destination folders ($)."...
+        Global.error.println( "ERROR: File.sync_to() has the same source and destination folders ($)."...
             (dest_folder.filepath.leftmost(-1)) )
         return 0
       endIf

@@ -1,7 +1,7 @@
 class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
   PROPERTIES
     standard_output : PrintWriter
-    standard_error  : PrintWriter
+    error  : PrintWriter
     exit_functions  : Function[]
 
   METHODS
@@ -12,7 +12,7 @@ class Global : BufferedPrintWriter<<global_output_buffer>> [singleton]
 
     method configure_standard_output
       standard_output = Console
-      standard_error  = Console.error
+      error  = Console.error
 
     method flush( buffer:String )
       standard_output.[ print(buffer), flush ]
