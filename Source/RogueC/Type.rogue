@@ -676,14 +676,13 @@ class Type : Cmd
                 forEach (p in incorporated_aspect.global_properties)
                   add_global_property_augment( p.cloned.[type_context=this] )
                 endForEach
+                incorporated_aspect.global_properties.clear
               endIf
 
               forEach (p in incorporated_aspect.properties)
                 add_extended_property( p.cloned.[type_context=this] )
               endForEach
             endForEach
-
-            aspects.discard( $.attributes.is_augment )
           endIf
 
           forEach (p in my_properties)
@@ -730,7 +729,7 @@ class Type : Cmd
       endIf
 
       # Add init_class() for global property initialization
-      block
+      if (not attributes.is_augment)
         local m = global_methods["init_class()"]
         if (not m)
           m = GlobalMethod( t, this, "init_class" )
@@ -756,10 +755,10 @@ class Type : Cmd
             endForEach
           endUse
         endIf
-      endBlock
+      endIf
 
       # Add init_object() methods for new initial property assignments
-      if (is_object)
+      if (is_object and not is_aspect)
         local m = methods["init_object()"]
         if (not m)
           m = Method( t, this, "init_object" )
