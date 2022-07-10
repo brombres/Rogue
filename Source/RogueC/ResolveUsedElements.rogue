@@ -5,23 +5,35 @@ class ResolveUsedElements : InspectionVisitor
     is_modified    : Logical
     all_methods    : Procedure[]
     all_properties : Property[]
-    m_get_property         : Procedure
     m_call_global          : Procedure
-    m_call_object          : Procedure
-    cmd_get_property_cases : WhichCases
     cmd_call_global_cases  : WhichCases
+    m_call_object          : Procedure
     cmd_call_object_cases  : WhichCases
+    m_get_global_property  : Procedure
+    cmd_get_global_property_cases : WhichCases
+    m_get_property         : Procedure
+    cmd_get_property_cases : WhichCases
+    m_set_global_property  : Procedure
+    cmd_set_global_property_cases : WhichCases
+    m_set_property         : Procedure
+    cmd_set_property_cases : WhichCases
 
   METHODS
     method apply
       all_methods            = Program.all_methods
       all_properties         = Program.all_properties
-      m_get_property         = Program.m_get_property
       m_call_global          = Program.m_call_global
       m_call_object          = Program.m_call_object
-      cmd_get_property_cases = Program.cmd_get_property_cases
       cmd_call_global_cases  = Program.cmd_call_global_cases
       cmd_call_object_cases  = Program.cmd_call_object_cases
+      m_get_global_property  = Program.m_get_global_property
+      m_get_property         = Program.m_get_property
+      cmd_get_property_cases = Program.cmd_get_property_cases
+      cmd_get_global_property_cases = Program.cmd_get_global_property_cases
+      m_set_global_property  = Program.m_set_global_property
+      m_set_property         = Program.m_set_property
+      cmd_set_property_cases = Program.cmd_set_property_cases
+      cmd_set_global_property_cases = Program.cmd_set_global_property_cases
 
       is_modified = true
       while (is_modified)
@@ -75,6 +87,23 @@ class ResolveUsedElements : InspectionVisitor
                 m_call_object.body.statements.insert( cmd_which )
               endUse
 
+              m_get_global_property = type_PropertyInfo.global_methods["get_global_property(Rogue::Int32)"]
+              assert m_get_global_property
+              m_get_global_property.resolve
+              t = m_get_global_property.t
+              cmd_get_global_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_get_global_property.parameters[0]), cmd_get_global_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_get_global_property.module_context
+                resolver.this_type      = m_get_global_property.type_context
+                resolver.this_procedure = m_get_global_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_get_global_property.body.statements.add( cmd_which )
+                m_get_global_property.body.statements.add( Return(t,GetLocal(m_get_global_property.locals[0])) )
+              endUse
+
               m_get_property = type_PropertyInfo.global_methods["get_property(Rogue::Int32,Rogue::Value)"]
               assert m_get_property
               m_get_property.resolve
@@ -92,6 +121,38 @@ class ResolveUsedElements : InspectionVisitor
                 m_get_property.body.statements.add( Return(t,GetLocal(m_get_property.locals[0])) )
               endUse
 
+              m_set_global_property = type_PropertyInfo.global_methods["set_global_property(Rogue::Int32,Rogue::Value)"]
+              assert m_set_global_property
+              m_set_global_property.resolve
+              t = m_set_global_property.t
+              cmd_set_global_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_set_global_property.parameters[0]), cmd_set_global_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_set_global_property.module_context
+                resolver.this_type      = m_set_global_property.type_context
+                resolver.this_procedure = m_set_global_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_set_global_property.body.statements.add( cmd_which )
+              endUse
+
+              m_set_property = type_PropertyInfo.global_methods["set_property(Rogue::Int32,Rogue::Value,Rogue::Value)"]
+              assert m_set_property
+              m_set_property.resolve
+              t = m_set_property.t
+              cmd_set_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_set_property.parameters[0]), cmd_set_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_set_property.module_context
+                resolver.this_type      = m_set_property.type_context
+                resolver.this_procedure = m_set_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_set_property.body.statements.add( cmd_which )
+              endUse
+
               Program.handled_call_indices = Dim<<Logical>>( Program.call_signatures.count )
               Program.handled_property_ids = Dim<<Logical>>( Program.all_properties.count )
 
@@ -102,12 +163,18 @@ class ResolveUsedElements : InspectionVisitor
               while (i < all_properties.count) add_introspection_access( all_properties[i] ); ++i
 
               Program.using_method_introspection = true
-              Program.m_get_property         = m_get_property
               Program.m_call_global          = m_call_global
               Program.m_call_object          = m_call_object
               Program.cmd_call_global_cases  = cmd_call_global_cases
               Program.cmd_call_object_cases  = cmd_call_object_cases
+              Program.m_get_global_property  = m_get_global_property
+              Program.m_get_property         = m_get_property
+              Program.cmd_get_global_property_cases = cmd_get_global_property_cases
               Program.cmd_get_property_cases = cmd_get_property_cases
+              Program.m_set_global_property  = m_set_global_property
+              Program.m_set_property         = m_set_property
+              Program.cmd_set_global_property_cases = cmd_set_global_property_cases
+              Program.cmd_set_property_cases = cmd_set_property_cases
 
               is_modified = true
             endIf
@@ -268,30 +335,87 @@ class ResolveUsedElements : InspectionVisitor
 
       local cmd_access : Cmd
 
-      if (not prop.attributes.is_global)
-        # property        -> context.to<<Type>>.property
-        local params = m_get_property.parameters
-        local v_result = m_get_property.locals[0]
-        cmd_access = GetLocal( t, params[1] )  # context
-        cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type_context, Args(t) )  # context.to<<ArgType>>
-        cmd_access = ContextDirectAccess( t, cmd_access, prop.name )                     # context.to<<ArgType>>.property
-        cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))     # context.to<<ArgType>>.property->Value
-        cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = context.to<<ArgType>>.property->Value
+      if (prop.attributes.is_global)
+        block
+          # return global_property->Value
+          local v_result = m_get_global_property.locals[0]
+          cmd_access = GetGlobalProperty( t, prop )                             # global_property
+          cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))     # global_property->Value
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = global_property->Value
 
-        cmd_access = Statements( t, cmd_access )
-        local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
-        use resolver = ObjectPool<<Resolver>>
-          resolver.this_module    = m_get_property.module_context
-          resolver.this_type      = m_get_property.type_context
-          resolver.this_procedure = m_get_property
-          cmd_case = resolver.visit( cmd_case )
-          visit( cmd_case )
-        endUse
-        cmd_get_property_cases.add( cmd_case )
+          cmd_access = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_get_global_property.module_context
+            resolver.this_type      = m_get_global_property.type_context
+            resolver.this_procedure = m_get_global_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_get_global_property_cases.add( cmd_case )
+        endBlock
+
+        if (not prop.type_context.is_compound)
+          # global_property = new_value->to<<property-type>>
+          cmd_access = GetLocal( t, m_set_global_property.parameters[1] )                       # new_value
+          cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) )  # new_value.to<<property-type>>
+          cmd_access = SetGlobalProperty( t, prop, cmd_access )               # global_property = new_value.to<<property-type>>
+          cmd_access = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_set_global_property.module_context
+            resolver.this_type      = m_set_global_property.type_context
+            resolver.this_procedure = m_set_global_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_set_global_property_cases.add( cmd_case )
+        endIf
 
       else
-        # global_property -> global_property
-        #local params = which{ prop.attributes.is_global:m_get_global_property.parameters || m_get_property.parameters }
+        block
+          # return context.to<<Type>>.property->Value
+          local params = m_get_property.parameters
+          local v_result = m_get_property.locals[0]
+          cmd_access = GetLocal( t, params[1] )  # context
+          cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type_context, Args(t) )  # context.to<<context-type>>
+          cmd_access = ContextDirectAccess( t, cmd_access, prop.name )                     # context.to<<ArgType>>.property
+          cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))     # context.to<<ArgType>>.property->Value
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = context.to<<ArgType>>.property->Value
+
+          cmd_access = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_get_property.module_context
+            resolver.this_type      = m_get_property.type_context
+            resolver.this_procedure = m_get_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_get_property_cases.add( cmd_case )
+        endBlock
+
+        if (not prop.type_context.is_compound)
+          # property = new_value->to<<property-type>>
+          local cmd_context = GetLocal( t, m_set_property.parameters[1] ) : Cmd                          # context
+          cmd_context = TemplatedMethodContextAccess( t, cmd_context, "to", prop.type_context, Args(t) ) # context.to<<context-type>>
+          cmd_access  = GetLocal( t, m_set_property.parameters[2] )                             # new_value
+          cmd_access  = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) ) # new_value.to<<property-type>>
+          cmd_access  = SetProperty( t, cmd_context, prop, cmd_access )                         # property = new_value.to<<property-type>>
+          cmd_access  = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_set_property.module_context
+            resolver.this_type      = m_set_property.type_context
+            resolver.this_procedure = m_set_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_set_property_cases.add( cmd_case )
+        endIf
+
       endIf
 
 

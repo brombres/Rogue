@@ -61,14 +61,20 @@ class Program [singleton]
     anonymous_class_names = StringTable<<String>>()
 
     using_method_introspection : Logical
-    m_call_global          : Procedure
-    m_call_object          : Procedure
-    cmd_call_global_cases  : WhichCases
-    cmd_call_object_cases  : WhichCases
-    cmd_get_property_cases : WhichCases
-    m_get_property         : Procedure
-    handled_call_indices   : Logical[]
-    handled_property_ids   : Logical[]
+    m_call_global                 : Procedure
+    m_call_object                 : Procedure
+    cmd_call_global_cases         : WhichCases
+    cmd_call_object_cases         : WhichCases
+    m_get_global_property         : Procedure
+    m_get_property                : Procedure
+    cmd_get_global_property_cases : WhichCases
+    cmd_get_property_cases        : WhichCases
+    m_set_global_property         : Procedure
+    m_set_property                : Procedure
+    cmd_set_global_property_cases : WhichCases
+    cmd_set_property_cases        : WhichCases
+    handled_call_indices          : Logical[]
+    handled_property_ids          : Logical[]
 
   METHODS
     method init
