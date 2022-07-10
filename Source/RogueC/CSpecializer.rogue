@@ -13,8 +13,17 @@ class CSpecializer : Visitor
       Program.apply( this )
 
       if (Program.default_module.types.contains("TypeInfo"))
-        forEach (mod in Program.modules)
+        forEach (mod in Program.modules.values)
           collect_literal_string( mod.name )
+        endForEach
+      endIf
+
+      if (Program.default_module.types.contains("PropertyInfo"))
+        forEach (mod in Program.modules)
+          forEach (type in mod.types.values)
+            collect_literal_string( (forEach in type.global_properties).name )
+            collect_literal_string( (forEach in type.properties).name )
+          endForEach
         endForEach
       endIf
 

@@ -1,0 +1,6 @@
+class PropertyInfo( id:Int32, name:String, type:TypeInfo, is_global:Logical ) [compound]
+  GLOBAL METHODS
+    #method get_global_property( id:Int32 )->Value
+    method get_property( id:Int32, context:Value )->Value [essential]
+endClass
+

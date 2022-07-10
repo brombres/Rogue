@@ -41,6 +41,7 @@ class Program [singleton]
     type_String       : Type
     type_Value        : Type
     type_Exception    : Type
+    type_TypeInfo     : Type
 
     is_modified       : Logical
     is_organizing     : Logical
@@ -53,17 +54,20 @@ class Program [singleton]
     call_signatures   = StringTable<<Procedure[]>>()
     all_methods       = Procedure[]
     all_types         = Type[]
+    all_properties    = Property[]
 
     base_type_lookup  = Int32[]
 
     anonymous_class_names = StringTable<<String>>()
 
     using_method_introspection : Logical
-    m_call_global         : Procedure
-    m_call_object         : Procedure
-    cmd_call_global_cases : WhichCases
-    cmd_call_object_cases : WhichCases
-    handled_call_indices  : Logical[]
+    m_call_global          : Procedure
+    m_call_object          : Procedure
+    cmd_call_global_cases  : WhichCases
+    cmd_call_object_cases  : WhichCases
+    handled_call_indices   : Logical[]
+    cmd_get_property_cases : WhichCases
+    m_get_property         : Procedure
 
   METHODS
     method init
@@ -280,6 +284,12 @@ class Program [singleton]
       definitions//Real = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64) type_Real = type_Real64
       else                 type_Real = type_Real32
+
+    method type_TypeInfo->Type
+      if (@type_TypeInfo) return @type_TypeInfo
+      Program.include( t, "Introspection" )
+      type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
+      return @type_TypeInfo
 
     method type_Value->Type
       if (@type_Value) return @type_Value

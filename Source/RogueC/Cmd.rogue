@@ -848,6 +848,7 @@ class Property : Cmd
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
+    id = -1       : Int32
 
   METHODS
     method init( t, name, initial_value, type )
@@ -4843,5 +4844,23 @@ class InlineAssignment : Cmd
 
     method description->String
       return "InlineAssignment($,$)" (%info,%value)
+
+endClass
+
+class IntrospectionGetObjectProperty : Cmd
+  PROPERTIES
+    info    : Property
+    context : Cmd
+
+  METHODS
+    method init( t, info, context )
+
+    method init( existing:IntrospectionGetObjectProperty )
+      prior.init( existing )
+      if (existing.info) info = existing.info.cloned
+      if (existing.context) context = existing.context.cloned
+
+    method description->String
+      return "IntrospectionGetObjectProperty($,$)" (%info,%context)
 
 endClass

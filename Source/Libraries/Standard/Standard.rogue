@@ -18,7 +18,6 @@ $include Standard/Global
 $include Standard/LineReader
 $include Standard/List
 $include Standard/ListRewriter
-$include Standard/MethodInfo
 $include Standard/Object
 $include Standard/ObjectPool
 $include Standard/Optional
@@ -37,7 +36,6 @@ $include Standard/Table
 $include Standard/Time
 $include Standard/TimeInterval
 $include Standard/Timestamp
-$include Standard/TypeInfo
 $include Standard/Value
 $include Standard/WorkList
 $include Standard/Writer

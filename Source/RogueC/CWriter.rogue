@@ -185,7 +185,7 @@ class CWriter : BufferedPrintWriter
            |  RogueInt32     index;
            |  RogueInt32     id;
            |  RogueInt32     module_name_index;
-           |  RogueInt32     method_data_index;
+           |  RogueInt32     class_data_index;
            |  RogueInt64     attributes;
            |  void**         local_pointer_stack; // Objects + compounds with embedded refs
            |  RogueInt32     local_pointer_capacity;

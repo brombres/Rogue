@@ -19,7 +19,7 @@ class TypeInfo
        |    type_info->index       = THIS->index;
        |    type_info->id          = THIS->id;
        |    type_info->attributes  = THIS->attributes;
-       |    type_info->method_data_index = THIS->method_data_index;
+       |    type_info->class_data_index = THIS->class_data_index;
        |
        |    THIS->type_info = (RogueObject*) type_info;
        |    RogueTypeInfo__init( type_info );
@@ -60,20 +60,34 @@ class TypeInfo
     id                : Int32
     attributes        : Int32
 
-    method_data_index : Int32
+    class_data_index : Int32
+    global_properties = PropertyInfo[]
+    properties        = PropertyInfo[]
     global_methods    = MethodInfo[]
     methods           = MethodInfo[]
 
   METHODS
     method init [essential]
-      local data_index = read_methods( method_data_index, global_methods, &is_global )
+      local data_index = class_data_index
+      data_index = read_properties( data_index, global_properties, &is_global )
+      data_index = read_properties( data_index, properties )
+      data_index = read_methods( data_index, global_methods, &is_global )
       data_index = read_methods( data_index, methods )
 
-    method read_methods( data_index:Int32, list:MethodInfo[], &is_global )->Int32
-      local n = native("Rogue_method_data[$data_index]")->Int32;
+    method read_properties( data_index:Int32, list:PropertyInfo[], &is_global )->Int32
+      local n = native("Rogue_class_data[$data_index]")->Int32;
       ++data_index
       loop n
-        list.add( MethodInfo(native("Rogue_method_data[$data_index]")->Int32, &=is_global) )
+        #list.add( MethodInfo(native("Rogue_class_data[$data_index]")->Int32, &=is_global) )
+        data_index += 3
+      endLoop
+      return data_index
+
+    method read_methods( data_index:Int32, list:MethodInfo[], &is_global )->Int32
+      local n = native("Rogue_class_data[$data_index]")->Int32;
+      ++data_index
+      loop n
+        list.add( MethodInfo(native("Rogue_class_data[$data_index]")->Int32, &=is_global) )
         ++data_index
       endLoop
       return data_index

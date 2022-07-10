@@ -26,20 +26,20 @@ class MethodInfo
       m.is_global = is_global
       local data_index = native("Rogue_method_info[$method_index]")->Int32
 
-      m.type_context = TypeInfo[ native("Rogue_method_data[$data_index]")->Int32 ]
-      m.name = native("Rogue_string_table[ Rogue_method_data[++$data_index] ]")->String
+      m.type_context = TypeInfo[ native("Rogue_class_data[$data_index]")->Int32 ]
+      m.name = native("Rogue_string_table[ Rogue_class_data[++$data_index] ]")->String
 
-      local n = native("Rogue_method_data[++$data_index]")->Int32
+      local n = native("Rogue_class_data[++$data_index]")->Int32
       m.parameter_types.reserve( n )
       loop n
-        m.parameter_types.add( TypeInfo[ native("Rogue_method_data[++$data_index]")->Int32 ] )
+        m.parameter_types.add( TypeInfo[ native("Rogue_class_data[++$data_index]")->Int32 ] )
       endLoop
-      local return_type_index = native("Rogue_method_data[++$data_index]")->Int32
+      local return_type_index = native("Rogue_class_data[++$data_index]")->Int32
       if (return_type_index >= 0) m.return_type = TypeInfo[return_type_index]
 
-      m.call_index = native("Rogue_method_data[++$data_index]")->Int32
-      m.attributes = native("Rogue_method_data[++$data_index]")->Int32
-      m.attributes = (m.attributes:<<:32) | ((native("Rogue_method_data[++$data_index]")->Int32->Int64) & 0xFFFF_FFFF)
+      m.call_index = native("Rogue_class_data[++$data_index]")->Int32
+      m.attributes = native("Rogue_class_data[++$data_index]")->Int32
+      m.attributes = (m.attributes:<<:32) | ((native("Rogue_class_data[++$data_index]")->Int32->Int64) & 0xFFFF_FFFF)
 
       local sig_len = m.name.count + 2           # name()
       sig_len += (m.parameter_types.count - 1)   # commas

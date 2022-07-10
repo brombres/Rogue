@@ -1602,7 +1602,7 @@ augment
       if (Program.default_module.types.contains("MethodInfo"))
         h_writer.println "extern RogueInt32 Rogue_method_count;"
         h_writer.println "extern RogueInt32 Rogue_method_info[];"
-        h_writer.println "extern RogueInt32 Rogue_method_data[];"
+        h_writer.println "extern RogueInt32 Rogue_class_data[];"
         h_writer.println "extern void* Rogue_method_pointers[];"
         h_writer.println
         forEach (group in Program.call_signatures.values)
@@ -1656,32 +1656,48 @@ augment
       local c_writer = CWriter( File(Program.output_filepath+".c") )
 
       local method_info : Int32[]
-      local method_data : Int32[]
+      local class_data : Int32[]
       if (Program.default_module.types.contains("MethodInfo"))
         c_writer.println
         c_writer.println "RogueInt32 Rogue_method_count = $;"(Program.all_methods.count)
 
         local string_indices = Program.string_table_indices
         method_info = Int32[]
-        method_data = Int32[]
+        class_data = Int32[]
         forEach (m in Program.all_methods)
-          method_info.add( method_data.count )
-          method_data.add( m.type_context.index )
-          method_data.add( string_indices[m.name] )
-          method_data.add( m.parameters.count )
-          method_data.add( (forEach in m.parameters).type.index )
-          method_data.add( which{m.return_type:m.return_type.index || -1} )
-          method_data.add( m.call_index )
-          method_data.add( (m.attributes.flags:>>>:32)->Int32 )
-          method_data.add( m.attributes.flags->Int32 )
+          method_info.add( class_data.count )
+          class_data.add( m.type_context.index )
+          class_data.add( string_indices[m.name] )
+          class_data.add( m.parameters.count )
+          class_data.add( (forEach in m.parameters).type.index )
+          class_data.add( which{m.return_type:m.return_type.index || -1} )
+          class_data.add( m.call_index )
+          class_data.add( (m.attributes.flags:>>>:32)->Int32 )
+          class_data.add( m.attributes.flags->Int32 )
         endForEach
 
         forEach (type in all_types)
-          type.method_data_index = method_data.count
-          method_data.add( type.global_methods.count )
-          method_data.add( (forEach in type.global_methods).index )
-          method_data.add( type.methods.count )
-          method_data.add( (forEach in type.methods).index )
+          type.class_data_index = class_data.count
+          class_data.add( type.global_properties.count )
+          forEach (prop in type.global_properties)
+            class_data.add( prop.id )
+            class_data.add( string_indices[prop.name] )
+            class_data.add( prop.type.index )
+          endForEach
+          if (type.is_aspect)
+            class_data.add( 0 )  # 0 object properties for aspects
+          else
+            class_data.add( type.properties.count )
+            forEach (prop in type.properties)
+              class_data.add( prop.id )
+              class_data.add( string_indices[prop.name] )
+              class_data.add( prop.type.index )
+            endForEach
+          endIf
+          class_data.add( type.global_methods.count )
+          class_data.add( (forEach in type.global_methods).index )
+          class_data.add( type.methods.count )
+          class_data.add( (forEach in type.methods).index )
         endForEach
 
         block
@@ -1706,10 +1722,10 @@ augment
 
         block
           local column = 0;
-          c_writer.println "RogueInt32 Rogue_method_data[$] ="(method_data.count)
+          c_writer.println "RogueInt32 Rogue_class_data[$] ="(class_data.count)
           c_writer.println "{"
           c_writer.indent += 2
-          forEach (value at index in method_data)
+          forEach (value at index in class_data)
             if (index > 0) c_writer.print ','
             if (column == 30)
               c_writer.println
@@ -1759,7 +1775,7 @@ augment
           if (including_type_info) c_writer.print Program.string_table_indices[type.module_context.name]
           else                     c_writer.print '0'
           c_writer.print   ", "
-          c_writer.print   type.method_data_index
+          c_writer.print   type.class_data_index
           c_writer.print   ", "
           c_writer.print   type.attributes.flags
 

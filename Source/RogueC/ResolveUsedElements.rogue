@@ -2,16 +2,21 @@ module RogueC
 
 class ResolveUsedElements : InspectionVisitor
   PROPERTIES
-    is_modified : Logical
-    all_methods : Procedure[]
-    m_call_global         : Procedure
-    m_call_object         : Procedure
-    cmd_call_global_cases : WhichCases
-    cmd_call_object_cases : WhichCases
+    is_modified    : Logical
+    all_methods    : Procedure[]
+    all_properties : Property[]
+    m_get_property         : Procedure
+    m_call_global          : Procedure
+    m_call_object          : Procedure
+    cmd_get_property_cases : WhichCases
+    cmd_call_global_cases  : WhichCases
+    cmd_call_object_cases  : WhichCases
 
   METHODS
     method apply
-      all_methods = Program.all_methods
+      all_methods           = Program.all_methods
+      all_properties        = Program.all_properties
+      m_get_property        = Program.m_get_property
       m_call_global         = Program.m_call_global
       m_call_object         = Program.m_call_object
       cmd_call_global_cases = Program.cmd_call_global_cases
@@ -34,6 +39,8 @@ class ResolveUsedElements : InspectionVisitor
             local type_MethodInfo = Program.default_module.types//MethodInfo
             if (type_MethodInfo)
               type_MethodInfo.resolve
+              local type_PropertyInfo = Program.default_module.types//PropertyInfo
+              type_PropertyInfo.resolve
 
               m_call_global = type_MethodInfo.global_methods["call_global_method(Rogue::Int32,Rogue::Int64,Rogue::Value)"]
               assert m_call_global
@@ -51,7 +58,6 @@ class ResolveUsedElements : InspectionVisitor
                 m_call_global.body.statements.insert( cmd_which )
               endUse
 
-              cmd_call_object_cases = WhichCases(Program.t)
               m_call_object = type_MethodInfo.global_methods["call_object_method(Rogue::Int32,Rogue::Int64,Rogue::Value,Rogue::Value)"]
               assert m_call_object
               m_call_object.resolve
@@ -68,16 +74,37 @@ class ResolveUsedElements : InspectionVisitor
                 m_call_object.body.statements.insert( cmd_which )
               endUse
 
+              m_get_property = type_PropertyInfo.global_methods["get_property(Rogue::Int32,Rogue::Value)"]
+              assert m_get_property
+              m_get_property.resolve
+              t = m_get_property.t
+              cmd_get_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_get_property.parameters[0]), cmd_get_property_cases,
+                  Statements(t,Return(t,LiteralUndefined(t))) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_get_property.module_context
+                resolver.this_type      = m_get_property.type_context
+                resolver.this_procedure = m_get_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_get_property.body.statements.insert( cmd_which )
+              endUse
+
               Program.handled_call_indices = Dim<<Logical>>( Program.call_signatures.count )
 
               local i = 0
               while (i < all_methods.count) add_introspection_call( all_methods[i] ); ++i
 
+              i = 0
+              while (i < all_properties.count) add_introspection_access( all_properties[i] ); ++i
+
               Program.using_method_introspection = true
-              Program.m_call_global         = m_call_global
-              Program.m_call_object         = m_call_object
-              Program.cmd_call_global_cases = cmd_call_global_cases
-              Program.cmd_call_object_cases = cmd_call_object_cases
+              Program.m_get_property         = m_get_property
+              Program.m_call_global          = m_call_global
+              Program.m_call_object          = m_call_object
+              Program.cmd_call_global_cases  = cmd_call_global_cases
+              Program.cmd_call_object_cases  = cmd_call_object_cases
+              Program.cmd_get_property_cases = cmd_get_property_cases
 
               is_modified = true
             endIf
@@ -103,7 +130,15 @@ class ResolveUsedElements : InspectionVisitor
         is_modified = true
       endIf
 
-      visit_type( (forEach in type.global_properties).type )
+      forEach (prop in type.global_properties)
+        if (prop.id == -1)
+          assert prop.attributes.is_global
+          prop.id = all_properties.count
+          all_properties.add( prop )
+          if (Program.using_method_introspection) add_introspection_access( prop )
+        endIf
+        visit_type( prop.type )
+      endForEach
 
       temporarily this_type = type
         forEach (m in type.global_methods)
@@ -138,7 +173,14 @@ class ResolveUsedElements : InspectionVisitor
         endIf
       endIf
 
-      visit_type( (forEach in type.properties).type )
+      forEach (prop in type.properties)
+        if (prop.id == -1)
+          prop.id = all_properties.count
+          all_properties.add( prop )
+          if (Program.using_method_introspection) add_introspection_access( prop )
+        endIf
+        visit_type( prop.type )
+      endForEach
 
       temporarily this_type = type
         forEach (m in type.methods)
@@ -211,6 +253,62 @@ class ResolveUsedElements : InspectionVisitor
       visit_children( m )
       return false
 
+    method add_introspection_access( prop:Property )
+      #{
+      if (m.type_context.is_aspect) return
+
+      assert m.call_index >= 0
+      Program.handled_call_indices.expand_to_include( m.call_index )
+      if (Program.handled_call_indices[m.call_index]) return  # already handled
+      Program.handled_call_indices[m.call_index] = true
+
+      local t = m.t
+
+      local cmd_call : Cmd
+
+      if (not m.attributes.is_mutating)
+        # m(a,b) -> m( args[0].to<<TypeA>>, args[1].to<<TypeB>> )
+        local dispatch_params = which{ m.is_global:m_call_global.parameters || m_call_object.parameters }
+        local value_args_info = which{ m.is_global:dispatch_params[2] || dispatch_params[3] }
+
+        local param_types = TypeList(t)
+        local args = Args(t)
+        if (not m.is_global)
+          param_types.add( m.type_context )
+          args.add( GetLocal(t,dispatch_params[2]) )
+        endIf
+        forEach (p at i in m.parameters)
+          local cmd = IndexedAccess( t, GetLocal(t,value_args_info), LiteralInt32(t,i) ) : Cmd # args[i]
+          if (p.type is not Program.@type_Value)
+            cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
+          endIf
+          param_types.add( p.type )
+          args.add( cmd )
+        endForEach
+
+        cmd_call = CallMethodPointer( t, m, GetLocal(t,dispatch_params[1]), param_types, args, m.return_type )
+
+        if (m.return_type)
+          cmd_call = Return( t, TypeAccess(t, Program.type_Value,Args(t,cmd_call)) )
+        endIf
+
+        cmd_call = Statements( t, cmd_call )
+      else
+        cmd_call = Statements(t)
+      endIf
+
+      local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,m.call_index)), cmd_call ) : Cmd
+      use resolver = ObjectPool<<Resolver>>
+        resolver.this_module    = m_call_object.module_context
+        resolver.this_type      = m_call_object.type_context
+        resolver.this_procedure = which{ m.is_global:m_call_global || m_call_object }
+        cmd_case = resolver.visit( cmd_case )
+        visit( cmd_case )
+      endUse
+      if (m.is_global) cmd_call_global_cases.add( cmd_case )
+      else             cmd_call_object_cases.add( cmd_case )
+      }#
+
     method add_introspection_call( m:Procedure )
       if (m.type_context.is_aspect) return
 
@@ -250,6 +348,7 @@ class ResolveUsedElements : InspectionVisitor
         endIf
 
         cmd_call = Statements( t, cmd_call )
+
       else
         cmd_call = Statements(t)
       endIf
