@@ -65,9 +65,10 @@ class Program [singleton]
     m_call_object          : Procedure
     cmd_call_global_cases  : WhichCases
     cmd_call_object_cases  : WhichCases
-    handled_call_indices   : Logical[]
     cmd_get_property_cases : WhichCases
     m_get_property         : Procedure
+    handled_call_indices   : Logical[]
+    handled_property_ids   : Logical[]
 
   METHODS
     method init

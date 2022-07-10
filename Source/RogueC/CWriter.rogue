@@ -516,8 +516,8 @@ class CWriter : BufferedPrintWriter
           print   p2.c_name
           println ")) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
         elseIf (p2.type.contains_reference)
-          path.add( p2.c_name )
           path.add( '.' )
+          path.add( p2.c_name )
           print_gc_checks( path, p2.type )
           path.remove_last
           path.remove_last

@@ -1,6 +1,32 @@
-class PropertyInfo( id:Int32, name:String, type:TypeInfo, is_global:Logical ) [compound]
+class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical ) [compound]
+  METHODS
+    method to->String
+      return name
+
+    method type->TypeInfo
+      return TypeInfo[type_index]
+
+    method value( context:Value )->Value
+      return get_property( id, context )
+
   GLOBAL METHODS
     #method get_global_property( id:Int32 )->Value
     method get_property( id:Int32, context:Value )->Value [essential]
+      local result : Value
 endClass
 
+augment PropertyInfo[]
+  METHODS
+    method get( name:String )->PropertyInfo?
+      forEach (prop in this)
+        if (prop.name == name) return prop
+      endForEach
+      return null
+endAugment
+
+augment PropertyInfo?
+  METHODS
+    method value( context:Value )->Value
+      if (exists) return value.value( context )
+      else        return undefined
+endAugment

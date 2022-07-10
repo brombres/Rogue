@@ -2040,7 +2040,7 @@ augment
               c_writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
-                path.add( "if ((ref = (RogueObject*)(" )
+                path.add( "if ((ref=(RogueObject*)(" )
                 path.add( p.c_name )
                 c_writer.print_gc_checks( path, p.type )
               endUse
