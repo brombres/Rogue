@@ -1,0 +1,44 @@
+$include Core/Boxed
+$include Core/ByteList
+$include Core/Console
+$include Core/ConsoleCursor
+$include Core/ConsoleErrorPrinter
+$include Core/ConsoleEvent
+$include Core/ConsoleMode
+$include Core/ConsoleStyle
+$include Core/Dim
+$include Core/Exception
+$include Core/Global
+$include Core/LineReader
+$include Core/Object
+$include Core/ObjectPool
+$include Core/Optional
+$include Core/Poolable
+$include Core/Primitives
+$include Core/PrintWriter
+$include Core/Range
+$include Core/Reader
+$include Core/Span
+$include Core/StackTrace
+$include Core/String
+$include Core/StringEncoding
+$include Core/StringList
+$include Core/StringPool
+$include Core/System
+$include Core/WorkList
+$include Core/Writer
+
+$include Collection/List
+
+uses Math [export]
+
+routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
+  # For internal use only - used by the compiler to cast between compatible tuple types.
+  return native("*(($<<ReturnType>>*)&$tuple)")->$NewType
+endRoutine
+
+routine describe( value:Object )->String
+  if (value) return value.description
+  else       return "null"
+endRoutine
+

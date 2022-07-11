@@ -128,7 +128,7 @@ class RogueC
 
       Program.include( forEach in command//args, &api=api_includes )
 
-      Program.include( "Standard" )
+      Program.include( "Core" )
 
       forEach (option in command//options//api)
         if (option == Value(true)) nextIteration
