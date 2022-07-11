@@ -27,7 +27,7 @@ class TypeOrganizer : Visitor
         base_type.ensure_definition
         base_type.organize_type
 
-        if (base_type.instance_of(this_type))
+        if (base_type.instance_of(this_type) and this_type is not Program.type_Object)
           throw cmd.base_types.t.error( "Circular class extension - $ already extends $." (base_type,this_type) )
         endIf
 
