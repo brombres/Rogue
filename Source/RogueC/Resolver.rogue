@@ -2090,11 +2090,13 @@ class Resolver : Poolable, Visitor
         sig += ')'
       endIf
 
+      if (not context) Program.check_include_hints( t, type_context.module_context, name )
+
       local mesg : String
       if (args or Candidates.count)
         which (Candidates.count)
           case 0
-            mesg = "No such "
+            mesg = "No such type or "
             if (require_global) mesg += "global "
             if (context)        mesg += "method "
             elseIf (this_type)  mesg += "method or routine "

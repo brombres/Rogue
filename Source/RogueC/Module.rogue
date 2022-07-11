@@ -102,12 +102,6 @@ class Module
         endIf
       endIf
 
-      if (Program.autoincludes.count)
-        if (Program.execute_autoincludes(template_name.before_first('<')))
-          return find_template( t, template_name, type_name, &=extended_search )
-        endIf
-      endIf
-
       return null
 
     method must_find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
@@ -116,6 +110,7 @@ class Module
 
       local (mod,type) = split_module_and_type( t, type_name )
       if (mod is null) mod = this
+      Program.check_include_hints( t, mod, template_name )
       throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
     method find_type( t:Token, type_name:String, &extended_search )->Type
@@ -160,12 +155,6 @@ class Module
         endIf
       endIf
 
-      if (Program.autoincludes.count)
-        if (Program.execute_autoincludes(isolated_type_name.before_first('<')))
-          return find_type( t, type_name, &=extended_search )
-        endIf
-      endIf
-
       return null
 
     method must_find_type( t:Token, type_name:String, &extended_search )->Type
@@ -173,6 +162,8 @@ class Module
       if (result) return result
       local (mod,type) = split_module_and_type( t, type_name )
       if (not mod) mod = this
+
+      Program.check_include_hints( t, mod, type_name )
       throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
     method instantiate_essential_and_api_types

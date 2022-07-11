@@ -5,7 +5,6 @@ class Program [singleton]
     t                    = Token( TokenType.EOI, "R2" )
     include_search_paths = String[]
     included_files       = StringTable<<IncludedFile>>()
-    autoincludes         = StringTable<<String[]>>()
     definitions          = StringTable<<Token[]>>()
     macros               = StringTable<<Macro[]>>()
     targets              = StringTable<<String>>()
@@ -144,52 +143,28 @@ class Program [singleton]
         endForEach
       endWhile
 
-    method autoinclude( filepath:String )
-      autoinclude( t, filepath )
+    method check_include_hints( t:Token, mod:Module, name:String )
+      name .= before_first('<')
 
-    method autoinclude( t:Token, filepath:String )
-      local found = find_include( t, filepath )
-      if (not found)
-        forEach (path in include_search_paths)
-          found = find_include( t, path/filepath )
-          if (found) escapeForEach
-        endForEach
+      local fix : String
+
+      if (mod is Program.default_module)
+        which (name)
+          case "Date", "Time", "Timestamp", "TimeInterval": fix = "$include DateTime"
+          case "File":  fix = "$include FileIO"
+          case "JSON":  fix = "$include Value"
+          case "Set":   fix = "$include Collection/Set"
+          case "Table": fix = "$include Collection/Table"
+          case "Value": fix = "$include Value"
+        endWhich
       endIf
 
-      if (found)
-        local folder = File( filepath ).folder
-        if (String.exists(folder)) add_include_search_path( folder )
-        filepath = found
-      else
-        throw t.error( "Include not found: $"(filepath) )
-      endIf
-
-      local base_name = filepath.after_any('/').before_last(".rogue")
-      local filepaths = autoincludes[base_name]
-      if (filepaths)
-        if (not filepaths.contains(filepath)) filepaths.add( filepath )
-      else
-        filepaths = String[]
-        autoincludes[base_name] = filepaths
-        filepaths.add( filepath )
+      if (fix)
+        throw t.error( "Reference to undefined type '$'. Add '$' at the top of your program to fix."(name,fix) )
       endIf
 
     method description->String
       return "Program"
-
-    method execute_autoincludes( name:String )->Logical
-      local filepaths = autoincludes[name]
-      if (filepaths and filepaths.count)
-        local original_module_count = modules.count
-        while (filepaths.count)
-          include( filepaths.remove_last )
-        endWhile
-        if (original_module_count < modules.count)
-          (forEach in modules from original_module_count).collect_used_modules
-        endIf
-        return true
-      endIf
-      return false
 
     method get_module( t:Token, name:String )->Module
       local m = modules[ name ]

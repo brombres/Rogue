@@ -1,3 +1,4 @@
+$include Collection/Table
 $include FileIO/File
 $include FileIO/FileListing
 $include FileIO/FilePattern

@@ -126,7 +126,6 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
-META_AUTOINCLUDE     $autoinclude
 META_DEFINE          $define        [meta]
 META_END_LOCAL_MACRO $endLocalMacro [meta structural]
 META_END_MACRO       $endMacro      [meta structural]
@@ -3007,12 +3006,7 @@ parser
   produceNull
 
 - process_another
-  on "$autoinclude"
-    collect_meta_filepath
-    call autoinclude_filepath
-    return
-
-  elseOn "$define"
+  on "$define"
     call mark_token
     on IDENTIFIER
       buffer = ""

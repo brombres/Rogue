@@ -1,3 +1,5 @@
+$include Collection/Table
+
 class Set<<$DataType>> : [$DataType:$DataType]
   METHODS
     method add( value:$DataType )

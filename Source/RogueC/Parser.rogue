@@ -404,9 +404,6 @@ class Parser : ParserCore, Poolable
     method has_another->Logical
       return _position < _limit or inserted_tokens.count
 
-    method autoinclude_filepath
-      Program.autoinclude( marked_token, buffer->String )
-
     method include_filepath
       Program.include( marked_token, buffer->String )
 
