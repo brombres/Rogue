@@ -172,7 +172,6 @@ class Module
           use includes = WorkList<<String>>
             includes.add( filepaths )
             filepaths.clear
-trace includes
             Program.include( forEach in includes )
           endUse
           return find_type( t, type_name, &=extended_search )
