@@ -782,4 +782,16 @@ class Parser : ParserCore, Poolable
 
       throw args.t.error( "Unexpected expression." )
 
+    method use_Introspection
+      Scanner.uses_Introspection = true
+      Scanner.uses_autoinclude = true
+
+    method use_Table
+      Scanner.uses_Table = true
+      Scanner.uses_autoinclude = true
+
+    method use_Value
+      Scanner.uses_Value = true
+      Scanner.uses_autoinclude = true
+
 endClass

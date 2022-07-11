@@ -144,24 +144,26 @@ class Program [singleton]
       endWhile
 
     method check_include_hints( t:Token, mod:Module, name:String )
+      #{
       name .= before_first('<')
 
       local fix : String
 
       if (mod is Program.default_module)
         which (name)
-          case "Date", "Time", "Timestamp", "TimeInterval": fix = "$include DateTime"
-          case "File":  fix = "$include FileIO"
-          case "JSON":  fix = "$include Value"
-          case "Set":   fix = "$include Collection/Set"
-          case "Table": fix = "$include Collection/Table"
-          case "Value": fix = "$include Value"
+          case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses DateTime"
+          case "File":  fix = "uses FileIO"
+          case "JSON":  fix = "uses Value"
+          case "Set":   fix = "uses Collection/Set"
+          case "Table": fix = "uses Collection/Table"
+          case "Value": fix = "uses Value"
         endWhich
       endIf
 
       if (fix)
         throw t.error( "Reference to undefined type '$'. Add '$' at the top of your program to fix."(name,fix) )
       endIf
+      }#
 
     method description->String
       return "Program"

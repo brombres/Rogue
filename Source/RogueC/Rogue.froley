@@ -309,6 +309,15 @@ scanner
   if (not scan([_a-zA-Z][_a-zA-Z0-9]*)) return
 
   match buffer
+    case "Date": call use_DateTime; produce IDENTIFIER
+    case "File": call use_File; produce IDENTIFIER
+    case "JSON": call use_Value; produce IDENTIFIER
+    case "Process": call use_Process; produce IDENTIFIER
+    case "Set": call use_Set; produce IDENTIFIER
+    case "Time": call use_DateTime; produce IDENTIFIER
+    case "TimeInterval": call use_DateTime; produce IDENTIFIER
+    case "Timestamp": call use_DateTime; produce IDENTIFIER
+    case "Value": call use_Value; produce IDENTIFIER
     produceAny Keywords
     case "GLOBAL"
       # "GLOBAL PROPERTIES" / "GLOBAL METHODS"
@@ -880,6 +889,7 @@ parser
     type
     mustConsume ']'
     create Type(key_type:Type,value_type:Type)
+    call use_Table
     list_or_optional_type
     return
 
@@ -2731,6 +2741,7 @@ parser
     if (nextIs(':'))
       restorePosition
       type  # [Key:Value] table
+      call use_Table
       if (nextIs('{'))
         literal_table
         create TypedLiteralTable( of_type:Type, table:KeyValuePairList )
@@ -2812,6 +2823,7 @@ parser
   on "<<"
     type
     mustConsume ">>"
+    call use_Introspection
     produce GetTypeInfo(of_type:Type)
   endOn
 
@@ -2830,6 +2842,7 @@ parser
   expression
 
 - value_list
+  call use_Value
   consume_eols
   if (consume(']')) produce EmptyValueList
 
@@ -2847,6 +2860,7 @@ parser
   produce ValueList(args)
 
 - value_table
+  call use_Value
   consume_eols
   if (consume('}')) produce EmptyValueTable
 
