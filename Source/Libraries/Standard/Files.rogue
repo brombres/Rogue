@@ -230,9 +230,9 @@ class Files
               if (src.count) src = src.leftmost( -1 )
               else           src = "."
               local dest = dest_folder.filepath.leftmost( -1 )
-              Console.println( "Copying $ -> $" (src,dest) )
+              Global.println( "Copying $ -> $" (src,dest) )
             endIf
-            Console.[ print("  "), println(relative_filepath) ]
+            Global.[ print("  "), println(relative_filepath) ]
           endIf
 
           if (not dry_run)
@@ -248,9 +248,9 @@ class Files
           if (verbose)
             if (not printed_header)
               printed_header = true
-              Console.println( "Deleting unused files in " + dest_files.base_folder )
+              Global.println( "Deleting unused files in " + dest_files.base_folder )
             endIf
-            Console.[ print("  "), println(dest_files.relative_filepath(filepath)) ]
+            Global.[ print("  "), println(dest_files.relative_filepath(filepath)) ]
           endIf
           if (not dry_run) File(filepath).delete
           ++change_count

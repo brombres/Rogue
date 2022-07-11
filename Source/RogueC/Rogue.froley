@@ -72,7 +72,6 @@ KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
 KEYWORD_IF                if
 KEYWORD_IMPORT            import
-KEYWORD_INCLUDE           include
 KEYWORD_INSTANCE_OF       instanceOf
 KEYWORD_IS                is
 KEYWORD_IS_COMPOUND       isCompound
@@ -127,6 +126,7 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
+META_AUTOINCLUDE     $autoinclude
 META_DEFINE          $define        [meta]
 META_END_LOCAL_MACRO $endLocalMacro [meta structural]
 META_END_MACRO       $endMacro      [meta structural]
@@ -3007,7 +3007,12 @@ parser
   produceNull
 
 - process_another
-  on "$define"
+  on "$autoinclude"
+    collect_meta_filepath
+    call autoinclude_filepath
+    return
+
+  elseOn "$define"
     call mark_token
     on IDENTIFIER
       buffer = ""

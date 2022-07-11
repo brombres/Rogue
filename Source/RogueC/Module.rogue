@@ -79,15 +79,16 @@ class Module
       return name
 
     method find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
-      # name:      e.g. List<<1>>
-      # type_name: e.g. Int32[]
+      # template_name: e.g. List<<1>>
+      # type_name:     e.g. Int32[]
       local mod : Module
       (mod,template_name) = split_module_and_type( t, template_name )
       if (mod is null) mod = split_module_and_type( t, type_name )._1
 
       if (mod)
         # Explicit module given
-        return mod.templates[ template_name ]
+        local result = mod.templates[ template_name ]
+        if (result) return result
 
       else
         local result = this.templates[ template_name ]
@@ -98,6 +99,18 @@ class Module
             result = used_m.m.templates[ template_name ]
             if (result) return result
           endForEach
+        endIf
+      endIf
+
+      if (Program.autoincludes.count)
+        local filepaths = Program.autoincludes[ template_name.before_first('<') ]
+        if (filepaths and filepaths.count)
+          use includes = WorkList<<String>>
+            includes.add( filepaths )
+            filepaths.clear
+            Program.include( forEach in includes )
+          endUse
+          return find_template( t, template_name, type_name, &=extended_search )
         endIf
       endIf
 
@@ -150,6 +163,19 @@ class Module
               return Type( template.t, template, isolated_type_name )
             endIf
           endForEach
+        endIf
+      endIf
+
+      if (Program.autoincludes.count)
+        local filepaths = Program.autoincludes[ isolated_type_name.before_first('<') ]
+        if (filepaths and filepaths.count)
+          use includes = WorkList<<String>>
+            includes.add( filepaths )
+            filepaths.clear
+trace includes
+            Program.include( forEach in includes )
+          endUse
+          return find_type( t, type_name, &=extended_search )
         endIf
       endIf
 

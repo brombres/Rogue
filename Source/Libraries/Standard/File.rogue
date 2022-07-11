@@ -1,3 +1,7 @@
+$include Standard/FileIO
+$include Standard/FileListing
+$include Standard/FilePattern
+
 class File( filepath:String ) [compound]
   NATIVE
     nativeHeader @|#include <stdio.h>
@@ -644,7 +648,7 @@ class File( filepath:String ) [compound]
         Process.run( "ln -s $ $" (target.esc,file.esc) )
       endIf
 
-    method timestamp->Timestamp
+    method timestamp_ms->Int64
       # Returns the last modified time.
 
       local ms : Int64
@@ -692,9 +696,9 @@ class File( filepath:String ) [compound]
               |  }
               |
               |#else
-              |  #error Must define File.timestamp() for this OS.
+              |  #error Must define File.timestamp_ms() for this OS.
               |#endif
-      return Timestamp(ms)
+      return ms
 
     method to->String
       return filepath
@@ -761,3 +765,5 @@ class File( filepath:String ) [compound]
       return FileWriter( resolved.filepath, &=append )
 
 endClass
+
+

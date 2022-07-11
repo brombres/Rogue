@@ -1,7 +1,5 @@
-$include Standard/ByteList
 $include Standard/Boxed
-$include Standard/Date
-$include Standard/Dim
+$include Standard/ByteList
 $include Standard/Console
 $include Standard/ConsoleCursor
 $include Standard/ConsoleErrorPrinter
@@ -10,20 +8,14 @@ $include Standard/ConsoleMode
 $include Standard/ConsoleStyle
 $include Standard/Exception
 $include Standard/File
-$include Standard/FileDescriptorIO
-$include Standard/FileIO
-$include Standard/FileListing
-$include Standard/FilePattern
 $include Standard/Global
 $include Standard/LineReader
 $include Standard/List
 $include Standard/ListRewriter
 $include Standard/Object
-$include Standard/ObjectPool
 $include Standard/Optional
 $include Standard/Primitives
 $include Standard/PrintWriter
-$include Standard/Quicksort
 $include Standard/Range
 $include Standard/Reader
 $include Standard/Span
@@ -32,13 +24,24 @@ $include Standard/String
 $include Standard/StringEncoding
 $include Standard/StringList
 $include Standard/System
-$include Standard/Table
-$include Standard/Time
-$include Standard/TimeInterval
-$include Standard/Timestamp
 $include Standard/Value
-$include Standard/WorkList
 $include Standard/Writer
+
+$autoinclude Standard/Date
+$autoinclude Standard/Dim
+$autoinclude Standard/Files
+$autoinclude Standard/ObjectPool
+$autoinclude Standard/Poolable
+$autoinclude Standard/Process
+$autoinclude Standard/Quicksort
+$autoinclude Standard/Set
+$autoinclude Standard/StringPool
+$autoinclude Standard/Table
+$autoinclude Standard/Time
+$autoinclude Standard/TimeInterval
+$autoinclude Standard/Timestamp
+$autoinclude Standard/Value
+$autoinclude Standard/WorkList
 
 uses Math [export]
 

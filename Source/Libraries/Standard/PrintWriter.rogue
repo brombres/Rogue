@@ -31,11 +31,6 @@ class PrintWriter [abstract aspect]
     method println( value:Object )                       [abstract]
     method println( value:String )                       [abstract]
 
-    method println( text:String, wrap:Logical )
-      println text.word_wrapped( Console.width )
-
-    method println( text:String, wrap:Int32 )
-      println text.word_wrapped( Console.width.or_smaller(wrap) )
 endClass
 
 class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]

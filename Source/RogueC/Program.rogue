@@ -5,6 +5,7 @@ class Program [singleton]
     t                    = Token( TokenType.EOI, "R2" )
     include_search_paths = String[]
     included_files       = StringTable<<IncludedFile>>()
+    autoincludes         = StringTable<<String[]>>()
     definitions          = StringTable<<Token[]>>()
     macros               = StringTable<<Macro[]>>()
     targets              = StringTable<<String>>()
@@ -142,6 +143,36 @@ class Program [singleton]
           endTemporarily
         endForEach
       endWhile
+
+    method autoinclude( filepath:String )
+      autoinclude( t, filepath )
+
+    method autoinclude( t:Token, filepath:String )
+      local found = find_include( t, filepath )
+      if (not found)
+        forEach (path in include_search_paths)
+          found = find_include( t, path/filepath )
+          if (found) escapeForEach
+        endForEach
+      endIf
+
+      if (found)
+        local folder = File( filepath ).folder
+        if (String.exists(folder)) add_include_search_path( folder )
+        filepath = found
+      else
+        throw t.error( "Include not found: $"(filepath) )
+      endIf
+
+      local base_name = filepath.after_any('/').before_last(".rogue")
+      local filepaths = autoincludes[base_name]
+      if (filepaths)
+        if (not filepaths.contains(filepath)) filepaths.add( filepath )
+      else
+        filepaths = String[]
+        autoincludes[base_name] = filepaths
+        filepaths.add( filepath )
+      endIf
 
     method description->String
       return "Program"

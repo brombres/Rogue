@@ -14,12 +14,3 @@ class ObjectPool<<$DataType>> [singleton]
       endIf
       available.add( object )
 endClass
-
-class Poolable [aspect]
-  METHODS
-    method on_return_to_pool
-endClass
-
-class StringPool : ObjectPool<<String>> [singleton]
-endClass
-
