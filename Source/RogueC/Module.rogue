@@ -103,13 +103,7 @@ class Module
       endIf
 
       if (Program.autoincludes.count)
-        local filepaths = Program.autoincludes[ template_name.before_first('<') ]
-        if (filepaths and filepaths.count)
-          use includes = WorkList<<String>>
-            includes.add( filepaths )
-            filepaths.clear
-            Program.include( forEach in includes )
-          endUse
+        if (Program.execute_autoincludes(template_name.before_first('<')))
           return find_template( t, template_name, type_name, &=extended_search )
         endIf
       endIf
@@ -167,13 +161,7 @@ class Module
       endIf
 
       if (Program.autoincludes.count)
-        local filepaths = Program.autoincludes[ isolated_type_name.before_first('<') ]
-        if (filepaths and filepaths.count)
-          use includes = WorkList<<String>>
-            includes.add( filepaths )
-            filepaths.clear
-            Program.include( forEach in includes )
-          endUse
+        if (Program.execute_autoincludes(isolated_type_name.before_first('<')))
           return find_type( t, type_name, &=extended_search )
         endIf
       endIf

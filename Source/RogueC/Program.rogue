@@ -177,6 +177,20 @@ class Program [singleton]
     method description->String
       return "Program"
 
+    method execute_autoincludes( name:String )->Logical
+      local filepaths = autoincludes[name]
+      if (filepaths and filepaths.count)
+        local original_module_count = modules.count
+        while (filepaths.count)
+          include( filepaths.remove_last )
+        endWhile
+        if (original_module_count < modules.count)
+          (forEach in modules from original_module_count).collect_used_modules
+        endIf
+        return true
+      endIf
+      return false
+
     method get_module( t:Token, name:String )->Module
       local m = modules[ name ]
       if (m) return m
@@ -289,7 +303,7 @@ class Program [singleton]
       forEach (included_file in included_files)
         local file_tokens = included_file.tokens
         temporarily current_module = Program.default_module
-          local elements = Parser(file_tokens).[ is_api=included_file.is_api] .parse
+          local elements = Parser(file_tokens).[ is_api=included_file.is_api].parse
           if (elements)
             local collector = Collector()
             collector.visit( forEach in elements )

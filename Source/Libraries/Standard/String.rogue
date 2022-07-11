@@ -36,9 +36,6 @@ class String : Poolable PrintWriter
       result.print( forEach in data )
       return result
 
-    method create( file:File )->String
-      return file.load_as_string
-
     method exists( string:String )->Logical
       # Returns false if the string is null or empty; otherwise returns true.
       return (string and string.count?)

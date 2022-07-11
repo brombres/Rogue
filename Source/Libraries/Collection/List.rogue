@@ -1,3 +1,6 @@
+$include Collection/ListRewriter
+$include Collection/Quicksort
+
 class ListType [aspect];
 
 class List<<$DataType>> : Poolable ListType

@@ -1,4 +1,9 @@
+$include Value/JSON
+
+uses Collection/Table
+uses FileIO
 uses Geometry
+uses Scanner
 
 class Value [compound]
   DEFINITIONS

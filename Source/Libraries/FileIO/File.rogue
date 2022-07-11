@@ -1,7 +1,3 @@
-$include Standard/FileIO
-$include Standard/FileListing
-$include Standard/FilePattern
-
 class File( filepath:String ) [compound]
   NATIVE
     nativeHeader @|#include <stdio.h>
@@ -766,4 +762,16 @@ class File( filepath:String ) [compound]
 
 endClass
 
+augment Byte[]
+  GLOBAL METHODS
+    method create( file:File )->Byte[]
+      return file.load_as_bytes
 
+endAugment
+
+augment String
+  GLOBAL METHODS
+    method create( file:File )->String
+      return file.load_as_string
+
+endAugment

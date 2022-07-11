@@ -683,6 +683,15 @@ class CGenerator : Visitor
 
       if (not BranchAnalyzer.all_paths_return(body))
         print_procedure_cleanup
+        if (this_procedure.return_type)
+          if (this_procedure.return_type.is_compound)
+            writer.print   "return ("
+            writer.print   this_procedure.return_type.c_name
+            writer.println "){};"
+          else
+            writer.println "return 0;"
+          endIf
+        endIf
       endIf
 
       writer.indent -= 2

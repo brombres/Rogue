@@ -1,3 +1,5 @@
+$include "Utility/DataIO"
+
 class BitReader : DataReader
   PROPERTIES
     bit_buffer   : Int64
