@@ -1,23 +1,14 @@
 $include Core/Boxed
 $include Core/ByteList
-$include Core/Console
-$include Core/ConsoleCursor
-$include Core/ConsoleErrorPrinter
-$include Core/ConsoleEvent
-$include Core/ConsoleMode
-$include Core/ConsoleStyle
 $include Core/Dim
 $include Core/Exception
 $include Core/Global
-$include Core/LineReader
 $include Core/Object
 $include Core/ObjectPool
 $include Core/Optional
 $include Core/Poolable
 $include Core/Primitives
-$include Core/PrintWriter
 $include Core/Range
-$include Core/Reader
 $include Core/Span
 $include Core/StackTrace
 $include Core/String
@@ -26,9 +17,13 @@ $include Core/StringList
 $include Core/StringPool
 $include Core/System
 $include Core/WorkList
-$include Core/Writer
 
 $include Collection/List
+$include Console
+$include IO/LineReader
+$include IO/PrintWriter
+$include IO/Reader
+$include IO/Writer
 
 uses Math [export]
 

@@ -1,4 +1,4 @@
-$include Scanner/ScanPattern
+$include IO/ScanPattern
 
 class Scanner : Reader<<Character>>
   PROPERTIES

@@ -1,3 +1,9 @@
+$include Console/ConsoleCursor
+$include Console/ConsoleErrorPrinter
+$include Console/ConsoleEvent
+$include Console/ConsoleMode
+$include Console/ConsoleStyle
+
 class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
   DEFINITIONS
     UP_ARROW    = 17

@@ -3,5 +3,4 @@ $include FileIO/FileListing
 $include FileIO/FilePattern
 $include FileIO/FileReader
 $include FileIO/FileWriter
-
-$autoinclude FileIO/Files
+$include FileIO/Files

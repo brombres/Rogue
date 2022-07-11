@@ -1,4 +1,4 @@
-$include "Utility/DataIO"
+$include Utility/DataIO
 
 class BitReader : DataReader
   PROPERTIES

@@ -1,9 +1,9 @@
+$include Collection/Table
+$include FileIO
+$include IO/Scanner
 $include Value/JSON
 
-uses Collection/Table
-uses FileIO
 uses Geometry
-uses Scanner
 
 class Value [compound]
   DEFINITIONS
