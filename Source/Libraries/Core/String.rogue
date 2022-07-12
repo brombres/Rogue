@@ -1650,14 +1650,12 @@ class String : Poolable PrintWriter
       endForEach
       return result
 
-#{
     method to_escaped_ascii( additional_characters_to_escape="":String )->String
       use builder = StringPool
-        (forEach in this).print_escaped_ascii( builder, additional_characters_to_escape )
+        (forEach in this).print_escaped_ascii( additional_characters_to_escape, builder )
         if (builder == this) return this  # no escapes
         else                 return builder.cloned
       endUse
-}#
 
     method to_plain_ascii->String
       # Converts or strips any non-ASCII Unicode.
