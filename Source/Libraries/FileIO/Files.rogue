@@ -61,9 +61,9 @@ class Files
 
     method any_newer_than( filepath:String )->Logical
       if (not File(filepath).exists) return true
-      local timestamp = newest_timestamp
-      if (not timestamp.exists) return false
-      return (timestamp.value > File(filepath).timestamp)
+      local timestamp_ms = newest_timestamp_ms
+      if (not timestamp_ms.exists) return false
+      return (timestamp_ms.value > File(filepath).timestamp_ms)
 
     method contains( file:File )->Logical
       return filepath_set.contains( file.resolved.filepath )
@@ -109,22 +109,22 @@ class Files
     method get( index:Int32 )->String
       return filepath_set[ index ]
 
-    method newest_timestamp->Timestamp?
-      local result : Timestamp?
+    method newest_timestamp_ms->Int64?
+      local result : Int64?
       forEach (filepath in filepath_set.values)
         if (File(filepath).exists)
-          local timestamp = File(filepath).timestamp
-          if (not result.exists or timestamp > result.value) result = timestamp
+          local timestamp_ms = File(filepath).timestamp_ms
+          if (not result.exists or timestamp_ms > result.value) result = timestamp_ms
         endIf
       endForEach
       return result
 
-    method oldest_timestamp->Timestamp?
-      local result : Timestamp?
+    method oldest_timestamp->Int64?
+      local result : Int64?
       forEach (filepath in filepath_set.values)
         if (File(filepath).exists)
-          local timestamp = File(filepath).timestamp
-          if (not result.exists or timestamp < result.value) result = timestamp
+          local timestamp_ms = File(filepath).timestamp_ms
+          if (not result.exists or timestamp_ms < result.value) result = timestamp_ms
         endIf
       endForEach
       return result

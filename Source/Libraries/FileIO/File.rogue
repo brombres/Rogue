@@ -7,6 +7,16 @@ class File( filepath:String ) [compound]
                   |  #include <dirent.h>
                   |#endif
 
+  GLOBAL METHODS
+    method operator+( left:String, right:File )->File
+      return File( left + right.filepath )
+
+    method operator+( left:File, right:String )->File
+      return File( left.filepath + right )
+
+    method operator+( left:File, right:File )->File
+      return File( left.filepath + right.filepath )
+
   METHODS
     method abs->File
       if (not this.exists)
@@ -393,7 +403,7 @@ class File( filepath:String ) [compound]
     method is_newer_than( other:File )->Logical
       if (not this.exists)  return false
       if (not other.exists) return true
-      return (this.timestamp > other.timestamp)
+      return (this.timestamp_ms > other.timestamp_ms)
 
       #{
     method is_valid_utf8( filepath:String )->Logical
