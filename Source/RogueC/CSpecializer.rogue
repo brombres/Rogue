@@ -30,6 +30,7 @@ class CSpecializer : Visitor
       if (Program.default_module.types.contains("MethodInfo"))
         forEach (m in Program.all_methods)
           collect_literal_string( m.name )
+          collect_literal_string( (forEach in m.parameters).name )
         endForEach
       endIf
 

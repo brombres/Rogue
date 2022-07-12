@@ -1,4 +1,11 @@
 class Object
+  GLOBAL METHODS
+    method __type_name( type_index:Int32 )->String [essential]
+      if (native("!Rogue_types[$type_index]->name_object")->Logical)
+        native @|Rogue_types[$type_index]->name_object = RogueString_create_permanent( Rogue_types[$type_index]->name );
+      endIf
+      return native("Rogue_types[$type_index]->name_object")->String
+
   METHODS
     method description->String
       return this->String

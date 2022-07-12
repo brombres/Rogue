@@ -2298,7 +2298,7 @@ class String : Poolable PrintWriter
                  |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
                  |  RogueByteList* data;
                  |  #ifdef ROGUE_GC_AUTO
-                 |    result->__refcount = 1;
+                 |    ++result->__refcount;
                  |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |    --result->__refcount;
                  |  #else
@@ -2348,7 +2348,7 @@ class String : Poolable PrintWriter
                  |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
                  |  RogueByteList* data;
                  |  #ifdef ROGUE_GC_AUTO
-                 |    result->__refcount = 1;
+                 |    ++result->__refcount;
                  |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
                  |    --result->__refcount;
                  |  #else

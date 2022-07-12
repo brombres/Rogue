@@ -178,10 +178,12 @@ class CWriter : BufferedPrintWriter
            |typedef void (*RogueFn_Object_Object)(void*,void*);
            |
            |typedef struct RogueObject RogueObject;
+           |typedef struct RogueString RogueString;
            |
            |struct RogueType
            |{
            |  const char*    name;
+           |  RogueString*   name_object;
            |  RogueInt32     index;
            |  RogueInt32     id;
            |  RogueInt32     module_name_index;

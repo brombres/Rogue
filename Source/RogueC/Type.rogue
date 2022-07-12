@@ -805,9 +805,13 @@ class Type : Cmd
         methods[ m.signature ] = m
 
         # type_name()->String
+        m = methods["type_name()"]
         m = Method( t, this, "type_name" )
         m.return_type = Program.type_String
-        m.statements.add( Return(t,LiteralString(t,"$"(name))) )
+        m.statements.add( Return(t,
+          ContextAccess( t, TypeContext(t,Program.type_Object),
+                         "__type_name", Args(t,TypeIndex(t,this)))
+        ) )
         m.organize
         methods[ m.signature ] = m
 

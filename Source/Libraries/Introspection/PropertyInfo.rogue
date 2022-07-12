@@ -4,6 +4,9 @@ class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical )
       if (not is_global) return undefined
       return get_global_property( id )
 
+    method property_type_name->String
+      return Object.__type_name( type_index )
+
     method get_value( context:Value )->Value
       if (is_global) return get_global_property( id )
       else           return get_property( id, context )
