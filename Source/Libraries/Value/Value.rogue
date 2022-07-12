@@ -215,6 +215,54 @@ class Value [compound]
           return false
       endWhich
 
+    method is_box->Logical
+      return (type == TYPE_BOX)
+
+    method is_byte->Logical
+      return (type == TYPE_BYTE)
+
+    method is_character->Logical
+      return (type == TYPE_CHARACTER)
+
+    method is_int32->Logical
+      return (type == TYPE_INT32)
+
+    method is_int64->Logical
+      return (type == TYPE_INT64)
+
+    method is_logical->Logical
+      return (type == TYPE_LOGICAL)
+
+    method is_list->Logical
+      return (type == TYPE_LIST)
+
+    method is_null->Logical
+      return (type == TYPE_NULL)
+
+    method is_number->Logical
+      return (type >= TYPE_BYTE and type <= TYPE_REAL64)
+
+    method is_object->Logical
+      return (type == TYPE_OBJECT)
+
+    method is_real32->Logical
+      return (type == TYPE_REAL32)
+
+    method is_real64->Logical
+      return (type == TYPE_REAL64)
+
+    method is_string->Logical
+      return (type == TYPE_STRING)
+
+    method is_table->Logical
+      return (type == TYPE_TABLE)
+
+    method is_undefined->Logical
+      return (type == TYPE_UNDEFINED)
+
+    method is_xy->Logical
+      return (type == TYPE_XY)
+
     method keys->TableKeysIterator<<String,Value>>
       if (type != TYPE_TABLE) return TableKeysIterator<<String,Value>>( null )
       return object->(as [String:Value]).keys
