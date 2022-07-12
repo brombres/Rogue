@@ -1150,11 +1150,16 @@ class String : Poolable PrintWriter
       if (value.count == 0) return # no change
 
       reserve( value.data.count )  # will include space for null terminator
-      native ...
-        @|memcpy( $this->data->as_utf8+$data->count, $value->data->as_utf8, $value->data->count );
-         |$this->count       += $value->count;
-         |$this->data->count += $value->data->count;
-         |$this->data->as_utf8[$this->data->count] = 0;
+
+      if (indent)
+        print( forEach in value )
+      else
+        native ...
+          @|memcpy( $this->data->as_utf8+$data->count, $value->data->as_utf8, $value->data->count );
+           |$this->count       += $value->count;
+           |$this->data->count += $value->data->count;
+           |$this->data->as_utf8[$this->data->count] = 0;
+      endIf
 
       hash_code = -1;
 

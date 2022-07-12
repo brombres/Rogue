@@ -1,5 +1,3 @@
-$include Collection/Table
-$include FileIO
 $include IO/Scanner
 $include Value/JSON
 
@@ -466,5 +464,129 @@ class Value [compound]
         return defaultValue<<$Type>>
       endIf
 
+    method to_json( &formatted, &omit_commas )->String
+      local result = String()
+      write_json( result, &=formatted, &=omit_commas )
+      return result
+
+    method write_json( builder:String, &formatted, &omit_commas )
+      which (type)
+        case TYPE_UNDEFINED
+          noAction
+        case TYPE_BYTE
+          builder.print( byte )
+        case TYPE_CHARACTER
+          # Write single character as a string
+          builder.print '"'
+          write_json_character( character, builder )
+          builder.print '"'
+        case TYPE_INT32
+          builder.print( int32 )
+        case TYPE_INT64
+          builder.print( int64 )
+        case TYPE_REAL32
+          builder.print( real32 )
+        case TYPE_REAL64
+          builder.print( real64 )
+        case TYPE_LOGICAL
+          builder.print( logical )
+        case TYPE_NULL
+          builder.print( "null" )
+        case TYPE_XY
+          builder.[ print('['), print(xy.x), print(','), print(xy.y), print(']') ]
+        case TYPE_BOX
+          builder.[ print('['), print(box.position.x), print(','), print(box.position.y) ]
+          builder.[ print(','), print(box.size.x),     print(','), print(box.size.y), print(']') ]
+        case TYPE_OBJECT
+          object.write_json( builder, &=formatted, &=omit_commas )
+        case TYPE_STRING
+          write_json_string( object->(as String), builder )
+        case TYPE_LIST
+          if (count)
+            builder.print '['
+            if (formatted) builder.indent+=2; builder.println
+            forEach (item at i in object->(as Value[]))
+              if (i)
+                if (omit_commas) builder.print ' '
+                else             builder.print ','
+                if (formatted) builder.println
+              endIf
+              item.write_json( builder, &=formatted, &=omit_commas )
+            endForEach
+            if (formatted) builder.indent-=2; builder.println
+            builder.print ']'
+          else
+            builder.print "[]"
+          endIf
+        case TYPE_TABLE
+          if (count)
+            builder.print '{'
+            if (formatted) builder.indent+=2; builder.println
+            forEach (entry at i in object->(as [String:Value]).entries)
+              if (i)
+                if (omit_commas) builder.print ' '
+                else             builder.print ','
+                if (formatted) builder.println
+              endIf
+              write_json_string( entry.key, builder )
+              builder.print ':'
+              entry.value.write_json( builder, &=formatted, &=omit_commas )
+            endForEach
+            if (formatted) builder.indent-=2; builder.println
+            builder.print '}'
+          else
+            builder.print "{}"
+          endIf
+      endWhich
+
+    method write_json_string( st:String, builder:String )
+      builder.print '"'
+      write_json_character( (forEach in st), builder )
+      builder.print '"'
+
+    method write_json_character( ch:Character, builder:String )
+      which (ch)
+        case '"':
+          builder.print( "\\\"" )
+        case '\\':
+          builder.print( "\\\\" )
+        case '\b':
+          builder.print( "\\b" )
+        case '\f':
+          builder.print( "\\f" )
+        case '\n':
+          builder.print( "\\n" )
+        case '\r':
+          builder.print( "\\r" )
+        case '\t':
+          builder.print( "\\t" )
+        others
+          if (ch >= 32 and ch <= 126)
+            builder.print( ch )
+          elseIf (ch < 32 or ch == 127 or ch == 0x2028 or ch == 0x2029)
+            # RE: 2028/2029:
+            # http://stackoverflow.com/questions/2965293/javascript-parse-error-on-u2028-unicode-character
+            builder.print( "\\u" )
+            local n = ch : Int32
+            loop 4
+              local digit = (n :>>>: 12) & 15
+              n = n:<<:4
+              if (digit <= 9)
+                builder.print( digit )
+              else
+                builder.print( ('a' + (digit - 10))->Character )
+              endIf
+            endLoop
+          else
+            # Store printable Unicode without encoding as \\uXXXX
+            builder.print( ch )
+          endIf
+      endWhich
 endClass
+
+augment Object
+  METHODS
+    method write_json( builder:String, &formatted, &omit_commas )
+      builder.[ print(''{"type":"''), print(type_name), print(''"}'') ]
+endAugment
 
