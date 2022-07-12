@@ -126,17 +126,19 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
-META_DEFINE          $define        [meta]
-META_END_LOCAL_MACRO $endLocalMacro [meta structural]
-META_END_MACRO       $endMacro      [meta structural]
-META_INCLUDE         $include       [meta]
-META_JOIN_IDS        $id            [meta]
-META_JOIN_STRINGS    $string        [meta]
-META_LOCAL_MACRO     $localMacro    [meta]
-META_LOWERCASE       $lowercase     [meta]
-META_MACRO           $macro         [meta]
-META_TARGET          $target        [meta]
-META_UPPERCASE       $uppercase     [meta]
+META_DEFINE          $define         [meta]
+META_END_LOCAL_MACRO $endLocalMacro  [meta structural]
+META_END_MACRO       $endMacro       [meta structural]
+META_INCLUDE         $include        [meta]
+META_JOIN_IDS        $id             [meta]
+META_JOIN_STRINGS    $string         [meta]
+META_LOCAL_MACRO     $localMacro     [meta]
+META_LOWERCASE       $lowercase      [meta]
+META_MACRO           $macro          [meta]
+META_SOURCE_FILEPATH $sourceFilepath [meta]
+META_SOURCE_LINE     $sourceLine     [meta]
+META_TARGET          $target         [meta]
+META_UPPERCASE       $uppercase      [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -3124,6 +3126,14 @@ parser
     endIf
 
     call define_macro
+    return
+
+  elseOn "$sourceFilepath"
+    call create_source_filepath
+    return
+
+  elseOn "$sourceLine"
+    call create_source_line
     return
 
   elseOn "$target"

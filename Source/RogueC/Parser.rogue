@@ -73,6 +73,12 @@ class Parser : ParserCore, Poolable
 
       if (local_macros) local_macros.clear
 
+    method create_source_filepath
+      processed_tokens.add( _cur_t.cloned(TokenType.STRING,_cur_t.filepath) )
+
+    method create_source_line
+      processed_tokens.add( _cur_t.cloned(TokenType.INTEGER,_cur_t.line) )
+
     method preprocess
       processed_tokens = Token[]( _tokens.count * 1.2 )
       parse( ip_preprocess )
