@@ -239,6 +239,10 @@ class Value [compound]
           return null
       endWhich
 
+    method operator?->Logical
+      if (type == TYPE_NULL or type == TYPE_UNDEFINED) return false
+      return this->Logical
+
     method operator<>( other:Value )->Int32
       if (type == TYPE_UNDEFINED) return (other.type == TYPE_UNDEFINED)
 
