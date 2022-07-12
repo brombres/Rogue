@@ -173,6 +173,10 @@ class Value [compound]
           return 1
       endWhich
 
+    method entries->TableEntriesIterator<<String,Value>>
+      if (type != TYPE_TABLE) return TableEntriesIterator<<String,Value>>( null )
+      return object->(as [String:Value]).entries
+
     method get( index:Int32 )->Value
       which (type)
         case TYPE_LIST
@@ -210,6 +214,10 @@ class Value [compound]
         others
           return false
       endWhich
+
+    method keys->TableKeysIterator<<String,Value>>
+      if (type != TYPE_TABLE) return TableKeysIterator<<String,Value>>( null )
+      return object->(as [String:Value]).keys
 
     method locate( value:Value, i1=null:Int32? )->Int32?
       which (type)
@@ -472,6 +480,10 @@ class Value [compound]
       local result = String()
       write_json( result, &=formatted, &=omit_commas )
       return result
+
+    method values->TableValuesIterator<<String,Value>>
+      if (type != TYPE_TABLE) return TableValuesIterator<<String,Value>>( null )
+      return object->(as [String:Value]).values
 
     method write_json( builder:String, &formatted, &omit_commas )
       which (type)
