@@ -143,6 +143,14 @@ class Value [compound]
           list.add( forEach in value )
       endWhich
 
+    method clear
+      which (type)
+        case TYPE_LIST
+          object->(as Value[]).clear
+        case TYPE_TABLE
+          object->(as [String:Value]).clear
+      endWhich
+
     method contains( value:Value )->Logical
       which (type)
         case TYPE_STRING
@@ -177,6 +185,27 @@ class Value [compound]
       if (type != TYPE_TABLE) return TableEntriesIterator<<String,Value>>( null )
       return object->(as [String:Value]).entries
 
+    method first->Value
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Value[])
+          if (list.count == 0) return undefined
+          return list[0]
+
+        case TYPE_STRING
+          local st = object->(as String)
+          if (st.count == 0) return undefined
+          return st[0]
+
+        case TYPE_TABLE
+          local table = object->(as [String:Value])
+          if (table.count == 0) return undefined
+          return table.at(0)
+
+        others
+          return this
+      endWhich
+
     method get( index:Int32 )->Value
       which (type)
         case TYPE_LIST
@@ -205,6 +234,12 @@ class Value [compound]
           return object->(as [String:Value])[ key ]
         others
           return undefined
+      endWhich
+
+    method insert( value:Value, before_index=0:Int32 )
+      which (type)
+        case TYPE_LIST
+          object->(as Value[]).insert( value, before_index )
       endWhich
 
     method is_collection->Logical
@@ -266,6 +301,27 @@ class Value [compound]
     method keys->TableKeysIterator<<String,Value>>
       if (type != TYPE_TABLE) return TableKeysIterator<<String,Value>>( null )
       return object->(as [String:Value]).keys
+
+    method last->Value
+      which (type)
+        case TYPE_LIST
+          local list = object->(as Value[])
+          if (list.count == 0) return undefined
+          return list[list.count-1]
+
+        case TYPE_STRING
+          local st = object->(as String)
+          if (st.count == 0) return undefined
+          return st[st.count-1]
+
+        case TYPE_TABLE
+          local table = object->(as [String:Value])
+          if (table.count == 0) return undefined
+          return table.at( table.count-1 )
+
+        others
+          return this
+      endWhich
 
     method locate( value:Value, i1=null:Int32? )->Int32?
       which (type)

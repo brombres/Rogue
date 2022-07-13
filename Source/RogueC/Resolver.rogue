@@ -2306,6 +2306,15 @@ class Resolver : Poolable, Visitor
       if (Candidates.found_match) return Candidates.match
       Candidates.refine
 
+      # Prefer global methods and object methods over routines
+      if (Candidates.list.contains( $.attributes.is_global and $.type_context.name == "Routine" ))
+        forEach (m in Candidates)
+          if (m.type_context.name != "Routine") Candidates.keep( m )
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
       # Keep methods with more specialized reference types, e.g. prefer String over Object.
       if (arg_count)
         forEach (m in Candidates)

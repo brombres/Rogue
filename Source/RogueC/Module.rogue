@@ -260,6 +260,7 @@ class Module
         local launch_t = which{ global_statements.count:global_statements.first.t || t }
         r = GlobalMethod( launch_t, type_Routine, "on_launch" )
         r.statements.add( forEach in global_statements )
+        r.attributes.is_global = true
         r.organize
         type_Routine.global_methods[ r.signature ] = r
         if (r.statements.count)

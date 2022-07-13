@@ -247,6 +247,7 @@ class Type : Cmd
       if (existing and existing.type_context is m.type_context)
         throw m.t.error( "Global method $ is already defined."(m.dev_signature) )
       endIf
+      m.attributes.is_global = true
       global_methods[ m.signature ] = m
 
     method add( m:Method )
@@ -367,18 +368,18 @@ class Type : Cmd
       ensure_definition
       organize_methods
 
+      if (not require_global)
+        forEach (m in methods)
+          if (m.name == m_name or m.base_name == m_name) list.add( m )
+        endForEach
+      endIf
+
       forEach (m in global_methods)
         if (m.name == m_name or m.base_name == m_name) list.add( m )
       endForEach
 
       if (require_global and base_class and m_name.begins_with("operator"))
         base_class.collect_methods( m_name, list, &require_global )
-      endIf
-
-      if (not require_global)
-        forEach (m in methods)
-          if (m.name == m_name or m.base_name == m_name) list.add( m )
-        endForEach
       endIf
 
     method contains_embedded_compound( type:Type )->Logical
@@ -462,9 +463,11 @@ class Type : Cmd
           existing_m.statements.add( forEach in aspect_m.statements )
         elseIf (existing_m.type_context is not this or is_augment)
           global_methods[ aspect_m.signature ] = aspect_m
+          aspect_m.attributes.is_global = true
         endIf
       else
         global_methods[ aspect_m.signature ] = aspect_m
+        aspect_m.attributes.is_global = true
       endIf
 
     method incorporate( aspect_m:Method, &is_augment )
@@ -741,6 +744,7 @@ class Type : Cmd
         local m = global_methods["init_class()"]
         if (not m)
           m = GlobalMethod( t, this, "init_class" )
+          m.attributes.is_global = true
           m.organize
           global_methods[ m.signature ] = m
         endIf
@@ -819,6 +823,7 @@ class Type : Cmd
         local gm = GlobalMethod( t, this, "type_info_index" )
         gm.return_type = Program.type_Int32
         gm.statements.add( Return(t,TypeIndex(t,this)) )
+        gm.attributes.is_global = true
         gm.organize
         global_methods[ gm.signature ] = gm
 
@@ -1040,6 +1045,7 @@ class Type : Cmd
           m.return_type = this
           m.statements.add( Return(t, CreateCompound(t,this)) )
           m.attributes.is_primary = true
+          m.attributes.is_global = true
           m.organize
           global_methods[ m.signature ] = m
         endBlock
@@ -1061,6 +1067,7 @@ class Type : Cmd
             )
           )
           m.statements.add( Return(t,TypeAccess(t,this,Args(t,LiteralInt32(t,0)))) )
+          m.attributes.is_global = true
           m.organize
           global_methods[ m.signature ] = m
         endBlock
@@ -1291,6 +1298,12 @@ class Type : Cmd
           throw m.t.error( "on_cleanup() cannot return a value." )
         endIf
       endBlock
+
+      forEach (m in global_methods)
+        if (methods.contains(m.signature))
+          throw m.t.error( "Duplicate definitions of $ as both a global method and an object method." )
+        endIf
+      endForEach
 
       Transformer().visit_type( this )
 

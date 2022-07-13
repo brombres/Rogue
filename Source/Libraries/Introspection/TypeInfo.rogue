@@ -117,13 +117,13 @@ class TypeInfo
 
       return null
 
-    method find_global_property( name:String )->MethodInfo?
+    method find_global_property( name:String )->PropertyInfo?
       return find_property( global_properties, name )
 
-    method find_property( name:String )->MethodInfo?
+    method find_property( name:String )->PropertyInfo?
       return find_property( properties, name )
 
-    method find_property( property_list:PropertyInfo[], name:String )->MethodInfo?
+    method find_property( property_list:PropertyInfo[], name:String )->PropertyInfo?
       forEach (prop in property_list)
         if (prop.name == name) return prop
       endForEach
