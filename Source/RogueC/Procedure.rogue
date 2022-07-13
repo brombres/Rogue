@@ -184,7 +184,12 @@ class Procedure : Cmd
           endForEach
           builder.print ')'
           if (return_type) builder.[ print("->"), print(return_type.module_context), print("::"), print(return_type) ]
-          if (attributes.is_mutating) builder.print("[mutating]")
+          if (is_global)
+            if (attributes.is_mutating) builder.print("[global mutating]")
+            else                        builder.print("[global]")
+          elseIf (attributes.is_mutating)
+            builder.print("[mutating]")
+          endIf
           @call_signature = builder->String
         endUse
       endIf

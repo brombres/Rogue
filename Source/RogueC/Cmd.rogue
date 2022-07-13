@@ -1551,6 +1551,7 @@ class GlobalMethod : Procedure
     method organize( &skip_add_to_type )
       if (is_organized) return
 
+      attributes.is_global = true
       prior.organize
 
       if (not skip_add_to_type) @type_context.add( this )
