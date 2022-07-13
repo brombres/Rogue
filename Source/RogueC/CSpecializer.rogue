@@ -159,7 +159,7 @@ class CSpecializer : Visitor
         local v = add_local( cmd.t, "obj", cmd.of_type, DummyInitialValue )
         insert( CreateObjectAndSetLocal(cmd.t,cmd.of_type,v) )
         if (cmd.m_init)
-          insert( validate(CallDynamicMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
+          insert( visit(CallStaticMethod(cmd.t,GetLocal(cmd.t,v),cmd.m_init,cmd.args)) )
         endIf
         return GetLocal(cmd.t,v)
       else
@@ -310,7 +310,7 @@ class CSpecializer : Visitor
       local cmd_create2 = validate( CreateObjectAndSetLocal(cmd_create.t,cmd_create.of_type,cmd.info) )
       if (cmd_create.m_init)
         insert( cmd_create2 )
-        return validate( CallDynamicMethod(cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args) )
+        return visit( CallDynamicMethod(cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args) )
       else
         return cmd_create2
       endIf
