@@ -1,5 +1,4 @@
 $include Core/Boxed
-$include Core/ByteList
 $include Core/Dim
 $include Core/Exception
 $include Core/Global
@@ -13,12 +12,13 @@ $include Core/Span
 $include Core/StackTrace
 $include Core/String
 $include Core/StringEncoding
-$include Core/StringList
 $include Core/StringPool
 $include Core/System
 $include Core/WorkList
 
+$include Collection/ByteList
 $include Collection/List
+$include Collection/StringList
 $include Console
 $include IO/LineReader
 $include IO/PrintWriter

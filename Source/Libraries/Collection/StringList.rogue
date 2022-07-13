@@ -1,0 +1,21 @@
+augment String[]
+  METHODS
+    method join( separator="\n":String, output=String():String )->String
+      # A better version of join() for String lists
+      if (count == 1) return this[0]
+
+      local total_count = 0
+      forEach (element in this) total_count += element.count
+      if (this.count) total_count += separator.count * (this.count-1)
+
+      output.reserve( total_count )
+      local first = true
+      forEach (element in this)
+        if (first) first = false
+        else       output.print( separator )
+        output.print( element )
+      endForEach
+
+      return output
+endAugment
+
