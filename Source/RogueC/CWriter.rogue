@@ -579,36 +579,38 @@ class CWriter : BufferedPrintWriter
         return
       endIf
 
-      if (not omit_quotes) print '"'
+      temporarily indent = 0
+        if (not omit_quotes) print '"'
 
-      local stage = 0
-      # 0: \ -> 1 ignore next
-      #    ? -> 2 first question mark
-      # 1: -> 0
-      # 2: ? -> print \ -> 0
-      #    else  0
+        local stage = 0
+        # 0: \ -> 1 ignore next
+        #    ? -> 2 first question mark
+        # 1: -> 0
+        # 2: ? -> print \ -> 0
+        #    else  0
 
-      local next_split = buffer.count + 16000
-      forEach (ch in st)
-        which (stage)
-          case 0
-            if (buffer.count >= next_split)
-              if (not omit_quotes) println( "\"" ); print( "\"" )
-              next_split = buffer.count + 16000
-            endIf
+        local next_split = buffer.count + 16000
+        forEach (ch in st)
+          which (stage)
+            case 0
+              if (buffer.count >= next_split)
+                if (not omit_quotes) println( "\"" ); print( "\"" )
+                next_split = buffer.count + 16000
+              endIf
 
-            if (ch == '\\')    stage = 1
-            elseIf (ch == '?') stage = 2
-          case 1
-            stage = 0
-          case 2
-            if (ch == '?') print( '\\' )  # Escape the second question mark in a row to avoid accidental trigraphs
-            stage = 0
-        endWhich
-        print_literal_c_character( ch, true )
-      endForEach
+              if (ch == '\\')    stage = 1
+              elseIf (ch == '?') stage = 2
+            case 1
+              stage = 0
+            case 2
+              if (ch == '?') print( '\\' )  # Escape the second question mark in a row to avoid accidental trigraphs
+              stage = 0
+          endWhich
+          print_literal_c_character( ch, true )
+        endForEach
 
-      if (not omit_quotes) print '"'
+        if (not omit_quotes) print '"'
+      endTemporarily
 
 endClass
 
