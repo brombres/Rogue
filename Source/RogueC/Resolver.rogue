@@ -316,10 +316,11 @@ class Resolver : Poolable, Visitor
         endIf
       endForEach
 
+      local context = Access( t, "Global" )
       if (args.count)
-        return visit( Access( t, "println", Args(t,FormattedString(t,format->String,args)) ) )
+        return visit( ContextAccess( t, context, "println", Args(t,FormattedString(t,format->String,args)) ) )
       else
-        return visit( Access( t, "println", Args(t,LiteralString(t,format->String)) ) )
+        return visit( ContextAccess( t, context, "println", Args(t,LiteralString(t,format->String)) ) )
       endIf
 
     method on_visit( cmd:CallMethodPointer )
