@@ -324,7 +324,7 @@ class ResolveUsedElements : InspectionVisitor
       return false
 
     method add_introspection_access( prop:Property )
-      if (prop.type_context.is_aspect) return
+      if (prop.type_context.is_aspect or prop.is_native) return
 
       assert prop.id >= 0
       Program.handled_property_ids.expand_to_include( prop.id )

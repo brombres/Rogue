@@ -163,7 +163,10 @@ class PropertyOrganizer : Visitor
           else
             local c_property = decl->(as NativeCProperty)
             if (c_property)
-              this_type.native_properties.add( c_property.expression )
+              ++Program.native_property_count
+              p = Property( c_property.t, ".native"+Program.native_property_count, c_property.expression )
+              p.attributes.flags |= cmd.attributes.flags
+              collect( p.t, p )
             endIf
           endIf
         endForEach

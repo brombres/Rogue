@@ -843,15 +843,20 @@ endClass
 
 class Property : Cmd
   PROPERTIES
-    type_context  : Type
-    name          : String
-    initial_value : Cmd
-    type          : Type
-    attributes    : Attributes
-    id = -1       : Int32
+    type_context      : Type
+    name              : String
+    initial_value     : Cmd
+    type              : Type
+    attributes        : Attributes
+    native_expression : String
+    id = -1           : Int32
 
   METHODS
     method init( t, name, initial_value, type )
+      attributes = Attributes(t)
+
+    method init( t, name, native_expression )
+      type = Program.type_NativeProperty
       attributes = Attributes(t)
 
     method init( existing:Property )
@@ -861,9 +866,14 @@ class Property : Cmd
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
       if (existing.attributes) attributes = existing.attributes.cloned
+      native_expression = existing.native_expression
 
     method description->String
-      return "Property($,$,$)" (%name,%initial_value,%type)
+      if (native_expression) return "Property($,$)" (%name,%native_expression)
+      else                   return "Property($,$,$)" (%name,%initial_value,%type)
+
+    method is_native->Logical
+      return native_expression?
 
 endClass
 

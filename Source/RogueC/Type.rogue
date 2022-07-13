@@ -14,7 +14,6 @@ class Type : Cmd
     definitions       = StringTable<<Cmd>>()
     global_properties = StringTable<<Property>>()
     properties        = StringTable<<Property>>()
-    native_properties = String[]
     global_methods    = StringTable<<GlobalMethod>>()
     methods           = StringTable<<Method>>()
     native_header     = NativeHeader[]
@@ -668,20 +667,12 @@ class Type : Cmd
             forEach (p in base_class.properties)
               properties[p.name] = p
             endForEach
-
-            forEach (p in base_class.native_properties step -1)
-              native_properties.insert( p )
-            endForEach
           endIf
 
           if (aspects)
             forEach (incorporated_aspect in aspects)
               incorporated_aspect.[ ensure_definition, organize_properties ]
               if (incorporated_aspect.contains_reference) attributes.contains_reference = true
-
-              forEach (p in incorporated_aspect.native_properties step -1)
-                native_properties.insert( p )
-              endForEach
 
               if (incorporated_aspect.attributes.is_augment)
                 forEach (p in incorporated_aspect.global_properties)

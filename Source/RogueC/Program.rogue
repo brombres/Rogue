@@ -32,16 +32,17 @@ class Program [singleton]
     type_Real64       : Type
     type_Real         : Type
 
-    type_null         : Type
-    type_GenericFn    : Type
-    type_Global       : Type
-    type_ListType     : Type
-    type_Math         : Type
-    type_Object       : Type
-    type_String       : Type
-    type_Value        : Type
-    type_Exception    : Type
-    type_TypeInfo     : Type
+    type_null           : Type
+    type_GenericFn      : Type
+    type_Global         : Type
+    type_ListType       : Type
+    type_Math           : Type
+    type_Object         : Type
+    type_String         : Type
+    type_Value          : Type
+    type_Exception      : Type
+    type_TypeInfo       : Type
+    type_NativeProperty : Type
 
     is_modified       : Logical
     is_organizing     : Logical
@@ -76,6 +77,8 @@ class Program [singleton]
     handled_call_indices          : Logical[]
     handled_property_ids          : Logical[]
 
+    native_property_count : Int32
+
   METHODS
     method init
       Program = this  # update singleton reference
@@ -93,6 +96,7 @@ class Program [singleton]
 
       type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
       type_null.attributes.is_defined = true
+
       type_GenericFn = Type( t, "GenericFn", Attribute.OBJECT, &unlisted )
       type_Global    = Type( t, "Global", Attribute.OBJECT|Attribute.SINGLETON )
       type_ListType  = Type( t, "ListType", Attribute.ASPECT )
@@ -100,6 +104,9 @@ class Program [singleton]
       type_Object    = Type( t, "Object", Attribute.OBJECT )
       type_String    = TypeString( t )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
+
+      type_NativeProperty = Type( t, "NativeProperty", Attribute.PRIMITIVE )
+      type_NativeProperty.attributes.is_defined = true
 
       type_Logical.attributes.is_essential   = true
       type_Byte.attributes.is_essential      = true

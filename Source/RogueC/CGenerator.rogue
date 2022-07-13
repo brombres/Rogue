@@ -1510,14 +1510,17 @@ augment
         endIf
         forEach (p in this.properties)
           if (not p.attributes.is_faux)
-            writer.print   p.type.c_name
-            if (p.type.is_reference) writer.print '*'
-            writer.print   ' '
-            writer.print   p.c_name
-            writer.println ';'
+            if (p.is_native)
+              writer.println p.native_expression
+            else
+              writer.print   p.type.c_name
+              if (p.type.is_reference) writer.print '*'
+              writer.print   ' '
+              writer.print   p.c_name
+              writer.println ';'
+            endIf
           endIf
         endForEach
-        writer.println (forEach in this.native_properties)
         writer.indent  -= 2
         writer.println "};"
         writer.println
@@ -1895,7 +1898,7 @@ augment
       endBlock
 
       block
-        c_writer.println "RogueType* Rogue_types[$] = "(types.count)
+        c_writer.println "RogueType* Rogue_types[$] ="(types.count)
         c_writer.println "{"
         c_writer.indent += 2
         local row_count = 0
