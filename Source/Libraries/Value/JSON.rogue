@@ -11,10 +11,8 @@ class JSON
         if (error_log) error_log.println "JSON parse error: " + err
       endTry
 
-      #{
     method save( value:Value, file:File, &formatted, &omit_commas )->Logical
-      return value.save( file, formatted, omit_commas  )
-      }#
+      return file.save( value.to_json(&=formatted, &=omit_commas)  )
 
 endClass
 

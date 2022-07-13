@@ -14,7 +14,8 @@ class Event
       is_processed = other.is_processed
 
     method cloned->Event
-      throw UnsupportedOperationError()
+      Global.error.println "Base class Event does not support cloned()."
+      return null
 
     method consume
       this.is_consumed = true

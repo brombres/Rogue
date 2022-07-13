@@ -5,12 +5,17 @@ class FileReader : Reader<<Byte>>
     position        : Int32
     buffer_position : Int32
     buffer          = Byte[](1024)
+    error           : Logical
     native "FILE* fp;"
 
   METHODS
+    method init
+      noAction
+
     method init( _filepath:String )
       if (not open(_filepath))
-        throw IOError( "Unable to open $ for reading." (filepath) )
+        Global.error.println( "Unable to open $ for reading." (filepath) )
+        error = true
       endIf
 
     method on_cleanup
@@ -39,9 +44,13 @@ class FileReader : Reader<<Byte>>
 
     method open( filepath )->Logical
       close
+      error = false
 
       native @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
-               if (native("!$this->fp")->Logical) return false
+               if (native("!$this->fp")->Logical)
+                 error = true
+                 return false
+               endIf
       native @|
               |fseek( $this->fp, 0, SEEK_END );
               |$count = (RogueInt32) ftell( $this->fp );
@@ -75,6 +84,7 @@ class FileReader : Reader<<Byte>>
       return result
 
     method read( result:Byte[], limit:Int32 )->Int32
+      if (position == count) return 0
       result.reserve( limit )
 
       # Read up to the end of our internal buffer

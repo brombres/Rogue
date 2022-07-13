@@ -167,23 +167,20 @@ class File( filepath:String ) [compound]
         if (not dest.parent.create_folder) return 0
       endIf
 
-      try
-        local reader = reader
-        local writer = dest.writer
+      local reader = reader
+      if (reader.error) return 0
 
-        use file_buffer = WorkList<<Byte>>
-          file_buffer.reserve( 1024 )
-          while (reader.has_another)
-            reader.read( file_buffer.[clear], 1024 )
-            writer.write( file_buffer )
-          endWhile
-          writer.close
-        endUse
+      local writer = dest.writer
+      if (writer.error) reader.close; return 0
 
-      catch (error:IOError)
-        println error
-        return 0
-      endTry
+      use file_buffer = WorkList<<Byte>>
+        file_buffer.reserve( 1024 )
+        while (reader.has_another)
+          reader.read( file_buffer.[clear], 1024 )
+          writer.write( file_buffer )
+        endWhile
+        writer.close
+      endUse
 
       return 1
 

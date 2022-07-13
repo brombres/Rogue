@@ -46,7 +46,8 @@ class ScanPattern
       return result
 
     method scan( scanner:Scanner, builder=null:String )->Logical
-      throw UnsupportedOperationError()
+      Global.error.println( "Base class ScanPattern does not support scan()." )
+      return false
 endClass
 
 class ScanPatternRoot( pattern:ScanPattern ) : ScanPattern

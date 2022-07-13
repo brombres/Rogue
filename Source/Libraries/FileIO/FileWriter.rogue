@@ -6,9 +6,13 @@ class FileWriter : Writer<<Byte>>
     native "FILE* fp;"
 
   METHODS
+    method init
+      noAction
+
     method init( _filepath:String, append=false:Logical )
       if (not open(_filepath,append))
-        throw IOError( "Unable to open $ for writing." (filepath) )
+        Global.error.println( "Unable to open $ for writing." (filepath) )
+        error = true
       endIf
 
     method on_cleanup
