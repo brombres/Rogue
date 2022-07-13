@@ -779,6 +779,13 @@ augment Byte[]
 
 endAugment
 
+augment LineReader
+  METHODS
+    method init( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )
+      init( file.reader, encoding )
+
+endAugment
+
 augment String
   GLOBAL METHODS
     method create( file:File )->String

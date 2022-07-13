@@ -5,5 +5,5 @@ enum StringEncoding
   AUTODETECT     = 3
 
   DEFINITIONS
-    EXTENDED_ASCII = ASCII_256
+    EXTENDED_ASCII = StringEncoding.ASCII_256
 endEnum

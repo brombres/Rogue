@@ -1,3 +1,6 @@
+$include IO/ExtendedASCIIReader
+$include IO/UTF8
+
 class LineReader : Reader<<String>>
   PROPERTIES
     source : Reader<<Character>>
@@ -8,16 +11,9 @@ class LineReader : Reader<<String>>
     method init( source )
       next = null
 
-      #{
     method init( reader:Reader<<Byte>>, encoding=StringEncoding.AUTODETECT:StringEncoding )
       if (encoding == StringEncoding.EXTENDED_ASCII) init( ExtendedASCIIReader(reader) )
       else                                           init( UTF8Reader(reader) )
-      }#
-
-      #{
-    method init( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )
-      init( file.reader, encoding )
-      }#
 
     method init( string:String )
       init( string.reader )
