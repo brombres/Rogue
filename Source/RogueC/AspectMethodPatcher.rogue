@@ -12,13 +12,12 @@ class AspectMethodPatcher : InspectionVisitor [singleton]
       m.module_context = this_type.module_context
       m.type_context   = this_type
       visit( m )
+      m.add_to_call_signature_group
 
     method patch( this_type, m:Method )
       m.module_context = this_type.module_context
       m.type_context   = this_type
-      if (m.attributes.returns_this)
-        m.return_type = this_type
-      endIf
+      if (m.attributes.returns_this) m.return_type = this_type
       visit( m )
       m.add_to_call_signature_group
 
