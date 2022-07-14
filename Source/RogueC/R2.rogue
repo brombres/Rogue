@@ -292,9 +292,9 @@ class RogueC
                |
                |  --debug
                |    Compile in debug mode:
-               |    1. 'DEBUG' is defined as 'true' instead of 'false'.
-               |    2. Call history is tracked, which allows for stack frame display at the cost
-               |       of additional overhead.
+               |    - 'DEBUG' is defined as 'true' instead of 'false'.
+               |    - Call history is tracked, which allows for stack frame display at the cost
+               |      of additional overhead.
                |
                |  --define="name[:value]", -D "name[:value]"
                |    Adds a single preprocessor define.

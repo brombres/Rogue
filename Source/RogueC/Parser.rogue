@@ -73,6 +73,9 @@ class Parser : ParserCore, Poolable
 
       if (local_macros) local_macros.clear
 
+    method create_rogue_version_string
+      processed_tokens.add( _cur_t.cloned(TokenType.STRING,VERSION.after_first('v')) )
+
     method create_source_filepath
       processed_tokens.add( _cur_t.cloned(TokenType.STRING,_cur_t.filepath) )
 

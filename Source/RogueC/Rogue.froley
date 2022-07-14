@@ -136,6 +136,7 @@ META_LOCAL_MACRO     $localMacro     [meta]
 META_LOWERCASE       $lowercase      [meta]
 META_MACRO           $macro          [meta]
 META_REQUIRE_ROGUE   $requireRogue   [meta]
+META_ROGUE_VERSION   $rogueVersion   [meta]
 META_SOURCE_FILEPATH $sourceFilepath [meta]
 META_SOURCE_LINE     $sourceLine     [meta]
 META_TARGET          $target         [meta]
@@ -3172,6 +3173,10 @@ parser
     elseOnOthers
       syntaxError "Expected a literal string containing a version number."
     endOn
+
+  elseOn "$rogueVersion"
+    call create_rogue_version_string
+    return
 
   elseOn "$sourceFilepath"
     call create_source_filepath
