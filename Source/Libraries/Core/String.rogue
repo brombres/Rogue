@@ -166,6 +166,10 @@ class String : Poolable PrintWriter
       data[0] = 0
       is_ascii = true
 
+    method init( character:Character )
+      init
+      print( character )
+
     method init( data, count )
       # 'data' must be valid UTF-8.
       if (is_immutable) return
