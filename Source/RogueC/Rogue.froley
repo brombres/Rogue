@@ -2882,19 +2882,36 @@ parser
 
 - key_value_pair
   consume_eols
-  on IDENTIFIER
-    create LiteralString(name=content)
-  elseOn STRING
-    create LiteralString(name=content)
-  elseOnOthers
-    syntaxError "Identifier or literal string expected."
-  endOn
-  consume_eols
 
-  mustConsume ':'
-  consume_eols
+  if (consume(':'))
+    # { :id } -> { "id":id }
+    on IDENTIFIER
+      create LiteralString(name=content)
+      createNull
+      create Access(name=content,args)
+    elseOn STRING
+      create LiteralString(name=content)
+      call clone
+    elseOnOthers
+      syntaxError "Identifier or literal string expected."
+    endOn
+  else
+    # { "string":value }, { id:value } -> { "id":value }
+    on IDENTIFIER
+      create LiteralString(name=content)
+    elseOn STRING
+      create LiteralString(name=content)
+    elseOnOthers
+      syntaxError "Identifier or literal string expected."
+    endOn
+    consume_eols
 
-  value_expression
+    mustConsume ':'
+    consume_eols
+
+    value_expression
+  endIf
+
   create KeyValuePair(key,value)
   consume_eols
 
