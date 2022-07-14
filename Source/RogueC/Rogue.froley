@@ -2711,49 +2711,52 @@ parser
   endOn
 
   # Parenthesized expression, tuple, or generic function definition
-  on '('
-    on ')'
-      # No-params generic function
-      beginList   # empty args
-      createList IDList
-      remaining_generic_function_definition
-      return
-
-    elseOnOthers
-      savePosition
-      expression
-      if (nextIs(':'))
-        restorePosition
-        named_tuple
+  onPeek '('
+    savePosition
+    on '('
+      on ')'
+        # No-params generic function
+        discardPosition
+        beginList   # empty args
+        createList IDList
+        remaining_generic_function_definition
         return
-      endIf
-      if (consume(')'))
-        if (not (nextIs("with") or nextIs("=>")))
-          # good to go as expression grouping
-          discardPosition
+      elseOnOthers
+        expression
+        if (nextIs(':'))
+          restorePosition
+          named_tuple_or_tuple_type
           return
         endIf
-      endIf
-      restorePosition
+        if (consume(')'))
+          if (not (nextIs("with") or nextIs("=>")))
+            # good to go as expression grouping
+            discardPosition
+            return
+          endIf
+        endIf
+        restorePosition
 
-      savePosition
-      anonymous_tuple
-      if (not (nextIs("=>") or nextIs("with")))
-        discardPosition  # confirmed anonymous_tuple
-        return
-      endIf
-      restorePosition
+        savePosition
+        anonymous_tuple_or_tuple_type
+        if (not (nextIs("=>") or nextIs("with")))
+          discardPosition  # confirmed anonymous_tuple
+          return
+        endIf
+        restorePosition
 
-      # Generic function
-      beginList
-        identifier
-        while (consume(","))
+        # Generic function
+        consume '('
+        beginList
           identifier
-        endWhile
-        mustConsume ')'
-      createList IDList
-      remaining_generic_function_definition
-      return
+          while (consume(","))
+            identifier
+          endWhile
+          mustConsume ')'
+        createList IDList
+        remaining_generic_function_definition
+        return
+      endOn
     endOn
   endOn
 
@@ -2942,9 +2945,22 @@ parser
     subclass
   endIf
 
+- anonymous_tuple_or_tuple_type
+  savePosition
+  anonymous_tuple
+  if (nextIs("[]") or nextIs('?'))
+    # Tuple list type or optional tuple type
+    restorePosition
+    type
+    type_access_or_typed_literal_list
+  else
+    # Name tuple instance
+    discardPosition
+  endIf
+
 - anonymous_tuple
   # (x,y,...)
-  # '(' already consumed
+  consume '('
   beginList
     consume_eols
     expression
@@ -2957,10 +2973,22 @@ parser
     mustConsume ')'
   createList AnonymousTuple
 
+- named_tuple_or_tuple_type
+  savePosition
+  named_tuple
+  if (nextIs("[]") or nextIs('?'))
+    # Tuple list type or optional tuple type
+    restorePosition
+    type
+    type_access_or_typed_literal_list
+  else
+    # Name tuple instance
+    discardPosition
+  endIf
 
 - named_tuple
   # (a:x,b:y,...)
-  # '(' already consumed
+  consume '('
   beginList
     named_tuple_element
     while (consume(','))
