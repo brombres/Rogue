@@ -1045,10 +1045,14 @@ class Resolver : Poolable, Visitor
           )
         )
         iterator.condition = PreDecrementLocal( v.t, v )
+
+        local t = cmd.t
+        return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt32(t,0)), Statements(t,iterator), null) )
+
       else
         iterator.condition = LiteralLogical(cmd.t,true)
+        return visit( iterator )
       endIf
-      return visit( iterator )
 
     method on_visit( cmd:Method )
       temporarily this_type = cmd.type_context

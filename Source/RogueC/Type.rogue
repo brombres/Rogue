@@ -1005,7 +1005,19 @@ class Type : Cmd
             if (not m)
               m = Method( t, this, "to<<Rogue::String>>" )
               m.return_type = Program.type_String
-              m.statements.add( Return(t,LiteralString(t,name)) )
+              if (properties.count == 0)
+                m.statements.add( Return(t,LiteralString(t,"()")) )
+              else
+                #local format = String("($")
+                #loop (properties.count-1) format.print(",$")
+                #format.print ','
+                local format = "($"
+                format += ",$" * (properties.count-1)
+                format += ')'
+                local args = Args(t)
+                args.add( Access(t, (forEach in properties).name) )
+                m.statements.add( Return(t,FormattedString(t,format,args)) )
+              endIf
               m.organize
               methods[ m.signature ] = m
             endIf
