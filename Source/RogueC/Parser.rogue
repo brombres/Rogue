@@ -756,6 +756,15 @@ class Parser : ParserCore, Poolable
       if (inserted_tokens.count) return inserted_tokens.remove_last
       return prior._read
 
+    method require_rogue_version
+      local v_req = _cur_t.content.after_any('v').after_any('V')
+      local v_cur = VERSION.after_first('v')
+      if (VersionNumber(v_req) > v_cur)
+        throw _cur_t.error(
+          "Rogue v$ is currently installed but Rogue v$ or better is required to compile this file."(v_cur,v_req)
+        )
+      endIf
+
     method rewrite_cur_token
       processed_tokens.add( _cur_t )
 

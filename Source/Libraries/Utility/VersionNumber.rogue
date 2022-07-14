@@ -1,0 +1,64 @@
+class VersionNumber( version:String ) [compound]
+  METHODS
+    method count->Int32
+      return version.count('.') + 1
+
+    method is_compatible_with( other:String )->Logical
+      return is_compatible_with( VersionNumber(other) )
+
+    method is_compatible_with( other:VersionNumber )->Logical
+      # Returns true if all parts of the shorter version are equal to the corresponding
+      # parts of the longer version.
+      #
+      # Examples
+      #   VersionNumber("3").is_compatible_with("3.2")   -> true
+      #   VersionNumber("3.1").is_compatible_with("3.2") -> false
+      local min_parts = this.count.or_smaller( other.count )
+      forEach (n in 0..<min_parts)
+        if (this.part(n) != other.part(n)) return false
+      endForEach
+      return true
+
+    method operator<>( other:String )->Int32
+      return this <> VersionNumber(other)
+
+    method operator<>( other:VersionNumber )->Int32
+      # Compares two multipart versions and returns:
+      #   -1 if this < other
+      #    0 if this = other
+      #    1 if this > other
+      #
+      # Each version can have any number of parts; mismatched numbers of parts are allowed.
+      # "Missing" parts are treated as 0.
+      #
+      # No allocations are made to perform the comparison.
+      #
+      # Examples:
+      #
+      #   compare_versions("1.0",   "1.0.0") ->  0
+      #   compare_versions("1.0",   "1.0.1") -> -1
+      #   compare_versions("1.10.0","1.2.3") ->  1
+      local max_parts = this.count.or_larger( other.count )
+      forEach (n in 0..<max_parts)
+        local delta = this.part(n) - other.part(n)
+        if (delta != 0) return delta.sign
+      endForEach
+      return 0  # equal
+
+    method part( n:Int32 )->Int32
+      local cur_p = 0
+      local result = 0
+      forEach (ch in version)
+        if (ch == '.')
+          ++cur_p
+          if (cur_p > n) return result
+        elseIf (cur_p == n and ch.is_number)
+          result = result * 10 + ch.to_number.value
+        endIf
+      endForEach
+      return result
+
+    method to->String
+      return version
+
+endClass

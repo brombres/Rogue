@@ -1,3 +1,6 @@
+$define VERSION "RogueC v2.0"
+$define AUTHOR "July 13, 2022 by Abe Pralle"
+
 module RogueC
 
 $include "Macros.rogue"
@@ -38,9 +41,10 @@ $include "Template.rogue"
 $include "Transformer.rogue"
 $include "Type.rogue"
 $include "EndScopePatcher.rogue"
-uses RogueC
+
 uses Utility/CommandLineParser
 uses Utility/ObjectPool
+uses Utility/VersionNumber
 
 try
   RogueC( System.command_line_arguments )
@@ -83,7 +87,22 @@ class RogueC
   METHODS
     method init( args:String[] )
       Analytics.total_time.start
-      command = parse_args( args )
+
+      try
+        command = parse_args( args )
+      catch (err:Error)
+        Console.error.println "=" * 80.or_smaller(Console.width)
+        Console.error.println err
+        Console.error.println "=" * 80.or_smaller(Console.width)
+        print_usage
+        System.exit 1
+      endTry
+
+      if (command//options//version)
+        println VERSION
+        println AUTHOR
+        System.exit 0
+      endIf
 
       if (command//options//help or command//args.count == 0)
         print_usage
@@ -174,6 +193,7 @@ class RogueC
         option( "--output=" )
         option( "--real=", &alias="-r" )
         option( "--target=", &alias="-t", &multi )
+        option( "--version", &alias="-v" )
       ].parse( args )
 
       local debug_t : Token
@@ -320,7 +340,9 @@ class RogueC
                |    frameworks, etc. that can be checked during compile time with '$target("C")'
                |    etc. This option can be listed multiple times. If no targets are given, a
                |    default target of "C" is used.
-
+               |
+               |  --version, -v
+               |    Prints the Rogue version number and release date.
 
 endClass
 
