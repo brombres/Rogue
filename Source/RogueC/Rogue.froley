@@ -2692,7 +2692,7 @@ parser
     restorePosition
   endOn
 
-  # Parenthesized expression or generic function definition
+  # Parenthesized expression, tuple, or generic function definition
   on '('
     on ')'
       # No-params generic function
@@ -2720,7 +2720,7 @@ parser
 
       savePosition
       anonymous_tuple
-      if (not nextIs("=>"))
+      if (not (nextIs("=>") or nextIs("with")))
         discardPosition  # confirmed anonymous_tuple
         return
       endIf
