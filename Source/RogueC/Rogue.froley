@@ -2487,7 +2487,13 @@ parser
 
 - access_inner
   on '.'
-    member_access
+    consume_eols
+    if (consume('['))
+      context_block
+      access_inner
+    else
+      member_access
+    endIf
 
   elseOn "->"
     if (nextIs('('))
@@ -2503,6 +2509,8 @@ parser
       elseOnOthers
         restorePosition
       endOn
+    else
+      consume_eols
     endIf
 
     type
@@ -2514,11 +2522,14 @@ parser
     endIf
     access_inner
   elseOn '['
+    consume_eols
     expression
+    consume_eols
     mustConsume(']')
     create IndexedAccess(context,index)
     access_inner
   elseOn "//"
+    consume_eols
     on IDENTIFIER
       create LiteralString(value=content):Literal
     elseOnOthers
@@ -2527,6 +2538,24 @@ parser
     create IndexedAccess(context,index)
     access_inner
   elseOn ".["
+    context_block
+  elseOn "=>"
+    consume_eols
+    identifier
+    if (nextIs('(')) function_param_types
+    else             createNull
+    produce CallbackFunction(context,name:String,param_types:TypeList)
+  elseOn "[>"
+    consume_eols
+    beginList
+      expression
+    createList Args
+    consume_eols
+    mustConsume ']'
+    produce ContextAccess(context,name="set_state":String,args)
+  endOn
+
+- context_block
     consume_eols
     if (consume(']'))
       access_inner
@@ -2535,25 +2564,13 @@ parser
     beginList
       context_block_command
       consume_eols
-      while (consume(','))
+      while (consume(',') or (hasAnother and not nextIs(']')))
         context_block_command
         consume_eols
       endWhile
       mustConsume ']'
     createList
     create ContextBlock(context,commands)
-  elseOn "=>"
-    identifier
-    if (nextIs('(')) function_param_types
-    else             createNull
-    produce CallbackFunction(context,name:String,param_types:TypeList)
-  elseOn "[>"
-    beginList
-      expression
-    createList Args
-    mustConsume ']'
-    produce ContextAccess(context,name="set_state":String,args)
-  endOn
 
 - member_access
   on '@'
