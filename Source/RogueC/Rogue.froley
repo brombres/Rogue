@@ -1986,22 +1986,23 @@ parser
   on "++" -> Increment(operand):Stepper
   on "--" -> Decrement(operand):Stepper
 
-  on "=" expression -> Assign(target,new_value)
+  on "=" consume_eols expression -> Assign(target,new_value)
 
-  on "+="     expression -> AddAndAssign(target,operand):OpAndAssign
-  on "-="     expression -> SubtractAndAssign(target,operand):OpAndAssign
-  on "*="     expression -> MultiplyAndAssign(target,operand):OpAndAssign
-  on "/="     expression -> DivideAndAssign(target,operand):OpAndAssign
-  on "%="     expression -> ModAndAssign(target,operand):OpAndAssign
-  on "^="     expression -> PowerAndAssign(target,operand):OpAndAssign
-  on "&="     expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
-  on "|="     expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
-  on "~="     expression -> BitwiseXorAndAssign(target,operand):OpAndAssign
-  on ":<<:="  expression -> BitShiftLeftAndAssign(target,operand):OpAndAssign
-  on ":>>:="  expression -> BitShiftRightAndAssign(target,operand):OpAndAssign
-  on ":>>>:=" expression -> BitShiftRightXAndAssign(target,operand):OpAndAssign
+  on "+="     consume_eols expression -> AddAndAssign(target,operand):OpAndAssign
+  on "-="     consume_eols expression -> SubtractAndAssign(target,operand):OpAndAssign
+  on "*="     consume_eols expression -> MultiplyAndAssign(target,operand):OpAndAssign
+  on "/="     consume_eols expression -> DivideAndAssign(target,operand):OpAndAssign
+  on "%="     consume_eols expression -> ModAndAssign(target,operand):OpAndAssign
+  on "^="     consume_eols expression -> PowerAndAssign(target,operand):OpAndAssign
+  on "&="     consume_eols expression -> BitwiseAndAndAssign(target,operand):OpAndAssign
+  on "|="     consume_eols expression -> BitwiseOrAndAssign(target,operand):OpAndAssign
+  on "~="     consume_eols expression -> BitwiseXorAndAssign(target,operand):OpAndAssign
+  on ":<<:="  consume_eols expression -> BitShiftLeftAndAssign(target,operand):OpAndAssign
+  on ":>>:="  consume_eols expression -> BitShiftRightAndAssign(target,operand):OpAndAssign
+  on ":>>>:=" consume_eols expression -> BitShiftRightXAndAssign(target,operand):OpAndAssign
 
   on ".="
+    consume_eols
     create AccessAndAssignContext(context)
     on '@'
       identifier
@@ -2017,6 +2018,7 @@ parser
 
   while (nextIs("?."))
     on "?."
+      consume_eols
       create ConditionalContext(context)
       member_access
     endOn
