@@ -309,7 +309,7 @@ class String : Poolable PrintWriter
       data.clear
       data[0] = 0
       count = 0
-      indent = 0
+      @indent = 0
       at_newline = true
       hash_code = -1
 
@@ -597,6 +597,9 @@ class String : Poolable PrintWriter
         native @|$hash_code = RogueString_compute_hash_code( $this, 0 );
       endIf
       return @hash_code
+
+    method indent->Int32
+      return @indent
 
     method indented( spaces:Int32 )->String
       local lines = split( '\n' )
@@ -903,9 +906,9 @@ class String : Poolable PrintWriter
       if (value == '\n')
         at_newline = true
       elseIf (at_newline)
-        if (indent)
-          loop (indent) data.add(' ')
-          count += indent
+        if (@indent)
+          loop (@indent) data.add(' ')
+          count += @indent
         endIf
         at_newline = false
       endIf
@@ -1155,7 +1158,7 @@ class String : Poolable PrintWriter
 
       reserve( value.data.count )  # will include space for null terminator
 
-      if (indent)
+      if (@indent)
         print( forEach in value )
       else
         native ...
@@ -1471,6 +1474,8 @@ class String : Poolable PrintWriter
          |$cursor_offset = c_offset;
 
      return cursor_offset
+
+    method set_indent( @indent )
 
     method split( separator:Character, &ignore_case )->String[]
       local result = String[]

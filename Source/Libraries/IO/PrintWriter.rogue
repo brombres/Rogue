@@ -9,6 +9,7 @@ class PrintWriter [abstract aspect]
 
     method flush                                         [abstract]
 
+    method indent->Int32                                 [abstract]
     method print( value:Byte )                           [abstract]
     method print( value:Character )                      [abstract]
     method print( value:Int32 )                          [abstract]
@@ -30,6 +31,7 @@ class PrintWriter [abstract aspect]
     method println( value:Real32 )                       [abstract]
     method println( value:Object )                       [abstract]
     method println( value:String )                       [abstract]
+    method set_indent( new_indent:Int32 )                [abstract]
 
 endClass
 
@@ -145,6 +147,8 @@ class BufferedPrintWriterAdapter : BufferedPrintWriter<<buffer>>
 
     method flush( buffer:String )
       output.write( buffer.data )
+      local previous_indent = buffer.@indent
       buffer.clear
+      buffer.indent = previous_indent
       output.flush
 endClass
