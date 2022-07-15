@@ -1169,6 +1169,7 @@ class Block : ControlStructure
 
     method init( existing:Block )
       prior.init( existing )
+      if (existing.assignments) assignments = existing.assignments.cloned
 
     method description->String
       return "Block($)" (%statements)
