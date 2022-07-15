@@ -1304,13 +1304,10 @@ class String : Poolable PrintWriter
       return result
 
     method replacing_pattern( search_pattern:String, replacement_pattern:String, parens="()":String )->String
-      return "TODO: String.replacing_pattern()"
-
-      #{
       # Search pattern has same "$*?" wildcard format as .extract_strings():
       #   - '$' acts as '*' but also denotes a piece to be extracted.
       # Replacement pattern contains '$' to denote implicitly-paired points of substitution
-      # or'$(0)' etc. to indicate the 0th, etc. extracted value. '$()' can be used to
+      # '$(0)' etc. to indicate the 0th, etc. extracted value. '$()' can be used to
       # escape the special meaning of a successive '(0)' and '$($)' can be written to
       # indicate a literal '$'.
       #
@@ -1372,7 +1369,7 @@ class String : Poolable PrintWriter
               else
                 local n = 0
                 while (scanner.has_another and not scanner.consume(close_paren))
-                  n = n * 10 + scanner.read.to_number
+                  n = n * 10 + scanner.read.to_number.value
                 endWhile
                 result.print( parts[n%parts.count] )
               endIf
@@ -1385,7 +1382,6 @@ class String : Poolable PrintWriter
         endWhile
         return result
       endIf
-    }#
 
     method reverse
       # Reverses the characters in this mutable String.
