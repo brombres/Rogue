@@ -1,5 +1,30 @@
 augment String[]
   METHODS
+    method conjoin( conjunction="and":String )->String
+      # ["alpha","beta","gamma"].conjoin -> "alpha, beta, and gamma"
+      which (count)
+        case 0: return ""
+        case 1: return this[0]
+        case 2: return "$ and $"(this[0],this[1])
+        others
+          local len = 0
+          len += (forEach in this).count
+          len += (count -  2) * 2      # ", "
+          len += conjunction.count + 3 # ", and "
+
+          local result = String( len )
+          forEach (item at i in this)
+            if (i > 0)
+              if (i < count-1) result.print ", "
+              else             result.[ print(", "), print(conjunction), print(" ") ]
+            endIf
+            result.print item
+          endForEach
+
+          return result
+      endWhich
+
+
     method join( separator="\n":String, output=String():String )->String
       # A better version of join() for String lists
       if (count == 1) return this[0]
