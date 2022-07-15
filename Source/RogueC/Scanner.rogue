@@ -83,20 +83,6 @@ class Scanner : ScannerCore, Poolable
         endForEach
       endIf
 
-    method set_source_line
-      while (_scanner.consume(' ')) noAction
-      local filepath = _filepath
-      if (_scanner.next_is_string) filepath = _scanner.scan_string
-
-      while (_scanner.consume(' ')) noAction
-      local new_line : Int64?
-      if (_scanner.next_is_number) new_line = _scanner.scan_int64
-
-      while (_scanner.has_another and not _scanner.consume('\n')) _scanner.read
-
-      _filepath = filepath
-      if (new_line) _scanner.line = new_line.value
-
     method use_DateTime
       uses_DateTime = true
       uses_autoinclude = true
