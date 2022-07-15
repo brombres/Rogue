@@ -1287,7 +1287,7 @@ class String : Poolable PrintWriter
 
       local i0 = 0
 
-      local result = String( count*1.1 )
+      local result = String( Int32(count*1.1) )
       while (i1.exists)
         forEach (i in i0..<i1.value) result.print( this[i] )
         result.print( replace_with )

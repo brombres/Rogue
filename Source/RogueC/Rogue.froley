@@ -137,6 +137,7 @@ META_LOWERCASE       $lowercase      [meta]
 META_MACRO           $macro          [meta]
 META_REQUIRE_ROGUE   $requireRogue   [meta]
 META_ROGUE_VERSION   $rogueVersion   [meta]
+#META_SET_SOURCE_LINE $setSourceLine  [meta]
 META_SOURCE_FILEPATH $sourceFilepath [meta]
 META_SOURCE_LINE     $sourceLine     [meta]
 META_TARGET          $target         [meta]
@@ -246,6 +247,9 @@ scanner
   endIf
 
   match input
+    case "$setSourceLine"
+      call set_source_line
+      restart
     produceAny Symbols
     case '\n': call mark_beginning_of_line; produce EOL
     case '"':  tokenize_string
