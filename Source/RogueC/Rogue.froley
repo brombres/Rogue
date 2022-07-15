@@ -317,6 +317,7 @@ scanner
     case "File": call use_File; produce IDENTIFIER
     case "JSON": call use_Value; produce IDENTIFIER
     case "Process": call use_Process; produce IDENTIFIER
+    case "Scanner": call use_Scanner; produce IDENTIFIER
     case "Set": call use_Set; produce IDENTIFIER
     case "Time": call use_DateTime; produce IDENTIFIER
     case "TimeInterval": call use_DateTime; produce IDENTIFIER

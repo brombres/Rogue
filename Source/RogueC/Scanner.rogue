@@ -5,14 +5,15 @@ $include "ScannerCore.rogue"
 
 class Scanner : ScannerCore, Poolable
   GLOBAL PROPERTIES
-    uses_autoinclude : Logical
-    uses_DateTime : Logical
-    uses_File     : Logical
+    uses_autoinclude   : Logical
+    uses_DateTime      : Logical
+    uses_File          : Logical
     uses_Introspection : Logical
-    uses_Process  : Logical
-    uses_Set      : Logical
-    uses_Table    : Logical
-    uses_Value    : Logical
+    uses_Process       : Logical
+    uses_Scanner       : Logical
+    uses_Set           : Logical
+    uses_Table         : Logical
+    uses_Value         : Logical
 
   PROPERTIES
     beginning_of_line : ScannerLocation
@@ -101,6 +102,10 @@ class Scanner : ScannerCore, Poolable
 
     method use_Set
       uses_Set = true
+      uses_autoinclude = true
+
+    method use_Scanner
+      uses_Scanner = true
       uses_autoinclude = true
 
     method use_Table

@@ -1,7 +1,3 @@
-# MISSING
-#   method decode_base64->Byte[]
-#   method is_false->Logical
-
 class String : Poolable PrintWriter
   PROPERTIES
     count           : Int32  # in whole characters
