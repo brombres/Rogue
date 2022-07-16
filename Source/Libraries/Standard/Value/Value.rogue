@@ -118,6 +118,9 @@ class Value [compound]
       if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$value }" )->Value
       else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
+    method create( value:Value )->Value
+      return value
+
     method list->Value
       # Convenience syntax: @[] is equivalent to Value.list()
       local data = Value[]
@@ -426,6 +429,10 @@ class Value [compound]
           object->(as [String:Value])[ key ] = value
       endWhich
 
+    method set( key:Value, value:Value )
+      if (key.is_number) set( key->Int32, value )
+      else               set( key->String, value )
+
     method to->Box
       which (type)
         case TYPE_BOX:       return box
@@ -574,6 +581,8 @@ class Value [compound]
         else    return $Type(0)
       elseIf ($Type isType XY or $Type isType Box)
         return this->$Type
+      elseIf ($Type isType Value)
+        return this
       else
         local box = this->Object->(as Boxed<<$Type>>)
         if (box) return box->$Type
@@ -583,6 +592,13 @@ class Value [compound]
     method to_json( &formatted, &omit_commas )->String
       local result = String()
       write_json( result, &=formatted, &=omit_commas )
+      return result
+
+    method to_list<<$DataType>>->$DataType[]
+      local result = $DataType[]( count )
+      forEach (value in this)
+        result.add( value->$DataType )
+      endForEach
       return result
 
     method values->TableValuesIterator<<String,Value>>
