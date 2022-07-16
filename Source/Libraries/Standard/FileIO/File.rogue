@@ -101,11 +101,8 @@ class File( filepath:String ) [compound]
       Global.error.println( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
       return this
 
-    #{
-    method character_writer( filepath:String )->CharacterToUTF8ByteWriter
-      filepath = expand_path( filepath )
-      return CharacterToUTF8ByteWriter( File.writer(filepath) )
-      }#
+    method character_writer->CharacterToUTF8ByteWriter
+      return CharacterToUTF8ByteWriter( File.writer(resolved.filepath) )
 
     method common_folder( other:File )->File
       local a = resolved.filepath
@@ -402,10 +399,9 @@ class File( filepath:String ) [compound]
       if (not other.exists) return true
       return (this.timestamp_ms > other.timestamp_ms)
 
-      #{
-    method is_valid_utf8( filepath:String )->Logical
-      if (not File.exists(filepath) or File.is_folder(filepath)) return false
-      local reader = File.reader( filepath )
+    method is_valid_utf8->Logical
+      if (not this.exists or this.is_folder) return false
+      local reader = this.reader
       contingent
         while (reader.has_another)
           local b = reader.read
@@ -434,30 +430,11 @@ class File( filepath:String ) [compound]
           #else 0xxx_xxxx
           endIf
         endWhile
+        return true
       unsatisfied
         reader.close
         return false
       endContingent
-      return true
-
-    method join( segments:String[] )->String
-      local buffer = StringBuilder()
-      local needs_separator = false
-      forEach (part at index in segments)
-        if (not part) nextIteration
-        if (needs_separator) buffer.print('/', &!formatted)
-        if (index > 0 and part.begins_with('/')) part .= rightmost(-1)
-        buffer.print(part)
-        needs_separator = not File.ends_with_separator( part )
-      endForEach
-      return buffer
-
-    method join( part1:String, part2:String )->String
-      return join(String[][part1, part2])
-
-    method join( part1:String, part2:String, part3:String, part4=null:String, part5=null:String, part6=null:String )->String
-      return join(String[][part1, part2, part3, part4, part5, part6])
-}#
 
     method listing( filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path,
         &files, &folders, &unsorted, &recursive )->String[]
@@ -471,6 +448,12 @@ class File( filepath:String ) [compound]
       options.is_unsorted      = unsorted
       options.is_recursive     = recursive
       return FileListing( this, filepattern, options ).filepaths
+
+    method listing( pattern:String, &ignore_hidden, &absolute, &omit_path,
+        &files, &folders, &unsorted, &recursive )->String[]
+      local filepattern : FilePattern?
+      if (pattern) filepattern = FilePattern( pattern )
+      return listing( filepattern, &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders, &=unsorted, &=recursive )
 
     method load_as_bytes( &discard_bom )->Byte[]
       # discard_bom
@@ -533,14 +516,12 @@ class File( filepath:String ) [compound]
     method reader->FileReader
       return FileReader( resolved.filepath )
 
-      #{
     method rename( destination:File )->Logical
       if (not this.exists) return false
       local source_filepath = resolved.filepath
       local destination_filepath = destination.resolved.filepath
-      native @|rename( $source_filepath->data->as_utf8, $new_filepath->data->as_utf8 );
-      return File.exists( new_filepath )
-      }#
+      native @|rename( $source_filepath->data->as_utf8, $destination_filepath->data->as_utf8 );
+      return File( destination_filepath ).exists
 
     method resolved->File
       local filepath = this.filepath
