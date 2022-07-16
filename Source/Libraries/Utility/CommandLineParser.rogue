@@ -199,7 +199,17 @@ class CommandLineParser
           endFunction
       endIf
 
-    method option( name:String, handler:Function(CommandLineParser) )
+    method option( name:String, handler:Function(CommandLineParser), &alias=null:String, &aliases=null:String[], &require_value )
+      if (alias)
+        ensure<<aliases>>
+        aliases.add( alias )
+      endIf
+
+      if (aliases)
+        local to_name = name.before_first( '=' )
+        this.alias( forEach in aliases, to_name, &=require_value )
+      endIf
+
       handlers[ name ] = handler
 
     method parse( args:String[] )->Value
