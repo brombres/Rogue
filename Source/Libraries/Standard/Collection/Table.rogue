@@ -310,6 +310,9 @@ class Table<<$KeyType,$ValueType>>
     method to->String
       return print_to( String() )
 
+    method to_list->$ValueType[]
+      return values.to_list
+
     method values->TableValuesIterator<<$KeyType,$ValueType>>
       # Returns an iterator compound.
       return TableValuesIterator<<$KeyType,$ValueType>>( first_entry )
