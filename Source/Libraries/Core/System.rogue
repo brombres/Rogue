@@ -68,14 +68,12 @@ class System [essential]
       native @|Rogue_quit();
               |exit( $result_code );
 
-      #{
-    method find_program( name:String )->String
+    method find_program( name:String )->File?
       # Returns the executable filepath of the given program or else null.
       # Uses 'where' on Windows and 'which' on other platforms.
       local result = Process.run( "$ $" (which{is_windows:"where"||"which"},name), &env )
       if (not result.success) return null
-      return result->String.trimmed
-      }#
+      return File( result->String.trimmed )
 
     method home_folder->String
       if (System.is_windows) return System.env//HOMEDRIVE + System.env//HOMEPATH
