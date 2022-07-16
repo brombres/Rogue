@@ -2455,7 +2455,7 @@ class Resolver : Poolable, Visitor
       endIf
 
       if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
-      if (arg_type is Program.type_Value) return true
+      if (arg_type is Program.@type_Value) return true
       if (arg_type.instance_of(param_type)) return true
       if (arg_type.is_primitive and param_type.is_primitive) return true
       if (param_type is Program.type_String or param_type is Program.type_Object or param_type is Program.@type_Value) return true

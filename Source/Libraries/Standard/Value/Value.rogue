@@ -118,9 +118,6 @@ class Value [compound]
       if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$value }" )->Value
       else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
-    method create( value:Value )->Value
-      return value
-
     method list->Value
       # Convenience syntax: @[] is equivalent to Value.list()
       local data = Value[]
@@ -581,8 +578,6 @@ class Value [compound]
         else    return $Type(0)
       elseIf ($Type isType XY or $Type isType Box)
         return this->$Type
-      elseIf ($Type isType Value)
-        return this
       else
         local box = this->Object->(as Boxed<<$Type>>)
         if (box) return box->$Type

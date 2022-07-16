@@ -123,7 +123,7 @@ class String : Poolable PrintWriter
         else      return String().[ reserve(4+builder.count), print("null"), print(builder) ]
       endUse
 
-    method operator+( left:String, right:String )->String
+    method operator+( left:String, right:String )->String [preferred]
       if (right is null) return operator+( left, "null" )
       if (left) return String().[ reserve(left.count+right.count), print(left), print(right) ]
       else      return String().[ reserve(4+right.count), print("null"), print(right) ]
