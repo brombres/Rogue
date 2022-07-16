@@ -3380,7 +3380,7 @@ augment
 
       local m_read_another = collection_type.methods[ "read_another()" ]
       if (m_read_another)
-        # Collection implements read-another protocol.
+        # Standard/Collection implements read-another protocol.
         if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
           throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
         endIf
@@ -3440,7 +3440,7 @@ augment
       if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
       local m_read = collection_type.methods[ "read()" ]
       if (has_has_another and m_read)
-        # Collection implements has-another protocol.
+        # Standard/Collection implements has-another protocol.
         if (not m_read.return_type)
           throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
         endIf
@@ -3509,13 +3509,13 @@ augment
       endIf
 
       use builder = StringBuilder.pool
-        builder.println @|Collection does not implement any of the collection protocols:
+        builder.println @|Standard/Collection does not implement any of the collection protocols:
                          |
                          |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
                          |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
                          |  read_another()->ElementType?
-                         |  iterator()->Collection (result must implement one of the above protocols)
-                         |  reader()->Collection (result must implement one of the above protocols)
+                         |  iterator()->Standard/Collection (result must implement one of the above protocols)
+                         |  reader()->Standard/Collection (result must implement one of the above protocols)
         throw t.error( builder->String )
       endUse
 
@@ -3535,7 +3535,7 @@ augment
       if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
 
       if (has_count and m_get)
-        # Collection implements count/at or count/get protocol
+        # Standard/Collection implements count/at or count/get protocol
         local down_to = false
         local cmd_step : LiteralInt32
         if (cmd_collection.step_size)
@@ -3596,7 +3596,7 @@ augment
 
       local m_read_another = collection_type.methods[ "read_another()" ]
       if (m_read_another)
-        # Collection implements read-another protocol.
+        # Standard/Collection implements read-another protocol.
         if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
           throw cmd_collection.t.error( "$.read_another() must return an optional value."(m_read_another.type_context) )
         endIf
@@ -3645,7 +3645,7 @@ augment
       if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
       local m_read = collection_type.methods[ "read()" ]
       if (has_has_another and m_read)
-        # Collection implements has-another protocol.
+        # Standard/Collection implements has-another protocol.
         if (not m_read.return_type)
           throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
         endIf
@@ -3705,13 +3705,13 @@ augment
       endIf
 
       use builder = StringBuilder.pool
-        builder.println @|Collection does not implement any of the collection protocols:
+        builder.println @|Standard/Collection does not implement any of the collection protocols:
                          |
                          |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
                          |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
                          |  read_another()->ElementType?
-                         |  iterator()->Collection (result must implement one of the above protocols)
-                         |  reader()->Collection (result must implement one of the above protocols)
+                         |  iterator()->Standard/Collection (result must implement one of the above protocols)
+                         |  reader()->Standard/Collection (result must implement one of the above protocols)
         throw t.error( builder->String )
       endUse
 

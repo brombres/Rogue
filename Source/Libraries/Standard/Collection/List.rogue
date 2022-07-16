@@ -1,5 +1,5 @@
-$include Collection/ListRewriter
-$include Collection/Quicksort
+$include Standard/Collection/ListRewriter
+$include Standard/Collection/Quicksort
 
 class ListType [aspect];
 

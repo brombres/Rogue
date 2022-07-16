@@ -1,5 +1,5 @@
-$include IO/Scanner
-$include Value/JSON
+$include Standard/IO/Scanner
+$include Standard/Value/JSON
 
 uses Geometry
 

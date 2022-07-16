@@ -1,3 +1,0 @@
-$include Collection/List
-$include Collection/Set
-$include Collection/Table

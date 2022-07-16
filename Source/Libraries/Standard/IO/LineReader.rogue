@@ -1,5 +1,5 @@
-$include IO/ExtendedASCIIReader
-$include IO/UTF8
+$include Standard/IO/ExtendedASCIIReader
+$include Standard/IO/UTF8
 
 class LineReader : Reader<<String>>
   PROPERTIES

@@ -100,7 +100,7 @@ class Program [singleton]
       type_GenericFn = Type( t, "GenericFn", Attribute.OBJECT, &unlisted )
       type_Global    = Type( t, "Global", Attribute.OBJECT|Attribute.SINGLETON )
       type_ListType  = Type( t, "ListType", Attribute.ASPECT )
-      type_Math      = Type( t, get_module(t,"Math"), "Math", Attribute.OBJECT )
+      type_Math      = Type( t, "Math", Attribute.OBJECT )
       type_Object    = Type( t, "Object", Attribute.OBJECT )
       type_String    = TypeString( t )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
@@ -158,11 +158,11 @@ class Program [singleton]
 
       if (mod is Program.default_module)
         which (name)
-          case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses DateTime"
-          case "File":  fix = "uses FileIO"
+          case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses Standard/DateTime"
+          case "File":  fix = "uses Standard/FileIO"
           case "JSON":  fix = "uses Value"
-          case "Set":   fix = "uses Collection/Set"
-          case "Table": fix = "uses Collection/Table"
+          case "Set":   fix = "uses Standard/Collection/Set"
+          case "Table": fix = "uses Standard/Collection/Table"
           case "Value": fix = "uses Value"
         endWhich
       endIf
@@ -323,7 +323,7 @@ class Program [singleton]
 
     method type_TypeInfo->Type
       if (@type_TypeInfo) return @type_TypeInfo
-      Program.include( t, "Introspection" )
+      Program.include( t, "Standard/Introspection" )
       type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
       return @type_TypeInfo
 

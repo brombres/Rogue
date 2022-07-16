@@ -1,5 +1,3 @@
-module Math
-
 class Radians( value:Real ) [compound]
   GLOBAL METHODS
     method create( degrees:Degrees )->Radians

@@ -1,4 +1,4 @@
-$include FileIO/FileDescriptorIO
+$include Standard/FileIO/FileDescriptorIO
 
 class Process
   PROPERTIES

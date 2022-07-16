@@ -1,8 +1,8 @@
-$include Console/ConsoleCursor
-$include Console/ConsoleErrorPrinter
-$include Console/ConsoleEvent
-$include Console/ConsoleMode
-$include Console/ConsoleStyle
+$include Standard/Console/ConsoleCursor
+$include Standard/Console/ConsoleErrorPrinter
+$include Standard/Console/ConsoleEvent
+$include Standard/Console/ConsoleMode
+$include Standard/Console/ConsoleStyle
 
 class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
   DEFINITIONS
