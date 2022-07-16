@@ -1017,7 +1017,7 @@ class CGenerator : Visitor
       local v = cmd.info
       writer.print( v.type.c_ref_name ).print( ' ' )
       writer.print( v.c_name )
-      if (not v.initial_value or v.type.is_reference)
+      if (not v.initial_value or v.type.is_reference or v.type.contains_reference)
         writer.print( " = " )
         if (v.type.is_compound) writer.print "{}"
         else                    writer.print "0"
