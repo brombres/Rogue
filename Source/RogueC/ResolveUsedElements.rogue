@@ -340,7 +340,9 @@ class ResolveUsedElements : InspectionVisitor
           # return global_property->Value
           local v_result = m_get_global_property.locals[0]
           cmd_access = GetGlobalProperty( t, prop )                             # global_property
-          cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))     # global_property->Value
+          if (prop.type is not Program.type_Value)
+            cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))   # global_property->Value
+          endIf
           cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = global_property->Value
 
           cmd_access = Statements( t, cmd_access )
@@ -357,8 +359,10 @@ class ResolveUsedElements : InspectionVisitor
 
         if (not prop.type_context.is_compound)
           # global_property = new_value->to<<property-type>>
-          cmd_access = GetLocal( t, m_set_global_property.parameters[1] )                       # new_value
-          cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) )  # new_value.to<<property-type>>
+          cmd_access = GetLocal( t, m_set_global_property.parameters[1] )                         # new_value
+          if (prop.type is not Program.type_Value)
+            cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) )  # new_value.to<<property-type>>
+          endIf
           cmd_access = SetGlobalProperty( t, prop, cmd_access )               # global_property = new_value.to<<property-type>>
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
@@ -379,10 +383,14 @@ class ResolveUsedElements : InspectionVisitor
           local params = m_get_property.parameters
           local v_result = m_get_property.locals[0]
           cmd_access = GetLocal( t, params[1] )  # context
-          cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type_context, Args(t) )  # context.to<<context-type>>
-          cmd_access = ContextDirectAccess( t, cmd_access, prop.name )                     # context.to<<ArgType>>.property
-          cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))     # context.to<<ArgType>>.property->Value
-          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = context.to<<ArgType>>.property->Value
+          if (prop.type_context is not Program.type_Value)
+            cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type_context, Args(t) )  # context.to<<context-type>>
+          endIf
+          cmd_access = ContextDirectAccess( t, cmd_access, prop.name )            # context.to<<ArgType>>.property
+          if (prop.type is not Program.type_Value)
+            cmd_access = TypeAccess(t, Program.type_Value,Args(t,cmd_access))     # context.to<<ArgType>>.property->Value
+          endIf
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment )   # result = context.to<<ArgType>>.property->Value
 
           cmd_access = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
@@ -399,9 +407,13 @@ class ResolveUsedElements : InspectionVisitor
         if (not prop.type_context.is_compound)
           # property = new_value->to<<property-type>>
           local cmd_context = GetLocal( t, m_set_property.parameters[1] ) : Cmd                          # context
-          cmd_context = TemplatedMethodContextAccess( t, cmd_context, "to", prop.type_context, Args(t) ) # context.to<<context-type>>
+          if (prop.type_context is not Program.type_Value)
+            cmd_context = TemplatedMethodContextAccess( t, cmd_context, "to", prop.type_context, Args(t) ) # context.to<<context-type>>
+          endIf
           cmd_access  = GetLocal( t, m_set_property.parameters[2] )                             # new_value
-          cmd_access  = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) ) # new_value.to<<property-type>>
+          if (prop.type is not Program.type_Value)
+            cmd_access  = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) ) # new_value.to<<property-type>>
+          endIf
           cmd_access  = SetProperty( t, cmd_context, prop, cmd_access )                         # property = new_value.to<<property-type>>
           cmd_access  = Statements( t, cmd_access )
           local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
@@ -453,7 +465,7 @@ class ResolveUsedElements : InspectionVisitor
 
         cmd_call = CallMethodPointer( t, m, GetLocal(t,dispatch_params[1]), param_types, args, m.return_type )
 
-        if (m.return_type)
+        if (m.return_type and m.return_type is not Program.type_Value)
           cmd_call = Return( t, TypeAccess(t, Program.type_Value,Args(t,cmd_call)) )
         endIf
 
