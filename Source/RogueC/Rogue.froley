@@ -2765,6 +2765,7 @@ parser
   onPeek '['
     savePosition
     consume '['
+    consume_eols
     expression
     if (nextIs(':'))
       restorePosition
