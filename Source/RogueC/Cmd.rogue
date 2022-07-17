@@ -2009,45 +2009,46 @@ class TemplateArgs : CmdList
       use builder = StringBuilder.pool
         builder.print name
         builder.print "<<"
-        forEach (token_list at i in this)
+        forEach (i of this)
           if (i) builder.print ','
-          use token_string = StringBuilder.pool
-            token_string.print((forEach in token_list.tokens)->String)
-            local type_entry = Program.current_module.type_arg_lookup.find( token_string )
-            if (type_entry)
-              if (type_entry.value)
-                # This token string has already been identified as a type
-                builder.print( type_entry.value.scoped_name )
-                token_list = TokenList( token_list.t, type_entry.value.name_tokens )
-                this[i] = token_list
-              else
-                # Already identified as NOT a type
-                builder.print token_string
-              endIf
-            else
-              # Determine if this token string represents a type and, if so, create lookup table entry
-              local type = Program.current_module.find_type( t, token_string, &extended_search )
-              if (not type)
-                try
-                  type = Parser( token_list.tokens ).parse( Parser.ip_type )->(as Type)
-                catch (Exception)
-                  # not a type
-                endTry
-              endIf
-              if (type)
-                token_list = TokenList( token_list.t, type.name_tokens )
-                this[i] = token_list
-                token_string.clear
-                token_string.print( (forEach in token_list.tokens)->String )
-              endIf
-              builder.print token_string
-              Program.current_module.type_arg_lookup[token_string] = type
-            endIf
-          endUse
+          builder.print type(i)
         endForEach
         builder.print ">>"
         return builder->String
       endUse
+
+    method type( index:Int32 )->Type
+      use token_string = StringBuilder.pool
+        local token_list = this[index]
+        token_string.print((forEach in token_list.tokens)->String)
+        local type_entry = Program.current_module.type_arg_lookup.find( token_string )
+        if (type_entry)
+          if (type_entry.value)
+            # This token string has already been identified as a type
+            return type_entry.value
+          else
+            # Already identified as NOT a type
+            return null
+          endIf
+        else
+          # Determine if this token string represents a type and, if so, create lookup table entry
+          local type = Program.current_module.find_type( t, token_string, &extended_search )
+          if (not type)
+            try
+              type = Parser( token_list.tokens ).parse( Parser.ip_type )->(as Type)
+            catch (Exception)
+              # not a type
+            endTry
+          endIf
+          if (type)
+            token_list = TokenList( token_list.t, type.name_tokens )
+            this[index] = token_list
+          endIf
+          Program.current_module.type_arg_lookup[token_string] = type
+          return type
+        endIf
+      endUse
+      return null
 endClass
 
 class AttributeAspect : Cmd

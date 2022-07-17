@@ -674,6 +674,12 @@ augment
         local type = Type( t, type_template, type_args )
         if (type and (args or type.attributes.is_singleton)) return type
       endIf
+
+      if (name == "Dim" and type_args.count == 1)
+        local element_type = type_args.type(0)
+        if (element_type) return Type( t, element_type )  # Appropriate list type
+      endIf
+
       return null
 
     method This.type->Type

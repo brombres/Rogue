@@ -1319,24 +1319,18 @@ class Resolver : Poolable, Visitor
       endIf
 
       # Assume templated method call
-      local name   = cmd.type_args->String( cmd.name )
+      local full_name   = cmd.type_args->String( cmd.name )
       local t_name : String
 
       # Routine template
-      local type_Routine = cmd.module_context.must_find_type( cmd.t, "Routine" )
-      if (type_Routine is not cmd.type_context)
-        if (not type_Routine.global_method_template_instances.contains(name))
-          if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
-          local templates = type_Routine.global_method_templates[ t_name ]
-          if (templates)
-            (forEach in templates).instantiate( cmd.type_args, type_Routine )
-          endIf
-        endIf
-      endIf
+      t_name = instantiate_routine_templates( cmd.module_context, cmd, t_name, full_name )
+      forEach (mod in cmd.module_context.used_modules)
+        t_name = instantiate_routine_templates( mod.m, cmd, t_name, full_name )
+      endForEach
 
       # Global Method Template
       assert cmd.type_context
-      if (not cmd.type_context.global_method_template_instances.contains(name))
+      if (not cmd.type_context.global_method_template_instances.contains(full_name))
         if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
         local templates = cmd.type_context.global_method_templates[ t_name ]
         if (templates)
@@ -1345,7 +1339,7 @@ class Resolver : Poolable, Visitor
       endIf
 
       # Object Method Template
-      if (not cmd.type_context.method_template_instances.contains(name))
+      if (not cmd.type_context.method_template_instances.contains(full_name))
         if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
         local templates = cmd.type_context.method_templates[ t_name ]
         if (templates)
@@ -1353,7 +1347,20 @@ class Resolver : Poolable, Visitor
         endIf
       endIf
 
-      return resolve_call( cmd.t, cmd.type_context, null, name, cmd.args )
+      return resolve_call( cmd.t, cmd.type_context, null, full_name, cmd.args )
+
+    method instantiate_routine_templates( mod:Module, cmd:TemplatedAccess, t_name:String, full_name:String )->String
+      local type_Routine = mod.must_find_type( cmd.t, "Routine" )
+      if (type_Routine is not cmd.type_context)
+        if (not type_Routine.global_method_template_instances.contains(full_name))
+          if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_Routine.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_Routine )
+          endIf
+        endIf
+      endIf
+      return t_name
 
     method on( cmd:TemplatedMethodContextAccess )->Cmd
       local context = visit( cmd.context )
@@ -2045,6 +2052,12 @@ class Resolver : Poolable, Visitor
             if (type_context is not type_Routine)
               type_Routine.collect_methods( name, Candidates.list, &require_global )
             endIf
+            forEach (used_mod in type_context.module_context.used_modules)
+              type_Routine = used_mod.m.must_find_type( t, "Routine" )
+              if (type_context is not type_Routine)
+                type_Routine.collect_methods( name, Candidates.list, &require_global )
+              endIf
+            endForEach
           endIf
         endIf
         Candidates.organize
