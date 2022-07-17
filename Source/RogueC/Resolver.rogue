@@ -1155,7 +1155,7 @@ class Resolver : Poolable, Visitor
         if (operand instanceOf LiteralCharacter) return LiteralInt32( cmd.t, -(operand->(as LiteralCharacter).value->Int32) )
         if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
       endIf
-      return cmd
+      return validate(cmd)
 
     method on( cmd:New )->Cmd
       local context = visit( cmd.type_expression )
