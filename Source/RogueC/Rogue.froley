@@ -2573,6 +2573,7 @@ parser
       mustConsume ']'
     createList
     create ContextBlock(context,commands)
+    access_inner
 
 - member_access
   on '@'
