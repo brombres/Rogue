@@ -80,26 +80,20 @@ class Quicksort<<$DataType>>
       # may well differ in size.
 
       # Place the pivot at the end temporarily
-      local temp = list[pivot_index]
-      list[pivot_index] = list[i2]
-      list[i2] = temp
+      list.swap( pivot_index, i2 )
 
       pivot_index = i1
       forEach (i in i1..(i2-1))
         if (compare_fn(list[i],pivot))
           # Read along swapping values when necessary so that all values
           # ordered before the pivot are on one side.
-          temp = list[i]
-          list[i] = list[pivot_index]
-          list[pivot_index] = temp
+          list.swap( i, pivot_index )
           ++pivot_index
         endIf
       endForEach
 
       # Put the pivot back in the middle
-      temp = list[pivot_index]
-      list[pivot_index] = list[i2]
-      list[i2] = temp
+      list.swap( pivot_index, i2 )
 
       sort( list, compare_fn, i1, pivot_index-1 )
       sort( list, compare_fn, pivot_index+1, i2 )

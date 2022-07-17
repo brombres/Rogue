@@ -1,3 +1,7 @@
+$include Standard/Collection/ByteList
 $include Standard/Collection/List
-$include Standard/Collection/Set
+$include Standard/Collection/ListRewriter
+$include Standard/Collection/Quicksort
+$include Standard/Collection/StringList
 $include Standard/Collection/Table
+# RogueC includes 'Set' if it is referenced during scanning.

@@ -1,0 +1,8 @@
+$include Standard/IO/ExtendedASCIIReader
+$include Standard/IO/LineReader
+$include Standard/IO/PrintWriter
+$include Standard/IO/Reader
+$include Standard/IO/UTF8
+$include Standard/IO/Writer
+
+# RogueC auto-includes Scanner and ScanPattern if they are referenced during tokenization.

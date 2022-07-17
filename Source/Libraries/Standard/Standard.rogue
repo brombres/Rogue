@@ -1,13 +1,10 @@
 $include Standard/Core
-$include Standard/Collection/ByteList
-$include Standard/Collection/List
-$include Standard/Collection/StringList
+$include Standard/Collection
 $include Standard/Console
-$include Standard/IO/LineReader
-$include Standard/IO/PrintWriter
-$include Standard/IO/Reader
-$include Standard/IO/Writer
+$include Standard/IO
 $include Standard/Math
+
+# RogueC auto-includes Value and JSON if they are referenced during tokenization.
 
 routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
   # For internal use only - used by the compiler to cast between compatible tuple types.
