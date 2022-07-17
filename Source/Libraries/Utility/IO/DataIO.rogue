@@ -304,6 +304,5 @@ class DataWriter : Writer<<Byte>>
         return extra_bytes + 1
       endIf
 
-
 endClass
 
