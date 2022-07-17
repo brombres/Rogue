@@ -98,23 +98,45 @@ augment
       return resolve_via_conversion_methods( this, this_type, target_type, resolver, &=suppress_error )
 
     method Cmd.resolve_via_conversion_methods( cmd:Cmd, this_type:Type, target_type:Type, resolver:Resolver, &suppress_error )->Cmd
-      if (this_type is Program.@type_Value)
-        if (target_type is Program.@type_Value) return cmd
-        return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
+      if (TypeConversionStack.count > 20)
+        if (suppress_error) return null
+
+        local message = StringBuilder()
+        message.print "Detected infinite recursive cycle for $->$ conversion.\n"(TypeConversionStack[0]._1,target_type)
+        if (TypeConversionStack.count > 1)
+          message.print " ("
+          forEach (conv at i in TypeConversionStack)
+            message.print conv._1
+            message.print " -> "
+          endForEach
+          message.print "...)"
+        endIf
+        TypeConversionStack.clear
+
+        throw cmd.t.error( message->String )
       endIf
 
-      # See if this_type has a to->TargetType method ( to<<Type>>->Type )
-      local type_arg = TemplateArgs( cmd.t, target_type )
-      local result = resolver.resolve_call( t, this_type, cmd, type_arg->String("to"), null, &suppress_error )
-      if (result) return result
+      use TypeConversionStack
+        TypeConversionStack.push( (this_type,target_type) )
 
-      # Look for a TargetType(cmd) constructor.
-      result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error )
-      if (result) return result
+        if (this_type is Program.@type_Value)
+          if (target_type is Program.@type_Value) return cmd
+          return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
+        endIf
 
-      if (this_type.instance_of(target_type))
-        return resolver.validate( WideningCast(t,cmd,target_type) )
-      endIf
+        # See if this_type has a to->TargetType method ( to<<Type>>->Type )
+        local type_arg = TemplateArgs( cmd.t, target_type )
+        local result = resolver.resolve_call( t, this_type, cmd, type_arg->String("to"), null, &suppress_error )
+        if (result) return result
+
+        # Look for a TargetType(cmd) constructor.
+        result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &exact_arg_types )
+        if (result) return result
+
+        if (this_type.instance_of(target_type))
+          return resolver.validate( WideningCast(t,cmd,target_type) )
+        endIf
+      endUse
 
       if (suppress_error) return null
 
@@ -707,3 +729,30 @@ augment
       return to_type
 
 endAugment
+
+class TypeConversionStack [singleton]
+  PROPERTIES
+    stack = (Type,Type)[]
+
+  METHODS
+    method clear
+      stack.clear
+
+    method count->Int32
+      return stack.count
+
+    method contains( conversion:(Type,Type) )->Logical
+      return stack.contains(conversion)
+
+    method get( index:Int32 )->(Type,Type)
+      return stack[index]
+
+    method on_use->this
+      return this
+
+    method on_end_use( THIS:TypeConversionStack )
+      if (stack.count) stack.remove_last
+
+    method push( conversion:(Type,Type) )
+      stack.add( conversion )
+endClass
