@@ -1,0 +1,261 @@
+#===============================================================================
+# CPR.rogue
+# Compression Library
+#
+# Generally gives results within 3% of Zip.
+#===============================================================================
+module CPR
+
+uses Utility/Math/Best
+uses Utility/Codec/Huffman
+uses Utility/IO/DataIO
+
+class CPRCompressor
+  # USAGE
+  #   uses Utility/Codec/CPR
+  #   local original_bytes = Byte[](File("filename"))
+  #   local compressor = CPRCompressor()
+  #   local compressed_bytes = compressor.compress( original_bytes )
+  #   local percent_of_original = ((compressed_bytes.count*100.0)/original_bytes.count).format(".2")
+  #   println "$% ($/$)" (percent_of_original,compressed_bytes.count,original_bytes.count)
+  PROPERTIES
+    data         : Byte[]
+    output_bytes : Byte[]
+    literals     : Byte[]
+    counts       : Byte[]
+    offsets      : Byte[]
+
+    backlinks    : Int32[]
+    next_32_bits : Int32[]
+    most_recent  = Dim<<Int32>>( 256 )
+
+    # These must be 1..255
+    max_length   = 255
+    max_jumps    = 255
+
+  METHODS
+    method init
+
+    method compress( file:File )->Byte[]
+      return compress( Byte[](file) )
+
+    method compress( data:String )->Byte[]
+      return compress( data.to_utf8 )
+
+    method compress( data )->Byte[]
+      most_recent.fill( -1 )
+      next_32_bits = Dim<<Int32>>( data.count )
+      backlinks    = Int32[]( data.count )
+
+      local next_32 = 0
+      forEach (byte at i in data)
+        # Link each byte to the previous occurrence
+        # Record the value of the next 4 bytes including the current one
+        backlinks.add( most_recent[byte] )
+        most_recent[byte] = i
+        next_32 = (next_32 :<<: 8) | byte
+        if (i > 2) next_32_bits[i-3] = next_32
+      endForEach
+
+      block initial_capacity = data.count / 4
+        literals = Byte[]( initial_capacity )
+        counts   = Byte[]( initial_capacity )
+        offsets  = Byte[]( initial_capacity )
+      endBlock
+
+      # Find repeating patterns
+      local limit = data.count
+      local i1    = 0
+      while (i1 < limit)
+        local (i2,i0,n) = find_next_repeat_sequence( which{i1:i1-1 || 0} )
+        if (n)
+          on_literal_sequence( i1, (i2-i1)+1 )
+          on_repeat_sequence( i2, i0, n-1 )
+          i1 = i2 + n
+        else
+          on_literal_sequence( i1, limit-i1 )
+          escapeWhile
+        endIf
+      endWhile
+
+      output_bytes = Byte[]( data.count/2 )
+      local writer = DataWriter(output_bytes)
+
+      writer.write_int32x( data.count )
+
+      write_section( post_process_counts(counts), writer )
+      write_section( post_process_offsets(offsets), writer )
+      write_section( post_process_literals(literals), writer )
+
+      writer.flush
+
+      return output_bytes
+
+    method find_next_repeat_sequence( i1:Int32 )->(Int32,Int32,Int32)
+      local limit = data.count - 3
+      while (i1 < limit)
+        local (i0,n) = find_longest_prior_sequence( i1 )
+        if (n) return (i1,i0,n)
+        ++i1
+      endWhile
+      return (0,0,0)
+
+    method find_longest_prior_sequence( limit:Int32 )->(Int32,Int32)
+      local next_32 = next_32_bits[ limit ]
+      local longest = Best<<Int32,Int32>>( (a,b) => a > b )
+      local i = backlinks[limit]
+      local remaining_jumps = max_jumps
+      while (i >= 0)
+        --remaining_jumps
+        if (not remaining_jumps) escapeWhile
+        if (next_32_bits[i] == next_32)
+          local count = sequence_length( i, limit )
+          if (longest.consider(i,count))
+            if (longest.score >= max_length)
+              escapeWhile
+            endIf
+          endIf
+        endIf
+        i = backlinks[i]
+      endWhile
+
+      if (not longest.exists) return (0,0)
+
+      local len = longest.score.or_smaller( max_length )
+      return (longest.value,len)
+
+    method on_literal_sequence( i1:Int32, count:Int32 )
+      if (count > max_length)
+        while (count > max_length)
+          on_literal_sequence( i1, max_length )
+          counts.add( 0 )  # implicitly followed by repeat sequence; make it zero length
+          i1 += max_length
+          count -= max_length
+        endWhile
+      endIf
+
+      counts.add( count )
+      literals.add( data[forEach in i1..<i1+count] )
+
+    method on_repeat_sequence( i1:Int32, i0:Int32, count:Int32 )
+      local jump_count = 1
+      local cur = backlinks[i1]
+      while (cur != i0) cur = backlinks[cur]; ++jump_count
+      counts.add( count )
+      offsets.add( jump_count )
+
+    method post_process( bytes:Byte[] )->Byte[]
+      return HuffmanWriter().[ write(bytes), flush ].output_bytes
+
+    method post_process_counts( literals:Byte[] )->Byte[]
+      return post_process( literals )
+
+    method post_process_literals( counts:Byte[] )->Byte[]
+      return post_process( counts )
+
+    method post_process_offsets( offsets:Byte[] )->Byte[]
+      return post_process( offsets )
+
+    method sequence_length( i1:Int32, i2:Int32 )->Int32
+      local limit = (i2 + max_length).or_smaller( data.count )
+      local limit_32 = limit - 3
+      local n = 4
+      i1 += 4
+      i2 += 4
+
+      # Match chunks of 4 bytes as long as possible
+      while (i2 < limit_32)
+        if (next_32_bits[i1] != next_32_bits[i2]) escapeWhile
+        n += 4
+        i1 += 4
+        i2 += 4
+      endWhile
+
+      # Match single bytes
+      while (i2 < limit)
+        if (data[i1] != data[i2]) escapeWhile
+        ++n
+        ++i1
+        ++i2
+      endWhile
+
+      return n
+
+    method write_section( bytes:Byte[], writer:DataWriter )
+      writer.write_int32x( bytes.count )  # following encoded byte count
+      writer.write( forEach in bytes )    # encoded bytes
+
+endClass
+
+class CPRDecompressor
+  # USAGE
+  #   uses Utility/Codec/CPR
+  #   local decompressor = CPRDecompressor()
+  #   local decompressed_bytes = decompressor.decompress( compressed_bytes )
+  #   @trace decompressed_bytes == original_bytes
+  METHODS
+    method decompress( file:File )->Byte[]
+      return decompress( Byte[](file) )
+
+    method decompress( data:Byte[] )->Byte[]
+      local reader = DataReader(data)
+
+      local decoded_size = reader.read_int32x
+      local output_bytes = Byte[]( decoded_size )
+
+      local counts   = preprocess_counts( read_stored_bytes(reader) ).iterator
+      local offsets  = preprocess_offsets( read_stored_bytes(reader) ).iterator
+      local literals = preprocess_literals( read_stored_bytes(reader) ).iterator
+
+      local backlinks       = Dim<<Int32>>( 256*256 )
+      local backlink_cursor = Dim<<Int32>>( 256 )
+
+      local byte : Int32
+      while (output_bytes.count < decoded_size)
+        # Literals section
+        local n = counts.read
+        loop (n)
+          byte = literals.read
+          local cursor = (backlink_cursor[byte] + 1) & 255
+          backlink_cursor[byte] = cursor
+          backlinks[ (byte:<<:8)|cursor ] = output_bytes.count
+          output_bytes.add( byte )
+        endLoop
+
+        if (output_bytes.count >= decoded_size) escapeWhile
+
+        # Repeat section
+        n = counts.read
+        if (n)
+          local offset = offsets.read
+          local i = backlinks[ (byte:<<:8) | ((backlink_cursor[byte]-offset) & 255) ] + 1
+          loop (n)
+            byte = output_bytes[i]
+            ++i
+            local cursor = (backlink_cursor[byte] + 1) & 255
+            backlink_cursor[byte] = cursor
+            backlinks[ (byte:<<:8)|cursor ] = output_bytes.count
+            output_bytes.add( byte )
+          endLoop
+        endIf
+      endWhile
+
+      return output_bytes
+
+    method preprocess( bytes:Byte[] )->Byte[]
+      return HuffmanReader( bytes ).read_bytes
+
+    method preprocess_counts( bytes:Byte[] )->Byte[]
+      return preprocess( bytes )
+
+    method preprocess_literals( bytes:Byte[] )->Byte[]
+      return preprocess( bytes )
+
+    method preprocess_offsets( bytes:Byte[] )->Byte[]
+      return preprocess( bytes )
+
+    method read_stored_bytes( reader:DataReader )->Byte[]
+      return reader.read_bytes
+
+endClass
+

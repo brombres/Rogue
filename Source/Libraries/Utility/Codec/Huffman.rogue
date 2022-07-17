@@ -1,0 +1,507 @@
+#===================================================================================================
+# Huffman.rogue
+#
+# General-purpose HuffmanWriter and HuffmanReader. Reads and writes Int32 values of any range,
+# compressing and decompressing on the fly. Includes read() and write() variations for Byte[],
+# Int32[], and File data.
+#
+# EXAMPLE 1
+#   uses Utility/Codec/Huffman
+#
+#   local writer = HuffmanWriter()
+#   local st1 = "This is the first test string."
+#   local st2 = "This is the second test string."
+#   writer.write( st1.count )
+#   writer.write( st1 )
+#   writer.write( st2.count )
+#   writer.write( st2.to_utf8 )
+#   writer.flush
+#
+#   local compressed = writer.output_bytes
+#   println "$ compressed bytes vs $ original string characters" ...
+#       (compressed.count,st1.count+st2.count)
+#   # 50 compressed bytes vs 61 original string characters
+#
+#   local reader = HuffmanReader( compressed )
+#   local n = reader.read
+#   local a = reader.read_string( n )
+#   local b = reader.read_string( reader.read )
+#   @trace a
+#   # "This is the first test string."
+#   @trace b
+#   # "This is the second test string."
+#
+# EXAMPLE 2
+#   uses Utility/Codec/Huffman
+#
+#   local writer = HuffmanWriter( File("File.rogue.huff") )
+#   writer.write( File("Source/Libraries/Standard/File.rogue") )
+#   writer.close
+#
+#   local writer = HuffmanWriter()
+#
+#   local reader = HuffmanReader( File("File.rogue.huff") )
+#   reader.read( File("File2.rogue") )
+#===================================================================================================
+
+uses Utility/Collection/ShakerSort
+uses Utility/IO/BitIO
+
+class HuffmanWriter : Writer<<Int32>>
+  # General-purpose Huffman encoder to compress Int32 values of any range, encoding on the fly.
+  #
+  # EXAMPLE
+  #   uses Utility/Huffman
+  #
+  #   local writer = HuffmanWriter()
+  #   local st1 = "This is the first test string."
+  #   local st2 = "This is the second test string."
+  #   writer.write( st1.count )
+  #   writer.write( st1 )
+  #   writer.write( st2.count )
+  #   writer.write( st2.to_utf8 )
+  #   writer.flush
+  #
+  #   local compressed = writer.output_bytes
+  #   println "$ compressed bytes vs $ original string characters" ...
+  #       (compressed.count,st1.count+st2.count)
+  #   # 50 compressed bytes vs 61 original string characters
+  PROPERTIES
+    buffer  = Int32[]
+    builder = HuffmanBuilder()
+    prev_compression : Real64
+
+    output_bytes : Byte[]
+    writer       : BitWriter
+
+    granularity = 1024
+    # The proportions of most-frequent and least-frequent bytes can change over
+    # the course of a dataset so HuffmanWriter buffers values and checks every
+    # 'granularity' number of values for a worsening compression ratio and
+    # writes out the buffer using the best chunk size. 'granularity' is
+    # automatically adjusted by write(Byte[]) and write(Int32[]) to be 1/256th
+    # of the total data size.
+    #
+    # In other words, if granularity is set to 1024 then the compression ratio
+    # will be evaluated at buffer sizes 1024, 2048, 3072, etc. If the compression
+    # ratio improves for 2048 and 3072 but gets worse for 4096, 3072 values will be
+    # written out and a new Huffman Tree will be created with the remaining 1024 bytes.
+
+  METHODS
+    method init
+      init( Byte[] )
+
+    method init( output_bytes )
+      writer = BitWriter( output_bytes )
+
+    method init( file:File )
+      init( file.writer )
+
+    method init( writer )
+
+    method init( writer:Writer<<Byte>> )
+      init( BitWriter(writer) )
+
+    method adjust_granularity( total_count:Int32 )
+      # Optional
+      granularity = (total_count :>>: 8).or_larger( 256 ).to_power_of_2
+
+    method close
+      flush
+      writer.close
+
+    method flush
+      write_buffered_chunk
+      writer.flush
+
+    method on_cleanup
+      close
+
+    method write( bytes:Byte[] )
+      adjust_granularity( bytes.count )
+      write( forEach in bytes )
+
+    method write( values:Int32[] )
+      adjust_granularity( values.count )
+      write( forEach in values )
+
+    method write( file:File )
+      write( file.load_as_bytes )
+
+    method write( value:String )
+      write( value.to_utf8 )
+
+    method write( value:Int32 )
+      builder.add( value )
+      buffer.add( value )
+      if ((buffer.count & (granularity-1)) == 0)
+        local cur_compression = builder.compression
+        if (prev_compression and cur_compression > prev_compression)
+          # Recreate up to previous mark and write out
+          builder = HuffmanBuilder()
+          builder.add( buffer, 0, buffer.count-granularity )
+          write_buffered_chunk
+        else
+          prev_compression = cur_compression
+        endIf
+      endIf
+
+    method write_buffered_chunk
+      if (builder.data.count)
+        buffer.discard( 0, builder.data.count )
+        builder.write( writer )
+        builder = HuffmanBuilder()
+        builder.add( forEach in buffer )
+        prev_compression = 0
+      endIf
+endClass
+
+class HuffmanReader : Reader<<Int32>>
+  # General-purpose Huffman decoder. Reads a byte stream and decompresses values on the fly.
+  #
+  # EXAMPLE
+  #   uses Utility/Huffman
+  #
+  #   local compressed = Byte[][...] # compressed data from HuffmanReader example
+  #
+  #   local reader = HuffmanReader( compressed )
+  #   local n = reader.read
+  #   local a = reader.read_string( n )
+  #   local b = reader.read_string( reader.read )
+  #   @trace a
+  #   # "This is the first test string."
+  #   @trace b
+  #   # "This is the second test string."
+  #
+  PROPERTIES
+    reader       : BitReader
+    remaining    : Int32
+    next         : Int32?
+    literal_bits : Int32
+    root         : HuffmanNode
+
+  METHODS
+    method init( bytes:Byte[] )
+      init( bytes, 0, bytes.count )
+
+    method init( bytes:Byte[], i1:Int32, count:Int32 )
+      reader = BitReader( ListReader<<Byte>>(bytes,i1,i1+count) )
+
+    method init( file:File )
+      reader = BitReader( file.reader )
+
+    method init( reader )
+
+    method has_another->Logical
+      if (next) return true
+      queue_next
+      return next?
+
+    method peek->Int32
+      if (not next)
+        queue_next
+        if (not next) throw OutOfBoundsError( "End of input." )
+      endIf
+      return next.value
+
+    method queue_next
+      if (not remaining)
+        while (not remaining)
+          if (not reader.has_another)
+            return
+          endIf
+          remaining = reader.read_int32x
+        endWhile
+        read_definition
+      endIf
+      next = root.read( reader )
+
+    method read->Int32
+      local result = peek
+      next = null
+      --remaining
+      return result
+
+    method read( bytes:Byte[], max=0:Int32 )->Byte[]
+      while (has_another)
+        bytes.reserve( which{max || remaining} )
+        loop (remaining)
+          bytes.add( read )
+          if (max)
+            --max
+            if (max == 0) escapeWhile
+          endIf
+        endLoop
+      endWhile
+      return bytes
+
+    method read( file:File )
+      # Read values and store them into the given file
+      local writer = file.writer
+      local value = read_another
+      while (value)
+        writer.write( value.value )
+        value = read_another
+      endWhile
+      writer.close
+
+    method read_another->Int32?
+      if (not next)
+        queue_next
+        if (not next) return null
+      endIf
+      local result = next.value
+      next = null
+      --remaining
+      return result
+
+    method read_bytes( max=0:Int32 )->Byte[]
+      return read( Byte[], max )
+
+    method read_string( max=0:Int32 )->String
+      return String( read_bytes(max) )
+
+    method read_definition
+      literal_bits = reader.read(5) + 1
+      root = HuffmanNode( reader, literal_bits )
+
+endClass
+
+class HuffmanBuilder
+  PROPERTIES
+    data              = Int32[]
+    byte_node_lookup  = Dim<<HuffmanNode>>(256)
+    large_node_lookup = [Int32:HuffmanNode]
+    nodes             = HuffmanNode[](320)
+    root              : HuffmanNode
+    max_value         : Int32
+    min_value         : Int32
+    literal_bits      : Int32
+
+  METHODS
+    method add( bytes:Byte[] )
+      add( bytes, 0, bytes.count )
+
+    method add( bytes:Byte[], i1:Int32, count:Int32 )
+      if (@root) deconstruct
+
+      local limit = (i1 + count).or_smaller( bytes.count )
+      forEach (i in i1..<limit)
+        local byte = bytes[i]
+        data.add( byte )
+        local node = byte_node_lookup[byte]
+        if (not node)
+          node = HuffmanNode( byte )
+          byte_node_lookup[byte] = node
+          nodes.add( node )
+        endIf
+        ++node.count
+      endForEach
+
+    method add( values:Int32[] )
+      add( values, 0, values.count )
+
+    method add( values:Int32[], i1:Int32, count:Int32 )
+      local limit = (i1 + count).or_smaller( values.count )
+      count = limit - i1
+
+      loop (count)
+        add( values[i1] )
+        ++i1
+      endLoop
+
+    method add( value:Int32 )
+      if (@root) deconstruct
+
+      data.add( value )
+
+      local node : HuffmanNode
+
+      if (value >= 0 and value <= 255)
+        node = byte_node_lookup[value]
+        if (not node)
+          node = HuffmanNode( value )
+          byte_node_lookup[value] = node
+          nodes.add( node )
+        endIf
+
+      else
+        node = large_node_lookup[ value ]
+        if (not node)
+          node = HuffmanNode( value )
+          large_node_lookup[value] = node
+          nodes.add( node )
+        endIf
+      endIf
+
+      ++node.count
+
+    method compression->Real64
+      return size->Real64 / data.count
+
+    method construct->HuffmanNode
+      if (@root) return @root
+      if (nodes.is_empty) return null
+
+      max_value = nodes.first.value
+      min_value = max_value
+      forEach (node in nodes from 1)
+        max_value .= or_larger( node.value )
+        min_value .= or_smaller( node.value )
+      endForEach
+
+      if (min_value < 0 and max_value > 0)
+        local pos_bits = max_value.minimum_bits
+        local neg_bits = min_value.minimum_bits
+        literal_bits = which{ (neg_bits <= pos_bits):pos_bits + 1 || neg_bits }
+      else
+        literal_bits = min_value.minimum_bits.or_larger( max_value.minimum_bits )
+      endIf
+
+      nodes.sort( (a,b) => a.count > b.count )  # initial quicksort
+
+      while (nodes.count > 1)
+        local b = nodes.remove_last
+        local a = nodes.remove_last
+        nodes.add( HuffmanNode(a,b) )
+        ShakerSort<<HuffmanNode>>.single_reverse_pass( nodes, (a,b) => a.count > b.count )
+        # Single reverse pass of bubble sort for successive sorts since only the last node
+        # might be out of place.
+      endWhile
+
+      @root = nodes.first
+      @root.assign_bit_patterns
+
+      return @root
+
+
+    method deconstruct
+      if (not @root) return
+      nodes.clear
+      @root.collect_leaves( nodes )
+      @root = null
+
+    method register( value:Int32, node:HuffmanNode )
+      # Only necessary if you want to pass in an extended HuffmanNode
+      # to control reading and writing.
+      node.value = value
+      contingent
+        if (value >= 0 and value <= 255)
+          necessary (not byte_node_lookup[value])
+          byte_node_lookup[value] = node
+        else
+          necessary (not large_node_lookup[value])
+          large_node_lookup[value] = node
+        endIf
+      unsatisfied
+        throw Error( "A HuffmanNode already exists for value $."(value) )
+      endContingent
+
+    method root->HuffmanNode
+      return construct
+
+    method size->Int32
+      construct
+      if (not root) return 1
+
+      # data count is stored as an int32x
+      # 5 bits for the literal bit size
+      # 7 to round up
+      return DataWriter.int64x_byte_count(data.count) + ((5 + (root.bit_size( literal_bits ) + 7)) / 8)
+
+    method write( writer:BitWriter )
+      if (not root) return
+
+      writer.write_int32x( data.count )
+
+      writer.write( literal_bits-1, 5 )  # 1-32 literal bits written as 00000..11111
+
+      root.write_definition( writer, literal_bits )
+
+      forEach (value in data)
+        if (value >= 0 and value <= 255)
+          byte_node_lookup[value].write( writer )
+        else
+          large_node_lookup[value].write( writer )
+        endIf
+      endForEach
+endClass
+
+class HuffmanNode
+  PROPERTIES
+    left       : HuffmanNode
+    right      : HuffmanNode
+    value      : Int32
+    count      : Int32
+    pattern    : Int32
+    bits       : Int32
+
+  METHODS
+    method init( value )
+
+    method init( left, right )
+      count = left.count + right.count
+
+    method init( reader:BitReader, value_bits:Int32, pattern=0, bits=0 )
+      if (reader.read(1))
+        left = HuffmanNode( reader, value_bits, pattern:<<:1, bits+1 )
+        right = HuffmanNode( reader, value_bits, (pattern:<<:1)|1, bits+1 )
+      else
+        value = reader.read(value_bits)
+      endIf
+
+    method assign_bit_patterns( pattern=0, bits=0 )
+      if (left)
+        local child_p = pattern :<<: 1
+        left.assign_bit_patterns( child_p, bits+1 )
+        right.assign_bit_patterns( child_p | 1, bits+1 )
+      endIf
+
+    method bit_size( literal_bits:Int32 )->Int64
+      if (left)
+        return 1 + left.bit_size(literal_bits) + right.bit_size(literal_bits)
+      else
+        return 1 + literal_bits + (count * bits)
+      endIf
+
+    method collect_leaves( nodes:HuffmanNode[] )
+      if (left)
+        left.collect_leaves( nodes )
+        right.collect_leaves( nodes )
+      else
+        nodes.add( this )
+      endIf
+
+    method description->String
+      if (left)
+        return left.description + right.description
+      else
+        local builder = String()
+        builder.print which{ (value >= 33 and value != 127):Character(value) || ' ' }
+        builder.print ' '
+        builder.print value.format("4")
+        builder.print " $ ($)\n" (pattern.to_binary_string.rightmost(bits),count)
+        return builder
+      endIf
+
+    method read( reader:BitReader )->Int32
+      if (left)
+        return which{ reader.read(1):right.read(reader) || left.read(reader) }
+      else
+        return value
+      endIf
+
+    method write( writer:BitWriter )
+      writer.write( pattern, bits )
+
+    method write_definition( writer:BitWriter, literal_bits:Int32 )
+      if (left)
+        writer.write( 1, 1 )
+        left.write_definition( writer, literal_bits )
+        right.write_definition( writer, literal_bits )
+      else
+        writer.write( 0, 1 )
+        writer.write( value, literal_bits )
+      endIf
+endClass
+
