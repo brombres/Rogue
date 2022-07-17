@@ -1,0 +1,724 @@
+#===============================================================================
+# BigInt.rogue
+#
+# Big Integer support.  Allows math operations between integers of
+# any size.
+#
+# Example:
+#   uses Utility/BigInt
+#   ...
+#   println( "A 128-bit computer supports integer values between $ and $." ...
+#            (-(BigInt(2)^127),BigInt(2)^127-1) )
+#   # A 128-bit computer supports integer values between
+#   # -170141183460469231731687303715884105728 and
+#   # 170141183460469231731687303715884105727.
+#
+#===============================================================================
+
+class BigInt
+  # Allows integers of any size to be represented and manipulated.
+  # BigInt operations are significantly slower than operations on
+  # primitive Int32/Int64 types so BigInt objects should only be
+  # used when you require integers with more than 64 bits.
+  #
+  # BigInt objects are immutable; operations produce new BigInt
+  # objects as side effects instead of altering operands.
+  #
+  # BigInt numbers are modeled using sign-magnitude; they are not
+  # 2's complement and the sign cannot be directly changed through
+  # a bitwise operation (only incidentally, as when a negative
+  # number is AND'd with zero to produce a zero result).
+  #
+  # BigInt values are stored as a series of unsigned 16-bit
+  # Int32 values.  Their total bit size (in multiples of 16) is only
+  # what's necessary to represent a number's magnitude.
+  #
+  # Similar to Java's BigInt class.
+  #
+  # Examples:
+  #   println( BigInt(123456) ^ BigInt("1000101",2) )
+  #   println( "2^100 = $" (BigInt(2) ^ 100) )
+  GLOBAL PROPERTIES
+    values         = BigInt[](16)
+    zero           : BigInt
+    one            : BigInt
+    ten            : BigInt
+    ten_e144       : BigInt
+    ten_e72        : BigInt
+    ten_e36        : BigInt
+    ten_e18        : BigInt
+    i64_limit      : BigInt
+    setup_complete : Logical
+
+  GLOBAL METHODS
+    method init_class
+      forEach (n in 0..15) values.add( BigInt(n,&new_object) )
+      zero = values[0]
+      one  = values[1]
+      ten  = values[10]
+      values.add( ten )
+      ten_e144  = BigInt(10)^144
+      ten_e72   = BigInt(10)^72
+      ten_e36   = BigInt(10)^36
+      ten_e18   = BigInt(10)^18
+      i64_limit = BigInt("9223372036854775808")
+      setup_complete = true
+
+    method create( n:Int32 )->BigInt
+      return create( n->Int64 )
+
+    method create( n:Int64 )->BigInt
+      # Creates a BigInt object out of an Int64 value.  If
+      # 'n' is 0..15 then a pre-defined BigInt object will
+      # be returned instead.
+      if (n >= 0 and n < 16)
+        local result = values[n]
+        if (result) return result
+      endIf
+      return BigInt(n,&new_object)
+
+  PROPERTIES
+    data      : Int32[]
+    sign_flag = 1  # 1 or -1
+
+  METHODS
+    method init( value:Int64, new_object:Logical )
+      data = Int32[](2)
+      if (value < 0)
+        sign_flag = -1
+        value = -value
+        if (value < 0)
+          # Must be 0xF x 64
+          loop (2) data.add( -1 )
+          return
+        endIf
+      endIf
+
+      data.add( value )
+
+      value = value :>>: 32
+      while (value)
+        data.add( value )
+        value = value :>>>: 32
+      endWhile
+
+    method init( value:String, base=10:Int32 )
+      # Initializes this BigInt to a value specified as a string
+      # of digits in a given base.  'base' can be 2, 10, or 16.
+      if (value[0] == '-')
+        sign_flag = -1
+        value = value.substring(1)
+      endIf
+
+      which (base)
+        case 2
+          # Pad to a multiple of 32 digits
+          value = value.justified( ((value.count-1)|31)+1, '0' )
+
+          data = Int32[](value.count/32)
+          forEach (index in 0..<value.count step 32)
+            data.add( value.substring(index,32)->Int32(2) )
+          endForEach
+          data.reverse
+
+        case 16
+          # Pad to a multiple of 8 digits
+          value = value.justified( ((value.count-1)|7)+1, '0' )
+
+          data = Int32[](value.count/8)
+          forEach (index in 0..<value.count step 8)
+            data.add( value.substring(index,8)->Int32(16) )
+          endForEach
+          data.reverse
+
+        case 10
+          local result = zero
+          forEach (ch in value)
+            result = result * ten
+            if (ch >= '0' and ch <= '9') result = result + values[ch-'0']
+            else Global.error.println "[BigInt] Invalid base 10 digit: $"(value)
+          endForEach
+          data = result.data
+
+        others
+          Global.error.println "[BigInt] Unsupported base: $."(base)
+          data = zero.data
+      endWhich
+
+    method init( other:BigInt )
+      data = other.data.cloned
+      sign_flag = other.sign_flag
+
+    method bits->Int32
+      local result = data.count * 32
+      forEach (n in data step -1)
+        if (n)
+          while (n > 0)
+            --result
+            n = n :<<: 1
+          endWhile
+          return result
+        endIf
+        result -= 32
+      endForEach
+      return 1  # 1 bit to represent 0
+
+    method format( fmt:String )->String
+      # fmt
+      #   - #: right-justify in this many spaces; 0 fill if begins with 0
+      #   - ,: put comma separators
+      local commas = false
+      local zero_fill = false
+      if (fmt.contains(',')) commas = true; fmt = fmt.replacing(",","")
+      if (fmt.begins_with('0')) zero_fill = true
+      local spaces = fmt->String
+      local result = this->String.justified( spaces, which{zero_fill:'0'||' '} )
+
+      if (commas and result.count > 3 and (sign_flag==1 or result.count>4))
+        local builder = String()
+        builder.reserve( result.count )
+        forEach (ch at index in result.reversed)
+          if (index and index%3==0 and ch!='-') builder.print ','
+          builder.print ch
+        endForEach
+        builder.reverse
+        result = builder
+      endIf
+
+      return result
+
+    method operator:<<:( bits:Int32 )->BigInt
+      if (bits == 0) return this
+      if (bits < 0 ) return this :>>: -bits
+
+      local result = BigInt(this)
+      local result_data = result.data
+      while (bits >= 32)
+        result_data.insert(0)
+        bits -= 32
+      endWhile
+
+      if (bits == 0) return result
+
+      local mask = (Int64(1) :<<: bits) - 1
+      local carry : Int64
+      forEach (value at index in result_data)
+        carry = ((value & 0x0_FFFF_FFFF) :<<: bits) | carry
+        result_data[index] = carry & 0x0_FFFF_FFFF
+        carry = (carry :>>>: 32) & mask
+      endForEach
+      if (carry) result_data.add( carry )
+
+      return result
+
+    method operator:>>>:( bits:Int32 )->BigInt
+      return this :>>: bits
+
+    method operator:>>:( bits:Int32 )->BigInt
+      if (bits == 0) return this
+      if (bits < 0)  return this :<<: -bits
+
+      local result = BigInt(this)
+      local result_data = result.data
+      while (bits >= 32)
+        result_data.remove_first
+        if (result_data.count == 0)
+          result_data.add(0)
+          return result
+        endIf
+        bits -= 32
+      endWhile
+      if (bits == 0) return result
+
+      local carry : Int64
+      forEach (value at index in result_data step -1)
+        carry |= value & 0x0_FFFF_FFFF
+        result_data[index] = (carry :>>: bits)
+        carry = (carry :<<: 32) & 0xFFFF_FFFF_0000
+      endForEach
+
+      return result.normalized
+
+    method normalized->BigInt
+      # Removes excess zero values on the most signficant end
+      # and changes a negative zero to a positive zero.
+      while (data.count > 1 and data.last == 0) data.remove_last
+      if (data.count == 1 and data.first == 0) sign_flag = 1
+      return this
+
+    method to->String( base:Int32 )
+      which (base)
+        case 10
+          return this->String
+        case 2
+          local buffer = String()
+          if (is_negative) buffer.print('-')
+          local digits = 1
+          forEach (n in data step -1)
+            (n->Int64 & 0x0_FFFF_FFFF).print_power_of_2( 2, digits, buffer )
+            digits = 32
+          endForEach
+          return buffer
+        case 16
+          local buffer = String()
+          if (is_negative) buffer.print('-')
+          local digits = 1
+          forEach (n in data step -1)
+            (n->Int64 & 0x0_FFFF_FFFF).print_power_of_2( 16, digits, buffer )
+            digits = 8
+          endForEach
+          return buffer
+
+        others: return "(Invalid base: $)"(base)
+      endWhich
+
+    method to->String
+      if (data.count == 1) return "$" (sign_flag * (data.first & 0x0_FFFF_FFFF))
+
+      if (sign_flag == -1)
+        sign_flag = 1
+        local result = this->String
+        sign_flag = -1
+        return "-" + result
+      endIf
+
+      if (not setup_complete)
+        # Can't use divide and conquer because we're still in the setup phase.
+        return this->String( &hex )
+      endIf
+
+      # Values less than 1 * 10^18 can be converted to an Int64
+      # and then into a string.
+      local work = abs(this)
+      if (work < ten_e18)
+        return this->Int64->String
+      endIf
+
+      # divide and conquer values larger than 1 * 10^144
+      if (work > ten_e144)
+        local result = this.divide_and_mod( ten_e144 )
+        return "$$" (result.division,result.modulo->String.justified(144,'0'))
+      endIf
+
+      # divide and conquer values larger than 1 * 10^72
+      if (work > ten_e72)
+        local result = this.divide_and_mod( ten_e72 )
+        return "$$" (result.division,result.modulo->String.justified(72,'0'))
+      endIf
+
+      # divide and conquer values larger than 1 * 10^36
+      if (work > ten_e36)
+        local result = this.divide_and_mod( ten_e36 )
+        return "$$" (result.division,result.modulo->String.justified(36,'0'))
+      endIf
+
+      # divide and conquer values larger >= 10^18
+      local result = this.divide_and_mod( ten_e18 )
+      return "$$" (result.division,result.modulo->String.justified(18,'0'))
+
+    method to->String( &binary, &hex )
+      if (binary) return this->String( 2 )
+      if (hex)    return this->String( 16 )
+      return this->String( 10 )
+
+    method _to_int64->Int64
+      local result = 0 : Int64
+      forEach (n in data step -1)
+        result = (result :<<: 32) | (n & 0x0_FFFF_FFFF)
+      endForEach
+
+      if (sign_flag == -1) result = -result
+
+      return result
+
+    method is_valid_int32->Logical
+      contingent
+        necessary (data.count == 1)
+        local result = _to_int64->Int32
+        necessary ((sign_flag==-1 and result<0) or (sign_flag==1 and result>=0))
+
+      satisfied
+        return true
+
+      unsatisfied
+        return false
+
+      endContingent
+
+    method is_valid_int64->Logical
+      contingent
+        necessary (data.count <= 2)
+        local result = _to_int64
+        necessary ((sign_flag==-1 and result<0) or (sign_flag==1 and result>=0))
+
+      satisfied
+        return true
+
+      unsatisfied
+        return false
+
+      endContingent
+
+    method to->Int32
+      contingent
+        necessary (data.count == 1)
+        local result = _to_int64
+        necessary ((sign_flag==-1 and result<0) or (sign_flag==1 and result>=0))
+        return result
+
+      unsatisfied
+        throw OutOfBoundsError( "BigInt value out of Int32 bounds." )
+
+      endContingent
+
+    method to->Int64
+      contingent
+        necessary (data.count <= 2)
+        local result = _to_int64
+        necessary ((sign_flag==-1 and result<0) or (sign_flag==1 and result>=0))
+        return result
+
+      unsatisfied
+        throw OutOfBoundsError( "BigInt value out of Int64 bounds." )
+
+      endContingent
+
+    method sign->Int32
+      # Returns -1, 0, or 1.
+      if (is_zero) return 0
+      return sign_flag
+
+    method is_negative->Logical
+      return (sign_flag == -1)
+
+    method is_zero->Logical
+      if (data.count > 1) return false
+      return (data.first == 0)
+
+    method operator==( other:BigInt )->Logical
+      if (sign_flag != other.sign_flag) return false
+      if (data.count != other.data.count) return false
+      forEach (index of data)
+        if (data[index] != other.data[index]) return false
+      endForEach
+      return true
+
+    method operator<>( other:BigInt )->Int32
+      if (is_zero)
+        if (other.is_zero)         return  0
+        elseIf (other.is_negative) return  1
+        else                       return -1
+
+      elseIf (other.is_zero)
+        if (is_negative) return -1
+        return 1
+
+      elseIf (is_negative)
+        if (other.is_negative)
+          # both negative; smaller magnitude is larger number
+          local other_data = other.data
+          if (data.count < other_data.count) return  1
+          if (data.count > other_data.count) return -1
+
+          forEach (index of data step -1)
+            local e1 = data[index] & 0x0_FFFF_FFFF
+            local e2 = other_data[index] & 0x0_FFFF_FFFF
+            if (e1 > e2)     return -1
+            elseIf (e1 < e2) return  1
+          endForEach
+
+          return 0
+        else
+          return -1
+        endIf
+
+      else
+        # 'this' is positive
+        if (other.is_negative)
+          return 1
+        else
+          # both positive; larger magnitude is larger number
+          local other_data = other.data
+          if (data.count < other_data.count) return -1
+          if (data.count > other_data.count) return  1
+
+          forEach (index of data step -1)
+            local e1 = data[index] & 0x0_FFFF_FFFF
+            local e2 = other_data[index] & 0x0_FFFF_FFFF
+            if (e1 > e2)     return  1
+            elseIf (e1 < e2) return -1
+          endForEach
+
+          return 0
+        endIf
+
+      endIf
+
+    method operator-()->BigInt
+      local result = BigInt( this )
+      result.sign_flag = -sign_flag
+      return result.normalized
+
+    method operator+( n:BigInt )->BigInt
+      if (this.is_negative == n.is_negative)
+        # both negative or both positive - add magnitudes & leave sign_flag
+        local result = BigInt(this)
+        local dest = result.data
+        local src = n.data
+
+        local carry : Int64
+        local index = 0
+
+        while (dest.count < src.count) dest.add(0)
+
+        forEach (1..src.count)
+          carry += (src[index] & 0x0_FFFF_FFFF)
+          carry += (dest[index] & 0x0_FFFF_FFFF)
+          dest[index] = carry
+          carry = (carry :>>>: 32) & 0x0_FFFF_FFFF
+          index++
+        endForEach
+
+        forEach (index..<dest.count)
+          if (carry == 0) escapeForEach
+          carry += dest[index] & 0x0_FFFF_FFFF
+          dest[index] = carry
+          carry = (carry :>>>: 32) & 0x0_FFFF_FFFF
+          index++
+        endForEach
+
+        if (carry?) dest.add( carry )
+
+        return result
+
+      else
+        if (is_negative)
+          # This is negative, other is positive
+          return n - (-this)
+        else
+          # This is positive, other is negative
+          return (this - (-n))
+        endIf
+      endIf
+
+    method operator-( n:BigInt )->BigInt
+      if (n.is_negative)
+        return this + (-n)
+
+      elseIf (is_negative)
+        return -((-this) + n)
+
+      else
+        # both positive
+        if (this < n)
+          return (-(n - this))
+        else
+          # this is >= n
+          local result = BigInt(this)
+          local index = 0
+          local borrow = false
+          local dest = result.data
+          local src = n.data
+          forEach (1..src.count)
+            local diff = dest[index] & 0x0_FFFF_FFFF
+            if (borrow) --diff
+            diff -= src[index] & 0x0_FFFF_FFFF
+            if (diff < 0) borrow = true; diff += 0x1_0000_0000
+            else borrow = false
+            dest[index] = diff
+            index++
+          endForEach
+
+          while (borrow)
+            local diff = dest[index] & 0x0_FFFF_FFFF
+            diff--
+            if (diff < 0) borrow = true; diff += 0x1_0000_0000
+            else borrow = false
+            dest[index] = diff
+            index++
+          endWhile
+
+          return result.normalized
+        endIf
+
+      endIf
+
+    method operator*( n:BigInt )->BigInt
+      if (this < n) return (n * this)
+      local result = zero
+      local factor = BigInt(this)
+      local control = BigInt(n)
+
+      factor.sign_flag = 1
+      control.sign_flag = 1
+      while (not control.is_zero)
+        if ((control.data.first & 1) == 1)
+          result += factor
+        endIf
+        factor = factor :<<: 1
+        control = control :>>: 1
+      endWhile
+
+      if (sign_flag == 1)
+        if (n.sign_flag == 1) result.sign_flag =  1
+        else                  result.sign_flag = -1
+      else
+        if (n.sign_flag == 1) result.sign_flag = -1
+        else                  result.sign_flag =  1
+      endIf
+      result .= normalized
+      return result
+
+    method divide_and_mod( n:BigInt )->BigIntDivideAndModResult
+      if (n.is_zero)
+        Console.error.println "[BigInt] Illegal division by 0."
+        return BigIntDivideAndModResult(zero,zero)
+      endIf
+
+      local result = zero
+      local remaining = BigInt(this)
+      local factor : Int64
+      local divisor = BigInt(n)
+      remaining.sign_flag = 1
+      divisor.sign_flag = 1
+
+      # Keep doubling the divisor, increasing factors of 2, until we meet or
+      # shoot past the original value
+      while (divisor < remaining)
+        ++factor
+        divisor = divisor :<<: 1
+      endWhile
+
+      # Start halving the divisor again summing the factors of 2 that can be
+      # taken out of the remaining number
+      while (factor >= 0)
+        if (divisor <= remaining)
+          result += one :<<: factor
+          remaining -= divisor
+        endIf
+        divisor = divisor :>>: 1
+        --factor
+      endWhile
+
+      remaining.sign_flag = sign_flag
+
+      result.sign_flag = sign_flag * n.sign_flag
+      result .= normalized
+      remaining .= normalized
+      return BigIntDivideAndModResult( result, remaining )
+
+    method divide_and_mod( n:Int64 )->BigIntDivideAndModResult
+      return divide_and_mod( BigInt(n) )
+
+    method operator/( n:BigInt )->BigInt
+      return divide_and_mod( n ).division
+
+    method operator%( n:BigInt )->BigInt
+      return divide_and_mod( n ).modulo
+
+    method operator^( n:BigInt )->BigInt
+      if (n.is_negative) throw Error( "BitInt.operator^ - Invalid operand $" (n) )
+      if (n.is_zero) return one
+      if (n == one) return this
+
+      if (is_odd(n))
+        return this * (this ^ (n - one))
+      endIf
+
+      local half_power = this ^ (n:>>:1)
+      local result = half_power * half_power
+      return result
+
+    method operator&( n:BigInt )->BigInt
+      if (n.data.count > this.data.count) return (n & this)
+
+      local result = BigInt(this)
+      forEach (index of n.data) result.data[index] &= n.data[index]
+      return result.normalized
+
+    method operator|( n:BigInt )->BigInt
+      if (n.data.count > this.data.count) return (n | this)
+
+      local result = BigInt(this)
+      forEach (index of n.data) result.data[index] |= n.data[index]
+      return result
+
+    method operator~( n:BigInt )->BigInt
+      if (n.data.count > this.data.count) return (n ~ this)
+
+      local result = BigInt(this)
+      forEach (index of n.data) result.data[index] ~= n.data[index]
+      return result.normalized
+
+    method operator==( n:Int64 )->Logical
+      return this == BigInt(n)
+
+    method operator<>( n:Int64 )->Int32
+      return this.operator<>( BigInt(n) )
+
+    method operator+( n:Int64 )->BigInt
+      return this + BigInt(n)
+
+    method operator-( n:Int64 )->BigInt
+      return this - BigInt(n)
+
+    method operator*( n:Int64 )->BigInt
+      return this * BigInt(n)
+
+    method operator/( n:Int64 )->BigInt
+      return this / BigInt(n)
+
+    method operator%( n:Int64 )->BigInt
+      return this % BigInt(n)
+
+    method operator^( n:Int64 )->BigInt
+      return this ^ BigInt(n)
+
+    method operator&( n:Int64 )->BigInt
+      return this & BigInt(n)
+
+    method operator|( n:Int64 )->BigInt
+      return this | BigInt(n)
+
+    method operator~( n:Int64 )->BigInt
+      return this ~ BigInt(n)
+
+    method sqrt->BigInt
+      if (is_negative) throw Error( "BigInt cannot compute the square root of negative number $." (this.format(",")) )
+      return _sqrt( this )
+
+  GLOBAL METHODS
+    method _sqrt( n:BigInt )->BigInt
+      # Helper method for BigInt.sqrt()
+
+      # Algorithm adapted from:
+      # https://en.wikipedia.org/wiki/Integer_square_root#Using_bitwise_operations
+
+      if (n.is_zero or n == one) return n
+
+      # Recursive call:
+      local low = _sqrt(n :>>: 2) :<<: 1
+      local high = low + 1
+      if (high * high > n) return low
+      else                 return high
+
+endClass
+
+class BigIntDivideAndModResult( division:BigInt, modulo:BigInt ) [compound];
+
+augment Global
+  METHODS
+    method abs( n:BigInt )->BigInt
+      if (n.is_negative) return -n
+      return n
+
+    method is_odd( n:BigInt )->Logical
+      return (n.data.first & 1) != 0
+
+    method is_even( n:BigInt )->Logical
+      return (n.data.first & 1) == 0
+endAugment
+
+class BigPrimes [singleton]
+  PROPERTIES
+endClass
