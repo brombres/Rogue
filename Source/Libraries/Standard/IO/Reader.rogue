@@ -40,7 +40,7 @@ class Reader<<$DataType>> [abstract aspect]
     method seek( pos:Int32 )
       local delta = pos - position
       if (delta >= 0) skip( delta )
-      else            Global.error.println( "Unsupported operation $.seek(<backwards position>)"(type_name) )
+      else            error.println( "Unsupported operation $.seek(<backwards position>)"(type_name) )
 
     method skip( n:Int32 )
       forEach (1..n) read

@@ -136,12 +136,12 @@ class BigInt
           forEach (ch in value)
             result = result * ten
             if (ch >= '0' and ch <= '9') result = result + values[ch-'0']
-            else Global.error.println "[BigInt] Invalid base 10 digit: $"(value)
+            else error.println "[BigInt] Invalid base 10 digit: $"(value)
           endForEach
           data = result.data
 
         others
-          Global.error.println "[BigInt] Unsupported base: $."(base)
+          error.println "[BigInt] Unsupported base: $."(base)
           data = zero.data
       endWhich
 

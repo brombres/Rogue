@@ -77,17 +77,17 @@ class CharacterToUTF8ByteWriter : Writer<<Character>>
 
     method seek( pos:Int32 )
       if (pos != 0)
-        Global.error.println( "CharacterToUTF8ByteWriter cannot seek to non-zero position." )
+        error.println( "CharacterToUTF8ByteWriter cannot seek to non-zero position." )
         return
       endIf
       position = 0
       byte_writer.seek( 0 )
 
     method seek_end()
-      Global.error.println( "CharacterToUTF8ByteWriter does not support seek_end()." )
+      error.println( "CharacterToUTF8ByteWriter does not support seek_end()." )
 
     method skip( n:Int32 )
-      Global.error.println( "CharacterToUTF8ByteWriter does not support skip()." )
+      error.println( "CharacterToUTF8ByteWriter does not support skip()." )
 
     method write( value:Character )
       if (value <= 0x7F)
@@ -123,17 +123,17 @@ class UTF8ByteToCharacterWriter : Writer<<Byte>>
 
     method seek( pos:Int32 )
       if (pos != 0)
-        Global.error.println( "UTF8ByteToCharacterWriter cannot seek to non-zero position." )
+        error.println( "UTF8ByteToCharacterWriter cannot seek to non-zero position." )
         return
       endIf
       position = 0
       character_writer.seek( 0 )
 
     method seek_end()
-      Global.error.println( "UTF8ByteToCharacterWriter does not support seek_end()." )
+      error.println( "UTF8ByteToCharacterWriter does not support seek_end()." )
 
     method skip( n:Int32 )
-      Global.error.println( "UTF8ByteToCharacterWriter does not support skip()." )
+      error.println( "UTF8ByteToCharacterWriter does not support skip()." )
 
     method write( value:Byte )
       bytes.add( value )
