@@ -1762,29 +1762,28 @@ class Resolver : Poolable, Visitor
           endForEach
         endIf
 
-        if (type_context)
+        block
+          assert type_context
           local result = resolve_global_access( t, type_context, name, args, &=suppress_error )
           if (result) return result
+        endBlock
 
-        else
-          if (this_type)
-            local result = resolve_global_access( t, this_type, name, args, &=suppress_error )
-            if (result) return result
-          endIf
-
+        block
           assert this_module
           forEach (implicit_type in this_module.implicit_context)
             local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
             if (result) return result
           endForEach
+        endBlock
 
-          if (not args)
-            # Global property
-            local p = Program.type_Global.properties[ name ]
-            if (p)
-              local cmd_get_p = GetProperty( t, GetSingleton(t,Program.type_Global), p )
-              return validate( cmd_get_p )
-            endIf
+        # Global singleton property
+        local p = Program.type_Global.properties[ name ]
+        if (p)
+          local cmd_get_p = GetProperty( t, GetSingleton(t,Program.type_Global), p )
+          if (args)
+            return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+          else
+            return validate( cmd_get_p )
           endIf
         endIf
 
