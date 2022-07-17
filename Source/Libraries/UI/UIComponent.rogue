@@ -1,6 +1,6 @@
 module UI
 
-uses Utility/Node
+uses Utility/Collection/Node
 
 # Make sure the UI_DYNAMIC_PROPERTY macro gets included first
 $include UI/UIDynamicProperties
