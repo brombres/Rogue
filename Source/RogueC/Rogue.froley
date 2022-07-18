@@ -114,6 +114,7 @@ KEYWORD_THROW             throw
 KEYWORD_TRACE             trace
 KEYWORD_TRUE              true
 KEYWORD_TRY               try
+KEYWORD_TYPE_OF           typeOf
 KEYWORD_UNDEFINED         undefined
 KEYWORD_UNSATISFIED       unsatisfied [structural]
 KEYWORD_USE               use
@@ -1860,10 +1861,6 @@ parser
   onPeek "use"         use:                return
   statement
 
-- args_or_null
-  if (nextIs('(')) args
-  else             produceNull
-
 - optional_args
   if (nextIs('(')) args
   else             createNull
@@ -2813,8 +2810,6 @@ parser
     produce Access(name="set_state":String,args)
   endOn
 
-  on "defaultValue" "<<" type ">>" -> DefaultValue(of_type:Type)
-
   on "native"
     native_code
     return
@@ -2837,6 +2832,9 @@ parser
     call on_generic_fn_arg
     produce GenericFnArg
   endOn
+
+  on "defaultValue" "<<" type ">>"               -> DefaultValue(of_type:Type)
+  on "typeOf" "<<" expression ">>" optional_args -> TypeOf(expression,args:Args)
 
   on "ThisType"
     create Type(name="ThisType":String)

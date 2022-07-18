@@ -4882,3 +4882,21 @@ class IntrospectionGetObjectProperty : Cmd
       return "IntrospectionGetObjectProperty($,$)" (%info,%context)
 
 endClass
+
+class TypeOf : Cmd
+  PROPERTIES
+    expression : Cmd
+    args       : Args
+
+  METHODS
+    method init( t, expression, args )
+
+    method init( existing:TypeOf )
+      prior.init( existing )
+      if (existing.expression) expression = existing.expression.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "TypeOf($,$)" (%expression,%args)
+
+endClass

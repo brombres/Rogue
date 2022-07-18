@@ -1449,6 +1449,10 @@ class Resolver : Poolable, Visitor
       cmd.@type.organize
       return validate( cmd )
 
+    method on( cmd:TypeOf )->Cmd
+      local expr = visit( cmd.expression )
+      return visit( TypeAccess(expr.t,expr.require_type,cmd.args) )
+
     method on( cmd:TypedDestructuringLocalDeclarations )->Cmd
       local tuple = visit( cmd.tuple )
       local tuple_type = tuple.require_type

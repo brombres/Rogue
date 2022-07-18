@@ -133,7 +133,7 @@ augment
         if (result) return result
 
         # Look for a TargetType(cmd) constructor.
-        local exact_arg_types = not (this_type.is_reference and target_type.is_reference)
+        local exact_arg_types = not (this_type.is_reference and (target_type.is_reference or target_type is Program.@type_Value))
         result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types )
         if (result) return result
 
