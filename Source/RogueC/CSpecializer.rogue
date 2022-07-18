@@ -633,6 +633,17 @@ augment Type
 
 endAugment
 
+augment Module
+  PROPERTIES
+    c_name : String
+
+  METHODS
+    method c_name->String
+      if (@c_name) return @c_name
+      @c_name = name.replacing("::","_")
+      return @c_name
+endAugment
+
 augment
   METHODS
     method GlobalMethod.c_name->String
@@ -664,9 +675,6 @@ augment
         c_name = builder
         return @c_name
       endUse
-
-    method Module.c_name->String
-      return name
 
 endAugment
 

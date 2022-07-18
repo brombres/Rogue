@@ -540,7 +540,7 @@ class Parser : ParserCore, Poolable
       local attributes = _cmd_stack.remove_last->(as Attributes)
       local path = _cmd_stack.remove_last
       if (collecting_templates)
-        local m = Program.get_module( path.t, File.filename(path) )
+        local m = Program.get_module( path.t, path->String.replacing("/","::") )
         Program.current_module.uses_module( m, &is_exported=attributes.is_exported )
       endIf
 
