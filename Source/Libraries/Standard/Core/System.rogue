@@ -20,12 +20,12 @@ class System [essential]
   GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
-    execution_start_time   = System.time : Real
+    execution_start_ms     = System.time_ms : Int64
 
   GLOBAL METHODS
     method elapsed_ms->Int32
       # Execution time in milliseconds.
-      return ((System.time - execution_start_time) * 1000)->Int32
+      return (System.time_ms - execution_start_ms)->Int32
 
     method executable_filepath->String
       if (@executable_filepath) return @executable_filepath
@@ -167,21 +167,22 @@ class System [essential]
 
     method sleep( seconds:Real )
       # Suspends execution of this program for the specified number of seconds.
-      #local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
-      local s = Int32(seconds)
-      local ms = Int32((seconds*1000) % 1000)
+      sleep_ms( (seconds * 1000)->Int32 )
 
+    method sleep_ms( ms:Int32 )
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
-              |//if (do_exit) ROGUE_EXIT;
-              |Sleep( $ms );
-              |//if (do_exit) ROGUE_ENTER;
+              |  //local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
+              |  //if (do_exit) ROGUE_EXIT;
+              |  Sleep( $ms );
+              |  //if (do_exit) ROGUE_ENTER;
               |#else
-      native @|struct timespec sleep_time;
-              |sleep_time.tv_sec = (time_t) $s;
-              |sleep_time.tv_nsec = (long) ($ms * 1000000);
-              |//if (do_exit) ROGUE_EXIT;
-              |nanosleep( &sleep_time, NULL );
-              |//if (do_exit) ROGUE_ENTER;
+              |  //local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
+      native @|  struct timespec sleep_time;
+              |  sleep_time.tv_sec = (time_t) ($ms/1000);
+              |  sleep_time.tv_nsec = (long) (($ms%1000) * 1000000);
+              |  //if (do_exit) ROGUE_EXIT;
+              |  nanosleep( &sleep_time, NULL );
+              |  //if (do_exit) ROGUE_ENTER;
               |#endif
 
     method sync_storage
