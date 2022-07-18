@@ -841,9 +841,6 @@ endClass
 
 class Logical [primitive]
   METHODS
-    method description->String
-      return this->String
-
     method hash_code->Int32
       if (this) return 1
       else      return 0
@@ -873,9 +870,6 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
     method clamped_high( high:$DataType )->$DataType
       if (this > high) return high
       return this
-
-    method description->String
-      return this->String
 
     method or_larger( other:$DataType )->$DataType
       return which{ this>=other:this || other }

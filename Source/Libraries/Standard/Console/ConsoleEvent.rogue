@@ -42,7 +42,7 @@ class ConsoleEvent( type:ConsoleEventType, x:Int32, y:Int32 ) [compound]
     method is_scroll_down->Logical
       return (type==ConsoleEventType.SCROLL_DOWN)
 
-    method description->String
+    method to->String
       which (type)
         case ConsoleEventType.CHARACTER
           which (Int32(x))

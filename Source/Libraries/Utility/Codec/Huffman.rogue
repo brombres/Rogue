@@ -472,9 +472,16 @@ class HuffmanNode
         nodes.add( this )
       endIf
 
-    method description->String
+    method read( reader:BitReader )->Int32
       if (left)
-        return left.description + right.description
+        return which{ reader.read(1):right.read(reader) || left.read(reader) }
+      else
+        return value
+      endIf
+
+    method to->String
+      if (left)
+        return left->String + right->String
       else
         local builder = String()
         builder.print which{ (value >= 33 and value != 127):Character(value) || ' ' }
@@ -482,13 +489,6 @@ class HuffmanNode
         builder.print value.format("4")
         builder.print " $ ($)\n" (pattern.to_binary_string.rightmost(bits),count)
         return builder
-      endIf
-
-    method read( reader:BitReader )->Int32
-      if (left)
-        return which{ reader.read(1):right.read(reader) || left.read(reader) }
-      else
-        return value
       endIf
 
     method write( writer:BitWriter )

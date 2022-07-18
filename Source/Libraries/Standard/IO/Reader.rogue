@@ -6,11 +6,6 @@ class Reader<<$DataType>> [abstract aspect]
     method close
       noAction
 
-    method description->String
-      local buffer = $DataType[]
-      while (has_another) buffer.add( read )
-      return buffer->String
-
     method has_another->Logical [abstract]
 
     method peek->$DataType [abstract]
@@ -44,6 +39,11 @@ class Reader<<$DataType>> [abstract aspect]
 
     method skip( n:Int32 )
       forEach (1..n) read
+
+    method to->String
+      local buffer = $DataType[]
+      while (has_another) buffer.add( read )
+      return buffer->String
 
     method to->$DataType[]
       local result = $DataType[]

@@ -59,12 +59,6 @@ class Node<<$ExtendedNodeType>>
       endWhile
       return false
 
-    method description->String
-      local result = "$"(type_name)
-      if (first_child) result += "($)"(first_child)
-      if (next)        result += "," + next
-      return result
-
     method detach( &preserve_next )->$ExtendedNodeType
       # Detaches this node from its current parent and all of its siblings.
       #
@@ -311,6 +305,12 @@ class Node<<$ExtendedNodeType>>
         @next = null
         return (this->(as $ExtendedNodeType), tail)
       endIf
+
+    method to->String
+      local result = "$"(type_name)
+      if (first_child) result += "($)"(first_child)
+      if (next)        result += "," + next
+      return result
 
 endClass
 

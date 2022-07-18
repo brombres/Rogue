@@ -720,7 +720,7 @@ class ListIterator<<$DataType>>( list:$DataType[], position=0:Int32, limit=-1:In
       ++position
       return list[ position-1 ]
 
-    method description->String
+    method to->String
       return to_list->String
 
     method to->$DataType[]( result=null:$DataType[] )

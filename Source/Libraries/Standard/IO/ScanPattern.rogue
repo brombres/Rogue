@@ -58,7 +58,7 @@ class ScanPatternRoot( pattern:ScanPattern ) : ScanPattern
       if (not pattern.scan(scanner,builder)) return false
       return (scanner.position != og_pos)
 
-    method description->String
+    method to->String
       return pattern->String
 endClass
 
@@ -80,7 +80,7 @@ class ScanPatternList( patterns:ScanPattern[] ) : ScanPattern
       endForEach
       return true
 
-    method description->String
+    method to->String
       return "{$}"(patterns.join(""))
 endClass
 
@@ -110,7 +110,7 @@ class SinglesSetScanPattern : ScanPattern
       if (builder) builder.print ch
       return true
 
-    method description->String
+    method to->String
       return "[$]" (escape(pattern,"]"))
 endClass
 
@@ -180,7 +180,7 @@ class LowHighSetScanPattern : ScanPattern
         return false
       endIf
 
-    method description->String
+    method to->String
       return "[$]" (pattern)
 endClass
 
@@ -191,7 +191,7 @@ class LiteralStringScanPattern( characters:String ) : ScanPattern
       if (builder) builder.print characters
       return true
 
-    method description->String
+    method to->String
       return escape( characters, "{}[]*+?." )
 endClass
 
@@ -201,7 +201,7 @@ class ZeroOrMoreScanPattern( operand:ScanPattern ) : ScanPattern
       while (operand.scan(scanner,builder)) noAction
       return true
 
-    method description->String
+    method to->String
       return "$*"(operand)
 endClass
 
@@ -212,7 +212,7 @@ class OneOrMoreScanPattern( operand:ScanPattern ) : ScanPattern
       while (operand.scan(scanner,builder)) noAction
       return true
 
-    method description->String
+    method to->String
       return "$+"(operand)
 endClass
 
@@ -222,7 +222,7 @@ class ZeroOrOneScanPattern( operand:ScanPattern ) : ScanPattern
       operand.scan( scanner, builder )
       return true
 
-    method description->String
+    method to->String
       return "$?"(operand)
 endClass
 
@@ -236,7 +236,7 @@ class AnyCharacterScanPattern : ScanPattern
       if (builder) builder.print( ch )
       return true
 
-    method description->String
+    method to->String
       return "."
 endClass
 

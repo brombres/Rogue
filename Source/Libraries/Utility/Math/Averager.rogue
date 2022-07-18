@@ -24,7 +24,7 @@ class Averager<<$DataType>> [compound]
     method average->$DataType
       return sum / count
 
-    method description->String
+    method to->String
       localize average
       if (average == Int32(average)) return average->String
       else                           return average.format(".2")

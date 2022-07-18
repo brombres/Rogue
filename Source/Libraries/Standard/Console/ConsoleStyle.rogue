@@ -60,6 +60,9 @@ class ConsoleStyle [singleton]
     BG_WHITE         = 107
 
   METHODS
+    method reset( output=Global:PrintWriter )
+      set( RESET, output )
+
     method set( code:Int32, output=Global:PrintWriter )
       output.flush
       output.print( "\e[" )
