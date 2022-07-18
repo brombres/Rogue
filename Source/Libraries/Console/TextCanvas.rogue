@@ -1,5 +1,3 @@
-module TextCanvas
-
 uses Geometry [export]
 
 class TextCanvas  : BufferedPrintWriter<<builder>>
