@@ -1,4 +1,4 @@
-$include "Utility/ProgressFn.rogue"
+$include "Presentation/ProgressFn.rogue"
 
 class Action
   DEFINITIONS
@@ -128,6 +128,9 @@ class Action
       if (next) result = "$ + $" (result,next->String)
       if (concurrent) result = "($) | ($)" (result,concurrent)
       return result
+
+    method to->String
+      return description
 
     method update->Action
       local cur_ticks = System.ticks
