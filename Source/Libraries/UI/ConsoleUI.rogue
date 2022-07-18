@@ -1,7 +1,7 @@
 module ConsoleUI
 
 uses UI [export]
-uses Utility/TextCanvas
+uses Console/TextCanvas
 
 class ConsoleUI : UI
   GLOBAL PROPERTIES
