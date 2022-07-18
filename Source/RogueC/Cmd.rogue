@@ -2011,7 +2011,12 @@ class TemplateArgs : CmdList
         builder.print "<<"
         forEach (i of this)
           if (i) builder.print ','
-          builder.print type(i)
+          local type = type(i)
+          if (type)
+            builder.print type.scoped_name
+          else
+            builder.print( (forEach in this[i].tokens)->String )
+          endIf
         endForEach
         builder.print ">>"
         return builder->String

@@ -97,7 +97,7 @@ class StandardConsoleMode : ConsoleMode
             endIf
 
           unsatisfied
-            next_input_character = b1
+            next_input_character = b1->Int32
 
           endContingent
 

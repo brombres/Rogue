@@ -1,4 +1,6 @@
-class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) [compound]
+class OptionalType [aspect];
+
+class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) : OptionalType [compound]
   GLOBAL METHODS
     method create->$DataType?
       local default_value : $DataType

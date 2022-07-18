@@ -119,6 +119,9 @@ augment
       use TypeConversionStack
         TypeConversionStack.push( (this_type,target_type) )
 
+        this_type.organize
+        target_type.organize
+
         if (this_type is Program.@type_Value)
           if (target_type is Program.@type_Value) return cmd
           return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
@@ -130,7 +133,8 @@ augment
         if (result) return result
 
         # Look for a TargetType(cmd) constructor.
-        result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &exact_arg_types )
+        local exact_arg_types = not (this_type.is_reference and target_type.is_reference)
+        result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types )
         if (result) return result
 
         if (this_type.instance_of(target_type))
@@ -179,6 +183,8 @@ augment
       target_type.organize
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
+      elseIf (target_type is Program.@type_Value)
+        return NativeExpression( t, "(RogueValue) { ROGUE_VALUE_TYPE_NULL }", Program.type_Value )
       elseIf (target_type.is_reference)
         of_type = target_type
         return this

@@ -1532,20 +1532,25 @@ augment
       endIf
 
     method Type.generate_c_class_typedefs( writer:CWriter )
+      local any_output = false
+
       if (this.is_object or this.is_compound)
         writer.print   "typedef struct "
         writer.print   this.c_name
         writer.print   ' '
         writer.print   this.c_name
         writer.println ";"
+        any_output = true
       endIf
 
       if (not this.is_aspect)
         writer.print "extern RogueType Type"
         writer.print this.c_name
         writer.println ";"
+        any_output = true
       endIf
-      writer.println
+
+      if (any_output) writer.println
 
     method Module.generate_c_header( writer:CWriter )
       if (native_headers.count)

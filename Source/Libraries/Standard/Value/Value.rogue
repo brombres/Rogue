@@ -578,6 +578,8 @@ class Value [compound]
         else    return $Type(0)
       elseIf ($Type isType XY or $Type isType Box)
         return this->$Type
+      elseIf ($Type instanceOf OptionalType)
+        return Value?(this)
       else
         local box = this->Object->(as Boxed<<$Type>>)
         if (box) return box->$Type
@@ -719,5 +721,17 @@ augment Object
   METHODS
     method write_json( builder:String, &formatted, &omit_commas )
       builder.[ print(''{"type":"''), print(type_name), print(''"}'') ]
+endAugment
+
+augment TableKeysIterator<<Rogue::String,Rogue::Value>>
+  METHODS
+    method to->Value
+      return Value(to_list)
+endAugment
+
+augment TableValuesIterator<<Rogue::String,Rogue::Value>>
+  METHODS
+    method to->Value
+      return Value(to_list)
 endAugment
 
