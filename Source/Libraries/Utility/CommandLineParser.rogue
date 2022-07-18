@@ -63,8 +63,6 @@
 #   ].parse( System.command_line_arguments )
 #
 #
-module CommandLineParser
-
 class CommandLineParser
   PROPERTIES
     handlers        = [String:Function(CommandLineParser)]()

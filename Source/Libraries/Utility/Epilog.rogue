@@ -1,0 +1,50 @@
+class Epilog : BufferedPrintWriter<<buffer>> [singleton]
+  # Epilog is a PrintWriter log that stores all output in memory or in a file,
+  # optionally echoing to standard output. If the output is not stored to
+  # a file then all collected output is printed on program termination
+  # (including CTRL+C but not including an uncaught exception).
+  #
+  # USAGE
+  #   uses Utility/Epilog
+  #   ...
+  #   Epilog.configure( File("Log.txt"), &echo )  # optional
+  #   ...
+  #   Epilog.println "XYZ"
+  #   ...
+  PROPERTIES
+    echo        : Logical
+    writer      : PrintWriter
+    history     = String()
+    is_finished : Logical
+
+  METHODS
+    method init
+      on_exit( this=>on_finish )
+
+    method configure( file=null:File?, echo=false )
+      if (writer) writer.close; writer = null
+      if local file = file
+        if (file.exists) file.delete
+        writer = PrintWriter( file.writer )
+      endIf
+
+    method on_finish
+      if (is_finished) return
+      is_finished = true
+
+      if (writer) writer.close
+
+      if (history.count)
+        Global.println  # Get clear of e.g. ^C character
+        Global.println history
+      endIf
+
+    method flush( buffer:String )
+      if (writer) writer.[ print(buffer), flush ]
+      else        history.print buffer
+
+      if (echo) Global.[ print(buffer), flush ]
+
+      buffer.clear
+endClass
+

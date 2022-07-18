@@ -1,0 +1,78 @@
+class Best<<$DataType,$ScoreType>>( better_fn:Function($ScoreType,$ScoreType)->Logical ) [compound]
+  # Tracks the best (value,score) pair among all considered pairs.
+  #
+  # EXAMPLE
+  #   # Find the index of the smallest real number in a list.
+  #   uses Math/Best
+  #
+  #   local numbers = [3.1, 0.2, 5.8, -1.0, 4.0]
+  #
+  #   local best = Best<<Int32,Real64>>( (a,b) => a < b )
+  #   # Finding the best Int32 value and Real64 score.
+  #   # The comparison function (a,b) should return true when score 'a' is better than score 'b'.
+  #
+  #   forEach (value at i in numbers)
+  #     best.consider( i, value )
+  #   endForEach
+  #
+  #   println "Lowest: numbers[$] = $" (best.value,best.score)
+  #   # Lowest: numbers[3] = -1.0
+  PROPERTIES
+    value  : $DataType
+    score  : $ScoreType
+    exists : Logical
+
+  METHODS
+    method consider( candidate_value:$DataType, candidate_score:$ScoreType )->Logical [mutating]
+      # Returns 'true' if a new best value is stored.
+      if (not exists or better_fn(candidate_score,score))
+        exists = true
+        value = candidate_value
+        score = candidate_score
+        return true
+      else
+        return false
+      endIf
+
+    method to->Logical
+      return exists
+endClass
+
+class Best<<$DataType>>( better_fn:Function($DataType,$DataType)->Logical ) [compound]
+  # Tracks the best (value,score) pair among all considered pairs.
+  #
+  # EXAMPLE
+  #   # Find the index of the smallest real number in a list.
+  #   uses Math/Best
+  #
+  #   local numbers = [3.1, 0.2, 5.8, -1.0, 4.0]
+  #
+  #   local best = Best<<Int32,Real64>>( (a,b) => a < b )
+  #   # Finding the best Int32 value and Real64 score.
+  #   # The comparison function (a,b) should return true when score 'a' is better than score 'b'.
+  #
+  #   forEach (value at i in numbers)
+  #     best.consider( i, value )
+  #   endForEach
+  #
+  #   println "Lowest: numbers[$] = $" (best.value,best.score)
+  #   # Lowest: numbers[3] = -1.0
+  PROPERTIES
+    value  : $DataType
+    exists : Logical
+
+  METHODS
+    method consider( candidate_value:$DataType )->Logical [mutating]
+      # Returns 'true' if a new best value is stored.
+      if (not exists or better_fn(candidate_value,value))
+        exists = true
+        value = candidate_value
+        return true
+      else
+        return false
+      endIf
+
+    method to->Logical
+      return exists
+endClass
+

@@ -1,0 +1,9 @@
+# This library is included by RogueC as needed.
+
+$include Collection/Table
+$include FileIO/File
+$include FileIO/FileListing
+$include FileIO/FilePattern
+$include FileIO/FileReader
+$include FileIO/FileWriter
+$include FileIO/Files

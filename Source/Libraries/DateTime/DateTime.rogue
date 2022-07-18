@@ -1,0 +1,7 @@
+# This library is included by RogueC as needed.
+
+$include DateTime/Date
+$include DateTime/Time
+$include DateTime/TimeInterval
+$include DateTime/Timestamp
+

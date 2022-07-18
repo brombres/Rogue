@@ -1,0 +1,11 @@
+# This library is included by RogueC as needed.
+
+$include Introspection/TypeInfo
+$include Introspection/MethodInfo
+$include Introspection/PropertyInfo
+
+augment Object
+  METHODS
+    method type_info->TypeInfo
+      return TypeInfo[type_info_index]
+endAugment

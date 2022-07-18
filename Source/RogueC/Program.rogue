@@ -323,7 +323,7 @@ class Program [singleton]
 
     method type_TypeInfo->Type
       if (@type_TypeInfo) return @type_TypeInfo
-      Program.include( t, "Standard/Introspection" )
+      Program.include( t, "Introspection" )
       type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
       return @type_TypeInfo
 

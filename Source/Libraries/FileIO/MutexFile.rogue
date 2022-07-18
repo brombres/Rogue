@@ -1,0 +1,30 @@
+class MutexFile
+  # Useful when a re-entrant program needs a mutex - for example a CGI program
+  # that is invoked multiple times concurrently.
+  #
+  # USAGE
+  #   uses FileIO/MutexFile
+  #
+  #   use MutexFile("Mutex")
+  #     ... # do other stuff
+  #   endUse
+  PROPERTIES
+    file : File
+    fd   : Int32
+
+  METHODS
+    method init( file )
+
+    method init( filepath:String )
+      file = File(filepath)
+
+    method on_use->this
+      if (not file.exists) file.save( "Mutex\n" )
+      native @|$fd = open( $file.filepath->data->as_utf8, O_RDONLY );
+      if (fd < 0) error.println( "Unable to acquire file lock on: "+file )
+      native @|flock( $fd, LOCK_EX );
+      return this
+
+    method on_end_use( THIS:MutexFile )
+      native @|flock( $fd, LOCK_UN );
+endClass

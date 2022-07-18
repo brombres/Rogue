@@ -161,14 +161,14 @@ class RogueC
       while (Scanner.uses_autoinclude)
         local t = Program.t
         Scanner.uses_autoinclude = false
-        if (Scanner.uses_DateTime) Program.include( t, "Standard/DateTime" ); Scanner.uses_DateTime = false
-        if (Scanner.uses_File)     Program.include( t, "Standard/FileIO" ); Scanner.uses_File = false
-        if (Scanner.uses_Introspection) Program.include( t, "Standard/Introspection" ); Scanner.uses_Introspection = false
-        if (Scanner.uses_Process)  Program.include( t, "Standard/Process" ); Scanner.uses_Process = false
-        if (Scanner.uses_Scanner)  Program.include( t, "Standard/IO/Scanner" ); Scanner.uses_Scanner = false
-        if (Scanner.uses_Set)      Program.include( t, "Standard/Collection/Set" ); Scanner.uses_Set = false
-        if (Scanner.uses_Table)    Program.include( t, "Standard/Collection/Table" ); Scanner.uses_Table = false
-        if (Scanner.uses_Value)    Program.include( t, "Standard/Value" ); Scanner.uses_Value = false
+        if (Scanner.uses_DateTime) Program.include( t, "DateTime" ); Scanner.uses_DateTime = false
+        if (Scanner.uses_File)     Program.include( t, "FileIO" ); Scanner.uses_File = false
+        if (Scanner.uses_Introspection) Program.include( t, "Introspection" ); Scanner.uses_Introspection = false
+        if (Scanner.uses_Process)  Program.include( t, "Process" ); Scanner.uses_Process = false
+        if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
+        if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
+        if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
+        if (Scanner.uses_Value)    Program.include( t, "Value" ); Scanner.uses_Value = false
       endWhile
 
       Program.resolve

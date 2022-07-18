@@ -1,0 +1,251 @@
+$include Console/ConsoleCursor
+$include Console/ConsoleErrorPrinter
+$include Console/ConsoleEvent
+$include Console/ConsoleMode
+$include Console/ConsoleStyle
+
+class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singleton]
+  DEFINITIONS
+    UP_ARROW    = 17
+    DOWN_ARROW  = 18
+    RIGHT_ARROW = 19
+    LEFT_ARROW  = 20
+
+  PROPERTIES
+    error   : PrintWriter
+    cursor  : ConsoleCursor
+
+    is_end_of_input : Logical
+    # Can be set after has_another() returns false in standard line-buffered input mode.
+    # Call reset_input to re-enable input.
+
+    immediate_mode : Logical
+    # Set to 'true' to turn off echo and line buffering and to turn on mouse events
+
+    decode_utf8  = true
+
+    mode        : ConsoleMode   # StandardConsoleMode || ImmediateConsoleMode
+
+    windows_in_quick_edit_mode : Logical
+
+    input_buffer = Byte[]
+
+    next_input_character : Int32?
+    _input_bytes         = Byte[]
+
+    native @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+            |  struct termios original_terminal_settings;
+            |  int            original_stdin_flags;
+            |#endif
+
+  METHODS
+    method init
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  // Enable ANSI colors and styles on Windows
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  DWORD mode;
+              |  GetConsoleMode( h_stdout, &mode );
+              |  SetConsoleMode( h_stdout, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING );
+              |  SetConsoleOutputCP(65001);  // Extended characters
+              |
+              |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+              |  GetConsoleMode( h_stdin, &mode );
+                 windows_in_quick_edit_mode = native("!!(mode & ENABLE_QUICK_EDIT_MODE)")->Logical
+
+      native @|#elif !defined(ROGUE_PLATFORM_EMBEDDED)
+              |  tcgetattr( STDIN_FILENO, &$this->original_terminal_settings );
+              |  $this->original_stdin_flags = fcntl( STDIN_FILENO, F_GETFL );
+              |
+              |  if ( !$this->original_terminal_settings.c_cc[VMIN] ) $this->original_terminal_settings.c_cc[VMIN] = 1;
+              |  $this->original_terminal_settings.c_lflag |= (ECHO | ECHOE | ICANON);
+              |  $this->original_stdin_flags &= ~(O_NONBLOCK);
+              |#endif
+
+    method clear( output=Global:PrintWriter )
+      output.[ flush, print("\e[2J"), flush ]
+
+    method clear_to_eol( output=Global:PrintWriter )
+      output.[ flush, print("\e[K"), flush ]
+
+    method error->PrintWriter
+      if (@error) return @error
+      @error = ConsoleErrorPrinter()
+      return @error
+
+    method flush( buffer:String )
+      write( buffer )
+      buffer.clear
+
+    method has_another->Logical
+      return mode.has_another
+
+    method has_another_event->Logical
+      return mode.has_another_event
+
+    method height->Int32
+      local result : Int32
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) $result = (info.srWindow.Bottom - info.srWindow.Top) + 1;
+              |  else $result = 24;
+              |#else
+              |  struct winsize sz;
+              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+              |
+              |  $result = sz.ws_row;
+              |#endif
+      return result
+
+    method input( prompt=null:String )->String
+      # Returns null on End-Of-Input
+      if (prompt) Global.[ print(prompt), flush ]
+
+      native @|char st[4096];
+              |if (!fgets( st, 4096, stdin ))
+              |{
+                 reset_input
+                 return null
+      native @|}
+              |
+              |// discard \n
+              |int len = strlen( st );
+              |if (len) st[--len] = 0;
+              |else st[0] = 0;
+
+      return native(''RogueString_create( st, len, ROGUE_STRING_COPY )'')->String
+
+    method mode->ConsoleMode
+      if (@mode) return @mode
+      @mode = StandardConsoleMode()
+      return @mode
+
+    method peek->Character
+      return mode.peek
+
+    method peek_event->ConsoleEvent
+      return mode.peek_event
+
+    method read->Character
+      return mode.read
+
+    method read_event->ConsoleEvent
+      return mode.read_event
+
+    method read_line->String
+      local input_buffer = String()
+      forEach (byte in this)
+        if (byte == 10) escapeForEach
+        input_buffer.print( byte )
+      endForEach
+      return input_buffer
+
+    method reset_input
+      # Allows stdin to be read again after a CTRL+D
+      is_end_of_input = false
+      native @|clearerr( stdin );
+
+    method set_cursor( x:Int32, y:Int32, output=Global:PrintWriter )
+      ++x
+      ++y
+      output.[ flush, print("\e["), print(y), print(';'), print(x), print('H'), flush ]
+
+    method set_cursor( position:(x:Int32,y:Int32), output=Global:PrintWriter )
+      set_cursor( position.x, position.y, output )
+
+    method set_immediate_mode( setting:Logical )
+      # setting==true: turn off echo and line buffer, turn on mouse events.
+      #                Must call next_is_mouse_event/read_mouse_event
+      if (@immediate_mode != setting)
+        @immediate_mode = setting
+        if (@immediate_mode)
+          @mode = ImmediateConsoleMode()
+        else
+          @mode = StandardConsoleMode()
+        endIf
+      endIf
+
+    method size->(width:Int32,height:Int32)
+      return (width,height)
+
+    method width->Int32
+      local result : Int32
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  HANDLE h_stdout = GetStdHandle( STD_OUTPUT_HANDLE );
+              |  CONSOLE_SCREEN_BUFFER_INFO info;
+              |  if (GetConsoleScreenBufferInfo(h_stdout,&info)) $result = info.dwSize.X;
+              |  else $result = 80;
+              |#else
+              |  struct winsize sz;
+              |  ioctl( STDOUT_FILENO, TIOCGWINSZ, &sz );
+              |
+              |  $result = sz.ws_col;
+              |#endif
+      return result
+
+    method write( value:String )
+      native @|#ifdef ROGUE_PLATFORM_ANDROID
+              |  __android_log_print( ANDROID_LOG_INFO, "Rogue", "%s", $value->data->as_utf8 );
+              |#else
+              |  Rogue_fwrite( (char*)$value->data->as_utf8, $value->data->count, STDOUT_FILENO );
+              |#endif
+
+    method _fill_input_buffer( minimum=1:Int32 )->Logical
+      if (_input_bytes.count >= minimum) return true
+
+      local n = 1024  # just to get us into the loop
+      while (n == 1024)
+        native @|char bytes[1024];
+                |$n = (RogueInt32) ROGUE_READ_CALL( STDIN_FILENO, &bytes, 1024 );
+        if (n == 0 and not @immediate_mode)
+          is_end_of_input = true
+          escapeWhile
+        endIf
+        if (n > 0)
+          forEach (i in 0..<n)
+            _input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
+          endForEach
+        endIf
+      endWhile
+
+      return _input_bytes.count >= minimum
+
+  NATIVE
+    nativeHeader
+     @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      |  #include <io.h>
+      |  #define ROGUE_READ_CALL _read
+      |#elif !defined(ROGUE_PLATFORM_EMBEDDED)
+      |  #include <fcntl.h>
+      |  #include <termios.h>
+      |  #include <unistd.h>
+      |  #include <sys/ioctl.h>
+      |  #define ROGUE_READ_CALL read
+      |#endif
+      |
+      |#ifndef STDIN_FILENO      /* Probably Windows */
+      |  #define STDIN_FILENO  0 /* Probably correct */
+      |  #define STDOUT_FILENO 1
+      |  #define STDERR_FILENO 2
+      |#endif
+      |
+      |void Rogue_fwrite( const char* utf8, int byte_count, int out );
+
+    nativeCode
+      @|void Rogue_fwrite( const char* utf8, int byte_count, int out )
+       |{
+       |  #if !defined(ROGUE_PLATFORM_EMBEDDED)
+       |  while (byte_count)
+       |  {
+       |    int n = (int) write( out, utf8, byte_count );
+       |    if (n > 0)
+       |    {
+       |      utf8 += n;
+       |      byte_count -= n;
+       |    }
+       |  }
+       |  #endif
+       |}
+
+endClass
+

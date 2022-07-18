@@ -1,0 +1,17 @@
+$include Core
+$include Collection
+$include Console
+$include IO
+$include Math
+
+# RogueC auto-includes Value and JSON if they are referenced during tokenization.
+
+routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
+  # For internal use only - used by the compiler to cast between compatible tuple types.
+  return native("*(($<<ReturnType>>*)&$tuple)")->$NewType
+endRoutine
+
+routine describe( value:Object )->String
+  if (value) return value.description
+  else       return "null"
+endRoutine

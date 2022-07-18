@@ -1,9 +1,0 @@
-$include Standard/Introspection/TypeInfo
-$include Standard/Introspection/MethodInfo
-$include Standard/Introspection/PropertyInfo
-
-augment Object
-  METHODS
-    method type_info->TypeInfo
-      return TypeInfo[type_info_index]
-endAugment
