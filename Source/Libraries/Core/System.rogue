@@ -20,10 +20,10 @@ class System [essential]
   GLOBAL PROPERTIES
     command_line_arguments = String[]
     executable_filepath    : String
-    execution_start_ms     = System.time_ms : Int64
+    execution_start_ms     = System.time_ms - 1 : Int64  # Minus 1 so that initial time is not 0
 
   GLOBAL METHODS
-    method elapsed_ms->Int32
+    method execution_time_ms->Int32
       # Execution time in milliseconds.
       return (System.time_ms - execution_start_ms)->Int32
 
@@ -190,7 +190,7 @@ class System [essential]
 
     method ticks->Int32
       # Execution time in 1/60th second ticks.
-      return (elapsed_ms * 6) / 100
+      return (execution_time_ms * 6) / 100
 
     method time->Real64
       return time_ms / Real64(1000)
