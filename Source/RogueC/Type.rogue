@@ -519,6 +519,7 @@ class Type : Cmd
 
     method instance_of( ancestor_type:Type )->Logical
       if (ancestor_type is Program.type_Object and this.is_reference) return true
+      if (this is ancestor_type) return true
 
       if (ancestor_type.is_aspect)
         local type = this
@@ -704,7 +705,7 @@ class Type : Cmd
         endIf
       endIf
 
-      if (this.instance_of(Program.type_ListType))
+      if (this.instance_of(Program.type_ListType) and this is not Program.type_ListType)
         local p_element_type = properties["element_type"]
         assert p_element_type
         if (p_element_type.type.is_reference)
@@ -1374,10 +1375,16 @@ class Type : Cmd
                 throw m.t.error( "Return type mismatch - overridden method $ returns a value."(base_m.context_signature) )
               endIf
             endIf
-            if (m.return_type and not m.return_type.instance_of(base_m.return_type))
-              throw m.t.error( "Return type mismatch - override return type $ is not instanceOf overridden return type $."...
-                (m.return_type,base_m.return_type) )
+
+            if (m.return_type)
+              m.return_type.organize
+              base_m.return_type.organize
+              if (not m.return_type.instance_of(base_m.return_type))
+                throw m.t.error( "Return type mismatch - override return type $ is not instanceOf overridden return type $."...
+                  (m.return_type,base_m.return_type) )
+              endIf
             endIf
+
             m.overridden_method = base_m
           else
             if (base_m.attributes.is_propagated)
