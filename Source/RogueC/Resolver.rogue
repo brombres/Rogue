@@ -1077,6 +1077,19 @@ class Resolver : Poolable, Visitor
           endContingent
         endForEach
 
+        forEach (m in context_type.global_methods.values)
+          contingent
+            necessary (m.name == name)
+            sufficient (not cmd.param_types)
+            necessary (m.parameters.count == cmd.param_types.count)
+            forEach (param_type at i in cmd.param_types)
+              necessary (param_type is m.parameters[i].type)
+            endForEach
+          satisfied
+            methods.add( m )
+          endContingent
+        endForEach
+
         if (methods.count == 0)
           throw cmd.t.error( "Type $ has no method named '$'."(context_type,name) )
         elseIf (methods.count > 1)
@@ -1093,10 +1106,18 @@ class Resolver : Poolable, Visitor
           args.add( Access(cmd.t,p.name) )
         endForEach
 
-        local with_values = WithValues(cmd.t)
-        with_values.add( WithValue(cmd.t,"_THIS",This(cmd.t,this_type)) )
+        local with_values : WithValues
+        local cmd_call    : Cmd
 
-        local cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name,args ) : Cmd
+        if (m.is_global)
+          cmd_call = ContextAccess( cmd.t, TypeContext(cmd.t,m.type_context), cmd.name, args )
+
+        else
+          with_values = WithValues(cmd.t)
+          with_values.add( WithValue(cmd.t,"_THIS",This(cmd.t,this_type)) )
+          cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name, args )
+        endIf
+
         if (m.return_type) cmd_call = Return( cmd.t, cmd_call )
         local statements = Statements( cmd.t, cmd_call )
 
