@@ -113,7 +113,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
               |if (len) st[--len] = 0;
               |else st[0] = 0;
 
-      return native(''RogueString_create( st, len, ROGUE_STRING_COPY )'')->String
+      return native(''RogueString_create_from_utf8( st, len, ROGUE_STRING_COPY )'')->String
 
     method mode->ConsoleMode
       if (@mode) return @mode

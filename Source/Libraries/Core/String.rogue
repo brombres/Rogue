@@ -2271,7 +2271,8 @@ class String : Poolable PrintWriter
                   |#define ROGUE_STRING_PERMANENT      3
                   |#define ROGUE_STRING_PERMANENT_COPY 4
                   |
-                  |RogueString* RogueString_create( const char* cstring, int byte_count, int usage );
+                  |RogueString* RogueString_create( const char* cstring );
+                  |RogueString* RogueString_create_from_utf8( const char* cstring, int byte_count, int usage );
                   |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
                   |RogueString* RogueString_create_permanent( const char* cstring );
                   |RogueString* RogueString_create_string_table_entry( const char* cstring );
@@ -2283,7 +2284,12 @@ class String : Poolable PrintWriter
 
     nativeCode  @|RogueInt32 Rogue_string_table_count = 0;
                  |
-                 |RogueString* RogueString_create( const char* cstring, int byte_count, int usage )
+                 |RogueString* RogueString_create( const char* cstring )
+                 |{
+                 |  return RogueString_create_from_utf8( cstring, -1, ROGUE_STRING_COPY );
+                 |}
+                 |
+                 |RogueString* RogueString_create_from_utf8( const char* cstring, int byte_count, int usage )
                  |{
                  |  // Creates an immutable String object.
                  |  //
@@ -2344,7 +2350,7 @@ class String : Poolable PrintWriter
                  |
                  |  if (utf8_byte_count == byte_count)
                  |  {
-                 |    return RogueString_create( cstring, byte_count, usage );
+                 |    return RogueString_create_from_utf8( cstring, byte_count, usage );
                  |  }
                  |
                  |  int is_permanent = (usage == ROGUE_STRING_PERMANENT) || (usage == ROGUE_STRING_PERMANENT_COPY);
@@ -2397,7 +2403,7 @@ class String : Poolable PrintWriter
                  |
                  |RogueString* RogueString_create_permanent( const char* cstring )
                  |{
-                 |  return RogueString_create( cstring, -1, ROGUE_STRING_PERMANENT );
+                 |  return RogueString_create_from_utf8( cstring, -1, ROGUE_STRING_PERMANENT );
                  |}
                  |
                  |RogueString* RogueString_create_string_table_entry( const char* cstring )

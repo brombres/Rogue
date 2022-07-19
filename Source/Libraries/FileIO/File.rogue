@@ -37,7 +37,7 @@ class File( filepath:String ) [compound]
               |
               |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
               |  {
-              |    $return_value = RogueString_create( full_name, -1, ROGUE_STRING_COPY );
+              |    $return_value = RogueString_create( full_name );
                    return_value .= replacing( '\\', '/' )
       native @|  }
               |}
@@ -89,7 +89,7 @@ class File( filepath:String ) [compound]
               |    r = fchdir( original_dir_fd );
               |    if ( r != 0 ) break;
               |
-              |    $return_value = RogueString_create( c_filepath, -1, ROGUE_STRING_COPY );
+              |    $return_value = RogueString_create( c_filepath );
               |  } while (0);
               |
               |  if (original_dir_fd >= 0) close( original_dir_fd );

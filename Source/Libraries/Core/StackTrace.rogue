@@ -23,14 +23,14 @@ class StackTrace
 
     method filename( index:Int32 )->String
       if (native("!Rogue_call_stack[$index].filename")->Logical) return "INTERNAL"
-      return native("RogueString_create( Rogue_call_stack[$index].filename, -1, ROGUE_STRING_BORROW )")->String
+      return native("RogueString_create_from_utf8( Rogue_call_stack[$index].filename, -1, ROGUE_STRING_BORROW )")->String
 
     method line( index:Int32 )->Int32
       return native("Rogue_call_stack[$index].line")->Int32
 
     method procedure( index:Int32 )->String
       if (native("!Rogue_call_stack[$index].procedure")->Logical) return "Unknown Procedure"
-      return native("RogueString_create( Rogue_call_stack[$index].procedure, -1, ROGUE_STRING_BORROW )")->String
+      return native("RogueString_create_from_utf8( Rogue_call_stack[$index].procedure, -1, ROGUE_STRING_BORROW )")->String
 
     method to->String
       if (not frames) return "(Call history unavailable - compile with '--debug')"
