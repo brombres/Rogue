@@ -267,6 +267,9 @@ class Value [compound]
     method is_int64->Logical
       return (type == TYPE_INT64)
 
+    method is_integer->Logical
+      return (type >= TYPE_BYTE and type <= TYPE_INT64)
+
     method is_logical->Logical
       return (type == TYPE_LOGICAL)
 
@@ -393,6 +396,167 @@ class Value [compound]
         others
           return type <> other.type
       endWhich
+
+    method operator-()->Value
+      which (type)
+        case TYPE_BYTE:      return Value( -byte )
+        case TYPE_INT32:     return Value( -int32 )
+        case TYPE_INT64:     return Value( -int64 )
+        case TYPE_REAL32:    return Value( -real32 )
+        case TYPE_REAL64:    return Value( -real64 )
+        case TYPE_LOGICAL:   return Value( -logical )
+        case TYPE_XY:        return Value( -xy )
+        others
+          return undefined
+      endWhich
+
+    method operator!()->Value
+      if (this.is_number)
+        if (type == TYPE_INT64) return Value( !(this->Int64) )
+        else                    return Value( !(this->Int32) )
+      else
+        return undefined
+      endIf
+
+    method operator+( other:Value )->Value
+      local (a,b) = to_compatible_values( other )
+      which (a.type)
+        case TYPE_BYTE:      return Value( a.byte      + b.byte )
+        case TYPE_CHARACTER: return Value( a.character + b.character )
+        case TYPE_INT32:     return Value( a.int32     + b.int32 )
+        case TYPE_INT64:     return Value( a.int64     + b.int64 )
+        case TYPE_REAL32:    return Value( a.real32    + b.real32 )
+        case TYPE_REAL64:    return Value( a.real64    + b.real64 )
+        case TYPE_LOGICAL:   return Value( a.logical or b.logical )
+        case TYPE_XY:        return Value( a.xy        + b.xy )
+        case TYPE_STRING:    return Value( a->String   + b->String )
+        others
+          return undefined
+      endWhich
+
+    method operator-( other:Value )->Value
+      local (a,b) = to_compatible_values( other )
+      which (a.type)
+        case TYPE_BYTE:      return Value( a.byte      - b.byte )
+        case TYPE_CHARACTER: return Value( a.character - b.character )
+        case TYPE_INT32:     return Value( a.int32     - b.int32 )
+        case TYPE_INT64:     return Value( a.int64     - b.int64 )
+        case TYPE_REAL32:    return Value( a.real32    - b.real32 )
+        case TYPE_REAL64:    return Value( a.real64    - b.real64 )
+        case TYPE_XY:        return Value( a.xy        - b.xy )
+        others
+          return undefined
+      endWhich
+
+    method operator*( other:Value )->Value
+      if (this.type == TYPE_STRING and other.is_number) return Value( this->String * other->Int32 )
+      if (this.is_number and other.type == TYPE_STRING) return Value( other->String * this->Int32 )
+
+      local (a,b) = to_compatible_values( other )
+      which (a.type)
+        case TYPE_BYTE:      return Value( a.byte      * b.byte )
+        case TYPE_CHARACTER: return Value( a.character * b.character )
+        case TYPE_INT32:     return Value( a.int32     * b.int32 )
+        case TYPE_INT64:     return Value( a.int64     * b.int64 )
+        case TYPE_REAL32:    return Value( a.real32    * b.real32 )
+        case TYPE_REAL64:    return Value( a.real64    * b.real64 )
+        case TYPE_LOGICAL:   return Value( a.logical and b.logical )
+        case TYPE_XY:        return Value( a.xy        * b.xy )
+        others
+          return undefined
+      endWhich
+
+    method operator/( other:Value )->Value
+      if (type == TYPE_STRING and other.type == TYPE_STRING) return Value( this->String / other->String )
+
+      local (a,b) = to_compatible_values( other )
+      which (a.type)
+        case TYPE_BYTE:      return Value( a.byte      / b.byte )
+        case TYPE_CHARACTER: return Value( a.character / b.character )
+        case TYPE_INT32:     return Value( a.int32     / b.int32 )
+        case TYPE_INT64:     return Value( a.int64     / b.int64 )
+        case TYPE_REAL32:    return Value( a.real32    / b.real32 )
+        case TYPE_REAL64:    return Value( a.real64    / b.real64 )
+        case TYPE_XY:        return Value( a.xy        / b.xy )
+        others
+          return undefined
+      endWhich
+
+    method operator%( other:Value )->Value
+      local (a,b) = to_compatible_values( other )
+      which (a.type)
+        case TYPE_BYTE:      return Value( a.byte      % b.byte )
+        case TYPE_CHARACTER: return Value( a.character % b.character )
+        case TYPE_INT32:     return Value( a.int32     % b.int32 )
+        case TYPE_INT64:     return Value( a.int64     % b.int64 )
+        case TYPE_REAL32:    return Value( a.real32    % b.real32 )
+        case TYPE_REAL64:    return Value( a.real64    % b.real64 )
+        case TYPE_XY:        return Value( a.xy        % b.xy )
+        others
+          return undefined
+      endWhich
+
+    method operator^( other:Value )->Value
+      local (a,b) = to_compatible_values( other )
+      which (a.type)
+        case TYPE_BYTE:      return Value( a.byte      ^ b.byte )
+        case TYPE_CHARACTER: return Value( a.character ^ b.character )
+        case TYPE_INT32:     return Value( a.int32     ^ b.int32 )
+        case TYPE_INT64:     return Value( a.int64     ^ b.int64 )
+        case TYPE_REAL32:    return Value( a.real32    ^ b.real32 )
+        case TYPE_REAL64:    return Value( a.real64    ^ b.real64 )
+        case TYPE_XY:        return Value( a.xy        ^ b.xy )
+        others
+          return undefined
+      endWhich
+
+    method operator&( other:Value )->Value
+      if (this.is_number and other.is_number)
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 & other->Int64 )
+        else                                                return Value( this->Int32 & other->Int32 )
+      else
+        return undefined
+      endIf
+
+    method operator|( other:Value )->Value
+      if (this.is_number and other.is_number)
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 | other->Int64 )
+        else                                                return Value( this->Int32 | other->Int32 )
+      else
+        return undefined
+      endIf
+
+    method operator~( other:Value )->Value
+      if (this.is_number and other.is_number)
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 ~ other->Int64 )
+        else                                                return Value( this->Int32 ~ other->Int32 )
+      else
+        return undefined
+      endIf
+
+    method operator:<<:( other:Value )->Value
+      if (this.is_number and other.is_number)
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :<<: other->Int64 )
+        else                                                return Value( this->Int32 :<<: other->Int32 )
+      else
+        return undefined
+      endIf
+
+    method operator:>>:( other:Value )->Value
+      if (this.is_number and other.is_number)
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :>>: other->Int64 )
+        else                                                return Value( this->Int32 :>>: other->Int32 )
+      else
+        return undefined
+      endIf
+
+    method operator:>>>:( other:Value )->Value
+      if (this.is_number and other.is_number)
+        if (type == TYPE_INT64 or other.type == TYPE_INT64) return Value( this->Int64 :>>>: other->Int64 )
+        else                                                return Value( this->Int32 :>>>: other->Int32 )
+      else
+        return undefined
+      endIf
 
     method remove( value:Value )->Value
       which (type)
@@ -534,7 +698,7 @@ class Value [compound]
       which (type)
         case TYPE_BYTE:      return byte->Real64
         case TYPE_CHARACTER: return character->Real64
-        case TYPE_INT32:     return real64->Real64
+        case TYPE_INT32:     return int32->Real64
         case TYPE_INT64:     return int64->Real64
         case TYPE_REAL32:    return real32->Real64
         case TYPE_REAL64:    return real64->Real64
@@ -593,6 +757,22 @@ class Value [compound]
         if (box) return box->$Type
         return defaultValue<<$Type>>
       endIf
+
+    method to_compatible_values( other:Value )->(Value,Value)
+      if (type == other.type) return (this,other)
+      if (type == TYPE_STRING or other.type == TYPE_STRING) return (Value(this->String),Value(other->String))
+      if (type == TYPE_UNDEFINED or other.type == TYPE_UNDEFINED) return (undefined,undefined)
+
+      if (type <= TYPE_REAL64 and other.type <= TYPE_REAL64)
+        if (type == TYPE_REAL64 or other.type == TYPE_REAL64) return (Value(this->Real64),Value(other->Real64))
+        if (type == TYPE_REAL32 or other.type == TYPE_REAL32) return (Value(this->Real32),Value(other->Real32))
+        if (type == TYPE_INT64 or other.type == TYPE_INT64)   return (Value(this->Int64), Value(other->Int64))
+        if (type == TYPE_INT32 or other.type == TYPE_INT32)   return (Value(this->Int32), Value(other->Int32))
+        if (type == TYPE_CHARACTER or other.type == TYPE_CHARACTER) return (Value(this->Character),Value(other->Character))
+        return (Value(this->Byte),Value(other->Byte))
+      endIf
+
+      return (undefined,undefined)
 
     method to_json( &formatted, &omit_commas )->String
       local result = String()
