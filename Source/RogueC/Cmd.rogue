@@ -1619,15 +1619,6 @@ class Method : Procedure
         endTemporarily
       endUse
 
-      # Add to dynamic method table
-      local dynamic_sig = dynamic_signature
-      local methods = Program.dynamic_methods[dynamic_sig]
-      if (not methods)
-        methods = Method[]
-        Program.dynamic_methods[dynamic_sig] = methods
-      endIf
-      methods.add( this )
-
       if (not skip_add_to_type) @type_context.add( this )
 
     method propagated_to( type_context:Type )->Method

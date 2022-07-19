@@ -195,10 +195,18 @@ class Procedure : Cmd
       endIf
       return @call_signature
 
+    method dynamic_return_type->Type
+      if (overridden_method) return overridden_method.return_type
+      else                   return return_type
+
     method dynamic_signature->String
       if (not @dynamic_signature)
         dynamic_signature = signature
-        if (return_type) dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
+        if (return_type)
+          localize return_type
+          if (overridden_method) return_type = overridden_method.return_type
+          dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
+        endIf
       endIf
       return @dynamic_signature
 

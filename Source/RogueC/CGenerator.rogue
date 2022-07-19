@@ -376,6 +376,7 @@ class CGenerator : Visitor
         assert group
         if (group and group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
+          if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
           writer.print( info.c_name )
         else
           writer.print "Rogue_dispatch_"
@@ -447,11 +448,13 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallThisDynamicMethod )
       local info = cmd.info
+
       if (this_type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.dynamic_signature]
         assert group
         if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
+          if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
           writer.print( info.c_name )
         else
           writer.print "Rogue_dispatch_"
@@ -2177,7 +2180,7 @@ augment
                         |for (i=1; i<Rogue_argc; ++i)
                         |{
                         |  RogueSystem___add_command_line_argument__RogueString(
-                        |    RogueString_create(Rogue_argv[i],-1,ROGUE_STRING_PERMANENT)
+                        |    RogueString_create_from_utf8(Rogue_argv[i],-1,ROGUE_STRING_PERMANENT)
                         |  );
                         |}
                         |

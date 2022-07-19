@@ -368,12 +368,12 @@ class Type : Cmd
       organize_methods
 
       if (not require_global)
-        forEach (m in methods)
+        forEach (m in methods.values)
           if (m.name == m_name or m.base_name == m_name) list.add( m )
         endForEach
       endIf
 
-      forEach (m in global_methods)
+      forEach (m in global_methods.values)
         if (m.name == m_name or m.base_name == m_name) list.add( m )
       endForEach
 
@@ -407,13 +407,13 @@ class Type : Cmd
       return "$" (%name)
 
     method has_global_method_named( name:String )->Logical
-      forEach (m in global_methods)
+      forEach (m in global_methods.values)
         if (m.name == name) return true
       endForEach
       return false
 
     method has_method_named( name:String )->Logical
-      forEach (m in methods)
+      forEach (m in methods.values)
         if (m.name == name) return true
       endForEach
       return false
@@ -1303,10 +1303,21 @@ class Type : Cmd
         endIf
       endBlock
 
-      forEach (m in global_methods)
+      forEach (m in global_methods.values)
         if (methods.contains(m.signature))
           throw m.t.error( "Duplicate definitions of $ as both a global method and an object method." )
         endIf
+      endForEach
+
+      # Add object methods to dynamic method table
+      forEach (m in methods.values)
+        local dynamic_sig = m.dynamic_signature
+        local group = Program.dynamic_methods[dynamic_sig]
+        if (not group)
+          group = Method[]
+          Program.dynamic_methods[dynamic_sig] = group
+        endIf
+        group.add( m )
       endForEach
 
       Transformer().visit_type( this )
@@ -1328,7 +1339,7 @@ class Type : Cmd
 
       # Any [essential] routine makes class Routine [essential] as well
       if (this.name == "Routine")
-        forEach (r in global_methods)
+        forEach (r in global_methods.values)
           if (r.attributes.is_essential or r.attributes.is_api)
             this.attributes.is_essential = true
             escapeForEach
@@ -1352,14 +1363,14 @@ class Type : Cmd
       # Inherit base class methods
       if (base_class)
         local has_init = false
-        forEach (m in methods)
+        forEach (m in methods.values)
           if (m.name == "init")
             has_init = true
             escapeForEach
           endIf
         endForEach
 
-        forEach (base_m in base_class.methods)
+        forEach (base_m in base_class.methods.values)
           local m = methods[ base_m.signature ]
 
           if (has_init and base_m.name == "init")
@@ -1414,7 +1425,7 @@ class Type : Cmd
         # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
           if (incorporated_aspect.attributes.is_augment)
-            forEach (aspect_m in incorporated_aspect.global_methods)
+            forEach (aspect_m in incorporated_aspect.global_methods.values)
               if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
                 if (not missing_only or not global_methods.contains(aspect_m.signature))
                   if (this_is_abstract or not aspect_m.attributes.is_abstract)
@@ -1429,7 +1440,7 @@ class Type : Cmd
         # Incorporate [insert] and [append] methods
         forEach (incorporated_aspect in aspects)
           if (incorporated_aspect.attributes.is_augment)
-            forEach (aspect_m in incorporated_aspect.global_methods)
+            forEach (aspect_m in incorporated_aspect.global_methods.values)
               if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
                 if (not missing_only or not global_methods.contains(aspect_m.signature))
                   if (this_is_abstract or not aspect_m.attributes.is_abstract)
@@ -1444,7 +1455,7 @@ class Type : Cmd
         # Create an error if no implementation of an abstract aspect method has been supplied.
         if (not this_is_abstract)
           forEach (incorporated_aspect in aspects)
-            forEach (aspect_m in incorporated_aspect.global_methods)
+            forEach (aspect_m in incorporated_aspect.global_methods.values)
               if (aspect_m.attributes.is_abstract and not global_methods.contains(aspect_m.signature))
                 throw aspect_m.t.error(
                 "Illegal abstract global method $ in class $." (aspect_m,this) )
@@ -1458,7 +1469,7 @@ class Type : Cmd
       if (aspects)
         # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
-          forEach (aspect_m in incorporated_aspect.methods)
+          forEach (aspect_m in incorporated_aspect.methods.values)
             if (not (aspect_m.attributes.is_insert or aspect_m.attributes.is_append))
               if (not missing_only or not methods.contains(aspect_m.signature))
                 if (this_is_abstract or not aspect_m.attributes.is_abstract)
@@ -1471,7 +1482,7 @@ class Type : Cmd
 
         # Incorporate [insert] and [append] methods
         forEach (incorporated_aspect in aspects)
-          forEach (aspect_m in incorporated_aspect.methods)
+          forEach (aspect_m in incorporated_aspect.methods.values)
             if (aspect_m.attributes.is_insert or aspect_m.attributes.is_append)
               if (not missing_only or not methods.contains(aspect_m.signature))
                 if (this_is_abstract or not aspect_m.attributes.is_abstract)
@@ -1485,7 +1496,7 @@ class Type : Cmd
         # Create an error if no implementation of an abstract aspect method has been supplied.
         if (not this_is_abstract)
           forEach (incorporated_aspect in aspects)
-            forEach (aspect_m in incorporated_aspect.methods)
+            forEach (aspect_m in incorporated_aspect.methods.values)
               if (aspect_m.attributes.is_abstract and not methods.contains(aspect_m.signature))
                 throw aspect_m.t.error(
                   "Class $ must either be declared [abstract] or else supply a definition for abstract aspect method $." ...
@@ -1498,7 +1509,7 @@ class Type : Cmd
       endIf
 
       # Verify that every [override] method is indeed overriding a prior method.
-      forEach (m in methods)
+      forEach (m in methods.values)
         if (m.attributes.is_override)
           if (not m.overridden_method)
             throw m.t.error( "Method $ does not override any prior definition. Check for signature type errors or remove the [override] attribute." )
@@ -1506,7 +1517,7 @@ class Type : Cmd
         endIf
       endForEach
 
-      forEach (m in global_methods)
+      forEach (m in global_methods.values)
         if (m.attributes.is_override)
           throw m.t.error( "A global method cannot [override] a prior definition." )
         endIf
@@ -1514,7 +1525,7 @@ class Type : Cmd
 
       # Any [abstract] methods require an [abstract] class.
       if (not this.attributes.is_abstract)
-        forEach (m in methods)
+        forEach (m in methods.values)
           if (m.attributes.is_abstract)
             if (m.type_context is this)
               throw m.t.error( "Method $ can only be declared [abstract] in an [abstract] class."(m) )
@@ -1525,7 +1536,7 @@ class Type : Cmd
           endIf
         endForEach
 
-        forEach (m in global_methods)
+        forEach (m in global_methods.values)
           if (m.attributes.is_abstract)
             throw m.t.error( "Global methods cannot be [abstract]." )
           endIf
