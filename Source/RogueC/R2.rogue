@@ -168,7 +168,7 @@ class RogueC
         if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
         if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
         if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false
-        if (Scanner.uses_Value)    Program.include( t, "Value" ); Scanner.uses_Value = false
+        if (Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
       endWhile
 
       Program.resolve

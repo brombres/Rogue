@@ -1,7 +1,7 @@
 # This library is included by RogueC as needed.
 
 $include IO/Scanner
-$include JSON
+$include Codec/JSON
 
 uses Geometry
 
