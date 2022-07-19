@@ -176,7 +176,8 @@ class JSONParser
       local code = 0
       loop 4
         if (reader.has_another)
-          code = (code :<<: 4) | which{reader.read.to_number(16) || 0}
+          local n = reader.read.to_number(16)
+          code = (code :<<: 4) | which{n>=0:n || 0}
         endIf
       endLoop
       return code->Character

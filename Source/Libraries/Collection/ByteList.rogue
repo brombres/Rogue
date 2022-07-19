@@ -14,7 +14,7 @@ augment Byte[]
       count += hex.count/2
 
       forEach (hex_i of hex step 2)
-        this[ dest_i ] = (hex[hex_i].to_number(16).value :<<: 4) | hex[hex_i+1].to_number(16).value
+        this[ dest_i ] = (hex[hex_i].to_number(16) :<<: 4) | hex[hex_i+1].to_number(16)
         ++dest_i
       endForEach
 

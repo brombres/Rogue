@@ -53,7 +53,7 @@ class VersionNumber( version:String ) [compound]
           ++cur_p
           if (cur_p > n) return result
         elseIf (cur_p == n and ch.is_number)
-          result = result * 10 + ch.to_number.value
+          result = result * 10 + ch.to_number
         endIf
       endForEach
       return result

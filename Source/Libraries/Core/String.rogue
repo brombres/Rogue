@@ -1369,7 +1369,7 @@ class String : Poolable PrintWriter
               else
                 local n = 0
                 while (scanner.has_another and not scanner.consume(close_paren))
-                  n = n * 10 + scanner.read.to_number.value
+                  n = n * 10 + scanner.read.to_number
                 endWhile
                 result.print( parts[n%parts.count] )
               endIf
