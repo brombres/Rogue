@@ -23,6 +23,7 @@ class Parser : ParserCore, Poolable
     generic_fn_args_depth : Int32
     generic_fn_args_used  : Int32
 
+    local_definitions     : StringTable<<Token[]>>
     local_macros          : StringTable<<Macro[]>>
 
 
@@ -313,6 +314,16 @@ class Parser : ParserCore, Poolable
       endUse
       token_buffer = Token[]
 
+    method create_local_definition
+      ensure  local_definitions
+      local def_name = buffer->String
+      local_definitions[ def_name ] = token_buffer
+      use history = WorkList<<String>>
+        detect_definition_cycle( history, def_name, token_buffer )
+      endUse
+      token_buffer = Token[]
+
+
     method collect_next_token
       token_buffer.add( _read )
 
@@ -331,6 +342,13 @@ class Parser : ParserCore, Poolable
           if (entry)
             detect_definition_cycle( history, entry.key, entry.value )
           endIf
+
+          if (local_definitions)
+            entry = local_definitions.find( t->String )
+            if (entry)
+              detect_definition_cycle( history, entry.key, entry.value )
+            endIf
+          endIf
         endIf
       endForEach
       history.remove_last
@@ -339,6 +357,22 @@ class Parser : ParserCore, Poolable
       if (_cmd_stack.count) _cmd_stack.remove_last
 
     method insert_definition
+      if (local_definitions)
+        local def = local_definitions[ _cur_t->String ]
+        if (def)
+          if (def.count > 0)
+            --_position
+            _tokens.shift( _position, &delta=def.count-1 )
+            forEach (t at i in def)
+              _tokens[_position+i] = t
+            endForEach
+            _limit += def.count - 1
+            if (_position < _limit) _next_t = _tokens[_position]
+          endIf
+          return
+        endIf
+      endIf
+
       local def = Program.definitions[ _cur_t->String ]
       if (def)
         if (def.count > 0)

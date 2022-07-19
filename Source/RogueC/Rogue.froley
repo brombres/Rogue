@@ -127,21 +127,22 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
-META_DEFINE          $define         [meta]
-META_END_LOCAL_MACRO $endLocalMacro  [meta structural]
-META_END_MACRO       $endMacro       [meta structural]
-META_INCLUDE         $include        [meta]
-META_JOIN_IDS        $id             [meta]
-META_JOIN_STRINGS    $string         [meta]
-META_LOCAL_MACRO     $localMacro     [meta]
-META_LOWERCASE       $lowercase      [meta]
-META_MACRO           $macro          [meta]
-META_REQUIRE_ROGUE   $requireRogue   [meta]
-META_ROGUE_VERSION   $rogueVersion   [meta]
-META_SOURCE_FILEPATH $sourceFilepath [meta]
-META_SOURCE_LINE     $sourceLine     [meta]
-META_TARGET          $target         [meta]
-META_UPPERCASE       $uppercase      [meta]
+META_DEFINE           $define         [meta]
+META_END_LOCAL_MACRO  $endLocalMacro  [meta structural]
+META_END_MACRO        $endMacro       [meta structural]
+META_INCLUDE          $include        [meta]
+META_JOIN_IDS         $id             [meta]
+META_JOIN_STRINGS     $string         [meta]
+META_LOCAL_DEFINE     $localDefine    [meta]
+META_LOCAL_MACRO      $localMacro     [meta]
+META_LOWERCASE        $lowercase      [meta]
+META_MACRO            $macro          [meta]
+META_REQUIRE_ROGUE    $requireRogue   [meta]
+META_ROGUE_VERSION    $rogueVersion   [meta]
+META_SOURCE_FILEPATH  $sourceFilepath [meta]
+META_SOURCE_LINE      $sourceLine     [meta]
+META_TARGET           $target         [meta]
+META_UPPERCASE        $uppercase      [meta]
 
 SYMBOL_AMPERSAND             &
 SYMBOL_ARROW                 ->
@@ -3117,6 +3118,19 @@ parser
     collect_meta_filepath
     call include_filepath
     return
+
+  elseOn "$localDefine"
+    call mark_token
+    on IDENTIFIER
+      buffer = ""
+      call collect_token_string
+      while (hasAnother and not nextIs(EOL))
+        call collect_next_token
+      endWhile
+      call create_local_definition
+    elseOnOthers
+      syntaxError "Identifier expected."
+    endOn
 
   elseOn "$localMacro"
     identifier   # macro name
