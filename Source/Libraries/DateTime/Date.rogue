@@ -406,6 +406,9 @@ class Date( year:Int32, month:Int32, day:Int32 ) [compound]
 
       return format
 
+    method verbose->String
+      return this->String(&verbose)
+
 endClass
 
 class DateInterval( years:Int32, months:Int32, days:Int32 ) [compound]

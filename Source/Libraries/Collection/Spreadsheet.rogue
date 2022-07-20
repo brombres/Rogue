@@ -1,0 +1,442 @@
+# EXAMPLE
+# # Create the following table programmatically:
+#
+# # About     | Current Release
+# # ----------|-----------------------
+# # Version   | 2.0
+# # Date      | July 15, 2022
+# # Platforms | Windows, macOS, Linux
+#
+# uses Collection/Spreadsheet
+#
+# local table = Spreadsheet()
+# table.add_row( @["About", "Current Release"] )
+# table.add_row( @["Version", "2.0"] )
+# table.add_row( @["Date", "July 15, 2022"] )
+# table.add_row( @["Platforms", "Windows, macOS, Linux"] )
+#
+# println table
+#
+# # OUTPUT
+# #   About           Current Release
+# #   Version         2.0
+# #   Date            July 15, 2022
+# #   Platforms       Windows, macOS,
+#
+# # NOTE
+# #   Output is a simple format with 16-character fixed-width columns.
+# #   It is intended for development use.
+#
+# println table.rows[0]     # About           Current Release
+# println
+#
+# println table.columns[0]
+# println
+# # About
+# # Version
+# # Date
+# # Platforms
+#
+# # 'table.rows' and 'table.columns' are Row[] and Column[] lists.
+# # Each Row and Column contains a list of Cell[].
+# # Find the row where the first column contains "Date".
+# local date_row : Row
+# if local row = table.rows.find( $[0].value == "Date" )
+#   date_row = row
+# else
+#   Console.error.println "ERROR: Date not found."
+#   System.exit 1
+# endIf
+#
+# println date_row[1]  # July 15, 2022
+# println
+
+module Collection::Spreadsheet
+
+class Spreadsheet
+  PROPERTIES
+    rows    = Row[]
+    columns = Column[]
+
+  METHODS
+    method init
+
+    method init( csv_file:File )
+      CSVParser( this, csv_file )
+
+    method init( csv:String )
+      CSVParser( this, csv )
+
+    method add_column->Column
+      local c = Column( this, columns.count )
+      columns.add( c )
+      forEach (r in rows)
+        local cell = Cell( c, r )
+        r.add( cell )
+        c.add( cell )
+      endForEach
+      return c
+
+    method add_column( values:Value )->Column
+      local i = columns.count
+      forEach (value at j in values)
+        set( i, j, value )
+      endForEach
+      return columns[i]
+
+    method add_row->Row
+      local r = Row( this, rows.count )
+      rows.add( r )
+      forEach (c in columns)
+        local cell = Cell( c, r )
+        r.add( cell )
+        c.add( cell )
+      endForEach
+      return r
+
+    method add_row( values:Value )->Row
+      local j = rows.count
+      forEach (value at i in values)
+        set( i, j, value )
+      endForEach
+      return rows[j]
+
+    method delete_column( index:Int32 )
+      if (index < 0 or index >= columns.count) return
+      columns.remove_at( index )
+      forEach (row in rows)
+        row.cells.remove_at( index )
+      endForEach
+      _reindex
+
+    method delete_row( index:Int32 )
+      if (index < 0 or index >= rows.count) return
+      rows.remove_at( index )
+      forEach (column in columns)
+        column.cells.remove_at( index )
+      endForEach
+      _reindex
+
+    method get( column:Int32, row:Int32 )->Value
+      if (column < 0 or column >= columns.count) return undefined
+      if (row < 0    or row    >= rows.count)    return undefined
+      return columns[ column ][ row ].value
+
+    method save( file:File )
+      file.save( to_csv )
+
+    method save( filepath:String )
+      File.save( filepath, to_csv )
+
+    method set( column:Int32, row:Int32, value:Value )
+      while (column >= columns.count) add_column
+      while (row    >= rows.count)    add_row
+
+      columns[ column ][ row ].value = value
+
+    method to->String
+      local builder = String()
+      forEach (row in rows)
+        forEach (cell at i in row)
+          if (i > 0) builder.print( ' ' )
+          cell.print( builder, 15 )
+        endForEach
+        builder.println
+      endForEach
+      return builder
+
+    method to_csv->String
+      local builder = String()
+      forEach (row in rows)
+        forEach (cell at index in row.cells)
+          if (index > 0) builder.print( ',' )
+          cell.print( builder, &csv )
+        endForEach
+        builder.println
+      endForEach
+      return builder
+
+    method _reindex
+      forEach (row at index in rows)       row.index = index
+      forEach (column at index in columns) column.index = index
+endClass
+
+
+class Header
+  PROPERTIES
+    table : Spreadsheet
+    index : Int32
+    cells = Cell[]
+
+  METHODS
+    method init( table, index )
+
+    method add( cell:Cell )
+      cells.add( cell )
+
+    method count->Int32
+      return cells.count
+
+    method find( query:(Function(Cell)->Logical) )->Cell?
+      return cells.find( query )
+
+    method get( index:Int32 )->Cell
+      if (index < 0 or index >= cells.count) return null
+      return cells[ index ]
+
+    method get( query:(Function(Cell)->Logical) )->Cell[]
+      return cells[ query ]
+endClass
+
+
+class Row : Header
+  METHODS
+    method delete
+      table.delete_row( index )
+
+    method set( column_index:Int32, value:Value )
+      table.set( column_index, index, value )
+
+    method to->String
+      local builder = String()
+      forEach (cell at i in cells)
+        if (i > 0) builder.print( ' ' )
+        cell.print( builder, 15 )
+      endForEach
+      return builder
+endClass
+
+class Column : Header
+  METHODS
+    method delete
+      table.delete_column( index )
+
+    method set( row_index:Int32, value:Value )
+      table.set( index, row_index, value )
+
+    method to->String
+      local builder = String()
+      forEach (cell at i in cells)
+        if (i > 0) builder.println
+        cell.print( builder )
+      endForEach
+      return builder
+endClass
+
+class Format
+  GLOBAL PROPERTIES
+    GENERAL = GeneralFormat()
+    MONEY   = MoneyFormat()
+
+  GLOBAL METHODS
+    method create( value:Value )->Format
+      if (value->String.begins_with('$')) return MONEY
+      return GENERAL
+
+  METHODS
+    method parse( value:Value )->Value
+      return value
+
+    method print( value:Value, builder:String, width:Int32 )
+      loop (width.or_larger(1)) builder.print( '?' )
+endClass
+
+class GeneralFormat : Format
+  METHODS
+    method init
+
+    method print( value:Value, builder:String, width:Int32 )
+      if (width)
+        builder.print( value->String.justified(-width).leftmost(width) )
+      else
+        builder.print( value->String )
+      endIf
+endClass
+
+class MoneyFormat : Format
+  METHODS
+    method init
+
+    method parse( value:Value )->Value
+      return Value( value->String.after_any('$').replacing(",","")->Real64 )
+
+    method print( value:Value, builder:String, width:Int32 )
+      local st = "$" + value->Real64.format(",.2")
+      if (width)
+        if (st.count > width)
+          st = st.before_first( '.' )
+          if (st.count > width) st = "#" * width
+        endIf
+        builder.print( st.justified(width) )
+      else
+        builder.print( st )
+      endIf
+endClass
+
+class Cell
+  PROPERTIES
+    row    : Row
+    column : Column
+    value  : Value
+    format : Format
+
+  METHODS
+    method init( column, row, value=undefined )
+      format = Format( value )
+      value = format.parse( value )
+
+    method delete_column
+      column.delete
+
+    method delete_row
+      row.delete
+
+    method is_empty->Logical
+      return value.is_empty
+
+    method print( builder:String, width=0:Int32, &csv )
+      if (csv)
+        use temp = StringPool
+          format.print( value, temp, width )
+          if (temp.contains(',') or temp.contains('"'))
+            builder.print( '"$"' (temp.replacing(''"'','""')) )
+          else
+            builder.print( temp )
+          endIf
+        endUse
+      else
+        format.print( value, builder, width )
+      endIf
+
+    method set_value( value:Value )
+      if (format is null or format is Format.GENERAL) format = Format( value )
+      @value = format.parse( value )
+
+    method to->Logical
+      return value->Logical
+
+    method to->Int32
+      return value->Int32
+
+    method to->Int64
+      return value->Int64
+
+    method to->Real64
+      return value->Real64
+
+    method to->String
+      return value->String
+
+endClass
+
+class CSVScanner
+  PROPERTIES
+    scanner : Scanner
+    builder = String()
+    row     : Int32
+    column  : Int32
+
+  METHODS
+    method init( file:File )
+      init( Scanner(file) )
+
+    method init( csv:String )
+      init( Scanner(csv) )
+
+    method init( scanner )
+      noAction
+
+    method scan_table
+      row = 0
+      column = 0
+      while (scanner.has_another)
+        scan_row
+      endWhile
+      on_table
+
+    method on_cell( content:String )
+      noAction
+
+    method on_row
+      noAction
+
+    method on_table
+      noAction
+
+    method consume_eol
+      scanner.consume( 13 ) # optional
+      scanner.consume( 10 )
+
+    method next_is_end_of_cell->Logical
+      return (scanner.next_is(',') or next_is_eol)
+
+    method next_is_eol->Logical
+      return (scanner.next_is(10) or scanner.next_is(13))
+
+    method scan_row
+      local first = true
+      while (first or scanner.consume(','))
+        first = false
+        scan_cell
+      endWhile
+
+      consume_eol
+      on_row
+      ++row
+      column = 0
+
+    method scan_cell
+      if (scanner.next_is('"')) read_quoted_content
+      else                      read_regular_content
+
+      on_cell( builder.cloned )
+      builder.clear
+      ++column
+
+    method read_regular_content
+      while (scanner.has_another and not next_is_end_of_cell)
+        builder.print( scanner.read )
+      endWhile
+
+    method read_quoted_content
+      scanner.consume('"')
+      while (scanner.has_another)
+        if (scanner.consume('"'))
+          if (scanner.consume('"'))
+            builder.print('"')
+          else
+            return
+          endIf
+        else
+          scanner.consume( 13 )  # discard CR if CRLF pair
+          builder.print( scanner.read )
+        endIf
+      endWhile
+endClass
+
+
+
+class CSVParser : CSVScanner
+  PROPERTIES
+    table       : Spreadsheet
+    row_builder = Value.list : Value
+
+  METHODS
+    method init( table:Spreadsheet, file:File )
+      init( table, Scanner(file) )
+
+    method init( table:Spreadsheet, csv:String )
+      init( table, Scanner(csv) )
+
+    method init( table, scanner:Scanner )
+      prior.init( scanner )
+      scan_table
+
+    method on_cell( content:String ) [override]
+      row_builder.add( Value(content) )
+
+    method on_row [override]
+      table.add_row( row_builder )
+      row_builder.clear
+endClass
+
