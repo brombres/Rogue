@@ -110,6 +110,7 @@ class FileListing
       if ((options.is_omit_path) and folder.begins_with("./") and folder.count>2)
         adjusted_folder = folder.rightmost( -2 )
       endIf
+      adjusted_folder /= ""  # end with '/'
 
       if (file_exists)
         local filepath = filepath_pattern

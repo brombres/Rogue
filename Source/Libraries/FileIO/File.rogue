@@ -20,9 +20,12 @@ class File( filepath:String ) [compound]
   METHODS
     method abs->File
       if (not this.exists)
-        local parent = this.parent
-        if (parent.filepath.count == 0) return File("."/filepath).abs
-        return parent.abs / filename
+        local filepath = resolved.filepath
+        if (filepath.count('/') > 0)
+          return parent.abs / filename
+        else
+          return File("."/filepath).abs
+        endIf
       endIf
 
       local filepath = resolved.filepath
@@ -358,16 +361,31 @@ class File( filepath:String ) [compound]
       # Discard trailing slash
       if (filepath.ends_with('/')) filepath = filepath.leftmost( -1 )
 
-      if (filepath.count == 0) return ""
+      if (filepath.count == 0)
+        return File("")
+      endIf
 
       local i1 = filepath.locate_last( '/' )
-      if (not i1?) return ""
+      if (not i1?)
+        local abs = File(filepath).abs
+        if (abs != filepath) return File(abs).folder
+        else                 return File("/")
+      endIf
+
       if (i1.value == 0) return File(filepath.leftmost(1))  # /abc -> /
 
       return filepath.from(0, i1.value-1)
 
     method has_parent->Logical
       return resolved.folder.count > 0
+
+    method is_absolute->Logical
+      local filepath = resolved.filepath
+      if (filepath.begins_with('/')) return true
+      if (System.is_windows)
+        if (filepath.count >= 3 and filepath[1]==':' and filepath[2]=='/') return true
+      endIf
+      return false
 
     method is_folder->Logical
       if (filepath == "") return false
@@ -386,13 +404,11 @@ class File( filepath:String ) [compound]
                  return true
       native @|#endif
 
-              #{
-    method is_hidden( filepath:String )->Logical
-      local filename = File.filename( expand_path(filepath) )
+    method is_hidden->Logical
+      local filename = this.resolved.filename
       if (not filename.begins_with('.'))       return false
       if (filename == "." or filename == "..") return false
       return true
-      }#
 
     method is_newer_than( other:File )->Logical
       if (not this.exists)  return false
@@ -502,6 +518,9 @@ class File( filepath:String ) [compound]
     method operator/( other:File )->File
       return File( resolved.filepath / other.resolved.filepath )
 
+    method operator/( pattern:FilePattern )->File
+      return File( resolved.filepath / pattern.pattern )
+
     method operator/( other_filepath:String )->File
       return File( resolved.filepath / File(other_filepath).resolved.filepath )
 
@@ -524,7 +543,7 @@ class File( filepath:String ) [compound]
       return File( destination_filepath ).exists
 
     method resolved->File
-      local filepath = this.filepath
+      localize filepath
 
       if (System.is_windows)
         local n = filepath.count('%')
@@ -552,6 +571,39 @@ class File( filepath:String ) [compound]
           return File(filepath)
         endIf
       endIf
+
+      if (filepath.contains(".."))
+        local is_expanded = false
+        local parts = filepath.split('/')
+        local i = 0
+        while (i < parts.count)
+          if (parts[i] == "..")
+            if (i == 0)
+              if (is_expanded)
+                return File("/")
+              else
+                # Restart with absolute filepath as prefix
+                is_expanded = true
+                parts = (File(".").abs.filepath / filepath).split('/')
+                i = 0
+                nextIteration
+              endIf
+            else
+              parts.remove_at(i)
+              parts.remove_at(i-1)
+              --i
+            endIf
+          else
+            ++i
+          endIf
+        endWhile
+        if (parts.is_empty)
+          if (is_expanded) return File("/")
+          else             return File(".")
+        endIf
+        filepath = parts.join('/')
+      endIf
+
       return File(filepath)
 
       #{

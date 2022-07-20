@@ -12,6 +12,12 @@ class FilePattern( pattern:String ) [compound]
     method operator==( pattern:FilePattern, text:String )->Logical
       return pattern.matches( text )
 
+    method operator/( pattern:FilePattern, text:String )->FilePattern
+      return FilePattern( pattern.pattern / text )
+
+    method operator/( text:String, pattern:FilePattern )->FilePattern
+      return FilePattern( text / pattern.pattern )
+
 
   METHODS
     method matches( filepath:String, &ignore_case )->Logical

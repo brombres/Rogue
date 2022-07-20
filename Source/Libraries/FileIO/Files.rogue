@@ -45,6 +45,12 @@ class Files
     method init( base_folder:String, pattern:String, &ignore_hidden=true, &include_folders )
       init( base_folder, FilePattern(pattern), &=ignore_hidden, &=include_folders )
 
+    method init( base_folder:File, pattern:FilePattern, &ignore_hidden=true, &include_folders )
+      init( base_folder.filepath, pattern, &=ignore_hidden, &=include_folders )
+
+    method init( base_folder:File, pattern:String, &ignore_hidden=true, &include_folders )
+      init( base_folder, FilePattern(pattern), &=ignore_hidden, &=include_folders )
+
     method add( pattern:FilePattern, &ignore_hidden=true, &include_folders )
       add( pattern->String, &=ignore_hidden, &=include_folders )
 

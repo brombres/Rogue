@@ -142,6 +142,7 @@ class String : Poolable PrintWriter
       return operator*( right, left )
 
     method operator/( prefix:String, suffix:String )->String
+      if (prefix == "") return suffix
       return "$/$" (prefix.without_suffix('/'),suffix)
 
   METHODS
