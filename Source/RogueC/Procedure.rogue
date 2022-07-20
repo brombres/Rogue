@@ -207,6 +207,14 @@ class Procedure : Cmd
           if (overridden_method) return_type = overridden_method.return_type
           dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
         endIf
+
+        local group = Program.dynamic_methods[@dynamic_signature]
+        if (not group)
+          group = Method[]
+          Program.dynamic_methods[@dynamic_signature] = group
+        endIf
+        group.add( this->(as Method) )
+
       endIf
       return @dynamic_signature
 

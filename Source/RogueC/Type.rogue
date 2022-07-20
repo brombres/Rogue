@@ -284,21 +284,6 @@ class Type : Cmd
         endIf
       endIf
 
-      p.type.[ ensure_definition, organize_properties ]
-
-      if (this.is_compound and p.type.is_compound)
-        if (p.type.contains_embedded_compound(this))
-          throw p.t.error(
-              "Circular compound definition - $ directly or indirectly contains an embedded $, so $ cannot contain a $."...
-              (p.type,this,this,p.type)
-          )
-        endIf
-      endIf
-
-      if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
-        this.attributes.contains_reference = true
-      endIf
-
       local existing_p = this.properties[p.name]
       if (existing_p and existing_p.type_context is this)
         throw p.t.error( ''Type $ already defines a property called "$".''(this,p.name) )
@@ -313,13 +298,6 @@ class Type : Cmd
       global_properties[p.name] = p
 
     method add_extended_property( p:Property )
-      local base_p = properties[p.name]
-      if (base_p)
-        if (not p.type.instance_of(base_p.type))
-          throw p.t.error( "Redeclared property '$' has type $ which is not instanceOf inherited type $."...
-            (p.name,p.type,base_p.type) )
-        endIf
-      endIf
       properties[p.name] = p
 
     method cloned->this
@@ -705,6 +683,33 @@ class Type : Cmd
         endIf
       endIf
 
+      forEach (p in properties.values)
+        if (p.type_context is this)
+          p.type.[ ensure_definition, organize_properties ]
+
+          if (this.is_compound and p.type.is_compound)
+            if (p.type.contains_embedded_compound(this))
+              throw p.t.error(
+                  "Circular compound definition - $ directly or indirectly contains an embedded $, so $ cannot contain a $."...
+                  (p.type,this,this,p.type)
+              )
+            endIf
+          endIf
+
+          if (p.type.is_reference or (p.type.is_compound and p.type.contains_embedded_reference))
+            this.attributes.contains_reference = true
+          endIf
+
+          local base_p = properties[p.name]
+          if (base_p)
+            if (not p.type.instance_of(base_p.type))
+              throw p.t.error( "Redeclared property '$' has type $ which is not instanceOf inherited type $."...
+                (p.name,p.type,base_p.type) )
+            endIf
+          endIf
+        endIf
+      endForEach
+
       if (this.instance_of(Program.type_ListType) and this is not Program.type_ListType)
         local p_element_type = properties["element_type"]
         assert p_element_type
@@ -717,6 +722,7 @@ class Type : Cmd
     method organize_methods
       if (methods_organizing) return
       methods_organizing = true
+
       organize_properties
 
       use organizer = ObjectPool<<MethodOrganizer>>
@@ -1310,15 +1316,7 @@ class Type : Cmd
       endForEach
 
       # Add object methods to dynamic method table
-      forEach (m in methods.values)
-        local dynamic_sig = m.dynamic_signature
-        local group = Program.dynamic_methods[dynamic_sig]
-        if (not group)
-          group = Method[]
-          Program.dynamic_methods[dynamic_sig] = group
-        endIf
-        group.add( m )
-      endForEach
+      forEach (m in methods.values) m.dynamic_signature  # Each method adds itself
 
       Transformer().visit_type( this )
 
