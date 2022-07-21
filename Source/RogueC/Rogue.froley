@@ -1327,11 +1327,25 @@ parser
 - native_code_block
   on "nativeHeader"
     consume_eols
-    string
+    on @"File"
+      mustConsume '('
+      string
+      call load_filepath_as_string
+      mustConsume ')'
+    elseOnOthers
+      string
+    endOn
     produce NativeHeader( content:String )
   elseOn "nativeCode"
     consume_eols
-    string
+    on @"File"
+      mustConsume '('
+      string
+      call load_filepath_as_string
+      mustConsume ')'
+    elseOnOthers
+      string
+    endOn
     produce NativeCode( content:String )
   endOn
   syntaxError "Expected 'nativeHeader' or 'nativeCode'."

@@ -440,6 +440,17 @@ class Parser : ParserCore, Poolable
       _restore_position
       return false
 
+    method load_filepath_as_string
+      if (disable_output or _cmd_stack.is_empty) return
+      local cmd_string = _cmd_stack.last->(as LiteralString)
+      assert cmd_string
+      local file = File(cmd_string->String)
+      if (not file.exists)
+        file = File( File(cmd_string.t.filepath).folder / file.filepath )
+      endIf
+      if (not file.exists) throw cmd_string.t.error("No such file: "+file.filepath)
+      cmd_string.value = String(file)
+
     method mark_token
       marked_token = _cur_t
       _attribute_no_include = false
