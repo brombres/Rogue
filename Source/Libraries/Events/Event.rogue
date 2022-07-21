@@ -246,7 +246,7 @@ class ScrollEvent : Event
       # or that a "momentum scroll" is active. Either way scroll events are guaranteed to continue
       # to be received until one where 'in_progress' is false.
     is_momentum   : Logical
-    density       : Real64
+    density       : Real
 
   METHODS
     method init( delta, is_precise=false, in_progress=false, is_momentum=false, density=1 )
@@ -271,7 +271,7 @@ class ScrollRate
   # Other OS or input device:
   # - Scales each scroll delta by 'base_scale' with no acceleration.
   PROPERTIES
-    base_scale     : Real64
+    base_scale     : Real
     delta          : XY
     history_x      = ScrollEvent[]
     history_y      = ScrollEvent[]
@@ -304,11 +304,11 @@ class ScrollRate
 
       return delta
 
-    method _same_direction( v1:Real64, v2:Real64 )->Logical
+    method _same_direction( v1:Real, v2:Real )->Logical
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
-    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Real64
+    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Real
       while ($HISTORY.count and $HISTORY.first.timestamp < e.timestamp - 0.25) $HISTORY.remove_first
 
       local result = 0.0

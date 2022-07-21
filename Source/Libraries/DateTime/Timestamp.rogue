@@ -44,7 +44,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
               |cur_date.tm_sec  = $second;
               |cur_date.tm_isdst = -1;
               |
-      return Timestamp( native( "((RogueReal64)mktime(&cur_date))" )->Real64 + millisecond )
+      return Timestamp( native( "((RogueInt64)mktime(&cur_date))" )->Int64 * 1000 + millisecond )
 
     method create( date:String )->Timestamp
       local parts = String[]

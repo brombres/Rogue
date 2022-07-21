@@ -283,10 +283,10 @@ class Scanner : Reader<<Character>>
       endIf
       return is_real
 
-    method scan_real64->Real64
+    method scan_real->Real
       use buffer = StringPool
         scan_number_string( buffer )
-        return buffer->Real64
+        return buffer->Real
       endUse
 
     method scan_string->String

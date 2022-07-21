@@ -111,11 +111,15 @@ class DataReader : Reader<<Byte>>
     method read_logical->Logical
       return (read != 0)
 
-    method read_real64->Real64
-      return read_int64.real_bits
+    method read_real->Real
+      if (Real isType Real32) return read_int32.real_bits
+      else                    return read_int64.real_bits
 
     method read_real32->Real32
       return read_int32.real_bits
+
+    method read_real64->Real64
+      return read_int64.real_bits
 
     method read_string( buffer=String():String )->String
       local count = read_int32x
@@ -272,6 +276,10 @@ class DataWriter : Writer<<Byte>>
 
     method write_logical( value:Logical )
       write( which{value:1 || 0} )
+
+    method write_real( value:Real )
+      if (Real isType Real32) write_int32( value.integer_bits )
+      else                    write_int64( value.integer_bits )
 
     method write_real32( value:Real32 )
       write_int32( value.integer_bits )

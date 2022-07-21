@@ -258,10 +258,10 @@ class MoneyFormat : Format
     method init
 
     method parse( value:Value )->Value
-      return Value( value->String.after_any('$').replacing(",","")->Real64 )
+      return Value( value->String.after_any('$').replacing(",","")->Real )
 
     method print( value:Value, builder:String, width:Int32 )
-      local st = "$" + value->Real64.format(",.2")
+      local st = "$" + value->Real.format(",.2")
       if (width)
         if (st.count > width)
           st = st.before_first( '.' )
@@ -321,8 +321,8 @@ class Cell
     method to->Int64
       return value->Int64
 
-    method to->Real64
-      return value->Real64
+    method to->Real
+      return value->Real
 
     method to->String
       return value->String

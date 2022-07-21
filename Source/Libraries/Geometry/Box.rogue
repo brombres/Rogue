@@ -31,12 +31,12 @@ class Box( position:XY, size:XY ) [essential compound]
         if (value.count == 2)
           return Box( XY(value) )
         else
-          return Box( value[0]->Real64, value[1]->Real64, value[2]->Real64, value[3]->Real64 )
+          return Box( value[0]->Real, value[1]->Real, value[2]->Real, value[3]->Real )
         endIf
       elseIf (value.contains("position"))
         return Box( XY(value//position), XY(value//size) )
       else
-        return Box( value//x->Real64, value//y->Real64, value//width->Real64, value//height->Real64 )
+        return Box( value//x->Real, value//y->Real, value//width->Real, value//height->Real )
       endIf
       }#
 

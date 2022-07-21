@@ -192,8 +192,8 @@ class System [essential]
       # Execution time in 1/60th second ticks.
       return (execution_time_ms * 6) / 100
 
-    method time->Real64
-      return time_ms / Real64(1000)
+    method time->Real
+      return time_ms / Real(1000)
 
     method time_ms->Int64
       local time_seconds_x1000 : Int64
