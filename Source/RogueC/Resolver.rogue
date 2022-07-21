@@ -1126,7 +1126,9 @@ class Resolver : Poolable, Visitor
       endUse
 
     method on( cmd:NamedArg )->Cmd
-      if (cmd.is_forward and not cmd.value)
+      if (cmd.value)
+        cmd.value = visit( cmd.value )
+      elseIf (cmd.is_forward)
         cmd.value = visit( Access(cmd.t,cmd.name) )
         cmd.is_forward=false
       endIf
