@@ -1125,6 +1125,13 @@ class Resolver : Poolable, Visitor
         return visit( fn_def )
       endUse
 
+    method on( cmd:NamedArg )->Cmd
+      if (cmd.is_forward and not cmd.value)
+        cmd.value = visit( Access(cmd.t,cmd.name) )
+        cmd.is_forward=false
+      endIf
+      return cmd
+
     method on( cmd:NamedTuple )->Cmd
       # Determine Tuple type
       visit_children( cmd )
