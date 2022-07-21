@@ -1,6 +1,6 @@
 # EXAMPLE
 #   # Parse.rogue
-#   $include Console/CommandLineParser
+#   uses Console/CommandLineParser
 #
 #   local command = CommandLineParser().
 #   [
@@ -22,7 +22,7 @@
 #   # command:{options:{timeout:30}}
 #
 # USAGE
-#   $include Console/CommandLineParser
+#   uses Console/CommandLineParser
 #
 #   local parser = CommandLineParser().
 #   [

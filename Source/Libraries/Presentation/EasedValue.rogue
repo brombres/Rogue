@@ -1,6 +1,6 @@
 # EXAMPLE
 #
-# $include Presentation/EasedValue
+# uses Presentation/EasedValue
 #
 # local score = EasedValue<<Int32>>( 0, 0.8, ProgressFn.QUADRATIC )
 # score.target_value = 99

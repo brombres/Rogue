@@ -1,5 +1,5 @@
 # EXAMPLE
-#   $include Network/Sockets
+#   uses Network/Sockets
 #
 #   local exe_name = File(System.executable_filepath).filename
 #   local port = 1112

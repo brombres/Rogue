@@ -1,5 +1,5 @@
 # EXAMPLE
-#   $include Utility/UUID
+#   uses Utility/UUID
 #   @trace UUID()
 #   # C9D68B12-1630-4E34-B0AB-EB611441878F  # newly-generated UUID
 #

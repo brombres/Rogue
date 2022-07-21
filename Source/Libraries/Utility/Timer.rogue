@@ -1,6 +1,6 @@
 # EXAMPLES
 #
-# $include Utility/Timer
+# uses Utility/Timer
 #
 # # Stopwatch mode
 # block
