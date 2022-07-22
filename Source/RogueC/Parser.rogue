@@ -440,6 +440,26 @@ class Parser : ParserCore, Poolable
       _restore_position
       return false
 
+    method filename_to_file_bytes
+      if (disable_output or _cmd_stack.is_empty) return
+      local string_node = _cmd_stack.remove_last
+      local t = string_node.t
+      local file = File(string_node->String)
+      if (not file.filepath.begins_with('/')) file = File(File(t.filepath).folder / file.filepath)
+      if (not file.exists) throw t.error( "No such file: $"(file) )
+      local bytes = Byte[](file)
+      _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes.to_hex_string)) ) )
+
+    method filename_to_file_string
+      if (disable_output or _cmd_stack.is_empty) return
+      local string_node = _cmd_stack.remove_last
+      local t = string_node.t
+      local file = File(string_node->String)
+      if (not file.filepath.begins_with('/')) file = File(File(t.filepath).folder / file.filepath)
+      if (not file.exists) throw t.error( "No such file: $"(file) )
+      local string = String(file)
+      _cmd_stack.add( LiteralString(t,string) )
+
     method load_filepath_as_string
       if (disable_output or _cmd_stack.is_empty) return
       local cmd_string = _cmd_stack.last->(as LiteralString)

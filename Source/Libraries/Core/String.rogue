@@ -167,12 +167,14 @@ class String : Poolable PrintWriter
       init
       print( character )
 
-    method init( data, count )
-      # 'data' must be valid UTF-8.
+    method init( _data:Byte[], count )
+      # '_data' must be valid UTF-8.
       if (is_immutable) return
-      data.reserve(1)
-      data[data.count] = 0
-      is_ascii = (count == data.count)
+      _data = _data.cloned
+      _data.reserve(1)
+      _data[_data.count] = 0
+      is_ascii = (count == _data.count)
+      data = _data
       hash_code = -1
 
     method cloned->String

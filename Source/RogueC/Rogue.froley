@@ -130,6 +130,8 @@ tokens Symbols
 META_DEFINE           $define         [meta]
 META_END_LOCAL_MACRO  $endLocalMacro  [meta structural]
 META_END_MACRO        $endMacro       [meta structural]
+META_FILE_BYTES       $fileBytes      [meta]
+META_FILE_STRING      $fileString     [meta]
 META_INCLUDE          $include        [meta]
 META_JOIN_IDS         $id             [meta]
 META_JOIN_STRINGS     $string         [meta]
@@ -2878,6 +2880,21 @@ parser
   on "isEnum"      "<<" expression ">>" -> IsEnum(operand)
   on "isPrimitive" "<<" expression ">>" -> IsPrimitive(operand)
   on "isReference" "<<" expression ">>" -> IsReference(operand)
+
+  on "$fileBytes"
+    mustConsume '('
+    string
+    mustConsume ')'
+    call filename_to_file_bytes
+    return
+
+  elseOn "$fileString"
+    mustConsume '('
+    string
+    mustConsume ')'
+    call filename_to_file_string
+    return
+  endOn
 
   syntaxError
 

@@ -1,7 +1,14 @@
 augment Byte[]
   METHODS
     method init( hex:String )
+      init
       add( hex )
+
+    method cloned->Byte[]
+      local result = Byte[]( count+1 )
+      result.count = count
+      copy( 0, count, result, 0 )
+      return result
 
     method add( hex:String )
       if (hex.count & 1)
@@ -9,7 +16,7 @@ augment Byte[]
         return
       endIf
 
-      local dest_i = count
+      local dest_i = count  # end of current is beginning of new
       reserve( hex.count/2 )
       count += hex.count/2
 
