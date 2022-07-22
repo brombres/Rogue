@@ -50,7 +50,7 @@ class Matrix( ...
     r1c2:Real, r2c2:Real, r3c2:Real, r4c2:Real,
     r1c3:Real, r2c3:Real, r3c3:Real, r4c3:Real,
     r1c4:Real, r2c4:Real, r3c4:Real, r4c4:Real
-  ) [compound]
+    ) [compound]
 
   DEFINITIONS
     count = 16
@@ -101,17 +101,17 @@ class Matrix( ...
       return rotate( degrees->RadiansXYZ )
 
     method rotate( radians:RadiansXYZ )->Matrix
-      if (radians.x)
-        local result = rotate_x( radians.x )
-        if (radians.y) result *= rotate_y( radians.y )
-        if (radians.z) result *= rotate_z( radians.z )
+      if (radians.value.x)
+        local result = rotate_x( radians.value.x )
+        if (radians.value.y) result *= rotate_y( radians.value.y )
+        if (radians.value.z) result *= rotate_z( radians.value.z )
         return result
-      elseIf (radians.y)
-        local result = rotate_y( radians.y )
-        if (radians.z) result *= rotate_z( radians.z )
+      elseIf (radians.value.y)
+        local result = rotate_y( radians.value.y )
+        if (radians.value.z) result *= rotate_z( radians.value.z )
         return result
-      elseIf (radians.z)
-        return rotate_z( radians.z )
+      elseIf (radians.value.z)
+        return rotate_z( radians.value.z )
       else
         return identity
       endIf
