@@ -1,0 +1,254 @@
+# EXAMPLE
+#   uses Codec/WAV
+#
+#   local wav = WAV( File("Test.wav") )
+#   println wav
+#   # 1 channel 24-bit PCM 96000 Hz (for example)
+#
+#   (forEach in wav.channels).samples.reverse
+#
+#   wav.save( File("Test-reversed.wav") )
+
+$include IO/DataIO
+
+class WAV
+  PROPERTIES
+    channels    = WAVChannel[](2)
+    format      : WAVFormat
+    bit_depth   : Int32
+    sample_rate : Int32
+    page_align  : Logical
+    error       : String
+
+  METHODS
+    method init( file:File )
+      if (not WAVDecoder.decode(DataReader(file),this))
+        error = "Error decoding WAV file: $"(file.filepath)
+      endIf
+
+    method init( format, bit_depth, sample_rate )
+      validate
+
+    method create_channel->WAVChannel
+      local channel = WAVChannel( this )
+      channels.add( channel )
+      return channel
+
+    method save( file:File )->Logical
+      if (not validate) return false
+      return file.save( WAVEncoder.encode(this) )
+
+    method to->String
+      return "$ channel $-bit $ $ Hz" (channels.count,bit_depth,format,sample_rate)
+
+    method validate->Logical
+      which (format)
+        case PCM
+          which (bit_depth)
+            case 8, 16, 24, 32
+              noAction
+            others
+              error = "WAV does not support $-bit PCM."(bit_depth)
+          endWhich
+        case IEEE_FLOAT
+          if (bit_depth != 32)
+            error = "WAV does not support $-bit floating point."(bit_depth)
+          endIf
+        others
+          error = "WAV cannot handle format $."(format)
+      endWhich
+      return not error
+endClass
+
+class WAVChannel
+  PROPERTIES
+    wav       : WAV
+    samples   = Real32[]
+
+  METHODS
+    method init( wav )
+
+    method add( sample:Real )
+      samples.add( sample )
+
+    method count->Int32
+      return samples.count
+
+    method get( index:Int32 )->Real
+      return samples[index]
+
+    method read( reader:DataReader )
+      which (wav.format)
+        case PCM
+          which (wav.bit_depth)
+            case 8
+              local sample = reader.read : Int32
+              samples.add( (sample - 128) / 255.0 )
+            case 16
+              local sample = reader.read_int16_low_high
+              if (sample & 0x8000) sample -= 65536
+              samples.add( ((sample+32768)/65535.0) * 2 - 1 )
+            case 24
+              local sample = reader.read_int16_low_high
+              sample = (reader.read->Int32 :<<: 16) | sample
+              if (sample & 0x80_0000) sample -= 0x100_0000
+              samples.add( ((sample+8388608)/16777215.0) * 2 - 1 )
+            others
+              samples.add( ((reader.read_int32_low_high+2147483648.0)/4294967295.0) * 2 - 1 )
+          endWhich
+        case IEEE_FLOAT
+          local sample = reader.read_int32_low_high.real_bits
+          samples.add( sample.clamped(-1.0,1.0) )
+      endWhich
+
+    method write( index:Int32, writer:DataWriter )
+      which (wav.format)
+        case PCM
+          which (wav.bit_depth)
+            case 8
+              writer.write( (samples[index].clamped(-0.5,0.5)*255 + 128)->Int32->Byte )
+            case 16
+              local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
+              writer.write_int16_low_high( sample*65535 - 32768 )
+            case 24
+              local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
+              block sample = ((sample * 16777215) - 8388608)->Int32
+                writer.write_int16_low_high( sample )
+                writer.write( sample:>>>:16 )
+              endBlock
+            others
+              local sample = (samples[index] + 1.0) / 2.0   # -1..1 -> 0..1
+              writer.write_int32_low_high( sample * 4294967295.0 - 2147483648.0 )
+          endWhich
+        case IEEE_FLOAT
+          writer.write_int32_low_high( samples[index]->Real32.integer_bits )
+      endWhich
+endClass
+
+
+class WAVDecoder [singleton]
+  # http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/WAVE.html
+  # http://tiny.systems/software/soundProgrammer/WavFormatDocs.pdf
+  PROPERTIES
+    reader : DataReader
+    wav    : WAV
+
+  METHODS
+    method decode( reader, wav )->Logical
+      if (reader.read_int32 != 0x52494646) return false  # "RIFF"
+      reader.read_int32_low_high                             # chunk size
+      if (reader.read_int32 != 0x57415645) return false  # "WAVE"
+      if (reader.read_int32 != 0x666D7420) return false  # "fmt "
+      if (reader.read_int32_low_high != 16) return false     # subchunk 1 size
+
+      wav.format = WAVFormat( reader.read_int16_low_high )
+      if (not wav.format.exists) return false
+
+      local channel_count = reader.read_int16_low_high
+
+      wav.sample_rate = reader.read_int32_low_high
+
+      reader.read_int32_low_high  # data rate
+      reader.read_int16_low_high  # block size in bytes
+
+      wav.bit_depth = reader.read_int16_low_high
+      if (not wav.validate) return false
+
+      loop (channel_count) wav.create_channel
+
+      while (reader.has_another)
+        read_another_chunk
+      endWhile
+
+      return true
+
+    method read_another_chunk
+      local id = reader.read_int32
+      local size = reader.read_int32_low_high
+
+      which (id)
+        case 0x64617461   # "data"
+          local n = size / ((wav.bit_depth / 8) * wav.channels.count)
+          (forEach in wav.channels).samples.reserve( n )
+          loop (n)
+            (forEach in wav.channels).read( reader )
+          endLoop
+
+        case 0x464C4C52   # "FLLR"
+          # A FLLR chunk aligns the read position to a multiple of 4096 minus 8
+          # so that the content of the data chunk is 4K page-aligned.
+          wav.page_align = true
+          reader.skip( size )
+
+        others            # Unknown chunk type
+          #println "Unknown chunk type: $" (id_to_string(id))
+          reader.skip( size )
+      endWhich
+
+    method id_to_string( id:Int32 )->String
+      local a = (id:>>>:24)->Byte->Character
+      local b = (id:>>>:16)->Byte->Character
+      local c = (id:>>>:8)->Byte->Character
+      local d = id->Byte->Character
+      return "$$$$"(a,b,c,d)
+endClass
+
+class WAVEncoder [singleton]
+  METHODS
+    method encode( wav:WAV )->Byte[]
+      local writer = DataWriter()
+
+      writer.write_int32( 0x52494646 )  # "RIFF"
+      writer.write_int32_low_high( encoded_size(wav) - 8 )
+      writer.write_int32( 0x57415645 )  # "WAVE"
+      writer.write_int32( 0x666D7420 )  # "fmt "
+
+      writer.write_int32_low_high( 16 )                 # subchunk 1 size
+      writer.write_int16_low_high( wav.format->Int32 )  # format
+
+      writer.write_int16_low_high( wav.channels.count ) # channel count
+      writer.write_int32_low_high( wav.sample_rate )    # sample rate
+
+      writer.write_int32_low_high( wav.sample_rate * (wav.bit_depth/8) * wav.channels.count )
+      writer.write_int16_low_high( (wav.bit_depth/8) * wav.channels.count )
+      writer.write_int16_low_high( wav.bit_depth )
+
+      if (wav.page_align)
+        # FLLR chunk to make data start on a 4K boundary
+        writer.write_int32( 0x464C4C52 )    # "FLLR"
+        writer.write_int32_low_high( 4044 )
+        loop (4044) writer.write(0)
+      endIf
+
+      writer.write_int32( 0x64617461 )  # "data"
+      local sample_count = which{ wav.channels.count:wav.channels.first.count || 0 }
+      writer.write_int32_low_high( sample_count * (wav.bit_depth/8) * wav.channels.count )  # chunk size
+      forEach (i in 0..<sample_count)
+        (forEach in wav.channels).write( i, writer )
+      endForEach
+
+      return writer.output_bytes
+
+
+    method encoded_size( wav:WAV )->Int32
+      local size = 36  # header
+      size += 8        # "data" chunk header
+      if (wav.page_align) size += 4052 # FLLR chunk to make data start on a 4K boundary
+      if (wav.channels.count)
+        size += wav.channels.count * (wav.bit_depth / 8) * wav.channels.first.count
+      endIf
+      return size
+endClass
+
+enum WAVFormat
+  PCM        = 0x0001
+  IEEE_FLOAT = 0x0003
+  ALAW       = 0x0006   # 8-bit ITU-T G.711 A-law
+  MULAW      = 0x0007   # 8-bit ITU-T G.711 µ-law
+  EXTENSIBLE = 0xFFFE   # Determined by SubFormat
+
+  METHODS
+    method exists->Logical
+      return categories.contains(this)
+endEnum
+
