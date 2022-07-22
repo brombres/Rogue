@@ -90,6 +90,8 @@ augment
           return resolver.visit(
             TemplatedAccess( t, type_Routine, "recast_tuple", template_args, Args(t,this) )
           )
+        elseIf (suppress_error)
+          return null
         else
           throw t.error( "Cannot convert $ -> $; these tuple types are incompatible."(this_type,target_type) )
         endIf
