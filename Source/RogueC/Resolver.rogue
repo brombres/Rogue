@@ -1628,13 +1628,17 @@ class Resolver : Poolable, Visitor
       push_scope( cmd )
       cmd.condition = visit( cmd.condition )
       local condition_type = cmd.condition.require_type
+
       local is_enum = condition_type.is_enum
+      if (is_enum) this_module.implicit_context.add( condition_type )
 
       cmd.cases = visit(cmd.cases)->(as WhichCases)
       cmd.statements = visit(cmd.statements)
 
       if (is_enum)
         # Convert enum cases to integer cases so we can use switch
+        this_module.implicit_context.remove_last
+
         cmd.condition = visit( ContextAccess(cmd.t,cmd.condition,"value") )
         forEach (cmd_case in cmd.cases)
           forEach (arg at i in cmd_case.args)
@@ -1793,6 +1797,14 @@ class Resolver : Poolable, Visitor
           forEach (implicit_type in this_module.implicit_context)
             local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
             if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
+
+            if (implicit_type is not this_type)
+              if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
+                  implicit_type.definitions.contains(name))
+                local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
+                if (result) return result
+              endIf
+            endIf
           endForEach
         endIf
 
