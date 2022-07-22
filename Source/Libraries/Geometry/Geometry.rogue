@@ -8,3 +8,5 @@ $include Geometry/Ellipse
 $include Geometry/Line
 $include Geometry/RealXY
 $include Geometry/XY
+$include Geometry/XYZ
+$include Geometry/XYZW

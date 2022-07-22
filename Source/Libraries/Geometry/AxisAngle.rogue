@@ -1,0 +1,5 @@
+class AxisAngle( axis:XYZ, angle:Radians ) [compound]
+  GLOBAL METHODS
+    method create( axis:XYZ, angle:Degrees )->AxisAngle
+      return AxisAngle( axis, angle->Radians )
+endClass

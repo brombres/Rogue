@@ -14,20 +14,20 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator*( a:Int32, b:XY )->XY
       return XY( a*b.x, a*b.y )
 
-    method operator*( a:RealXY, b:XY )->XY
-      return XY( a.x*b.x, a.x*b.y )
+    method operator*( a:RealXY, b:XY )->RealXY
+      return RealXY( a.x*b.x, a.x*b.y )
 
     method operator/( a:Int32, b:XY )->XY
       return XY( a/b.x, a/b.y )
 
-    method operator/( a:RealXY, b:XY )->XY
-      return XY( a.x/b.x, a.x/b.y )
+    method operator/( a:RealXY, b:XY )->RealXY
+      return RealXY( a.x/b.x, a.x/b.y )
 
     method operator%( a:Int32, b:XY )->XY
       return XY( a%b.x, a%b.y )
 
-    method operator%( a:RealXY, b:XY )->XY
-      return XY( a.x%b.x, a.x%b.y )
+    method operator%( a:RealXY, b:XY )->RealXY
+      return RealXY( a.x%b.x, a.x%b.y )
 
   METHODS
     method cross( other:XY )->Int32
@@ -84,11 +84,17 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator+( other:XY )->XY
       return XY( x+other.x, y+other.y )
 
+    method operator+( other:RealXY )->RealXY
+      return RealXY( x+other.x, y+other.y )
+
     method operator-()->XY
       return XY( -x, -y )
 
     method operator-( other:XY )->XY
       return XY( x-other.x, y-other.y )
+
+    method operator-( other:RealXY )->RealXY
+      return RealXY( x-other.x, y-other.y )
 
     method operator*( other:XY )->XY
       return XY( x*other.x, y*other.y )
@@ -96,8 +102,8 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator*( value:Int32 )->XY
       return XY( x*value, y*value )
 
-    method operator*( value:Real )->XY
-      return XY( (x*value).floor, (y*value).floor )
+    method operator*( value:Real )->RealXY
+      return RealXY( x*value, y*value )
 
     method operator*( other:RealXY )->RealXY
       return RealXY( x*other.x, y*other.y )
@@ -109,9 +115,8 @@ class XY( x:Int32, y:Int32 ) [essential compound]
       if (value == 0) return XY.zero
       return XY( x/value, y/value )
 
-    method operator/( value:Real )->XY
-      if (value == 0) return XY.zero
-      return XY( (x/value).floor, (y/value).floor )
+    method operator/( value:Real )->RealXY
+      return RealXY( x/value, y/value )
 
     method operator/( other:RealXY )->RealXY
       return this->RealXY / other
@@ -122,6 +127,9 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator%( value:Int32 )->XY
       if (value == 0) return this
       return XY( x%value, y%value )
+
+    method operator%( other:RealXY )->RealXY
+      return RealXY( x%other.x, y%other.y )
 
     method operator^( other:XY )->XY
       return XY( x^other.x, y^other.y )

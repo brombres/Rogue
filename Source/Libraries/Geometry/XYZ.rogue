@@ -1,0 +1,130 @@
+module Geometry
+
+class XYZ( x:Real, y:Real, z=0:Real ) [compound]
+  GLOBAL METHODS
+    method create->XYZ
+      return XYZ( 0, 0, 0 )
+
+    method create( xy:XY )->XYZ
+      return XYZ( xy.x, xy.y, 0 )
+
+    method create( xy:XY, z:Real )->XYZ
+      return XYZ( xy.x, xy.y, z )
+
+  METHODS
+    method cross( other:XYZ )->XYZ
+      return XYZ(
+          y*other.z - (z*other.y),
+          z*other.x - (x*other.z),
+          x*other.y - (y*other.x)
+      )
+
+    method dot( other:XYZ )->Real
+      return x*other.x + y*other.y + z*other.z
+
+    method magnitude->Real
+      return Math.sqrt( x*x + y*y + z*z )
+
+    method magnitude_squared->Real
+      return x*x + y*y + z*z
+
+    method normalized->XYZ
+      local sum_of_squares = x*x + y*y + z*z
+      if ((1.0 - sum_of_squares).abs <= 0.0001) return this # already normalized
+      local m = Math.sqrt( sum_of_squares )
+      return XYZ( x/m, y/m, z/m )
+
+    method operator==( other:XYZ )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z)
+
+    method operator+( other:XYZ )->XYZ
+      return XYZ( x+other.x, y+other.y, z+other.z )
+
+    method operator+( value:Real )->XYZ
+      return XYZ( x+value, y+value, z+value )
+
+    method operator-()->XYZ
+      return XYZ( -x, -y, -z )
+
+    method operator-( other:XYZ )->XYZ
+      return XYZ( x-other.x, y-other.y, z-other.z )
+
+    method operator-( value:Real )->XYZ
+      return XYZ( x-value, y-value, z-value )
+
+    method operator*( other:XYZ )->XYZ
+      return XYZ( x*other.x, y*other.y, z*other.z )
+
+    method operator*( value:Real )->XYZ
+      return XYZ( x*value, y*value, z*value )
+
+    method operator/( other:XYZ )->XYZ
+      return XYZ( x/other.x, y/other.y, z/other.z )
+
+    method operator/( value:Real )->XYZ
+      return XYZ( x/value, y/value, z/value )
+
+    method operator%( other:XYZ )->XYZ
+      return XYZ( x%other.x, y%other.y, z%other.z )
+
+    method operator%( value:Real )->XYZ
+      return XYZ( x%value, y%value, z%value )
+
+    method operator^( other:XYZ )->XYZ
+      return XYZ( x^other.x, y^other.y, z^other.z )
+
+    method operator^( value:Real )->XYZ
+      return XYZ( x^value, y^value, z^value )
+
+    method to->String
+      return "[$,$,$]" (x,y,z)
+
+    method to->XY [essential]
+      return XY(x.floor,y.floor)
+endClass
+
+class DegreesXYZ( x:Degrees, y:Degrees, z:Degrees ) [compound]
+  GLOBAL METHODS
+    method create( x:Real, y:Real, z:Real )->DegreesXYZ
+      return DegreesXYZ( Degrees(x), Degrees(y), Degrees(z) )
+
+  METHODS
+    method description->String
+      return this->XYZ.description
+
+    method to->RadiansXYZ
+      return RadiansXYZ( x->Radians, y->Radians, z->Radians )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
+endClass
+
+class RadiansXYZ( x:Radians, y:Radians, z:Radians ) [compound]
+  GLOBAL METHODS
+    method create( x:Real, y:Real, z:Real )->RadiansXYZ
+      return RadiansXYZ( Radians(x), Radians(y), Radians(z) )
+
+  METHODS
+    method description->String
+      return this->XYZ.description
+
+    method to->DegreesXYZ
+      return DegreesXYZ( x->Degrees, y->Degrees, z->Degrees )
+
+    method to->XYZ
+      return XYZ( x.value, y.value, z.value )
+endClass
+
+augment Random
+  METHODS
+    method xyz->XYZ:
+      # Creates a XYZ compound with randomized (x,y,z) values,
+      # each in the range (0.0,1.0) exclusive.
+      return XYZ( real, real, real )
+
+    method xyz( low:Real, high:Real )->XYZ
+      # Returns a XYZ compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y,z) values.
+      return XYZ((real * (high-low)) + low,(real * (high-low)) + low,(real * (high-low)) + low)
+endAugment
