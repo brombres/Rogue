@@ -522,6 +522,22 @@ class Parser : ParserCore, Poolable
         Program.include( marked_token, filepath, &is_optional )
       endIf
 
+    method evaluate_meta_expression
+      #if (disable_output or _cmd_stack.is_empty) return
+      #local condition = _cmd_stack.remove_last
+      #meta_condition = condition.evaluate
+
+    method on_is_defined
+      if (not disable_output)
+        local t = _cur_t
+        local name = t->String
+        if (Program.definitions.contains(name) or (local_definitions and local_definitions.contains(name)))
+          processed_tokens.add( t.cloned(TokenType.KEYWORD_TRUE,null) )
+        else
+          processed_tokens.add( t.cloned(TokenType.KEYWORD_FALSE,null) )
+        endIf
+      endIf
+
     method on_begin_arg
       ++generic_fn_args_depth
 
