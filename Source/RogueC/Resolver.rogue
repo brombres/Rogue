@@ -1301,7 +1301,6 @@ class Resolver : Poolable, Visitor
         forEach (statement in current_statements)
           statement = visit( statement )
           if (statement)
-            #if (statement.type) statement = DiscardResult( statement.t, statement )
             if (statement.type) statement = statement.discarding_result
             current_statements.write( statement )
           endIf
@@ -1940,7 +1939,6 @@ class Resolver : Poolable, Visitor
 
     method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error, &exact_arg_types )->Cmd
       type.organize
-
       temporarily this_module = type.module_context
 
         if (args)
@@ -1951,8 +1949,10 @@ class Resolver : Poolable, Visitor
           if (type.attributes.is_singleton)
             return GetSingleton(t,type)
           else
-            if (type.name.ends_with(']') or type.name.begins_with('['))  # List or Table (Int32[], [String:Int32])
+            if (type.name.begins_with('['))  # Table / [String:Int32]
               return resolve_access( t, null, type.name, Args(t) )
+            elseIf (type.name.ends_with(']'))  # List / Int32[]
+              return resolve_access( t, null, type.scoped_name, Args(t) )
             else
               return TypeContext(t,type)
             endIf

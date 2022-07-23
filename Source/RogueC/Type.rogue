@@ -89,13 +89,16 @@ class Type : Cmd
       return Type( t, template, type_args->String(template.name), type_args, &=is_tuple )
 
     method create( t:Token, template:Template, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
+      return create( t, template, template.module_context, name, type_args, &=is_tuple )
+
+    method create( t:Token, template:Template, module_context:Module, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
       # 'name' should already include <<type,args>>
       if (type_args)
-        local type = template.module_context.find_type( t, name, &extended_search )
+        local type = module_context.find_type( t, name, &extended_search )
         if (type) return type
       endIf
 
-      local type = Type( t, template.module_context, name, 0 )
+      local type = Type( t, module_context, name, 0 )
       if (is_tuple) type.attributes.is_tuple = true
       type.type_template = template
       type.type_args     = type_args
@@ -112,7 +115,9 @@ class Type : Cmd
       if (type) return type
 
       local type_args = TemplateArgs(t).[ add(TokenList(t,element_type.name_tokens)) ]
-      return Type( t, Program.default_module.must_find_template(t,"List<<1>>",name), name, type_args )
+      local template = Program.default_module.must_find_template( t, "List<<1>>", name )
+      local result = Type( t, template, element_type.module_context, name, type_args )
+      return result
 
     method create( t:Token, key_type:Type, value_type:Type )->Type
       # Creates type [KeyType:ValueType] AKA Table<<KeyType,ValueType>>
@@ -1556,11 +1561,10 @@ class Type : Cmd
     method scoped_name->String
       if (@scoped_name) return @scoped_name
 
-      if (name.begins_with('(') or name.begins_with('[') or name.ends_with('?'))
+      if (name.begins_with('(') or name.begins_with('['))
         # Type names beginning with ( are (tuples) or (Functions)
         # Type names beginning with [ are [KeyType:ValueType] tables
-        # Type names ending with ? are optional types
-        # None of the above use an explicit scope.
+        # Neither use an explicit scope.
         @scoped_name = name
       else
         use builder = StringBuilder.pool

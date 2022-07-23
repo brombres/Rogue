@@ -23,7 +23,7 @@ class Template
         throw type.t.error( "Template already instantiated" )
       endIf
 
-      type.module_context = module_context
+      if (not type.module_context) type.module_context = module_context
       type.attributes.flags |= attributes.flags
       type.attributes.is_defined = true
 

@@ -592,8 +592,8 @@ class Parser : ParserCore, Poolable
         if (module_name == "") module_name = "Rogue"
         m = Program.get_module( augment_t, module_name )
         name .= after_last("::")
-      elseIf (name.begins_with('[') or name.ends_with(']') or name.ends_with('?'))
-        # Tables, Lists, and Optional types all go in the standard module namespace
+      elseIf (name.begins_with('['))
+        # Tables go in the standard module namespace
         m = Program.default_module
       endIf
 
@@ -824,11 +824,40 @@ class Parser : ParserCore, Poolable
       return prior._peek
 
     method print_peek
-      println "$:$.$: $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
+      println "PEEK [$:$.$] $"(_next_t.filepath,_next_t.line,_next_t.column,_next_t)
 
     method print_stack
       @trace _cmd_stack
       #if (_cmd_stack.count and _cmd_stack.last) @trace _cmd_stack.last.type_name
+
+    method debug_check
+      if (_cmd_stack.count and _cmd_stack.last instanceOf ModuleQualifiedID)
+        if (_cmd_stack.last->(as ModuleQualifiedID)->String.contains("Rogue::Color"))
+          trace _tokens
+        endIf
+      endIf
+
+    method print_stack_top
+      if (_cmd_stack.count)
+        if (_cmd_stack.last is null)
+          println "STACK null"
+        elseIf (_cmd_stack.last instanceOf Type)
+          println "STACK [$] $ ($)"(_cmd_stack.last.t.source_position,_cmd_stack.last,_cmd_stack.last->(as Type).scoped_name)
+        else
+          println "STACK [$] $ ($)"(_cmd_stack.last.t.source_position,_cmd_stack.last,_cmd_stack.last.type_name)
+        endIf
+      else
+        println "STACK []"
+      endIf
+
+    method print_stack_top_2
+      if (_cmd_stack.count >= 2)
+        local cmd = _cmd_stack[_cmd_stack.count-2]
+        if (cmd) println "STACK [$] $, $"(cmd.t.source_position,cmd,_cmd_stack.last)
+        else     println "STACK null"
+      else
+        print_stack_top
+      endIf
 
     method print_trace
       @trace _next_t
