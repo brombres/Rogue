@@ -6,8 +6,8 @@ class List<<$DataType>> : Poolable ListType
     capacity     : Int32
     element_size : Int32
     is_ref_array : Logical
-    element_type : $DataType  # dummy property used to generate type-releated C code
     is_borrowed  : Logical
+    element_type : $DataType  # dummy property used to generate type-releated C code
 
     native @|union
             |{

@@ -20,6 +20,7 @@ class Type : Cmd
     native_code       = NativeCode[]
     class_def         : Cmd
     states            = StateDef[]
+    element_type      : Type  # for lists
 
     categories        : Category[]
 
@@ -718,8 +719,11 @@ class Type : Cmd
       if (this.instance_of(Program.type_ListType) and this is not Program.type_ListType)
         local p_element_type = properties["element_type"]
         assert p_element_type
-        if (p_element_type.type.is_reference)
+        element_type = p_element_type.type
+        if (element_type.is_reference)
           attributes.is_reference_list = true
+          attributes.contains_reference = true
+        elseIf (element_type.contains_reference)
           attributes.contains_reference = true
         endIf
       endIf
