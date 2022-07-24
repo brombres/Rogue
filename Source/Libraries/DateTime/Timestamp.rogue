@@ -1,4 +1,9 @@
 class Timestamp( value=System.time_ms:Int64 ) [compound]
+  NATIVE
+    nativeHeader @|#if defined(ROGUE_PLATFORM_LINUX)
+                  |  #include <time.h>
+                  |#endif
+
   DEFINITIONS
     JANUARY   = 1
     FEBRUARY  = 2
