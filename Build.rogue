@@ -123,6 +123,7 @@ routine compile_cpp
     local flags = Build.CPP_FLAGS_UNIX
     if (flags != "") flags += " "
     flags += which{ Build.RELEASE_MODE:"-O3" || "-O0" }
+    libs += " -lm"
     local cc = "c++ $ -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof $ -o $$"...
       (flags,File.esc(cpp_filepath),File.esc(exe_filepath),libs)
     execute cc
