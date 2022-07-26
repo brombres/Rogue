@@ -1021,17 +1021,22 @@ class Type : Cmd
             if (not m)
               m = Method( t, this, "to<<Rogue::String>>" )
               m.return_type = Program.type_String
-              if (properties.count == 0)
+
+              local n = 0
+              if ((forEach in properties).type is not Program.type_NativeProperty) ++n
+
+              if (n == 0)
                 m.statements.add( Return(t,LiteralString(t,"()")) )
               else
-                #local format = String("($")
-                #loop (properties.count-1) format.print(",$")
-                #format.print ','
                 local format = "($"
-                format += ",$" * (properties.count-1)
+                format += ",$" * (n-1)
                 format += ')'
                 local args = Args(t)
-                args.add( Access(t, (forEach in properties).name) )
+                forEach (property in properties)
+                  if (property.type is not Program.type_NativeProperty)
+                    args.add( Access(t, property.name) )
+                  endIf
+                endForEach
                 m.statements.add( Return(t,FormattedString(t,format,args)) )
               endIf
               m.organize
