@@ -101,6 +101,7 @@ KEYWORD_PI                pi
 KEYWORD_PRIOR             prior
 KEYWORD_PROPERTIES        PROPERTIES  [structural]
 KEYWORD_RETURN            return
+KEYWORD_ROGO_DIRECTIVE    rogoDirective
 KEYWORD_ROUTINE           routine     [structural]
 KEYWORD_SATISFIED         satisfied   [structural]
 KEYWORD_STATES            STATES      [structural]
@@ -1356,8 +1357,13 @@ parser
       string
     endOn
     produce NativeCode( content:String )
+  elseOn "rogoDirective"
+    string
+    call rogo_directive
+    consume_eols
+    return
   endOn
-  syntaxError "Expected 'nativeHeader' or 'nativeCode'."
+  syntaxError "Expected 'nativeHeader', 'nativeCode', or 'rogoDirective'."
 
 - definition
   on IDENTIFIER
