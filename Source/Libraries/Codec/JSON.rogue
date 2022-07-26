@@ -192,7 +192,7 @@ class JSONParser
         local buffer = String()
         local finished = false
         while (not finished and reader.has_another)
-          if (ch.is_identifier(&allow_dollar))
+          if (ch.is_identifier("$"))
             reader.read
             buffer.print( ch->Character )
             ch = reader.peek
@@ -210,7 +210,7 @@ class JSONParser
 
     method next_is_identifier->Logical
       local ch = reader.peek
-      if (ch.is_identifier(&start,&allow_dollar)) return true
+      if (ch.is_identifier_start("$")) return true
       return (ch == '"' or ch == '\'')
 
     method parse_number->Value

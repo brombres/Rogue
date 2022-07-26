@@ -2074,7 +2074,7 @@ class String : Poolable PrintWriter
               if (ch != ' ' and ch != '\t') escapeWhile
               ++n
             endWhile
-            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
+            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier_start)
               return _extract_strings( i0+n, remaining_count-n, format, f0, fcount, results, &=ignore_case )
             endIf
           endIf
@@ -2258,7 +2258,7 @@ class String : Poolable PrintWriter
               if (ch != ' ' and ch != '\t') escapeWhile
               ++n
             endWhile
-            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier)
+            if (i0 == 0 or n == remaining_count or not this[i0-1].is_identifier or not this[i0+n].is_identifier_start)
               return _pattern_match_count( i0+n, remaining_count-n, format, f0, fcount, &=ignore_case )
             endIf
           endIf

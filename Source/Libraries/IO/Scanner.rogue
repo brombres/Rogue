@@ -164,8 +164,8 @@ class Scanner : Reader<<Character>>
       local ch = peek
       return (ch >= '0' and ch <= '9') or (ch >= 'a' and ch <= 'f') or (ch >= 'A' and ch <= 'F')
 
-    method next_is_identifier( &allow_dollar )->Logical
-      return peek.is_identifier( &start, &=allow_dollar )
+    method next_is_identifier( additional_characters="":String )->Logical
+      return peek.is_identifier_start( additional_characters )
 
     method next_is_number( base=10:Int32 )->Logical
       if (next_is('-')) return peek(1).is_number( base )
@@ -247,11 +247,11 @@ class Scanner : Reader<<Character>>
       endWhile
       return value
 
-    method scan_identifier( buffer=null:String, &allow_dollar )->String
-      if (not peek.is_identifier(&start,&=allow_dollar)) return null
+    method scan_identifier( additional_characters="":String, buffer=null:String )->String
+      if (not peek.is_identifier_start(&=additional_characters)) return null
       if (not buffer) buffer = String()
       buffer.print( read )
-      while (peek.is_identifier(&=allow_dollar)) buffer.print( read )
+      while (peek.is_identifier(&=additional_characters)) buffer.print( read )
       return buffer
 
     method scan_int64( base=10:Int32 )->Int64

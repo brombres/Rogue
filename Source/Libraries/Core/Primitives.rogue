@@ -610,10 +610,15 @@ class Character [primitive]
     method is_base64_digit->Logical
       return is_alphanumeric or this == '+' or this == '/'
 
-    method is_identifier( &start, &allow_dollar )->Logical
+    method is_identifier( additional_characters="":String )->Logical
       if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
-      if (not start and (this >= '0' and this <= '9')) return true
-      if (allow_dollar and this == '$') return true
+      if (this >= '0' and this <= '9') return true
+      if (additional_characters.contains(this)) return true
+      return false
+
+    method is_identifier_start( additional_characters="":String )->Logical
+      if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
+      if (additional_characters.contains(this)) return true
       return false
 
     method is_letter->Logical
