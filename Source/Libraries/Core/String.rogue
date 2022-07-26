@@ -225,6 +225,13 @@ class String : Poolable PrintWriter
       if (begins_with(st,&=ignore_case)) return after_first( st, &=ignore_case )
       else                               return this
 
+    method appending( other:String, spacer=" ":String )->String
+      # If this string is empty then 'other' is returned.
+      # Otherwise, 'this+spacer+other' is returned.
+      if (not other) return this
+      if (count == 0) return other
+      return "$$$" (this,spacer,other)
+
     method before( index:Int32 )->String
       # Returns the substring of this string that occur before
       # the given index.
