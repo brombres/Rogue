@@ -68,7 +68,7 @@ class System [essential]
       native @|Rogue_quit();
               |exit( $result_code );
 
-    method find_program( name:String )->File?
+    method find_executable( name:String )->File?
       # Returns the executable filepath of the given program or else null.
       # Uses 'where' on Windows and 'which' on other platforms.
       local result = Process.run( "$ $" (which{is_windows:"where"||"which"},name), &env )
