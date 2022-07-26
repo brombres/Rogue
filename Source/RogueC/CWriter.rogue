@@ -225,7 +225,7 @@ class CWriter : BufferedPrintWriter
            |void  Rogue_check_gc(void);
            |void  Rogue_collect_garbage(void);
            |void  Rogue_request_gc(void);
-           |void  Rogue_quit(void);
+           |int   Rogue_quit(void);
            |void* Rogue_release( void* obj );
            |void* Rogue_retain( void* obj );
            |
@@ -369,8 +369,9 @@ class CWriter : BufferedPrintWriter
         println ...
           @|}
            |
-           |void Rogue_quit(void)
+           |int Rogue_quit(void)
            |{
+           |  int status = !!Rogue_exception;
            |  Rogue_print_exception();  // Only has an effect if there is a pending exception
            |
            |  RogueGlobal__call_exit_functions();
@@ -379,6 +380,8 @@ class CWriter : BufferedPrintWriter
            |  Rogue_collect_garbage();
            |  Rogue_collect_garbage();
            |  Rogue_collect_garbage();
+           |
+           |  return status;
            |}
            |
            |void Rogue_print_exception(void)

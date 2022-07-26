@@ -2242,8 +2242,7 @@ augment
                           |{
                           |  Rogue_configure( argc, argv );
                           |  Rogue_launch();
-                          |  Rogue_quit();
-                          |  return 0;
+                          |  return Rogue_quit();
         c_writer.println @|}
       endIf
 
