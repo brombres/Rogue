@@ -2372,11 +2372,11 @@ augment
             writer.println
             # RogueValue* cursor = ((RogueValue*)(((RogueValueList*)THIS)->data)) - 1;
             writer.print   element_type.c_name
-            writer.print   "* cursor = (("
+            writer.print   "* cursor = ("
             writer.print   element_type.c_name
             writer.print   "*)((("
             writer.print   c_name
-            writer.println "*)THIS)->data)) - 1;"
+            writer.println "*)THIS)->data);"
             writer.print   "int n = ((int)(("
             writer.print   c_name
             writer.println "*)THIS)->capacity);"
@@ -2388,9 +2388,10 @@ augment
             writer.println "while (--n >=0)"
             writer.println "{"
             use path = WorkList<<String>>
-              path.add( "  if ((ref = (RogueObject*)((*(++cursor))" )
+              path.add( "  if ((ref = (RogueObject*)((*cursor)" )
               writer.print_gc_checks( path, element_type )
             endUse
+            writer.println "  ++cursor;"
             writer.println "}"
 
           endIf
