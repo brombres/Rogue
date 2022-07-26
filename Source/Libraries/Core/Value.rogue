@@ -709,8 +709,8 @@ class Value [compound]
 
     method to->String
       which (type)
-        case TYPE_UNDEFINED: return ""
-        case TYPE_NULL:      return "null"
+        case TYPE_UNDEFINED: return null
+        case TYPE_NULL:      return null
         case TYPE_LOGICAL:   return logical->String
         case TYPE_BYTE:      return byte->String
         case TYPE_CHARACTER: return character->String
@@ -724,7 +724,7 @@ class Value [compound]
         case TYPE_STRING:    return object->String
         case TYPE_LIST:      return object->(as Value[])->String
         case TYPE_TABLE:     return object->(as [String:Value])->String
-        others:              return ""
+        others:              return null
       endWhich
 
     method to->XY
