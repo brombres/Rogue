@@ -1,0 +1,31 @@
+#$include Codec/BMP
+$include Codec/JPEG
+$include Codec/PNG
+
+augment Bitmap::Bitmap
+  NATIVE
+    rogoDirective @|LIBRARIES(macOS) = libjpeg
+    rogoDirective @|LIBRARIES(macOS) = libpng zlib
+    rogoDirective @|LINK(macOS)      = -lz
+    rogoDirective @|LIBRARIES(Linux) = libjpeg(install:libjpeg-dev)
+    rogoDirective @|LIBRARIES(Linux) = libpng(install:libpng-dev)
+
+  GLOBAL METHODS
+    #{
+    method decode_bmp( bytes:Byte[] )->Bitmap
+      return BMPDecoder().decode( bytes )
+    }#
+
+    method decode_jpeg( bytes:Byte[] )->Bitmap
+      return JPEGDecoder().decode( bytes )
+
+    method decode_png( bytes:Byte[] )->Bitmap
+      return PNGDecoder().decode( bytes )
+
+  METHODS
+    method to_jpeg_bytes( quality=75:Int32 )->Byte[]
+      return JPEGEncoder().encode( this, null, quality )
+
+    method to_png_bytes->Byte[]
+      return PNGEncoder().encode( this, null )
+endAugment

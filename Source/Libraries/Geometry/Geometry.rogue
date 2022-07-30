@@ -7,7 +7,9 @@ $include Geometry/Corners
 $include Geometry/Ellipse
 $include Geometry/Line
 $include Geometry/LineGenerator
+$include Geometry/Quad
 $include Geometry/RealXY
+$include Geometry/Triangle
 $include Geometry/XY
 $include Geometry/XYZ
 $include Geometry/XYZW

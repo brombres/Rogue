@@ -1,0 +1,117 @@
+module Bitmap
+
+class Color( argb:Int32 ) [compound]
+  DEFINITIONS
+    BLACK       = Bitmap::Color( 0xff000000 )
+    BLUE        = Bitmap::Color( 0xff0000FF )
+    BROWN       = Bitmap::Color( 0xff882222 )
+    CYAN        = Bitmap::Color( 0xff00FFFF )
+    DARK_GRAY   = Bitmap::Color( 0xff444444 )
+    DARK_GREEN  = Bitmap::Color( 0xff008800 )
+    GRAY        = Bitmap::Color( 0xff888888 )
+    GREEN       = Bitmap::Color( 0xff00FF00 )
+    LIGHT_GRAY  = Bitmap::Color( 0xffCCCCCC )
+    LIGHT_GREEN = Bitmap::Color( 0xff88FF88 )
+    MAGENTA     = Bitmap::Color( 0xffFF00FF )
+    ORANGE      = Bitmap::Color( 0xffFF8800 )
+    PINK        = Bitmap::Color( 0xffFFCCCC )
+    PURPLE      = Bitmap::Color( 0xff880088 )
+    RED         = Bitmap::Color( 0xffFF0000 )
+    ROGUE_BLUE  = Bitmap::Color( 0xff3333FF )
+    ROYAL_BLUE  = Bitmap::Color( 0xff4169E1 )
+    SKY_BLUE    = Bitmap::Color( 0xff87CEEB )
+    TRANSPARENT = Bitmap::Color( 0 )
+    YELLOW      = Bitmap::Color( 0xffFFFF00 )
+    WHITE       = Bitmap::Color( 0xffFFFFFF )
+
+  GLOBAL METHODS
+    method create( r:Int32, g:Int32, b:Int32, a=255:Int32 )->Color
+      return (a.clamped(0,255):<<:24 | r.clamped(0,255):<<:16 | g.clamped(0,255):<<:8 | b.clamped(0,255))
+
+    method create( r:Real64, g:Real64, b:Real64, a=1.0:Real64 )->Color
+      return Color( (r*255)->Int32, (g*255)->Int32, (b*255)->Int32, (a*255)->Int32 )
+
+  METHODS
+    method alpha->Real64
+      return ((argb :>>: 24) & 255) / 255.0
+
+    method alpha_byte->Int32
+      return (argb :>>: 24) & 255
+
+    method alpha_premultiplied->Color
+      local a = alpha_byte
+      return Color( (red_byte*a)/255, (green_byte*a)/255, (blue_byte*a)/255, a )
+
+    method alpha_unmultiplied->Color
+      local a = alpha_byte
+      if (a == 0) return Color(0)
+      return Color( (red_byte*255)/a, (green_byte*255)/a, (blue_byte*255)/a, a )
+
+    method blue->Real64
+      return (argb & 255) / 255.0
+
+    method blue_byte->Int32
+      return argb & 255
+
+    method green->Real64
+      return ((argb :>>: 8) & 255) / 255.0
+
+    method green_byte->Int32
+      return (argb :>>: 8) & 255
+
+    method hash_code->Int32
+      return argb
+
+    method is_opaque->Logical
+      return ((argb & 0xFF000000) == 0xFF000000)
+
+    method operator*( other:Color )->Color
+      local a = other.alpha
+      local inverse_a = 1.0 - a
+      local r = red * inverse_a   + other.red *a
+      local g = green * inverse_a + other.green *a
+      local b = blue * inverse_a  + other.blue *a
+      return Color( r, g, b, alpha*inverse_a+a )
+
+    method operator&( n:Int32 )->Color
+      return Color( argb & n )
+
+    method operator|( n:Int32 )->Color
+      return Color( argb | n )
+
+    method operator!->Color
+      return Color( !argb )
+
+    method red->Real64
+      return ((argb :>>: 16) & 255) / 255.0
+
+    method red_byte->Int32
+      return (argb :>>: 16) & 255
+
+    method with_opacity( a:Real64 )->Color
+      return (Int32((argb:>>:24) * a):<<:24) | (argb & 0xffFFff)
+
+    method to->String
+      return argb->String(&hex)
+
+    method with_alpha( a:Real64 )->Color
+      return with_alpha_byte( (a*255)->Int32 )
+
+    method with_alpha_byte( a:Int32 )->Color
+      return Color( (a.clamped(0,255) :<<: 24) | (this.argb & 0xFFffFF) )
+
+endClass
+
+augment Rogue::Real64
+  METHODS
+    method lerp( a:Bitmap::Color, b:Bitmap::Color )->Bitmap::Color
+      return Bitmap::Color( this.lerp(a.red,b.red), this.lerp(a.green,b.green), this.lerp(a.blue,b.blue), this.lerp(a.alpha,b.alpha) )
+endAugment
+
+augment Rogue::Random
+  METHODS
+    method color->Bitmap::Color
+      # Returns a color with randomized (r,g,b) values and an
+      # alpha of 1.0.
+      return Bitmap::Color.create(real64,real64,real64)
+endAugment
