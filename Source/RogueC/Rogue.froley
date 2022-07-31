@@ -31,7 +31,6 @@ KEYWORD_CATCH             catch          [structural]
 KEYWORD_CATEGORIES        CATEGORIES     [structural]
 KEYWORD_CLASS             class          [structural]
 KEYWORD_CONTINGENT        contingent
-KEYWORD_DEFAULT_VALUE     defaultValue
 KEYWORD_DEFINITIONS       DEFINITIONS    [structural]
 KEYWORD_DOWN_TO           downTo
 KEYWORD_ELSE              else           [structural]
@@ -74,10 +73,6 @@ KEYWORD_IF                if
 KEYWORD_IMPORT            import
 KEYWORD_INSTANCE_OF       instanceOf
 KEYWORD_IS                is
-KEYWORD_IS_COMPOUND       isCompound
-KEYWORD_IS_ENUM           isEnum
-KEYWORD_IS_PRIMITIVE      isPrimitive
-KEYWORD_IS_REFERENCE      isReference
 KEYWORD_IS_TYPE           isType
 KEYWORD_LOCAL             local
 KEYWORD_LOCALIZE          localize
@@ -128,6 +123,7 @@ KEYWORD_XOR               xor
 ----------------------------------------------------------------------
 tokens Symbols
 ----------------------------------------------------------------------
+META_DEFAULT_VALUE    $defaultValue   [meta]
 META_DEFINE           $define         [meta]
 META_ELSE_IF          $elseIf         [meta structural]
 META_END_IF           $endIf          [meta structural]
@@ -138,7 +134,11 @@ META_FILE_BYTES       $fileBytes      [meta]
 META_FILE_STRING      $fileString     [meta]
 META_IF               $if             [meta]
 META_INCLUDE          $include        [meta]
+META_IS_COMPOUND      $isCompound     [meta]
 META_IS_DEFINED       $isDefined      [meta]
+META_IS_ENUM          $isEnum         [meta]
+META_IS_PRIMITIVE     $isPrimitive    [meta]
+META_IS_REFERENCE     $isReference    [meta]
 META_JOIN_IDS         $id             [meta]
 META_JOIN_STRINGS     $string         [meta]
 META_LOCAL_DEFINE     $localDefine    [meta]
@@ -2864,7 +2864,7 @@ parser
     produce GenericFnArg
   endOn
 
-  on "defaultValue" "<<" type ">>"               -> DefaultValue(of_type:Type)
+  on "$defaultValue" "<<" type ">>"               -> DefaultValue(of_type:Type)
   on "typeOf" "<<" expression ">>" optional_args -> TypeOf(expression,args:Args)
 
   on "ThisType"
@@ -2887,10 +2887,10 @@ parser
 
   on "new" "<<" expression ">>" args -> New(type_expression,args:Args)
 
-  on "isCompound"  "<<" expression ">>" -> IsCompound(operand)
-  on "isEnum"      "<<" expression ">>" -> IsEnum(operand)
-  on "isPrimitive" "<<" expression ">>" -> IsPrimitive(operand)
-  on "isReference" "<<" expression ">>" -> IsReference(operand)
+  on "$isCompound"  "<<" expression ">>" -> IsCompound(operand)
+  on "$isEnum"      "<<" expression ">>" -> IsEnum(operand)
+  on "$isPrimitive" "<<" expression ">>" -> IsPrimitive(operand)
+  on "$isReference" "<<" expression ">>" -> IsReference(operand)
 
   on "$fileBytes"
     mustConsume '('

@@ -174,7 +174,7 @@ class List<<$DataType>> : Poolable ListType
       if ($DataType isType Logical or $DataType isType Byte)
         native @|memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
         return
-      elseIf (isPrimitive<<$DataType>> or isReference<<$DataType>>)
+      elseIf ($isPrimitive<<$DataType>> or $isReference<<$DataType>>)
         if (not value)
           native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
           return
@@ -296,7 +296,7 @@ class List<<$DataType>> : Poolable ListType
     method locate( value:$DataType, i1=null:Int32? )->Int32?
       if (not i1) i1 = 0
 
-      if (isReference<<$DataType>>)
+      if ($isReference<<$DataType>>)
         if (value is null)
           forEach (i of this from i1.value)
             if (value is this[i]) return i
@@ -331,7 +331,7 @@ class List<<$DataType>> : Poolable ListType
           forEach (i in 0..<other_count)
             local a = this[ starting_index + i ]
             local b = other[ i ]
-            if (isReference<<$DataType>>)
+            if ($isReference<<$DataType>>)
               if (a is null)
                 necessary (b is null)
               elseIf (b is null)
@@ -353,7 +353,7 @@ class List<<$DataType>> : Poolable ListType
 
     method locate_last( value:$DataType, i1=null:Int32? )->Int32?
       local starting_index = which{ i1 || count-1 }
-      if (isReference<<$DataType>>)
+      if ($isReference<<$DataType>>)
         if (value is null)
           forEach (i in starting_index downTo 0)
             if (not this[i]) return i
@@ -385,7 +385,7 @@ class List<<$DataType>> : Poolable ListType
           forEach (i in 0..<other_count)
             local a = this[ first_i + i ]
             local b = other[ i ]
-            if (isReference<<$DataType>>)
+            if ($isReference<<$DataType>>)
               if (a is null)
                 necessary (b is null)
               elseIf (b is null)
@@ -517,7 +517,7 @@ class List<<$DataType>> : Poolable ListType
         native @|RogueLogical result = $this->as_logicals[$count];
                 |$this->as_logicals[$count] = 0;
                  return native("result")->$DataType
-      elseIf (isCompound<<$DataType>>)
+      elseIf ($isCompound<<$DataType>>)
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |memset( (($<<element_type>>*)($this->data)) + $count, 0, sizeof($<<element_type>>) );
                  return native("result")->$DataType

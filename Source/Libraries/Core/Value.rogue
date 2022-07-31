@@ -600,7 +600,7 @@ class Value [compound]
       which (type)
         case TYPE_BOX:       return box
         case TYPE_XY:        return Box(xy)
-        others:              return defaultValue<<Box>>
+        others:              return $defaultValue<<Box>>
       endWhich
 
     method to->Byte
@@ -730,13 +730,13 @@ class Value [compound]
     method to->XY
       which (type)
         case TYPE_XY:        return xy
-        others:              return defaultValue<<XY>>
+        others:              return $defaultValue<<XY>>
       endWhich
 
     method to<<$Type>>->$Type
-      if (isReference<<$Type>>)
+      if ($isReference<<$Type>>)
         return this->Object->(as $Type)
-      elseIf (isEnum<<$Type>>)
+      elseIf ($isEnum<<$Type>>)
         local st = this->String
         if (st) return $Type(st)
         else    return $Type(0)
@@ -746,14 +746,14 @@ class Value [compound]
         elseIf (type == TYPE_OBJECT)
           local box = this->Object->(as Boxed<<$Type>>)
           if (box) return box->$Type
-          return defaultValue<<$Type>>
+          return $defaultValue<<$Type>>
         else
-          return defaultValue<<$Type>>
+          return $defaultValue<<$Type>>
         endIf
       else
         local box = this->Object->(as Boxed<<$Type>>)
         if (box) return box->$Type
-        return defaultValue<<$Type>>
+        return $defaultValue<<$Type>>
       endIf
 
     method to_compatible_values( other:Value )->(Value,Value)

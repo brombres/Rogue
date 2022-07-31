@@ -40,7 +40,7 @@ class Table<<$KeyType,$ValueType>>
       local entry = entry_at( index )
       if (entry) return entry.value
 
-      return defaultValue<<$ValueType>>
+      return $defaultValue<<$ValueType>>
 
     method clear
       forEach (i of bins) bins[i] = null
@@ -118,7 +118,7 @@ class Table<<$KeyType,$ValueType>>
       if (first_entry)
         return first_entry.value
       else
-        return defaultValue<<$ValueType>>
+        return $defaultValue<<$ValueType>>
       endIf
 
     method first( query:(Function($ValueType)->Logical) )->$ValueType?
@@ -134,7 +134,7 @@ class Table<<$KeyType,$ValueType>>
       if (entry)
         return entry.value
       else
-        return defaultValue<<$ValueType>>
+        return $defaultValue<<$ValueType>>
       endIf
 
     method get( key:$KeyType, default_value:$ValueType )->$ValueType
