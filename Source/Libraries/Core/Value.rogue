@@ -734,23 +734,21 @@ class Value [compound]
       endWhich
 
     method to<<$Type>>->$Type
-      if (isPrimitive<<$Type>>)
-        return this->$Type
-      elseIf (isReference<<$Type>>)
+      if (isReference<<$Type>>)
         return this->Object->(as $Type)
       elseIf (isEnum<<$Type>>)
         local st = this->String
         if (st) return $Type(st)
         else    return $Type(0)
-      elseIf ($Type isType XY or $Type isType Box)
-        return this->$Type
       elseIf ($Type instanceOf OptionalType)
-        if (type == TYPE_OBJECT)
+        if ($exists<<$Type(this)>>)
+          return $Type(this)
+        elseIf (type == TYPE_OBJECT)
           local box = this->Object->(as Boxed<<$Type>>)
           if (box) return box->$Type
           return defaultValue<<$Type>>
         else
-          return $Type.create_from(this)
+          return defaultValue<<$Type>>
         endIf
       else
         local box = this->Object->(as Boxed<<$Type>>)
