@@ -373,6 +373,32 @@ class Resolver : Poolable, Visitor
       endIf
       visit_children( cmd )
 
+    method on( cmd:CommandExists )->Cmd
+      local access = cmd.command->(as Access)
+      if (access)
+        local args = visit( access.args )
+        local result = resolve_access( cmd.t, null, access.name, args, &suppress_error )
+        return LiteralLogical( cmd.t, result? )
+      else
+        local context_access = cmd.command->(as ContextAccess)
+        if (context_access)
+          local args = visit( context_access.args )
+          local result = resolve_access( cmd.t, context_access.context, context_access.name, args, &suppress_error )
+          return LiteralLogical( cmd.t, result? )
+        else
+          local type_access = cmd.command->(as TypeAccess)
+          if (type_access)
+            type_access.of_type.organize
+            local args = visit( type_access.args )
+            local result = resolve_type_access( cmd.t, type_access.of_type, args, &suppress_error )
+            return LiteralLogical( cmd.t, result? )
+          else
+            throw cmd.t.error( "Unsupported syntax. $exists<<...>> can be used with TypeOrID, Constructor(...), " +
+                               "and context.access(...) syntax." )
+          endIf
+        endIf
+      endIf
+
     method on_validate( cmd:CompareEQ )->Cmd
       local left_type = cmd.left.type
       if (left_type.is_primitive and cmd.right.type.is_primitive) return cmd

@@ -1092,4 +1092,9 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:CommandExists )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.command)
+      return result
+
 endClass

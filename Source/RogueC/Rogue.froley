@@ -133,6 +133,7 @@ META_ELSE_IF          $elseIf         [meta structural]
 META_END_IF           $endIf          [meta structural]
 META_END_LOCAL_MACRO  $endLocalMacro  [meta structural]
 META_END_MACRO        $endMacro       [meta structural]
+META_EXISTS           $exists         [meta]
 META_FILE_BYTES       $fileBytes      [meta]
 META_FILE_STRING      $fileString     [meta]
 META_IF               $if             [meta]
@@ -2903,6 +2904,13 @@ parser
     string
     mustConsume ')'
     call filename_to_file_string
+    return
+
+  elseOn "$exists"
+    mustConsume '<<'
+    expression
+    create CommandExists( command )
+    mustConsume '>>'
     return
   endOn
 

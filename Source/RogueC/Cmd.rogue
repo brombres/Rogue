@@ -4891,3 +4891,19 @@ class TypeOf : Cmd
       return "TypeOf($,$)" (%expression,%args)
 
 endClass
+
+class CommandExists : Cmd
+  PROPERTIES
+    command : Cmd
+
+  METHODS
+    method init( t, command )
+
+    method init( existing:CommandExists )
+      prior.init( existing )
+      if (existing.command) command = existing.command.cloned
+
+    method description->String
+      return "CommandExists($)" (%command)
+
+endClass
