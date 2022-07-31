@@ -110,7 +110,6 @@ KEYWORD_THROW             throw
 KEYWORD_TRACE             trace
 KEYWORD_TRUE              true
 KEYWORD_TRY               try
-KEYWORD_TYPE_OF           typeOf
 KEYWORD_UNDEFINED         undefined
 KEYWORD_UNSATISFIED       unsatisfied [structural]
 KEYWORD_USE               use
@@ -2865,7 +2864,6 @@ parser
   endOn
 
   on "$defaultValue" "<<" type ">>"               -> DefaultValue(of_type:Type)
-  on "typeOf" "<<" expression ">>" optional_args -> TypeOf(expression,args:Args)
 
   on "ThisType"
     create Type(name="ThisType":String)
