@@ -1,4 +1,4 @@
-#$include Codec/BMP
+$include Codec/BMP
 $include Codec/JPEG
 $include Codec/PNG
 
@@ -11,10 +11,8 @@ augment Bitmap::Bitmap
     rogoDirective @|LIBRARIES(Linux) = libpng(install:libpng-dev)
 
   GLOBAL METHODS
-    #{
     method decode_bmp( bytes:Byte[] )->Bitmap
       return BMPDecoder().decode( bytes )
-    }#
 
     method decode_jpeg( bytes:Byte[] )->Bitmap
       return JPEGDecoder().decode( bytes )
