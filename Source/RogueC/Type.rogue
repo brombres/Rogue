@@ -141,7 +141,7 @@ class Type : Cmd
 
       local template = Program.default_module.must_find_template( t, "Optional<<1>>", name )
       local type_args = TemplateArgs(t).[ add(TokenList(t,core_type.name_tokens)) ]
-      type = Type( t, template, name, type_args )
+      type = Type( t, template, core_type.module_context, name, type_args )
       type.attributes.is_optional = true
       return type
 
