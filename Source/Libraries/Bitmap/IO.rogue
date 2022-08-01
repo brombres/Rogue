@@ -5,8 +5,8 @@ $include Codec/PNG
 augment Bitmap::Bitmap
   NATIVE
     rogoDirective @|LIBRARIES(macOS) = libjpeg
-    rogoDirective @|LIBRARIES(macOS) = libpng zlib
-    rogoDirective @|LINK(macOS)      = -lz
+    rogoDirective @|LIBRARIES(macOS) = libpng
+    rogoDirective @|LIBRARIES(macOS) = zlib(flags:-lz)
     rogoDirective @|LIBRARIES(Linux) = libjpeg(install:libjpeg-dev)
     rogoDirective @|LIBRARIES(Linux) = libpng(install:libpng-dev)
 
