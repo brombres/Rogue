@@ -1046,8 +1046,24 @@ class CGenerator : Visitor
       local needs_semicolon = false
 
       local v = cmd.info
-      if (not Program.gc_auto)
-        writer.print( v.type.c_ref_name ).print( ' ' )
+      if (Program.gc_auto)
+        # In auto-gc variables have already been declared but we need to reinitialize locals without
+        # an explicit initial value at this point of original declaration to prevent logic bugs.
+        if (not v.initial_value)
+          writer.print( v.c_name )
+          writer.print( " = " )
+          if (v.type.is_compound)
+            writer.print '('
+            writer.print( v.type.c_ref_name )
+            writer.print ')'
+            writer.print "{}"
+          else
+            writer.print "0"
+          endIf
+          needs_semicolon = true
+        endIf
+      else
+        writer.[ print(v.type.c_ref_name), print(' ') ]
         writer.print( v.c_name )
         if (not v.initial_value or v.type.is_reference or v.type.contains_reference)
           writer.print( " = " )
