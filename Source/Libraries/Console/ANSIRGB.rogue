@@ -1,0 +1,27 @@
+# An RGB color compound specialized for use with ANSIBitmap
+uses Bitmap
+
+class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
+  GLOBAL METHODS
+    method create( color:Color )->ANSIRGB
+      return ANSIRGB( color.red, color.green, color.blue )
+
+  METHODS
+    method description->String
+      return "ANSIRGB($,$,$)" (red.format(".2"),green.format(".2"),blue.format(".2"))
+
+    method operator+( other:ANSIRGB )->ANSIRGB
+      return ANSIRGB( red+other.red, green+other.green, blue+other.blue )
+
+    method operator-( other:ANSIRGB )->ANSIRGB
+      return ANSIRGB( red-other.red, green-other.green, blue-other.blue )
+
+    method operator*( value:Real )->ANSIRGB
+      return ANSIRGB( red*value, green*value, blue*value )
+
+    method to->ANSIColor
+      local r = Int32( red*255 ).clamped( 0, 255 )
+      local g = Int32( green*255 ).clamped( 0, 255 )
+      local b = Int32( blue*255 ).clamped( 0, 255 )
+      return ANSIColors[ ANSIColorLookup[ ((r & 0xF0):<<:4) | (g & 0xF0) | ((b & 0xF0):>>>:4) ] ]
+endClass

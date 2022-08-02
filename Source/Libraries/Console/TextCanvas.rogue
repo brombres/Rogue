@@ -369,7 +369,8 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
     method pixellated( style=CharacterStyle.NONE:CharacterStyle )->TextCanvas
       # "Pixellates" non-space characters in this TextCanvas into quarter block characters.
-      # The width and height of the resulting TextCanvas are half what they originally were.
+      # The height of the resulting TextCanvas is half what it originally was.
+      # See also: Console/ANSIBitmap.rogue
       #
       # Example:
       #   uses Console/TextCanvas
