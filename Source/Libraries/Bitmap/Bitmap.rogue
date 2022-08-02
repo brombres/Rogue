@@ -779,7 +779,7 @@ class Bitmap
     method resize_add_row( src_i:Int32, new_width:Int32, multiplier:Real, resize_row_buffer:Real[] )
       local this_width = width
       local available = new_width
-      local buffer = resize_row_buffer.data
+      local buffer = resize_row_buffer
       local buffer_i = 0
       native @|RogueByte* src = (RogueByte*)($pixels->as_int32s + $src_i);
 
@@ -854,6 +854,21 @@ class Bitmap
                 |dest   += 4;
                 |buffer += 5;
       endForEach
+
+    method resize_to_fill( max_width:Int32, max_height:Int32, crop=null:Anchor? )
+      local scale_x = max_width->Real / width
+      local scale_y = max_height->Real / height
+      local scale = scale_x.or_larger( scale_y )
+      resize( (width*scale)->Int32, (height*scale)->Int32 )
+      if (crop)
+        this.crop( max_width, max_height, crop.value )
+      endIf
+
+    method resize_to_fit( max_width:Int32, max_height:Int32 )
+      local scale_x = max_width->Real / width
+      local scale_y = max_height->Real / height
+      local scale = scale_x.or_smaller( scale_y )
+      resize( (width*scale)->Int32, (height*scale)->Int32 )
 
     method resized( new_width:Int32, new_height:Int32 )->Bitmap
       return resized( XY(new_width,new_height) )
