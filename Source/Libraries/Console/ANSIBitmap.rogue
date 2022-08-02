@@ -81,6 +81,9 @@ class ANSIBitmap
                 |}
       endIf
 
+    method display
+      this->TextCanvas.display
+
     method to->TextCanvas
       local canvas = TextCanvas( width, height/2 )
       local canvas_data = canvas.buffer
