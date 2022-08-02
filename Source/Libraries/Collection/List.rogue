@@ -26,13 +26,14 @@ class List<<$DataType>> : Poolable ListType
 
   METHODS
     method init
+
+    method init( capacity:Int32 )
+      reserve( capacity )
+
+    method init_object
       if ($DataType isType Logical) element_size = 1
       else                          element_size = native("sizeof($element_type)")->Int32
       if ($DataType instanceOf Object) is_ref_array = true
-
-    method init( capacity:Int32 )
-      init
-      reserve( capacity )
 
     method cloned->$DataType[]
       local result = $DataType[]( count )
