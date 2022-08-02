@@ -8,24 +8,23 @@ class ANSIBitmap
   PROPERTIES
     width       : Int32
     height      : Int32
-    even_height : Int32
     pixels      : Byte[]
 
   METHODS
     method init( source:Bitmap, &dither )
+      if (source.height & 1)
+        source = source.resized( source.width, source.height+1 )
+      endIf
+
       width  = source.width
       height = source.height
-      even_height = height + (height & 1)
-      pixels = Byte[]( width*even_height )  # round up height to even # pixels
-      pixels.count = width*height
-
-      loop (width * (height&1)) pixels.add(ANSIColors.BLACK.index)  # odd # pixels get black bottom
+      pixels = Dim<<Byte>>( width*height )
 
       if (dither)
         # Convert colors while applying Floyd-Steinberg dithering.
         # Make alternating/serpentine passes per row.
         # https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
-        local error = Dim<<ANSIRGB>>( (width+2) * (even_height+1) )
+        local error = Dim<<ANSIRGB>>( (width+2) * (height+1) )
 
         local src_data  = source.pixels
         local src_i     = 0
@@ -83,7 +82,7 @@ class ANSIBitmap
       endIf
 
     method to->TextCanvas
-      local canvas = TextCanvas( width, even_height/2 )
+      local canvas = TextCanvas( width, height/2 )
       local canvas_data = canvas.buffer
 
       localize width
@@ -92,7 +91,7 @@ class ANSIBitmap
       local FG_SHIFT = CharacterStyle.FG_SHIFT
       local BG_SHIFT = CharacterStyle.BG_SHIFT
 
-      forEach (j in 0..<even_height/2)
+      forEach (j in 0..<height/2)
         forEach (i in 0..<width)
           # StyledCharacter uses index 0 as the default color and indices 1-256 as colors 0-255.
           local bg = (Int32((pixels[src_index]))       + 1) :<<: BG_SHIFT
