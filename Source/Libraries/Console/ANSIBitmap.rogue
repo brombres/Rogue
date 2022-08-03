@@ -21,12 +21,14 @@ class ANSIBitmap
         forEach (j in 0..<source.height)
           forEach (i in 0..<source.width)
             local color = pixels[index]
-            if (color.alpha_byte == 0)
+            if (color.alpha_byte < 255)
+              local pattern : Color
               if ((i & 2) xor (j & 2))
-                pixels[index] = Color(0xFF555555)
+                pattern = Color(0xFF555555)
               else
-                pixels[index] = Color(0xFFAAAAAA)
+                pattern = Color(0xFFAAAAAA)
               endIf
+              pixels[index] = pattern * color
             endIf
             ++index
           endForEach
