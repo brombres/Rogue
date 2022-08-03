@@ -1,0 +1,319 @@
+uses Bitmap
+
+class FreeTypeFace
+  # Example
+  #
+  # uses Bitmap
+  # uses Utility/FreeType
+  #
+  # local face = FreeTypeFace("Arial",16)
+  # assert face
+  # local characters = Character[]
+  # characters.add( forEach in 32..126 )
+  # local info = face.render( characters )
+  # local total_w = 0
+  # total_w += (forEach in info).bitmap.width
+  # local atlas = Bitmap(total_w,face.height,0)
+  # local x = 0
+  # forEach (ch in info)
+  #   ch.bitmap.blit( atlas, x, 0 )
+  #   x += ch.bitmap.width
+  # endForEach
+  # atlas.save_as_png( File("Font.png") )
+  NATIVE
+    nativeHeader(1)...  # Specifying (1) to ensure that Bitmap/IO includes png.h first to resolve a Linux png/setjmp issue
+     @|#include <ft2build.h>
+      |#include FT_FREETYPE_H
+      |#include FT_GLYPH_H
+
+    nativeCode @|FT_Library Rogue_freetype_library;
+
+  GLOBAL METHODS
+    method create( name:String, height:Int32, search_folders=null:String[] )->FreeTypeFace
+      ensure<<search_folders>>
+      if (System.is_macos)
+        local folder = "/Library/Fonts"
+        if (not search_folders.contains(folder)) search_folders.add(folder)
+        folder = "/System/Library/Fonts"
+        if (not search_folders.contains(folder)) search_folders.add(folder)
+        folder = "/System/Library/Fonts/Supplemental"
+        if (not search_folders.contains(folder)) search_folders.add(folder)
+      endIf
+
+      forEach (ext in ["",".ttf",".ttc",".otf",".TTF",".TTC",".OTF"])
+        forEach (folder in search_folders)
+          local filepath = folder / (name + ext)
+          if (File(filepath).exists)
+            return FreeTypeFace( filepath, height, &initialize )
+          endIf
+        endForEach
+      endForEach
+
+      return null
+
+    method create( names:String[], height:Int32, search_folders=null:String[] )->FreeTypeFace
+      forEach (name in names)
+        local result = FreeTypeFace( name, height, search_folders )
+        if (result) return result
+      endForEach
+      return null
+
+  PROPERTIES
+    filepath   : String
+    data       : Byte[]
+    height     : Int32  # requested pixel height
+    ft_height  : Int32  # height we send FT to get height
+    max_offset : Int32  # zero or negative
+    characters : FreeTypeCharacter[]
+    kerning    : [Character:[Character:Int32]]
+      # if (kerning and kerning.contains(prev_ch) and kerning[prev_ch].contains(cur_ch))
+      #   cursor += kerning[prev_ch][cur_ch]
+      # endIf
+
+    native "FT_Face ft_face;"
+
+  METHODS
+    method init( filepath, height, initialize:Logical )
+      # 'initialize' is a dummy argument to disambiguate from create(filepath,height).
+      init( filepath, Byte[](File(filepath)), height )
+
+    method init( filepath, data, height )
+      ft_height = height
+
+      if (not native("Rogue_freetype_library")->Logical)
+        # Initialize FreeType library
+        if (native("FT_Init_FreeType(&Rogue_freetype_library)")->Int32)
+          throw Error( "FreeType library failed to initialize." )
+        endIf
+        on_exit( () => native "FT_Done_FreeType( Rogue_freetype_library );" )
+      endIf
+
+      if (native("FT_New_Memory_Face( Rogue_freetype_library, (const FT_Byte*)$data->as_bytes, $data->count, 0, &$this->ft_face )")->Int32)
+        throw Error( "Error loading $." (filepath) )
+      endIf
+
+    method render( characters:Character[] )->FreeTypeCharacter[]
+      local result = FreeTypeCharacter[]
+      result.add( FreeTypeCharacter(forEach in characters) )
+      render( result )
+      return result
+
+    method render( characters )
+      _ensure_strict_height_limit( characters )
+
+      forEach (ch in characters)
+        if (not ch.bitmap)
+          if (0 != native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
+            # Error / glyph does not exist
+            ch.init( Bitmap(1,height,Color(0x00FFffFF)), 0, 1 )
+          else
+            local w         = native( "(RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
+            local h         = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+            local offset_x  = native( "(RogueInt32)$this->ft_face->glyph->bitmap_left" )->Int32
+            local offset_y  = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+            local advance_x = native( "(RogueInt32)$this->ft_face->glyph->advance.x" )->Int32 :>>>: 6
+
+            if ((offset_y - max_offset) + h > height)
+              trace "ERROR: font character exceeds max height."
+              h = height - (offset_y - max_offset)
+            endIf
+
+            if (w > 0)
+              local pitch = native( "(RogueInt32)$this->ft_face->glyph->bitmap.pitch" )->Int32
+              native "RogueByte* src = (RogueByte*) $this->ft_face->glyph->bitmap.buffer;"
+              local bmp = Bitmap( w, height, Color(0x00FFffFF) )
+              local src_i = 0
+              local dest_i = (offset_y - max_offset) * w
+              local column_skip = pitch - w
+              forEach (j in 1..h)
+                forEach (i in 1..w)
+                  local a = native( "(RogueInt32)(src[$src_i++])" )->Int32
+                  bmp.pixels[dest_i] = Color(255,255,255,a)
+                  ++dest_i
+                endForEach
+                src_i += column_skip
+              endForEach
+              ch.init( bmp, offset_x, advance_x )
+
+            else
+              ch.init( Bitmap(1, height,Color(0x00FFffFF)), offset_x, advance_x )
+            endIf
+          endIf
+        endIf
+      endForEach
+
+      if (native("FT_HAS_KERNING($this->ft_face)")->Logical)
+        forEach (info_1 in characters)
+          native @|FT_UInt glyph_index_1 = FT_Get_Char_Index( $this->ft_face, $info_1->character );
+          forEach (info_2 in characters)
+            local kern_x : Int32
+            native @|FT_UInt glyph_index_2 = FT_Get_Char_Index( $this->ft_face, $info_2->character );
+                    |FT_Vector  delta;
+                    |FT_Get_Kerning( $this->ft_face, glyph_index_1, glyph_index_2, FT_KERNING_DEFAULT, &delta );
+                    |$kern_x = delta.x >> 6;
+            if (kern_x)
+              ensure<<kerning>>
+              ensure<<kerning[info_1.character]>>
+              kerning[ info_1.character ][ info_2.character ] = kern_x
+            endIf
+          endForEach
+        endForEach
+      endIf
+
+      #{
+    method to->BitmapFont
+      assert characters
+
+      # Collect data
+      local writer = DataWriter()
+      writer.write_int32x( 1 )  # version 1
+      writer.write_int32x( characters.count )
+
+      local total_w = 0
+      local cursor_x = 0
+      local kerning_list = Int32[][0]
+      local info = BitmapFontCharacterInfo[]
+      forEach (ch in characters)
+        local w = ch.bitmap.width
+        local h = ch.bitmap.height
+        total_w += w
+        local kerning_index = 0
+        if (kerning and kerning.contains(ch.character))
+          kerning_index = kerning_list.count
+          local alts = kerning[ch.character]
+          kerning_list.add( alts.count )
+          forEach (entry in alts.entries)
+            kerning_list.add( entry.key )
+            kerning_list.add( entry.value )
+          endForEach
+        endIf
+
+        info.add( BitmapFontCharacterInfo(ch.character,ch.offset_x,ch.advance_x,kerning_index,Box(cursor_x,0,w,h)) )
+        writer.write_int32x( ch.character )
+        writer.write_int32x( ch.offset_x )
+        writer.write_int32x( ch.advance_x )
+        writer.write_int32x( kerning_index )
+        writer.write_int32x( cursor_x )
+        writer.write_int32x( 0 )
+        writer.write_int32x( w )
+        writer.write_int32x( h )
+
+        #ch.bitmap.blit( strip, cursor_x, 0 )
+        cursor_x += ch.bitmap.width
+      endForEach
+
+      writer.write_int32x( kerning_list.count )
+      writer.write_int32x( forEach in kerning_list )
+
+      # Build font strip
+      local strip = Bitmap(total_w,height,0)
+      cursor_x = 0
+      forEach (ch in characters)
+        ch.bitmap.blit( strip, cursor_x, 0 )
+        cursor_x += ch.bitmap.width
+      endForEach
+
+      writer.write_int32( 0 )  # ensure enough room for the height
+
+      local coded = Bitmap.encode_data( writer.output_bytes, strip.width )
+
+      # Set the bottom-right pixel to be the 24-bit pixel height of the font
+      coded.pixels.last = Color( (height:>>:16)&255, (height:>>:8)&255, height&255 )
+
+      strip /= coded
+
+      return BitmapFont( strip )
+      }#
+
+    method _ensure_strict_height_limit( characters:FreeTypeCharacter[] )
+      loop
+        contingent
+          native "FT_Set_Pixel_Sizes( $this->ft_face, 0, $ft_height );"
+
+          sufficient (ft_height <= 4)
+
+          # FT does not guarantee rendered characters within our height. Therefore
+          # we may make more than one pass to find the true bounds at the current height
+          # and reduce if necessary.
+          #
+          # Metrics and bounding boxes don't give quite the same results in all cases
+          # as actually rendering the character, so we render it.
+          local max_height = 0
+          max_offset = 0
+          forEach (ch in characters)
+            block ch = ch.character
+              if (0 == native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
+                local h      = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+                local offset = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+                max_height = max_height.or_larger( h )
+                max_offset = max_offset.or_smaller( offset )
+              endIf
+            endBlock
+          endForEach
+
+          necessary (max_height <= height)
+
+          # Check each character one more time, ensuring that once the delta between the character
+          # offset and the max offset is taken into account, the adjusted height still does not
+          # exceed our max height.
+          forEach (ch in characters)
+            block ch = ch.character
+              if (0 == native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
+                local h      = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+                local offset = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+                necessary (h + offset <= height + max_offset)
+              endIf
+            endBlock
+          endForEach
+
+        satisfied
+          escapeLoop
+
+        unsatisfied
+          --ft_height
+
+        endContingent
+      endLoop
+
+endClass
+
+class FreeTypeCharacter
+  # Drawing algorithm:
+  #
+  # local cursor_x, cursor_y : Int32
+  # local prev_ch : Character
+  # forEach (ch in text)
+  #   local info = character_info[ch]
+  #   if (info)
+  #     cursor_x += info.offset_x
+  #     if (prev_ch)
+  #       if (kerning)
+  #         local k1 = kerning.find(prev_ch)
+  #         if (k1)
+  #           local k2 = kerning.find(ch)
+  #           if (k2) cursor_x += k2.value
+  #         endIf
+  #       endIf
+  #     endIf
+  #     info.bitmap.blit( destination_bitmap, cursor_x+info.offset_x, cursor_y )
+  #     cursor_x += info.advance_x
+  #     prev_ch = ch
+  #   endIf
+  # endForEach
+  PROPERTIES
+    character : Character
+    bitmap    : Bitmap
+    offset_x  : Int32
+    advance_x : Int32
+
+  METHODS
+    method init( character )
+
+    method init( bitmap, offset_x, advance_x )
+
+    method init( character, bitmap, offset_x, advance_x )
+
+    method to->String
+      return character->String
+endClass
+
