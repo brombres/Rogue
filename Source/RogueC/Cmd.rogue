@@ -909,17 +909,21 @@ endClass
 
 class NativeCode : Cmd
   PROPERTIES
+    ordinal : Int32
     content : String
 
   METHODS
-    method init( t, content )
+    method init( t, ordinal, content )
 
     method init( existing:NativeCode )
       prior.init( existing )
+      ordinal = existing.ordinal
       content = existing.content
 
     method description->String
-      return "NativeCode($)" (%content)
+      local _content = %content
+      if (_content.count > 20) _content = _content.leftmost(17) + "..."
+      return "NativeCode($)" (_content)
 
     method to->Character
       return Cmd.to_character(content)
@@ -932,17 +936,21 @@ endClass
 
 class NativeHeader : Cmd
   PROPERTIES
+    ordinal : Int32
     content : String
 
   METHODS
-    method init( t, content )
+    method init( t, ordinal, content )
 
     method init( existing:NativeHeader )
       prior.init( existing )
+      ordinal = existing.ordinal
       content = existing.content
 
     method description->String
-      return "NativeHeader($)" (%content)
+      local _content = %content
+      if (_content.count > 20) _content = _content.leftmost(17) + "..."
+      return "NativeHeader($)" (_content)
 
     method to->Character
       return Cmd.to_character(content)

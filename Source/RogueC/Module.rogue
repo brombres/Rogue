@@ -18,8 +18,8 @@ class Module
 
     attributes        : Attributes
 
-    native_headers = String[]
-    native_code    = String[]
+    native_headers = NativeHeader[]
+    native_code    = NativeCode[]
 
     is_organized   : Logical
 

@@ -1603,13 +1603,15 @@ augment
 
     method Module.generate_c_header( writer:CWriter )
       if (native_headers.count)
-        writer.println forEach in native_headers
+        native_headers.sort( (a,b) => (a.ordinal < b.ordinal) )
+        writer.println( (forEach in native_headers).content )
         writer.println
       endIf
 
     method Module.generate_c_code( writer:CWriter )
       if (native_code.count)
-        writer.println forEach in native_code
+        native_code.sort( (a,b) => (a.ordinal < b.ordinal) )
+        writer.println( (forEach in native_code).content )
         writer.println
       endIf
 

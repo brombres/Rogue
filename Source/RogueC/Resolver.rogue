@@ -1174,11 +1174,11 @@ class Resolver : Poolable, Visitor
       return validate( CreateCompound(cmd.t, tuple_type, args) )
 
     method on( cmd:NativeHeader )->Cmd
-      this_module.native_headers.add( cmd.content )
+      this_module.native_headers.add( cmd )
       return null
 
     method on( cmd:NativeCode )->Cmd
-      this_module.native_code.add( cmd.content )
+      this_module.native_code.add( cmd )
       return null
 
     method on_visit( cmd:NativeExpression )

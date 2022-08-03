@@ -244,6 +244,7 @@ scanner
   if (ch == '.' and consume("..."))
     while (hasAnother and not consume('\n'))
       if (not (consume(' ') or consume('\t')))
+        if (nextIs('#')) scan_comment; restart
         syntaxError "End of line expected."
       endIf
     endWhile
@@ -1336,6 +1337,16 @@ parser
 
 - native_code_block
   on "nativeHeader"
+    if (consume('('))
+      on INTEGER
+        create LiteralInteger(content=content:String,base="10":Integer):LiteralPrimitive
+      elseOnOthers
+        syntaxError "Integer ordinal expected."
+      endOn
+      mustConsume ')'
+    else
+      createNull
+    endIf
     consume_eols
     on @"File"
       mustConsume '('
@@ -1345,8 +1356,19 @@ parser
     elseOnOthers
       string
     endOn
-    produce NativeHeader( content:String )
+    produce NativeHeader( ordinal:Integer, content:String )
+
   elseOn "nativeCode"
+    if (consume('('))
+      on INTEGER
+        create LiteralInteger(content=content:String,base="10":Integer):LiteralPrimitive
+      elseOnOthers
+        syntaxError "Integer ordinal expected."
+      endOn
+      mustConsume ')'
+    else
+      createNull
+    endIf
     consume_eols
     on @"File"
       mustConsume '('
@@ -1356,7 +1378,8 @@ parser
     elseOnOthers
       string
     endOn
-    produce NativeCode( content:String )
+    produce NativeCode( ordinal:Integer, content:String )
+
   elseOn "rogoDirective"
     string
     call rogo_directive
