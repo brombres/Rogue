@@ -1614,8 +1614,10 @@ class Method : Procedure
           tokens = specialized_tokens
         endContingent
 
-        body.statements = Parser(tokens).parse( Parser.ip_multi_line_statements )
-        statements = body.statements
+        temporarily Program.current_module = this.module_context
+          body.statements = Parser(tokens).parse( Parser.ip_multi_line_statements )
+          statements = body.statements
+        endTemporarily
       endIf
 
     method organize( &skip_add_to_type )
