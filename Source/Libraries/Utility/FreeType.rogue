@@ -69,6 +69,7 @@ class FreeTypeFace
       # if (kerning and kerning.contains(prev_ch) and kerning[prev_ch].contains(cur_ch))
       #   cursor += kerning[prev_ch][cur_ch]
       # endIf
+    error      : String
 
     native "FT_Face ft_face;"
 
@@ -83,22 +84,40 @@ class FreeTypeFace
       if (not native("Rogue_freetype_library")->Logical)
         # Initialize FreeType library
         if (native("FT_Init_FreeType(&Rogue_freetype_library)")->Int32)
-          throw Error( "FreeType library failed to initialize." )
+          error = "FreeType library failed to initialize."
+          return
         endIf
         on_exit( () => native "FT_Done_FreeType( Rogue_freetype_library );" )
       endIf
 
       if (native("FT_New_Memory_Face( Rogue_freetype_library, (const FT_Byte*)$data->as_bytes, $data->count, 0, &$this->ft_face )")->Int32)
-        throw Error( "Error loading $." (filepath) )
+        error = "Error loading $." (filepath)
       endIf
+
+    method atlas->Bitmap
+      assert characters
+
+      local total_w = 0
+      total_w += (forEach in characters).bitmap.width
+      local atlas = Bitmap( total_w, height )
+
+      local x = 0
+      forEach (ch in characters)
+        ch.bitmap.blit( atlas, x, 0 )
+        x += ch.bitmap.width
+      endForEach
+
+      return atlas
 
     method render( characters:Character[] )->FreeTypeCharacter[]
       local result = FreeTypeCharacter[]
+      if (error) return result
       result.add( FreeTypeCharacter(forEach in characters) )
       render( result )
       return result
 
     method render( characters )
+      if (error) return
       _ensure_strict_height_limit( characters )
 
       forEach (ch in characters)
@@ -160,23 +179,15 @@ class FreeTypeFace
         endForEach
       endIf
 
-      #{
     method to->BitmapFont
-      assert characters
+      local font = BitmapFont( atlas, height )
 
-      # Collect data
-      local writer = DataWriter()
-      writer.write_int32x( 1 )  # version 1
-      writer.write_int32x( characters.count )
-
-      local total_w = 0
       local cursor_x = 0
-      local kerning_list = Int32[][0]
+      local kerning_list = font.kerning
       local info = BitmapFontCharacterInfo[]
       forEach (ch in characters)
         local w = ch.bitmap.width
         local h = ch.bitmap.height
-        total_w += w
         local kerning_index = 0
         if (kerning and kerning.contains(ch.character))
           kerning_index = kerning_list.count
@@ -188,42 +199,12 @@ class FreeTypeFace
           endForEach
         endIf
 
-        info.add( BitmapFontCharacterInfo(ch.character,ch.offset_x,ch.advance_x,kerning_index,Box(cursor_x,0,w,h)) )
-        writer.write_int32x( ch.character )
-        writer.write_int32x( ch.offset_x )
-        writer.write_int32x( ch.advance_x )
-        writer.write_int32x( kerning_index )
-        writer.write_int32x( cursor_x )
-        writer.write_int32x( 0 )
-        writer.write_int32x( w )
-        writer.write_int32x( h )
+        font.add( BitmapFontCharacterInfo(ch.character,ch.offset_x,ch.advance_x,kerning_index,Box(cursor_x,0,w,h)) )
 
-        #ch.bitmap.blit( strip, cursor_x, 0 )
         cursor_x += ch.bitmap.width
       endForEach
 
-      writer.write_int32x( kerning_list.count )
-      writer.write_int32x( forEach in kerning_list )
-
-      # Build font strip
-      local strip = Bitmap(total_w,height,0)
-      cursor_x = 0
-      forEach (ch in characters)
-        ch.bitmap.blit( strip, cursor_x, 0 )
-        cursor_x += ch.bitmap.width
-      endForEach
-
-      writer.write_int32( 0 )  # ensure enough room for the height
-
-      local coded = Bitmap.encode_data( writer.output_bytes, strip.width )
-
-      # Set the bottom-right pixel to be the 24-bit pixel height of the font
-      coded.pixels.last = Color( (height:>>:16)&255, (height:>>:8)&255, height&255 )
-
-      strip /= coded
-
-      return BitmapFont( strip )
-      }#
+      return font
 
     method _ensure_strict_height_limit( characters:FreeTypeCharacter[] )
       loop

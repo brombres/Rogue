@@ -125,14 +125,14 @@ class Bitmap
     filepath               : String
 
   METHODS
-    method init( _size:XY, color=Color(0):Color ) [essential]
-      init( _size.x, _size.y, color )
+    method init( size:XY, color=Color(0):Color ) [essential]
+      init( size.x, size.y, color )
 
     method init( width, height, color:Color ) [essential]
       init( width, height, Dim<<Bitmap::Color>>( width*height ).[fill(color)] )
 
-    method init( _size:XY, pixels )
-      init( _size.x, _size.y, pixels )
+    method init( size:XY, pixels )
+      init( size.x, size.y, pixels )
 
     method init( width, height, pixels )
 
