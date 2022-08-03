@@ -321,6 +321,12 @@ class Bitmap
 
       return bytes
 
+    method expand( delta:Int32, pad_color=Color(0):Color )
+      expand( delta, delta, delta, delta, pad_color )
+
+    method expand( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )
+      crop( -left, -top, -right, -bottom, pad_color )
+
     method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
