@@ -1,0 +1,90 @@
+module Bitmap
+
+class HSB( hue:Real, saturation:Real, brightness:Real ) [compound]
+  GLOBAL METHODS
+    method create( color:Color )->HSB
+      # Creates a HSB compound from the given Color compound.
+      local r = color.red_byte / 255.0
+      local g = color.green_byte / 255.0
+      local b = color.blue_byte / 255.0
+
+      local maxrgb = r.or_larger( g ).or_larger( b )
+      local minrgb = r.or_smaller( g ).or_smaller( b )
+      local delta  = maxrgb - minrgb
+
+      local brightness = maxrgb
+      local hue, saturation : Real
+
+      if (maxrgb) saturation = delta / maxrgb
+
+      if (delta)
+        if (r == maxrgb)     hue = (g - b) / delta
+        elseIf (g == maxrgb) hue = 2 + ((b - r) / delta)
+        else                 hue = 4 + ((r - g) / delta)
+
+        hue = ((hue * 60) % 360) / 360.0
+      endIf
+
+      return HSB( hue, saturation, brightness )
+
+  METHODS
+    method hash_code->Int32
+      return hue.hash_code ~ saturation.hash_code ~ brightness.hash_code
+
+    method to->Color
+      local r, g, b : Real
+      if (saturation)
+        local hue = (hue * 6) % 6
+        local i = Int32( hue )
+        local f = hue - i
+        local p = brightness * (1 - saturation)
+        local q = brightness * (1 - saturation * f)
+        local t = brightness * (1 - saturation * (1 - f))
+        which (i)
+          case 0
+              r = brightness
+              g = t
+              b = p
+          case 1
+              r = q
+              g = brightness
+              b = p
+          case 2
+              r = p
+              g = brightness
+              b = t
+          case 3
+              r = p
+              g = q
+              b = brightness
+          case 4
+              r = t
+              g = p
+              b = brightness
+          others
+              r = brightness
+              g = p
+              b = q
+        endWhich
+        return Color( Int32(r*255+0.5), Int32(g*255+0.5), Int32(b*255+0.5) )
+      else
+        local v = Int32( brightness * 255 + 0.5 )
+        return Color( v, v, v )
+      endIf
+
+    method to->String
+      return "($,$,$)" (hue.format("3.0"),saturation.format(".2"),brightness.format(".2"))
+endClass
+
+augment Real32
+  METHODS
+    method lerp( a:HSB, b:HSB )->Color
+      return HSB( this.lerp(a.hue,b.hue), this.lerp(a.saturation,b.saturation), this.lerp(a.brightness,b.brightness) )
+endAugment
+
+augment Real64
+  METHODS
+    method lerp( a:HSB, b:HSB )->Color
+      return HSB( this.lerp(a.hue,b.hue), this.lerp(a.saturation,b.saturation), this.lerp(a.brightness,b.brightness) )
+endAugment
+
