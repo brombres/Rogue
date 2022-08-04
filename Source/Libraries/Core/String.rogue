@@ -440,6 +440,15 @@ class String : Poolable PrintWriter
       endWhile
       return result
 
+    method discard_from( i1:Int32 )
+      if (is_immutable) return
+
+      cursor = i1
+      data.discard_from( cursor_offset )
+      count = cursor_index
+
+      hash_code = -1
+
     method ends_with( ch:Character, &ignore_case )->Logical
       if (ignore_case)
         return (count > 0 and this[count-1].to_lowercase == ch.to_lowercase)
