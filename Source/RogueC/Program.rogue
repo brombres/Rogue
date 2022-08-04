@@ -212,7 +212,7 @@ class Program [singleton]
       endIf
 
       if (found)
-        local folder = File( filepath ).folder
+        local folder = File( found ).folder
         if (String.exists(folder)) add_include_search_path( folder )
         filepath = found
       elseIf (is_optional)
