@@ -1637,6 +1637,7 @@ class Method : Procedure
         propagated_m.type_context = type_context
         propagated_m.generate_body
         AspectMethodPatcher.patch( type_context, propagated_m )
+        propagated_m.is_resolved = false
         return propagated_m
       endTemporarily
 
