@@ -33,8 +33,8 @@ class ScanPattern
     method escape( pattern:String, at_escape:String )->String
       local builder = String()
       forEach (ch in pattern)
-        if (at_escape.contains(ch)) builder.print("\\\\").print(ch)
-        else                        ch.print_escaped_ascii( builder, '"' )
+        if (at_escape.contains(ch)) builder.[ print("\\\\"), print(ch) ]
+        else                        ch.print_escaped_ascii( '"', builder )
       endForEach
       return builder
 
@@ -111,7 +111,7 @@ class SinglesSetScanPattern : ScanPattern
       return true
 
     method to->String
-      return "[$]" (escape(pattern,"]"))
+      return "[$]" (ScanPattern.escape(pattern,"]"))
 endClass
 
 class LowHighSetScanPattern : ScanPattern
@@ -192,7 +192,7 @@ class LiteralStringScanPattern( characters:String ) : ScanPattern
       return true
 
     method to->String
-      return escape( characters, "{}[]*+?." )
+      return ScanPattern.escape( characters, "{}[]*+?." )
 endClass
 
 class ZeroOrMoreScanPattern( operand:ScanPattern ) : ScanPattern

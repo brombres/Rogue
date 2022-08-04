@@ -38,7 +38,7 @@ class EndScopePatcher : Visitor [singleton]
 
         local v = resolver.add_local( cmd.result.t, "result", return_type )
         local statements = Statements( v.t, SetLocal(v,cmd.result,&initial_assignment) )
-        statements.add( insert_cmd.cloned )
+        statements.add( resolver.visit(insert_cmd.cloned) )
         cmd.result = GetLocal(v)
         statements.add( cmd )
         return statements
@@ -61,6 +61,6 @@ class EndScopePatcher : Visitor [singleton]
       return patched_statements( cmd )
 
     method patched_statements( cmd:Cmd )->Cmd
-      return Statements( cmd.t, insert_cmd.cloned, cmd )
+      return Statements( cmd.t, resolver.visit(insert_cmd.cloned), cmd )
 
 endClass

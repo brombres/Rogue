@@ -1383,8 +1383,11 @@ class Resolver : Poolable, Visitor
         t_name = instantiate_routine_templates( mod.m, cmd, t_name, full_name )
       endForEach
 
+      if (not cmd.type_context)
+        throw cmd.t.error( "No such method $."(full_name) )
+      endIf
+
       # Global Method Template
-      assert cmd.type_context
       if (not cmd.type_context.global_method_template_instances.contains(full_name))
         if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
         local templates = cmd.type_context.global_method_templates[ t_name ]
