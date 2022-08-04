@@ -2132,6 +2132,9 @@ class Resolver : Poolable, Visitor
               endIf
             endForEach
           endIf
+          if (type_context.is_aspect and type_context.is_reference)
+            Program.type_Object.collect_methods( name, Candidates.list, &=require_global )
+          endIf
         endIf
         Candidates.organize
 
