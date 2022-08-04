@@ -961,9 +961,17 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:IsNot )
-      print_parenthesized( cmd.left )
-      writer.print " != "
-      print_parenthesized( cmd.right )
+      if (cmd.left.type is not cmd.right.type)
+        writer.print "(void*)"
+        print_parenthesized( cmd.left )
+        writer.print " != "
+        writer.print "(void*)"
+        print_parenthesized( cmd.right )
+      else
+        print_parenthesized( cmd.left )
+        writer.print " != "
+        print_parenthesized( cmd.right )
+      endIf
 
     method on_visit( cmd:IsType )
       writer.print "Rogue_is_type("
