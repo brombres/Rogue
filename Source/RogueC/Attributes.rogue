@@ -160,6 +160,9 @@ augment
     method AttributeMutating.attribute_flags->Int64
       return Attribute.MUTATING
 
+    method AttributeOptional.attribute_flags->Int64
+      return Attribute.OPTIONAL
+
     method AttributeOverride.attribute_flags->Int64
       return Attribute.OVERRIDE
 

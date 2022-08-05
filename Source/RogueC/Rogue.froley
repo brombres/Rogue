@@ -3195,6 +3195,8 @@ parser
 
   elseOn "$include"
     collect_meta_filepath
+    include_attribute_optional = false
+    include_attributes
     call include_filepath
     return
 
@@ -3364,6 +3366,22 @@ parser
 
   endOn
   call rewrite_token
+
+- include_attributes
+  on '['
+    while (hasAnother and not nextIs(']'))
+      include_attribute
+      consume ','
+    endWhile
+    mustConsume(']')
+  endOn
+
+- include_attribute
+  on @"optional"
+    include_attribute_optional = true
+    return
+  endOn
+  syntaxError "Illegal $include attribute. Expected [optional]."
 
 #{
 - meta_if
