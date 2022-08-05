@@ -420,10 +420,12 @@ augment
       local result = type.resolve_unary_op( logicalized, resolver, &=suppress_error )
       if (result) return result
 
-      result = cmd.resolve_conversion_to( Program.type_Logical, resolver, &=suppress_error )
-      if (result) return result
+      if (not type.is_reference)
+        result = cmd.resolve_conversion_to( Program.type_Logical, resolver, &=suppress_error )
+        if (result) return result
+      endIf
 
-      return logicalized   # a reference with no to->Logical available
+      return logicalized
 
 endAugment
 

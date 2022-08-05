@@ -4009,7 +4009,10 @@ augment
           if (m) return resolver.resolve_call( cmd.t, null, m, arg )
 
           m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error, &=exact_arg_types )
-          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+          if (m and m.is_method)
+            if (cmd.symbol != "?" or not type.is_reference) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+            throw cmd.t.error( "With reference types, operator? (logicalize) must be a global method." )
+          endIf
 
           exact_arg_types = false
         endLoop
