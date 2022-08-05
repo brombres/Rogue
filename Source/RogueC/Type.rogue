@@ -336,6 +336,12 @@ class Type : Cmd
       endIf
       attributes.is_visiting = false
 
+    method collect_extended_types( list:Type[] )
+      forEach (type in extended_types)
+        list.add( type )
+        type.collect_extended_types( list )
+      endForEach
+
     method collect_reference_types( type_list:Type[] )
       if (attributes.is_visiting or attributes.is_collected) return
       attributes.is_visiting = true  # use as 'is_collected' flag; will be reset externally

@@ -1637,7 +1637,8 @@ class Method : Procedure
         propagated_m.type_context = type_context
         propagated_m.generate_body
         AspectMethodPatcher.patch( type_context, propagated_m )
-        propagated_m.is_resolved = false
+        propagated_m.is_resolved        = false
+        propagated_m.attributes.is_used = false
         return propagated_m
       endTemporarily
 
@@ -3596,6 +3597,7 @@ class MethodTemplate : Cmd
       m.type_context   = type_context
       m.generate_body
       m.organize
+      m.dynamic_signature  # adds method to dynamic call group
 
       type_context.method_template_instances.add( name )
 
@@ -3603,14 +3605,17 @@ class MethodTemplate : Cmd
       local sig = m.signature
       if (not type_context.methods.contains(sig)) type_context.methods[ sig ] = m
       if (type_context.methods_organized)
-        forEach (type in type_context.extended_types)
-          if (type.methods_organized)
-            if (not type.methods[sig])
-              if (m.attributes.is_propagated) type.methods[ sig ] = m.propagated_to( type )
-              else                            type.methods[ sig ] = m
+        use all_extended_types = WorkList<<Type>>
+          type_context.collect_extended_types( all_extended_types )
+          forEach (type in all_extended_types)
+            if (type.methods_organized)
+              if (not type.methods[sig])
+                if (m.attributes.is_propagated) type.methods[ sig ] = m.propagated_to( type )
+                else                            type.methods[ sig ] = m
+              endIf
             endIf
-          endIf
-        endForEach
+          endForEach
+        endUse
       endIf
 
       return m
