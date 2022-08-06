@@ -376,12 +376,16 @@ class CWriter : BufferedPrintWriter
            |
            |  RogueGlobal__call_exit_functions();
            |
-           |  // Issue a few GC's to allow objects requiring clean-up to do so.
-           |  Rogue_collect_garbage();
-           |  Rogue_collect_garbage();
-           |  Rogue_collect_garbage();
-           |
-           |  return status;
+        if (Program.gc_auto)
+          println ...
+            @|  // Issue a few GC's to allow objects requiring clean-up to do so.
+             |  Rogue_collect_garbage();
+             |  Rogue_collect_garbage();
+             |  Rogue_collect_garbage();
+             |
+        endIf
+        println ...
+          @|  return status;
            |}
            |
            |void Rogue_print_exception(void)
