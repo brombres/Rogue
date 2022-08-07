@@ -73,7 +73,7 @@ class CGenerator : Visitor
       if (return_type)
         writer.print ' '
         if (return_type.is_compound)
-          writer.print('(').print(return_type.c_name).print("){}")
+          writer.[ print('('), print(return_type.c_name), print("){}") ]
         else
           visit( return_type.cmd_default_value(t) )
         endIf
@@ -183,7 +183,7 @@ class CGenerator : Visitor
         writer.print ")"
         writer.print( "Rogue_as(" )
         visit( cmd.operand )
-        writer.print( ", " ).print( cmd.as_type.id ).print( ')' )
+        writer.[ print(", "), print(cmd.as_type.id), print(')') ]
         writer.print ")"
       endIf
 
@@ -646,7 +646,7 @@ class CGenerator : Visitor
         # Declare all local variables.
         if (this_procedure.locals.count)
           forEach (v in this_procedure.locals)
-            writer.print( v.type.c_ref_name ).print( ' ' )
+            writer.[ print(v.type.c_ref_name), print(' ') ]
             writer.print( v.c_name )
             writer.print( " = " )
             if (v.type.is_compound) writer.print "{}"
@@ -732,7 +732,7 @@ class CGenerator : Visitor
       on_leave( cmd )
 
     method on_visit( cmd:CreateCompound )
-      writer.print( "(" ).print( cmd.of_type.c_name ).print( ") " )
+      writer.[ print("("), print(cmd.of_type.c_name), print(") ") ]
       writer.print '{'
       if (cmd.args)
         forEach (arg at i in cmd.args)
@@ -743,7 +743,7 @@ class CGenerator : Visitor
         # Command is embedded in the compound's primary create() method. Pass in the create() params.
         forEach (param at i in this_procedure.parameters)
           if (i > 0) writer.print ','
-          writer.print(' ').print(param.c_name)
+          writer.[ print(' '), print(param.c_name) ]
         endForEach
       endIf
       writer.print "}"
@@ -945,7 +945,7 @@ class CGenerator : Visitor
     method on_visit( cmd:InstanceOf )
       writer.print( "Rogue_instance_of(" )
       visit( cmd.operand )
-      writer.print( ", " ).print( cmd.compare_type.id ).print( ')' )
+      writer.[ print(", "), print(cmd.compare_type.id), print(')') ]
 
     method on_visit( cmd:Is )
       if (cmd.left.type is not cmd.right.type)
@@ -977,7 +977,7 @@ class CGenerator : Visitor
       writer.print "Rogue_is_type("
       visit( cmd.operand )
       writer.print ", &"
-      writer.print( cmd.compare_type.c_name ).print( ')' )
+      writer.[ print(cmd.compare_type.c_name), print(')') ]
 
     method on_visit( cmd:Iterator )
       on_enter( cmd )
@@ -1295,7 +1295,7 @@ class CGenerator : Visitor
         if (Program.stack_trace)
           if (statement.t.line != cur_line)
             cur_line = statement.t.line
-            writer.print( "Rogue_call_stack_line = " ).print( cur_line ).println(";")
+            writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
           endIf
         endIf
         visit( statement )
@@ -1627,7 +1627,7 @@ augment
       forEach (type in types)
         local m = type.global_methods["init_class()"]
         if (not m or m.statements.count == 0) nextIteration
-        writer.print( m.c_name ).println( "();" )
+        writer.[ print(m.c_name), println("();") ]
         writer.println "if (Rogue_exception) return 0;"
       endForEach
 
@@ -1636,7 +1636,7 @@ augment
       assert type_Routine
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (r and r.statements.count)
-        writer.print( r.c_name ).println( "();" )
+        writer.[ print(r.c_name), println("();") ]
         writer.println "if (Rogue_exception) return 0;"
       endIf
 
@@ -2344,7 +2344,7 @@ augment
 
     method Type.generate_c_code( writer:CWriter )
       if ((is_reference or contains_reference or this is Program.type_Object) and not is_aspect)
-        writer.print( "void " ).print( c_name ).println( "_gc_trace( void* THIS )" )
+        writer.[ print("void "), print(c_name), println("_gc_trace( void* THIS )") ]
         writer.println '{'
         writer.indent += 2
 

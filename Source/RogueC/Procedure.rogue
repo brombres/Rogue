@@ -131,7 +131,7 @@ class Procedure : Cmd
 
     method dev_signature->String
       use builder = StringBuilder.pool
-        if (type_context) builder.print( type_context ).print( '.' )
+        if (type_context) builder.[ print(type_context), print('.') ]
         builder.print name
         builder.print "("
         forEach (param at i in parameters)
@@ -294,7 +294,7 @@ class Procedure : Cmd
                 endIf
               endIf
               assert p.type
-              builder.print( p.type.module_context.name ).print( "::" ).print( p.type.name )
+              builder.[ print(p.type.module_context.name), print("::"), print(p.type.name) ]
             endBlock
           endForEach
           builder.print ')'

@@ -462,7 +462,7 @@ augment Procedure
         builder.print '_'
         if (parameters.count)
           forEach (p in parameters)
-            builder.print( "_" ).print( p.type.c_sig_name )
+            builder.[ print("_"), print(p.type.c_sig_name) ]
           endForEach
         endIf
 
@@ -656,12 +656,12 @@ augment
     method GlobalMethod.c_name->String
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
-        builder.print( type_context.c_sig_name ).print( "__" )
+        builder.[ print(type_context.c_sig_name), print("__") ]
         builder.print( Program.to_c_name(name) )
         if (parameters.count)
           builder.print '_'
           forEach (p in parameters)
-            builder.print( "_" ).print( p.type.c_sig_name )
+            builder.[ print("_"), print(p.type.c_sig_name) ]
           endForEach
         endIf
         c_name = builder
@@ -671,12 +671,12 @@ augment
     method Method.c_name->String
       if (@c_name) return @c_name
       use builder = StringBuilder.pool
-        builder.print( type_context.c_sig_name ).print( "__" )
+        builder.[ print(type_context.c_sig_name), print("__") ]
         builder.print( Program.to_c_name(name) )
         if (parameters.count)
           builder.print '_'
           forEach (p in parameters)
-            builder.print( "_" ).print( p.type.c_sig_name )
+            builder.[ print("_"), print(p.type.c_sig_name) ]
           endForEach
         endIf
         c_name = builder

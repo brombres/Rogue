@@ -26,7 +26,7 @@ class CompileError( message:String, filepath=null:String, source=null:String, li
           builder.print( " line $, column $" (line,column) )
         endIf
       endIf
-      builder.println.println
+      builder.[ println, println ]
       builder.println( message.word_wrapped(w) )
       builder.println
 
@@ -40,7 +40,7 @@ class CompileError( message:String, filepath=null:String, source=null:String, li
             escapeForEach
           endIf
         endForEach
-        builder.print( " " * (column-(skip+1)) ).println( '^' )
+        builder.[ print(" " * (column-(skip+1))), println('^') ]
       endIf
 
       builder.println( "=" * w )
