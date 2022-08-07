@@ -342,9 +342,9 @@ class ScanPatternParser [singleton]
       if (builder.count)
         which (state)
           case PARSE_SEQ
-            stack.add( LiteralStringScanPattern(builder->String) )
+            stack.add( LiteralStringScanPattern(builder.cloned) )
           case PARSE_SET
-            stack.add( charset_to_scan_pattern(builder->String) )
+            stack.add( charset_to_scan_pattern(builder.cloned) )
         endWhich
         builder.clear
       endIf
