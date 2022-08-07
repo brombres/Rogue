@@ -3593,33 +3593,36 @@ class MethodTemplate : Cmd
       local tokens = Template.make_replacements( type_context, token_list, replacements )
       local parser = Parser( tokens )
       parser._cmd_stack.add( Identifier(t,name) )
-      local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
-      m.module_context = type_context.module_context
-      m.type_context   = type_context
-      m.generate_body
-      m.organize
-      m.dynamic_signature  # adds method to dynamic call group
 
-      type_context.method_template_instances.add( name )
+      temporarily Program.current_module = type_context.module_context
+        local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
+        m.module_context = type_context.module_context
+        m.type_context   = type_context
+        m.generate_body
+        m.organize
+        m.dynamic_signature  # adds method to dynamic call group
 
-      # Propagate new method template to types that have already organized & inherited methods
-      local sig = m.signature
-      if (not type_context.methods.contains(sig)) type_context.methods[ sig ] = m
-      if (type_context.methods_organized)
-        use all_extended_types = WorkList<<Type>>
-          type_context.collect_extended_types( all_extended_types )
-          forEach (type in all_extended_types)
-            if (type.methods_organized)
-              if (not type.methods[sig])
-                if (m.attributes.is_propagated) type.methods[ sig ] = m.propagated_to( type )
-                else                            type.methods[ sig ] = m
+        type_context.method_template_instances.add( name )
+
+        # Propagate new method template to types that have already organized & inherited methods
+        local sig = m.signature
+        if (not type_context.methods.contains(sig)) type_context.methods[ sig ] = m
+        if (type_context.methods_organized)
+          use all_extended_types = WorkList<<Type>>
+            type_context.collect_extended_types( all_extended_types )
+            forEach (type in all_extended_types)
+              if (type.methods_organized)
+                if (not type.methods[sig])
+                  if (m.attributes.is_propagated) type.methods[ sig ] = m.propagated_to( type )
+                  else                            type.methods[ sig ] = m
+                endIf
               endIf
-            endIf
-          endForEach
-        endUse
-      endIf
+            endForEach
+          endUse
+        endIf
 
-      return m
+        return m
+      endTemporarily
 
 endClass
 
@@ -4279,15 +4282,18 @@ class GlobalMethodTemplate : Cmd
       local name = type_args->String( name )
       local replacements = Template.replacements( placeholders, type_args )
       local tokens = Template.make_replacements( type_context, token_list, replacements )
-      local parser = Parser( tokens )
-      parser._cmd_stack.add( Identifier(t,name) )
-      local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
-      m.module_context = type_context.module_context
-      m.type_context   = type_context
-      m.organize
 
-      type_context.global_method_template_instances.add( name )
-      return m
+      temporarily Program.current_module = type_context.module_context
+        local parser = Parser( tokens )
+        parser._cmd_stack.add( Identifier(t,name) )
+        local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
+        m.module_context = type_context.module_context
+        m.type_context   = type_context
+        m.organize
+
+        type_context.global_method_template_instances.add( name )
+        return m
+      endTemporarily
 endClass
 
 class CreateRange : Cmd
