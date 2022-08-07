@@ -104,7 +104,7 @@ class Files
     method delete( &verbose, &dry_run )
       forEach (filepath in filepath_set.values)
         if (verbose) print "Deleting " + filepath
-        if (not dry_run) File.delete( filepath )
+        if (not dry_run) File( filepath ).delete
       endForEach
 
     method files->File[]
