@@ -1,0 +1,2565 @@
+module RogueC
+
+uses Utility/WorkList
+
+class CGenerator : Visitor
+  PROPERTIES
+    writer         : CWriter
+    autoname_index = 0
+
+    visible_locals    = Local[]
+    visible_locals_fp = Int32[]
+    control_stack     = ControlStructure[]
+
+    cur_line          : Int32
+
+  METHODS
+    method init( writer )
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
+
+    method collect_tracked_local_types( list:Type[] )
+      # Check for object refs
+      forEach (p in this_procedure.parameters)
+        if (p.type.is_reference)
+          if (not p.is_anchored and not Program.type_Object.attributes.is_collected)
+            list.add( Program.type_Object )
+            Program.type_Object.attributes.is_collected = true
+          endIf
+        elseIf (p.type.is_compound and p.type.contains_reference and not p.is_anchored and not p.type.attributes.is_collected)
+          list.add( p.type )
+          p.type.attributes.is_collected = true
+        endIf
+      endForEach
+
+      forEach (v in this_procedure.locals)
+        if (v.type.is_reference and not Program.type_Object.attributes.is_collected)
+          list.add( Program.type_Object )
+          Program.type_Object.attributes.is_collected = true
+        elseIf (v.type.is_compound and v.type.contains_reference and not v.type.attributes.is_collected)
+          list.add( v.type )
+          v.type.attributes.is_collected = true
+        endIf
+      endForEach
+
+      (forEach in list).attributes.is_collected = false  # reset
+
+    method dispatch_exception( t:Token, header=null:String )
+      if (header) writer.print(header)
+
+      forEach (control in control_stack step -1)
+        if (control.catches_exception or control.requires_cleanup)
+          writer.print " goto "
+          writer.print control.c_escape_label(this)
+          writer.println ';'
+          return
+        endIf
+      endForEach
+
+      if (Program.stack_trace or this_procedure.requires_cleanup)
+        writer.println
+        writer.println '{'
+        writer.indent += 2
+        print_procedure_cleanup
+      else
+        writer.print ' '
+      endIf
+
+      writer.print "return"
+      local return_type = this_procedure.return_type
+      if (return_type)
+        writer.print ' '
+        if (return_type.is_compound)
+          writer.[ print('('), print(return_type.c_name), print("){}") ]
+        else
+          visit( return_type.cmd_default_value(t) )
+        endIf
+      endIf
+      writer.println ";"
+
+      if (Program.stack_trace or this_procedure.requires_cleanup)
+        writer.indent -= 2
+        writer.println '}'
+      endIf
+
+    method escape_label( control_type=ControlType.UNDEFINED:ControlType )->String
+      forEach (scope in control_stack step -1)
+        if (scope.catches_escape(control_type))
+          return scope.c_escape_label(this,control_type)
+        endIf
+      endForEach
+      return null
+
+    method find_local( name:String )->Local
+      forEach (v in visible_locals step -1)
+        if (v.name == name) return v
+      endForEach
+      return null
+
+    method print_with_cast( cmd:Cmd, to_type:Type, &context_is_mutating, &call_is_mutating )
+      local cmd_type = cmd.type
+      if (cmd_type is to_type)
+        if (call_is_mutating)
+          if (not context_is_mutating) writer.print '&'
+        else
+          if (context_is_mutating) writer.print '*'
+        endIf
+        visit( cmd )
+      else
+        writer.print "(("
+        writer.print to_type.c_ref_name
+        writer.print ")"
+        visit( cmd )
+        writer.print ")"
+      endIf
+
+    method print_with_cast( cmd:String, from_type:Type, to_type:Type, &context_is_mutating, &call_is_mutating )
+      if (from_type is to_type)
+        if (call_is_mutating)
+          if (not context_is_mutating) writer.print '&'
+        else
+          if (context_is_mutating) writer.print '*'
+        endIf
+        writer.print cmd
+      else
+        writer.print "(("
+        writer.print to_type.c_ref_name
+        writer.print ")"
+        writer.print cmd
+        writer.print ")"
+      endIf
+
+    method on_visit( cmd:Cmd )
+      throw cmd.t.error("Unsupported operation CGenerator.on_visit($) [$]"(cmd.type_name,cmd))
+
+    method on_visit( cmd:Access )
+      #println StackTrace()
+      throw cmd.t.error("[INTERNAL] CGenerator: unresolved Access '$'."(cmd.name))
+
+    method on_visit( cmd:Add )
+      writer.print '('
+      print_parenthesized( cmd.left )
+      writer.print " + "
+      print_parenthesized( cmd.right )
+      writer.print ')'
+
+    method on_visit( cmd:AddAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " += "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:AddAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " += " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:AddAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " += "
+      visit( cmd.operand )
+
+    method on_visit( cmd:AddAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " += "
+      visit( cmd.operand )
+
+    method on_visit( cmd:As )
+      if (cmd.operand.type.instance_of(cmd.as_type))
+        print_with_cast( cmd.operand, cmd.as_type )
+      else
+        writer.print "(("
+        writer.print cmd.as_type.c_ref_name
+        writer.print ")"
+        writer.print( "Rogue_as(" )
+        visit( cmd.operand )
+        writer.[ print(", "), print(cmd.as_type.id), print(')') ]
+        writer.print ")"
+      endIf
+
+    method on_visit( cmd:BitwiseAndAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " &= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitwiseAndAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " &= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseAndAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " &= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseAndAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " &= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseOrAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " |= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitwiseOrAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " |= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseOrAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " |= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseOrAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " |= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseXorAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " ^= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitwiseXorAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " ^= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseXorAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " ^= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitwiseXorAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " ^= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitShiftLeftAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " <<= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitShiftLeftAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " <<= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitShiftLeftAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " <<= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitShiftLeftAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " <<= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitShiftRightXAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " >>= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:BitShiftRightXAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " >>= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitShiftRightXAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " >>= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:BitShiftRightXAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " >>= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:CmdList )
+      visit_children( cmd )
+
+    method print_parenthesized( cmd:Cmd )
+      if (cmd.is_operator)
+        writer.print "("
+        visit( cmd )
+        writer.print ")"
+      else
+        visit( cmd )
+      endIf
+
+    method on_visit( cmd:CompareOp )
+      print_parenthesized( cmd.left )
+      writer.print " - "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitShiftLeft )
+      print_parenthesized( cmd.left )
+      writer.print " << "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitShiftRightX )
+      print_parenthesized( cmd.left )
+      writer.print " >> "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseAnd )
+      print_parenthesized( cmd.left )
+      writer.print " & "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseNot )
+      writer.print "~"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:BitwiseOr )
+      print_parenthesized( cmd.left )
+      writer.print " | "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:BitwiseXor )
+      print_parenthesized( cmd.left )
+      writer.print " ^ "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CallGlobalMethod )
+      writer.print( cmd.info.c_name )
+      if (cmd.args.count)
+        writer.print "( "
+        forEach (arg at i in cmd.args)
+          if (i) writer.print ", "
+          local p = cmd.info.parameters[i]
+          print_with_cast( arg, p.type )
+        endForEach
+        writer.print " )"
+      else
+        writer.print "()"
+      endIf
+
+    method on_visit( cmd:CallDynamicMethod )
+      local info = cmd.info
+      if (cmd.context.type.is_aspect or info.attributes.is_abstract)
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        assert group
+        if (group and group.count == 1 and not group.first.attributes.is_placeholder)
+          info = group.first
+          if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
+          writer.print( info.c_name )
+        else
+          writer.print "Rogue_dispatch_"
+          writer.print( info.c_dynamic_signature )
+        endIf
+      else
+        if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
+          writer.print "Rogue_dispatch_"
+          writer.print( info.c_dynamic_signature )
+        else
+          writer.print( info.c_name )
+        endIf
+      endIf
+
+      if (cmd.args.count == 0)
+        writer.print '('
+        print_with_cast( cmd.context, info.type_context )
+        writer.print ')'
+      else
+        writer.print "( "
+        print_with_cast( cmd.context, info.type_context )
+
+        forEach (arg at i in cmd.args)
+          writer.print ", "
+          local p = info.parameters[i]
+          print_with_cast( arg, p.type )
+        endForEach
+        writer.print " )"
+      endIf
+
+    method on_visit( cmd:CallMethodPointer )
+      writer.print "(("
+      writer.print cmd.info.c_call_signature
+      writer.print ")(void*)"
+      visit( cmd.pointer )
+      writer.print ")("
+      forEach (arg at i in cmd.args)
+        if (i > 0) writer.print ','
+        local param_type = cmd.param_types[i]
+        if (param_type.is_reference)
+          writer.print "((RogueObject*)"
+          visit( arg )
+          writer.print ')'
+        else
+          visit( arg )
+        endIf
+      endForEach
+      writer.print ')'
+
+    method on_visit( cmd:CallStaticMethod )
+      local call_is_mutating = cmd.info.attributes.is_mutating
+      writer.print( cmd.info.c_name )
+
+      if (cmd.args.count == 0)
+        writer.print '('
+        print_with_cast( cmd.context, cmd.info.type_context, &=call_is_mutating )
+        writer.print ')'
+      else
+        writer.print "( "
+        print_with_cast( cmd.context, cmd.info.type_context, &=call_is_mutating )
+
+        forEach (arg at i in cmd.args)
+          writer.print ", "
+          local p = cmd.info.parameters[i]
+          print_with_cast( arg, p.type )
+        endForEach
+        writer.print " )"
+      endIf
+
+    method on_visit( cmd:CallThisDynamicMethod )
+      local info = cmd.info
+
+      if (this_type.is_aspect or info.attributes.is_abstract)
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        assert group
+        if (group.count == 1 and not group.first.attributes.is_placeholder)
+          info = group.first
+          if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
+          writer.print( info.c_name )
+        else
+          writer.print "Rogue_dispatch_"
+          writer.print( info.c_dynamic_signature )
+        endIf
+      else
+        if (info.attributes.dynamic_dispatch and info.attributes.is_overridden)
+          writer.print "Rogue_dispatch_"
+          writer.print( info.c_dynamic_signature )
+        else
+          writer.print( info.c_name )
+        endIf
+      endIf
+
+      if (cmd.args.count == 0)
+        writer.print '('
+        print_with_cast( "THIS", this_type, info.type_context )
+        writer.print ')'
+      else
+        writer.print "( "
+        print_with_cast( "THIS", this_type, info.type_context )
+        if (cmd.args.count)
+          forEach (arg at i in cmd.args)
+            writer.print ", "
+            local p = info.parameters[i]
+            print_with_cast( arg, p.type )
+          endForEach
+        endIf
+        writer.print " )"
+      endIf
+
+    method on_visit( cmd:CallThisStaticMethod )
+      local context_is_mutating = this_procedure.attributes.is_mutating
+      local call_is_mutating = cmd.info.attributes.is_mutating
+
+      writer.print( cmd.info.c_name )
+      if (cmd.args.count == 0)
+        writer.print '('
+        print_with_cast( "THIS", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
+        writer.print ')'
+      else
+        writer.print "( "
+        print_with_cast( "THIS", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
+        if (cmd.args.count)
+          forEach (arg at i in cmd.args)
+            writer.print ", "
+            local p = cmd.info.parameters[i]
+            print_with_cast( arg, p.type )
+          endForEach
+        endIf
+        writer.print " )"
+      endIf
+
+    method on_visit( cmd:ConvertToByte )
+      writer.print "((RogueByte)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToCharacter )
+      writer.print "((RogueCharacter)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToInt32 )
+      writer.print "((RogueInt32)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToInt64 )
+      writer.print "((RogueInt64)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToLogical )
+      writer.print "((RogueLogical)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToReal32 )
+      writer.print "((RogueReal32)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:ConvertToReal64 )
+      writer.print "((RogueReal64)"
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:CompareEQ )
+      print_parenthesized( cmd.left )
+      writer.print " == "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareNE )
+      print_parenthesized( cmd.left )
+      writer.print " != "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareLT )
+      print_parenthesized( cmd.left )
+      writer.print " < "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareGT )
+      print_parenthesized( cmd.left )
+      writer.print " > "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareLE )
+      print_parenthesized( cmd.left )
+      writer.print " <= "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:CompareGE )
+      print_parenthesized( cmd.left )
+      writer.print " >= "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Contingent )
+      on_enter( cmd )
+      visit( cmd.statements )
+      if (cmd.catches_sufficient)
+        writer.print escape_label(ControlType.SUFFICIENT)
+        writer.println ":;"
+      endIf
+      visit( cmd.satisfied_statements )
+      if (cmd.catches_necessary)
+        writer.print escape_label(ControlType.NECESSARY)
+        writer.println ":;"
+      endIf
+      visit( cmd.unsatisfied_statements )
+      on_leave( cmd )
+
+    method on_enter( cmd:ControlStructure )
+      push_scope( cmd )
+      cmd.on_begin_scope( this )
+
+    method on_enter_procedure( cmd:ControlStructure )
+      push_scope( cmd )
+
+      writer.println( "{" )
+      writer.indent += 2
+
+      if (Program.stack_trace)
+        cur_line = this_procedure.t.line
+        writer.print ''Rogue_call_stack_push( "''
+        if (this_procedure.type_context)
+          writer.print this_procedure.type_context
+          writer.print '.'
+        endIf
+        writer.print this_procedure.signature
+        writer.print ''", "''
+        writer.print File.filename(this_procedure.t.filepath)
+        writer.print   ''", ''
+        writer.print   cur_line
+        writer.println '' );''
+      endIf
+
+      if (this_procedure.return_type and this_procedure.attributes.has_return and
+          this_procedure.attributes.requires_cleanup)
+        writer.print this_procedure.return_type.c_name
+        if (this_procedure.return_type.is_reference) writer.print '*'
+        writer.print   ' '
+        writer.print   this_procedure.c_result_name
+        writer.print " = "
+        if (this_procedure.return_type.is_compound) writer.println "{};"
+        else                                        writer.println "0;"
+      endIf
+
+      if (Program.gc_auto)
+        # Declare all local variables.
+        if (this_procedure.locals.count)
+          forEach (v in this_procedure.locals)
+            writer.[ print(v.type.c_ref_name), print(' ') ]
+            writer.print( v.c_name )
+            writer.print( " = " )
+            if (v.type.is_compound) writer.print "{}"
+            else                    writer.print "0"
+            writer.println( ';' )
+
+            # Add a '(void)varname;' to prevent unused variable warnings due to Rogue variables
+            # within C #ifdef blocks.
+            writer.print   "(void)"
+            writer.print   v.c_name
+            writer.println ';'
+          endForEach
+          writer.println
+        endIf
+      endIf
+
+      if (this_procedure.requires_cleanup and Program.gc_auto)
+        use tracked_local_types = WorkList<<Type>>
+          collect_tracked_local_types( tracked_local_types )
+          forEach (type at i in tracked_local_types)
+            writer.[ print("RogueInt32 _auto_local_pointer_fp_"), print(i), print(" = Type") ]
+            if (type.is_reference) writer.print "RogueObject"
+            else                   writer.print type.c_name
+            writer.println ".local_pointer_count;"
+          endForEach
+
+          # If there's any native code, possibly with conditional compilation blocks,
+          # suppress any warnings for unused frame pointers.
+          if (this_procedure.attributes.has_native_code)
+            forEach (i of tracked_local_types)
+              writer.[ print("(void)_auto_local_pointer_fp_"), print(i), println(';') ]
+            endForEach
+          endIf
+        endUse
+
+        if (Program.gc_auto)
+          forEach (p in this_procedure.parameters)
+            if (not p.is_anchored)
+              if (p.type.is_reference)
+                writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+                writer.print   p.c_name
+                writer.println " );"
+              elseIf (p.type.contains_reference)
+                writer.print   "RogueType_local_pointer_stack_add( &Type"
+                writer.print   p.type.c_name
+                writer.print   ", &"
+                writer.print   p.c_name
+                writer.println " );"
+              endIf
+            endIf
+          endForEach
+        endIf
+
+        writer.println
+      endIf
+
+    method on_leave( cmd:ControlStructure )
+      pop_scope
+      cmd.on_end_scope( this )
+
+    method on_leave_procedure( body:ControlStructure )
+      pop_scope
+
+      if (not BranchAnalyzer.all_paths_return(body))
+        print_procedure_cleanup
+        if (this_procedure.return_type)
+          if (this_procedure.return_type.is_compound)
+            writer.print   "return ("
+            writer.print   this_procedure.return_type.c_name
+            writer.println "){};"
+          else
+            writer.println "return 0;"
+          endIf
+        endIf
+      endIf
+
+      writer.indent -= 2
+      writer.println( "}" )
+
+    method on_visit( cmd:ControlStructure )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
+    method on_visit( cmd:CreateCompound )
+      writer.[ print("("), print(cmd.of_type.c_name), print(") ") ]
+      writer.print '{'
+      if (cmd.args)
+        forEach (arg at i in cmd.args)
+          if (i > 0) writer.print ','
+          visit(arg)
+        endForEach
+      else
+        # Command is embedded in the compound's primary create() method. Pass in the create() params.
+        forEach (param at i in this_procedure.parameters)
+          if (i > 0) writer.print ','
+          writer.[ print(' '), print(param.c_name) ]
+        endForEach
+      endIf
+      writer.print "}"
+
+    method on_visit( cmd:CreateObject )
+      writer.print "ROGUE_CREATE_OBJECT( "
+      writer.print cmd.of_type.c_name
+      writer.print " )"
+
+    method on_visit( cmd:CreateObjectAndSetLocal )
+      writer.print cmd.info.c_name
+      writer.print " = "
+      writer.print "ROGUE_CREATE_OBJECT( "
+      writer.print cmd.of_type.c_name
+      writer.print " )"
+
+    method on_visit( cmd:DecrementGlobalProperty )
+      writer.print "--"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementLocal )
+      writer.print "--"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementProperty )
+      writer.print "--"
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:DecrementThisProperty )
+      writer.print "--"
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:Divide )
+      writer.print '('
+      print_parenthesized( cmd.left )
+      writer.print " / "
+      print_parenthesized( cmd.right )
+      writer.print ')'
+
+    method on_visit( cmd:DivideAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " /= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:DivideAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " /= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " /= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:DivideAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " /= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:EmptyCompound )
+      writer.print '('
+      writer.print cmd.of_type.c_name
+      writer.print "){}"
+
+    method on_visit( cmd:Escape )
+      writer.print "goto "
+      writer.print escape_label(cmd.control_type)
+
+    method on_visit( cmd:GetLocal )
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GetGlobalProperty )
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GetProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GetSingleton )
+      writer.print "ROGUE_SINGLETON("
+      writer.print cmd.type.c_name
+      writer.print ")"
+
+    method on_visit( cmd:GetThisProperty )
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:GlobalMethod )
+      if (cmd.type_context is not this_type) return
+
+      this_type.write_c_global_method_header( cmd, writer )
+      writer.println
+
+      on_enter_procedure( cmd.body )
+      visit( cmd.statements )
+      on_leave_procedure( cmd.body )
+
+      writer.println
+
+    method on_visit( cmd:If )
+      on_enter( cmd )
+      if (cmd.condition)
+        writer.print   "if ("
+        visit( cmd.condition )
+        writer.println ")"
+      endIf
+
+      writer.println '{'
+      writer.indent += 2
+      visit( cmd.statements )
+      writer.indent -= 2
+      writer.println '}'
+
+      if (cmd.cmd_else)
+        writer.print "else"
+        if (cmd.cmd_else.condition) writer.print " "
+        else                        writer.println
+        visit( cmd.cmd_else )
+      endIf
+      on_leave( cmd )
+
+    method on_visit( cmd:IncrementGlobalProperty )
+      writer.print "++"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementLocal )
+      writer.print "++"
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementProperty )
+      writer.print "++"
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:IncrementThisProperty )
+      writer.print "++"
+      writer.print "THIS"
+      assert this_type
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+
+    method on_visit( cmd:InlineAssignment )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print '='
+      visit( cmd.value )
+      writer.print ')'
+
+    method on_visit( cmd:InlineWhich )
+      # a:x || b:y || c
+      # ->
+      # (a) ? (x) : ((b) ? (y) : (c))
+      writer.print '('
+      local first_case = cmd.cases[0]
+      print_parenthesized( first_case.condition )
+      writer.print " ? "
+      print_parenthesized( first_case.value )
+      writer.print " : "
+      write_case( cmd, 1 )
+      writer.print ')'
+
+    method write_case( cmd:InlineWhich, i:Int32 )
+      local cur_case = cmd.cases[i]
+      if (i+1 < cmd.cases.count)
+        writer.print '('
+        print_parenthesized( cur_case.condition )
+        writer.print " ? "
+        print_parenthesized( cur_case.value )
+        writer.print " : "
+        write_case( cmd, i+1 )
+        writer.print ')'
+      else
+        print_parenthesized( cur_case.value )
+      endIf
+
+    method on_visit( cmd:InstanceOf )
+      writer.print( "Rogue_instance_of(" )
+      visit( cmd.operand )
+      writer.[ print(", "), print(cmd.compare_type.id), print(')') ]
+
+    method on_visit( cmd:Is )
+      if (cmd.left.type is not cmd.right.type)
+        writer.print "(void*)"
+        print_parenthesized( cmd.left )
+        writer.print " == "
+        writer.print "(void*)"
+        print_parenthesized( cmd.right )
+      else
+        print_parenthesized( cmd.left )
+        writer.print " == "
+        print_parenthesized( cmd.right )
+      endIf
+
+    method on_visit( cmd:IsNot )
+      if (cmd.left.type is not cmd.right.type)
+        writer.print "(void*)"
+        print_parenthesized( cmd.left )
+        writer.print " != "
+        writer.print "(void*)"
+        print_parenthesized( cmd.right )
+      else
+        print_parenthesized( cmd.left )
+        writer.print " != "
+        print_parenthesized( cmd.right )
+      endIf
+
+    method on_visit( cmd:IsType )
+      writer.print "Rogue_is_type("
+      visit( cmd.operand )
+      writer.print ", &"
+      writer.[ print(cmd.compare_type.c_name), print(')') ]
+
+    method on_visit( cmd:Iterator )
+      on_enter( cmd )
+      local control_label = autoname("loop_condition")
+      writer.print   "goto "
+      writer.print   control_label
+      writer.println ";"
+      writer.println "do"
+      writer.println "{"
+      writer.indent += 2
+      visit( cmd.statements )
+      if (cmd.upkeep_label_used) writer.[ print(cmd.upkeep_label), print(":;") ]
+      visit( cmd.upkeep )
+      writer.print   control_label
+      writer.println ":;"
+      visit( cmd.control )
+      writer.indent -= 2
+      writer.println "}"
+      writer.print   "while ("
+      visit( cmd.condition )
+      writer.println ");"
+      on_leave( cmd )
+
+    method on_visit( cmd:LiteralCharacter )
+      if (cmd.value >= 32 and cmd.value <= 126)
+        writer.print '\''
+        which (cmd.value)
+          case '\\': writer.print '\\'
+          case '\'': writer.print '\\'
+        endWhich
+        writer.print( cmd.value )
+        writer.print '\''
+      else
+        writer.print "((RogueCharacter)"
+        writer.print cmd.value->Int32
+        writer.print ")"
+      endIf
+
+    method on_visit( cmd:LiteralInt32 )
+      writer.print( cmd.value )
+
+    method on_visit( cmd:LiteralInt64 )
+      writer.print cmd.value
+      writer.print "LL"
+
+    method on_visit( cmd:LiteralLogical )
+      writer.print which{ cmd.value:1 || 0 }
+
+    method on_visit( cmd:LiteralNull )
+      writer.print 0
+
+    method on_visit( cmd:LiteralNullOptional )
+      writer.[ print("("), print(cmd.optional_type.c_name), print(") {}") ]
+
+    method on_visit( cmd:LiteralPi )
+      writer.print pi
+      if (Program.real_bits == 32) writer.print 'f'
+
+    method on_visit( cmd:LiteralReal )
+      writer.print cmd.value
+      if (Program.real_bits == 32) writer.print 'f'
+
+    method on_visit( cmd:LiteralString )
+      local c_id = Program.unique_strings[cmd.value]
+      if (not c_id) trace cmd.value
+      assert c_id
+      writer.print( c_id )
+
+    method on_visit_children( cmd:Local )
+      # Overriding to prevent visiting initial_value
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit( cmd:LocalDeclaration )
+      local needs_semicolon = false
+
+      local v = cmd.info
+      if (Program.gc_auto)
+        # In auto-gc variables have already been declared but we need to reinitialize locals without
+        # an explicit initial value at this point of original declaration to prevent logic bugs.
+        if (not v.initial_value)
+          writer.print( v.c_name )
+          writer.print( " = " )
+          if (v.type.is_compound)
+            writer.print '('
+            writer.print( v.type.c_ref_name )
+            writer.print ')'
+            writer.print "{}"
+          else
+            writer.print "0"
+          endIf
+          needs_semicolon = true
+        endIf
+      else
+        writer.[ print(v.type.c_ref_name), print(' ') ]
+        writer.print( v.c_name )
+        if (not v.initial_value or v.type.is_reference or v.type.contains_reference)
+          writer.print( " = " )
+          if (v.type.is_compound) writer.print "{}"
+          else                    writer.print "0"
+        endIf
+        needs_semicolon = true
+      endIf
+
+      if (Program.gc_auto)
+        if (v.type.is_reference)
+          if (needs_semicolon) writer.println ';'
+          writer.print   "RogueType_local_pointer_stack_add( &TypeRogueObject, &"
+          writer.print   v.c_name
+          writer.print   " )"
+        elseIf (v.type.contains_reference)
+          if (needs_semicolon) writer.println ';'
+          writer.print   "RogueType_local_pointer_stack_add( &Type"
+          writer.print   v.type.c_name
+          writer.print   ", &"
+          writer.print   v.c_name
+          writer.print   " )"
+        endIf
+      endIf
+
+    method on_visit( cmd:LogicalAnd )
+      print_parenthesized( cmd.left )
+      writer.print " && "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:LogicalNot )
+      writer.print "!"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:LogicalOr )
+      print_parenthesized( cmd.left )
+      writer.print " || "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:LogicalXor )
+      print_parenthesized( cmd.left )
+      writer.print " ^ "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:Logicalized )
+      writer.print "!!"
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:Method )
+      if (cmd.type_context is not this_type or cmd.attributes.is_abstract) return
+
+      this_type.write_c_method_header( cmd, writer )
+      writer.println
+
+      on_enter_procedure( cmd.body )
+      visit( cmd.statements )
+      on_leave_procedure( cmd.body )
+
+      writer.println
+
+    method on_visit( cmd:Multiply )
+      print_parenthesized( cmd.left )
+      writer.print " * "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:MultiplyAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " *= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:MultiplyAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " *= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " *= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:MultiplyAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " *= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:NativeExpression )
+      print_native_code( cmd.t, cmd.content )
+
+    method on_visit( cmd:NativeStatement )
+      print_native_code( cmd.t, cmd.content )
+      writer.println
+
+    method on_visit( cmd:Necessary )
+      writer.print "if (!("
+      visit( cmd.condition )
+      writer.print ")) goto "
+      writer.print escape_label(cmd.control_type)
+
+    method on_visit( cmd:Negate )
+      writer.print '-'
+      print_parenthesized( cmd.operand )
+
+    method on_visit( cmd:NextIteration )
+      forEach (control_structure in control_stack step -1)
+        if (control_structure instanceOf Iterator)
+          writer.print "goto "
+          writer.print control_structure->(as Iterator).upkeep_label
+          return
+        endIf
+      endForEach
+      throw cmd.t.error( "[INTERNAL] No enclosing loop for nextIteration." )
+
+    method on_visit( cmd:Power )
+      local type = cmd.left.type
+      writer.print '('
+      writer.print type.c_name
+      if (type is Program.type_Real32 or (Program.real_bits==32 and type is not Program.type_Real64))
+        writer.print ")powf("
+      else
+        writer.print ")pow("
+      endIf
+      visit( cmd.left )
+      writer.print ","
+      visit( cmd.right )
+      writer.print ')'
+
+    method on_visit( cmd:PreDecrementLocal )
+      writer.print "--"
+      writer.print( cmd.info.c_name )
+
+
+    method on( cmd:Procedure )->Cmd
+      this_procedure = cmd
+      autoname_index = 0
+
+      visible_locals_fp.add( visible_locals.count )
+      forEach (p in cmd.parameters)
+        visible_locals.add( p->(as Local) )
+      endForEach
+
+      visit_content( cmd )
+
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+      return cmd
+
+    method on_visit( cmd:PushStackTraceCutoff )
+      writer.println ''Rogue_call_stack_push( "", "", -1 );''   # create dummy frame for stack trace cutoff
+
+    method on_visit( cmd:Return )
+      if (cmd.result and cmd.result.can_trigger_gc)
+        local result_name = autoname("result")
+        writer.print cmd.result.type.c_ref_name
+        writer.print ' '
+        writer.print result_name
+        writer.print " = "
+        visit( cmd.result )
+        writer.println ';'
+
+        print_procedure_cleanup
+
+        writer.print "return "
+        writer.print result_name
+        writer.println ';'
+
+      else
+        print_procedure_cleanup
+        writer.print "return"
+        if (cmd.result)
+          writer.print ' '
+          visit( cmd.result )
+        endIf
+        writer.println ';'
+      endIf
+
+    method on_visit( cmd:ReturnOnException )
+      dispatch_exception( cmd.t, "if (Rogue_exception)" )
+
+    method on_visit( cmd:SetGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
+
+    method on_visit( cmd:SetLocal )
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
+
+    method on_visit( cmd:SetProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
+
+    method on_visit( cmd:SetSingleton )
+      writer.print "ROGUE_SET_SINGLETON("
+      writer.print cmd.of_type.c_name
+      writer.print ','
+      visit( cmd.new_value )
+      writer.print ")"
+
+    method on_visit( cmd:SetThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print( " = " )
+      visit( cmd.new_value )
+
+    method on_visit( cmd:Statements )
+      forEach (statement in cmd)
+        if (Program.stack_trace)
+          if (statement.t.line != cur_line)
+            cur_line = statement.t.line
+            writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
+          endIf
+        endIf
+        visit( statement )
+        if (statement.needs_semicolon) writer.println( ';' )
+      endForEach
+
+    method on_visit( cmd:Subtract )
+      print_parenthesized( cmd.left )
+      writer.print " - "
+      print_parenthesized( cmd.right )
+
+    method on_visit( cmd:SubtractAndAssignLocal )
+      writer.print '('
+      writer.print cmd.info.c_name
+      writer.print " -= "
+      print_parenthesized( cmd.operand )
+      writer.print ')'
+
+    method on_visit( cmd:SubtractAndAssignGlobalProperty )
+      writer.print( cmd.info.c_name )
+      writer.print( " -= " )
+      visit( cmd.operand )
+
+    method on_visit( cmd:SubtractAndAssignProperty )
+      visit( cmd.context )
+      if (cmd.context.type.is_reference) writer.print "->"
+      else                               writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " -= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:SubtractAndAssignThisProperty )
+      writer.print "THIS"
+      if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
+      else                        writer.print "."
+      writer.print( cmd.info.c_name )
+      writer.print " -= "
+      visit( cmd.operand )
+
+    method on_visit( cmd:Sufficient )
+      writer.print "if ("
+      visit( cmd.condition )
+      writer.print ") goto "
+      writer.print escape_label(cmd.control_type)
+
+    method on_visit( cmd:Switch )
+      on_enter( cmd )
+
+      writer.print "switch ("
+      visit( cmd.condition )
+      writer.println ')'
+      writer.println '{'
+      writer.indent  += 2
+      forEach (cmd_case in cmd.cases)
+        forEach (arg in cmd_case.args)
+          writer.print "case "
+          visit( arg )
+          writer.println ':'
+        endForEach
+        writer.println '{'
+        writer.indent  += 2
+        visit( cmd_case.statements )
+        if (cmd_case.statements.count == 0 or cmd_case.statements.last not instanceOf Return)
+          writer.println "break;"
+        endIf
+        writer.indent  -= 2
+        writer.println '}'
+      endForEach
+      if (cmd.statements)
+        writer.println "default:"
+        writer.println '{'
+        writer.indent  += 2
+        visit( cmd.statements )
+        writer.indent  -= 2
+        writer.println '}'
+      endIf
+      writer.indent  -= 2
+      writer.println '}'
+
+      on_leave( cmd )
+
+    method on_visit( cmd:This )
+      if (this_procedure.attributes.is_mutating) writer.print '*'
+      writer.print "THIS"
+
+    method on_visit( cmd:Throw )
+      writer.print   "Rogue_exception = (RogueObject*)"
+      visit( cmd.exception )
+      writer.println ';'
+      dispatch_exception( cmd.t )
+
+    method on_visit( cmd:Try )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+      # .catches are handled in on_end_scope
+
+    method on_visit( cmd:TypeIndex )
+      writer.print( cmd.of_type.index )
+
+    method on_visit( cmd:WideningCast )
+      print_with_cast( cmd.operand, cmd.to_type )
+
+    method pop_scope
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+      control_stack.remove_last
+
+    method push_scope( cmd:ControlStructure )
+      control_stack.add( cmd )
+      visible_locals_fp.add( visible_locals.count )
+      visible_locals.add( forEach in cmd.locals )
+
+    method print_procedure_cleanup
+      if (Program.stack_trace)
+        writer.println "Rogue_call_stack_pop();"
+      endIf
+
+      if (this_procedure.requires_cleanup)
+        if (Program.gc_auto)
+          # Release local refs
+          use tracked_local_types = WorkList<<Type>>
+            collect_tracked_local_types( tracked_local_types )
+            forEach (type at i in tracked_local_types)
+              writer.print "Type"
+              if (type.is_reference) writer.print "RogueObject"
+              else                   writer.print type.c_sig_name
+              writer.[ print(".local_pointer_count = _auto_local_pointer_fp_"), print(i), println(';') ]
+            endForEach
+          endUse
+        endIf
+      endIf
+
+    method print_native_code( t:Token, code:String )
+      if (code.contains("return"))
+        local i = code.locate( "return" )
+        while (i)
+          local i1 = i.value - 1
+          local i2 = i1 + 7
+          if (not ((i1 >= 0 and code[i1].is_identifier(&start)) or (i2 < code.count and code[i2].is_identifier)))
+            throw t.error( "Illegal 'return' in native code. Returns must be executed in Rogue code." )
+          endIf
+          i = code.locate( "return", i.value+1 )
+        endWhile
+      endIf
+
+      block
+        # Replace $<<TypeName>> with C type name
+        local i1 = code.locate("$<<")
+        while (i1)
+          local i2 = code.locate( ">>", i1 )
+          if (not i2)
+            throw t.error( "Use of unterminated '$<<' variable marker." )
+          endIf
+
+          local marker = code.from(i1.value+3,i2.value-1)
+          code = code.leftmost(i1.value) + native_replacement(t,marker,&type) + code.from(i2.value+2)
+          i1 = code.locate("$<<",i1)
+        endWhile
+      endBlock
+
+      block
+        # Replace $varname with e.g. localname_0 or THIS->property_name
+        local i1 = code.locate('$')
+        while (i1)
+          local i2 = i1.value
+          while (i2+1 < code.count)
+            local ch = code[i2+1]
+            if (not (ch.is_letter or ch.is_number or ch == '_')) escapeWhile
+            ++i2
+          endWhile
+
+          local marker = code.from(i1.value+1,i2)
+          code = code.leftmost(i1.value) + native_replacement(t,marker) + code.from(i2+1)
+          i1 = code.locate( '$', i1 )
+        endWhile
+      endBlock
+
+      writer.print code
+
+    method native_replacement( t:Token, name:String, &type )->String
+      forEach (v in visible_locals)
+        if (name == v.name)
+          if (type) return v.type.c_ref_name
+          else      return v.c_name
+        endIf
+      endForEach
+
+      if (this_type)
+        if (name == "ReturnType")
+          if (this_procedure.return_type)
+            return this_procedure.return_type.c_ref_name
+          else
+            throw t.error( "$<<ReturnType>> requested but procedure does not return a value." )
+          endIf
+        endIf
+
+        if (this_procedure.is_method)
+          if (name == "this")
+            if (type) return this_type.c_ref_name
+            else      return "THIS"
+          endIf
+
+          forEach (p in this_type.properties)
+            if (name == p.name)
+              if (type)                       return p.type.c_ref_name
+              elseIf (this_type.is_reference or this_procedure.attributes.is_mutating) return "THIS->" + p.c_name
+              else                            return "THIS." + p.c_name
+            endIf
+          endForEach
+        endIf
+
+        forEach (p in this_type.global_properties)
+          if (name == p.name)
+            if (type) return p.type.c_ref_name
+            else      return p.c_name
+          endIf
+        endForEach
+
+        local type_obj = this_module.types[name]
+        if (type_obj) return type_obj.c_name
+      endIf
+
+      throw t.error( "No such variable '$' exists in current scope."(name) )
+endClass
+
+# write_print()
+augment
+  METHODS
+    method Cmd.write_print( writer:CWriter )
+      throw UnsupportedOperationError("[INTERNAL] $.write_print() [$]"(type_name,this))
+
+    method LiteralInt32.write_print( writer:CWriter )
+      writer.print ''printf( "%d", $ )'' (value)
+
+    method LiteralString.write_print( writer:CWriter )
+      writer.print ''printf( "$" )'' (value.to_escaped_ascii(''"''))
+endAugment
+
+augment
+  METHODS
+    method Cmd.needs_semicolon->Logical
+      return true
+
+    method ControlStructure.needs_semicolon->Logical
+      return false
+
+    method Return.needs_semicolon->Logical
+      return false
+
+    method ReturnOnException.needs_semicolon->Logical
+      return false
+
+    method Throw.needs_semicolon->Logical
+      return false
+
+    method Type.generate_c_native_headers( writer:CWriter )
+      writer.println( forEach in this.native_header )
+
+    method Type.generate_c_class_structs( writer:CWriter )
+      if (this.is_object or this.is_compound)
+        writer.print   "struct "
+        writer.print   this.c_name
+        writer.println
+        writer.println '{'
+        writer.indent  += 2
+        if (this.is_object)
+          writer.println "RogueType* __type;"
+          writer.println "RogueInt32 __refcount;"
+        endIf
+        forEach (p in this.properties)
+          if (not p.attributes.is_faux)
+            if (p.is_native)
+              writer.println p.native_expression
+            else
+              writer.print   p.type.c_name
+              if (p.type.is_reference) writer.print '*'
+              writer.print   ' '
+              writer.print   p.c_name
+              writer.println ';'
+            endIf
+          endIf
+        endForEach
+        writer.indent  -= 2
+        writer.println "};"
+        writer.println
+      endIf
+
+      if ((this.is_reference or this.contains_reference or this is Program.type_Object) and not is_aspect)
+        writer.[ print("void "), print(this.c_name), println("_gc_trace( void* THIS );") ]
+        writer.println
+      endIf
+
+    method Type.generate_c_class_typedefs( writer:CWriter )
+      local any_output = false
+
+      if (this.is_object or this.is_compound)
+        writer.print   "typedef struct "
+        writer.print   this.c_name
+        writer.print   ' '
+        writer.print   this.c_name
+        writer.println ";"
+        any_output = true
+      endIf
+
+      if (not this.is_aspect)
+        writer.print "extern RogueType Type"
+        writer.print this.c_name
+        writer.println ";"
+        any_output = true
+      endIf
+
+      if (any_output) writer.println
+
+    method Module.generate_c_header( writer:CWriter )
+      if (native_headers.count)
+        native_headers.sort( (a,b) => (a.ordinal < b.ordinal) )
+        writer.println( (forEach in native_headers).content )
+        writer.println
+      endIf
+
+    method Module.generate_c_code( writer:CWriter )
+      if (native_code.count)
+        native_code.sort( (a,b) => (a.ordinal < b.ordinal) )
+        writer.println( (forEach in native_code).content )
+        writer.println
+      endIf
+
+    method Module.generate_c_class_initialization( writer:CWriter )
+      forEach (type in types)
+        local m = type.global_methods["init_class()"]
+        if (not m or m.statements.count == 0) nextIteration
+        writer.[ print(m.c_name), println("();") ]
+        writer.println "if (Rogue_exception) return 0;"
+      endForEach
+
+    method Module.generate_c_launch_commands( writer:CWriter )
+      local type_Routine = find_type( t, "Routine" )
+      assert type_Routine
+      local r = type_Routine.global_methods[ "on_launch()" ]
+      if (r and r.statements.count)
+        writer.[ print(r.c_name), println("();") ]
+        writer.println "if (Rogue_exception) return 0;"
+      endIf
+
+    method NativeStatement.needs_semicolon->Logical
+      return false
+
+    method Program.generate_c
+      CSpecializer().apply
+
+      local types = Program.all_types
+
+      local h_writer = CWriter( File(Program.output_filepath+".h"), &header )
+
+      h_writer.println ...
+        @|//------------------------------------------------------------------------------
+         |// Generated
+         |//------------------------------------------------------------------------------
+      (forEach in modules).generate_c_header( h_writer )
+      h_writer.println "typedef struct RogueType RogueType;"
+      (forEach in types).generate_c_class_typedefs( h_writer )
+      (forEach in types).generate_c_native_headers( h_writer )
+      (forEach in types).generate_c_class_structs( h_writer )
+      (forEach in types).generate_c_header( h_writer )
+
+      local wrote_any = false
+      forEach (group in Program.dynamic_methods)
+        if (group.count == 1 and not group.first.attributes.is_placeholder) nextIteration
+        write_c_dispatch_method_header( group, h_writer )
+        h_writer.println ';'
+        wrote_any = true
+      endForEach
+      if (wrote_any) h_writer.println
+
+      h_writer.println "extern RogueInt32 Rogue_type_count;"
+      h_writer.println "extern RogueType* Rogue_types[$];"(types.count)
+
+      h_writer.println "extern RogueInt32 Rogue_base_types[$];" (Program.base_type_lookup.count)
+
+      if (Program.default_module.types.contains("MethodInfo"))
+        h_writer.println "extern RogueInt32 Rogue_method_count;"
+        h_writer.println "extern RogueInt32 Rogue_method_info[];"
+        h_writer.println "extern RogueInt32 Rogue_type_data[];"
+        h_writer.println "extern void* Rogue_method_pointers[];"
+        h_writer.println
+        forEach (group in Program.call_signatures.values)
+          if (group.is_empty) nextIteration  # all methods were unused and culled out
+          local m = group.first  # any one of the group will suffice
+
+          h_writer.print "typedef "
+          if (m.return_type)
+            if (m.return_type.is_reference) h_writer.print "void*"
+            else                            h_writer.print m.return_type.c_ref_name
+          else
+            h_writer.print "void"
+          endIf
+          h_writer.print " (*"
+          h_writer.print m.c_call_signature
+          h_writer.print ")("
+
+          local i = 0
+          if (not m.is_global)
+            if (m.type_context.is_reference)
+              h_writer.print "RogueObject"
+            else
+              h_writer.print m.type_context.c_name
+            endIf
+            if (m.type_context.is_reference or m.attributes.is_mutating) h_writer.print '*'
+            ++i
+          endIf
+          forEach (param in m.parameters)
+            if (i > 0) h_writer.print ','
+            if (param.type.is_reference) h_writer.print "RogueObject*"
+            else                         h_writer.print param.type.c_ref_name
+            ++i
+          endForEach
+          h_writer.println ");"
+        endForEach
+        h_writer.println
+      endIf
+
+      h_writer.println "extern RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
+
+      forEach (str in Program.unique_strings)
+        h_writer.print   "extern RogueString* "
+        h_writer.print   str
+        h_writer.println ';'
+      endForEach
+
+      h_writer.close
+
+      #-------------------------------------------------------------------------
+
+      local c_writer = CWriter( File(Program.output_filepath+".c") )
+
+      local method_info : Int32[]
+      local type_data : Int32[]
+      if (Program.default_module.types.contains("MethodInfo"))
+        c_writer.println
+        c_writer.println "RogueInt32 Rogue_method_count = $;"(Program.all_methods.count)
+
+        local string_indices = Program.string_table_indices
+        method_info = Int32[]
+        type_data = Int32[]
+        forEach (m in Program.all_methods)
+          method_info.add( type_data.count )
+          type_data.add( m.type_context.index )
+          type_data.add( string_indices[m.name] )
+          type_data.add( m.parameters.count )
+          forEach (param in m.parameters)
+            type_data.add( string_indices[param.name] )
+            type_data.add( param.type.index )
+          endForEach
+          type_data.add( which{m.return_type:m.return_type.index || -1} )
+          type_data.add( m.call_index )
+          type_data.add( (m.attributes.flags:>>>:32)->Int32 )
+          type_data.add( m.attributes.flags->Int32 )
+        endForEach
+
+        forEach (type in all_types)
+          type.class_data_index = type_data.count
+          type_data.add( type.global_properties.count )
+          forEach (prop in type.global_properties)
+            type_data.add( prop.id )
+            type_data.add( string_indices[prop.name] )
+            type_data.add( prop.type.index )
+          endForEach
+          if (type.is_aspect)
+            type_data.add( 0 )  # 0 object properties for aspects
+          else
+            type_data.add( type.properties.count )
+            forEach (prop in type.properties)
+              type_data.add( prop.id )
+              type_data.add( string_indices[prop.name] )
+              type_data.add( prop.type.index )
+            endForEach
+          endIf
+          type_data.add( type.global_methods.count )
+          type_data.add( (forEach in type.global_methods).index )
+          type_data.add( type.methods.count )
+          type_data.add( (forEach in type.methods).index )
+        endForEach
+
+        block
+          local column = 0;
+          c_writer.println "RogueInt32 Rogue_method_info[$] ="(method_info.count)
+          c_writer.println "{"
+          c_writer.indent += 2
+          forEach (value at index in method_info)
+            if (index > 0) c_writer.print ','
+            if (column == 30)
+              c_writer.println
+              column = 0
+            endIf
+            c_writer.print value
+            ++column
+          endForEach
+          c_writer.println
+          c_writer.indent -= 2
+          c_writer.println "};"
+          c_writer.println
+        endBlock
+
+        block
+          local column = 0;
+          c_writer.println "RogueInt32 Rogue_type_data[$] ="(type_data.count)
+          c_writer.println "{"
+          c_writer.indent += 2
+          forEach (value at index in type_data)
+            if (index > 0) c_writer.print ','
+            if (column == 30)
+              c_writer.println
+              column = 0
+            endIf
+            c_writer.print value
+            ++column
+          endForEach
+          c_writer.println
+          c_writer.indent -= 2
+          c_writer.println "};"
+          c_writer.println
+        endBlock
+
+        block
+          c_writer.println "void* Rogue_method_pointers[$] ="(Program.all_methods.count)
+          c_writer.println "{"
+          c_writer.indent += 2
+          forEach (m at index in Program.all_methods)
+            if (index > 0) c_writer.println ','
+            c_writer.print m.c_name
+          endForEach
+          c_writer.println
+          c_writer.indent -= 2
+          c_writer.println "};"
+          c_writer.println
+        endBlock
+
+      endIf
+
+      c_writer.println "RogueInt32 Rogue_type_count = $;" (types.count)
+
+      local including_type_info = Program.default_module.types.contains("TypeInfo")
+
+      block
+        forEach (type in types)
+          c_writer.print   "RogueType Type"
+          c_writer.print   type.c_sig_name
+          c_writer.print   '' = { "''
+          c_writer.print   type.name
+          c_writer.print   ''", ''
+          c_writer.print   ''0, ''  # name_object
+          assert type.index >= 0
+          c_writer.print   type.index
+          c_writer.print   ", "
+          c_writer.print   type.id
+          c_writer.print   ", "
+          if (including_type_info) c_writer.print Program.string_table_indices[type.module_context.name]
+          else                     c_writer.print '0'
+          c_writer.print   ", "
+          c_writer.print   type.class_data_index
+          c_writer.print   ", "
+          c_writer.print   type.attributes.flags
+
+          if (type.is_primitive or type.is_aspect)
+            c_writer.println "};"
+            nextIteration
+          endIf
+
+          c_writer.print   ", 0, " # local_pointer_stack
+          c_writer.print   "0, "   # local_pointer_capacity
+          c_writer.print   "0, "   # local_pointer_count
+          c_writer.print   ''sizeof(''
+          c_writer.print   type.c_name
+          c_writer.print   ''), Rogue_base_types+''
+          c_writer.print   type.base_type_lookup_index
+          c_writer.print   ", "
+          c_writer.print   type.base_type_ids.count
+          c_writer.print   ", "
+          c_writer.print   "0, "   # type_info
+
+          local m_init_object = type.methods["init_object()"]
+          if (m_init_object)
+            c_writer.print   ''(RogueFn_Object)''
+            c_writer.print   m_init_object.c_name
+          else
+            c_writer.print   "0"
+          endIf
+          c_writer.print ", "
+
+          local default_constructor = type.methods["init()"]
+          if (default_constructor)
+            c_writer.print   ''(RogueFn_Object)''
+            c_writer.print   default_constructor.c_name
+          else
+            c_writer.print   "0"
+          endIf
+
+          # fn_gc_trace
+          c_writer.print ", "
+          if (type.is_object)
+            c_writer.print "(RogueFn_Object)"
+            if (type.contains_reference) c_writer.print type.c_name
+            else                         c_writer.print "RogueObject"
+            c_writer.print "_gc_trace"
+          else
+            c_writer.print '0'
+          endIf
+
+          # fn_on_cleanup
+          c_writer.print ", "
+          if (type.is_object)
+            local m = type.methods["on_cleanup()"]
+            if (m)
+              c_writer.print "(RogueFn_Object)"
+              c_writer.print m.c_name
+            else
+              c_writer.print '0'
+            endIf
+          else
+            c_writer.print '0'
+          endIf
+
+          # fn_on_singleton_change
+          c_writer.print ", "
+          if (type.m_on_singleton_change)
+            c_writer.print "(RogueFn_Object_Object)"
+            c_writer.print type.m_on_singleton_change.c_name
+          else
+            c_writer.print '0'
+          endIf
+
+          c_writer.println '' };''
+
+          forEach (p in type.global_properties)
+            if (not p.attributes.is_faux)
+              c_writer.print p.type.c_ref_name
+              c_writer.print ' '
+              c_writer.print p.c_name
+              if (p.type.is_compound) c_writer.println " = {};"
+              else                    c_writer.println " = 0;"
+            endIf
+          endForEach
+
+          if (type.is_aspect) nextIteration
+
+          if (type.attributes.is_singleton)
+            c_writer.print   type.c_name
+            if (type.is_reference) c_writer.print '*'
+            c_writer.print   ' '
+            c_writer.print   type.c_name
+            c_writer.println "_singleton = 0;"
+          endIf
+        endForEach
+
+        forEach (type in types)
+          forEach (code in type.native_code)
+            c_writer.println code->String
+            c_writer.println
+          endForEach
+        endForEach
+        c_writer.println
+
+        (forEach in types).generate_c_code( c_writer )
+      endBlock
+
+      block
+        c_writer.println "RogueType* Rogue_types[$] ="(types.count)
+        c_writer.println "{"
+        c_writer.indent += 2
+        local row_count = 0
+        forEach (type at i in types)
+          if (i > 0) c_writer.print ','
+          if (row_count == 4) c_writer.println; row_count = 0
+          else                c_writer.print ' '
+          c_writer.[ print("&Type"), print(type.c_name) ]
+          ++row_count
+        endForEach
+        c_writer.println
+        c_writer.indent -= 2
+        c_writer.println "};"
+        c_writer.println
+      endBlock
+
+      c_writer.println "RogueInt32 Rogue_base_types[$] =" (Program.base_type_lookup.count)
+      c_writer.println "{"
+      c_writer.indent += 2
+      forEach (id at index in Program.base_type_lookup)
+        if (index > 0)
+          c_writer.print ','
+          if (index % 20 == 0) c_writer.println
+        endIf
+        c_writer.print id
+      endForEach
+      if (Program.base_type_lookup.count % 20 == 0) c_writer.println
+      c_writer.println
+      c_writer.indent -= 2
+      c_writer.println "};"
+      c_writer.println
+
+      (forEach in modules).generate_c_code( c_writer )
+
+      local cgen = CGenerator( c_writer )
+      forEach (group in Program.dynamic_methods)
+        if (group.count == 1 and not group.first.attributes.is_placeholder) nextIteration
+        write_c_dispatch_method_header( group, c_writer )
+        c_writer.println
+        c_writer.println '{'
+
+        if (group.count == 1 and group.first.attributes.is_placeholder)
+          # No concrete methods exist; only abstract methods and aspect methods.
+          # Write a no-op.
+          local m = group.first
+          if (m.return_type)
+            c_writer.print "  return "
+            cgen.visit( m.return_type.cmd_default_value(m.t) )
+            c_writer.println ';'
+          endIf
+          c_writer.println '}'
+          c_writer.println
+          nextIteration
+        endIf
+
+        c_writer.indent += 2
+        c_writer.println "switch (((RogueObject*)THIS)->__type->id)"
+        c_writer.println '{'
+        c_writer.indent += 2
+
+        # Put the most frequent type id cases at the end so they can be the 'default:'
+        group.sort(
+          function(a:Method,b:Method)->Logical
+            local a_count = a.inheriting_types.count
+            local b_count = b.inheriting_types.count
+            return (a_count < b_count or (a_count == b_count and a.type_context.id < b.type_context.id))
+          endFunction
+        )
+
+        local last_m = group.last
+        forEach (m in group)
+          if (m is not last_m)
+            m.inheriting_types.sort( (a,b) => (a.id < b.id) )
+            local n = m.inheriting_types.count + 1
+            c_writer.print "case "
+            c_writer.print m.type_context.id
+            c_writer.print ':'
+            if (n > 1) c_writer.println
+            forEach (inheriting_type at i in m.inheriting_types)
+              c_writer.print "case "
+              c_writer.print inheriting_type.id
+              c_writer.print ':'
+              if (n > i+1) c_writer.println
+            endForEach
+            c_writer.print ' '
+          else
+            c_writer.print "default: "
+          endIf
+
+          if (m.return_type) c_writer.print "return "
+          c_writer.print m.c_name
+          c_writer.print "(("
+          c_writer.print m.type_context.c_ref_name
+          c_writer.print ")THIS"
+          forEach (i of m.parameters)
+            c_writer.print ",p"
+            c_writer.print i
+          endForEach
+          if (m.return_type) c_writer.println ");"
+          else               c_writer.println "); return;"
+        endForEach
+
+        c_writer.indent -= 2
+        c_writer.println '}'
+        c_writer.indent -= 2
+        c_writer.println '}'
+        c_writer.println
+      endForEach
+
+      c_writer.println "RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
+
+      forEach (str in Program.unique_strings)
+        c_writer.print   "RogueString* "
+        c_writer.print   str
+        c_writer.println ';'
+      endForEach
+
+      c_writer.println @|
+                        |void  Rogue_collect_garbage()
+                        |{
+      c_writer.indent += 2
+      c_writer.println   @|RogueMM_bytes_allocated_since_gc = 0;
+                          |RogueMM_gc_request = 0;
+                          |
+                          |RogueObject*  ref;
+                          |RogueObject** refptr;
+                          |int i;
+                          |int write_i;
+                          |
+                          |// Trace all retained objects (positive refcount)
+                          |for (i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
+                          |{
+                          |  if ((ref=(RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
+                          |}
+                          |
+                          |// Trace singletons
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          if (type.attributes.is_singleton)
+            c_writer.print   "if ((ref = (RogueObject*)"
+            c_writer.print   type.c_name
+            c_writer.println "_singleton) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+          endIf
+        endForEach
+      endForEach
+      c_writer.println
+
+      c_writer.println "// Trace globals"
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          forEach (p in type.global_properties)
+            if (p.type.is_reference)
+              c_writer.print   "if ((ref = (RogueObject*)"
+              c_writer.print   p.c_name
+              c_writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+            elseIf (p.type.contains_reference)
+              use path = WorkList<<String>>
+                path.add( "if ((ref=(RogueObject*)(" )
+                path.add( p.c_name )
+                c_writer.print_gc_checks( path, p.type )
+              endUse
+            endIf
+          endForEach
+        endForEach
+      endForEach
+      c_writer.println
+
+      if (Program.gc_auto)
+        c_writer.println @|// Trace stack
+                          |void** v;
+                          |
+                          |for (i=TypeRogueObject.local_pointer_count, v=TypeRogueObject.local_pointer_stack-1; --i>=0; )
+                          |{
+                          |  if ((ref=(RogueObject*)(*(RogueObject**)*(++v))) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
+                          |}
+        forEach (type in (forEach in Program.modules).types)
+          if (type.is_compound and type.contains_reference)
+            c_writer.print   "for (i=Type"
+            c_writer.print   type.c_name
+            c_writer.print   ".local_pointer_count, v=Type"
+            c_writer.print   type.c_name
+            c_writer.println ".local_pointer_stack; --i>=0; ++v )"
+            c_writer.println '{'
+            use path = WorkList<<String>>
+              path.add( "  if ((ref=(RogueObject*)((*((" )
+              path.add( type.c_ref_name )
+              path.add( "*)(*v)))" )
+              c_writer.print_gc_checks( path, type )
+            endUse
+            c_writer.println '}'
+          endIf
+        endForEach
+        c_writer.println
+      endIf
+
+      c_writer.println @|// Find unreferenced objects requiring cleanup, trace them, and move them to
+                        |// the end of the regular list.
+                        |
+                        |// We can't delete them yet because they could added themselves back to the object
+                        |// graph during cleanup. They'll be deleted from the regular list the next time
+                        |// they're unreferenced with no chance to clean up again.
+                        |int cleanup_count = 0;
+                        |int end_i = RogueMM_objects_requiring_cleanup.count;
+                        |refptr = RogueMM_objects_requiring_cleanup.data + end_i;
+                        |for (i=end_i; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(--refptr);
+                        |  if (ref->__refcount >= 0)
+                        |  {
+                        |    ++cleanup_count;
+                        |    ref->__type->fn_gc_trace( ref );
+                        |
+                        |    RogueObjectList_add( &RogueMM_objects, ref );
+                        |    *refptr = RogueMM_objects_requiring_cleanup.data[--end_i];
+                        |  }
+                        |}
+                        |RogueMM_objects_requiring_cleanup.count -= cleanup_count;
+                        |
+                        |// Free unreferenced objects and reset the traced flag on referenced objects.
+                        |for (write_i=-1,i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(++refptr);
+                        |  if (ref->__refcount >= 0)
+                        |  {
+                        |    // Untraced == unreferenced
+                        |    Rogue_destroy_object( ref );
+                        |  }
+                        |  else
+                        |  {
+                        |    // Still referenced. Reset flag.
+                        |    ref->__refcount = ~ref->__refcount;
+                        |    RogueMM_objects.data[++write_i] = ref;
+                        |  }
+                        |}
+                        |RogueMM_objects.count = write_i + 1;
+                        |
+                        |end_i = RogueMM_objects_requiring_cleanup.count;
+                        |refptr = RogueMM_objects_requiring_cleanup.data + end_i;
+                        |for (i=end_i; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref->__refcount = ~ref->__refcount;
+                        |}
+                        |
+                        |// Call on_cleanup() on formerly-unreferenced objects at the end of the
+                        |// regular list.
+                        |end_i  = RogueMM_objects.count;
+                        |refptr = RogueMM_objects.data + end_i;
+                        |for (i=cleanup_count; --i>=0; )
+                        |{
+                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref->__type->fn_on_cleanup( ref );
+                        |}
+                        |
+                        |//printf("New object count:%d\n",RogueMM_objects.count);
+                        |
+
+      c_writer.indent -= 2
+      c_writer.println @|}
+
+      c_writer.println @|
+                        |int Rogue_launch()
+                        |{
+      c_writer.indent += 2
+      Program.generate_c_string_literals( c_writer )
+
+      (forEach in modules).generate_c_class_initialization( c_writer )
+      c_writer.println
+
+      c_writer.println @|int i;
+                        |for (i=1; i<Rogue_argc; ++i)
+                        |{
+                        |  RogueSystem___add_command_line_argument__RogueString(
+                        |    RogueString_create_from_utf8(Rogue_argv[i],-1,ROGUE_STRING_PERMANENT)
+                        |  );
+                        |}
+                        |
+
+      # Instantiate essential singletons
+      local any_essential_singletons = false
+      forEach (mod in modules)
+        forEach (type in mod.types)
+          if (type.attributes.is_singleton and type.attributes.is_essential)
+            any_essential_singletons = true
+            c_writer.print "ROGUE_SINGLETON("
+            c_writer.print type.c_name
+            c_writer.println ");"
+          endIf
+        endForEach
+      endForEach
+      if (any_essential_singletons) c_writer.println
+
+      (forEach in modules).generate_c_launch_commands( c_writer )
+      c_writer.println
+      c_writer.println "return 1;"
+      c_writer.indent -= 2
+      c_writer.println '}'
+      c_writer.println
+
+      if (Program.generate_main)
+        c_writer.println
+        c_writer.println @|int main( int argc, char* argv[] )
+                          |{
+                          |  Rogue_configure( argc, argv );
+                          |  Rogue_launch();
+                          |  return Rogue_quit();
+        c_writer.println @|}
+      endIf
+
+      c_writer.close
+
+    method Program.generate_c_string_literals( writer:CWriter )
+      if (Program.unique_strings.count)
+        forEach (entry in Program.unique_strings.entries)
+          writer.print   entry.value
+          writer.print   " = RogueString_create_string_table_entry( "
+          writer.print_literal_c_string( entry.key )
+          writer.println ");"
+        endForEach
+        writer.println
+      endIf
+
+    method Program.write_c_dispatch_method_header( group:Method[], writer:CWriter )
+      local m = group.first  # any method will do; they all share the same signature
+      if (m.return_type)
+        writer.print( m.return_type.c_ref_name )
+      else
+        writer.print "void"
+      endIf
+      writer.print " Rogue_dispatch_"
+      writer.print( m.c_dynamic_signature )
+      writer.print( "( void* THIS" )
+      forEach (p at i in m.parameters)
+        writer.print ", "
+        writer.print( p.type.c_ref_name )
+        writer.print ' '
+        writer.print "p"
+        writer.print i
+      endForEach
+      writer.print( " )" )
+
+    method Statements.needs_semicolon->Logical
+      return false
+
+    method Type.generate_c_header( writer:CWriter )
+      forEach (p in global_properties)
+        writer.print "extern "
+        writer.print p.type.c_ref_name
+        writer.print ' '
+        writer.print p.c_name
+        writer.println ';'
+      endForEach
+
+      forEach (m in global_methods)
+        if (m.type_context is this)
+          write_c_global_method_header( m, writer )
+          writer.println ';'
+        endIf
+      endForEach
+
+      if (is_aspect) return
+
+      if (attributes.is_singleton)
+        writer.print   "extern "
+        writer.print   c_name
+        if (is_reference) writer.print '*'
+        writer.print   ' '
+        writer.print   c_name
+        writer.println "_singleton;"
+        writer.println
+      endIf
+
+      forEach (m in methods)
+        if (m.type_context is this and not m.attributes.is_abstract)
+          write_c_method_header( m, writer )
+          writer.println ';'
+        endIf
+      endForEach
+
+    method Type.generate_c_code( writer:CWriter )
+      if ((is_reference or contains_reference or this is Program.type_Object) and not is_aspect)
+        writer.[ print("void "), print(c_name), println("_gc_trace( void* THIS )") ]
+        writer.println '{'
+        writer.indent += 2
+
+        #writer.println ''printf("Tracing $\\n");''(name)
+
+        if (is_reference)
+          writer.println "((RogueObject*)THIS)->__refcount = ~((RogueObject*)THIS)->__refcount;"
+        endIf
+
+        contingent
+          forEach (p in properties)
+            sufficient (p.type.is_reference or p.type.contains_reference)
+          endForEach
+          escapeContingent
+
+        satisfied
+          writer.println
+          if (contains_reference) writer.println "RogueObject* ref;"
+          forEach (p in properties)
+            if (p.type.is_reference)
+              writer.print   "if ((ref = (RogueObject*)(("
+              writer.print   c_name
+              writer.print   "*)THIS)->"
+              writer.print   p.c_name
+              writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
+            elseIf (p.type.contains_reference)
+              use path = WorkList<<String>>
+                path.add( "if ((ref = (RogueObject*)(((" )
+                path.add( c_name )
+                path.add( "*)THIS)->" )
+                path.add( p.c_name )
+                writer.print_gc_checks( path, p.type )
+              endUse
+            endIf
+          endForEach
+
+          if (attributes.is_reference_list)
+            writer.println
+            writer.print   "RogueObject** cursor = ((RogueObject**)(("
+            writer.print   c_name
+            writer.println "*)THIS)->data) - 1;"
+            writer.print   "int n = ((int)(("
+            writer.print   c_name
+            writer.println "*)THIS)->capacity);"
+            writer.println @|while (--n >=0)
+                            |{
+                            |  if ((ref = *(++cursor)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
+                            |}
+
+          elseIf (element_type and element_type.contains_reference)
+            writer.println
+            # RogueValue* cursor = ((RogueValue*)(((RogueValueList*)THIS)->data)) - 1;
+            writer.print   element_type.c_name
+            writer.print   "* cursor = ("
+            writer.print   element_type.c_name
+            writer.print   "*)((("
+            writer.print   c_name
+            writer.println "*)THIS)->data);"
+            writer.print   "int n = ((int)(("
+            writer.print   c_name
+            writer.println "*)THIS)->capacity);"
+
+            # while (--n >=0)
+            # {
+            #   if ((ref = (RogueObject*)((*(++cursor)).object)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
+            # }
+            writer.println "while (--n >=0)"
+            writer.println "{"
+            use path = WorkList<<String>>
+              path.add( "  if ((ref = (RogueObject*)((*cursor)" )
+              writer.print_gc_checks( path, element_type )
+            endUse
+            writer.println "  ++cursor;"
+            writer.println "}"
+
+          endIf
+
+        endContingent
+
+        writer.indent -= 2
+        writer.println '}'
+        writer.println
+      endIf
+
+      local cgen = CGenerator( writer )
+      cgen.visit_global_methods( this )
+
+      if (not is_aspect) cgen.visit_methods( this )
+
+    method Type.write_c_global_method_header( m:GlobalMethod, writer:CWriter )
+      if (m.return_type)
+        writer.print( m.return_type.c_name )
+        if (m.return_type.is_reference) writer.print '*'
+      else
+        writer.print "void"
+      endIf
+      writer.print ' '
+      writer.print( m.c_name )
+      writer.print( "(" )
+      if (m.parameters.count)
+        forEach (p at i in m.parameters)
+          block p = p->(as Local)
+            if (i) writer.print ", "
+            writer.print( p.type.c_name )
+            if (p.type.is_reference) writer.print '*'
+            writer.print ' '
+            writer.print( p.c_name )
+          endBlock
+        endForEach
+      else
+        writer.print "void"
+      endIf
+      writer.print( ")" )
+
+    method Type.write_c_method_header( m:Method, writer:CWriter )
+      if (m.return_type)
+        writer.print( m.return_type.c_name )
+        if (m.return_type.is_reference) writer.print '*'
+      else
+        writer.print "void"
+      endIf
+      writer.print ' '
+      writer.print( m.c_name )
+      writer.print( "( " )
+      writer.print m.type_context.c_name
+      if (m.type_context.is_reference or m.attributes.is_mutating) writer.print '*'
+      writer.print " THIS"
+      forEach (p at i in m.parameters)
+        block p = p->(as Local)
+          writer.print ", "
+          writer.print( p.type.c_name )
+          if (p.type.is_reference) writer.print '*'
+          writer.print ' '
+          writer.print( p.c_name )
+        endBlock
+      endForEach
+      writer.print( " )" )
+
+endAugment
+
+augment
+  METHODS
+    method ControlStructure.on_begin_scope( cgen:CGenerator )
+      noAction
+
+    method ControlStructure.on_end_scope( cgen:CGenerator )
+      if (catches_escape)
+        cgen.writer.print   c_escape_label(cgen)
+        cgen.writer.println ":;"
+      endIf
+
+      if (exception_passthrough)
+        cgen.dispatch_exception( t, "if (Rogue_exception)" )
+      endIf
+
+    method CleanupBlock.on_end_scope( cgen:CGenerator )
+      local writer = cgen.writer
+
+      if (catches_escape)
+        writer.print   c_escape_label(cgen)
+        writer.println ":;"
+      endIf
+
+      if (not BranchAnalyzer.all_paths_return(statements))
+        cgen.visit( cleanup )
+      endIf
+
+      if (exception_passthrough)
+        cgen.dispatch_exception( t, "if (Rogue_exception)" )
+      endIf
+
+    method Try.on_end_scope( cgen:CGenerator )
+      if (catches_escape or catches_exception)
+        local writer = cgen.writer
+        writer.print   c_escape_label(cgen)
+        writer.println ":;"
+        if (catches_exception)
+          writer.println "if (Rogue_exception)"
+          writer.println '{'
+          writer.indent += 2
+
+          forEach (catch_block at i in catches)
+            if (i > 0) writer.print "else "
+            writer.print   "if (Rogue_instance_of(Rogue_exception, "
+            writer.print   catch_block.exception_type.id
+            writer.println "))"
+            writer.println '{'
+            writer.indent += 2
+
+            if (catch_block.v_catch)
+              writer.print   catch_block.v_catch.c_name
+              writer.print   " = ("
+              writer.print   catch_block.v_catch.type.c_ref_name
+              writer.println ") Rogue_exception;"
+            endIf
+            writer.println "Rogue_exception = 0;"
+
+            cgen.push_scope( catch_block )
+            cgen.visit( catch_block.statements )
+            cgen.pop_scope
+
+            if (catch_block.@catches_escape)
+              writer.print   catch_block.c_escape_label(cgen)
+              writer.println ":;"
+            endIf
+
+            writer.indent -= 2
+            writer.println '}'
+          endForEach
+
+          cgen.dispatch_exception( t, "else" )
+
+          writer.indent -= 2
+          writer.println '}'
+        endIf
+      endIf
+endAugment
+

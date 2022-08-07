@@ -1,0 +1,496 @@
+module RogueC
+
+class ResolveUsedElements : InspectionVisitor
+  PROPERTIES
+    is_modified    : Logical
+    all_methods    : Procedure[]
+    all_properties : Property[]
+    m_call_global          : Procedure
+    cmd_call_global_cases  : WhichCases
+    m_call_object          : Procedure
+    cmd_call_object_cases  : WhichCases
+    m_get_global_property  : Procedure
+    cmd_get_global_property_cases : WhichCases
+    m_get_property         : Procedure
+    cmd_get_property_cases : WhichCases
+    m_set_global_property  : Procedure
+    cmd_set_global_property_cases : WhichCases
+    m_set_property         : Procedure
+    cmd_set_property_cases : WhichCases
+
+  METHODS
+    method apply
+      all_methods            = Program.all_methods
+      all_properties         = Program.all_properties
+      m_call_global          = Program.m_call_global
+      m_call_object          = Program.m_call_object
+      cmd_call_global_cases  = Program.cmd_call_global_cases
+      cmd_call_object_cases  = Program.cmd_call_object_cases
+      m_get_global_property  = Program.m_get_global_property
+      m_get_property         = Program.m_get_property
+      cmd_get_property_cases = Program.cmd_get_property_cases
+      cmd_get_global_property_cases = Program.cmd_get_global_property_cases
+      m_set_global_property  = Program.m_set_global_property
+      m_set_property         = Program.m_set_property
+      cmd_set_property_cases = Program.cmd_set_property_cases
+      cmd_set_global_property_cases = Program.cmd_set_global_property_cases
+
+      is_modified = true
+      while (is_modified)
+        is_modified = false
+
+        Program.apply( this )
+
+        forEach (type in (forEach in Program.modules).types)
+          type.attributes.is_visiting = false
+          (forEach in type.global_methods).attributes.is_visiting = false
+          (forEach in type.methods).attributes.is_visiting = false
+        endForEach
+
+        # Add introspection call handlers if needed
+        if (not is_modified)
+          if (not Program.using_method_introspection)
+            local type_MethodInfo = Program.default_module.types//MethodInfo
+            if (type_MethodInfo)
+              type_MethodInfo.resolve
+              local type_PropertyInfo = Program.default_module.types//PropertyInfo
+              type_PropertyInfo.resolve
+
+              m_call_global = type_MethodInfo.global_methods["call_global_method(Rogue::Int32,Rogue::Int64,Rogue::Value)"]
+              assert m_call_global
+              m_call_global.resolve
+              local t = m_call_global.t
+              cmd_call_global_cases = WhichCases(t)
+              local cmd_which = Which( t, GetLocal(t,m_call_global.parameters[0]), cmd_call_global_cases,
+                Statements(t,Return(t,LiteralUndefined(t))) ) : Cmd
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_call_global.module_context
+                resolver.this_type      = m_call_global.type_context
+                resolver.this_procedure = m_call_global
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_call_global.body.statements.insert( cmd_which )
+              endUse
+
+              m_call_object = type_MethodInfo.global_methods["call_object_method(Rogue::Int32,Rogue::Int64,Rogue::Value,Rogue::Value)"]
+              assert m_call_object
+              m_call_object.resolve
+              t = m_call_object.t
+              cmd_call_object_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_call_object.parameters[0]), cmd_call_object_cases,
+                  Statements(t,Return(t,LiteralUndefined(t))) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_call_object.module_context
+                resolver.this_type      = m_call_object.type_context
+                resolver.this_procedure = m_call_object
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_call_object.body.statements.insert( cmd_which )
+              endUse
+
+              m_get_global_property = type_PropertyInfo.global_methods["get_global_property(Rogue::Int32)"]
+              assert m_get_global_property
+              m_get_global_property.resolve
+              t = m_get_global_property.t
+              cmd_get_global_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_get_global_property.parameters[0]), cmd_get_global_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_get_global_property.module_context
+                resolver.this_type      = m_get_global_property.type_context
+                resolver.this_procedure = m_get_global_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_get_global_property.body.statements.add( cmd_which )
+                m_get_global_property.body.statements.add( Return(t,GetLocal(m_get_global_property.locals[0])) )
+              endUse
+
+              m_get_property = type_PropertyInfo.global_methods["get_property(Rogue::Int32,Rogue::Value)"]
+              assert m_get_property
+              m_get_property.resolve
+              t = m_get_property.t
+              cmd_get_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_get_property.parameters[0]), cmd_get_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_get_property.module_context
+                resolver.this_type      = m_get_property.type_context
+                resolver.this_procedure = m_get_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_get_property.body.statements.add( cmd_which )
+                m_get_property.body.statements.add( Return(t,GetLocal(m_get_property.locals[0])) )
+              endUse
+
+              m_set_global_property = type_PropertyInfo.global_methods["set_global_property(Rogue::Int32,Rogue::Value)"]
+              assert m_set_global_property
+              m_set_global_property.resolve
+              t = m_set_global_property.t
+              cmd_set_global_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_set_global_property.parameters[0]), cmd_set_global_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_set_global_property.module_context
+                resolver.this_type      = m_set_global_property.type_context
+                resolver.this_procedure = m_set_global_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_set_global_property.body.statements.add( cmd_which )
+              endUse
+
+              m_set_property = type_PropertyInfo.global_methods["set_property(Rogue::Int32,Rogue::Value,Rogue::Value)"]
+              assert m_set_property
+              m_set_property.resolve
+              t = m_set_property.t
+              cmd_set_property_cases = WhichCases(t)
+              cmd_which = Which( t, GetLocal(t,m_set_property.parameters[0]), cmd_set_property_cases,
+                                 Statements(t) )
+              use resolver = ObjectPool<<Resolver>>
+                resolver.this_module    = m_set_property.module_context
+                resolver.this_type      = m_set_property.type_context
+                resolver.this_procedure = m_set_property
+                cmd_which = resolver.visit( cmd_which )
+                visit( cmd_which )
+                m_set_property.body.statements.add( cmd_which )
+              endUse
+
+              Program.handled_call_indices = Dim<<Logical>>( Program.call_signatures.count )
+              Program.handled_property_ids = Dim<<Logical>>( Program.all_properties.count )
+
+              local i = 0
+              while (i < all_methods.count) add_introspection_call( all_methods[i] ); ++i
+
+              i = 0
+              while (i < all_properties.count) add_introspection_access( all_properties[i] ); ++i
+
+              Program.using_method_introspection = true
+              Program.m_call_global          = m_call_global
+              Program.m_call_object          = m_call_object
+              Program.cmd_call_global_cases  = cmd_call_global_cases
+              Program.cmd_call_object_cases  = cmd_call_object_cases
+              Program.m_get_global_property  = m_get_global_property
+              Program.m_get_property         = m_get_property
+              Program.cmd_get_global_property_cases = cmd_get_global_property_cases
+              Program.cmd_get_property_cases = cmd_get_property_cases
+              Program.m_set_global_property  = m_set_global_property
+              Program.m_set_property         = m_set_property
+              Program.cmd_set_global_property_cases = cmd_set_global_property_cases
+              Program.cmd_set_property_cases = cmd_set_property_cases
+
+              is_modified = true
+            endIf
+          endIf
+        endIf
+      endWhile
+
+    method on_visit( mod:Module ) [override]
+      assert( mod.m_on_launch )
+
+      forEach (type in mod.types)
+        if (type.attributes.is_essential)
+          visit_type( type )
+        endIf
+      endForEach
+
+    method on_visit_type( type:Type ) [override]
+      if (type.attributes.is_visiting) return
+      type.attributes.is_visiting = true
+
+      if (not type.attributes.is_used)
+        type.attributes.is_used = true
+        is_modified = true
+      endIf
+
+      forEach (prop in type.global_properties)
+        if (prop.id == -1)
+          assert prop.attributes.is_global
+          prop.id = all_properties.count
+          all_properties.add( prop )
+          if (Program.using_method_introspection) add_introspection_access( prop )
+        endIf
+        visit_type( prop.type )
+      endForEach
+
+      temporarily this_type = type
+        forEach (m in type.global_methods)
+          if ((m.attributes.is_essential or m.attributes.is_api))
+            temporarily this_module=m.module_context, this_procedure=m
+              visit( m )
+            endTemporarily
+          endIf
+        endForEach
+      endTemporarily
+
+      if (type.attributes.is_aspect) return
+
+      if (type.base_class) visit_type( type.base_class )
+      if (type.aspects)
+        visit_type( forEach in type.aspects )
+      endIf
+
+      local m_init_object = type.methods["init_object()"]
+      if (m_init_object and m_init_object.statements.count)
+        temporarily this_procedure = m_init_object
+          visit( m_init_object )
+        endTemporarily
+      endIf
+
+      if (type.attributes.is_singleton)
+        local m_init = type.methods["init()"]
+        if (m_init and m_init.statements.count)
+          temporarily this_procedure = m_init
+            visit( m_init )
+          endTemporarily
+        endIf
+      endIf
+
+      forEach (prop in type.properties)
+        if (prop.id == -1)
+          prop.id = all_properties.count
+          all_properties.add( prop )
+          if (Program.using_method_introspection) add_introspection_access( prop )
+        endIf
+        visit_type( prop.type )
+      endForEach
+
+      temporarily this_type = type
+        forEach (m in type.methods)
+          if (m.type_context is type)
+            if ((m.attributes.is_essential or m.attributes.is_api))
+              temporarily this_module=m.module_context, this_procedure=m
+                visit( m )
+              endTemporarily
+            endIf
+          endIf
+        endForEach
+      endTemporarily
+
+    method on_visit( cmd:CallProcedure )
+      visit( cmd.info )
+
+    method on_visit( cmd:CallDynamicMethod )
+      visit_dynamic_call( cmd.info )
+
+    method on_visit( cmd:CallThisDynamicMethod )
+      visit_dynamic_call( cmd.info )
+
+    method visit_dynamic_call( info:Procedure )
+      # As other types become used, additional methods may be visited here, which is
+      # why we have to keep revisiting types and methods that are already used until
+      # there are not further changes.
+      forEach (m in Program.dynamic_methods[info.dynamic_signature])
+        contingent
+          sufficient (m.attributes.is_used)  # already marked used; revisit
+          necessary  (not m.type_context.is_aspect)
+          necessary  (not m.attributes.is_abstract)
+          necessary  (m.type_context.attributes.is_used)
+          necessary  (m.type_context.instance_of(info.type_context))
+        satisfied
+          visit( m )
+        endContingent
+      endForEach
+
+    method on_visit( cmd:CreateObject )
+      visit( cmd.m_init )
+
+    method on_visit( cmd:CreateObjectAndSetLocal )
+      visit( cmd.of_type )
+
+    method on_visit( cmd:GetGlobalProperty )
+      visit( cmd.info.type_context )
+      visit( cmd.info )
+
+    method on( m:Procedure )->Logical
+      if (m.attributes.is_visiting or m.attributes.is_abstract) return false
+      m.attributes.is_visiting = true
+
+      temporarily this_type=m.type_context, this_module=m.module_context, this_procedure=m
+        if (not m.attributes.is_used)
+          m.attributes.is_used = true
+          is_modified = true
+
+          assert (not all_methods.contains(m))
+          m.index = all_methods.count
+          all_methods.add( m )
+
+          if (Program.using_method_introspection) add_introspection_call( m )
+        endIf
+
+        visit_type( m.type_context )
+
+        m.resolve
+
+        visit( (forEach in m.locals).type )
+
+        visit_children( m )
+      endTemporarily
+
+      return false
+
+    method add_introspection_access( prop:Property )
+      if (prop.type_context.is_aspect or prop.is_native) return
+
+      assert prop.id >= 0
+      Program.handled_property_ids.expand_to_include( prop.id )
+      if (Program.handled_property_ids[prop.id]) return  # already handled
+      Program.handled_property_ids[prop.id] = true
+
+      local t = prop.t
+
+      local cmd_access : Cmd
+
+      if (prop.attributes.is_global)
+        block
+          # return global_property->Value
+          local v_result = m_get_global_property.locals[0]
+          cmd_access = GetGlobalProperty( t, prop )                             # global_property
+          if (prop.type is not Program.@type_Value)
+            cmd_access = TypeAccess(t, Program.@type_Value,Args(t,cmd_access))   # global_property->Value
+          endIf
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment ) # result = global_property->Value
+
+          cmd_access = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_get_global_property.module_context
+            resolver.this_type      = m_get_global_property.type_context
+            resolver.this_procedure = m_get_global_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_get_global_property_cases.add( cmd_case )
+        endBlock
+
+        if (not prop.type_context.is_compound)
+          # global_property = new_value->to<<property-type>>
+          cmd_access = GetLocal( t, m_set_global_property.parameters[1] )                         # new_value
+          if (prop.type is not Program.@type_Value)
+            cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) )  # new_value.to<<property-type>>
+          endIf
+          cmd_access = SetGlobalProperty( t, prop, cmd_access )               # global_property = new_value.to<<property-type>>
+          cmd_access = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_set_global_property.module_context
+            resolver.this_type      = m_set_global_property.type_context
+            resolver.this_procedure = m_set_global_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_set_global_property_cases.add( cmd_case )
+        endIf
+
+      else
+        block
+          # return context.to<<Type>>.property->Value
+          local params = m_get_property.parameters
+          local v_result = m_get_property.locals[0]
+          cmd_access = GetLocal( t, params[1] )  # context
+          if (prop.type_context is not Program.@type_Value)
+            cmd_access = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type_context, Args(t) )  # context.to<<context-type>>
+          endIf
+          cmd_access = ContextDirectAccess( t, cmd_access, prop.name )            # context.to<<ArgType>>.property
+          if (prop.type is not Program.@type_Value)
+            cmd_access = TypeAccess(t, Program.@type_Value,Args(t,cmd_access))     # context.to<<ArgType>>.property->Value
+          endIf
+          cmd_access = SetLocal( t, v_result, cmd_access, &initial_assignment )   # result = context.to<<ArgType>>.property->Value
+
+          cmd_access = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_get_property.module_context
+            resolver.this_type      = m_get_property.type_context
+            resolver.this_procedure = m_get_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_get_property_cases.add( cmd_case )
+        endBlock
+
+        if (not prop.type_context.is_compound)
+          # property = new_value->to<<property-type>>
+          local cmd_context = GetLocal( t, m_set_property.parameters[1] ) : Cmd                          # context
+          if (prop.type_context is not Program.@type_Value)
+            cmd_context = TemplatedMethodContextAccess( t, cmd_context, "to", prop.type_context, Args(t) ) # context.to<<context-type>>
+          endIf
+          cmd_access  = GetLocal( t, m_set_property.parameters[2] )                             # new_value
+          if (prop.type is not Program.@type_Value)
+            cmd_access  = TemplatedMethodContextAccess( t, cmd_access, "to", prop.type, Args(t) ) # new_value.to<<property-type>>
+          endIf
+          cmd_access  = SetProperty( t, cmd_context, prop, cmd_access )                         # property = new_value.to<<property-type>>
+          cmd_access  = Statements( t, cmd_access )
+          local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,prop.id)), cmd_access ) : Cmd
+
+          use resolver = ObjectPool<<Resolver>>
+            resolver.this_module    = m_set_property.module_context
+            resolver.this_type      = m_set_property.type_context
+            resolver.this_procedure = m_set_property
+            cmd_case = resolver.visit( cmd_case )
+            visit( cmd_case )
+          endUse
+          cmd_set_property_cases.add( cmd_case )
+        endIf
+
+      endIf
+
+
+    method add_introspection_call( m:Procedure )
+      if (m.type_context.is_aspect) return
+
+      assert m.call_index >= 0
+      Program.handled_call_indices.expand_to_include( m.call_index )
+      if (Program.handled_call_indices[m.call_index]) return  # already handled
+      Program.handled_call_indices[m.call_index] = true
+
+      local t = m.t
+
+      local cmd_call : Cmd
+
+      if (not m.attributes.is_mutating)
+        # m(a,b) -> m( args[0].to<<TypeA>>, args[1].to<<TypeB>> )
+        local dispatch_params = which{ m.is_global:m_call_global.parameters || m_call_object.parameters }
+        local value_args_info = which{ m.is_global:dispatch_params[2] || dispatch_params[3] }
+
+        local param_types = TypeList(t)
+        local args = Args(t)
+        if (not m.is_global)
+          param_types.add( m.type_context )
+          args.add( GetLocal(t,dispatch_params[2]) )
+        endIf
+        forEach (p at i in m.parameters)
+          local cmd = IndexedAccess( t, GetLocal(t,value_args_info), LiteralInt32(t,i) ) : Cmd # args[i]
+          if (p.type is not Program.@type_Value)
+            cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
+          endIf
+          param_types.add( p.type )
+          args.add( cmd )
+        endForEach
+
+        cmd_call = CallMethodPointer( t, m, GetLocal(t,dispatch_params[1]), param_types, args, m.return_type )
+
+        if (m.return_type and m.return_type is not Program.@type_Value)
+          cmd_call = Return( t, TypeAccess(t, Program.@type_Value,Args(t,cmd_call)) )
+        endIf
+
+        cmd_call = Statements( t, cmd_call )
+
+      else
+        cmd_call = Statements(t)
+      endIf
+
+      local cmd_case = WhichCase( t, Args(t,LiteralInt32(t,m.call_index)), cmd_call ) : Cmd
+      use resolver = ObjectPool<<Resolver>>
+        resolver.this_module    = m_call_object.module_context
+        resolver.this_type      = m_call_object.type_context
+        resolver.this_procedure = which{ m.is_global:m_call_global || m_call_object }
+        cmd_case = resolver.visit( cmd_case )
+        visit( cmd_case )
+      endUse
+      if (m.is_global) cmd_call_global_cases.add( cmd_case )
+      else             cmd_call_object_cases.add( cmd_case )
+
+    method on_visit( cmd:Type )
+      visit_type( cmd )
+
+endClass

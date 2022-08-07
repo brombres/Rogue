@@ -1,0 +1,338 @@
+module RogueC
+
+class Program [singleton]
+  PROPERTIES
+    t                    = Token( TokenType.EOI, "R2" )
+    include_search_paths = String[]
+    included_files       = [Table:IncludedFile]
+    definitions          = [Table:Token[]]
+    macros               = [Table:Macro[]]
+    targets              = [Table:String]
+
+    debug_mode        = false
+    gc_auto           = true
+    gc_threshold      = 1024*1024 : Int32
+    generate_main     = false
+    output_filepath   : String
+    stack_trace       = false
+    real_bits         : Int32 # Set with --real=32 compile option
+    api_patterns      = String[]
+    api_filepaths     = Set<<String>>()
+
+    modules           = [String:Module]
+    default_module    : Module
+    current_module    : Module
+
+    type_Logical      : Type
+    type_Byte         : Type
+    type_Character    : Type
+    type_Int32        : Type
+    type_Int64        : Type
+    type_Real32       : Type
+    type_Real64       : Type
+    type_Real         : Type
+
+    type_null           : Type
+    type_GenericFn      : Type
+    type_Global         : Type
+    type_ListType       : Type
+    type_Math           : Type
+    type_Object         : Type
+    type_String         : Type
+    type_Value          : Type
+    type_Exception      : Type
+    type_TypeInfo       : Type
+    type_NativeProperty : Type
+
+    is_modified       : Logical
+    is_organizing     : Logical
+    unorganized_types = Type[]
+
+    unique_strings       = [String:String]
+    string_table_indices = [String:Int32]
+
+    dynamic_methods   = [String:Method[]]
+    call_signatures   = [String:Procedure[]]
+    all_methods       = Procedure[]
+    all_types         = Type[]
+    all_properties    = Property[]
+
+    base_type_lookup  = Int32[]
+
+    anonymous_class_names = [Table:String]
+
+    using_method_introspection : Logical
+    m_call_global                 : Procedure
+    m_call_object                 : Procedure
+    cmd_call_global_cases         : WhichCases
+    cmd_call_object_cases         : WhichCases
+    m_get_global_property         : Procedure
+    m_get_property                : Procedure
+    cmd_get_global_property_cases : WhichCases
+    cmd_get_property_cases        : WhichCases
+    m_set_global_property         : Procedure
+    m_set_property                : Procedure
+    cmd_set_global_property_cases : WhichCases
+    cmd_set_property_cases        : WhichCases
+    handled_call_indices          : Logical[]
+    handled_property_ids          : Logical[]
+
+    native_property_count : Int32
+
+  METHODS
+    method init
+      Program = this  # update singleton reference
+      default_module = get_module( t, "Rogue" )
+      current_module = default_module
+
+      type_Logical   = TypeLogical( t )
+      type_Byte      = TypeByte( t )
+      type_Character = TypeCharacter( t )
+      type_Int32     = TypeInt32( t )
+      type_Int64     = TypeInt64( t )
+      type_Real32    = TypeReal32( t )
+      type_Real64    = TypeReal64( t )
+      real_bits      = 64  # default; calls set_real_bits
+
+      type_null      = Type( t, "null", Attribute.OBJECT, &unlisted )
+      type_null.attributes.is_defined = true
+
+      type_GenericFn = Type( t, "GenericFn", Attribute.OBJECT, &unlisted )
+      type_Global    = Type( t, "Global", Attribute.OBJECT|Attribute.SINGLETON )
+      type_ListType  = Type( t, "ListType", Attribute.ASPECT )
+      type_Math      = Type( t, "Math", Attribute.OBJECT )
+      type_Object    = Type( t, "Object", Attribute.OBJECT )
+      type_String    = TypeString( t )
+      type_Exception = Type( t, "Exception", Attribute.OBJECT )
+
+      type_NativeProperty = Type( t, "NativeProperty", Attribute.PRIMITIVE )
+      type_NativeProperty.attributes.is_defined = true
+
+      type_Logical.attributes.is_essential   = true
+      type_Byte.attributes.is_essential      = true
+      type_Character.attributes.is_essential = true
+      type_Int32.attributes.is_essential     = true
+      type_Int64.attributes.is_essential     = true
+      type_Real32.attributes.is_essential    = true
+      type_Real64.attributes.is_essential    = true
+      type_Real.attributes.is_essential      = true
+      type_String.attributes.is_essential    = true
+
+    method add_include_search_path( path:String )
+      path = File.abs( path )
+      if (not include_search_paths.contains(path) and File.exists(path))
+        include_search_paths.add( path )
+      endIf
+
+    method apply( visitor:InspectionVisitor )
+      is_modified = true
+
+      while (is_modified)
+        is_modified = false
+
+        forEach (m in modules)
+          temporarily visitor.this_module = m
+            visitor.visit( m )
+          endTemporarily
+        endForEach
+      endWhile
+
+    method apply( visitor:Visitor )
+      is_modified = true
+
+      while (is_modified)
+        is_modified = false
+
+        forEach (m in modules)
+          temporarily visitor.this_module = m
+            visitor.visit( m )
+          endTemporarily
+        endForEach
+      endWhile
+
+    method check_include_hints( t:Token, mod:Module, name:String )
+      #{
+      name .= before_first('<')
+
+      local fix : String
+
+      if (mod is Program.default_module)
+        which (name)
+          case "Date", "Time", "Timestamp", "TimeInterval": fix = "uses Standard/DateTime"
+          case "File":  fix = "uses Standard/FileIO"
+          case "JSON":  fix = "uses Value"
+          case "Set":   fix = "uses Standard/Collection/Set"
+          case "Table": fix = "uses Standard/Collection/Table"
+          case "Value": fix = "uses Value"
+        endWhich
+      endIf
+
+      if (fix)
+        throw t.error( "Reference to undefined type '$'. Add '$' at the top of your program to fix."(name,fix) )
+      endIf
+      }#
+
+    method description->String
+      return "Program"
+
+    method get_module( t:Token, name:String )->Module
+      local m = modules[ name ]
+      if (m) return m
+
+      m = Module( t, name )
+      modules[ name ] = m
+      return m
+
+    method find_include( t:Token, filepath:String )->String
+      if (File.exists(filepath))
+        if (File.is_folder(filepath))
+          local fpath = "$/$.rogue" (filepath,File.filename(filepath))
+          if (File.exists(fpath)) return File.abs(fpath)
+          throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
+        else
+          return File.abs(filepath)
+        endIf
+      elseIf (File.exists(filepath.with_trailing(".rogue")))
+        filepath .= with_trailing( ".rogue" )
+        return File.abs(filepath)
+      else
+        return null
+      endIf
+
+    method include( filepath:String, &api )
+      include( t, filepath, &=api )
+
+    method include( t:Token, filepath:String, &api, &is_optional )
+      local found = find_include( t, filepath )
+      if (not found)
+        forEach (path in include_search_paths)
+          found = find_include( t, path/filepath )
+          if (found) escapeForEach
+        endForEach
+      endIf
+
+      if (found)
+        local folder = File( found ).folder
+        if (String.exists(folder)) add_include_search_path( folder )
+        filepath = found
+      elseIf (is_optional)
+        return
+      else
+        throw t.error( "Include not found: $"(filepath) )
+      endIf
+
+      if (api) api_filepaths.add( filepath )
+
+      if (included_files.contains(filepath)) return
+      included_files[ filepath ] = IncludedFile(null,null,false) # placeholder
+
+      temporarily current_module = Program.default_module
+        Analytics.tokenization.start
+        local tokens = Scanner( File(filepath) ).tokenize
+        Analytics.tokenization.stop
+
+        Analytics.preprocessing.start
+        Parser( tokens ).preprocess
+        Analytics.preprocessing.stop
+
+        included_files[filepath] = IncludedFile( filepath, tokens, api )
+
+        # First parser pass collects class templates but does not build an AST
+        Analytics.parse_templates.start
+        Parser(tokens).[collecting_templates=true,disable_output=1,is_api=api].parse
+        Analytics.parse_templates.stop
+      endTemporarily
+
+    method organize_types
+      if (is_organizing) return
+      is_organizing = true
+
+      local i1 = 0
+      while (i1 < unorganized_types.count)
+        local i = i1
+        while (i < unorganized_types.count)
+          unorganized_types[i].organize_type
+          ++i
+        endWhile
+
+        i = i1
+        local limit = unorganized_types.count
+        while (i < limit)
+          unorganized_types[i].organize_properties
+          ++i
+        endWhile
+
+        i = i1
+        while (i < limit)
+          unorganized_types[i].organize_methods
+          ++i
+        endWhile
+
+        i1 = limit
+      endWhile
+
+      unorganized_types.clear
+      is_organizing = false
+
+    method resolve
+      (forEach in modules.values).collect_used_modules
+
+      # We've collected all class templates.
+      Analytics.ensure_definitions.start
+      (forEach in (forEach in modules.values).types).ensure_definition
+      Analytics.ensure_definitions.stop
+
+      # Reparse the tokens for each file.
+      Analytics.main_parse.start
+      forEach (included_file in included_files)
+        local file_tokens = included_file.tokens
+        temporarily current_module = Program.default_module
+          local elements = Parser(file_tokens).[ is_api=included_file.is_api].parse
+          if (elements)
+            local collector = Collector()
+            collector.visit( forEach in elements )
+          endIf
+        endTemporarily
+      endForEach
+      Analytics.main_parse.stop
+
+      Analytics.instantiate_essential.start
+      (forEach in modules).instantiate_essential_and_api_types
+      Analytics.instantiate_essential.stop
+
+      Analytics.organize_methods.start
+      (forEach in modules).organize_methods
+      Analytics.organize_methods.stop
+
+      Analytics.tranform.start
+      apply( Transformer() )
+      Analytics.tranform.stop
+
+      Analytics.resolve_used_elements.start
+      ResolveUsedElements().apply
+      Analytics.resolve_used_elements.stop
+
+      Analytics.finalize.start
+      Finalizer().apply
+      Analytics.finalize.stop
+
+    method set_real_bits( @real_bits )
+      definitions//Real = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
+      if (real_bits == 64) type_Real = type_Real64
+      else                 type_Real = type_Real32
+
+    method type_TypeInfo->Type
+      if (@type_TypeInfo) return @type_TypeInfo
+      Program.include( t, "Introspection" )
+      type_TypeInfo = default_module.must_find_type( t, "TypeInfo" )
+      return @type_TypeInfo
+
+    method type_Value->Type
+      if (@type_Value) return @type_Value
+      type_Value = default_module.must_find_type( t, "Value" )
+      return @type_Value
+
+endClass
+
+class IncludedFile( filepath:String, tokens:Token[], is_api:Logical ) [compound];
+

@@ -1,0 +1,36 @@
+class ListLookupTable<<$KeyType,$ValueType>> : [$KeyType:$ValueType[]]
+  # A table with $KeyType keys and lists of $ValueType as values.
+  METHODS
+    method add( key:$KeyType, value:$ValueType )->this
+      local entry = find( key )
+
+      if (entry) entry.value.add( value )
+      else       this[ key ] = $ValueType[].[ add(value) ]
+
+      return this
+
+    method add( other:ListLookupTable<<$KeyType,$ValueType>> )->ListLookupTable<<$KeyType,$ValueType>>
+      forEach (key in other.keys)
+        forEach (element in this[key]) other[key] = element
+      endForEach
+      return this
+
+    method cloned->ListLookupTable<<$KeyType,$ValueType>>
+      return ListLookupTable<<$KeyType,$ValueType>>( this )
+
+    method contains( key:$KeyType )->Logical
+      return find(key)
+
+    method remove( key:$KeyType, value:$ValueType )->$ValueType
+      local entry = find( key )
+      if (not entry)
+        local default_zero_value : $ValueType
+        return default_zero_value
+      endIf
+
+      return entry.value.remove( value )
+
+    method set( key:$KeyType, value:$ValueType )->this
+      return add( key, value )
+endClass
+

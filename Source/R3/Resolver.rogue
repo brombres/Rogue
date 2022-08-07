@@ -1,0 +1,4195 @@
+module RogueC
+uses Utility/WorkList
+
+$localMacro FOLD_CONSTANTS(m,Type,op)
+  method on_fold_constants( cmd:Type )->Cmd
+    return m<<op>>( cmd )
+$endMacro
+
+class Resolver : Poolable, Visitor
+  PROPERTIES
+    visible_locals    = Local[]
+    visible_locals_fp = Int32[]
+    control_stack     = ControlStructure[]
+
+    current_statements : ListRewriter<<Cmd>>
+
+    autoname_index = 0
+
+  METHODS
+    method reset
+      visible_locals.clear
+      visible_locals_fp.clear
+      control_stack.clear
+      current_statements = null
+      autoname_index = 0
+
+    method on_return_to_pool
+      reset
+
+    method visit( m:Module, proc:Procedure )
+      temporarily this_module=m, this_procedure=proc
+        visit( proc )
+      endTemporarily
+
+    method visit_type( type:Type )
+      if (type.is_resolved) return
+      type.ensure_definition
+      type.organize
+      type.is_resolved = true  # prevent recursion
+
+      prior.visit_type( type )
+
+    method on_visit_type( type:Type )
+      resolve_definitions( type )
+
+    method visit_global_method( type:Type, signature:String )
+      local m = type.global_methods[ signature ]
+      if (m) m.resolve
+
+    method visit_method( type:Type, signature:String )
+      local m = type.methods[ signature ]
+      if (m) m.resolve
+
+    method resolve_definitions( type:Type )
+      if (type.definitions_resolved) return
+      type.definitions_resolved = true
+
+      if (type.is_enum)
+        # Resolve enum category values
+        temporarily this_type = type
+          use entries = WorkList<<TableEntry<<String,Cmd>>>>
+            # Resolve each category value to an Int32
+            forEach (entry in type.definitions.entries)
+              local enum_value_def = entry.value->(as EnumValueDef)
+              if (enum_value_def)  # versus a regular definition that is not an enum category
+                local value = visit( enum_value_def.value )
+                if (value not instanceOf LiteralInt32)
+                  throw value.t.error( "Category value must resolve to a literal integer." )
+                endIf
+                entry.value = value
+                entries.add( entry )
+
+                forEach (category in type.categories)
+                  if (category.name == entry.key)
+                    category.ordinal = value->(as LiteralInt32).value
+                    escapeForEach
+                  endIf
+                endForEach
+              endIf
+            endForEach
+
+            # Wrap each def in EnumName(value)
+            forEach (entry in entries)
+              local t = entry.value.t
+              entry.value = TypeAccess(t,type,Args(t,entry.value))
+            endForEach
+          endUse
+        endTemporarily
+      endIf
+
+    method add_local( v:Local )->Local
+      insert( LocalDeclaration(v.t,v) )
+      v.index = this_procedure.locals.count
+      this_procedure.locals.add( v )
+      assert control_stack.count
+      control_stack.last.locals.add( v )
+      visible_locals.add( v )
+      return v
+
+    method add_local( t:Token, base:String, type:Type, initial_value=null:Cmd )->Local
+      local v = Local( t, autoname(base), initial_value, type )
+      add_local( v )
+      return v
+
+    method auto_local( t:Token, base:String, type:Type )->Local
+      return Local( t, autoname(base), null, type )
+
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
+
+    method find_local( name:String )->Local
+      forEach (v in visible_locals step -1)
+        if (v.name == name) return v
+      endForEach
+      return null
+
+    method on( cmd:Access )->Cmd
+      local args = visit( cmd.args )
+      return resolve_access( cmd.t, null, cmd.name, args )
+
+    method on( cmd:AnonymousTuple )->Cmd
+      # Determine Tuple type
+      visit_children( cmd )
+      local type_elements = NamedTupleTypeElements( cmd.t )
+      local args = Args(cmd.t)
+      forEach (element at i in cmd)
+        type_elements.add( NamedTupleTypeElement(element.t, "_"+(i+1), element.require_type) )
+        args.add( element )
+      endForEach
+      local tuple_type = Type( cmd.t, type_elements )
+      return validate( CreateCompound(cmd.t, tuple_type, args) )
+
+    method on( cmd:As )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local type = cmd.operand.require_type
+      type.organize
+      cmd.as_type.organize
+      if (not type.is_reference or not cmd.as_type.is_reference)
+        throw cmd.t.error( "'as' can only be used with reference types." )
+      endIf
+      return cmd
+
+    method on( cmd:Assert )->Cmd
+      if (not Program.debug_mode) return null
+      local t = cmd.expression.t
+      local builder = String()
+      builder.print "Assertion failed: "
+      builder.print( forEach in cmd.token_list.tokens )
+      return visit(
+        If( t, LogicalNot(t,cmd.expression),
+          Statements( t,
+            Throw( t, Access(t, "AssertionError", Args(t,LiteralString(t,builder)) ) )
+          ),
+          null
+        )
+      )
+
+    method on( cmd:AccessAndAssign )->Cmd
+      local context = AccessAndAssignPatcher.find_context(cmd)
+
+      local resolved_context = visit( context )
+
+      if (resolved_context.is_simple)
+        AccessAndAssignPatcher.patch( cmd, resolved_context )
+        return visit( Assign(cmd.t, context, cmd.operand) )
+      endIf
+
+      return context.resolve_access_and_assign( cmd.operand, this )
+
+    method on_fold_constants( cmd:Cmd )->Cmd
+      return cmd
+
+    FOLD_CONSTANTS( fold_numerical_constants, Add,            + )
+    FOLD_CONSTANTS( fold_numerical_constants, Subtract,       - )
+    FOLD_CONSTANTS( fold_numerical_constants, Multiply,       * )
+    FOLD_CONSTANTS( fold_numerical_constants, Divide,         / )
+    FOLD_CONSTANTS( fold_numerical_constants, Mod,            % )
+    FOLD_CONSTANTS( fold_numerical_constants, Power,          ^ )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseAnd,     & )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseOr,      | )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseXor,     ~ )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftLeft,   :<<:  )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRight,  :>>:  )
+    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRightX, :>>>: )
+    #FOLD_CONSTANTS( fold_logical_constants,   LogicalAnd,     and )
+    #FOLD_CONSTANTS( fold_logical_constants,   LogicalOr,      or  )
+    #FOLD_CONSTANTS( fold_logical_constants,   LogicalXor,     xor )
+
+    method fold_bitwise_constants<<$op>>( cmd:Binary )->Cmd
+      if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
+        block left=cmd.left->(as LiteralInt32), right=cmd.right->(as LiteralInt32)
+          if (left and right) return LiteralInt32( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
+          if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralCharacter), right=cmd.right->(as LiteralCharacter)
+          if (left and right) return LiteralCharacter( cmd.t, left.value $op right.value )
+        endBlock
+      endIf
+      return cmd
+
+    method fold_logical_constants<<$op>>( cmd:Binary )->Cmd
+      if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
+        block left=cmd.left->(as LiteralLogical), right=cmd.right->(as LiteralLogical)
+          if (left and right) return LiteralLogical( cmd.t, left.value $op right.value )
+        endBlock
+      endIf
+      return cmd
+
+    method fold_numerical_constants<<$op>>( cmd:Binary )->Cmd
+      if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
+        block left=cmd.left->(as LiteralInt32), right=cmd.right->(as LiteralInt32)
+          if (left and right) return LiteralInt32( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralReal64), right=cmd.right->(as LiteralReal64)
+          if (left and right) return LiteralReal64( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralReal32), right=cmd.right->(as LiteralReal32)
+          if (left and right) return LiteralReal32( cmd.t, left.value $op right.value )
+        endBlock
+        block left=cmd.left->(as LiteralInt64), right=cmd.right->(as LiteralInt64)
+          if (left and right) return LiteralInt64( cmd.t, left.value $op right.value )
+        endBlock
+      endIf
+      return cmd
+
+    method on( cmd:Assign )->Cmd
+      local new_value = visit( cmd.new_value ).require_value
+      return cmd.target.resolve_assignment( cmd.t, new_value, this )
+
+    method on_visit( cmd:Binary )
+      visit_children( cmd )
+      cmd.left.require_type
+      cmd.right.require_type
+
+    method on_validate( cmd:Binary )->Cmd
+      local result = cmd.left.require_type.resolve_binary_op(cmd,this)
+      return result.dispatch<<on_fold_constants,ThisType,Cmd>>( this )
+
+    method on( cmd:Block )->Cmd
+      local cmd_control_structure = ControlStructure( cmd.t, cmd.statements, ControlType.BLOCK )
+
+      if (cmd.assignments)
+        push_scope( cmd_control_structure )
+        temporarily current_statements = cmd_control_structure.statements->(as Statements).list.rewriter
+          use new_locals = WorkList<<Local>>
+            forEach (decl in cmd.assignments)
+              local assign = decl->(as Assign)
+              if (assign)
+                # a = b
+                local new_value = visit( assign.new_value )
+                new_locals.add( add_local(Local(assign.t,assign.target->String,new_value,new_value.require_type)) )
+              else
+                # a -> a = a
+                local new_value = visit( Access(decl.t,decl->String) )
+                new_locals.add( add_local(Local(decl.t,decl->String,new_value,new_value.require_type)) )
+              endIf
+            endForEach
+
+            forEach (v in new_locals)
+              insert( SetLocal(v,v.initial_value,&initial_assignment) )
+            endForEach
+          endUse
+
+          while (current_statements.has_another)
+            current_statements.write( current_statements.read )
+          endWhile
+        endTemporarily
+        pop_scope
+      endIf
+
+      return visit( cmd_control_structure )
+
+    method on( cmd:BriefTrace )->Cmd
+      return resolve_trace( cmd.t, cmd.expressions )
+
+    method on( cmd:VerboseTrace )->Cmd
+      return resolve_trace( cmd.t, cmd.expressions, &verbose )
+
+    method resolve_trace( t:Token, expressions:TracedExpressions, &verbose )->Cmd
+      local args = Args(t)
+      local format = String()
+
+      if (verbose)
+        format.print '['
+        if (this_type.name != "Routine")
+          format.[ print(this_type.name), print('.') ]
+        endIf
+        format.[ print(this_procedure.name), print("() ") ]
+        format.[ print(File.filename(t.filepath)), print(':'), print(t.line), print("] ") ]
+      endIf
+
+      forEach (arg at i in expressions)
+        if (i > 0) format.print ' '
+        if (arg.expression instanceOf LiteralString)
+          local st = arg.expression->String
+          format.print st
+          loop st.count('$')
+            args.add( LiteralCharacter(arg.expression.t,'$') )
+          endLoop
+        elseIf (arg.expression instanceOf FormattedString)
+          format.print "$"
+          args.add( arg.expression )
+        else
+          forEach (t2 in arg.token_list.tokens)
+            local st = t2->String
+            if (st == "$") args.add( LiteralCharacter(t2,'$') )
+            format.print( st )
+          endForEach
+          format.print ":$"
+          args.add( arg.expression )
+        endIf
+      endForEach
+
+      local context = Access( t, "Global" )
+      if (args.count)
+        return visit( ContextAccess( t, context, "println", Args(t,FormattedString(t,format,args)) ) )
+      else
+        return visit( ContextAccess( t, context, "println", Args(t,LiteralString(t,format)) ) )
+      endIf
+
+    method on_visit( cmd:CallMethodPointer )
+      visit_children( cmd )
+      forEach (arg at i in cmd.args)
+        local param_type = cmd.param_types[i]
+        if (param_type.is_reference) param_type = Program.type_Object
+        cmd.args[i] = arg.resolve_conversion_to( param_type, this )
+      endForEach
+
+    method on( cmd:CallPriorMethod )->Cmd
+      if (not this_type.base_class)
+        throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )
+      endIf
+
+      local args = which{ cmd.args || Args(cmd.t) }
+
+      local m = find_method( cmd.t, this_type.base_class, null, cmd.name, args )
+      local prior_m = m
+      if (m.type_context is this_type) m = m.overridden_method
+
+      if (not prior_m)
+        if (cmd.name == "init")
+          # Initializers are a special case.
+          local base_type = this_type.base_class
+          while (base_type and not prior_m)
+            prior_m = find_method( cmd.t, base_type, null, "init", args, &suppress_error )
+            base_type .= base_class
+          endWhile
+
+          if (not prior_m)
+            throw cmd.t.error( "Invalid prior call - no ancestor of $ defines a compatible initializer."(this_type) )
+          endIf
+
+        else
+          throw cmd.t.error( "Invalid prior call - $ does not override any base class methods. " ...
+              "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
+        endIf
+      endIf
+
+      args.list.discard( $ instanceOf DefaultArg )
+      visit( args )
+      convert_args_to_parameter_types( args, prior_m )
+
+      return validate( CallThisStaticMethod(cmd.t, prior_m, args) )
+
+    method on_visit( cmd:Catch )
+      if (not cmd.v_catch and cmd.var_name)
+        cmd.v_catch = add_local( Local(cmd.t, cmd.var_name, cmd.exception_type) )
+      endIf
+      visit_children( cmd )
+
+    method on( cmd:CommandExists )->Cmd
+      local access = cmd.command->(as Access)
+      if (access)
+        local args = visit( access.args )
+        local result = resolve_access( cmd.t, null, access.name, args, &suppress_error )
+        return LiteralLogical( cmd.t, result? )
+      else
+        local context_access = cmd.command->(as ContextAccess)
+        if (context_access)
+          local args = visit( context_access.args )
+          local result = resolve_access( cmd.t, context_access.context, context_access.name, args, &suppress_error )
+          return LiteralLogical( cmd.t, result? )
+        else
+          local type_access = cmd.command->(as TypeAccess)
+          if (type_access)
+            type_access.of_type.organize
+            local args = visit( type_access.args )
+            local result = resolve_type_access( cmd.t, type_access.of_type, args, &suppress_error )
+            return LiteralLogical( cmd.t, result? )
+          else
+            throw cmd.t.error( "Unsupported syntax. $exists<<...>> can be used with TypeOrID, Constructor(...), " +
+                               "and context.access(...) syntax." )
+          endIf
+        endIf
+      endIf
+
+    method on_validate( cmd:CompareEQ )->Cmd
+      local left_type = cmd.left.type
+      if (left_type.is_primitive and cmd.right.type.is_primitive) return cmd
+
+      local result = left_type.resolve_compare_op( cmd, "operator==", this, &suppress_error )
+      if (result) return result
+
+      result = left_type.resolve_compare_op( cmd, "operator<>", this )
+      return validate( LogicalNot(cmd.t,result) )
+
+    method on_validate( cmd:CompareNE )->Cmd
+      local left_type = cmd.left.type
+      if (left_type.is_primitive and cmd.right.type.is_primitive) return cmd
+
+      local result = left_type.resolve_compare_op( cmd, "operator==", this, &suppress_error )
+      if (result) return validate( LogicalNot(cmd.t,result) )
+
+      result = left_type.resolve_compare_op( cmd, "operator<>", this )
+      return result.logicalized( this )
+
+    method on_validate( cmd:CompareLT )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareLT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareLE )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareLE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareGT )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareGT( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareGE )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return CompareGE( cmd.t, result, LiteralInt32( cmd.t, 0 ) )
+      return cmd  # resolved primitive comparison
+
+    method on_validate( cmd:CompareOp )->Cmd
+      local result = cmd.left.require_type.resolve_compare_op( cmd, "operator<>", this )
+      if (result) return result
+      return cmd  # resolved primitive comparison
+
+    method on( cmd:ConditionalContext )->Cmd
+      return visit( cmd.context )
+
+    method on( cmd:ContextAccess )->Cmd
+      visit( cmd.args )
+      local result = resolve_access( cmd.t, cmd.context, cmd.name, cmd.args )
+      return result
+
+    method on( cmd:ContextBlock )->Cmd
+      local context = visit( cmd.context )
+      local v = add_local( cmd.t, "context_block", context.require_type, DummyInitialValue )
+      insert( SetLocal( v.t, v, context, &initial_assignment ) )
+      forEach (context_cmd in cmd.commands)
+        context_cmd = ContextBlockPatcher.patch( v, context_cmd )
+        insert( context_cmd )
+      endForEach
+      return GetLocal( v.t, v )
+
+    method on( cmd:ContextDirectAccess )->Cmd
+      return resolve_direct_access( cmd.t, cmd.context, cmd.name )
+
+    method on( cmd:Contingent )->Cmd
+      if (cmd.is_resolved) return cmd
+
+      local outer_scope = Block( cmd.t, Statements(cmd.t,cmd), ControlType.CONTINGENT )
+      # This wrapper catches escapeContingent in any section.
+
+      cmd.control_type = ControlType.UNDEFINED
+
+      if (cmd.unsatisfied_statements)
+        local statements = which{ cmd.satisfied_statements || cmd.statements }
+        statements.add( EscapeContingent(cmd.t) )
+      endIf
+
+      push_scope( outer_scope )
+
+      push_scope( cmd )
+      cmd.statements = visit( cmd.statements )
+      pop_scope
+
+      cmd.satisfied_statements = visit( cmd.satisfied_statements )
+      cmd.unsatisfied_statements = visit( cmd.unsatisfied_statements )
+
+      pop_scope
+
+      return outer_scope
+
+    method on( cmd:ControlStructure )->Cmd
+      push_scope( cmd )
+      visit_content( cmd )
+      pop_scope
+      return cmd
+
+    method on_visit( cmd:Convert )
+      visit_children( cmd )
+
+    method on( cmd:ConvertToType )->Cmd
+      cmd.operand = visit( cmd.operand )
+      return cmd.operand.resolve_conversion_to( cmd.to_type, this )
+
+    method on( cmd:ConvertToTypeWithArgs )->Cmd
+      local type_arg = TemplateArgs( cmd.t, cmd.to_type )
+      local m_name = type_arg->String("to")
+      return visit( ContextAccess(cmd.t, cmd.operand, m_name, cmd.args) )
+
+    method on_validate( cmd:CreateObject )->Cmd
+      if (cmd.of_type.attributes.is_abstract)
+        throw cmd.t.error( "Abstract type $ cannot be instantiated."(cmd.of_type) )
+      endIf
+      return cmd
+
+    method on( cmd:CreateRange )->Cmd
+      visit_children( cmd )
+      local t = cmd.t
+      local common_type = Cmd.common_type( t, cmd.start.require_type, cmd.limit.require_type )
+      if (common_type)
+        if (cmd.step_size) common_type = Cmd.common_type( t, common_type, cmd.step_size.require_type )
+        else               cmd.step_size = LiteralInt32( t, cmd.default_step_size )
+      endIf
+      if (not common_type)
+        throw t.error( "Incompatible types used in range." )
+      endIf
+
+      local start = cmd.start.resolve_conversion_to( common_type, this )
+      local limit = cmd.limit.resolve_conversion_to( common_type, this )
+      local step_size = cmd.step_size.resolve_conversion_to( common_type, this )
+
+      local range_type = Type( t, cmd.name, common_type )
+      return validate( CreateCompound(t, range_type, Args(cmd.t,start,limit,step_size)) )
+
+    method on( cmd:DefaultValue )->Cmd
+      cmd.of_type.organize
+      return visit( cmd.of_type.cmd_default_value(cmd.t) )
+
+    method on( cmd:Describe )->Cmd
+      local operand = visit( cmd.operand )
+      if (operand.require_type.is_reference)
+        return visit( Access(cmd.t, "describe", Args(cmd.t,operand)) )
+      else
+        return visit( ContextAccess(cmd.t, operand, "description") )
+      endIf
+
+    method on( cmd:DirectAccess )->Cmd
+      return resolve_direct_access( cmd.t, null, cmd.name )
+
+    method on( cmd:EmptyValueList )->Cmd
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "list" ) )
+
+    method on( cmd:EmptyValueTable )->Cmd
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "table" ) )
+
+    method on( cmd:Ensure )->Cmd
+      local t = cmd.expression.t
+      return visit(
+        If( t, LogicalNot(t,cmd.expression.cloned),
+          Statements( t, Assign(t,cmd.expression.cloned,New(t,cmd.expression,cmd.args)) ),
+          null
+        )
+      )
+
+    method on( cmd:EnumValue )->Cmd
+      local def = visit(cmd.of_type.definitions[cmd.name])->(as CreateCompound)
+      assert def and def.args and def.args.count
+      return def.args.first  # Integer value
+
+    method on_visit( cmd:Escape )
+      contingent
+        forEach (scope in control_stack step -1)
+          sufficient (scope.catches_escape(cmd.control_type))
+        endForEach
+        throw cmd.t.error( "No enclosing '$' to escape from."(cmd.control_type.control_type_name) )
+      endContingent
+
+    method on( cmd:ForEach )->Cmd
+      local iterator = cmd.control.resolve_foreach( cmd, this )
+      return visit( iterator )
+
+    method on( cmd:FormattedString )->Cmd
+      local marker_count = cmd.format.count('$')
+      if (marker_count != cmd.args.count)
+        if (marker_count < cmd.args.count)
+          throw cmd.t.error( "Formatted string has fewer '$' markers than replacement args." )
+        else
+          throw cmd.t.error( "Formatted string has more '$' markers than replacement args." )
+        endIf
+      endIf
+
+      local format = cmd.format
+      local t = cmd.t
+      local build_list = CmdList( t )
+      forEach (arg in cmd.args)
+        local i = format.locate('$').value
+        if (i > 0)
+          local st = LiteralString( t, format.leftmost(i) )
+          format .= rightmost(-(i+1))
+          build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,st) ) )
+        else
+          format .= rightmost( -1 )
+        endIf
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,arg) ) )
+      endForEach
+      if (format.count)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "print", Args(t,LiteralString(t,format)) ) )
+      endIf
+
+      local result = visit( ContextBlock(t, TypeAccess(t,Program.type_String,Args(t)), build_list) )
+      return result
+
+    method on( cmd:FunctionDefinition )->Cmd
+      local type = cmd.resolve_type
+
+      local args : Args
+      if (cmd.with_values)
+        args = Args( cmd.with_values.t )
+        visit( cmd.with_values )
+        local m_init = Method( cmd.t, type, "init" )
+        forEach (with_value in cmd.with_values)
+          local arg = with_value.value
+          if (not arg) arg = visit( Access(with_value.t,with_value.name) )
+          local p = Property( with_value.t, with_value.name, null, arg.require_type )
+          type.add_property( p )
+          m_init.parameters.add( Local(with_value.t, with_value.name, arg.require_value.cloned, null) )
+          args.add( arg )
+        endForEach
+        m_init.organize
+      endIf
+
+      type.resolve
+      if (args)
+        return visit( TypeAccess(args.t,type,args) )
+      else
+        return validate( GetSingleton(cmd.t,type) )
+      endIf
+
+    method on( cmd:GenericFunctionDefinition )->Cmd
+      return cmd
+
+    method on( cmd:GetTypeInfo )->Cmd
+      cmd.of_type.organize
+      return visit( IndexedAccess( cmd.t, TypeAccess(cmd.t,Program.type_TypeInfo), TypeIndex(cmd.t,cmd.of_type) ) )
+
+    method on_visit( cmd:GlobalMethod )
+      temporarily this_type = cmd.type_context
+        on_visit( cmd->(as Procedure) )
+      endTemporarily
+
+    method on( cmd:IndexedAccess )->Cmd
+      local context = visit( cmd.context )
+      local index   = visit( cmd.index )
+      local context_type = context.require_type
+      local index_type   = index.require_type
+
+      if (index_type is Program.type_Int32)
+        local cmd_call = resolve_access( cmd.t, context, "at", Args(cmd.t,index), &suppress_error )
+        if (cmd_call) return cmd_call
+      endIf
+
+      local cmd_call = resolve_access( cmd.t, context, "get", Args(cmd.t,index), &suppress_error )
+      if (cmd_call) return cmd_call
+
+      throw cmd.t.error( "Type $ has no indexed access method at(Int32) or get($|Int32)."...
+        (context_type,index_type) )
+
+    method on( cmd:If )->Cmd
+      push_scope( cmd )
+      if (cmd.condition) cmd.condition .= logicalized( this )
+
+      if (cmd.condition and cmd.condition.is_literal)
+        pop_scope
+        if (cmd.condition.is_truthy)
+          # Keep the statements, discard any elseIfs/else
+          return visit( cmd.statements )
+        elseIf (cmd.cmd_else)
+          # Discard this 'if' in favor of the elseIf or else that comes next
+          if (cmd.cmd_else.condition)
+            return visit( cmd.cmd_else )
+          else
+            return visit( cmd.cmd_else.statements )
+          endIf
+        else
+          return null # this 'if' disappears entirely
+        endIf
+      endIf
+
+      cmd.statements = visit( cmd.statements )
+      if (cmd.cmd_else) cmd.cmd_else = visit( cmd.cmd_else )->(as If)
+      pop_scope
+
+      return cmd
+
+    method on( cmd:IfConditionalContext )->Cmd
+      local cmd_if = If( cmd.t, null, cmd.statements, null )
+      local context = visit( cmd.conditional_context.context )
+      local context_type = context.require_type
+      if (context.is_simple)
+        cmd_if.condition = context.cloned
+      else
+        local v_context = add_local( cmd.t, "conditional_context", context_type, DummyInitialValue )
+        insert( SetLocal(v_context,context) )
+        cmd_if.condition = GetLocal( v_context )
+        cmd.conditional_context.context = GetLocal( v_context )
+      endIf
+      return visit( cmd_if )
+
+    method on( cmd:IfLocal )->Cmd
+      local expression = visit( cmd.expression )
+      local expression_type = expression.require_type
+
+      if (expression_type.attributes.is_optional)
+        # Let elseIfs/else bind to existing variable names before they are shadowed
+        local nested_else_if : If
+        if (cmd.else_if)
+          local t = cmd.else_if.t
+          if (cmd.else_if.name)
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if))), null )
+          else
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if.statements))), null )
+          endIf
+        endIf
+
+        if (not expression.is_simple)
+          local v_expression = add_local( cmd.t, "expression", expression_type, DummyInitialValue )
+          insert( SetLocal(v_expression,expression) )
+          expression = GetLocal( v_expression )
+        endIf
+        local cmd_if = If( cmd.t, ContextAccess(cmd.t,expression.cloned,"exists"), Statements(cmd.t), nested_else_if )
+        push_scope( cmd_if )
+
+        local core_type = expression_type.properties["value"].type
+        local v = add_local( Local(cmd.t, cmd.name, DummyInitialValue, core_type) )
+        cmd_if.statements.add( SetLocal(v,ContextAccess(expression.t,expression,"value"),&initial_assignment) )
+        cmd_if.statements.add( forEach in cmd.statements )
+
+        pop_scope
+        return visit( cmd_if )
+
+      else
+        local cmd_block = ControlStructure( cmd.t, Statements(cmd.t), ControlType.UNDEFINED )
+        push_scope( cmd_block )
+
+        # Let elseIfs/else bind to existing variable names before they are shadowed
+        local nested_else_if : If
+        if (cmd.else_if)
+          local t = cmd.else_if.t
+          if (cmd.else_if.name)
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if))), null )
+          else
+            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if.statements))), null )
+          endIf
+        endIf
+
+        local v = add_local( Local(cmd.t, cmd.name, DummyInitialValue, expression_type) )
+        cmd_block.statements.add( SetLocal(v,expression,&initial_assignment) )
+
+        local cmd_if = If( cmd.t, GetLocal(v), cmd.statements, nested_else_if )
+        cmd_block.statements.add( cmd_if )
+
+        pop_scope
+        return visit( cmd_block )
+      endIf
+
+    method on( cmd:InlineWhich )->Cmd
+      if (cmd.cases.count == 1) return visit( cmd.cases.first )
+
+      visit_children( cmd )
+
+      local last_case = cmd.cases.last->(as InlineWhichCase)
+      if (last_case.value)
+        if (last_case.condition)
+          throw cmd.t.error( "The last which{} case must be a value without a condition, e.g. 'which {a:x || b:y || z}'." )
+        endIf
+      else
+        swapValues( last_case.condition, last_case.value )
+      endIf
+
+      local result_type : Type
+      local unwrap_optional = false
+      forEach (wcase in cmd.cases)
+        local cur_value = which{ wcase.value || wcase.condition }
+        local cur_type = cur_value.require_type
+        if (cur_type.attributes.is_optional)
+          unwrap_optional = true
+          cur_type = cur_type.properties//value.type
+          wcase.value = visit( ContextAccess(cur_value.t, cur_value, "value") )
+        endIf
+        result_type = which{ result_type:Cmd.common_type(cmd.t,result_type,cur_type) || cur_type }
+      endForEach
+      cmd.result_type = result_type
+
+      if (unwrap_optional and last_case.value.type.attributes.is_optional)
+        throw last_case.value.t.error( "The last which{} case cannot be an optional value." )
+      endIf
+
+      forEach (wcase in cmd.cases)
+        if (wcase.condition)
+          if (wcase.value)
+            wcase.condition .= logicalized( this )
+          else
+            # which{ a || b }
+            if (wcase.condition.is_simple)
+              # ->
+              # which{ a?:a || b }
+              wcase.value = wcase.condition.cloned
+              wcase.condition .= logicalized( this )
+            else
+              # ->
+              # local temp = a
+              # which{ temp?:temp || b }
+              local v = add_local( cmd.t, "case", wcase.condition.type, DummyInitialValue )
+              insert( SetLocal(v,wcase.condition,&initial_assignment) )
+              wcase.condition = GetLocal( v ).logicalized( this )
+              wcase.value     = GetLocal( v )
+            endIf
+          endIf
+        endIf
+
+        if (wcase.value)
+          wcase.value .= resolve_conversion_to( result_type, this )
+        endIf
+      endForEach
+
+      return cmd
+
+    method on( cmd:Is )->Cmd
+      cmd.left = visit( cmd.left )
+      cmd.right = visit( cmd.right )
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
+      if (not left_type.is_reference or not right_type.is_reference)
+        throw cmd.t.error( "Use '==' instead of 'is' to compare primitives and compounds." )
+      endIf
+      return cmd
+
+    method on( cmd:IsNot )->Cmd
+      cmd.left = visit( cmd.left )
+      cmd.right = visit( cmd.right )
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
+      if (not left_type.is_reference or not right_type.is_reference)
+        throw cmd.t.error( "Use '==' instead of 'is' to compare primitives and compounds." )
+      endIf
+      return cmd
+
+    method on( cmd:InstanceOf )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local operand_type = cmd.operand.require_type
+      if (cmd.operand.is_type_context)
+        if (operand_type.attributes.is_singleton)
+          return cmd  # leave as a runtime check - singleton ref could hold an extended class
+        else
+          return LiteralLogical( cmd.t, operand_type.instance_of(cmd.compare_type) )
+        endIf
+      elseIf (cmd.compare_type.instance_of(operand_type))
+        # Leave it as a runtime check
+        return cmd
+      else
+        return LiteralLogical( cmd.t, false )
+      endIf
+
+    method on( cmd:IsCompound )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_compound )
+
+    method on( cmd:IsEnum )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_enum )
+
+    method on( cmd:IsPrimitive )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_primitive )
+
+    method on( cmd:IsReference )->Cmd
+      local operand = visit( cmd.operand )
+      return LiteralLogical( cmd.t, operand.require_type.is_reference )
+
+    method on( cmd:IsType )->Cmd
+      cmd.operand = visit( cmd.operand )
+      local operand_type = cmd.operand.require_type
+      if (cmd.operand.is_type_context)
+        if (operand_type.attributes.is_singleton)
+          return cmd  # leave as a runtime check - singleton ref could hold an extended class
+        else
+          return LiteralLogical( cmd.t, operand_type is cmd.compare_type )
+        endIf
+      elseIf (cmd.compare_type.instance_of(operand_type))
+        # Leave it as a runtime check
+        return cmd
+      else
+        return LiteralLogical( cmd.t, false )  # no way
+      endIf
+
+    method on( cmd:Iterator )->Cmd
+      if (not cmd.@upkeep_label) cmd.upkeep_label = autoname("upkeep")
+      push_scope( cmd )
+      cmd.condition = visit( cmd.condition )
+      cmd.statements = visit( cmd.statements )
+      cmd.upkeep = visit( cmd.upkeep )
+      cmd.control = visit( cmd.control )
+      pop_scope
+      return cmd
+
+    method on( cmd:LiteralList )->Cmd
+      if (cmd.count == 0)
+        throw cmd.t.error( "Cannot determine type of empty literal list. Write e.g. 'Int32[]' "...
+                           "for an empty Int32 list or '@[]' for an empty Value list." )
+      endIf
+
+      visit_children( cmd )
+
+      local common_type : Type
+      forEach (arg at i in cmd)
+        local arg_type = arg.require_type
+        common_type = which{ common_type:Cmd.common_type(cmd.t,common_type,arg_type) || arg_type }
+      endForEach
+
+      local t = cmd.t
+      local list_type = Type( t, common_type )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,list_type,Args(t,LiteralInt32(t,cmd.count))), build_list) )
+
+    method on( cmd:KeyValuePairList )->Cmd
+      if (cmd.count == 0)
+        throw cmd.t.error( "Cannot determine type of empty literal table. Write e.g. '[String:Int32]' "...
+                           "for an empty table of String-to-Int32 mappings or '@{}' for an empty Value table." )
+      endIf
+
+      visit_children( cmd )
+
+      local t = cmd.t
+      local common_key_type : Type
+      local common_value_type : Type
+      forEach (arg at i in cmd)
+        local key_type = arg.key.require_type
+        local value_type = arg.value.require_type
+        common_key_type = which{ common_key_type:Cmd.common_type(t,common_key_type,key_type) || key_type }
+        common_value_type = which{ common_value_type:Cmd.common_type(t,common_value_type,value_type) || value_type }
+      endForEach
+
+      local table_type = Type( t, common_key_type, common_value_type )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "set", Args(arg.t,arg.key,arg.value) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,table_type,Args(t)), build_list) )
+
+    method on( cmd:LocalDeclarations )->Cmd
+      if (cmd.@type)
+        # local a, b=x, c : Type
+        #   ->
+        # local a:Type, b=x:Type, c:Type
+        local type = cmd.@type->Type
+        cmd.type = type
+        (forEach in cmd.declarations)->(as Local).type = type
+      else
+        # Infer any missing types.
+        forEach (v in cmd.declarations)
+          block v = v->(as Local)
+            if (v.initial_value)
+              v.initial_value = visit( v.initial_value ).require_value
+              if (v.@type) v.initial_value = visit( v.initial_value.resolve_conversion_to(v.@type, this) )
+              else         v.type = v.initial_value.type
+            elseIf (not v.@type)
+              throw v.t.error( "Local variable declarations must have an initial value assignment or an assigned ': Type'." )
+            endIf
+          endBlock
+        endForEach
+      endIf
+
+      forEach (decl in cmd.declarations)
+        local v = decl->(as Local)
+        contingent
+          forEach (control_structure in control_stack)
+            forEach (existing_v in control_structure.locals)
+              necessary (existing_v.name != v.name)
+            endForEach
+          endForEach
+        unsatisfied
+          throw v.t.error( ''A local variable named "$" already exists in this scope.''(v.name) )
+        endContingent
+        add_local( v )
+      endForEach
+
+      local result : Statements
+      local is_multiple_declaration = (cmd.declarations.count > 1)
+      if (is_multiple_declaration) result = Statements( cmd.t )
+      forEach (decl in cmd.declarations)
+        local v = decl->(as Local)
+        if (v.initial_value)
+          local cmd_assign = validate( SetLocal(v.t, v, visit(v.initial_value), &initial_assignment) )
+          if (is_multiple_declaration) result.add( cmd_assign )
+          else                         return cmd_assign
+        endIf
+      endForEach
+      if (is_multiple_declaration) return result
+
+      return null
+
+    method on_visit_children( cmd:Local )
+      # Overriding to prevent visiting initial_value; not necessary
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on( cmd:LogicalAnd )->Cmd
+      cmd.left  = visit( cmd.left ).logicalized( this )
+      cmd.right = visit( cmd.right ).logicalized( this )
+      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value and cmd.right->(as LiteralLogical).value )
+      endIf
+      return cmd
+
+    method on_validate( cmd:LogicalNot )->Cmd
+      if (cmd.operand instanceOf LogicalNot)
+        # not not x -> x?
+        return validate( cmd.operand->(as LogicalNot).operand.logicalized(this) )
+      endIf
+
+      if (cmd.operand instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, not cmd.operand->(as LiteralLogical).value )
+      endIf
+
+      if (cmd.operand.type is not Program.type_Logical)
+        cmd.operand = cmd.operand.logicalized( this )
+        if (cmd.operand instanceOf Logicalized)
+          # Was not converted into a method call - simplify
+          cmd.operand = cmd.operand->(as Logicalized).operand
+        endIf
+      endIf
+      return cmd
+
+    method on( cmd:LogicalOr )->Cmd
+      cmd.left  = visit( cmd.left ).logicalized( this )
+      cmd.right = visit( cmd.right ).logicalized( this )
+      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value or cmd.right->(as LiteralLogical).value )
+      endIf
+      return cmd
+
+    method on( cmd:LogicalXor )->Cmd
+      cmd.left  = visit( cmd.left ).logicalized( this )
+      cmd.right = visit( cmd.right ).logicalized( this )
+      if (cmd.left instanceOf LiteralLogical and cmd.right instanceOf LiteralLogical)
+        return LiteralLogical( cmd.t, cmd.left->(as LiteralLogical).value xor cmd.right->(as LiteralLogical).value )
+      endIf
+      return cmd
+
+    method on( cmd:Logicalize )->Cmd
+      return cmd.operand.logicalized( this )
+
+    method on( cmd:Logicalized )->Cmd
+      return cmd  # good to go
+
+    method on( cmd:Loop )->Cmd
+      local iterator = Iterator( cmd.t, cmd.statements, ControlType.LOOP )
+      if (cmd.loop_count)
+        local v = add_local( cmd.loop_count.t, "i", Program.type_Int32, DummyInitialValue )
+        insert(
+          SetLocal( v.t, v,
+          Add( v.t, visit(cmd.loop_count).resolve_conversion_to(Program.type_Int32, this), LiteralInt32(v.t,1) )
+          )
+        )
+        iterator.condition = PreDecrementLocal( v.t, v )
+
+        local t = cmd.t
+        return visit( If(t, CompareGT(t,GetLocal(v),LiteralInt32(t,0)), Statements(t,iterator), null) )
+
+      else
+        iterator.condition = LiteralLogical(cmd.t,true)
+        return visit( iterator )
+      endIf
+
+    method on_visit( cmd:Method )
+      temporarily this_type = cmd.type_context
+        on_visit( cmd->(as Procedure) )
+      endTemporarily
+
+    method on( cmd:CallbackFunction )->Cmd
+      local context = visit( cmd.context )
+      local context_type = context.require_type
+      local name = cmd.name
+      use methods = WorkList<<Procedure>>
+        forEach (m in context_type.methods.values)
+          contingent
+            necessary (m.name == name)
+            sufficient (not cmd.param_types)
+            necessary (m.parameters.count == cmd.param_types.count)
+            forEach (param_type at i in cmd.param_types)
+              necessary (param_type is m.parameters[i].type)
+            endForEach
+          satisfied
+            methods.add( m )
+          endContingent
+        endForEach
+
+        forEach (m in context_type.global_methods.values)
+          contingent
+            necessary (m.name == name)
+            sufficient (not cmd.param_types)
+            necessary (m.parameters.count == cmd.param_types.count)
+            forEach (param_type at i in cmd.param_types)
+              necessary (param_type is m.parameters[i].type)
+            endForEach
+          satisfied
+            methods.add( m )
+          endContingent
+        endForEach
+
+        if (methods.count == 0)
+          throw cmd.t.error( "Type $ has no method named '$'."(context_type,name) )
+        elseIf (methods.count > 1)
+          throw cmd.t.error(
+            "Type $ has multiple methods named '$'. Specify a signature such as $(Int32,Logical) to disambiguate."...
+            (context_type,name,name) )
+        endIf
+
+        local m = methods.first
+        local params = Parameters(cmd.t)
+        local args   = Args( cmd.t )
+        forEach (p in m.parameters)
+          params.add( Local(cmd.t,p.name,null,p.type) )
+          args.add( Access(cmd.t,p.name) )
+        endForEach
+
+        local with_values : WithValues
+        local cmd_call    : Cmd
+
+        if (m.is_global)
+          cmd_call = ContextAccess( cmd.t, TypeContext(cmd.t,m.type_context), cmd.name, args )
+
+        else
+          with_values = WithValues(cmd.t)
+          with_values.add( WithValue(cmd.t,"_THIS",This(cmd.t,this_type)) )
+          cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name, args )
+        endIf
+
+        if (m.return_type) cmd_call = Return( cmd.t, cmd_call )
+        local statements = Statements( cmd.t, cmd_call )
+
+        local fn_def = FunctionDefinition( cmd.t, params, m.return_type, with_values, statements )
+        return visit( fn_def )
+      endUse
+
+    method on( cmd:NamedArg )->Cmd
+      if (cmd.value)
+        cmd.value = visit( cmd.value )
+      elseIf (cmd.is_forward)
+        cmd.value = visit( Access(cmd.t,cmd.name) )
+        cmd.is_forward=false
+      endIf
+      return cmd
+
+    method on( cmd:NamedTuple )->Cmd
+      # Determine Tuple type
+      visit_children( cmd )
+      local type_elements = NamedTupleTypeElements( cmd.t )
+      local args = Args(cmd.t)
+      forEach (element in cmd)
+        type_elements.add( NamedTupleTypeElement(element.t, element.name, element.value.require_type) )
+        args.add( element.value )
+      endForEach
+      local tuple_type = Type( cmd.t, type_elements )
+      tuple_type.organize
+      return validate( CreateCompound(cmd.t, tuple_type, args) )
+
+    method on( cmd:NativeHeader )->Cmd
+      this_module.native_headers.add( cmd )
+      return null
+
+    method on( cmd:NativeCode )->Cmd
+      this_module.native_code.add( cmd )
+      return null
+
+    method on_visit( cmd:NativeExpression )
+      this_procedure.attributes.has_native_code = true
+      visit_children( cmd )
+
+    method on_visit( cmd:NativeStatement )
+      this_procedure.attributes.has_native_code = true
+      visit_children( cmd )
+
+    method on_visit( cmd:Necessary )
+      visit_children( cmd )
+      cmd.condition .= logicalized( this )
+
+      contingent
+        forEach (scope in control_stack step -1)
+          sufficient (scope.catches_escape(cmd.control_type))
+        endForEach
+        throw cmd.t.error( "No enclosing 'contingent' to escape from." )
+      endContingent
+
+    method on( cmd:Negate )->Cmd
+      visit_children( cmd )
+      local operand = cmd.operand
+      if (operand.is_literal)
+        if (operand instanceOf LiteralReal64) return LiteralReal64( cmd.t,   -operand->(as LiteralReal64).value )
+        if (operand instanceOf LiteralReal32) return LiteralReal32( cmd.t,   -operand->(as LiteralReal32).value )
+        if (operand instanceOf LiteralInt64) return LiteralInt64( cmd.t,     -operand->(as LiteralInt64).value )
+        if (operand instanceOf LiteralInt32) return LiteralInt32( cmd.t,     -operand->(as LiteralInt32).value )
+        if (operand instanceOf LiteralCharacter) return LiteralInt32( cmd.t, -(operand->(as LiteralCharacter).value->Int32) )
+        if (operand instanceOf LiteralLogical) return LiteralLogical( cmd.t, not operand->(as LiteralLogical).value )
+      endIf
+      return validate(cmd)
+
+    method on( cmd:New )->Cmd
+      local context = visit( cmd.type_expression )
+      return visit( TypeAccess(cmd.t, context.require_type, cmd.args) )
+
+    method on( cmd:NextIteration )->Cmd
+      forEach (control_structure in control_stack step -1)
+        local iterator = control_structure->(as Iterator)
+        if (iterator)
+          iterator.upkeep_label_used = true
+          return cmd
+        endIf
+      endForEach
+      throw cmd.t.error( "No enclosing loop for nextIteration." )
+
+    method on( cmd:NotInstanceOf )->Cmd
+      return visit( LogicalNot(cmd.t, InstanceOf(cmd.t,cmd.operand,cmd.compare_type)) )
+
+    method on( cmd:OpAndAssign )->Cmd
+      local target = visit( cmd.target )  # don't alter cmd.target
+      cmd.operand = visit( cmd.operand )
+
+      local target_type = target.require_type.[organize]
+      cmd.operand.require_type.organize
+      local op_method_name = "operator" + cmd.symbol
+
+      target_type.organize
+
+      # TargetType.operator+=(target:TargetType,operand:OperandType)
+      local args = Args(cmd.t,target,cmd.operand)
+      local m = find_procedure( cmd.t, target_type, null, op_method_name, args, &require_global, &suppress_error )
+      if (m) return resolve_call( cmd.t, null, m, args )
+
+      # TargetType.operator+=(operand:OperandType)
+      local arg = Args( cmd.t, cmd.operand )
+      m = find_procedure( cmd.t, target_type, target, op_method_name, arg, &suppress_error )
+      if (m and m.is_method) return resolve_call( cmd.t, target, m, arg )
+
+      # No op-and-assign operator method available
+      return cmd.dispatch_resolve_op_and_assign( cmd, this )
+
+    method on_visit( cmd:Procedure )
+      cmd.is_resolved = true
+      autoname_index = 0
+
+      visible_locals_fp.add( visible_locals.count )
+      forEach (p in cmd.parameters)
+        block p = p->(as Local)
+          p.attributes.is_anchored = true  # starting assumption
+          visible_locals.add( p )
+        endBlock
+      endForEach
+
+      visit_children( cmd )
+
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+
+    method on_visit_children( cmd:Property )
+      # skip initial_value since it will be out of context
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method pop_scope
+      control_stack.remove_last
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+
+    method push_scope( cmd:ControlStructure )
+      visible_locals_fp.add( visible_locals.count )
+      control_stack.add( cmd )
+      visible_locals.add( forEach in cmd.locals )
+
+    method on_validate( cmd:Return )->Cmd
+      this_procedure.attributes.has_return = true
+
+      if (cmd.result)
+        if (not this_procedure.return_type)
+          throw cmd.t.error( "Unexpected return value - $ does not declare a return type."(this_procedure) )
+        endIf
+        cmd.result = cmd.result.require_value.resolve_conversion_to( this_procedure.return_type, this )
+      else
+        if (this_procedure.return_type)
+          throw cmd.t.error( "$ return value expected."(this_procedure.return_type) )
+        endIf
+      endIf
+
+      return cmd
+
+    method on_validate( cmd:SetGlobalProperty )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method on_validate( cmd:SetLocal )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method on_validate( cmd:SetProperty )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method on_validate( cmd:SetThisProperty )->Cmd
+      cmd.new_value = cmd.new_value.resolve_conversion_to( cmd.info.type, this )
+      return cmd
+
+    method on( cmd:FunctionReturnValue )->Cmd
+      local operand = visit(cmd.operand)
+      if (operand.type)
+        return Return(operand.t,operand)
+      else
+        return operand
+      endIf
+
+    method on_visit( cmd:Statements )
+      temporarily current_statements = cmd.list.rewriter
+        forEach (statement in current_statements)
+          statement = visit( statement )
+          if (statement)
+            if (statement.type) statement = statement.discarding_result
+            current_statements.write( statement )
+          endIf
+        endForEach
+      endTemporarily
+
+    method on( cmd:Stepper )->Cmd
+      return visit(cmd.operand).require_type.resolve_stepper( cmd, this )
+
+    method on_visit( cmd:Sufficient )
+      visit_children( cmd )
+      cmd.condition .= logicalized( this )
+
+      contingent
+        forEach (scope in control_stack step -1)
+          sufficient (scope.catches_escape(cmd.control_type))
+        endForEach
+        throw cmd.t.error( "No enclosing 'contingent' to escape from." )
+      endContingent
+
+    method on( cmd:SwapValues )->Cmd
+      local a = visit( cmd.a )
+      local b = visit( cmd.b )
+      local a_type = a.require_type
+      if (a_type is not b.require_type)
+        throw cmd.t.error( "Cannot swap values with mismatched types." )
+      endIf
+
+      local statements = Statements( cmd.t )
+      local scope = Block( cmd.t, statements )
+      push_scope( scope )
+      local v_temp = add_local( cmd.t, "temp", a_type, DummyInitialValue )
+      statements.add( SetLocal( v_temp, cmd.a.cloned, &initial_assignment) )
+      statements.add( Assign(cmd.t, cmd.a, cmd.b) )
+      statements.add( Assign(cmd.t, cmd.b.cloned, GetLocal(v_temp)) )
+      pop_scope
+
+      return visit( scope )
+
+    method on( cmd:TemplatedAccess )->Cmd
+      local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+      local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
+      if (type_template)
+        return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.type_args), cmd.args) )
+      endIf
+
+      # Assume templated method call
+      local full_name   = cmd.type_args->String( cmd.name )
+      local t_name : String
+
+      # Routine template
+      t_name = instantiate_routine_templates( cmd.module_context, cmd, t_name, full_name )
+      forEach (mod in cmd.module_context.used_modules)
+        t_name = instantiate_routine_templates( mod.m, cmd, t_name, full_name )
+      endForEach
+
+      if (not cmd.type_context)
+        throw cmd.t.error( "No such method $."(full_name) )
+      endIf
+
+      # Global Method Template
+      if (not cmd.type_context.global_method_template_instances.contains(full_name))
+        if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+        local templates = cmd.type_context.global_method_templates[ t_name ]
+        if (templates)
+          (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
+        endIf
+      endIf
+
+      # Object Method Template
+      if (not cmd.type_context.method_template_instances.contains(full_name))
+        if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+        local templates = cmd.type_context.method_templates[ t_name ]
+        if (templates)
+          (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
+        endIf
+      endIf
+
+      return resolve_call( cmd.t, cmd.type_context, null, full_name, cmd.args )
+
+    method instantiate_routine_templates( mod:Module, cmd:TemplatedAccess, t_name:String, full_name:String )->String
+      local type_Routine = mod.must_find_type( cmd.t, "Routine" )
+      if (type_Routine is not cmd.type_context)
+        if (not type_Routine.global_method_template_instances.contains(full_name))
+          if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_Routine.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_Routine )
+          endIf
+        endIf
+      endIf
+      return t_name
+
+    method on( cmd:TemplatedMethodContextAccess )->Cmd
+      local context = visit( cmd.context )
+      local type_context = context.require_type
+
+      local name = cmd.type_args->String( cmd.name )
+
+      type_context.organize
+      local m = find_procedure( cmd.t, type_context, context, name, cmd.args, &suppress_error, &exact_arg_types )
+      if (not m)
+        # Global method template
+        if (not type_context.global_method_template_instances.contains(name))
+          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_context.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_context )
+          endIf
+        endIf
+
+        # Object Method Template
+        if (not type_context.method_template_instances.contains(name))
+          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
+          local templates = type_context.method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( cmd.type_args, type_context )
+          endIf
+        endIf
+      endIf
+
+      return resolve_call( cmd.t, type_context, context, name, cmd.args )
+
+    method on( cmd:Temporarily )->Cmd
+      if (cmd.assignments.count > 1)
+        local assignment = cmd.assignments.remove_first->(as TemporaryAssignment)
+        local nested_temporarily = Temporarily( cmd.t, cmd.assignments, cmd.statements )
+        cmd.assignments = TemporaryAssignments( cmd.t, assignment )
+        cmd.statements = Statements( cmd.statements.t, nested_temporarily )
+      endIf
+
+      local cmd_block = CleanupBlock( cmd.t, ControlType.TEMPORARILY )
+      push_scope( cmd_block )
+
+      local assignment = cmd.assignments.first->(as TemporaryAssignment)
+      local og_value = visit( assignment.target.cloned )
+      local og_value_type = og_value.require_type
+
+      local v_og_value = add_local( assignment.t, "original_value", og_value_type, DummyInitialValue )
+      cmd_block.statements.add( SetLocal(v_og_value, assignment.target.cloned, &initial_assignment) )
+      cmd_block.statements.add( Assign(assignment.t, assignment.target.cloned, assignment.new_value) )
+
+      local cmd_restore = Assign( assignment.t, assignment.target, GetLocal(v_og_value) )
+
+      cmd_block.statements.add( forEach in cmd.statements )
+      cmd_block.cleanup.add( cmd_restore.cloned )
+      local result = visit( cmd_block )
+      result = EndScopePatcher.patch( this, cmd_restore, result )
+
+      pop_scope
+
+      return result
+
+    method on_visit( cmd:This )
+      if (this_procedure.is_global)
+        throw cmd.t.error( "Illegal use of 'this' in a global context. 'this' can only be used in the context of an instance object." )
+      endIf
+
+    method on_validate( cmd:Throw )->Cmd
+      if (not cmd.exception.require_type.instance_of(Program.type_Exception))
+        throw cmd.exception.t.error( "Thrown value must be instanceOf Exception." )
+      endIf
+      return cmd
+
+    method on( cmd:Try )->Cmd
+      push_scope( cmd )
+      visit( cmd.statements )
+      pop_scope
+      visit( cmd.catches )
+      return cmd
+
+    method on( cmd:TypeAccess )->Cmd
+      cmd.of_type.organize
+      cmd.args = visit( cmd.args )
+      return resolve_type_access( cmd.t, cmd.of_type, cmd.args )
+
+    method on( cmd:TypeContext )->Cmd
+      cmd.@type.organize
+      return validate( cmd )
+
+    method on( cmd:TypeOf )->Cmd
+      local expr = visit( cmd.expression )
+      return visit( TypeAccess(expr.t,expr.require_type,cmd.args) )
+
+    method on( cmd:TypedDestructuringLocalDeclarations )->Cmd
+      local tuple = visit( cmd.tuple )
+      local tuple_type = tuple.require_type
+      if (not tuple_type.is_compound)
+        throw cmd.t.error( "Destructuring local declarations must be assigned a tuple type or other compound type." )
+      endIf
+
+      local m = tuple_type.m_primary_constructor
+      assert m
+      local params = m.parameters
+      if (params.count != cmd.locals.count)
+        throw cmd.t.error( "$ destructuring local declarations but $ are required."...
+            (cmd.locals.count, params.count) )
+      endIf
+
+      forEach (v in cmd.locals)
+        v.type.organize
+        add_local( Local(v.t, v.name, DummyInitialValue, v.type) )
+      endForEach
+
+      local anonymous_tuple = AnonymousTuple( cmd.t )
+      forEach (v in cmd.locals)
+        anonymous_tuple.add( Access(v.t,v.name) )
+      endForEach
+
+      local result = Assign(cmd.t, anonymous_tuple, tuple) : Cmd
+      result = visit( result )
+      return result
+
+    method on( cmd:TypedLiteralList )->Cmd
+      local t = cmd.list.t
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.list)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t,LiteralInt32(t,cmd.list.count))), build_list) )
+
+    method on( cmd:TypedLiteralTable )->Cmd
+      local t = cmd.table.t
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.table)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "set", Args(arg.t,arg.key,arg.value) ) )
+      endForEach
+
+      return visit( ContextBlock(t, TypeAccess(t,cmd.of_type,Args(t)), build_list) )
+
+    method on_validate( cmd:Unary )->Cmd
+      return cmd.operand.require_type.resolve_unary_op( cmd, this )
+
+    method on( cmd:LiteralUndefined )->Cmd
+      return visit( TypeAccess(cmd.t,Program.type_Value,Args(cmd.t)) )
+
+    method on( cmd:Use )->Cmd
+      if (cmd.resources.count > 1)
+        local res = cmd.resources.remove_first->(as UsedResource)
+        local nested_use = Use( cmd.t, cmd.resources, cmd.statements )
+        cmd.resources = UsedResources(cmd.t).[ add(res) ]
+        cmd.statements = Statements(cmd.statements.t).[ add(nested_use) ]
+      endIf
+
+      local cmd_block = CleanupBlock( cmd.t, ControlType.USE )
+      push_scope( cmd_block )
+
+      local res = cmd.resources.first->(as UsedResource)
+      local resource = visit( res.resource )
+      local resource_type = resource.require_type
+
+      local v_resource = add_local( resource.t, "resource", resource_type )
+      cmd_block.statements.add( SetLocal(v_resource, resource, &initial_assignment) )
+
+      local cmd_call = resolve_call( resource.t, resource.require_type, GetLocal(v_resource), "on_use", null )
+      local v = add_local( Local(res.t, res.name, cmd_call.require_type) )
+      cmd_block.statements.add( SetLocal(v, cmd_call, &initial_assignment) )
+
+      cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
+
+      cmd_block.statements.add( forEach in cmd.statements )
+      cmd_block.cleanup.add( cmd_call.cloned )
+      local result = visit( cmd_block ) : Cmd
+      result = EndScopePatcher.patch( this, cmd_call, result )
+
+      pop_scope
+
+      return result
+
+    method on( cmd:UntypedDestructuringLocalDeclarations )->Cmd
+      local tuple = visit( cmd.tuple )
+      local tuple_type = tuple.require_type
+      if (not tuple_type.is_compound)
+        throw cmd.t.error( "Destructuring local declarations must be assigned a tuple type or other compound type." )
+      endIf
+
+      local m = tuple_type.m_primary_constructor
+      assert m
+      local params = m.parameters
+      if (params.count != cmd.locals.count)
+        throw cmd.t.error( "$ destructuring local declarations but $ are required."...
+            (cmd.locals.count, params.count) )
+      endIf
+
+      forEach (param at i in params)
+        add_local( Local(param.t, cmd.locals[i]->String, DummyInitialValue, param.type) )
+      endForEach
+
+      local anonymous_tuple = AnonymousTuple( cmd.t )
+      forEach (v in cmd.locals)
+        anonymous_tuple.add( Access(v.t,v->String) )
+      endForEach
+
+      local result = Assign(cmd.t, anonymous_tuple, tuple) : Cmd
+      result = visit( result )
+      return result
+
+    method on( cmd:ValueList )->Cmd
+      local t = cmd.t
+      local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Value), "list" )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.args)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "add", Args(arg.t,arg) ) )
+      endForEach
+
+      return visit( ContextBlock(t, cmd_list, build_list) )
+
+    method on( cmd:ValueTable )->Cmd
+      local t = cmd.t
+      local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Value), "table" )
+
+      local build_list = CmdList( t )
+      forEach (arg in cmd.args)
+        build_list.add( ContextAccess( t, ContextBlockContext(t), "set", Args(arg.t,arg.key,arg.value) ) )
+      endForEach
+
+      return visit( ContextBlock(t, cmd_table, build_list) )
+
+    method on( cmd:Which )->Cmd
+      if (cmd.is_resolved) return cmd
+      cmd.is_resolved = true
+
+      push_scope( cmd )
+      cmd.condition = visit( cmd.condition )
+      local condition_type = cmd.condition.require_type
+
+      local is_enum = condition_type.is_enum
+      if (is_enum) this_module.implicit_context.add( condition_type )
+
+      cmd.cases = visit(cmd.cases)->(as WhichCases)
+      cmd.statements = visit(cmd.statements)
+
+      if (is_enum)
+        # Convert enum cases to integer cases so we can use switch
+        this_module.implicit_context.remove_last
+
+        cmd.condition = visit( ContextAccess(cmd.t,cmd.condition,"value") )
+        forEach (cmd_case in cmd.cases)
+          forEach (arg at i in cmd_case.args)
+            local create_compound = arg->(as CreateCompound)
+            if (create_compound and create_compound.of_type is condition_type)
+              cmd_case.args[i] = create_compound.args.first
+            else
+              cmd_case.args[i] = visit( ContextAccess(cmd.t,arg,"value") )
+            endIf
+          endForEach
+        endForEach
+      endIf
+
+      pop_scope
+
+      contingent
+        forEach (cmd_case in cmd.cases)
+          necessary ((forEach in cmd_case.args) instanceOf LiteralPrimitive)
+        endForEach
+
+        if (is_enum)
+          # Detect duplicate case values from alternate names and auto-generated code.
+          local used_cases = Logical[]
+          forEach (cmd_case in cmd.cases)
+            forEach (arg in cmd_case.args)
+              local n = arg->(as LiteralInt32)
+              if (n)
+                used_cases.expand_to_include( n.value )
+                if (used_cases[n.value])
+                  throw arg.t.error( "Illegal duplicate category value - each enum category must have a unique value. Use DEFINITIONS to support alternate names, e.g. 'CATEGORIES / WHITE, GRAY', 'DEFINITIONS / GREY=GRAY'." )
+                else
+                  used_cases[n.value] = true
+                endIf
+              endIf
+            endForEach
+          endForEach
+        endIf
+
+        local cmd_switch = Switch( cmd.t, cmd.condition, cmd.cases, cmd.statements )
+        cmd_switch.catches_escape = cmd.catches_escape
+        cmd_switch.exception_passthrough = cmd.exception_passthrough
+        return validate( cmd_switch )
+      endContingent
+
+      # Convert to use Ifs
+      if (cmd.cases.count == 0) return cmd.statements
+
+      local v_value = add_local( cmd.t, "which_value", cmd.condition.require_type )
+      insert( SetLocal(v_value, cmd.condition, &initial_assignment) )
+
+      local cmd_if = which_case_if( v_value, cmd.cases[0] )
+      local result = cmd_if
+      forEach (cmd_case in cmd.cases from 1)
+        cmd_if.cmd_else = which_case_if( v_value, cmd_case )
+        cmd_if .= cmd_else
+      endForEach
+
+      if (cmd.statements)
+        cmd_if.cmd_else = If( cmd.statements.t, null, cmd.statements, null, ControlType.WHICH )
+      endIf
+
+      return visit( result )
+
+    method which_case_if( v_value:Local, cmd_case:WhichCase )->If
+      local condition = CompareEQ( cmd_case.t, GetLocal(v_value), cmd_case.args[0] ) : Cmd
+      forEach (arg in cmd_case.args from 1)
+        condition = LogicalOr( condition.t, condition, CompareEQ(arg.t,GetLocal(v_value),arg) )
+      endForEach
+      return If( cmd_case.t, condition, cmd_case.statements, null, ControlType.WHICH )
+
+    method on( cmd:While )->Cmd
+      local iterator = Iterator( cmd.t, cmd.statements, ControlType.WHILE )
+
+      push_scope( iterator )
+
+      iterator.condition = visit( cmd.condition ).logicalized( this )
+
+      pop_scope
+
+      return visit( iterator )
+
+    method insert( cmd:Cmd )
+      cmd = visit( cmd )
+      if (cmd) current_statements.write( cmd )
+
+    method resolve_access( t:Token, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
+      local m : Module
+      (m,name) = this_module.split_module_and_type( t, name )
+      if (not m) m = this_module
+
+      temporarily this_module = m
+
+        local type_context : Type
+        local is_global = false
+
+        if (context)
+          context = visit( context )
+          is_global = context.is_type_context
+          type_context = context.type
+          if (not type_context)
+            throw t.error( "Nil value used as call context." )
+          endIf
+
+        else
+          is_global = this_procedure.is_global
+          local type = this_module.find_type( t, name, &extended_search )
+          if (type) return resolve_type_access( t, type, args, &=suppress_error )
+
+          type_context = this_type  # may be null
+          local v = find_local( name )
+          if (v)
+            if (args) return resolve_access( t, GetLocal(t,v), "call", args, &=suppress_error )
+            else      return validate( GetLocal(t,v) )
+          endIf
+        endIf
+
+        if (type_context)
+          type_context.organize
+          resolve_definitions( type_context )
+          local def = type_context.definitions[ name ]
+          if (def) return visit( def.cloned )
+        elseIf (this_type)
+          local def = this_type.definitions[ name ]
+          if (def) return visit( def.cloned )
+        endIf
+
+        local is_fallback = false
+        local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+        if (match)
+          if (match.attributes.is_fallback)
+            is_fallback = true
+          else
+            return resolve_call( t, context, match, args )
+          endIf
+        endIf
+
+        if (not is_global)
+          if (type_context)
+            local p = type_context.properties[ name ]
+            if (p)
+              if (args)
+                match = find_method( t, p.type, context, name, args, &require_global=is_global, &suppress_error )
+              endIf
+
+              local cmd_get_p = which{ context:GetProperty(t,context,p)->(as Cmd) || GetThisProperty(t,p)->(as Cmd) }
+              if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+              else      return validate( cmd_get_p )
+            endIf
+
+          endIf
+        endIf
+
+        if (not is_fallback and not context)
+          # Check for a matching method in implicit context types (Global, Routine, ...)
+          assert this_module
+          forEach (implicit_type in this_module.implicit_context)
+            local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
+            if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
+
+            if (implicit_type is not this_type)
+              if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
+                  implicit_type.definitions.contains(name))
+                local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
+                if (result) return result
+              endIf
+            endIf
+          endForEach
+        endIf
+
+        block
+          assert type_context
+          local result = resolve_global_access( t, type_context, name, args, &=suppress_error )
+          if (result) return result
+        endBlock
+
+        block
+          assert this_module
+          forEach (implicit_type in this_module.implicit_context)
+            local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
+            if (result) return result
+          endForEach
+        endBlock
+
+        # Global singleton property
+        local p = Program.type_Global.properties[ name ]
+        if (p)
+          local cmd_get_p = GetProperty( t, GetSingleton(t,Program.type_Global), p )
+          if (args)
+            return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+          else
+            return validate( cmd_get_p )
+          endIf
+        endIf
+
+        if (is_fallback)
+          return resolve_call( t, context, match, args )
+        endIf
+
+        if (suppress_error) return null->(as Cmd)
+
+        find_procedure( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+
+      endTemporarily
+      return null  # never reached
+
+    method resolve_global_access( t:Token, type_context:Type, name:String, args:Cmd, &suppress_error )->Cmd
+      local p = type_context.global_properties[ name ]
+      if (p)
+        local cmd_get_p = GetGlobalProperty(t,p)
+        if (args) return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+        else      return validate( cmd_get_p )
+      endIf
+      return null
+
+    method resolve_call( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd, &suppress_error )->Cmd
+      local m : Module
+      (m,name) = this_module.split_module_and_type( t, name )
+      if (not m) m = this_module
+
+      temporarily this_module = m
+
+        local is_global = this_procedure.is_global and (not context or context.is_type_context)
+
+        type_context.organize
+        resolve_definitions( type_context )
+        local def = type_context.definitions[ name ]
+        if (def) return visit( def.cloned )
+
+        local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
+        if (match) return resolve_call( t, context, match, args )
+
+        if (suppress_error) return null->(as Cmd)
+
+        find_method( t, type_context, context, name, args, &require_global=is_global )  # throw an error
+
+      endTemporarily
+      return null  # never reached
+
+    method resolve_call( t:Token, context:Cmd, m:Procedure, args=null:Cmd )->Cmd
+      if (not args)
+        args = CmdList(t)
+      else
+        args->(as CmdList).list.discard( $ instanceOf DefaultArg )
+        args = visit(args)
+      endIf
+      confirm_candidate( t, null, m, args )
+      convert_args_to_parameter_types( args, m )
+      return visit( m.cmd_call(t,context,args) )
+
+    method resolve_direct_access( t:Token, context:Cmd, name:String )->Cmd
+      local type_context = this_type
+      if (context)
+        context = visit( context )
+        type_context = context.require_type
+      endIf
+
+      if (context or this_procedure.is_method)
+        local p = type_context.properties[ name ]
+        if (p)
+          if (context) return validate( GetProperty(t,context,p) )
+          else         return validate( GetThisProperty(t,p) )
+        endIf
+      endIf
+
+      block
+        local p = type_context.global_properties[ name ]
+        if (p)
+          return validate( GetGlobalProperty(t,p) )
+        endIf
+      endBlock
+
+      throw t.error( "No such property '$' in type $."(name,type_context) )
+
+    method resolve_direct_assignment( t:Token, context:Cmd, name:String, new_value:Cmd )->Cmd
+      local type_context = this_type
+      if (context)
+        context = visit( context )
+        type_context = context.require_type
+      endIf
+
+      new_value = visit( new_value ).require_value
+
+      if (context or this_procedure.is_method)
+        local p = type_context.properties[ name ]
+        if (p)
+          if (context) return validate( SetProperty(t,context,p,new_value) )
+          else         return validate( SetThisProperty(t,p,new_value) )
+        endIf
+      endIf
+
+      block
+        local p = type_context.global_properties[ name ]
+        if (p)
+          return validate( SetGlobalProperty(t,p,new_value) )
+        endIf
+      endBlock
+
+      throw t.error( "No such property '$' in type $."(name,type_context) )
+
+    method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error, &exact_arg_types )->Cmd
+      type.organize
+      temporarily this_module = type.module_context
+
+        if (args)
+          local result = cmd_create_object( t, type, args, &=suppress_error, &=exact_arg_types )
+          if (not result) return null->(as Cmd)
+          return validate( result )
+        else
+          if (type.attributes.is_singleton)
+            return GetSingleton(t,type)
+          else
+            if (type.name.begins_with('['))  # Table / [String:Int32]
+              return resolve_access( t, null, type.name, Args(t) )
+            elseIf (type.name.ends_with(']'))  # List / Int32[]
+              return resolve_access( t, null, type.scoped_name, Args(t) )
+            else
+              return TypeContext(t,type)
+            endIf
+          endIf
+        endIf
+
+      endTemporarily
+
+    method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error, &exact_arg_types )->Cmd
+      assert args
+      if (type_context.is_primitive and args.count == 1 and args.first.require_type.is_primitive)
+        return args.first.resolve_conversion_to( type_context, this )
+      endIf
+
+      local m_constructor = find_procedure( t, type_context, null, "constructor", args, &constructor, &suppress_error, &=exact_arg_types )
+      if (m_constructor)
+        if (m_constructor instanceOf GlobalMethod)
+          if (m_constructor.attributes.is_primary)
+            convert_args_to_parameter_types( args, m_constructor )
+            assert args instanceOf Args
+            assert type_context
+            return CreateCompound( t, m_constructor.type_context, args->(as Args) )
+          else
+            return resolve_call( t, null, m_constructor, args )
+          endIf
+        else
+          convert_args_to_parameter_types( args, m_constructor )
+          return CreateObject( t, type_context, m_constructor->(as Method), args )
+        endIf
+      endIf
+
+      if (suppress_error) return null
+
+      local mesg : String
+      use Candidates
+        type_context.collect_methods( "create", Candidates.list )
+        type_context.collect_methods( "init", Candidates.list )
+        Candidates.organize
+
+        if (args.count == 0 and Candidates.count == 0)
+          # No constructors available and no constructor required.
+          if (type_context.is_compound)
+            assert args instanceOf Args
+            return CreateCompound( t, type_context, args->(as Args) )
+          else
+            return CreateObject( t, type_context, null, args )
+          endIf
+        endIf
+
+        mesg = "No exact match for ambiguous object constructor $("(type_context)
+        forEach (arg at i in args)
+          if (i > 0) mesg += ','
+          mesg += arg.require_type
+        endForEach
+        mesg += "). $:\n\n"("Candidate".pluralized(Candidates.count))
+        if (Candidates.count)
+          forEach (m in Candidates)
+            mesg += "  $$\n" (type_context,m.dev_signature.from_first('('))
+          endForEach
+        else
+          mesg += "  $()"(type_context)
+        endIf
+      endUse
+      throw t.error( mesg )
+
+    method convert_args_to_parameter_types( args:Cmd, proc:Procedure )
+      # And fill in default values
+      proc.resolve
+
+      if (not proc.arrange_args(args,this))
+        throw args.t.error( "[INTERNAL] Invalid procedure selected." )
+      endIf
+
+      forEach (arg at i in args)
+        if (arg instanceOf NamedArg)
+          local named_arg = arg->(as NamedArg)
+          if (named_arg.is_zero)
+            if (named_arg.value) throw named_arg.value.t.error( "Unexpected value." )
+            arg = LiteralLogical(named_arg.t,false)
+          elseIf (named_arg.is_forward)
+            arg = visit( Access(named_arg.t,named_arg.name,null) )
+          elseIf (named_arg.value)
+            arg = named_arg.value
+          else
+            arg = LiteralLogical(named_arg.t,true)
+          endIf
+        elseIf (arg instanceOf DefaultArg)
+          arg = visit( arg->(as DefaultArg).operand.cloned )
+        endIf
+        args[i] = arg.resolve_conversion_to(proc.parameters[i].type, this)
+      endForEach
+
+    method find_method( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
+        &constructor, &require_global, &suppress_error )->Procedure
+      # Wraps find_procedure() and expands it by also instantiating method templates
+      # as needed.
+      if (not type_context or constructor or require_global)
+        return find_procedure( t, type_context, context, name, args, &=constructor,
+                               &=require_global, &=suppress_error )
+      endIf
+
+      local proc = find_procedure( t, type_context, context, name, args, &=constructor,
+                               &=require_global, &suppress_error )
+      if (proc) return proc
+
+      if (args and args.count)
+        # Attempt to infer the template type args from the arg types.
+        local t_name    = "$<<$>>"(name,args.count)
+
+        local global_templates = type_context.global_method_templates[ t_name ]
+        if (global_templates)
+          args = visit( args )
+          local type_args = TemplateArgs(t)
+          type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
+          (forEach in global_templates).instantiate( type_args, type_context )
+        else
+          local method_templates = type_context.method_templates[ t_name ]
+          if (method_templates)
+            args = visit( args )
+            local type_args = TemplateArgs(t)
+            type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
+            (forEach in method_templates).instantiate( type_args, type_context )
+          endIf
+        endIf
+      endIf
+
+      return find_procedure( t, type_context, context, name, args, &=constructor,
+                               &=require_global, &=suppress_error )
+
+
+    method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
+        &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
+      # 'context' is only passed for error description purposes.
+      visit( args )  # resolve args to determine types
+      use Candidates
+        type_context.organize
+        if (constructor)
+          type_context.collect_methods( "create", Candidates.list, &require_global )
+          type_context.collect_methods( "init", Candidates.list )
+        else
+          type_context.collect_methods( name, Candidates.list, &=require_global )
+          if (not context)
+            local type_Routine = type_context.module_context.must_find_type( t, "Routine" )
+            if (type_context is not type_Routine)
+              type_Routine.collect_methods( name, Candidates.list, &require_global )
+            endIf
+            forEach (used_mod in type_context.module_context.used_modules)
+              type_Routine = used_mod.m.must_find_type( t, "Routine" )
+              if (type_context is not type_Routine)
+                type_Routine.collect_methods( name, Candidates.list, &require_global )
+              endIf
+            endForEach
+          endIf
+          if (type_context.is_aspect and type_context.is_reference)
+            Program.type_Object.collect_methods( name, Candidates.list, &=require_global )
+          endIf
+        endIf
+        Candidates.organize
+
+        return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global,
+            &=suppress_error, &=exact_arg_types )
+      endUse
+
+    method confirm_candidate( t:Token, context:Cmd, m:Procedure, args:Cmd )
+      use Candidates
+        Candidates.add( m )
+        select_candidate( t, m.type_context, context, m.name, args, &require_global=m.is_global )
+      endUse
+
+    method select_candidate( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
+        &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
+
+      if (Candidates.count)
+        local result = refine_candidates( type_context, args, &=exact_arg_types )
+        if (result)
+          return result.[resolve]
+        elseIf (suppress_error)
+          if (constructor or exact_arg_types) return null
+          if (not args) return null
+        endIf
+      elseIf (suppress_error)
+        return null
+      endIf
+
+      # Throw an error
+      local sig = name
+      if (args)
+        sig += '('
+        forEach (arg at i in args)
+          if (i > 0) sig += ','
+          if (arg instanceOf GenericFunctionDefinition)
+            local def = arg->(as GenericFunctionDefinition)
+            sig += "function("
+            forEach (param at j in def.parameters)
+              if (j > 0) sig += ','
+              sig += param->String
+            endForEach
+            sig += ')'
+          else
+            sig += arg.require_type
+          endIf
+        endForEach
+        sig += ')'
+      endIf
+
+      if (not context) Program.check_include_hints( t, type_context.module_context, name )
+
+      local mesg : String
+      if (args or Candidates.count)
+        which (Candidates.count)
+          case 0
+            mesg = "No such type or "
+            if (require_global) mesg += "global "
+            if (context)        mesg += "method "
+            elseIf (this_type)  mesg += "method or routine "
+            else                mesg += "routine "
+
+            if (context)        mesg += context.type + "."
+            elseIf (this_type)  mesg += this_type + "."
+
+            mesg += sig + '.'
+
+          case 1
+            mesg = "Call to "
+            if (type_context)  mesg += type_context + "."
+            elseIf (this_type) mesg += this_type + "."
+
+            mesg += sig
+            if (args) mesg += " has arguments that are"
+            else      mesg += " is"
+            mesg += " incompatible with the best candidate:\n\n"
+            mesg += "  " + Candidates[0].dev_signature
+
+          others
+            mesg = "No exact match for ambiguous call to "
+            if (require_global) mesg += "global "
+            if (type_context)   mesg += type_context + "."
+            elseIf (this_type)  mesg += this_type + "."
+
+            mesg += sig
+            mesg += ". Candidates:\n\n"
+            forEach (m in Candidates)
+              mesg += "  $\n" (m.dev_signature)
+            endForEach
+
+        endWhich
+
+      else
+        local g = which{ require_global:"global " || "" }
+        if (context)
+          if (args) mesg = "No such $method '$' exists in type '$'." (g,sig,context.type)
+          else      mesg = "No such $property or method '$' exists in type '$'." (g,sig,context.type)
+        elseIf (this_type)
+          if (args) mesg = "No such $method or routine '$'."(g,sig)
+          else      mesg = "No such $variable, method, or routine '$'."(g,sig)
+        else
+          if (args) mesg = "No such $routine '$'."(g,sig)
+          else      mesg = "No such $variable or routine '$'."(g,sig)
+        endIf
+
+      endIf
+
+      local error_message = mesg.replacing( "Routine.", "" )
+      throw t.error( error_message )
+
+    method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types )->Procedure
+      local arg_count = which{ args:args.count || 0 }
+
+      local has_named_arg = false
+      if (args)
+        # Remove any DefaultArgs and check for named args with duplicate names.
+        use arg_names = WorkList<<String>>
+          forEach (arg in rewriter=args->(as CmdList).list.rewriter)
+            if (arg instanceOf NamedArg)
+              local named_arg = arg->(as NamedArg)
+              rewriter.write( arg )
+              has_named_arg = true
+              if (arg_names.contains(named_arg.name))
+                throw arg.t.error( "Named argument '$' is used multiple times."(named_arg.name) )
+              endIf
+              arg_names.add( named_arg.name )
+            elseIf (arg not instanceOf DefaultArg)
+              rewriter.write( arg )
+            endIf
+          endForEach
+        endUse
+      endIf
+
+      # Filter out incorrect number of args
+      forEach (m in Candidates)
+        if (m.accepts_arg_count(arg_count)) Candidates.keep m
+      endForEach
+      if (not Candidates.refine) return null
+
+      # Filter by candidates that contain all named args in a compatible arrangement.
+      # Example: if 'method m(a:Int32,b=0:Int32)' called with 'm(&b=5)', that method
+      # is not compatible with those arguments.
+      if (has_named_arg)
+        forEach (m in Candidates)
+          contingent
+            forEach (arg in args)
+              if (arg instanceOf NamedArg)
+                local arg_name = arg->(as NamedArg).name
+                necessary (m.has_parameter_named(arg_name))
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (not Candidates.refine) return null
+
+        forEach (m in Candidates)
+          contingent
+            if (m.arrange_args(args,this)) Candidates.keep m
+          endContingent
+        endForEach
+        if (not Candidates.refine) return null
+
+      endIf
+
+      if (not exact_arg_types)
+        # Filter by compatible and convertible args
+        local allow_conversions = false
+        loop 2
+          if (arg_count)
+            forEach (m in Candidates)
+              if (has_named_arg) m.arrange_args( args, this )
+              contingent
+                forEach (arg at i in args)
+                  necessary (arg_type_is_compatible(arg,m.parameters[i].type,&=allow_conversions))
+                endForEach
+                Candidates.keep m
+              endContingent
+            endForEach
+            if (Candidates.found_match) return Candidates.match
+            if (not Candidates.refine and allow_conversions) return null
+          else
+            if (Candidates.found_match) return Candidates.match
+          endIf
+          allow_conversions = true
+        endLoop
+
+        # Filter out candidates that don't have the same module context as the first candidate
+        local priority_module_context = Candidates[0].module_context
+        forEach (m in Candidates)
+          if (m.module_context is priority_module_context) Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Filter by exact arg types
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          contingent
+            forEach (arg at i in args)
+              necessary exact_type_match( arg, m.parameters[i].type )
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      else
+        if (Candidates.count == 1) return Candidates[0]
+      endIf
+
+      if (exact_arg_types) return null
+
+      # Filter by fewest parameters (omitting calls with excess default args)
+      if (arg_count)
+        local min_params = Candidates[0].parameters.count
+        min_params .= or_smaller( (forEach in Candidates from 1).parameters.count )
+        forEach (m in Candidates)
+          if (m.parameters.count == min_params) Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Filter by arg categories (reference/primitive/compound)
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.require_type
+              local param_type = m.parameters[i].type
+              if (arg_type.is_reference) necessary (param_type.is_reference)
+              if (arg_type.is_primitive) necessary (param_type.is_primitive)
+              if (arg_type.is_compound)  necessary (param_type.is_compound)
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Filter out methods where a reference arg type is not instanceOf the corresponding parameter type
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          forEach (arg at i in args)
+            local arg_type = arg.type
+            local param_type = m.parameters[i].type
+            if (arg_type.is_reference and param_type.is_reference)
+              if (arg_type.instance_of(param_type)) Candidates.keep m
+            endIf
+          endForEach
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # See if one of the remaining candidates is [preferred]
+      forEach (m in Candidates)
+        if (m.attributes.is_preferred)
+          Candidates.keep m
+        endIf
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      Candidates.refine
+
+      # Prefer global methods and object methods over routines
+      if (Candidates.list.contains( $.attributes.is_global and $.type_context.name == "Routine" ))
+        forEach (m in Candidates)
+          if (m.type_context.name != "Routine") Candidates.keep( m )
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Keep methods with more specialized reference types, e.g. prefer String over Object.
+      if (arg_count)
+        forEach (m in Candidates)
+          if (not does_any_candidate_have_more_specialized_reference_parameters(m))
+            Candidates.keep( m )
+          endIf
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Prefer methods with primitive parameters that are higher precision than the args
+      if (arg_count)
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          contingent
+            forEach (arg at i in args)
+              local arg_type = arg.type
+              local param_type = m.parameters[i].type
+              if (arg_type.is_primitive and param_type.is_primitive)
+                necessary (param_type.precision_index >= arg_type.precision_index)
+              endIf
+            endForEach
+            Candidates.keep m
+          endContingent
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      # Keep methods with the fewest maximum args. More default args usually means more options that
+      # aren't being used.
+      # E.g. if to->String() is ambiguous with to->String(&binary,&hex,&octal), we want the former.
+      block
+        local min : Int32?
+        forEach (m in Candidates)
+          if (not min or m.parameters.count < min.value) min = m.parameters.count
+        endForEach
+        forEach (m in Candidates)
+          if (m.parameters.count == min.value) Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endBlock
+
+      # Prefer extended class methods over base class methods
+      forEach (m in Candidates)
+        contingent
+          forEach (m2 in Candidates)
+            sufficient (m2.type_context.instance_of(m.type_context) and not m.type_context.instance_of(m2.type_context))
+          endForEach
+          Candidates.keep m
+        endContingent
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      Candidates.refine
+
+      if (arg_count == 1)
+        # Prefer methods with single Value parameter; the arg will be to->Value'd
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          if (m.parameters.first.type is Program.@type_Value) Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      if (arg_count == 1)
+        # Prefer methods with a single String parameter; the arg will be to->String'd
+        forEach (m in Candidates)
+          if (has_named_arg) m.arrange_args( args, this )
+          if (m.parameters.first.type is Program.type_String) Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
+
+      return null
+
+    method exact_type_match( arg:Cmd, param_type:Type )->Logical
+      # Exact in principle but in practice it's a little fuzzy
+      if (arg.type is param_type) return true
+
+      if (arg instanceOf DefaultArg) return true
+
+      local arg_type = arg.type
+      if (arg_type is Program.type_null)
+        return (param_type.is_reference or param_type.attributes.is_optional)
+      endIf
+
+      if (param_type.attributes.is_optional)
+        return arg_type is param_type.properties["value"].type
+      endIf
+
+      return false
+
+
+    method does_any_candidate_have_more_specialized_reference_parameters( m1:Procedure )->Logical
+      forEach (m2 in Candidates)
+        if (m2 is m1) nextIteration
+        contingent
+          local any_refs = false
+          forEach (i in 0..<m1.parameters.count.or_smaller(m2.parameters.count))
+            local type1 = m1.parameters[i].type
+            local type2 = m2.parameters[i].type
+            if (type1.is_reference and type2.is_reference)
+              any_refs = true
+              necessary (type2.instance_of(type1))
+            endIf
+          endForEach
+
+          # Every m2 ref parameter is equal to or more specialized than m1
+          if (any_refs) return true
+        endContingent
+      endForEach
+
+      return false
+
+    method arg_type_is_compatible( arg:Cmd, param_type:Type, &allow_conversions )->Logical
+      local arg_type = arg.require_type
+
+      if (arg_type is param_type) return true
+
+      if (arg_type is Program.type_GenericFn)
+        if (param_type not instanceOf FunctionType) return false
+        block arg=arg->(as GenericFunctionDefinition), param_type=param_type->(as FunctionType)
+          return arg.parameters.count == param_type.param_types.count
+        endBlock
+      endIf
+
+      if (arg_type.attributes.is_tuple and param_type.attributes.is_tuple)
+        return arg_type.is_compatible_tuple( param_type )
+      endIf
+
+      if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
+      if (arg_type is Program.@type_Value) return true
+      if (arg_type.instance_of(param_type)) return true
+      if (arg_type.is_primitive and param_type.is_primitive) return true
+      if (param_type is Program.type_String or param_type is Program.type_Object or param_type is Program.@type_Value) return true
+      if (param_type.attributes.is_optional and not arg_type.attributes.is_optional)
+        if (arg_type is Program.type_null)
+          return true
+        endIf
+        return arg_type_is_compatible( arg, param_type.properties//value.type, &=allow_conversions )
+      endIf
+
+      if (allow_conversions)
+        local resolved_arg = arg.resolve_conversion_to( param_type, this, &suppress_error )
+        if (resolved_arg) return true
+      endIf
+
+      return false
+
+
+endClass
+
+# resolve_access_and_assign
+augment
+  METHODS
+    method Cmd.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target for '.='." )
+
+    method Access.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
+
+      operand = AccessAndAssignPatcher.patch( operand, this.cloned )
+      return resolver.visit( Assign(t, this, operand) )
+
+    method ContextAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) return prior.resolve_access_and_assign( operand, resolver )  # generate error
+
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      local v_context = resolver.add_local( t, "context", context_type )
+      resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+      local context_access = ContextAccess( t, GetLocal(v_context), name )
+      operand = AccessAndAssignPatcher.patch( operand, context_access.cloned )
+      return resolver.visit( Assign(t, context_access, operand) )
+
+    method DirectAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      operand = AccessAndAssignPatcher.patch( operand, this.cloned )
+      return resolver.visit( Assign(t, this, operand) )
+
+    method ContextDirectAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      local v_context = resolver.add_local( t, "context", context_type )
+      resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+      local context_access = ContextDirectAccess( t, GetLocal(v_context), name )
+      operand = AccessAndAssignPatcher.patch( operand, context_access.cloned )
+      return resolver.visit( Assign(t, context_access, operand) )
+
+    method TypeAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      return ContextAccess( t, resolver.visit(this), args ).resolve_access_and_assign( operand, resolver )
+
+    method IndexedAccess.resolve_access_and_assign( operand:Cmd, resolver:Resolver )->Cmd
+      local context = resolver.visit( context ).require_value
+      local index = resolver.visit( index ).require_value
+
+      if (context.is_simple and index.is_simple)
+        operand = AccessAndAssignPatcher.patch( operand, this.cloned )
+        return resolver.visit( Assign(t, this, operand) )
+      else
+        local v_context = resolver.add_local( t, "context", context.require_type )
+        resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+        local v_index = resolver.add_local( t, "index", index.require_type )
+        resolver.insert( SetLocal(v_index, index, &initial_assignment) )
+
+        local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
+        operand = AccessAndAssignPatcher.patch( operand, indexed_access.cloned )
+        return resolver.visit( Assign(t, indexed_access, operand) )
+      endIf
+endAugment
+
+# OpAndAssign
+augment
+  METHODS
+    method Cmd.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      println t.error( "Unsupported operation" )
+      throw UnsupportedOperationError()
+
+    method OpAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      throw t.error( "[INTERNAL] Operation '$' is unsupported."(symbol) )
+
+    method AddAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+          resolve_op_and_assign<<"+",Add,AddAndAssignLocal,AddAndAssignGlobalProperty,AddAndAssignProperty,AddAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method SubtractAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<"-",Subtract,SubtractAndAssignLocal,SubtractAndAssignGlobalProperty,SubtractAndAssignProperty,SubtractAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method MultiplyAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<"*",Multiply,MultiplyAndAssignLocal,MultiplyAndAssignGlobalProperty,MultiplyAndAssignProperty,MultiplyAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method DivideAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<"/",Divide,DivideAndAssignLocal,DivideAndAssignGlobalProperty,DivideAndAssignProperty,DivideAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method ModAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.resolve_op_and_assign<<"%",Mod>>( op_and_assign.operand, resolver )
+
+    method PowerAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.resolve_op_and_assign<<"^",Power>>( op_and_assign.operand, resolver )
+
+    method BitwiseAndAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<"&",BitwiseAnd,BitwiseAndAndAssignLocal,BitwiseAndAndAssignGlobalProperty,BitwiseAndAndAssignProperty,BitwiseAndAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method BitwiseOrAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<"|",BitwiseOr,BitwiseOrAndAssignLocal,BitwiseOrAndAssignGlobalProperty,BitwiseOrAndAssignProperty,BitwiseOrAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method BitwiseXorAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<"~",BitwiseXor,BitwiseXorAndAssignLocal,BitwiseXorAndAssignGlobalProperty,BitwiseXorAndAssignProperty,BitwiseXorAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method BitShiftLeftAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<":<<:",BitShiftLeft,BitShiftLeftAndAssignLocal,BitShiftLeftAndAssignGlobalProperty,BitShiftLeftAndAssignProperty,BitShiftLeftAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method BitShiftRightAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.resolve_op_and_assign<<":>>:",BitShiftRight>>( op_and_assign.operand, resolver )
+
+    method BitShiftRightXAndAssign.dispatch_resolve_op_and_assign( op_and_assign:OpAndAssign, resolver:Resolver )->Cmd
+      return op_and_assign.target.
+      resolve_op_and_assign<<":>>>:",BitShiftRightX,BitShiftRightXAndAssignLocal,BitShiftRightXAndAssignGlobalProperty,BitShiftRightXAndAssignProperty,BitShiftRightXAndAssignThisProperty>>(
+            op_and_assign.operand, resolver
+          )
+
+    method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target for '$'."($OpSymbol) )
+
+    method Cmd.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target for '$'."($OpSymbol) )
+
+    method DirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      local v = resolver.find_local( name )
+      if (v)
+        # TargetType.operator+(target:TargetType,operand:OperandType)
+        local context = GetLocal(t,v)
+        local args = Args(t,context,operand)
+        local m = resolver.find_procedure( t, v.type, null, op_method_name, args, &require_global, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, null, m, args) )
+
+        # TargetType.operator+(operand:OperandType)
+        local arg = Args(t,operand)
+        m = resolver.find_procedure( t, v.type, context, op_method_name, arg, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, context, m, arg) )
+
+        operand = operand.resolve_conversion_to(v.type, resolver)
+        return resolver.validate( $OpLocal(t,v,operand) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local context = GetThisProperty(t,p)
+          local args = Args(t,context,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, context, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpThisProperty(t,p,operand) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpGlobal(t,p,operand) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local context = GetSingleton(t,Program.type_Global)
+          local args = Args(t,GetProperty(t,context,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p,operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+    method Access.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+      contingent
+        local get_name = name + "()"
+        sufficient resolver.this_type.methods[ get_name ]
+        sufficient resolver.this_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient resolver.this_type.has_method_named( set_name )
+        sufficient resolver.this_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      local v = resolver.find_local( name )
+      if (v)
+        # TargetType.operator+(target:TargetType,operand:OperandType)
+        local context = GetLocal(t,v)
+        local args = Args(t,context,operand)
+        local m = resolver.find_procedure( t, v.type, null, op_method_name, args, &require_global, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, null, m, args) )
+
+        # TargetType.operator+(operand:OperandType)
+        local arg = Args(t,operand)
+        m = resolver.find_procedure( t, v.type, context, op_method_name, arg, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, context, m, arg) )
+
+        operand = operand.resolve_conversion_to(v.type, resolver)
+        return resolver.validate( $OpLocal(t,v,operand) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local context = GetThisProperty(t,p)
+          local args = Args(t,context,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, context, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpThisProperty(t,p,operand) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpGlobal(t,p,operand) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local context = GetSingleton(t,Program.type_Global)
+          local args = Args(t,GetProperty(t,context,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p,operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+    method Access.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
+
+      contingent
+        local get_name = name + "()"
+        sufficient resolver.this_type.methods[ get_name ]
+        sufficient resolver.this_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient resolver.this_type.has_method_named( set_name )
+        sufficient resolver.this_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
+
+      # There was no e.g. operator%= method. Check for operator% and convert if present:
+      #  'target %= value' -> 'target = target % value'
+      local op_method_name = "operator" + $OpSymbol
+
+      local v = resolver.find_local( name )
+      if (v)
+        # TargetType.operator%(target:TargetType,operand:OperandType)
+        local context = GetLocal(t,v)
+        local args = Args(t,context,operand)
+        local m = resolver.find_procedure( t, v.type, null, op_method_name, args, &require_global, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, null, m, args) )
+
+        # TargetType.operator%(operand:OperandType)
+        local arg = Args(t,operand)
+        m = resolver.find_procedure( t, v.type, context, op_method_name, arg, &suppress_error )
+        if (m) return SetLocal( t, v, resolver.resolve_call(t, context, m, arg) )
+
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          # TargetType.operator%(target:TargetType,operand:OperandType)
+          local context = GetThisProperty(t,p)
+          local args = Args(t,context,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator%(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetThisProperty( t, p, resolver.resolve_call(t, context, m, arg) )
+
+          return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator%(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          # TargetType.operator%(target:TargetType,operand:OperandType)
+          local context = GetSingleton(t,Program.type_Global)
+          local args = Args(t,GetProperty(t,context,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator%(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, context, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, context, m, arg) )
+
+          return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
+
+    method ContextAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+      context = resolver.visit( context )
+      local target = resolver.visit( this )
+      local context_type = context.require_type.[ organize ]
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      contingent
+        local get_name = name + "()"
+        sufficient context_type.methods[ get_name ]
+        sufficient context_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient context_type.has_method_named( set_name )
+        sufficient context_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
+
+      block p = context_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,target,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpProperty(t,context,p,operand) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpGlobal(t,p,operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+    method ContextAccess.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
+      if (args) return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
+
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+      local target = resolver.visit( this )
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      contingent
+        local get_name = name + "()"
+        sufficient context_type.methods[ get_name ]
+        sufficient context_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient context_type.has_method_named( set_name )
+        sufficient context_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      endContingent
+
+      block p = context_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,target,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
+
+          if (context.is_simple)
+            return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+          else
+            local v_context = resolver.add_local( t, "context", context.require_type )
+            resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+            local context_access = ContextAccess( t, GetLocal(v_context), name )
+            return resolver.visit( Assign(t, context_access, $OpName(t,context_access.cloned,operand)) )
+          endIf
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          return SetGlobalProperty( t, p, $OpName(t,GetGlobalProperty(t,p),operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
+
+    method ContextDirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local target = resolver.visit( this )
+      local context_type = context.require_type.[ organize ]
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      block p = context_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,target,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpProperty(t,context,p,operand) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          operand = operand.resolve_conversion_to(p.type, resolver)
+          return resolver.validate( $OpGlobal(t,p,operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
+
+    method ContextDirectAccess.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+      local target = resolver.visit( this )
+
+      # There was no e.g. operator+= method. Check for operator+ and convert if present:
+      #  'target += value' -> 'target = target + value'
+      local op_method_name = "operator" + $OpSymbol
+
+      block p = context_type.properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,target,operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, null, m, args) )
+
+          # TargetType.operator+(operand:OperandType)
+          local arg = Args(t,operand)
+          m = resolver.find_procedure( t, p.type, target, op_method_name, arg, &suppress_error )
+          if (m) return SetProperty( t, context, p, resolver.resolve_call(t, target, m, arg) )
+
+          if (context.is_simple)
+            return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+          else
+            local v_context = resolver.add_local( t, "context", context.require_type )
+            resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+            local context_access = ContextAccess( t, GetLocal(v_context), name )
+            return resolver.visit( Assign(t, context_access, $OpName(t,context_access.cloned,operand)) )
+          endIf
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          # TargetType.operator+(target:TargetType,operand:OperandType)
+          local args = Args(t,GetGlobalProperty(t,p),operand)
+          local m = resolver.find_procedure( t, p.type, null, op_method_name, args, &require_global, &suppress_error )
+          if (m) return SetGlobalProperty( t, p, resolver.resolve_call(t, null, m, args) )
+
+          return SetGlobalProperty( t, p, $OpName(t,GetGlobalProperty(t,p),operand) )
+        endIf
+      endBlock
+
+      return prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
+
+    method TypeAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      return ContextAccess( t, resolver.visit(this), args ).resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )
+
+    method TypeAccess.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
+      return ContextAccess( t, resolver.visit(this), args ).resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )
+
+    method IndexedAccess.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand:Cmd, resolver:Resolver )->Cmd
+      local context = resolver.visit( context ).require_value
+      local index = resolver.visit( index ).require_value
+
+      if (context.is_simple and index.is_simple)
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      else
+        local v_context = resolver.add_local( t, "context", context.require_type )
+        resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+        local v_index = resolver.add_local( t, "index", index.require_type )
+        resolver.insert( SetLocal(v_index, index, &initial_assignment) )
+
+        local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
+        return resolver.visit( Assign(t, indexed_access, $OpName(t,indexed_access.cloned,operand)) )
+      endIf
+
+    method IndexedAccess.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand:Cmd, resolver:Resolver )->Cmd
+      local context = resolver.visit( context ).require_value
+      local index = resolver.visit( index ).require_value
+
+      if (context.is_simple and index.is_simple)
+        return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
+      else
+        local v_context = resolver.add_local( t, "context", context.require_type )
+        resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+        local v_index = resolver.add_local( t, "index", index.require_type )
+        resolver.insert( SetLocal(v_index, index, &initial_assignment) )
+
+        local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
+        return resolver.visit( Assign(t, indexed_access, $OpName(t,indexed_access.cloned,operand)) )
+      endIf
+endAugment
+
+# Assignment
+augment
+  METHODS
+    method Cmd.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      throw t.error( "Illegal assignment target." )
+
+    method Access.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        local v = resolver.find_local( name )
+        if (v) return resolver.validate( SetLocal(t,v,new_value) )
+
+        local type = resolver.this_module.find_type( t, name, &extended_search )
+        if (type and type.attributes.is_singleton)
+          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
+        endIf
+
+        if (resolver.this_type)
+          local args = Args( t, new_value )
+          local m = resolver.find_procedure( t, resolver.this_type, null, "set_"+name, args, &suppress_error )
+          if (m)
+            if (not m.attributes.is_fallback)
+              if (m is resolver.this_procedure)
+                throw t.error( "Recursive call to setter. Either write '@$ = value' instead or explicitly call 'set_$(value)' if the recursion was intentional."(name,name) )
+              endIf
+              return resolver.resolve_access( t, null, m.name, args )
+            endIf
+          endIf
+
+          if (resolver.this_procedure.is_method)
+            local p = resolver.this_type.properties[ name ]
+            if (p)
+              return resolver.validate( SetThisProperty(t,p,new_value) )
+            endIf
+          endIf
+
+          if (m)
+            return resolver.resolve_access( t, null, m.name, args )
+          endIf
+
+          local p = resolver.this_type.global_properties[ name ]
+          if (p)
+            return resolver.validate( SetGlobalProperty(t,p,new_value) )
+          endIf
+        endIf
+
+        if (resolver.this_procedure.is_method)
+          throw t.error( "No such variable '$', or setter set_$(), in current context."(name,name) )
+        elseIf (resolver.this_procedure.is_global)
+          throw t.error( "No such local variable or global property '$' in current context."(name) )
+        else
+          throw t.error( "No such local variable '$' in current context."(name) )
+        endIf
+      endIf
+      throw t.error( "Illegal assignment target." )
+
+    method AnonymousTuple.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      # Destructuring assignment
+      #
+      # (a,b) = Tuple<<...>>(x,y)
+      #   ->
+      # local tuple = Tuple...
+      # a = tuple.x
+      # b = tuple.y
+      local tuple_type = new_value.require_type
+      if (not tuple_type.is_compound)
+        throw t.error( "Destructuring assignments can only be used with tuples." )
+      endIf
+
+      local cmd_read_tuple : Cmd
+      if (new_value.is_simple)
+        cmd_read_tuple = new_value
+      else
+        local v_tuple = resolver.add_local( t, "tuple", tuple_type, DummyInitialValue )
+        resolver.insert( SetLocal(t, v_tuple, new_value, &initial_assignment) )
+        cmd_read_tuple = GetLocal( v_tuple )
+      endIf
+
+      local m = tuple_type.m_primary_constructor
+      assert m
+      local params = m.parameters
+      if (params.count != this.count)
+        throw t.error( "Destructuring assignment to $ but $ are required."...
+            ("# variable".pluralized(this.count), params.count) )
+      endIf
+
+      forEach (prop at i in params)
+        resolver.insert( Assign(t,this[i],ContextAccess(t,cmd_read_tuple.cloned,prop.name)) )
+      endForEach
+
+      return null
+
+    method ContextAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        context = resolver.visit( context )
+        local context_type = context.require_type
+
+        local args = Args( t, new_value )
+        local m = resolver.find_procedure( t, context_type, context, "set_"+name, args, &suppress_error )
+        if (m)
+          if (not m.attributes.is_fallback)
+            return resolver.resolve_access( t, context, m.name, args )
+          endIf
+        endIf
+
+        local p = context_type.properties[ name ]
+        if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
+
+        if (m)
+          return resolver.resolve_access( t, context, m.name, args )
+        endIf
+
+        p = context_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( SetGlobalProperty(t,p,new_value) )
+        endIf
+
+        throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type) )
+      endIf
+
+      return prior.resolve_assignment( t, new_value, resolver )  # throws error
+
+    method ContextDirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      return resolver.resolve_direct_assignment( t, context, name, new_value )
+
+    method DirectAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      return resolver.resolve_direct_assignment( t, null, name, new_value )
+
+    method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      local result = resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
+      return result
+
+    method TypeAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      if (not args)
+        if (type.attributes.is_singleton)
+          return SetSingleton( t, type, new_value.resolve_conversion_to(type,resolver) )
+        endIf
+      endIf
+
+      return prior.resolve_assignment( t, new_value, resolver )  # throws error
+
+endAugment
+
+# Call
+augment
+  METHODS
+    method Cmd.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
+      throw t.error( "[INTERNAL] $.cmd_call() is undefined."(type_name) )
+
+    method GlobalMethod.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
+      return CallGlobalMethod( t, this, args )
+
+    method Method.cmd_call( t:Token, context:Cmd, args:Cmd )->Cmd
+      if (context)
+        if (type_context.is_reference)
+          return CallDynamicMethod( t, context, this, args )
+        else
+          return CallStaticMethod( t, context, this, args )
+        endIf
+      else
+        if (type_context.is_reference)
+          return CallThisDynamicMethod( t, this, args )
+        else
+          return CallThisStaticMethod( t, this, args )
+        endIf
+      endIf
+
+endAugment
+
+# ForEach
+augment
+  METHODS
+    method ForEachControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
+      println t.error( "Unsupported operation" )
+      throw UnsupportedOperationError()
+
+    method ForEachInControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
+      local cmd_iterator = Iterator( cmd_foreach.t, cmd_foreach.statements, ControlType.FOR_EACH )
+      resolver.push_scope( cmd_iterator )
+
+      resolver.visit( this )
+
+      collection.data.resolve_foreach_in( resolver, cmd_foreach, this, collection, cmd_iterator )
+
+      resolver.pop_scope
+      return cmd_iterator
+
+    method ForEachOfControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
+      if (optional_at) throw optional_at.t.error( "'at' cannot be used in a forEach-of." )
+
+      if (collection.starting_index)
+        if (collection.step_size)
+          collection.step_size = resolver.visit( collection.step_size )
+          local cmd_step = collection.step_size->(as LiteralInt32)
+          if (cmd_step.value < 0)
+            throw t.error( "Redundant pairing of forEach-of with a starting index and a negative step size. Use 'forEach (i in starting_index downTo 0)' instead." )
+          endIf
+        endIf
+      endIf
+
+      local cmd_iterator = Iterator( cmd_foreach.t, cmd_foreach.statements, ControlType.FOR_EACH )
+      resolver.push_scope( cmd_iterator )
+
+      resolver.visit( this )
+
+      collection.data.resolve_foreach_of( resolver, cmd_foreach, this, collection, cmd_iterator )
+
+      resolver.pop_scope
+      return cmd_iterator
+
+    method Cmd.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+                                  cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      local collection_type = cmd_collection.data.require_type
+      collection_type.organize
+
+      local has_count = collection_type.methods.contains("count()")
+      if (not has_count) has_count = collection_type.properties.contains("count")
+
+      local m_get          = collection_type.methods[ "at(Rogue::Int32)" ]
+      if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
+
+      if (has_count and m_get)
+        local down_to = false
+        local cmd_step : LiteralInt32
+        if (cmd_collection.step_size)
+          cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
+          cmd_step = cmd_collection.step_size->(as LiteralInt32)
+          if (cmd_step)
+            if (cmd_step.value < 0) down_to = true
+          else
+            throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
+          endIf
+        endIf
+
+        local v_index_name = which{ cmd_control.optional_at:cmd_control.optional_at.name || resolver.autoname("index") }
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        if (cmd_collection.starting_index)
+          resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
+        else
+          if (down_to)
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
+            resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+          else
+            resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          endIf
+        endIf
+
+        if (cmd_collection.step_size)
+          cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
+        elseIf (down_to)
+          cmd_iterator.upkeep.add( Decrement(t, Access(t,v_index.name)) )
+        else
+          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+        endIf
+
+        if (not m_get.return_type)
+          throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
+        endIf
+
+        local v_collection : Local
+        if (cmd_collection.name)
+          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        else
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+        endIf
+
+        if (down_to)
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
+        else
+          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          resolver.insert( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
+          cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+        endIf
+
+        if (cmd_control.name)
+          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
+          cmd_iterator.statements.insert(
+            SetLocal( v_cur,
+              resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
+                  Args(cmd_collection.t,GetLocal(v_index)) ),
+              &initial_assignment
+            )
+          )
+        endIf
+        return
+      endIf
+
+      local m_read_another = collection_type.methods[ "read_another()" ]
+      if (m_read_another)
+        # Standard/Collection implements read-another protocol.
+        if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read_another.type_context,m_read_another.signature) )
+        endIf
+
+        if (cmd_collection.starting_index)
+          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the read-another protocol." )
+        endIf
+
+        if (cmd_collection.step_size)
+          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has_another protocol." )
+        endIf
+
+        if (cmd_control.optional_at)
+          local v_index_name = cmd_control.optional_at.name
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+          resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+        endIf
+
+        local v_collection : Local
+        if (cmd_collection.name)
+          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        else
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+        endIf
+
+        local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
+        resolver.insert(
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another), &initial_assignment )
+        )
+        cmd_iterator.upkeep.add(
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another) )
+        )
+
+        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
+        local cur_type = m_read_another.return_type.properties//value.type
+        assert cur_type
+
+        if (cmd_control.name)
+          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+          cmd_iterator.statements.insert(
+            SetLocal( v_cur, ContextAccess( cmd_control.t, GetLocal(v_next), "value" ), &initial_assignment )
+          )
+        endIf
+
+        return
+      endIf
+
+      local has_has_another = collection_type.methods.contains( "has_another()" )
+      if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
+      local m_read = collection_type.methods[ "read()" ]
+      if (has_has_another and m_read)
+        # Standard/Collection implements has-another protocol.
+        if (not m_read.return_type)
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
+        endIf
+
+        if (cmd_collection.starting_index)
+          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
+        endIf
+
+        if (cmd_collection.step_size)
+          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
+        endIf
+
+        if (cmd_control.optional_at)
+          local v_index_name = cmd_control.optional_at.name
+          local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+          resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+        endIf
+
+        local v_collection : Local
+        if (cmd_collection.name)
+          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        else
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+        endIf
+
+        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
+
+        local cur_type = m_read.return_type
+        assert cur_type
+
+        if (cmd_control.name)
+          local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
+          assert resolver.control_stack.last is cmd_iterator
+          cmd_iterator.statements.insert(
+            SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
+          )
+        endIf
+
+        return
+      endIf
+
+      if (collection_type.methods.contains("iterator()") or collection_type.global_methods.contains("iterator()"))
+        cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "iterator" )
+
+        resolver.visit( cmd_collection )
+
+        resolve_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        return
+      endIf
+
+      if (collection_type.methods.contains("reader()") or collection_type.global_methods.contains("reader()"))
+        cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "reader" )
+
+        resolver.visit( cmd_collection )
+
+        resolve_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        return
+      endIf
+
+      local builder = String()
+      builder.println @|Standard/Collection does not implement any of the collection protocols:
+                       |
+                       |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
+                       |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                       |  read_another()->ElementType?
+                       |  iterator()->Standard/Collection (result must implement one of the above protocols)
+                       |  reader()->Standard/Collection (result must implement one of the above protocols)
+      throw t.error( builder )
+
+    method Cmd.resolve_foreach_of( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
+                                  cmd_collection:ForEachCollection, cmd_iterator:Iterator )
+      if (cmd_control.optional_at)
+        throw cmd_control.optional_at.t.error( "forEach 'at' cannot be used in conjunction with 'of'." )
+      endIf
+      local collection_type = cmd_collection.data.require_type
+      collection_type.organize
+
+      local has_count = collection_type.methods.contains("count()")
+      if (not has_count) has_count = collection_type.properties.contains("count")
+
+      # forEach-of doesn't use get/at but if it's not there we need to use a different protocol.
+      local m_get          = collection_type.methods[ "at(Rogue::Int32)" ]
+      if (not m_get) m_get = collection_type.methods[ "get(Rogue::Int32)" ]
+
+      if (has_count and m_get)
+        # Standard/Collection implements count/at or count/get protocol
+        local down_to = false
+        local cmd_step : LiteralInt32
+        if (cmd_collection.step_size)
+          cmd_collection.step_size = resolver.visit( cmd_collection.step_size )
+          cmd_step = cmd_collection.step_size->(as LiteralInt32)
+          if (cmd_step)
+            if (cmd_step.value < 0) down_to = true
+          else
+            throw cmd_collection.step_size.t.error( "Step size must be a literal integer." )
+          endIf
+        endIf
+
+        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        if (cmd_collection.starting_index)
+          resolver.insert( SetLocal(v_index,cmd_collection.starting_index,&initial_assignment) )
+        else
+          if (down_to)
+            local cmd_count_minus_1 = Subtract( t, ContextAccess(t, cmd_collection.data,"count"), LiteralInt32(t,1) )
+            resolver.insert( SetLocal(v_index,cmd_count_minus_1,&initial_assignment) )
+          else
+            resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+          endIf
+        endIf
+
+        if (cmd_collection.step_size)
+          cmd_iterator.upkeep.add( AddAndAssign(t, Access(t,v_index.name), cmd_collection.step_size) )
+        elseIf (down_to)
+          cmd_iterator.upkeep.add( Decrement(t, Access(t,v_index.name)) )
+        else
+          cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+        endIf
+
+        local v_collection : Local
+        if (cmd_collection.name)
+          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        else
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+        endIf
+
+        if (down_to)
+          cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
+        else
+          local v_count = resolver.add_local( t, "count", Program.type_Int32 )
+          resolver.insert( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
+          cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+        endIf
+
+        return
+      endIf
+
+      local m_read_another = collection_type.methods[ "read_another()" ]
+      if (m_read_another)
+        # Standard/Collection implements read-another protocol.
+        if (not m_read_another.return_type or not m_read_another.return_type.attributes.is_optional)
+          throw cmd_collection.t.error( "$.read_another() must return an optional value."(m_read_another.type_context) )
+        endIf
+
+        if (cmd_collection.starting_index)
+          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-of that uses the read-another protocol." )
+        endIf
+
+        if (cmd_collection.step_size)
+          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-of that uses the has_another protocol." )
+        endIf
+
+        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+
+        local v_collection : Local
+        if (cmd_collection.name)
+          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        else
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+        endIf
+
+        local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
+        resolver.insert(
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another), &initial_assignment )
+        )
+        cmd_iterator.upkeep.add(
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another) )
+        )
+
+        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
+
+        return
+      endIf
+
+      local has_has_another = collection_type.methods.contains( "has_another()" )
+      if (not has_has_another) has_has_another = collection_type.properties.contains( "has_another" )
+      local m_read = collection_type.methods[ "read()" ]
+      if (has_has_another and m_read)
+        # Standard/Collection implements has-another protocol.
+        if (not m_read.return_type)
+          throw cmd_collection.t.error( "$.$ must return an optional value."(m_read.type_context,m_read.signature) )
+        endIf
+
+        if (cmd_collection.starting_index)
+          throw cmd_collection.starting_index.t.error( "A starting index cannot be specified for a forEach-in that uses the has-another protocol." )
+        endIf
+
+        if (cmd_collection.step_size)
+          throw cmd_collection.step_size.t.error( "A step size cannot be specified for a forEach-in that uses the has-another protocol." )
+        endIf
+
+        local v_index_name = which{ cmd_control.name || resolver.autoname("index") }
+        local v_index = resolver.add_local( Local(t, v_index_name, DummyInitialValue, Program.type_Int32) )
+        resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
+        cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
+
+        local v_collection : Local
+        if (cmd_collection.name)
+          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+        else
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+        endIf
+
+        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
+
+        cmd_iterator.statements.insert(
+          resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read )
+        )
+
+        return
+      endIf
+
+      if (collection_type.methods.contains("iterator()") or collection_type.global_methods.contains("iterator()"))
+        cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "iterator" )
+
+        resolver.visit( cmd_collection )
+
+        resolve_foreach_of( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        return
+      endIf
+
+      if (collection_type.methods.contains("reader()") or collection_type.global_methods.contains("reader()"))
+        cmd_collection.data = ContextAccess( cmd_collection.t, cmd_collection.data, "reader" )
+
+        resolver.visit( cmd_collection )
+
+        resolve_foreach_of( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        return
+      endIf
+
+      local builder = String()
+      builder.println @|Standard/Collection does not implement any of the collection protocols:
+                       |
+                       |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
+                       |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                       |  read_another()->ElementType?
+                       |  iterator()->Standard/Collection (result must implement one of the above protocols)
+                       |  reader()->Standard/Collection (result must implement one of the above protocols)
+      throw t.error( builder )
+
+endAugment
+
+# Op
+augment
+  METHODS
+    method Type.resolve_binary_op( cmd:Binary, resolver:Resolver )->Cmd
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
+
+      if (not cmd.requires_operator_method)
+        if (left_type.is_primitive and right_type.is_primitive)
+          local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
+          if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
+          if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+          return cmd
+        endIf
+      endIf
+
+      if (cmd.symbol is null)
+        throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
+
+      else
+        local op_method_name = "operator" + cmd.symbol
+        local args_left_right = Args( t, cmd.left, cmd.right )
+
+        left_type.organize
+        right_type.organize
+
+        local exact_arg_types = true
+        loop 2
+          # LeftType.op(LeftType,RightType)  [global]
+          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          # RightType.op(LeftType,RightType)  [global]
+          m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          # LeftType.op(RightType)
+          local arg = Args( t, cmd.right )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+
+          exact_arg_types = false
+        endLoop
+
+        local message = String()
+        message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
+        message.println "  $.$($)" (left_type,op_method_name,right_type)
+        if (left_type is not right_type)
+          message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+        endIf
+        throw cmd.t.error( message )
+      endIf
+
+      return null
+
+    method Type.resolve_compare_op( cmd:Compare, op_method_name:String, resolver:Resolver, &suppress_error )->Cmd
+      local left_type = cmd.left.require_type
+      local right_type = cmd.right.require_type
+
+      if (left_type.is_primitive and right_type.is_primitive)
+        local result_type = Cmd.common_op_type( cmd.t, left_type, right_type )
+        if (left_type is not result_type) cmd.left .= resolve_conversion_to( result_type, resolver )
+        if (right_type is not result_type) cmd.right .= resolve_conversion_to( result_type, resolver )
+        return null
+
+      else
+        if (left_type.is_primitive or right_type.is_primitive)
+          if (left_type is Program.type_null or right_type is Program.type_null)
+            # Allow primitive "value is null" comparisons to become "not value" to more easily
+            # implement template types.
+            if (left_type.is_primitive) return resolver.visit( LogicalNot(cmd.t,cmd.left) )
+            else                        return resolver.visit( LogicalNot(cmd.t,cmd.right) )
+          endIf
+        endIf
+
+        local args_left_right = Args( t, cmd.left, cmd.right )
+
+        left_type.organize
+        right_type.organize
+
+        local exact_arg_types = true
+        loop 2
+          # LeftType.op(LeftType,RightType)  [global]
+          local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          # RightType.op(LeftType,RightType)  [global]
+          m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global,
+              &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
+
+          # LeftType.op(RightType)
+          local arg = Args( t, cmd.right )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
+
+          exact_arg_types = false
+        endLoop
+
+        if (suppress_error) return null
+
+        local message = String()
+        message.print   "Operation $ $ $ is undefined. "(left_type,op_method_name.after_first("operator"),right_type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
+        message.println "  $.$($)" (left_type,op_method_name,right_type)
+        message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+        throw cmd.t.error( message )
+      endIf
+
+      return null
+
+    method Type.resolve_stepper( cmd:Stepper, resolver:Resolver, &suppress_error )->Cmd
+      local type = this
+
+      if (type.is_primitive)
+        return cmd.dispatch_resolve_stepper( resolver )
+
+      elseIf (cmd.symbol is null)
+        throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
+
+      else
+        local op_method_name = "operator" + cmd.symbol
+        local arg = Args( t, cmd.operand )
+
+        type.organize
+
+        local exact_arg_types = true
+        loop 2
+          # OperandType.operator++(operand:OperandType)
+          local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, arg )
+
+          # OperandType.operator++
+          m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+
+          exact_arg_types = false
+        endLoop
+
+        if (cmd.symbol == "++")
+          return resolver.visit( AddAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+        elseIf (cmd.symbol == "--")
+          return resolver.visit( SubtractAndAssign(t, cmd.operand, LiteralInt32(t,1)) )
+        endIf
+
+        if (suppress_error) return null
+
+        local message = String()
+        message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($)  (global method)" (type,op_method_name,type)
+        message.println "  $.$()"  (type,op_method_name)
+        throw cmd.t.error( message )
+      endIf
+
+      return null
+
+    method Type.resolve_unary_op( cmd:Unary, resolver:Resolver, &suppress_error )->Cmd
+      local type = cmd.operand.require_type
+
+      if (type.is_primitive)
+        local op_type = Cmd.common_op_type( cmd.t, type, Program.type_Int32 )
+        if (type is not op_type) cmd.operand = cmd.operand.resolve_conversion_to(op_type, resolver)
+        return cmd
+
+      elseIf (cmd.symbol is null)
+        throw cmd.t.error( "[INTERNAL] Unsupported operation: " + cmd )
+
+      else
+        local op_method_name = "operator" + cmd.symbol
+        local arg = Args( t, cmd.operand )
+
+        type.organize
+
+        local exact_arg_types = true
+        loop 2
+          local m = resolver.find_procedure( cmd.t, type, null, op_method_name, arg, &require_global, &suppress_error, &=exact_arg_types )
+          if (m) return resolver.resolve_call( cmd.t, null, m, arg )
+
+          m = resolver.find_procedure( cmd.t, type, null, op_method_name, null, &suppress_error, &=exact_arg_types )
+          if (m and m.is_method)
+            if (cmd.symbol != "?" or not type.is_reference) return resolver.resolve_call( cmd.t, cmd.operand, m, null )
+            throw cmd.t.error( "With reference types, operator? (logicalize) must be a global method." )
+          endIf
+
+          exact_arg_types = false
+        endLoop
+
+        if (suppress_error) return null
+
+        local message = String()
+        message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($)  (global method)" (type,op_method_name,type)
+        message.println "  $.$()"  (type,op_method_name)
+        throw cmd.t.error( message )
+      endIf
+
+      return null
+endAugment
+
+# Stepper
+augment
+  METHODS
+    method Cmd.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      println t.error( "Unsupported operation" )
+      throw UnsupportedOperationError()
+
+    method Decrement.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      return operand.
+          resolve_stepper<<-1,DecrementLocal,DecrementGlobalProperty,DecrementProperty,DecrementThisProperty>>(
+            resolver
+          )
+
+    method Increment.dispatch_resolve_stepper( resolver:Resolver )->Cmd
+      return operand.
+          resolve_stepper<<1,IncrementLocal,IncrementGlobalProperty,IncrementProperty,IncrementThisProperty>>(
+            resolver
+          )
+
+    method Cmd.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      throw t.error( "Illegal stepper target. " )
+
+    method Access.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+      contingent
+        local get_name = name + "()"
+        sufficient resolver.this_type.methods[ get_name ]
+        sufficient resolver.this_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient resolver.this_type.has_method_named( set_name )
+        sufficient resolver.this_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        if ($Step == 1)
+          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+        else
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+        endIf
+      endContingent
+
+      local v = resolver.find_local( name )
+      if (v)
+        return resolver.validate( $OpLocal(t,v) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpThisProperty(t,p) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+    method ContextAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      if (args) return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      contingent
+        local get_name = name + "()"
+        sufficient context_type.methods[ get_name ]
+        sufficient context_type.global_methods[ get_name ]
+        local set_name = "set_" + name
+        sufficient context_type.has_method_named( set_name )
+        sufficient context_type.has_global_method_named( set_name )
+        escapeContingent
+      satisfied
+        if ($Step == 1)
+          return resolver.visit( AddAndAssign(t, this, LiteralInt32(t,1)) )
+        else
+          return resolver.visit( SubtractAndAssign(t, this, LiteralInt32(t,1)) )
+        endIf
+      endContingent
+
+      block p = context_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,context,p) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+    method ContextDirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      context = resolver.visit( context )
+      local context_type = context.require_type.[ organize ]
+
+      block p = context_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,context,p) )
+        endIf
+      endBlock
+
+      block p = context_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+
+    method DirectAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      local v = resolver.find_local( name )
+      if (v)
+        return resolver.validate( $OpLocal(t,v) )
+      endIf
+
+      block p = resolver.this_type.properties[ name ]
+        if (p)
+          return resolver.validate( $OpThisProperty(t,p) )
+        endIf
+      endBlock
+
+      block p = resolver.this_type.global_properties[ name ]
+        if (p)
+          return resolver.validate( $OpGlobal(t,p) )
+        endIf
+      endBlock
+
+      block p = Program.type_Global.properties[ name ]
+        if (p)
+          return resolver.validate( $OpProperty(t,GetSingleton(t,Program.type_Global),p) )
+        endIf
+      endBlock
+
+      return prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
+
+    method TypeAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      return ContextAccess( t, resolver.visit(this), args ).
+      resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )
+
+    method IndexedAccess.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver:Resolver )->Cmd
+      local context = resolver.visit( context ).require_value
+      local index = resolver.visit( index ).require_value
+
+      if (context.is_simple and index.is_simple)
+        return resolver.visit( Assign(t, this, Add(t,this.cloned,LiteralInt32(t,$Step))) )
+      else
+        local v_context = resolver.add_local( t, "context", context.require_type )
+        resolver.insert( SetLocal(v_context, context, &initial_assignment) )
+        local v_index = resolver.add_local( t, "index", index.require_type )
+        resolver.insert( SetLocal(v_index, index, &initial_assignment) )
+
+        local indexed_access = IndexedAccess( t, GetLocal(v_context), GetLocal(v_index) )
+        return resolver.visit( Assign(t, indexed_access, Add(t,indexed_access.cloned,LiteralInt32(t,$Step))) )
+      endIf
+
+endAugment
+

@@ -1,0 +1,66 @@
+module RogueC
+
+class EndScopePatcher : Visitor [singleton]
+  PROPERTIES
+    resolver      : Resolver
+    insert_cmd    : Cmd
+    control_stack = ControlStructure[]
+
+  METHODS
+    method patch( resolver, insert_cmd, cmd:Cmd )->Cmd
+      assert control_stack.is_empty
+      return visit( cmd )
+
+    method on( cmd:ControlStructure )->Cmd
+      control_stack.add( cmd )
+      visit_content( cmd )
+      control_stack.remove_last
+      return cmd
+
+    #method on( cmd:Escape )->Cmd
+      #if ((forEach in control_stack).catches(cmd)) return cmd
+      #return patched_statements( cmd )
+
+    method on( cmd:Return )->Cmd
+      if (cmd.result)
+        # return expression
+        # ->
+        # local result = expression
+        # patch_command
+        # return result
+        local return_type = resolver.this_procedure.return_type
+        if (not return_type)
+          throw cmd.t.error( "Unexpected return value - $ does not declare a return type."(resolver.this_procedure) )
+        endIf
+
+        cmd.result = resolver.visit( visit(cmd.result) )
+        cmd.result = cmd.result.resolve_conversion_to( return_type, resolver )
+
+        local v = resolver.add_local( cmd.result.t, "result", return_type )
+        local statements = Statements( v.t, SetLocal(v,cmd.result,&initial_assignment) )
+        statements.add( resolver.visit(insert_cmd.cloned) )
+        cmd.result = GetLocal(v)
+        statements.add( cmd )
+        return statements
+      else
+        return patched_statements( cmd )
+      endIf
+
+    method on_visit( cmd:Statements )
+      temporarily resolver.current_statements = cmd.list.rewriter
+        forEach (statement in resolver.current_statements)
+          statement = visit( statement )
+          if (statement)
+            if (statement.type) statement = statement.discarding_result
+            if (statement) resolver.current_statements.write( statement )
+          endIf
+        endForEach
+      endTemporarily
+
+    method on( cmd:Throw )->Cmd
+      return patched_statements( cmd )
+
+    method patched_statements( cmd:Cmd )->Cmd
+      return Statements( cmd.t, resolver.visit(insert_cmd.cloned), cmd )
+
+endClass

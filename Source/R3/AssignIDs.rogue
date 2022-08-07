@@ -1,0 +1,14 @@
+module RogueC
+
+class AssignIDs : InspectionVisitor
+  PROPERTIES
+    next_type_id   = 1
+    next_method_id = 1
+
+  METHODS
+    method on_visit_type( type:Type )
+      type.id = next_type_id
+      ++next_type_id
+      prior.on_visit_type( type )
+
+endClass

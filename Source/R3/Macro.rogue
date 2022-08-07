@@ -1,0 +1,7 @@
+module RogueC
+
+class Macro( t:Token, name:String, placeholders:Identifiers, tokens:Token[] )
+  METHODS
+    method to->String
+      return name
+endClass

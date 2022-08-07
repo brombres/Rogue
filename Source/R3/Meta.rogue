@@ -1,0 +1,10 @@
+module RogueC
+
+augment
+  METHODS
+    method Cmd.evaluate->Value
+      throw t.error( "Invalid metacondition." )
+
+    method LiteralLogical.evaluate->Value
+      return value
+endAugment

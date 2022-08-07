@@ -1,0 +1,295 @@
+module RogueC
+
+class Module
+  PROPERTIES
+    t    : Token
+    name : String
+
+    used_modules      = UsedModule[]
+    implicit_context  = Type[]
+    global_statements : Statements
+    templates         = [String:Template]
+    augments          = [String:String[]]
+    next_augment_id   = 0
+
+    types             = [String:Type]
+    type_arg_lookup   = [String:Type]
+    m_on_launch       : GlobalMethod
+
+    attributes        : Attributes
+
+    native_headers = NativeHeader[]
+    native_code    = NativeCode[]
+
+    is_organized   : Logical
+
+  METHODS
+    method init( t, name )
+      attributes = Attributes(t)
+      Program.modules[ name ] = this
+      ensure<<global_statements>>(t)
+
+      if (name != "Rogue")
+        uses_module( Program.default_module )
+      endIf
+
+      # Each module gets a Routine class to store routines as GLOBAL METHODS.
+      local tokens = Token[]
+      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
+      local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, 0 )
+      templates["Routine<<0>>"] = new_template
+
+    method collect_used_modules
+      # Ensure we have a flat list of all modules we should search for types in.
+      temporarily attributes.is_visiting = true
+        forEach (used_m in used_modules)
+          used_m.m.collect_exported_modules( this )
+        endForEach
+      endTemporarily
+
+      (forEach in used_modules).m.attributes.is_collected = false
+
+      # Every module has type Rogue::Global as an implicit context.
+      implicit_context.add( Program.type_Global )
+
+      # Add each class ModuleName::Routine to list of implicit contexts if it exists.
+      # Each routine is converted in to a global method of its module's Routine class.
+      local type_Routine = Type( t, Program.default_module, "Routine" )
+      implicit_context.add( type_Routine )
+      forEach (used_m in used_modules)
+        type_Routine = Type( t, used_m.m, "Routine" )
+        implicit_context.add( type_Routine )
+      endForEach
+
+    method collect_exported_modules( target:Module )
+      if (attributes.is_visiting or attributes.is_collected) return
+      attributes.is_collected = true
+
+      temporarily attributes.is_visiting = true
+        forEach (used_m in used_modules)
+          if (used_m.is_exported)
+            target.uses_module( used_m.m )
+            used_m.m.collect_exported_modules( target )
+          endIf
+        endForEach
+      endTemporarily
+
+    method description->String
+      return name
+
+    method find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
+      # template_name: e.g. List<<1>>
+      # type_name:     e.g. Int32[]
+      local mod : Module
+      (mod,template_name) = split_module_and_type( t, template_name )
+      if (mod is null) mod = split_module_and_type( t, type_name )._1
+
+      if (mod)
+        # Explicit module given
+        local result = mod.templates[ template_name ]
+        if (result) return result
+
+      else
+        local result = this.templates[ template_name ]
+        if (result) return result
+
+        if (extended_search)
+          forEach (used_m in used_modules)
+            result = used_m.m.templates[ template_name ]
+            if (result) return result
+          endForEach
+        endIf
+      endIf
+
+      return null
+
+    method must_find_template( t:Token, template_name:String, type_name:String, &extended_search )->Template
+      local result = find_template( t, template_name, type_name, &=extended_search )
+      if (result) return result
+
+      local (mod,type) = split_module_and_type( t, type_name )
+      if (mod is null) mod = this
+      Program.check_include_hints( t, mod, template_name )
+      throw t.error( "Reference to undefined type '$::$'."(mod,type) )
+
+    method find_type( t:Token, type_name:String, &extended_search )->Type
+      local (mod,isolated_type_name) = split_module_and_type( t, type_name )
+
+      if (mod)
+        # Explicit module given
+        local result = mod.types[ isolated_type_name ]
+        if (result) return result
+        extended_search = false
+
+      else
+        local result = this.types[ isolated_type_name ]
+        if (result) return result
+
+        if (extended_search)
+          forEach (used_m in used_modules)
+            result = used_m.m.types[ isolated_type_name ]
+            if (result) return result
+          endForEach
+        endIf
+
+        mod = this
+      endIf
+
+      # Handle non-parameterized templates here by checking for a match with <<0>> template parameters.
+      if (not isolated_type_name.ends_with('>'))
+        local template_name = isolated_type_name + "<<0>>"
+
+        local template = mod.templates[ template_name ]
+        if (template)
+          return Type( template.t, template, isolated_type_name )
+        endIf
+
+        if (extended_search)
+          forEach (used_m in used_modules)
+            template = used_m.m.templates[ template_name ]
+            if (template)
+              return Type( template.t, template, isolated_type_name )
+            endIf
+          endForEach
+        endIf
+      endIf
+
+      return null
+
+    method must_find_type( t:Token, type_name:String, &extended_search )->Type
+      local result = find_type( t, type_name, &=extended_search )
+      if (result) return result
+      local (mod,type) = split_module_and_type( t, type_name )
+      if (not mod) mod = this
+
+      Program.check_include_hints( t, mod, type_name )
+      throw t.error( "Reference to undefined type '$::$'."(mod,type) )
+
+    method instantiate_essential_and_api_types
+      if (attributes.is_essential)
+        # Instantiate one of each template with 0 type parameters
+        temporarily Program.current_module = this
+          forEach (templ in templates)
+            if (templ.placeholders.count == 0)
+              if (not types.contains(templ.name))
+                  Type( templ.t, templ.name )
+              endIf
+            endIf
+          endForEach
+        endTemporarily
+      endIf
+
+      if (attributes.is_essential)
+        (forEach in types).attributes.is_essential = true
+      endIf
+      if (attributes.is_api)
+        (forEach in types).attributes.is_api = true
+      endIf
+
+    method split_module_and_type( t:Token, type_name:String )->(Module,String)
+      if (type_name.begins_with('(') or type_name.begins_with('[') or not type_name.contains("::"))
+        # Type names beginning with ( are (tuples) or (Functions)
+        # Type names beginning with [ are [KeyType:ValueType] tables
+        return (null->(as Module),type_name)
+      endIf
+
+      # Find module name, handling e.g. MyModule::Type<<Rogue::Int32>>
+      local first_template_i = type_name.locate( "<<" )  # could be null
+      local last_scope_i = type_name.locate_last( "::", first_template_i )
+      if (not last_scope_i.exists) return (null->(as Module),type_name)
+
+      use mod_name = StringPool
+        forEach (i in 0..<last_scope_i.value)
+          mod_name.print type_name[i]
+        endForEach
+
+        type_name .= substring( last_scope_i.value + 2 )
+
+        local mod = Program.modules[ mod_name ]
+        if (mod) return (mod,type_name)
+
+        use relative_mod_name = StringPool
+          # Try one more thing - if in module Alpha, check Beta::XYZ -> Alpha::Beta::XYZ
+          relative_mod_name.print this.name
+          relative_mod_name.print "::"
+          relative_mod_name.print mod_name
+          mod = Program.modules[ relative_mod_name ]
+          if (mod) return (mod,type_name)
+        endUse
+
+        throw t.error( "No such module '$'. Is there a missing 'uses $' directive?" (mod_name,mod_name) )
+      endUse
+
+      return (null->(as Module),type_name) # never executed
+
+    method organize_methods
+      if (is_organized) return
+      is_organized = true
+
+      # Instantiate any essential templates
+      forEach (template in templates)
+        if (template.placeholders.count == 0)
+          if (not template.attributes.is_essential)
+            if (not template.attributes.is_aspect)
+              forEach (pattern in Program.api_patterns)
+                contingent
+                  if (pattern.contains("::"))
+                    necessary (FilePattern(pattern).matches("$::$"(name,template.name)))
+                  else
+                    necessary (FilePattern(pattern).matches(template.name))
+                  endIf
+                satisfied
+                  template.attributes.is_api = true
+                  template.attributes.is_essential = true
+                endContingent
+              endForEach
+            endIf
+          endIf
+
+          if (template.attributes.is_essential)
+            Type( template.tokens.first, template.name )
+          endIf
+        endIf
+      endForEach
+
+      # Add global statements to Routine.on_launch()
+      local type_Routine = Type( t, this, "Routine" )
+      local r = type_Routine.global_methods[ "on_launch()" ]
+      if (not r)
+        local launch_t = which{ global_statements.count:global_statements.first.t || t }
+        r = GlobalMethod( launch_t, type_Routine, "on_launch" )
+        r.statements.add( forEach in global_statements )
+        r.attributes.is_global = true
+        r.organize
+        type_Routine.global_methods[ r.signature ] = r
+        if (r.statements.count)
+          r.attributes.is_essential = true
+          type_Routine.attributes.is_essential = true
+        endIf
+      else
+        r.statements.add( forEach in global_statements )
+      endIf
+      m_on_launch = r
+
+    method to->String
+      return name
+
+    method uses_module( m:Module, &is_exported )
+      if (m is this) return
+      # happens when this is the default module because all modules implicitly "use" default module
+
+      forEach (existing_m in used_modules)
+        if (existing_m.m is m) return # already added
+      endForEach
+
+      used_modules.add( UsedModule(m,&=is_exported) )
+
+endClass
+
+class UsedModule( m:Module, is_exported:Logical ) [compound]
+  METHODS
+    method to->String
+      return m.name
+endClass
+

@@ -1,0 +1,156 @@
+module RogueC
+
+class Finalizer : Visitor
+  METHODS
+    method apply
+      # Remove special aspects that implement augments
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          if (type.aspects)
+            type.aspects.discard( $.attributes.is_augment )
+          endIf
+        endForEach
+      endForEach
+
+      # Collect and preserve certain methods that are implicitly called
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+
+          # on_singleton_change(old_singleton:Type,new_singleton:Type)
+          if (type.attributes.is_singleton)
+            local full_type = "$::$"(type.module_context,type.name)
+            type.m_on_singleton_change = type.global_methods["on_singleton_change($,$)"(full_type,full_type)]
+
+            if (not type.m_on_singleton_change)
+              forEach (m in type.global_methods)
+                if (m.name == "on_singleton_change")
+                  throw m.t.error( "Incorrect signature - expected on_singleton_change(old_singleton:$,new_singleton:$)" ...
+                    (type,type) )
+                endIf
+              endForEach
+            endIf
+
+            if (type.m_on_singleton_change)
+              type.m_on_singleton_change.attributes.is_essential = true
+              if (type.m_on_singleton_change.return_type)
+                throw type.m_on_singleton_change.t.error( "on_singleton_change() cannot return a value." )
+              endIf
+            endIf
+          endIf
+
+          # on_cleanup
+          block m = type.methods["on_cleanup()"]
+            if (m) m.attributes.is_essential = true
+          endBlock
+
+        endForEach
+      endForEach
+
+      # Cull unused classes and methods
+      Program.dynamic_methods.clear
+      BuildDynamicMethodTable().apply
+      CullUnusedElements().apply
+      Program.dynamic_methods.clear
+      BuildDynamicMethodTable().apply  # Rebuild using new, slimmer program
+      forEach (method_group in Program.dynamic_methods)
+        if (method_group.count > 1)
+          (forEach in method_group).attributes.dynamic_dispatch = true
+        endIf
+      endForEach
+
+      Program.apply( AssignIDs() )
+
+      Program.apply( this )
+
+      # Collect a list of all types in dependency order.
+      local types = Type[]
+      forEach (m in Program.modules)
+        (forEach in m.types).collect_compounds_and_primitives( types )
+      endForEach
+      forEach (m in Program.modules)
+        (forEach in m.types).collect_reference_types( types )
+      endForEach
+      (forEach in types).attributes.is_collected = false
+      forEach (type at index in types) type.index = index
+      Program.all_types = types
+
+      # Collect list of inheriting types for each method
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+          forEach (m in type.methods)
+            if (m.type_context is not type)
+              assert (not m.inheriting_types.contains(type))
+              m.inheriting_types.add( type )
+            endIf
+          endForEach
+        endForEach
+      endForEach
+
+      ExceptionAnalyzer().apply()
+
+      if (Program.cmd_call_global_cases)
+        # Reorder introspection call dispatcher to use sequential case numbers
+        Program.cmd_call_global_cases.list.sort(
+        (a,b) => a->(as WhichCase).args[0]->(as LiteralInt32).value <
+                 b->(as WhichCase).args[0]->(as LiteralInt32).value )
+
+        Program.cmd_call_object_cases.list.sort(
+          (a,b) => a->(as WhichCase).args[0]->(as LiteralInt32).value <
+                   b->(as WhichCase).args[0]->(as LiteralInt32).value )
+      endIf
+
+    method on_visit( cmd:CallDynamicMethod )
+      ensure_dynamic_dispatch( cmd.info->(as Method) )
+      visit_children( cmd )
+
+    method on_visit( cmd:CallThisDynamicMethod )
+      ensure_dynamic_dispatch( cmd.info->(as Method) )
+      visit_children( cmd )
+
+    method ensure_dynamic_dispatch( m:Method )
+      if (m.type_context.is_aspect or m.attributes.is_abstract)
+        if (not Program.dynamic_methods.contains(m.dynamic_signature))
+          m.attributes.dynamic_dispatch = true
+          m.attributes.is_placeholder = true
+          Program.dynamic_methods[m.dynamic_signature] = Method[][m]
+        endIf
+      endIf
+
+    method on( cmd:GetProperty )->Cmd
+      if (cmd.info.type_context.is_enum)
+        if (cmd.info.name == "value")
+          local create_compound = cmd.context->(as CreateCompound)
+          if (create_compound)
+            return create_compound.args.first
+          endIf
+        endIf
+      endIf
+      return cmd
+
+    method on_visit( cmd:GenericFunctionDefinition )
+      throw cmd.t.error( "Generic functions must be passed as an argument or assigned to a variable with specialized Function type." )
+
+    method on_visit_type( type:Type )
+      type.collect_base_type_ids
+
+      type.base_type_lookup_index = Program.base_type_lookup.count
+      Program.base_type_lookup.add( forEach in type.base_type_ids )
+
+      prior.on_visit_type( type )
+
+    method on_visit( m:Method )
+      if (this_type.is_reference)
+        if (this_type.base_class)
+          local base_m = this_type.base_class.methods[ m.signature ]
+          if (base_m) base_m.attributes.is_overridden = true
+        endIf
+      endIf
+      visit_children( m )
+
+    method on_visit( p:Property )
+      p.initial_value = null
+
+    method on_visit( cmd:TypeContext )
+      throw cmd.t.error( "Unused type context." )
+
+endClass
