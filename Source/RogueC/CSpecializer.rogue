@@ -178,20 +178,13 @@ class CSpecializer : Visitor
     method on_visit( cmd:Iterator )
       control_stack.add( cmd )
 
-      if (Program.gc_auto)
-        local v = add_local( cmd.t, "condition", Program.type_Logical, DummyInitialValue )
-        insert( SetLocal(cmd.t,v,cmd.condition.cloned,&initial_assignment) )
-        cmd.upkeep.add( SetLocal(v,cmd.condition,&initial_assignment) )
-        cmd.condition = GetLocal(v)
-        cmd.statements = visit( cmd.statements )
-        cmd.upkeep = visit( cmd.upkeep )
-        cmd.control = visit( cmd.control )
-      else
-        cmd.condition = visit( cmd.condition )
-        cmd.statements = visit( cmd.statements )
-        cmd.upkeep = visit( cmd.upkeep )
-        cmd.control = visit( cmd.control )
-      endIf
+      local v = add_local( cmd.t, "condition", Program.type_Logical, DummyInitialValue )
+      insert( SetLocal(cmd.t,v,cmd.condition.cloned,&initial_assignment) )
+      cmd.upkeep.add( SetLocal(v,cmd.condition,&initial_assignment) )
+      cmd.condition = GetLocal(v)
+      cmd.statements = visit( cmd.statements )
+      cmd.upkeep = visit( cmd.upkeep )
+      cmd.control = visit( cmd.control )
 
       control_stack.remove_last
 
