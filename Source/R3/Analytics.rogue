@@ -1,22 +1,24 @@
 module RogueC
 
+$include Utility/Timer
+
 class Analytics [singleton]
   PROPERTIES
-    total_time         = Stopwatch(&stopped)
-    tokenization       = Stopwatch(&stopped)
-    preprocessing      = Stopwatch(&stopped)
-    parse_templates    = Stopwatch(&stopped)
-    ensure_definitions = Stopwatch(&stopped)
-    main_parse         = Stopwatch(&stopped)
-    collect_modules    = Stopwatch(&stopped)
+    total_time         = Timer(&stopped)
+    tokenization       = Timer(&stopped)
+    preprocessing      = Timer(&stopped)
+    parse_templates    = Timer(&stopped)
+    ensure_definitions = Timer(&stopped)
+    main_parse         = Timer(&stopped)
+    collect_modules    = Timer(&stopped)
 
-    instantiate_essential = Stopwatch(&stopped)
-    organize_methods      = Stopwatch(&stopped)
-    tranform              = Stopwatch(&stopped)
-    resolve_used_elements = Stopwatch(&stopped)
-    finalize              = Stopwatch(&stopped)
+    instantiate_essential = Timer(&stopped)
+    organize_methods      = Timer(&stopped)
+    tranform              = Timer(&stopped)
+    resolve_used_elements = Timer(&stopped)
+    finalize              = Timer(&stopped)
 
-    generate_c  = Stopwatch(&stopped)
+    generate_c  = Timer(&stopped)
 
   METHODS
     method display

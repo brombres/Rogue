@@ -339,7 +339,8 @@ class Resolver : Poolable, Visitor
 
       local m = find_method( cmd.t, this_type.base_class, null, cmd.name, args )
       local prior_m = m
-      if (m.type_context is this_type) m = m.overridden_method
+      if (prior_m.type_context is this_type) prior_m = prior_m.overridden_method
+      if (not prior_m) throw cmd.t.error( "Invalid prior call - $ has no prior definition."(m) )
 
       if (not prior_m)
         if (cmd.name == "init")
@@ -359,6 +360,31 @@ class Resolver : Poolable, Visitor
               "Note that any incorporated aspect methods cannot be called with 'prior'."(m) )
         endIf
       endIf
+
+      args.list.discard( $ instanceOf DefaultArg )
+      visit( args )
+      convert_args_to_parameter_types( args, prior_m )
+
+      return validate( CallThisStaticMethod(cmd.t, prior_m, args) )
+
+    method on( cmd:CallPriorTemplatedMethod )->Cmd
+      if (not this_type.base_class)
+        throw cmd.t.error( "Invalid prior call - $ is not an extended class."(this_type) )
+      endIf
+
+      local args = which{ cmd.args || Args(cmd.t) }
+
+      local cmd_call = resolve_templated_call( cmd.t, this_module, this_type.base_class, cmd.name,
+                                               cmd.template_args, args )->(as CallProcedure)
+      if (not cmd_call or cmd_call not instanceOf CallThisDynamicMethod)
+        local sig = which{ cmd_call:cmd_call.info.signature || cmd.name }
+        throw cmd.t.error( "Invalid prior call - $ is not an object method."(sig) )
+      endIf
+
+      local m = cmd_call.info
+      local prior_m = m
+      if (prior_m.type_context is this_type) prior_m = prior_m.overridden_method
+      if (not prior_m) throw cmd.t.error( "Invalid prior call - $ has no prior definition."(m) )
 
       args.list.discard( $ instanceOf DefaultArg )
       visit( args )
@@ -1372,48 +1398,53 @@ class Resolver : Poolable, Visitor
         return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.type_args), cmd.args) )
       endIf
 
+      return resolve_templated_call( cmd.t, cmd.module_context, cmd.type_context, cmd.name, cmd.type_args, cmd.args )
+
+    method resolve_templated_call( t:Token, module_context:Module, type_context:Type,
+                                   name:String, template_args:TemplateArgs, args:Cmd )->Cmd
       # Assume templated method call
-      local full_name   = cmd.type_args->String( cmd.name )
+      local full_name = template_args->String( name )
       local t_name : String
 
       # Routine template
-      t_name = instantiate_routine_templates( cmd.module_context, cmd, t_name, full_name )
-      forEach (mod in cmd.module_context.used_modules)
-        t_name = instantiate_routine_templates( mod.m, cmd, t_name, full_name )
+      t_name = instantiate_routine_templates( t, module_context, type_context, name, t_name, full_name, template_args )
+      forEach (mod in module_context.used_modules)
+        t_name = instantiate_routine_templates( t, mod.m, type_context, name, t_name, full_name, template_args )
       endForEach
 
-      if (not cmd.type_context)
-        throw cmd.t.error( "No such method $."(full_name) )
+      if (not type_context)
+        throw t.error( "No such method $."(full_name) )
       endIf
 
       # Global Method Template
-      if (not cmd.type_context.global_method_template_instances.contains(full_name))
-        if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
-        local templates = cmd.type_context.global_method_templates[ t_name ]
+      if (not type_context.global_method_template_instances.contains(full_name))
+        if (not t_name) t_name = "$<<$>>"(name,template_args.count)
+        local templates = type_context.global_method_templates[ t_name ]
         if (templates)
-          (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
+          (forEach in templates).instantiate( template_args, type_context )
         endIf
       endIf
 
       # Object Method Template
-      if (not cmd.type_context.method_template_instances.contains(full_name))
-        if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
-        local templates = cmd.type_context.method_templates[ t_name ]
+      if (not type_context.method_template_instances.contains(full_name))
+        if (not t_name) t_name = "$<<$>>"(name,template_args.count)
+        local templates = type_context.method_templates[ t_name ]
         if (templates)
-          (forEach in templates).instantiate( cmd.type_args, cmd.type_context )
+          (forEach in templates).instantiate( template_args, type_context )
         endIf
       endIf
 
-      return resolve_call( cmd.t, cmd.type_context, null, full_name, cmd.args )
+      return resolve_call( t, type_context, null, full_name, args )
 
-    method instantiate_routine_templates( mod:Module, cmd:TemplatedAccess, t_name:String, full_name:String )->String
-      local type_Routine = mod.must_find_type( cmd.t, "Routine" )
-      if (type_Routine is not cmd.type_context)
+    method instantiate_routine_templates( t:Token, mod:Module, type_context:Type, name:String,
+                                          t_name:String, full_name:String, template_args:TemplateArgs )->String
+      local type_Routine = mod.must_find_type( t, "Routine" )
+      if (type_Routine is not type_context)
         if (not type_Routine.global_method_template_instances.contains(full_name))
-          if (not t_name) t_name = "$<<$>>"(cmd.name,cmd.type_args.count)
+          if (not t_name) t_name = "$<<$>>"(name,template_args.count)
           local templates = type_Routine.global_method_templates[ t_name ]
           if (templates)
-            (forEach in templates).instantiate( cmd.type_args, type_Routine )
+            (forEach in templates).instantiate( template_args, type_Routine )
           endIf
         endIf
       endIf

@@ -2749,10 +2749,18 @@ parser
   on "prior"
     mustConsume '.'
     identifier
-    if (nextIs('(')) access_args
-    else             createNull
-    create CallPriorMethod( name:String, args:Args )
-    access_inner
+    if (nextIs("<<"))
+      template_args
+      if (nextIs('(')) access_args
+      else             createNull
+      create CallPriorTemplatedMethod( name:String, template_args:TemplateArgs, args:Args )
+      access_inner
+    else
+      if (nextIs('(')) access_args
+      else             createNull
+      create CallPriorMethod( name:String, args:Args )
+      access_inner
+    endIf
     return
   endOn
 
