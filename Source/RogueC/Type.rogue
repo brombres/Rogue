@@ -89,6 +89,9 @@ class Type : Cmd
     method create( t:Token, template:Template, type_args=null:TemplateArgs, &is_tuple )->Type
       return Type( t, template, type_args->String(template.name), type_args, &=is_tuple )
 
+    method create( t:Token, template:Template, module_context:Module, type_args=null:TemplateArgs, &is_tuple )->Type
+      return Type( t, template, module_context, type_args->String(template.name), type_args, &=is_tuple )
+
     method create( t:Token, template:Template, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
       return create( t, template, template.module_context, name, type_args, &=is_tuple )
 

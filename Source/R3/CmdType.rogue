@@ -703,7 +703,7 @@ augment
       local type_template_name = "$<<$>>"(name,type_args.count)
       local type_template = module_context.find_template( t, type_template_name, name, &extended_search )
       if (type_template)
-        local type = Type( t, type_template, type_args )
+        local type = Type( t, type_template, module_context, type_args )
         if (type and (args or type.attributes.is_singleton)) return type
       endIf
 

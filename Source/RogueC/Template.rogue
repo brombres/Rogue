@@ -64,7 +64,7 @@ class Template
       if (augments and augments.count)
         forEach (augment_name in augments)
           local augment_template = type.module_context.templates[augment_name]
-          local augment_type = Type( t, augment_name, augment_template.attributes.flags )
+          local augment_type = Type( t, type.module_context, augment_name, augment_template.attributes.flags )
           local augment_tokens = augment_template.tokens
           augment_tokens = Template.make_replacements( augment_type, augment_tokens, replacements )
 
