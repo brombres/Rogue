@@ -1,9 +1,9 @@
 module RogueC
 uses Utility/WorkList
 
-$localMacro FOLD_CONSTANTS(m,Type,op)
-  method on_fold_constants( cmd:Type )->Cmd
-    return m<<op>>( cmd )
+$localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
+  method on_fold_constants( cmd:$Type )->Cmd
+    return $m<<$op>>( cmd )
 $endMacro
 
 class Resolver : Poolable, Visitor
@@ -172,21 +172,21 @@ class Resolver : Poolable, Visitor
     method on_fold_constants( cmd:Cmd )->Cmd
       return cmd
 
-    FOLD_CONSTANTS( fold_numerical_constants, Add,            + )
-    FOLD_CONSTANTS( fold_numerical_constants, Subtract,       - )
-    FOLD_CONSTANTS( fold_numerical_constants, Multiply,       * )
-    FOLD_CONSTANTS( fold_numerical_constants, Divide,         / )
-    FOLD_CONSTANTS( fold_numerical_constants, Mod,            % )
-    FOLD_CONSTANTS( fold_numerical_constants, Power,          ^ )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseAnd,     & )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseOr,      | )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseXor,     ~ )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftLeft,   :<<:  )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRight,  :>>:  )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRightX, :>>>: )
-    #FOLD_CONSTANTS( fold_logical_constants,   LogicalAnd,     and )
-    #FOLD_CONSTANTS( fold_logical_constants,   LogicalOr,      or  )
-    #FOLD_CONSTANTS( fold_logical_constants,   LogicalXor,     xor )
+    FOLD_CONSTANTS<< fold_numerical_constants, Add,            + >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Subtract,       - >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Multiply,       * >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Divide,         / >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Mod,            % >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Power,          ^ >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitwiseAnd,     & >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitwiseOr,      | >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitwiseXor,     ~ >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitShiftLeft,   :<<:  >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitShiftRight,  :>>:  >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitShiftRightX, :>>>: >>
+    #FOLD_CONSTANTS<< fold_logical_constants,   LogicalAnd,     and >>
+    #FOLD_CONSTANTS<< fold_logical_constants,   LogicalOr,      or  >>
+    #FOLD_CONSTANTS<< fold_logical_constants,   LogicalXor,     xor >>
 
     method fold_bitwise_constants<<$op>>( cmd:Binary )->Cmd
       if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)

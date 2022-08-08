@@ -1072,7 +1072,7 @@ parser
   on IDENTIFIER  -> Identifier(name=content)
   if (nextIs(PLACEHOLDER))
     if (not disable_output)
-      syntaxError "Unrecognized $directive or unexpected $placeholder."
+      syntaxError "Unrecognized $directive or $placeholder."
     endIf
     on PLACEHOLDER -> Identifier(name=content)
   endIf
@@ -1944,24 +1944,44 @@ parser
   # Produces a list of TokenLists
   beginList
 
-  mustConsume '('
+  mustConsume '<<'
   consume_eols
-  if (consume(')')) produceList Args
+  if (consume('>>')) produceList Args
   consume_eols
 
   while (hasAnother and not nextHasAttribute(structural))
     savePosition
     ++disable_output
-    arg
+    macro_arg
     --disable_output
     createTokenList  # consumes saved position
     consume_eols
     consume ','
     consume_eols
   endWhile
-  mustConsume ')'
+  mustConsume '>>'
 
   produceList
+
+- macro_arg
+  while (hasAnother and not nextIs(',') and not nextIs('>>'))
+    if (consume('<<'))
+      nested_macro_arg
+      mustConsume('>>')
+    else
+      read
+    endIf
+  endWhile
+
+- nested_macro_arg
+  while (hasAnother and not nextIs('>>'))
+    if (consume('<<'))
+      nested_macro_arg
+      mustConsume('>>')
+    else
+      read
+    endIf
+  endWhile
 
 - arg
   call on_begin_arg # detect use of '$' and '$1' etc. generic fn args
@@ -3227,14 +3247,14 @@ parser
     identifier   # macro name
 
     # placeholders
-    mustConsume '('
+    mustConsume '<<'
     beginList
-      identifier
+      placeholder
       while (consume(','))
-        identifier
+        placeholder
       endWhile
-    createList Identifiers
-    mustConsume ')'
+    createList Placeholders
+    mustConsume '>>'
 
     if (nextIs(EOL))
       consume_eols
@@ -3271,14 +3291,14 @@ parser
     identifier   # macro name
 
     # placeholders
-    mustConsume '('
+    mustConsume '<<'
     beginList
-      identifier
+      placeholder
       while (consume(','))
-        identifier
+        placeholder
       endWhile
-    createList Identifiers
-    mustConsume ')'
+    createList Placeholders
+    mustConsume '>>'
 
     if (nextIs(EOL))
       consume_eols

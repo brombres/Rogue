@@ -4930,3 +4930,12 @@ class CommandExists : Cmd
       return "CommandExists($)" (%command)
 
 endClass
+
+class Placeholders : CmdList
+  METHODS
+    method description->String
+      return "Placeholders" + list_description
+
+    method get( index:Int32 )->Placeholder
+      return list[index]->(as Placeholder)
+endClass

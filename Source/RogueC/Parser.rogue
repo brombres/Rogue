@@ -230,7 +230,7 @@ class Parser : ParserCore, Poolable
     method define_macro
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens
-      local placeholders = _cmd_stack.remove_last->(as Identifiers)
+      local placeholders = _cmd_stack.remove_last->(as Placeholders)
       local id_node = _cmd_stack.remove_last
 
       local macros = Program.macros[id_node->String]
@@ -261,7 +261,7 @@ class Parser : ParserCore, Poolable
     method define_local_macro
       assert _cmd_stack.count >= 3
       local tokens = _cmd_stack.remove_last->(as TokenList).tokens
-      local placeholders = _cmd_stack.remove_last->(as Identifiers)
+      local placeholders = _cmd_stack.remove_last->(as Placeholders)
       local id_node = _cmd_stack.remove_last
 
       ensure local_macros
@@ -387,7 +387,7 @@ class Parser : ParserCore, Poolable
         return
       endIf
 
-      if (_next_t.type == TokenType.SYMBOL_OPEN_PAREN)
+      if (_next_t.type == TokenType.SYMBOL_LTLT)
         if (expand_macro(Program.macros[_cur_t->String])) return
         if (local_macros and expand_macro(local_macros[_cur_t->String])) return
       endIf
@@ -412,7 +412,7 @@ class Parser : ParserCore, Poolable
 
           use expanded_tokens = WorkList<<Token>>
             forEach (t in m.tokens)
-              if (t.type == TokenType.IDENTIFIER)
+              if (t.type == TokenType.PLACEHOLDER)
                 local replacement = replacements[ t.content ]
                 if (replacement)
                   expanded_tokens.add( forEach in replacement )

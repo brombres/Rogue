@@ -20,8 +20,15 @@ augment Build
 endAugment
 
 routine rogo_r2
+  execute @|froley --project=RogueC Source/RogueC/Rogue.froley Source/RogueC
   execute @|roguec Source/RogueC/R2.rogue --gc=manual --debug --output=Build/R2-macOS.cpp --target=Console,C++,macOS
   execute @|c++ -O0 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
+endRoutine
+
+routine rogo_t
+  execute @|r2 Test.rogue --main --gc=manual --debug --target=Console,C++
+           |gcc Test.c -o test
+           |./test
 endRoutine
 
 routine rogo_default
