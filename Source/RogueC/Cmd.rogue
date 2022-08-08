@@ -1640,6 +1640,11 @@ class Method : Procedure
         propagated_m.is_resolved        = false
         propagated_m.attributes.is_used = false
         propagated_m.dynamic_signature # adds to Program.dynamic_methods{}
+
+        if (type_context.base_class)
+          propagated_m.overridden_method = type_context.base_class.methods[ propagated_m.signature ]
+        endIf
+
         return propagated_m
       endTemporarily
 
@@ -3606,7 +3611,13 @@ class MethodTemplate : Cmd
 
         # Propagate new method template to types that have already organized & inherited methods
         local sig = m.signature
-        if (not type_context.methods.contains(sig)) type_context.methods[ sig ] = m
+
+        local existing_m = type_context.methods[sig]
+        if (not existing_m or existing_m.type_context is not type_context)
+          m.overridden_method = existing_m
+          type_context.methods[ sig ] = m
+        endIf
+
         if (type_context.methods_organized)
           use all_extended_types = WorkList<<Type>>
             type_context.collect_extended_types( all_extended_types )
@@ -4938,4 +4949,24 @@ class Placeholders : CmdList
 
     method get( index:Int32 )->Placeholder
       return list[index]->(as Placeholder)
+endClass
+
+class CallPriorTemplatedMethod : Cmd
+  PROPERTIES
+    name          : String
+    template_args : TemplateArgs
+    args          : Args
+
+  METHODS
+    method init( t, name, template_args, args )
+
+    method init( existing:CallPriorTemplatedMethod )
+      prior.init( existing )
+      name = existing.name
+      if (existing.template_args) template_args = existing.template_args.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "CallPriorTemplatedMethod($,$,$)" (%name,%template_args,%args)
+
 endClass

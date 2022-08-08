@@ -1097,4 +1097,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.command)
       return result
 
+    method on_visit_children( cmd:CallPriorTemplatedMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.template_args)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
 endClass
