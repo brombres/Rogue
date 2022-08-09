@@ -1813,15 +1813,16 @@ class Resolver : Poolable, Visitor
           endIf
         endIf
 
-        if (type_context)
-          type_context.organize
-          resolve_definitions( type_context )
-          local def = type_context.definitions[ name ]
-          if (def) return visit( def.cloned )
-        elseIf (this_type)
-          local def = this_type.definitions[ name ]
-          if (def) return visit( def.cloned )
-        endIf
+        block
+          # Check DEFINITIONS
+          local type = which{ type_context || this_type }
+          while (type)
+            resolve_definitions( type )
+            local def = type.definitions[ name ]
+            if (def) return visit( def.cloned )
+            type .= base_class
+          endWhile
+        endBlock
 
         local is_fallback = false
         local match = find_method( t, type_context, context, name, args, &require_global=is_global, &suppress_error )
@@ -1870,6 +1871,16 @@ class Resolver : Poolable, Visitor
           assert type_context
           local result = resolve_global_access( t, type_context, name, args, &=suppress_error )
           if (result) return result
+        endBlock
+
+        block
+          local base_class = type_context.base_class
+          while (base_class)
+            base_class.organize
+            local result = resolve_global_access( t, base_class, name, args, &=suppress_error )
+            if (result) return result
+            base_class .= base_class
+          endWhile
         endBlock
 
         block
