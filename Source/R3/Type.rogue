@@ -494,14 +494,18 @@ class Type : Cmd
       endIf
 
       if (existing_m)
-        if (aspect_m.attributes.is_insert)
+        if (aspect_m.attributes.is_insert and existing_m.type_context is this)
           aspect_m.statements.add( forEach in existing_m.statements )
           existing_m.body = aspect_m.body
           existing_m.statements = aspect_m.statements
-        elseIf (aspect_m.attributes.is_append)
+        elseIf (aspect_m.attributes.is_append and existing_m.type_context is this)
           existing_m.statements.add( forEach in aspect_m.statements )
-        elseIf (existing_m.type_context is not this or is_augment)
+        elseIf (existing_m.type_context is not this)
           methods[ aspect_m.signature ] = aspect_m
+          aspect_m.overridden_method = existing_m
+        elseIf (is_augment)
+          methods[ aspect_m.signature ] = aspect_m
+          aspect_m.overridden_method = existing_m.overridden_method
         endIf
       else
         methods[ aspect_m.signature ] = aspect_m
@@ -1526,20 +1530,22 @@ class Type : Cmd
 
       endIf
 
-      # Verify that every [override] method is indeed overriding a prior method.
-      forEach (m in methods.values)
-        if (m.attributes.is_override)
-          if (not m.overridden_method)
-            throw m.t.error( "Method $ does not override any prior definition. Check for signature type errors or remove the [override] attribute." )
+      if (not this.is_aspect)
+        # Verify that every [override] method is indeed overriding a prior method.
+        forEach (m in methods.values)
+          if (m.attributes.is_override)
+            if (not m.overridden_method)
+              throw m.t.error( "Method $.$ does not override any prior definition. Check for signature type errors or remove the [override] attribute."(m.type_context,m) )
+            endIf
           endIf
-        endIf
-      endForEach
+        endForEach
 
-      forEach (m in global_methods.values)
-        if (m.attributes.is_override)
-          throw m.t.error( "A global method cannot [override] a prior definition." )
-        endIf
-      endForEach
+        forEach (m in global_methods.values)
+          if (m.attributes.is_override)
+            throw m.t.error( "A global method cannot [override] a prior definition." )
+          endIf
+        endForEach
+      endIf
 
       # Any [abstract] methods require an [abstract] class.
       if (not this.attributes.is_abstract)
