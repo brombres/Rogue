@@ -1395,7 +1395,9 @@ class Resolver : Poolable, Visitor
       local type_template_name = "$<<$>>"(cmd.name,cmd.type_args.count)
       local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
       if (type_template)
-        return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.type_args), cmd.args) )
+        temporarily Program.current_module = cmd.module_context
+          return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.type_args), cmd.args) )
+        endTemporarily
       endIf
 
       return resolve_templated_call( cmd.t, cmd.module_context, cmd.type_context, cmd.name, cmd.type_args, cmd.args )
