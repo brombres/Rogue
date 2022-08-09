@@ -1396,7 +1396,7 @@ class Resolver : Poolable, Visitor
       local type_template = cmd.module_context.find_template( cmd.t, type_template_name, cmd.name, &extended_search )
       if (type_template)
         temporarily Program.current_module = cmd.module_context
-          return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.type_args), cmd.args) )
+          return visit( TypeAccess(cmd.t, Type(cmd.t,type_template,cmd.module_context,cmd.type_args), cmd.args) )
         endTemporarily
       endIf
 
