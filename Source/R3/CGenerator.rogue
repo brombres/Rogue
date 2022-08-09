@@ -625,7 +625,7 @@ class CGenerator : Visitor
         endIf
         writer.print this_procedure.signature
         writer.print ''", "''
-        writer.print File.filename(this_procedure.t.filepath)
+        writer.print File(this_procedure.t.filepath).filename
         writer.print   ''", ''
         writer.print   cur_line
         writer.println '' );''

@@ -290,7 +290,7 @@ class Resolver : Poolable, Visitor
           format.[ print(this_type.name), print('.') ]
         endIf
         format.[ print(this_procedure.name), print("() ") ]
-        format.[ print(File.filename(t.filepath)), print(':'), print(t.line), print("] ") ]
+        format.[ print(File(t.filepath).filename), print(':'), print(t.line), print("] ") ]
       endIf
 
       forEach (arg at i in expressions)

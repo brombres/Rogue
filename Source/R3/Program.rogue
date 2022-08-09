@@ -119,8 +119,8 @@ class Program [singleton]
       type_String.attributes.is_essential    = true
 
     method add_include_search_path( path:String )
-      path = File.abs( path )
-      if (not include_search_paths.contains(path) and File.exists(path))
+      path = File( path ).abs
+      if (not include_search_paths.contains(path) and File(path).exists)
         include_search_paths.add( path )
       endIf
 
@@ -184,17 +184,17 @@ class Program [singleton]
       return m
 
     method find_include( t:Token, filepath:String )->String
-      if (File.exists(filepath))
-        if (File.is_folder(filepath))
-          local fpath = "$/$.rogue" (filepath,File.filename(filepath))
-          if (File.exists(fpath)) return File.abs(fpath)
+      if (File(filepath).exists)
+        if (File(filepath).is_folder)
+          local fpath = "$/$.rogue" (filepath,File(filepath).filename)
+          if (File(fpath).exists) return File(fpath).abs
           throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
         else
-          return File.abs(filepath)
+          return File(filepath).abs
         endIf
-      elseIf (File.exists(filepath.with_trailing(".rogue")))
-        filepath .= with_trailing( ".rogue" )
-        return File.abs(filepath)
+      elseIf (File(filepath.with_suffix(".rogue")).exists)
+        filepath .= with_suffix( ".rogue" )
+        return File(filepath).abs
       else
         return null
       endIf

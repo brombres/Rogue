@@ -13,7 +13,7 @@ class CWriter : BufferedPrintWriter
         println @|#ifndef TEST_H
                  |#define TEST_H
                  |
-        println "// $.h"(File.filename(Program.output_filepath))
+        println "// $.h"(File(Program.output_filepath).filename)
         println
 
         if (Program.gc_auto)
@@ -261,9 +261,9 @@ class CWriter : BufferedPrintWriter
 
       else
         # Writing .c file
-        println  "// $.c"(File.filename(Program.output_filepath))
+        println  "// $.c"(File(Program.output_filepath).filename)
         println
-        println ''#include "$.h"''(File.filename(Program.output_filepath))
+        println ''#include "$.h"''(File(Program.output_filepath).filename)
         println  "#include <stdio.h>"
         println
         println ...

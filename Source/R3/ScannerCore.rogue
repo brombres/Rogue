@@ -643,7 +643,8 @@ class ScannerCore [abstract]
             if ((ch=='\n'))
               saved_buffer = buffer
               _add( TokenType.EOL )
-              buffer.clear.print saved_buffer
+              buffer.clear
+              buffer.print saved_buffer
             elseIf ((ch=='#'))
               if (_scan('{'))
                 ++count
@@ -1298,8 +1299,10 @@ class ScannerCore [abstract]
         buffer.print(value->Character)
         return true
       endIf
-      buffer.clear.print ""
-      buffer.print("Invalid escape sequence '\\").print(ch)
+      buffer.clear
+      buffer.print ""
+      buffer.print("Invalid escape sequence '\\")
+      buffer.print(ch)
       buffer.print("'. Supported: \\b \\e \\f \\n \\r \\t \\v \\0 \\? \\/ \\' \\\\ \\\" \\xHH \\uHHHH \\[H*].")
       _throw_syntax_error(buffer)
       return false

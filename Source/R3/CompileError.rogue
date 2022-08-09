@@ -18,7 +18,7 @@ class CompileError( message:String, filepath=null:String, source=null:String, li
       builder.print( "ERROR" )
       if (filepath)
         if (filepath.contains('/'))
-          builder.print( '' in "$/$"'' (File.filename(File.folder(filepath)),File.filename(filepath)) )
+          builder.print( '' in "$/$"'' (File(filepath).parent.filename,File(filepath).filename) )
         else
           builder.print( '' in "$"'' (filepath) )
         endIf

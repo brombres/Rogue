@@ -80,7 +80,7 @@ class Scanner : ScannerCore, Poolable
 
         local matches = comment.split('\n').[ discard( not $.contains("FIXME") ) ]
         forEach (match in matches)
-          println "[FIXME][$:$] $"(File.filename(_filepath),beginning_of_line.line,match)
+          println "[FIXME][$:$] $"(File(_filepath).filename,beginning_of_line.line,match)
         endForEach
       endIf
 

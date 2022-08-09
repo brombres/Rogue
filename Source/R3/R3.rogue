@@ -239,11 +239,11 @@ class RogueC
       if (command//args.count > 0)
         if (command//options//output)
             local filepath = command//options//output->String
-            if (File.is_folder(filepath))
+            if (File(filepath).is_folder)
               filepath /= command//args.first->String.before_suffix( ".rogue" )
             else
-              local parent = File.folder( filepath )
-              if (String.exists(parent)) File.create_folder( parent )
+              local parent = File( filepath ).folder
+              if (String.exists(parent)) File( parent ).create_folder
             endIf
             Program.output_filepath = filepath
         else

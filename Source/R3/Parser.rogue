@@ -23,8 +23,8 @@ class Parser : ParserCore, Poolable
     generic_fn_args_depth : Int32
     generic_fn_args_used  : Int32
 
-    local_definitions     : [Table:Token[]]
-    local_macros          : [Table:Macro[]]
+    local_definitions     : [String:Token[]]
+    local_macros          : [String:Macro[]]
 
 
   METHODS
@@ -681,7 +681,7 @@ class Parser : ParserCore, Poolable
       local class_t = _tokens[i1]  # 'subclass'
 
       local m = Program.current_module
-      local hash = "$:$:$" (File.abs(class_t.filepath),class_t.line,class_t.column)
+      local hash = "$:$:$" (File(class_t.filepath).abs,class_t.line,class_t.column)
 
       if (collecting_templates)
         local name = "AnonymousSubclass" + Program.anonymous_class_names.count

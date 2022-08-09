@@ -5570,7 +5570,8 @@ class ParserCore [abstract]
           ip = this.ip
           if (_next_t.type == TokenType.IDENTIFIER)
             temporarily _cur_t = _on_t
-              buffer.clear.print ""
+              buffer.clear
+              buffer.print ""
               this.ip = ip
               collect_token_string
               ip = this.ip
@@ -5642,7 +5643,8 @@ class ParserCore [abstract]
           ip = this.ip
           if (_next_t.type == TokenType.IDENTIFIER)
             temporarily _cur_t = _on_t
-              buffer.clear.print ""
+              buffer.clear
+              buffer.print ""
               this.ip = ip
               collect_token_string
               ip = this.ip
@@ -5934,7 +5936,8 @@ class ParserCore [abstract]
       this.ip = ip
       mark_token
       ip = this.ip
-      buffer.clear.print ""
+      buffer.clear
+      buffer.print ""
       if (_next_t.type == TokenType.STRING)
         temporarily _cur_t = _on_t
           this.ip = ip
