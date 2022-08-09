@@ -105,7 +105,7 @@ class Program [singleton]
       type_String    = TypeString( t )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
 
-      type_NativeProperty = Type( t, "NativeProperty", Attribute.PRIMITIVE )
+      type_NativeProperty = Type( t, "RogueCNativeProperty", Attribute.PRIMITIVE )
       type_NativeProperty.attributes.is_defined = true
 
       type_Logical.attributes.is_essential   = true

@@ -1800,7 +1800,7 @@ class Resolver : Poolable, Visitor
           is_global = context.is_type_context
           type_context = context.type
           if (not type_context)
-            throw t.error( "Nil value used as call context." )
+            throw t.error( "Value expected - call context does not result in a value." )
           endIf
 
         else
