@@ -19,6 +19,7 @@ class Transformer : Visitor
     method on( cmd:InlineForEach )->Cmd
       local name = autoname( "iterator" )
       cmd.control.name = name
+      visit( cmd.control )
       inline_stack.add( ForEach(cmd.t,cmd.control,null) )
       return Access( cmd.t, name )
 
