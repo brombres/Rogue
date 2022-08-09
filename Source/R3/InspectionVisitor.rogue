@@ -56,7 +56,7 @@ class InspectionVisitor<<$ReturnType>>
       endTemporarily
 
     method visit( cmd:Cmd )->$ReturnType [propagated]
-      if (cmd is null) return $ReturnType.meta.default_value
+      if (cmd is null) return $defaultValue<<$ReturnType>>
       return cmd.dispatch<<on,ThisType,$ReturnType>>( this )
 
     method visit_content( cmd:Cmd ) [propagated]
@@ -82,14 +82,14 @@ class InspectionVisitor<<$ReturnType>>
       # children are visited.
 
     method on_visit_children( cmd:Cmd )->$ReturnType
-      return $ReturnType.meta.default_value
+      return $defaultValue<<$ReturnType>>
 
     method on_visit_children( cmd:CmdList )->$ReturnType
       forEach (statement in cmd.list)
         local result = visit(statement)
         if (result?) return result
       endForEach
-      return $ReturnType.meta.default_value
+      return $defaultValue<<$ReturnType>>
 
     method on_visit_children( cmd:Access )->$ReturnType
       local result : $ReturnType

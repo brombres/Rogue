@@ -1624,7 +1624,7 @@ class Method : Procedure
 
       use organizer = ObjectPool<<MethodOrganizer>>
         temporarily organizer.this_module=module_context, organizer.this_type=@type_context
-          prior.organize( organizer )
+          prior.organize( &=skip_add_to_type )
         endTemporarily
       endUse
 
