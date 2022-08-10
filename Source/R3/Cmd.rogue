@@ -2054,6 +2054,8 @@ class TemplateArgs : CmdList
           if (type)
             token_list = TokenList( token_list.t, type.name_tokens )
             this[index] = token_list
+            token_string.clear
+            token_string.print((forEach in token_list.tokens)->String)
           endIf
           Program.current_module.type_arg_lookup[token_string] = type
           return type
