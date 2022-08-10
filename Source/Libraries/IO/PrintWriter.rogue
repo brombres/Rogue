@@ -1,7 +1,7 @@
 class PrintWriter [abstract aspect]
   GLOBAL METHODS
     method create( writer:Writer<<Byte>> )->PrintWriter
-      return BufferedPrintWriterAdapter( writer )
+      return BufferedPrintWriter( writer )
 
   METHODS
     method close
@@ -131,10 +131,7 @@ class BufferedPrintWriter<<$buffer>> : PrintWriter [abstract aspect]
       $buffer.indent = new_indent
 endClass
 
-class BufferedPrintWriter : BufferedPrintWriter<<buffer>> [abstract aspect]
-endClass
-
-class BufferedPrintWriterAdapter : BufferedPrintWriter<<buffer>>
+class BufferedPrintWriter : BufferedPrintWriter<<buffer>>
   PROPERTIES
     output : Writer<<Byte>>
 
