@@ -173,14 +173,14 @@ class CWriter : BufferedPrintWriter
            |  #define ROGUE_RETAIN( obj )   Rogue_retain( obj )
            |#endif
            |
-           |typedef struct RogueType RogueType;
+           |typedef struct RogueRuntimeType RogueRuntimeType;
            |typedef void (*RogueFn_Object)(void*);
            |typedef void (*RogueFn_Object_Object)(void*,void*);
            |
            |typedef struct RogueObject RogueObject;
            |typedef struct RogueString RogueString;
            |
-           |struct RogueType
+           |struct RogueRuntimeType
            |{
            |  const char*    name;
            |  RogueString*   name_object;
@@ -239,7 +239,7 @@ class CWriter : BufferedPrintWriter
            |
            |void  Rogue_call_stack_push( const char* procedure, const char* filename, int line );
            |void  Rogue_call_stack_pop(void);
-           |void  RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer );
+           |void  RogueRuntimeType_local_pointer_stack_add( RogueRuntimeType* type, void* local_pointer );
            |void  RogueObjectList_add( RogueObjectList* list, void* obj );
            |
            |struct RogueObject;
@@ -281,7 +281,7 @@ class CWriter : BufferedPrintWriter
            |  #ifdef ROGUE_GC_AUTO
            |    if (RogueMM_bytes_allocated_since_gc >= ROGUE_MM_GC_THRESHOLD) Rogue_collect_garbage();
            |  #endif
-           |  RogueType*  type = (RogueType*) _type;
+           |  RogueRuntimeType*  type = (RogueRuntimeType*) _type;
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->__type = type;
@@ -313,7 +313,7 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_new_object( void* _type )
            |{
            |  // Create a Rogue object that is not tracked by the GC.
-           |  RogueType*  type = (RogueType*) _type;
+           |  RogueRuntimeType*  type = (RogueRuntimeType*) _type;
            |  RogueObject* obj = (RogueObject*) ROGUE_MALLOC( type->size );
            |  memset( obj, 0, type->size );
            |  obj->__type = type;
@@ -329,7 +329,7 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_singleton( void* _type, void* singleton_ref )
            |{
            |  if (*((RogueObject**)singleton_ref)) return *((RogueObject**)singleton_ref);
-           |  RogueType* type = (RogueType*) _type;
+           |  RogueRuntimeType* type = (RogueRuntimeType*) _type;
            |  RogueObject* obj = Rogue_create_object( type );
            |  (*((RogueObject**)singleton_ref)) = obj;
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
@@ -340,7 +340,7 @@ class CWriter : BufferedPrintWriter
            |void Rogue_set_singleton( void* _type, void* singleton_ref, void* new_singleton )
            |{
            |  RogueObject** ref = (RogueObject**)singleton_ref;
-           |  RogueType* type = (RogueType*) _type;
+           |  RogueRuntimeType* type = (RogueRuntimeType*) _type;
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( *ref, new_singleton );
            |  *ref = new_singleton;
            |}
@@ -424,7 +424,7 @@ class CWriter : BufferedPrintWriter
            |  }
            |}
            |
-           |void RogueType_local_pointer_stack_add( RogueType* type, void* local_pointer )
+           |void RogueRuntimeType_local_pointer_stack_add( RogueRuntimeType* type, void* local_pointer )
            |{
            |  if (type->local_pointer_count == type->local_pointer_capacity)
            |  {
@@ -477,7 +477,7 @@ class CWriter : BufferedPrintWriter
            |void* Rogue_as( void* obj, RogueInt32 recast_type_id )
            |{
            |  if ( !obj ) return 0;
-           |  RogueType* type = ((RogueObject*)obj)->__type;
+           |  RogueRuntimeType* type = ((RogueObject*)obj)->__type;
            |  if (type->id == recast_type_id) return obj;
            |
            |  RogueInt32* base_ids = type->base_type_ids - 1;
@@ -492,7 +492,7 @@ class CWriter : BufferedPrintWriter
            |RogueLogical Rogue_instance_of( void* obj, RogueInt32 ancestor_id )
            |{
            |  if ( !obj ) return 0;
-           |  RogueType* type = ((RogueObject*)obj)->__type;
+           |  RogueRuntimeType* type = ((RogueObject*)obj)->__type;
            |  if (type->id == ancestor_id) return 1;
            |
            |  RogueInt32* base_ids = type->base_type_ids - 1;
@@ -504,7 +504,7 @@ class CWriter : BufferedPrintWriter
            |  return 0;
            |}
            |
-           |RogueLogical Rogue_is_type( void* obj, RogueType* type )
+           |RogueLogical Rogue_is_type( void* obj, RogueRuntimeType* type )
            |{
            |  if ( !obj ) return 0;
            |  return ((RogueObject*)obj)->__type == type;

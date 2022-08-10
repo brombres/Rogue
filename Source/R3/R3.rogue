@@ -3,6 +3,8 @@ $define DATE "July 13, 2022"
 
 module RogueC
 
+uses Codec/Base64
+
 $include "Macros.rogue"
 
 $include "AccessAndAssignPatcher.rogue"
