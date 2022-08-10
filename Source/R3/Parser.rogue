@@ -120,7 +120,7 @@ class Parser : ParserCore, Poolable
         builder.print t->String
       endForEach
       if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
-      augment_context_name = builder
+      @augment_context_name = builder
 
     method batch_augment_create_method
       if (not collecting_templates) return
@@ -354,12 +354,9 @@ class Parser : ParserCore, Poolable
         local def = local_definitions[ _cur_t->String ]
         if (def)
           if (def.count > 0)
-            --_position
-            _tokens.shift( _position, &delta=def.count-1 )
-            forEach (t at i in def)
-              _tokens[_position+i] = t
-            endForEach
-            _limit += def.count - 1
+            ++_position
+            _tokens.insert( def, _position )
+            _limit += def.count
             if (_position < _limit) _next_t = _tokens[_position]
           endIf
           return
@@ -369,12 +366,9 @@ class Parser : ParserCore, Poolable
       local def = Program.definitions[ _cur_t->String ]
       if (def)
         if (def.count > 0)
-          --_position
-          _tokens.shift( _position, &delta=def.count-1 )
-          forEach (t at i in def)
-            _tokens[_position+i] = t
-          endForEach
-          _limit += def.count - 1
+          ++_position
+          _tokens.insert( def, _position )
+          _limit += def.count
           if (_position < _limit) _next_t = _tokens[_position]
         endIf
         return
@@ -418,10 +412,7 @@ class Parser : ParserCore, Poolable
             endForEach
 
             # Insert expanded tokens
-            _tokens.shift( _position, &delta=expanded_tokens.count )
-            forEach (t at i in expanded_tokens)
-              _tokens[_position+i] = t
-            endForEach
+            _tokens.insert( expanded_tokens, _position )
             _limit += expanded_tokens.count
             if (_position < _limit) _next_t = _tokens[_position]
           endUse
@@ -441,7 +432,7 @@ class Parser : ParserCore, Poolable
       if (not file.filepath.begins_with('/')) file = File(File(t.filepath).folder / file.filepath)
       if (not file.exists) throw t.error( "No such file: $"(file) )
       local bytes = Byte[](file)
-      _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes.to_hex_string)) ) )
+      _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes->String(&hex))) ) )
 
     method filename_to_file_string
       if (disable_output or _cmd_stack.is_empty) return

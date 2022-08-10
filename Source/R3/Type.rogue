@@ -367,7 +367,7 @@ class Type : Cmd
         if (m.name == m_name or m.base_name == m_name) list.add( m )
       endForEach
 
-      if (require_global and base_class and m_name.begins_with("operator"))
+      if (base_class)
         base_class.collect_methods( m_name, list, &require_global )
       endIf
 

@@ -120,7 +120,7 @@ class Parser : ParserCore, Poolable
           builder.print t->String
         endForEach
         if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
-        augment_context_name = builder
+        @augment_context_name = builder
       endUse
 
     method batch_augment_create_method
