@@ -42,9 +42,9 @@ class Candidates [singleton]
         if (m.return_type) m.return_type.organize
       endForEach
 
-    method on_end_use
-      work_list_alpha.on_end_use
-      work_list_beta.on_end_use
+    method on_end_use( ignore:Candidates )
+      work_list_alpha.on_end_use( list )
+      work_list_beta.on_end_use( matches )
 
     method refine->Logical
       if (matches.is_empty) return false
