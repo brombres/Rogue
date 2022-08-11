@@ -3,8 +3,21 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int32, write_ind
     method finish [mutating]
       list.discard_from( write_index )
 
+    method has_another->Logical [mutating]
+      if (read_index < list.count)
+        return true
+      else
+        # automatically finish up
+        finish
+        return false
+      endIf
+
     method peek( lookahead=0:Int32 )->$DataType
       return list[ read_index + lookahead ]
+
+    method read->$DataType [mutating]
+      ++read_index
+      return list[ read_index - 1 ]
 
     method read_another->$DataType? [mutating]
       if (read_index < list.count)
