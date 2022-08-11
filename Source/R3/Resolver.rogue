@@ -90,7 +90,7 @@ class Resolver : Poolable, Visitor
 
     method add_local( v:Local )->Local
       insert( LocalDeclaration(v.t,v) )
-      v.index = this_procedure.locals.count
+      v.index = this_procedure.locals.count + this_procedure.parameters.count
       this_procedure.locals.add( v )
       assert control_stack.count
       control_stack.last.locals.add( v )
