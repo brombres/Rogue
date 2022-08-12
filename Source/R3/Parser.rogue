@@ -354,7 +354,6 @@ class Parser : ParserCore, Poolable
         local def = local_definitions[ _cur_t->String ]
         if (def)
           if (def.count > 0)
-            ++_position
             _tokens.insert( def, _position )
             _limit += def.count
             if (_position < _limit) _next_t = _tokens[_position]
@@ -366,7 +365,6 @@ class Parser : ParserCore, Poolable
       local def = Program.definitions[ _cur_t->String ]
       if (def)
         if (def.count > 0)
-          ++_position
           _tokens.insert( def, _position )
           _limit += def.count
           if (_position < _limit) _next_t = _tokens[_position]

@@ -14,7 +14,7 @@ augment Build
 
     BUILD_MODE       = "debug"
     LAUNCHER_FOLDER  = "/usr/local/bin"
-    ROGUEC_FLAGS     = ""
+    ROGUEC_FLAGS     = "--main --gc=manual"
     CC_FLAGS_UNIX    = ""
     CC_FLAGS_WINDOWS = ""
 endAugment
@@ -22,7 +22,7 @@ endAugment
 routine rogo_r2
   #execute @|~/Projects/Tools/Froley/Build/Froley-macOS-3 --project=RogueC Source/RogueC/Rogue.froley Source/RogueC
   execute @|roguec Source/RogueC/R2.rogue --gc=manual --debug --output=Build/R2-macOS.cpp --target=Console,C++,macOS
-  execute @|c++ -O0 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
+  execute @|c++ -O3 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
 endRoutine
 
 routine rogo_t
@@ -289,7 +289,7 @@ routine compile_rogue
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS
   if (Build.BUILD_MODE == "debug") flags = flags.with_suffix(' ') + "--debug"
-  local cmd = "r2 $ $ --main --target=Console,C,$ --output=$"...
+  local cmd = "r2 $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
   local status = Process.run( cmd, &env )
