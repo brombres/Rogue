@@ -1084,7 +1084,7 @@ class CGenerator : Visitor
           if (v.type.is_compound) writer.print "{}"
           else                    writer.print "0"
         endIf
-        needs_semicolon = true
+        writer.println ";"
       endIf
 
       if (Program.gc_auto)
@@ -1093,6 +1093,7 @@ class CGenerator : Visitor
           writer.print   "RogueRuntimeType_local_pointer_stack_add( &TypeRogueObject, &"
           writer.print   v.c_name
           writer.print   " )"
+          writer.println ";"
         elseIf (v.type.contains_reference)
           if (needs_semicolon) writer.println ';'
           writer.print   "RogueRuntimeType_local_pointer_stack_add( &Type"
@@ -1100,6 +1101,9 @@ class CGenerator : Visitor
           writer.print   ", &"
           writer.print   v.c_name
           writer.print   " )"
+          writer.println ";"
+        elseIf (needs_semicolon)
+          writer.println ';'
         endIf
       endIf
 
@@ -1546,6 +1550,9 @@ augment
       return true
 
     method ControlStructure.needs_semicolon->Logical
+      return false
+
+    method LocalDeclaration.needs_semicolon->Logical
       return false
 
     method Return.needs_semicolon->Logical
@@ -2507,7 +2514,7 @@ augment
       endIf
 
       if (exception_passthrough)
-        cgen.dispatch_exception( t, "if (Rogue_exception) /*1*/" )
+        cgen.dispatch_exception( t, "if (Rogue_exception)" )
       endIf
 
     method CleanupBlock.on_end_scope( cgen:CGenerator )
@@ -2523,7 +2530,7 @@ augment
       endIf
 
       if (exception_passthrough)
-        cgen.dispatch_exception( t, "if (Rogue_exception) /*2*/" )
+        cgen.dispatch_exception( t, "if (Rogue_exception)" )
       endIf
 
     method Try.on_end_scope( cgen:CGenerator )
@@ -2532,7 +2539,7 @@ augment
         writer.print   c_escape_label(cgen)
         writer.println ":;"
         if (catches_exception)
-          writer.println "if (Rogue_exception)/*3*/"
+          writer.println "if (Rogue_exception)"
           writer.println '{'
           writer.indent += 2
 
