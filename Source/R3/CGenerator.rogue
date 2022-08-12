@@ -103,7 +103,19 @@ class CGenerator : Visitor
       local cmd_type = cmd.type
       if (cmd_type is to_type)
         if (call_is_mutating)
-          if (not context_is_mutating) writer.print '&'
+          if (not context_is_mutating)
+            if (cmd instanceOf InlineAssignment)
+              writer.print '('
+              visit( cmd )
+              writer.print ","
+              writer.print '&'
+              writer.print cmd->(as InlineAssignment).info.c_name
+              writer.print ')'
+              return
+            else
+              writer.print '&'
+            endIf
+          endIf
         else
           if (context_is_mutating) writer.print '*'
         endIf
