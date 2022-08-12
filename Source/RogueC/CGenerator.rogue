@@ -710,18 +710,24 @@ class CGenerator : Visitor
     method on_leave_procedure( body:ControlStructure )
       pop_scope
 
-      if (not BranchAnalyzer.all_paths_return(body))
-        print_procedure_cleanup
-        if (this_procedure.return_type)
-          if (this_procedure.return_type.is_compound)
-            writer.print   "return ("
-            writer.print   this_procedure.return_type.c_name
-            writer.println "){};"
-          else
-            writer.println "return 0;"
-          endIf
+      contingent
+        if (BranchAnalyzer.all_paths_return(body))
+          sufficient (this_procedure.throws and this_procedure.return_type)
+          escapeContingent
         endIf
-      endIf
+
+        print_procedure_cleanup
+        necessary (this_procedure.return_type)
+
+      satisfied
+        if (this_procedure.return_type.is_compound)
+          writer.print   "return ("
+          writer.print   this_procedure.return_type.c_name
+          writer.println "){};"
+        else
+          writer.println "return 0;"
+        endIf
+      endContingent
 
       writer.indent -= 2
       writer.println( "}" )
@@ -2501,7 +2507,7 @@ augment
       endIf
 
       if (exception_passthrough)
-        cgen.dispatch_exception( t, "if (Rogue_exception)" )
+        cgen.dispatch_exception( t, "if (Rogue_exception) /*1*/" )
       endIf
 
     method CleanupBlock.on_end_scope( cgen:CGenerator )
@@ -2517,7 +2523,7 @@ augment
       endIf
 
       if (exception_passthrough)
-        cgen.dispatch_exception( t, "if (Rogue_exception)" )
+        cgen.dispatch_exception( t, "if (Rogue_exception) /*2*/" )
       endIf
 
     method Try.on_end_scope( cgen:CGenerator )
@@ -2526,7 +2532,7 @@ augment
         writer.print   c_escape_label(cgen)
         writer.println ":;"
         if (catches_exception)
-          writer.println "if (Rogue_exception)"
+          writer.println "if (Rogue_exception)/*3*/"
           writer.println '{'
           writer.indent += 2
 
