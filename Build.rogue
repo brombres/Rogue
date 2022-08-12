@@ -39,7 +39,9 @@ endRoutine
 
 routine rogo_run
   # Runs this project.
-  execute "$ Test.$" (exe_file.esc,Build.LAUNCHER_NAME)
+  execute "$ Test.rogue --main --gc=manual --debug --target=Console,C++"(exe_file.esc)
+  execute @|gcc Test.c -o test
+           |./test
 endRoutine
 
 routine rogo_debug

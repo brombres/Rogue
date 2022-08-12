@@ -1,14 +1,14 @@
 class TypeInfo
   NATIVE
     nativeHeader
-      @|struct RogueType;
+      @|struct RogueRuntimeType;
        |struct RogueTypeInfo;
-       |typedef struct RogueType RogueType;
+       |typedef struct RogueRuntimeType RogueRuntimeType;
        |typedef struct RogueTypeInfo RogueTypeInfo;
-       |RogueTypeInfo* RogueType_type_info( RogueType* THIS );
+       |RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THIS );
 
     nativeCode
-      @|RogueTypeInfo* RogueType_type_info( RogueType* THIS )
+      @|RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THIS )
        |{
        |  if ( !THIS->type_info )
        |  {
@@ -41,7 +41,7 @@ class TypeInfo
         println "No such type: TypeInfo[$]. Valid types are 0..$."(index,count)
         return null
       else
-        return native("RogueType_type_info( Rogue_types[$index] )")->TypeInfo
+        return native("RogueRuntimeType_type_info( Rogue_types[$index] )")->TypeInfo
       endIf
 
     method get( name:String )->TypeInfo
