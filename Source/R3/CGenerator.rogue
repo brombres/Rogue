@@ -2288,7 +2288,11 @@ augment
     method Program.write_c_dispatch_method_header( group:Method[], writer:CWriter )
       local m = group.first  # any method will do; they all share the same signature
       if (m.return_type)
-        writer.print( m.return_type.c_ref_name )
+        if (m.return_type.is_reference)
+          writer.print( "void*" )
+        else
+          writer.print( m.return_type.c_ref_name )
+        endIf
       else
         writer.print "void"
       endIf

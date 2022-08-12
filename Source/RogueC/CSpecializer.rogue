@@ -466,6 +466,8 @@ augment Procedure
         endIf
 
         if (return_type)
+          localize return_type
+          if (return_type.is_reference) return_type = Program.type_Object
           builder.print "__"
           builder.print return_type.c_sig_name
         endIf
