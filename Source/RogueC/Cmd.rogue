@@ -1635,6 +1635,7 @@ class Method : Procedure
       temporarily body.statements=null, statements=null
         local propagated_m = this.cloned
         propagated_m.type_context = type_context
+        ClearLocalInfo.visit( propagated_m )
         propagated_m.generate_body
         AspectMethodPatcher.patch( type_context, propagated_m )
         propagated_m.is_resolved        = false
