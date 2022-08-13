@@ -317,7 +317,7 @@ class Program [singleton]
       Analytics.finalize.stop
 
     method set_real_bits( @real_bits )
-      definitions//Real = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
+      definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64) type_Real = type_Real64
       else                 type_Real = type_Real32
 
