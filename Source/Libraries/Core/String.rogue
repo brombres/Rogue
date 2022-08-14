@@ -2453,7 +2453,7 @@ class String : Poolable PrintWriter
                  |RogueInt32 RogueString_utf8_character_count( const char* cstring, int byte_count )
                  |{
                  |  // Returns -1 if 'cstring' is not a valid UTF-8 string.
-                 |  if (byte_count == -1) byte_count = strlen(cstring);
+                 |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                  |
                  |  RogueInt32 character_count = 0;
                  |  int i;

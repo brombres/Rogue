@@ -40,12 +40,8 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int32, write_ind
         # Shift all the unread elements over to the end of the available
         # capacity, effectively inserting 1 or more empty spots for us to write
         # additional data to.
-        list.copy( read_index, unread_count, list, list.capacity - unread_count )
-
-        read_index += (list.capacity - list.count)
-
-        # Change the list count to include the shifted data
-        list.count = list.capacity
+        list.copy( read_index, unread_count, list, read_index+1 )
+        ++read_index
       endIf
 
       if (write_index == list.count)
