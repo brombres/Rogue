@@ -24,7 +24,7 @@ $localMacro UI_FACTORY_METHODS<<$name,$TypeName>>
       if (c6) result.add( c6 )
       if (c7) result.add( c7 )
       return result
-$endMacro
+$endLocalMacro
 
 class UILayout : UIComponent
   GLOBAL METHODS

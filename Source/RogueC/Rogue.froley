@@ -3267,11 +3267,11 @@ parser
     if (nextIs(EOL))
       consume_eols
       savePosition
-      while (hasAnother and not nextIs("$endMacro"))
+      while (hasAnother and not nextIs("$endLocalMacro"))
         read
       endWhile
       createTokenList # consumes saved position
-      mustConsume "$endMacro"
+      mustConsume "$endLocalMacro"
     else
       savePosition
       while (hasAnother and not nextIs(EOL))
