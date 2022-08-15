@@ -5678,12 +5678,12 @@ class ParserCore [abstract]
           if ((_next_t.type == TokenType.EOL))
             r_consume_eols
             _save_position
-            while (((_position < _limit) and (not (_next_t.type == TokenType.META_END_MACRO))))
+            while (((_position < _limit) and (not (_next_t.type == TokenType.META_END_LOCAL_MACRO))))
               _read
             endWhile
             if (disable_output) _discard_position
             else                _create_token_list
-            if (not _consume(TokenType.META_END_MACRO)) _throw_syntax_error( &expected=TokenType.META_END_MACRO )
+            if (not _consume(TokenType.META_END_LOCAL_MACRO)) _throw_syntax_error( &expected=TokenType.META_END_LOCAL_MACRO )
           else
             _save_position
             while (((_position < _limit) and (not (_next_t.type == TokenType.EOL))))

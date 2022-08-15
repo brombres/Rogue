@@ -202,6 +202,8 @@ class Procedure : Cmd
         dynamic_signature = signature
         if (return_type)
           localize return_type
+          return_type.ensure_definition
+          return_type.organize_type
           if (return_type.is_reference) return_type = Program.type_Object
           dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
         endIf

@@ -770,7 +770,7 @@ class GetLocal : Cmd
 
     method init( existing:GetLocal )
       prior.init( existing )
-      if (existing.info) info = existing.info
+      info = existing.info
 
     method description->String
       return "GetLocal($)" (%info)

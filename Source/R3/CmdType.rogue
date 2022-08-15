@@ -211,7 +211,7 @@ augment
     method GetLocal.can_trigger_gc->Logical
       return false
 
-    method GetGlobal.can_trigger_gc->Logical
+    method GetGlobalProperty.can_trigger_gc->Logical
       return false
 
     method GetThisProperty.can_trigger_gc->Logical
@@ -323,7 +323,7 @@ augment
     method GetLocal.is_simple->Logical
       return true
 
-    method GetGlobal.is_simple->Logical
+    method GetGlobalProperty.is_simple->Logical
       return true
 
     method GetSingleton.is_simple->Logical
@@ -333,6 +333,29 @@ augment
       return true
 
     method Literal.is_simple->Logical
+      return true
+
+endAugment
+
+# is_getter
+augment
+  METHODS
+    method Cmd.is_getter->Logical
+      return false
+
+    method GetLocal.is_getter->Logical
+      return true
+
+    method GetGlobalProperty.is_getter->Logical
+      return true
+
+    method GetProperty.is_getter->Logical
+      return true
+
+    method GetSingleton.is_getter->Logical
+      return true
+
+    method GetThisProperty.is_getter->Logical
       return true
 
 endAugment

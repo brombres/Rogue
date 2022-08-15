@@ -4,7 +4,7 @@ uses Utility/WorkList
 $localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
   method on_fold_constants( cmd:$Type )->Cmd
     return $m<<$op>>( cmd )
-$endMacro
+$endLocalMacro
 
 class Resolver : Poolable, Visitor
   PROPERTIES
@@ -3399,11 +3399,32 @@ augment
 
 endAugment
 
+$localMacro PREPARE_COLLECTION<<$cmd>>
+        local $cmd : Cmd
+        if (cmd_collection.name)
+          local v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
+          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          $cmd = GetLocal( v_collection )
+        elseIf (collection_type.is_compound and cmd_collection.data.is_getter)
+          $cmd = cmd_collection.data
+        else
+          local v_collection : Local
+          local cmd_get_local = cmd_collection.data->(as GetLocal)
+          if (cmd_get_local)
+            v_collection = cmd_get_local.info
+          else
+            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
+            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
+          endIf
+          $cmd = GetLocal( v_collection )
+        endIf
+$endLocalMacro
+
 # ForEach
 augment
   METHODS
     method ForEachControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
-      println t.error( "Unsupported operation" )
+      println t.error( "Unsupported operation ($)"(type_name) )
       throw UnsupportedOperationError()
 
     method ForEachInControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
@@ -3489,25 +3510,13 @@ augment
           throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
         endIf
 
-        local v_collection : Local
-        if (cmd_collection.name)
-          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
-          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-        else
-          local cmd_get_local = cmd_collection.data->(as GetLocal)
-          if (cmd_get_local)
-            v_collection = cmd_get_local.info
-          else
-            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          endIf
-        endIf
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
         else
           local v_count = resolver.add_local( t, "count", Program.type_Int32 )
-          resolver.insert( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
+          resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
           cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
         endIf
 
@@ -3515,8 +3524,8 @@ augment
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, m_get.return_type) )
           cmd_iterator.statements.insert(
             SetLocal( v_cur,
-              resolver.resolve_call( cmd_collection.t, GetLocal(v_collection), m_get,
-                  Args(cmd_collection.t,GetLocal(v_index)) ),
+              resolver.resolve_call( cmd_collection.t, cmd_get_collection, m_get,
+              Args(cmd_collection.t,GetLocal(v_index)) ),
               &initial_assignment
             )
           )
@@ -3546,26 +3555,14 @@ augment
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
-        local v_collection : Local
-        if (cmd_collection.name)
-          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
-          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-        else
-          local cmd_get_local = cmd_collection.data->(as GetLocal)
-          if (cmd_get_local)
-            v_collection = cmd_get_local.info
-          else
-            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          endIf
-        endIf
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
         resolver.insert(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another), &initial_assignment )
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
         )
         cmd_iterator.upkeep.add(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another) )
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
         )
 
         cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
@@ -3606,21 +3603,9 @@ augment
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
-        local v_collection : Local
-        if (cmd_collection.name)
-          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
-          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-        else
-          local cmd_get_local = cmd_collection.data->(as GetLocal)
-          if (cmd_get_local)
-            v_collection = cmd_get_local.info
-          else
-            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          endIf
-        endIf
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
-        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
+        cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
 
         local cur_type = m_read.return_type
         assert cur_type
@@ -3629,7 +3614,7 @@ augment
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
           assert resolver.control_stack.last is cmd_iterator
           cmd_iterator.statements.insert(
-            SetLocal( v_cur, resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read ), &initial_assignment )
+          SetLocal( v_cur, resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ), &initial_assignment )
           )
         endIf
 
@@ -3714,26 +3699,14 @@ augment
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
-        local v_collection : Local
-        if (cmd_collection.name)
-          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
-          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-        else
-          local cmd_get_local = cmd_collection.data->(as GetLocal)
-          if (cmd_get_local)
-            v_collection = cmd_get_local.info
-          else
-            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          endIf
-        endIf
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
         else
           local v_count = resolver.add_local( t, "count", Program.type_Int32 )
-          resolver.insert( SetLocal(v_count,ContextAccess(t,GetLocal(v_collection),"count"),&initial_assignment) )
-          cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
+          resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
+          cmd_iterator.condition = CompareLT( t, cmd_get_collection, Local(v_count) )
         endIf
 
         return
@@ -3759,26 +3732,14 @@ augment
         resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
-        local v_collection : Local
-        if (cmd_collection.name)
-          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
-          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-        else
-          local cmd_get_local = cmd_collection.data->(as GetLocal)
-          if (cmd_get_local)
-            v_collection = cmd_get_local.info
-          else
-            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          endIf
-        endIf
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
         resolver.insert(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another), &initial_assignment )
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
         )
         cmd_iterator.upkeep.add(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, GetLocal(v_collection), m_read_another) )
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
         )
 
         cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_next), "exists" )
@@ -3808,24 +3769,12 @@ augment
         resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
-        local v_collection : Local
-        if (cmd_collection.name)
-          v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
-          resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-        else
-          local cmd_get_local = cmd_collection.data->(as GetLocal)
-          if (cmd_get_local)
-            v_collection = cmd_get_local.info
-          else
-            v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
-            resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          endIf
-        endIf
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
-        cmd_iterator.condition = ContextAccess( cmd_control.t, GetLocal(v_collection), "has_another" )
+        cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
 
         cmd_iterator.statements.insert(
-          resolver.resolve_call( cmd_control.t, GetLocal(v_collection), m_read )
+          resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read )
         )
 
         return
