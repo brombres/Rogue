@@ -3570,6 +3570,46 @@ class EmptyCompound : Cmd
 
 endClass
 
+class GlobalMethodTemplate : Cmd
+  PROPERTIES
+    name         : String
+    placeholders : Cmd
+    token_list   : TokenList
+
+  METHODS
+    method init( t, name, placeholders, token_list )
+
+    method init( existing:GlobalMethodTemplate )
+      prior.init( existing )
+      name = existing.name
+      if (existing.placeholders) placeholders = existing.placeholders.cloned
+      if (existing.token_list) token_list = existing.token_list.cloned
+
+    method description->String
+      return "GlobalMethodTemplate($,$)" (%name,%placeholders)
+
+    method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
+      local placeholders = Token[]
+      forEach (p in this.placeholders)
+        placeholders.add( p.t )
+      endForEach
+      local name = type_args->String( name )
+      local replacements = Template.replacements( placeholders, type_args )
+      local tokens = Template.make_replacements( type_context, token_list, replacements )
+
+      temporarily Program.current_module = type_context.module_context
+        local parser = Parser( tokens )
+        parser._cmd_stack.add( Identifier(t,name) )
+        local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
+        m.module_context = type_context.module_context
+        m.type_context   = type_context
+        m.organize
+
+        type_context.global_method_template_instances.add( name )
+        return m
+      endTemporarily
+endClass
+
 class MethodTemplate : Cmd
   PROPERTIES
     name         : String
@@ -4264,46 +4304,6 @@ class NamedTupleTypeElements : CmdList
 
     method get( index:Int32 )->NamedTupleTypeElement
       return list[index]->(as NamedTupleTypeElement)
-endClass
-
-class GlobalMethodTemplate : Cmd
-  PROPERTIES
-    name         : String
-    placeholders : Cmd
-    token_list   : TokenList
-
-  METHODS
-    method init( t, name, placeholders, token_list )
-
-    method init( existing:GlobalMethodTemplate )
-      prior.init( existing )
-      name = existing.name
-      if (existing.placeholders) placeholders = existing.placeholders.cloned
-      if (existing.token_list) token_list = existing.token_list.cloned
-
-    method description->String
-      return "GlobalMethodTemplate($,$)" (%name,%placeholders)
-
-    method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
-      local placeholders = Token[]
-      forEach (p in this.placeholders)
-        placeholders.add( p.t )
-      endForEach
-      local name = type_args->String( name )
-      local replacements = Template.replacements( placeholders, type_args )
-      local tokens = Template.make_replacements( type_context, token_list, replacements )
-
-      temporarily Program.current_module = type_context.module_context
-        local parser = Parser( tokens )
-        parser._cmd_stack.add( Identifier(t,name) )
-        local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
-        m.module_context = type_context.module_context
-        m.type_context   = type_context
-        m.organize
-
-        type_context.global_method_template_instances.add( name )
-        return m
-      endTemporarily
 endClass
 
 class CreateRange : Cmd

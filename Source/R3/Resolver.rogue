@@ -1418,23 +1418,8 @@ class Resolver : Poolable, Visitor
         throw t.error( "No such method $."(full_name) )
       endIf
 
-      # Global Method Template
-      if (not type_context.global_method_template_instances.contains(full_name))
-        if (not t_name) t_name = "$<<$>>"(name,template_args.count)
-        local templates = type_context.global_method_templates[ t_name ]
-        if (templates)
-          (forEach in templates).instantiate( template_args, type_context )
-        endIf
-      endIf
-
-      # Object Method Template
-      if (not type_context.method_template_instances.contains(full_name))
-        if (not t_name) t_name = "$<<$>>"(name,template_args.count)
-        local templates = type_context.method_templates[ t_name ]
-        if (templates)
-          (forEach in templates).instantiate( template_args, type_context )
-        endIf
-      endIf
+      instantiate_global_method_templates( type_context, full_name, name, template_args )
+      instantiate_object_method_templates( type_context, full_name, name, template_args )
 
       return resolve_call( t, type_context, null, full_name, args )
 
@@ -1456,31 +1441,38 @@ class Resolver : Poolable, Visitor
       local context = visit( cmd.context )
       local type_context = context.require_type
 
-      local name = cmd.type_args->String( cmd.name )
+      local full_name = cmd.type_args->String( cmd.name )
 
       type_context.organize
-      local m = find_procedure( cmd.t, type_context, context, name, cmd.args, &suppress_error, &exact_arg_types )
+      local m = find_procedure( cmd.t, type_context, context, full_name, cmd.args, &suppress_error, &exact_arg_types )
       if (not m)
-        # Global method template
-        if (not type_context.global_method_template_instances.contains(name))
-          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-          local templates = type_context.global_method_templates[ t_name ]
-          if (templates)
-            (forEach in templates).instantiate( cmd.type_args, type_context )
-          endIf
-        endIf
-
-        # Object Method Template
-        if (not type_context.method_template_instances.contains(name))
-          local t_name    = "$<<$>>"(cmd.name,cmd.type_args.count)
-          local templates = type_context.method_templates[ t_name ]
-          if (templates)
-            (forEach in templates).instantiate( cmd.type_args, type_context )
-          endIf
-        endIf
+        instantiate_global_method_templates( type_context, full_name, cmd.name, cmd.type_args )
+        instantiate_object_method_templates( type_context, full_name, cmd.name, cmd.type_args )
       endIf
 
-      return resolve_call( cmd.t, type_context, context, name, cmd.args )
+      return resolve_call( cmd.t, type_context, context, full_name, cmd.args )
+
+    method instantiate_global_method_templates( type_context:Type, full_name:String, name:String, type_args:TemplateArgs )
+      if (not type_context.global_method_template_instances.contains(full_name))
+        use t_name = StringPool
+          t_name.[ print(name), print("<<"), print(type_args.count), print(">>") ]
+          local templates = type_context.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( type_args, type_context )
+          endIf
+        endUse
+      endIf
+
+    method instantiate_object_method_templates( type_context:Type, full_name:String, name:String, type_args:TemplateArgs )
+      if (not type_context.method_template_instances.contains(full_name))
+        use t_name = StringPool
+          t_name.[ print(name), print("<<"), print(type_args.count), print(">>") ]
+          local templates = type_context.method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( type_args, type_context )
+          endIf
+        endUse
+      endIf
 
     method on( cmd:Temporarily )->Cmd
       if (cmd.assignments.count > 1)

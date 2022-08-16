@@ -22,7 +22,7 @@ endAugment
 routine rogo_r2
   #execute @|~/Projects/Tools/Froley/Build/Froley-macOS-3 --project=RogueC Source/RogueC/Rogue.froley Source/RogueC
   execute @|roguec Source/RogueC/R2.rogue --gc=manual --debug --output=Build/R2-macOS.cpp --target=Console,C++,macOS
-  execute @|c++ -O3 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
+  execute @|c++ -O0 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
 endRoutine
 
 routine rogo_t
