@@ -341,12 +341,6 @@ class Type : Cmd
       endIf
       attributes.is_visiting = false
 
-    method collect_extended_types( list:Type[] )
-      forEach (type in extended_types)
-        list.add( type )
-        type.collect_extended_types( list )
-      endForEach
-
     method collect_reference_types( type_list:Type[] )
       if (attributes.is_visiting or attributes.is_collected) return
       attributes.is_visiting = true  # use as 'is_collected' flag; will be reset externally
@@ -1524,6 +1518,12 @@ class Type : Cmd
           endForEach
         endForEach
 
+        forEach (m in methods)
+          if (m.method_template and m.type_context is not this)
+            instantiate_overriding_template( m )
+          endIf
+        endForEach
+
         # Create an error if no implementation of an abstract aspect method has been supplied.
         if (not this_is_abstract)
           forEach (incorporated_aspect in aspects)
@@ -1585,6 +1585,31 @@ class Type : Cmd
           endIf
         endForEach
       endIf
+
+    method inject_inherited_method( m:Method )
+      if (methods_organized)
+        local sig = m.signature
+        if (not methods.contains(sig))
+          if (not instantiate_overriding_template(m))
+            if (m.attributes.is_propagated)
+              methods[sig] = m.propagated_to( type )
+            else
+              methods[sig] = m
+            endIf
+            (forEach in extended_types).inject_inherited_method( m )
+          endIf
+        endIf
+      endIf
+
+    method instantiate_overriding_template( m:Method )->Logical
+      # Instantiate an overriding method template if it exists
+      local group = method_templates[ "$<<$>>"(m.method_template.name,m.method_template.placeholders.count) ]
+      if (not group) return false
+
+      forEach (template in group)
+        template.instantiate( m.template_args )
+      endForEach
+      return true
 
     method precision_index->Int32
       return 10 # Objects etc.

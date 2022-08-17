@@ -3591,13 +3591,13 @@ class GlobalMethodTemplate : Cmd
     method description->String
       return "GlobalMethodTemplate($,$)" (%name,%placeholders)
 
-    method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
+    method instantiate( template_args:TemplateArgs, type_context:Type )->Procedure
       local placeholders = Token[]
       forEach (p in this.placeholders)
         placeholders.add( p.t )
       endForEach
-      local name = type_args->String( name )
-      local replacements = Template.replacements( placeholders, type_args )
+      local name = template_args->String( name )
+      local replacements = Template.replacements( placeholders, template_args )
       local tokens = Template.make_replacements( type_context, token_list, replacements )
 
       temporarily Program.current_module = type_context.module_context
@@ -3633,13 +3633,13 @@ class MethodTemplate : Cmd
     method description->String
       return "MethodTemplate($,$)" (%name,%placeholders)
 
-    method instantiate( type_args:TemplateArgs )->Procedure
+    method instantiate( template_args:TemplateArgs )->Procedure
       local placeholders = Token[]
       forEach (p in this.placeholders)
         placeholders.add( p.t )
       endForEach
-      local name = type_args->String( name )
-      local replacements = Template.replacements( placeholders, type_args )
+      local name = template_args->String( name )
+      local replacements = Template.replacements( placeholders, template_args )
       local tokens = Template.make_replacements( type_context, token_list, replacements )
       local parser = Parser( tokens )
       parser._cmd_stack.add( Identifier(t,name) )
@@ -3648,6 +3648,8 @@ class MethodTemplate : Cmd
         local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
         m.module_context = type_context.module_context
         m.type_context   = type_context
+        m.method_template = this
+        m.template_args = template_args
         m.generate_body
         m.organize
         m.dynamic_signature  # adds method to dynamic call group
@@ -3664,17 +3666,7 @@ class MethodTemplate : Cmd
         endIf
 
         if (type_context.methods_organized)
-          use all_extended_types = WorkList<<Type>>
-            type_context.collect_extended_types( all_extended_types )
-            forEach (type in all_extended_types)
-              if (type.methods_organized)
-                if (not type.methods[sig])
-                  if (m.attributes.is_propagated) type.methods[ sig ] = m.propagated_to( type )
-                  else                            type.methods[ sig ] = m
-                endIf
-              endIf
-            endForEach
-          endUse
+          (forEach in type_context.extended_types).inject_inherited_method( m )
         endIf
 
         return m
