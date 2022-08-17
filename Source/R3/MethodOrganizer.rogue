@@ -70,6 +70,7 @@ class MethodOrganizer : Visitor, Poolable
 
     method on_visit( cmd:MethodTemplate )
       local name = "$<<$>>"(cmd.name,cmd.placeholders.count)
+      cmd.type_context = this_type
       this_type.method_templates.add( name, cmd )
 
     method on_visit_children( cmd:Statements )

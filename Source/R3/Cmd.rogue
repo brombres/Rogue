@@ -3612,6 +3612,7 @@ endClass
 
 class MethodTemplate : Cmd
   PROPERTIES
+    type_context : Type
     name         : String
     placeholders : Cmd
     token_list   : TokenList
@@ -3621,6 +3622,7 @@ class MethodTemplate : Cmd
 
     method init( existing:MethodTemplate )
       prior.init( existing )
+      type_context = existing.type_context
       name = existing.name
       if (existing.placeholders) placeholders = existing.placeholders.cloned
       if (existing.token_list) token_list = existing.token_list.cloned
@@ -3628,7 +3630,7 @@ class MethodTemplate : Cmd
     method description->String
       return "MethodTemplate($,$)" (%name,%placeholders)
 
-    method instantiate( type_args:TemplateArgs, type_context:Type )->Procedure
+    method instantiate( type_args:TemplateArgs )->Procedure
       local placeholders = Token[]
       forEach (p in this.placeholders)
         placeholders.add( p.t )

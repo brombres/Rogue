@@ -1439,10 +1439,14 @@ class Type : Cmd
         # Merge method templates
         forEach (incorporated_aspect in aspects)
           forEach (entry in incorporated_aspect.global_method_templates.entries)
-            global_method_templates.add( entry.key, forEach in entry.value )
+            forEach (template in entry.value)
+              global_method_templates.add( entry.key, template )
+            endForEach
           endForEach
           forEach (entry in incorporated_aspect.method_templates.entries)
-            method_templates.add( entry.key, forEach in entry.value )
+            forEach (template in entry.value)
+              method_templates.add( entry.key, template.cloned.[type_context=this] )
+            endForEach
           endForEach
         endForEach
 
@@ -1529,7 +1533,17 @@ class Type : Cmd
             endForEach
           endForEach
         endIf
+      endIf
 
+      # Inherit method templates
+      if (base_class)
+        forEach (key in base_class.method_templates.keys)
+          if (not this.method_templates.contains(key))
+            forEach (template in base_class.method_templates[key])
+              this.method_templates.add( key, template )
+            endForEach
+          endIf
+        endForEach
       endIf
 
       if (not this.is_aspect)

@@ -1469,7 +1469,7 @@ class Resolver : Poolable, Visitor
           t_name.[ print(name), print("<<"), print(type_args.count), print(">>") ]
           local templates = type_context.method_templates[ t_name ]
           if (templates)
-            (forEach in templates).instantiate( type_args, type_context )
+            (forEach in templates).instantiate( type_args )
           endIf
         endUse
       endIf
@@ -2138,7 +2138,7 @@ class Resolver : Poolable, Visitor
             args = visit( args )
             local type_args = TemplateArgs(t)
             type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-            (forEach in method_templates).instantiate( type_args, type_context )
+            (forEach in method_templates).instantiate( type_args )
           endIf
         endIf
       endIf
