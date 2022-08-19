@@ -259,8 +259,13 @@ class Type : Cmd
 
     method add( m:Method )
       local existing = methods[m.signature]
-      if (existing and existing.type_context is m.type_context)
-        throw m.t.error( "Method $ is already defined."(m.dev_signature) )
+      if (existing)
+        if (existing.type_context is m.type_context)
+          throw m.t.error( "Method $ is already defined."(m.dev_signature) )
+        else
+          m.overridden_method = existing
+          existing.attributes.is_overridden = true
+        endIf
       endIf
       methods[ m.signature ] = m
 
@@ -1589,7 +1594,7 @@ class Type : Cmd
         if (not methods.contains(sig))
           if (not instantiate_overriding_template(m))
             if (m.attributes.is_propagated)
-              methods[sig] = m.propagated_to( type )
+              methods[sig] = m.propagated_to( this )
             else
               methods[sig] = m
             endIf
@@ -1598,10 +1603,26 @@ class Type : Cmd
         endIf
       endIf
 
+    method instantiate_object_method_templates( t_name:String, template_args:TemplateArgs )
+      # Drill down to start at most general ancestor class with a compatible method template
+      local root_type : Type
+      if (this.method_templates.contains(t_name)) root_type = this
+
+      local base_type = base_class
+      while (base_type)
+        if (base_type.method_templates.contains(t_name)) root_type = this
+        base_type .= base_class
+      endWhile
+
+      if (root_type)
+        (forEach in root_type.method_templates[t_name]).instantiate( template_args )
+      endIf
+
     method instantiate_overriding_template( m:Method )->Logical
       # Instantiate an overriding method template if it exists
       local group = method_templates[ "$<<$>>"(m.method_template.name,m.method_template.placeholders.count) ]
-      if (not group) return false
+      if (not group or group.is_empty) return false
+      if (group.first.type_context is not this) return false
 
       forEach (template in group)
         template.instantiate( m.template_args )

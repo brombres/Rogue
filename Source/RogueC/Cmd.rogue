@@ -3656,17 +3656,20 @@ class MethodTemplate : Cmd
 
         type_context.method_template_instances.add( name )
 
-        # Propagate new method template to types that have already organized & inherited methods
-        local sig = m.signature
-
-        local existing_m = type_context.methods[sig]
-        if (not existing_m or existing_m.type_context is not type_context)
-          m.overridden_method = existing_m
-          type_context.methods[ sig ] = m
+        if (type_context.methods_organized)
+          if (not m.overridden_method and type_context.base_class)
+            m.overridden_method = type_context.base_class.methods[ m.signature ]
+            if (m.overridden_method) m.overridden_method.attributes.is_overridden = true
+          endIf
         endIf
 
+        # Propagate new method template to types that have already organized & inherited methods
         if (type_context.methods_organized)
           (forEach in type_context.extended_types).inject_inherited_method( m )
+        endIf
+
+        if (type_context.is_resolved)
+          m.resolve
         endIf
 
         return m

@@ -114,6 +114,8 @@ class Finalizer : Visitor
           m.attributes.is_placeholder = true
           Program.dynamic_methods[m.dynamic_signature] = Method[][m]
         endIf
+      elseIf (not m.attributes.dynamic_dispatch and Program.dynamic_methods.contains(m.dynamic_signature))
+        m.attributes.dynamic_dispatch = true
       endIf
 
     method on( cmd:GetProperty )->Cmd

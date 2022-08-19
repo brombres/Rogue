@@ -139,6 +139,11 @@ augment
         result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types )
         if (result) return result
 
+        # 'ref -> Logical' becomes 'ref?'
+        if (this_type.is_reference and target_type is Program.type_Logical)
+          return cmd.logicalized( resolver )
+        endIf
+
         if (this_type.instance_of(target_type))
           return resolver.validate( WideningCast(t,cmd,target_type) )
         endIf

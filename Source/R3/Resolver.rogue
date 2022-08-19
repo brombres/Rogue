@@ -1452,25 +1452,22 @@ class Resolver : Poolable, Visitor
 
       return resolve_call( cmd.t, type_context, context, full_name, cmd.args )
 
-    method instantiate_global_method_templates( type_context:Type, full_name:String, name:String, type_args:TemplateArgs )
+    method instantiate_global_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.global_method_template_instances.contains(full_name))
         use t_name = StringPool
-          t_name.[ print(name), print("<<"), print(type_args.count), print(">>") ]
+          t_name.[ print(name), print("<<"), print(template_args.count), print(">>") ]
           local templates = type_context.global_method_templates[ t_name ]
           if (templates)
-            (forEach in templates).instantiate( type_args, type_context )
+            (forEach in templates).instantiate( template_args, type_context )
           endIf
         endUse
       endIf
 
-    method instantiate_object_method_templates( type_context:Type, full_name:String, name:String, type_args:TemplateArgs )
+    method instantiate_object_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.method_template_instances.contains(full_name))
         use t_name = StringPool
-          t_name.[ print(name), print("<<"), print(type_args.count), print(">>") ]
-          local templates = type_context.method_templates[ t_name ]
-          if (templates)
-            (forEach in templates).instantiate( type_args )
-          endIf
+          t_name.[ print(name), print("<<"), print(template_args.count), print(">>") ]
+          type_context.instantiate_object_method_templates( t_name, template_args )
         endUse
       endIf
 
@@ -2129,23 +2126,22 @@ class Resolver : Poolable, Visitor
         local global_templates = type_context.global_method_templates[ t_name ]
         if (global_templates)
           args = visit( args )
-          local type_args = TemplateArgs(t)
-          type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-          (forEach in global_templates).instantiate( type_args, type_context )
+          local template_args = TemplateArgs(t)
+          template_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
+          (forEach in global_templates).instantiate( template_args, type_context )
         else
           local method_templates = type_context.method_templates[ t_name ]
           if (method_templates)
             args = visit( args )
-            local type_args = TemplateArgs(t)
-            type_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
-            (forEach in method_templates).instantiate( type_args )
+            local template_args = TemplateArgs(t)
+            template_args.add( TokenList(t).[add(t.cloned(TokenType.IDENTIFIER,(forEach in args).type.name))] )
+            type_context.instantiate_object_method_templates( t_name, template_args )
           endIf
         endIf
       endIf
 
       return find_procedure( t, type_context, context, name, args, &=constructor,
                                &=require_global, &=suppress_error )
-
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
         &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
