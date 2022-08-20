@@ -3634,17 +3634,19 @@ class MethodTemplate : Cmd
       return "MethodTemplate($,$)" (%name,%placeholders)
 
     method instantiate( template_args:TemplateArgs )->Procedure
-      local placeholders = Token[]
-      forEach (p in this.placeholders)
-        placeholders.add( p.t )
-      endForEach
-      local name = template_args->String( name )
-      local replacements = Template.replacements( placeholders, template_args )
-      local tokens = Template.make_replacements( type_context, token_list, replacements )
-      local parser = Parser( tokens )
-      parser._cmd_stack.add( Identifier(t,name) )
-
       temporarily Program.current_module = type_context.module_context
+        local placeholders = Token[]
+        forEach (p in this.placeholders)
+          placeholders.add( p.t )
+        endForEach
+        local name = template_args->String( name )
+        local replacements = Template.replacements( placeholders, template_args )
+        local tokens = Template.make_replacements( type_context, token_list, replacements )
+        local parser = Parser( tokens )
+        parser._cmd_stack.add( Identifier(t,name) )
+
+        type_context.method_template_instances.add( name )
+
         local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
         m.module_context = type_context.module_context
         m.type_context   = type_context
@@ -3653,8 +3655,6 @@ class MethodTemplate : Cmd
         m.generate_body
         m.organize
         m.dynamic_signature  # adds method to dynamic call group
-
-        type_context.method_template_instances.add( name )
 
         if (type_context.methods_organized)
           if (not m.overridden_method and type_context.base_class)

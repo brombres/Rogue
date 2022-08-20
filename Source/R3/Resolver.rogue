@@ -1404,24 +1404,26 @@ class Resolver : Poolable, Visitor
 
     method resolve_templated_call( t:Token, module_context:Module, type_context:Type,
                                    name:String, template_args:TemplateArgs, args:Cmd )->Cmd
-      # Assume templated method call
-      local full_name = template_args->String( name )
-      local t_name : String
+      temporarily Program.current_module = module_context
+        # Assume templated method call
+        local full_name = template_args->String( name )
+        local t_name : String
 
-      # Routine template
-      t_name = instantiate_routine_templates( t, module_context, type_context, name, t_name, full_name, template_args )
-      forEach (mod in module_context.used_modules)
-        t_name = instantiate_routine_templates( t, mod.m, type_context, name, t_name, full_name, template_args )
-      endForEach
+        # Routine template
+        t_name = instantiate_routine_templates( t, module_context, type_context, name, t_name, full_name, template_args )
+        forEach (mod in module_context.used_modules)
+          t_name = instantiate_routine_templates( t, mod.m, type_context, name, t_name, full_name, template_args )
+        endForEach
 
-      if (not type_context)
-        throw t.error( "No such method $."(full_name) )
-      endIf
+        if (not type_context)
+          throw t.error( "No such method $."(full_name) )
+        endIf
 
-      instantiate_global_method_templates( type_context, full_name, name, template_args )
-      instantiate_object_method_templates( type_context, full_name, name, template_args )
+        instantiate_global_method_templates( type_context, full_name, name, template_args )
+        instantiate_object_method_templates( type_context, full_name, name, template_args )
 
-      return resolve_call( t, type_context, null, full_name, args )
+        return resolve_call( t, type_context, null, full_name, args )
+      endTemporarily
 
     method instantiate_routine_templates( t:Token, mod:Module, type_context:Type, name:String,
                                           t_name:String, full_name:String, template_args:TemplateArgs )->String
@@ -1441,16 +1443,18 @@ class Resolver : Poolable, Visitor
       local context = visit( cmd.context )
       local type_context = context.require_type
 
-      local full_name = cmd.type_args->String( cmd.name )
+      temporarily Program.current_module = type_context.module_context
+        local full_name = cmd.type_args->String( cmd.name )
 
-      type_context.organize
-      local m = find_procedure( cmd.t, type_context, context, full_name, cmd.args, &suppress_error, &exact_arg_types )
-      if (not m)
-        instantiate_global_method_templates( type_context, full_name, cmd.name, cmd.type_args )
-        instantiate_object_method_templates( type_context, full_name, cmd.name, cmd.type_args )
-      endIf
+        type_context.organize
+        local m = find_procedure( cmd.t, type_context, context, full_name, cmd.args, &suppress_error, &exact_arg_types )
+        if (not m)
+          instantiate_global_method_templates( type_context, full_name, cmd.name, cmd.type_args )
+          instantiate_object_method_templates( type_context, full_name, cmd.name, cmd.type_args )
+        endIf
 
-      return resolve_call( cmd.t, type_context, context, full_name, cmd.args )
+        return resolve_call( cmd.t, type_context, context, full_name, cmd.args )
+      endTemporarily
 
     method instantiate_global_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.global_method_template_instances.contains(full_name))
@@ -2224,11 +2228,18 @@ class Resolver : Poolable, Visitor
       if (args or Candidates.count)
         which (Candidates.count)
           case 0
-            mesg = "No such type or "
-            if (require_global) mesg += "global "
-            if (context)        mesg += "method "
-            elseIf (this_type)  mesg += "method or routine "
-            else                mesg += "routine "
+            local options = String[]
+            if (not context) options.add( "type" )
+            if (require_global)
+              if (context)        options.add( "global method" )
+              elseIf (this_type)  options.[ add("global method"), add("routine") ]
+              else                options.add( "routine" )
+            else
+              if (context)        options.add( "method" )
+              elseIf (this_type)  options.[ add("method"), add("routine") ]
+              else                options.add( "routine" )
+            endIf
+            mesg = "No such $ "(options.conjoin("or"))
 
             if (context)        mesg += context.type + "."
             elseIf (this_type)  mesg += this_type + "."

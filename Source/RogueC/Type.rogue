@@ -127,7 +127,7 @@ class Type : Cmd
 
     method create( t:Token, key_type:Type, value_type:Type )->Type
       # Creates type [KeyType:ValueType] AKA Table<<KeyType,ValueType>>
-      local name = "[$::$:$::$]"(key_type.module_context,key_type,value_type.module_context,value_type)
+      local name = "[$:$]"(key_type.scoped_name,value_type.scoped_name)
 
       local type = Program.current_module.find_type( t, name, &extended_search )
       if (type) return type
