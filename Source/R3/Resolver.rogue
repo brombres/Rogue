@@ -697,24 +697,19 @@ class Resolver : Poolable, Visitor
       if (cmd.condition) cmd.condition .= logicalized( this )
 
       if (cmd.condition and cmd.condition.is_literal)
+        # Condition is a literal. Discard the if/else wrapper and return either the
+        # 'if' statements or the 'else' statements.
         pop_scope
         if (cmd.condition.is_truthy)
           # Keep the statements, discard any elseIfs/else
           return visit( cmd.statements )
-        elseIf (cmd.cmd_else)
-          # Discard this 'if' in favor of the elseIf or else that comes next
-          if (cmd.cmd_else.condition)
-            return visit( cmd.cmd_else )
-          else
-            return visit( cmd.cmd_else.statements )
-          endIf
         else
-          return null # this 'if' disappears entirely
+          return visit( cmd.cmd_else )
         endIf
       endIf
 
       cmd.statements = visit( cmd.statements )
-      if (cmd.cmd_else) cmd.cmd_else = visit( cmd.cmd_else )->(as If)
+      cmd.cmd_else = visit( cmd.cmd_else )
       pop_scope
 
       return cmd
@@ -743,9 +738,9 @@ class Resolver : Poolable, Visitor
         if (cmd.else_if)
           local t = cmd.else_if.t
           if (cmd.else_if.name)
-            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if))), null )
+            nested_else_if = If( t, null, visit(Statements(t,cmd.else_if)), null )
           else
-            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if.statements))), null )
+            nested_else_if = If( t, null, visit(Statements(t,cmd.else_if.statements)), null )
           endIf
         endIf
 
@@ -774,9 +769,9 @@ class Resolver : Poolable, Visitor
         if (cmd.else_if)
           local t = cmd.else_if.t
           if (cmd.else_if.name)
-            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if))), null )
+            nested_else_if = If( t, null, visit(Statements(t,cmd.else_if)), null )
           else
-            nested_else_if = If( t, null, visit(LocalScope(t,Statements(t,cmd.else_if.statements))), null )
+            nested_else_if = If( t, null, visit(Statements(t,cmd.else_if.statements)), null )
           endIf
         endIf
 
@@ -1745,13 +1740,12 @@ class Resolver : Poolable, Visitor
       local cmd_if = which_case_if( v_value, cmd.cases[0] )
       local result = cmd_if
       forEach (cmd_case in cmd.cases from 1)
-        cmd_if.cmd_else = which_case_if( v_value, cmd_case )
-        cmd_if .= cmd_else
+        local cmd_else = which_case_if( v_value, cmd_case )
+        cmd_if.cmd_else = Statements(cmd_else)
+        cmd_if = cmd_else
       endForEach
 
-      if (cmd.statements)
-        cmd_if.cmd_else = If( cmd.statements.t, null, cmd.statements, null, ControlType.WHICH )
-      endIf
+      cmd_if.cmd_else = cmd.statements
 
       return visit( result )
 

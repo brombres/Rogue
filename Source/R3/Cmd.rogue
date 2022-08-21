@@ -1215,7 +1215,7 @@ endClass
 
 class If : Conditional
   PROPERTIES
-    cmd_else : If
+    cmd_else : Cmd
 
   METHODS
     method init( t, condition, statements:Cmd, cmd_else, control_type=ControlType.IF:ControlType )

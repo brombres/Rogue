@@ -912,7 +912,7 @@ class Type : Cmd
                 If( t,
                   CompareEQ(t,Access(t,"new_state"),LiteralInt32(t,-1)),
                   Statements(t,Assign(t,Access(t,"new_state"),LiteralInt32(t,0))),
-                  cmd_else
+                  Statements(cmd_else)
                 )
               )
 
@@ -1261,9 +1261,9 @@ class Type : Cmd
                 m.statements.add(
                   If( t, Access(t,"setting"),
                     Statements( t, BitwiseOrAndAssign(t, Access(t,"value"), EnumValue(t,this,category.name)) ),
-                    If( t, null,
+                    Statements( t, If( t, null,
                       Statements( t, BitwiseAndAndAssign(t, Access(t,"value"), BitwiseNot(t,EnumValue(t,this,category.name))) ),
-                      null )
+                      null ) )
                   )
                 )
                 m.organize

@@ -1508,7 +1508,7 @@ parser
       scoped_single_line_statements
       if_statement_single_line_elseIf_else
     endIf
-    produce If(condition,statements,cmd_else:If):Conditional
+    produce If(condition,statements,cmd_else):Conditional
   endOn
 
 - print_peek_8
@@ -1556,27 +1556,29 @@ parser
 
 - if_statement_multi_line_elseIf_else
   savePosition
-  on 'elseIf'
+  on "elseIf"
     expression
     if (consume(EOL))
       # This elseIf is multi-line; good to keep going
       discardPosition
       scoped_multi_line_statements
       if_statement_multi_line_elseIf_else
-      produce If(condition,statements,cmd_else:If):Conditional
+      create If(condition,statements,cmd_else):Conditional
+      produce Statements(element)
     else
       # This single-line elseIf is outside the scope of the 'if' we're currently parsing.
       restorePosition
       produceNull
     endIf
-  elseOn 'else'
+  elseOn "else"
     if (consume(EOL))
       # This else is multi-line; good to keep going
       discardPosition
       createNull
       scoped_multi_line_statements
       createNull
-      produce If(condition,statements,cmd_else:If):Conditional
+      create If(condition,statements,cmd_else):Conditional
+      produce Statements(element)
     else
       # This single-line else is outside the scope of the 'if' we're currently parsing.
       restorePosition
@@ -1589,7 +1591,7 @@ parser
 
 - if_statement_single_line_elseIf_else
   savePosition
-  on 'elseIf'
+  on "elseIf"
     expression
     if (consume(EOL))
       # This elseIf is multi-line and outside our scope
@@ -1600,9 +1602,10 @@ parser
       discardPosition
       scoped_single_line_statements
       if_statement_single_line_elseIf_else
-      produce If(condition,statements,cmd_else:If):Conditional
+      create If(condition,statements,cmd_else):Conditional
+      produce Statements(element)
     endIf
-  elseOn 'else'
+  elseOn "else"
     if (consume(EOL))
       # This else is multi-line and outside our scope
       restorePosition
@@ -1613,7 +1616,8 @@ parser
       createNull
       scoped_single_line_statements
       createNull
-      produce If(condition,statements,cmd_else:If):Conditional
+      create If(condition,statements,cmd_else):Conditional
+      produce Statements(element)
     endIf
   elseOnOthers
     discardPosition
@@ -3460,7 +3464,7 @@ parser
     scoped_single_line_statements
     if_statement_single_line_elseIf_else
   endIf
-  produce If(condition,statements,cmd_else:If):Conditional
+  produce If(condition,statements,cmd_else):Conditional
 }#
 
 - meta_expression

@@ -171,9 +171,24 @@ class CSpecializer : Visitor
 
       cmd.condition = visit( cmd.condition )
       cmd.statements = visit( cmd.statements )
-      cmd.cmd_else = visit(cmd.cmd_else)->(as If)
+      cmd.cmd_else = visit( cmd.cmd_else )
 
       control_stack.remove_last
+
+      #{
+    method on( cmd:InlineWhich )->Cmd
+      if (cmd.needs_decomposition)
+        # One of the cases can throw an exception - change the whole thing into an 'if' block
+        #
+        # Example
+        #   println which{ a:x || b:y || z }
+        # ->
+        #   local result : typeOf<<x>>
+        #   if (a)     result = x
+        #   elseIf (b) result = y
+        #   else       result = z
+      endIf
+      }#
 
     method on_visit( cmd:Iterator )
       control_stack.add( cmd )

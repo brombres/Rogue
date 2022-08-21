@@ -2406,7 +2406,7 @@ class ParserCore [abstract]
             r_scoped_single_line_statements
             r_if_statement_single_line_elseIf_else
           endIf
-          if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
+          if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
           _cur_t = _previous_cur_t
           return
         endTemporarily
@@ -2494,7 +2494,8 @@ class ParserCore [abstract]
             _discard_position
             r_scoped_multi_line_statements
             r_if_statement_multi_line_elseIf_else
-            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
+            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
+            if (not disable_output) _push( Statements(_cur_t,_node_arg(-1)), 1 )
             _cur_t = _previous_cur_t
             return
           else
@@ -2511,7 +2512,8 @@ class ParserCore [abstract]
             if (not disable_output) _push( null, 0 )
             r_scoped_multi_line_statements
             if (not disable_output) _push( null, 0 )
-            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
+            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
+            if (not disable_output) _push( Statements(_cur_t,_node_arg(-1)), 1 )
             _cur_t = _previous_cur_t
             return
           else
@@ -2543,7 +2545,8 @@ class ParserCore [abstract]
             _discard_position
             r_scoped_single_line_statements
             r_if_statement_single_line_elseIf_else
-            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
+            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
+            if (not disable_output) _push( Statements(_cur_t,_node_arg(-1)), 1 )
             _cur_t = _previous_cur_t
             return
           endIf
@@ -2560,7 +2563,8 @@ class ParserCore [abstract]
             if (not disable_output) _push( null, 0 )
             r_scoped_single_line_statements
             if (not disable_output) _push( null, 0 )
-            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)->(as If)), 3 )
+            if (not disable_output) _push( If(_cur_t,_node_arg(-3),_node_arg(-2),_node_arg(-1)), 3 )
+            if (not disable_output) _push( Statements(_cur_t,_node_arg(-1)), 1 )
             _cur_t = _previous_cur_t
             return
           endIf
