@@ -896,11 +896,14 @@ class CGenerator : Visitor
       writer.println '}'
 
       if (cmd.cmd_else)
-        writer.print "else"
-        if (cmd.cmd_else.condition) writer.print " "
-        else                        writer.println
+        writer.println "else"
+        writer.println '{'
+        writer.indent += 2
         visit( cmd.cmd_else )
+        writer.indent -= 2
+        writer.println '}'
       endIf
+
       on_leave( cmd )
 
     method on_visit( cmd:IncrementGlobalProperty )

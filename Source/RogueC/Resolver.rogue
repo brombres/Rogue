@@ -1459,7 +1459,6 @@ class Resolver : Poolable, Visitor
 
     method instantiate_global_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.global_method_template_instances.contains(full_name))
-        #t_name.[ print(name), print("<<"), print(template_args.count), print(">>") ]
         local t_name    = "$<<$>>"(name,template_args.count)
         local templates = type_context.global_method_templates[ t_name ]
         if (templates)
@@ -1469,7 +1468,6 @@ class Resolver : Poolable, Visitor
 
     method instantiate_object_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.method_template_instances.contains(full_name))
-        #t_name.[ print(name), print("<<"), print(template_args.count), print(">>") ]
         local t_name    = "$<<$>>"(name,template_args.count)
         type_context.instantiate_object_method_templates( t_name, template_args )
       endIf
