@@ -25,6 +25,11 @@ routine rogo_r2
   execute @|c++ -O0 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
 endRoutine
 
+routine rogo_r4
+  execute @|Build/R3-macOS Source/R3/R3.rogue --main --gc=manual --debug --target=Console,C,macOS --output=Build/R4-macOS
+  execute @|cc -O0 -Wall Build/R4-macOS.c -o Build/R4-macOS
+endRoutine
+
 routine rogo_t
   execute @|r2 Test.rogue --main --gc=manual --debug --target=Console,C++
            |gcc Test.c -o test

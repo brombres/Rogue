@@ -3722,8 +3722,8 @@ augment
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
         else
           local v_count = resolver.add_local( t, "count", Program.type_Int32 )
-          resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection.cloned,"count"),&initial_assignment) )
-          cmd_iterator.condition = CompareLT( t, cmd_get_collection, Local(v_count) )
+          resolver.insert( SetLocal(v_count,ContextAccess(t,cmd_get_collection,"count"),&initial_assignment) )
+          cmd_iterator.condition = CompareLT( t, GetLocal(v_index), GetLocal(v_count) )
         endIf
 
         return
