@@ -786,8 +786,6 @@ class Resolver : Poolable, Visitor
       endIf
 
     method on( cmd:InlineWhich )->Cmd
-      if (cmd.cases.count == 1) return visit( cmd.cases.first )
-
       visit_children( cmd )
 
       local last_case = cmd.cases.last->(as InlineWhichCase)
@@ -798,6 +796,8 @@ class Resolver : Poolable, Visitor
       else
         swapValues( last_case.condition, last_case.value )
       endIf
+
+      if (cmd.cases.count == 1) return last_case.value
 
       local result_type : Type
       local unwrap_optional = false
@@ -829,13 +829,10 @@ class Resolver : Poolable, Visitor
               wcase.value = wcase.condition.cloned
               wcase.condition .= logicalized( this )
             else
-              # ->
-              # local temp = a
-              # which{ temp?:temp || b }
-              local v = add_local( cmd.t, "case", wcase.condition.type, DummyInitialValue )
-              insert( SetLocal(v,wcase.condition,&initial_assignment) )
-              wcase.condition = GetLocal( v ).logicalized( this )
-              wcase.value     = GetLocal( v )
+              # -> if statement version
+              local v_result = add_local( cmd.t, "which", wcase.condition.type, DummyInitialValue )
+              insert( convert_case_to_if(cmd,v_result) )
+              return validate( GetLocal(v_result) )
             endIf
           endIf
         endIf
@@ -846,6 +843,33 @@ class Resolver : Poolable, Visitor
       endForEach
 
       return cmd
+
+    method convert_case_to_if( cmd:InlineWhich, v_result:Local, index=0:Int32 )->Cmd
+      local cmd_case = cmd.cases[index]
+
+      local value = cmd_case.value
+      if (not value)
+        if (cmd_case.condition.is_simple)
+          value = cmd_case.condition.cloned
+        else
+          local v_case = add_local( cmd.t, "case", cmd_case.condition.type, DummyInitialValue )
+          insert( SetLocal(v_case,cmd_case.condition.cloned,&initial_assignment) )
+          value = GetLocal( v_case )
+        endIf
+      endIf
+
+      local statements = Statements( cmd_case.t, SetLocal(cmd_case.t, v_result, value, &initial_assignment) )
+      if (index+1 == cmd.cases.count) return statements
+
+      local cmd_if = If( cmd_case.t, cmd_case.condition, statements, null )
+
+      local else_statements = Statements( cmd_case.t )
+      temporarily current_statements = else_statements.list.rewriter
+        else_statements.add( convert_case_to_if(cmd,v_result,index+1) )
+        cmd_if.cmd_else = else_statements
+      endTemporarily
+
+      return cmd_if
 
     method on( cmd:Is )->Cmd
       cmd.left = visit( cmd.left )
