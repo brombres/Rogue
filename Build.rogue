@@ -19,6 +19,12 @@ augment Build
     CC_FLAGS_WINDOWS = ""
 endAugment
 
+routine rogo_redo
+  execute @|r2 Source/R3/R3.rogue --main --gc=manual --target=Console,C,macOS --output=Build/RogueC
+  execute @|cc -O3 -Wall Build/RogueC.c -o Build/RogueC-macOS
+  #execute @|cp Build/RogueC-macOS Build/R2-macOS
+endRoutine
+
 routine rogo_r2
   execute @|~/Projects/Tools/Froley/Build/Froley-macOS-3 --project=RogueC Source/RogueC/Rogue.froley Source/RogueC
   execute @|roguec Source/RogueC/R2.rogue --gc=manual --debug --output=Build/R2-macOS.cpp --target=Console,C++,macOS
@@ -26,8 +32,8 @@ routine rogo_r2
 endRoutine
 
 routine rogo_r4
-  execute @|Build/R3-macOS Source/R3/R3.rogue --main --gc=manual --debug --target=Console,C,macOS --output=Build/R4-macOS
-  execute @|cc -O0 -Wall Build/R4-macOS.c -o Build/R4-macOS
+  #execute @|Build/R3-macOS Source/R3/R3.rogue --main --gc=manual --debug --target=Console,C,macOS --output=Build/RogueC
+  execute @|cc -O3 -Wall Build/RogueC.c -o Build/RogueC-macOS
 endRoutine
 
 routine rogo_t
