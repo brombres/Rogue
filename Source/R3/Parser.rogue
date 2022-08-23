@@ -300,7 +300,7 @@ class Parser : ParserCore, Poolable
       _attribute_essential = true
 
     method create_definition
-      local def_name = buffer->String
+      local def_name = buffer.cloned
       Program.definitions[ def_name ] = token_buffer
       use history = WorkList<<String>>
         detect_definition_cycle( history, def_name, token_buffer )
@@ -309,7 +309,7 @@ class Parser : ParserCore, Poolable
 
     method create_local_definition
       ensure<<local_definitions>>
-      local def_name = buffer->String
+      local def_name = buffer.cloned
       local_definitions[ def_name ] = token_buffer
       use history = WorkList<<String>>
         detect_definition_cycle( history, def_name, token_buffer )
@@ -461,7 +461,7 @@ class Parser : ParserCore, Poolable
       return _position < _limit or inserted_tokens.count
 
     method include_filepath
-      Program.include( marked_token, buffer->String, &is_optional=include_attribute_optional )
+      Program.include( marked_token, buffer.cloned, &is_optional=include_attribute_optional )
 
     method join
       if (not disable_output and _cmd_stack.count >= 2)
@@ -497,7 +497,7 @@ class Parser : ParserCore, Poolable
 
     method uses_filepath
       # First pass $include's the given file
-      local filepath = buffer->String
+      local filepath = buffer.cloned
       if (filepath == "") throw marked_token.error( "Module path expected." )
       processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
       if (not _attribute_no_include)
@@ -797,7 +797,7 @@ class Parser : ParserCore, Poolable
         buffer.print _read.content
       endWhile
 
-      local module_id = buffer->String
+      local module_id = buffer.cloned
       if (not disable_output) _push( Identifier(t,module_id), 0 )
       Program.current_module = Program.get_module( t, module_id )
 
