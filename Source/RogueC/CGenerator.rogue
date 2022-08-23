@@ -559,9 +559,8 @@ class CGenerator : Visitor
       writer.print ')'
 
     method on_visit( cmd:ConvertToLogical )
-      writer.print "((RogueLogical)"
+      writer.print "!!"
       print_parenthesized( cmd.operand )
-      writer.print ')'
 
     method on_visit( cmd:ConvertToReal32 )
       writer.print "((RogueReal32)"
