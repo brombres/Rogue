@@ -1971,7 +1971,7 @@ parser
   while (hasAnother and not nextIs(',') and not nextIs('>>'))
     if (consume('<<'))
       nested_macro_arg
-      mustConsume('>>')
+      mustConsume('<<')
     else
       read
     endIf

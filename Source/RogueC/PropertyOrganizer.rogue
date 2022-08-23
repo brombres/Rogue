@@ -11,7 +11,7 @@ class PropertyOrganizer : Visitor
     method on_visit( cmd:Class )
       if (this_type.is_enum)
         collect( cmd.t, Property(cmd.t, "value", null, Program.type_Int32) )
-        ensure this_type.categories
+        ensure<<this_type.categories>>
 
       elseIf (cmd.constructor_properties)
         if (this_type.is_object)

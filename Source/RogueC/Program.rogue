@@ -2,12 +2,12 @@ module RogueC
 
 class Program [singleton]
   PROPERTIES
-    t                    = Token( TokenType.EOI, "R2" )
+    t                     = Token( TokenType.EOI, "RogueC" )
     include_search_paths = String[]
-    included_files       = StringTable<<IncludedFile>>()
-    definitions          = StringTable<<Token[]>>()
-    macros               = StringTable<<Macro[]>>()
-    targets              = StringTable<<String>>()
+    included_files       = [String:IncludedFile]
+    definitions          = [String:Token[]]
+    macros               = [String:Macro[]]
+    targets              = [String:String]
 
     debug_mode        = false
     gc_auto           = true
@@ -19,7 +19,7 @@ class Program [singleton]
     api_patterns      = String[]
     api_filepaths     = Set<<String>>()
 
-    modules           = StringTable<<Module>>()
+    modules           = [String:Module]
     default_module    : Module
     current_module    : Module
 
@@ -48,18 +48,18 @@ class Program [singleton]
     is_organizing     : Logical
     unorganized_types = Type[]
 
-    unique_strings       = StringTable<<String>>()
-    string_table_indices = StringTable<<Int32>>()
+    unique_strings       = [String:String]
+    string_table_indices = [String:Int32]
 
-    dynamic_methods   = StringTable<<Method[]>>()
-    call_signatures   = StringTable<<Procedure[]>>()
+    dynamic_methods   = [String:Method[]]
+    call_signatures   = [String:Procedure[]]
     all_methods       = Procedure[]
     all_types         = Type[]
     all_properties    = Property[]
 
     base_type_lookup  = Int32[]
 
-    anonymous_class_names = StringTable<<String>>()
+    anonymous_class_names = [String:String]
 
     using_method_introspection : Logical
     m_call_global                 : Procedure
@@ -119,8 +119,8 @@ class Program [singleton]
       type_String.attributes.is_essential    = true
 
     method add_include_search_path( path:String )
-      path = File.abs( path )
-      if (not include_search_paths.contains(path) and File.exists(path))
+      path = File( path ).abs
+      if (not include_search_paths.contains(path) and File(path).exists)
         include_search_paths.add( path )
       endIf
 
@@ -184,17 +184,17 @@ class Program [singleton]
       return m
 
     method find_include( t:Token, filepath:String )->String
-      if (File.exists(filepath))
-        if (File.is_folder(filepath))
-          local fpath = "$/$.rogue" (filepath,File.filename(filepath))
-          if (File.exists(fpath)) return File.abs(fpath)
+      if (File(filepath).exists)
+        if (File(filepath).is_folder)
+          local fpath = "$/$.rogue" (filepath,File(filepath).filename)
+          if (File(fpath).exists) return File(fpath).abs
           throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
         else
-          return File.abs(filepath)
+          return File(filepath).abs
         endIf
-      elseIf (File.exists(filepath.with_trailing(".rogue")))
-        filepath .= with_trailing( ".rogue" )
-        return File.abs(filepath)
+      elseIf (File(filepath.with_suffix(".rogue")).exists)
+        filepath .= with_suffix( ".rogue" )
+        return File(filepath).abs
       else
         return null
       endIf
@@ -317,7 +317,7 @@ class Program [singleton]
       Analytics.finalize.stop
 
     method set_real_bits( @real_bits )
-      definitions//Real = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
+      definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]
       if (real_bits == 64) type_Real = type_Real64
       else                 type_Real = type_Real32
 

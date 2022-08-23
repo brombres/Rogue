@@ -1,10 +1,10 @@
 module RogueC
 uses Utility/WorkList
 
-$localMacro FOLD_CONSTANTS(m,Type,op)
-  method on_fold_constants( cmd:Type )->Cmd
-    return m<<op>>( cmd )
-$endMacro
+$localMacro FOLD_CONSTANTS<<$m,$Type,$op>>
+  method on_fold_constants( cmd:$Type )->Cmd
+    return $m<<$op>>( cmd )
+$endLocalMacro
 
 class Resolver : Poolable, Visitor
   PROPERTIES
@@ -145,18 +145,17 @@ class Resolver : Poolable, Visitor
     method on( cmd:Assert )->Cmd
       if (not Program.debug_mode) return null
       local t = cmd.expression.t
-      use builder = StringBuilder.pool
-        builder.print "Assertion failed: "
-        builder.print( forEach in cmd.token_list.tokens )
-        return visit(
-          If( t, LogicalNot(t,cmd.expression),
-            Statements( t,
-              Throw( t, Access(t, "AssertionError", Args(t,LiteralString(t,builder->String)) ) )
-            ),
-            null
-          )
+      local builder = String()
+      builder.print "Assertion failed: "
+      builder.print( forEach in cmd.token_list.tokens )
+      return visit(
+        If( t, LogicalNot(t,cmd.expression),
+          Statements( t,
+            Throw( t, Access(t, "AssertionError", Args(t,LiteralString(t,builder)) ) )
+          ),
+          null
         )
-      endUse
+      )
 
     method on( cmd:AccessAndAssign )->Cmd
       local context = AccessAndAssignPatcher.find_context(cmd)
@@ -173,21 +172,21 @@ class Resolver : Poolable, Visitor
     method on_fold_constants( cmd:Cmd )->Cmd
       return cmd
 
-    FOLD_CONSTANTS( fold_numerical_constants, Add,            + )
-    FOLD_CONSTANTS( fold_numerical_constants, Subtract,       - )
-    FOLD_CONSTANTS( fold_numerical_constants, Multiply,       * )
-    FOLD_CONSTANTS( fold_numerical_constants, Divide,         / )
-    FOLD_CONSTANTS( fold_numerical_constants, Mod,            % )
-    FOLD_CONSTANTS( fold_numerical_constants, Power,          ^ )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseAnd,     & )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseOr,      | )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitwiseXor,     ~ )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftLeft,   :<<:  )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRight,  :>>:  )
-    FOLD_CONSTANTS( fold_bitwise_constants,   BitShiftRightX, :>>>: )
-    #FOLD_CONSTANTS( fold_logical_constants,   LogicalAnd,     and )
-    #FOLD_CONSTANTS( fold_logical_constants,   LogicalOr,      or  )
-    #FOLD_CONSTANTS( fold_logical_constants,   LogicalXor,     xor )
+    FOLD_CONSTANTS<< fold_numerical_constants, Add,            + >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Subtract,       - >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Multiply,       * >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Divide,         / >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Mod,            % >>
+    FOLD_CONSTANTS<< fold_numerical_constants, Power,          ^ >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitwiseAnd,     & >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitwiseOr,      | >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitwiseXor,     ~ >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitShiftLeft,   :<<:  >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitShiftRight,  :>>:  >>
+    FOLD_CONSTANTS<< fold_bitwise_constants,   BitShiftRightX, :>>>: >>
+    #FOLD_CONSTANTS<< fold_logical_constants,   LogicalAnd,     and >>
+    #FOLD_CONSTANTS<< fold_logical_constants,   LogicalOr,      or  >>
+    #FOLD_CONSTANTS<< fold_logical_constants,   LogicalXor,     xor >>
 
     method fold_bitwise_constants<<$op>>( cmd:Binary )->Cmd
       if (cmd.left instanceOf Literal and cmd.right instanceOf Literal)
@@ -283,7 +282,7 @@ class Resolver : Poolable, Visitor
 
     method resolve_trace( t:Token, expressions:TracedExpressions, &verbose )->Cmd
       local args = Args(t)
-      local format = StringBuilder()
+      local format = String()
 
       if (verbose)
         format.print '['
@@ -291,7 +290,7 @@ class Resolver : Poolable, Visitor
           format.[ print(this_type.name), print('.') ]
         endIf
         format.[ print(this_procedure.name), print("() ") ]
-        format.[ print(File.filename(t.filepath)), print(':'), print(t.line), print("] ") ]
+        format.[ print(File(t.filepath).filename), print(':'), print(t.line), print("] ") ]
       endIf
 
       forEach (arg at i in expressions)
@@ -318,9 +317,9 @@ class Resolver : Poolable, Visitor
 
       local context = Access( t, "Global" )
       if (args.count)
-        return visit( ContextAccess( t, context, "println", Args(t,FormattedString(t,format->String,args)) ) )
+        return visit( ContextAccess( t, context, "println", Args(t,FormattedString(t,format,args)) ) )
       else
-        return visit( ContextAccess( t, context, "println", Args(t,LiteralString(t,format->String)) ) )
+        return visit( ContextAccess( t, context, "println", Args(t,LiteralString(t,format)) ) )
       endIf
 
     method on_visit( cmd:CallMethodPointer )
@@ -710,7 +709,7 @@ class Resolver : Poolable, Visitor
       endIf
 
       cmd.statements = visit( cmd.statements )
-      if (cmd.cmd_else) cmd.cmd_else = visit( cmd.cmd_else )
+      cmd.cmd_else = visit( cmd.cmd_else )
       pop_scope
 
       return cmd
@@ -1478,17 +1477,21 @@ class Resolver : Poolable, Visitor
 
     method instantiate_global_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.global_method_template_instances.contains(full_name))
-        local t_name    = "$<<$>>"(name,template_args.count)
-        local templates = type_context.global_method_templates[ t_name ]
-        if (templates)
-          (forEach in templates).instantiate( template_args, type_context )
-        endIf
+        use t_name = StringPool
+          t_name.[ print(name), print("<<"), print(template_args.count), print(">>") ]
+          local templates = type_context.global_method_templates[ t_name ]
+          if (templates)
+            (forEach in templates).instantiate( template_args, type_context )
+          endIf
+        endUse
       endIf
 
     method instantiate_object_method_templates( type_context:Type, full_name:String, name:String, template_args:TemplateArgs )
       if (not type_context.method_template_instances.contains(full_name))
-        local t_name    = "$<<$>>"(name,template_args.count)
-        type_context.instantiate_object_method_templates( t_name, template_args )
+        use t_name = StringPool
+          t_name.[ print(name), print("<<"), print(template_args.count), print(">>") ]
+          type_context.instantiate_object_method_templates( t_name, template_args )
+        endUse
       endIf
 
     method on( cmd:Temporarily )->Cmd
@@ -2243,12 +2246,18 @@ class Resolver : Poolable, Visitor
       if (args or Candidates.count)
         which (Candidates.count)
           case 0
-            mesg = "No such "
-            if (not context)    mesg += "type or "
-            if (require_global) mesg += "global "
-            if (context)        mesg += "method "
-            elseIf (this_type)  mesg += "method or routine "
-            else                mesg += "routine "
+            local options = String[]
+            if (not context) options.add( "type" )
+            if (require_global)
+              if (context)        options.add( "global method" )
+              elseIf (this_type)  options.[ add("global method"), add("routine") ]
+              else                options.add( "routine" )
+            else
+              if (context)        options.add( "method" )
+              elseIf (this_type)  options.[ add("method"), add("routine") ]
+              else                options.add( "routine" )
+            endIf
+            mesg = "No such $ "(options.conjoin("or"))
 
             if (context)        mesg += context.type + "."
             elseIf (this_type)  mesg += this_type + "."
@@ -3407,14 +3416,14 @@ augment
 
 endAugment
 
-$localMacro PREPARE_COLLECTION(cmd)
-        local cmd : Cmd
+$localMacro PREPARE_COLLECTION<<$cmd>>
+        local $cmd : Cmd
         if (cmd_collection.name)
           local v_collection = resolver.add_local( Local(cmd_collection.t, cmd_collection.name, DummyInitialValue, collection_type) )
           resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
-          cmd = GetLocal( v_collection )
+          $cmd = GetLocal( v_collection )
         elseIf (collection_type.is_compound and cmd_collection.data.is_getter)
-          cmd = cmd_collection.data
+          $cmd = cmd_collection.data
         else
           local v_collection : Local
           local cmd_get_local = cmd_collection.data->(as GetLocal)
@@ -3424,15 +3433,15 @@ $localMacro PREPARE_COLLECTION(cmd)
             v_collection = resolver.add_local( cmd_collection.t, "collection", collection_type )
             resolver.insert( SetLocal(v_collection,cmd_collection.data,&initial_assignment) )
           endIf
-          cmd = GetLocal( v_collection )
+          $cmd = GetLocal( v_collection )
         endIf
-$endMacro
+$endLocalMacro
 
 # ForEach
 augment
   METHODS
     method ForEachControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
-      println t.error( "Unsupported operation" )
+      println t.error( "Unsupported operation ($)"(type_name) )
       throw UnsupportedOperationError()
 
     method ForEachInControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
@@ -3518,7 +3527,7 @@ augment
           throw cmd_collection.t.error( "$.$ must return a value."(m_get.type_context,m_get.signature) )
         endIf
 
-        PREPARE_COLLECTION(cmd_get_collection)
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
@@ -3533,7 +3542,7 @@ augment
           cmd_iterator.statements.insert(
             SetLocal( v_cur,
               resolver.resolve_call( cmd_collection.t, cmd_get_collection, m_get,
-                  Args(cmd_collection.t,GetLocal(v_index)) ),
+              Args(cmd_collection.t,GetLocal(v_index)) ),
               &initial_assignment
             )
           )
@@ -3563,7 +3572,7 @@ augment
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
-        PREPARE_COLLECTION(cmd_get_collection)
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
         resolver.insert(
@@ -3611,7 +3620,7 @@ augment
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
-        PREPARE_COLLECTION(cmd_get_collection)
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
 
@@ -3622,7 +3631,7 @@ augment
           local v_cur = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, cur_type) )
           assert resolver.control_stack.last is cmd_iterator
           cmd_iterator.statements.insert(
-            SetLocal( v_cur, resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ), &initial_assignment )
+          SetLocal( v_cur, resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read ), &initial_assignment )
           )
         endIf
 
@@ -3647,16 +3656,15 @@ augment
         return
       endIf
 
-      use builder = StringBuilder.pool
-        builder.println @|Standard/Collection does not implement any of the collection protocols:
-                         |
-                         |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
-                         |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
-                         |  read_another()->ElementType?
-                         |  iterator()->Standard/Collection (result must implement one of the above protocols)
-                         |  reader()->Standard/Collection (result must implement one of the above protocols)
-        throw t.error( builder->String )
-      endUse
+      local builder = String()
+      builder.println @|Standard/Collection does not implement any of the collection protocols:
+                       |
+                       |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
+                       |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                       |  read_another()->ElementType?
+                       |  iterator()->Standard/Collection (result must implement one of the above protocols)
+                       |  reader()->Standard/Collection (result must implement one of the above protocols)
+      throw t.error( builder )
 
     method Cmd.resolve_foreach_of( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
@@ -3708,7 +3716,7 @@ augment
           cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
         endIf
 
-        PREPARE_COLLECTION(cmd_get_collection)
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         if (down_to)
           cmd_iterator.condition = CompareGE( t, GetLocal(v_index), LiteralInt32(t,0) )
@@ -3741,11 +3749,11 @@ augment
         resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
-        PREPARE_COLLECTION(cmd_get_collection)
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
         local v_next = resolver.add_local( cmd_control.t, "next", m_read_another.return_type )
         resolver.insert(
-          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another), &initial_assignment )
+          SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection.cloned, m_read_another), &initial_assignment )
         )
         cmd_iterator.upkeep.add(
           SetLocal( v_next, resolver.resolve_call(cmd_collection.t, cmd_get_collection, m_read_another) )
@@ -3778,9 +3786,9 @@ augment
         resolver.insert( SetLocal(v_index,LiteralInt32(t,0),&initial_assignment) )
         cmd_iterator.upkeep.add( Increment(t, Access(t,v_index.name)) )
 
-        PREPARE_COLLECTION(cmd_get_collection)
+        PREPARE_COLLECTION<<cmd_get_collection>>
 
-        cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection, "has_another" )
+        cmd_iterator.condition = ContextAccess( cmd_control.t, cmd_get_collection.cloned, "has_another" )
 
         cmd_iterator.statements.insert(
           resolver.resolve_call( cmd_control.t, cmd_get_collection, m_read )
@@ -3807,16 +3815,15 @@ augment
         return
       endIf
 
-      use builder = StringBuilder.pool
-        builder.println @|Standard/Collection does not implement any of the collection protocols:
-                         |
-                         |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
-                         |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
-                         |  read_another()->ElementType?
-                         |  iterator()->Standard/Collection (result must implement one of the above protocols)
-                         |  reader()->Standard/Collection (result must implement one of the above protocols)
-        throw t.error( builder->String )
-      endUse
+      local builder = String()
+      builder.println @|Standard/Collection does not implement any of the collection protocols:
+                       |
+                       |  count()->Int32/count:Int32 + at(index:Int32)->ElementType
+                       |  count()->Int32/count:Int32 + get(index:Int32)->ElementType
+                       |  read_another()->ElementType?
+                       |  iterator()->Standard/Collection (result must implement one of the above protocols)
+                       |  reader()->Standard/Collection (result must implement one of the above protocols)
+      throw t.error( builder )
 
 endAugment
 
@@ -3866,16 +3873,15 @@ augment
           exact_arg_types = false
         endLoop
 
-        use message = StringBuilder.pool
-          message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
-          message.println "Define one of the following methods to support the operation:\n"
-          message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
-          message.println "  $.$($)" (left_type,op_method_name,right_type)
-          if (left_type is not right_type)
-            message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
-          endIf
-          throw cmd.t.error( message )
-        endUse
+        local message = String()
+        message.print   "Operation $ $ $ is undefined. "(left_type,cmd.symbol,right_type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
+        message.println "  $.$($)" (left_type,op_method_name,right_type)
+        if (left_type is not right_type)
+          message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+        endIf
+        throw cmd.t.error( message )
       endIf
 
       return null
@@ -3927,14 +3933,13 @@ augment
 
         if (suppress_error) return null
 
-        use message = StringBuilder.pool
-          message.print   "Operation $ $ $ is undefined. "(left_type,op_method_name.after_first("operator"),right_type)
-          message.println "Define one of the following methods to support the operation:\n"
-          message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
-          message.println "  $.$($)" (left_type,op_method_name,right_type)
-          message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
-          throw cmd.t.error( message )
-        endUse
+        local message = String()
+        message.print   "Operation $ $ $ is undefined. "(left_type,op_method_name.after_first("operator"),right_type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($,$)  (global method)" (left_type,op_method_name,left_type,right_type)
+        message.println "  $.$($)" (left_type,op_method_name,right_type)
+        message.println "  $.$($,$)  (global method)" (right_type,op_method_name,left_type,right_type)
+        throw cmd.t.error( message )
       endIf
 
       return null
@@ -3975,13 +3980,12 @@ augment
 
         if (suppress_error) return null
 
-        use message = StringBuilder.pool
-          message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
-          message.println "Define one of the following methods to support the operation:\n"
-          message.println "  $.$($)  (global method)" (type,op_method_name,type)
-          message.println "  $.$()"  (type,op_method_name)
-          throw cmd.t.error( message )
-        endUse
+        local message = String()
+        message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($)  (global method)" (type,op_method_name,type)
+        message.println "  $.$()"  (type,op_method_name)
+        throw cmd.t.error( message )
       endIf
 
       return null
@@ -4019,13 +4023,12 @@ augment
 
         if (suppress_error) return null
 
-        use message = StringBuilder.pool
-          message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
-          message.println "Define one of the following methods to support the operation:\n"
-          message.println "  $.$($)  (global method)" (type,op_method_name,type)
-          message.println "  $.$()"  (type,op_method_name)
-          throw cmd.t.error( message )
-        endUse
+        local message = String()
+        message.print   "Operation $ is undefined on type $. "(cmd.symbol,type)
+        message.println "Define one of the following methods to support the operation:\n"
+        message.println "  $.$($)  (global method)" (type,op_method_name,type)
+        message.println "  $.$()"  (type,op_method_name)
+        throw cmd.t.error( message )
       endIf
 
       return null

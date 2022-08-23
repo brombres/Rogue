@@ -13,7 +13,7 @@ class TypeOrganizer : Visitor
         throw cmd.t.error( "Only enums can have a CATEGORIES section." )
       endIf
 
-      ensure this_type.categories
+      ensure<<this_type.categories>>
       this_type.categories.add( cmd )
 
     method on_visit( cmd:Class )
@@ -48,7 +48,7 @@ class TypeOrganizer : Visitor
           this_type.base_class = base_type
         else
           # base_type.is_aspect
-          ensure this_type.aspects
+          ensure<<this_type.aspects>>
           this_type.aspects.add( base_type )
         endIf
       endForEach

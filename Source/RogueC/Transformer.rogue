@@ -61,7 +61,7 @@ class Transformer : Visitor
             if (cmd_if)
               cmd_if.statements = statements
             else
-              assert false || "[INTERNAL] Missing logic."
+              assert false
             endIf
           endIf
         endWhile

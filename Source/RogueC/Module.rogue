@@ -8,12 +8,12 @@ class Module
     used_modules      = UsedModule[]
     implicit_context  = Type[]
     global_statements : Statements
-    templates         = StringTable<<Template>>()
-    augments          = StringTable<<String[]>>()
+    templates         = [String:Template]
+    augments          = [String:String[]]
     next_augment_id   = 0
 
-    types             = StringTable<<Type>>()
-    type_arg_lookup   = StringTable<<Type>>()
+    types             = [String:Type]
+    type_arg_lookup   = [String:Type]
     m_on_launch       : GlobalMethod
 
     attributes        : Attributes
@@ -27,7 +27,7 @@ class Module
     method init( t, name )
       attributes = Attributes(t)
       Program.modules[ name ] = this
-      ensure global_statements(t)
+      ensure<<global_statements>>(t)
 
       if (name != "Rogue")
         uses_module( Program.default_module )
@@ -199,7 +199,7 @@ class Module
       local last_scope_i = type_name.locate_last( "::", first_template_i )
       if (not last_scope_i.exists) return (null->(as Module),type_name)
 
-      use mod_name = StringBuilder.pool
+      use mod_name = StringPool
         forEach (i in 0..<last_scope_i.value)
           mod_name.print type_name[i]
         endForEach
@@ -209,7 +209,7 @@ class Module
         local mod = Program.modules[ mod_name ]
         if (mod) return (mod,type_name)
 
-        use relative_mod_name = StringBuilder.pool
+        use relative_mod_name = StringPool
           # Try one more thing - if in module Alpha, check Beta::XYZ -> Alpha::Beta::XYZ
           relative_mod_name.print this.name
           relative_mod_name.print "::"

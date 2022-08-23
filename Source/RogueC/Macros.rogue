@@ -1,10 +1,10 @@
-$macro ROGUE_ATTRIBUTE( name, value )
+$macro ROGUE_ATTRIBUTE<<$name, $value>>
   METHODS
-    method name->Logical
-      return (flags & (value))
+    method $name->Logical
+      return (flags & ($value))
 
-    method $join(set_,name)( setting:Logical )
-      if (setting) flags |= (value)
-      else         flags &= !(value)
+    method $id(set_,$name)( setting:Logical )
+      if (setting) flags |= ($value)
+      else         flags &= !($value)
 $endMacro
 

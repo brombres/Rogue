@@ -636,7 +636,7 @@ class CGenerator : Visitor
         endIf
         writer.print this_procedure.signature
         writer.print ''", "''
-        writer.print File.filename(this_procedure.t.filepath)
+        writer.print File(this_procedure.t.filepath).filename
         writer.print   ''", ''
         writer.print   cur_line
         writer.println '' );''
@@ -1458,7 +1458,7 @@ class CGenerator : Visitor
         while (i)
           local i1 = i.value - 1
           local i2 = i1 + 7
-          if (not ((i1 >= 0 and code[i1].is_identifier(&start)) or (i2 < code.count and code[i2].is_identifier)))
+          if (not ((i1 >= 0 and code[i1].is_identifier_start) or (i2 < code.count and code[i2].is_identifier)))
             throw t.error( "Illegal 'return' in native code. Returns must be executed in Rogue code." )
           endIf
           i = code.locate( "return", i.value+1 )

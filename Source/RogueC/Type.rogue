@@ -1,7 +1,6 @@
 module RogueC
 
-uses Utility/WorkList
-uses Utility/ListLookupTable
+uses Collection/ListLookupTable
 
 class Type : Cmd
   PROPERTIES
@@ -11,11 +10,11 @@ class Type : Cmd
     aspects           : Type[]
     extended_types    = Type[]
     attributes        : Attributes
-    definitions       = StringTable<<Cmd>>()
-    global_properties = StringTable<<Property>>()
-    properties        = StringTable<<Property>>()
-    global_methods    = StringTable<<GlobalMethod>>()
-    methods           = StringTable<<Method>>()
+    definitions       = [String:Cmd]
+    global_properties = [String:Property]
+    properties        = [String:Property]
+    global_methods    = [String:GlobalMethod]
+    methods           = [String:Method]
     native_header     = NativeHeader[]
     native_code       = NativeCode[]
     class_def         : Cmd
@@ -173,68 +172,66 @@ class Type : Cmd
         endIf
       endForEach
 
-      use builder = StringBuilder.pool
-        builder.print '('
-        forEach (element at i in named_elements)
-          if (i > 0) builder.print ','
-          if (not is_anonymous)
-            builder.print element.name
-            builder.print ':'
-          endIf
-          builder.print element.of_type.scoped_name
-        endForEach
-        builder.print ')'
-        local tuple_type_name = builder->String
-
-        local type = Program.default_module.types[ tuple_type_name ]
-        if (type) return type
-
-        local template_key = "Tuple<<$>>"(named_elements.count*2)
-        local template = Program.default_module.templates[ template_key ]
-        if (not template)
-          # Create template e.g.:
-          #   <<$name1,$Type1,$name2,$Type2>>
-          #   ( name1:Type1, name2:Type2, ... ) [compound]
-          #   endClass
-          local placeholders = Token[]
-          forEach (element at i in named_elements)
-            placeholders.add( element.t.cloned(TokenType.PLACEHOLDER, "$name"+(i+1)) )
-            placeholders.add( element.t.cloned(TokenType.PLACEHOLDER, "$Type"+(i+1)) )
-          endForEach
-
-          local tokens = Token[]
-          t = t.cloned( t.type, null )
-          tokens.add( t.cloned(TokenType.SYMBOL_OPEN_PAREN) )            # (
-          forEach (i of named_elements)
-            if (i > 0) tokens.add( t.cloned(TokenType.SYMBOL_COMMA) )    # ,
-            tokens.add( t.cloned(TokenType.PLACEHOLDER, "$name"+(i+1)) ) # $nameN
-            tokens.add( t.cloned(TokenType.SYMBOL_COLON) )               # :
-            tokens.add( t.cloned(TokenType.PLACEHOLDER, "$Type"+(i+1)) ) # $TypeN
-          endForEach
-          tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_PAREN) )           # )
-          tokens.add( t.cloned(TokenType.SYMBOL_OPEN_SQUARE) )           # [
-          tokens.add( t.cloned(TokenType.IDENTIFIER,"compound") )        # compound
-          tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_SQUARE) )          # ]
-          tokens.add( t.cloned(TokenType.EOL) )                          # EOL
-          tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )            # endClass
-          tokens.add( t.cloned(TokenType.EOL) )                          # EOL
-
-          template = Template( t, Program.default_module, "Tuple", placeholders, tokens, Attribute.COMPOUND )
-          Program.default_module.templates[ template_key ] = template
+      local builder = String()
+      builder.print '('
+      forEach (element at i in named_elements)
+        if (i > 0) builder.print ','
+        if (not is_anonymous)
+          builder.print element.name
+          builder.print ':'
         endIf
+        builder.print element.of_type.scoped_name
+      endForEach
+      builder.print ')'
+      local tuple_type_name = builder
 
-        # Instantiate the template
-        local template_args = TemplateArgs( t )
-        forEach (element in named_elements)
-          template_args.add( TokenList( element.t, Token[][element.t.cloned(TokenType.IDENTIFIER, element.name)] ) )
-          template_args.add( TokenList( element.t, element.of_type.name_tokens.cloned ) )
+      local type = Program.default_module.types[ tuple_type_name ]
+      if (type) return type
+
+      local template_key = "Tuple<<$>>"(named_elements.count*2)
+      local template = Program.default_module.templates[ template_key ]
+      if (not template)
+        # Create template e.g.:
+        #   <<$name1,$Type1,$name2,$Type2>>
+        #   ( name1:Type1, name2:Type2, ... ) [compound]
+        #   endClass
+        local placeholders = Token[]
+        forEach (element at i in named_elements)
+          placeholders.add( element.t.cloned(TokenType.PLACEHOLDER, "$name"+(i+1)) )
+          placeholders.add( element.t.cloned(TokenType.PLACEHOLDER, "$Type"+(i+1)) )
         endForEach
 
-        type = Type( t, template, tuple_type_name, template_args, &is_tuple )
-        type.attributes.is_anonymous_tuple = is_anonymous
-        return type
-      endUse
-      return null
+        local tokens = Token[]
+        t = t.cloned( t.type, null )
+        tokens.add( t.cloned(TokenType.SYMBOL_OPEN_PAREN) )            # (
+        forEach (i of named_elements)
+          if (i > 0) tokens.add( t.cloned(TokenType.SYMBOL_COMMA) )    # ,
+          tokens.add( t.cloned(TokenType.PLACEHOLDER, "$name"+(i+1)) ) # $nameN
+          tokens.add( t.cloned(TokenType.SYMBOL_COLON) )               # :
+          tokens.add( t.cloned(TokenType.PLACEHOLDER, "$Type"+(i+1)) ) # $TypeN
+        endForEach
+        tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_PAREN) )           # )
+        tokens.add( t.cloned(TokenType.SYMBOL_OPEN_SQUARE) )           # [
+        tokens.add( t.cloned(TokenType.IDENTIFIER,"compound") )        # compound
+        tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_SQUARE) )          # ]
+        tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+        tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )            # endClass
+        tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+
+        template = Template( t, Program.default_module, "Tuple", placeholders, tokens, Attribute.COMPOUND )
+        Program.default_module.templates[ template_key ] = template
+      endIf
+
+      # Instantiate the template
+      local template_args = TemplateArgs( t )
+      forEach (element in named_elements)
+        template_args.add( TokenList( element.t, Token[][element.t.cloned(TokenType.IDENTIFIER, element.name)] ) )
+        template_args.add( TokenList( element.t, element.of_type.name_tokens.cloned ) )
+      endForEach
+
+      type = Type( t, template, tuple_type_name, template_args, &is_tuple )
+      type.attributes.is_anonymous_tuple = is_anonymous
+      return type
 
   METHODS
     method init( t, name, attributes:Int64, &unlisted )
@@ -912,7 +909,7 @@ class Type : Cmd
                 If( t,
                   CompareEQ(t,Access(t,"new_state"),LiteralInt32(t,-1)),
                   Statements(t,Assign(t,Access(t,"new_state"),LiteralInt32(t,0))),
-                  Statements(cmd_else)
+                  Statements(t,cmd_else)
                 )
               )
 
@@ -1653,12 +1650,11 @@ class Type : Cmd
         # Neither use an explicit scope.
         @scoped_name = name
       else
-        use builder = StringBuilder.pool
-          builder.print module_context.name
-          builder.print "::"
-          builder.print name
-          @scoped_name = builder
-        endUse
+        local builder = String()
+        builder.print module_context.name
+        builder.print "::"
+        builder.print name
+        @scoped_name = builder
       endIf
 
       return @scoped_name

@@ -8,8 +8,7 @@ augment Build
   # You can create a Local.settings file with overrides for these values, e.g.:
   # BUILD_MODE = release
   PROPERTIES
-    #PROJECT          = "$PROJECT_NAME"
-    PROJECT          = "R3"
+    PROJECT          = "RogueC"
     LAUNCHER_NAME    = PROJECT.to_lowercase : String
 
     BUILD_MODE       = "debug"
@@ -19,27 +18,10 @@ augment Build
     CC_FLAGS_WINDOWS = ""
 endAugment
 
-routine rogo_redo
-  execute @|r2 Source/R3/R3.rogue --main --gc=manual --target=Console,C,macOS --output=Build/RogueC
-  execute @|cc -O3 -Wall Build/RogueC.c -o Build/RogueC-macOS
-  #execute @|cp Build/RogueC-macOS Build/R2-macOS
-endRoutine
-
-routine rogo_r2
-  execute @|~/Projects/Tools/Froley/Build/Froley-macOS-3 --project=RogueC Source/RogueC/Rogue.froley Source/RogueC
-  execute @|roguec Source/RogueC/R2.rogue --gc=manual --debug --output=Build/R2-macOS.cpp --target=Console,C++,macOS
-  execute @|c++ -O0 -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof Build/R2-macOS.cpp -o Build/R2-macOS -lm
-endRoutine
-
-routine rogo_r4
-  #execute @|Build/R3-macOS Source/R3/R3.rogue --main --gc=manual --debug --target=Console,C,macOS --output=Build/RogueC
-  execute @|cc -O3 -Wall Build/RogueC.c -o Build/RogueC-macOS
-endRoutine
-
-routine rogo_t
-  execute @|r2 Test.rogue --main --gc=manual --debug --target=Console,C++
-           |gcc Test.c -o test
-           |./test
+routine rogo_bootstrap
+  execute @|cc -O0 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
+  execute @|rm Build/R2-macOS
+  execute @|cp Build/RogueC-macOS Build/R2-macOS
 endRoutine
 
 routine rogo_default
@@ -77,11 +59,11 @@ routine rogo_build
   # Recompiles Rogue -> C -> Exe if needed. 'rogo rebuild' forces a build.
   localize exe_file
 
-  if (File("Source/R3/$.froley"(Build.PROJECT)).is_newer_than(exe_file))
+  if (File("Source/RogueC/Rogue.froley").is_newer_than(exe_file))
     rogo_froley
   endIf
 
-  local source_files = Files( "Source/R3", "**/*.rogue" )
+  local source_files = Files( "Source/RogueC", "**/*.rogue" )
   if (source_files.any_newer_than(exe_file))
     local c_filepath = "Build/$-$.c" (Build.PROJECT,System.os)
     if (source_files.any_newer_than(c_filepath))
@@ -92,7 +74,7 @@ routine rogo_build
 endRoutine
 
 routine rogo_froley
-  local froley_src = File( "Source/R3/$.froley"(Build.PROJECT) )
+  local froley_src = File( "Source/RogueC/Rogue.froley" )
   execute "froley --project=RogueC $ Source/$"(froley_src.esc,Build.PROJECT)
 endRoutine
 
@@ -184,7 +166,7 @@ routine rogo_update_version( version:String )
   # Updates the version number and date in the project source and README.md.
   if (version.count == 0) throw Error( "New version number expected, e.g. '1.0.2'." )
 
-  block file = File( "Source/R3/R2.rogue" )
+  block file = File( "Source/RogueC/RogueC.rogue" )
     if (file.exists)
       local og_content = String(file)
       local content = og_content
@@ -296,7 +278,7 @@ routine rogo_publish( new_version:String )
 endRoutine
 
 routine compile_rogue
-  local src_filepath = "Source/R3/$.rogue" (Build.PROJECT)
+  local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS
   if (Build.BUILD_MODE == "debug") flags = flags.with_suffix(' ') + "--debug"
@@ -331,6 +313,9 @@ routine compile_c
     cc .= appending( "$LIBRARY_FLAGS" )
     execute cc
   endIf
+
+  execute @|rm Build/R2-macOS
+  execute @|cp Build/RogueC-macOS Build/R2-macOS
 endRoutine
 
 routine exe_file->File

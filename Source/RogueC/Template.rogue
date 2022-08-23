@@ -55,7 +55,7 @@ class Template
       if (is_first_unorganized_type) Program.organize_types
       Program.is_modified = true
 
-    method incorporate_augments( type:Type, name:String, replacements:Table<<String,Token[]>> )
+    method incorporate_augments( type:Type, name:String, replacements:[String:Token[]] )
       local class_def = type.class_def->(as Class)
       assert class_def
       assert type.module_context
@@ -82,7 +82,7 @@ class Template
       endIf
 
   GLOBAL METHODS
-    method make_replacements( type:Type, tokens:Token[], replacements:Table<<String,Token[]>> )->Token[]
+    method make_replacements( type:Type, tokens:Token[], replacements:[String:Token[]] )->Token[]
       use processed_tokens = WorkList<<Token>>
         local any_changes = false
         forEach (t in tokens)
@@ -107,11 +107,11 @@ class Template
 
       return tokens
 
-    method replacements( placeholders:Token[], type_args:TemplateArgs )->Table<<String,Token[]>>
+    method replacements( placeholders:Token[], type_args:TemplateArgs )->[String:Token[]]
       if (not type_args) return null
       assert placeholders.count == type_args.count
 
-      local replacements = Table<<String,Token[]>>()
+      local replacements = [String:Token[]]
       forEach (placeholder at i in placeholders)
         replacements[placeholder] = type_args[i].tokens
       endForEach

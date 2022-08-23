@@ -135,68 +135,66 @@ class Procedure : Cmd
       return which{ signature || name }
 
     method dev_signature->String
-      use builder = StringBuilder.pool
-        if (type_context) builder.[ print(type_context), print('.') ]
-        builder.print name
-        builder.print "("
-        forEach (param at i in parameters)
-          if (i > 0) builder.print ','
-          local param_name = param.original_name
-          if (param.attributes.is_default_parameter and param.type is Program.type_Logical)
-            builder.print '&'
-            builder.print param_name
-          elseIf (param.initial_value)
-            builder.print '['
-            builder.print param_name
-            builder.print ':'
-            builder.print param.type
-            builder.print ']'
-          else
-            builder.print param_name
-            builder.print ':'
-            builder.print param.type
-          endIf
-        endForEach
-        builder.print ")"
-        return builder->String
-      endUse
+      local builder = String()
+      if (type_context) builder.[ print(type_context), print('.') ]
+      builder.print name
+      builder.print "("
+      forEach (param at i in parameters)
+        if (i > 0) builder.print ','
+        local param_name = param.original_name
+        if (param.attributes.is_default_parameter and param.type is Program.type_Logical)
+          builder.print '&'
+          builder.print param_name
+        elseIf (param.initial_value)
+          builder.print '['
+          builder.print param_name
+          builder.print ':'
+          builder.print param.type
+          builder.print ']'
+        else
+          builder.print param_name
+          builder.print ':'
+          builder.print param.type
+        endIf
+      endForEach
+      builder.print ")"
+      return builder
 
     method call_signature->String
       if (not @call_signature)
-        use builder = StringBuilder.pool
-          builder.print '('
-          local i = 0
-          if (not is_global)
-            if (type_context.is_reference)
-              builder.print "Rogue::Object"
-            else
-              builder.print type_context.module_context
-              builder.print "::"
-              builder.print type_context.name
-            endIf
-            ++i
+        local builder = String()
+        builder.print '('
+        local i = 0
+        if (not is_global)
+          if (type_context.is_reference)
+            builder.print "Rogue::Object"
+          else
+            builder.print type_context.module_context
+            builder.print "::"
+            builder.print type_context.name
           endIf
-          forEach (p in parameters)
-            if (i) builder.print ','
-            if (p.type.is_reference)
-              builder.print("Rogue::Object")
-            else
-              builder.print( p.type.module_context.name )
-              builder.print("::")
-              builder.print( p.type.name )
-            endIf
-            ++i
-          endForEach
-          builder.print ')'
-          if (return_type) builder.[ print("->"), print(return_type.module_context), print("::"), print(return_type) ]
-          if (is_global)
-            if (attributes.is_mutating) builder.print("[global mutating]")
-            else                        builder.print("[global]")
-          elseIf (attributes.is_mutating)
-            builder.print("[mutating]")
+          ++i
+        endIf
+        forEach (p in parameters)
+          if (i) builder.print ','
+          if (p.type.is_reference)
+            builder.print("Rogue::Object")
+          else
+            builder.print( p.type.module_context.name )
+            builder.print("::")
+            builder.print( p.type.name )
           endIf
-          @call_signature = builder->String
-        endUse
+          ++i
+        endForEach
+        builder.print ')'
+        if (return_type) builder.[ print("->"), print(return_type.module_context), print("::"), print(return_type) ]
+        if (is_global)
+          if (attributes.is_mutating) builder.print("[global mutating]")
+          else                        builder.print("[global]")
+        elseIf (attributes.is_mutating)
+          builder.print("[mutating]")
+        endIf
+        @call_signature = builder
       endIf
       return @call_signature
 
@@ -271,42 +269,41 @@ class Procedure : Cmd
       endIf
 
       if (not signature)
-        use builder = StringBuilder.pool
-          builder.print name
-          builder.print '('
-          forEach (p at i in parameters)
-            block p = p->(as Local)
-              assert p
-              if (i) builder.print ','
-              if (not p.type)
-                if (p.attributes.is_default_parameter)
-                  if (p.initial_value) p.type = p.initial_value.type
-                  if (not p.type) p.type = Program.type_Logical
-                  if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
-                elseIf (this.is_method)
-                  local prop = type_context.properties[p.name]
-                  if (prop)
-                    p.name = "_auto_store_" + p.name
-                    p.type = prop.type
-                    if (p.attributes.is_direct_auto_store)
-                      statements.insert( SetThisProperty(p.t,prop,Access(p.t,p.name)) )
-                    else
-                      statements.insert( Assign(p.t,Access(p.t,prop.name),Access(p.t,p.name)) )
-                    endIf
+        local builder = String()
+        builder.print name
+        builder.print '('
+        forEach (p at i in parameters)
+          block p = p->(as Local)
+            assert p
+            if (i) builder.print ','
+            if (not p.type)
+              if (p.attributes.is_default_parameter)
+                if (p.initial_value) p.type = p.initial_value.type
+                if (not p.type) p.type = Program.type_Logical
+                if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
+              elseIf (this.is_method)
+                local prop = type_context.properties[p.name]
+                if (prop)
+                  p.name = "_auto_store_" + p.name
+                  p.type = prop.type
+                  if (p.attributes.is_direct_auto_store)
+                    statements.insert( SetThisProperty(p.t,prop,Access(p.t,p.name)) )
                   else
-                    throw p.t.error( "No corresponding property for auto-store parameter '$'."(p.name) )
+                    statements.insert( Assign(p.t,Access(p.t,prop.name),Access(p.t,p.name)) )
                   endIf
                 else
-                  throw p.t.error( "Missing parameter type (e.g. $:SomeType)."(p.name) )
+                  throw p.t.error( "No corresponding property for auto-store parameter '$'."(p.name) )
                 endIf
+              else
+                throw p.t.error( "Missing parameter type (e.g. $:SomeType)."(p.name) )
               endIf
-              assert p.type
-              builder.[ print(p.type.module_context.name), print("::"), print(p.type.name) ]
-            endBlock
-          endForEach
-          builder.print ')'
-          signature = builder->String
-        endUse
+            endIf
+            assert p.type
+            builder.[ print(p.type.module_context.name), print("::"), print(p.type.name) ]
+          endBlock
+        endForEach
+        builder.print ')'
+        signature = builder
 
         min_args = 0
         forEach (p in parameters)

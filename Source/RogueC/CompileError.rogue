@@ -10,15 +10,15 @@ class CompileError( message:String, filepath=null:String, source=null:String, li
     method describe
       Console.error.println this->String
 
-    method description->String
+    method to->String
       local w = Console.width.or_smaller(80)
       if (w <= 0) w = 80
-      local builder = StringBuilder()
+      local builder = String()
       builder.println( "=" * w )
       builder.print( "ERROR" )
       if (filepath)
         if (filepath.contains('/'))
-          builder.print( '' in "$/$"'' (File.filename(File.folder(filepath)),File.filename(filepath)) )
+          builder.print( '' in "$/$"'' (File(filepath).parent.filename,File(filepath).filename) )
         else
           builder.print( '' in "$"'' (filepath) )
         endIf
@@ -44,5 +44,5 @@ class CompileError( message:String, filepath=null:String, source=null:String, li
       endIf
 
       builder.println( "=" * w )
-      return builder->String
+      return builder
 endClass

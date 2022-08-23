@@ -103,7 +103,7 @@ augment
       if (TypeConversionStack.count > 20)
         if (suppress_error) return null
 
-        local message = StringBuilder()
+        local message = String()
         message.print "Detected infinite recursive cycle for $->$ conversion.\n"(TypeConversionStack[0]._1,target_type)
         if (TypeConversionStack.count > 1)
           message.print " ("
@@ -115,7 +115,7 @@ augment
         endIf
         TypeConversionStack.clear
 
-        throw cmd.t.error( message->String )
+        throw cmd.t.error( message )
       endIf
 
       use TypeConversionStack

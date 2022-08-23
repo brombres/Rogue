@@ -23,8 +23,8 @@ class Parser : ParserCore, Poolable
     generic_fn_args_depth : Int32
     generic_fn_args_used  : Int32
 
-    local_definitions     : StringTable<<Token[]>>
-    local_macros          : StringTable<<Macro[]>>
+    local_definitions     : [String:Token[]]
+    local_macros          : [String:Macro[]]
 
 
   METHODS
@@ -96,32 +96,31 @@ class Parser : ParserCore, Poolable
       local i2 = _position - 1
       augment_t = _tokens[i1]
 
-      use builder = StringBuilder.pool
-        local depth = 0
-        forEach (t at i in _tokens.from(i1,i2))
-          which (t.type)
-            case TokenType.EOL
-              if (depth > 0) throw t.error( "Expected '>>', found end of line." )
+      local builder = String()
+      local depth = 0
+      forEach (t at i in _tokens.from(i1,i2))
+        which (t.type)
+          case TokenType.EOL
+            if (depth > 0) throw t.error( "Expected '>>', found end of line." )
+            escapeForEach
+          case TokenType.SYMBOL_COLON
+            if (depth > 0)
               escapeForEach
-            case TokenType.SYMBOL_COLON
-              if (depth > 0)
-                escapeForEach
-              endIf
-            case TokenType.SYMBOL_LTLT
-              ++depth
-            case TokenType.SYMBOL_GTGT
-              --depth
-              if (depth < 0)  throw t.error( "Unexpected '>>'." )
-              if (depth == 0)
-                builder.print ">>"
-                escapeForEach
-              endIf
-          endWhich
-          builder.print t->String
-        endForEach
-        if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
-        @augment_context_name = builder
-      endUse
+            endIf
+          case TokenType.SYMBOL_LTLT
+            ++depth
+          case TokenType.SYMBOL_GTGT
+            --depth
+            if (depth < 0)  throw t.error( "Unexpected '>>'." )
+            if (depth == 0)
+              builder.print ">>"
+              escapeForEach
+            endIf
+        endWhich
+        builder.print t->String
+      endForEach
+      if (depth > 0) throw _tokens[i1].error( "Unterminated '<<'." )
+      @augment_context_name = builder
 
     method batch_augment_create_method
       if (not collecting_templates) return
@@ -258,7 +257,7 @@ class Parser : ParserCore, Poolable
       local placeholders = _cmd_stack.remove_last->(as Placeholders)
       local id_node = _cmd_stack.remove_last
 
-      ensure local_macros
+      ensure<<local_macros>>
       local macros = local_macros[id_node->String]
       if (not macros)
         macros = Macro[]
@@ -301,7 +300,7 @@ class Parser : ParserCore, Poolable
       _attribute_essential = true
 
     method create_definition
-      local def_name = buffer->String
+      local def_name = buffer.cloned
       Program.definitions[ def_name ] = token_buffer
       use history = WorkList<<String>>
         detect_definition_cycle( history, def_name, token_buffer )
@@ -309,8 +308,8 @@ class Parser : ParserCore, Poolable
       token_buffer = Token[]
 
     method create_local_definition
-      ensure  local_definitions
-      local def_name = buffer->String
+      ensure<<local_definitions>>
+      local def_name = buffer.cloned
       local_definitions[ def_name ] = token_buffer
       use history = WorkList<<String>>
         detect_definition_cycle( history, def_name, token_buffer )
@@ -355,12 +354,8 @@ class Parser : ParserCore, Poolable
         local def = local_definitions[ _cur_t->String ]
         if (def)
           if (def.count > 0)
-            --_position
-            _tokens.shift( _position, &delta=def.count-1 )
-            forEach (t at i in def)
-              _tokens[_position+i] = t
-            endForEach
-            _limit += def.count - 1
+            _tokens.insert( def, _position )
+            _limit += def.count
             if (_position < _limit) _next_t = _tokens[_position]
           endIf
           return
@@ -370,12 +365,8 @@ class Parser : ParserCore, Poolable
       local def = Program.definitions[ _cur_t->String ]
       if (def)
         if (def.count > 0)
-          --_position
-          _tokens.shift( _position, &delta=def.count-1 )
-          forEach (t at i in def)
-            _tokens[_position+i] = t
-          endForEach
-          _limit += def.count - 1
+          _tokens.insert( def, _position )
+          _limit += def.count
           if (_position < _limit) _next_t = _tokens[_position]
         endIf
         return
@@ -399,7 +390,7 @@ class Parser : ParserCore, Poolable
           _discard_position
 
           # Expand macro here
-          local replacements = StringTable<<Token[]>>()
+          local replacements = [String:Token[]]
           forEach (placeholder at i in m.placeholders)
             replacements[placeholder->String] = args[i]->(as TokenList).tokens
           endForEach
@@ -419,10 +410,7 @@ class Parser : ParserCore, Poolable
             endForEach
 
             # Insert expanded tokens
-            _tokens.shift( _position, &delta=expanded_tokens.count )
-            forEach (t at i in expanded_tokens)
-              _tokens[_position+i] = t
-            endForEach
+            _tokens.insert( expanded_tokens, _position )
             _limit += expanded_tokens.count
             if (_position < _limit) _next_t = _tokens[_position]
           endUse
@@ -442,7 +430,7 @@ class Parser : ParserCore, Poolable
       if (not file.filepath.begins_with('/')) file = File(File(t.filepath).folder / file.filepath)
       if (not file.exists) throw t.error( "No such file: $"(file) )
       local bytes = Byte[](file)
-      _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes.to_hex_string)) ) )
+      _cmd_stack.add( TypeAccess( t, Type(t,Program.type_Byte), Args(t,LiteralString(t,bytes->String(&hex))) ) )
 
     method filename_to_file_string
       if (disable_output or _cmd_stack.is_empty) return
@@ -473,7 +461,7 @@ class Parser : ParserCore, Poolable
       return _position < _limit or inserted_tokens.count
 
     method include_filepath
-      Program.include( marked_token, buffer->String, &is_optional=include_attribute_optional )
+      Program.include( marked_token, buffer.cloned, &is_optional=include_attribute_optional )
 
     method join
       if (not disable_output and _cmd_stack.count >= 2)
@@ -509,7 +497,7 @@ class Parser : ParserCore, Poolable
 
     method uses_filepath
       # First pass $include's the given file
-      local filepath = buffer->String
+      local filepath = buffer.cloned
       if (filepath == "") throw marked_token.error( "Module path expected." )
       processed_tokens.add( marked_token.cloned(TokenType.STRING,filepath) )
       if (not _attribute_no_include)
@@ -682,7 +670,7 @@ class Parser : ParserCore, Poolable
       local class_t = _tokens[i1]  # 'subclass'
 
       local m = Program.current_module
-      local hash = "$:$:$" (File.abs(class_t.filepath),class_t.line,class_t.column)
+      local hash = "$:$:$" (File(class_t.filepath).abs,class_t.line,class_t.column)
 
       if (collecting_templates)
         local name = "AnonymousSubclass" + Program.anonymous_class_names.count
@@ -809,7 +797,7 @@ class Parser : ParserCore, Poolable
         buffer.print _read.content
       endWhile
 
-      local module_id = buffer->String
+      local module_id = buffer.cloned
       if (not disable_output) _push( Identifier(t,module_id), 0 )
       Program.current_module = Program.get_module( t, module_id )
 

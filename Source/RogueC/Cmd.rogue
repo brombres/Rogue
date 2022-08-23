@@ -147,15 +147,14 @@ class CmdList : Cmd
       return @list.last
 
     method list_description->String
-      use builder = StringBuilder.pool
-        builder.print '['
-        forEach (element at index in @list)
-          if (index > 0) builder.print ','
-          builder.print( %element )
-        endForEach
-        builder.print ']'
-        return builder->String
-      endUse
+      local builder = String()
+      builder.print '['
+      forEach (element at index in @list)
+        if (index > 0) builder.print ','
+        builder.print( %element )
+      endForEach
+      builder.print ']'
+      return builder
 
     method remove_first->Cmd
       return @list.remove_first
@@ -652,12 +651,12 @@ class Local : Cmd
   METHODS
     method init( t, name, type )
       original_name = name
-      ensure attributes(t)
+      ensure<<attributes>>(t)
       attributes.is_anchored = true  # always true
 
     method init( t, name, initial_value, type, attribute=null:String )
       original_name = name
-      ensure attributes(t)
+      ensure<<attributes>>(t)
       if (attribute)
         which (attribute)
           case "default":           attributes.is_default_parameter = true
@@ -770,7 +769,7 @@ class GetLocal : Cmd
 
     method init( existing:GetLocal )
       prior.init( existing )
-      info = existing.info
+      if (existing.info) info = existing.info
 
     method description->String
       return "GetLocal($)" (%info)
@@ -2010,30 +2009,28 @@ class TemplateArgs : CmdList
       return list[index]->(as TokenList)
 
     method to->String
-      use builder = StringBuilder.pool
-        builder.print( (forEach in this).tokens )
-        return builder->String
-      endUse
+      local builder = String()
+      builder.print( (forEach in this).tokens )
+      return builder
 
     method to->String( name:String )
-      use builder = StringBuilder.pool
-        builder.print name
-        builder.print "<<"
-        forEach (i of this)
-          if (i) builder.print ','
-          local type = type(i)
-          if (type)
-            builder.print type.scoped_name
-          else
-            builder.print( (forEach in this[i].tokens)->String )
-          endIf
-        endForEach
-        builder.print ">>"
-        return builder->String
-      endUse
+      local builder = String()
+      builder.print name
+      builder.print "<<"
+      forEach (i of this)
+        if (i) builder.print ','
+        local type = type(i)
+        if (type)
+          builder.print type.scoped_name
+        else
+          builder.print( (forEach in this[i].tokens)->String )
+        endIf
+      endForEach
+      builder.print ">>"
+      return builder
 
     method type( index:Int32 )->Type
-      use token_string = StringBuilder.pool
+      use token_string = StringPool
         local token_list = this[index]
         token_string.print((forEach in token_list.tokens)->String)
         local type_entry = Program.current_module.type_arg_lookup.find( token_string )
@@ -3736,27 +3733,26 @@ class FunctionType : Type
 
   GLOBAL METHODS
     method create( t:Token, param_types:TypeList, return_type:Type )->FunctionType
-      use builder = StringBuilder.pool
-        builder.print "(Function("
-        forEach (arg_type at i in param_types)
-          if (i > 0) builder.print ','
-          builder.print arg_type.scoped_name
-        endForEach
-        builder.print ')'
-        if (return_type)
-          builder.print "->"
-          builder.print return_type.module_context
-          builder.print "::"
-          builder.print return_type
-        endIf
-        builder.print ')'
-        local name = builder->String
+      local builder = String()
+      builder.print "(Function("
+      forEach (arg_type at i in param_types)
+        if (i > 0) builder.print ','
+        builder.print arg_type.scoped_name
+      endForEach
+      builder.print ')'
+      if (return_type)
+        builder.print "->"
+        builder.print return_type.module_context
+        builder.print "::"
+        builder.print return_type
+      endIf
+      builder.print ')'
+      local name = builder
 
-        local type = Program.default_module.find_type( t, name )->(as FunctionType)
-        if (type) return type
-        type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
-        return type
-      endUse
+      local type = Program.default_module.find_type( t, name )->(as FunctionType)
+      if (type) return type
+      type = FunctionType( t, name, Attribute.OBJECT|Attribute.ABSTRACT, param_types, return_type )
+      return type
 
   METHODS
     method init( t, name:String, attributes:Int64, param_types, return_type )
