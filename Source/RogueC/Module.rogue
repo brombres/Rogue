@@ -116,43 +116,26 @@ class Module
     method find_type( t:Token, type_name:String, &extended_search )->Type
       local (mod,isolated_type_name) = split_module_and_type( t, type_name )
 
-      if (mod)
-        # Explicit module given
-        local result = mod.types[ isolated_type_name ]
-        if (result) return result
-        extended_search = false
+      if (mod) extended_search = false
+      else     mod = this
 
-      else
-        local result = this.types[ isolated_type_name ]
-        if (result) return result
+      local result = mod.types[ isolated_type_name ]
+      if (result) return result
 
-        if (extended_search)
-          forEach (used_m in used_modules)
-            result = used_m.m.types[ isolated_type_name ]
-            if (result) return result
-          endForEach
-        endIf
-
-        mod = this
+      if (not isolated_type_name.ends_with('>'))
+        use template_name = StringPool
+          template_name.print isolated_type_name
+          template_name.print "<<0>>"
+          local template = mod.templates[ template_name ]
+          if (template) return Type( t, template, isolated_type_name )
+        endUse
       endIf
 
-      # Handle non-parameterized templates here by checking for a match with <<0>> template parameters.
-      if (not isolated_type_name.ends_with('>'))
-        local template_name = isolated_type_name + "<<0>>"
-
-        local template = mod.templates[ template_name ]
-        if (template)
-          return Type( template.t, template, isolated_type_name )
-        endIf
-
-        if (extended_search)
-          forEach (used_m in used_modules)
-            template = used_m.m.templates[ template_name ]
-            if (template)
-              return Type( template.t, template, isolated_type_name )
-            endIf
-          endForEach
-        endIf
+      if (extended_search)
+        forEach (used_m in used_modules)
+          result = used_m.m.find_type( t, type_name )
+          if (result) return result
+        endForEach
       endIf
 
       return null
@@ -275,15 +258,19 @@ class Module
     method to->String
       return name
 
-    method uses_module( m:Module, &is_exported )
-      if (m is this) return
+    method uses_module( mod:Module, &is_exported )
+      if (mod is this) return
       # happens when this is the default module because all modules implicitly "use" default module
 
-      forEach (existing_m in used_modules)
-        if (existing_m.m is m) return # already added
+      forEach (existing_m at i in used_modules)
+        if (existing_m.m is mod)
+          # Already added - move to end to give it higher search priority than before.
+          used_modules.add( used_modules.remove_at(i) )
+          return
+        endIf
       endForEach
 
-      used_modules.add( UsedModule(m,&=is_exported) )
+      used_modules.add( UsedModule(mod,&=is_exported) )
 
 endClass
 

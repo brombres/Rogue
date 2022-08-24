@@ -79,7 +79,6 @@ class Procedure : Cmd
       if (args.count > parameters.count) return false
 
       use list = WorkList<<Cmd>>
-        #loop (parameters.count) list.add( null->(as Cmd) )
         list.expand_to_count( parameters.count )
 
         # Put each named arg in the right spot
