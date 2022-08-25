@@ -721,24 +721,19 @@ class CGenerator : Visitor
     method on_leave_procedure( body:ControlStructure )
       pop_scope
 
-      contingent
-        if (BranchAnalyzer.all_paths_return(body))
-          sufficient (this_procedure.throws and this_procedure.return_type)
-          escapeContingent
-        endIf
+      print_procedure_cleanup
 
-        print_procedure_cleanup
-        necessary (this_procedure.return_type)
-
-      satisfied
-        if (this_procedure.return_type.is_compound)
-          writer.print   "return ("
-          writer.print   this_procedure.return_type.c_name
-          writer.println "){};"
-        else
-          writer.println "return 0;"
+      if (this_procedure.return_type)
+        if (not BranchAnalyzer.all_paths_return(body) or this_procedure.throws)
+          if (this_procedure.return_type.is_compound)
+            writer.print   "return ("
+            writer.print   this_procedure.return_type.c_name
+            writer.println "){};"
+          else
+            writer.println "return 0;"
+          endIf
         endIf
-      endContingent
+      endIf
 
       writer.indent -= 2
       writer.println( "}" )
