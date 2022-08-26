@@ -18,6 +18,11 @@ augment Build
     CC_FLAGS_WINDOWS = ""
 endAugment
 
+routine rogo_x2
+  rogo_rebuild
+  rogo_rebuild
+endRoutine
+
 routine rogo_bootstrap
   execute @|cc -O0 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
   execute @|rm Build/R2-macOS

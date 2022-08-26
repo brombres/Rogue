@@ -4,14 +4,15 @@ uses Utility/WorkList
 
 class CGenerator : Visitor
   PROPERTIES
-    writer         : CWriter
-    autoname_index = 0
+    writer             : CWriter
+    autoname_index     = 0
 
-    visible_locals    = Local[]
-    visible_locals_fp = Int32[]
-    control_stack     = ControlStructure[]
+    visible_locals     = Local[]
+    visible_locals_fp  = Int32[]
+    control_stack      = ControlStructure[]
 
-    cur_line          : Int32
+    cur_line           : Int32
+    current_statements : Statements
 
   METHODS
     method init( writer )
@@ -47,17 +48,22 @@ class CGenerator : Visitor
 
       (forEach in list).attributes.is_collected = false  # reset
 
-    method dispatch_exception( t:Token, header=null:String )
-      if (header) writer.print(header)
-
+    method dispatch_exception( t:Token, &indeterminate, &is_end_of_procedure )
       forEach (control in control_stack step -1)
         if (control.catches_exception or control.requires_cleanup)
+          if (indeterminate) writer.print( "if (Rogue_exception)" )
           writer.print " goto "
           writer.print control.c_escape_label(this)
           writer.println ';'
           return
         endIf
       endForEach
+
+      if (indeterminate and control_stack.count > 0)
+        if (not is_end_of_procedure)
+          writer.print( "if (Rogue_exception)" )
+        endIf
+      endIf
 
       if (Program.stack_trace or this_procedure.requires_cleanup)
         writer.println
@@ -98,6 +104,9 @@ class CGenerator : Visitor
         if (v.name == name) return v
       endForEach
       return null
+
+    method is_end_of_procedure( cmd:Cmd )->Logical
+      return control_stack.count == 1 and current_statements.count and current_statements.last is cmd
 
     method print_with_cast( cmd:Cmd, to_type:Type, &context_is_mutating, &call_is_mutating )
       local cmd_type = cmd.type
@@ -721,10 +730,9 @@ class CGenerator : Visitor
     method on_leave_procedure( body:ControlStructure )
       pop_scope
 
-      print_procedure_cleanup
-
-      if (this_procedure.return_type)
-        if (not BranchAnalyzer.all_paths_return(body) or this_procedure.throws)
+      if (not BranchAnalyzer.all_paths_return(body))
+        print_procedure_cleanup
+        if (this_procedure.return_type)
           if (this_procedure.return_type.is_compound)
             writer.print   "return ("
             writer.print   this_procedure.return_type.c_name
@@ -1274,7 +1282,7 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:ReturnOnException )
-      dispatch_exception( cmd.t, "if (Rogue_exception)" )
+      dispatch_exception( cmd.t, &indeterminate )
 
     method on_visit( cmd:SetGlobalProperty )
       writer.print( cmd.info.c_name )
@@ -1310,16 +1318,18 @@ class CGenerator : Visitor
       visit( cmd.new_value )
 
     method on_visit( cmd:Statements )
-      forEach (statement in cmd)
-        if (Program.stack_trace)
-          if (statement.t.line != cur_line)
-            cur_line = statement.t.line
-            writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
+      temporarily current_statements = cmd
+        forEach (statement in cmd)
+          if (Program.stack_trace)
+            if (statement.t.line != cur_line)
+              cur_line = statement.t.line
+              writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
+            endIf
           endIf
-        endIf
-        visit( statement )
-        if (statement.needs_semicolon) writer.println( ';' )
-      endForEach
+          visit( statement )
+          if (statement.needs_semicolon) writer.println( ';' )
+        endForEach
+      endTemporarily
 
     method on_visit( cmd:Subtract )
       print_parenthesized( cmd.left )
@@ -2523,7 +2533,7 @@ augment
       endIf
 
       if (exception_passthrough)
-        cgen.dispatch_exception( t, "if (Rogue_exception)" )
+        cgen.dispatch_exception( t, &indeterminate, &is_end_of_procedure=cgen.is_end_of_procedure(this) )
       endIf
 
     method CleanupBlock.on_end_scope( cgen:CGenerator )
@@ -2539,7 +2549,7 @@ augment
       endIf
 
       if (exception_passthrough)
-        cgen.dispatch_exception( t, "if (Rogue_exception)" )
+        cgen.dispatch_exception( t, &indeterminate, &is_end_of_procedure=cgen.is_end_of_procedure(this) )
       endIf
 
     method Try.on_end_scope( cgen:CGenerator )
@@ -2581,7 +2591,12 @@ augment
             writer.println '}'
           endForEach
 
-          cgen.dispatch_exception( t, "else" )
+          writer.println "else"
+          writer.println '{'
+          writer.indent += 2
+          cgen.dispatch_exception( t, &is_end_of_procedure=cgen.is_end_of_procedure(this) )
+          writer.indent -= 2
+          writer.println '}'
 
           writer.indent -= 2
           writer.println '}'
