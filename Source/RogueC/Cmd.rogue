@@ -3480,15 +3480,19 @@ class Contingent : ControlStructure
       if (existing.unsatisfied_statements) unsatisfied_statements = existing.unsatisfied_statements.cloned
 
     method catches_escape( escape_type:ControlType )->Logical
-      if (escape_type == ControlType.NECESSARY)
-        catches_necessary = true
-        return true
-      elseIf (escape_type == ControlType.SUFFICIENT)
-        catches_sufficient = true
-        return true
-      else
-        return false
-      endIf
+      which (escape_type)
+        case ControlType.CONTINGENT
+          catches_escape = true
+          return true
+        case ControlType.NECESSARY
+          catches_necessary = true
+          return true
+        case ControlType.SUFFICIENT
+          catches_sufficient = true
+          return true
+        others
+          return false
+      endWhich
 
     method description->String
       return "Contingent($,$,$)" (%statements,%satisfied_statements,%unsatisfied_statements)

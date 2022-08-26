@@ -295,10 +295,11 @@ class ImmediateConsoleMode : ConsoleMode
               |  $unicode = (RogueInt32) record.Event.KeyEvent.uChar.UnicodeChar;
                  if (unicode == 13) unicode = 10
                  events.add ConsoleEvent( ConsoleEventType.CHARACTER, unicode, 0 )
-                 return
       native @|}
               |
               |#endif // ROGUE_PLATFORM_WINDOWS
+
+              return
 
     method _fill_event_queue_unix
       _fill_event_queue_unix_process_next

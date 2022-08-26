@@ -1414,6 +1414,7 @@ class CGenerator : Visitor
       writer.print   "Rogue_exception = (RogueObject*)"
       visit( cmd.exception )
       writer.println ';'
+      writer.println "Rogue_call_stack_pop();"  # remove the call stack cutoff marker added with PushStackTraceCutoff
       dispatch_exception( cmd.t )
 
     method on_visit( cmd:Try )
