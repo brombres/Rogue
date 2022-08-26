@@ -30,7 +30,8 @@ routine rogo_bootstrap
 endRoutine
 
 routine rogo_update_bootstrap
-  execute @|cp Build/RogueC.* Source/RogueC/Bootstrap
+  execute "cp Build/RogueC-$.h Source/RogueC/Bootstrap/RogueC.h"(System.os)
+  execute "cp Build/RogueC-$.c Source/RogueC/Bootstrap/RogueC.c"(System.os)
 endRoutine
 
 routine rogo_default
