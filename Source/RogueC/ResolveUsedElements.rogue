@@ -185,6 +185,9 @@ class ResolveUsedElements : InspectionVisitor
 
     method on_visit( mod:Module ) [override]
       assert( mod.m_on_launch )
+      if (mod.m_on_launch.statements.count)
+        visit( mod.m_on_launch.type_context )
+      endIf
 
       forEach (type in mod.types)
         if (type.attributes.is_essential)

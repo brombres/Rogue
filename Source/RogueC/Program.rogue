@@ -288,10 +288,12 @@ class Program [singleton]
         local file_tokens = included_file.tokens
         temporarily current_module = Program.default_module
           local elements = Parser(file_tokens).[ is_api=included_file.is_api].parse
-          if (elements)
-            local collector = Collector()
-            collector.visit( forEach in elements )
-          endIf
+          temporarily current_module = Program.default_module # Parser might have changed the current_module
+            if (elements)
+              local collector = Collector()
+              collector.visit( forEach in elements )
+            endIf
+          endTemporarily
         endTemporarily
       endForEach
       Analytics.main_parse.stop

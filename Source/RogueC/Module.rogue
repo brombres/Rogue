@@ -37,7 +37,7 @@ class Module
       local tokens = Token[]
       tokens.add( t.cloned(TokenType.EOL) )
       tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
-      local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, 0 )
+      local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, Attribute.OBJECT )
       templates["Routine<<0>>"] = new_template
 
     method collect_used_modules
@@ -56,9 +56,11 @@ class Module
       # Add each class ModuleName::Routine to list of implicit contexts if it exists.
       # Each routine is converted in to a global method of its module's Routine class.
       local type_Routine = Type( t, Program.default_module, "Routine" )
+      type_Routine.ensure_definition
       implicit_context.add( type_Routine )
       forEach (used_m in used_modules)
         type_Routine = Type( t, used_m.m, "Routine" )
+        type_Routine.ensure_definition
         implicit_context.add( type_Routine )
       endForEach
 
@@ -238,6 +240,7 @@ class Module
 
       # Add global statements to Routine.on_launch()
       local type_Routine = Type( t, this, "Routine" )
+      type_Routine.ensure_definition
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (not r)
         local launch_t = which{ global_statements.count:global_statements.first.t || t }

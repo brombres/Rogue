@@ -5,11 +5,6 @@ class Collector : Visitor
     autoname_index = 0
 
   METHODS
-    method autoname( base:String )->String
-      local result = "_auto_$_$"(base,autoname_index)
-      ++autoname_index
-      return result
-
     method on( cmd:Cmd )->Cmd
       throw cmd.t.error( "[INTERNAL] Unexpected $ in Collector."(cmd.type_name) )
 

@@ -30,9 +30,17 @@ routine rogo_bootstrap
 endRoutine
 
 routine rogo_update_bootstrap
-  execute "cp Build/RogueC-$.h Source/RogueC/Bootstrap/RogueC.h"(System.os)
-  execute "cp Build/RogueC-$.c Source/RogueC/Bootstrap/RogueC.c"(System.os)
+  copy_bootstrap_file( "h" )
+  copy_bootstrap_file( "c" )
 endRoutine
+
+routine copy_bootstrap_file( ext:String )
+  println "> copy Build/RogueC-$.$ Source/RogueC/Bootstrap/RogueC.$"(System.os,ext,System.os)
+  local content = String(File("Build/RogueC-$.$"(System.os,ext)))
+  content .= replacing( "RogueC-$"(System.os), "RogueC" )
+  File("Source/RogueC/Bootstrap/RogueC.$"(ext)).save( content )
+endRoutine
+
 
 routine rogo_default
   # Builds and runs this project - equivalent to 'rogo build && rogo run'.
