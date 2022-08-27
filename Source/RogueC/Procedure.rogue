@@ -212,12 +212,13 @@ class Procedure : Cmd
           dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
         endIf
 
+        local m = this->(as Method)
         local group = Program.dynamic_methods[@dynamic_signature]
-        if (not group)
-          group = Method[]
-          Program.dynamic_methods[@dynamic_signature] = group
+        if (group)
+          group.add( m )
+        else
+          Program.dynamic_methods[@dynamic_signature] = DynamicMethodGroup( m )
         endIf
-        group.add( this->(as Method) )
 
       endIf
       return @dynamic_signature

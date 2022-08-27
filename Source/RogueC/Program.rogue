@@ -52,7 +52,7 @@ class Program [singleton]
     unique_strings       = [String:String]
     string_table_indices = [String:Int32]
 
-    dynamic_methods   = [String:Method[]]
+    dynamic_methods   = [String:DynamicMethodGroup]
     call_signatures   = [String:Procedure[]]
     all_methods       = Procedure[]
     all_types         = Type[]

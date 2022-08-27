@@ -281,7 +281,7 @@ class ResolveUsedElements : InspectionVisitor
       # As other types become used, additional methods may be visited here, which is
       # why we have to keep revisiting types and methods that are already used until
       # there are not further changes.
-      forEach (m in Program.dynamic_methods[info.dynamic_signature])
+      forEach (m in Program.dynamic_methods[info.dynamic_signature].methods)
         contingent
           sufficient (m.attributes.is_used)  # already marked used; revisit
           necessary  (not m.type_context.is_aspect)

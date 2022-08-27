@@ -1,0 +1,14 @@
+module RogueC
+
+class DynamicMethodGroup
+  PROPERTIES
+    methods = Method[]
+    is_used : Logical
+
+  METHODS
+    method init( m:Method )
+      methods.add( m )
+
+    method add( m:Method )
+      methods.add( m )
+endClass

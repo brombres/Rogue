@@ -411,7 +411,7 @@ class CGenerator : Visitor
     method on_visit( cmd:CallDynamicMethod )
       local info = cmd.info
       if (cmd.context.type.is_aspect or info.attributes.is_abstract)
-        local group = Program.dynamic_methods[info.dynamic_signature]
+        local group = Program.dynamic_methods[info.dynamic_signature].methods
         assert group
         if (group and group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
@@ -489,7 +489,7 @@ class CGenerator : Visitor
       local info = cmd.info
 
       if (this_type.is_aspect or info.attributes.is_abstract)
-        local group = Program.dynamic_methods[info.dynamic_signature]
+        local group = Program.dynamic_methods[info.dynamic_signature].methods
         assert group
         if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
@@ -1696,8 +1696,9 @@ augment
 
       local wrote_any = false
       forEach (group in Program.dynamic_methods)
-        if (group.count == 1 and not group.first.attributes.is_placeholder) nextIteration
-        write_c_dispatch_method_header( group, h_writer )
+        local methods = group.methods
+        if (methods.count == 1 and not methods.first.attributes.is_placeholder) nextIteration
+        write_c_dispatch_method_header( methods, h_writer )
         h_writer.println ';'
         wrote_any = true
       endForEach
@@ -2032,15 +2033,16 @@ augment
 
       local cgen = CGenerator( c_writer )
       forEach (group in Program.dynamic_methods)
-        if (group.count == 1 and not group.first.attributes.is_placeholder) nextIteration
-        write_c_dispatch_method_header( group, c_writer )
+        local methods = group.methods
+        if (methods.count == 1 and not methods.first.attributes.is_placeholder) nextIteration
+        write_c_dispatch_method_header( methods, c_writer )
         c_writer.println
         c_writer.println '{'
 
-        if (group.count == 1 and group.first.attributes.is_placeholder)
+        if (methods.count == 1 and methods.first.attributes.is_placeholder)
           # No concrete methods exist; only abstract methods and aspect methods.
           # Write a no-op.
-          local m = group.first
+          local m = methods.first
           if (m.return_type)
             c_writer.print "  return "
             cgen.visit( m.return_type.cmd_default_value(m.t) )
@@ -2057,7 +2059,7 @@ augment
         c_writer.indent += 2
 
         # Put the most frequent type id cases at the end so they can be the 'default:'
-        group.sort(
+        methods.sort(
           function(a:Method,b:Method)->Logical
             local a_count = a.inheriting_types.count
             local b_count = b.inheriting_types.count
@@ -2065,8 +2067,8 @@ augment
           endFunction
         )
 
-        local last_m = group.last
-        forEach (m in group)
+        local last_m = methods.last
+        forEach (m in methods)
           if (m is not last_m)
             m.inheriting_types.sort( (a,b) => (a.id < b.id) )
             local n = m.inheriting_types.count + 1

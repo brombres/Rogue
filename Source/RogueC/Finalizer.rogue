@@ -52,9 +52,9 @@ class Finalizer : Visitor
       CullUnusedElements().apply
       Program.dynamic_methods.clear
       BuildDynamicMethodTable().apply  # Rebuild using new, slimmer program
-      forEach (method_group in Program.dynamic_methods)
-        if (method_group.count > 1)
-          (forEach in method_group).attributes.dynamic_dispatch = true
+      forEach (group in Program.dynamic_methods)
+        if (group.methods.count > 1)
+          (forEach in group.methods).attributes.dynamic_dispatch = true
         endIf
       endForEach
 
@@ -112,7 +112,7 @@ class Finalizer : Visitor
         if (not Program.dynamic_methods.contains(m.dynamic_signature))
           m.attributes.dynamic_dispatch = true
           m.attributes.is_placeholder = true
-          Program.dynamic_methods[m.dynamic_signature] = Method[][m]
+          Program.dynamic_methods[m.dynamic_signature] = DynamicMethodGroup( m )
         endIf
       elseIf (not m.attributes.dynamic_dispatch and Program.dynamic_methods.contains(m.dynamic_signature))
         m.attributes.dynamic_dispatch = true

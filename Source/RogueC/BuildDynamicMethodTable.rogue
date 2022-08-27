@@ -5,18 +5,19 @@ class BuildDynamicMethodTable : InspectionVisitor
     method apply
       Program.apply( this )
 
-      forEach (method_group in Program.dynamic_methods)
+      forEach (group in Program.dynamic_methods)
         # Remove aspect methods and abstract methods, keeping at least one
         # of them if there are no concrete methods.
-        local first = method_group.first
-        forEach (m in writer=method_group.rewriter)
+        local methods = group.methods
+        local first = methods.first
+        forEach (m in writer=methods.rewriter)
           if (not (m.type_context.is_aspect or m.attributes.is_abstract))
             writer.write( m )
           endIf
         endForEach
-        if (method_group.is_empty)
+        if (methods.is_empty)
           first.attributes.is_placeholder = true
-          method_group.add( first )
+          methods.add( first )
         endIf
       endForEach
 
@@ -24,12 +25,12 @@ class BuildDynamicMethodTable : InspectionVisitor
       if (this_type.is_reference)
         if (m.type_context is this_type)
           local dynamic_sig = m.dynamic_signature
-          local methods = Program.dynamic_methods[dynamic_sig]
-          if (not methods)
-            methods = Method[]
-            Program.dynamic_methods[dynamic_sig] = methods
+          local group = Program.dynamic_methods[dynamic_sig]
+          if (group)
+            group.add( m )
+          else
+            Program.dynamic_methods[dynamic_sig] = DynamicMethodGroup( m )
           endIf
-          methods.add( m )
         endIf
       endIf
       visit_children( m )

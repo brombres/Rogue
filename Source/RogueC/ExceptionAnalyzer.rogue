@@ -35,7 +35,7 @@ class ExceptionAnalyzer : InspectionVisitor
       endIf
 
     method propagate_exceptions_among_dynamic_methods( reference_m:Procedure )
-      local group = Program.dynamic_methods[reference_m.dynamic_signature]
+      local group = Program.dynamic_methods[reference_m.dynamic_signature].methods
       if (not group) return
 
       forEach (m1 at i in group)
