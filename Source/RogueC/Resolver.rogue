@@ -603,7 +603,7 @@ class Resolver : Poolable, Visitor
       endContingent
 
     method on( cmd:ForEach )->Cmd
-      local iterator = cmd.control.resolve_foreach( cmd, this )
+      local iterator = cmd.control.convert_foreach( cmd, this )
       return visit( iterator )
 
     method on( cmd:FormattedString )->Cmd
@@ -3440,22 +3440,22 @@ $endLocalMacro
 # ForEach
 augment
   METHODS
-    method ForEachControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
+    method ForEachControl.convert_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
       println t.error( "Unsupported operation ($)"(type_name) )
       throw UnsupportedOperationError()
 
-    method ForEachInControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
+    method ForEachInControl.convert_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
       local cmd_iterator = Iterator( cmd_foreach.t, cmd_foreach.statements, ControlType.FOR_EACH )
       resolver.push_scope( cmd_iterator )
 
       resolver.visit( this )
 
-      collection.data.resolve_foreach_in( resolver, cmd_foreach, this, collection, cmd_iterator )
+      collection.data.convert_foreach_in( resolver, cmd_foreach, this, collection, cmd_iterator )
 
       resolver.pop_scope
       return cmd_iterator
 
-    method ForEachOfControl.resolve_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
+    method ForEachOfControl.convert_foreach( cmd_foreach:ForEach, resolver:Resolver )->Iterator
       if (optional_at) throw optional_at.t.error( "'at' cannot be used in a forEach-of." )
 
       if (collection.starting_index)
@@ -3473,15 +3473,54 @@ augment
 
       resolver.visit( this )
 
-      collection.data.resolve_foreach_of( resolver, cmd_foreach, this, collection, cmd_iterator )
+      collection.data.convert_foreach_of( resolver, cmd_foreach, this, collection, cmd_iterator )
 
       resolver.pop_scope
       return cmd_iterator
 
-    method Cmd.resolve_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
+    method Cmd.convert_foreach_in( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachInControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       local collection_type = cmd_collection.data.require_type
       collection_type.organize
+
+      if (collection_type.instance_of(Program.type_TableType))
+        # forEach (value in table)
+        #   ->
+        # forEach (entry in table.entries)
+        #   local value = entry.value
+        #   ...
+        #
+        # forEach (value at key in table)
+        #   ->
+        # forEach (entry in table.entries)
+        #   local key = entry.key
+        #   local value = entry.value
+        #   ...
+        local entry_type = collection_type.properties//first_entry.type
+        local key_type   = entry_type.properties//key.type
+        local value_type = entry_type.properties//value.type
+
+        cmd_collection.data = resolver.visit( ContextAccess(cmd_collection.data.t, cmd_collection.data, "entries") )
+        collection_type = cmd_collection.data.require_type.[ organize ]
+
+        local entry_name = resolver.autoname( "entry" )
+        local v_value = resolver.add_local( Local(cmd_control.t, cmd_control.name, null, value_type) )
+        cmd_control.name = entry_name
+
+        local t = cmd_control.t
+        cmd_iterator.statements.insert(
+          SetLocal( v_value, ContextAccess(t,Access(t,entry_name),"value"), &initial_assignment )
+        )
+
+        if (cmd_control.optional_at)
+          t = cmd_control.optional_at.t
+          local v_key = resolver.add_local( Local(t, cmd_control.optional_at.name, null, key_type) )
+          cmd_iterator.statements.insert(
+            SetLocal( v_key, ContextAccess(t,Access(t,entry_name),"key"), &initial_assignment )
+          )
+          cmd_control.optional_at = null
+        endIf
+      endIf
 
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")
@@ -3643,7 +3682,7 @@ augment
 
         resolver.visit( cmd_collection )
 
-        resolve_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        convert_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
       endIf
 
@@ -3652,7 +3691,7 @@ augment
 
         resolver.visit( cmd_collection )
 
-        resolve_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        convert_foreach_in( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
       endIf
 
@@ -3666,13 +3705,25 @@ augment
                        |  reader()->Standard/Collection (result must implement one of the above protocols)
       throw t.error( builder )
 
-    method Cmd.resolve_foreach_of( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
+    method Cmd.convert_foreach_of( resolver:Resolver, cmd_foreach:ForEach, cmd_control:ForEachOfControl,
                                   cmd_collection:ForEachCollection, cmd_iterator:Iterator )
       if (cmd_control.optional_at)
         throw cmd_control.optional_at.t.error( "forEach 'at' cannot be used in conjunction with 'of'." )
       endIf
       local collection_type = cmd_collection.data.require_type
       collection_type.organize
+
+      if (collection_type.instance_of(Program.type_TableType))
+        # forEach (key of table)
+        #   ->
+        # forEach (key in table.keys)
+        local data = resolver.visit( ContextAccess(cmd_collection.data.t, cmd_collection.data, "keys") )
+        local collection = ForEachCollection( cmd_collection.t, cmd_collection.name, data, cmd_collection.starting_index,
+                                              cmd_collection.step_size )
+        local control = ForEachInControl( cmd_control.t, cmd_control.name, null, collection )
+        convert_foreach_in( resolver, cmd_foreach, control, collection, cmd_iterator )
+        return
+      endIf
 
       local has_count = collection_type.methods.contains("count()")
       if (not has_count) has_count = collection_type.properties.contains("count")
@@ -3802,7 +3853,7 @@ augment
 
         resolver.visit( cmd_collection )
 
-        resolve_foreach_of( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        convert_foreach_of( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
       endIf
 
@@ -3811,7 +3862,7 @@ augment
 
         resolver.visit( cmd_collection )
 
-        resolve_foreach_of( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
+        convert_foreach_of( resolver, cmd_foreach, cmd_control, cmd_collection, cmd_iterator )
         return
       endIf
 

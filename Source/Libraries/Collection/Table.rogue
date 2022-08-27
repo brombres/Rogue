@@ -1,4 +1,6 @@
-class Table<<$KeyType,$ValueType>>
+class TableType [aspect];
+
+class Table<<$KeyType,$ValueType>> : TableType
   PROPERTIES
     count           : Int32
     bin_mask        : Int32

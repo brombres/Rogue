@@ -32,21 +32,22 @@ class Program [singleton]
     type_Real64       : Type
     type_Real         : Type
 
-    type_null           : Type
-    type_GenericFn      : Type
-    type_Global         : Type
-    type_ListType       : Type
-    type_Math           : Type
-    type_Object         : Type
-    type_String         : Type
-    type_Value          : Type
-    type_Exception      : Type
-    type_TypeInfo       : Type
-    type_NativeProperty : Type
+    type_null            : Type
+    type_GenericFn       : Type
+    type_Global          : Type
+    type_ListType        : Type
+    type_Math            : Type
+    type_Object          : Type
+    type_String          : Type
+    type_Value           : Type
+    type_Exception       : Type
+    type_TableType       : Type
+    type_TypeInfo        : Type
+    type_NativeProperty  : Type
 
-    is_modified       : Logical
-    is_organizing     : Logical
-    unorganized_types = Type[]
+    is_modified          : Logical
+    is_organizing        : Logical
+    unorganized_types    = Type[]
 
     unique_strings       = [String:String]
     string_table_indices = [String:Int32]
@@ -103,6 +104,7 @@ class Program [singleton]
       type_Math      = Type( t, "Math", Attribute.OBJECT )
       type_Object    = Type( t, "Object", Attribute.OBJECT )
       type_String    = TypeString( t )
+      type_TableType = Type( t, "TableType", Attribute.ASPECT )
       type_Exception = Type( t, "Exception", Attribute.OBJECT )
 
       type_NativeProperty = Type( t, "RogueCNativeProperty", Attribute.PRIMITIVE )
