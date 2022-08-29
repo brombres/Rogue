@@ -500,7 +500,9 @@ class Resolver : Poolable, Visitor
 
       if (cmd.unsatisfied_statements)
         local statements = which{ cmd.satisfied_statements || cmd.statements }
-        statements.add( EscapeContingent(cmd.t) )
+        if (not BranchAnalyzer.all_paths_return(statements))
+          statements.add( EscapeContingent(cmd.t) )
+        endIf
       endIf
 
       push_scope( outer_scope )

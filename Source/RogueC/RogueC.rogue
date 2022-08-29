@@ -15,8 +15,10 @@ $include Attributes
 $include BranchAnalyzer
 $include BuildDynamicMethodTable
 $include Candidates
+$include ClearDynamicDispatchFlags
 $include ClearLocalInfo
 $include Collector
+$include ConvertDynamicCallsToStaticAndVirtualCalls
 $include CullUnusedElements
 $include TypeOrganizer
 $include ContextBlockPatcher

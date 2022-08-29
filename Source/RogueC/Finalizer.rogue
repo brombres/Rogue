@@ -50,8 +50,10 @@ class Finalizer : Visitor
       Program.dynamic_methods.clear
       BuildDynamicMethodTable().apply
       CullUnusedElements().apply
+
+      # Rebuild using new, slimmer program
       Program.dynamic_methods.clear
-      BuildDynamicMethodTable().apply  # Rebuild using new, slimmer program
+      BuildDynamicMethodTable().apply
       forEach (group in Program.dynamic_methods)
         if (group.methods.count > 1)
           (forEach in group.methods).attributes.dynamic_dispatch = true
@@ -61,6 +63,9 @@ class Finalizer : Visitor
       Program.apply( AssignIDs() )
 
       Program.apply( this )
+
+      # Turn dynamic dispatch calls into static and virtual dispatch calls where possible
+      ConvertDynamicCallsToStaticAndVirtualCalls()
 
       # Collect a list of all types in dependency order.
       local types = Type[]

@@ -48,7 +48,7 @@ class CGenerator : Visitor
 
       (forEach in list).attributes.is_collected = false  # reset
 
-    method dispatch_exception( t:Token, &indeterminate, &is_end_of_procedure )
+    method dispatch_exception( t:Token, &indeterminate )
       forEach (control in control_stack step -1)
         if (control.catches_exception or control.requires_cleanup)
           if (indeterminate) writer.print( "if (Rogue_exception)" )
@@ -60,9 +60,7 @@ class CGenerator : Visitor
       endForEach
 
       if (indeterminate and control_stack.count > 0)
-        if (not is_end_of_procedure)
-          writer.print( "if (Rogue_exception)" )
-        endIf
+        writer.print( "if (Rogue_exception)" )
       endIf
 
       if (Program.stack_trace or this_procedure.requires_cleanup)
@@ -2535,8 +2533,8 @@ augment
         cgen.writer.println ":;"
       endIf
 
-      if (exception_passthrough)
-        cgen.dispatch_exception( t, &indeterminate, &is_end_of_procedure=cgen.is_end_of_procedure(this) )
+      if (exception_passthrough and not cgen.is_end_of_procedure(this))
+        cgen.dispatch_exception( t, &indeterminate )
       endIf
 
     method CleanupBlock.on_end_scope( cgen:CGenerator )
@@ -2547,12 +2545,10 @@ augment
         writer.println ":;"
       endIf
 
-      if (not BranchAnalyzer.all_paths_return(statements))
-        cgen.visit( cleanup )
-      endIf
+      cgen.visit( cleanup )
 
-      if (exception_passthrough)
-        cgen.dispatch_exception( t, &indeterminate, &is_end_of_procedure=cgen.is_end_of_procedure(this) )
+      if (exception_passthrough and not cgen.is_end_of_procedure(this))
+        cgen.dispatch_exception( t, &indeterminate )
       endIf
 
     method Try.on_end_scope( cgen:CGenerator )
@@ -2594,12 +2590,14 @@ augment
             writer.println '}'
           endForEach
 
-          writer.println "else"
-          writer.println '{'
-          writer.indent += 2
-          cgen.dispatch_exception( t, &is_end_of_procedure=cgen.is_end_of_procedure(this) )
-          writer.indent -= 2
-          writer.println '}'
+          if (not cgen.is_end_of_procedure(this))
+            writer.println "else"
+            writer.println '{'
+            writer.indent += 2
+            cgen.dispatch_exception( t )
+            writer.indent -= 2
+            writer.println '}'
+          endIf
 
           writer.indent -= 2
           writer.println '}'

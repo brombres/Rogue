@@ -391,10 +391,10 @@ augment ControlStructure
     method c_escape_label( cgen:CGenerator, control_type=ControlType.UNDEFINED:ControlType )->String
       which (control_type)
         case ControlType.NECESSARY
-          if (not @c_necessary_label) @c_necessary_label = cgen.autoname("necessary")
+          if (not @c_necessary_label) @c_necessary_label = cgen.autoname("unsatisfied")
           return @c_necessary_label
         case ControlType.SUFFICIENT
-          if (not @c_sufficient_label) @c_sufficient_label = cgen.autoname("sufficient")
+          if (not @c_sufficient_label) @c_sufficient_label = cgen.autoname("satisfied")
           return @c_sufficient_label
         others
           if (not @c_escape_label) @c_escape_label = cgen.autoname("escape")

@@ -11,11 +11,16 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
     method on( cmd:Contingent )->Logical
       if (cmd.catches_escape) return false
 
-      if (cmd.catches_necessary or cmd.catches_sufficient)
-        if (not visit(cmd.satisfied_statements) or not visit(cmd.unsatisfied_statements)) return false
+      if (cmd.catches_sufficient)
+        if (cmd.catches_necessary and not visit(cmd.unsatisfied_statements)) return false
+        return visit(cmd.satisfied_statements)
+      elseIf (cmd.catches_necessary)
+        if (not visit(cmd.unsatisfied_statements)) return false
+        if (cmd.satisfied_statements) return visit(cmd.satisfied_statements)
+        return visit( cmd.statements )
       else
-        if (cmd.satisfied_statements.count) return visit(cmd.satisfied_statements)
-        else                                return visit(cmd.statements)
+        if (cmd.satisfied_statements) return visit(cmd.satisfied_statements)
+        return visit( cmd.statements )
       endIf
 
     method on( cmd:ControlStructure )->Logical
@@ -27,10 +32,6 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
 
       control_stack.remove_last
       return result
-
-    #method on( cmd:Escape )->Logical
-      #if ((forEach in control_stack).catches_escape(cmd.control_type)) return false
-      #return true
 
     method on( cmd:If )->Logical
       if (cmd.condition and not cmd.cmd_else) return false
