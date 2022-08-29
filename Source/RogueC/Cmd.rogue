@@ -1637,8 +1637,6 @@ class Method : Procedure
         ClearLocalInfo.visit( propagated_m )
         propagated_m.generate_body
         AspectMethodPatcher.patch( type_context, propagated_m )
-        propagated_m.is_resolved        = false
-        propagated_m.attributes.is_used = false
         propagated_m.dynamic_signature # adds to Program.dynamic_methods{}
 
         if (type_context.base_class)

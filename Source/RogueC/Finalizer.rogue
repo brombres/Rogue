@@ -47,12 +47,10 @@ class Finalizer : Visitor
       endForEach
 
       # Cull unused classes and methods
-      Program.dynamic_methods.clear
       BuildDynamicMethodTable().apply
       CullUnusedElements().apply
 
       # Rebuild using new, slimmer program
-      Program.dynamic_methods.clear
       BuildDynamicMethodTable().apply
       forEach (group in Program.dynamic_methods)
         if (group.methods.count > 1)
@@ -63,6 +61,8 @@ class Finalizer : Visitor
       Program.apply( AssignIDs() )
 
       Program.apply( this )
+
+      (forEach in Program.dynamic_methods).mark_uncollected # reset flags for any future needs
 
       # Turn dynamic dispatch calls into static and virtual dispatch calls where possible
       ConvertDynamicCallsToStaticAndVirtualCalls()

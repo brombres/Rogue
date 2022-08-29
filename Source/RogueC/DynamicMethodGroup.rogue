@@ -7,8 +7,13 @@ class DynamicMethodGroup
 
   METHODS
     method init( m:Method )
-      methods.add( m )
+      add( m )
 
     method add( m:Method )
+      if (m.attributes.is_collected) return
       methods.add( m )
+      m.attributes.is_collected = true
+
+    method mark_uncollected
+      (forEach in methods).attributes.is_collected = false
 endClass

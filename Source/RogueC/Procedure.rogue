@@ -71,6 +71,10 @@ class Procedure : Cmd
       method_template = existing.method_template
       template_args   = existing.template_args
 
+      is_resolved             = false
+      attributes.is_used      = false
+      attributes.is_collected = false
+
     method accepts_arg_count( n:Int32 )->Logical
       return n >= min_args and n <= parameters.count
 

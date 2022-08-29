@@ -3,6 +3,9 @@ module RogueC
 class BuildDynamicMethodTable : InspectionVisitor
   METHODS
     method apply
+      (forEach in Program.dynamic_methods).mark_uncollected
+      Program.dynamic_methods.clear
+
       Program.apply( this )
 
       forEach (group in Program.dynamic_methods)
