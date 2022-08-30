@@ -1,12 +1,10 @@
 module RogueC
 
-class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor
+class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
   METHODS
-    method init
-      Program.apply( this )
-
     method on( cmd:CallDynamicMethod )->Cmd
       local info = cmd.info
+
       contingent
         if (cmd.context.type.is_aspect or info.attributes.is_abstract)
           local group = Program.dynamic_methods[info.dynamic_signature].methods
@@ -22,42 +20,17 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor
         return visit( cmd_call )
 
       unsatisfied
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        if (group) group.is_used = true
         return visit_content( cmd )
 
       endContingent
-
-      #{
-      if (cmd.context.type.is_aspect or info.attributes.is_abstract)
-        #return visit_content( cmd )
-        local group = Program.dynamic_methods[info.dynamic_signature].methods
-        assert group
-        if (group and group.count == 1 and not group.first.attributes.is_placeholder)
-          info = group.first
-          if (info.return_type is not info.return_type) writer.print "(void*)"
-          writer.print( info.c_name )
-        else
-          writer.print "Rogue_dispatch_"
-          writer.print( info.c_dynamic_signature )
-        endIf
-      else
-        if (info.attributes.dynamic_dispatch and info.attributes.is_overridden)
-          return visit_content( cmd )
-          #writer.print "Rogue_dispatch_"
-          #writer.print( info.c_dynamic_signature )
-        else
-          local cmd_call = CallStaticMethod( cmd.t, cmd.context, info, cmd.args ).[ result_discarded=cmd.result_discarded ]
-          return visit( cmd_call )
-          #return visit_content( cmd )
-        endIf
-      endIf
-      }#
 
     method on( cmd:CallThisDynamicMethod )->Cmd
       local info = cmd.info
 
-      #{
       contingent
-        if (cmd.context.type.is_aspect or info.attributes.is_abstract)
+        if (this_type.is_aspect or info.attributes.is_abstract)
           local group = Program.dynamic_methods[info.dynamic_signature].methods
           assert group
           necessary (group and group.count == 1 and not group.first.attributes.is_placeholder)
@@ -67,38 +40,14 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor
         endIf
 
       satisfied
-        local cmd_call = CallStaticMethod( cmd.t, cmd.context, info, cmd.args ).[ result_discarded=cmd.result_discarded ]
+        local cmd_call = CallThisStaticMethod( cmd.t, info, cmd.args ).[ result_discarded=cmd.result_discarded ]
         return visit( cmd_call )
 
       unsatisfied
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        if (group) group.is_used = true
         return visit_content( cmd )
 
       endContingent
-      }#
 
-      if (this_type.is_aspect or info.attributes.is_abstract)
-        return visit_content( cmd )
-        #{
-        local group = Program.dynamic_methods[info.dynamic_signature].methods
-        assert group
-        if (group.count == 1 and not group.first.attributes.is_placeholder)
-          info = group.first
-          if (info.return_type is not info.return_type) writer.print "(void*)"
-          writer.print( info.c_name )
-        else
-          writer.print "Rogue_dispatch_"
-          writer.print( info.c_dynamic_signature )
-        endIf
-        }#
-      else
-        if (info.attributes.dynamic_dispatch and info.attributes.is_overridden)
-          return visit_content( cmd )
-          #writer.print "Rogue_dispatch_"
-          #writer.print( info.c_dynamic_signature )
-        else
-          local cmd_call = CallThisStaticMethod( cmd.t, info, cmd.args ).[ result_discarded=cmd.result_discarded ]
-          return visit( cmd_call )
-          #return visit_content( cmd )
-        endIf
-      endIf
 endClass

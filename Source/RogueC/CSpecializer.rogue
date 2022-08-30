@@ -362,7 +362,8 @@ class CSpecializer : Visitor
       local cmd_create2 = validate( CreateObjectAndSetLocal(cmd_create.t,cmd_create.of_type,cmd.info) )
       if (cmd_create.m_init)
         insert( cmd_create2 )
-        return visit( CallDynamicMethod(cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args) )
+        local cmd_constructor = CallDynamicMethod( cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args )
+        return visit( ConvertDynamicCallsToStaticAndVirtualCalls.visit(cmd_constructor) )
       else
         return cmd_create2
       endIf

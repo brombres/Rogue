@@ -1694,6 +1694,7 @@ augment
 
       local wrote_any = false
       forEach (group in Program.dynamic_methods)
+        if (not group.is_used) nextIteration
         local methods = group.methods
         if (methods.count == 1 and not methods.first.attributes.is_placeholder) nextIteration
         write_c_dispatch_method_header( methods, h_writer )
@@ -2031,6 +2032,7 @@ augment
 
       local cgen = CGenerator( c_writer )
       forEach (group in Program.dynamic_methods)
+        if (not group.is_used) nextIteration
         local methods = group.methods
         if (methods.count == 1 and not methods.first.attributes.is_placeholder) nextIteration
         write_c_dispatch_method_header( methods, c_writer )

@@ -65,7 +65,7 @@ class Finalizer : Visitor
       (forEach in Program.dynamic_methods).mark_uncollected # reset flags for any future needs
 
       # Turn dynamic dispatch calls into static and virtual dispatch calls where possible
-      ConvertDynamicCallsToStaticAndVirtualCalls()
+      Program.apply( ConvertDynamicCallsToStaticAndVirtualCalls )
 
       # Collect a list of all types in dependency order.
       local types = Type[]
