@@ -3479,9 +3479,11 @@ class Contingent : ControlStructure
 
     method catches_escape( escape_type:ControlType )->Logical
       which (escape_type)
-        case ControlType.CONTINGENT
-          catches_escape = true
-          return true
+        # Contingents are wrapped in contingent Blocks that act like contingents.
+        # The wrapping Block catches CONTINGENT escapes.
+        #case ControlType.CONTINGENT
+        #  catches_escape = true
+        #  return true
         case ControlType.NECESSARY
           catches_necessary = true
           return true
