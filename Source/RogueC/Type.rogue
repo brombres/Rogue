@@ -45,12 +45,15 @@ class Type : Cmd
     base_type_lookup_index  : Int32
     base_type_ids           = Int32[]
 
+    method_vtable           = [String:Method]
+
     is_type_organized    : Logical
     properties_organized : Logical
     methods_organizing   : Logical
     methods_organized    : Logical
     definitions_resolved : Logical
     is_resolved          : Logical
+    is_vtable_finalized  : Logical
 
   GLOBAL METHODS
     method create( t:Token, name:String, type_args=null:TemplateArgs, &is_tuple )->Type
@@ -398,6 +401,37 @@ class Type : Cmd
 
     method description->String
       return "$" (%name)
+
+    method finalize_vtable
+      if (is_vtable_finalized) return
+      is_vtable_finalized = true
+
+      if (base_class)
+        base_class.finalize_vtable
+        use vtable = WorkList<<Method>>
+          forEach (base_m in base_class.method_vtable)
+            local overridden_m = method_vtable[base_m.signature]
+            if (not overridden_m) overridden_m = methods[base_m.signature]
+            vtable.add( which{overridden_m||base_m} )
+          endForEach
+          forEach (m in method_vtable)
+            if (not base_class.method_vtable.contains(m.signature))
+              vtable.add( m )
+            endIf
+          endForEach
+
+          method_vtable.clear
+          forEach (m at i in vtable)
+            m.vtable_index = i
+            method_vtable[m.signature] = m
+          endForEach
+        endUse
+
+      else
+        forEach (m at i in method_vtable.values)
+          m.vtable_index = i
+        endForEach
+      endIf
 
     method has_global_method_named( name:String )->Logical
       forEach (m in global_methods.values)

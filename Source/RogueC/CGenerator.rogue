@@ -545,6 +545,60 @@ class CGenerator : Visitor
         writer.print " )"
       endIf
 
+    method on_visit( cmd:CallThisVirtualMethod )
+      local info = cmd.info
+      writer.print "(("
+      if (info.return_type) writer.print info.return_type.c_ref_name
+      else                  writer.print "void"
+      writer.print " (*)("
+      writer.print info.type_context.c_ref_name
+      forEach (param in info.parameters)
+        writer.print ','
+        writer.print param.type.c_ref_name
+      endForEach
+      writer.print "))(THIS->__type->vtable["
+      writer.print info.vtable_index
+      writer.print "]))(THIS"
+      forEach (arg at i in cmd.args)
+        writer.print ", "
+        local p = info.parameters[i]
+        print_with_cast( arg, p.type )
+      endForEach
+      writer.print ")"
+
+    method on_visit( cmd:CallVirtualMethod )
+      local info = cmd.info
+      local n = cmd.vcall_index
+      assert cmd.vcall_index >= 0
+      writer.print "(_auto_virtual_context_"
+      writer.print n
+      writer.print "=(RogueObject*)("
+      visit( cmd.context )
+      writer.print '),'
+      writer.print "(("
+      if (info.return_type) writer.print info.return_type.c_ref_name
+      else                  writer.print "void"
+      writer.print " (*)("
+      writer.print info.type_context.c_ref_name
+      forEach (param in info.parameters)
+        writer.print ','
+        writer.print param.type.c_ref_name
+      endForEach
+      writer.print "))(_auto_virtual_context_"
+      writer.print n
+      writer.print "->__type->vtable["
+      writer.print info.vtable_index
+      writer.print "]))(("
+      writer.print( info.type_context.c_ref_name )
+      writer.print ")_auto_virtual_context_"
+      writer.print n
+      forEach (arg at i in cmd.args)
+        writer.print ", "
+        local p = info.parameters[i]
+        print_with_cast( arg, p.type )
+      endForEach
+      writer.print "))"
+
     method on_visit( cmd:ConvertToByte )
       writer.print "((RogueByte)"
       print_parenthesized( cmd.operand )
@@ -658,6 +712,18 @@ class CGenerator : Visitor
         writer.print " = "
         if (this_procedure.return_type.is_compound) writer.println "{};"
         else                                        writer.println "0;"
+      endIf
+
+      if (VCALLS)
+        # Declare temporary variables for implementing virtual calls
+        forEach (n in 0..<this_procedure.vcall_max)
+          writer.print   "RogueObject* _auto_virtual_context_"
+          writer.print   n
+          writer.println ';'
+          #writer.print   "(void) _auto_virtual_context_"
+          #writer.print   n
+          #writer.println ';'
+        endForEach
       endIf
 
       if (Program.gc_auto)
@@ -1874,6 +1940,24 @@ augment
 
       block
         forEach (type in types)
+          # V-Table
+          if (type.method_vtable.count)
+            c_writer.println
+            c_writer.print "void* Type"
+            c_writer.print type.c_sig_name
+            c_writer.print "_vtable["
+            c_writer.print type.method_vtable.count
+            c_writer.print "] = {"
+            forEach (m at i in type.method_vtable.values)
+              if (i > 0) c_writer.print ','
+              if (m.attributes.is_abstract) c_writer.print '0'
+              else                          c_writer.print m.c_name
+            endForEach
+            c_writer.println "};"
+            c_writer.println
+          endIf
+
+          # Type Metadata
           c_writer.print   "RogueRuntimeType Type"
           c_writer.print   type.c_sig_name
           c_writer.print   '' = { "''
@@ -1897,7 +1981,17 @@ augment
             nextIteration
           endIf
 
-          c_writer.print   ", 0, " # local_pointer_stack
+          # method_vtable
+          c_writer.print   ", "
+          if (type.method_vtable.count)
+            c_writer.print "Type"
+            c_writer.print type.c_sig_name
+            c_writer.print "_vtable, "
+          else
+            c_writer.print   "0, "
+          endIf
+
+          c_writer.print   "0, " # local_pointer_stack
           c_writer.print   "0, "   # local_pointer_capacity
           c_writer.print   "0, "   # local_pointer_count
           c_writer.print   ''sizeof(''

@@ -24,8 +24,6 @@ class BuildDynamicMethodTable : InspectionVisitor
         endIf
       endForEach
 
-      #method on_visit( cmd:CallDynamicMethod )
-
     method on_visit( m:Method )
       if (this_type.is_reference)
         if (m.type_context is this_type)

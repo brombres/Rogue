@@ -3503,6 +3503,8 @@ parser
   create CallStaticMethod(context,args):CallProcedure
   create CallThisDynamicMethod(args):CallProcedure
   create CallThisStaticMethod(args):CallProcedure
+  create CallVirtualMethod(context,args):CallProcedure
+  create CallThisVirtualMethod(args):CallProcedure
   create CleanupBlock(statements,cleanup):ControlStructure
   create Compare(left,right):Binary
   create Conditional(condition,statements):ControlStructure

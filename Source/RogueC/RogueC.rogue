@@ -7,6 +7,9 @@ uses Codec/Base64
 
 $include Macros
 
+$define VCALLS true
+# Enable vtable virtual calls where possible. If 'false' then dynamic dispatch used instead.
+
 $include AccessAndAssignPatcher
 $include Analytics
 $include AspectMethodPatcher
@@ -17,6 +20,7 @@ $include BuildDynamicMethodTable
 $include Candidates
 $include ClearDynamicDispatchFlags
 $include ClearLocalInfo
+$include CollectVirtualCallInfo
 $include Collector
 $include ConvertDynamicCallsToStaticAndVirtualCalls
 $include CullUnusedElements

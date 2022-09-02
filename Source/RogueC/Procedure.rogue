@@ -34,6 +34,11 @@ class Procedure : Cmd
     method_template   : MethodTemplate # only for method template instances
     template_args     : TemplateArgs   # only for method template instances
 
+    vtable_index      : Int32 # only for vtable methods
+    vcall_count       : Int32 # number of virtual call temp variables required by the current statement
+    vcall_max         : Int32 # total virtual call temp variables required by this procedure
+    vcall_slot        = -1  # index of temp variable used during dispatch
+
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
         attributes=null:Attributes, body=null:LocalScope )
@@ -70,6 +75,11 @@ class Procedure : Cmd
       call_index   = existing.call_index
       method_template = existing.method_template
       template_args   = existing.template_args
+
+      vtable_index = existing.vtable_index
+      vcall_count  = existing.vcall_count
+      vcall_max    = existing.vcall_max
+      vcall_slot   = existing.vcall_slot
 
       is_resolved             = false
       attributes.is_used      = false

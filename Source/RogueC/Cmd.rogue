@@ -4968,3 +4968,29 @@ class CallPriorTemplatedMethod : Cmd
       return "CallPriorTemplatedMethod($,$,$)" (%name,%template_args,%args)
 
 endClass
+
+class CallThisVirtualMethod : CallProcedure
+  METHODS
+    method description->String
+      return "CallThisVirtualMethod($)" (%args)
+
+endClass
+
+class CallVirtualMethod : CallProcedure
+  PROPERTIES
+    context       : Cmd
+    vcall_index   = -1
+
+  METHODS
+    method init( t, context, args )
+
+    method init( t, context, info, args )
+
+    method init( existing:CallVirtualMethod )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+
+    method description->String
+      return "CallVirtualMethod($,$)" (%context,%args)
+
+endClass

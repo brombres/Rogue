@@ -12,6 +12,12 @@ class CSpecializer : Visitor
     method apply
       Program.apply( this )
 
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+          type.finalize_vtable
+        endForEach
+      endForEach
+
       if (Program.default_module.types.contains("TypeInfo"))
         forEach (mod in Program.modules.values)
           collect_literal_string( mod.name )
@@ -33,6 +39,8 @@ class CSpecializer : Visitor
           collect_literal_string( (forEach in m.parameters).name )
         endForEach
       endIf
+
+      if (VCALLS) CollectVirtualCallInfo()
 
     method visit_type( type:Type )
       if (type.attributes.is_used)
@@ -363,7 +371,8 @@ class CSpecializer : Visitor
       if (cmd_create.m_init)
         insert( cmd_create2 )
         local cmd_constructor = CallDynamicMethod( cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args )
-        return visit( ConvertDynamicCallsToStaticAndVirtualCalls.visit(cmd_constructor) )
+        local result = visit( ConvertDynamicCallsToStaticAndVirtualCalls.[this_procedure=this_procedure].visit(cmd_constructor) )
+        return result
       else
         return cmd_create2
       endIf
