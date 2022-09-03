@@ -25,7 +25,7 @@ endRoutine
 
 routine rogo_bootstrap
   execute @|cc -O0 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
-  execute @|rm Build/R2-macOS
+  execute @|rm -f Build/R2-macOS
   execute @|cp Build/RogueC-macOS Build/R2-macOS
 endRoutine
 
@@ -332,7 +332,7 @@ routine compile_c
     execute cc
   endIf
 
-  execute @|rm Build/R2-macOS
+  execute @|rm -f Build/R2-macOS
   execute @|cp Build/RogueC-macOS Build/R2-macOS
 endRoutine
 

@@ -22,7 +22,7 @@ else
 endif
 
 ABS_BUILD_FOLDER = `(cd $(BUILD_FOLDER) && pwd)`
-BUILD_EXE  = RogueC-$(PLATFORM)
+BUILD_EXE  = R2-$(PLATFORM)
 C_SRC      = Source/RogueC/Bootstrap/RogueC.c
 H_SRC      = Source/RogueC/Bootstrap/RogueC.h
 
