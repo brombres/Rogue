@@ -2798,6 +2798,7 @@ parser
   onPeek '('
     savePosition
     on '('
+      consume_eols
       on ')'
         # No-params generic function
         discardPosition
@@ -2807,6 +2808,7 @@ parser
         return
       elseOnOthers
         expression
+        consume_eols
         if (nextIs(':'))
           restorePosition
           named_tuple_or_tuple_type
@@ -2831,10 +2833,13 @@ parser
 
         # Generic function
         consume '('
+        consume_eols
         beginList
           identifier
+          consume_eols
           while (consume(","))
             identifier
+            consume_eols
           endWhile
           mustConsume ')'
         createList IDList
@@ -3521,7 +3526,6 @@ parser
   create CreateObject(of_type:Type,info:Local)
   create CreateCompound(of_type:Type,args:Args)
   create DefaultArg(operand):Unary
-  #create DiscardResult(operand)
   create DummyInitialValue
   create EnumValue(of_type:Type,name:String)
   create EnumValueDef(value)
