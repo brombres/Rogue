@@ -22,7 +22,7 @@ class StandardConsoleMode : ConsoleMode
               |  HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
               |  DWORD mode;
               |  GetConsoleMode( h_stdin, &mode );
-              |  if ($this->windows_in_quick_edit_mode) mode |= ENABLE_QUICK_EDIT_MODE;
+              |  if ($console->windows_in_quick_edit_mode) mode |= ENABLE_QUICK_EDIT_MODE;
               |  mode |= (ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT);
               |  SetConsoleMode( h_stdin, mode );
               |#else

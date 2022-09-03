@@ -395,7 +395,7 @@ class File( filepath:String ) [compound]
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
               |  struct stat s;
                  if (native("stat((char*)$filepath->data->as_utf8, &s) != 0")->Logical) return false
-                 return native("(s.st_mode & S_IFMT) == S_IFDIR)")->Logical
+                 return native("((s.st_mode & S_IFMT) == S_IFDIR)")->Logical
       native @|#else
               |  DIR* dir = opendir( (char*)$filepath->data->as_utf8 );
                  if (native("!dir")->Logical) return false
