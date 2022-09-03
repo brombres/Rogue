@@ -75,6 +75,8 @@ endRoutine
 
 routine rogo_build
   # Recompiles Rogue -> C -> Exe if needed. 'rogo rebuild' forces a build.
+  rogo_libs
+
   localize exe_file
 
   if (File("Source/RogueC/Rogue.froley").is_newer_than(exe_file))
@@ -89,6 +91,10 @@ routine rogo_build
     endIf
     compile_c
   endIf
+endRoutine
+
+routine rogo_libs
+  Files("Source/Libraries/**").sync_to(File("Build/Libraries"),&verbose)
 endRoutine
 
 routine rogo_froley
