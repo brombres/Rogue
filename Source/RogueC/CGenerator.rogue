@@ -77,7 +77,7 @@ class CGenerator : Visitor
       if (return_type)
         writer.print ' '
         if (return_type.is_compound)
-          writer.[ print('('), print(return_type.c_name), print("){}") ]
+          writer.[ print('('), print(return_type.c_name), print("){0}") ]
         else
           visit( return_type.cmd_default_value(t) )
         endIf
@@ -710,7 +710,7 @@ class CGenerator : Visitor
         writer.print   ' '
         writer.print   this_procedure.c_result_name
         writer.print " = "
-        if (this_procedure.return_type.is_compound) writer.println "{};"
+        if (this_procedure.return_type.is_compound) writer.println "{0};"
         else                                        writer.println "0;"
       endIf
 
@@ -733,7 +733,7 @@ class CGenerator : Visitor
             writer.[ print(v.type.c_ref_name), print(' ') ]
             writer.print( v.c_name )
             writer.print( " = " )
-            if (v.type.is_compound) writer.print "{}"
+            if (v.type.is_compound) writer.print "{0}"
             else                    writer.print "0"
             writer.println( ';' )
 
@@ -800,7 +800,7 @@ class CGenerator : Visitor
           if (this_procedure.return_type.is_compound)
             writer.print   "return ("
             writer.print   this_procedure.return_type.c_name
-            writer.println "){};"
+            writer.println "){0};"
           else
             writer.println "return 0;"
           endIf
@@ -905,7 +905,7 @@ class CGenerator : Visitor
     method on_visit( cmd:EmptyCompound )
       writer.print '('
       writer.print cmd.of_type.c_name
-      writer.print "){}"
+      writer.print "){0}"
 
     method on_visit( cmd:Escape )
       writer.print "goto "
@@ -1117,7 +1117,7 @@ class CGenerator : Visitor
       writer.print 0
 
     method on_visit( cmd:LiteralNullOptional )
-      writer.[ print("("), print(cmd.optional_type.c_name), print(") {}") ]
+      writer.[ print("("), print(cmd.optional_type.c_name), print(") {0}") ]
 
     method on_visit( cmd:LiteralPi )
       writer.print pi
@@ -1151,7 +1151,7 @@ class CGenerator : Visitor
             writer.print '('
             writer.print( v.type.c_ref_name )
             writer.print ')'
-            writer.print "{}"
+            writer.print "{0}"
           else
             writer.print "0"
           endIf
@@ -1162,7 +1162,7 @@ class CGenerator : Visitor
         writer.print( v.c_name )
         if (not v.initial_value or v.type.is_reference or v.type.contains_reference)
           writer.print( " = " )
-          if (v.type.is_compound) writer.print "{}"
+          if (v.type.is_compound) writer.print "{0}"
           else                    writer.print "0"
         endIf
         writer.println ";"
@@ -2063,7 +2063,7 @@ augment
               c_writer.print p.type.c_ref_name
               c_writer.print ' '
               c_writer.print p.c_name
-              if (p.type.is_compound) c_writer.println " = {};"
+              if (p.type.is_compound) c_writer.println " = {0};"
               else                    c_writer.println " = 0;"
             endIf
           endForEach

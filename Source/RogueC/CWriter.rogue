@@ -472,8 +472,8 @@ class CWriter : BufferedPrintWriter
            |
            |int              RogueMM_bytes_allocated_since_gc  = 0;
            |int              RogueMM_gc_request                = 0;
-           |RogueObjectList  RogueMM_objects                   = {};
-           |RogueObjectList  RogueMM_objects_requiring_cleanup = {};
+           |RogueObjectList  RogueMM_objects                   = {0};
+           |RogueObjectList  RogueMM_objects_requiring_cleanup = {0};
            |
            |void* Rogue_as( void* obj, RogueInt32 recast_type_id )
            |{
