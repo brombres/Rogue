@@ -263,6 +263,9 @@ class RogueC
       return command
 
     method print_usage
+      println VERSION
+      println "$ by Abe Pralle" (DATE)
+      println
       println @|USAGE
                |  rogue [OPTIONS] <filepath>
                |

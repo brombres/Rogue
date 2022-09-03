@@ -35,7 +35,7 @@ routine rogo_update_bootstrap
 endRoutine
 
 routine copy_bootstrap_file( ext:String )
-  println "> copy Build/RogueC-$.$ Source/RogueC/Bootstrap/RogueC.$"(System.os,ext,System.os)
+  println "> copy Build/RogueC-$.$ Source/RogueC/Bootstrap/RogueC.$"(System.os,ext,ext)
   local content = String(File("Build/RogueC-$.$"(System.os,ext)))
   content .= replacing( "RogueC-$"(System.os), "RogueC" )
   File("Source/RogueC/Bootstrap/RogueC.$"(ext)).save( content )
