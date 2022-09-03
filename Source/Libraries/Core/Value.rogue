@@ -578,6 +578,29 @@ class Value [compound]
           return undefined
       endWhich
 
+    method remove_first->Value
+      if (count == 0) return undefined
+      which (type)
+        case TYPE_LIST
+          return object->(as Value[]).remove_at( 0 )
+        case TYPE_TABLE
+          return object->(as [String:Value]).remove_at( 0 )
+        others
+          return undefined
+      endWhich
+
+    method remove_last->Value
+      local n = count
+      if (n == 0) return undefined
+      which (type)
+        case TYPE_LIST
+          return object->(as Value[]).remove_at( n-1 )
+        case TYPE_TABLE
+          return object->(as [String:Value]).remove_at( n-1 )
+        others
+          return undefined
+      endWhich
+
     method set( index:Int32, value:Value )
       which (type)
         case TYPE_LIST
