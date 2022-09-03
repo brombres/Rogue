@@ -1,7 +1,12 @@
 class System [essential]
   NATIVE
-    nativeHeader @|#include <sys/time.h>
-                  |#include <spawn.h>
+    nativeHeader @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  #include <sys/timeb.h>
+                  |#else
+                  |  #include <sys/time.h>
+                  |  #include <spawn.h>
+                  |#endif
+                  |
                   |extern int    Rogue_argc;
                   |extern char** Rogue_argv;
                   |

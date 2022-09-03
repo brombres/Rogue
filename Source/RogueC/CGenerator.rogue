@@ -1661,6 +1661,8 @@ augment
         if (this.is_object)
           writer.println "RogueRuntimeType* __type;"
           writer.println "RogueInt32 __refcount;"
+        elseIf (this.properties.is_empty)
+          writer.println "int dummy;"
         endIf
         forEach (p in this.properties)
           if (not p.attributes.is_faux)
