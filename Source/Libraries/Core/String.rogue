@@ -228,7 +228,7 @@ class String : Poolable PrintWriter
     method appending( other:String, spacer=" ":String )->String
       # If this string is empty then 'other' is returned.
       # Otherwise, 'this+spacer+other' is returned.
-      if (not other) return this
+      if (not other or other.count == 0) return this
       if (count == 0) return other
       return "$$$" (this,spacer,other)
 

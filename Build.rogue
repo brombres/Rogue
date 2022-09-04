@@ -24,7 +24,7 @@ routine rogo_x2
 endRoutine
 
 routine rogo_bootstrap
-  execute @|cc -O0 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
+  execute @|cc -O3 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
 endRoutine
 
 routine rogo_update_bootstrap
@@ -48,9 +48,7 @@ endRoutine
 
 routine rogo_run
   # Runs this project.
-  execute "$ Test.rogue --main --gc=manual --debug --target=Console,C++"(exe_file.esc)
-  execute @|gcc Test.c -o test
-           |./test
+  execute exe_file.esc
 endRoutine
 
 routine rogo_debug
