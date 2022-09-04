@@ -1,0 +1,132 @@
+class RangeUpTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeUpToIterator<<$DataType>>
+      return RangeUpToIterator<<$DataType>>( start, limit, step )
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      return iterator.to_list
+endClass
+
+class RangeUpToIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur <= limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      local list = $DataType[]
+      if (step) list.reserve( (((limit-cur)+1) / step).abs + 1 )
+      list.add( forEach in this )
+      return list
+endClass
+
+class RangeUpToLessThan<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeUpToLessThanIterator<<$DataType>>
+      return RangeUpToLessThanIterator<<$DataType>>( start, limit, step )
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      return iterator.to_list
+endClass
+
+class RangeUpToLessThanIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur < limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      local list = $DataType[]
+      if (step) list.reserve( (((limit-cur)+1) / step).abs + 1 )
+      list.add( forEach in this )
+      return list
+endClass
+
+class RangeDownTo<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeDownToIterator<<$DataType>>
+      return RangeDownToIterator<<$DataType>>( start, limit, step )
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      return iterator.to_list
+endClass
+
+class RangeDownToIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur >= limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      local list = $DataType[]
+      if (step) list.reserve( (((cur-limit)+1) / step).abs + 1 )
+      list.add( forEach in this )
+      return list
+endClass
+
+class RangeDownToGreaterThan<<$DataType>>( start:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method iterator->RangeDownToGreaterThanIterator<<$DataType>>
+      return RangeDownToGreaterThanIterator<<$DataType>>( start, limit, step )
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      return iterator.to_list
+endClass
+
+class RangeDownToGreaterThanIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$DataType ) [compound]
+  METHODS
+    method read_another->$DataType? [mutating]
+      if (cur > limit)
+        local result = cur
+        cur += step
+        return result
+      else
+        return null
+      endIf
+
+    method to->$DataType[]
+      return iterator.to_list
+
+    method to_list->$DataType[]
+      local list = $DataType[]
+      if (step) list.reserve( (((cur-limit)+1) / step).abs + 1 )
+      list.add( forEach in this )
+      return list
+endClass
+

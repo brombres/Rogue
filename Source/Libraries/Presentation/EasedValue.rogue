@@ -1,0 +1,100 @@
+# EXAMPLE
+#
+# uses Presentation/EasedValue
+#
+# local score = EasedValue<<Int32>>( 0, 0.8, ProgressFn.QUADRATIC )
+# score.target_value = 99
+# loop 5
+#   println "$ ($%)" (score.value.format("2"),(score.progress*100).format(".0"))
+#   System.sleep(0.2)
+# endLoop
+# println
+#
+# score.target_value = 50
+# loop 5
+#   println "$ ($%)" (score.value.format("2"),(score.progress*100).format(".0"))
+#   System.sleep(0.2)
+# endLoop
+# println
+#
+# # OUTPUT
+#  0 (0%)
+# 13 (26%)
+# 51 (51%)
+# 88 (77%)
+# 99 (100%)
+#
+# 99 (0%)
+# 92 (26%)
+# 73 (51%)
+# 55 (77%)
+# 50 (100%)
+
+$include Presentation/ProgressFn
+
+class TargetValue<<$DataType>> [abstract]
+  PROPERTIES
+    target_value : $DataType
+
+  METHODS
+    method set_target_value( @target_value )->this
+      return this
+
+    method set_value( @target_value )->this
+      return this
+
+    method value->$DataType
+      return target_value
+endClass
+
+class EasedValue<<$DataType>> : TargetValue<<$DataType>>
+  PROPERTIES
+    initial_value : $DataType
+    start_time_ms : Int32
+    duration      : Real
+    progress_fn   : Function(Real)->Real
+    duration_fn   : Function($DataType)->Real
+
+  METHODS
+    method init( initial_value, duration=0.5, progress_fn=ProgressFn.QUADRATIC, duration_fn=null )
+      @target_value = initial_value
+
+    method init( initial_value, duration_fn, progress_fn=ProgressFn.QUADRATIC )
+      @target_value = initial_value
+
+    method delta->$DataType
+      return target_value - value
+
+    method progress->Real
+      if (duration == 0 or not start_time_ms) return 1.0
+      local duration_ms = (duration*1000)->Int32
+      return ((System.execution_time_ms - start_time_ms)->Real / duration_ms).clamped( 0, 1 )
+
+    method set_target_value( new_target_value:$DataType )->this
+      if (target_value == new_target_value) return this
+      initial_value = value
+      @target_value = new_target_value
+      start_time_ms = System.execution_time_ms
+      if (duration_fn) duration = duration_fn( target_value - initial_value )
+      return this
+
+    method set_value( new_value:$DataType )->this
+      if (initial_value == new_value and target_value == new_value) return this
+      @initial_value = new_value
+      @target_value = new_value
+      start_time_ms = 0
+      return this
+
+    method value->$DataType
+      if (duration == 0 or not start_time_ms) return target_value
+      local duration_ms = (duration*1000)->Int32
+      local t = ((System.execution_time_ms - start_time_ms)->Real / duration_ms).clamped( 0, 1 )
+      if (t == 0) return initial_value
+      if (t == 1)
+        start_time_ms = 0  # otherwise a duration change could start this moving again
+        return target_value
+      endIf
+      return initial_value + (target_value - initial_value) * progress_fn(t)
+
+endClass
+

@@ -1,0 +1,800 @@
+class ListType [aspect];
+
+class List<<$DataType>> : Poolable ListType
+  PROPERTIES
+    count        : Int32
+    capacity     : Int32
+    element_size : Int32
+    is_ref_array : Logical
+    is_borrowed  : Logical
+    element_type : $DataType  # dummy property used to generate type-releated C code
+
+    native @|union
+            |{
+            |  void*           data;
+            |  RogueObject**   as_objects;
+            |  RogueString**   as_strings;
+            |  RogueReal64*    as_real64s;
+            |  RogueReal32*    as_real32s;
+            |  RogueInt64*     as_int64s;
+            |  RogueInt32*     as_int32s;
+            |  RogueCharacter* as_characters;
+            |  RogueByte*      as_bytes;
+            |  char*           as_utf8; // only valid for String data; includes null terminator
+            |  RogueByte*      as_logicals;
+            |};
+
+  METHODS
+    method init
+
+    method init( capacity:Int32 )
+      reserve( capacity )
+
+    method init_object
+      if ($DataType isType Logical) element_size = 1
+      else                          element_size = native("sizeof($element_type)")->Int32
+      if ($DataType instanceOf Object) is_ref_array = true
+
+    method cloned->$DataType[]
+      local result = $DataType[]( count )
+      result.count = count
+      copy( 0, count, result, 0 )
+      return result
+
+    method on_cleanup
+      native @|if ($this->as_bytes)
+              |{
+              |  if ($is_borrowed) $is_borrowed = 0;
+              |  else              ROGUE_FREE( $this->as_bytes );
+              |  $this->as_bytes = 0;
+              |  $capacity = 0;
+              |  $count = 0;
+              |}
+
+    method add( value:$DataType )
+      reserve( 1 )
+      if ($DataType isType Logical)
+        native @|$this->as_logicals[$count++] = (RogueByte)$value;
+      else
+        native @|(($<<value>>*)($this->data))[$count++] = $value;
+      endIf
+
+    method add( other:$DataType[] )
+      reserve(other.count)
+      forEach (value in other) add( value )
+
+    method apply( fn:(Function($DataType)) )
+      forEach (item in this) fn( item )
+
+    method applying( fn:(Function($DataType)) )->$DataType[]
+      return cloned.[ apply(fn) ]
+
+    method clear
+      discard_from( 0 )
+
+    method contains( value:$DataType )->Logical
+      return this.locate( value )?
+
+    method contains( query:(Function($DataType)->Logical) )->Logical
+      return first( query ).exists
+
+    method contains( other:$DataType[] )->Logical
+      return this.locate( other )?
+
+    method copy( dest:$DataType[], dest_i1=0:Int32 )
+      copy( 0, count, dest, dest_i1 )
+
+    method copy( src_i1:Int32, src_count:Int32, dest:$DataType[], dest_i1:Int32 )
+      if (src_count <= 0) return
+
+      dest.expand_to_count( dest_i1 + src_count )
+
+      if (this is dest)
+        native @|memmove(
+                |  $dest->as_bytes + $dest_i1*$element_size,
+                |  $this->as_bytes + $src_i1*$element_size,
+                |  $src_count * $element_size
+                |);
+      else
+        native @|memcpy(
+                |  $dest->as_bytes + $dest_i1*$element_size,
+                |  $this->as_bytes + $src_i1*$element_size,
+                |  $src_count * $element_size
+                |);
+      endIf
+
+    method count( query:Function($DataType)->Logical )->Int32
+      local n = 0
+      if (query(forEach in this)) ++n
+      return n
+
+    method description->String
+      local result = String()
+      result.print '['
+      forEach (value at i in this)
+        if (i > 0) result.print ','
+        result.print( value )
+      endForEach
+      result.print ']'
+      return result
+
+    method dim( n:Int32 )
+      clear
+      reserve( n )
+      count = n
+
+    method discard( i1:Int32, n=1:Int32 )
+      local i2 = i1 + n
+      copy( i2, (count-i2), this, i1 )
+      discard_from( count-n )
+
+    method discard( discard_if:(Function($DataType)->Logical) )
+      # Discards any item that passes the query function.
+      forEach (value in rewriter=this.rewriter)
+        if (not discard_if(value)) rewriter.write( value )
+      endForEach
+
+    method discarding( discard_if:(Function($DataType)->Logical) )->$DataType[]
+      # Returns a copy of the list without any item that passes the query function.
+      return cloned.[ discard(discard_if) ]
+
+    method discard_from( index:Int32 )
+      local n = (count - index)
+      if (n > 0)
+        zero( index, n )
+        count = index
+      endIf
+
+    method ensure_capacity( desired_capacity:Int32 )
+      reserve( desired_capacity - count )
+
+    method expand( additional_count:Int32 )
+      # Adds 'additional_count' items to this list, each with the default
+      # value of null/0/false.
+      reserve( additional_count )
+      count += additional_count
+
+    method expand_to_count( minimum_count:Int32 )
+      # Expands the list if necessary to have at least 'minimum_count' elements.
+      if (count < minimum_count)
+        ensure_capacity( minimum_count )
+        count = minimum_count
+      endIf
+
+    method expand_to_include( index:Int32 )
+      # Expands the list if necessary to include the specified index.
+      expand_to_count( index + 1 )
+
+    method fill( value:$DataType, i1=0:Int32, count=null:Int32? )
+      local n = which{ count || this.count }
+
+      if ($DataType isType Logical) native @|//A
+      if ($DataType isType Byte) native @|//B
+      if ($DataType isType Logical or $DataType isType Byte) native @|//C
+
+      if ($DataType isType Logical or $DataType isType Byte)
+        native @|memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
+        return
+      elseIf ($isPrimitive<<$DataType>> or $isReference<<$DataType>>)
+        if (not value)
+          native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
+          return
+        endIf
+      endIf
+
+      native @|RogueInt32 n = $n;
+              |$<<element_type>>* ptr = (($<<element_type>>*)$this->data) + ($i1 - 1);
+              |while (--n >= 0) *(++ptr) = $value;
+
+    method filter( keep_if:(Function($DataType)->Logical) )
+      this.keep( keep_if )
+
+    method filtered( keep_if:(Function($DataType)->Logical) )->$DataType[]
+      return this.keeping( keep_if )
+
+    method find( query:(Function($DataType)->Logical) )->$DataType?
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+      return null
+
+    method first->$DataType
+      return this[0]
+
+    method first( query:(Function($DataType)->Logical) )->$DataType?
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+
+      return null
+
+    method from( i1:Int32 )->ListIterator<<$DataType>>
+      return ListIterator<<$DataType>>( this, i1 )
+
+    method from( i1:Int32, i2:Int32 )->ListIterator<<$DataType>>
+      return ListIterator<<$DataType>>( this, i1, i2+1 )
+
+    method get( index:Int32 )->$DataType
+      if ($DataType isType Logical)
+        return native("$this->as_logicals[$index]")->$DataType
+      else
+        return native("(($<<element_type>>*)($this->data))[$index]")->$DataType
+      endIf
+
+    method get( query:(Function($DataType)->Logical) )->$DataType[]
+      local results = $DataType[]
+
+      forEach (value in this)
+        if (query(value)) results.add( value )
+      endForEach
+
+      return results
+
+    method insert( value:$DataType, before_index=0:Int32 )
+      if (before_index < 0) before_index = 0
+
+      if (before_index >= count)
+        add( value )
+      else
+        reserve( 1 )
+        copy( before_index, count-before_index, this, before_index+1 )
+        this[ before_index ] = value
+      endIf
+
+    method insert( other:$DataType[], before_index=0:Int32 )
+      if (before_index < 0) before_index = 0
+
+      local n = other.count
+      if (n == 0) return
+
+      if (before_index >= count)
+        add( other )
+        return
+      else
+        reserve( n )
+        copy( before_index, count-before_index, this, before_index+n )
+
+        # Copy in the new values
+        forEach (value in other)
+          this[ before_index ] = value
+          ++before_index
+        endForEach
+      endIf
+
+    method is_empty->Logical
+      return count == 0
+
+    method iterator->ListIterator<<$DataType>>
+      return ListIterator<<$DataType>>( this, 0 )
+
+    method join( separator="\n":String, output=String():String )->String
+      local first = true
+      forEach (item in this)
+        if (first) first = false
+        else       output.print( separator )
+        output.print( item )
+      endForEach
+      return output
+
+    method keep( keep_if:(Function($DataType)->Logical) )
+      forEach (value in rewriter=this.rewriter)
+        if (keep_if(value)) rewriter.write( value )
+      endForEach
+
+    method keeping( keep_if:(Function($DataType)->Logical) )->$DataType[]
+      return cloned.[ keep(keep_if) ]
+
+    method last->$DataType
+      return this[ count - 1 ]
+
+    method last( query:(Function($DataType)->Logical) )->$DataType?
+      forEach (value in this step -1)
+        if (query(value)) return value
+      endForEach
+
+      return null
+
+    method locate( value:$DataType, i1=null:Int32? )->Int32?
+      if (not i1) i1 = 0
+
+      if ($isReference<<$DataType>>)
+        if (value is null)
+          forEach (i of this from i1.value)
+            if (value is this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
+      forEach (i of this from i1.value)
+        if (value == this[i]) return i
+      endForEach
+      return null
+
+    method locate( query:(Function($DataType)->Logical), i1=null:Int32? )->Int32?
+      if (not i1) i1 = 0
+
+      forEach (value at index in this from i1.value)
+        if (query(value)) return index
+      endForEach
+
+      return null
+
+    method locate( other:$DataType[], i1=null:Int32? )->Int32?
+      if (not i1) i1 = 0
+
+      local other_count = other.count
+      if (count < other_count) return null
+      forEach (starting_index in i1.value..(count-other_count))
+
+        contingent
+
+          forEach (i in 0..<other_count)
+            local a = this[ starting_index + i ]
+            local b = other[ i ]
+            if ($isReference<<$DataType>>)
+              if (a is null)
+                necessary (b is null)
+              elseIf (b is null)
+                necessary (a is null)
+              else
+                necessary (a == b)
+              endIf
+            else
+              necessary (a == b)
+            endIf
+          endForEach
+
+        satisfied
+          return starting_index
+        endContingent
+
+      endForEach
+      return null
+
+    method locate_last( value:$DataType, i1=null:Int32? )->Int32?
+      local starting_index = which{ i1 || count-1 }
+      if ($isReference<<$DataType>>)
+        if (value is null)
+          forEach (i in starting_index downTo 0)
+            if (not this[i]) return i
+          endForEach
+          return null
+        endIf
+      endIf
+
+      forEach (i in starting_index downTo 0)
+        if (value == this[i]) return i
+      endForEach
+      return null
+
+    method locate_last( query:(Function($DataType)->Logical), i1=null:Int32? )->Int32?
+      local starting_index = which{ i1 || count-1 }
+      forEach (value at index in this from starting_index step -1)
+        if (query(value)) return index
+      endForEach
+      return null
+
+    method locate_last( other:$DataType[], i1=null:Int32? )->Int32?
+      local starting_index = which{ i1 || count-1 }
+      local other_count = other.count
+      if (count < other_count) return null
+      forEach (first_i in starting_index.or_smaller(count-other_count) downTo 0)
+
+        contingent
+
+          forEach (i in 0..<other_count)
+            local a = this[ first_i + i ]
+            local b = other[ i ]
+            if ($isReference<<$DataType>>)
+              if (a is null)
+                necessary (b is null)
+              elseIf (b is null)
+                necessary (a is null)
+              else
+                necessary (a == b)
+              endIf
+            else
+              necessary (a == b)
+            endIf
+          endForEach
+
+        satisfied
+          return first_i
+        endContingent
+
+      endForEach
+      return null
+
+    method map<<$ToType>>( map_fn:(Function($DataType)->$ToType) )->$ToType[]
+      local result = $ToType[]( capacity )
+      forEach (element in this) result.add( map_fn(element) )
+      return result
+
+    method modify( fn:(Function($DataType)->$DataType) )
+      forEach (index of this) this[index] = fn(this[index])
+
+    method modified( fn:(Function($DataType)->$DataType) )->$DataType[]
+      return cloned.[ modify(fn) ]
+
+    method on_return_to_pool
+      clear
+
+    method operator==( other:$DataType[] )->Logical
+      if (this is other) return true
+      return count == other.count and locate(other).exists
+
+    method operator*( n:Int32 )->$DataType[]
+      # Creates a new list containing 'n' concatenated copies of this list.
+      # Useful for creating an array-style list. For example, a list of 256 0's: [0] * 256
+      local result = $DataType[]( this.count * n )
+      loop (n) result.add( this )
+      return result
+
+    method permutation( n:Int64, output_list=null:$DataType[] )->$DataType[]
+      # n           - A value between 0 and (permutation_count-1).  0 gives the
+      #               original list and (permutation_count-1) gives the list in
+      #               reverse order.
+      # output_list - A optional existing list to store the output permutation in.
+      #               Will be created dynamically if not passed in.
+      if (not output_list) output_list = $DataType[]( count )
+      output_list.clear
+      if (count == 0) return output_list
+
+      forEach (value in this) output_list.add( value )
+
+      local c = count
+      while (c)
+        output_list.add( output_list.remove_at(n % c) )
+        n /= c
+        --c
+      endWhile
+
+      return output_list
+
+    method permutation_count->Int64
+      # The permutation count is the factorial of the list size
+      if (count == 0) return 0
+
+      local c = 1 : Int64
+      forEach (n in 2..count)
+        c *= n
+      endForEach
+
+      return c
+
+    method random( generator=Random:Random )->$DataType
+      # Returns an element at random
+      if (not count)
+        local default_value : $DataType
+        return default_value
+      endIf
+      return this[ generator.int32(this.count) ]
+
+    method reader->ListReader<<$DataType>>
+      return ListReader<<$DataType>>( this )
+
+    method reduce<<$ToType>>( reduce_fn:(Function(Int32,$DataType,$ToType)->$ToType) )->$ToType
+      local result : $ToType
+      forEach (index of this)
+        result = reduce_fn( index, this[index], result )
+      endForEach
+      return result
+
+    method remove( value:$DataType )->$DataType
+      local index = locate( value )
+      if (index)
+        return remove_at( index.value )
+      else
+        return value
+      endIf
+
+    method remove( query:(Function($DataType)->Logical) )->$DataType[]
+      # Returns the list of items that pass the query function while removing
+      # them from this list.
+      local result = $DataType[]
+      forEach (value in rewriter=this.rewriter)
+        if (query(value)) result.add( value )
+        else              rewriter.write( value )
+      endForEach
+      return result
+
+    method remove_at( index:Int32 )->$DataType
+      local result = this[ index ]
+      copy( index+1, count-(index+1), this, index )
+      --count
+      local zero_value : $DataType
+      this[count] = zero_value
+      return result
+
+    method remove_first->$DataType
+      local result = this[0]
+      shift( -1 )
+      return result
+
+    method remove_last->$DataType
+      --count
+      if ($DataType isType Logical)
+        native @|RogueLogical result = $this->as_logicals[$count];
+                |$this->as_logicals[$count] = 0;
+                 return native("result")->$DataType
+      elseIf ($isCompound<<$DataType>>)
+        native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
+                |memset( (($<<element_type>>*)($this->data)) + $count, 0, sizeof($<<element_type>>) );
+                 return native("result")->$DataType
+      else
+        native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
+                |(($<<element_type>>*)($this->data))[$count] = 0;
+                 return native("result")->$DataType
+      endIf
+
+    method remove_random( generator=Random:Random )->$DataType
+      # Removes and returns an element at random
+      # If list is empty, returns the default value for the type (0/false/null).
+      if (not count)
+        local default_value : $DataType
+        return default_value
+      endIf
+      return remove_at( generator.int32(this.count) )
+
+    method reserve( additional_capacity:Int32 )
+      local required_capacity = count + additional_capacity
+      if (required_capacity <= capacity) return
+
+      required_capacity = required_capacity.or_larger( count*2 ).or_larger( 10 )
+
+      native @|int total_size = $required_capacity * $element_size;
+              |RogueByte* new_data = (RogueByte*) ROGUE_MALLOC( total_size );
+              |
+              |if ($this->as_bytes)
+              |{
+              |  int old_size = $capacity * $element_size;
+              |  RogueByte* old_data = $this->as_bytes;
+              |  memcpy( new_data, old_data, old_size );
+              |  memset( new_data+old_size, 0, total_size-old_size );
+              |  if ($is_borrowed) $is_borrowed = 0;
+              |  else              ROGUE_FREE( old_data );
+              |}
+              |else
+              |{
+              |  memset( new_data, 0, total_size );
+              |}
+              |$this->as_bytes = new_data;
+
+      capacity = required_capacity
+
+    method resize( new_count:Int32 )
+      if (count != new_count)
+        expand_to_count( new_count )
+        discard_from( new_count )
+      endIf
+
+    method reverse
+      reverse( 0, count-1 )
+
+    method reverse( i1:Int32, i2:Int32 )
+      if (i1 < 0) i1 = 0
+      if (i2 >= count) i2 = count - 1
+
+      while (i1 < i2)
+        local temp = this[i1]
+        this[i1] = this[i2]
+        this[i2] = temp
+        ++i1
+        --i2
+      endWhile
+
+    method rewriter->ListRewriter<<$DataType>>
+      return ListRewriter<<$DataType>>( this )
+
+    method rotate_left( w:Int32, h:Int32 )
+      # Treats this list as a 2D WxH set of data and rotates it 90º counter-clockwise.
+      # The data must then be accessed using HxW.
+      local total_count = w * h
+      #require count == total_count
+
+      use new_data = WorkList<<$DataType>>
+        new_data.reserve( total_count )
+        local row_start = (w - 1)
+        loop w
+          local pos = row_start
+          loop (h)
+            new_data.add( this[pos] )
+            pos += w
+          endLoop
+          --row_start
+        endLoop
+        new_data.copy( 0, new_data.count, this, 0 )
+      endUse
+
+    method rotate_right( w:Int32, h:Int32 )
+      # Treats this list as a 2D WxH set of data and rotates it 90º clockwise.
+      # The data must then be accessed using HxW.
+      local total_count = w * h
+      #require count == total_count
+
+      use new_data = WorkList<<$DataType>>
+        new_data.reserve( total_count )
+        local row_start = (h - 1) * w
+        loop w
+          local pos = row_start
+          loop h
+            new_data.add( this[pos] )
+            pos -= w
+          endLoop
+          ++row_start
+        endLoop
+        new_data.copy( 0, new_data.count, this, 0 )
+      endUse
+
+    method set( index:Int32, value:$DataType )
+      if ($DataType isType Logical)
+        native @|$this->as_logicals[$index] = (RogueByte) $value;
+      else
+        native @|(($<<element_type>>*)($this->data))[$index] = $value;
+      endIf
+
+    method set_first( new_value:$DataType )
+      this[ 0 ] = new_value
+
+    method set_last( new_value:$DataType )
+      this[ count - 1 ] = new_value
+
+    method shift( delta:Int32 )
+      if (delta == 0) return
+
+      if (delta > 0)
+        reserve( delta )
+        copy( 0, count, this, delta )
+        zero( 0, delta )
+        count += delta
+      elseIf (-delta >= count)
+        clear
+      else
+        copy( -delta, count+delta, this, 0 )
+        discard_from( count+delta )
+      endIf
+
+    method shuffle( generator=Random:Random )
+      local n = count
+      forEach (i of this) swap( i, generator.int32(n) )
+
+    method shuffled( generator=Random:Random )->$DataType[]
+      return cloned.[ shuffle(generator) ]
+
+    method sort( compare_fn:(Function($DataType,$DataType)->Logical) )
+      Quicksort<<$DataType>>.sort( this, compare_fn )
+
+    method sorted( compare_fn:(Function($DataType,$DataType)->Logical) )->$DataType[]
+      return cloned.[ sort(compare_fn) ]
+
+    method subset( i1:Int32 )->$DataType[]
+      return subset( i1, count-i1 )
+
+    method subset( i1:Int32, n:Int32 )->$DataType[]
+      if (n < 0)
+        n = (count - i1) + n
+        if (n <= 0) return $DataType[]
+      endIf
+      local result = $DataType[]( n )
+      forEach (i in i1..<i1+n) result.add( this[i] )
+      return result
+
+    method swap( i1:Int32, i2:Int32 )
+      swapValues( this[i1], this[i2] )
+
+    method to->String
+      return description
+
+    method writer->ListWriter<<$DataType>>
+      return ListWriter<<$DataType>>( this )
+
+    method zero( i1=0:Int32, count=null:Int32? )
+      local n = which{ count || this.count }
+      native @|memset( $this->as_bytes + $i1*$element_size, 0, $n*$element_size );
+
+endClass
+
+class ListIterator<<$DataType>>( list:$DataType[], position=0:Int32, limit=-1:Int32 ) [compound]
+  METHODS
+    method has_another->Logical
+      if (limit == -1) return (position < list.count)
+      else             return (position < limit)
+
+    method has_another( n:Int32 )->Logical
+      if (limit == -1) return (position + n <= list.count)
+      else             return (position + n <= limit)
+
+    method peek( lookahead=0:Int32 )->$DataType
+      return list[ position+lookahead ]
+
+    method read->$DataType [mutating]
+      ++position
+      return list[ position-1 ]
+
+    method read_another->$DataType? [mutating]
+      if (limit == -1)
+        if (position == list.count) return null
+      else
+        if (position == limit) return null
+      endIf
+      ++position
+      return list[ position-1 ]
+
+    method to->String
+      return to_list->String
+
+    method to->$DataType[]( result=null:$DataType[] )
+      return to_list( result )
+
+    method to_list( result=null:$DataType[] )->$DataType[]
+      if (not result) result = $DataType[](list.count)
+      result.add( forEach in this )
+      return result
+endClass
+
+class ListReader<<$DataType>> : Reader<<$DataType>>
+  PROPERTIES
+    list       : $DataType[]
+    position   : Int32
+    limit      : Int32
+    is_limited : Logical
+
+  METHODS
+    method init( list, position=0 )
+
+    method init( list, position, limit )
+      is_limited = true
+
+    method has_another->Logical
+      if (is_limited) return (position < limit)
+      else            return (position < list.count)
+
+    method peek->$DataType
+      return list[ position ]
+
+    method read->$DataType
+      ++position
+      return list[ position - 1 ]
+
+    method reset
+      seek( 0 )
+
+    method seek( pos:Int32 )
+      if (pos < 0) pos = 0
+
+      if (is_limited)
+        if (pos > limit) pos = limit
+      else
+        if (pos > list.count) pos = list.count
+      endIf
+
+      position = pos
+
+endClass
+
+class ListWriter<<$DataType>> : Writer<<$DataType>>
+  PROPERTIES
+    list     : $DataType[]
+    position : Int32
+
+  METHODS
+    method init( list )
+      position = list.count
+
+    method close
+      list.discard_from( position )
+
+    method seek( pos:Int32 )
+      if (pos < 0) pos = 0
+      position = pos
+      list.expand_to_count( pos )
+
+    method seek_end()
+      position = list.count
+
+    method write( value:$DataType )
+      if (position == list.count) list.add( value )
+      else                        list[ position ] = value
+      ++position
+endClass

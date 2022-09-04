@@ -1,0 +1,80 @@
+$include IO/ExtendedASCIIReader
+$include IO/UTF8
+
+class LineReader : Reader<<String>>
+  PROPERTIES
+    source : Reader<<Character>>
+    next   : String
+    prev   : Character
+
+  METHODS
+    method init( source )
+      next = null
+
+    method init( reader:Reader<<Byte>>, encoding=StringEncoding.AUTODETECT:StringEncoding )
+      if (encoding == StringEncoding.EXTENDED_ASCII) init( ExtendedASCIIReader(reader) )
+      else                                           init( UTF8Reader(reader) )
+
+    method init( string:String )
+      init( string.reader )
+
+    method close
+      source.close
+
+    method has_another->Logical
+      return prepare_next
+
+    method peek->String
+      prepare_next
+      return next
+
+    method prepare_next->Logical
+      if (next) return true
+
+      if (not source.has_another) return false
+
+      prev = 0
+      use buffer = StringPool
+        while (source.has_another)
+          local ch = source.read
+          if (ch == '\r') nextIteration
+          if (ch == '\n')
+            prev = '\n'
+            escapeWhile
+          endIf
+          buffer.print( ch )
+        endWhile
+
+        next = buffer.cloned
+      endUse
+      return true
+
+    method read->String
+      local result = peek
+      next = null
+      ++position
+      return result
+
+    method reset
+      seek( 0 )
+
+    method seek( pos:Int32 )
+      if (pos < 0) pos = 0
+
+      if (pos < position)
+        source.reset
+        position = 0
+        next = null
+      endIf
+
+      while (pos > position)
+        read
+      endWhile
+
+    method to->String[]
+      local lines = String[]
+      forEach (line in this) lines.add( line )
+      return lines
+
+endClass
+

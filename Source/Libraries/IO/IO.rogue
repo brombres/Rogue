@@ -1,0 +1,10 @@
+$include IO/ExtendedASCIIReader
+$include IO/LineReader
+$include IO/PrintWriter
+$include IO/Reader
+$include IO/UTF8
+$include IO/Writer
+
+# Included by RogueC as needed:
+# - IO/Scanner
+# - IO/ScanPattern

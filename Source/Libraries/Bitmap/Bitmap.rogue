@@ -1,0 +1,1118 @@
+#==============================================================================
+# Bitmap.rogue
+#
+# LINKING
+#   Loading and saving images using class Bitmap requires linking with libpng
+#   and libjpeg. This is relatively easy to do if you're using Rogo to compile.
+#
+#   Using Rogo & using class Bitmap within Build.rogue
+#     In Build.rogue:
+#
+#       #$ LINK_LIBS            = true
+#       #$ LIBRARIES(macOS)     = libpng libjpeg(header:jpeglib.h) zlib
+#       #$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
+#
+#   Using Rogo to compile another .rogue program which uses Bitmap:
+#     In Build.rogue:
+#
+#       #$ LIBRARIES(macOS)     = libpng libjpeg(header:jpeglib.h) zlib
+#       #$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
+#       ...
+#       execute "roguec OtherProgram.rogue --compile-arg='$LIBRARY_FLAGS(libpng,libjpeg,zlib)'"
+#
+#   The two approaches can be combined.
+#
+#   If you are not using Rogo then you will need to install libpng and libjpeg
+#   manually and pass the appropriate flags to roguec or the C++ compiler.
+#==============================================================================
+module Bitmap
+
+uses Geometry [export]
+
+$include Bitmap/Color
+$include Bitmap/HSB
+
+#{
+$include "Bitmap/BitmapFont.rogue"
+$include "Bitmap/HSB.rogue"
+
+$if not defined(CUSTOM_BITMAP_IO)
+  $include "Bitmap/BMP.rogue"
+  $include "Bitmap/JPEG.rogue"
+  $include "Bitmap/PNG.rogue"
+$endIf
+
+}#
+
+class Bitmap
+  GLOBAL METHODS
+    method create( width:Int32, height:Int32 )->Bitmap
+      return Bitmap( width, height, Color(0) )
+
+    method create( file:File )->Bitmap
+      return Bitmap( Byte[](file) )
+
+    method create( bytes:Byte[] )->Bitmap
+      local result = decode( bytes )
+      if (result) return result
+      result = Bitmap(1,1)
+      result.error = true
+      return result
+
+    method encode_data( bytes:Byte[], width=0:Int32 )->Bitmap
+      # Creates a bitmap that uses the raw bytes as pixel values so that a chunk of
+      # data can be saved as a PNG or other lossless format. Use decode_data[] to
+      # reverse the process.
+      #
+      # Every three bytes is stored as an R,G,B value with an alpha of 255 (1.0).
+      # We can't reliably use the alpha byte as storage because various graphics
+      # routines will fuss with alpha values in one way or another. Examples include
+      # premultiplying RGBxA upon loading and using 7-bit alpha instead of 8-bit alpha.
+      local byte_count = bytes.count
+      if (width == 0) width = Math.sqrt( byte_count/3 ).or_larger(16)
+      local height = (byte_count + ((width*3)-1)) / (width*3)
+
+      local bitmap = Bitmap( width, height, 0 )
+      bitmap.pixels.clear
+      forEach (i of bytes step 3)
+        local b1 = bytes[i]->Int32
+        local b2 = which{ i+1<byte_count:bytes[i+1] || 0 }->Int32
+        local b3 = which{ i+2<byte_count:bytes[i+2] || 0 }->Int32
+        bitmap.pixels.add( Color(b1,b2,b3) )
+      endForEach
+
+      loop (width*height - bitmap.pixels.count)
+        bitmap.pixels.add( Color(0) )
+      endLoop
+
+      return bitmap
+
+    method decode( bytes:Byte[] )->Bitmap
+      if (bytes.count < 4) return null
+
+      if (bytes[0] == 0x89 and bytes[1] == 'P' and bytes[2] == 'N' and bytes[3] == 'G')
+        return decode_png( bytes )
+
+      elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
+        return decode_jpeg( bytes )
+
+      elseIf (bytes[0] == 'B' and bytes[1] == 'M')
+        return decode_bmp( bytes )
+
+      else
+        return null
+
+      endIf
+
+    method decode_bmp( bytes:Byte[] )->Bitmap
+      error.println "ERROR: No BMP decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
+      return null
+
+    method decode_jpeg( bytes:Byte[] )->Bitmap
+      error.println "ERROR: No JPEG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
+      return null
+
+    method decode_png( bytes:Byte[] )->Bitmap
+      error.println "ERROR: No PNG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_png(Byte[])->Bitmap to utilize an alternate decoder."
+      return null
+
+  PROPERTIES
+    width                  : Int32
+    height                 : Int32
+    pixels                 : Color[]
+    error                  : Logical
+    is_premultiplied_alpha : Logical
+    filepath               : String
+
+  METHODS
+    method init( size:XY, color=Color(0):Color ) [essential]
+      init( size.x, size.y, color )
+
+    method init( width, height, color:Color ) [essential]
+      init( width, height, Dim<<Bitmap::Color>>( width*height ).[fill(color)] )
+
+    method init( size:XY, pixels )
+      init( size.x, size.y, pixels )
+
+    method init( width, height, pixels )
+
+    method init( existing:Bitmap, bounds:Box )
+      init( bounds.size )
+      existing.blit( this, -bounds.position )
+
+    method reset( width, height, color=Color(0):Color? )
+      error                  = false
+      is_premultiplied_alpha = false
+      pixels.expand_to_count( width*height )
+      pixels.discard_from( width*height )
+      if (color)
+        local c = color.value
+        pixels.clear
+        loop (width*height) pixels.add( c )
+      endIf
+
+    method cloned->Bitmap
+      local result = Bitmap( size, pixels.cloned )
+      result.error = this.error
+      return result
+
+    method add_rows( rows:Int32, color=0:Color )->this
+      pixels.reserve( width*rows )
+      forEach (1..width*rows) pixels.add( color )
+      height += rows
+      return this
+
+    method blit( dest_bitmap:Bitmap, x:Int32, y:Int32, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( dest_bitmap, XY(x,y), &=blit_fn )
+
+    method blit( dest_bitmap:Bitmap, pos=XY(0,0):XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( Box(0,0,size), dest_bitmap, pos, &=blit_fn )
+
+    method blit( bounds:Box, dest_bitmap:Bitmap, x:Int32, y:Int32, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      blit( bounds, dest_bitmap, XY(x,y), &=blit_fn )
+
+    method blit( bounds:Box, dest_bitmap:Bitmap, dest_position=XY(0,0):XY, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
+      local src_x1  = bounds.position.x->Int32
+      local src_y1  = bounds.position.y->Int32
+      local w       = bounds.width->Int32
+      local h       = bounds.height->Int32
+      local dest_x1 = dest_position.x->Int32
+      local dest_y1 = dest_position.y->Int32
+
+      local src_x_limit  = src_x1 + w
+      local src_y_limit  = src_y1 + h
+      local dest_x_limit = dest_x1 + w
+      local dest_y_limit = dest_y1 + h
+
+      local this_width = width
+
+      # clip
+      if (src_x1 < 0)
+        local delta = -src_x1
+        src_x1    = 0
+        dest_x1  += delta
+      endIf
+      if (src_y1 < 0)
+        local delta = -src_y1
+        src_y1    = 0
+        dest_y1  += delta
+      endIf
+      if (src_x_limit > this_width)
+        local delta    = src_x_limit - this_width
+        src_x_limit  -= delta
+        dest_x_limit -= delta
+      endIf
+      if (src_y_limit > height)
+        local delta    = src_y_limit - height
+        src_y_limit  -= delta
+        dest_y_limit -= delta
+      endIf
+
+      if (dest_x1 < 0)
+        local delta = -dest_x1
+        dest_x1  = 0
+        src_x1   += delta
+      endIf
+      if (dest_y1 < 0)
+        local delta = -dest_y1
+        dest_y1  = 0
+        src_y1   += delta
+      endIf
+      if (dest_x_limit > dest_bitmap.width)
+        local delta = dest_x_limit - dest_bitmap.width
+        dest_x_limit -= delta
+        src_x_limit  -= delta
+      endIf
+      if (dest_y_limit > dest_bitmap.height)
+        local delta = dest_y_limit - dest_bitmap.height
+        dest_y_limit -= delta
+        src_y_limit  -= delta
+      endIf
+
+      local blit_height = dest_y_limit - dest_y1
+      local blit_width = (dest_x_limit - dest_x1)
+
+      if (blit_height <= 0 or blit_width <= 0) return
+
+      blit_fn( this, src_x1, src_y1, dest_bitmap, dest_x1, dest_y1, blit_width, blit_height )
+
+    method clear( color=Color(0):Color )
+      forEach (i of pixels) pixels[i] = color
+
+  METHODS
+    method convert_gray_to_alpha->Bitmap
+      local count = width * height
+
+      native @|RogueInt32* cur = $pixels->as_int32s - 1;
+              |while (--$count >= 0)
+              |{
+              |  RogueInt32 gray = *(++cur) & 255;
+              |  *cur = (gray << 24) | 0xFFffFF;
+              |}
+
+      return this
+
+
+    method crop( delta:Int32, pad_color=Color(0):Color )
+      crop( delta, delta, delta, delta, &=pad_color )
+
+    method crop( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )
+      if (left == 0 and top == 0 and right == 0 and bottom == 0) return
+
+      local result = Bitmap( width-(left+right), height-(top+bottom), pad_color )
+      blit( result, XY(-left,-top) )
+
+      this.width = result.width
+      this.height = result.height
+      this.pixels = result.pixels
+
+    method crop( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
+      if (width == new_width and height == new_height) return
+
+      local new_size = XY( new_width, new_height )
+      local bounds = Box(this.size).positioned_within( Box(new_size), anchor )
+      local reframed = Bitmap( new_size, pad_color )
+      blit( reframed, bounds.position )
+
+      this.width = reframed.width
+      this.height = reframed.height
+      this.pixels = reframed.pixels
+
+    method cropped( delta:Int32, pad_color=Color(0):Color )->Bitmap
+      return cropped( delta, delta, delta, delta, &=pad_color )
+
+    method cropped( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )->Bitmap
+      if (left == 0 and top == 0 and right == 0 and bottom == 0) return this
+
+      local result = Bitmap( width-(left+right), height-(top+bottom), pad_color )
+      blit( result, XY(-left,-top) )
+
+      return result
+
+    method cropped( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )->Bitmap
+      if (width == new_width and height == new_height) return this
+
+      local new_size = XY( new_width, new_height )
+      local bounds = Box(this.size).positioned_within( Box(new_size), anchor )
+      local reframed = Bitmap( new_size, pad_color )
+      blit( reframed, bounds.position )
+
+      return reframed
+
+    method decode_data( start_x=0:Int32, start_y=0:Int32, byte_count=-1:Int32, bytes=Byte[]:Byte[] )->Byte[]
+      # See encode_data()
+      local i1 = (start_y * width + start_x)
+      local total_count = width * height
+      if (byte_count == -1) byte_count = (total_count - i1) * 3
+
+      bytes.reserve( byte_count )
+      local limit = i1 + byte_count/3
+      forEach (i in i1..<limit)
+        local color = pixels[i]
+        bytes.add( color.red_byte )
+        bytes.add( color.green_byte )
+        bytes.add( color.blue_byte )
+      endForEach
+
+      if (bytes.count < byte_count)
+        local color = pixels[limit]
+        bytes.add( color.red_byte )
+        if (bytes.count < byte_count) bytes.add( color.green_byte )
+      endIf
+
+      return bytes
+
+    method expand( delta:Int32, pad_color=Color(0):Color )
+      expand( delta, delta, delta, delta, pad_color )
+
+    method expand( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )
+      crop( -left, -top, -right, -bottom, pad_color )
+
+    method fill( box:Box, color:Color )
+      local x1 = box.position.x->Int32
+      local y1 = box.position.y->Int32
+      local x_limit = x1 + box.size.x->Int32
+      local y_limit = y1 + box.size.y->Int32
+
+      local w = width
+      local h = height
+
+      if (x1 < 0) x1 = 0
+      if (y1 < 0) y1 = 0
+      if (x_limit >= w) x_limit = w
+      if (y_limit >= h) y_limit = h
+
+      if (x1 >= x_limit or y1 >= y_limit) return
+
+      local argb = color.argb
+      local row_width = x_limit - x1
+      local row_skip = width - row_width
+      local rows = y_limit - y1
+
+      native @|RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1) - 1;
+              |while (--$rows >= 0)
+              |{
+              |  for (int i=$row_width; --i>=0; )
+              |  {
+              |    *(++dest) = $argb;
+              |  }
+              |  dest += $row_skip;
+              |}
+
+    method fill( box:Box, color:Color, channel_mask:Int32 )
+      local x1 = box.position.x->Int32
+      local y1 = box.position.y->Int32
+      local x_limit = x1 + box.size.x->Int32
+      local y_limit = y1 + box.size.y->Int32
+
+      local w = width
+      local h = height
+
+      if (x1 < 0) x1 = 0
+      if (y1 < 0) y1 = 0
+      if (x_limit >= w) x_limit = w
+      if (y_limit >= h) y_limit = h
+
+      if (x1 >= x_limit or y1 >= y_limit) return
+
+      local argb = color.argb & channel_mask
+      local row_width = x_limit - x1
+      local row_skip = width - row_width
+      local rows = y_limit - y1
+
+      native @|RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1);
+              |RogueInt32  inverse_mask = ~$channel_mask;
+              |while (--$rows >= 0)
+              |{
+              |  for (int i=$row_width; --i>=0; )
+              |  {
+              |    *dest = (*dest & inverse_mask) | $argb;
+              |    ++dest;
+              |  }
+              |  dest += $row_skip;
+              |}
+
+    method flip( &h, &v )
+      if (not h and not v) h = true
+      if (h)
+        block width, height, pixels, i1=0, i2=width-1
+          while (i1 < i2)
+            local pos1 = i1
+            local pos2 = i2
+            loop (height)
+              pixels.swap(pos1,pos2)
+              pos1 += width
+              pos2 += width
+            endLoop
+            ++i1
+            --i2
+          endWhile
+        endBlock
+      endIf
+      if (v)
+        block width, height, pixels, line1=0, line2=height-1, start1=0, start2=line2*width
+          while (line1 < line2)
+            local pos1 = start1
+            local pos2 = start2
+            loop (width)
+              pixels.swap(pos1,pos2)
+              ++pos1
+              ++pos2
+            endLoop
+            ++line1
+            --line2
+            start1 += width
+            start2 -= width
+          endWhile
+        endBlock
+      endIf
+
+    method extend_edges( bounds:Box )
+      local x1 = bounds.position.x
+      local y1 = bounds.position.y
+      local w  = bounds.size.x
+      local h  = bounds.size.y
+      local x2 = x1 + (w - 1)
+      local y2 = y1 + (h - 1)
+      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
+      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
+      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
+      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
+
+    method fill( triangle:Triangle, color:Color )
+      local top    = triangle.a.floor
+      local middle = triangle.b.floor
+      local bottom = triangle.c.floor
+
+      # Sort a, middle, bottom into ascending y-coordinate order
+      if (middle.y < top.y)    swapValues( top, middle )
+      if (bottom.y < top.y)    swapValues( top, bottom )
+      if (bottom.y < middle.y) swapValues( middle, bottom )
+
+      if (bottom.y < 0 or top.y >= height) return
+      if (top.x.or_larger(middle.x).or_larger(bottom.x) < 0 or top.x.or_smaller(middle.x).or_smaller(middle.x) >= width) return
+
+      local width      = this.width
+      local height     = this.height
+      local pixels     = this.pixels
+
+      if (top.y == middle.y)
+        local left_x  = top.x
+        local right_x = middle.x
+        local y       = top.y
+        local left_error = 0
+        local right_error = 0
+        local left_dx    = bottom.x - top.x
+        local right_dx   = bottom.x - middle.x
+        local left_step  = left_dx.sign
+        local right_step = right_dx.sign
+        left_dx = left_dx.abs
+        right_dx = right_dx.abs
+        local dy         = bottom.y - top.y
+        local line_start = y * width
+
+        forEach (1..dy)
+          if (y >= 0)
+            if (y == height) return
+            local x1 = left_x.or_larger( 0 )
+
+            local x2 = right_x
+            right_error += right_dx
+            if (dy > 0)
+              while (right_error >= dy) x2 = right_x; right_x += right_step; right_error -= dy
+            endIf
+            x2 = x2.or_smaller( width - 1 )
+
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+            left_error  += left_dx
+            if (dy > 0)
+              while (left_error >= dy)  left_x += left_step; left_error -= dy
+            endIf
+          endIf
+          ++y
+          line_start += width
+        endForEach
+
+      else
+        local left  = middle
+        local right = bottom
+        if (right.x < left.x) swapValues( left, right )
+
+        local left_x  = top.x
+        local right_x = top.x
+        local y       = top.y
+        local left_error  = 0
+        local right_error = 0
+        local left_dx    = left.x - top.x
+        local right_dx   = right.x - top.x
+        local left_step  = left_dx.sign
+        local right_step = right_dx.sign
+        left_dx = left_dx.abs
+        right_dx = right_dx.abs
+        local left_dy    = left.y - top.y
+        local right_dy   = right.y - top.y
+        local lines = left_dy.or_smaller( right_dy )
+        local line_start = y * width
+
+        # Draw the top half of the triangle
+        forEach (1..lines)
+          if (y >= 0)
+            if (y == height) return
+            local x1 = left_x.or_larger( 0 )
+
+            local x2 = right_x
+            right_error += right_dx
+            if (right_dy > 0)
+              while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            endIf
+            x2 = x2.or_smaller( width - 1 )
+
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+            left_error  += left_dx
+            if (left_dy > 0)
+              while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            endIf
+          endIf
+          ++y
+          line_start += width
+        endForEach
+
+        # Reset either the left or the right slope and draw the bottom half of the triangle
+        if (left.y < right.y)
+          # Reset left side
+          left_x  = left.x
+          left_error  = 0
+          left_dx    = right.x - left.x
+          left_step  = left_dx.sign
+          left_dx = left_dx.abs
+          left_dy    = right.y - left.y
+          lines = left_dy + 1
+        else
+          # Reset right side
+          right_x  = right.x
+          right_error  = 0
+          right_dx    = left.x - right.x
+          right_step  = right_dx.sign
+          right_dx = right_dx.abs
+          right_dy    = left.y - right.y
+          lines = right_dy + 1
+        endIf
+
+        line_start = y * width
+        forEach (1..lines)
+          if (y >= 0)
+            if (y == height) return
+            local x1 = left_x.or_larger( 0 )
+
+            local x2 = right_x
+            right_error += right_dx
+            if (right_dy > 0)
+              while (right_error >= right_dy) x2 = right_x; right_x += right_step; right_error -= right_dy
+            endIf
+            x2 = x2.or_smaller( width - 1 )
+
+            forEach (x in x1..x2) pixels[ line_start + x ] = color
+
+            left_error  += left_dx
+            if (left_dy > 0)
+              while (left_error >= left_dy)   left_x += left_step; left_error -= left_dy
+            endIf
+
+          endIf
+          ++y
+          line_start += width
+        endForEach
+
+      endIf
+
+    method expand_to_power_of_two->this
+      local wp2 = width.to_power_of_two
+      local hp2 = height.to_power_of_two
+      if (wp2 == width and hp2 == height) return this
+
+      local result = Bitmap( wp2, hp2 )
+      this.blit( result, XY(0,0) )
+      width = result.width
+      height = result.height
+      pixels = result.pixels
+      error = result.error
+
+      return this
+
+    method get( x:Int32, y:Int32 )->Color
+      if (x < 0 or y < 0 or x >= width or y >= height)
+        return Color(0)
+      else
+        return pixels[ y*width + x ]
+      endIf
+
+    method get( xy:XY )->Color
+      return get( xy.x, xy.y )
+
+    method is_opaque->Logical
+      local pixel_count = width * height
+      native...
+       @|RogueInt32* data = (RogueInt32*) $pixels->as_int32s;
+        |for (int i=$pixel_count; --i>=0; )
+        |{
+        |  if ((data[i] & 0xFF000000) != 0xFF000000)
+        |  {
+             return false
+      native...
+       @|  }
+        |}
+         return true
+
+    method draw( box:Box, color:Color )
+      fill( Box(box.top_left, XY(box.width,1)), color )
+      fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color )
+
+      fill( Box(box.top_left,            XY(1,box.height)), color )
+      fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color )
+
+    method draw( box:Box, color:Color, channel_mask:Int32 )
+      fill( Box(box.top_left, XY(box.width,1)), color, channel_mask )
+      fill( Box(box.bottom_left-XY(0,1), XY(box.width,1)), color, channel_mask )
+
+      fill( Box(box.top_left,            XY(1,box.height)), color, channel_mask )
+      fill( Box(box.top_right - XY(1,0), XY(1,box.height)), color, channel_mask )
+
+    method draw( line:Line, color:Color, thickness=1:Real )
+      if (thickness == 1)
+        local a = line.a
+        local b = line.b
+
+        if (b.x < a.x) swapValues( a, b )
+        if (a.x >= width or b.x < 0) return
+
+        if (b.y < a.y) swapValues( a, b )
+        if (a.y >= height or b.y < 0) return
+
+        local line_generator = LineGenerator( a, b )
+
+        while (line_generator.y < 0) line_generator.advance
+
+        # All we know is we're going top to bottom. Could optimize further by adding
+        # Line/Box intersection and clip the line ahead of time.
+        loop
+          local x = line_generator.x
+          local y = line_generator.y
+          if (y == height) return
+          if (x >= 0 and y >= 0 and x < width and y < height)
+            pixels[ y * width + x ] = color
+          endIf
+          if (line_generator.is_finished) return
+          line_generator.advance
+        endLoop
+
+      else
+        local delta = line.b - line.a
+        fill( Box(0, -thickness/2, delta.magnitude, thickness).rotated( delta.radians ) + line.a, color )
+      endIf
+
+    method fill( quad:Quad, color:Color )
+      fill( Triangle(quad.a,quad.b,quad.c), color )
+      fill( Triangle(quad.a,quad.c,quad.d), color )
+
+    method operator+( rhs:Bitmap )->Bitmap
+      # Join two bitmaps side by side - this on the left and rhs on the right.
+      # If necessary the shorter bitmap will be aspect-resized to match the height of the
+      # taller bitmap before joining.
+      local max_height = height.or_larger( rhs.height )
+      local lhs = this.resized_to_height( max_height )
+      rhs .= resized_to_height( max_height )
+      local result = Bitmap( lhs.width + rhs.width, max_height )
+      lhs.blit( result,         0, 0 )
+      rhs.blit( result, lhs.width, 0 )
+      return result
+
+    method operator/( bottom:Bitmap )->Bitmap
+      # Stack two bitmaps vertically - this bitmap on the top.
+      # If necessary the narrower bitmap will be aspect-resized to match the width of the
+      # wider bitmap before stacking.
+      local max_width = width.or_larger( bottom.width )
+      local top = this.resized_to_width( max_width )
+      bottom .= resized_to_width( max_width )
+      local result = Bitmap( max_width, top.height + bottom.height )
+      top.blit( result,    0,          0 )
+      bottom.blit( result, 0, top.height )
+      return result
+
+    method premultiply_alpha
+      # Multiplies the R,G,B components of each color by their current
+      # alpha value - so Color(255,192,0,127) becomes Color(127,95,0,127).
+      if (is_premultiplied_alpha) return
+
+      is_premultiplied_alpha = true
+      forEach (i of pixels)
+        local argb = pixels[i].argb
+        local a = argb :>>>: 24 & 255
+        local r = argb :>>>: 16 & 255
+        local g = argb :>>>: 8 & 255
+        local b = argb & 255
+        r = (r * a) / 255
+        g = (g * a) / 255
+        b = (b * a) / 255
+        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+      endForEach
+
+    method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
+      crop( new_width, new_height, anchor, &=pad_color )
+
+    method resize( new_width:Int32, new_height:Int32 )->this
+      return resize( XY(new_width,new_height) )
+
+    method resize( new_size:XY )->this
+      if (new_size.x == width and new_size.y == height) return this  # no need to resize
+      local result = resized( new_size )
+      width = result.width
+      height = result.height
+      pixels = result.pixels
+      error = result.error
+      return this
+
+    method resize_to( other:Bitmap )
+      # Uses a custom algorithm inspired by Bresenham's line drawing algorithm.
+      #
+      # Here's the essential idea of this algorithm. Say we want to resize a set
+      # of 10 pixels to be 7 pixels:
+      #
+      # 10 pixels
+      # 0 0 9 9 0 0 9 9 0 0
+      #
+      # Mathmatically make 7 copies of each of 10 pixels = 10 groups of 7
+      # 0000000 0000000 9999999 9999999 0000000 0000000 9999999 9999999 0000000 0000000
+      #
+      # Regroup as 7 groups of 10
+      # 0000000000 0000999999 9999999900 0000000000 0099999999 9999990000 0000000000
+      #
+      # Average out into 7 single pixels
+      # 0 5 7 0 7 5 0
+      local this_width  = this.width
+      local this_height = this.height
+      local new_width   = other.width
+      local new_height  = other.height
+
+      # Each ARGB component needs a separate int + divisor
+      use resize_row_buffer = WorkList<<Real>>
+        resize_row_buffer.expand_to_count( new_width * 5 )
+
+        local src_i = 0
+        local dest_i = 0
+
+        local available = new_height
+        forEach (1..new_height)
+          local need = this_height
+          while (need >= available)
+            resize_add_row( src_i, new_width, available, resize_row_buffer )
+            src_i += this_width
+            need -= available
+            available = new_height
+          endWhile
+          if (need)
+            resize_add_row( src_i, new_width, need, resize_row_buffer )
+
+            available -= need
+            if (available == 0)
+              src_i += this_width
+              available = new_height
+            endIf
+          endIf
+          resize_write_row( other, dest_i, new_width, resize_row_buffer )
+          dest_i += new_width
+        endForEach
+      endUse
+
+    method resize_add_row( src_i:Int32, new_width:Int32, multiplier:Real, resize_row_buffer:Real[] )
+      local this_width = width
+      local available = new_width
+      local buffer = resize_row_buffer
+      local buffer_i = 0
+      native @|RogueByte* src = (RogueByte*)($pixels->as_int32s + $src_i);
+
+      forEach (1..new_width)
+        local n = 0.0
+        local b = 0.0
+        local g = 0.0
+        local r = 0.0
+        local a = 0.0
+        local need = this_width
+        while (need >= available)
+          b += native("(RogueReal)src[0]")->Real * available
+          g += native("(RogueReal)src[1]")->Real * available
+          r += native("(RogueReal)src[2]")->Real * available
+          a += native("(RogueReal)src[3]")->Real * available
+          n += available
+          native @|src += 4;
+
+          need -= available
+          available = new_width
+        endWhile
+
+        if (need)
+          b += native("(RogueReal)src[0]")->Real * need
+          g += native("(RogueReal)src[1]")->Real * need
+          r += native("(RogueReal)src[2]")->Real * need
+          a += native("(RogueReal)src[3]")->Real * need
+          n += need
+
+          available -= need
+          if (available == 0)
+            native @|src += 4;
+            available = new_width
+          endIf
+        endIf
+
+        buffer[buffer_i]   += b * multiplier
+        buffer[buffer_i+1] += g * multiplier
+        buffer[buffer_i+2] += r * multiplier
+        buffer[buffer_i+3] += a * multiplier
+        buffer[buffer_i+4] += n * multiplier
+
+        buffer_i += 5
+      endForEach
+
+    method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32, resize_row_buffer:Real[] )
+      local row_buffer = resize_row_buffer
+      native @|RogueByte*   dest = (RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
+              |RogueReal*   buffer = $row_buffer->as_real64s;
+              |RogueReal    divisor = 0.0;
+
+      forEach (1..new_width)
+        native @|if ((divisor = buffer[4]))
+                |{
+                |  dest[0] = (RogueByte)(buffer[0] / divisor);
+                |  dest[1] = (RogueByte)(buffer[1] / divisor);
+                |  dest[2] = (RogueByte)(buffer[2] / divisor);
+                |  dest[3] = (RogueByte)(buffer[3] / divisor);
+                |}
+                |else
+                |{
+                |  dest[0] = 0;
+                |  dest[1] = 0;
+                |  dest[2] = 0;
+                |  dest[3] = 0;
+                |}
+                |buffer[0] = 0;
+                |buffer[1] = 0;
+                |buffer[2] = 0;
+                |buffer[3] = 0;
+                |buffer[4] = 0;
+                |dest   += 4;
+                |buffer += 5;
+      endForEach
+
+    method resize_to_fill( max_width:Int32, max_height:Int32, crop=null:Anchor? )
+      local scale_x = max_width->Real / width
+      local scale_y = max_height->Real / height
+      local scale = scale_x.or_larger( scale_y )
+      resize( (width*scale)->Int32, (height*scale)->Int32 )
+      if (crop)
+        this.crop( max_width, max_height, crop.value )
+      endIf
+
+    method resize_to_fit( max_width:Int32, max_height:Int32 )
+      local scale_x = max_width->Real / width
+      local scale_y = max_height->Real / height
+      local scale = scale_x.or_smaller( scale_y )
+      resize( (width*scale)->Int32, (height*scale)->Int32 )
+
+    method resized( new_width:Int32, new_height:Int32 )->Bitmap
+      return resized( XY(new_width,new_height) )
+
+    method resized( new_size:XY )->Bitmap
+      local result = Bitmap( new_size )
+      resize_to( result )
+      return result
+
+    method resized_to_height( new_height:Int32 )->Bitmap
+      # Returns a bitmap that has been resized to the specified height.
+      # The aspect ratio is preserved. This bitmap is returned if no
+      # resizing is required; otherwise a new bitmap is returned.
+      if (height == new_height) return this
+      local new_width = Int32( width * (new_height / Real(height)) )
+      return resized( new_width, new_height )
+
+    method resized_to_width( new_width:Int32 )->Bitmap
+      # Returns a bitmap that has been resized to the specified width.
+      # The aspect ratio is preserved. This bitmap is returned if no
+      # resizing is required; otherwise a new bitmap is returned.
+      if (width == new_width) return this
+      local new_height = Int32( height * (new_width / Real(width)) )
+      return resized( new_width, new_height )
+
+    method rotate_180
+      flip( &h, &v )
+
+    method rotate_90( &cw, &ccw )
+      if (not cw and not ccw) cw = true
+      elseIf (cw and ccw)     return
+
+      local rotated_pixels = Color[]( pixels.count )
+      block width, height, pixels, dest=0
+        if (cw)
+          local src_start = (height-1) * width
+          forEach (i in 0..<width)
+            local src = src_start
+            forEach (j in (height-1) downTo 0)
+              rotated_pixels[dest] = pixels[src]
+              ++dest
+              src -= width
+            endForEach
+            ++src_start
+          endForEach
+
+        else
+          local src_start = (width-1)
+          forEach (i in (width-1) downTo 0)
+            local src = src_start
+            forEach (j in 0..<height)
+              rotated_pixels[dest] = pixels[src]
+              ++dest
+              src += width
+            endForEach
+            --src_start
+          endForEach
+
+        endIf
+      endBlock
+
+      pixels = rotated_pixels
+      swapValues(width, height)
+
+    method save_as_png( file:File )->Logical
+      return file.save( to_png_bytes )
+
+    method save_as_jpeg( file:File, quality=75:Int32 )->Logical
+      return file.save( to_jpeg_bytes(quality) )
+
+    method set( x:Int32, y:Int32, color:Color )->this
+      if (x >= 0 and y >= 0 and x < width and y < height)
+        pixels[ y*width + x ] = color
+      endIf
+      return this
+
+    method set( xy:XY, color:Color )->this
+      return set( xy.x, xy.y, color )
+
+    method size->XY
+      return XY( width, height )
+
+    method split( tiles_wide:Int32, tiles_high:Int32 )->Bitmap[]
+      local tiles = Bitmap[]( tiles_wide * tiles_high )
+      local w = width / tiles_wide
+      local h = height / tiles_high
+      forEach (y in 0..<tiles_high)
+        forEach (x in 0..<tiles_wide)
+          tiles.add( Bitmap(this,Box(x*w,y*h,w,h)) )
+        endForEach
+      endForEach
+      return tiles
+
+    method swap_red_and_blue->this
+      native @|int n = $width * $height;
+              |RogueInt32* src = $pixels->as_int32s + n;
+              |while (--n >= 0)
+              |{
+              |  RogueInt32 pixel = *(--src);
+              |  *src = (pixel & 0xFF00FF00) | ((pixel << 16) & 0xFF0000) | ((pixel >> 16) & 0xFF);
+              |}
+      return this
+
+    method to_png_bytes->Byte[]
+      #return PNGEncoder().encode( this )
+      Global.error.println "ERROR: No JPEG encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_png_bytes->Byte[] to utilize an alternate decoder."
+      return null
+
+    method to_jpeg_bytes( quality=75:Int32 )->Byte[]
+      Global.error.println "ERROR: No JPEG encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_jpeg_bytes(quality:Int32)->Byte[] to utilize an alternate decoder."
+      return null
+
+
+    method to->String
+      return "($x$ Bitmap)" (width,height)
+
+    method unmultiply_alpha
+      # Performs the reverse of premultiply_alpha(). Due to integer division,
+      # component values may not be exactly the same as before.
+      if (not is_premultiplied_alpha) return
+
+      is_premultiplied_alpha = false
+      forEach (i of pixels)
+        local argb = pixels[i].argb
+        local a = argb :>>>: 24 & 255
+        local r = argb :>>>: 16 & 255
+        local g = argb :>>>: 8 & 255
+        local b = argb & 255
+        if (a)
+          r = (r * 255) / a
+          g = (g * 255) / a
+          b = (b * 255) / a
+        endIf
+        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+      endForEach
+
+endClass
+
+class BitmapBlitFn : Function(Bitmap,Int32,Int32,Bitmap,Int32,Int32,Int32,Int32)
+  GLOBAL PROPERTIES
+    OPAQUE = BitmapBlitFn()
+    ALPHA  = AlphaBitmapBlitFn()
+
+  METHODS
+    method call( src:Bitmap, src_x1:Int32, src_y1:Int32, dest:Bitmap, dest_x1:Int32, dest_y1:Int32, blit_width:Int32, blit_height:Int32 )
+      local src_width = src.width
+      local dest_width = dest.width
+      native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
+              |RogueInt32* src_limit  = src_start + $blit_width;
+              |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
+              |
+              |while (--$blit_height >= 0)
+              |{
+              |  RogueInt32* src  = src_start - 1;
+              |  RogueInt32* dest = dest_start;
+              |  while (++src < src_limit)
+              |  {
+              |    *(dest++) = *src;
+              |  }
+              |  src_start  += $src_width;
+              |  src_limit  += $src_width;
+              |  dest_start += $dest_width;
+              |}
+endClass
+
+class AlphaBitmapBlitFn : BitmapBlitFn
+  METHODS
+    method call( src:Bitmap, src_x1:Int32, src_y1:Int32, dest:Bitmap, dest_x1:Int32, dest_y1:Int32, blit_width:Int32, blit_height:Int32 )
+      local src_width = src.width
+      local dest_width = dest.width
+      local is_premultiplied = src.is_premultiplied_alpha
+      native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
+              |RogueInt32* src_limit  = src_start + $blit_width;
+              |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
+              |
+              |while (--$blit_height >= 0)
+              |{
+              |  RogueInt32* src  = src_start - 1;
+              |  RogueInt32* dest = dest_start;
+              |  while (++src < src_limit)
+              |  {
+              |    int src_c  = *src;
+              |    int a      = (src_c >> 24) & 255;
+              |    int inv_a  = 255 - a;
+              |    int src_r  = (src_c >> 16) & 255;
+              |    int src_g  = (src_c >> 8) & 255;
+              |    int src_b  = src_c & 255;
+              |    int dest_c = *dest;
+              |    int dest_a = (dest_c >> 24) & 255;
+              |    int dest_r = (dest_c >> 16) & 255;
+              |    int dest_g = (dest_c >> 8) & 255;
+              |    int dest_b = dest_c & 255;
+              |    if ($is_premultiplied)
+              |    {
+              |      *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | ((src_r+(dest_r*inv_a)/255)<<16) | ((src_g+(dest_g*inv_a)/255)<<8) | (src_b+(dest_b*inv_a)/255);
+              |    }
+              |    else
+              |    {
+              |      *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | (((src_r*a+dest_r*inv_a)/255)<<16) | (((src_g*a+dest_g*inv_a)/255)<<8) | ((src_b*a+dest_b*inv_a)/255);
+              |    }
+              |  }
+              |  src_start  += $src_width;
+              |  src_limit  += $src_width;
+              |  dest_start += $dest_width;
+              |}
+endClass
+
+class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
+  METHODS
+    method call( src:Bitmap, src_x1:Int32, src_y1:Int32, dest:Bitmap, dest_x1:Int32, dest_y1:Int32, blit_width:Int32, blit_height:Int32 )
+      local fill_r = color.red_byte
+      local fill_g = color.green_byte
+      local fill_b = color.blue_byte
+      local src_width = src.width
+      local dest_width = dest.width
+      native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
+              |RogueInt32* src_limit  = src_start + $blit_width;
+              |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
+              |
+              |while (--$blit_height >= 0)
+              |{
+              |  RogueInt32* src  = src_start - 1;
+              |  RogueInt32* dest = dest_start;
+              |  while (++src < src_limit)
+              |  {
+              |    int a      = (*src >> 24) & 255;
+              |    int inv_a  = 255 - a;
+              |    int dest_c = *dest;
+              |    int dest_a = (dest_c >> 24) & 255;
+              |    int dest_r = (dest_c >> 16) & 255;
+              |    int dest_g = (dest_c >> 8) & 255;
+              |    int dest_b = dest_c & 255;
+              |    *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | ((($fill_r*a+dest_r*inv_a)/255)<<16) | ((($fill_g*a+dest_g*inv_a)/255)<<8) | (($fill_b*a+dest_b*inv_a)/255);
+              |  }
+              |  src_start  += $src_width;
+              |  src_limit  += $src_width;
+              |  dest_start += $dest_width;
+              |}
+endClass
+

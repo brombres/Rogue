@@ -1,0 +1,4 @@
+class Poolable [aspect]
+  METHODS
+    method on_return_to_pool
+endClass

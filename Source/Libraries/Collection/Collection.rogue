@@ -1,0 +1,9 @@
+$include Collection/ByteList
+$include Collection/List
+$include Collection/ListRewriter
+$include Collection/Quicksort
+$include Collection/StringList
+
+# Included by RogueC as needed:
+# - Collection/Set
+# - Collection/Table

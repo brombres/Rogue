@@ -1,0 +1,960 @@
+class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
+  METHODS
+    method acos->Real64
+      return native("acos($this)")->Real64
+
+    method atan->Real64
+      return native("atan($this)")->Real64
+
+    method atan2( x:Real64 )->Real64
+      # Equivalent to atan2(this,x)
+      return native("atan2($this,$x)")->Real64
+
+    method asin->Real64
+      return native("asin($this)")->Real64
+
+    method ceiling->Real64
+      return native("ceil($this)")->Real64
+
+    method cos->Real64
+      return native("cos($this)")->Real64
+
+    method exp->Real64
+      return native("exp($this)")->Real64
+
+    method floor->Real64
+      return native("floor($this)")->Real64
+
+    method format( fmt:String )->String
+      # fmt
+      #   C-esque "[attributes][N][.][D]" - attributes must come before
+      #   optional "N.D" but can otherwise be in any order.
+      #
+      #   'N' - Minimum whole digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      #
+      #   '+' - Always add leading +/- sign.
+      #   ' ' - Insert any padding between sign and number.
+      #   '0' - Pad whole portion with 0's instead of spaces
+      #   ',' - Add commas.
+      local info = PrimitiveFormat( fmt )
+      if (info.d == -1)
+        block
+          forEach (n in 1..17)
+            if (this.is_string_accurate_at(n))
+              info.d = n
+              escapeBlock
+            endIf
+          endForEach
+
+          info.d = 18
+        endBlock
+      endIf
+
+      local st = this->String( info.d )
+      local whole_st = st.before_first('.')->Int64.format( info.subset(&n,&zeros,&commas,&sign,&spaces)->String )
+      if (info.d) st = "$$" (whole_st,st.from_first('.'))
+      elseIf (info.sign and this >= 0) st = "+" + st
+
+      return st
+
+    method hash_code->Int32
+      return integer_bits.hash_code
+
+    method integer_bits->Int64
+      return native("*((RogueInt64*)&$this)")->Int64
+
+    method is_infinite->Logical
+      # Returns true for positive OR negative infinity
+      return (this == this) and (this - this != 0)
+
+    method is_NaN->Logical
+      return (this != this)
+
+    method is_string_accurate_at( decimal_places:Int32, buffer=null:String )->Logical
+      if (buffer)
+        buffer.clear
+        buffer.print( this, decimal_places )
+        return (buffer->Real64 == this)
+      else
+        use local_buffer = StringPool
+          local_buffer.print( this, decimal_places )
+          return (local_buffer->Real64 == this)
+        endUse
+      endIf
+      return true # never reached
+
+    method lerp( a:Int32, b:Int32 )->Int32
+      # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method lerp( a:Real64, b:Real64 )->Real64
+      # Assumes this Real64 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method log->Real64
+      return native("log($this)")->Real64
+
+    method log2->Real64
+      return native("log2($this)")->Real64
+
+    method log10->Real64
+      return native("log10($this)")->Real64
+
+    method operator%( other:Real64 )->Real64
+      local q = this / other
+      return this - q.floor * other
+
+    method sin->Real64
+      return native("sin($this)")->Real64
+
+    method sqrt->Real64
+      return native("sqrt($this)")->Real64
+
+    method tan->Real64
+      return native("tan($this)")->Real64
+
+    method to->String
+      return String().[ print(this) ]
+
+    method to->String( decimal_places:Int32 )
+      return String().[ print(this,decimal_places) ]
+
+endClass
+
+class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
+  METHODS
+    method acos->Real32
+      return native("acosf($this)")->Real32
+
+    method atan->Real32
+      return native("atanf($this)")->Real32
+
+    method atan2( x:Real32 )->Real32
+      # Equivalent to atan2(this,x)
+      return native("atan2f($this,$x)")->Real32
+
+    method asin->Real32
+      return native("asinf($this)")->Real32
+
+    method ceiling->Real32
+      return native("ceilf($this)")->Real32
+
+    method cos->Real32
+      return native("cosf($this)")->Real32
+
+    method exp->Real32
+      return native("expf($this)")->Real32
+
+    method floor->Real32
+      return native("floorf($this)")->Real32
+
+    method format( fmt:String )->String
+      # fmt
+      #   C-esque "[attributes][N][.][D]" - attributes must come before
+      #   optional "N.D" but can otherwise be in any order.
+      #
+      #   'N' - Minimum whole digits before decimal point
+      #   '.' - Include decimal (fractional) value in output.
+      #   'D' - Number of digits after decimal point.
+      #
+      #   '+' - Always add leading +/- sign.
+      #   ' ' - Insert any padding between sign and number.
+      #   '0' - Pad whole portion with 0's instead of spaces
+      #   ',' - Add commas.
+      local info = PrimitiveFormat( fmt )
+      if (info.d == -1)
+        block
+          forEach (n in 1..17)
+            if (this.is_string_accurate_at(n))
+              info.d = n
+              escapeBlock
+            endIf
+          endForEach
+
+          info.d = 18
+        endBlock
+      endIf
+
+      local st = this->String( info.d )
+      local whole_st = st.before_first('.')->Int64.format( info.subset(&n,&zeros,&commas,&sign,&spaces)->String )
+      if (info.d) st = "$$" (whole_st,st.from_first('.'))
+      elseIf (info.sign and this >= 0) st = "+" + st
+
+      return st
+
+    method hash_code->Int32
+      return integer_bits.hash_code
+
+    method integer_bits->Int32
+      return native("*((RogueInt32*)&$this)")->Int32
+
+    method is_infinite->Logical
+      # Returns true for positive OR negative infinity
+      return (this == this) and (this - this != 0)
+
+    method is_NaN->Logical
+      return (this != this)
+
+    method is_string_accurate_at( decimal_places:Int32, buffer=null:String )->Logical
+      if (buffer)
+        buffer.clear
+        buffer.print( this, decimal_places )
+        return (buffer->Real32 == this)
+      else
+        use local_buffer = StringPool
+          local_buffer.print( this, decimal_places )
+          return (local_buffer->Real32 == this)
+        endUse
+      endIf
+      return true # never reached
+
+    method lerp( a:Int32, b:Int32 )->Int32
+      # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method lerp( a:Real32, b:Real32 )->Real32
+      # Assumes this Real32 is a progress value in the 0.0 to 1.0 range.
+      # Returns the position from 'a' to 'b' based on this progress.
+      return a + (b-a) * this
+
+    method log->Real32
+      return native("logf($this)")->Real32
+
+    method log2->Real32
+      return native("log2f($this)")->Real32
+
+    method log10->Real32
+      return native("log10f($this)")->Real32
+
+    method operator%( other:Real32 )->Real32
+      local q = this / other
+      return this - q.floor * other
+
+    method sin->Real32
+      return native("sinf($this)")->Real32
+
+    method sqrt->Real32
+      return native("sqrtf($this)")->Real32
+
+    method tan->Real32
+      return native("tanf($this)")->Real32
+
+    method to->String
+      return String().[ print(this) ]
+
+    method to->String( decimal_places:Int32 )
+      return String().[ print(this,decimal_places) ]
+endClass
+
+class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
+  DEFINITIONS
+    MAXIMUM = 0x7FFF_FFFF_FFFF_FFFF
+    MINIMUM = 0x8000_0000_0000_0000
+
+  METHODS
+    method format( fmt:String, bits=64:Int32 )->String
+      # fmt
+      #   C-esque "[attributes][N]" - attributes must come before optional "N"
+      #   but can otherwise be in any order.
+      #
+      #   'N' - Minimum digits
+      #
+      #   '$' - Use base 16.
+      #   '%' - Use base 2.
+      #   '+' - Always add leading +/- sign in base 10.
+      #   ' ' - Insert any padding between sign and number in base 10.
+      #   '0' - Pad whole portion with 0's instead of spaces
+      #   ',' - Add commas in base 10.
+      local info = PrimitiveFormat( fmt )
+
+      local digits = info.n
+      local this_value = this
+
+      if (info.hex)
+        if (this < 0)
+          digits = digits.or_larger( bits/4 )
+          if (bits < 64) this_value &= ((1->Int64:<<:bits)-1)
+        else
+          local n = 1
+          local value = this_value :>>>: 4
+          while (value) ++n; value = value :>>>: 4
+          digits = digits.or_larger( n )
+        endIf
+        return this_value->String( 1, &hex ).justified( digits, info.fill )
+
+      elseIf (info.binary)
+        info.commas = false
+        if (this < 0)
+          digits = digits.or_larger( bits )
+          if (bits < 64) this_value &= ((1->Int64:<<:bits)-1)
+        else
+          local n = 1
+          local value = this_value :>>>: 1
+          while (value) ++n; value = value :>>>: 1
+          digits = digits.or_larger( n )
+        endIf
+        return this_value->String( 1, &binary ).justified( digits, info.fill )
+
+      endIf
+
+      if (info.zeros)
+        info.commas = false
+        info.spaces = true
+      endIf
+
+      local n = this
+      local is_negative = (n < 0)
+      n .= abs
+
+      local result = n->String
+
+      if (info.commas)
+        local work = result
+        result = ""
+        while (work.count > 3)
+          if (result.count) result = ',' + result
+          result = work.rightmost( 3 ) + result
+          work = work.leftmost( -3 )
+        endWhile
+        if (work.count)
+          if (result.count) result = work + ',' + result
+          else              result = work
+        endIf
+      endIf
+
+      local fill_ch = info.fill
+      if (info.sign)
+        if (info.spaces) return which{is_negative:'-'||'+'} + result.justified( digits-1, fill_ch )
+        else             return (which{is_negative:'-'||'+'} + result).justified( digits, fill_ch )
+      else
+        if (info.spaces)
+          if (is_negative) return '-' + result.justified( digits-1, fill_ch )
+          else             return result.justified( digits, fill_ch )
+        else
+          if (is_negative) return ('-' + result).justified( digits, fill_ch )
+          else             return result.justified( digits, fill_ch )
+        endIf
+      endIf
+
+      return result
+
+    method hash_code->Int32
+      return Int32(this :>>: 32) ~ Int32(this)
+
+    method minimum_bits->Int32
+      if (this < 0)
+        if (this < 0xC000_0000_0000_0000) return 64
+        local bits = 1 : Int64
+        local threshold = -1 : Int64
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
+      if (this & 0x8000_0000_0000_0000) return 64
+      if (this & 0x4000_0000_0000_0000) return 63
+      local bits = 1 : Int64
+      while ((Int64(1):<<:bits) <= this) ++bits
+      return bits
+
+    method operator%( other:Int64 )->Int64
+      if ((not this and not other) or other == 1) return 0
+
+      local r = native("$this % $other")->Int64
+      if ((this ~ other) < 0)
+        if (r) return r + other
+        else   return 0
+      else
+        return r
+      endIf
+
+    method operator:>>:( bits:Int64 )->Int64
+      if (bits <= 0) return this
+
+      --bits
+      if (bits) return ((this :>>>: 1) & 0x7fffFFFFffffFFFF) :>>>: bits
+      else      return (this :>>>: 1) & 0x7fffFFFFffffFFFF
+
+    method print_power_of_2( base:Int32, digits:Int32, buffer:PrintWriter )->PrintWriter
+      local bits = 0
+      local temp = base
+      while (temp > 1) ++bits; temp = temp:>>>:1
+
+      local remaining = this :>>: bits
+      if (digits > 1 or remaining) remaining.print_power_of_2( base, digits-1, buffer )
+      buffer.print( (this & (base-1))->Int32.to_digit )
+      return buffer
+
+    method progress( a:Int64, b:Int64 )->Real
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   1.progress(1,5) -> 0.00
+      #   2.progress(1,5) -> 0.25
+      #   3.progress(1,5) -> 0.50
+      #   4.progress(1,5) -> 0.75
+      #   5.progress(1,5) -> 1.00
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      return Real(this-a) / Real(b-a)
+
+    method real_bits->Real64
+      return native("*((RogueReal64*)&$this)")->Real64
+
+    method rol( nbits:Int32 )->Int64
+      if (nbits <= 0) return this
+      nbits &= 63
+      return (this :<<: nbits) | (this :>>: (64-nbits))
+
+    method ror( nbits:Int32 )->Int64
+      if (nbits <= 0) return this
+      nbits &= 63
+      return (this :>>: nbits) | (this :<<: (64-nbits))
+
+    method sqrt->Int64
+      return this->Real.sqrt->Int64
+
+    method to->String
+      if (this >= -1 and this <= 9) return this->Int32->String
+      return String().[ print(this) ]
+
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      if (binary) return print_power_of_2(  2, which{digits||64}, String() )->(as String)
+      if (hex)    return print_power_of_2( 16, which{digits||16}, String() )->(as String)
+      if (octal)  return print_power_of_2(  8, which{digits||22}, String() )->(as String)
+      return this->String
+endClass
+
+class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
+  DEFINITIONS
+    MAXIMUM = 2147483647
+    MINIMUM = 0x8000_0000
+
+  METHODS
+    method real_bits->Real32
+      return native("*((RogueReal32*)&$this)")->Real32
+
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt, 32 )
+
+    method hash_code->Int32
+      return this
+
+    method minimum_bits->Int32
+      if (this < 0)
+        if (this < 0xC000_0000) return 32
+        local bits = 1
+        local threshold = -1
+        while (this < threshold)
+          ++bits
+          threshold = threshold :<<: 1
+        endWhile
+        return bits
+      endIf
+
+      if (this & 0x8000_0000) return 32
+      if (this & 0x4000_0000) return 31
+      local bits = 1
+      while ((1:<<:bits) <= this) ++bits
+      return bits
+
+    method operator%( other:Int32 )->Int32
+      if ((not this and not other) or other == 1) return 0
+
+      local r = native("$this % $other")->Int32
+      if ((this ~ other) < 0)
+        if (r) return r + other
+        else   return 0
+      else
+        return r
+      endIf
+
+    method operator:>>:( bits:Int32 )->Int32
+      if (bits <= 0) return this
+
+      --bits
+      if (bits) return ((this :>>>: 1) & 0x7fffFFFF) :>>>: bits
+      else      return (this :>>>: 1) & 0x7fffFFFF
+
+    method print_power_of_2( base:Int32, digits:Int32, buffer:PrintWriter )->PrintWriter
+      local bits = 0
+      local temp = base
+      while (temp > 1) ++bits; temp = temp:>>>:1
+
+      local remaining = this :>>: bits
+      if (digits > 1 or remaining) remaining.print_power_of_2( base, digits-1, buffer )
+      buffer.print( (this & (base-1)).to_digit )
+      return buffer
+
+    method progress( a:Int32, b:Int32 )->Real
+      # Returns the progress of this number along the interval from a to b.
+      # Examples:
+      #   2.progress(1,5) -> 0.25
+      #   2.progress(5,1) -> 0.75
+      if (a == b) return 1.0
+      return Real(this-a) / Real(b-a)
+
+    method rol( nbits:Int32 )->Int32
+      if (nbits <= 0) return this
+      nbits &= 31
+      return (this :<<: nbits) | (this :>>: (32-nbits))
+
+    method ror( nbits:Int32 )->Int32
+      if (nbits <= 0) return this
+      nbits &= 31
+      return (this :>>: nbits) | (this :<<: (32-nbits))
+
+    method sqrt->Int32
+      return this->Real.sqrt->Int32
+
+    method to->Int64( unsigned:Logical )
+      if (unsigned) return this->Int64 & 0x0FFFFffff
+      else          return this->Int64
+
+    method to_power_of_2->Int32
+      if (this < 0) return 1
+
+      local p2 = 1
+      loop (30)
+        if (p2 >= this) return p2
+        p2 :<<:= 1
+      endLoop
+
+      return 1
+
+    method th->String
+      # Returns Nst, Nnd, Nrd, Nth as appropriate
+      # Example:
+      #   local n = 23
+      #   println n.th  # 23rd
+      if (this == 0)     return "0th"
+      if (-this == this) return "-2147483648th"
+      local result = String()
+      local n = this
+      if (n < 0)
+        result.print( '-' )
+        n = -n
+      endIf
+      result.print( n )
+      which (n % 100)
+        case 11, 12, 13
+          result.print( "th" )
+        others
+          which (n % 10)
+            case 1: result.print( "st" )
+            case 2: result.print( "nd" )
+            case 3: result.print( "rd" )
+            others: result.print( "th" )
+          endWhich
+      endWhich
+      return result
+
+    method to->String
+      which (this)
+        case -1: return "-1"
+        case  0: return "0"
+        case  1: return "1"
+        case  2: return "2"
+        case  3: return "3"
+        case  4: return "4"
+        case  5: return "5"
+        case  6: return "6"
+        case  7: return "7"
+        case  8: return "8"
+        case  9: return "9"
+        others:  return String().[ print(this) ]
+      endWhich
+
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      if (binary) return print_power_of_2(  2, which{digits||32}, String() )->(as String)
+      if (hex)    return print_power_of_2( 16, which{digits|| 8}, String() )->(as String)
+      if (octal)  return print_power_of_2(  8, which{digits||11}, String() )->(as String)
+      return this->String
+
+    method to_digit( &base64 )->Character
+      if (base64)
+        if (this >= 0  and this <= 25) return (this + 'A')->Character
+        if (this >= 26 and this <= 51) return ((this-26) + 'a')->Character
+        if (this >= 52 and this <= 61) return ((this-52) + '0')->Character
+        if (this == 62) return '+'
+        if (this == 63) return '/'
+        return '='
+      else
+        if (this >= 0 and this <= 9)   return (this + '0')->Character
+        if (this >= 10 and this <= 35) return ((this - 10) + ('A'))->Character
+        return '0'
+      endIf
+
+endClass
+
+class Character [primitive]
+  METHODS
+    method description->String
+      return this->String
+
+    method equals( other:Character, &ignore_case )->Logical
+      if (ignore_case) return this.to_lowercase == other.to_lowercase
+      return this == other
+
+    method hash_code->Int32
+      return this->Int32
+
+    method is_alphanumeric->Logical
+      return (this >= '0' and this <= '9') or
+             (this >= 'a' and this <= 'z') or
+             (this >= 'A' and this <= 'Z')
+
+    method is_base64_digit->Logical
+      return is_alphanumeric or this == '+' or this == '/'
+
+    method is_identifier( additional_characters="":String )->Logical
+      if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
+      if (this >= '0' and this <= '9') return true
+      if (additional_characters.contains(this)) return true
+      return false
+
+    method is_identifier_start( additional_characters="":String )->Logical
+      if ((this >= 'a' and this <= 'z') or (this >= 'A' and this <= 'Z') or (this == '_')) return true
+      if (additional_characters.contains(this)) return true
+      return false
+
+    method is_letter->Logical
+      return (this >= 'a' and this <= 'z') or
+             (this >= 'A' and this <= 'Z')
+
+    method is_lowercase->Logical
+      return (this >= 'a' and this <= 'z')
+
+    method is_number( base=10:Int32 )->Logical
+      return to_number(base) >= 0
+
+    method is_uppercase->Logical
+      return (this >= 'A' and this <= 'Z')
+
+    method minimum_bits->Int32
+      return this->Int32.minimum_bits
+
+    method operator%( other:Character )->Int32
+      return this->Int32 % other->Int32
+
+    method operator:>>:( bits:Int32 )->Int32
+      return this->Int32 :>>: bits
+
+    method print_escaped_ascii( additional_characters_to_escape="":String, writer=Global:PrintWriter )
+      which (this)
+        case '\\': writer.print( "\\\\" )
+        case '\0': writer.print( "\\0" )
+        case '\b': writer.print( "\\b" )
+        case '\e': writer.print( "\\e" )
+        case '\f': writer.print( "\\f" )
+        case '\n': writer.print( "\\n" )
+        case '\r': writer.print( "\\r" )
+        case '\t': writer.print( "\\t" )
+        case '\v': writer.print( "\\v" )
+        others
+          if (additional_characters_to_escape.contains(this))
+            writer.[ print("\\"), print(this) ]
+          elseIf (this >= 256)
+            writer.print( "\\[" )
+            this->Int64.print_power_of_2( 16, 3, writer )
+            writer.print( ']' )
+          elseIf (this < 32 or this >= 127)
+            writer.print( "\\x" )
+            this->Int64.print_power_of_2( 16, 2, writer )
+          else
+            writer.print( this )
+          endIf
+      endWhich
+
+    method to->String
+      which (this)
+        case   0: return "\0"
+        case   8: return "\b"
+        case   9: return "\t"
+        case  10: return "\n"
+        case  11: return "\v"
+        case  12: return "\f"
+        case  13: return "\r"
+        case  27: return "\e"
+        case  32: return " "
+        case  33: return "!"
+        case  34: return ''"''
+        case  35: return "#"
+        case  36: return "$"
+        case  37: return "%"
+        case  38: return "&"
+        case  39: return "'"
+        case  40: return "("
+        case  41: return ")"
+        case  42: return "*"
+        case  43: return "+"
+        case  44: return ","
+        case  45: return "-"
+        case  46: return "."
+        case  47: return "/"
+        case  48: return "0"
+        case  49: return "1"
+        case  50: return "2"
+        case  51: return "3"
+        case  52: return "4"
+        case  53: return "5"
+        case  54: return "6"
+        case  55: return "7"
+        case  56: return "8"
+        case  57: return "9"
+        case  58: return ":"
+        case  59: return ";"
+        case  60: return "<"
+        case  61: return "="
+        case  62: return ">"
+        case  63: return "?"
+        case  64: return "@"
+        case  65: return "A"
+        case  66: return "B"
+        case  67: return "C"
+        case  68: return "D"
+        case  69: return "E"
+        case  70: return "F"
+        case  71: return "G"
+        case  72: return "H"
+        case  73: return "I"
+        case  74: return "J"
+        case  75: return "K"
+        case  76: return "L"
+        case  77: return "M"
+        case  78: return "N"
+        case  79: return "O"
+        case  80: return "P"
+        case  81: return "Q"
+        case  82: return "R"
+        case  83: return "S"
+        case  84: return "T"
+        case  85: return "U"
+        case  86: return "V"
+        case  87: return "W"
+        case  88: return "X"
+        case  89: return "Y"
+        case  90: return "Z"
+        case  91: return "["
+        case  92: return "\\"
+        case  93: return "]"
+        case  94: return "^"
+        case  95: return "_"
+        case  96: return "`"
+        case  97: return "a"
+        case  98: return "b"
+        case  99: return "c"
+        case 100: return "d"
+        case 101: return "e"
+        case 102: return "f"
+        case 103: return "g"
+        case 104: return "h"
+        case 105: return "i"
+        case 106: return "j"
+        case 107: return "k"
+        case 108: return "l"
+        case 109: return "m"
+        case 110: return "n"
+        case 111: return "o"
+        case 112: return "p"
+        case 113: return "q"
+        case 114: return "r"
+        case 115: return "s"
+        case 116: return "t"
+        case 117: return "u"
+        case 118: return "v"
+        case 119: return "w"
+        case 120: return "x"
+        case 121: return "y"
+        case 122: return "z"
+        case 123: return "{"
+        case 124: return "|"
+        case 125: return "}"
+        case 126: return "~"
+        others
+          return String().[ print(this) ]
+      endWhich
+
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      return this->Int32->String( &=digits, &=binary, &=hex, &=octal )
+
+    method to_escaped_ascii( additional_characters_to_escape="":String )->String
+      local result = String(4)
+      print_escaped_ascii( additional_characters_to_escape, result )
+      return result
+
+    method to_lowercase->Character
+      if (not is_uppercase) return this
+      return Character( this + ('a'-'A') )
+
+    method to_number( base=10:Int32 )->Int32
+      local value : Int32
+      if (this >= '0' and this <= '9')     value = this - '0'
+      elseIf (this >= 'A' and this <= 'Z') value = 10 + (this - 'A')
+      elseIf (this >= 'a' and this <= 'z') value = 10 + (this - 'a')
+      else return -1
+
+      if (value < base) return value
+      else              return -1
+
+    method to_uppercase->Character
+      if (not is_lowercase) return this
+      return Character( this + ('A'-'a') )
+
+endClass
+
+class Byte : CommonPrimitiveMethods<<Byte>> [primitive]
+  DEFINITIONS
+    MAXIMUM = 255
+    MINIMUM = 0
+
+  METHODS
+    method format( fmt:String )->String
+      return Int64( this ).format( fmt, 8 )
+
+    method hash_code->Int32
+      return this->Int32
+
+    method minimum_bits->Int32
+      if (this & 0x80) return 8
+      local bits = 1
+      while ((1:<<:bits) <= this) ++bits
+      return bits
+
+    method operator%( other:Byte )->Byte
+      return (this->Int32 % other->Int32)->Byte
+
+    method operator:>>:( bits:Int32 )->Byte
+      return (this->Int32 :>>: bits)->Byte
+
+    method signed->Int32
+      if (this <= 127) return this
+      return (this - 256)
+
+    method to->String
+      return this->Int32->String
+
+    method to->String( digits=0:Int32, &binary, &hex, &octal )
+      if (binary) return this->Int32.print_power_of_2(  2, which{digits||8}, String() )->(as String)
+      if (hex)    return this->Int32.print_power_of_2( 16, which{digits||2}, String() )->(as String)
+      if (octal)  return this->Int32.print_power_of_2(  8, which{digits||3}, String() )->(as String)
+      return this->String
+endClass
+
+class Logical [primitive]
+  METHODS
+    method description->String
+      return this->String
+
+    method hash_code->Int32
+      if (this) return 1
+      else      return 0
+
+    method to->Object
+      return Boxed<<Logical>>(this)
+
+    method to->String
+      return which{ this:"true" || "false" }
+endClass
+
+class CommonPrimitiveMethods<<$DataType>> [aspect]
+  METHODS
+    method abs->$DataType
+      if (this >= 0) return this
+      else           return -this
+
+    method clamped( low:$DataType, high:$DataType )->$DataType
+      if (this < low)  return low
+      if (this > high) return high
+      return this
+
+    method clamped_low( low:$DataType )->$DataType
+      if (this < low) return low
+      return this
+
+    method clamped_high( high:$DataType )->$DataType
+      if (this > high) return high
+      return this
+
+    method description->String
+      return this->String
+
+    method or_larger( other:$DataType )->$DataType
+      return which{ this>=other:this || other }
+
+    method or_smaller( other:$DataType )->$DataType
+      return which{ this<=other:this || other }
+
+    method sign->$DataType
+      return which{ this>0:1 || this<0:-1 || 0 }
+
+    method to->Object
+      return Boxed<<$DataType>>(this)
+endClass
+
+class PrimitiveFormat( n:Int32, d:Int32, sign:Logical, spaces:Logical, zeros:Logical, commas:Logical,
+    binary:Logical, hex:Logical ) [compound]
+  GLOBAL METHODS
+    method create( fmt:String )->PrimitiveFormat
+      local chars = fmt->Character[]
+      local result = PrimitiveFormat(0,-1,false,false,false,false,false,false)
+      while (chars.count)
+        which (chars.first)
+          case '+': result.sign   = true
+          case ' ': result.spaces = true
+          case '0': result.zeros  = true
+          case ',': result.commas = true
+          case '%': result.binary = true
+          case '$': result.hex    = true
+          others:   escapeWhile  # only thing left is N.D
+        endWhich
+        chars.remove_first
+      endWhile
+
+      local n_d = String(chars)
+      result.n = n_d.before_first('.')->Int32
+      if (n_d.contains('.') and not n_d.ends_with('.'))
+        result.d = n_d.after_first('.')->Int32
+      endIf
+
+      return result
+
+  METHODS
+    method description->String
+      return "$.$ sign:$ spaces:$ zeros:$ commas:$ binary:$ hex:$" (n,d,sign,spaces,zeros,commas,binary,hex)
+
+    method fill->Character
+      if (zeros) return '0'
+      else       return ' '
+
+    method subset( &n, &sign, &spaces, &zeros, &commas )->PrimitiveFormat
+      local result = PrimitiveFormat(0,-1,false,false,false,false,false,false)
+      if (n)      result.n = this.n
+      if (sign)   result.sign   = this.sign
+      if (spaces) result.spaces = this.spaces
+      if (zeros)  result.zeros  = this.zeros
+      if (commas) result.commas = this.commas
+      return result
+
+    method to->String
+      local result = String()
+      if (sign)   result.print '+'
+      if (spaces) result.print ' '
+      if (binary) result.print '%'
+      if (hex)    result.print '$'
+      if (zeros)  result.print '0'
+      if (commas) result.print ','
+      result.print which{n||1}
+      if (d != -1)
+        result.print '.'
+        result.print d
+      endIf
+      return result
+
+endClass

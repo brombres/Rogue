@@ -1,0 +1,87 @@
+module UI
+
+class UIText : UIComponent
+  PROPERTIES
+    text : String
+
+  METHODS
+    method init( @text )
+      prior.init
+      if (@text.count > 1)
+        local i = @text.locate( '\n' )
+        if (i)
+          block i = i.value
+            if (i == 0)
+              insert_next( create_text(@text.from(1)) )
+              @text = "\n"
+            else
+              insert_next( create_text(@text.from(i)) )
+              @text .= leftmost( i )
+            endIf
+          endBlock
+        endIf
+      endIf
+
+    method init( text:String, font:UIFont )
+      init( text )
+      set_font( font )
+
+    method can_split_x( max_width:Int32 )->Logical
+      local index = @text.locate(' ')
+      if (not index) return false
+      return font.measure( @text, 0, index.value+1 ).x <= max_width
+
+    method create_text( text:String )->UIComponent
+      return UIText( text )
+
+    method is_br->Logical
+      return @text == "\n"
+
+    method on_draw
+      local text = text_content
+      font.draw( text, this )
+
+    method on_prepare_layout [override]
+      fixed_size = font.measure( @text )
+
+    method split_after( i:Int32 )->UIComponent
+      return _split_at( i+1 )
+
+    method split_x( max_width=null:Int32? )->UIComponent
+      if (not max_width)
+        # Split at the first possible location
+        local index = @text.locate(' ')
+        if (not index) return null # no split possible
+
+        return _split_at( index.value+1 )
+
+      else
+        block max_width = max_width.value
+          local font = font
+          local last_sp = 0
+          local w = 0.0
+          forEach (ch at i in @text)
+            w += font.measure( ch ).x
+            if (w > max_width) escapeForEach
+            if (ch == ' ') last_sp = i
+          endForEach
+          return _split_at( last_sp+1 )
+        endBlock
+      endIf
+
+    method text_content->String
+      return @text
+
+    method _split_at( index:Int32 )->UIComponent
+      local right = create_text( @text.substring(index) )
+      @text .= leftmost( index )
+      insert_next( right )
+      on_prepare_layout
+      right.prepare_layout
+      return right
+
+    method _extended_description( table:Value )
+      prior._extended_description( table )
+      table//text = @text
+endClass
+

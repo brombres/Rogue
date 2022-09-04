@@ -1,0 +1,50 @@
+module Geometry
+
+class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
+  GLOBAL METHODS
+    method create->XYZW
+      return XYZW( 0, 0, 0, 1 )
+
+    method create( xy:XY )->XYZW
+      return XYZW( xy.x, xy.y, 0, 1 )
+
+    method create( xy:XY, z:Real )->XYZW
+      return XYZW( xy.x, xy.y, z, 1 )
+
+    method create( xy:XY, z:Real, w:Real )->XYZW
+      return XYZW( xy.x, xy.y, z, w )
+
+    method create( xyz:XYZ )->XYZW
+      return XYZW( xyz.x, xyz.y, xyz.z, 1 )
+
+    method create( xyz:XYZ, w:Real )->XYZW
+      return XYZW( xyz.x, xyz.y, xyz.z, w )
+
+  METHODS
+    method operator==( other:XYZW )->Logical
+      return (x == other.x) and (y == other.y) and (z == other.z) and (w == other.w)
+
+    method to->String
+      return "[$,$,$,$]" (x,y,z,w)
+
+    method to->XY
+      return XY(x.floor,y.floor)
+
+    method to->XYZ
+      return XYZ(x,y,z)
+endClass
+
+augment Math::Random
+  METHODS
+    method xyzw->XYZW:
+      # Creates a XYZW compound with randomized (x,y,z,w) values,
+      # each in the range (0.0,1.0) exclusive.
+      return XYZW( real, real, real, real )
+
+    method xyzw( low:Real, high:Real )->XYZW
+      # Returns a XYZW compound with an evenly distributed random real number in
+      # the range (low,high) exclusive (does not include low or high).
+      # for each of the (x,y,z,w) values.
+      return XYZW((real * (high-low)) + low,(real * (high-low)) + low,(real * (high-low)) + low,(real * (high-low)) + low)
+endAugment
+

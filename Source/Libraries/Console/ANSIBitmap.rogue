@@ -1,0 +1,134 @@
+uses Bitmap
+uses Geometry
+uses Console/ANSIColor
+uses Console/ANSIRGB
+uses Console/TextCanvas
+
+class ANSIBitmap
+  PROPERTIES
+    width       : Int32
+    height      : Int32
+    pixels      : Byte[]
+
+  METHODS
+    method init( source:Bitmap, &dither )
+      source = source.cloned
+      if (source.height & 1) source.expand( 0, 0, 0, 1, Color(0) )
+
+      block
+        local index = 0
+        local pixels = source.pixels
+        forEach (j in 0..<source.height)
+          forEach (i in 0..<source.width)
+            local color = pixels[index]
+            if (color.alpha_byte < 255)
+              local pattern : Color
+              if ((i & 2) xor (j & 2))
+                pattern = Color(0xFF555555)
+              else
+                pattern = Color(0xFFAAAAAA)
+              endIf
+              pixels[index] = pattern * color
+            endIf
+            ++index
+          endForEach
+        endForEach
+      endBlock
+
+      width  = source.width
+      height = source.height
+      pixels = Dim<<Byte>>( width*height )
+
+      if (dither)
+        # Convert colors while applying Floyd-Steinberg dithering.
+        # Make alternating/serpentine passes per row.
+        # https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering
+        local error = Dim<<ANSIRGB>>( (width+2) * (height+1) )
+
+        local src_data  = source.pixels
+        local src_i     = 0
+        local src_w     = width
+        local dest_data = pixels
+        local err_i     = 1
+        local err_w     = width + 2
+
+        forEach (j in 0..<height step 2)
+          # Left to Right
+          loop width
+            local original = ANSIRGB( src_data[src_i] )
+            local ansi  = (original + error[err_i])->ANSIColor
+            local diff = original - ANSIRGB(ansi.color)
+            error[ err_i+1 ]         = diff * (7.0/16.0)
+            error[ err_i+(err_w-1) ] = diff * (3.0/16.0)
+            error[ err_i+err_w ]     = diff * (5.0/16.0)
+            error[ err_i+(err_w+1) ] = diff * (1.0/16.0)
+            dest_data[ src_i ] = ansi.index
+            ++src_i
+            ++err_i
+          endLoop
+          src_i += (src_w - 1)
+          err_i += (err_w - 1)
+          if (j+1 == height) escapeForEach
+
+          # Right to Left
+          loop width
+            local original = ANSIRGB( src_data[src_i] )
+            local ansi  = (original + error[err_i])->ANSIColor
+            local diff = original - ANSIRGB(ansi.color)
+            error[ err_i-1 ]         = diff * (7.0/16.0)
+            error[ err_i+(err_w+1) ] = diff * (3.0/16.0)
+            error[ err_i+err_w ]     = diff * (5.0/16.0)
+            error[ err_i+(err_w-1) ] = diff * (1.0/16.0)
+            dest_data[ src_i ] = ansi.index
+            --src_i
+            --err_i
+          endLoop
+          src_i += src_w + 1
+          err_i += err_w + 1
+        endForEach
+
+      else
+        local lookup = ANSIColorLookup
+        native @|RogueInt32* src = $source->pixels->as_int32s - 1;
+                |RogueByte* dest = $pixels->as_bytes - 1;
+                |RogueByte* lookup = $lookup->as_bytes;
+                |
+                |for (int i=$width*$height; --i>=0; )
+                |{
+                |  RogueInt32 argb = *(++src);
+                |  *(++dest) = lookup[ ((argb & 0xF00000)>>12) | ((argb & 0xF000)>>8) | ((argb & 0xF0)>>4) ];
+                |}
+      endIf
+
+    method display
+      this->TextCanvas.display
+
+    method to->TextCanvas
+      local canvas = TextCanvas( width, height/2 )
+      local canvas_data = canvas.buffer
+
+      localize width
+      local src_index = 0
+      local dest_index = 0
+      local FG_SHIFT = CharacterStyle.FG_SHIFT
+      local BG_SHIFT = CharacterStyle.BG_SHIFT
+
+      forEach (j in 0..<height/2)
+        forEach (i in 0..<width)
+          # StyledCharacter uses index 0 as the default color and indices 1-256 as colors 0-255.
+          local bg = (Int32((pixels[src_index]))       + 1) :<<: BG_SHIFT
+          local fg = (Int32((pixels[src_index+width])) + 1) :<<: FG_SHIFT
+          canvas_data[ dest_index ] = StyledCharacter( '\[2584]', bg | fg )
+          ++src_index
+          ++dest_index
+        endForEach
+        src_index += width
+      endForEach
+
+      return canvas
+
+    method size->XY
+      return XY(width,height)
+
+endClass
+

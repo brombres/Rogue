@@ -1,0 +1,27 @@
+module RogueC
+
+class Collector : Visitor
+  PROPERTIES
+    autoname_index = 0
+
+  METHODS
+    method on( cmd:Cmd )->Cmd
+      throw cmd.t.error( "[INTERNAL] Unexpected $ in Collector."(cmd.type_name) )
+
+    method on( cmd:DefineModule )->Cmd
+      local t = cmd.t
+
+      if (cmd.name) Program.current_module = Program.get_module( t, cmd.name )
+      else          Program.current_module = Program.default_module
+
+      local m = Program.current_module
+      m.attributes.flags |= cmd.attributes.flags
+
+      return null
+
+    method on( cmd:Statements )->Cmd
+      Program.current_module.global_statements.add( forEach in cmd )
+      return null
+
+endClass
+

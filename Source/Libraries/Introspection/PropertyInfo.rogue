@@ -1,0 +1,69 @@
+class PropertyInfo( id:Int32, name:String, type_index:Int32, is_global:Logical ) [compound]
+  METHODS
+    method get_value->Value
+      if (not is_global) return undefined
+      return get_global_property( id )
+
+    method property_type_name->String
+      return Object.__type_name( type_index )
+
+    method get_value( context:Value )->Value
+      if (is_global) return get_global_property( id )
+      else           return get_property( id, context )
+
+    method set_value( new_value:Value )
+      if (is_global) set_global_property( id, new_value )
+
+    method set_value( context:Value, new_value:Value )
+      if (is_global) set_global_property( id, new_value )
+      else           set_property( id, context, new_value )
+
+    method to->String
+      return name
+
+    method type->TypeInfo
+      return TypeInfo[type_index]
+
+  GLOBAL METHODS
+    method get_global_property( id:Int32 )->Value [essential]
+      local result : Value
+      # <Compiler will insert generated code here>
+
+    method get_property( id:Int32, context:Value )->Value [essential]
+      local result : Value
+      # <Compiler will insert generated code here>
+
+    method set_global_property( id:Int32, new_value:Value ) [essential]
+      # <Compiler will insert generated code here>
+
+    method set_property( id:Int32, context:Value, new_value:Value ) [essential]
+      local result : Value
+      # <Compiler will insert generated code here>
+endClass
+
+augment PropertyInfo[]
+  METHODS
+    method get( name:String )->PropertyInfo?
+      forEach (prop in this)
+        if (prop.name == name) return prop
+      endForEach
+      return null
+endAugment
+
+augment PropertyInfo?
+  METHODS
+    method get_value->Value
+      if (exists) return value.get_value
+      else        return undefined
+
+    method get_value( context:Value )->Value
+      if (exists) return value.get_value( context )
+      else        return undefined
+
+    method set_value( new_value:Value )
+      if (exists) value.set_value( new_value )
+
+    method set_value( context:Value, new_value:Value )
+      if (exists) value.set_value( context, new_value )
+
+endAugment

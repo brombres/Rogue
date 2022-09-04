@@ -1,0 +1,16 @@
+class ObjectPool<<$DataType>> [singleton]
+  PROPERTIES
+    available = $DataType[]
+
+  METHODS
+    method on_use->$DataType
+      if (available.is_empty) return $DataType()
+      return available.remove_last
+
+    method on_end_use( object:$DataType )
+      # override with desired object cleanup
+      if local poolable = object->(as Poolable)
+        poolable.on_return_to_pool
+      endIf
+      available.add( object )
+endClass

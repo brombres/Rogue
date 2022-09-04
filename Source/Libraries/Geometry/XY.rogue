@@ -1,0 +1,175 @@
+module Geometry
+
+class XY( x:Int32, y:Int32 ) [essential compound]
+  DEFINITIONS
+    zero = XY(0,0)
+
+  GLOBAL METHODS
+    method create( n:Int32 )->XY
+      return XY(n,n)
+
+    method create( real_xy:RealXY )->XY
+      return XY( real_xy.x.floor, real_xy.y.floor )
+
+    method operator*( a:Int32, b:XY )->XY
+      return XY( a*b.x, a*b.y )
+
+    method operator*( a:RealXY, b:XY )->RealXY
+      return RealXY( a.x*b.x, a.x*b.y )
+
+    method operator/( a:Int32, b:XY )->XY
+      return XY( a/b.x, a/b.y )
+
+    method operator/( a:RealXY, b:XY )->RealXY
+      return RealXY( a.x/b.x, a.x/b.y )
+
+    method operator%( a:Int32, b:XY )->XY
+      return XY( a%b.x, a%b.y )
+
+    method operator%( a:RealXY, b:XY )->RealXY
+      return RealXY( a.x%b.x, a.x%b.y )
+
+  METHODS
+    method cross( other:XY )->Int32
+      return x * other.y - y * other.x
+
+    method dot( other:XY )->Int32
+      return x * other.x + y * other.y
+
+    method is_zero->Logical
+      return x == 0 and y == 0
+
+    method magnitude->Int32
+      return (x*x + y*y).sqrt
+
+    method magnitude2->Int32
+      return x*x + y*y
+
+    method max->Int32
+      return which{ x>=y:x || y }
+
+    method min->Int32
+      return which{ x<=y:x || y }
+
+    method max( other:XY )->XY
+      # Returns an XY containing the max X and the max Y of 'this' and 'other'.
+      local max_x = which{ x>=other.x:x || other.x }
+      local max_y = which{ y>=other.y:y || other.y }
+      return XY( max_x, max_y )
+
+    method min( other:XY )->XY
+      # Returns an XY containing the min X and the min Y of 'this' and 'other'.
+      local min_x = which{ x<=other.x:x || other.x }
+      local min_y = which{ y<=other.y:y || other.y }
+      return XY( min_x, min_y )
+
+    method normal->XY
+      # Returns the normal of this vector.
+      return XY( -y, x )
+
+    method normalized->XY
+      local msq = x*x + y*y
+      if (msq <= 0) return XY(0,0)
+      local m = msq.sqrt
+      if (m) return XY( x/m, y/m )
+      else   return XY.zero
+
+    method operator==( other:XY )->Logical
+      return x == other.x and y == other.y
+
+    method operator<>( other:XY )->Int32
+      if (x == other.x) return y <> other.y
+      else              return x <> other.x
+
+    method operator+( other:XY )->XY
+      return XY( x+other.x, y+other.y )
+
+    method operator+( other:RealXY )->RealXY
+      return RealXY( x+other.x, y+other.y )
+
+    method operator-()->XY
+      return XY( -x, -y )
+
+    method operator-( other:XY )->XY
+      return XY( x-other.x, y-other.y )
+
+    method operator-( other:RealXY )->RealXY
+      return RealXY( x-other.x, y-other.y )
+
+    method operator*( other:XY )->XY
+      return XY( x*other.x, y*other.y )
+
+    method operator*( value:Int32 )->XY
+      return XY( x*value, y*value )
+
+    method operator*( value:Real )->RealXY
+      return RealXY( x*value, y*value )
+
+    method operator*( other:RealXY )->RealXY
+      return RealXY( x*other.x, y*other.y )
+
+    method operator/( other:XY )->XY
+      return XY( which{other.x:x/other.x || 0}, which{other.y:y/other.y || 0} )
+
+    method operator/( value:Int32 )->XY
+      if (value == 0) return XY.zero
+      return XY( x/value, y/value )
+
+    method operator/( value:Real )->RealXY
+      return RealXY( x/value, y/value )
+
+    method operator/( other:RealXY )->RealXY
+      return this->RealXY / other
+
+    method operator%( other:XY )->XY
+      return XY( x%other.x, y%other.y )
+
+    method operator%( value:Int32 )->XY
+      if (value == 0) return this
+      return XY( x%value, y%value )
+
+    method operator%( other:RealXY )->RealXY
+      return RealXY( x%other.x, y%other.y )
+
+    method operator^( other:XY )->XY
+      return XY( x^other.x, y^other.y )
+
+    method operator^( value:Int32 )->XY
+      return XY( x^value, y^value )
+
+    method or_larger( other:XY )->XY
+      # Returns the largest X and the largest Y between this value and the other value.
+      return XY( this.x.or_larger(other.x), this.y.or_larger(other.y) )
+
+    method or_smaller( other:XY )->XY
+      # Returns the smaller X and the smaller Y between this value and the other value.
+      return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
+
+    method product->Int32
+      return x * y
+
+    method sign->XY
+      return XY( x.sign, y.sign )
+
+    method to->String
+      return "($,$)"(x,y)
+
+    method to->RealXY
+      return RealXY(x,y)
+
+    method xv->XY
+      return XY(x,0)
+
+    method yv->XY
+      return XY(0,y)
+endClass
+
+augment Math::Random
+  METHODS
+    method xy( limit:Int32 )->Geometry::XY
+      return Geometry::XY( int32(limit), int32(limit) )
+
+    method xy( limit:Geometry::XY )->Geometry::XY
+      return Geometry::XY( int32(limit.x), int32(limit.y) )
+endAugment
+

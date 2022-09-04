@@ -1,0 +1,142 @@
+module Geometry
+
+class Line( a:XY, b:XY ) [compound]
+  GLOBAL METHODS
+    method create( ax:Int32, ay:Int32, bx:Int32, by:Int32 )->Line
+      return Line( XY(ax,ay), XY(bx,by) )
+
+  METHODS
+    method at( p:Real )->XY
+      return a + (b - a) * p
+
+    method direction->XY
+      return (b - a)
+
+      #{
+    method intersection( circle:Circle )->Line?
+      # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
+      if (circle.contains(a))
+        if (circle.contains(b))
+          return this
+        else
+          return Line( a, Line(b,a)->Ray.intersection(circle).value )
+        endIf
+      else
+        if (circle.contains(b))
+          return Line( this->Ray.intersection(circle).value, b )
+        else
+          # https://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
+          local delta = a - circle.position
+          local direction = b - a
+          local A = direction.dot( direction )
+          local v = 2 * direction * delta
+          local B = v.x + v.y
+          local C = delta.dot( delta ) - circle.radius^2
+          local discriminant = B*B - 4*A*C
+          if (discriminant <= 0) return null
+          discriminant = discriminant.sqrt
+          local t1 = (-B + discriminant) / (2 * A )
+          local t2 = (-B - discriminant) / (2 * A )
+          if (t1 < 0.0 or t2 < 0.0) return null
+          return Line( a + t1 * direction, a + t2 * direction )
+        endIf
+      endIf
+      }#
+
+      #{
+    method intersection( other:Line, &clamp=true )->XY?
+      # Returns the point of intersection between this line and another line.
+      local P1 = this.a
+      local P2 = this.b
+      local P3 = other.a
+      local P4 = other.b
+      local A = P2 - P1
+      local B = P4 - P3
+      local C = P3 - P1
+      local denom = B.cross(A)
+      local t0 = B.cross(C) / denom
+      if (t0.is_NaN) return null
+      local t1 = A.cross(C) / denom
+      if (t1.is_NaN) return null
+      if (clamp)
+        if (t0 < 0.0 or t0 > 1.0 or t1 < 0.0 or t1 > 1.0) return null
+      endIf
+      return P1 + t0 * A
+      }#
+
+      #{
+    method intersects( box:Box )->Logical
+      return Quad(box).intersects( this )
+      }#
+
+      #{
+    method intersects( circle:Circle )->Logical
+      local closest_pt = circle.position.clamped( this )
+      return ((circle.position - closest_pt).magnitude2 <= circle.radius^2)
+
+    method intersects( quad:Quad )->Logical
+      return quad.intersects( this )
+      }#
+
+      #{
+    method intersects( other:Line )->Logical
+      return (this & other).exists
+      }#
+
+      #{
+    method intersects( triangle:Triangle )->Logical
+      if (this.intersects(Line(triangle.a,triangle.b))) return true
+      if (this.intersects(Line(triangle.b,triangle.c))) return true
+      if (this.intersects(Line(triangle.a,triangle.c))) return true
+
+      # This line could be entirely contained within the triangle - see
+      # if the triangle contains either end point
+      return triangle.contains( a )
+      }#
+
+    method normal->XY
+      local v = (b - a)
+      return XY( -v.y, v.x ).normalized
+
+    method reversed->Line
+      return Line( b, a )
+
+    method operator+( position:XY )->Line
+      return Line( a+position, b+position )
+
+    method operator-( position:XY )->Line
+      return Line( a-position, b-position )
+
+    method operator*( scale:Real )->Line
+      return Line( a*scale, b*scale )
+
+    method operator/( scale:Real )->Line
+      if (scale) return Line( a/scale, b/scale )
+      else       return this
+
+    method operator*( scale:XY )->Line
+      return Line( a*scale.x, b*scale.y )
+
+    method operator/( scale:XY )->Line
+      return Line( a/scale, b/scale )
+
+      #{
+    method operator&( other:Line )->XY?
+      return intersection( other )
+      }#
+
+      #{
+    method rotated( angle:Degrees )->Line [macro]
+      return this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Line
+      return Line( a.rotated(angle), b.rotated(angle) )
+
+    method to->Ray
+      return Ray( a, (b-a).normalized )
+      }#
+
+    method to->String
+      return "[$->$]"(a,b)
+
+endClass

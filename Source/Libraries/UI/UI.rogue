@@ -1,0 +1,363 @@
+module UI
+
+$macro UI_ATTRIBUTE<<$NAME, $is_name, $value>>
+  DEFINITIONS
+    $id(ATTRIBUTE_ $NAME) = $value
+
+  METHODS
+    method $is_name->Logical
+      return (attributes & ($value))
+
+    method $id(set_ $is_name)( setting:Logical )
+      if (setting) attributes |= ($value)
+      else         attributes &= !($value)
+$endMacro
+
+uses Geometry            [export]
+uses Presentation/Action [export]
+
+#$include "Event.rogue"
+#$include "Keyboard.rogue"
+#$include "Pointer.rogue"
+
+$include UI/UIAbsoluteLayout
+$include UI/UIDynamicProperties
+$include UI/UIBorder
+$include UI/UIComponent
+$include UI/UIContent
+$include UI/UIEntity
+$include UI/UIFiller
+$include UI/UIFlowLayout
+$include UI/UIFont
+$include UI/UIHorizontalLayout
+$include UI/UILabel
+$include UI/UILayout
+$include UI/UIList
+$include UI/UIModifier
+$include UI/UIPlacement
+$include UI/UIScrollView
+$include UI/UIScrollViewController
+$include UI/UISpacer
+$include UI/UIStackLayout
+$include UI/UITableLayout
+$include UI/UIText
+$include UI/UIVerticalLayout
+$include UI/UIWidget
+
+class UI [abstract]
+  GLOBAL PROPERTIES
+    current : UI
+
+  PROPERTIES
+    actions        : Action
+
+    bounds         : Box
+    dirty_bounds   : Box?
+    clip           : Box?
+    last_update_ms : Int32
+    is_initialized : Logical
+
+    layers = UIComponent[]
+
+    pointer_focus  : UIComponent
+    keyboard_focus : UIComponent
+
+  METHODS
+    method init
+      activate
+
+      is_initialized = true
+      on_init
+
+    method activate
+      UI.current = this
+
+    method add( layer:UIComponent )
+      layers.add( layer )
+      layer.request_layout
+
+
+      #{
+    method after( e:KeyEvent )
+      noAction
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after( e:ScrollEvent )
+      noAction
+
+    method after( e:TextEvent )
+      noAction
+      }#
+
+    method after_draw
+      noAction
+
+    method after_resize
+      noAction
+
+    method after_update
+      noAction
+
+    method apply( fn:Function(UIComponent) )
+      (forEach in layers).apply( fn )
+
+    method at( xp:Real, yp:Real )->XY
+      return XY( size.x*xp, size.y*yp )
+
+      #{
+    method broadcast_message( message:Value )
+      dispatch_message( message )
+      }#
+
+    method needs_redraw( callback=null:Function(Box) )->Logical
+      activate
+      local any_dirty = false
+
+      local origin = bounds.position
+      forEach (layer in layers)
+        if (layer.needs_redraw(origin,callback))
+          any_dirty = true
+        endIf
+      endForEach
+      return any_dirty
+
+    method clear
+      layers.clear
+      clear_focus
+      dirty_bounds = null
+      clip = null
+
+    method clear_focus
+      keyboard_focus = null
+      pointer_focus = null
+
+    method contains( pos:XY )->Logical
+      return bounds.contains( pos )
+
+    method default_font->UIFont [abstract]
+
+      #{
+    method description->String
+      return layers->String
+
+    method dispatch_message( message:Value )
+      on_message( message )
+      layers.dispatch_message( message )
+      }#
+
+    method drag_threshold->Int32
+      return 16
+
+    method draw
+      activate
+
+      if (needs_redraw) request_redraw
+
+      if (dirty_bounds)
+        temporarily clip = dirty_bounds
+          dirty_bounds = null
+          on_draw
+          (forEach in layers).draw( clip.value )
+          after_draw
+        endTemporarily
+
+        (forEach in layers).apply( $.save_display_state )
+      endIf
+
+      #{
+    method find( pos:XY )->UIComponent
+      return layers.find( pos )
+
+    method handle( e:KeyEvent )
+      View = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (keyboard_focus)
+        if (keyboard_focus.is_visible and keyboard_focus.is_input_enabled)
+          keyboard_focus.handle( e )
+        else
+          keyboard_focus.release_keyboard_focus
+          layers.handle( e )
+        endIf
+      else
+        layers.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:PointerEvent )
+      View = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (pointer_focus)
+        if (pointer_focus.is_visible and pointer_focus.is_input_enabled)
+          pointer_focus.handle( e )
+        else
+          pointer_focus.release_pointer_focus
+          layers.handle( e )
+        endIf
+      else
+        layers.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:ScrollEvent )
+      View = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (pointer_focus)
+        pointer_focus.handle( e )
+      else
+        layers.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+
+    method handle( e:TextEvent )
+      View = this
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (keyboard_focus)
+        keyboard_focus.handle( e )
+      else
+        layers.handle( e )
+      endIf
+      if (e.is_consumed) return
+
+      after( e )
+      }#
+
+      #{
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+      }#
+
+    method on_init
+      noAction
+
+    method on_draw
+      noAction
+
+      #{
+    method on_message( message:Value )
+      noAction
+      }#
+
+    method on_resize
+      noAction
+
+    method on_update
+      noAction
+
+    method on_update_layout
+      # Called after a 'bounds' change to build or rebuild the layout.
+      noAction
+
+    method perform_layout
+      (forEach in layers).update_layout( bounds )
+
+    method release_focus
+      release_keyboard_focus
+      release_pointer_focus
+
+    method release_keyboard_focus
+      if (keyboard_focus) keyboard_focus.release_pointer_focus
+
+    method release_pointer_focus
+      if (pointer_focus) pointer_focus.release_pointer_focus
+
+    method remove( layer:UIComponent )
+      layers.remove( layer )
+
+    method request_layout
+      (forEach in layers).request_layout
+
+    method request_redraw
+      dirty_bounds = bounds
+
+    method request_redraw( bounds:Box? )
+      dirty_bounds |= bounds
+
+    method set_bounds( new_bounds:Box )
+      if (new_bounds == bounds) return
+      @bounds = new_bounds
+      request_layout
+      on_resize
+      (forEach in layers).handle_resize
+      after_resize
+
+    method set_clip( @clip )
+      noAction # Override in specialized UI to have clip take effect
+
+    method size->XY
+      return bounds.size
+
+    method update
+      activate
+
+      update( bounds )
+
+    method update( bounds:Box )
+      # Must update before layout so that new components created in update() can be
+      # measured in update_layout()
+      activate
+
+      if (not is_initialized)
+        is_initialized = true
+        on_init
+      endIf
+      on_update
+      if (actions) actions .= update
+      (forEach in layers).update
+
+      forEach (layer in layers step -1)
+        if (layer.discard_dead is null) layers.remove( layer )
+      endForEach
+
+      after_update
+
+      update_layout( bounds )
+
+    method update_layout( new_bounds:Box )
+      activate
+
+      local bounds_changed = (bounds != new_bounds)
+      if (bounds_changed)
+        bounds = new_bounds
+        if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire UI
+        on_update_layout
+      endIf
+
+      contingent
+        sufficient ((forEach in layers).is_modified)
+        sufficient (bounds_changed)
+        escapeContingent
+      satisfied
+        perform_layout
+      endContingent
+
+endClass
+

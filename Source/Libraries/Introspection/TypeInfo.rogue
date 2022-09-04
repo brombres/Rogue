@@ -1,0 +1,182 @@
+class TypeInfo
+  NATIVE
+    nativeHeader
+      @|struct RogueRuntimeType;
+       |struct RogueTypeInfo;
+       |typedef struct RogueRuntimeType RogueRuntimeType;
+       |typedef struct RogueTypeInfo RogueTypeInfo;
+       |RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THIS );
+
+    nativeCode
+      @|RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THIS )
+       |{
+       |  if ( !THIS->type_info )
+       |  {
+       |    RogueTypeInfo* type_info = ROGUE_CREATE_OBJECT(RogueTypeInfo);
+       |    ++type_info->__refcount;
+       |
+       |    type_info->module_name = Rogue_string_table[ THIS->module_name_index ];
+       |    type_info->name        = RogueObject____type_name__RogueInt32( THIS->index );
+       |    type_info->index       = THIS->index;
+       |    type_info->id          = THIS->id;
+       |    type_info->attributes  = THIS->attributes;
+       |    type_info->class_data_index = THIS->class_data_index;
+       |
+       |    THIS->type_info = (RogueObject*) type_info;
+       |    RogueTypeInfo__init( type_info );
+       |    --type_info->__refcount;
+
+    nativeCode
+      @|  }
+       |
+       |  return (RogueTypeInfo*) THIS->type_info;
+       |}
+
+  GLOBAL METHODS
+    method count->Int32
+      return native("Rogue_type_count")->Int32
+
+    method get( index:Int32 )->TypeInfo
+      if (index < 0 or index >= native("Rogue_type_count")->Int32)
+        println "No such type: TypeInfo[$]. Valid types are 0..$."(index,count)
+        return null
+      else
+        return native("RogueRuntimeType_type_info( Rogue_types[$index] )")->TypeInfo
+      endIf
+
+    method get( name:String )->TypeInfo
+      forEach (i in 0..<count)
+        if (native("0 == strcmp($name->data->as_utf8, Rogue_types[$i]->name)")->Logical)
+          return TypeInfo[i]
+        endIf
+      endForEach
+      return null
+
+    method iterator->TypeInfoIterator
+      return TypeInfoIterator()
+
+  PROPERTIES
+    module_name       : String
+    name              : String
+    index             : Int32
+    id                : Int32
+    attributes        : Int32
+
+    class_data_index : Int32
+    global_properties = PropertyInfo[]
+    properties        = PropertyInfo[]
+    global_methods    = MethodInfo[]
+    methods           = MethodInfo[]
+
+  METHODS
+    method init [essential]
+      local data_index = class_data_index
+      data_index = read_properties( data_index, global_properties, &is_global )
+      data_index = read_properties( data_index, properties )
+      data_index = read_methods( data_index, global_methods, &is_global )
+      data_index = read_methods( data_index, methods )
+
+    method read_properties( data_index:Int32, list:PropertyInfo[], &is_global )->Int32
+      local n = native("Rogue_type_data[$data_index]")->Int32;
+      loop n
+        local property_id   = native("Rogue_type_data[++$data_index]")->Int32
+        local property_name = native("Rogue_string_table[ Rogue_type_data[++$data_index] ]")->String
+        local property_type_index = native("Rogue_type_data[++$data_index]")->Int32
+        list.add( PropertyInfo(property_id,property_name,property_type_index,&=is_global) )
+      endLoop
+      ++data_index
+      return data_index
+
+    method read_methods( data_index:Int32, list:MethodInfo[], &is_global )->Int32
+      local n = native("Rogue_type_data[$data_index]")->Int32;
+      ++data_index
+      loop n
+        list.add( MethodInfo(native("Rogue_type_data[$data_index]")->Int32, &=is_global) )
+        ++data_index
+      endLoop
+      return data_index
+
+    method find_global_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return find_method( global_methods, name_or_sig, arg_count )
+
+    method find_method( name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      return find_method( methods, name_or_sig, arg_count )
+
+    method find_method( method_list:MethodInfo[], name_or_sig:String, arg_count=null:Int32? )->MethodInfo
+      if (name_or_sig.contains('('))
+        forEach (m in method_list)
+          if (m.signature == name_or_sig) return m
+        endForEach
+      endIf
+
+      forEach (m in method_list)
+        if (m.name == name_or_sig and (not arg_count.exists or m.parameters.count == arg_count.value))
+          return m
+        endIf
+      endForEach
+
+      return null
+
+    method find_global_property( name:String )->PropertyInfo?
+      return find_property( global_properties, name )
+
+    method find_property( name:String )->PropertyInfo?
+      return find_property( properties, name )
+
+    method find_property( property_list:PropertyInfo[], name:String )->PropertyInfo?
+      forEach (prop in property_list)
+        if (prop.name == name) return prop
+      endForEach
+      return null
+
+    method is_aspect->Logical
+      return (attributes & native("ROGUE_TYPE_ASPECT")->Int32)
+
+    method is_compound->Logical
+      return (attributes & native("ROGUE_TYPE_COMPOUND")->Int32)
+
+    method is_enum->Logical
+      return (attributes & native("ROGUE_TYPE_ENUM")->Int32)
+
+    method is_object->Logical
+      return (attributes & native("ROGUE_TYPE_OBJECT")->Int32)
+
+    method is_primitive->Logical
+      return (attributes & native("ROGUE_TYPE_PRIMITIVE")->Int32)
+
+    method to->String
+      return name
+endClass
+
+
+class TypeInfoIterator( position=0:Int32 ) [compound]
+  METHODS
+    method has_another->Logical
+      return (position < TypeInfo.count)
+
+    method has_another( n:Int32 )->Logical
+      return (position + n <= TypeInfo.count)
+
+    method peek( lookahead=0:Int32 )->TypeInfo
+      return TypeInfo[ position+lookahead ]
+
+    method read->TypeInfo [mutating]
+      ++position
+      return TypeInfo[ position-1 ]
+
+    method read_another->TypeInfo? [mutating]
+      if (position == TypeInfo.count) return null
+      ++position
+      return TypeInfo[ position-1 ]
+
+    method to->String
+      return to_list->String
+
+    method to->TypeInfo[]( result=null:TypeInfo[] )
+      return to_list( result )
+
+    method to_list( result=null:TypeInfo[] )->TypeInfo[]
+      ensure<<result>>( TypeInfo.count )
+      result.add( forEach in this )
+      return result
+endClass

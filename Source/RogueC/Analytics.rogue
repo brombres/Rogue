@@ -1,0 +1,37 @@
+module RogueC
+
+$include Utility/Timer
+
+class Analytics [singleton]
+  PROPERTIES
+    total_time         = Timer(&stopped)
+    tokenization       = Timer(&stopped)
+    preprocessing      = Timer(&stopped)
+    parse_templates    = Timer(&stopped)
+    ensure_definitions = Timer(&stopped)
+    main_parse         = Timer(&stopped)
+    collect_modules    = Timer(&stopped)
+
+    instantiate_essential = Timer(&stopped)
+    organize_methods      = Timer(&stopped)
+    tranform              = Timer(&stopped)
+    resolve_used_elements = Timer(&stopped)
+    finalize              = Timer(&stopped)
+
+    generate_c  = Timer(&stopped)
+
+  METHODS
+    method display
+      println "total_time:            $"(total_time)
+      println "tokenization:          $"(tokenization)
+      println "preprocessing:         $"(preprocessing)
+      println "parse_templates:       $"(parse_templates)
+      println "ensure_definitions:    $"(ensure_definitions)
+      println "main_parse:            $"(main_parse)
+      println "instantiate_essential: $"(instantiate_essential)
+      println "organize_methods:      $"(organize_methods)
+      println "tranform:              $"(tranform)
+      println "resolve_used_elements: $"(resolve_used_elements)
+      println "finalize:              $"(finalize)
+      println "generate_c:            $"(generate_c)
+endClass

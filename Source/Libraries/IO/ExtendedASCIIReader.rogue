@@ -1,0 +1,43 @@
+class ExtendedASCIIReader : Reader<<Character>>
+  PROPERTIES
+    byte_reader : Reader<<Byte>>
+    next        : Character?
+
+  METHODS
+    method init( byte_reader )
+      next = null
+
+    method close
+      byte_reader.close
+
+    method has_another->Logical
+      return next.exists or byte_reader.has_another
+
+    method peek->Character
+      if (next.exists) return next.value
+      if (not byte_reader.has_another) return 0
+
+      local ch = Character(byte_reader.read)
+      next = ch
+      return ch
+
+    method read->Character
+      local result = peek
+      next = null
+      ++position
+      return result
+
+    method reset
+      seek( 0 )
+
+    method seek( pos:Int32 )
+      if (pos < position)
+        position = 0
+        byte_reader.seek( 0 )
+      endIf
+      skip( pos - position )
+
+    method skip( n:Int32 )
+      forEach (1..n) read
+endClass
+

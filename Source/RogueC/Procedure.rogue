@@ -1,0 +1,370 @@
+module RogueC
+
+uses Utility/WorkList
+
+class Procedure : Cmd
+  PROPERTIES
+    module_context    : Module
+    type_context      : Type
+    name              : String
+    base_name         : String   # without any <<template-args>>
+    signature         : String   # m(arg:Types)
+    dynamic_signature : String   # m(arg:Types)->ReturnType
+    call_signature    : String   # (arg:Types)->ReturnType
+    parameters        : Parameters
+    return_type       : Type
+    attributes        : Attributes
+    body              : LocalScope   # LocalScope(statements)
+    statements        : Cmd   # the Statements contained in the body's LocalScope
+
+    is_organized      = false
+    is_resolved       = false
+
+    min_args          : Int32
+    index             = -1
+    call_index        = -1    # call signature index
+
+    locals            = Local[]
+
+    throws            : Type
+    # Most general type of exception that this procedure throws (or null)
+
+    overridden_method : Procedure
+
+    method_template   : MethodTemplate # only for method template instances
+    template_args     : TemplateArgs   # only for method template instances
+
+    vtable_index      : Int32 # only for vtable methods
+    vcall_count       : Int32 # number of virtual call temp variables required by the current statement
+    vcall_max         : Int32 # total virtual call temp variables required by this procedure
+    vcall_slot        = -1  # index of temp variable used during dispatch
+
+  METHODS
+    method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
+        attributes=null:Attributes, body=null:LocalScope )
+      init( t, null, name, parameters, return_type, attributes, body )
+
+    method init( t, module_context, name, parameters=null, return_type=null,
+        attributes=null, body=null )
+      if (not parameters) parameters = Parameters(t)
+      if (not attributes) attributes = Attributes( t )
+      if (not body)       body = LocalScope(t)
+      statements = body.statements
+
+      if (attributes.returns_this)
+        if (not this.is_method)
+          throw t.error( "Return type 'this' can only be used with an object method." )
+        endIf
+      endIf
+
+    method init( existing:Procedure )
+      prior.init( existing )
+      name = existing.name
+      if (existing.parameters)  parameters  = existing.parameters.cloned
+      if (existing.return_type) return_type = existing.return_type.cloned
+      if (existing.attributes)  attributes  = existing.attributes.cloned
+      if (existing.body)        body  = existing.body.cloned
+      if (body) statements = body.statements
+      module_context = existing.module_context
+      signature = existing.signature
+      is_organized = existing.is_organized
+      is_resolved  = existing.is_resolved
+      min_args     = existing.min_args
+      locals.add( (forEach in existing.locals).cloned )
+      throws       = existing.throws
+      call_index   = existing.call_index
+      method_template = existing.method_template
+      template_args   = existing.template_args
+
+      vtable_index = existing.vtable_index
+      vcall_count  = existing.vcall_count
+      vcall_max    = existing.vcall_max
+      vcall_slot   = existing.vcall_slot
+
+      is_resolved             = false
+      attributes.is_used      = false
+      attributes.is_collected = false
+
+    method accepts_arg_count( n:Int32 )->Logical
+      return n >= min_args and n <= parameters.count
+
+    method arrange_args( args:Cmd, resolver:Resolver )->Logical
+      args->(as CmdList).list.discard( $ instanceOf DefaultArg )
+      if (args.count > parameters.count) return false
+
+      use list = WorkList<<Cmd>>
+        list.expand_to_count( parameters.count )
+
+        # Put each named arg in the right spot
+        forEach (arg in args)
+          block arg = arg->(as NamedArg)
+            if (arg and arg.name)
+              local index = locate_parameter(arg.name)
+              assert index?
+              list[ index.value ] = arg
+            endIf
+          endBlock
+        endForEach
+
+        # Populate empty spots with positional args
+        local available_i = 0
+        forEach (arg in args)
+          if (arg not instanceOf NamedArg and arg not instanceOf DefaultArg)
+            while (list[available_i] and available_i<list.count) ++available_i
+            assert available_i < list.count
+            list[available_i] = arg
+          endIf
+        endForEach
+
+        # If there are any null spots remaining...
+        if (list.contains(null->(as Cmd)))
+
+          # Fill in empty spots that have default values with placeholder named args.
+          forEach (param at i in parameters)
+            if (not list[i] and param.initial_value)
+              list[i] = DefaultArg( param.t, resolver.visit(param.initial_value) )
+            endIf
+          endForEach
+
+          # If any null spots still remain it's not a compatible method.
+          if (list.contains(null->(as Cmd))) return false
+        endIf
+
+        # Everything looks good. Commit the new ordering.
+        args.clear
+        args.add( forEach in list )
+
+        return true
+      endUse
+
+    method base_name->String
+      if (not @base_name)
+        if (name.contains("<<:")) @base_name = name  # operator:<<:, operator:<<:=
+        else                      @base_name = name.before_first("<<")
+      endIf
+      return @base_name
+
+    method description->String
+      return which{ signature || name }
+
+    method dev_signature->String
+      local builder = String()
+      if (type_context) builder.[ print(type_context), print('.') ]
+      builder.print name
+      builder.print "("
+      forEach (param at i in parameters)
+        if (i > 0) builder.print ','
+        local param_name = param.original_name
+        if (param.attributes.is_default_parameter and param.type is Program.type_Logical)
+          builder.print '&'
+          builder.print param_name
+        elseIf (param.initial_value)
+          builder.print '['
+          builder.print param_name
+          builder.print ':'
+          builder.print param.type
+          builder.print ']'
+        else
+          builder.print param_name
+          builder.print ':'
+          builder.print param.type
+        endIf
+      endForEach
+      builder.print ")"
+      return builder
+
+    method call_signature->String
+      if (not @call_signature)
+        local builder = String()
+        builder.print '('
+        local i = 0
+        if (not is_global)
+          if (type_context.is_reference)
+            builder.print "Rogue::Object"
+          else
+            builder.print type_context.module_context
+            builder.print "::"
+            builder.print type_context.name
+          endIf
+          ++i
+        endIf
+        forEach (p in parameters)
+          if (i) builder.print ','
+          if (p.type.is_reference)
+            builder.print("Rogue::Object")
+          else
+            builder.print( p.type.module_context.name )
+            builder.print("::")
+            builder.print( p.type.name )
+          endIf
+          ++i
+        endForEach
+        builder.print ')'
+        if (return_type) builder.[ print("->"), print(return_type.module_context), print("::"), print(return_type) ]
+        if (is_global)
+          if (attributes.is_mutating) builder.print("[global mutating]")
+          else                        builder.print("[global]")
+        elseIf (attributes.is_mutating)
+          builder.print("[mutating]")
+        endIf
+        @call_signature = builder
+      endIf
+      return @call_signature
+
+    method dynamic_return_type->Type
+      if (overridden_method) return overridden_method.return_type
+      else                   return return_type
+
+    method dynamic_signature->String
+      if (not @dynamic_signature)
+        dynamic_signature = signature
+        if (return_type)
+          localize return_type
+          return_type.ensure_definition
+          return_type.organize_type
+          if (return_type.is_reference) return_type = Program.type_Object
+          dynamic_signature = "$->$::$"(@dynamic_signature,return_type.module_context,return_type)
+        endIf
+
+        local m = this->(as Method)
+        local group = Program.dynamic_methods[@dynamic_signature]
+        if (group)
+          group.add( m )
+        else
+          Program.dynamic_methods[@dynamic_signature] = DynamicMethodGroup( m )
+        endIf
+
+      endIf
+      return @dynamic_signature
+
+    method has_parameter_named( name:String )->Logical
+      return locate_parameter( name )?
+
+    method is_global->Logical
+      return false
+
+    method is_method->Logical
+      return this instanceOf Method
+
+    method locate_parameter( name:String )->Int32?
+      forEach (param at i in parameters)
+        if (param.original_name == name) return i
+      endForEach
+      return null
+
+    method organize( &skip_add_to_type )
+      if (is_organized) return
+      is_organized = true
+
+      if (not module_context) module_context = Program.current_module
+
+      if (not type_context or not type_context.is_aspect)
+        if (attributes.is_append) throw t.error( "Attribute [append] is only valid for aspect methods." )
+        if (attributes.is_insert) throw t.error( "Attribute [insert] is only valid for aspect methods." )
+      endIf
+      if (attributes.is_append and attributes.is_insert)
+        throw t.error( "Attributes [append] and [insert] cannot be used together." )
+      endIf
+
+      if (attributes.returns_this) return_type = type_context
+
+      if (attributes.is_propagated and is_global)
+        throw t.error( "Routines and global methods cannot be [propagated]." )
+      endIf
+
+      if (attributes.is_mutating and not type_context.is_compound)
+        throw t.error( "Only compound methods can have the [mutating] attribute." )
+      endIf
+
+      if (name == "to" and return_type)
+        # to->String -> to<<String>>()->String etc.
+        local type_arg = TemplateArgs( t, return_type )
+        name = type_arg->String("to")
+      endIf
+
+      if (not signature)
+        local builder = String()
+        builder.print name
+        builder.print '('
+        forEach (p at i in parameters)
+          block p = p->(as Local)
+            assert p
+            if (i) builder.print ','
+            if (not p.type)
+              if (p.attributes.is_default_parameter)
+                if (p.initial_value) p.type = p.initial_value.type
+                if (not p.type) p.type = Program.type_Logical
+                if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
+              elseIf (this.is_method)
+                local prop = type_context.properties[p.name]
+                if (prop)
+                  p.name = "_auto_store_" + p.name
+                  p.type = prop.type
+                  if (p.attributes.is_direct_auto_store)
+                    statements.insert( SetThisProperty(p.t,prop,Access(p.t,p.name)) )
+                  else
+                    statements.insert( Assign(p.t,Access(p.t,prop.name),Access(p.t,p.name)) )
+                  endIf
+                else
+                  throw p.t.error( "No corresponding property for auto-store parameter '$'."(p.name) )
+                endIf
+              else
+                throw p.t.error( "Missing parameter type (e.g. $:SomeType)."(p.name) )
+              endIf
+            endIf
+            assert p.type
+            builder.[ print(p.type.module_context.name), print("::"), print(p.type.name) ]
+          endBlock
+        endForEach
+        builder.print ')'
+        signature = builder
+
+        min_args = 0
+        forEach (p in parameters)
+          block p = p->(as Local)
+            if (p.initial_value) escapeForEach
+            ++min_args
+          endBlock
+        endForEach
+        forEach (p in parameters from min_args)
+          block p = p->(as Local)
+            if (not p.initial_value)
+              throw p.t.error( "Missing default value. If one parameter has a default value then all successive parameters must supply default values as well." )
+            endIf
+          endBlock
+        endForEach
+
+      endIf
+
+      use organizer = ObjectPool<<MethodOrganizer>>
+        temporarily organizer.this_module=module_context, organizer.this_type=type_context, organizer.this_procedure=this
+          organizer.visit_children( this )
+        endTemporarily
+      endUse
+
+      add_to_call_signature_group
+
+    method add_to_call_signature_group
+      block
+        local group = Program.call_signatures[call_signature]
+        if (group)
+          call_index = group.first.call_index
+        else
+          call_index = Program.call_signatures.count
+          group = Procedure[]
+          Program.call_signatures[call_signature] = group
+        endIf
+        group.add(this)
+      endBlock
+
+    method resolve
+      if (not is_organized) organize
+
+      if (is_resolved) return
+
+      use resolver = ObjectPool<<Resolver>>
+        resolver.visit( module_context, this )
+      endUse
+
+endClass
+

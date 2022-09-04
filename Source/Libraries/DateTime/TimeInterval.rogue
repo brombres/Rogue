@@ -1,0 +1,73 @@
+class TimeInterval( total_ms:Int64 ) [compound]
+  # This time interval can be broken down into days, hours, minutes, seconds, and milliseconds.
+  # Those values are all independent and precise.
+  GLOBAL METHODS
+    method create( flag=true:Logical, days=0:Int64, hours=0:Int64, minutes=0:Int64, seconds=0:Int64, milliseconds=0:Int64 )->TimeInterval
+      # 'flag' is ignored and is a kludge to disambiguate the compound initializers from this global create method.
+      return TimeInterval( days * (3600000*24) + hours*3600000 + minutes*60000 + seconds*1000 + milliseconds )
+
+    method hms( hours:Real, minutes:Real, seconds:Real, ms=0:Real )->TimeInterval
+      return TimeInterval( &hours=hours, &minutes=minutes, &seconds=seconds, &milliseconds=ms )
+
+
+  METHODS
+    method days->Int32
+      return Int32( this.total_ms / (3000600*24) )
+
+    method hours->Int32
+      return Int32( (this.total_ms.abs % (3000600*24)) / 3600000 * total_ms.sign )
+
+    method is_negative->Logical
+      return (this.total_ms.abs < 0)
+
+    method minutes->Int32
+      return Int32( (this.total_ms.abs % 3600000) / 60000 * total_ms.sign )
+
+    method seconds->Int32
+      return Int32( (this.total_ms.abs % 60000) * total_ms.sign )
+
+    method milliseconds->Int32
+      return Int32( (this.total_ms.abs % 1000) * total_ms.sign )
+
+    method operator<>( other:TimeInterval )->Int64
+      return (total_ms <> other.total_ms)
+
+    method operator==( other:TimeInterval )->Logical
+      return (total_ms == other.total_ms)
+
+    method to->String
+      local result = String()
+
+      if (total_ms < 0) result.print( '-' )
+
+      local needs_comma = false
+
+      if (days)  result.[ print(days.abs), print(" day".pluralized(days)) ]; needs_comma = true
+
+      if (hours)
+        if (needs_comma) result.print( ", " )
+        result.[ print(hours.abs), print(" hour".pluralized(hours.abs)) ]; needs_comma = true
+      endIf
+      if (minutes)
+        if (needs_comma) result.print( ", " )
+        result.[ print(minutes.abs), print(" minute".pluralized(minutes.abs)) ]; needs_comma = true
+      endIf
+
+      if (seconds or milliseconds)
+        if (needs_comma) result.print( ", " )
+        needs_comma = true
+        result.print "$.$ seconds"(seconds,milliseconds)
+      endIf
+
+      if (not result.count) return "0.000 seconds"
+
+      return result
+
+    method total_days->Real
+      return this.total_ms / (3600000.0*24)
+
+    method total_hours->Real
+      return this.total_ms / 3600000.0
+
+endClass
+

@@ -1,0 +1,452 @@
+# EXAMPLE
+#
+#   uses Math/Matrix
+#
+#   local i = Matrix.identity
+#   println i
+#   println
+#   #   1 0 0 0
+#   #   0 1 0 0
+#   #   0 0 1 0
+#   #   0 0 0 1
+#
+#   local translate = Matrix.translate(XY(320,240))
+#   println translate
+#   println
+#   #     1   0   0 320
+#   #     0   1   0 240
+#   #     0   0   1   0
+#   #     0   0   0   1
+#
+#   local scale = Matrix.scale(2)
+#   println scale
+#   println
+#   #   2 0 0 0
+#   #   0 2 0 0
+#   #   0 0 1 0
+#   #   0 0 0 1
+#
+#   local m = i * translate * scale
+#   println m
+#   println
+#   #     2   0   0 320
+#   #     0   2   0 240
+#   #     0   0   1   0
+#   #     0   0   0   1
+#
+#   @trace m[12]  # 320.0
+#
+#   m[14] = -1
+#   println m
+#   #   m[12]:320.0
+#   #     2   0   0 320
+#   #     0   2   0 240
+#   #     0   0   1  -1
+#   #     0   0   0   1
+uses Geometry [export]
+
+class Matrix( ...
+    r1c1:Real, r2c1:Real, r3c1:Real, r4c1:Real,
+    r1c2:Real, r2c2:Real, r3c2:Real, r4c2:Real,
+    r1c3:Real, r2c3:Real, r3c3:Real, r4c3:Real,
+    r1c4:Real, r2c4:Real, r3c4:Real, r4c4:Real
+    ) [compound]
+
+  DEFINITIONS
+    count = 16
+
+  GLOBAL METHODS
+    method create->Matrix
+      return Matrix( 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0 )
+
+    method identity->Matrix
+      local m = Matrix()
+      m.r1c1 = 1
+      m.r2c2 = 1
+      m.r3c3 = 1
+      m.r4c4 = 1
+      return m
+
+    method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real )->Matrix
+      # Returns a right-handed projection matrix (OpenGL is also right-hand).
+      # Adapted from Xcode "Game" template project.
+      local ys = 1.0 / (fov_y * 0.5).tan
+      local xs = ys / aspect_ratio
+      local zs = z_far / (z_near - z_far)
+      local m = Matrix()
+      m.r1c1 = xs
+      m.r2c2 = ys
+      m.r3c3 = zs
+      m.r3c4 = zs * z_near
+      m.r4c3 = -1
+      return m
+
+    method perspective( left:Real, top:Real, right:Real, bottom:Real, near:Real, far:Real )->Matrix
+      # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
+      local m = identity
+
+      m.r1c1 = 2 * near / (right - left)
+      m.r2c2 = 2 * near / (top - bottom)
+
+      m.r1c3 = (right + left) / (right - left)
+      m.r2c3 = (top + bottom) / (top - bottom)
+      m.r3c3 = - (far + near) / (far - near)
+      m.r4c3 = -1
+
+      m.r3c4 = - (2 * far * near) / (far - near)
+
+      return m
+
+    method rotate( degrees:DegreesXYZ )->Matrix
+      return rotate( degrees->RadiansXYZ )
+
+    method rotate( radians:RadiansXYZ )->Matrix
+      if (radians.value.x)
+        local result = rotate_x( radians.value.x )
+        if (radians.value.y) result *= rotate_y( radians.value.y )
+        if (radians.value.z) result *= rotate_z( radians.value.z )
+        return result
+      elseIf (radians.value.y)
+        local result = rotate_y( radians.value.y )
+        if (radians.value.z) result *= rotate_z( radians.value.z )
+        return result
+      elseIf (radians.value.z)
+        return rotate_z( radians.value.z )
+      else
+        return identity
+      endIf
+
+    method rotate( theta:Radians, axis:XYZ )->Matrix
+      axis .= normalized
+      local ct = theta.cos
+      local st = theta.sin
+      local ci = 1.0 - ct
+      local x = axis.x
+      local y = axis.y
+      local z = axis.z
+      return Matrix(
+            ct + x * x * ci, y * x * ci + z * st, z * x * ci - y * st, 0,
+        x * y * ci - z * st,     ct + y * y * ci, z * y * ci + x * st, 0,
+        x * z * ci + y * st, y * z * ci - x * st,     ct + z * z * ci, 0,
+                          0,                   0,                   0, 1
+      )
+
+    method rotate_x( theta:Radians )->Matrix
+      local m = identity
+      local sin0 = theta.sin
+      local cos0 = theta.cos
+      m.r2c2 =  cos0
+      m.r2c3 = -sin0
+      m.r3c2 =  sin0
+      m.r3c3 =  cos0
+      return m
+
+    method rotate_y( theta:Radians )->Matrix
+      local m = identity
+      local sin0 = theta.sin
+      local cos0 = theta.cos
+      m.r1c1 =  cos0
+      m.r1c3 =  sin0
+      m.r3c1 = -sin0
+      m.r3c3 =  cos0
+      return m
+
+    method rotate_z( theta:Radians )->Matrix
+      local m = identity
+      local sin0 = theta.sin
+      local cos0 = theta.cos
+      m.r1c1 =  cos0
+      m.r1c2 = -sin0
+      m.r2c1 =  sin0
+      m.r2c2 =  cos0
+      return m
+
+    method transform( size:XY, anchor:Anchor )->Matrix
+      # Performs a partial 2D transform for size and anchor. The typical full
+      # tranform set for a [0,0 1x1] box in the order they'd be pushed on
+      # a transform stack:
+      #
+      #   translate( position )
+      #   rotate_z( rotation )
+      #   scale( size )                   # peformed by this method
+      #   translate( -anchor.position )   # peformed by this method
+      #
+      # Use transform(position,size,anchor,rotation) to perform all transforms at once
+      # in 2DX space. Use this method combined with other transforms if other transformations
+      # are needed, such as rotation around the x or y axis.
+      local a = -(anchor.position/2.0)
+      return Matrix(
+        size.x, 0, 0, 0,
+        0, size.y, 0, 0,
+        0, 0, 1, 0,
+        (size.x * a.x), (size.y * a.y), 0, 1
+      )
+
+    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
+      # Returns a transformation matrix that will position a [0,0 1x1] coordinate box
+      # in 2DX space - everything is in 2D except for the Z coordinate that is applied
+      # at the end to move the image closer to (z > 0) or farther away from (z < 0) the camera.
+
+      #local m = translate( position )
+      #m *= rotate_z( rotation )
+      #m *= scale( XYZ(size,1) )
+      #m *= translate( XYZ(-anchor.position,0) )
+      #return m
+      local cos0 = rotation.cos
+      local sin0 = rotation.sin
+      local a    = -(anchor.position/2.0)
+      return Matrix(
+        (cos0*size.x),  (sin0*size.x), 0, 0,  # column 1
+        (-sin0*size.y), (cos0*size.y), 0, 0,  # column 2
+        0,              0,             1, 0,  # column 3
+        ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
+          ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
+          position.z,
+          1
+      )
+
+    method translate( delta:XY )->Matrix
+      local m = identity
+      m.r1c4 = delta.x
+      m.r2c4 = delta.y
+      return m
+
+    method translate( delta:XYZ )->Matrix
+      local m = identity
+      m.r1c4 = delta.x
+      m.r2c4 = delta.y
+      m.r3c4 = delta.z
+      return m
+
+    method scale( k:Real )->Matrix
+      return scale( XYZ(k,k,1) )
+
+    method scale( k:XY )->Matrix
+      return scale( XYZ(k,1) )
+
+    method scale( k:XYZ )->Matrix
+      local m = Matrix()
+      m.r1c1 = k.x
+      m.r2c2 = k.y
+      m.r3c3 = k.z
+      m.r4c4 = 1
+      return m
+
+    method scale( k:Real, origin:XY )->Matrix
+      return scale( XYZ(k,k,1), XYZ(origin,0) )
+
+    method scale( k:XY, origin:XY )->Matrix
+      return scale( XYZ(k,1), XYZ(origin,0) )
+
+    method scale( k:XYZ, origin:XYZ )->Matrix
+      return Matrix.translate(origin) * Matrix.scale(k) * Matrix.translate(-origin)
+
+    method shear( xy:XY )->Matrix
+      return shear( xy.xv, XY(xy.y,0), XY.zero )
+
+    method shear( x_yz:XY, y_xz:XY, z_xy:XY )->Matrix
+      # x_yz: amount that x is sheared proportional to changes in y and z
+      # y_xz: amount that y is sheared proportional to changes in x and z
+      # z_xy: amount that z is sheared proportional to changes in x and y
+      return Matrix(
+             1, y_xz.x, z_xy.x,      0,
+        x_yz.x,      1, z_xy.y,      0,
+        x_yz.y, y_xz.y,      1,      0,
+             0,      0,      0,      1
+      )
+
+  METHODS
+    method count->Int32
+      return 16
+
+    method get( index:Int32 )->Real
+      return native( "(&$this.r1c1)[ $index ]" )->Real
+
+    method operator*( other:Matrix )->Matrix
+      local result = Matrix()
+
+      result[0] = this[0]  * other[0] +
+                  this[4]  * other[1] +
+                  this[8]  * other[2] +
+                  this[12] * other[3]
+
+      result[1] = this[1]  * other[0] +
+                  this[5]  * other[1] +
+                  this[9]  * other[2] +
+                  this[13] * other[3]
+
+      result[2] = this[2]  * other[0] +
+                  this[6]  * other[1] +
+                  this[10] * other[2] +
+                  this[14] * other[3]
+
+      result[3] = this[3]  * other[0] +
+                  this[7]  * other[1] +
+                  this[11] * other[2] +
+                  this[15] * other[3]
+
+      result[4] = this[0]  * other[4] +
+                  this[4]  * other[5] +
+                  this[8]  * other[6] +
+                  this[12] * other[7]
+
+      result[5] = this[1]  * other[4] +
+                  this[5]  * other[5] +
+                  this[9]  * other[6] +
+                  this[13] * other[7]
+
+      result[6] = this[2]  * other[4] +
+                  this[6]  * other[5] +
+                  this[10] * other[6] +
+                  this[14] * other[7]
+
+      result[7] = this[3]  * other[4] +
+                  this[7]  * other[5] +
+                  this[11] * other[6] +
+                  this[15] * other[7]
+
+      result[8] = this[0]  * other[8]  +
+                  this[4]  * other[9]  +
+                  this[8]  * other[10] +
+                  this[12] * other[11]
+
+      result[9] = this[1]  * other[8]  +
+                  this[5]  * other[9]  +
+                  this[9]  * other[10] +
+                  this[13] * other[11]
+
+      result[10] = this[2]  * other[8]  +
+                   this[6]  * other[9]  +
+                   this[10] * other[10] +
+                   this[14] * other[11]
+
+      result[11] = this[3]  * other[8]  +
+                   this[7]  * other[9]  +
+                   this[11] * other[10] +
+                   this[15] * other[11]
+
+      result[12] = this[0]  * other[12] +
+                   this[4]  * other[13] +
+                   this[8]  * other[14] +
+                   this[12] * other[15]
+
+      result[13] = this[1]  * other[12] +
+                   this[5]  * other[13] +
+                   this[9]  * other[14] +
+                   this[13] * other[15]
+
+      result[14] = this[2]  * other[12] +
+                   this[6]  * other[13] +
+                   this[10] * other[14] +
+                   this[14] * other[15]
+
+      result[15] = this[3]  * other[12] +
+                   this[7]  * other[13] +
+                   this[11] * other[14] +
+                   this[15] * other[15]
+
+      return result
+
+    method operator*( v:XY )->XY
+      return XY(
+        this[0]   * v.x +
+        this[4]   * v.y +
+        this[12],
+
+        this[1]   * v.x +
+        this[5]   * v.y +
+        this[13]
+      )
+
+    method operator*( v:XYZ )->XYZW
+      return XYZW(
+        this[0]   * v.x +
+        this[4]   * v.y +
+        this[8]   * v.z +
+        this[12],
+
+        this[1]   * v.x +
+        this[5]   * v.y +
+        this[9]   * v.z +
+        this[13],
+
+        this[2]   * v.x +
+        this[6]   * v.y +
+        this[10]  * v.z +
+        this[14],
+
+        this[3]   * v.x +
+        this[7]   * v.y +
+        this[11]  * v.z +
+        this[15]
+      )
+
+    method operator*( v:XYZW )->XYZW
+      return XYZW(
+        this[0]   * v.x +
+        this[4]   * v.y +
+        this[8]   * v.z +
+        this[12]  * v.w,
+
+        this[1]   * v.x +
+        this[5]   * v.y +
+        this[9]   * v.z +
+        this[13]  * v.w,
+
+        this[2]   * v.x +
+        this[6]   * v.y +
+        this[10]  * v.z +
+        this[14]  * v.w,
+
+        this[3]   * v.x +
+        this[7]   * v.y +
+        this[11]  * v.z +
+        this[15]  * v.w
+      )
+
+    method set( index:Int32, value:Real ) [mutating]
+      native( "(&$this->r1c1)[ $index ] = $value;" )
+
+    method to->String
+      local min_whole_digits = 0
+      local min_decimal_digits = 0
+      forEach (value in this)
+        local whole_digits = whole_digit_count(value)
+        local decimal_digits = decimal_digit_count(value)
+        min_whole_digits = min_whole_digits.or_larger( whole_digits )
+        min_decimal_digits = min_decimal_digits.or_larger( decimal_digits )
+      endForEach
+      min_decimal_digits = min_decimal_digits.or_smaller( 4 )
+
+      local buffer = String()
+      forEach (j in 0..3)
+        forEach (i in 0..3)
+          if (i > 0) buffer.print " "
+          local value = this[ i*4 + j ]
+          forEach (1..min_whole_digits-whole_digit_count(value)) buffer.print( ' ' )
+          buffer.print( value, min_decimal_digits )
+        endForEach
+        buffer.println
+      endForEach
+      return buffer
+
+  GLOBAL METHODS
+    method whole_digit_count( value:Real )->Int32
+      use buffer = StringPool
+        buffer.print( value, 0 )
+        return buffer.count
+      endUse
+
+    method decimal_digit_count( value:Real )->Int32
+      use builder = StringPool
+        forEach (n in 0..4)
+          if (value.is_string_accurate_at(n,builder))
+            return n
+          endIf
+        endForEach
+        return 4
+      endUse
+
+
+endClass
+

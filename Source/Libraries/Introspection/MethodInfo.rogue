@@ -1,0 +1,134 @@
+class MethodInfo
+  GLOBAL PROPERTIES
+    method_table : MethodInfo[]
+
+  PROPERTIES
+    method_index       : Int32
+    call_index         : Int32
+    is_global          : Logical
+    type_context_index : Int32
+    name               : String
+    signature          : String
+    parameters         = ParameterInfo[]
+    return_type_index  : Int32
+    attributes         : Int64
+
+  GLOBAL METHODS
+    method init_class
+      method_table = Dim<<MethodInfo>>( native("Rogue_method_count")->Int32 )
+
+    method create( method_index:Int32, is_global=false:Logical )->MethodInfo
+      local m = method_table[method_index]
+      if (m) return m
+
+      m = MethodInfo()
+      m.method_index = method_index
+      m.is_global = is_global
+      local data_index = native("Rogue_method_info[$method_index]")->Int32
+
+      m.type_context_index = native("Rogue_type_data[$data_index]")->Int32
+      m.name = native("Rogue_string_table[ Rogue_type_data[++$data_index] ]")->String
+
+      local n = native("Rogue_type_data[++$data_index]")->Int32
+      m.parameters.reserve( n )
+      loop n
+        local param_name = native("Rogue_string_table[ Rogue_type_data[++$data_index] ]")->String
+        local type_index = native("Rogue_type_data[++$data_index]")->Int32
+        m.parameters.add( ParameterInfo(param_name,type_index) )
+      endLoop
+      m.return_type_index = native("Rogue_type_data[++$data_index]")->Int32
+
+      m.call_index = native("Rogue_type_data[++$data_index]")->Int32
+      m.attributes = native("Rogue_type_data[++$data_index]")->Int32
+      m.attributes = (m.attributes:<<:32) | ((native("Rogue_type_data[++$data_index]")->Int32->Int64) & 0xFFFF_FFFF)
+
+      local sig_len = m.name.count + 2                                # name()
+      sig_len += (m.parameters.count - 1)                             # commas
+      sig_len += (forEach in m.parameters).parameter_type_name.count  # param type names
+
+      local sig = String(sig_len)
+      sig.print m.name
+      sig.print '('
+      forEach (param at i in m.parameters)
+        if (i > 0) sig.print ','
+        sig.print param.parameter_module_name
+        sig.print "::"
+        sig.print param.parameter_type_name
+      endForEach
+      sig.print ')'
+      m.signature = sig
+
+      method_table[method_index] = m
+      return m
+
+  METHODS
+    method init
+      noAction
+
+    method call( context_or_args=undefined:Value )->Value
+      # Call this global or object method.
+      #
+      # context_or_args
+      #   Global methods: a single arg, a @[list], or 'undefined'.
+      #   Object methods: call context
+      if (is_global)
+        return call_global_method( call_index, native("(RogueInt64)Rogue_method_pointers[$method_index]")->Int64, context_or_args )
+      else
+        return call_object_method( call_index, native("(RogueInt64)Rogue_method_pointers[$method_index]")->Int64, context_or_args, undefined )
+      endIf
+
+    method call( context:Value, args:Value )->Value
+      # Call this object method.
+      #
+      # context
+      #   The context object to call the method on.
+      #
+      # args
+      #   A single arg, a @[list], or 'undefined'.
+      return call_object_method( call_index, native("(RogueInt64)Rogue_method_pointers[$method_index]")->Int64, context, args )
+
+    method return_type->TypeInfo
+      if (return_type_index == -1) return null
+      return TypeInfo[return_type_index]
+
+    method to->String
+      return signature
+
+    method type_context->TypeInfo
+      return TypeInfo[type_context_index]
+
+  GLOBAL METHODS
+    method call_global_method( call_index:Int32, fnptr:Int64, args:Value )->Value [essential]
+      # args
+      #   A single arg, a @[list], or 'undefined'.
+
+      # <Compiler will insert generated code here>
+
+      return undefined
+
+    method call_object_method( call_index:Int32, fnptr:Int64, context:Value, args:Value )->Value [essential]
+      # context
+      #   The context object to call the method on.
+      #
+      # args
+      #   A single arg, a @[list], or 'undefined'.
+
+      # <Compiler will insert generated code here>
+
+      return undefined
+endClass
+
+class ParameterInfo( name:String, type_index:Int32 ) [compound]
+  METHODS
+    method parameter_module_name->String
+      return native("Rogue_string_table[ Rogue_types[$type_index]->module_name_index ]")->String
+
+    method parameter_type_name->String
+      return Object.__type_name( type_index )
+
+    method to->String
+      return "$:$"(name,type)
+
+    method type->TypeInfo
+      return TypeInfo[type_index]
+endClass

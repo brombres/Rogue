@@ -1,0 +1,276 @@
+# EXAMPLE
+#   uses Codec/Zip
+#
+#   local folder = File("ZipTest").[ create_folder ]
+#   (folder/"ABC.txt").save( "ABC" )
+#
+#   local zip = Zip( File("ZipTest.zip") )
+#
+#   zip.add( folder/"ABC.txt" )
+#   zip.add( "ZipTest/DEF.txt", "DEF" )
+#
+#   @trace zip.count
+#   println
+#
+#   folder.delete
+#   zip.extract( File(".") )  # Extract all files
+#
+#   forEach (entry in zip)
+#     @trace entry.name, entry.is_folder, entry.size, entry.crc32
+#     entry.extract( File(".") )    # Extract individual files
+#
+#     local bytes = Byte[]
+#     entry.extract( bytes )        # Extract file in memory and append to 'bytes'
+#
+#     bytes = entry.extract_bytes   # Extract file in memory as a standalone byte list
+#     @trace bytes.count
+#
+#     local st = entry.extract_string  # Extract file in memory as a standalone string
+#     @trace st.count
+#     println
+#   endForEach
+#
+#   @trace zip.find( FilePattern("**/*.txt") )
+#   @trace zip.find( "ZipTest/ABC.txt" )
+#   println
+#
+#   zip.remove( "ZipTest/ABC.txt" )
+#   zip.remove( zip.find(FilePattern("**/DEF*")) )
+#   println
+#
+#   zip.add( File(folder) )
+#
+#   zip.close
+
+class Zip
+  # NOTES
+  #   Uses kuba-- zip 0.2.4
+  #   https://github.com/kuba--/zip
+  DEFINITIONS
+    CLOSED = '0'
+    READ   = 'r'
+    WRITE  = 'w'
+    APPEND = 'a'
+    DELETE = 'd'
+
+    COMPRESSION_NONE    = 0
+    COMPRESSION_DEFAULT = 6
+    COMPRESSION_MAX     = 9
+
+  PROPERTIES
+    filepath    : String
+    compression : Int32  # 0 (uncompressed) to 9 (maximum compression)
+    mode        : Int32  # CLOSED, READ, WRITE, APPEND, DELETE (can change frequently internally)
+    native "struct zip_t* zip;"
+
+  METHODS
+    method init( zipfile:File, compression=Zip.COMPRESSION_DEFAULT:Int32 )
+      local mode = which{ zipfile.exists:APPEND || WRITE }
+      open( zipfile, compression, mode )
+
+    method add( file:File, compression=null:Int32?, &ignore_hidden=true, &verbose )
+      if (file.is_folder)
+        if (file.is_absolute)
+          # Do not include folder path in zip
+          add( Files(file,"**"), &=compression, &=ignore_hidden, &=verbose )
+        else
+          # Include folder path in zip
+          add( Files(".",file/"**"), &=compression, &=ignore_hidden, &=verbose )
+        endIf
+      else
+        add( file.filepath, Byte[](file), &=compression, &=verbose )
+      endIf
+
+    method add( files:Files, compression=null:Int32?, &ignore_hidden=true, &verbose )
+      forEach (filepath in files.filepaths)
+        add( files.relative_filepath(filepath), File(filepath).load_as_bytes, compression, &=verbose )
+      endForEach
+
+    method add( archive_filepath:String, data:Byte[], compression=null:Int32?, &verbose )
+      if (compression) this.compression = compression.value
+
+      remove( archive_filepath ) # Remove any previous version
+
+      if (verbose) println "Adding $" (archive_filepath)
+
+      mode = which{ File(filepath).exists:APPEND || WRITE }
+      native @|zip_entry_open( $this->zip, $archive_filepath->data->as_utf8 );
+      native @|zip_entry_write( $this->zip, $data->as_bytes, $data->count );
+      native @|zip_entry_close( $this->zip );
+
+    method add( archive_filepath:String, file:File, compression=null:Int32?, &verbose )
+      add( archive_filepath, Byte[](file), compression, &=verbose )
+
+    method add( archive_filepath:String, data:String, compression=null:Int32?, &verbose )
+      add( archive_filepath, data.to_utf8, compression, &=verbose )
+
+    method close
+      native @|if ($this->zip)
+              |{
+              |  zip_close( $this->zip );
+              |  $this->zip = 0;
+              |}
+      @mode = CLOSED
+
+    method count->Int32
+      mode = READ
+      return native("zip_entries_total($this->zip)")->Int32
+
+    method extract( folder:File, &verbose )
+      if (not folder.is_folder) throw Error( "Zip.extract() folder does not exist: $" (folder) )
+      forEach (entry in this)
+        if (verbose) println "Extracting $" (folder/entry.name)
+        entry.extract( folder )
+      endForEach
+
+    method find( name:String )->ZipEntry[]
+      return find( FilePattern(name) )
+
+    method find( pattern:FilePattern )->ZipEntry[]
+      # Examples:
+      #   zip.find( "ExactName.txt" ) -> result count 0 or 1
+      #   zip.find( "*.txt" ) -> result count 0+
+      mode = READ
+      local results = ZipEntry[]
+
+      forEach (index of this)
+        # First pass does not allocate new strings and looks for a literal match
+        native @|zip_entry_openbyindex( $this->zip, $index );
+                |if (0 == strcmp($pattern.pattern->data->as_utf8,zip_entry_name($this->zip)))
+                |{
+                |  zip_entry_close( $this->zip );
+                   results.add( this[index] )
+                   return results
+        native @|}
+                |zip_entry_close( $this->zip );
+      endForEach
+
+      # We haven't found an exact match. Use pattern matching to potentially find multiple matches.
+      forEach (entry in this)
+        if (entry.name == pattern) results.add( entry )
+      endForEach
+
+      return results
+
+    method get( index:Int32 )->ZipEntry
+      mode = READ
+
+      local name : String
+      local is_folder : Logical
+      local size : Int64
+      local crc32  : Int32
+      native @|zip_entry_openbyindex( $this->zip, $index );
+              |$name = RogueString_create( zip_entry_name($this->zip) );
+              |$is_folder = (RogueLogical) zip_entry_isdir( $this->zip );
+              |$size = (RogueInt64) zip_entry_size( $this->zip );
+              |$crc32 = (RogueInt32) zip_entry_crc32( $this->zip );
+              |zip_entry_close( $this->zip );
+
+      return ZipEntry( this, name, is_folder, size, crc32 )
+
+    method on_cleanup
+      close
+
+    method open( zipfile:File, compression=Zip.COMPRESSION_DEFAULT, new_mode=Zip.CLOSED:Int32 )
+      filepath = zipfile.resolved
+
+      close
+      if (new_mode == CLOSED) return
+
+      @mode = new_mode
+
+      native @|$this->zip = zip_open( $filepath->data->as_utf8, (int)$compression, (char)$new_mode );
+
+      if (native("!$this->zip")->Logical) throw Error( 'Error opening "$".'(filepath) )
+
+    method remove( list:ZipEntry[] )
+      if (list.is_empty) return
+      mode = DELETE
+
+      local count = list.count
+      native @|char** entries = ROGUE_MALLOC( sizeof(char*) * $count );
+      forEach (entry at i in list)
+        native @|entries[$i] = $entry.name->data->as_utf8;
+      endForEach
+      native @|zip_entries_delete( $this->zip, entries, $count );
+              |ROGUE_FREE( entries );
+
+    method remove( name:String )
+      remove( find(name) )
+
+    method remove( pattern:FilePattern )
+      remove( find(pattern) )
+
+    method set_compression( new_compression:Int32 )
+      if (compression != new_compression)
+        local og_mode = mode
+        close
+        @compression = new_compression
+        if (filepath) open( File(filepath), new_compression, og_mode )
+      endIf
+
+    method set_mode( new_mode:Int32 )
+      if (mode != new_mode)
+        if (new_mode == CLOSED) close
+        else                    open( File(filepath), compression, new_mode )
+        @mode = new_mode
+      endIf
+
+    method to->String
+      return filepath
+
+  NATIVE
+    # The following nativeHeader section contains miniz.h followed by zip.h
+    nativeHeader File("ZipNative/miniz.h")
+    nativeHeader File("ZipNative/zip.h")
+    nativeCode   File("ZipNative/zip.c")
+endClass
+
+class ZipEntry( zip:Zip, name:String, is_folder:Logical, size:Int64, crc32:Int32 ) [compound]
+  GLOBAL PROPERTIES
+    buffer : Byte[]
+
+  METHODS
+    method description->String
+      return name
+
+    method extract( buffer:Byte[] )->Byte[]
+      ensure<<buffer>>( size )
+      local start = buffer.count
+      buffer.expand( size )
+      zip.mode = Zip.READ
+      native @|zip_entry_open( $this.zip->zip, $this.name->data->as_utf8 );
+              |zip_entry_noallocread( $this.zip->zip, $buffer->as_bytes+$start, $this.size );
+              |zip_entry_close( $this.zip->zip );
+      return buffer
+
+    method extract( file:File )
+      ensure<<buffer>>( size )
+      extract( buffer.[clear] )
+
+      if (file.is_folder)
+        # Save full path into specified folder
+        local output_filepath = file.filepath/name
+        if (this.is_folder)
+          File( output_filepath ).create_folder
+        else
+          if (output_filepath.contains('/')) File(output_filepath).parent.create_folder
+          File( output_filepath ).save( buffer )
+        endIf
+      elseIf (this.is_folder)
+        file.create_folder
+      else
+        # Save as specified different filename
+        if (file.filepath.contains('/')) File(file.folder).create_folder
+        file.save( buffer )
+      endIf
+
+    method extract_bytes->Byte[]
+      ensure<<buffer>>( size )
+      return extract( buffer.[clear] ).cloned
+
+    method extract_string->String
+      ensure<<buffer>>( size )
+      return String( extract(buffer.[clear]) )
+endClass
+

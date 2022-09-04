@@ -1,0 +1,10 @@
+module UI
+
+class UISpacer : UIComponent
+  GLOBAL METHODS
+    method h( width:Int32 )->UISpacer
+      return UISpacer( XY(width,0) )
+
+    method v( height:Int32 )->UISpacer
+      return UISpacer( XY(0,height) )
+endClass

@@ -1,0 +1,154 @@
+module Bitmap
+
+class BitmapFont
+  PROPERTIES
+    atlas      : Bitmap  # Font strip
+    height     : Int32
+    characters = BitmapFontCharacterInfo[](128)
+    kerning    = Int32[][0]
+      # Format. kerning[] is indexed into from the "prev_ch" BitmapFontCharacterInfo.
+      #
+      #   [count_x,next1,offset1,next2,offset2,..., count_y,next1,offset1,...]
+      #
+      # Conceptual equivalent:
+      #   local prev_ch = ... : Character
+      #   local cur_ch = ...  : Character
+      #   if (kerning and kerning.contains(prev_ch) and kerning[prev_ch].contains(cur_ch))
+      #     cursor_x += kerning[prev_ch][cur_ch]
+      #   endIf
+      #
+      # Actual use of kerning data structure:
+      #   local prev_ch = ... : BitmapFontCharacterInfo
+      #   local cur_ch = ...  : BitmapFontCharacterInfo
+      #   local i = prev_ch.kerning_index
+      #   if (i)
+      #     local n = kerning[i]
+      #     ++i
+      #     loop n
+      #       if (kerning[i] == prev_ch.character)
+      #         cursor_x += kerning[i+1]
+      #         escapeLoop
+      #       endIf
+      #       i += 2
+      #     endLoop
+      #   endIf
+      #
+
+  METHODS
+    method init( atlas, height )
+      # Caller should next populate font info with calls to add(BitmapFontCharacterInfo) and modifications
+      # to .kerning
+
+    method add( info:BitmapFontCharacterInfo )
+      characters.expand_to_include( info.character )
+      characters[info.character] = info
+
+    method bitmap( ch:Character )->Bitmap
+      if (ch >= characters.count) return null
+      local info = characters[ch]
+      if (info.character == ch) return this.bitmap( info )
+      return null
+
+    method bitmap( ch:BitmapFontCharacterInfo )->Bitmap
+      return Bitmap( atlas, ch.bounds )
+
+    method draw( text:String, dest_bitmap:Bitmap, position:XY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+      draw( text, dest_bitmap, position.x, position.y, anchor, blit_fn )
+
+    method draw( text:String, dest_bitmap:Bitmap, x:Int32, y:Int32, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+      if (text.contains('\n'))
+        y = Box( x, y, measure(text) ).relative_to( anchor ).position.y
+        anchor = Anchor( XY(anchor.position.x,0) )  # anchor vertical alignment to TOP
+        use buffer = StringPool
+          forEach (ch in text)
+            if (ch == '\n')
+              if (buffer.count) draw( buffer, dest_bitmap, x, y, anchor, blit_fn )
+              buffer.clear
+              y += height
+            else
+              buffer.print ch
+            endIf
+          endForEach
+          if (buffer.count) draw( buffer, dest_bitmap, x, y, anchor, blit_fn )
+        endUse
+        return
+      endIf
+
+      (x,y) = Box( x, y, measure(text) ).relative_to( anchor ).position
+
+      local prev_info : BitmapFontCharacterInfo?
+      forEach (ch in text)
+        local info = this[ch]
+        if (info)
+          if (prev_info)
+            local ki = prev_info.value.kerning_index
+            if (ki)
+              local n = kerning[ki]
+              ++ki
+              loop (n)
+                if (kerning[ki] == ch)
+                  x += kerning[ki+1]
+                  escapeLoop
+                endIf
+                ki += 2
+              endLoop
+            endIf
+          endIf
+          atlas.blit( info.value.bounds, dest_bitmap, x+info.value.offset_x, y, blit_fn )
+          x += info.value.advance_x
+        endIf
+        prev_info = info
+      endForEach
+
+    method get( ch:Character )->BitmapFontCharacterInfo?
+      if (ch >= characters.count)
+        return null
+      else
+        return characters[ ch ]
+      endIf
+
+    method measure( text:String )->XY
+      local w = 0
+      local max_w = 0
+      local h = 0
+      local prev_info : BitmapFontCharacterInfo?
+      forEach (ch in text)
+        if (ch == '\n')
+          max_w .= or_larger( w )
+          w = 0
+          h += height
+          prev_info = null
+        else
+          local info = this[ch]
+          if (info)
+            if (prev_info)
+              local ki = prev_info.value.kerning_index
+              if (ki)
+                local n = kerning[ki]
+                ++ki
+                loop (n)
+                  if (kerning[ki] == ch)
+                    w += kerning[ki+1]
+                    escapeLoop
+                  endIf
+                  ki += 2
+                endLoop
+              endIf
+            endIf
+            w += info.value.advance_x
+          endIf
+          prev_info = info
+        endIf
+      endForEach
+
+      max_w .= or_larger( w )
+      h += height
+
+      return XY( max_w, h )
+
+endClass
+
+class BitmapFontCharacterInfo( character:Character, offset_x:Int32, advance_x:Int32, kerning_index:Int32, bounds:Box ) [compound]
+  # kerning
+  #   Advance mappings for this as the previous character.
+endClass

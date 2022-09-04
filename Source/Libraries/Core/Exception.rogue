@@ -1,0 +1,56 @@
+class Exception [essential]
+  PROPERTIES
+    message     : String
+    stack_trace : StackTrace
+
+  METHODS
+    method init_object
+      if (DEBUG) stack_trace = StackTrace()
+
+    method init( message )
+
+    method display
+      if (DEBUG) stack_trace.display
+      Console.error.println this
+
+    method to->String
+      local result = String()
+      result.println message
+      return result
+
+  GLOBAL METHODS
+    method display( err:Exception ) [essential]
+      if (err) err.display
+
+endClass
+
+class Error : Exception;
+
+class AssertionError : Exception;
+
+class IOError : Error;
+
+class OutOfBoundsError : Error
+  METHODS
+    method init( message )
+
+    method init( index:Int32, limit:Int32 )
+      which (limit)
+        case 0: init( "Index $ is out of bounds (data has zero elements)." (index) )
+        case 1: init( "Index $ is out of bounds (data has one element at index 0)." (index) )
+        others: init( "Index $ is out of bounds (data has $ indices $..$)." (index,"# element".pluralized(limit),0,limit-1) )
+      endWhich
+endClass
+
+class UnsupportedOperationError : Error
+  METHODS
+    method init
+
+    #{ TODO
+    method init( type_context_name=type_name:String, method_signature=$methodSignature:String )
+      message = "Class $ does not support operation $." (type_context_name,method_signature)
+      }#
+
+    method init( operation_name:String )
+      message = "Unsupported operation: $." (operation_name)
+endClass

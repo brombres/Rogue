@@ -1,0 +1,275 @@
+class System [essential]
+  NATIVE
+    nativeHeader @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  #include <sys/timeb.h>
+                  |#else
+                  |  #include <sys/time.h>
+                  |  #include <spawn.h>
+                  |#endif
+                  |
+                  |extern int    Rogue_argc;
+                  |extern char** Rogue_argv;
+                  |
+                  |#ifndef PATH_MAX
+                  |  #define PATH_MAX 4096
+                  |#endif
+                  |
+                  |extern char **environ;
+
+    nativeCode   @|int    Rogue_argc = 0;
+                  |char** Rogue_argv = 0;
+
+  DEFINITIONS
+    env = SystemEnvironment
+
+  GLOBAL PROPERTIES
+    command_line_arguments = String[]
+    executable_filepath    : String
+    execution_start_ms     = System.time_ms - 1 : Int64  # Minus 1 so that initial time is not 0
+
+  GLOBAL METHODS
+    method execution_time_ms->Int32
+      # Execution time in milliseconds.
+      return (System.time_ms - execution_start_ms)->Int32
+
+    method executable_filepath->String
+      if (@executable_filepath) return @executable_filepath
+
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  char buffer[ 2048 ];
+              |  if ( !GetModuleFileName( NULL, buffer, 2048 ) )
+              |  {
+              |    strcpy( buffer, "rogue.exe" );
+              |  }
+              |  $executable_filepath = RogueString_create_from_utf8( buffer, -1, ROGUE_STRING_PERMANENT_COPY );
+              |
+              |#elif defined(__APPLE__)
+              |  char buffer[PATH_MAX];
+              |  char raw_filepath[PATH_MAX];
+              |  uint32_t buffer_size = (uint32_t) PATH_MAX;
+              |  if (0 != _NSGetExecutablePath(raw_filepath,&buffer_size))
+              |  {
+              |    raw_filepath[0] = 0;
+              |  }
+              |  realpath( raw_filepath, buffer );
+              |  $executable_filepath = RogueString_create_from_utf8( buffer, -1, ROGUE_STRING_PERMANENT_COPY );
+              |
+              |#else
+              |  // Linux
+              |  char buffer[PATH_MAX];
+              |  char raw_filepath[PATH_MAX];
+              |  #if defined(__sun)
+              |    strcpy( raw_filepath, "/proc/self/path/a.out" );
+              |  #else
+              |    strcpy( raw_filepath, "/proc/self/exe" );
+              |  #endif
+              |  if (0 == realpath( raw_filepath, buffer )) strcpy( buffer, "" );
+              |  $executable_filepath = RogueString_create_from_utf8( buffer, -1, ROGUE_STRING_PERMANENT_COPY );
+              |#endif
+
+      return @executable_filepath
+
+    method exit( result_code=0:Int32 )
+      native @|Rogue_quit();
+              |exit( $result_code );
+
+    method find_executable( name:String )->File?
+      # Returns the executable filepath of the given program or else null.
+      # Uses 'where' on Windows and 'which' on other platforms.
+      local result = Process.run( "$ $" (which{is_windows:"where"||"which"},name), &env )
+      if (not result.success) return null
+      return File( result->String.trimmed )
+
+    method home_folder->String
+      if (System.is_windows) return System.env//HOMEDRIVE + System.env//HOMEPATH
+      else                   return System.env//HOME
+
+    method is_android->Logical
+      native @|#if defined(ROGUE_PLATFORM_ANDROID)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method is_cygwin->Logical
+      native @|#if defined(ROGUE_PLATFORM_CYGWIN)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method is_ios->Logical
+      native @|#if defined(ROGUE_PLATFORM_IOS)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method is_linux->Logical
+      native @|#if defined(ROGUE_PLATFORM_LINUX)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method is_macos->Logical
+      native @|#if defined(ROGUE_PLATFORM_MACOS)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method is_web->Logical
+      native @|#if defined(ROGUE_PLATFORM_WEB)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method is_windows->Logical
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                 return 1
+      native @|#else
+                 return 0
+      native @|#endif
+
+    method os->String
+      # Returns one of:
+      #   macOS
+      #   Windows
+      #   iOS
+      #   Android
+      #   Cygwin
+      #   Web
+      #   Linux (includes Unix and Posix)
+      local result : String
+      native @|#if defined(ROGUE_PLATFORM_ANDROID)
+      result = "Android"
+      native @|#elif defined(ROGUE_PLATFORM_IOS)
+      result = "iOS"
+      native @|#elif defined(ROGUE_PLATFORM_MACOS)
+      result = "macOS"
+      native @|#elif defined(ROGUE_PLATFORM_WEB)
+      result = "Web"
+      native @|#elif defined(ROGUE_PLATFORM_WINDOWS)
+      result = "Windows"
+      native @|#else
+      result = "Linux"
+      native @|#endif
+      return result
+
+    method request_gc
+      native @|Rogue_request_gc();
+
+    method run( command:String )->Int32
+      local return_val = 0
+      native @|$return_val = system( (char*)$command->data->as_utf8 );
+      if (return_val == -1) return -1
+      native @|#if !defined(ROGUE_PLATFORM_WINDOWS)
+              |$return_val = (RogueInt32) WEXITSTATUS($return_val);
+              |#endif
+      return return_val
+
+    method sleep( seconds:Real )
+      # Suspends execution of this program for the specified number of seconds.
+      sleep_ms( (seconds * 1000)->Int32 )
+
+    method sleep_ms( ms:Int32 )
+      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+              |  //local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
+              |  //if (do_exit) ROGUE_EXIT;
+              |  Sleep( $ms );
+              |  //if (do_exit) ROGUE_ENTER;
+              |#else
+              |  //local do_exit = seconds > 0.5 # Or should it be lower? Used for multithreaded synchronization.
+      native @|  struct timespec sleep_time;
+              |  sleep_time.tv_sec = (time_t) ($ms/1000);
+              |  sleep_time.tv_nsec = (long) (($ms%1000) * 1000000);
+              |  //if (do_exit) ROGUE_EXIT;
+              |  nanosleep( &sleep_time, NULL );
+              |  //if (do_exit) ROGUE_ENTER;
+              |#endif
+
+    method sync_storage
+      noAction
+
+    method ticks->Int32
+      # Execution time in 1/60th second ticks.
+      return (execution_time_ms * 6) / 100
+
+    method time->Real
+      return time_ms / Real(1000)
+
+    method time_ms->Int64
+      local time_seconds_x1000 : Int64
+
+      native @|#if defined(_WIN32)
+              |  struct __timeb64 time_struct;
+              |  _ftime64_s( &time_struct );
+              |  $time_seconds_x1000 = ((RogueInt64) time_struct.time) * 1000;
+              |  $time_seconds_x1000 += time_struct.millitm;
+              |
+              |#else
+              |  struct timeval time_struct;
+              |  gettimeofday( &time_struct, 0 );
+              |  $time_seconds_x1000 = ((RogueInt64) time_struct.tv_sec) * 1000;
+              |  $time_seconds_x1000 += (time_struct.tv_usec / 1000);
+              |#endif
+
+      return time_seconds_x1000
+
+    method _add_command_line_argument( arg:String ) [essential]
+      command_line_arguments.add( arg )
+endClass
+
+class SystemEnvironment [singleton]
+  PROPERTIES
+    definitions : [String:String]
+    names       : String[]
+
+  METHODS
+    method contains( name:String )->Logical
+      return definitions.contains(name)
+
+    method count->Int32
+      return definitions.count
+
+    method definitions->[String:String]
+      if (@definitions) return @definitions
+
+
+      @definitions = [String:String]
+
+      native "char** env = environ;"
+      while (native("!!*env")->Logical)
+        local parts = native("RogueString_create( *(env++) )")->String.split('=')
+        local name  = parts.first
+        local value = which{ parts.count==2:parts.last || "" }
+        @definitions[name] = value
+      endWhile
+
+      return @definitions
+
+    method get( index:Int32 )->String
+      return names[index]
+
+    method get( name:String )->String
+      return definitions[name]
+
+    method names->String[]
+      if (@names) return @names
+      @names = definitions.keys.to_list
+      return @names
+
+    method set( name:String, value:String )
+      if (value and value.count)
+        if (@definitions) @definitions[name] = value
+        if (@names and not @names.contains(name)) @names.add( name )
+        native @|setenv( (char*)$name->data->as_utf8, (char*)$value->data->as_utf8, 1 );
+      else
+        if (@definitions) @definitions.remove( name )
+        if (@names) @names.remove( name )
+
+        native @|unsetenv( (char*)$name->data->as_utf8 );
+      endIf
+endClass

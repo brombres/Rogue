@@ -1,0 +1,82 @@
+module RogueC
+
+class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
+  METHODS
+    method on( cmd:CallDynamicMethod )->Cmd
+      if (cmd.context instanceOf This)
+        return visit( CallThisDynamicMethod(cmd.t,cmd.info,cmd.args).[result_discarded=cmd.result_discarded] )
+      endIf
+
+      local info = cmd.info
+
+      contingent
+        if (cmd.context.type.is_aspect or info.attributes.is_abstract)
+          local group = Program.dynamic_methods[info.dynamic_signature].methods
+          assert group
+          necessary (group and group.count == 1 and not group.first.attributes.is_placeholder)
+          info = group.first
+        else
+          necessary (not info.attributes.dynamic_dispatch or not info.attributes.is_overridden)
+        endIf
+
+      satisfied
+        local cmd_call = CallStaticMethod( cmd.t, cmd.context, info, cmd.args ).[ result_discarded=cmd.result_discarded ]
+        return visit( cmd_call )
+
+      unsatisfied
+        if (VCALLS and not cmd.context.type.is_aspect)
+          # V-table eligible
+          cmd.context.type.method_vtable[ info.signature ] = info->(as Method)
+          return visit( CallVirtualMethod(cmd.t,cmd.context,info,cmd.args) )
+        endIf
+
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        if (group) group.is_used = true
+        return visit_content( cmd )
+
+      endContingent
+
+    method on( cmd:CallThisDynamicMethod )->Cmd
+      local info = cmd.info
+
+      contingent
+        if (this_type.is_aspect or info.attributes.is_abstract)
+          local group = Program.dynamic_methods[info.dynamic_signature].methods
+          assert group
+          necessary (group and group.count == 1 and not group.first.attributes.is_placeholder)
+          info = group.first
+        else
+          necessary (not info.attributes.dynamic_dispatch or not info.attributes.is_overridden)
+        endIf
+
+      satisfied
+        local cmd_call = CallThisStaticMethod( cmd.t, info, cmd.args ).[ result_discarded=cmd.result_discarded ]
+        return visit( cmd_call )
+
+      unsatisfied
+        if (VCALLS and this_type.is_aspect)
+          # V-table eligible
+          this_type.method_vtable[ info.signature ] = info->(as Method)
+          return visit( CallThisVirtualMethod(cmd.t,info,cmd.args) )
+        endIf
+
+        local group = Program.dynamic_methods[info.dynamic_signature]
+        if (group) group.is_used = true
+        return visit_content( cmd )
+
+      endContingent
+
+    method on_visit( cmd:Statements )
+      forEach (statement in writer=cmd.list.rewriter)
+        statement = visit( statement )
+
+        if (statement)
+          if (statement instanceOf Statements)
+            writer.write( forEach in statement )
+          else
+            writer.write( statement )
+          endIf
+        endIf
+      endForEach
+
+endClass

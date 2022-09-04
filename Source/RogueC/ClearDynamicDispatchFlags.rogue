@@ -1,0 +1,10 @@
+module RogueC
+
+class ClearDynamicDispatchFlags : InspectionVisitor
+  METHODS
+    method init
+      Program.apply( this )
+
+    method on_visit( m:Method )
+      m.attributes.dynamic_dispatch = false
+endClass

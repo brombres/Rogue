@@ -1,0 +1,126 @@
+class OptionalType [aspect];
+
+class Optional<<$DataType>>( value:$DataType, exists=true:Logical ) : OptionalType [compound]
+  GLOBAL METHODS
+    method create->$DataType?
+      local default_value : $DataType
+      return $DataType?( default_value, false )
+
+  METHODS
+    method operator==( other:$DataType? )->Logical
+      if (exists) return which{ other.exists:(value==other.value) || false }
+      else        return which{ other.exists:false || true }
+
+    method to->String
+      if (exists) return value->String
+      else        return "null"
+
+endClass
+
+augment Real64?
+  METHODS
+    method to->Real32?
+      return which{ this|| Real32?() }
+
+    method to->Int64?
+      return which{ this || Int64?() }
+
+    method to->Int32?
+      return which{ this || Int32?() }
+
+    method to->Character?
+      return which{ this || Character?() }
+
+    method to->Byte?
+      return which{ this || Byte?() }
+endAugment
+
+augment Real32?
+  METHODS
+    method to->Real64?
+      return which{ this|| Real64?() }
+
+    method to->Int64?
+      return which{ this || Int64?() }
+
+    method to->Int32?
+      return which{ this || Int32?() }
+
+    method to->Character?
+      return which{ this || Character?() }
+
+    method to->Byte?
+      return which{ this || Byte?() }
+endAugment
+
+augment Int64?
+  METHODS
+    method to->Real64?
+      return which{ this|| Real64?() }
+
+    method to->Real32?
+      return which{ this || Real32?() }
+
+    method to->Int32?
+      return which{ this || Int32?() }
+
+    method to->Character?
+      return which{ this || Character?() }
+
+    method to->Byte?
+      return which{ this || Byte?() }
+endAugment
+
+augment Int32?
+  METHODS
+    method to->Real64?
+      return which{ this|| Real64?() }
+
+    method to->Real32?
+      return which{ this || Real32?() }
+
+    method to->Int64?
+      return which{ this || Int64?() }
+
+    method to->Character?
+      return which{ this || Character?() }
+
+    method to->Byte?
+      return which{ this || Byte?() }
+endAugment
+
+augment Character?
+  METHODS
+    method to->Real64?
+      return which{ this|| Real64?() }
+
+    method to->Real32?
+      return which{ this || Real32?() }
+
+    method to->Int64?
+      return which{ this || Int64?() }
+
+    method to->Int32?
+      return which{ this || Int32?() }
+
+    method to->Byte?
+      return which{ this || Byte?() }
+endAugment
+
+augment Byte?
+  METHODS
+    method to->Real64?
+      return which{ this|| Real64?() }
+
+    method to->Real32?
+      return which{ this || Real32?() }
+
+    method to->Int64?
+      return which{ this || Int64?() }
+
+    method to->Int32?
+      return which{ this || Int32?() }
+
+    method to->Character?
+      return which{ this || Character?() }
+endAugment

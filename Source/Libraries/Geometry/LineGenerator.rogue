@@ -1,0 +1,81 @@
+module Geometry
+
+class LineGenerator(
+    x1:Int32, x2:Int32, x:Int32, step_x:Int32, x_error:Int32,
+    y1:Int32, y2:Int32, y:Int32, step_y:Int32, y_error:Int32,
+    error:Int32, is_horizontal:Logical, has_another:Logical
+  ) [compound]
+
+  GLOBAL METHODS
+    method create( a:XY, b:XY )->LineGenerator
+      local delta = b - a
+      return LineGenerator(
+        a.x, b.x, a.x, delta.x.sign, delta.x.abs,
+        a.y, b.y, a.y, delta.y.sign, delta.y.abs,
+        0, delta.x.abs >= delta.y.abs, true
+      )
+
+    method create( line:Line )->LineGenerator
+      return LineGenerator( line.a, line.b )
+
+  METHODS
+    method advance [mutating]
+      if (is_horizontal)
+        x += step_x
+        error += y_error
+        while (error >= x_error)
+          y += step_y
+          error -= x_error
+        endWhile
+
+      else
+        y += step_y
+        error += x_error
+        while (error >= y_error)
+          x += step_x
+          error -= y_error
+        endWhile
+
+      endIf
+
+    method advance_x [mutating]
+      if (x_error == 0) return
+      local start_x = x
+      advance
+      while (start_x == x) advance
+
+    method advance_y [mutating]
+      if (y_error == 0) return
+      local start_y = y
+      advance
+      while (start_y == y) advance
+
+    method height->Int32
+      return y_error + 1
+
+    method is_finished->Logical
+      return (x == x2 and y == y2)
+
+    method read->XY [mutating]
+      local result = XY(x,y)
+      if (is_finished) has_another = false
+      else             advance
+      return result
+
+    method steps_remaining->Int32
+      if (is_horizontal)
+        if (not step_x) return 0
+        return (x2 - x) / step_x
+      else
+        if (not step_y) return 0
+        return (y2 - y) / step_y
+      endIf
+
+    method to->XY
+      return XY( x, y )
+
+    method width->Int32
+      return x_error + 1
+
+endClass
+

@@ -1,0 +1,77 @@
+module RogueC
+
+class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
+  PROPERTIES
+    control_stack = ControlStructure[]
+
+  METHODS
+    method all_paths_return( cmd:Cmd )->Logical
+      return visit( cmd )
+
+    method on( cmd:Contingent )->Logical
+      if (cmd.catches_escape) return false
+
+      if (cmd.catches_sufficient)
+        if (cmd.catches_necessary and not visit(cmd.unsatisfied_statements)) return false
+        return visit(cmd.satisfied_statements)
+      elseIf (cmd.catches_necessary)
+        if (not visit(cmd.unsatisfied_statements)) return false
+        if (cmd.satisfied_statements) return visit(cmd.satisfied_statements)
+        return visit( cmd.statements )
+      else
+        if (cmd.satisfied_statements) return visit(cmd.satisfied_statements)
+        return visit( cmd.statements )
+      endIf
+
+    method on( cmd:ControlStructure )->Logical
+      if (cmd.catches_escape) return false
+
+      control_stack.add( cmd )
+
+      local result = visit_children( cmd )
+
+      control_stack.remove_last
+      return result
+
+    method on( cmd:If )->Logical
+      if (cmd.condition and not cmd.cmd_else) return false
+
+      control_stack.add( cmd )
+
+      local result = visit(cmd.statements)
+      if (result and cmd.cmd_else) result = visit( cmd.cmd_else )
+
+      control_stack.remove_last
+      return result
+
+    method on( cmd:Return )->Logical
+      return true
+
+    method on( cmd:Switch )->Logical
+      if (not cmd.statements) return false
+      if (not visit(cmd.statements)) return false
+      if (not visit(forEach in cmd.cases)) return false
+      return true
+
+    method on( cmd:Throw )->Logical
+      local thrown_type = which{ cmd.exception.type || Program.type_Exception }
+      if ((forEach in control_stack).catches_exception(thrown_type)) return false
+      return true
+
+    method on( cmd:Try )->Logical
+      control_stack.add( cmd )
+      if (not visit(cmd.statements)) return false
+      control_stack.remove_last
+
+      forEach (catch_block in cmd.catches)
+        if (not visit(catch_block)) return false
+      endForEach
+      return true
+
+    method on( cmd:Which )->Logical
+      if (not cmd.statements) return false
+      if (not visit(cmd.statements)) return false
+      if (not visit(forEach in cmd.cases)) return false
+      return true
+
+endClass

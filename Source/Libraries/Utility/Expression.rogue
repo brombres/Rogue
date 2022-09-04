@@ -1,0 +1,349 @@
+#===============================================================================
+# Expression.rogue
+# Utility library for parsing and evaluating simple mathematical expressions.
+# Moderately extensible.
+#
+# BASIC EXAMPLE
+#   uses Utility/Expression
+#
+#   println "Expression Evaluator"
+#   try
+#     loop
+#       local expr = Expression.parse( Console.input("> ") )
+#       println "  = " + expr
+#       println "  = " + expr()
+#     endLoop
+#   catch (err:Error)
+#     error.println err
+#   endTry
+#
+#   # OUTPUT
+#   #   Expression Evaluator
+#   #   > 3
+#   #     = 3.0
+#   #     = 3.0
+#   #   > 3+4
+#   #     = (3.0 + 4.0)
+#   #     = 7.0
+#   #   > 3 + 4 * 5
+#   #     = (3.0 + (4.0 * 5.0))
+#   #     = 23.0
+#   #   > (3+4)*5
+#   #     = ((3.0 + 4.0) * 5.0)
+#   #     = 35.0
+#   #   > q
+#   #   Unrecognized identifier "q".
+#
+# CUSTOMIZATION EXAMPLE
+#   # Adds 'random' as a keyword that evaluates to a different random number
+#   # each time.
+#
+#   uses Utility/Expression
+#
+#   println "Expression Evaluator"
+#   loop
+#     local expr = Expression.parse( Console.input("> "), Routine=>id_lookup )
+#     println "  = " + expr
+#     println "  = " + expr()
+#   endLoop
+#
+#   routine id_lookup( id:String )->Expression
+#     which (id)
+#       case "random": return RandomNumber()
+#       others:        return null
+#     endWhich
+#   endRoutine
+#
+#   class RandomNumber : Expression
+#     METHODS
+#       method call->Value
+#         return Random.real
+#
+#       method to->String
+#         return "random"
+#   endClass
+#
+#   # OUTPUT
+#   #   Expression Evaluator
+#   #   > random
+#   #     = random
+#   #     = 0.1656
+#   #   > random
+#   #     = random
+#   #     = 0.5681
+#   #   > random * 10
+#   #     = (random * 10.0)
+#   #     = 1.8194
+#===============================================================================
+module Utility::Expression
+
+class ExpressionParser [singleton]
+  PROPERTIES
+    symbols      = ["+","-","*","/","%","^","(",")"]
+    scanner      : Scanner
+    tokens       : Value[]
+    token_reader : Reader<<Value>>
+    id_lookup    : Function(String)->Expression
+
+  METHODS
+    method parse( command:String, id_lookup=null )->Expression
+      scanner = Scanner( command )
+      tokenize
+      token_reader = tokens.reader
+      return parse_expression
+
+    method parse_expression->Expression
+      return parse_add_sub
+
+    method parse_add_sub->Expression
+      return parse_add_sub( parse_mul_div_mod )
+
+    method parse_add_sub( left:Expression )->Expression
+      if (consume("+"))     return parse_add_sub( AddExpression(left,parse_mul_div_mod) )
+      elseIf (consume("-")) return parse_add_sub( SubtractExpression(left,parse_mul_div_mod) )
+      else                  return left
+
+    method parse_mul_div_mod->Expression
+      return parse_mul_div_mod( parse_pow )
+
+    method parse_mul_div_mod( left:Expression )->Expression
+      if (consume("*"))     return parse_mul_div_mod( MultiplyExpression(left,parse_pow) )
+      elseIf (consume("/")) return parse_mul_div_mod( DivideExpression(left,parse_pow) )
+      elseIf (consume("%")) return parse_mul_div_mod( ModuloExpression(left,parse_pow) )
+      else                  return left
+
+    method parse_pow->Expression
+      return parse_pow( parse_pre_unary )
+
+    method parse_pow( left:Expression )->Expression
+      if (consume("^")) return parse_pow( PowerExpression(left,parse_pre_unary) )
+      else              return left
+
+    method parse_pre_unary->Expression
+      if (consume("-")) return NegateExpression( parse_pre_unary )
+      else              return parse_post_unary
+
+    method parse_post_unary->Expression
+      return parse_post_unary( parse_term )
+
+    method parse_post_unary( operand:Expression )->Expression
+      return operand
+
+    method parse_term->Expression
+      if (not token_reader.has_another) throw Error( "Unexpected end of input." )
+
+      if (token_reader.peek.is_number)
+        return NumberExpression( token_reader.read )
+      elseIf (consume("("))
+        local id = token_reader.peek
+        local result = parse_expression
+        must_consume(")")
+        return result
+      elseIf (token_reader.peek.is_object)
+        return parse_identifier( token_reader.read->String )
+      endIf
+
+      throw Error( "Unexpected '$'." (token_reader.peek->String.to_escaped_ascii) )
+
+    method parse_identifier( id:String )->Expression
+      which (id)
+        case "e":  return NumberExpression( Math.E )
+        case "pi": return NumberExpression( pi )
+        others
+          if (id_lookup)
+            local result = id_lookup( id )
+            if (result) return result
+          endIf
+          throw Error( "Unrecognized identifier \"$\"." (id) )
+      endWhich
+
+    method consume( symbol:String )->Logical
+      if (not token_reader.has_another)    return false
+      if (not token_reader.peek.is_string) return false
+      if (token_reader.peek != symbol)     return false
+      token_reader.read
+      return true
+
+    method must_consume( symbol:String )
+      if (consume(symbol)) return
+      throw Error( "Expected '$', found '$'." (symbol.to_escaped_ascii,scanner.peek.to_escaped_ascii) )
+
+    method tokenize
+      symbols.sort( (a,b) => a.count >= b.count )
+      tokens = Value[]
+      while (tokenize_another) noAction
+
+    method tokenize_another->Logical
+      while (scanner.consume_whitespace) noAction
+      if (not scanner.has_another) return false
+
+      if (next_is_number)
+        tokens.add( scan_number )
+        return true
+      endIf
+
+      forEach (sym in symbols)
+        if (scanner.consume(sym))
+          tokens.add( Value(sym) )
+          return true
+        endIf
+      endForEach
+
+      if (next_is_identifier)
+        # Tokens use string-Value for symbols and object-Value for identifiers
+        tokens.add( Value(scan_identifier->(as Object)) )
+        return true
+      endIf
+
+      throw Error( "Unexpected '$'." (scanner.peek.to_escaped_ascii) )
+
+    method next_is_identifier->Logical
+      local ch = scanner.peek
+      return (ch >= 'a' and ch <= 'z') or (ch >= 'A' and ch <= 'Z') or ch == '_'
+
+    method next_is_number->Logical
+      local ch = scanner.peek
+      return (ch >= '0' and ch <= '9') or ch == '.'
+
+    method scan_identifier->String
+      local builder = String()
+      builder.print( scanner.read )
+      while (scanner.has_another)
+        local ch = scanner.peek
+        contingent
+          sufficient (ch >= 'a' and ch <= 'z')
+          sufficient (ch >= 'A' and ch <= 'Z')
+          sufficient (ch >= '0' and ch <= '9')
+          sufficient (ch == '_')
+          escapeWhile
+        endContingent
+        builder.print( scanner.read )
+      endWhile
+      return builder
+
+    method scan_number->Value
+      use builder = StringPool
+        local saw_period = false
+        local saw_e = false
+        while (scanner.has_another)
+          local ch = scanner.peek
+          contingent
+            sufficient (ch >= '0' and ch <= '9')
+            if (not saw_e)
+              if (not saw_period)
+                if (ch == '.') saw_period = true; sufficient true
+              endIf
+              if (ch == 'e' or ch == 'E')
+                saw_e = true
+                builder.print( scanner.read )
+                if (scanner.consume('-')) builder.print '-'
+                else                      scanner.consume('+')
+                nextIteration
+              endIf
+            endIf
+            escapeWhile
+          endContingent
+          builder.print( scanner.read )
+        endWhile
+        return Value( builder->Real )
+      endUse
+
+endClass
+
+class Expression [abstract]
+  GLOBAL METHODS
+    method parse( command:String, id_lookup=null:Function(String)->Expression )->Expression
+      return ExpressionParser.parse( command, id_lookup )
+
+  METHODS
+    method call()->Value [abstract]
+endClass
+
+class UnaryExpression( operand:Expression ) : Expression [abstract]
+  METHODS
+    method symbol->String [abstract]
+
+    method to->String
+      return "$$" (symbol,operand)
+endClass
+
+class BinaryExpression( left:Expression, right:Expression ) : Expression [abstract]
+  METHODS
+    method symbol->String [abstract]
+
+    method to->String
+      return "($ $ $)" (left, symbol, right)
+endClass
+
+class AddExpression : BinaryExpression
+  METHODS
+    method call()->Value
+      return left() + right()
+
+    method symbol->String
+      return "+"
+endClass
+
+class SubtractExpression : BinaryExpression
+  METHODS
+    method call()->Value
+      return left() - right()
+
+    method symbol->String
+      return "-"
+endClass
+
+class MultiplyExpression : BinaryExpression
+  METHODS
+    method call()->Value
+      return left() * right()
+
+    method symbol->String
+      return "*"
+endClass
+
+class DivideExpression : BinaryExpression
+  METHODS
+    method call()->Value
+      return left() / right()
+
+    method symbol->String
+      return "/"
+endClass
+
+class ModuloExpression : BinaryExpression
+  METHODS
+    method call()->Value
+      return left() % right()
+
+    method symbol->String
+      return "%"
+endClass
+
+class PowerExpression : BinaryExpression
+  METHODS
+    method call()->Value
+      return left() ^ right()
+
+    method symbol->String
+      return "^"
+endClass
+
+class NegateExpression : UnaryExpression
+  METHODS
+    method call()->Value
+      return -operand()
+
+    method symbol->String
+      return "-"
+endClass
+
+class NumberExpression( value:Value ) : Expression
+  METHODS
+    method call()->Value
+      return value
+
+    method to->String
+      return value->String
+endClass
+

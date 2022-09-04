@@ -1,0 +1,730 @@
+# Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
+module RogueC
+
+class Visitor
+  # Tree-rebuilding visitor.
+  #
+  # Default per-node call sequence:
+  #
+  #   CALL                       OVERLOADABLE METHOD
+  #   --------------------       -----------------------------------------
+  #   visit(cmd)->Cmd         -> on(cmd:CmdType)->Cmd
+  #     visit_content(cmd)    ->   on_visit(cmd:CmdType)
+  #       visit_children(cmd) ->     on_visit_children(cmd:CmdType)
+  #     validate(cmd)->Cmd    ->   on_validate(cmd:CmdType)->Cmd
+  #
+  # For visit() and validate() the AST is rebuilt with the return value the
+  # call, so return 'cmd' to keep that subtree or else return a different Cmd
+  # node to replace the subtree.
+  PROPERTIES
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+
+  METHODS
+    method on( cmd:Cmd )->Cmd
+      visit_content( cmd )
+      return validate( cmd )
+
+    method on_visit( cmd:Cmd )
+      # Called from on(CmdType). If you overload this method with an extended
+      # Cmd type, this node's children will only be visited if and
+      # when you call visit_children(cmd).
+      visit_children( cmd )
+
+    method on_validate( cmd:Cmd )->Cmd
+      return cmd
+
+    method visit( cmd:Cmd )->Cmd [propagated]
+      # Call to invoke the appropriate on/on_visit() for the given Cmd type.
+      #
+      # For example:
+      #   method on( cmd:Binary )->Cmd
+      #     cmd.left  = visit(cmd.left)
+      #     cmd.right = visit(cmd.right)
+      #     return cmd
+      if (cmd is null) return null
+      return cmd.dispatch<<on,ThisType,Cmd>>( this )
+
+    method visit_children( cmd:Cmd )->Cmd [propagated]
+      # Call from 'on()' or 'on_visit()' handler to visit subtrees.
+      cmd.dispatch<<on_visit_children,ThisType>>( this )
+      return cmd
+
+    method visit_content( cmd:Cmd )->Cmd [propagated]
+      # Primarily for internal use - see on(Cmd) for usage.
+      cmd.dispatch<<on_visit,ThisType>>( this )
+      return cmd
+
+    method visit( m:Module )
+      temporarily this_module = m
+        on_visit( m )
+      endTemporarily
+
+    method on_visit( m:Module )
+      visit_types( m )
+
+    method visit_types( m:Module )
+      temporarily this_module = m
+        forEach (type in m.types)
+          visit_type( type )
+        endForEach
+      endTemporarily
+
+    method visit_type( type:Type )
+      temporarily this_module=type.module_context, this_type=type
+        on_visit_type( type )
+      endTemporarily
+
+    method on_visit_type( type:Type )
+      visit_global_methods( type )
+      visit_methods( type )
+
+    method visit_global_methods( type:Type )
+      temporarily this_type = type
+        forEach (m in type.global_methods)
+          temporarily this_module=m.module_context, this_procedure=m
+            visit( m )
+          endTemporarily
+        endForEach
+      endTemporarily
+
+    method visit_methods( type:Type )
+      temporarily this_type = type
+        forEach (m in type.methods)
+          if (m.type_context is type)
+            temporarily this_module=m.module_context, this_procedure=m
+              visit( m )
+            endTemporarily
+          endIf
+        endForEach
+      endTemporarily
+
+    method validate( cmd:Cmd )->Cmd [propagated]
+      if (cmd is null) return null
+      return cmd.dispatch<<on_validate,ThisType,Cmd>>( this )
+
+    method on_visit_children( cmd:Cmd )
+      # Overloaded automatically by the Froley compiler
+      noAction
+
+    method on_visit_children( cmd:CmdList )
+      forEach (element in writer=cmd.list.rewriter)
+        local visited_element = visit( element )
+        if (visited_element) writer.write( visited_element )
+      endForEach
+
+    method on_visit_children( cmd:Statements )
+      forEach (element in writer=cmd.list.rewriter)
+        local visited_element = visit( element )
+        if (visited_element)
+          if (visited_element instanceOf Statements)
+            writer.write( forEach in visited_element )
+          else
+            writer.write( visited_element )
+          endIf
+        endIf
+      endForEach
+
+
+    method on_visit_children( cmd:Binary )
+      cmd.left = visit(cmd.left)
+      cmd.right = visit(cmd.right)
+
+    method on_visit_children( cmd:Unary )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:ContextAccess )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:IndexedAccess )
+      cmd.context = visit(cmd.context)
+      cmd.index = visit(cmd.index)
+
+    method on_visit_children( cmd:Procedure )
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.body = visit(cmd.body)->(as LocalScope)
+
+    method on_visit_children( cmd:Local )
+      cmd.type = visit(cmd.type)->(as Type)
+      cmd.initial_value = visit(cmd.initial_value)
+
+    method on_visit_children( cmd:LocalDeclarations )
+      cmd.declarations = visit(cmd.declarations)
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:Access )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:Assign )
+      cmd.target = visit(cmd.target)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:SetLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:GetLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:Class )
+      cmd.constructor_properties = visit(cmd.constructor_properties)->(as Parameters)
+      cmd.base_types = visit(cmd.base_types)->(as TypeList)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.sections = visit(cmd.sections)
+
+    method on_visit_children( cmd:PropertyDeclarations )
+      cmd.declarations = visit(cmd.declarations)
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:Property )
+      cmd.initial_value = visit(cmd.initial_value)
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:ForEachCollection )
+      cmd.data = visit(cmd.data)
+      cmd.starting_index = visit(cmd.starting_index)
+      cmd.step_size = visit(cmd.step_size)
+
+    method on_visit_children( cmd:ForEachControl )
+      cmd.optional_at = visit(cmd.optional_at)->(as ForEachAt)
+      cmd.collection = visit(cmd.collection)->(as ForEachCollection)
+
+    method on_visit_children( cmd:Conditional )
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:ForEach )
+      cmd.control = visit(cmd.control)->(as ForEachControl)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:ControlStructure )
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:Iterator )
+      cmd.control = visit(cmd.control)
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
+      cmd.upkeep = visit(cmd.upkeep)
+
+    method on_visit_children( cmd:If )
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
+      cmd.cmd_else = visit( cmd.cmd_else )
+
+    method on_visit_children( cmd:Return )
+      cmd.result = visit(cmd.result)
+
+    method on_visit_children( cmd:CallProcedure )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:DefineModule )
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+
+    method on_visit_children( cmd:ModuleQualifiedID )
+      cmd.context = visit(cmd.context)
+
+    method on_visit_children( cmd:NativeExpression )
+      cmd.result_type = visit(cmd.result_type)->(as Type)
+
+    method on_visit_children( cmd:CreateObject )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:Method )
+      cmd.type_context = visit(cmd.type_context)->(as Type)
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+      cmd.body = visit(cmd.body)->(as LocalScope)
+
+    method on_visit_children( cmd:TypeContext )
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:OpAndAssign )
+      cmd.target = visit(cmd.target)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:CallDynamicMethod )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:GetProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:GetThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:SetProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:SetThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:GetSingleton )
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:ConvertToType )
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
+
+    method on_visit_children( cmd:CreateObjectAndSetLocal )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:Definition )
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:Throw )
+      cmd.exception = visit(cmd.exception)
+
+    method on_visit_children( cmd:Try )
+      cmd.statements = visit(cmd.statements)
+      cmd.catches = visit(cmd.catches)->(as Catches)
+
+    method on_visit_children( cmd:Catch )
+      cmd.exception_type = visit(cmd.exception_type)->(as Type)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:Convert )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:Stepper )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:Type )
+      noAction
+
+    method on_visit_children( cmd:CallStaticMethod )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:InlineWhich )
+      cmd.cases = visit(cmd.cases)->(as InlineWhichCases)
+
+    method on_visit_children( cmd:InlineWhichCase )
+      cmd.condition = visit(cmd.condition)
+      cmd.value = visit(cmd.value)
+
+    #method on_visit_children( cmd:DiscardResult )
+      #cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:IsType )
+      cmd.operand = visit(cmd.operand)
+      cmd.compare_type = visit(cmd.compare_type)->(as Type)
+
+    method on_visit_children( cmd:InstanceOf )
+      cmd.operand = visit(cmd.operand)
+      cmd.compare_type = visit(cmd.compare_type)->(as Type)
+
+    method on_visit_children( cmd:IsCompound )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:IsPrimitive )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:IsReference )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:Print )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:Println )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:ContextBlock )
+      cmd.context = visit(cmd.context)
+      cmd.commands = visit(cmd.commands)
+
+    method on_visit_children( cmd:NamedArg )
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:Loop )
+      cmd.loop_count = visit(cmd.loop_count)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:GlobalPropertyDeclarations )
+      cmd.declarations = visit(cmd.declarations)
+      cmd.type = visit(cmd.type)->(as Type)
+      cmd.attributes = visit(cmd.attributes)->(as Attributes)
+
+    method on_visit_children( cmd:TypeAccess )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:GetGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:SetGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:ContextDirectAccess )
+      cmd.context = visit(cmd.context)
+
+    method on_visit_children( cmd:WideningCast )
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
+
+    method on_visit_children( cmd:UsedResource )
+      cmd.resource = visit(cmd.resource)
+
+    method on_visit_children( cmd:Use )
+      cmd.resources = visit(cmd.resources)->(as UsedResources)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:While )
+      cmd.condition = visit(cmd.condition)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:AddAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:BitShiftLeftAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:BitShiftRightXAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:BitwiseAndAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:BitwiseOrAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:BitwiseXorAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:DivideAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:MultiplyAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:ResolvedOpAndAssignLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:ResolvedOpAndAssignProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:SubtractAndAssignProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:AccessAndAssign )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:AccessAndAssignContext )
+      cmd.context = visit(cmd.context)
+
+    method on_visit_children( cmd:InlineForEach )
+      cmd.control = visit(cmd.control)->(as ForEachControl)
+
+    method on_visit_children( cmd:DecrementGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:DecrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:DecrementProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:DecrementThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:IncrementGlobalProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:IncrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:IncrementProperty )
+      cmd.context = visit(cmd.context)
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:IncrementThisProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+
+    method on_visit_children( cmd:PreDecrementLocal )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:CleanupBlock )
+      cmd.statements = visit(cmd.statements)
+      cmd.cleanup = visit(cmd.cleanup)
+
+    method on_visit_children( cmd:FormattedString )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:Which )
+      cmd.condition = visit(cmd.condition)
+      cmd.cases = visit(cmd.cases)->(as WhichCases)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:WhichCase )
+      cmd.args = visit(cmd.args)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:Switch )
+      cmd.condition = visit(cmd.condition)
+      cmd.cases = visit(cmd.cases)->(as WhichCases)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:Contingent )
+      cmd.statements = visit(cmd.statements)
+      cmd.satisfied_statements = visit(cmd.satisfied_statements)
+      cmd.unsatisfied_statements = visit(cmd.unsatisfied_statements)
+
+    method on_visit_children( cmd:Necessary )
+      cmd.condition = visit(cmd.condition)
+
+    method on_visit_children( cmd:Sufficient )
+      cmd.condition = visit(cmd.condition)
+
+    method on_visit_children( cmd:EmptyCompound )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
+    method on_visit_children( cmd:MethodTemplate )
+      cmd.placeholders = visit(cmd.placeholders)
+      cmd.token_list = visit(cmd.token_list)->(as TokenList)
+
+    method on_visit_children( cmd:TemplatedAccess )
+      cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:TemplatedMethodContextAccess )
+      cmd.context = visit(cmd.context)
+      cmd.type_args = visit(cmd.type_args)->(as TemplateArgs)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:FunctionType )
+      cmd.param_types = visit(cmd.param_types)->(as TypeList)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+
+    method on_visit_children( cmd:FunctionDefinition )
+      cmd.parameters = visit(cmd.parameters)->(as Parameters)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+      cmd.with_values = visit(cmd.with_values)->(as WithValues)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:WithValue )
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:GenericFunctionDefinition )
+      cmd.parameters = visit(cmd.parameters)->(as IDList)
+      cmd.with_values = visit(cmd.with_values)->(as WithValues)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:FunctionReturnValue )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:ConvertToTypeWithArgs )
+      cmd.operand = visit(cmd.operand)
+      cmd.to_type = visit(cmd.to_type)->(as Type)
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:Category )
+      cmd.args = visit(cmd.args)
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:EnumValueDef )
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:CreateCompound )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:EnumValue )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
+    method on_visit_children( cmd:LocalDeclaration )
+      cmd.info = visit(cmd.info)->(as Local)
+
+    method on_visit_children( cmd:StateDef )
+      cmd.methods = visit(cmd.methods)->(as Methods)
+
+    method on_visit_children( cmd:SetSingleton )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:Temporarily )
+      cmd.assignments = visit(cmd.assignments)->(as TemporaryAssignments)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:TemporaryAssignment )
+      cmd.target = visit(cmd.target)
+      cmd.new_value = visit(cmd.new_value)
+
+    method on_visit_children( cmd:As )
+      cmd.operand = visit(cmd.operand)
+      cmd.as_type = visit(cmd.as_type)->(as Type)
+
+    method on_visit_children( cmd:IfLocal )
+      cmd.expression = visit(cmd.expression)
+      cmd.statements = visit(cmd.statements)
+      cmd.else_if    = visit(cmd.else_if)->(as IfLocal)
+
+    method on_visit_children( cmd:NamedTupleElement )
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:TypedDestructuringLocal )
+      cmd.type = visit(cmd.type)->(as Type)
+
+    method on_visit_children( cmd:TypedDestructuringLocalDeclarations )
+      cmd.locals = visit(cmd.locals)->(as TypedDestructuringLocals)
+      cmd.tuple = visit(cmd.tuple)
+
+    method on_visit_children( cmd:UntypedDestructuringLocalDeclarations )
+      cmd.locals = visit(cmd.locals)->(as Identifiers)
+      cmd.tuple = visit(cmd.tuple)
+
+    method on_visit_children( cmd:NamedTupleTypeElement )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
+    method on_visit_children( cmd:GlobalMethodTemplate )
+      cmd.placeholders = visit(cmd.placeholders)
+      cmd.token_list = visit(cmd.token_list)->(as TokenList)
+
+    method on_visit_children( cmd:Block )
+      cmd.assignments = visit(cmd.assignments)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:CreateRange )
+      cmd.start = visit(cmd.start)
+      cmd.limit = visit(cmd.limit)
+      cmd.step_size = visit(cmd.step_size)
+
+    method on_visit_children( cmd:New )
+      cmd.type_expression = visit(cmd.type_expression)
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:Ensure )
+      cmd.expression = visit(cmd.expression)
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:Assert )
+      cmd.expression = visit(cmd.expression)
+      cmd.token_list = visit(cmd.token_list)->(as TokenList)
+
+    method on_visit_children( cmd:TypedLiteralList )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.list = visit(cmd.list)
+
+    method on_visit_children( cmd:KeyValuePair )
+      cmd.key = visit(cmd.key)
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:TypedLiteralTable )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+      cmd.table = visit(cmd.table)->(as KeyValuePairList)
+
+    method on_visit_children( cmd:BriefTrace )
+      cmd.expressions = visit(cmd.expressions)->(as TracedExpressions)
+
+    method on_visit_children( cmd:TracedExpression )
+      cmd.expression = visit(cmd.expression)
+      cmd.token_list = visit(cmd.token_list)->(as TokenList)
+
+    method on_visit_children( cmd:VerboseTrace )
+      cmd.expressions = visit(cmd.expressions)->(as TracedExpressions)
+
+    method on_visit_children( cmd:LiteralNullOptional )
+      cmd.optional_type = visit(cmd.optional_type)->(as Type)
+
+    method on_visit_children( cmd:CallPriorMethod )
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:CallbackFunction )
+      cmd.context = visit(cmd.context)
+      cmd.param_types = visit(cmd.param_types)->(as TypeList)
+
+    method on_visit_children( cmd:SwapValues )
+      cmd.a = visit(cmd.a)
+      cmd.b = visit(cmd.b)
+
+    method on_visit_children( cmd:NotInstanceOf )
+      cmd.operand = visit(cmd.operand)
+      cmd.compare_type = visit(cmd.compare_type)->(as Type)
+
+    method on_visit_children( cmd:DefaultValue )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
+    method on_visit_children( cmd:IsEnum )
+      cmd.operand = visit(cmd.operand)
+
+    method on_visit_children( cmd:GetTypeInfo )
+      cmd.of_type  = visit(cmd.of_type)->(as Type)
+
+    method on_visit_children( cmd:TypeIndex )
+      cmd.of_type = visit(cmd.of_type)->(as Type)
+
+    method on_visit_children( cmd:ConditionalContext )
+      cmd.context = visit(cmd.context)
+
+    method on_visit_children( cmd:IfConditionalContext )
+      cmd.conditional_context = visit(cmd.conditional_context)->(as ConditionalContext)
+      cmd.statements = visit(cmd.statements)
+
+    method on_visit_children( cmd:ValueList )
+      cmd.args = visit(cmd.args)
+
+    method on_visit_children( cmd:ValueTable )
+      cmd.args = visit(cmd.args)->(as KeyValuePairList)
+
+    method on_visit_children( cmd:CallMethodPointer )
+      cmd.pointer = visit(cmd.pointer)
+      cmd.param_types = visit(cmd.param_types)->(as TypeList)
+      cmd.args = visit(cmd.args)
+      cmd.return_type = visit(cmd.return_type)->(as Type)
+
+    method on_visit_children( cmd:InlineAssignment )
+      cmd.info = visit(cmd.info)->(as Local)
+      cmd.value = visit(cmd.value)
+
+    method on_visit_children( cmd:IntrospectionGetObjectProperty )
+      cmd.info = visit(cmd.info)->(as Property)
+      cmd.context = visit(cmd.context)
+
+    method on_visit_children( cmd:TypeOf )
+      cmd.expression = visit(cmd.expression)
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:CommandExists )
+      cmd.command = visit(cmd.command)
+
+    method on_visit_children( cmd:CallPriorTemplatedMethod )
+      cmd.template_args = visit(cmd.template_args)->(as TemplateArgs)
+      cmd.args = visit(cmd.args)->(as Args)
+
+    method on_visit_children( cmd:CallVirtualMethod )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
+endClass
+

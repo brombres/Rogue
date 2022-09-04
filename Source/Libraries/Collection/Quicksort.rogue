@@ -1,0 +1,100 @@
+class Quicksort<<$DataType>>
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical) )->$DataType[]
+      sort( list, compare_fn, 0, list.count-1 )
+      return list
+
+    method sort( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical), i1:Int32, i2:Int32 )
+      if (i1 >= i2)
+        # Zero or one elements - already sorted
+        return
+
+      elseIf (i1 + 1 == i2)
+        # Optimization for two elements
+        local a = list[i1]
+        local b = list[i2]
+        if (not compare_fn(a,b))
+          list[i2] = a
+          list[i1] = b
+        endIf
+        return
+
+      elseIf (i1 + 2 == i2)
+        # Optimization for three elements
+        local ib = i1 + 1
+        local a = list[i1]
+        local b = list[ib]
+        local c = list[i2]
+        if (compare_fn(a,b))
+          # abc, acb, cab
+          if (compare_fn(b,c))
+            # abc
+            return
+          elseIf (compare_fn(a,c))
+            # acb
+            list[ib] = c
+            list[i2] = b
+            return
+          else
+            # cab
+            list[i1] = c
+            list[ib] = a
+            list[i2] = b
+            return
+          endIf
+        else
+          # bac, bca, cba
+          if (compare_fn(a,c))
+            # bac
+            list[i1] = b
+            list[ib] = a
+            return
+          elseIf (compare_fn(b,c))
+            # bca
+            list[i1] = b
+            list[ib] = c
+            list[i2] = a
+            return
+          else
+            # cba
+            list[i1] = c
+            list[ib] = b
+            list[i2] = a
+            return
+          endIf
+        endIf
+      endIf
+
+      # General case - 4 or more elements.  Select the median value
+      # of the first, middle, and last numbers as the pivot.
+      local pivot_index = (i1+i2) :>>: 1
+      local pivot = list[ pivot_index ]
+      local first = list[i1]
+      if (compare_fn(pivot,first)) pivot = first; pivot_index = i1
+      local last = list[i2]
+      if (compare_fn(last,pivot)) pivot = last; pivot_index = i2
+
+      # Swap numbers until the left part of the list contains
+      # everything less than the pivot value and the right part contains
+      # everything greater than the pivot value - these two parts
+      # may well differ in size.
+
+      # Place the pivot at the end temporarily
+      list.swap( pivot_index, i2 )
+
+      pivot_index = i1
+      forEach (i in i1..(i2-1))
+        if (compare_fn(list[i],pivot))
+          # Read along swapping values when necessary so that all values
+          # ordered before the pivot are on one side.
+          list.swap( i, pivot_index )
+          ++pivot_index
+        endIf
+      endForEach
+
+      # Put the pivot back in the middle
+      list.swap( pivot_index, i2 )
+
+      sort( list, compare_fn, i1, pivot_index-1 )
+      sort( list, compare_fn, pivot_index+1, i2 )
+endClass

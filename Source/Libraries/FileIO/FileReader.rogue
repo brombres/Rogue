@@ -1,0 +1,133 @@
+class FileReader : Reader<<Byte>>
+  PROPERTIES
+    filepath        : String
+    count           : Int32
+    position        : Int32
+    buffer_position : Int32
+    buffer          = Byte[](1024)
+    error           : Logical
+    native "FILE* fp;"
+
+  METHODS
+    method init
+      noAction
+
+    method init( _filepath:String )
+      if (not open(_filepath))
+        Global.error.println( "Unable to open $ for reading." (filepath) )
+        error = true
+      endIf
+
+    method on_cleanup
+      close
+
+    method close
+      if (fp)
+        native @|fclose( $this->fp );
+                |$this->fp = 0;
+      endIf
+
+      position = 0
+      count = 0
+
+    method fp->Int64
+      return native("(RogueInt64)$this->fp")->Int64
+
+    method has_another->Logical
+      return (position < count)
+
+    method on_use->this
+      return this
+
+    method on_end_use( this_reader:FileReader )
+      close
+
+    method open( filepath )->Logical
+      close
+      error = false
+
+      native @|$this->fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
+               if (native("!$this->fp")->Logical)
+                 error = true
+                 return false
+               endIf
+      native @|
+              |fseek( $this->fp, 0, SEEK_END );
+              |$count = (RogueInt32) ftell( $this->fp );
+              |fseek( $this->fp, 0, SEEK_SET );
+
+      # Always close after the last byte is read, so if there are no
+      # bytes then close right away.
+      if (count == 0) close
+
+      return true
+
+    method peek->Byte
+      if (position == count) return 0
+
+      if (buffer_position == buffer.count)
+        native @|$buffer->count = (RogueInt32) fread( $buffer->as_bytes, 1, 1024, $this->fp );
+        buffer_position = 0
+      endIf
+
+      return buffer[ buffer_position ]
+
+    method read->Byte
+      if (position == count) return 0
+
+      local result = peek
+
+      ++position
+      ++buffer_position
+      if (position == count) close
+
+      return result
+
+    method read( result:Byte[], limit:Int32 )->Int32
+      if (position == count) return 0
+      result.reserve( limit )
+
+      # Read up to the end of our internal buffer
+      local total_read = 0
+      local n = (buffer.count - buffer_position).or_smaller( limit )
+      if (n > 0)
+        native @|memcpy( $result->as_bytes + $result->count, $buffer->as_bytes+$buffer_position, $n );
+        result.count += n
+        buffer_position += n
+        position += n
+        total_read += n
+        limit -= n
+      endIf
+
+      if (limit > 0)
+        # fread directly from file
+        native @|$n = (RogueInt32) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
+        result.count += n
+        total_read += n
+        position += n
+      endIf
+
+      if (position == count) close
+
+      return total_read
+
+    method remaining->Int32
+      return count - position
+
+    method reset
+      if (not fp) return
+      count = native( "(RogueInt32)ftell($this->fp)" )->Int32
+      seek( 0 )
+
+    method seek( pos:Int32 )
+      if (not fp) return
+
+      if (pos < 0) pos = 0
+      if (pos > count) pos = count
+
+      position = pos
+      native "fseek( $this->fp, $position, SEEK_SET );"
+
+      buffer_position = 0
+      buffer.clear
+endClass

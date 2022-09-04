@@ -1,0 +1,126 @@
+-------------------------------------------------------------------------------
+#  Random
+-------------------------------------------------------------------------------
+class Random [singleton]
+  # This random number generator produces evenly distributed
+  # pseudo-random values.
+  #
+  # You may create a Random object with a 'seed' value; generators
+  # created with the same seed always return the same sequence of random
+  # numbers. If a seed is not specified then the current System.time_ms
+  # is used.
+  #
+  # Underneath, the Random operates on a 48-bit integer using the linear
+  # congruence formula with the "drand48" parameters:
+  #
+  #   next = (a * prev + c) mod (2^48)
+  #
+  # Where a=0x5DEECE66D, c=11, and bits 31:0 of
+  # 'next' are retrieved with each read call.
+
+  PROPERTIES
+    state : Int64
+
+  METHODS
+    method init
+      reset( Rogue::System.time_ms )
+
+    method init( seed:Int64 )
+      reset( seed )
+
+    method reset( _state:Int64 )
+      state = _state
+      _advance_state
+
+    method chance( p:Real )->Logical
+      # Has a proportional chance 'p' to return true (0 < p < 1.0).
+      # Example:
+      #   Random.chance(0.75)  # returns true 75% of the time statistically speaking.
+      return (real < p)
+
+    method gaussian->Real
+      # Returns a random number from a normal distribution of avg=0, stddev=1
+      # 68.2% chance of being between -1..1
+      # 95.45% chance of being between -2..2
+      # 99.73% chance of being -3..3
+      # 99.994% chance of being -4..4
+      # Real number precision limits the results to [-8.5,8.5]
+      # From: https://stackoverflow.com/a/218600/135791
+      local u1 = 1.0 - real
+      local u2 = 1.0 - real
+      return (-2.0 * u1.log).sqrt * (pi * 2 * u2).sin
+
+    method real->Real
+      # Returns a random number 0 < n < 1.0
+      return ((_advance_state & 0x7fff_ffff)->Real + 1.0) / 2147483649.0
+
+    method real( limit:Real )->Real
+      # Returns a random number 0 < n < limit
+      return real * limit
+
+    method real( low:Real, high:Real )->Real
+      # Returns a random number low < n < high
+      return (real * (high-low)) + low
+
+    method real32->Real32
+      # Returns a random number 0 < n < 1.0
+      return ((_advance_state & 0x7fff_ffff)->Real32 + 1.0) / 2147483649.0
+
+    method real32( limit:Real32 )->Real32
+      # Returns a random number 0 < n < limit
+      return real32 * limit
+
+    method real32( low:Real32, high:Real32 )->Real32
+      # Returns a random number low < n < high
+      return (real32 * (high-low)) + low
+
+    method real64->Real64
+      # Returns a random number 0 < n < 1.0
+      return ((_advance_state & 0x7fff_ffff)->Real64 + 1.0) / 2147483649.0
+
+    method real64( limit:Real64 )->Real64
+      # Returns a random number 0 < n < limit
+      return real64 * limit
+
+    method real64( low:Real64, high:Real64 )->Real64
+      # Returns a random number low < n < high
+      return (real64 * (high-low)) + low
+
+    method int64->Int64
+      # Returns a normalized, evenly distributed random integer in
+      # the range [0,2^63-1] inclusive.
+      local result = _advance_state->Int64 :<<: 32
+      return (result | (_advance_state->Int64 & 0x0FFFFffff))
+
+    method int32->Int32
+      # Returns a normalized, evenly distributed random integer in
+      # the range [0,2^31-1] inclusive.
+      return _advance_state & 0x7fff_ffff
+
+    method int32( limit:Int32 )->Int32
+      # Returns an evenly distributed random integer in
+      # the range [0,limit) - includes 0 but does not include limit.
+      #
+      # Example:
+      #   println( random_Int32(100) )  #prints a number 0..99
+      if (limit == 0) return 0
+      return int32 % limit
+
+    method int32( low:Int32, high:Int32 )->Int32
+      # Returns a random integer between low and high, inclusive.
+      return int32( (high-low)+1 ) + low
+
+    method byte->Byte
+      # Returns a random byte between 0 and 255.
+      return ((_advance_state:>>>:8) & 0xff)->Byte
+
+    method logical->Logical
+      # Returns either "true" or "false" with equal likelihood.
+      return (_advance_state & 8)?
+
+    method _advance_state->Int32
+      # Calculates the next raw random integer.
+      state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
+      return state
+
+endClass

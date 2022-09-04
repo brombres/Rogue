@@ -1,0 +1,61 @@
+class WorkList<<$DataType>> : WorkList<<$DataType,Default>> [singleton]
+  # WorkList<<T>> provides an efficient alternative to allocating local lists
+  # of type T in frequent and/or recursive calls.
+  #
+  # Internally WorkList uses only two lists: a current work list or "frame"
+  # and a "stack" list that saves content across recursive calls. The lists
+  # grow as new "high-level watermark" capacity is required but they are
+  # never freed.
+  #
+  # Each time a WorkList<<T>> is 'use'd it saves any old work list contents,
+  # clears the list, and returns it as a new work list. On 'endUse' the current
+  # work list is cleared again and refilled with its previous contents.
+  #
+  # EXAMPLE
+  #   method recurse_in_random_directions
+  #     use dirs = WorkList<<Direction>>
+  #       dirs.add( Direction.UP, Direction.LEFT, Direction.DOWN, Direction.RIGHT )
+  #       dirs.shuffle
+  #       forEach (dir in dirs) ...
+  #     endUse
+endClass
+
+class WorkList<<$DataType,$Category>> [singleton]
+  # Multiple worklists can be used concurrently as long as they specify a different
+  # $Category as a template parameter. Example:
+  #
+  #   uses WorkList
+  #
+  #   use numbers = WorkList<<Int32>>
+  #     numbers.add( forEach in 1..10 )
+  #
+  #     use evens = WorkList<<Int32,Filtered>>
+  #       forEach (n in numbers)
+  #         if (n % 2 == 0) evens.add( n )
+  #       endForEach
+  #       @trace evens
+  #     endUse
+  #
+  #   endUse
+  #
+  # A WorkList without an explicit category uses category 'Default'.
+
+  PROPERTIES
+    frame    = $DataType[]  # current "frame"
+    stack    = $DataType[]  # stack of previous content "frames"
+    sp_stack = Int32[]
+
+  METHODS
+    method on_use->$DataType[]
+      sp_stack.add( stack.count )
+      stack.add( frame )
+      return frame.[ clear ]
+
+    method on_end_use( list:$DataType[] )
+      frame.clear
+      local sp = sp_stack.remove_last
+      forEach (component in stack from sp)
+        frame.add( component )
+      endForEach
+      stack.discard_from( sp )
+endClass

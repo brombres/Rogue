@@ -1,0 +1,154 @@
+# USAGE
+#   uses Presentation/ProgressFn
+#
+#   local fn = ProgressFn.QUADRATIC_OUT : ProgressFnType
+#   forEach (t in 0.0..1.0 step 0.05)
+#     println "f($) = $"(t.format(".2"),fn(t).format(".2"))
+#   endForEach
+#
+#   # f(0.00) = 0.00
+#   # f(0.05) = 0.10
+#   # f(0.10) = 0.19
+#   # f(0.15) = 0.28
+#   # f(0.20) = 0.36
+#   # f(0.25) = 0.44
+#   # f(0.30) = 0.51
+#   # f(0.35) = 0.58
+#   # f(0.40) = 0.64
+#   # f(0.45) = 0.70
+#   # f(0.50) = 0.75
+#   # f(0.55) = 0.80
+#   # f(0.60) = 0.84
+#   # f(0.65) = 0.88
+#   # f(0.70) = 0.91
+#   # f(0.75) = 0.94
+#   # f(0.80) = 0.96
+#   # f(0.85) = 0.98
+#   # f(0.90) = 0.99
+#   # f(0.95) = 1.00
+$define ProgressFnType Function(Real)->Real
+
+class ProgressFn
+  GLOBAL PROPERTIES
+    BACK            = function(p:Real)->Real
+                        if( p < 0.5 )
+                          return p * p * (7 * p - 2.5) * 2
+                        else
+                          --p
+                          return 1 + p * p * 2 * (7 * p + 2.5)
+                        endIf
+                      endFunction
+    BACK_IN         = function(p:Real)->Real: return p * p * (2.70158 * p - 1.70158)
+    BACK_OUT        = function(p:Real)->Real: return (p-1) * (p-1) * (2.70158*(p-1) + 1.70158) + 1
+    BACK_EASY_OUT   = function(p:Real)->Real: return 1 - ((1.0 - p)^2 - (1.0 - p)/1.25 * Radians((1.0 - p) * pi).sin)
+
+    BOUNCE          = function(p:Real)->Real
+                        if( p < 0.5 )
+                          return 8 * 2 ^ (8 * (p - 1) ) * ( p * pi * 7 ).sin.abs
+                        else
+                          return 1 - 8 * 2 ^ (-8 * p) * ( p * pi * 7 ).sin.abs
+                        endIf
+                      endFunction
+    BOUNCE_IN       = function(p:Real)->Real: return 2 ^ (6 * (p - 1)) * ( p * pi * 3.5 ).sin.abs
+    BOUNCE_OUT      = function(p:Real)->Real: return 1 - 2 ^ (-6 * p) * ( p * pi * 3.5 ).cos.abs
+
+    CIRCULAR        = function(p:Real)->Real
+                        if( p < 0.5 )
+                          return (1 - ( 1 - 2 * p ).sqrt) * 0.5
+                        else
+                          return (1 + ( 2 * p - 1 ).sqrt) * 0.5
+                        endIf
+                      endFunction
+    CIRCULAR_IN     = function(p:Real)->Real: return 1 - ( 1 - p ).sqrt
+    CIRCULAR_OUT    = function(p:Real)->Real: return ( p ).sqrt
+
+    CUBIC           = function(p:Real)->Real
+                        p *= 2
+                        if (p < 1) return 0.5 * p * p * p
+                        p -= 2
+                        return 0.5 * (p * p *p + 2)
+                      endFunction
+    CUBIC_IN        = function(p:Real)->Real: return p * p * p
+    CUBIC_OUT       = function(p:Real)->Real: --p; return 1 + p * p * p
+
+    ELASTIC         = function(p:Real)->Real
+                        if( p < 0.45 )
+                          local p2 = p * p
+                          return 8 * p2 * p2 * ( p * pi * 9 ).sin
+                        elseIf( p < 0.55 )
+                          return 0.5 + 0.75 * ( p * pi * 4 ).sin
+                        else
+                          local p2 = (p - 1) * (p - 1)
+                          return 1 - 8 * p2 * p2 * ( p * pi * 9 ).sin
+                        endIf
+                      endFunction
+    ELASTIC_IN      = function(p:Real)->Real
+                        local p2 = p * p
+                        return p2 * p2 * ( p * pi * 4.5 ).sin
+                      endFunction
+    ELASTIC_OUT     = function(p:Real)->Real
+                        local p2 = (p - 1) * (p - 1)
+                        return 1 - p2 * p2 * ( p * pi * 4.5 ).cos
+                      endFunction
+
+    EXPONENTIAL     = function(p:Real)->Real
+                        if( p < 0.5 )
+                          return (2^(16 * p) - 1) / 510
+                        else
+                          return 1 - 0.5 * 2 ^ (-16 * (p - 0.5))
+                        endIf
+                      endFunction
+    EXPONENTIAL_IN  = function(p:Real)->Real: return (2^(8*p) - 1) / 255
+    EXPONENTIAL_OUT = function(p:Real)->Real: return 1 - 2^(-8*p)
+
+    LINEAR          = function(p:Real)->Real: return p
+
+    QUADRATIC       = function(p:Real)->Real: return which{ p<0.5:2*p*p || 0.5 + (0.5-p) * (2*p-3) }
+    QUADRATIC_IN    = function(p:Real)->Real: return p * p
+    QUADRATIC_OUT   = function(p:Real)->Real: return p * (2 - p)
+
+    QUARTIC         = function(p:Real)->Real
+                        if (p < 0.5)
+                          p *= p
+                          return 8 * p * p
+                        else
+                          --p
+                          p *= p
+                          return 1 - 8 * p * p
+                        endIf
+                      endFunction
+    QUARTIC_IN      = function(p:Real)->Real: p *= p; return p * p
+    QUARTIC_OUT     = function(p:Real)->Real: --p; p *= p; return 1 - p * p
+
+    QUINTIC         = function(p:Real)->Real
+                        if( p < 0.5 )
+                          local p2 = p * p
+                          return 16 * p * p2 * p2
+                        else
+                          local p2 = (p - 1) * p
+                          return 1 + 16 * p * p2 * p2
+                        endIf
+                      endFunction
+    QUINTIC_IN      = function(p:Real)->Real
+                        local p2 = p * p
+                        return p * p2 * p2
+                      endFunction
+    QUINTIC_OUT     = function(p:Real)->Real
+                        local p2 = (p - p) * p
+                        return 1 + p * p2 * p2
+                      endFunction
+
+    SINE            = function(p:Real)->Real: return 0.5 * (1 + ( 3.1415926 * (p - 0.5) ).sin )
+    SINE_IN         = function(p:Real)->Real: return ( 1.5707963 * p ).sin
+    SINE_OUT        = function(p:Real)->Real: return 1 + ( 1.5707963 * (p-1) ).sin
+
+    SMOOTHSTEP      = function(p:Real)->Real: return p * p * (3 - 2*p)
+    SMOOTHERSTEP    = function(p:Real)->Real: return p * p * p * (p * (p * 6 - 15) + 10)
+
+    SNAPBOUNCE      = function(p:Real)->Real
+                        local exponent = -10 * p
+                        return (Radians( -13 * (pi/2) * (p + 1)).sin) * 2 ^ exponent + 1
+                      endFunction
+
+endClass
+

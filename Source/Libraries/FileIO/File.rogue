@@ -1,0 +1,824 @@
+class File( filepath:String ) [compound]
+  NATIVE
+    nativeHeader @|#include <stdio.h>
+                  |#include <sys/stat.h>
+                  |
+                  |#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+                  |  #include <dirent.h>
+                  |#endif
+
+  GLOBAL METHODS
+    method operator+( left:String, right:File )->File
+      return File( left + right.filepath )
+
+    method operator+( left:File, right:String )->File
+      return File( left.filepath + right )
+
+    method operator+( left:File, right:File )->File
+      return File( left.filepath + right.filepath )
+
+  METHODS
+    method abs->File
+      if (not this.exists)
+        local filepath = resolved.filepath
+        if (filepath.count('/') > 0)
+          return parent.abs / filename
+        else
+          return File("."/filepath).abs
+        endIf
+      endIf
+
+      local filepath = resolved.filepath
+      local return_value : String
+
+      native @|#if defined(_WIN32)
+              |{
+              |  char long_name[PATH_MAX+4];
+              |  char full_name[PATH_MAX+4];
+              |
+              |  strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->data->as_utf8 );
+              |
+              |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
+              |  {
+              |    $return_value = RogueString_create( full_name );
+                   return_value .= replacing( '\\', '/' )
+      native @|  }
+              |}
+              |#else
+              |{
+              |  int original_dir_fd;
+              |  int new_dir_fd;
+              |  char filename[PATH_MAX];
+              |  char c_filepath[ PATH_MAX ];
+                 localize is_folder
+      native @|
+              |  int len = $filepath->data->count;
+              |  if (len >= PATH_MAX) len = PATH_MAX - 1;
+              |  memcpy( c_filepath, (char*)$filepath->data->as_utf8, len );
+              |  c_filepath[len] = 0;
+              |
+              |  // A way to get back to the starting folder when finished.
+              |  original_dir_fd = open( ".", O_RDONLY );
+              |
+              |  if ($is_folder)
+              |  {
+              |    filename[0] = 0;
+              |  }
+              |  else
+              |  {
+              |    // fchdir only works with a path, not a path+filename (c_filepath).
+              |    // Copy out the filename and null terminate the filepath to be just a path.
+              |    int i = (int) strlen( c_filepath ) - 1;
+              |    while (i >= 0 && c_filepath[i] != '/') --i;
+              |    strcpy( filename, c_filepath+i+1 );
+              |    if (i == -1) strcpy( c_filepath, "." );
+              |    else         c_filepath[i] = 0;
+              |  }
+              |  new_dir_fd = open( c_filepath, O_RDONLY );
+              |
+              |  do
+              |  {
+              |    if (original_dir_fd < 0 || new_dir_fd < 0) break;
+              |
+              |    int r = fchdir( new_dir_fd );
+              |    if ( r != 0 ) break;
+              |    char* r2 = getcwd( c_filepath, PATH_MAX );
+              |    if ( r2 == 0 ) break;
+              |    if ( !$is_folder )
+              |    {
+              |      strcat( c_filepath, "/" );
+              |      strcat( c_filepath, filename );
+              |    }
+              |    r = fchdir( original_dir_fd );
+              |    if ( r != 0 ) break;
+              |
+              |    $return_value = RogueString_create( c_filepath );
+              |  } while (0);
+              |
+              |  if (original_dir_fd >= 0) close( original_dir_fd );
+              |  if (new_dir_fd >= 0) close( new_dir_fd );
+              |}
+              |#endif
+
+      if (return_value) return return_value
+      error.println( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
+      return this
+
+    method character_writer->CharacterToUTF8ByteWriter
+      return CharacterToUTF8ByteWriter( File.writer(resolved.filepath) )
+
+    method common_folder( other:File )->File
+      local a = resolved.filepath
+      local b = other.resolved.filepath
+
+      if (a == b) return a
+
+      # Remove trailing '/'
+      while (a.count > 1 and a.ends_with('/')) a .= leftmost( -1 )
+      while (b.count > 1 and b.ends_with('/')) b .= leftmost( -1 )
+
+      while ((a.count > 0 or b.count > 0) and a != b)
+        if (a.count > b.count) a = File( a ).folder
+        else                   b = File( b ).folder
+      endWhile
+
+      return File(a)  # 'a' and 'b' are the same at this point, possibly ""
+
+    method contains( pattern:FilePattern )->Logical
+      # Returns true if this folder contains a file with the given pattern.
+      if (not is_folder) return false
+      return listing( pattern ).count > 0
+
+    method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
+      # Copies a file or the contents of a folder to a specified file or folder.
+      # Returns the count of files copied or null on an error.
+      if (this.is_folder)
+        if (not destination.is_folder and destination.exists)
+          println "Cannot copy the contents of folder $ to file $."(this,destination)
+          return null
+        endIf
+
+        if (not destination.exists)
+          if (dry_run) return this.listing( FilePattern("**"), &=ignore_hidden, &files ).count
+          destination.create_folder
+        endIf
+
+        local result = 0
+        forEach (filepath in listing(&=ignore_hidden))
+          local file = File( filepath )
+          local dest = destination
+          if (file.is_folder) dest /= file.filename
+          local n = file.copy_to( dest, &=if_different, &if_newer, &=dry_run, &=verbose, &=ignore_hidden )
+          if (not n) return 0
+          result += n.value
+        endForEach
+        return result
+      endIf
+
+      local dest = this.with_destination( destination )
+      if (if_newer and not this.is_newer_than(destination)) return 0
+      if (if_different and this == dest) return 0
+
+      if (verbose) println "$ -> $" (this,dest)
+
+      if (dry_run) return 1
+
+      if (dest.has_parent)
+        if (not dest.parent.create_folder) return 0
+      endIf
+
+      local reader = reader
+      if (reader.error) return 0
+
+      local writer = dest.writer
+      if (writer.error) reader.close; return 0
+
+      use file_buffer = WorkList<<Byte>>
+        file_buffer.reserve( 1024 )
+        while (reader.has_another)
+          reader.read( file_buffer.[clear], 1024 )
+          writer.write( file_buffer )
+        endWhile
+        writer.close
+      endUse
+
+      return 1
+
+    method conventional_filepath->String
+      if (System.is_windows) return filepath.replacing( '/', '\\' )
+      else                   return filepath
+
+    method crc32->Int32
+      nativeHeader @|extern const RogueUInt32 Rogue_crc32_table[256];
+
+      nativeCode...
+        @|const RogueUInt32 Rogue_crc32_table[256] =
+         |{
+         |  0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
+         |  0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
+         |  0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
+         |  0xf3b97148, 0x84be41de, 0x1adad47d, 0x6ddde4eb, 0xf4d4b551, 0x83d385c7,
+         |  0x136c9856, 0x646ba8c0, 0xfd62f97a, 0x8a65c9ec, 0x14015c4f, 0x63066cd9,
+         |  0xfa0f3d63, 0x8d080df5, 0x3b6e20c8, 0x4c69105e, 0xd56041e4, 0xa2677172,
+         |  0x3c03e4d1, 0x4b04d447, 0xd20d85fd, 0xa50ab56b, 0x35b5a8fa, 0x42b2986c,
+         |  0xdbbbc9d6, 0xacbcf940, 0x32d86ce3, 0x45df5c75, 0xdcd60dcf, 0xabd13d59,
+         |  0x26d930ac, 0x51de003a, 0xc8d75180, 0xbfd06116, 0x21b4f4b5, 0x56b3c423,
+         |  0xcfba9599, 0xb8bda50f, 0x2802b89e, 0x5f058808, 0xc60cd9b2, 0xb10be924,
+         |  0x2f6f7c87, 0x58684c11, 0xc1611dab, 0xb6662d3d, 0x76dc4190, 0x01db7106,
+         |  0x98d220bc, 0xefd5102a, 0x71b18589, 0x06b6b51f, 0x9fbfe4a5, 0xe8b8d433,
+         |  0x7807c9a2, 0x0f00f934, 0x9609a88e, 0xe10e9818, 0x7f6a0dbb, 0x086d3d2d,
+         |  0x91646c97, 0xe6635c01, 0x6b6b51f4, 0x1c6c6162, 0x856530d8, 0xf262004e,
+         |  0x6c0695ed, 0x1b01a57b, 0x8208f4c1, 0xf50fc457, 0x65b0d9c6, 0x12b7e950,
+         |  0x8bbeb8ea, 0xfcb9887c, 0x62dd1ddf, 0x15da2d49, 0x8cd37cf3, 0xfbd44c65,
+         |  0x4db26158, 0x3ab551ce, 0xa3bc0074, 0xd4bb30e2, 0x4adfa541, 0x3dd895d7,
+         |  0xa4d1c46d, 0xd3d6f4fb, 0x4369e96a, 0x346ed9fc, 0xad678846, 0xda60b8d0,
+         |  0x44042d73, 0x33031de5, 0xaa0a4c5f, 0xdd0d7cc9, 0x5005713c, 0x270241aa,
+         |  0xbe0b1010, 0xc90c2086, 0x5768b525, 0x206f85b3, 0xb966d409, 0xce61e49f,
+         |  0x5edef90e, 0x29d9c998, 0xb0d09822, 0xc7d7a8b4, 0x59b33d17, 0x2eb40d81,
+         |  0xb7bd5c3b, 0xc0ba6cad, 0xedb88320, 0x9abfb3b6, 0x03b6e20c, 0x74b1d29a,
+         |  0xead54739, 0x9dd277af, 0x04db2615, 0x73dc1683, 0xe3630b12, 0x94643b84,
+         |  0x0d6d6a3e, 0x7a6a5aa8, 0xe40ecf0b, 0x9309ff9d, 0x0a00ae27, 0x7d079eb1,
+         |  0xf00f9344, 0x8708a3d2, 0x1e01f268, 0x6906c2fe, 0xf762575d, 0x806567cb,
+         |  0x196c3671, 0x6e6b06e7, 0xfed41b76, 0x89d32be0, 0x10da7a5a, 0x67dd4acc,
+         |  0xf9b9df6f, 0x8ebeeff9, 0x17b7be43, 0x60b08ed5, 0xd6d6a3e8, 0xa1d1937e,
+         |  0x38d8c2c4, 0x4fdff252, 0xd1bb67f1, 0xa6bc5767, 0x3fb506dd, 0x48b2364b,
+         |  0xd80d2bda, 0xaf0a1b4c, 0x36034af6, 0x41047a60, 0xdf60efc3, 0xa867df55,
+         |  0x316e8eef, 0x4669be79, 0xcb61b38c, 0xbc66831a, 0x256fd2a0, 0x5268e236,
+         |  0xcc0c7795, 0xbb0b4703, 0x220216b9, 0x5505262f, 0xc5ba3bbe, 0xb2bd0b28,
+         |  0x2bb45a92, 0x5cb36a04, 0xc2d7ffa7, 0xb5d0cf31, 0x2cd99e8b, 0x5bdeae1d,
+         |  0x9b64c2b0, 0xec63f226, 0x756aa39c, 0x026d930a, 0x9c0906a9, 0xeb0e363f,
+         |  0x72076785, 0x05005713, 0x95bf4a82, 0xe2b87a14, 0x7bb12bae, 0x0cb61b38,
+         |  0x92d28e9b, 0xe5d5be0d, 0x7cdcefb7, 0x0bdbdf21, 0x86d3d2d4, 0xf1d4e242,
+         |  0x68ddb3f8, 0x1fda836e, 0x81be16cd, 0xf6b9265b, 0x6fb077e1, 0x18b74777,
+         |  0x88085ae6, 0xff0f6a70, 0x66063bca, 0x11010b5c, 0x8f659eff, 0xf862ae69,
+         |  0x616bffd3, 0x166ccf45, 0xa00ae278, 0xd70dd2ee, 0x4e048354, 0x3903b3c2,
+         |  0xa7672661, 0xd06016f7, 0x4969474d, 0x3e6e77db, 0xaed16a4a, 0xd9d65adc,
+         |  0x40df0b66, 0x37d83bf0, 0xa9bcae53, 0xdebb9ec5, 0x47b2cf7f, 0x30b5ffe9,
+         |  0xbdbdf21c, 0xcabac28a, 0x53b39330, 0x24b4a3a6, 0xbad03605, 0xcdd70693,
+         |  0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
+         |  0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
+         |};
+
+      local file = resolved
+      if (not file.exists) return 0
+
+      native @|RogueUInt32 result = ~0U;
+      local reader = file.reader
+      local file_buffer = Byte[]( 1024 )
+      while (reader.has_another)
+        reader.read( file_buffer.[clear], 1024 )
+        native @|RogueByte* byte_ptr = $file_buffer->as_bytes - 1;
+                |for (int i=$file_buffer->count+1; --i; )
+                |{
+                |  result = Rogue_crc32_table[ (result ^ *(++byte_ptr)) & 0xFF ] ^ (result >> 8);
+                |}
+      endWhile
+
+      return native( "(RogueInt32)~result" )->Int32
+
+    method create_folder->Logical
+      # Creates the specified folder along with intermediate folders
+      # if necessary.  Returns 'true' on success or if the filepath
+      # already exists as a folder.  Returns 'false' on failure to
+      local file = resolved.abs.without_trailing_separator
+      if (file.exists) return file.is_folder
+
+      # Check for the parent folder's existence and recursively create
+      # that if necessary.
+      local parent = file.parent
+      if (parent.filepath == "") return false
+
+      if (not parent.create_folder) return false
+
+      # Note: 0777 is a permission mask rather than the actual permission setting.
+      local status : Logical
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  $status = (0 == mkdir((char*)$filepath->data->as_utf8));
+              |#else
+              |  $status = (0 == mkdir((char*)$filepath->data->as_utf8, 0777));
+              |#endif
+      return status
+
+    method delete->Logical
+      local file = resolved
+      if (file.is_folder)
+        File(forEach in file.listing(FilePattern("*"))).delete  # Recursively delete nested content
+        return (0 == native( "rmdir( (const char*) $filepath->data->as_utf8 )")->Int32)
+      endIf
+      return (0 == native( "unlink( (const char*) $filepath->data->as_utf8 )")->Int32)
+
+    method esc->String
+      local acceptable : String
+      if (System.is_windows)
+        # Windows
+        # Characters that cannot be part of a filename:    "*:<>?/\|
+        # Non-alpha-num chars that don't require escaping: #$.-@_
+        acceptable = ''"*:<>?/\\|#$.-@_''
+      else
+        # Mac/Linux
+        # Characters that cannot be part of a filename:    /
+        # Non-alpha-num chars that don't require escaping: #%+-._~
+        acceptable = "/#%+-._~"
+      endIf
+
+      local filepath = conventional_filepath
+
+      contingent
+        forEach (ch in filepath)
+          necessary (ch.is_alphanumeric or acceptable.contains(ch))
+        endForEach
+        return filepath
+
+      unsatisfied
+        if (System.is_windows)
+          # Surrounding the filepath with double quotes is all the escaping we need.
+          return '"$"' (filepath)
+        else
+          # On Unixy OS's, put a '\' in front of every character that needs it.
+          local result = String()
+          forEach (ch in filepath)
+            if (ch.is_alphanumeric or acceptable.contains(ch))
+              result.print( ch )
+            else
+              result.[ print('\\'), print(ch) ]
+            endIf
+          endForEach
+          return result
+        endIf
+
+      endContingent
+
+    method exists->Logical
+      if (filepath == "") return false
+      local filepath = resolved.filepath
+      native @|struct stat s;
+      return native("(stat((char*)$filepath->data->as_utf8, &s) == 0)")->Logical
+
+
+    method extension->String
+      return filename.after_last( '.' )
+
+    method filename->String
+      local filepath = resolved.filepath
+      local i = filepath.locate_last( '/' )
+      if (not i?) return this
+      return filepath.from( i.value+1 )
+
+    method filepath_before_pattern->String
+      # Example: alpha/beta/image*.png -> alpha/beta
+      local filepath = resolved.filepath
+      while (filepath.contains('?') or filepath.contains('*'))
+        filepath = File(filepath).folder
+      endWhile
+      return filepath
+
+    method folder->String
+      local filepath = resolved.filepath
+
+      # Replace multiple slashes with single slashes
+      while (filepath.contains("//")) filepath = filepath.replacing( "//", "/" )
+
+      # Discard trailing slash
+      if (filepath.ends_with('/')) filepath = filepath.leftmost( -1 )
+
+      if (filepath.count == 0)
+        return File("")
+      endIf
+
+      local i1 = filepath.locate_last( '/' )
+      if (not i1?)
+        local abs = File(filepath).abs
+        if (abs != filepath) return File(abs).folder
+        else                 return File("/")
+      endIf
+
+      if (i1.value == 0) return File(filepath.leftmost(1))  # /abc -> /
+
+      return filepath.from(0, i1.value-1)
+
+    method has_parent->Logical
+      return resolved.folder.count > 0
+
+    method is_absolute->Logical
+      local filepath = resolved.filepath
+      if (filepath.begins_with('/')) return true
+      if (System.is_windows)
+        if (filepath.count >= 3 and filepath[1]==':' and filepath[2]=='/') return true
+      endIf
+      return false
+
+    method is_folder->Logical
+      if (filepath == "") return false
+
+      local filepath = resolved.filepath
+
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  struct stat s;
+                 if (native("stat((char*)$filepath->data->as_utf8, &s) != 0")->Logical) return false
+                 return native("((s.st_mode & S_IFMT) == S_IFDIR)")->Logical
+      native @|#else
+              |  DIR* dir = opendir( (char*)$filepath->data->as_utf8 );
+                 if (native("!dir")->Logical) return false
+      native @|
+              |  closedir( dir );
+                 return true
+      native @|#endif
+
+    method is_hidden->Logical
+      local filename = this.resolved.filename
+      if (not filename.begins_with('.'))       return false
+      if (filename == "." or filename == "..") return false
+      return true
+
+    method is_newer_than( other:File )->Logical
+      if (not this.exists)  return false
+      if (not other.exists) return true
+      return (this.timestamp_ms > other.timestamp_ms)
+
+    method is_valid_utf8->Logical
+      if (not this.exists or this.is_folder) return false
+      local reader = this.reader
+      contingent
+        while (reader.has_another)
+          local b = reader.read
+          if (b & 0x80)
+            necessary (b & 0x40) # 10xx_xxxx is an illegal first byte of UTF8
+            if (b & 0x20)
+              if (b & 0x10)
+                necessary ((b&8) == 0) # 1111_1xxx is illegal
+                loop (3)
+                  # 1111_0xxx
+                  necessary (reader.has_another)
+                  necessary ((reader.read & 0xC0) == 0x80)
+                endLoop
+              else
+                loop (2)
+                  # 1110_xxxx
+                  necessary (reader.has_another)
+                  necessary ((reader.read & 0xC0) == 0x80)
+                endLoop
+              endIf
+            else
+              # 110x_xxxx
+              necessary (reader.has_another)
+              necessary ((reader.read & 0xC0) == 0x80)
+            endIf
+          #else 0xxx_xxxx
+          endIf
+        endWhile
+        return true
+      unsatisfied
+        reader.close
+        return false
+      endContingent
+
+    method listing( filepattern=null:FilePattern?, &ignore_hidden, &absolute, &omit_path,
+        &files, &folders, &unsorted, &recursive )->String[]
+      # Use the filepattern '**' for a recursive listing.
+      local options : FileListingOption
+      options.is_ignore_hidden = ignore_hidden
+      options.is_absolute      = absolute
+      options.is_omit_path     = omit_path
+      options.is_files         = files
+      options.is_folders       = folders
+      options.is_unsorted      = unsorted
+      options.is_recursive     = recursive
+      return FileListing( this, filepattern, options ).filepaths
+
+    method listing( pattern:String, &ignore_hidden, &absolute, &omit_path,
+        &files, &folders, &unsorted, &recursive )->String[]
+      local filepattern : FilePattern?
+      if (pattern) filepattern = FilePattern( pattern )
+      return listing( filepattern, &=ignore_hidden, &=absolute, &=omit_path, &=files, &=folders, &=unsorted, &=recursive )
+
+    method load_as_bytes( &discard_bom )->Byte[]
+      # discard_bom
+      #   Discard the Byte Order Marker, if it exists.
+      local count = size
+      local bytes = Byte[]( count )
+      use reader = this.reader
+        if (count >= 3 and discard_bom)
+          # Discard byte order marker if it exists
+          local b0 = reader.read
+          local b1 = reader.read
+          local b2 = reader.read
+          if (b0 == 0xEF and b1 == 0xBB and b2 == 0xBF)
+            count -= 3
+          else
+            bytes = Byte[]( count )
+            bytes.add( b0 )
+            bytes.add( b1 )
+            bytes.add( b2 )
+          endIf
+        endIf
+
+        ensure<<bytes>>( count )
+        reader.read( bytes, count )
+      endUse
+      return bytes
+
+    method load_as_string( encoding=StringEncoding.AUTODETECT:StringEncoding )->String
+      local bytes = load_as_bytes( &discard_bom )
+      return String( bytes, encoding )
+
+    method operator==( other:File )->Logical
+      # Returns true if 'this' and 'other' both exist, are the same size, and have the same CRC32.
+      local file = resolved
+      other .= resolved
+
+      if (file.exists xor other.exists) return false
+      if (not file.exists) return true
+
+      if (filepath == other.filepath)   return true
+
+      if (file.size != other.size)      return false
+      if (file.crc32 != other.crc32)    return false
+      return true
+
+    method operator/( other:File )->File
+      return File( resolved.filepath / other.resolved.filepath )
+
+    method operator/( pattern:FilePattern )->File
+      return File( resolved.filepath / pattern.pattern )
+
+    method operator/( other_filepath:String )->File
+      return File( resolved.filepath / File(other_filepath).resolved.filepath )
+
+    method parent( level=1:Int32 )->File
+      if (level <= 0) return filepath
+      if (level == 1) return File(folder)
+      return File(folder).parent( level-1 )
+
+    method print_writer( &append )->PrintWriter
+      return PrintWriter( writer(&=append) )
+
+    method reader->FileReader
+      return FileReader( resolved.filepath )
+
+    method rename( destination:File )->Logical
+      if (not this.exists) return false
+      local source_filepath = resolved.filepath
+      local destination_filepath = destination.resolved.filepath
+      native @|rename( $source_filepath->data->as_utf8, $destination_filepath->data->as_utf8 );
+      return File( destination_filepath ).exists
+
+    method resolved->File
+      localize filepath
+
+      if (System.is_windows)
+        local n = filepath.count('%')
+        while (n >= 2)
+          local i1 = filepath.locate('%').value
+          local i2 = filepath.locate('%',i1+1).value
+          local name  = filepath.from(i1+1,i2-1)
+          local value = which{ System.env[name] || "" }
+          filepath .= replacing_at( i1, (i2-i1)+1, value )
+          n -= 2
+        endWhile
+      endIf
+
+      if (System.is_windows) filepath = filepath.replacing( '\\', '/' )
+
+      if (filepath == "~" or filepath.begins_with("~/"))
+        local home_folder : String
+        if (System.is_windows)
+          home_folder = System.env//HOMEDRIVE + System.env//HOMEPATH
+        else
+          home_folder = System.env//HOME
+        endIf
+        if (home_folder and home_folder.count)
+          filepath = home_folder + filepath.rightmost(-1)
+          return File(filepath)
+        endIf
+      endIf
+
+      if (filepath.contains(".."))
+        local is_expanded = false
+        local parts = filepath.split('/')
+        local i = 0
+        while (i < parts.count)
+          if (parts[i] == "..")
+            if (i == 0)
+              if (is_expanded)
+                return File("/")
+              else
+                # Restart with absolute filepath as prefix
+                is_expanded = true
+                parts = (File(".").abs.filepath / filepath).split('/')
+                i = 0
+                nextIteration
+              endIf
+            else
+              parts.remove_at(i)
+              parts.remove_at(i-1)
+              --i
+            endIf
+          else
+            ++i
+          endIf
+        endWhile
+        if (parts.is_empty)
+          if (is_expanded) return File("/")
+          else             return File(".")
+        endIf
+        filepath = parts.join('/')
+      endIf
+
+      return File(filepath)
+
+      #{
+    method rewrite( filepath:String, mappings:Table<<String,String>> )
+      filepath = expand_path( filepath )
+      local fn = function( line:String )->String with (mappings)
+        local cur = mappings.first_entry
+        while (cur)
+          if (line.contains(cur.key))
+            line = line.replacing( cur.key, cur.value )
+          endIf
+          cur = cur.next_entry
+        endWhile
+        return line
+      endFunction
+
+      rewrite( filepath, fn )
+
+    method rewrite( filepath:String, fn1:Function(String)->String, fn2=null:Function(String)->String, fn3=null:Function(String)->String )
+      filepath = expand_path( filepath )
+      local has_bom = has_byte_order_mark( filepath )
+      local data = load_as_string( filepath )
+      local result = StringBuilder( data.count * 1.1 )
+      forEach (line in LineReader(data))
+        line = fn1( line )
+        if (fn2) line = fn2( line )
+        if (fn3) line = fn3( line )
+        result.println( line )
+      endForEach
+      save( filepath, result->String, &bom=has_bom )
+      }#
+
+    method save( data:Byte[] )->Logical
+      local outfile = resolved.writer
+      outfile.write( data )
+      outfile.close
+      return not outfile.error
+
+    method save( data:String, &bom )->Logical
+      local outfile = resolved.writer
+      if (bom) outfile.[ write(0xEF), write(0xBB), write(0xBF) ]
+      outfile.write( data )
+      outfile.close
+      return not outfile.error
+
+    method separator->Character
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+              |  return '\\';
+              |#else
+              |  return '/';
+              |#endif
+
+    method is_valid_filename_character( ch:Character, &any_os )->Logical
+      if (ch < 32 or ch == 127) return false
+      if (any_os or System.is_windows) return not ''"*:<>?/\\|''.contains( ch )
+      return ch != '/'
+
+    method size->Int64
+      local filepath = resolved.filepath
+      local size : Int64
+      native @|FILE* fp = fopen( (char*)$filepath->data->as_utf8, "rb" );
+               if (native("!fp")->Logical) return 0
+      native @|
+              |fseek( fp, 0, SEEK_END );
+              |$size = (RogueInt64) ftell( fp );
+              |fclose( fp );
+      return size;
+
+    method symlink( target:File )
+      # Symlinks this File to the target file.
+      # Unix-style example: File("/usr/local/bin/cmdlauncher").symlink(File("/opt/myapp/bin/cmd"))
+      local file = resolved
+      target .= resolved
+      if (System.is_windows)
+        local option = which{ file.is_folder:"/D " || "" }
+        Process.run( "mklink $$ $" (option,file.esc,target.esc) )
+      else
+        Process.run( "ln -s $ $" (target.esc,file.esc) )
+      endIf
+
+    method timestamp_ms->Int64
+      # Returns the last modified time.
+
+      local ms : Int64
+      local filepath = resolved.filepath
+
+      native @|#if defined(_WIN32)
+              |  HANDLE handle = CreateFile( (const char*)$filepath->data->as_utf8, 0, 0, NULL, OPEN_EXISTING,
+              |      FILE_ATTRIBUTE_NORMAL, NULL );
+              |  if (handle != INVALID_HANDLE_VALUE)
+              |  {
+              |    BY_HANDLE_FILE_INFORMATION info;
+              |    if (GetFileInformationByHandle( handle, &info ))
+              |    {
+              |      RogueInt64 result = info.ftLastWriteTime.dwHighDateTime;
+              |      result <<= 32;
+              |      result |= info.ftLastWriteTime.dwLowDateTime;
+              |      result /= 10000; // convert from Crazyseconds to Milliseconds
+              |      result -= 11644473600000;  // base on Jan 1, 1970 instead of Jan 1, 1601 (?!)
+              |      CloseHandle(handle);
+              |      $ms = result;
+              |    }
+              |    CloseHandle(handle);
+              |  }
+              |
+              |#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
+              |  int file_id = open( (const char*)$filepath->data->as_utf8, O_RDONLY );
+              |  if (file_id >= 0)
+              |  {
+              |    struct stat info;
+              |    if (0 == fstat(file_id, &info))
+              |    {
+              |#if defined(__APPLE__)
+              |      RogueInt64 result = info.st_mtimespec.tv_sec;
+              |      result *= 1000000000;
+              |      result += info.st_mtimespec.tv_nsec;
+              |      result /= 1000000;  // convert to milliseconds
+              |#else
+              |      RogueInt64 result = (RogueInt64) info.st_mtime;
+              |      result *= 1000;  // convert to ms
+              |#endif
+              |      close(file_id);
+              |      $ms = result;
+              |    }
+              |    close(file_id);
+              |  }
+              |
+              |#else
+              |  #error Must define File.timestamp_ms() for this OS.
+              |#endif
+      return ms
+
+    method to->String
+      return filepath
+
+      #{
+    method touch( filepath:String )
+      filepath = shell_escaped( expand_path(filepath) )
+      if (System.is_windows)
+        System.run "type nul >> $" (filepath)
+      else
+        System.run "touch $" (filepath)
+      endIf
+      }#
+
+    method with_destination( destination:File )->File
+      # Uses console-style filename and folder rules to modify a source filepath
+      # given a destination filepath.
+      #
+      # File( "folder1/filename1" ).with_destination( File("folder2/filename2") ) -> "folder2/filename2"
+      # File( "folder1/filename1" ).with_destination( File("folder2") )           -> "folder2/filename1"
+      # File( "folder1/filename1" ).with_destination( File("filename2") )         -> "filename2"
+      # File( "filename1" ).with_destination( File("folder2/filename2") )         -> "folder2/filename2"
+      # File( "filename1" ).with_destination( File("folder2") )                   -> "folder2/filename1"
+      # File( "filename1" ).with_destination( File("filename2") )                 -> "filename2"
+      # File( "folder1" ).with_destination( File("folder2/filename2") )           -> "folder2/filename2"
+      # File( "folder1" ).with_destination( File("folder2") )                     -> "folder2/folder1"
+      # File( "folder1" ).with_destination( File("filename2") )                   -> "filename2" (folder1 renamed to filename2)
+      #
+      # Definitions
+      # - path:     .exists and .is_folder
+      # - filename: not .exists or (.exists and not .is_folder)
+      if (destination.is_folder)
+        # File( "folder1" ).with_destination( "folder2" )           -> "folder2/folder1"
+        # File( "folder1/filename1" ).with_destination( "folder2" ) -> "folder2/filename1"
+        # File( "filename1" ).with_destination( "folder2" )         -> "folder2/filename1"
+        return destination / this.filename
+
+      elseIf (destination.parent.is_folder or this.is_folder)
+        # File( "folder1/filename1" ).with_destination( File("folder2/filename2") ) -> "folder2/filename2"
+        # File( "filename1" ).with_destination( File("folder2/filename2") )         -> "folder2/filename2"
+        # File( "folder1" ).with_destination( File("folder2/filename2") )           -> "folder2/filename2"
+        # File( "folder1" ).with_destination( File("filename2") )                   -> "filename2"
+        return destination
+
+      elseIf (this.parent.is_folder)
+        # File( "folder1/filename1" ).with_destination( "filename2" ) -> "filename2"
+        return destination
+
+      else
+        # File( "filename1" ).with_destination( "filename2" ) -> "filename2"
+        return destination
+
+      endIf
+
+    method without_trailing_separator->File
+      # Removes trailing slash on anything except "/"
+      local filepath = resolved.filepath
+      while (filepath.count > 1 and filepath.ends_with('/'))
+        filepath .= leftmost( -1 )
+      endWhile
+      return File(filepath)
+
+    method writer( &append )->FileWriter
+      return FileWriter( resolved.filepath, &=append )
+
+endClass
+
+augment Byte[]
+  GLOBAL METHODS
+    method create( file:File )->Byte[]
+      return file.load_as_bytes
+
+endAugment
+
+augment LineReader
+  METHODS
+    method init( file:File, encoding=StringEncoding.AUTODETECT:StringEncoding )
+      init( file.reader, encoding )
+
+endAugment
+
+augment String
+  GLOBAL METHODS
+    method create( file:File )->String
+      return file.load_as_string
+
+endAugment

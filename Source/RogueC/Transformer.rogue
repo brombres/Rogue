@@ -1,0 +1,71 @@
+module RogueC
+
+class Transformer : Visitor
+  PROPERTIES
+    inline_stack = Cmd[]
+    autoname_index = 0
+
+  METHODS
+    method autoname( base:String )->String
+      local result = "_auto_$_$"(base,autoname_index)
+      ++autoname_index
+      return result
+
+    method on( cmd:ConditionalContext )->Cmd
+      cmd.context = visit( cmd.context )
+      inline_stack.add( IfConditionalContext(cmd.t,cmd,null) )
+      return cmd
+
+    method on( cmd:InlineForEach )->Cmd
+      local name = autoname( "iterator" )
+      cmd.control.name = name
+      visit( cmd.control )
+      inline_stack.add( ForEach(cmd.t,cmd.control,null) )
+      return Access( cmd.t, name )
+
+    method on_visit( cmd:Procedure )
+      autoname_index = 0
+      visit_children( cmd )
+
+    method on_visit_children( cmd:Statements )
+      forEach (element in writer=cmd.list.rewriter)
+        local cur_statement_index = writer.write_index
+        local inline_stack_fp = inline_stack.count
+
+        local visited_element = visit( element )
+        if (visited_element)
+          if (visited_element instanceOf Statements)
+            writer.write( forEach in visited_element )
+          else
+            writer.write( visited_element )
+          endIf
+        endIf
+
+        # Turn inline commands inside out
+        while (inline_stack.count > inline_stack_fp)
+          local outer_cmd = inline_stack.remove_last
+
+          local statements = Statements( writer.list[cur_statement_index].t )
+          forEach (i in cur_statement_index..<writer.write_index)
+            statements.add( writer.list[i] )
+            writer.list[i] = null
+          endForEach
+          writer.list[ cur_statement_index ] = outer_cmd
+          writer.write_index = cur_statement_index + 1
+
+          local cmd_foreach = outer_cmd->(as ForEach)
+          if (cmd_foreach)
+            cmd_foreach.statements = statements
+          else
+            local cmd_if = outer_cmd->(as IfConditionalContext)
+            if (cmd_if)
+              cmd_if.statements = statements
+            else
+              assert false
+            endIf
+          endIf
+        endWhile
+
+      endForEach
+
+endClass

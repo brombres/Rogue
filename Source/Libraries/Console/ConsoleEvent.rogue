@@ -1,0 +1,68 @@
+enum ConsoleEventType
+  CHARACTER
+  POINTER_PRESS_LEFT
+  POINTER_PRESS_RIGHT
+  POINTER_RELEASE
+  POINTER_MOVE
+  SCROLL_UP
+  SCROLL_DOWN
+endEnum
+
+enum UnixConsoleMouseEventType
+  PRESS_LEFT  = 32
+  PRESS_RIGHT = 34
+  RELEASE     = 35
+  DRAG_LEFT   = 64
+  DRAG_RIGHT  = 66
+  MOVE        = 67
+  SCROLL_UP   = 96
+  SCROLL_DOWN = 97
+endEnum
+
+class ConsoleEvent( type:ConsoleEventType, x:Int32, y:Int32 ) [compound]
+  METHODS
+    method is_character->Logical
+      return (type == ConsoleEventType.CHARACTER)
+
+    method is_pointer_press->Logical
+      return (type==ConsoleEventType.POINTER_PRESS_LEFT or type==ConsoleEventType.POINTER_PRESS_RIGHT)
+
+    method is_pointer_press_left->Logical
+      return (type==ConsoleEventType.POINTER_PRESS_LEFT)
+
+    method is_pointer_press_right->Logical
+      return (type==ConsoleEventType.POINTER_PRESS_RIGHT)
+
+    method is_pointer_release->Logical
+      return (type==ConsoleEventType.POINTER_RELEASE)
+
+    method is_scroll_up->Logical
+      return (type==ConsoleEventType.SCROLL_UP)
+
+    method is_scroll_down->Logical
+      return (type==ConsoleEventType.SCROLL_DOWN)
+
+    method to->String
+      which (type)
+        case ConsoleEventType.CHARACTER
+          which (Int32(x))
+            case 8:                   return "BACKSPACE"
+            case '\t':                return "TAB"
+            case 10:                  return "NEWLINE"
+            case 27:                  return "ESCAPE"
+            case Console.UP_ARROW:    return "UP"
+            case Console.DOWN_ARROW:  return "DOWN"
+            case Console.RIGHT_ARROW: return "RIGHT"
+            case Console.LEFT_ARROW:  return "LEFT"
+            case 127:                 return "DELETE"
+            others:                   return ""+Character(x)
+          endWhich
+        case ConsoleEventType.SCROLL_UP,
+             ConsoleEventType.SCROLL_DOWN
+          return type->String
+      endWhich
+      return "$($,$)" (type,x->Int32,y->Int32)
+
+    method unicode->Character
+      return Character(x)
+endClass

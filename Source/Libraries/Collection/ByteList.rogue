@@ -1,0 +1,115 @@
+augment Byte[]
+  METHODS
+    method init( hex:String )
+      init
+      add( hex )
+
+    method cloned->Byte[]
+      local result = Byte[]( count+1 )
+      result.count = count
+      copy( 0, count, result, 0 )
+      return result
+
+    method add( hex:String )
+      if (hex.count & 1)
+        println "ERROR: odd number of characters in Byte[].add(hex:String)."
+        return
+      endIf
+
+      local dest_i = count  # end of current is beginning of new
+      reserve( hex.count/2 )
+      count += hex.count/2
+
+      forEach (hex_i of hex step 2)
+        this[ dest_i ] = (hex[hex_i].to_number(16) :<<: 4) | hex[hex_i+1].to_number(16)
+        ++dest_i
+      endForEach
+
+    method has_byte_order_mark->Logical
+      if (count < 3) return false
+      if (this[0] != 0xEF) return false
+      if (this[1] != 0xBB) return false
+      if (this[2] != 0xBF) return false
+      return true
+
+    method is_valid_utf8->Logical
+      native @|int n = $count;
+              |unsigned char* src = $this->as_bytes - 1;
+              |while (--n >= 0)
+              |{
+              |  int b = *(++src);
+              |  if (b & 0x80)
+              |  {
+              |    // 1xxx_xxxx
+              |    if (b & 0x40)
+              |    {
+              |      // 11xx_xxxx
+              |      if (b & 0x20)
+              |      {
+              |        // 111x_xxxx
+              |        if (b & 0x10)
+              |        {
+              |          // 1111_xxxx
+              |          if (b & 8)
+              |          {
+              |            // 1111_1xxx is illegal
+              |            goto return_false;
+              |          }
+              |          else
+              |          {
+              |            // 1111_0xxx
+              |            if (n < 2) goto return_false;
+              |            if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |            if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |            if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |            n -= 3;
+              |          }
+              |        }
+              |        else
+              |        {
+              |          // 1110_xxxx
+              |          if (n < 1) goto return_false;
+              |          if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |          if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |          n -= 2;
+              |        }
+              |      }
+              |      else
+              |      {
+              |        // 110x_xxxx
+              |        if (--n < 0) goto return_false;
+              |        if ((*(++src) & 0xC0) != 0x80) goto return_false;
+              |      }
+              |    }
+              |    else
+              |    {
+              |      // 10xx_xxxx is an illegal first byte of UTF8
+              |      goto return_false;
+              |    }
+              |  //else 0xxx_xxxx is fine
+              |  }
+              |}
+               return true
+      native @|return_false:
+               return false
+
+    method to->String( hex:Logical, &uppercase, &lowercase )
+      # Returns a string of hexadecimal digit pairs encoding each byte.
+      # Uppercase by default unless &lowercase is specified.
+      #
+      # Example:
+      #
+      #   println Byte[][0,127,160,255]->String(&hex) # "007FA0FF"
+      local buffer = String( count*2 )
+      if (lowercase)
+        forEach (b in this)
+          buffer.[ print(((b:>>:4)&15).to_digit.to_lowercase), print((b&15).to_digit.to_lowercase) ]
+        endForEach
+      else
+        forEach (b in this)
+          buffer.[ print(((b:>>:4)&15).to_digit), print((b&15).to_digit) ]
+        endForEach
+      endIf
+      return buffer
+endAugment
+

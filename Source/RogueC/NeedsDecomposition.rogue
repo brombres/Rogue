@@ -1,0 +1,18 @@
+module RogueC
+
+class NeedsDecomposition : InspectionVisitor<<Logical>> [singleton]
+  METHODS
+    method on( cmd:CallProcedure )->Logical
+      if (cmd.info.throws?) return true          # call throws exception
+      visit_content( cmd )
+      return visit_children( cmd )
+
+endClass
+
+augment
+  METHODS
+    method Cmd.needs_decomposition->Logical
+      return NeedsDecomposition.visit( this )
+
+endAugment
+

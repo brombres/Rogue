@@ -1,0 +1,61 @@
+# EXAMPLE
+#   uses Utility/UUID
+#   @trace UUID()
+#   # C9D68B12-1630-4E34-B0AB-EB611441878F  # newly-generated UUID
+#
+# NOTES
+#   Windows
+#   - Must link with Rpcrt4.lib
+class UUID
+  PROPERTIES
+    bytes     = Byte[](16)
+    as_string : String
+
+  METHODS
+    method init
+      bytes.clear
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+        native @|UUID uuid;
+                |UuidCreate( &uuid );
+        local d1 = native( "uuid.Data1" )->Int32
+        local d2 = native( "(RogueInt32) uuid.Data2" )->Int32
+        local d3 = native( "(RogueInt32) uuid.Data2" )->Int32
+        bytes.add( d1 :>>: 24 )
+        bytes.add( d1 :>>: 16 )
+        bytes.add( d1 :>>: 8 )
+        bytes.add( d1 )
+        bytes.add( d2 :>>: 8 )
+        bytes.add( d2 )
+        bytes.add( d3 :>>: 8 )
+        bytes.add( d3 )
+        forEach (i in 0..7)
+          bytes.add( native("uuid.Data4[$i]")->Byte )
+        endForEach
+      native @|#else
+        native @|uuid_t uuid;
+                |uuid_generate( uuid );
+        forEach (i in 0..15)
+          bytes.add( native("uuid[$i]")->Byte )
+        endForEach
+      native @|#endif
+
+              local st = bytes->String(&hex)
+      local a = st.substring(  0,  8 )
+      local b = st.substring(  8,  4 )
+      local c = st.substring( 12,  4 )
+      local d = st.substring( 16,  4 )
+      local e = st.substring( 20, 12 )
+      as_string = "$-$-$-$-$" (a,b,c,d,e)
+
+    method to->String
+      return as_string
+
+  NATIVE
+    nativeHeader...
+     @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      |  #include <Rpc.h>
+      |#else
+      |  #include <uuid/uuid.h>
+      |#endif
+endClass
+

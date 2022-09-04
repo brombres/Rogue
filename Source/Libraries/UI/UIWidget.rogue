@@ -1,0 +1,104 @@
+module UI
+
+enum UIWidgetState
+  IDLE, TARGETED, PRESSED, DISABLED
+endEnum
+
+class UIWidget : UIComponent
+  PROPERTIES
+    widget_state       : UIWidgetState
+    on_select_callback : Function
+
+  METHODS
+    method init
+      prior.init
+
+    method init( size:XY )
+      prior.init( size )
+
+    method init( component:UIComponent )
+      prior.init( component )
+
+    method init( label:String )
+      init( UILabel(label) )
+
+    method init( label:String, font:UIFont )
+      init( UILabel(label,font) )
+
+    method handle_select
+      on_select
+      if (on_select_callback) on_select_callback()
+
+    method is_disabled->Logical
+      return (widget_state == UIWidgetState.DISABLED)
+
+    method is_idle->Logical
+      return (widget_state == UIWidgetState.IDLE)
+
+    method is_pressed->Logical
+      return (widget_state == UIWidgetState.PRESSED)
+
+    method is_targeted->Logical
+      return (widget_state == UIWidgetState.TARGETED)
+
+    method on( e:PointerEvent )
+      if (is_disabled) return
+
+      local contains_e = contains( e )
+      if (contains_e or has_pointer_focus or is_targeted)
+        request_redraw
+      endIf
+
+      if (e.is_press)
+        if (contains_e)
+          if (capture_pointer_focus)
+            widget_state = UIWidgetState.PRESSED
+            e.consume
+          endIf
+        else
+          release_pointer_focus
+        endIf
+      elseIf (e.is_release)
+        if (contains_e and has_pointer_focus)
+          prior.release_pointer_focus
+          widget_state = UIWidgetState.TARGETED
+          e.consume
+          handle_select
+        else
+          release_pointer_focus
+        endIf
+      elseIf (e.is_move)
+        if (contains_e)
+          if (widget_state == UIWidgetState.IDLE)
+            widget_state = UIWidgetState.TARGETED
+          endIf
+        else
+          if (widget_state == UIWidgetState.TARGETED or widget_state == UIWidgetState.PRESSED)
+            widget_state = UIWidgetState.IDLE
+          endIf
+        endIf
+      endIf
+
+    method on_select
+
+    method on_select( on_select_callback )
+
+    method release_pointer_focus
+      if (UI.pointer_focus is this)
+        if (widget_state != UIWidgetState.DISABLED) widget_state = UIWidgetState.IDLE
+        request_redraw
+      endIf
+      prior.release_pointer_focus
+
+    method set_disabled( setting:Logical )
+      if (setting == is_disabled) return
+      widget_state = which{ setting:UIWidgetState.DISABLED || UIWidgetState.IDLE }
+
+    method set_is_visible( setting:Logical )
+      if (setting == is_visible) return
+      if (not setting) release_pointer_focus
+      prior.set_is_visible( setting )
+      if (not is_disabled) widget_state = UIWidgetState.IDLE
+
+    method set_on_select( on_select_callback )
+endClass

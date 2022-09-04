@@ -1,0 +1,121 @@
+module RogueC
+
+class Template
+  PROPERTIES
+    t              : Token
+    module_context : Module
+    name           : String
+    placeholders   : Token[]
+    tokens         = Token[]
+    attributes     : Attributes
+
+  METHODS
+    method init( t, module_context, name, placeholders, tokens, attributes:Int64 )
+      this.attributes = Attributes( t )
+      this.attributes.flags = attributes
+
+    method description->String
+      return name
+
+    method instantiate( type:Type, type_args=null:TemplateArgs )
+      if (type.attributes.is_defined)
+        println StackTrace()
+        throw type.t.error( "Template already instantiated" )
+      endIf
+
+      if (not type.module_context) type.module_context = module_context
+      type.attributes.flags |= attributes.flags
+      type.attributes.is_defined = true
+
+      if (type.name == "Value" and type.module_context is Program.default_module)
+        Program.type_Value = type
+      endIf
+
+      local template_tokens = tokens
+
+      local replacements = Template.replacements( placeholders, type_args )
+      template_tokens = Template.make_replacements( type, template_tokens, replacements )
+
+      Program.unorganized_types.add( type )
+      local is_first_unorganized_type = (Program.unorganized_types.count == 1)
+      local parser = Parser( template_tokens )
+      temporarily Program.current_module = type.module_context
+        if (type.attributes.is_enum)
+          type.class_def = parser.parse( Parser.ip_enum )->(as Class)
+        else
+          type.class_def = parser.parse( Parser.ip_class )->(as Class)
+        endIf
+      endTemporarily
+
+      incorporate_augments( type, name, replacements )          # e.g. List
+      if (type.name != name)
+        incorporate_augments( type, type.name, replacements )   # e.g. Byte[]
+      endIf
+
+      if (is_first_unorganized_type) Program.organize_types
+      Program.is_modified = true
+
+    method incorporate_augments( type:Type, name:String, replacements:[String:Token[]] )
+      local class_def = type.class_def->(as Class)
+      assert class_def
+      assert type.module_context
+
+      local augments = type.module_context.augments[name]
+      if (augments and augments.count)
+        forEach (augment_name in augments)
+          local augment_template = type.module_context.templates[augment_name]
+          local augment_type = Type( t, type.module_context, augment_name, augment_template.attributes.flags )
+          local augment_tokens = augment_template.tokens
+          augment_tokens = Template.make_replacements( augment_type, augment_tokens, replacements )
+
+          class_def.base_types.add( augment_type )
+          augment_type.attributes.is_defined = true
+          Program.unorganized_types.add( augment_type )
+
+          temporarily Program.current_module = type.module_context
+            augment_type.class_def = Parser( augment_tokens ).parse( Parser.ip_class )
+          endTemporarily
+
+          if (augment_type.attributes.is_api)       type.attributes.is_api       = true
+          if (augment_type.attributes.is_essential) type.attributes.is_essential = true
+        endForEach
+      endIf
+
+  GLOBAL METHODS
+    method make_replacements( type:Type, tokens:Token[], replacements:[String:Token[]] )->Token[]
+      use processed_tokens = WorkList<<Token>>
+        local any_changes = false
+        forEach (t in tokens)
+          which (t.type)
+            case TokenType.PLACEHOLDER
+              contingent
+                necessary (replacements)
+                local replacement = replacements[t.content]
+                necessary (replacement)
+                any_changes = true
+                processed_tokens.add( forEach in replacement )
+              unsatisfied
+                processed_tokens.add( t )
+              endContingent
+            others
+              processed_tokens.add( t )
+          endWhich
+        endForEach
+
+        if (any_changes) return processed_tokens.cloned
+      endUse
+
+      return tokens
+
+    method replacements( placeholders:Token[], type_args:TemplateArgs )->[String:Token[]]
+      if (not type_args) return null
+      assert placeholders.count == type_args.count
+
+      local replacements = [String:Token[]]
+      forEach (placeholder at i in placeholders)
+        replacements[placeholder] = type_args[i].tokens
+      endForEach
+
+      return replacements
+
+endClass

@@ -1,0 +1,159 @@
+#==============================================================================
+# Time.rogue
+#
+# Models a time as a number of hours, minutes, seconds, and milliseconds.
+# Can be used as both an absolute time and a relative interval.
+#
+# HISTORY
+#   2020.03.16 - Created by Abe Pralle
+#==============================================================================
+
+class Time( total_ms:Int64 ) [compound]
+  GLOBAL METHODS
+    method create( hour:Int32, minute:Int32, second=0:Int32, millisecond=0:Int32 )->Time
+      return Time( (hour*3600 + minute*60 + second) * 1000 + millisecond )
+
+    method create( text:String )->Time
+      local st = text.to_lowercase
+      local parts = st.before_first('.').before_first(' ').split(':')
+      local h, m, s, ms : Int32
+      if (parts and parts.count >= 2 and parts.count <= 4)
+        h = parts[0]->Int32
+        m = parts[1]->Int32
+        if (parts.count >= 3)
+          s = parts[2]->Int32
+          if (parts.count == 4) ms = parts[3]->Int32
+        endIf
+      else
+        println( "Unsupported time format: " + text )
+        return Time(0)
+      endIf
+      if (ms == 0)
+        local ms_string = st.extract_string( "*.$(I)*" )
+        if (ms_string) ms = ms_string->Int32
+      endIf
+      if (st.contains("am") or st.contains("a.m."))
+        if (h == 12) h = 0
+      elseIf (st.contains("pm") or st.contains("p.m."))
+        if (h != 12) h += 12
+      endIf
+      return Time( h, m, s, ms )
+
+    method from_timestamp( timestamp:Timestamp )->Time
+      return Time( timestamp.hour, timestamp.minute, timestamp.second, timestamp.millisecond )
+
+    method now->Time
+      return from_timestamp( Timestamp.now )
+
+  METHODS
+    method days->Int32
+      return Int32(total_ms / (24*3600000))
+
+    method hour->Int32
+      return Int32(total_ms / 3600000)
+
+    method is_am->Logical
+      return hour < 12
+
+    method is_pm->Logical
+      return hour >= 12
+
+    method minute->Int32
+      return Int32(total_ms % 3600000) / 60000
+
+    method second->Int32
+      return Int32(total_ms % 60000) / 1000
+
+    method millisecond->Int32
+      return Int32(total_ms % 1000)
+
+    method operator+( other:Time )->Time
+      return Time( total_ms + other.total_ms )
+
+    method operator-( other:Time )->Time
+      return Time( total_ms - other.total_ms )
+
+    method operator<>( other:Time )->Int64
+      return (total_ms <> other.total_ms)
+
+    method to->String
+      return this->String( "hh24:mm:ss" )
+
+    method to->String( format:String )
+      # format
+      #   hh24  - hour in 24-hour format with possible leading 0
+      #   hh12  - hour in 12-hour format with possible leading 0
+      #   hh    - same as hh24
+      #   h24   - hour in 24-hour format without any leading 0
+      #   h12   - hour in 12-hour format without any leading 0
+      #   h     - same as h24
+      #   mm    - minutes with possible leading 0
+      #   m     - minutes without any leading 0
+      #   ss    - seconds with possible leading 0
+      #   s     - seconds without any leading 0
+      #   ms    - 3-digit milliseconds with possible leading 0's
+      #   ampm  - replaced with 'am' or 'pm' as appropriate
+      #   AMPM  - replaced with 'AM' or 'PM' as appropriate
+      #   am/pm - replaced with 'am' or 'pm' as appropriate
+      #   AM/PM - replaced with 'AM' or 'PM' as appropriate
+      #   am    - same as ampm
+      #   pm    - same as ampm
+      #   AM    - same as AMPM
+      #   PM    - same as AMPM
+      local is_12 = false
+
+      # Convert am/pm markers to a temporary name that doesn't contain 'm' so that
+      # minutes replacement doesn't mess it up.
+      if (format.contains("ampm"))  format = format.replacing( "ampm",  "aplc" ); is_12 = true
+      if (format.contains("am/pm")) format = format.replacing( "am/pm", "aplc" ); is_12 = true
+      if (format.contains("am"))    format = format.replacing( "am",    "aplc" ); is_12 = true
+      if (format.contains("pm"))    format = format.replacing( "pm",    "aplc" ); is_12 = true
+      if (format.contains("AMPM"))  format = format.replacing( "AMPM",  "apuc" ); is_12 = true
+      if (format.contains("AM/PM")) format = format.replacing( "AM/PM", "apuc" ); is_12 = true
+      if (format.contains("AM"))    format = format.replacing( "AM",    "apuc" ); is_12 = true
+      if (format.contains("PM"))    format = format.replacing( "PM",    "apuc" ); is_12 = true
+
+      format = format.to_lowercase
+
+      if (format.contains("hh12")) format = _replace_hours_12( format, "hh12", hour, "02" )
+      if (format.contains("hh24")) format = format.replacing( "hh24", hour.format("02") )
+      if (format.contains("hh"))
+        if (is_12) format = _replace_hours_12( format, "hh", hour, "02" )
+        else       format = format.replacing( "hh", hour.format("02") )
+      endIf
+      if (format.contains("h12"))  format = _replace_hours_12( format, "h12", hour, "1" )
+      if (format.contains("h24"))  format = format.replacing( "h24", hour->String )
+      if (format.contains("h"))
+        if (is_12) format = _replace_hours_12( format, "h", hour, "1" )
+        else       format = format.replacing( "h", hour->String )
+      endIf
+
+      if (format.contains("ms")) format = format.replacing( "ms", millisecond.format("03") )
+
+      if (format.contains("mm")) format = format.replacing( "mm", minute.format("02") )
+      if (format.contains("m"))  format = format.replacing( "m",  minute->String )
+
+      if (format.contains("ss")) format = format.replacing( "ss", second.format("02") )
+      if (format.contains("s"))  format = format.replacing( "s",  second->String )
+
+      if (format.contains("aplc")) format = format.replacing( "aplc", which{(hour<12):"am"||"pm"} )
+      if (format.contains("apuc")) format = format.replacing( "apuc", which{(hour<12):"AM"||"PM"} )
+
+      return format
+
+    method total_days->Real
+      return total_ms / (24*3600000.0)
+
+    method total_hours->Real
+      return total_ms / 3600000.0
+
+    method total_minutes->Real
+      return total_ms / 60000.0
+
+    method _replace_hours_12( text:String, find:String, h:Int32, fmt:String )->String
+      if (not text.contains(find)) return text
+      if (h == 0)      return text.replacing( find, 12.format(fmt) )
+      elseIf (h <= 12) return text.replacing( find, h.format(fmt) )
+      else             return text.replacing( find, (h-12).format(fmt) )
+endClass
+

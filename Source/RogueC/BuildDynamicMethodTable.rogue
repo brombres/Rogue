@@ -1,0 +1,41 @@
+module RogueC
+
+class BuildDynamicMethodTable : InspectionVisitor
+  METHODS
+    method apply
+      (forEach in Program.dynamic_methods).mark_uncollected
+      Program.dynamic_methods.clear
+
+      Program.apply( this )
+
+      forEach (group in Program.dynamic_methods)
+        # Remove aspect methods and abstract methods, keeping at least one
+        # of them if there are no concrete methods.
+        local methods = group.methods
+        local first = methods.first
+        forEach (m in writer=methods.rewriter)
+          if (not (m.type_context.is_aspect or m.attributes.is_abstract))
+            writer.write( m )
+          endIf
+        endForEach
+        if (methods.is_empty)
+          first.attributes.is_placeholder = true
+          methods.add( first )
+        endIf
+      endForEach
+
+    method on_visit( m:Method )
+      if (this_type.is_reference)
+        if (m.type_context is this_type)
+          local dynamic_sig = m.dynamic_signature
+          local group = Program.dynamic_methods[dynamic_sig]
+          if (group)
+            group.add( m )
+          else
+            Program.dynamic_methods[dynamic_sig] = DynamicMethodGroup( m )
+          endIf
+        endIf
+      endIf
+      visit_children( m )
+
+endClass

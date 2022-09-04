@@ -1,0 +1,9 @@
+enum StringEncoding
+  UTF8           = 0
+  ASCII          = 1
+  ASCII_256      = 2
+  AUTODETECT     = 3
+
+  DEFINITIONS
+    EXTENDED_ASCII = StringEncoding.ASCII_256
+endEnum

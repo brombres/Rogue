@@ -1,0 +1,50 @@
+class ShakerSort<<$DataType>>
+  # Peforms a Cocktail Shaker Sort AKA bidirectional Bubble Sort. Useful to avoid doing extra
+  # work when a list is nearly sorted and just needs a touch-up.
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->$DataType[]
+      local n = list.count
+      if (n <= 1) return list
+
+      local i1 = 0
+      local i2 = n-1
+      loop
+        if (not single_forward_pass(list,i1,i2,compare_fn)) escapeLoop
+        --i2
+
+        if (not single_reverse_pass(list,i1,i2,compare_fn)) escapeLoop
+        ++i1
+      endLoop
+
+      return list
+
+    method single_forward_pass( list:$DataType[], compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
+      return single_forward_pass( list, 0, list.count-1, compare_fn )
+
+    method single_forward_pass( list:$DataType[], i1:Int32, i2:Int32,
+          compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
+      # Returns 'true' if any changes occur.
+      local any_changes = false
+      forEach (i in i1..<i2)
+        if (compare_fn(list[i+1],list[i]))
+          list.swap( i, i+1 )
+          any_changes = true
+        endIf
+      endForEach
+      return any_changes
+
+    method single_reverse_pass( list:$DataType[], compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
+      return single_reverse_pass( list, 0, list.count-1, compare_fn )
+
+    method single_reverse_pass( list:$DataType[], i1:Int32, i2:Int32,
+          compare_fn:(Function(a:$DataType,b:$DataType)->Logical) )->Logical
+      # Returns 'true' if any changes occur.
+      local any_changes = false
+      forEach (i in i2 downTo i1+1)
+        if (compare_fn(list[i],list[i-1]))
+          list.swap( i-1, i )
+          any_changes = true
+        endIf
+      endForEach
+      return any_changes
+endClass

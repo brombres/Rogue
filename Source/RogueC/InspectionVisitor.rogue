@@ -1,0 +1,1116 @@
+# Generated and updated by Froley. Custom changes will not be overwritten; customize as desired.
+module RogueC
+
+class InspectionVisitor : InspectionVisitor<<Logical>>
+endClass
+
+class InspectionVisitor<<$ReturnType>>
+  PROPERTIES
+    this_module    : Module
+    this_type      : Type
+    this_procedure : Procedure
+
+  METHODS
+    method visit( m:Module )
+      temporarily this_module = m
+        on_visit( m )
+      endTemporarily
+
+    method on_visit( m:Module )
+      visit_types( m )
+
+    method visit_types( m:Module )
+      temporarily this_module = m
+        forEach (type in m.types)
+          visit_type( type )
+        endForEach
+      endTemporarily
+
+    method visit_type( type:Type )
+      temporarily this_module=type.module_context, this_type=type
+        on_visit_type( type )
+      endTemporarily
+
+    method on_visit_type( type:Type )
+      visit_global_methods( type )
+      visit_methods( type )
+
+    method visit_global_methods( type:Type )
+      temporarily this_type = type
+        forEach (m in type.global_methods)
+          temporarily this_module=m.module_context, this_procedure=m
+            visit( m )
+          endTemporarily
+        endForEach
+      endTemporarily
+
+    method visit_methods( type:Type )
+      temporarily this_type = type
+        forEach (m in type.methods)
+          if (m.type_context is type)
+            temporarily this_module=m.module_context, this_procedure=m
+              visit( m )
+            endTemporarily
+          endIf
+        endForEach
+      endTemporarily
+
+    method visit( cmd:Cmd )->$ReturnType [propagated]
+      if (cmd is null) return $defaultValue<<$ReturnType>>
+      return cmd.dispatch<<on,ThisType,$ReturnType>>( this )
+
+    method visit_content( cmd:Cmd ) [propagated]
+      cmd.dispatch<<on_visit,ThisType>>( this )
+
+    method visit_children( cmd:Cmd )->$ReturnType [propagated]
+      # Call from 'on()' or 'on_visit()' handler to visit subtrees.
+      return cmd.dispatch<<on_visit_children,ThisType,$ReturnType>>( this )
+
+    method on( cmd:Cmd )->$ReturnType
+      # Default per-node InspectionVisitor call sequence.
+      #
+      #   CALL                                   OVERLOADABLE METHOD
+      #   --------------------                   ------------------------
+      #   visit(cmd)->$ReturnType            ->  on(cmd:CmdType)->$ReturnType
+      #     visit_content(cmd)               ->    on_visit(cmd:CmdType)
+      #     visit_children(cmd)->$ReturnType ->    on_visit_children(cmd:CmdType)
+      visit_content( cmd )
+      return visit_children( cmd )
+
+    method on_visit( cmd:Cmd )
+      # This method is called from the default on(CmdType) before
+      # children are visited.
+
+    method on_visit_children( cmd:Cmd )->$ReturnType
+      return $defaultValue<<$ReturnType>>
+
+    method on_visit_children( cmd:CmdList )->$ReturnType
+      forEach (statement in cmd.list)
+        local result = visit(statement)
+        if (result?) return result
+      endForEach
+      return $defaultValue<<$ReturnType>>
+
+    method on_visit_children( cmd:Access )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:AccessAndAssign )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:AccessAndAssignContext )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      return result
+
+    method on_visit_children( cmd:AddAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:Assign )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.target)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:Binary )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.left)
+      if (result?) return result
+      result = visit(cmd.right)
+      return result
+
+    method on_visit_children( cmd:BitShiftLeftAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:BitShiftRightXAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:BitwiseAndAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:BitwiseOrAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:BitwiseXorAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:CallDynamicMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:CallProcedure )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:CallStaticMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:Catch )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.exception_type)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:Class )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.constructor_properties)
+      if (result?) return result
+      result = visit(cmd.base_types)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      if (result?) return result
+      result = visit(cmd.sections)
+      return result
+
+    method on_visit_children( cmd:Conditional )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:ContextAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:ContextBlock )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.commands)
+      return result
+
+    method on_visit_children( cmd:ContextDirectAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      return result
+
+    method on_visit_children( cmd:ControlStructure )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:Convert )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:ConvertToType )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      return result
+
+    method on_visit_children( cmd:CreateObject )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:DecrementGlobalProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:DecrementLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:DecrementProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:DecrementThisProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:DefineModule )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.attributes)
+      return result
+
+    method on_visit_children( cmd:Definition )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:DivideAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:ForEach )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.control)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:ForEachCollection )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.data)
+      if (result?) return result
+      result = visit(cmd.starting_index)
+      if (result?) return result
+      result = visit(cmd.step_size)
+      return result
+
+    method on_visit_children( cmd:ForEachControl )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.optional_at)
+      if (result?) return result
+      result = visit(cmd.collection)
+      return result
+
+    method on_visit_children( cmd:GetGlobalProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:GetLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:GetProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:GetSingleton )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type)
+      return result
+
+    method on_visit_children( cmd:GetThisProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:GlobalPropertyDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.declarations)
+      if (result?) return result
+      result = visit(cmd.type)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      return result
+
+    method on_visit_children( cmd:If )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.cmd_else)
+      return result
+
+    method on_visit_children( cmd:IncrementGlobalProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:IncrementLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:IncrementProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:IncrementThisProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:IndexedAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.index)
+      return result
+
+    method on_visit_children( cmd:InlineForEach )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.control)
+      return result
+
+    method on_visit_children( cmd:InlineWhich )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.cases)
+      return result
+
+    method on_visit_children( cmd:InlineWhichCase )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:InstanceOf )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.compare_type)
+      return result
+
+    method on_visit_children( cmd:IsCompound )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:IsPrimitive )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:IsReference )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:IsType )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.compare_type)
+      return result
+
+    method on_visit_children( cmd:Iterator )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.control)
+      if (result?) return result
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.upkeep)
+      return result
+
+    method on_visit_children( cmd:Local )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type)
+      if (result?) return result
+      result = visit(cmd.initial_value)
+      return result
+
+    method on_visit_children( cmd:LocalDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.declarations)
+      if (result?) return result
+      result = visit(cmd.type)
+      return result
+
+    method on_visit_children( cmd:Loop )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.loop_count)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:ModuleQualifiedID )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      return result
+
+    method on_visit_children( cmd:MultiplyAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:NamedArg )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:NativeExpression )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.result_type)
+      return result
+
+    method on_visit_children( cmd:OpAndAssign )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.target)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:PreDecrementLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:Procedure )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.parameters)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      if (result?) return result
+      result = visit(cmd.body)
+      return result
+
+    method on_visit_children( cmd:Property )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.initial_value)
+      if (result?) return result
+      result = visit(cmd.type)
+      return result
+
+    method on_visit_children( cmd:PropertyDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.declarations)
+      if (result?) return result
+      result = visit(cmd.type)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      return result
+
+    method on_visit_children( cmd:ResolvedOpAndAssignLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:ResolvedOpAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:Return )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.result)
+      return result
+
+    method on_visit_children( cmd:SetGlobalProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:SetLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:SetProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:SetThisProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:Stepper )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:SubtractAndAssignProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:Throw )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.exception)
+      return result
+
+    method on_visit_children( cmd:Try )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.catches)
+      return result
+
+    method on_visit_children( cmd:Type )->$ReturnType
+      local result : $ReturnType
+      return result
+
+    method on_visit_children( cmd:TypeAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:TypeContext )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type)
+      return result
+
+    method on_visit_children( cmd:Unary )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:Use )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.resources)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:UsedResource )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.resource)
+      return result
+
+    method on_visit_children( cmd:While )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:WideningCast )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      return result
+
+    method on_visit_children( cmd:CleanupBlock )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.cleanup)
+      return result
+
+    method on_visit_children( cmd:FormattedString )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:Which )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.cases)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:WhichCase )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:Switch )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      if (result?) return result
+      result = visit(cmd.cases)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:Contingent )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.satisfied_statements)
+      if (result?) return result
+      result = visit(cmd.unsatisfied_statements)
+      return result
+
+    method on_visit_children( cmd:Necessary )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      return result
+
+    method on_visit_children( cmd:Sufficient )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.condition)
+      return result
+
+    method on_visit_children( cmd:EmptyCompound )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
+    method on_visit_children( cmd:MethodTemplate )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.placeholders)
+      if (result?) return result
+      result = visit(cmd.token_list)
+      return result
+
+    method on_visit_children( cmd:TemplatedAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_args)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:TemplatedMethodContextAccess )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.type_args)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:FunctionType )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.param_types)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      return result
+
+    method on_visit_children( cmd:FunctionDefinition )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.parameters)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      if (result?) return result
+      result = visit(cmd.with_values)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:WithValue )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:GenericFunctionDefinition )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.parameters)
+      if (result?) return result
+      result = visit(cmd.with_values)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:FunctionReturnValue )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:ConvertToTypeWithArgs )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:Category )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:EnumValueDef )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:CreateCompound )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:EnumValue )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
+    method on_visit_children( cmd:LocalDeclaration )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      return result
+
+    method on_visit_children( cmd:StateDef )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.methods)
+      return result
+
+    method on_visit_children( cmd:SetSingleton )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:Method )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.parameters)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      if (result?) return result
+      result = visit(cmd.attributes)
+      if (result?) return result
+      result = visit(cmd.body)
+      if (result?) return result
+      result = visit(cmd.source_tokens)
+      return result
+
+    method on_visit_children( cmd:Temporarily )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.assignments)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:TemporaryAssignment )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.target)
+      if (result?) return result
+      result = visit(cmd.new_value)
+      return result
+
+    method on_visit_children( cmd:As )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.as_type)
+      return result
+
+    method on_visit_children( cmd:IfLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.statements)
+      if (result?) return result
+      result = visit(cmd.else_if)
+      return result
+
+    method on_visit_children( cmd:NamedTupleElement )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:TypedDestructuringLocal )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type)
+      return result
+
+    method on_visit_children( cmd:TypedDestructuringLocalDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.locals)
+      if (result?) return result
+      result = visit(cmd.tuple)
+      return result
+
+    method on_visit_children( cmd:UntypedDestructuringLocalDeclarations )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.locals)
+      if (result?) return result
+      result = visit(cmd.tuple)
+      return result
+
+    method on_visit_children( cmd:NamedTupleTypeElement )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
+    method on_visit_children( cmd:GlobalMethodTemplate )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.placeholders)
+      if (result?) return result
+      result = visit(cmd.token_list)
+      return result
+
+    method on_visit_children( cmd:Block )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.assignments)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:CreateRange )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.start)
+      if (result?) return result
+      result = visit(cmd.limit)
+      if (result?) return result
+      result = visit(cmd.step_size)
+      return result
+
+    method on_visit_children( cmd:New )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.type_expression)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:Ensure )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:Assert )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.token_list)
+      return result
+
+    method on_visit_children( cmd:TypedLiteralList )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.list)
+      return result
+
+    method on_visit_children( cmd:KeyValuePair )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.key)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:TypedLiteralTable )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      if (result?) return result
+      result = visit(cmd.table)
+      return result
+
+    method on_visit_children( cmd:BriefTrace )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expressions)
+      return result
+
+    method on_visit_children( cmd:TracedExpression )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.token_list)
+      return result
+
+    method on_visit_children( cmd:VerboseTrace )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expressions)
+      return result
+
+    method on_visit_children( cmd:LiteralNullOptional )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.optional_type)
+      return result
+
+    method on_visit_children( cmd:CallPriorMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:CallbackFunction )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.param_types)
+      return result
+
+    method on_visit_children( cmd:SwapValues )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.a)
+      if (result?) return result
+      result = visit(cmd.b)
+      return result
+
+    method on_visit_children( cmd:NotInstanceOf )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.compare_type)
+      return result
+
+    method on_visit_children( cmd:DefaultValue )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
+    method on_visit_children( cmd:IsEnum )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      return result
+
+    method on_visit_children( cmd:GetTypeInfo )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
+    method on_visit_children( cmd:TypeIndex )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.of_type)
+      return result
+
+    method on_visit_children( cmd:ConditionalContext )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      return result
+
+    method on_visit_children( cmd:IfConditionalContext )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.conditional_context)
+      if (result?) return result
+      result = visit(cmd.statements)
+      return result
+
+    method on_visit_children( cmd:ValueList )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:ValueTable )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:CallMethodPointer )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.pointer)
+      if (result?) return result
+      result = visit(cmd.param_types)
+      if (result?) return result
+      result = visit(cmd.args)
+      if (result?) return result
+      result = visit(cmd.return_type)
+      return result
+
+    method on_visit_children( cmd:InlineAssignment )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.value)
+      return result
+
+    method on_visit_children( cmd:IntrospectionGetObjectProperty )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.info)
+      if (result?) return result
+      result = visit(cmd.context)
+      return result
+
+    method on_visit_children( cmd:TypeOf )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.expression)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    method on_visit_children( cmd:CommandExists )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.command)
+      return result
+
+    method on_visit_children( cmd:CallPriorTemplatedMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.template_args)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+    #method on_visit_children( cmd:Statements )->$ReturnType
+
+    method on_visit_children( cmd:CallVirtualMethod )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.context)
+      if (result?) return result
+      result = visit(cmd.args)
+      return result
+
+endClass

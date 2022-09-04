@@ -1,0 +1,135 @@
+class FilePattern( pattern:String ) [compound]
+  GLOBAL METHODS
+    method operator==( file:File, pattern:FilePattern )->Logical
+      return pattern.matches( file.resolved.filepath )
+
+    method operator==( pattern:FilePattern, file:File )->Logical
+      return pattern.matches( file.resolved.filepath )
+
+    method operator==( text:String, pattern:FilePattern )->Logical
+      return pattern.matches( text )
+
+    method operator==( pattern:FilePattern, text:String )->Logical
+      return pattern.matches( text )
+
+    method operator/( pattern:FilePattern, text:String )->FilePattern
+      return FilePattern( pattern.pattern / text )
+
+    method operator/( text:String, pattern:FilePattern )->FilePattern
+      return FilePattern( text / pattern.pattern )
+
+
+  METHODS
+    method matches( filepath:String, &ignore_case )->Logical
+      # Determines whether or not the given filepath matches the given
+      # semi-Unix/Dos-style 'wildcard pattern'.  'pattern' is a
+      # regular text string that may contain the following special
+      # characters:
+      #
+      # *    - Matches any number of characters but does not match '/'
+      # **   - Matches any number of characters including slashes
+      # ***/ - Matches any number of characters and a slash or else nothing.
+      # ?  - Matches any one character except '/'
+      #
+      # Note: A filepath with a ./ prefix is checked with and without the prefix.
+
+      # Check non-wildcard characters at the end of pattern first as an easy out
+      local last_wildcard = -1
+      forEach (ch at i in pattern step -1)
+        if (ch == '*')
+          last_wildcard = i
+          if (i>0 and i+1<pattern.count and pattern[i-1]=='*' and pattern[i+1]=='/') ++last_wildcard
+          escapeForEach
+        elseIf (ch == '?')
+          last_wildcard = i
+          escapeForEach
+        endIf
+      endForEach
+
+      if (last_wildcard != -1)
+        local end_count = pattern.count - (last_wildcard+1)
+        if (end_count > 0)
+          if (end_count > filepath.count) return false
+
+          local i = last_wildcard + 1
+          forEach (ch in filepath from filepath.count-end_count)
+            local pattern_ch = pattern[i]
+            if (ignore_case)
+              ch = ch.to_lowercase
+              pattern_ch = pattern_ch.to_lowercase
+            endIf
+            if (ch != pattern_ch) return false
+            ++i
+          endForEach
+        endIf
+      endIf
+
+      if (_matches(filepath,0,filepath.count,pattern,0,pattern.count,&=ignore_case)) return true
+
+      if (filepath.count <= 2 or not filepath.begins_with("./")) return false
+
+      # Try ignoring the ./ prefix on the filepath
+      return (_matches(filepath,2,filepath.count-2,pattern,0,pattern.count,&=ignore_case))
+
+    method _matches( filepath:String, f0:Int32, fcount:Int32, pattern:String, p0:Int32, pcount:Int32,
+       &ignore_case )->Logical
+      # f0     - starting index in filepath
+      # fcount - remaining filepath count
+      # p0     - starting index in pattern
+      # pcount - remaining pattern count
+      if (pcount == 0) return (fcount == 0)
+
+      local remaining_pattern = pattern
+      local r0 = p0 + 1
+      local rcount = pcount - 1
+      local ch = pattern[p0]
+      which (ch)
+        case '*':
+          if (rcount >= 2 and remaining_pattern[r0] == '*' and remaining_pattern[r0+1] == '/')
+            # '**/' - match any characters (including '/') and ending with '/' or else match zero characters.
+
+            # Match 0 characters (skip '**/' entirely)
+            if (_matches(filepath,f0,fcount,remaining_pattern,r0+2,rcount-2,&=ignore_case)) return true
+
+            # Match 0+ characters for '**' and leave '/' to end pattern (matches 1+ total)
+            ++r0
+            --rcount
+            forEach (n in 0..fcount)
+              if (_matches(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount,&=ignore_case)) return true
+            endForEach
+          elseIf (rcount and remaining_pattern[r0] == '*')
+            # '**' - match any characters including '/'
+            ++r0
+            --rcount
+            forEach (n in 0..fcount)
+              if (_matches(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount,&=ignore_case)) return true
+            endForEach
+          else
+            # Single asterisk - match any characters except '/'
+            forEach (n in 0..<fcount)
+              ch = filepath[ f0+n ]
+              if (_matches(filepath,f0+n,fcount-n,remaining_pattern,r0,rcount, &=ignore_case)) return true
+              if (ch == '/') return false
+            endForEach
+            return _matches( "", 0, 0, remaining_pattern, r0, rcount, &=ignore_case )
+          endIf
+
+        case '?':
+          if (fcount == 0) return false
+          ch = filepath[ f0 ]
+          if (ch == '/') return false
+          return _matches( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount, &=ignore_case )
+
+        others:
+          if (fcount == 0) return false
+          local filepath_ch = filepath[f0]
+          if (ignore_case) ch = ch.to_lowercase; filepath_ch = filepath_ch.to_lowercase
+          if (ch == filepath_ch)
+            return _matches( filepath, f0+1, fcount-1, remaining_pattern, r0, rcount, &=ignore_case )
+          endIf
+      endWhich
+      return false
+
+    method to->String
+      return pattern
+endClass

@@ -1,0 +1,11 @@
+class Span( index:Int32, count:Int32 ) [compound]
+  METHODS
+    method i2->Int32
+      return index + (count-1)
+
+    method limit->Int32
+      return index + count
+
+    method to->String
+      return "@$ x$"(index,count)
+endClass

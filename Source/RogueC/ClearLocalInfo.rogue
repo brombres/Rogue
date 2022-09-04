@@ -1,0 +1,12 @@
+module RogueC
+
+class ClearLocalInfo : InspectionVisitor [singleton]
+  METHODS
+    method visit( m:Method )->Logical
+      m.locals.clear
+      return prior.visit( m->(as Cmd) )
+
+    method on_visit( cmd:ControlStructure )
+      cmd.locals.clear
+
+endClass

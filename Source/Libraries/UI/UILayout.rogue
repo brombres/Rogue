@@ -1,0 +1,51 @@
+module UI
+
+$localMacro UI_FACTORY_METHODS<<$name,$TypeName>>
+    method $name->$TypeName
+      return $TypeName()
+
+    method $name( size:XY )->$TypeName
+      return $TypeName( size )
+
+    method $name( content:UIComponent )->$TypeName
+      return $TypeName( content )
+
+    method $name( c1:UIComponent, c2:UIComponent, c3=null:UIComponent, c4=null:UIComponent )->$TypeName
+      local result = $TypeName( c1 )
+      result.add( c2 )
+      if (c3) result.add( c3 )
+      if (c4) result.add( c4 )
+      return result
+
+    method $name( c1:UIComponent, c2:UIComponent, c3:UIComponent, c4:UIComponent, c5:UIComponent,
+                 c6=null:UIComponent, c7=null:UIComponent, c8=null:UIComponent )->$TypeName
+      local result = $name( c1, c2, c3, c4 )
+      result.add( c5 )
+      if (c6) result.add( c6 )
+      if (c7) result.add( c7 )
+      return result
+$endLocalMacro
+
+class UILayout : UIComponent
+  GLOBAL METHODS
+    UI_FACTORY_METHODS<< absolute, UIAbsoluteLayout >>
+    UI_FACTORY_METHODS<< flow,     UIFlowLayout >>
+    UI_FACTORY_METHODS<< h,        UIHorizontalLayout >>
+    UI_FACTORY_METHODS<< list,     UIList >>
+    UI_FACTORY_METHODS<< stack,    UIStackLayout >>
+    UI_FACTORY_METHODS<< v,        UIVerticalLayout >>
+
+    method table->UITableLayout
+      return UITableLayout()
+
+    method table( columns:Int32, rows:Int32 )->UITableLayout
+      return UITableLayout(columns,rows)
+
+    method table( size:XY )->UITableLayout
+      return UITableLayout(size)
+
+  METHODS
+    method content->UIComponent
+      return first_child
+endClass
+
