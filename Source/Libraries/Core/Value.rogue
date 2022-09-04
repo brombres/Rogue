@@ -145,6 +145,14 @@ class Value [compound]
           list.add( forEach in value )
       endWhich
 
+    method as_list->Value[]
+      if (type != TYPE_LIST) return null
+      return object->(as Value[])
+
+    method as_table->[String:Value]
+      if (type != TYPE_TABLE) return null
+      return object->(as [String:Value])
+
     method clear
       which (type)
         case TYPE_LIST
@@ -208,6 +216,12 @@ class Value [compound]
           return this
       endWhich
 
+    method first( query:Function(Value)->Logical )->Value
+      forEach (value in this)
+        if (query(value)) return value
+      endForEach
+      return undefined
+
     method get( index:Int32 )->Value
       which (type)
         case TYPE_LIST
@@ -260,6 +274,9 @@ class Value [compound]
 
     method is_character->Logical
       return (type == TYPE_CHARACTER)
+
+    method is_empty->Logical
+      return (count == 0)
 
     method is_int32->Logical
       return (type == TYPE_INT32)
@@ -327,6 +344,12 @@ class Value [compound]
         others
           return this
       endWhich
+
+    method last( query:Function(Value)->Logical )->Value
+      forEach (value in this step -1)
+        if (query(value)) return value
+      endForEach
+      return undefined
 
     method locate( value:Value, i1=null:Int32? )->Int32?
       which (type)
