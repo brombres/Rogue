@@ -1,5 +1,5 @@
-$define VERSION "RogueC v2.0"
-$define DATE "July 13, 2022"
+$define VERSION "2.0"
+$define DATE    "September 3, 2022"
 
 module RogueC
 
@@ -86,6 +86,7 @@ class RogueC
       endTry
 
       if (command//options//version)
+        print   "RogueC "
         println VERSION
         println "$ by Abe Pralle" (DATE)
         System.exit 0
@@ -263,6 +264,7 @@ class RogueC
       return command
 
     method print_usage
+      print   "RogueC "
       println VERSION
       println "$ by Abe Pralle" (DATE)
       println

@@ -11,7 +11,7 @@ augment Build
     PROJECT          = "RogueC"
     LAUNCHER_NAME    = PROJECT.to_lowercase : String
 
-    BUILD_MODE       = "debug"
+    BUILD_MODE       = "release"
     LAUNCHER_FOLDER  = "/usr/local/bin"
     ROGUEC_FLAGS     = "--main --gc=manual"
     CC_FLAGS_UNIX    = ""
@@ -25,8 +25,6 @@ endRoutine
 
 routine rogo_bootstrap
   execute @|cc -O0 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
-  execute @|rm -f Build/R2-macOS
-  execute @|cp Build/RogueC-macOS Build/R2-macOS
 endRoutine
 
 routine rogo_update_bootstrap
@@ -306,7 +304,7 @@ routine compile_rogue
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS
   #if (Build.BUILD_MODE == "debug") flags = flags.appending("--debug")
-  local cmd = "r2 $ $ --target=Console,C,$ --output=$"...
+  local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
   local status = Process.run( cmd, &env )
@@ -337,9 +335,6 @@ routine compile_c
     cc .= appending( "$LIBRARY_FLAGS" )
     execute cc
   endIf
-
-  execute @|rm -f Build/R2-macOS
-  execute @|cp Build/RogueC-macOS Build/R2-macOS
 endRoutine
 
 routine exe_file->File

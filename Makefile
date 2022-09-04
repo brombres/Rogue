@@ -2,7 +2,7 @@
 
 BUILD_FOLDER=Build
 LIBRARIES_FOLDER=$(BUILD_FOLDER)
-LINK_EXE=/usr/local/bin/r2
+LINK_EXE=/usr/local/bin/roguec
 
 ROGUEC_C_FLAGS = -Wall -O3
 
@@ -22,7 +22,7 @@ else
 endif
 
 ABS_BUILD_FOLDER = `(cd $(BUILD_FOLDER) && pwd)`
-BUILD_EXE  = R2-$(PLATFORM)
+BUILD_EXE  = RogueC-$(PLATFORM)
 C_SRC      = Source/RogueC/Bootstrap/RogueC.c
 H_SRC      = Source/RogueC/Bootstrap/RogueC.h
 
