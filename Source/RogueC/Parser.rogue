@@ -853,7 +853,7 @@ class Parser : ParserCore, Poolable
 
     method require_rogue_version
       local v_req = _cur_t.content.after_any('v').after_any('V')
-      local v_cur = VERSION.after_first('v')
+      local v_cur = VERSION.after_any('v').after_any('V')
       if (VersionNumber(v_req) > v_cur)
         throw _cur_t.error(
           "Rogue v$ is currently installed but Rogue v$ or better is required to compile this file."(v_cur,v_req)

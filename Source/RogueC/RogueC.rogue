@@ -86,7 +86,7 @@ class RogueC
       endTry
 
       if (command//options//version)
-        print   "RogueC "
+        print   "RogueC v"
         println VERSION
         println "$ by Abe Pralle" (DATE)
         System.exit 0
@@ -264,7 +264,7 @@ class RogueC
       return command
 
     method print_usage
-      print   "RogueC "
+      print   "RogueC v"
       println VERSION
       println "$ by Abe Pralle" (DATE)
       println

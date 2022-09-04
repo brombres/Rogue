@@ -19,7 +19,7 @@ augment Build
 endAugment
 
 routine rogo_x2
-  rogo_rebuild
+  rogo_rebuild_debug
   rogo_rebuild
 endRoutine
 
