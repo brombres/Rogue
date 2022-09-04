@@ -469,7 +469,7 @@ class WindowsProcess : Process
               |  if (exit_code != STILL_ACTIVE)
               |  {
               |    $exit_code = exit_code;
-              |    $is_finished = true;
+              |    $is_finished = 1;
               |  }
               |}
               |#endif
@@ -542,7 +542,7 @@ class WindowsProcessReader : Reader<<Byte>>
               |security_attributes.lpSecurityDescriptor = NULL;
               |if ( !CreatePipe(&$this->output_reader,&$this->output_writer,&security_attributes,0) ) goto ERROR_EXIT;
               |if ( !SetHandleInformation($this->output_reader,HANDLE_FLAG_INHERIT,0) ) goto ERROR_EXIT;
-              |$success = true;
+              |$success = 1;
               |ERROR_EXIT:
               |#endif
       if (not success) error.println("Process reader could not be initialized.")
@@ -630,7 +630,7 @@ class WindowsProcessWriter : Writer<<Byte>>
               |security_attributes.lpSecurityDescriptor = NULL;
               |if ( !CreatePipe(&$this->input_reader,&$this->input_writer,&security_attributes,0) ) goto ERROR_EXIT;
               |if ( !SetHandleInformation($this->input_writer,HANDLE_FLAG_INHERIT,0) ) goto ERROR_EXIT;
-              |$success = true;
+              |$success = 1;
               |ERROR_EXIT:
               |#endif
       if (not success) error.println("Process reader could not be initialized.")

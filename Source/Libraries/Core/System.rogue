@@ -1,6 +1,7 @@
 class System [essential]
   NATIVE
     nativeHeader @|#if defined(ROGUE_PLATFORM_WINDOWS)
+                  |  #include <time.h>
                   |  #include <sys/timeb.h>
                   |#else
                   |  #include <sys/time.h>
