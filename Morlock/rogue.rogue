@@ -9,16 +9,16 @@ class RoguePackage : Package
        scan_repo_releases
 
     method build
-      forEach (folder in File.listing(".",&folders,&ignore_hidden))
+      forEach (folder in File(".").listing(&folders,&ignore_hidden))
         if (System.is_windows)
-          if (File.exists(folder/"make.bat"))
-            execute "cd $ && make.bat build" (File.esc(folder))
+          if (File(folder/"make.bat").exists)
+            execute "cd $ && make.bat build" (File(folder).esc)
             archive_folder = folder
             return
           endIf
         else
-          if (File.exists(folder/"Makefile"))
-            execute "cd $ && make build" (File.esc(folder))
+          if (File(folder/"Makefile").exists)
+            execute "cd $ && make build" (File(folder).esc)
             archive_folder = folder
             return
           endIf
@@ -41,7 +41,7 @@ class RoguePackage : Package
       install_executable( &dest_filename="roguec" )
 
       local libs = Files( archive_folder/"Source/Libraries", "**" )
-      File.sync_from( libs, install_folder/"Libraries" )
+      libs.sync_to( install_folder/"Libraries" )
 
     method handle_uninstall
       throw error( "Essential package $ cannot be uninstalled."(name) )

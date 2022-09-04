@@ -1,5 +1,0 @@
-class State( t:Token, name:String )
-  PROPERTIES
-    methods = Method[]
-endClass
-

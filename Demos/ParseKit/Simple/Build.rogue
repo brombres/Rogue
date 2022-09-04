@@ -1,4 +1,0 @@
-# To run this build file, install Rogue from github.com/AbePralle/Rogue and type "rogo" at the command line.
-
-#$ DEPENDENCIES = "Simple.rogue"
-$include "Simple.rogue"
