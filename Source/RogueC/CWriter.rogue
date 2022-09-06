@@ -591,19 +591,19 @@ class CWriter : BufferedPrintWriter
         if (not omit_quotes) print '"'
 
         local stage = 0
-        # 0: \ -> 1 ignore next
-        #    ? -> 2 first question mark
-        # 1: -> 0
-        # 2: ? -> print \ -> 0
-        #    else  0
+        # 0: \    -> 1 ignore next
+        #    ?    -> 2 first question mark
+        # 1:      -> 0
+        # 2: ?    -> print \ -> 0
+        #    else -> 0
 
-        local next_split = buffer.count + 16000
-        forEach (ch in st)
+        local next_split = output.position + buffer.count + 16000
+        forEach (ch at i in st)
           which (stage)
             case 0
-              if (buffer.count >= next_split)
+              if (output.position + buffer.count >= next_split)
                 if (not omit_quotes) println( "\"" ); print( "\"" )
-                next_split = buffer.count + 16000
+                next_split = output.position + buffer.count + 16000
               endIf
 
               if (ch == '\\')    stage = 1
