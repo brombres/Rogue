@@ -24,7 +24,7 @@ routine rogo_x2
 endRoutine
 
 routine rogo_bootstrap
-  execute @|cc -O3 -Wall Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
+  execute @|cc -O3 -Wall -fno-strict-aliasing Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS
 endRoutine
 
 routine rogo_update_bootstrap
@@ -329,7 +329,7 @@ routine compile_c
     local flags = Build.CC_FLAGS_UNIX
     if (flags != "") flags += " "
     flags += which{ Build.BUILD_MODE=="release":"-O3" || "-O0" }
-    local cc = "cc $ -Wall $.c -o $" (flags,File(c_filepath).esc,exe_file.esc)
+    local cc = "cc $ -Wall -fno-strict-aliasing $.c -o $" (flags,File(c_filepath).esc,exe_file.esc)
     cc .= appending( "$LIBRARY_FLAGS" )
     execute cc
   endIf
@@ -397,7 +397,7 @@ endRoutine
 
 #   ROGUEC       = roguec       # Path to roguec to compile this file with
 #   ROGUEC_ARGS  = --whatever   # Additional options to pass to RogueC
-#   CC           = gcc -Wall
+#   CC           = gcc -Wall -fno-strict-aliasing
 #   CC_ARGS      = -a -b -c          # Additional C args
 #   LINK         = -lalpha -lbeta    # Link this build file with these options
 #   LINK(macOS)  = ...               # Options applying only to

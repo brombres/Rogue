@@ -4,7 +4,7 @@ BUILD_FOLDER=Build
 LIBRARIES_FOLDER=$(BUILD_FOLDER)
 LINK_EXE=/usr/local/bin/roguec
 
-ROGUEC_C_FLAGS = -Wall -O3
+ROGUEC_C_FLAGS = -Wall -O3 -fno-strict-aliasing
 
 ifeq ($(OS),Windows_NT)
   ifneq (,$(findstring /cygdrive/,$(PATH)))
