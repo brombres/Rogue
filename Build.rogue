@@ -177,7 +177,7 @@ endRoutine
 routine rogo_link
   # Builds and invokes 'morlock link ...' to add a launcher to Morlock's binpath.
   rogo_build
-  execute "morlock link $ $"(exe_file.esc,Build.LAUNCHER_NAME)
+  execute "morlock link $"(Build.LAUNCHER_NAME,exe_file.esc)
 endRoutine
 
 routine rogo_uninstall
@@ -332,7 +332,7 @@ routine compile_c
     execute cc
 
     File(exe_filepath).rename( File(exe_filepath+".old") )
-    File(exe_filepath+".new").rename( File(exe_filepath) ) 
+    File(exe_filepath+".new").rename( File(exe_filepath) )
   else
     local flags = Build.CC_FLAGS_UNIX
     if (flags != "") flags += " "
