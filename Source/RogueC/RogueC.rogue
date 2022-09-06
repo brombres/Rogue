@@ -86,7 +86,7 @@ class RogueC
       endTry
 
       if (command//options//version)
-        print   "RogueC v"
+        print   "v"
         println VERSION
         println "$ by Abe Pralle" (DATE)
         System.exit 0
