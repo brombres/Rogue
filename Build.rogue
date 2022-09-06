@@ -18,6 +18,10 @@ augment Build
     CC_FLAGS_WINDOWS = ""
 endAugment
 
+if (System.is_windows and File("Build/roguec.exe.old").exists)
+  File("Build/roguec.exe.old").delete
+endIf
+
 routine rogo_x2
   rogo_rebuild_debug
   rogo_rebuild
@@ -322,9 +326,13 @@ routine compile_c
     if (flags != "") flags += " "
     flags += which{ Build.BUILD_MODE=="release":"/Ob2ity /GF /Gy" || "/Od" }
     local obj_filepath = File( "Build/$-Windows.obj"(Build.PROJECT) ).esc
-    local cc = "cl $ /EHsc /nologo $.c /Fo$ /Fe$" (flags,c_filepath,obj_filepath,exe_filepath)
+    local cc = "cl $ /EHsc /nologo $.c /Fo$ /Fe.new$" (flags,c_filepath,obj_filepath,exe_filepath)
     cc .= appending( "$LIBRARY_FLAGS" )
+
     execute cc
+
+    File(exe_filepath).rename( File(exe_filepath+".old") )
+    File(exe_filepath+".new").rename( File(exe_filepath) ) 
   else
     local flags = Build.CC_FLAGS_UNIX
     if (flags != "") flags += " "
