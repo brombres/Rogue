@@ -1,5 +1,7 @@
 @if not exist Build mkdir Build
 
+@if exist Build ( rmdir /S /Q Build )
+mkdir Build
 cl /Ob2ity /GF /Gy /EHsc /nologo Source\RogueC\Bootstrap\RogueC.c /FoBuild\roguec.obj /FeBuild\roguec.exe
 xcopy /I /S /Q /Y Source\Libraries Build\Libraries
 
