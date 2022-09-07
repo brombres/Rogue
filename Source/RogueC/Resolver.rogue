@@ -2555,6 +2555,13 @@ class Resolver : Poolable, Visitor
         Candidates.refine
       endIf
 
+      # Prefer non-template methods over template methods
+      forEach (m in Candidates)
+        if (m.name == m.base_name) Candidates.keep m
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      Candidates.refine
+
       return null
 
     method exact_type_match( arg:Cmd, param_type:Type )->Logical
