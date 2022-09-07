@@ -76,6 +76,14 @@ class TypeInfo
       data_index = read_methods( data_index, global_methods, &is_global )
       data_index = read_methods( data_index, methods )
 
+    method create_object->Object
+      local result : Object
+      native @|$result = Rogue_create_object( Rogue_types[$index] );
+      return result
+
+    method create_object<<$AsType>>->$AsType
+      return create_object->(as $AsType)
+
     method instance_of( ancestor:TypeInfo )->Logical
       local ancestor_id = ancestor.id
       if (id == ancestor_id) return true
