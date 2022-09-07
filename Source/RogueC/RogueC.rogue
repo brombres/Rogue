@@ -81,7 +81,7 @@ class RogueC
         Console.error.println "=" * 80.or_smaller(Console.width)
         Console.error.println err
         Console.error.println "=" * 80.or_smaller(Console.width)
-        print_usage
+        println "Run 'roguec' without arguments to see usage."
         System.exit 1
       endTry
 
