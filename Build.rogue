@@ -177,7 +177,7 @@ endRoutine
 routine rogo_link
   # Builds and invokes 'morlock link ...' to add a launcher to Morlock's binpath.
   rogo_build
-  execute "morlock link $"(Build.LAUNCHER_NAME,exe_file.esc)
+  execute "morlock link $ $"(Build.LAUNCHER_NAME,exe_file.esc)
 endRoutine
 
 routine rogo_uninstall
