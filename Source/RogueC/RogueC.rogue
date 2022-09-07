@@ -126,8 +126,13 @@ class RogueC
           rogue_folder /= "Source/Libraries"
         else
           rogue_folder .= parent
-          if ((rogue_folder/"Source/Libraries").exists) rogue_folder /= "Source/Libraries"
-          else                                          rogue_folder = File(".")
+          if ((rogue_folder/"Source/Libraries").exists)
+            rogue_folder /= "Source/Libraries"
+          elseIf ((rogue_folder/"Libraries").exists)
+            rogue_folder /= "Libraries"
+          else
+            rogue_folder = File(".")
+          endIf
         endIf
       endIf
 
