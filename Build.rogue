@@ -32,6 +32,7 @@ routine rogo_bootstrap
 endRoutine
 
 routine rogo_update_bootstrap
+  rogo_build
   copy_bootstrap_file( "h" )
   copy_bootstrap_file( "c" )
 endRoutine
@@ -260,6 +261,8 @@ routine project_has_uncommitted_changes->Logical
 endRoutine
 
 routine rogo_publish( new_version:String )
+  rogo_update_bootstrap
+
   # Updates source and README version number, commits, and publishes a release to GitHub.
   if (not String.exists(new_version)) throw Error( "Expected version number after 'rogo publish'." )
   if (not System.find_executable("gh")) throw Error( "The GitHub command line tool 'gh' must be installed." )

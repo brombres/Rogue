@@ -76,6 +76,23 @@ class TypeInfo
       data_index = read_methods( data_index, global_methods, &is_global )
       data_index = read_methods( data_index, methods )
 
+    method instance_of( ancestor:TypeInfo )->Logical
+      local ancestor_id = ancestor.id
+      if (id == ancestor_id) return true
+
+      native...
+       @|RogueInt32* base_ids = Rogue_types[$index]->base_type_ids - 1;
+        |RogueInt32  count = Rogue_types[$index]->base_type_count;
+        |while (--count >= 0)
+        |{
+        |  if (*(++base_ids) == $ancestor_id)
+        |  {
+             return true
+      native...
+       @|  }
+        |}
+      return false
+
     method read_properties( data_index:Int32, list:PropertyInfo[], &is_global )->Int32
       local n = native("Rogue_type_data[$data_index]")->Int32;
       loop n
