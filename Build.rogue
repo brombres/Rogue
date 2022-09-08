@@ -327,9 +327,9 @@ routine compile_c
   if (System.is_windows)
     local flags = Build.CC_FLAGS_WINDOWS
     if (flags != "") flags += " "
-    flags += which{ Build.BUILD_MODE=="release":"/Ob2ity /GF /Gy" || "/Od" }
+    flags += which{ Build.BUILD_MODE=="release":"/O2 /bigobj" || "/Od" }
     local obj_filepath = File( "Build/$-Windows.obj"(Build.PROJECT) ).esc
-    local cc = "cl $ /EHsc /nologo $.c /Fo$ /Fe$.new" (flags,c_filepath,obj_filepath,exe_filepath)
+    local cc = "cl $ /nologo $.c /Fo$ /Fe$.new" (flags,c_filepath,obj_filepath,exe_filepath)
     cc .= appending( "$LIBRARY_FLAGS" )
 
     execute cc
