@@ -114,7 +114,7 @@ class CommandLineParser
       on_unknown(
         function( parser:CommandLineParser ) with (usage_callback)
           Console.error.println( "=" * 80 )
-          Console.error.println( "ERROR: " + UnrecognizedOptionError(parser.arg) ).println
+          Console.error.[ println("ERROR: " + UnrecognizedOptionError(parser.arg)), println ]
           Console.error.println( "=" * 80 )
           usage_callback()
           System.exit 1
