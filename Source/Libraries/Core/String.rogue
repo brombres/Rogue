@@ -1837,7 +1837,7 @@ class String : Poolable PrintWriter
       # characters are preserved.
       return word_wrapped( width, allow_break_after )->String.split('\n')
 
-    method word_wrapped( width:Int32, buffer=String():String, allow_break_after=null:String )->String
+    method word_wrapped( width:Int32, allow_break_after=null:String, buffer=String():String )->String
       # Prints a word-wrapped version of this string to the given
       # String.  Existing newlines characters will cause a new line to
       # begin immediately.  Spaces immediately following existing newline
