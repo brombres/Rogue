@@ -858,6 +858,10 @@ class Parser : ParserCore, Poolable
         throw _cur_t.error(
           "Rogue v$ is currently installed but Rogue v$ or better is required to compile this file."(v_cur,v_req)
         )
+      elseIf (VersionNumber(v_req) < "2")
+        throw _cur_t.error(
+          "Rogue v$ is currently installed and cannot compile Rogue v1.x files.."(v_cur)
+        )
       endIf
 
     method rewrite_cur_token
