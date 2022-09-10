@@ -141,6 +141,16 @@ class RealXY( x:Real, y:Real ) [compound]
       return RealXY(0,y)
 endClass
 
+augment Geometry::Anchor
+  GLOBAL METHODS
+    method create( position:RealXY )->Anchor
+      return Anchor( XY(position*2) )
+
+  METHODS
+    method to->RealXY
+      return RealXY(position) / 2.0
+endAugment
+
 augment Math::Random
   METHODS
     method real_xy( limit:Real )->Geometry::RealXY
