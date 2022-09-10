@@ -1,7 +1,8 @@
-module ConsoleUI
+module UI
 
 uses UI [export]
 uses Console/TextCanvas
+uses Events [export]
 
 class ConsoleUI : UI
   GLOBAL PROPERTIES

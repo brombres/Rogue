@@ -1,6 +1,6 @@
 module UI
 
-uses Utility/Collection/Node
+uses Collection/Node
 
 # Make sure the UI_DYNAMIC_PROPERTY macro gets included first
 $include UI/UIDynamicProperties
@@ -8,13 +8,13 @@ $include UI/UIDynamicProperties
 # The following attribute macros inject appropriate code into UIComponent and UIDynamicProperties.
 # For example, given UI_DYNAMIC_PROPERTY(anchor,...) we can set component.anchor = Anchor.XYZ and
 # fetch component.anchor->Anchor.
-UI_INHERITED_DYNAMIC_PROPERTY( alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute )
+UI_INHERITED_DYNAMIC_PROPERTY<< alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute >>
 # 'alignment' affects text within this component and subcomponents. Unlike 'anchor',
 # 'alignment' is inherited by child components until a new alignment is set.
-UI_DYNAMIC_PROPERTY( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
-UI_INHERITED_DYNAMIC_PROPERTY( font, UIFont, UI.current.default_font, UIFontAttribute )
-UI_FN_DYNAMIC_PROPERTY( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
-UI_DYNAMIC_PROPERTY( weight, RealXY, RealXY(1,1), UIWeightAttribute )
+UI_DYNAMIC_PROPERTY<< display_offset, XY, XY.zero, UIDisplayOffsetAttribute >>
+UI_INHERITED_DYNAMIC_PROPERTY<< font, UIFont, UI.current.default_font, UIFontAttribute >>
+UI_FN_DYNAMIC_PROPERTY<< on_resize, Function(UIComponent), UIResizeCallbackAttribute >>
+UI_DYNAMIC_PROPERTY<< weight, RealXY, RealXY(1,1), UIWeightAttribute >>
 
 class UIComponent : Node<<UIComponent>>
   DEFINITIONS
@@ -29,10 +29,10 @@ class UIComponent : Node<<UIComponent>>
     ATTRIBUTE_DISABLE_CLIP          = (1:<<:5)
     ATTRIBUTE_HIDDEN                = (1:<<:6)  # not visible, not updated, no events sent
 
-    UI_ATTRIBUTE( NEEDS_LAYOUT, needs_layout, (1:<<:7) )   # needs layout
-    UI_ATTRIBUTE( IS_DIRTY,     is_dirty,     (1:<<:8) )   # needs redraw?
-    UI_ATTRIBUTE( GHOST,        is_ghost,     (1:<<:9) )   # visible, updated & drawn, no events sent
-    UI_ATTRIBUTE( DEAD,         is_dead,      (1:<<:10) )  # will automatically be removed from the UI
+    UI_ATTRIBUTE<< NEEDS_LAYOUT, needs_layout, (1:<<:7) >>  # needs layout
+    UI_ATTRIBUTE<< IS_DIRTY,     is_dirty,     (1:<<:8) >>  # needs redraw?
+    UI_ATTRIBUTE<< GHOST,        is_ghost,     (1:<<:9) >>  # visible, updated & drawn, no events sent
+    UI_ATTRIBUTE<< DEAD,         is_dead,      (1:<<:10)>>  # will automatically be removed from the UI
 
   PROPERTIES
     position          : XY

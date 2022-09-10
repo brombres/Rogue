@@ -30,7 +30,6 @@ class Event
       ++refcount
 endClass
 
-#{
 class KeyEvent : Event
   PROPERTIES
     keycode            : Int32   # if keycode == Keycode.UNICODE then 'syscode' contains unicode value
@@ -60,7 +59,7 @@ class KeyEvent : Event
     method is_repeat( _keycode:Int32 )->Logical
       return keycode == _keycode and is_repeat
 
-    method is_release->Logical [macro]
+    method is_release->Logical
       return not this.is_press
 
     method is_release( _keycode:Int32 )->Logical
@@ -140,9 +139,8 @@ class TextEvent : Event
       return text
 endClass
 
-
 class PointerEvent : Event
-  ENUMERATE
+  DEFINITIONS
     MOVE       = 0
     PRESS      = 1
     RELEASE    = 2
@@ -150,9 +148,9 @@ class PointerEvent : Event
     DRAG_START = 4
     DRAG_STOP  = 5
 
-    LEFT     = 0
-    RIGHT    = 1
-    MIDDLE   = 2
+    LEFT       = 0
+    RIGHT      = 1
+    MIDDLE     = 2
 
   PROPERTIES
     type         : Int32
@@ -169,19 +167,19 @@ class PointerEvent : Event
     method cloned->PointerEvent
       return PointerEvent( type, position, delta, index, is_cancelled ).[ init(this) ]
 
-    method is_drag_move->Logical [macro]
+    method is_drag_move->Logical
       return (this.type == PointerEvent.DRAG_MOVE)
 
-    method is_drag_start->Logical [macro]
+    method is_drag_start->Logical
       return (this.type == PointerEvent.DRAG_START)
 
-    method is_drag_stop->Logical [macro]
+    method is_drag_stop->Logical
       return (this.type == PointerEvent.DRAG_STOP)
 
-    method is_move->Logical [macro]
+    method is_move->Logical
       return (this.type == PointerEvent.MOVE)
 
-    method is_press->Logical [macro]
+    method is_press->Logical
       return (this.type == PointerEvent.PRESS)
 
     method is_press( button_index:Int32 )->Logical
@@ -196,7 +194,7 @@ class PointerEvent : Event
     method is_press_middle->Logical
       return is_press( 2 )
 
-    method is_release->Logical [macro]
+    method is_release->Logical
       return (this.type == PointerEvent.RELEASE)
 
     method is_release( button_index:Int32 )->Logical
@@ -233,7 +231,6 @@ class PointerEvent : Event
 
       return buffer->String
 endClass
-
 
 class ScrollEvent : Event
   PROPERTIES
@@ -330,4 +327,3 @@ class ScrollRate
       $ACCELERATION = ($ACCELERATION * 1.25).clamped_high( base_scale*2 )
       return result
 endClass
-}#
