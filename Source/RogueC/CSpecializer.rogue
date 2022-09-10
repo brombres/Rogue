@@ -371,7 +371,9 @@ class CSpecializer : Visitor
       if (cmd_create.m_init)
         insert( cmd_create2 )
         local cmd_constructor = CallDynamicMethod( cmd.t, GetLocal(cmd.t,cmd.info), cmd_create.m_init, args )
-        local result = visit( ConvertDynamicCallsToStaticAndVirtualCalls.[this_procedure=this_procedure].visit(cmd_constructor) )
+        ConvertDynamicCallsToStaticAndVirtualCalls.this_procedure = this_procedure
+        ConvertDynamicCallsToStaticAndVirtualCalls.this_type = this_type
+        local result = visit( ConvertDynamicCallsToStaticAndVirtualCalls.visit(cmd_constructor) )
         return result
       else
         return cmd_create2

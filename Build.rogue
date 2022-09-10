@@ -308,7 +308,7 @@ routine compile_rogue
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS
-  #if (Build.BUILD_MODE == "debug") flags = flags.appending("--debug")
+  if (Build.BUILD_MODE == "debug") flags = flags.appending("--debug")
   local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
