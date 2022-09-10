@@ -2168,7 +2168,7 @@ class Resolver : Poolable, Visitor
                                &=require_global, &=suppress_error )
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
+        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
       use Candidates
@@ -2197,7 +2197,7 @@ class Resolver : Poolable, Visitor
         Candidates.organize
 
         return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global,
-            &=suppress_error, &=exact_arg_types )
+          &=suppress_error, &=exact_arg_types, &=relaxed_arg_types )
       endUse
 
     method confirm_candidate( t:Token, context:Cmd, m:Procedure, args:Cmd )
@@ -2207,14 +2207,32 @@ class Resolver : Poolable, Visitor
       endUse
 
     method select_candidate( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error, &exact_arg_types )->Procedure
+        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types )->Procedure
+
+      # The terminology has gotten a little confusing. Will change names at some point, but until then:
+      #   suppress_error
+      #     Suppresses errors for constructors and for no-args calls. This is used when scouting
+      #     an ID to see if it is a method. Calls with args will normally still throw an error because
+      #     there's no other possible resolution (or that was the original thinking).
+      #
+      #   exact_arg_types
+      #     Forces exact arg matches and makes suppress_error extra powerful so that it also suppresses
+      #     errors in calls with args. This is used when resolving operator methods where there is often
+      #     a mix of local and global methods in two different classes.
+      #
+      #   relaxed_arg_types
+      #     Makes suppress_error always work. Also used when resolving operator methods. The approach:
+      #     1. Look for procedures in all 3 possible places (LHS local, LHS global, RHS global) with
+      #        &exact_arg_types.
+      #     2. Look for procedures in all 3 possible places with &relaxed_arg_types.
+      #     3. Check one more time while allowing errors to be thrown.
 
       if (Candidates.count)
         local result = refine_candidates( type_context, args, &=exact_arg_types )
         if (result)
           return result.[resolve]
         elseIf (suppress_error)
-          if (constructor or exact_arg_types) return null
+          if (constructor or exact_arg_types or relaxed_arg_types) return null
           if (not args) return null
         endIf
       elseIf (suppress_error)
@@ -3913,24 +3931,31 @@ augment
         left_type.organize
         right_type.organize
 
-        local exact_arg_types = true
-        loop 2
+        local exact_arg_types   = true
+        local relaxed_arg_types = false
+        loop 3
           # LeftType.op(LeftType,RightType)  [global]
           local m = resolver.find_procedure( cmd.t, left_type, null, op_method_name, args_left_right, &require_global,
-              &suppress_error, &=exact_arg_types )
+          &suppress_error, &=exact_arg_types, &=relaxed_arg_types )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
           # RightType.op(LeftType,RightType)  [global]
           m = resolver.find_procedure( cmd.t, right_type, null, op_method_name, args_left_right, &require_global,
-              &suppress_error, &=exact_arg_types )
+          &suppress_error, &=exact_arg_types, &=relaxed_arg_types )
           if (m) return resolver.resolve_call( cmd.t, null, m, args_left_right )
 
           # LeftType.op(RightType)
           local arg = Args( t, cmd.right )
-          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error, &=exact_arg_types )
+          m = resolver.find_procedure( cmd.t, left_type, cmd.left, op_method_name, arg, &suppress_error,
+                                       &=exact_arg_types, &=relaxed_arg_types )
           if (m and m.is_method) return resolver.resolve_call( cmd.t, cmd.left, m, arg )
 
-          exact_arg_types = false
+          if (exact_arg_types)
+            exact_arg_types = false
+            relaxed_arg_types = true
+          else
+            relaxed_arg_types = false
+          endIf
         endLoop
 
         local message = String()
