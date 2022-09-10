@@ -50,7 +50,7 @@ class Bitmap
       return Bitmap( width, height, Color(0) )
 
     method create( file:File )->Bitmap
-      return Bitmap( Byte[](file) )
+      return Bitmap( Byte[](file) ).[ filepath=file.filepath ]
 
     method create( bytes:Byte[] )->Bitmap
       local result = decode( bytes )
