@@ -1970,18 +1970,93 @@ parser
 - macro_arg
   while (hasAnother and not nextIs(',') and not nextIs('>>'))
     if (consume('<<'))
-      nested_macro_arg
+      nested_macro_arg_template
       mustConsume('<<')
+    elseIf (consume('{'))
+      nested_macro_arg_curly_braces
+      mustConsume('}')
+    elseIf (consume('('))
+      nested_macro_arg_parens
+      mustConsume(')')
+    elseIf (consume('['))
+      nested_macro_arg_square_brackets
+      mustConsume(']')
     else
       read
     endIf
   endWhile
 
-- nested_macro_arg
+- nested_macro_arg_template
   while (hasAnother and not nextIs('>>'))
     if (consume('<<'))
-      nested_macro_arg
-      mustConsume('>>')
+      nested_macro_arg_template
+      mustConsume('<<')
+    elseIf (consume('{'))
+      nested_macro_arg_curly_braces
+      mustConsume('}')
+    elseIf (consume('('))
+      nested_macro_arg_parens
+      mustConsume(')')
+    elseIf (consume('['))
+      nested_macro_arg_square_brackets
+      mustConsume(']')
+    else
+      read
+    endIf
+  endWhile
+
+- nested_macro_arg_curly_braces
+  while (hasAnother and not nextIs('}'))
+    if (consume('<<'))
+      nested_macro_arg_template
+      mustConsume('<<')
+    elseIf (consume('{'))
+      nested_macro_arg_curly_braces
+      mustConsume('}')
+    elseIf (consume('('))
+      nested_macro_arg_parens
+      mustConsume(')')
+    elseIf (consume('['))
+      nested_macro_arg_square_brackets
+      mustConsume(']')
+    else
+      read
+    endIf
+  endWhile
+
+- nested_macro_arg_parens
+  while (hasAnother and not nextIs(')'))
+    if (consume('<<'))
+      nested_macro_arg_template
+      mustConsume('<<')
+    elseIf (consume('{'))
+      nested_macro_arg_curly_braces
+      mustConsume('}')
+    elseIf (consume('('))
+      nested_macro_arg_parens
+      mustConsume(')')
+    elseIf (consume('['))
+      nested_macro_arg_square_brackets
+      mustConsume(']')
+    else
+      read
+    endIf
+  endWhile
+
+- nested_macro_arg_square_brackets
+  while (hasAnother and not nextIs(']'))
+    if (consume('<<'))
+      nested_macro_arg_template
+      mustConsume('<<')
+    elseIf (consume('{'))
+      nested_macro_arg_curly_braces
+      mustConsume('}')
+    elseIf (consume('('))
+      nested_macro_arg_parens
+      mustConsume(')')
+    elseIf (consume('['))
+      nested_macro_arg_square_brackets
+      mustConsume(']')
     else
       read
     endIf

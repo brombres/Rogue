@@ -351,7 +351,7 @@ class Parser : ParserCore, Poolable
 
     method insert_definition
       if (local_definitions)
-        local def = local_definitions[ _cur_t->String ]
+        local def = local_definitions[ _cur_t.content ]
         if (def)
           if (def.count > 0)
             _tokens.insert( def, _position )
@@ -362,7 +362,7 @@ class Parser : ParserCore, Poolable
         endIf
       endIf
 
-      local def = Program.definitions[ _cur_t->String ]
+      local def = Program.definitions[ _cur_t.content ]
       if (def)
         if (def.count > 0)
           _tokens.insert( def, _position )
@@ -373,7 +373,7 @@ class Parser : ParserCore, Poolable
       endIf
 
       if (_next_t.type == TokenType.SYMBOL_LTLT)
-        if (expand_macro(Program.macros[_cur_t->String])) return
+        if (expand_macro(Program.macros[_cur_t.content])) return
         if (local_macros and expand_macro(local_macros[_cur_t->String])) return
       endIf
 
