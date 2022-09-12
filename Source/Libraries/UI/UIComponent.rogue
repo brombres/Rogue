@@ -1,6 +1,6 @@
 module UI
 
-uses Utility/Collection/Node
+uses Collection/Node
 
 # Make sure the UI_DYNAMIC_PROPERTY macro gets included first
 $include UI/UIDynamicProperties
@@ -8,13 +8,13 @@ $include UI/UIDynamicProperties
 # The following attribute macros inject appropriate code into UIComponent and UIDynamicProperties.
 # For example, given UI_DYNAMIC_PROPERTY(anchor,...) we can set component.anchor = Anchor.XYZ and
 # fetch component.anchor->Anchor.
-UI_INHERITED_DYNAMIC_PROPERTY( alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute )
+UI_INHERITED_DYNAMIC_PROPERTY<< alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute >>
 # 'alignment' affects text within this component and subcomponents. Unlike 'anchor',
 # 'alignment' is inherited by child components until a new alignment is set.
-UI_DYNAMIC_PROPERTY( display_offset, XY, XY.zero, UIDisplayOffsetAttribute )
-UI_INHERITED_DYNAMIC_PROPERTY( font, UIFont, UI.current.default_font, UIFontAttribute )
-UI_FN_DYNAMIC_PROPERTY( on_resize, Function(UIComponent), UIResizeCallbackAttribute )
-UI_DYNAMIC_PROPERTY( weight, RealXY, RealXY(1,1), UIWeightAttribute )
+UI_DYNAMIC_PROPERTY<< display_offset, XY, XY.zero, UIDisplayOffsetAttribute >>
+UI_INHERITED_DYNAMIC_PROPERTY<< font, UIFont, UI.current.default_font, UIFontAttribute >>
+UI_FN_DYNAMIC_PROPERTY<< on_resize, Function(UIComponent), UIResizeCallbackAttribute >>
+UI_DYNAMIC_PROPERTY<< weight, RealXY, RealXY(1,1), UIWeightAttribute >>
 
 class UIComponent : Node<<UIComponent>>
   DEFINITIONS
@@ -29,10 +29,10 @@ class UIComponent : Node<<UIComponent>>
     ATTRIBUTE_DISABLE_CLIP          = (1:<<:5)
     ATTRIBUTE_HIDDEN                = (1:<<:6)  # not visible, not updated, no events sent
 
-    UI_ATTRIBUTE( NEEDS_LAYOUT, needs_layout, (1:<<:7) )   # needs layout
-    UI_ATTRIBUTE( IS_DIRTY,     is_dirty,     (1:<<:8) )   # needs redraw?
-    UI_ATTRIBUTE( GHOST,        is_ghost,     (1:<<:9) )   # visible, updated & drawn, no events sent
-    UI_ATTRIBUTE( DEAD,         is_dead,      (1:<<:10) )  # will automatically be removed from the UI
+    UI_ATTRIBUTE<< NEEDS_LAYOUT, needs_layout, (1:<<:7)  >>  # needs layout
+    UI_ATTRIBUTE<< IS_DIRTY,     is_dirty,     (1:<<:8)  >>  # needs redraw?
+    UI_ATTRIBUTE<< GHOST,        is_ghost,     (1:<<:9)  >>  # visible, updated & drawn, no events sent
+    UI_ATTRIBUTE<< DEAD,         is_dead,      (1:<<:10) >>  # will automatically be removed from the UI
 
   PROPERTIES
     position          : XY
@@ -65,7 +65,6 @@ class UIComponent : Node<<UIComponent>>
     method on_init
       noAction
 
-#{
     method after( e:KeyEvent )
       noAction
 
@@ -77,7 +76,6 @@ class UIComponent : Node<<UIComponent>>
 
     method after( e:TextEvent )
       noAction
-}#
 
     method after_draw
       noAction
@@ -142,10 +140,8 @@ class UIComponent : Node<<UIComponent>>
         (forEach in children).collect_drawable_components( list )
       endIf
 
-      #{
     method contains( e:PointerEvent )->Logical
       return contains( e.position )
-      }#
 
     method contains( pos:XY )->Logical
       return display_bounds.contains( pos )
@@ -168,7 +164,6 @@ class UIComponent : Node<<UIComponent>>
     method discard_dead->UIComponent
       return discard( $.is_dead and not $.is_dirty )
 
-#{
     method dispatch( e:KeyEvent )
       # Send input events to children in reverse order because the top layer comes last
       if (next) next.dispatch( e )
@@ -192,7 +187,6 @@ class UIComponent : Node<<UIComponent>>
       if (next) next.dispatch( e )
       if (e.is_consumed) return
       handle( e )
-}#
 
 #{
     method dispatch_message( message:Value )
@@ -283,7 +277,6 @@ class UIComponent : Node<<UIComponent>>
       endForEach
       return null
 
-#{
     method handle( e:KeyEvent )
       if (is_hidden or is_input_disabled) return
 
@@ -335,7 +328,6 @@ class UIComponent : Node<<UIComponent>>
       endIf
 
       after( e )
-}#
 
     method handle_resize
       on_resize
@@ -466,7 +458,6 @@ class UIComponent : Node<<UIComponent>>
       endUse
       return any_dirty
 
-#{
     method on( e:KeyEvent )
       noAction
 
@@ -481,7 +472,6 @@ class UIComponent : Node<<UIComponent>>
 
     method on_message( message:Value )
       noAction
-}#
 
     method on_update
       noAction

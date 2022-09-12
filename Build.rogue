@@ -15,7 +15,7 @@ augment Build
     LAUNCHER_FOLDER  = "/usr/local/bin"
     ROGUEC_FLAGS     = "--main --gc=manual"
     CC_FLAGS_UNIX    = ""
-    CC_FLAGS_WINDOWS = ""
+    CC_FLAGS_WINDOWS = "/bigobj"
 endAugment
 
 if (System.is_windows and File("Build/roguec.exe.old").exists)

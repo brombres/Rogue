@@ -1,24 +1,33 @@
-module UI
-uses Geometry [export]
-
 class Event
   PROPERTIES
-    is_consumed  = false
-    timestamp    : Int32
-    is_processed : Logical  # for optional use by the UI library or other similar infrastructure
+    is_consumed  : Logical
+    refcount     : Int32
+    timestamp    : Timestamp
 
   METHODS
-    method init( other:Event )
-      is_consumed = other.is_consumed
-      timestamp = other.timestamp
-      is_processed = other.is_processed
+    method init( timestamp=Timestamp.now )
+      is_consumed = false
+      refcount    = 0
 
-    method cloned->Event
-      error.println "Base class Event does not support cloned()."
-      return null
+    method init( existing:Event )
+      is_consumed = existing.is_consumed
+      refcount    = existing.refcount
+      timestamp   = existing.timestamp
+
+    method cloned->Event [propagated]
+      return ThisType( this )
 
     method consume
-      this.is_consumed = true
+      is_consumed = true
+
+    method release [propagated]
+      --refcount
+      if (refcount == 0)
+        ObjectPool<<ThisType>>.on_end_use( this )
+      endIf
+
+    method retain
+      ++refcount
 endClass
 
 class KeyEvent : Event
@@ -50,7 +59,7 @@ class KeyEvent : Event
     method is_repeat( _keycode:Int32 )->Logical
       return keycode == _keycode and is_repeat
 
-    method is_release->Logical [macro]
+    method is_release->Logical
       return not this.is_press
 
     method is_release( _keycode:Int32 )->Logical
@@ -60,7 +69,7 @@ class KeyEvent : Event
       return (modifier_key_state & Keyboard.SHIFT_MODIFIER_FLAG)
 
     method to->String
-      local buffer = StringBuilder()
+      local buffer = String()
       which (keycode)
          case    1: buffer.print( "[LeftArrow] " )
          case    2: buffer.print( "[UpArrow] " )
@@ -73,7 +82,7 @@ class KeyEvent : Event
          case   32: buffer.print( "[Space] " )
          case  127: buffer.print( "[Delete] " )
          others
-           buffer.print( "(Keycode " ).print( Int32(keycode) ).print( ") " )
+           buffer.[ print("(Keycode "), print(Int32(keycode)), print(") ") ]
        endWhich
 
        if (is_press)
@@ -85,7 +94,7 @@ class KeyEvent : Event
 
         if (is_consumed) buffer.print( " (consumed)" )
 
-       return buffer->String
+       return buffer
 
     method unicode->Character
       if (keycode == Keycode.UNICODE) return syscode->Character
@@ -132,7 +141,7 @@ endClass
 
 
 class PointerEvent : Event
-  ENUMERATE
+  DEFINITIONS
     MOVE       = 0
     PRESS      = 1
     RELEASE    = 2
@@ -159,19 +168,19 @@ class PointerEvent : Event
     method cloned->PointerEvent
       return PointerEvent( type, position, delta, index, is_cancelled ).[ init(this) ]
 
-    method is_drag_move->Logical [macro]
+    method is_drag_move->Logical
       return (this.type == PointerEvent.DRAG_MOVE)
 
-    method is_drag_start->Logical [macro]
+    method is_drag_start->Logical
       return (this.type == PointerEvent.DRAG_START)
 
-    method is_drag_stop->Logical [macro]
+    method is_drag_stop->Logical
       return (this.type == PointerEvent.DRAG_STOP)
 
-    method is_move->Logical [macro]
+    method is_move->Logical
       return (this.type == PointerEvent.MOVE)
 
-    method is_press->Logical [macro]
+    method is_press->Logical
       return (this.type == PointerEvent.PRESS)
 
     method is_press( button_index:Int32 )->Logical
@@ -186,7 +195,7 @@ class PointerEvent : Event
     method is_press_middle->Logical
       return is_press( 2 )
 
-    method is_release->Logical [macro]
+    method is_release->Logical
       return (this.type == PointerEvent.RELEASE)
 
     method is_release( button_index:Int32 )->Logical
@@ -208,20 +217,20 @@ class PointerEvent : Event
       return this + (-offset)
 
     method to->String
-      local buffer = StringBuilder()
+      local buffer = String()
       buffer.print( "Pointer " )
       which (type)
         case MOVE:       buffer.print( "move" )
-        case PRESS:      buffer.print( "press index " ).print( index )
+        case PRESS:      buffer.[ print("press index "), print(index) ]
         case RELEASE:    buffer.print( "release" )
         case DRAG_START: buffer.print( "drag start" )
         case DRAG_MOVE:  buffer.print( "drag move" )
         case DRAG_STOP:  buffer.print( "drag stop" )
       endWhich
-      buffer.print( " at " ).print( position )
+      buffer.[ print(" at "), print(position) ]
       if (is_consumed) buffer.print( " (consumed)" )
 
-      return buffer->String
+      return buffer
 endClass
 
 
@@ -236,7 +245,7 @@ class ScrollEvent : Event
       # or that a "momentum scroll" is active. Either way scroll events are guaranteed to continue
       # to be received until one where 'in_progress' is false.
     is_momentum   : Logical
-    density       : Int32
+    density       : Real
 
   METHODS
     method init( delta, is_precise=false, in_progress=false, is_momentum=false, density=1 )
@@ -245,12 +254,12 @@ class ScrollEvent : Event
       return ScrollEvent( delta, &=is_precise, &=in_progress, &=is_momentum, &=density ).[ init(this) ]
 
     method to->String
-      local buffer = StringBuilder().print( "Scroll " ).print( delta )
+      local buffer = String().[ print("Scroll "), print( delta ) ]
       buffer.print( " [$x]"(density) )
       if (in_progress) buffer.print( " [in progress]" )
       if (is_momentum) buffer.print( " [momentum]" )
       if (is_consumed) buffer.print( " (consumed)" )
-      return buffer->String
+      return buffer
 endClass
 
 class ScrollRate
@@ -261,7 +270,7 @@ class ScrollRate
   # Other OS or input device:
   # - Scales each scroll delta by 'base_scale' with no acceleration.
   PROPERTIES
-    base_scale     : Int32
+    base_scale     : Real
     delta          : XY
     history_x      = ScrollEvent[]
     history_y      = ScrollEvent[]
@@ -294,11 +303,11 @@ class ScrollRate
 
       return delta
 
-    method _same_direction( v1:Int32, v2:Int32 )->Logical
+    method _same_direction( v1:Real, v2:Real )->Logical
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
-    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Int32
+    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Real
       while ($HISTORY.count and $HISTORY.first.timestamp < e.timestamp - 0.25) $HISTORY.remove_first
 
       local result = 0.0
@@ -320,5 +329,3 @@ class ScrollRate
       $ACCELERATION = ($ACCELERATION * 1.25).clamped_high( base_scale*2 )
       return result
 endClass
-
-

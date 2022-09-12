@@ -1,4 +1,4 @@
-module ConsoleUI
+module UI
 
 uses UI [export]
 uses Console/TextCanvas
@@ -100,13 +100,13 @@ class ConsoleUI : UI
     method run
       System.sleep(0.2)  # helps prevent initial screen corruption
       Console.immediate_mode = true
-      Console.show_cursor = false
+      Console.cursor.hide
       Console.clear
 
       try
         is_running = true
         while (is_running)
-          update( Console.bounds )
+          update( Box(Console.width,Console.height) )
           draw
 
           # If it needs a redraw right after drawing then we're animating
@@ -115,11 +115,11 @@ class ConsoleUI : UI
         endWhile
 
         Console.immediate_mode = false
-        Console.show_cursor = true
+        Console.cursor.show
 
       catch (error:Error)
         Console.immediate_mode = false
-        Console.show_cursor = true
+        Console.cursor.show
         Console.clear
         println error
       endTry

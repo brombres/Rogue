@@ -30,11 +30,20 @@ class RealXY( x:Real, y:Real ) [compound]
       return RealXY( a.x%b.x, a.x%b.y )
 
   METHODS
+    method abs->RealXY
+      return RealXY( x.abs, y.abs )
+
+    method ceiling->RealXY
+      return RealXY( x.ceiling, y.ceiling )
+
     method cross( other:XY )->Real
       return x * other.y - y * other.x
 
     method dot( other:XY )->Real
       return x * other.x + y * other.y
+
+    method floor->RealXY
+      return RealXY( x.floor, y.floor )
 
     method is_zero->Logical
       return x == 0 and y == 0

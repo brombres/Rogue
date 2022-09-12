@@ -20,13 +20,11 @@ class UIScrollViewController
     method content_offset->XY
       return view.content_offset
 
-      #{ FIXME PointerEvent
     method on( e:PointerEvent )
       noAction
 
     method on( e:ScrollEvent )
       noAction
-      }#
 
     method on_prepare_layout
       noAction
@@ -83,7 +81,6 @@ class StandardUIScrollViewController : UIScrollViewController
         content_offset = XY( 0, view.bottom_offset )
       endIf
 
-      #{ FIXME PointerEvent
     method on( e:PointerEvent )
       if (e.is_press)
         if (not is_dragging and view.contains(e))
@@ -177,7 +174,6 @@ class StandardUIScrollViewController : UIScrollViewController
         active_scroll = false
         allow_momentum_scroll = true
       endIf
-      }#
 
     method on_prepare_layout
       if (not tracks_bottom)

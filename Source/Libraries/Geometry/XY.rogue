@@ -30,6 +30,9 @@ class XY( x:Int32, y:Int32 ) [essential compound]
       return RealXY( a.x%b.x, a.x%b.y )
 
   METHODS
+    method abs->XY
+      return XY( x.abs, y.abs )
+
     method cross( other:XY )->Int32
       return x * other.y - y * other.x
 

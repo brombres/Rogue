@@ -1,14 +1,14 @@
 module UI
 
 class Keyboard [singleton]
-  ENUMERATE
+  DEFINITIONS
     SHIFT_MODIFIER_FLAG   = 1
     CONTROL_MODIFIER_FLAG = 2
     ALT_MODIFIER_FLAG     = 4
     OS_MODIFIER_FLAG      = 8
 
   PROPERTIES
-    key_pressed = Array<<Logical>>( 256 )
+    key_pressed = Dim<<Logical>>( 256 )
 
   METHODS
     method clear_pressed_keys
@@ -23,7 +23,7 @@ class Keyboard [singleton]
       if (is_os_pressed)      state |= OS_MODIFIER_FLAG
       return state
 
-    method is_key_pressed( keycode:Int32 )->Logical [macro]
+    method is_key_pressed( keycode:Int32 )->Logical
       return this.key_pressed[ keycode & 255 ]
 
     method is_alt_pressed->Logical
@@ -40,144 +40,144 @@ class Keyboard [singleton]
 endClass
 
 class Keycode
-  ENUMERATE
-    LEFT_ARROW        1
-    UP_ARROW          2
-    RIGHT_ARROW       3
-    DOWN_ARROW        4
+  DEFINITIONS
+    LEFT_ARROW       =  1
+    UP_ARROW         =  2
+    RIGHT_ARROW      =  3
+    DOWN_ARROW       =  4
 
-    BACKSPACE         8
-    TAB               9
-    ENTER            10
+    BACKSPACE        =  8
+    TAB              =  9
+    ENTER            = 10
 
-    CAPS_LOCK        11
-    LEFT_SHIFT       12
-    RIGHT_SHIFT      13
-    LEFT_CONTROL     14
-    RIGHT_CONTROL    15
-    LEFT_ALT         16
-    RIGHT_ALT        17
+    CAPS_LOCK        = 11
+    LEFT_SHIFT       = 12
+    RIGHT_SHIFT      = 13
+    LEFT_CONTROL     = 14
+    RIGHT_CONTROL    = 15
+    LEFT_ALT         = 16
+    RIGHT_ALT        = 17
 
-    LEFT_OS          18
-    RIGHT_OS         19
-    LEFT_WINDOWS     LEFT_OS
-    RIGHT_WINDOWS    RIGHT_OS
-    LEFT_COMMAND     LEFT_OS
-    RIGHT_COMMAND    RIGHT_OS
+    LEFT_OS          = 18
+    RIGHT_OS         = 19
+    LEFT_WINDOWS     = LEFT_OS
+    RIGHT_WINDOWS    = RIGHT_OS
+    LEFT_COMMAND     = LEFT_OS
+    RIGHT_COMMAND    = RIGHT_OS
 
-    FUNCTION         26
-    ESCAPE           27
+    FUNCTION         = 26
+    ESCAPE           = 27
 
-    SPACE            32
+    SPACE            = 32
 
-    APOSTROPHE       39
-    COMMA            44
-    MINUS            45
-    PERIOD           46
-    SLASH            47
-    NUMBER_0         48
-    NUMBER_1         49
-    NUMBER_2         50
-    NUMBER_3         51
-    NUMBER_4         52
-    NUMBER_5         53
-    NUMBER_6         54
-    NUMBER_7         55
-    NUMBER_8         56
-    NUMBER_9         57
-    SEMICOLON        59
-    EQUALS           61
+    APOSTROPHE       = 39
+    COMMA            = 44
+    MINUS            = 45
+    PERIOD           = 46
+    SLASH            = 47
+    NUMBER_0         = 48
+    NUMBER_1         = 49
+    NUMBER_2         = 50
+    NUMBER_3         = 51
+    NUMBER_4         = 52
+    NUMBER_5         = 53
+    NUMBER_6         = 54
+    NUMBER_7         = 55
+    NUMBER_8         = 56
+    NUMBER_9         = 57
+    SEMICOLON        = 59
+    EQUALS           = 61
 
-    AT               64
-    A                65
-    B                66
-    C                67
-    D                68
-    E                69
-    F                70
-    G                71
-    H                72
-    I                73
-    J                74
-    K                75
-    L                76
-    M                77
-    N                78
-    O                79
-    P                80
-    Q                81
-    R                82
-    S                83
-    T                84
-    U                85
-    V                86
-    W                87
-    X                88
-    Y                89
-    Z                90
+    AT               = 64
+    A                = 65
+    B                = 66
+    C                = 67
+    D                = 68
+    E                = 69
+    F                = 70
+    G                = 71
+    H                = 72
+    I                = 73
+    J                = 74
+    K                = 75
+    L                = 76
+    M                = 77
+    N                = 78
+    O                = 79
+    P                = 80
+    Q                = 81
+    R                = 82
+    S                = 83
+    T                = 84
+    U                = 85
+    V                = 86
+    W                = 87
+    X                = 88
+    Y                = 89
+    Z                = 90
 
-    OPEN_BRACKET     91
-    BACKSLASH        92
-    CLOSE_BRACKET    93
-    BACKQUOTE        96
+    OPEN_BRACKET     = 91
+    BACKSLASH        = 92
+    CLOSE_BRACKET    = 93
+    BACKQUOTE        = 96
 
-    NUMPAD_ENTER    110
+    NUMPAD_ENTER     = 110
 
-    SYS_REQUEST     124
-    SCROLL_LOCK     125
-    BREAK           126
+    SYS_REQUEST      = 124
+    SCROLL_LOCK      = 125
+    BREAK            = 126
 
-    DELETE          127
-    INSERT          128
-    HOME            129
-    END             130
-    PAGE_UP         131
-    PAGE_DOWN       132
+    DELETE           = 127
+    INSERT           = 128
+    HOME             = 129
+    END              = 130
+    PAGE_UP          = 131
+    PAGE_DOWN        = 132
 
-    NUMPAD_ASTERISK 142
-    NUMPAD_PLUS     143
-    NUMPAD_MINUS    145
-    NUMPAD_PERIOD   146
-    NUMPAD_SLASH    147
-    NUMPAD_0        148
-    NUMPAD_1        149
-    NUMPAD_2        150
-    NUMPAD_3        151
-    NUMPAD_4        152
-    NUMPAD_5        153
-    NUMPAD_6        154
-    NUMPAD_7        155
-    NUMPAD_8        156
-    NUMPAD_9        157
-    NUMPAD_NUM_LOCK 158
-    NUMPAD_EQUALS   161
+    NUMPAD_ASTERISK  = 142
+    NUMPAD_PLUS      = 143
+    NUMPAD_MINUS     = 145
+    NUMPAD_PERIOD    = 146
+    NUMPAD_SLASH     = 147
+    NUMPAD_0         = 148
+    NUMPAD_1         = 149
+    NUMPAD_2         = 150
+    NUMPAD_3         = 151
+    NUMPAD_4         = 152
+    NUMPAD_5         = 153
+    NUMPAD_6         = 154
+    NUMPAD_7         = 155
+    NUMPAD_8         = 156
+    NUMPAD_9         = 157
+    NUMPAD_NUM_LOCK  = 158
+    NUMPAD_EQUALS    = 161
 
-    F1              201
-    F2              202
-    F3              203
-    F4              204
-    F5              205
-    F6              206
-    F7              207
-    F8              208
-    F9              209
-    F10             210
-    F11             211
-    F12             212
-    F13             213
-    F14             214
-    F15             215
-    F16             216
-    F17             217
-    F18             218
-    F19             219
-    F20             220
-    F21             221
-    F22             222
-    F23             223
-    F24             224
+    F1               = 201
+    F2               = 202
+    F3               = 203
+    F4               = 204
+    F5               = 205
+    F6               = 206
+    F7               = 207
+    F8               = 208
+    F9               = 209
+    F10              = 210
+    F11              = 211
+    F12              = 212
+    F13              = 213
+    F14              = 214
+    F15              = 215
+    F16              = 216
+    F17              = 217
+    F18              = 218
+    F19              = 219
+    F20              = 220
+    F21              = 221
+    F22              = 222
+    F23              = 223
+    F24              = 224
 
-    UNICODE         255
+    UNICODE          = 255
     # A KeyEvent containing .keycode == Keycode.UNICODE means that .syscode is the Unicode value
 
   GLOBAL PROPERTIES
