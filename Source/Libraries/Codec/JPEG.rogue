@@ -162,9 +162,6 @@ endClass
 
 class JPEGEncoder
   NATIVE
-    rogoDirective @|LIBRARIES(macOS) = libjpeg
-    rogoDirective @|LIBRARIES(Linux) = libjpeg(install:libjpeg-dev)
-
     nativeHeader...
      @|#if !defined(ROGUE_PLATFORM_LINUX)
       |  #include <setjmp.h>
@@ -258,13 +255,8 @@ endClass
 
 class JPEGErrorHandler [compound]
   PROPERTIES
-    #$if not target("Plasmacore") or target("Linux") or target("Console")
     native "struct jpeg_error_mgr jpeg_error_manager;"
     native "jmp_buf               on_error;"
-    #$endIf
-    #METHODS
-    #method operator== (other: JPEGErrorHandler)->Logical
-    #return false
 endClass
 
 

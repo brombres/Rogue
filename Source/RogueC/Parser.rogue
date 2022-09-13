@@ -870,21 +870,6 @@ class Parser : ParserCore, Poolable
     method rewrite_token
       processed_tokens.add( _read )
 
-    method rogo_directive
-      if (disable_output or _cmd_stack.is_empty) return
-      local directive = _cmd_stack.remove_last->(as LiteralString)
-      assert directive
-      local file = File("Build.rogue")
-      if (file.exists or File("BuildCore.rogue").exists)
-        local content = which{ file.exists:String(file) || "" }
-        local new_directive = "#$ " + directive
-        if (not content.contains(new_directive))
-          println "ROGO: " + new_directive
-          content = new_directive + "\n" + content
-          file.save( content )
-        endIf
-      endIf
-
     method set_cur_token
       _cur_t = _next_t
 
