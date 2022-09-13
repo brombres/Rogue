@@ -4,11 +4,13 @@ $include Codec/PNG
 
 augment Bitmap::Bitmap
   NATIVE
-    rogoDirective @|LIBRARIES(macOS) = libjpeg
-    rogoDirective @|LIBRARIES(macOS) = libpng
-    rogoDirective @|LIBRARIES(macOS) = zlib(flags:-lz)
-    rogoDirective @|LIBRARIES(Linux) = libjpeg(install:libjpeg-dev)
-    rogoDirective @|LIBRARIES(Linux) = libpng(install:libpng-dev)
+    rogoDirective @|LIBRARIES(macOS)   = libjpeg
+    rogoDirective @|LIBRARIES(macOS)   = libpng
+    rogoDirective @|LIBRARIES(macOS)   = zlib(flags:-lz)
+    rogoDirective @|LIBRARIES(Linux)   = libjpeg(install:libjpeg-dev)
+    rogoDirective @|LIBRARIES(Linux)   = libpng(install:libpng-dev)
+    rogoDirective @|LIBRARIES(Windows) = abepralle/windowsmedialibs
+    rogoDirective @|CC_LINK(Windows)   = /link /LTCG
 
   GLOBAL METHODS
     method decode_bmp( bytes:Byte[] )->Bitmap
@@ -30,13 +32,8 @@ endAugment
 
 augment FreeTypeFace
   NATIVE
-    rogoDirective @|LIBRARIES(macOS) = libjpeg
-    rogoDirective @|LIBRARIES(macOS) = libpng
-    rogoDirective @|LIBRARIES(macOS) = zlib(flags:-lz)
     rogoDirective @|LIBRARIES(macOS) = bzip2(flags:-lbz2)
     rogoDirective @|LIBRARIES(macOS) = freetype2
-    rogoDirective @|LIBRARIES(Linux) = libjpeg(install:libjpeg-dev)
-    rogoDirective @|LIBRARIES(Linux) = libpng(install:libpng-dev)
     rogoDirective @|LIBRARIES(Linux) = freetype2(install:libfreetype6-dev)
 
     # Must include png.h before ft2build.h to fix an order-of-include issue with png and setjmp on Linux
