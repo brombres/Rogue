@@ -818,17 +818,19 @@ class CGenerator : Visitor
     method on_visit( cmd:CreateCompound )
       writer.[ print("("), print(cmd.of_type.c_name), print(") ") ]
       writer.print '{'
-      if (cmd.args)
+      if (cmd.args and cmd.args.count)
         forEach (arg at i in cmd.args)
           if (i > 0) writer.print ','
           visit(arg)
         endForEach
-      else
+      elseIf (this_procedure.parameters.count)
         # Command is embedded in the compound's primary create() method. Pass in the create() params.
         forEach (param at i in this_procedure.parameters)
           if (i > 0) writer.print ','
           writer.[ print(' '), print(param.c_name) ]
         endForEach
+      else
+        writer.print '0'  # No elements in literal struct; pass in 0 to keep MSVC happy.
       endIf
       writer.print "}"
 
