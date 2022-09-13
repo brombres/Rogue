@@ -1,5 +1,5 @@
-$define VERSION "2.0.12"
-$define DATE    "September 12, 2022"
+$define VERSION "2.1"
+$define DATE    "September 13, 2022"
 
 module RogueC
 

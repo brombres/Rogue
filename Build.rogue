@@ -261,11 +261,13 @@ routine project_has_uncommitted_changes->Logical
 endRoutine
 
 routine rogo_publish( new_version:String )
-  rogo_update_bootstrap
-
   # Updates source and README version number, commits, and publishes a release to GitHub.
   if (not String.exists(new_version)) throw Error( "Expected version number after 'rogo publish'." )
   if (not System.find_executable("gh")) throw Error( "The GitHub command line tool 'gh' must be installed." )
+
+  rogo_update_bootstrap
+  rogo_build
+
   rogo_commit( new_version )
 
   # These can be hard-coded to suit your project
