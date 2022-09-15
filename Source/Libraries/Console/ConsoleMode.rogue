@@ -258,7 +258,8 @@ class ImmediateConsoleMode : ConsoleMode
                    elseIf (event_flags & native("MOUSE_MOVED")->Int32)
                      events.add ConsoleEvent( ConsoleEventType.POINTER_MOVE, x, y )
                    elseIf (event_flags & native("MOUSE_WHEELED")->Int32)
-                     if ((new_button_state & 0xFFFF0000) > 0)
+                     local delta = new_button_state :>>>: 16
+                     if (delta > 0)
                        events.add ConsoleEvent( ConsoleEventType.SCROLL_UP, x, y )
                      else
                        events.add ConsoleEvent( ConsoleEventType.SCROLL_DOWN, x, y )
