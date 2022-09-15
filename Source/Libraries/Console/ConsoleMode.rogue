@@ -1,5 +1,14 @@
 class ConsoleMode [abstract]
+  GLOBAL PROPERTIES
+    configured_on_exit : Logical
+
   METHODS
+    method init_object
+      if (not configured_on_exit)
+        configured_on_exit = true
+        on_exit( () => Console.immediate_mode=false; Console.cursor.show )
+      endIf
+
     method has_another->Logical        [abstract]
     method has_another_event->Logical  [abstract]
     method peek->Character             [abstract]
@@ -9,9 +18,6 @@ class ConsoleMode [abstract]
 endClass
 
 class StandardConsoleMode : ConsoleMode
-  GLOBAL PROPERTIES
-    configured_on_exit : Logical
-
   PROPERTIES
     next_input_character : Int32?
 
@@ -32,11 +38,6 @@ class StandardConsoleMode : ConsoleMode
                  # Disable mouse events
                  Global.[ flush, print("\e[?1003l"), flush ]
       native @|#endif
-
-      if (not configured_on_exit)
-        configured_on_exit = true
-        on_exit( () => Console.immediate_mode=false; Console.cursor.show )
-      endIf
 
     method has_another->Logical
       if (not next_input_character.exists)
