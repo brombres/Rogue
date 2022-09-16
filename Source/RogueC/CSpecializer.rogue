@@ -536,17 +536,11 @@ augment Program
       unique_c_names.add( "RogueObjectList" )
 
     method to_c_name( name:String )->String
-      loop
-        if (name.ends_with("[]"))
-          name = name.leftmost(-2) + "List"
-          nextIteration
-        elseIf (name.ends_with('?'))
-          name = "Optional" + name.leftmost(-1)
-          nextIteration
-        else
-          escapeLoop
-        endIf
-      endLoop
+      name = name.replacing( "[]", "List" )
+
+      while (name.ends_with('?'))
+        name = "Optional" + name.leftmost(-1)
+      endWhile
 
       if (name.contains(':'))
         name .= replacing( ":<<:",  "SHL" )
@@ -561,10 +555,10 @@ augment Program
         if (ch.is_letter or ch.is_number)
           builder.print ch
         elseIf (ch == '>')
-          if (iterator.peek == '>') iterator.read
+          if (iterator.peek == '>') builder.print 'x'; iterator.read
           else                      builder.print "GT"
         elseIf (ch == '<')
-          if (iterator.peek == '<') builder.print '_'; iterator.read
+          if (iterator.peek == '<') builder.print 'x'; iterator.read
           else                      builder.print "LT"
         elseIf (ch == '+')
           if (iterator.peek == '+') builder.print "INC"; iterator.read
