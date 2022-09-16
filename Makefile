@@ -2,7 +2,7 @@
 
 BUILD_FOLDER=Build
 LIBRARIES_FOLDER=$(BUILD_FOLDER)
-LINK_EXE=/usr/local/bin/roguec
+LINK_EXE=/usr/local/bin/roguec1
 
 ROGUEC_CPP_FLAGS = -Wall -std=gnu++11 -fno-strict-aliasing -Wno-invalid-offsetof -O3
 
@@ -27,9 +27,9 @@ CPP_SRC    = Source/RogueC/Bootstrap/RogueC.cpp
 H_SRC      = Source/RogueC/Bootstrap/RogueC.h
 
 all: link
-	@echo ┌─────────────────┐
-	@echo │roguec installed!│
-	@echo └─────────────────┘
+	@echo ┌──────────────────┐
+	@echo │roguec1 installed!│
+	@echo └──────────────────┘
 
 build: $(BUILD_FOLDER)/$(BUILD_EXE)
 
@@ -48,7 +48,7 @@ $(LINK_EXE): build
 uninstall:
 	rm -rf "$(LINK_EXE)" || (echo Retrying with sudo && sudo rm -rf "$(LINK_EXE)")
 	rm -rf "$(BUILD_FOLDER)"
-	@echo ┌──────────────────┐
-	@echo │roguec uninstalled│
-	@echo └──────────────────┘
+	@echo ┌───────────────────┐
+	@echo │roguec1 uninstalled│
+	@echo └───────────────────┘
 
