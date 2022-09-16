@@ -862,13 +862,13 @@ class Bitmap
                 |buffer += 5;
       endForEach
 
-    method resize_to_fill( max_width:Int32, max_height:Int32, crop=null:Anchor? )
-      local scale_x = max_width->Real / width
-      local scale_y = max_height->Real / height
+    method resize_to_fill( min_width:Int32, min_height:Int32, crop=null:Anchor? )
+      local scale_x = min_width->Real / width
+      local scale_y = min_height->Real / height
       local scale = scale_x.or_larger( scale_y )
       resize( (width*scale)->Int32, (height*scale)->Int32 )
       if (crop)
-        this.crop( max_width, max_height, crop.value )
+        this.crop( min_width, min_height, crop.value )
       endIf
 
     method resize_to_fit( max_width:Int32, max_height:Int32 )
