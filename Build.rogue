@@ -265,8 +265,10 @@ routine rogo_publish( new_version:String )
   if (not String.exists(new_version)) throw Error( "Expected version number after 'rogo publish'." )
   if (not System.find_executable("gh")) throw Error( "The GitHub command line tool 'gh' must be installed." )
 
-  rogo_update_bootstrap
+  rogo_update_version( new_version )
+
   rogo_build
+  rogo_update_bootstrap
 
   rogo_commit( new_version )
 
