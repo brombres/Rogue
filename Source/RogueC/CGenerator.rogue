@@ -691,11 +691,7 @@ class CGenerator : Visitor
       if (Program.stack_trace)
         cur_line = this_procedure.t.line
         writer.print ''Rogue_call_stack_push( "''
-        if (this_procedure.type_context)
-          writer.print this_procedure.type_context
-          writer.print '.'
-        endIf
-        writer.print this_procedure.signature
+        writer.print this_procedure.dev_signature
         writer.print ''", "''
         writer.print File(this_procedure.t.filepath).filename
         writer.print   ''", ''
