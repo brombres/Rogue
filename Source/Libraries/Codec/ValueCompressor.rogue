@@ -1,0 +1,107 @@
+augment Value
+  METHODS
+    method compressed->Value
+      if (this.is_table and contains("@id_list") and contains("@indexed_data")) return this
+      # Already compressed?
+
+      local builder = ValueIDTableBuilder()
+      local indexed_data = encode_indexed( builder )
+
+      local result = @{ "@id_list":builder.id_list, "@indexed_data":indexed_data }
+      return result
+
+    method decompressed->Value
+      if (not contains("@id_list") or not contains("@indexed_data")) return this
+
+      local table = ValueIDLookupTable( this )
+      return this["@indexed_data"].decode_indexed( table )
+
+    method decode_indexed( id_table:ValueIDLookupTable )->Value
+      which (type)
+        case TYPE_STRING
+          return id_table[ object->(as String) ]
+        case TYPE_LIST
+          local result = @[]
+          result.add( (forEach in this).decode_indexed(id_table) )
+          return result
+        case TYPE_TABLE
+          local result = @{}
+          forEach (cur in entries)
+            local key = Value( cur.key ).decode_indexed( id_table )
+            local value = cur.value.decode_indexed( id_table )
+            result[ key ] = value
+          endForEach
+          return result
+        others
+          return this
+      endWhich
+
+    method encode_indexed( id_table_builder:ValueIDTableBuilder )->Value
+      which (type)
+        case TYPE_STRING
+          return id_table_builder[ object->(as String) ]
+        case TYPE_LIST
+          local result = @[]
+          result.add( (forEach in this).encode_indexed(id_table_builder) )
+          return result
+        case TYPE_TABLE
+          local result = @{}
+          forEach (cur in entries)
+            local key = Value( cur.key ).encode_indexed( id_table_builder )
+            local value = cur.value.encode_indexed( id_table_builder )
+            result[ key ] = value
+          endForEach
+          return result
+        others
+          return this
+      endWhich
+endAugment
+
+class ValueIDTableBuilder
+  PROPERTIES
+    id_table = @{}
+    id_list  = @[]
+
+  METHODS
+    method get( value:Value )->Value
+      local text = value->String
+      local encoded_value = id_table[ text ]
+      if (encoded_value) return encoded_value
+
+      if (id_list.count.digit_count + 1 >= text.count and not text.begins_with('@'))
+        # Encoded ID would be equal to or larger than the original; just leave it as-is.
+        return value
+      endIf
+
+      encoded_value = "@" + id_list.count
+      id_table[ text ] = encoded_value
+
+      id_list.add( value )
+
+      return encoded_value
+
+endClass
+
+class ValueIDLookupTable
+  PROPERTIES
+    id_list : Value
+
+  METHODS
+    method init( info:Value )
+      id_list = info[ "@id_list" ]
+
+    method get( index_string:String )->Value
+      if (not index_string.begins_with('@')) return index_string
+
+      local index = 0
+      forEach (ch at i in index_string)
+        if (i > 0)
+          index = index * 10 + (ch - '0')
+        endIf
+      endForEach
+
+      if (index < 0 or index >= id_list.count) return "(ERROR)"
+
+      return id_list[ index ]
+
+endClass
