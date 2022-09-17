@@ -6,7 +6,7 @@ class JSON
       if (not file.exists) return undefined
       return parse( String(file) )
 
-    method parse( json:File, error_log=null:PrintWriter )->Value
+    method parse( file:File, error_log=null:PrintWriter )->Value
       return load( file, &=error_log )
 
     method parse( json:String, error_log=null:PrintWriter )->Value
