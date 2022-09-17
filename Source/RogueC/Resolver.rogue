@@ -2443,7 +2443,7 @@ class Resolver : Poolable, Visitor
         Candidates.refine
       endIf
 
-      # Filter by arg categories (reference/primitive/compound)
+      # Filter by arg categories (reference/primitive/exact compound)
       if (arg_count)
         forEach (m in Candidates)
           if (has_named_arg) m.arrange_args( args, this )
@@ -2451,9 +2451,9 @@ class Resolver : Poolable, Visitor
             forEach (arg at i in args)
               local arg_type = arg.require_type
               local param_type = m.parameters[i].type
-              if (arg_type.is_reference) necessary (param_type.is_reference)
-              if (arg_type.is_primitive) necessary (param_type.is_primitive)
-              if (arg_type.is_compound)  necessary (param_type.is_compound)
+              if (param_type.is_reference) necessary (arg_type.is_reference)
+              if (param_type.is_primitive) necessary (arg_type.is_primitive)
+              if (param_type.is_compound)  necessary (arg_type is param_type)
             endForEach
             Candidates.keep m
           endContingent
