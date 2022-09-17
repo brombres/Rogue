@@ -6,6 +6,9 @@ class StackTrace
     method init
       local n = native("Rogue_call_stack_count")->Int32
       if (n)
+        # Stow the current line number
+        native @|Rogue_call_stack[Rogue_call_stack_count-1].line = Rogue_call_stack_line;
+
         frames = StackTraceFrame[]( n )
 
         forEach (i in 0..<n)
@@ -34,9 +37,22 @@ class StackTrace
 
     method to->String
       if (not frames) return "(Call history unavailable - compile with '--debug')"
+
+      local left_w = 0
+      local right_w = 0
+      forEach (frame in frames)
+        left_w .= or_larger( frame.procedure.count )
+        right_w .= or_larger( frame.filename.count + frame.line.digit_count )
+      endForEach
+      local max_w = Console.width.or_larger(40)
+      if (left_w + right_w + 5 > max_w)
+        left_w = (max_w - (right_w + 5)).clamped_low(20)
+        right_w = (max_w - (left_w + 5))
+      endIf
+
       local result = String()
       forEach (frame in frames)
-        result.println frame
+        result.println frame->String(left_w,right_w)
       endForEach
       return result
 endClass
@@ -45,4 +61,18 @@ class StackTraceFrame( procedure:String, filename:String, line:Int32 ) [compound
   METHODS
     method to->String
       return "[$  $:$]" (procedure, filename, line )
+
+    method to->String( left_w:Int32, right_w:Int32 )
+      local builder = String()
+      builder.print '['
+      if (procedure.count > left_w) builder.print( procedure.leftmost(left_w-3) + "..." )
+      else                          builder.print( procedure.justified(-left_w) )
+      builder.print "  "
+      right_w -= line.digit_count
+      if (filename.count > right_w) builder.print( filename.leftmost(right_w-3) + "..." )
+      else                          builder.print( filename.justified(right_w) )
+      builder.print ':'
+      builder.print line
+      builder.print ']'
+      return builder
 endClass

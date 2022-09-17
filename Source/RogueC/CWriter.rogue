@@ -421,7 +421,7 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (--Rogue_call_stack_count)
            |  {
-           |    Rogue_call_stack_line = Rogue_call_stack[ Rogue_call_stack_count ].line;
+           |    Rogue_call_stack_line = Rogue_call_stack[ Rogue_call_stack_count-1 ].line;
            |  }
            |}
            |
