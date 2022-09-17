@@ -1,24 +1,4 @@
 class FilePattern( pattern:String ) [compound]
-  GLOBAL METHODS
-    method operator==( file:File, pattern:FilePattern )->Logical
-      return pattern.matches( file.resolved.filepath )
-
-    method operator==( pattern:FilePattern, file:File )->Logical
-      return pattern.matches( file.resolved.filepath )
-
-    method operator==( text:String, pattern:FilePattern )->Logical
-      return pattern.matches( text )
-
-    method operator==( pattern:FilePattern, text:String )->Logical
-      return pattern.matches( text )
-
-    method operator/( pattern:FilePattern, text:String )->FilePattern
-      return FilePattern( pattern.pattern / text )
-
-    method operator/( text:String, pattern:FilePattern )->FilePattern
-      return FilePattern( text / pattern.pattern )
-
-
   METHODS
     method matches( filepath:String, &ignore_case )->Logical
       # Determines whether or not the given filepath matches the given

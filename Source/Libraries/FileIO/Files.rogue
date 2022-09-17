@@ -162,7 +162,7 @@ class Files
       if (pattern.contains('*') or pattern.contains('?'))
         block pattern = FilePattern(pattern)
           forEach (filepath in filepath_set.values)
-            if (pattern == filepath or pattern == relative_filepath(filepath))
+            if (pattern.matches(filepath) or pattern.matches(relative_filepath(filepath)))
               filepath_set.remove( filepath )
             endIf
           endForEach

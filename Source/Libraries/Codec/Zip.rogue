@@ -147,7 +147,7 @@ class Zip
 
       # We haven't found an exact match. Use pattern matching to potentially find multiple matches.
       forEach (entry in this)
-        if (entry.name == pattern) results.add( entry )
+        if (pattern.matches(entry.name)) results.add( entry )
       endForEach
 
       return results

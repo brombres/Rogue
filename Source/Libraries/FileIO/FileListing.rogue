@@ -126,7 +126,7 @@ class FileListing
           if (pattern.value.count)
             # Directories were recursed into based on the pattern, but some files could have been added
             # earlier that don't match the wildcard pattern.
-            necessary (filepath == FilePattern(pattern.value))
+            necessary (FilePattern(pattern.value).matches(filepath))
           endIf
 
           if ((options.is_omit_path) and filepath.begins_with(adjusted_folder))
@@ -144,7 +144,7 @@ class FileListing
 
     method collect( filename:String )
       if ((options.is_ignore_hidden) and filename.begins_with('.')) return
-      if (pattern_segments.count and filename != FilePattern(pattern_segments.first)) return
+      if (pattern_segments.count and not FilePattern(pattern_segments.first).matches(filename)) return
 
       filepath_segments.[ clear, add(path_segments), add(filename) ]
 
