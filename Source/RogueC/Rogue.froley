@@ -3046,6 +3046,7 @@ parser
 - value_expression
   on '{' value_table: return
   on '[' value_list:  return
+  on "[]" -> EmptyValueList
   expression
 
 - value_list
