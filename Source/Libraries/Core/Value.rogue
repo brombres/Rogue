@@ -195,6 +195,26 @@ class Value [compound]
       if (type != TYPE_TABLE) return TableEntriesIterator<<String,Value>>( null )
       return object->(as [String:Value]).entries
 
+    method ensure_list( name:String )->Value
+      if (not is_table) return @[]
+
+      local list = this[name]
+      if (list) return list
+
+      list = @[]
+      this[name] = list
+      return list
+
+    method ensure_table( name:String )->Value
+      if (not is_table) return @{}
+
+      local table = this[name]
+      if (table) return table
+
+      table = @{}
+      this[name] = table
+      return table
+
     method first->Value
       which (type)
         case TYPE_LIST
@@ -755,8 +775,8 @@ class Value [compound]
 
     method to->String
       which (type)
-        case TYPE_UNDEFINED: return null
-        case TYPE_NULL:      return null
+        case TYPE_UNDEFINED: return ""
+        case TYPE_NULL:      return "null"
         case TYPE_LOGICAL:   return logical->String
         case TYPE_BYTE:      return byte->String
         case TYPE_CHARACTER: return character->String
