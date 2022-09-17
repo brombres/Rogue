@@ -885,6 +885,12 @@ class CommonPrimitiveMethods<<$DataType>> [aspect]
     method description->String
       return this->String
 
+    method digit_count->Int32
+      use builder = StringPool
+        builder.print( this )
+        return builder.count
+      endUse
+
     method or_larger( other:$DataType )->$DataType
       return which{ this>=other:this || other }
 
