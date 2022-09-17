@@ -148,6 +148,9 @@ class RealXY( x:Real, y:Real ) [compound]
 
     method yv->RealXY
       return RealXY(0,y)
+
+    method yx->RealXY
+      return RealXY(y,x)
 endClass
 
 augment Geometry::Anchor

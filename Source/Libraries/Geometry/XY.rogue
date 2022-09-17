@@ -165,6 +165,9 @@ class XY( x:Int32, y:Int32 ) [essential compound]
 
     method yv->XY
       return XY(0,y)
+
+    method yx->XY
+      return XY(y,x)
 endClass
 
 augment Math::Random
