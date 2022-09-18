@@ -701,8 +701,8 @@ class Bitmap
     method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
       crop( new_width, new_height, anchor, &=pad_color )
 
-    method resize( new_width:Int32, new_height:Int32 )->this
-      return resize( XY(new_width,new_height) )
+    method resize( new_width:Int32, new_height:Int32 )
+      resize( XY(new_width,new_height) )
 
     method resize( new_size:XY )
       if (new_size.x == width and new_size.y == height) return # no need to resize
