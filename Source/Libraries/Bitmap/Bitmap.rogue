@@ -32,18 +32,6 @@ uses Geometry [export]
 $include Bitmap/Color
 $include Bitmap/HSB
 
-#{
-$include "Bitmap/BitmapFont.rogue"
-$include "Bitmap/HSB.rogue"
-
-$if not defined(CUSTOM_BITMAP_IO)
-  $include "Bitmap/BMP.rogue"
-  $include "Bitmap/JPEG.rogue"
-  $include "Bitmap/PNG.rogue"
-$endIf
-
-}#
-
 class Bitmap
   GLOBAL METHODS
     method create( width:Int32, height:Int32 )->Bitmap
@@ -156,11 +144,10 @@ class Bitmap
       result.error = this.error
       return result
 
-    method add_rows( rows:Int32, color=0:Color )->this
+    method add_rows( rows:Int32, color=0:Color )
       pixels.reserve( width*rows )
       forEach (1..width*rows) pixels.add( color )
       height += rows
-      return this
 
     method blit( dest_bitmap:Bitmap, x:Int32, y:Int32, blit_fn=BitmapBlitFn.OPAQUE:BitmapBlitFn )
       blit( dest_bitmap, XY(x,y), &=blit_fn )
@@ -240,7 +227,7 @@ class Bitmap
       forEach (i of pixels) pixels[i] = color
 
   METHODS
-    method convert_gray_to_alpha->Bitmap
+    method convert_gray_to_alpha
       local count = width * height
 
       native @|RogueInt32* cur = $pixels->as_int32s - 1;
@@ -249,9 +236,6 @@ class Bitmap
               |  RogueInt32 gray = *(++cur) & 255;
               |  *cur = (gray << 24) | 0xFFffFF;
               |}
-
-      return this
-
 
     method crop( delta:Int32, pad_color=Color(0):Color )
       crop( delta, delta, delta, delta, &=pad_color )
@@ -328,6 +312,30 @@ class Bitmap
     method expand( left:Int32, top:Int32, right:Int32, bottom:Int32, pad_color=Color(0):Color )
       crop( -left, -top, -right, -bottom, pad_color )
 
+    method expand_to_power_of_2
+      local wp2 = width.to_power_of_2
+      local hp2 = height.to_power_of_2
+      if (wp2 == width and hp2 == height) return
+
+      local result = Bitmap( wp2, hp2 )
+      this.blit( result, XY(0,0) )
+      width = result.width
+      height = result.height
+      pixels = result.pixels
+      error = result.error
+
+    method extend_edges( bounds:Box )
+      local x1 = bounds.position.x
+      local y1 = bounds.position.y
+      local w  = bounds.size.x
+      local h  = bounds.size.y
+      local x2 = x1 + (w - 1)
+      local y2 = y1 + (h - 1)
+      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
+      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
+      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
+      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
+
     method fill( box:Box, color:Color )
       local x1 = box.position.x->Int32
       local y1 = box.position.y->Int32
@@ -391,53 +399,6 @@ class Bitmap
               |  }
               |  dest += $row_skip;
               |}
-
-    method flip( &h, &v )
-      if (not h and not v) h = true
-      if (h)
-        block width, height, pixels, i1=0, i2=width-1
-          while (i1 < i2)
-            local pos1 = i1
-            local pos2 = i2
-            loop (height)
-              pixels.swap(pos1,pos2)
-              pos1 += width
-              pos2 += width
-            endLoop
-            ++i1
-            --i2
-          endWhile
-        endBlock
-      endIf
-      if (v)
-        block width, height, pixels, line1=0, line2=height-1, start1=0, start2=line2*width
-          while (line1 < line2)
-            local pos1 = start1
-            local pos2 = start2
-            loop (width)
-              pixels.swap(pos1,pos2)
-              ++pos1
-              ++pos2
-            endLoop
-            ++line1
-            --line2
-            start1 += width
-            start2 -= width
-          endWhile
-        endBlock
-      endIf
-
-    method extend_edges( bounds:Box )
-      local x1 = bounds.position.x
-      local y1 = bounds.position.y
-      local w  = bounds.size.x
-      local h  = bounds.size.y
-      local x2 = x1 + (w - 1)
-      local y2 = y1 + (h - 1)
-      blit( Box(x1,y1,w,1), this, XY(x1,y1-1) )  # top
-      blit( Box(x1,y2,w,1), this, XY(x1,y2+1) )  # bottom
-      blit( Box(x1,y1-1,1,h+2), this, XY(x1-1,y1-1) )  # left
-      blit( Box(x2,y1-1,1,h+2), this, XY(x2+1,y1-1) )  # right
 
     method fill( triangle:Triangle, color:Color )
       local top    = triangle.a.floor
@@ -585,19 +546,40 @@ class Bitmap
 
       endIf
 
-    method expand_to_power_of_two->this
-      local wp2 = width.to_power_of_two
-      local hp2 = height.to_power_of_two
-      if (wp2 == width and hp2 == height) return this
-
-      local result = Bitmap( wp2, hp2 )
-      this.blit( result, XY(0,0) )
-      width = result.width
-      height = result.height
-      pixels = result.pixels
-      error = result.error
-
-      return this
+    method flip( &h, &v )
+      if (not h and not v) h = true
+      if (h)
+        block width, height, pixels, i1=0, i2=width-1
+          while (i1 < i2)
+            local pos1 = i1
+            local pos2 = i2
+            loop (height)
+              pixels.swap(pos1,pos2)
+              pos1 += width
+              pos2 += width
+            endLoop
+            ++i1
+            --i2
+          endWhile
+        endBlock
+      endIf
+      if (v)
+        block width, height, pixels, line1=0, line2=height-1, start1=0, start2=line2*width
+          while (line1 < line2)
+            local pos1 = start1
+            local pos2 = start2
+            loop (width)
+              pixels.swap(pos1,pos2)
+              ++pos1
+              ++pos2
+            endLoop
+            ++line1
+            --line2
+            start1 += width
+            start2 -= width
+          endWhile
+        endBlock
+      endIf
 
     method get( x:Int32, y:Int32 )->Color
       if (x < 0 or y < 0 or x >= width or y >= height)
@@ -722,14 +704,13 @@ class Bitmap
     method resize( new_width:Int32, new_height:Int32 )->this
       return resize( XY(new_width,new_height) )
 
-    method resize( new_size:XY )->this
-      if (new_size.x == width and new_size.y == height) return this  # no need to resize
+    method resize( new_size:XY )
+      if (new_size.x == width and new_size.y == height) return # no need to resize
       local result = resized( new_size )
       width = result.width
       height = result.height
       pixels = result.pixels
       error = result.error
-      return this
 
     method resize_to( other:Bitmap )
       # Uses a custom algorithm inspired by Bresenham's line drawing algorithm.
@@ -950,11 +931,10 @@ class Bitmap
     method save_as_jpeg( file:File, quality=75:Int32 )->Logical
       return file.save( to_jpeg_bytes(quality) )
 
-    method set( x:Int32, y:Int32, color:Color )->this
+    method set( x:Int32, y:Int32, color:Color )
       if (x >= 0 and y >= 0 and x < width and y < height)
         pixels[ y*width + x ] = color
       endIf
-      return this
 
     method set( xy:XY, color:Color )->this
       return set( xy.x, xy.y, color )
@@ -973,7 +953,7 @@ class Bitmap
       endForEach
       return tiles
 
-    method swap_red_and_blue->this
+    method swap_red_and_blue
       native @|int n = $width * $height;
               |RogueInt32* src = $pixels->as_int32s + n;
               |while (--n >= 0)
@@ -981,7 +961,6 @@ class Bitmap
               |  RogueInt32 pixel = *(--src);
               |  *src = (pixel & 0xFF00FF00) | ((pixel << 16) & 0xFF0000) | ((pixel >> 16) & 0xFF);
               |}
-      return this
 
     method to_png_bytes->Byte[]
       #return PNGEncoder().encode( this )
@@ -1119,4 +1098,3 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
               |  dest_start += $dest_width;
               |}
 endClass
-
