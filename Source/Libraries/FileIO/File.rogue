@@ -672,6 +672,12 @@ class File( filepath:String ) [compound]
               |fclose( fp );
       return size;
 
+    method split_filepath_and_extension->(filepath:String,extension:String)
+      local filepath = resolved.filepath
+      localize filename
+      if (not filename.contains('.')) return (filepath,"")
+      return (filepath:filepath.before_last('.'),extension:filename.after_last('.'))
+
     method symlink( target:File )
       # Symlinks this File to the target file.
       # Unix-style example: File("/usr/local/bin/cmdlauncher").symlink(File("/opt/myapp/bin/cmd"))
