@@ -582,6 +582,10 @@ augment Program
             case '|': builder.print "OR"
             case '~': builder.print "XOR"
             case '!': builder.print "NOT"
+            case '(': builder.print "OPAREN"
+            case ')': builder.print "CPAREN"
+            case '[': builder.print "BTABLE"
+            case ']': builder.print "ETABLE"
             others:   builder.print '_'
           endWhich
         endIf
