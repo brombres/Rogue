@@ -146,10 +146,25 @@ class Value [compound]
       endWhich
 
     method as_list->Value[]
+      # If this value .is_list, returns the backing Value[] list; otherwise returns null.
       if (type != TYPE_LIST) return null
       return object->(as Value[])
 
+    method as_string->String
+      # If this value .is_string, returns the backing String; otherwise returns null.
+      #
+      #   Value     | ->String  |  .as_string
+      #   ----------|-----------|------------
+      #   null      | "null"    | null
+      #   undefined | ""        | null
+      #   "ABC"     | "ABC"     | ABC
+      #   [3,4]     | "[3,4]"   | null
+      #   {x:22}    | "{x:22}"  | null
+      if (type != TYPE_STRING) return null
+      return object->(as String)
+
     method as_table->[String:Value]
+      # If this value .is_table, returns the backing [String:Value] table; otherwise returns null.
       if (type != TYPE_TABLE) return null
       return object->(as [String:Value])
 
@@ -787,7 +802,7 @@ class Value [compound]
         case TYPE_XY:        return xy->String
         case TYPE_BOX:       return box->String
         case TYPE_OBJECT:    return object->String
-        case TYPE_STRING:    return object->String
+        case TYPE_STRING:    return object->(as String)
         case TYPE_LIST:      return object->(as Value[])->String
         case TYPE_TABLE:     return object->(as [String:Value])->String
         others:              return null
