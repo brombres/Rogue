@@ -577,10 +577,10 @@ class Resolver : Poolable, Visitor
       return resolve_direct_access( cmd.t, null, cmd.name )
 
     method on( cmd:EmptyValueList )->Cmd
-      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "list" ) )
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "create_list" ) )
 
     method on( cmd:EmptyValueTable )->Cmd
-      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "table" ) )
+      return visit( ContextAccess( cmd.t, TypeContext(cmd.t,Program.type_Value), "create_table" ) )
 
     method on( cmd:Ensure )->Cmd
       local t = cmd.expression.t
@@ -1675,7 +1675,7 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:ValueList )->Cmd
       local t = cmd.t
-      local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Value), "list" )
+      local cmd_list = ContextAccess( t, TypeContext(t,Program.type_Value), "create_list" )
 
       local build_list = CmdList( t )
       forEach (arg in cmd.args)
@@ -1686,7 +1686,7 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:ValueTable )->Cmd
       local t = cmd.t
-      local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Value), "table" )
+      local cmd_table = ContextAccess( t, TypeContext(t,Program.type_Value), "create_table" )
 
       local build_list = CmdList( t )
       forEach (arg in cmd.args)

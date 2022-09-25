@@ -120,13 +120,13 @@ class Value [compound]
       if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$value }" )->Value
       else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
-    method list->Value
-      # Convenience syntax: @[] is equivalent to Value.list()
+    method create_list->Value
+      # Convenience syntax: @[] is equivalent to Value.create_list()
       local data = Value[]
       return native( "(RogueValue) { ROGUE_VALUE_TYPE_LIST, (RogueObject*)$data }" )->Value
 
-    method table->Value
-      # Convenience syntax: @{} is equivalent to Value.table()
+    method create_table->Value
+      # Convenience syntax: @{} is equivalent to Value.create_table()
       local data = [String:Value]
       return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$data }" )->Value
 
