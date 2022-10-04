@@ -2,15 +2,15 @@ module Geometry
 
 class Anchor( position:RealXY ) [compound]
   DEFINITIONS
-    TOP_LEFT      = Anchor( XY(  0.0, 0.0) )
-    TOP           = Anchor( XY(  0.5, 0.0) )
-    TOP_RIGHT     = Anchor( XY(  1.0, 0.0) )
-    LEFT          = Anchor( XY(  0.0, 0.5) )
-    CENTER        = Anchor( XY(  0.5, 0.5) )
-    RIGHT         = Anchor( XY(  1.0, 0.5) )
-    BOTTOM_LEFT   = Anchor( XY(  0.0, 1.0) )
-    BOTTOM        = Anchor( XY(  0.5, 1.0) )
-    BOTTOM_RIGHT  = Anchor( XY(  1.0, 1.0) )
+    TOP_LEFT      = Anchor( RealXY( 0.0, 0.0) )
+    TOP           = Anchor( RealXY( 0.5, 0.0) )
+    TOP_RIGHT     = Anchor( RealXY( 1.0, 0.0) )
+    LEFT          = Anchor( RealXY( 0.0, 0.5) )
+    CENTER        = Anchor( RealXY( 0.5, 0.5) )
+    RIGHT         = Anchor( RealXY( 1.0, 0.5) )
+    BOTTOM_LEFT   = Anchor( RealXY( 0.0, 1.0) )
+    BOTTOM        = Anchor( RealXY( 0.5, 1.0) )
+    BOTTOM_RIGHT  = Anchor( RealXY( 1.0, 1.0) )
 
     LEFT_TOP      = TOP_LEFT
     TOP_CENTER    = TOP
