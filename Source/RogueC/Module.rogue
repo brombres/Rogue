@@ -233,7 +233,9 @@ class Module
           endIf
 
           if (template.attributes.is_essential)
-            Type( template.tokens.first, template.name )
+            temporarily Program.current_module = this
+              Type( template.tokens.first, template.name )
+            endTemporarily
           endIf
         endIf
       endForEach
