@@ -1,17 +1,16 @@
 module Geometry
 
-class Anchor( position:XY ) [compound]
+class Anchor( position:RealXY ) [compound]
   DEFINITIONS
-    # 31.1 fixed-point
-    TOP_LEFT      = Anchor( XY(  0,  0) )
-    TOP           = Anchor( XY(  1,  0) )
-    TOP_RIGHT     = Anchor( XY(  2,  0) )
-    LEFT          = Anchor( XY(  0,  1) )
-    CENTER        = Anchor( XY(  1,  1) )
-    RIGHT         = Anchor( XY(  2,  1) )
-    BOTTOM_LEFT   = Anchor( XY(  0,  2) )
-    BOTTOM        = Anchor( XY(      2) )
-    BOTTOM_RIGHT  = Anchor( XY(  2,  2) )
+    TOP_LEFT      = Anchor( XY(  0.0, 0.0) )
+    TOP           = Anchor( XY(  0.5, 0.0) )
+    TOP_RIGHT     = Anchor( XY(  1.0, 0.0) )
+    LEFT          = Anchor( XY(  0.0, 0.5) )
+    CENTER        = Anchor( XY(  0.5, 0.5) )
+    RIGHT         = Anchor( XY(  1.0, 0.5) )
+    BOTTOM_LEFT   = Anchor( XY(  0.0, 1.0) )
+    BOTTOM        = Anchor( XY(  0.5, 1.0) )
+    BOTTOM_RIGHT  = Anchor( XY(  1.0, 1.0) )
 
     LEFT_TOP      = TOP_LEFT
     TOP_CENTER    = TOP
@@ -29,13 +28,13 @@ class Anchor( position:XY ) [compound]
       # size * anchor -> delta (or the anchor position within the area (0,0,size))
       # Display.size * Anchor.TOP_LEFT     -> XY(0,0)
       # Display.size * Anchor.BOTTOM_RIGHT -> Display.size
-      return XY( (anchor.position.x*size.x):>>>:1, (anchor.position.y*size.y):>>>:1 )
+      return XY( anchor.position.x*size.x, anchor.position.y*size.y )
 
     method operator*( anchor:Anchor, size:XY )->XY
       # anchor * size -> delta (or the anchor position within the area (0,0,size))
       # Anchor.TOP_LEFT     * Display.size -> XY(0,0)
       # Anchor.BOTTOM_RIGHT * Display.size -> Display.size
-      return XY( (anchor.position.x*size.x):>>>:1, (anchor.position.y*size.y):>>>:1 )
+      return XY( anchor.position.x*size.x, anchor.position.y*size.y )
 
   METHODS
     method operator==( other:Anchor )->Logical
