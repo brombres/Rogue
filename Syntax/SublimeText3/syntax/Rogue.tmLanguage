@@ -279,7 +279,7 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(DEPENDENCIES|PROPERTIES|STATES|METHODS|ROUTINES)\b</string>
+					<string>\b(NATIVE|PROPERTIES|STATES|METHODS|ROUTINES)\b</string>
 					<key>name</key>
 					<string>keyword.other.rogue</string>
 				</dict>

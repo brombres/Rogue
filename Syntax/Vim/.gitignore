@@ -1,0 +1,13 @@
+# Rogo
+.rogo
+Local.settings
+BuildLocal.rogue
+/Build
+
+# Mac
+.DS_Store
+
+# Vim
+*.swo
+*.swp
+*~
