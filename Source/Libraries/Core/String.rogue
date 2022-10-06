@@ -1250,9 +1250,9 @@ class String : Poolable PrintWriter
       local result = this[ count-1 ]
       if (is_immutable) return result
 
-      --count
-      cursor = count
+      cursor = count - 1
       data.discard_from( cursor_offset )
+      --count
       hash_code = -1
       if (count == 0) is_ascii = true
       return result
