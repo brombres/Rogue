@@ -1,3 +1,4 @@
+$include Codec/UTF16String
 $include Core
 $include Collection
 $include Console
@@ -5,6 +6,15 @@ $include IO
 $include Math
 
 # RogueC auto-includes Value and JSON if they are referenced during tokenization.
+
+nativeType<<"RogueReal*">>      RogueRealPointer
+nativeType<<"RogueReal64*">>    RogueReal64Pointer
+nativeType<<"RogueReal32*">>    RogueReal32Pointer
+nativeType<<"RogueInt64*">>     RogueInt64Pointer
+nativeType<<"RogueInt32*">>     RogueInt32Pointer
+nativeType<<"RogueCharacter*">> RogueCharacterPointer
+nativeType<<"RogueWord*">>      RogueWordPointer
+nativeType<<"RogueByte*">>      RogueBytePointer
 
 routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
   # For internal use only - used by the compiler to cast between compatible tuple types.
