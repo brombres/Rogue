@@ -66,7 +66,6 @@ KEYWORD_FALSE             false
 KEYWORD_FOR_EACH          forEach
 KEYWORD_FUNCTION          function
 KEYWORD_FUNCTION_TYPE     Function
-KEYWORD_GLOBAL            global
 KEYWORD_GLOBAL_PROPERTIES(GLOBAL PROPERTIES) [structural]
 KEYWORD_GLOBAL_METHODS(GLOBAL METHODS)       [structural]
 KEYWORD_IF                if
@@ -84,6 +83,7 @@ KEYWORD_NATIVE_SECTION    NATIVE      [structural]
 KEYWORD_NATIVE            native
 KEYWORD_NATIVE_HEADER     nativeHeader
 KEYWORD_NATIVE_CODE       nativeCode
+KEYWORD_NATIVE_TYPE       nativeType
 KEYWORD_NECESSARY         necessary
 KEYWORD_NEW               new
 KEYWORD_NEXT_ITERATION    nextIteration
@@ -634,6 +634,28 @@ parser
     module_attributes
     produce DefineModule(name:String,attributes:Attributes)
   endOn
+
+  on "nativeType"
+    # EXAMPLE: nativeType<<"char*">> RogueCString
+    call define_native_type
+    return
+  endOn
+
+  if (nextIs("class"))
+    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    ++disable_output # Pass 2: also disable output; just parse to get past
+
+    consume("class")
+    identifier
+    template_parameters
+    class
+    call on_parsed_class  # Pass 1: stores class template tokens. Pass 2: does nothing.
+
+    --disable_output
+    discardPosition
+
+    return
+  endIf
 
   if (nextIs("routine"))
     savePosition     # Pass 1: position to scan template tokens from (node output already disabled)

@@ -281,6 +281,63 @@ class Parser : ParserCore, Poolable
 
       macros.add( Macro(id_node.t,id_node->String,placeholders,tokens) )
 
+    method define_native_type
+      # EXAMPLE: nativeType<<"char*">> RogueCString
+      #
+      # cur_t is 'nativeType'
+      if (not disable_output)
+        # Pass 2; we've already handled this.
+        _read # <<
+        _read # "char*"
+        _read # >>
+        _read # RogueCString
+        return
+      endIf
+
+      local t = _cur_t
+
+      # <<
+      if (not _consume(TokenType.SYMBOL_LTLT)) _throw_syntax_error( &expected=TokenType.SYMBOL_LTLT )
+
+      # "char*"
+      if (_next_t.type != TokenType.STRING) _throw_syntax_error( "Literal string containing C type expected." )
+      local c_type = _read.content
+
+      # >>
+      if (not _consume(TokenType.SYMBOL_GTGT)) _throw_syntax_error( &expected=TokenType.SYMBOL_GTGT )
+
+      # RogueCString
+      if (_next_t.type != TokenType.IDENTIFIER) _throw_syntax_error( "Identifier expected." )
+      local type_name = _read.content
+
+      r_must_consume_eols
+
+      local mod = Program.default_module
+      local extended_name = "$<<0>>"(type_name)
+      if (mod.templates[extended_name])
+        throw t.error( "A type named '$' already exists."(type_name) )
+      endIf
+
+      local tokens = Token[]
+
+      tokens.add( t.cloned(TokenType.EOL) )
+
+      # PROPERTIES
+      tokens.add( t.cloned(TokenType.KEYWORD_PROPERTIES) )
+      tokens.add( t.cloned(TokenType.EOL) )
+
+      # native "char* value;"
+      tokens.add( t.cloned(TokenType.KEYWORD_NATIVE) )
+      tokens.add( t.cloned(TokenType.STRING,"$ value;"(c_type)) )
+      tokens.add( t.cloned(TokenType.EOL) )
+
+      # endClass
+      tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
+      tokens.add( t.cloned(TokenType.EOL) )
+
+      local template = Template( t, mod, type_name, Token[], tokens, Attribute.COMPOUND|Attribute.NATIVE_TYPE )
+      mod.templates[extended_name] = template
+
     method clone
       if (disable_output or _cmd_stack.is_empty) return
       local cmd = _cmd_stack.last

@@ -12,7 +12,7 @@
 	<array>
 		<dict>
 			<key>begin</key>
-			<string>\b(class|routine|augment|enum)\b\s*</string>
+			<string>\b(class|routine|augment|enum|nativeType|nativeCode|nativeHeader)\b\s*</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>
@@ -249,19 +249,13 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(return|necessary|sufficient|noAction|yield|compileError|deprecated)\b</string>
+					<string>\b(return|necessary|sufficient|noAction)\b</string>
 					<key>name</key>
 					<string>keyword.control.rogue</string>
 				</dict>
 				<dict>
 					<key>match</key>
 					<string>\b(try|catch|finally)\b</string>
-					<key>name</key>
-					<string>keyword.control.rogue</string>
-				</dict>
-				<dict>
-					<key>match</key>
-					<string>\b(unitTest|endUnitTest)\b</string>
 					<key>name</key>
 					<string>keyword.control.rogue</string>
 				</dict>
@@ -291,7 +285,7 @@
 			<array>
 				<dict>
 					<key>match</key>
-					<string>\b(while|endWhile|forEach|endForEach|in|of|step|await|downTo|do)\b</string>
+					<string>\b(while|endWhile|forEach|endForEach|in|of|step|downTo|do)\b</string>
 					<key>name</key>
 					<string>keyword.loop.rogue</string>
 				</dict>
@@ -423,13 +417,13 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(readOnly|writeOnly|public|private|const|local|localize|singleton|primitive|aspect)\b</string>
+					<string>\b(local|localize|singleton|primitive|aspect)\b</string>
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\b(native|inline|essential|abstract|final|compound|override|propagated|foreign|preferred)\b</string>
+					<string>\b(native|inline|essential|abstract|final|compound|override|propagated|preferred)\b</string>
 					<key>name</key>
 					<string>storage.modifier.rogue</string>
 				</dict>

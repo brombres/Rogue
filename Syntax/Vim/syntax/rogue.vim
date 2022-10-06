@@ -23,7 +23,7 @@ syn keyword rogueClassDecl   function endFunction
 syn keyword rogueClassDecl   with
 syn keyword rogueClassDecl   subclass endSubclass
 syn keyword rogueClassDecl   augment endAugment
-syn keyword rogueClassDecl   nativeCode nativeHeader nativeLibrary endNativeCode endNativeHeader
+syn keyword rogueClassDecl   nativeCode nativeHeader nativeType
 syn keyword rogueMember      ENUMERATE DEFINITIONS SETTINGS CATEGORIES
 syn keyword rogueMember      NATIVE PROPERTIES METHODS GLOBAL STATES
 syn match   rogueError       "\<for\(\s\|(\)"
@@ -32,8 +32,6 @@ syn keyword rogueConditional  which whichIs case caseNext others endWhich endWhi
 syn keyword rogueConditional  contingent endContingent satisfied unsatisfied
 syn keyword rogueConditional  block endBlock
 syn keyword rogueConditional  temporarily endTemporarily
-syn keyword rogueConditional  unitTest endUnitTest
-syn keyword rogueLoop         await
 syn keyword rogueLoop         while endWhile forEach endForEach in of step downTo do
 syn keyword rogueLoop         loop endLoop
 syn keyword rogueBranch       escapeForEach escapeWhile escapeLoop
@@ -44,12 +42,9 @@ syn keyword rogueBoolean      true false pi
 syn keyword rogueConstant     null infinity NaN
 syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
-syn keyword rogueStatement    yield
-syn keyword rogueStatement    compileError deprecated
-syn keyword rogueStatement    includeSource includeSourceFolder
 syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
-syn keyword rogueScopeDecl    readOnly writeOnly public private limited const local localize global
+syn keyword rogueScopeDecl    local localize
 syn keyword rogueScopeDecl    singleton
 syn keyword rogueStorageClass native macro endMacro essential abstract final compound override propagated foreign preferred mutating
 syn keyword rogueStorageClass threadLocal synchronized synchronizable
