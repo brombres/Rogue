@@ -1,0 +1,75 @@
+uses IO/DataIO
+
+class UTF16String : Poolable
+  PROPERTIES
+    utf16 = Byte[]
+
+  METHODS
+    method init
+      noAction
+
+    method init( text:String )
+      local utf16_count : Int32
+      forEach (ch in text)
+        if (ch >= 0x10_000)
+          utf16_count += 2
+        else
+          ++utf16_count
+        endIf
+      endForEach
+
+      utf16.reserve( (utf16_count+1) * 2 )
+      forEach (ch in text)
+        if (ch >= 0x1_0000)
+          local u10 = ch - 0x1_0000
+          local w1 = 0xD800 | ((u10:>>>:10) & 0x3FF)
+          local w2 = 0xDC00 | (u10 & 0x3FF)
+          utf16.add( w1 & 255 )
+          utf16.add( (w1:>>>:8) & 255 )
+          utf16.add( w2 & 255 )
+          utf16.add( (w2:>>>:8) & 255 )
+        else
+          utf16.add( ch & 255 )
+          utf16.add( (ch:>>>:8) & 255 )
+        endIf
+      endForEach
+
+      utf16.[ add(0), add(0) ]  # null terminator
+
+    method init( utf16_bytes:Byte[] )
+      utf16.clear
+      utf16.reserve( utf16_bytes.count )
+      utf16.add( utf16_bytes )
+
+    method on_return_to_pool
+      utf16.clear
+
+    method to->String
+      local n = utf16.count
+      if (n <= 2) return ""
+      if (utf16[n-2] or utf16[n-1]) utf16.[ add(0), add(0) ]
+
+      use builder = StringPool
+        local reader = DataReader( utf16 )
+        while (reader.has_another)
+          local w1 = reader.read_int16_low_high
+          if (w1 >= 0xD800 and w1 <= 0xDBFF)
+            local rewind_pos = reader.position
+            local w2 = reader.read_int16_low_high
+            if (w2 >= 0xDC00 and w2 <= 0xDFFF)
+              local ch = Character( (((w1 & 0x3FF) :<<: 10) | (w2 & 0x3FF)) + 0x1_0000 )
+              builder.print( ch )
+            else
+              # w1 is an illegal unpaired leading surrogate. Treat it as a single code point
+              # and save the following int16 for the next iteration.
+              reader.seek( rewind_pos )
+              builder.print( w1->Character )
+            endIf
+          else
+            builder.print( w1->Character )
+          endIf
+        endWhile
+        builder.remove_last  # null terminator
+        return builder.cloned
+      endUse
+endClass
