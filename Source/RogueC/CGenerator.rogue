@@ -1568,7 +1568,7 @@ class CGenerator : Visitor
       writer.print code
 
     method native_replacement( t:Token, name:String, &type )->String
-      forEach (v in visible_locals)
+      forEach (v in visible_locals step -1)
         if (name == v.name)
           if (type) return v.type.c_ref_name
           else      return v.c_name
