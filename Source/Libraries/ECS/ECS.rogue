@@ -1,0 +1,17 @@
+#===============================================================================
+# ECS (Entity Component System)
+#
+# NOTES
+#   Inspired by Austin Morlan's design:
+#   https://austinmorlan.com/posts/entity_component_system/
+#===============================================================================
+module ECS
+
+$include ECS/ECSMacros
+
+$include ECS/Component
+$include ECS/ComponentManager
+$include ECS/ComponentTypeID
+$include ECS/ComponentTypeManager
+$include ECS/Entity
+$include ECS/EntityManager

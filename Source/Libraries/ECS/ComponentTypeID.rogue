@@ -1,0 +1,10 @@
+module ECS
+
+class ComponentTypeID<<$ComponentType>> [singleton]
+  PROPERTIES
+    value : ComponentSignature
+
+  METHODS
+    method init
+      value = ComponentTypeManager.obtain_type_id
+endClass

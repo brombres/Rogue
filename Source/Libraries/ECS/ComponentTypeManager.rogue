@@ -1,0 +1,12 @@
+module ECS
+
+class ComponentTypeManager [singleton]
+  PROPERTIES
+    next_type_id = 1 : ComponentSignature
+
+  METHODS
+    method obtain_type_id->ComponentSignature
+      local result = next_type_id
+      next_type_id :<<:= 1
+      return result
+endClass

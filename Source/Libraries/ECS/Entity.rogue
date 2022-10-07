@@ -1,0 +1,18 @@
+module ECS
+
+class Entity( id:Int32 ) [compound]
+  GLOBAL METHODS
+    method create->Entity
+      return EntityManager.create_entity
+
+  METHODS
+    method destroy
+      EntityManager.destroy_entity( this )
+      id = 0
+
+    method signature->ComponentSignature
+      return EntityManager.signatures[id]
+
+    method to->String
+      return id->String
+endClass

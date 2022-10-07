@@ -1,0 +1,26 @@
+module ECS
+
+class EntityManager [singleton]
+  PROPERTIES
+    available_ids = Int32[]
+    next_id       = 0
+    signatures    = ComponentSignature[][0]
+
+  METHODS
+    method create_entity->Entity
+      local id : Int32
+      if (available_ids.count)
+        id = available_ids.remove_last
+        signatures[id] = 0
+      else
+        ++next_id
+        id = next_id
+        signatures.add( 0 )
+      endIf
+      return Entity( id )
+
+    method destroy_entity( entity:Entity )
+      available_ids.add( entity.id )
+
+endClass
+

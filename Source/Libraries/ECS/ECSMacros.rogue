@@ -1,0 +1,43 @@
+$define ComponentSignature Int64
+
+$macro COMPONENT<<$Name>> COMPONENT<<$thisModule,$Name>>
+
+$macro COMPONENT<<$Module,$Name>>
+NATIVE_POINTER_TYPE<<$id($Module $Name Pointer),$string($Module $Name "*")>>
+
+augment ECS::ComponentManager<<$Module::$Name>>
+  METHODS
+    method pointer( entity:ECS::Entity )->$id($Module $Name Pointer)
+      local entry = entity_to_index.find( entity.id )
+      if (entry)
+        return native($string("(" $Module $Name Pointer ")" "{((" $Module $Name "*)$components->as_void)+$entry->value}"))->$id($Module $Name Pointer)
+      else
+        local result : $id($Module $Name Pointer)
+        result.entity = entity
+        return result
+      endIf
+endAugment
+
+augment ECS::Entity
+  METHODS
+    method $id($lowercase($Name))->$Module::$Name
+      return ECS::ComponentManager<<$Module::$Name>>[ this ]
+
+    method $id($lowercase($Name) _pointer)->$id($Module $Name Pointer)
+      return ECS::ComponentManager<<$Module::$Name>>.pointer( this )
+
+    method $id(remove_ $lowercase($Name))
+      ECS::ComponentManager<<$Module::$Name>>.remove_from( this )
+
+    method $id(set_ $lowercase($Name))( new_value:$Module::$Name )
+      ECS::ComponentManager<<$Module::$Name>>[ this ] = new_value
+endAugment
+
+
+class $Name : Component [compound]
+  GLOBAL PROPERTIES
+    type_id = ComponentTypeID<<$Name>>.value : ComponentSignature
+$endMacro
+
+$define END_COMPONENT endClass
+

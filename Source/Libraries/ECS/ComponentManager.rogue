@@ -1,0 +1,49 @@
+module ECS
+
+class ComponentManager<<$ComponentType>> [singleton]
+  PROPERTIES
+    components      = $ComponentType[]
+    entity_to_index = [Int32:Int32]
+    count           : Int32
+
+  METHODS
+    method contains( entity:Entity )->Logical
+      return entity_to_index.find( entity.id )?
+
+    method find( entity:Entity )->$ComponentType?
+      local entry = entity_to_index.find( entity.id )
+      if (entry) return components[ entry.value ]
+      return null
+
+    method get( entity:Entity )->$ComponentType
+      local entry = entity_to_index.find( entity.id )
+      if (entry) return components[ entry.value ]
+      local component = $defaultValue<<$ComponentType>>
+      component.entity = entity
+      return component
+
+    method remove_from( entity:Entity )
+      local entry = entity_to_index.find( entity.id )
+      if (entry)
+        entity_to_index.remove( entry )
+        --count
+        EntityManager.signatures[entity.id] &= !$ComponentType.type_id
+      endIf
+
+    method set( entity:Entity, component:$ComponentType )
+      component.entity = entity
+      local entry = entity_to_index.find( entity.id )
+      if (entry)
+        # Replace the existing component with this new one
+        components[ entry.value ] = component
+      else
+        # New component
+        local index = count
+        ++count
+        entity_to_index[ entity.id ] = index
+        components.add( component )
+
+        EntityManager.signatures[entity.id] |= $ComponentType.type_id
+      endIf
+
+endClass

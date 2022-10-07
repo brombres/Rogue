@@ -1,0 +1,7 @@
+module ECS
+
+class Component [aspect]
+  PROPERTIES
+    entity : Entity
+endClass
+
