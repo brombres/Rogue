@@ -309,6 +309,7 @@ routine rogo_publish( new_version:String )
 endRoutine
 
 routine compile_rogue
+  rogo_libs
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
   local flags = Build.ROGUEC_FLAGS

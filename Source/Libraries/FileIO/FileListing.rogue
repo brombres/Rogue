@@ -197,42 +197,31 @@ class FileListing
     method _listing( folder:File, collector:Function(String) )
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
               |{
-              |  WIN32_FIND_DATA entry;
+              |  WIN32_FIND_DATAW entry;
               |  HANDLE dir;
               |
                  local search_folder = folder/"*"
-      native @|  dir = FindFirstFile( $search_folder.filepath->data->as_utf8, &entry );
-              |
-              |  if (dir != INVALID_HANDLE_VALUE)
-              |  {
-              |    do
+                 use filepath_utf16 = ObjectPool<<UTF16String>>
+                   filepath_utf16.init( search_folder.filepath )
+
+      native @|    dir = FindFirstFileW( $filepath_utf16->data->as_wchars, &entry );
+              |    if (dir != INVALID_HANDLE_VALUE)
               |    {
-              |      int keep = 1;
-              |      if (entry.cFileName[0] == '.')
-              |      {
-              |        switch (entry.cFileName[1])
-              |        {
-              |          case 0:   // '.' / this folder
-              |            keep = 0;
-              |            break;
-              |          case '.':
-              |            keep = entry.cFileName[2] != 0;  // ".." / Parent Folder
-              |            break;
-              |        }
-              |      }
-              |      if (keep)
-              |      {
-                       block
-                         local entry = native("RogueString_create(entry.cFileName)")->String
+                     local first = true
+                     while (first or native("FindNextFileW(dir,&entry)")->Logical)
+                       first = false
+
+                       filepath_utf16.init( native("(RogueWordPointer){entry.cFileName}")->RogueWordPointer )
+                       local entry = filepath_utf16->String
+                       if (entry != "." and entry != "..")
                          collector( entry )
-                       endBlock
-      native @|      }
+                       endIf
+                     endWhile
+
+      native @|      FindClose( dir );
               |    }
-              |    while (FindNextFile(dir,&entry));
-              |
-              |    FindClose( dir );
-              |  }
-              |}
+                 endUse
+      native @|}
               |#else
               |// Mac/Linux
               |{
