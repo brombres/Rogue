@@ -2,13 +2,15 @@ uses IO/DataIO
 
 class UTF16String : Poolable
   PROPERTIES
-    utf16 = Byte[]
+    data = Byte[]
 
   METHODS
     method init
-      noAction
+      data.clear
 
     method init( text:String )
+      data.clear
+
       local utf16_count : Int32
       forEach (ch in text)
         if (ch >= 0x10_000)
@@ -18,39 +20,47 @@ class UTF16String : Poolable
         endIf
       endForEach
 
-      utf16.reserve( (utf16_count+1) * 2 )
+      data.reserve( (utf16_count+1) * 2 )
       forEach (ch in text)
         if (ch >= 0x1_0000)
           local u10 = ch - 0x1_0000
           local w1 = 0xD800 | ((u10:>>>:10) & 0x3FF)
           local w2 = 0xDC00 | (u10 & 0x3FF)
-          utf16.add( w1 & 255 )
-          utf16.add( (w1:>>>:8) & 255 )
-          utf16.add( w2 & 255 )
-          utf16.add( (w2:>>>:8) & 255 )
+          data.add( w1 & 255 )
+          data.add( (w1:>>>:8) & 255 )
+          data.add( w2 & 255 )
+          data.add( (w2:>>>:8) & 255 )
         else
-          utf16.add( ch & 255 )
-          utf16.add( (ch:>>>:8) & 255 )
+          data.add( ch & 255 )
+          data.add( (ch:>>>:8) & 255 )
         endIf
       endForEach
 
-      utf16.[ add(0), add(0) ]  # null terminator
+      data.[ add(0), add(0) ]  # null terminator
 
     method init( utf16_bytes:Byte[] )
-      utf16.clear
-      utf16.reserve( utf16_bytes.count )
-      utf16.add( utf16_bytes )
+      data.clear
+      data.reserve( utf16_bytes.count )
+      data.add( utf16_bytes )
+
+    method init( wchar_data:RogueWordPointer )
+      data.clear
+      local count = -1
+      while (native("$wchar_data.value[++$count]")->Int32) noAction
+      ++count  # include null terminator
+      data.expand_to_count( count*2 )
+      native @|memcpy( $data->as_bytes, $wchar_data.value, $count*2 );
 
     method on_return_to_pool
-      utf16.clear
+      data.clear
 
     method to->String
-      local n = utf16.count
+      local n = data.count
       if (n <= 2) return ""
-      if (utf16[n-2] or utf16[n-1]) utf16.[ add(0), add(0) ]
+      if (data[n-2] or data[n-1]) data.[ add(0), add(0) ]
 
       use builder = StringPool
-        local reader = DataReader( utf16 )
+        local reader = DataReader( data )
         while (reader.has_another)
           local w1 = reader.read_int16_low_high
           if (w1 >= 0xD800 and w1 <= 0xDBFF)
@@ -72,4 +82,5 @@ class UTF16String : Poolable
         builder.remove_last  # null terminator
         return builder.cloned
       endUse
+
 endClass
