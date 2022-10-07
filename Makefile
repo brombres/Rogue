@@ -38,6 +38,9 @@ $(BUILD_FOLDER)/$(BUILD_EXE): $(C_SRC) $(H_SRC)
 	$(CC) $(ROGUEC_C_FLAGS) $(C_SRC) -o "$(BUILD_FOLDER)/$(BUILD_EXE)" -lm
 	cp -r Source/Libraries "$(LIBRARIES_FOLDER)"
 
+libs:
+	cp -r Source/Libraries "$(LIBRARIES_FOLDER)"
+
 link: $(LINK_EXE)
 
 $(LINK_EXE): build

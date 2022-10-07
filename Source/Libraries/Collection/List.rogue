@@ -12,6 +12,7 @@ class List<<$DataType>> : Poolable ListType
     native @|union
             |{
             |  void*           data;
+            |  void*           as_void;
             |  RogueObject**   as_objects;
             |  RogueString**   as_strings;
             |  RogueReal64*    as_real64s;
@@ -19,9 +20,13 @@ class List<<$DataType>> : Poolable ListType
             |  RogueInt64*     as_int64s;
             |  RogueInt32*     as_int32s;
             |  RogueCharacter* as_characters;
+            |  RogueWord*      as_words;
             |  RogueByte*      as_bytes;
             |  char*           as_utf8; // only valid for String data; includes null terminator
             |  RogueByte*      as_logicals;
+            |  #if defined(ROGUE_PLATFORM_WINDOWS)
+            |    wchar_t*      as_wchars;
+            |  #endif
             |};
 
   METHODS

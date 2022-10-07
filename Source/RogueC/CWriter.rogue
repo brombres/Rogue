@@ -65,12 +65,15 @@ class CWriter : BufferedPrintWriter
            |#endif
            |
            |#if defined(ROGUE_PLATFORM_WINDOWS)
-           |#  define NOGDI
-           |#  pragma warning(disable: 4297) /* unexpected throw warnings */
-           |#  include <windows.h>
-           |#  include <signal.h>
+           |  #define NOGDI
+           |  #pragma warning(disable: 4297) /* unexpected throw warnings */
+           |  #if !defined(UNICODE)
+           |    #define UNICODE
+           |  #endif
+           |  #include <windows.h>
+           |  #include <signal.h>
            |#else
-           |#  include <stdint.h>
+           |  #include <stdint.h>
            |#endif
            |
            |#include <math.h>

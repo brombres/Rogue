@@ -31,19 +31,21 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       local return_value : String
 
-      native @|#if defined(_WIN32)
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
               |{
-              |  char long_name[PATH_MAX+4];
-              |  char full_name[PATH_MAX+4];
-              |
-              |  strcpy_s( long_name, PATH_MAX+4, (char*)$filepath->data->as_utf8 );
-              |
-              |  if (GetFullPathName(long_name, PATH_MAX+4, full_name, 0) != 0)
-              |  {
-              |    $return_value = RogueString_create( full_name );
-                   return_value .= replacing( '\\', '/' )
-      native @|  }
-              |}
+                 use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
+                   filepath_utf16.init( filepath )
+
+                   local utf16_count = native( "GetFullPathName($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int32
+                   abs_filepath_utf16.data.expand_to_count( utf16_count*2 )
+
+      native @|    if (GetFullPathName($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
+              |    {
+                     return_value = abs_filepath_utf16->String
+                     return_value .= replacing( '\\', '/' )
+      native @|    }
+                 endUse
+      native @|}
               |#else
               |{
               |  int original_dir_fd;
@@ -696,8 +698,10 @@ class File( filepath:String ) [compound]
       local ms : Int64
       local filepath = resolved.filepath
 
-      native @|#if defined(_WIN32)
-              |  HANDLE handle = CreateFile( (const char*)$filepath->data->as_utf8, 0, 0, NULL, OPEN_EXISTING,
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+               use filepath_utf16 = ObjectPool<<UTF16String>>
+                 filepath_utf16.init( filepath )
+      native @|  HANDLE handle = CreateFile( $filepath_utf16->data->as_wchars, 0, 0, NULL, OPEN_EXISTING,
               |      FILE_ATTRIBUTE_NORMAL, NULL );
               |  if (handle != INVALID_HANDLE_VALUE)
               |  {
@@ -714,8 +718,8 @@ class File( filepath:String ) [compound]
               |    }
               |    CloseHandle(handle);
               |  }
-              |
-              |#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
+               endUse
+      native @|#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
               |  int file_id = open( (const char*)$filepath->data->as_utf8, O_RDONLY );
               |  if (file_id >= 0)
               |  {

@@ -381,9 +381,9 @@ class WindowsProcess : Process
   # Based on:
   # https://msdn.microsoft.com/en-us/library/windows/desktop/ms682499(v=vs.85).aspx
   PROPERTIES
-    process_created : Logical
-    arg_string      : String
-      # The arg_string ref must be kept for the duration of the process; allowing it
+    process_created  : Logical
+    arg_string_utf16 : UTF16String
+      # arg_string_utf16 must be kept for the duration of the process; allowing it
       # to be GC'd can crash the process
 
     native @|#ifdef ROGUE_PLATFORM_WINDOWS
@@ -418,11 +418,12 @@ class WindowsProcess : Process
       error_reader  = WindowsProcessReader()
       input_writer  = WindowsProcessWriter()
 
-      arg_string = args.join(" ").cloned
-
       local output_reader = this.output_reader->(as WindowsProcessReader)
       local error_reader  = this.error_reader->(as WindowsProcessReader)
       local input_writer  = this.input_writer->(as WindowsProcessWriter)
+
+      local arg_string = args.join(" ").cloned
+      arg_string_utf16 = UTF16String( arg_string )
 
       native @|$this->startup_info.cb = sizeof( STARTUPINFO );
               |$this->startup_info.hStdOutput = $output_reader->output_writer;
@@ -430,17 +431,17 @@ class WindowsProcess : Process
               |$this->startup_info.hStdInput =  $input_writer->input_reader;
               |$this->startup_info.dwFlags |= STARTF_USESTDHANDLES;
               |
-              |if ( !CreateProcess(
-              |    NULL,                       // lpApplicationName
-              |    $arg_string->data->as_utf8, // lpCommandLine
-              |    NULL,                       // lpProcessAttributes
-              |    NULL,                       // lpThreadAttributes
-              |    TRUE,                       // bInheritHandles
-              |    0,                          // dwCreationFlags  (CREATE_NO_WINDOW?)
-              |    NULL,                       // lpEnvironment
-              |    NULL,                       // lpCurrentDirectory
-              |    &$this->startup_info,       // lpStartupInfo
-              |    &$this->process_info        // lpProcessInformation
+              |if ( !CreateProcessW(
+              |    NULL,                               // lpApplicationName
+              |    $arg_string_utf16->data->as_wchars, // lpCommandLine
+              |    NULL,                               // lpProcessAttributes
+              |    NULL,                               // lpThreadAttributes
+              |    TRUE,                               // bInheritHandles
+              |    0,                                  // dwCreationFlags  (CREATE_NO_WINDOW?)
+              |    NULL,                               // lpEnvironment
+              |    NULL,                               // lpCurrentDirectory
+              |    &$this->startup_info,               // lpStartupInfo
+              |    &$this->process_info                // lpProcessInformation
               |))
               |{
                  return false
