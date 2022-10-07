@@ -1,0 +1,131 @@
+module Entities
+
+$macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
+  augment
+    METHODS
+      method Entity.$name->$Type
+        return DynamicEntityProperties.$name( this )
+
+      method Entity.$id(has_,$name)->Logical
+        return DynamicEntityProperties.$id(has_,$name)( this )
+
+      method Entity.$id(set_,$name)( value:$Type )
+        DynamicEntityProperties.$id(set_,$name)( this, value )
+
+      method DynamicEntityProperties.$name( component:Entity )->$Type
+        if (component.properties) return component.properties.$name
+        else                      return $default_value
+
+      method DynamicEntityProperties.$id(has_,$name)( component:Entity )->Logical
+        if (component.properties) return component.properties.$id(has_,$name)
+        else                      return false
+
+      method DynamicEntityProperties.$id(set_,$name)( component:Entity, value:$Type )
+        if (component.properties) component.properties.$id(set_,$name)( value )
+        else                      component.properties = $ComponentType( value )
+
+      method DynamicEntityProperty.$name->$Type
+        if (next) return next.$name
+        return $default_value
+
+      method DynamicEntityProperty.$id(has_,$name)->Logical
+        if (next) return next.$id(has_,$name)
+        else      return false
+
+      method DynamicEntityProperty.$id(set_,$name)( value:$Type )
+        if (next) next.$id(set_,$name)( value )
+        else      next = $ComponentType( value )
+  endAugment
+
+class $ComponentType( value:$Type ) : DynamicEntityProperty
+    METHODS
+      method $name->$Type
+        return value
+
+      method $id(has_,$name)->Logical
+        return true
+
+      method $id(set_,$name)( value )
+  endClass
+$endMacro
+
+$macro INHERITED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
+  augment
+    METHODS
+      method Entity.$name->$Type
+        return DynamicEntityProperties.$name( this )
+
+      method Entity.$id(set_,$name)( value:$Type )
+        DynamicEntityProperties.$id(set_,$name)( this, value )
+
+      method DynamicEntityProperties.$name( component:Entity )->$Type
+        if (component.properties)
+          local result = component.properties.$name
+          if (result) return result.value
+        endIf
+        if (component.parent) return component.parent.$name
+        return $default_value
+
+    method DynamicEntityProperties.$id(set_,$name)( component:Entity, value:$Type )
+        if (component.properties) component.properties.$id(set_,$name)( value )
+        else                      component.properties = $ComponentType( value )
+
+    method DynamicEntityProperty.$name->$Type?
+        if (next) return next.$name
+        return null
+
+    method DynamicEntityProperty.$id(set_,$name)( value:$Type )
+        if (next) next.$id(set_,$name)( value )
+        else      next = $ComponentType( value )
+  endAugment
+
+  class $ComponentType( value:$Type ) : DynamicEntityProperty
+    METHODS
+      method $name->$Type?
+        return value
+
+      method $id(set_,$name)( value )
+  endClass
+$endMacro
+
+$macro DYNAMIC_ENTITY_FN_PROPERTY<<$name,$Type,$ComponentType>>
+  augment
+    METHODS
+      method Entity.$name( callback:$Type )
+        DynamicEntityProperties.$id(set_,$name)( this, callback )
+
+      method DynamicEntityProperties.$name( component:Entity )
+        if (component.properties) component.properties.$name(component)
+
+      method DynamicEntityProperties.$id(set_,$name)( component:Entity, fn:$Type )
+        if (component.properties) component.properties.$id(set_,$name)( fn )
+        else                      component.properties = $ComponentType( fn )
+
+      method DynamicEntityProperty.$name( component:Entity )
+        if (next) next.$name( component )
+
+      method DynamicEntityProperty.$id(set_,$name)( fn:$Type )
+        if (next) next.$id(set_,$name)( fn )
+        else      next = $ComponentType( fn )
+  endAugment
+
+  class $ComponentType( fn:$Type ) : DynamicEntityProperty
+    METHODS
+      method $name( component:Entity )
+        if (fn) fn( component )
+
+      method $id(set_,$name)( fn )
+  endClass
+$endMacro
+
+class DynamicEntityProperties [singleton]
+  METHODS
+endClass
+
+class DynamicEntityProperty
+  PROPERTIES
+    next : DynamicEntityProperty
+
+  METHODS
+endClass
+

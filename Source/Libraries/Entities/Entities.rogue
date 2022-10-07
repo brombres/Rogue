@@ -1,0 +1,19 @@
+module Entities
+
+$macro ENTITY_ATTRIBUTE<<$NAME, $is_name, $value>>
+  DEFINITIONS
+    $id(ATTRIBUTE_ $NAME) = $value
+
+  METHODS
+    method $is_name->Logical
+      return (attributes & ($value))
+
+    method $id(set_ $is_name)( setting:Logical )
+      if (setting) attributes |= ($value)
+      else         attributes &= !($value)
+$endMacro
+
+# This $include must be first
+$include DynamicEntityProperties
+
+$include Entity

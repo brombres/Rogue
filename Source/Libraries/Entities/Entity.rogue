@@ -1,0 +1,50 @@
+module Entities
+
+uses Collection/Node
+uses Geometry
+
+class Entity : Node<<Entity>>
+  ENTITY_ATTRIBUTE<< NEEDS_LAYOUT, needs_layout, (1:<<:0)  >>
+  ENTITY_ATTRIBUTE<< NEEDS_REDRAW, needs_redraw, (1:<<:1)  >>
+  ENTITY_ATTRIBUTE<< HIDDEN,       is_hidden,    (1:<<:2)  >>  # neither visible, updated, nor drawn
+  ENTITY_ATTRIBUTE<< GHOST,        ghost,        (1:<<:3)  >>  # visible, updated, & drawn but does not receive input events
+  ENTITY_ATTRIBUTE<< DEAD,         dead,         (1:<<:4)  >>  # will be removed from the entity graph at the next opportunity
+
+  PROPERTIES
+    position   : XY
+    size       : XY
+    anchor     = Anchor.CENTER : Anchor
+    attributes : Int32
+
+    # Used to determine if an entity needs a redraw
+    last_display_position : XY
+    last_size             : XY
+
+  METHODS
+    method init
+
+    method init( size )
+
+    method init( position, size )
+
+    method after_draw
+      noAction
+
+    method bounds
+      return Box( position, size )
+
+    method display_bounds->Box
+      if (parent) return Box( parent.display_bounds.position, size ).relative_to( anchor )
+      return Box( position, size ).relative_to( anchor )
+
+    method draw
+      draw( display_bounds )
+
+    method draw( clip_bounds:Box )
+      on_draw
+      after_draw
+
+    method on_draw
+      noAction
+
+endClass
