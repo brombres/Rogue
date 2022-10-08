@@ -15,6 +15,7 @@ nativeType<<"RogueInt32*">>     RogueInt32Pointer
 nativeType<<"RogueCharacter*">> RogueCharacterPointer
 nativeType<<"RogueWord*">>      RogueWordPointer
 nativeType<<"RogueByte*">>      RogueBytePointer
+nativeType<<"void*">>           RogueVoidPointer
 
 routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
   # For internal use only - used by the compiler to cast between compatible tuple types.
