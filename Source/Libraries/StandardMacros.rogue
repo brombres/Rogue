@@ -1,0 +1,10 @@
+$macro NATIVE_POINTER_TYPE<<$Name,$NativeType>>
+  nativeType<<$NativeType>>  $Name
+
+  augment $Name
+    METHODS
+      method exists->Logical
+        return native("!!$this.value")->Logical
+  endAugment
+$endMacro
+

@@ -7,15 +7,23 @@ $include Math
 
 # RogueC auto-includes Value and JSON if they are referenced during tokenization.
 
-nativeType<<"RogueReal*">>      RogueRealPointer
-nativeType<<"RogueReal64*">>    RogueReal64Pointer
-nativeType<<"RogueReal32*">>    RogueReal32Pointer
-nativeType<<"RogueInt64*">>     RogueInt64Pointer
-nativeType<<"RogueInt32*">>     RogueInt32Pointer
-nativeType<<"RogueCharacter*">> RogueCharacterPointer
-nativeType<<"RogueWord*">>      RogueWordPointer
-nativeType<<"RogueByte*">>      RogueBytePointer
-nativeType<<"void*">>           RogueVoidPointer
+# This
+#
+#   NATIVE_POINTER_TYPE<<RogueInt32Pointer,"RogueInt32*">>
+#
+# creates
+#
+#   nativeType<<"RogueInt32*">> RogueInt32Pointer
+#
+# with a Rogue-side .exists method.
+NATIVE_POINTER_TYPE<< RogueRealPointer,      "RogueReal*"      >>
+NATIVE_POINTER_TYPE<< RogueReal64Pointer,    "RogueReal64*"    >>
+NATIVE_POINTER_TYPE<< RogueReal32Pointer,    "RogueReal32*"    >>
+NATIVE_POINTER_TYPE<< RogueInt64Pointer,     "RogueInt64*"     >>
+NATIVE_POINTER_TYPE<< RogueInt32Pointer,     "RogueInt32*"     >>
+NATIVE_POINTER_TYPE<< RogueCharacterPointer, "RogueCharacter*" >>
+NATIVE_POINTER_TYPE<< RogueWordPointer,      "RogueWord*"      >>
+NATIVE_POINTER_TYPE<< RogueVoidPointer,      "void*"           >>
 
 routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType
   # For internal use only - used by the compiler to cast between compatible tuple types.
