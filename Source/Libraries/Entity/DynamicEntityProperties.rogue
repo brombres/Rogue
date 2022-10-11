@@ -1,4 +1,4 @@
-module Entities
+module Entity
 
 $macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
   augment

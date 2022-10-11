@@ -1,0 +1,40 @@
+module Entity
+
+uses Collection/Node
+
+class Constraint [singleton]
+  METHODS
+    method anchor( anchor:Anchor )->Constraints
+      return AnchorConstraint( anchor )
+
+    method relative_to( entity:Entity )->Constraints
+      return RelativeToEntityConstraint( entity )
+endClass
+
+class Constraints : Node<<Constraints>>
+  METHODS
+    method anchor( anchor:Anchor )->Constraints
+      add_next( AnchorConstraint(anchor) )
+      return this
+
+    method relative_to( entity:Entity )->Constraints
+      add_next( RelativeToEntityConstraint(entity) )
+      return this
+
+    method anchor( entity:Entity )->Anchor
+      if (next) return next.anchor( entity )
+      return null
+
+      #method relative_to(->Entity
+      #return
+endClass
+
+class AnchorConstraint( anchor:Anchor ) : Constraints
+  METHODS
+    method anchor( entity:Entity )->Anchor
+      return anchor
+endClass
+
+class RelativeToEntityConstraint( entity:Entity ) : Constraints
+endClass
+

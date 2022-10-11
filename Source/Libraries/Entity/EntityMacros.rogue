@@ -1,4 +1,4 @@
-module Entities
+$include DynamicEntityProperties
 
 $macro ENTITY_ATTRIBUTE<<$NAME, $is_name, $value>>
   DEFINITIONS
@@ -12,8 +12,3 @@ $macro ENTITY_ATTRIBUTE<<$NAME, $is_name, $value>>
       if (setting) attributes |= ($value)
       else         attributes &= !($value)
 $endMacro
-
-# This $include must be first
-$include DynamicEntityProperties
-
-$include Entity
