@@ -5,4 +5,5 @@ class Actor2D : Component
     position : XY
     size     : XY
     anchor   = Anchor.CENTER : Anchor
+
 endClass

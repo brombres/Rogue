@@ -18,29 +18,55 @@ class Entity : Node<<Entity>>
   ENTITY_ATTRIBUTE<< DEAD,         dead,         (1:<<:4) >>  # will be removed from the entity graph at the next opportunity
 
   PROPERTIES
-    position    : XY
-    size        : XY
-    anchor      = Anchor.CENTER : Anchor
     attributes  : Int32
     components  : Component
-
-    # Used to determine if an entity needs a redraw
-    last_display_position : XY
-    last_size             : XY
 
   METHODS
     method init
 
-    method init( size )
+    #method init( size )
 
-    method init( position, size )
+    #method init( position, size )
+
+    method add( component:Component )
+      component.entity = this
+      component.next = components
+      components = component
 
     method after_draw
       noAction
 
+      #{
     method bounds
       return Box( position, size )
+      }#
 
+    method collect<<$ComponentType>>( list:$ComponentType[] )->Int32
+      local n = 0
+
+      local this_component = components
+      while (this_component)
+        if local matching_component = this_component->(as $ComponentType)
+          list.add( matching_component )
+          ++n
+          escapeWhile
+        endIf
+        this_component .= next
+      endWhile
+
+      n += (forEach in children).collect<<$ComponentType>>(list)
+      return n
+
+    method component<<$ComponentType>>->$ComponentType
+      local result = components
+      while (result)
+        if local result = result->(as $ComponentType)
+          return result
+        endIf
+        result .= next
+      endWhile
+
+      #{
     method display_bounds->Box
       if (parent) return Box( parent.display_bounds.position, size ).relative_to( anchor )
       return Box( position, size ).relative_to( anchor )
@@ -54,5 +80,6 @@ class Entity : Node<<Entity>>
 
     method on_draw
       noAction
+      }#
 
 endClass

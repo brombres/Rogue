@@ -7,5 +7,4 @@ class Component : Node<<Component>>
     entity : Entity  # The entity this component belongs to.
 
   METHODS
-    method init( entity )
 endClass
