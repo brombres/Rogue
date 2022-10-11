@@ -82,7 +82,7 @@ KEYWORD_NATIVE_SECTION    NATIVE      [structural]
 KEYWORD_NATIVE            native
 KEYWORD_NATIVE_HEADER     nativeHeader
 KEYWORD_NATIVE_CODE       nativeCode
-KEYWORD_NATIVE_TYPE       nativeType
+KEYWORD_NATIVE_TYPE       nativeType  [structural]
 KEYWORD_NECESSARY         necessary
 KEYWORD_NEW               new
 KEYWORD_NEXT_ITERATION    nextIteration
