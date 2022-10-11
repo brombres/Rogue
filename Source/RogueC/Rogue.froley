@@ -22,7 +22,6 @@ GENERIC_FN_ARG $arg          [content]
 tokens Keywords
 ----------------------------------------------------------------------
 KEYWORD_AND               and
-KEYWORD_AS                as
 KEYWORD_ASSERT            assert
 KEYWORD_AUGMENT           augment        [structural]
 KEYWORD_BLOCK             block
@@ -2666,7 +2665,7 @@ parser
     if (nextIs('('))
       savePosition
       consume '('
-      on "as"
+      on @"as"
         discardPosition
         type
         mustConsume ')'
