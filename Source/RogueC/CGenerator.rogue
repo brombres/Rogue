@@ -819,11 +819,11 @@ class CGenerator : Visitor
           if (i > 0) writer.print ','
           visit(arg)
         endForEach
-      elseIf (this_procedure.parameters.count)
+      elseIf (this_procedure.type_context is cmd.of_type and this_procedure.parameters.count)
         # Command is embedded in the compound's primary create() method. Pass in the create() params.
         forEach (param at i in this_procedure.parameters)
           if (i > 0) writer.print ','
-          writer.[ print(' '), print(param.c_name) ]
+          writer.[ print(param.c_name) ]
         endForEach
       else
         writer.print '0'  # No elements in literal struct; pass in 0 to keep MSVC happy.
