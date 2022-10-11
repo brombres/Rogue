@@ -138,6 +138,8 @@ class RogueC
 
       Program.add_include_search_path( rogue_folder )
 
+      Program.include( "StandardMacros" )
+
       Program.include( forEach in command//args, &api=api_includes )
 
       Program.include( "Standard" )
