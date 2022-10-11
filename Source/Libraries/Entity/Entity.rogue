@@ -5,11 +5,13 @@ $include Entity/EntityMacros
 
 $include Entity/Actor2D
 $include Entity/Component
+$include Entity/ComponentCollector
 $include Entity/Constraint
 
 uses Collection/Node
 uses Geometry
 
+#{
 class Entity : Node<<Entity>>
   ENTITY_ATTRIBUTE<< NEEDS_LAYOUT, needs_layout, (1:<<:0) >>
   ENTITY_ATTRIBUTE<< NEEDS_REDRAW, needs_redraw, (1:<<:1) >>
@@ -40,6 +42,9 @@ class Entity : Node<<Entity>>
     method bounds
       return Box( position, size )
       }#
+
+    method collect<<$ComponentType>>->ComponentCollector<<$ComponentType>>
+      return ComponentCollector<<$ComponentType>>( this )
 
     method collect<<$ComponentType>>( list:$ComponentType[] )->Int32
       local n = 0
@@ -83,3 +88,4 @@ class Entity : Node<<Entity>>
       }#
 
 endClass
+}#

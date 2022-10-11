@@ -1,5 +1,6 @@
 module Entity
 
+#{
 class Actor2D : Component
   PROPERTIES
     position : XY
@@ -7,3 +8,4 @@ class Actor2D : Component
     anchor   = Anchor.CENTER : Anchor
 
 endClass
+}#
