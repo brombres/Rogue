@@ -46,7 +46,7 @@ syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    local localize
 syn keyword rogueScopeDecl    singleton
-syn keyword rogueStorageClass native macro endMacro essential abstract final compound override propagated foreign preferred mutating
+syn keyword rogueStorageClass native essential abstract final compound override propagated foreign preferred mutating
 syn keyword rogueStorageClass threadLocal synchronized synchronizable
 syn keyword rogueStorageClass api nonessential
 syn keyword rogueExceptions   throw try catch endTry use endUse
@@ -54,6 +54,7 @@ syn keyword rogueExceptions   throw try catch endTry use endUse
 syn match   rogueDirective    "\$compileArg\>"
 syn match   rogueDirective    "\$define\>"
 syn match   rogueDirective    "\$defined\>"
+syn match   rogueDirective    "\$endMacro\>"
 syn match   rogueDirective    "\$include\>"
 syn match   rogueDirective    "\$includeFolder\>"
 syn match   rogueDirective    "\$if\>"
