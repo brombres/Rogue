@@ -147,6 +147,7 @@ META_ROGUE_VERSION    $rogueVersion   [meta]
 META_SOURCE_FILEPATH  $sourceFilepath [meta]
 META_SOURCE_LINE      $sourceLine     [meta]
 META_TARGET           $target         [meta]
+META_THIS_MODULE      $thisModule     [meta]
 META_UPPERCASE        $uppercase      [meta]
 
 SYMBOL_AMPERSAND             &
@@ -3428,6 +3429,13 @@ parser
     call define_macro
     return
 
+  elseOn "module"
+    savePosition
+    call parse_module_id # adjusts Program.current_module
+    restorePosition
+    call rewrite_cur_token
+    return
+
   elseOn "$requireRogue"
     on STRING
       call require_rogue_version
@@ -3455,6 +3463,11 @@ parser
     elseOnOthers
       call check_target
     endOn
+    return
+
+  elseOn "$thisModule"
+    call write_this_module_id
+    return
 
   elseOn "$string"
     call begin_join_strings
