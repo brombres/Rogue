@@ -172,7 +172,7 @@ class Module
         (forEach in types).attributes.is_api = true
       endIf
 
-    method split_module_and_type( t:Token, type_name:String )->(Module,String)
+    method split_module_and_type( t:Token, type_name:String, &allow_unknown_module )->(Module,String)
       if (type_name.begins_with('(') or type_name.begins_with('[') or not type_name.contains("::"))
         # Type names beginning with ( are (tuples) or (Functions)
         # Type names beginning with [ are [KeyType:ValueType] tables
@@ -202,6 +202,12 @@ class Module
           mod = Program.modules[ relative_mod_name ]
           if (mod) return (mod,type_name)
         endUse
+
+        if (allow_unknown_module)
+          # Create and return the module
+          mod = Program.get_module( t, mod_name )
+          return (mod,type_name)
+        endIf
 
         throw t.error( "No such module '$'. Is there a missing 'uses $' directive?" (mod_name,mod_name) )
       endUse
