@@ -1052,6 +1052,20 @@ class Type : Cmd
         endBlock
 
         if (not is_enum)
+          if (not m_primary_constructor)
+            block m_create = global_methods["create()"]
+              if (not m_create and has_global_method_named("create"))
+                m_create = GlobalMethod( t, this, "create" )
+                m_create.return_type = this
+                m_create.attributes.is_primary = true
+                m_create.statements.add( Return(t, CreateCompound(t,this)) )
+                m_primary_constructor = m_create
+                m_create.organize
+                global_methods[ m_create.signature ] = m_create
+              endIf
+            endBlock
+          endIf
+
           # Enums get different versions of to->String/to->Object and operator==()
           block m = methods["to<<Rogue::Object>>()"]
             if (not m)
