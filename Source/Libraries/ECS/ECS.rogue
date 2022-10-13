@@ -11,6 +11,7 @@ $include ECS/ECSMacros
 
 $include ECS/Component
 $include ECS/ComponentManager
+$include ECS/ComponentSignature
 $include ECS/ComponentTypeID
 $include ECS/ComponentTypeManager
 $include ECS/Entity

@@ -1,7 +1,11 @@
 module ECS
 
-class Component [aspect]
+class ValueComponent [aspect]
   PROPERTIES
     entity : Entity
 endClass
 
+class RefComponent
+  PROPERTIES
+    entity : Entity
+endClass

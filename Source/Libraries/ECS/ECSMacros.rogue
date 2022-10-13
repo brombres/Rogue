@@ -1,8 +1,6 @@
-$define ComponentSignature Int64
+$macro component<<$Name>> component<<$thisModule,$Name>>
 
-$macro COMPONENT<<$Name>> COMPONENT<<$thisModule,$Name>>
-
-$macro COMPONENT<<$Module,$Name>>
+$macro component<<$Module,$Name>>
 NATIVE_POINTER_TYPE<<$id($Module $Name Pointer),$string($Module $Name "*")>>
 
 augment ECS::ComponentManager<<$Module::$Name>>
@@ -34,10 +32,35 @@ augment ECS::Entity
 endAugment
 
 
-class $Name : Component [compound]
+class $Name : ValueComponent [compound]
   GLOBAL PROPERTIES
     type_id = ComponentTypeID<<$Name>>.value : ComponentSignature
 $endMacro
 
-$define END_COMPONENT endClass
+$define endComponent endClass
+
+
+$macro refComponent<<$Name>> refComponent<<$thisModule,$Name>>
+
+$macro refComponent<<$Module,$Name>>
+
+augment ECS::Entity
+  METHODS
+    method $id($lowercase($Name))->$Module::$Name
+      return ECS::ComponentManager<<$Module::$Name>>[ this ]
+
+    method $id(remove_ $lowercase($Name))
+      ECS::ComponentManager<<$Module::$Name>>.remove_from( this )
+
+    method $id(set_ $lowercase($Name))( new_value:$Module::$Name )
+      ECS::ComponentManager<<$Module::$Name>>[ this ] = new_value
+endAugment
+
+
+class $Name : RefComponent
+  GLOBAL PROPERTIES
+    type_id = ComponentTypeID<<$Name>>.value : ComponentSignature
+$endMacro
+
+$define endRefComponent endClass
 

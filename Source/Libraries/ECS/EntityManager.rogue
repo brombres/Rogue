@@ -11,11 +11,11 @@ class EntityManager [singleton]
       local id : Int32
       if (available_ids.count)
         id = available_ids.remove_last
-        signatures[id] = 0
+        signatures[id] = ComponentSignature(0)
       else
         ++next_id
         id = next_id
-        signatures.add( 0 )
+        signatures.add( ComponentSignature(0) )
       endIf
       return Entity( id )
 

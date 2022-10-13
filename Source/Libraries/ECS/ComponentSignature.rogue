@@ -1,0 +1,19 @@
+module ECS
+
+class ComponentSignature( bits0:Int64 ) [compound]
+  METHODS
+    method operator&( other:ComponentSignature )->ComponentSignature
+      return ComponentSignature( bits0 & other.bits0 )
+
+    method operator|( other:ComponentSignature )->ComponentSignature
+      return ComponentSignature( bits0 | other.bits0 )
+
+    method operator!->ComponentSignature
+      return ComponentSignature( !bits0 )
+
+    method operator:<<:( shift_count:Int32 )->ComponentSignature
+      return ComponentSignature( bits0 :<<: shift_count )
+
+    method to->String
+      return bits0->String(&binary).rightmost( ComponentTypeManager.count.or_larger(1) )
+endClass
