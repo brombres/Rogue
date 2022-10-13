@@ -14,5 +14,7 @@ class Entity( id:Int32 ) [compound]
       return EntityManager.signatures[id]
 
     method to->String
-      return id->String
+      if (has_describe) return describe.fn()
+      return "(Entity $)"(id)
 endClass
+

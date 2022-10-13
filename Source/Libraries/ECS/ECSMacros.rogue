@@ -1,6 +1,8 @@
-$macro component<<$Name>> component<<$thisModule,$Name>>
+$macro component<<$Name>> component<<$thisModule,$Name,$id($lowercase($Name))>>
 
-$macro component<<$Module,$Name>>
+$macro component<<$Name,$property_name>> component<<$thisModule,$Name,$property_name>>
+
+$macro component<<$Module,$Name,$property_name>>
 NATIVE_POINTER_TYPE<<$id($Module $Name Pointer),$string($Module $Name "*")>>
 
 augment ECS::ComponentManager<<$Module::$Name>>
@@ -10,24 +12,26 @@ augment ECS::ComponentManager<<$Module::$Name>>
       if (entry)
         return native($string("(" $Module $Name Pointer ")" "{((" $Module $Name "*)$components->as_void)+$entry->value}"))->$id($Module $Name Pointer)
       else
-        local result : $id($Module $Name Pointer)
-        result.entity = entity
-        return result
+        return $id($Module $Name Pointer)
       endIf
 endAugment
 
+
 augment ECS::Entity
   METHODS
-    method $id($lowercase($Name))->$Module::$Name
+    method $id(has_ $property_name)->Logical
+      return ECS::ComponentManager<<$Module::$Name>>.incorporated_by( this )
+
+    method $property_name->$Module::$Name
       return ECS::ComponentManager<<$Module::$Name>>[ this ]
 
-    method $id($lowercase($Name) _pointer)->$id($Module $Name Pointer)
+    method $id($property_name _pointer)->$id($Module $Name Pointer)
       return ECS::ComponentManager<<$Module::$Name>>.pointer( this )
 
-    method $id(remove_ $lowercase($Name))
+    method $id(remove_ $property_name)
       ECS::ComponentManager<<$Module::$Name>>.remove_from( this )
 
-    method $id(set_ $lowercase($Name))( new_value:$Module::$Name )
+    method $id(set_ $property_name)( new_value:$Module::$Name )
       ECS::ComponentManager<<$Module::$Name>>[ this ] = new_value
 endAugment
 
@@ -40,19 +44,24 @@ $endMacro
 $define endComponent endClass
 
 
-$macro refComponent<<$Name>> refComponent<<$thisModule,$Name>>
+$macro refComponent<<$Name>> refComponent<<$thisModule,$Name,$id($lowercase($Name))>>
 
-$macro refComponent<<$Module,$Name>>
+$macro refComponent<<$Name,$property_name>> refComponent<<$thisModule,$Name,$property_name>>
+
+$macro refComponent<<$Module,$Name,$property_name>>
 
 augment ECS::Entity
   METHODS
-    method $id($lowercase($Name))->$Module::$Name
+    method $id(has_ $property_name)->Logical
+      return ECS::ComponentManager<<$Module::$Name>>.incorporated_by( this )
+
+    method $property_name->$Module::$Name
       return ECS::ComponentManager<<$Module::$Name>>[ this ]
 
-    method $id(remove_ $lowercase($Name))
+    method $id(remove_ $property_name)
       ECS::ComponentManager<<$Module::$Name>>.remove_from( this )
 
-    method $id(set_ $lowercase($Name))( new_value:$Module::$Name )
+    method $id(set_ $property_name)( new_value:$Module::$Name )
       ECS::ComponentManager<<$Module::$Name>>[ this ] = new_value
 endAugment
 

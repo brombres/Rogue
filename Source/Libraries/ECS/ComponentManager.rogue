@@ -4,10 +4,11 @@ class ComponentManager<<$ComponentType>> [singleton]
   PROPERTIES
     components      = $ComponentType[]
     entity_to_index = [Int32:Int32]
+    index_to_entity = [Int32:Int32]
     count           : Int32
 
   METHODS
-    method contains( entity:Entity )->Logical
+    method incorporated_by( entity:Entity )->Logical
       return entity_to_index.find( entity.id )?
 
     method find( entity:Entity )->$ComponentType?
@@ -25,8 +26,18 @@ class ComponentManager<<$ComponentType>> [singleton]
     method remove_from( entity:Entity )
       local entry = entity_to_index.find( entity.id )
       if (entry)
-        entity_to_index.remove( entry )
         --count
+        if (count)
+          # Move tail to gap to keep list packed
+          local index = entry.value
+          components[index] = components.remove_last
+          local moved_component_owner = index_to_entity[count]
+          entity_to_index[ moved_component_owner ] = index
+          index_to_entity[index] = moved_component_owner
+        else
+          components.clear
+        endIf
+        entity_to_index.remove( entry )
         EntityManager.signatures[entity.id] &= !$ComponentType.type_id
       endIf
 
@@ -41,6 +52,7 @@ class ComponentManager<<$ComponentType>> [singleton]
         local index = count
         ++count
         entity_to_index[ entity.id ] = index
+        index_to_entity[ index ] = entity.id
         components.add( component )
 
         EntityManager.signatures[entity.id] |= $ComponentType.type_id

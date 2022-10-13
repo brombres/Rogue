@@ -1,0 +1,10 @@
+module ECS
+
+component<<Describe>>
+  PROPERTIES
+    fn : Function->String
+
+  GLOBAL METHODS
+    method create( fn:Function->String )->Describe
+      return Describe().[ fn=fn ]
+endComponent
