@@ -1,20 +1,26 @@
 module ECS
 
-class Entity( id:Int32 ) [compound]
-  GLOBAL METHODS
-    method create->Entity
-      return EntityManager.create_entity
+class Entity
+  PROPERTIES
+    id : Int32
 
   METHODS
+    method init_object
+      EntityManager.assign_id( this )
+
+    method on_cleanup
+      destroy
+
     method destroy
-      EntityManager.destroy_entity( this )
-      id = 0
+      if (id)
+        EntityManager.destroy( this )
+        id = 0
+      endIf
 
     method signature->ComponentSignature
       return EntityManager.signatures[id]
 
     method to->String
-      if (has_describe) return describe.fn()
       return "(Entity $)"(id)
 endClass
 

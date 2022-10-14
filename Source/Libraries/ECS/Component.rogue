@@ -2,10 +2,18 @@ module ECS
 
 class ValueComponent [aspect]
   PROPERTIES
-    entity : Entity
+    entity_id : Int32
+
+  METHODS
+    method entity->Entity
+      return EntityManager.id_to_entity[ entity_id ]
 endClass
 
 class RefComponent
   PROPERTIES
-    entity : Entity
+    entity_id : Int32
+
+  METHODS
+    method entity->Entity
+      return EntityManager.id_to_entity[ entity_id ]
 endClass

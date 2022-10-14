@@ -20,7 +20,7 @@ class ComponentManager<<$ComponentType>> [singleton]
       local entry = entity_to_index.find( entity.id )
       if (entry) return components[ entry.value ]
       local component = $defaultValue<<$ComponentType>>
-      component.entity = entity
+      component.entity_id = entity.id
       return component
 
     method remove_from( entity:Entity )
@@ -42,7 +42,7 @@ class ComponentManager<<$ComponentType>> [singleton]
       endIf
 
     method set( entity:Entity, component:$ComponentType )
-      component.entity = entity
+      component.entity_id = entity.id
       local entry = entity_to_index.find( entity.id )
       if (entry)
         # Replace the existing component with this new one

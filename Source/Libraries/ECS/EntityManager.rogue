@@ -3,23 +3,26 @@ module ECS
 class EntityManager [singleton]
   PROPERTIES
     available_ids = Int32[]
+    id_to_entity  = Entity[][null]
     next_id       = 0
     signatures    = ComponentSignature[][0]
 
   METHODS
-    method create_entity->Entity
+    method assign_id( entity:Entity )
       local id : Int32
       if (available_ids.count)
         id = available_ids.remove_last
         signatures[id] = ComponentSignature(0)
+        id_to_entity[id] = entity
       else
         ++next_id
         id = next_id
         signatures.add( ComponentSignature(0) )
+        id_to_entity.add( entity )
       endIf
-      return Entity( id )
+      entity.id = id
 
-    method destroy_entity( entity:Entity )
+    method destroy( entity:Entity )
       available_ids.add( entity.id )
 
 endClass
