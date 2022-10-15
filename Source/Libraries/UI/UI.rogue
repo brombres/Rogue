@@ -13,8 +13,8 @@ $macro UI_ATTRIBUTE<<$NAME, $is_name, $value>>
       else         attributes &= !($value)
 $endMacro
 
-uses Geometry            [export]
-uses Presentation/Action [export]
+uses Geometry       [export]
+uses Control/Action [export]
 
 $include "Event.rogue"
 $include "Keyboard.rogue"

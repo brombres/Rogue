@@ -1,6 +1,6 @@
 # EXAMPLE
 #
-# uses Presentation/EasedValue
+# uses Control/EasedValue
 #
 # local score = EasedValue<<Int32>>( 0, 0.8, ProgressFn.QUADRATIC )
 # score.target_value = 99
@@ -30,7 +30,7 @@
 # 55 (77%)
 # 50 (100%)
 
-$include Presentation/ProgressFn
+$include Control/ProgressFn
 
 class TargetValue<<$DataType>> [abstract]
   PROPERTIES

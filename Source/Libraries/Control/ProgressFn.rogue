@@ -1,5 +1,5 @@
 # USAGE
-#   uses Presentation/ProgressFn
+#   uses Control/ProgressFn
 #
 #   local fn = ProgressFn.QUADRATIC_OUT : ProgressFnType
 #   forEach (t in 0.0..1.0 step 0.05)
