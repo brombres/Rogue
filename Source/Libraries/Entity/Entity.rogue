@@ -123,5 +123,7 @@ class Entity : Node<<Entity>>
 
       after_update
 
+      if (actions) actions .= update
+
 
 endClass
