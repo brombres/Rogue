@@ -1,15 +1,13 @@
 module Entity
 
-#{
 class ComponentCollector<<$ComponentType>>( entity:Entity ) [compound]
   METHODS
     method on_use->$ComponentType[]
       local list = WorkList<<$ComponentType>>.on_use
-      entity.collect<<$ComponentType>>( list )
+      entity.collect_components<<$ComponentType>>( list )
       return list
 
     method on_end_use( list:$ComponentType[] )
       WorkList<<$ComponentType>>.on_end_use( list )
 
 endClass
-}#

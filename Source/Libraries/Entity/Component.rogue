@@ -2,11 +2,9 @@ module Entity
 
 uses Collection/Node
 
-#{
 class Component : Node<<Component>>
   PROPERTIES
     entity : Entity  # The entity this component belongs to.
 
   METHODS
 endClass
-}#
