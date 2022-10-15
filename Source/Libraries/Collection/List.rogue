@@ -56,7 +56,7 @@ class List<<$DataType>> : Poolable ListType
               |  $count = 0;
               |}
 
-    method add( value:$DataType )
+    method add( value:$DataType ) [preferred]
       reserve( 1 )
       if ($DataType isType Logical)
         native @|$this->as_logicals[$count++] = (RogueByte)$value;

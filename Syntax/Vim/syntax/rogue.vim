@@ -46,7 +46,7 @@ syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
 syn match   rogueType         "Function([^()]*)\(->\)\?"
 syn keyword rogueScopeDecl    local localize
 syn keyword rogueScopeDecl    singleton
-syn keyword rogueStorageClass native macro endMacro essential abstract final compound override propagated foreign preferred mutating
+syn keyword rogueStorageClass native essential abstract final compound override propagated foreign preferred mutating
 syn keyword rogueStorageClass threadLocal synchronized synchronizable
 syn keyword rogueStorageClass api nonessential
 syn keyword rogueExceptions   throw try catch endTry use endUse
@@ -54,6 +54,7 @@ syn keyword rogueExceptions   throw try catch endTry use endUse
 syn match   rogueDirective    "\$compileArg\>"
 syn match   rogueDirective    "\$define\>"
 syn match   rogueDirective    "\$defined\>"
+syn match   rogueDirective    "\$endMacro\>"
 syn match   rogueDirective    "\$include\>"
 syn match   rogueDirective    "\$includeFolder\>"
 syn match   rogueDirective    "\$if\>"
@@ -63,14 +64,12 @@ syn match   rogueDirective    "\$endIf\>"
 syn match   rogueDirective    "\$essential\>"
 syn match   rogueDirective    "\$join\>"
 syn match   rogueDirective    "\$macro\>"
-syn match   rogueDirective    "\$metacode\>"
-syn match   rogueDirective    "\$endMetacode\>"
 syn match   rogueDirective    "\$localDefine\>"
 syn match   rogueDirective    "\$localMacro\>"
 syn match   rogueDirective    "\$requireRogue\>"
 syn match   rogueDirective    "\$sourceFilepath\>"
 syn match   rogueDirective    "\$sourceLine\>"
-syn match   rogueDirective    "\$methodSignature\>"
+syn match   rogueDirective    "\$thisModule\>"
 syn keyword rogueDirective    module
 syn keyword rogueDirective    uses
 syn match   rogueNumber       "\<\(\d\|_\)\+\(\.\(\d\|_\)\+\)\=\>"

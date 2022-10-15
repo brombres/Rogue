@@ -84,10 +84,12 @@ class Parser : ParserCore, Poolable
       processed_tokens.add( _cur_t.cloned(TokenType.INTEGER,_cur_t.line) )
 
     method preprocess
-      processed_tokens = Token[]( _tokens.count * 1.2 )
-      parse( ip_preprocess )
-      _tokens.clear
-      _tokens.add( processed_tokens )
+      temporarily Program.current_module = Program.default_module
+        processed_tokens = Token[]( _tokens.count * 1.2 )
+        parse( ip_preprocess )
+        _tokens.clear
+        _tokens.add( processed_tokens )
+      endTemporarily
 
     method set_augment_context_name
       if (not collecting_templates) return
@@ -129,7 +131,7 @@ class Parser : ParserCore, Poolable
       local i2 = _position - 1
       local tokens = _tokens.from( i1, i2 ).to_list
 
-      local (mod,name) = Program.current_module.split_module_and_type( _tokens[i1], augment_context_name )
+      local (mod,name) = Program.current_module.split_module_and_type( _tokens[i1], augment_context_name, &allow_unknown_module )
       if (not mod) mod = Program.current_module
       local base_name = name.before_first('<')
 
@@ -623,25 +625,16 @@ class Parser : ParserCore, Poolable
       local i2 = _position - 1
       local tokens = _tokens.from( i1, i2 ).to_list
 
-      local name = augment_context_name
-      local m = Program.current_module
+      local (mod,name) = Program.current_module.split_module_and_type( augment_t, augment_context_name, &allow_unknown_module )
+      if (not mod) mod = Program.current_module
       local base_name = name.before_first('<')
-      if (base_name.contains(':'))
-        local module_name = base_name.before_last( "::" )
-        if (module_name == "") module_name = "Rogue"
-        m = Program.get_module( augment_t, module_name )
-        name .= after_last("::")
-      elseIf (name.begins_with('['))
-        # Tables go in the standard module namespace
-        m = Program.default_module
-      endIf
 
       # Create a special aspect that will be incorporated into the designated class
-      local aspect_name = "Augment_$_$_$"(m.next_augment_id,m.name,base_name)
-      ++m.next_augment_id
+      local aspect_name = "Augment_$_$_$"(mod.next_augment_id,mod.name,base_name)
+      ++mod.next_augment_id
 
-      if (not m.augments.contains(name)) m.augments[name] = String[]
-      m.augments[name].add( aspect_name )
+      if (not mod.augments.contains(name)) mod.augments[name] = String[]
+      mod.augments[name].add( aspect_name )
 
       # Change 'endAugment' to 'endClass'
       forEach (t at i in tokens step -1)
@@ -653,7 +646,7 @@ class Parser : ParserCore, Poolable
 
       local attributes = Attribute.ASPECT | Attribute.AUGMENT
       if (is_api) attributes |= (Attribute.ESSENTIAL | Attribute.API)
-      m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
+      mod.templates[aspect_name] = Template( augment_t, mod, aspect_name, Token[], tokens, attributes )
 
     method on_uses_module
       assert _cmd_stack.count >= 2
@@ -964,5 +957,8 @@ class Parser : ParserCore, Poolable
     method use_Value
       Scanner.uses_Value = true
       Scanner.uses_autoinclude = true
+
+    method write_this_module_id
+      processed_tokens.add( _cur_t.cloned(TokenType.IDENTIFIER, Program.current_module.name) )
 
 endClass
