@@ -4,6 +4,9 @@ module Entity
 $include Entity/EntityMacros
 
 $include Entity/Drawable2D
+$include Entity/UIElement
+$include Entity/UILayout
+$include Entity/UIView
 
 uses Collection/Node
 uses Control/Action  [export]

@@ -1,0 +1,4 @@
+module Entity
+
+class UIView : UILayout
+endClass

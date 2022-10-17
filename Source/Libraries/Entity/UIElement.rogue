@@ -1,0 +1,4 @@
+module Entity
+
+class UIElement : Drawable2D
+endClass

@@ -5,6 +5,9 @@ class Drawable2D : Entity
     position : XY
     size     : XY
     z        : Int32
-    origin   = Anchor.CENTER : Anchor
+    anchor   = Anchor.CENTER : Anchor
     angle    : XYZ
+
+  METHODS
+    method init( size )
 endClass

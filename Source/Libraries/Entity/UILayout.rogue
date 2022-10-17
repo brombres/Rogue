@@ -1,0 +1,4 @@
+module Entity
+
+class UILayout : UIElement
+endClass
