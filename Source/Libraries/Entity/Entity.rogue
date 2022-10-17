@@ -4,9 +4,6 @@ module Entity
 $include Entity/EntityMacros
 
 $include Entity/Drawable2D
-$include Entity/Component
-$include Entity/ComponentIterator
-$include Entity/Constraint
 
 uses Collection/Node
 uses Control/Action  [export]
@@ -19,7 +16,6 @@ class Entity : Node<<Entity>>
 
   PROPERTIES
     attributes  : Int32
-    components  : Component
     actions     : Action
 
   METHODS
@@ -28,11 +24,6 @@ class Entity : Node<<Entity>>
     #method init( size )
 
     #method init( position, size )
-
-    method add( component:Component )
-      component.entity = this
-      if (components) components.add( component )
-      else            components = component
 
     method after_draw
       noAction
@@ -44,17 +35,6 @@ class Entity : Node<<Entity>>
     method bounds
       return Box( position, size )
       }#
-
-    method component<<$ComponentType>>->$ComponentType
-      forEach (component in entity.components)
-        if local result = result->(as $ComponentType)
-          return result
-        endIf
-      endForEach
-      return null
-
-    method components<<$ComponentType>>->ComponentIterator<<$ComponentType>>
-      return ComponentIterator<<$ComponentType>>( this )
 
       #{
     method display_bounds->Box

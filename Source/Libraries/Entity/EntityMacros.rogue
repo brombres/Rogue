@@ -1,5 +1,3 @@
-$include DynamicEntityProperties
-
 $macro ENTITY_ATTRIBUTE<<$NAME, $is_name, $value>>
   DEFINITIONS
     $id(ATTRIBUTE_ $NAME) = $value
