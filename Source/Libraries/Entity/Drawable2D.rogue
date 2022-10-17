@@ -1,0 +1,10 @@
+module Entity
+
+class Drawable2D : Entity
+  PROPERTIES
+    position : XY
+    size     : XY
+    z        : Int32
+    origin   = Anchor.CENTER : Anchor
+    angle    : XYZ
+endClass

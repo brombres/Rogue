@@ -1,9 +1,0 @@
-module Entity
-
-class Actor2D : Component
-  PROPERTIES
-    position : XY
-    size     : XY
-    anchor   = Anchor.CENTER : Anchor
-
-endClass

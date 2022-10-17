@@ -3,14 +3,14 @@ module Entity
 # This $include must be first
 $include Entity/EntityMacros
 
-$include Entity/Actor2D
+$include Entity/Drawable2D
 $include Entity/Component
-$include Entity/ComponentCollector
+$include Entity/ComponentIterator
 $include Entity/Constraint
 
 uses Collection/Node
-uses Geometry
-uses Presentation/Action
+uses Control/Action  [export]
+uses Geometry        [export]
 
 class Entity : Node<<Entity>>
   ENTITY_ATTRIBUTE<< NEEDS_LAYOUT, needs_layout, (1:<<:0) >>
@@ -45,36 +45,16 @@ class Entity : Node<<Entity>>
       return Box( position, size )
       }#
 
-    method collect_components<<$ComponentType>>( list:$ComponentType[] )->Int32
-      local n = 0
-
-      local this_component = components
-      while (this_component)
-        if local matching_component = this_component->(as $ComponentType)
-          list.add( matching_component )
-          ++n
-          escapeWhile
-        endIf
-        this_component .= next
-      endWhile
-
-      return n
-
     method component<<$ComponentType>>->$ComponentType
-      local result = components
-      while (result)
+      forEach (component in entity.components)
         if local result = result->(as $ComponentType)
           return result
         endIf
-        result .= next
-      endWhile
+      endForEach
+      return null
 
-    method components<<$ComponentType>>->ComponentCollector<<$ComponentType>>
-      # USAGE
-      #   use entity.components<<Type>>
-      #     ...
-      #   endUse
-      return ComponentCollector<<$ComponentType>>( this )
+    method components<<$ComponentType>>->ComponentIterator<<$ComponentType>>
+      return ComponentIterator<<$ComponentType>>( this )
 
       #{
     method display_bounds->Box
