@@ -1,4 +1,4 @@
 module Entity
 
-class UILayout : UIElement
+class UILayout : UIComponent
 endClass

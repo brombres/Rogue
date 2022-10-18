@@ -2,12 +2,84 @@ module Entity
 
 class Drawable2D : Entity
   PROPERTIES
-    position : XY
-    size     : XY
-    z        : Int32
-    anchor   = Anchor.CENTER : Anchor
-    angle    : XYZ
+    position         : XY
+    display_position : XY
+    size             : XY
+    anchor           = Anchor.CENTER : Anchor
+    rotation         : XYZ
+    z                : Int32
+    draw_order       : Int32
 
   METHODS
     method init( size )
+
+    method after_draw
+      noAction
+
+    method bounds->Box
+      return Box( position, size )
+
+    method display_bounds->Box
+      return Box( display_position, size )
+
+    method draw
+      draw( display_bounds )
+
+    method draw( clip_bounds:Box )
+      on_draw
+      after_draw
+
+    method on_draw
+      noAction
+
+
+    method set_anchor( value:Anchor )
+      if (value != anchor)
+        @anchor = value
+        needs_redraw = true
+      endIf
+
+    method set_bounds( bounds:Box )
+      @position = bounds.position
+      if (bounds.size != size)
+        @size = bounds.size
+        needs_redraw = true
+      endIf
+
+    method set_display_position( value:XY )
+      if (value != display_position)
+        @display_position = value
+        needs_redraw = true
+      endIf
+
+    method set_draw_index( value:Int32 )
+      if (value != draw_order)
+        @draw_order = value
+        needs_redraw = true
+      endIf
+
+    method set_rotation( value:Radians )
+      if (value != rotation.z)
+        @rotation = XYZ( rotation.x, rotation.y, value )
+        needs_redraw = true
+      endIf
+
+    method set_rotation( value:XYZ )
+      if (value != rotation)
+        @rotation = value
+        needs_redraw = true
+      endIf
+
+    method set_size( value:XY )
+      if (value != size)
+        @size = value
+        needs_redraw = true
+      endIf
+
+    method set_z( value:Int32 )
+      if (value != z)
+        @z = value
+        needs_redraw = true
+      endIf
+
 endClass

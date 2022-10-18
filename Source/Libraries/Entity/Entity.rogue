@@ -4,7 +4,7 @@ module Entity
 $include Entity/EntityMacros
 
 $include Entity/Drawable2D
-$include Entity/UIElement
+$include Entity/UIComponent
 $include Entity/UILayout
 $include Entity/UIView
 
@@ -28,29 +28,8 @@ class Entity : Node<<Entity>>
 
     #method init( position, size )
 
-    method after_draw
-      noAction
-
     method after_update
       noAction
-
-      #{
-    method bounds
-      return Box( position, size )
-      }#
-
-      #{
-    method display_bounds->Box
-      if (parent) return Box( parent.display_bounds.position, size ).relative_to( anchor )
-      return Box( position, size ).relative_to( anchor )
-
-    method draw
-      draw( display_bounds )
-
-    method draw( clip_bounds:Box )
-      on_draw
-      after_draw
-    }#
 
     method handle_dead_entities
       if (is_dead)
@@ -70,11 +49,6 @@ class Entity : Node<<Entity>>
       endIf
 
     method on_destroy
-
-      #{
-    method on_draw
-      noAction
-      }#
 
     method on_update
       noAction
