@@ -32,6 +32,23 @@ class Drawable2D : Entity
     method on_draw
       noAction
 
+    method prepare_to_draw
+      local pos = position
+
+      localize parent
+      while (parent)
+        if local parent_drawable = parent->(as Drawable2D)
+          pos += parent_drawable.display_position
+          escapeWhile
+        endIf
+        parent .= parent
+      endWhile
+
+      if (pos != display_position)
+        @display_position = pos
+        needs_redraw = true
+      endIf
+
 
     method set_anchor( value:Anchor )
       if (value != anchor)

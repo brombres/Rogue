@@ -1,0 +1,12 @@
+module Entity
+
+class EntityCollector<<$EntityType>>( ancestor:Entity, for_layout=null:Logical ) [compound]
+  METHODS
+    method on_use->$EntityType[]
+      local list = WorkList<<$EntityType>>.on_use
+      ancestor.collect<<$EntityType>>( list, &=for_layout )
+      return list
+
+    method on_end_use( list:$EntityType[] )
+      WorkList<<$EntityType>>.on_end_use( list )
+endClass

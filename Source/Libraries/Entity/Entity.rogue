@@ -4,6 +4,7 @@ module Entity
 $include Entity/EntityMacros
 
 $include Entity/Drawable2D
+$include Entity/EntityCollector
 $include Entity/UIComponent
 $include Entity/UILayout
 $include Entity/UIView
@@ -31,7 +32,30 @@ class Entity : Node<<Entity>>
     method after_update
       noAction
 
-    method handle_dead_entities
+    method collect<<$EntityType>>( &for_layout )->EntityCollector<<$EntityType>>
+      # Returns an EntityCollector that can be 'use'd to obtain a list
+      # of all descendent entities that are instanceOf $EntityType.
+      #
+      # Parents will be placed in the list ahead of children.
+      #
+      # for_layout
+      #   If true, entities that are instanceOf UILayout are not recursed into.
+      #
+      # USAGE e.g.
+      #   use drawables = view.collect<<Drawable2D>>
+      #     forEach (drawable in drawables) ...
+      #   endUse
+      return EntityCollector<<$EntityType>>( this, &=for_layout )
+
+    method collect<<$EntityType>>( list:$EntityType[], &for_layout )
+      forEach (child in children)
+        if local child = child->(as $EntityType)
+          list.add( child )
+        endIf
+        if (for_layout and child not instanceOf UILayout) child.collect<<$EntityType>>( list, &for_layout )
+      endForEach
+
+    method destroy_dead_entities
       if (is_dead)
         (forEach in children).is_dead = true
       endIf
@@ -39,7 +63,7 @@ class Entity : Node<<Entity>>
       local cur_child = first_child
       while (cur_child)
         local next_child = cur_child.next
-        cur_child.handle_dead_entities
+        cur_child.destroy_dead_entities
         cur_child = next_child
       endWhile
 
@@ -62,5 +86,6 @@ class Entity : Node<<Entity>>
 
       if (actions) actions .= update
 
+      destroy_dead_entities
 
 endClass

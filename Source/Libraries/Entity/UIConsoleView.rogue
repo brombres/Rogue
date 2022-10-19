@@ -10,7 +10,8 @@ class UIConsoleView : UIView
     method init( size:XY )
       prior.init( size )
 
-    method draw
+    method draw( clip_bounds:Box )
+      prior.draw( clip_bounds )
       UIConsoleViewCanvas.display
 
     method update

@@ -1,4 +1,25 @@
 module Entity
 
 class UIView : UILayout
+  METHODS
+    method draw
+      prepare_to_draw
+      draw( display_bounds )
+
+    method draw( clip_bounds:Box )
+      on_draw
+
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).draw
+      endUse
+
+      after_draw
+
+    method prepare_to_draw
+      prior.prepare_to_draw
+
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).prepare_to_draw
+      endUse
+
 endClass
