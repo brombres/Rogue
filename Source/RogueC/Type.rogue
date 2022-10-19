@@ -1643,6 +1643,7 @@ class Type : Cmd
         local sig = m.signature
         if (not methods.contains(sig))
           if (not instantiate_overriding_template(m))
+            method_template_instances.add( m.name )
             if (m.attributes.is_propagated)
               methods[sig] = m.propagated_to( this )
             else
