@@ -10,6 +10,7 @@ class UIView : UILayout
       on_draw
 
       use drawables = collect<<Drawable2D>>
+        drawables.sort( $1.draw_order < $2.draw_order )
         (forEach in drawables).draw
       endUse
 
