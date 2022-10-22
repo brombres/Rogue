@@ -1,0 +1,512 @@
+# Adapted from:
+# https://android.googlesource.com/platform/libcore/+/jb-mr2-release/luni/src/main/java/java/util/TimSort.java
+
+class Timsort<<$DataType>>
+  DEFINITIONS
+    MERGE_THRESHOLD          = 32
+    INITIAL_GALLOP_THRESHOLD = 7
+
+  GLOBAL PROPERTIES
+    runs             = Span[]
+    gallop_threshold = INITIAL_GALLOP_THRESHOLD : Int32
+
+  GLOBAL METHODS
+    method sort( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical) )
+      local limit = list.count
+      if (limit <= 1) return
+
+      local remaining_count = limit
+
+      if (remaining_count < MERGE_THRESHOLD)
+        local initial_run_length = _count_and_order_run( list, 0, limit, compare_fn )
+        _binary_sort( list, 0, limit, initial_run_length, compare_fn )
+        return
+      endIf
+
+      runs.clear
+      gallop_threshold = INITIAL_GALLOP_THRESHOLD
+
+      local low = 0
+      local min_run_length = _min_run_length( remaining_count )
+      while (remaining_count)
+        local run_length = _count_and_order_run( list, low, limit, compare_fn )
+        if (run_length < min_run_length)
+          local force = which{ remaining_count<=min_run_length:remaining_count || min_run_length }
+          _binary_sort( list, low, low+force, low+run_length, compare_fn )
+          run_length = force
+        endIf
+
+        runs.add( Span(low,run_length) )
+        _merge_collapse( list, compare_fn )
+
+        low += run_length
+        remaining_count -= run_length
+      endWhile
+
+      # Merge all remaining runs to complete sort
+      assert low == limit
+      _merge_force_collapse( list, compare_fn )
+
+      assert runs.count == 1
+      runs.remove_last
+
+    method _count_and_order_run( list:$DataType[], low:Int32, limit:Int32,
+        compare_fn:(Function($DataType,$DataType)->Logical) )->Int32
+      assert low < limit
+
+      local run_limit = low + 1
+      if (run_limit == limit) return 1
+
+      if (not compare_fn(list[low], list[run_limit]))
+        # Run is in reverse order
+        ++run_limit
+        while (run_limit < limit and not compare_fn(list[run_limit-1],list[run_limit]))
+          ++run_limit
+        endWhile
+        _reverse_range( list, low, run_limit )
+      else
+        # Run is in-order
+        ++run_limit
+        while (run_limit < limit and compare_fn(list[run_limit-1],list[run_limit]))
+          ++run_limit
+        endWhile
+      endIf
+
+      return run_limit - low
+
+    method _binary_sort( list:$DataType[], low:Int32, limit:Int32, start:Int32,
+                        compare_fn:(Function($DataType,$DataType)->Logical) )
+      assert low <= start and start <= limit
+
+      if (start == low) ++start
+
+      while (start < limit)
+        local pivot = list[start]
+
+        local left = low
+        local right = start
+
+        assert left <= right
+
+        while (left < right)
+          local mid = (left + right) :>>: 1
+          if (not compare_fn(list[mid],pivot))
+            right = mid
+          else
+            left = mid + 1
+          endIf
+        endWhile
+
+        assert left == right
+
+        local n = start - left
+        which (n)
+          case 2
+            list[left + 2] = list[left + 1]
+            list[left + 1] = list[left]
+          case 1
+            list[left + 1] = list[left]
+          others
+            list.copy( left, n, list, left+1 )
+        endWhich
+        list[left] = pivot
+        ++start
+      endWhile
+
+    method _gallop_left( key:$DataType, list:$DataType[], base:Int32, len:Int32, hint:Int32,
+        compare_fn:(Function($DataType,$DataType)->Logical) )->Int32
+      assert len > 0 and hint >= 0 and hint < len
+
+      local last_ofs = 0
+      local ofs = 1
+      if (not compare_fn(key,list[base+hint]))
+        local max_ofs = len - hint
+        while (ofs < max_ofs and not compare_fn(key,list[base + hint + ofs]))
+          last_ofs = ofs
+          ofs = (ofs * 2) + 1
+          if (ofs <= 0) ofs = max_ofs
+        endWhile
+
+        if (ofs > max_ofs) ofs = max_ofs
+
+        last_ofs += hint
+        ofs += hint
+
+      else
+        local max_ofs = hint + 1
+        while (ofs < max_ofs and compare_fn(key, list[base + hint - ofs]))
+          last_ofs = ofs
+          ofs = (ofs * 2) + 1
+          if (ofs <= 0) ofs = max_ofs
+        endWhile
+
+        if (ofs > max_ofs) ofs = max_ofs
+
+        local tmp = last_ofs
+        last_ofs = hint - ofs
+        ofs = hint - tmp
+      endIf
+
+      assert -1 <= last_ofs and last_ofs < ofs and ofs <= len
+
+      ++last_ofs
+      while (last_ofs < ofs)
+        local m = last_ofs + ((ofs - last_ofs) :>>: 1)
+        if (not compare_fn(key,list[base + m])) last_ofs = m + 1
+        else                                    ofs = m
+      endWhile
+
+      assert last_ofs == ofs
+      return ofs
+
+    method _gallop_right( key:$DataType, list:$DataType[], base:Int32, len:Int32, hint:Int32,
+        compare_fn:(Function($DataType,$DataType)->Logical) )->Int32
+      assert len > 0 and hint >= 0 and hint < len
+
+      local ofs = 1
+      local last_ofs = 0
+      if (not compare_fn(list[base + hint],key))
+        local max_ofs = hint + 1
+        while (ofs < max_ofs and not compare_fn(list[base+hint-ofs],key))
+          last_ofs = ofs
+          ofs = (ofs * 2) + 1
+          if (ofs <= 0) ofs = max_ofs
+        endWhile
+
+        if (ofs > max_ofs) ofs = max_ofs
+
+        local tmp = last_ofs
+        last_ofs = hint - ofs
+        ofs = hint - tmp
+      else
+        local max_ofs = len - hint
+        while (ofs < max_ofs and compare_fn(list[base+hint+ofs],key))
+          last_ofs = ofs
+          ofs = (ofs * 2) + 1
+          if (ofs <= 0) ofs = max_ofs
+        endWhile
+        if (ofs > max_ofs) ofs = max_ofs
+
+        last_ofs += hint
+        ofs += hint
+      endIf
+
+      assert -1 <= last_ofs and last_ofs < ofs and ofs <= len
+
+      ++last_ofs
+      while (last_ofs < ofs)
+        local m = last_ofs + ((ofs - last_ofs) :>>: 1)
+        if (not compare_fn(list[base + m],key)) ofs = m
+        else                                    last_ofs = m + 1
+      endWhile
+
+      assert last_ofs == ofs
+      return ofs
+
+    method _merge_at( list:$DataType[], i:Int32, compare_fn:(Function($DataType,$DataType)->Logical) )
+      assert runs.count >= 2
+      assert i >= 0
+      assert i == runs.count - 2 or i == runs.count - 3
+
+      local base1 = runs[i].index
+      local len1  = runs[i].count
+      local base2 = runs[i + 1].index
+      local len2  = runs[i + 1].count
+      assert len1 > 0 and len2 > 0
+      assert base1 + len1 == base2
+
+      local span = runs[i]
+      runs[i] = Span( span.index, len1+len2 )
+      if (i == runs.count - 3)
+        runs[i+1] = runs[i+2]
+      endIf
+      runs.remove_last
+
+      local k = _gallop_right( list[base2], list, base1, len1, 0, compare_fn )
+      assert k >= 0
+      base1 += k
+      len1 -= k
+      if (len1 == 0) return
+
+      len2 = _gallop_left( list[base1 + len1 - 1], list, base2, len2, len2 - 1, compare_fn )
+      assert len2 >= 0
+      if (len2 == 0) return
+
+      if (len1 <= len2) _merge_low( list, base1, len1, base2, len2, compare_fn )
+      else              _merge_high( list, base1, len1, base2, len2, compare_fn )
+
+    method _merge_collapse( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical) )
+      while (runs.count > 1)
+        local n = runs.count - 2
+        if (n > 0 and runs[n-1].count <= runs[n].count + runs[n+1].count)
+          if (runs[n - 1].count < runs[n + 1].count) --n
+          _merge_at( list, n, compare_fn )
+        elseIf (runs[n].count <= runs[n+1].count)
+          _merge_at( list, n, compare_fn )
+        else
+          return
+        endIf
+      endWhile
+
+    method _merge_force_collapse( list:$DataType[], compare_fn:(Function($DataType,$DataType)->Logical) )
+      while (runs.count > 1)
+        local n = runs.count - 2
+        if (n > 0 and runs[n-1].count < runs[n+1].count) --n
+        _merge_at( list, n, compare_fn )
+      endWhile
+
+    method _merge_high( list:$DataType[], base1:Int32, len1:Int32, base2:Int32, len2:Int32,
+        compare_fn:(Function($DataType,$DataType)->Logical) )
+      assert len1 > 0 and len2 > 0 and base1 + len1 == base2
+
+      use tmp = WorkList<<$DataType>>
+        tmp.reserve( len2 )
+
+        list.copy( base2, len2, tmp, 0 )
+
+        local cursor1 = base1 + len1 - 1
+        local cursor2 = len2 - 1
+        local dest = base2 + len2 - 1
+        --dest
+        --cursor1
+        list[dest] = list[cursor1]
+
+        --len1
+        if (len1 == 0)
+          tmp.copy( 0, len2, list, dest-(len2-1) )
+          return
+        endIf
+
+        if (len2 == 1)
+          dest -= len1
+          cursor1 -= len1
+          list.copy( cursor1+1, len1, list, dest+1 )
+          list[dest] = tmp[cursor2]
+          return
+        endIf
+
+        loop
+          local count1 = 0
+          local count2 = 0
+
+          local first = true
+          while (first or (count1 | count2) < gallop_threshold)
+            first = false
+
+            assert len1 > 0 and len2 > 1
+
+            if (not compare_fn(list[cursor1],tmp[cursor2]))
+              list[dest] = list[cursor1]
+              --dest
+              --cursor1
+              ++count1
+              count2 = 0
+              --len1
+              if (len1 == 0) escapeLoop
+            else
+              list[dest] = tmp[cursor2]
+              --dest
+              --cursor2
+              ++count2
+              count1 = 0
+              --len2
+              if (len2 == 1) escapeLoop
+            endIf
+          endWhile
+
+          first = true
+          while (first or count1 >= INITIAL_GALLOP_THRESHOLD or count2 >= INITIAL_GALLOP_THRESHOLD)
+            first = false
+
+            assert len1 > 0 and len2 > 1
+
+            count1 = len1 - _gallop_right(tmp[cursor2], list, base1, len1, len1 - 1, compare_fn)
+            if (count1)
+              dest -= count1
+              cursor1 -= count1
+              len1 -= count1
+              list.copy( cursor1+1, count1, list, dest+1 )
+              if (len1 == 0) escapeLoop
+            endIf
+
+            list[dest] = tmp[cursor2]
+            --dest
+            --cursor2
+
+            --len2
+            if (len2 == 1) escapeLoop
+            count2 = len2 - _gallop_left( list[cursor1], tmp, 0, len2, len2 - 1, compare_fn )
+
+            if (count2)
+              dest -= count2
+              cursor2 -= count2
+              len2 -= count2
+              tmp.copy( cursor2+1, count2, list, dest+1 )
+              if (len2 <= 1) escapeLoop
+            endIf
+
+            list[dest] = list[cursor1]
+            --dest
+            --cursor1
+
+            --len1
+            if (len1 == 0) escapeLoop
+            --gallop_threshold
+          endWhile
+
+          if (gallop_threshold < 0) gallop_threshold = 0
+          gallop_threshold += 2
+        endLoop
+
+        gallop_threshold .= clamped_low( 1 )
+
+        if (len2 == 1)
+          assert len1 > 0
+          dest -= len1
+          cursor1 -= len1
+          list.copy( cursor1+1, len1, list, dest+1 )
+          list[dest] = tmp[cursor2]
+        else
+          assert len1 == 0
+          assert len2 > 0
+          tmp.copy( 0, len2, list, dest-(len2-1) )
+        endIf
+      endUse
+
+    method _merge_low( list:$DataType[], base1:Int32, len1:Int32, base2:Int32, len2:Int32,
+        compare_fn:(Function($DataType,$DataType)->Logical) )
+      assert len1 > 0 and len2 > 0 and base1 + len1 == base2
+
+      use tmp = WorkList<<$DataType>>
+        tmp.reserve( len1 )
+
+        list.copy( base1, len1, tmp, 0 )
+
+        local cursor1 = 0
+        local cursor2 = base2
+        local dest = base1
+
+        list[dest] = list[cursor2]
+        ++dest
+        ++cursor2
+
+        --len2
+        if (len2 == 0)
+          tmp.copy( cursor1, len1, list, dest )
+          return
+        endIf
+
+        if (len1 == 1)
+          list.copy( cursor2, len2, list, dest )
+          list[dest + len2] = tmp[cursor1]
+          return
+        endIf
+
+        loop
+          local count1 = 0
+          local count2 = 0
+
+          local first = true
+          while (first or (count1|count2) < gallop_threshold)
+            first = false
+
+            assert len1 > 1 and len2 > 0
+            if (not compare_fn(tmp[cursor1],list[cursor2]))
+              list[dest] = list[cursor2]
+              ++dest
+              ++cursor2
+              ++count2
+              count1 = 0
+              --len2
+              if (len2 == 0) escapeLoop
+            else
+              list[dest] = tmp[cursor1]
+              ++dest
+              ++cursor1
+              count1++
+              count2 = 0
+              --len1
+              if (len1 == 1) escapeLoop
+            endIf
+          endWhile
+
+          first = true
+          while (first or count1 >= INITIAL_GALLOP_THRESHOLD or count2 >= INITIAL_GALLOP_THRESHOLD)
+            first = false
+
+            assert len1 > 1 and len2 > 0
+
+            count1 = _gallop_right( list[cursor2], tmp, cursor1, len1, 0, compare_fn )
+
+            if (count1)
+              tmp.copy( cursor1, count1, list, dest )
+              dest += count1
+              cursor1 += count1
+              len1 -= count1
+              if (len1 <= 1) escapeLoop
+            endIf
+
+            list[dest] = list[cursor2]
+            ++dest
+            ++cursor2
+
+            --len2
+            if (len2 == 0) escapeLoop
+
+            count2 = _gallop_left( tmp[cursor1], list, cursor2, len2, 0, compare_fn )
+
+            if (count2 != 0)
+              list.copy( cursor2, count2, list, dest )
+              dest += count2
+              cursor2 += count2
+              len2 -= count2
+              if (len2 == 0) escapeLoop
+            endIf
+
+            list[dest] = tmp[cursor1]
+            ++dest
+            ++cursor1
+
+            --len1
+            if (len1 == 1) escapeLoop
+
+            --gallop_threshold
+
+          endWhile
+
+          if (gallop_threshold < 0) gallop_threshold = 0
+          gallop_threshold += 2
+        endLoop
+
+        gallop_threshold .= clamped_low(1)
+
+        if (len1 == 1)
+          assert len2 > 0
+          list.copy( cursor2, len2, list, dest )
+          list[dest + len2] = tmp[cursor1]
+        else
+          assert len2 == 0
+          assert len1 > 1
+          tmp.copy( cursor1, len1, list, dest )
+        endIf
+      endUse
+
+    method _min_run_length( n:Int32 )->Int32
+      assert n >= 0
+
+      local r = 0
+      while (n >= MERGE_THRESHOLD)
+        r |= (n & 1)
+        n :>>>:= 1
+      endWhile
+      return n + r
+
+    method _reverse_range( list:$DataType[], low:Int32, limit:Int32 )
+      --limit
+      while (low < limit)
+        list.swap( low, limit )
+        ++low
+        --limit
+      endWhile
+
+endClass

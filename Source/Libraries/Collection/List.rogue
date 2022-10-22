@@ -668,7 +668,7 @@ class List<<$DataType>> : Poolable ListType
       return cloned.[ shuffle(generator) ]
 
     method sort( compare_fn:(Function($DataType,$DataType)->Logical) )
-      Quicksort<<$DataType>>.sort( this, compare_fn )
+      Timsort<<$DataType>>.sort( this, compare_fn )
 
     method sorted( compare_fn:(Function($DataType,$DataType)->Logical) )->$DataType[]
       return cloned.[ sort(compare_fn) ]

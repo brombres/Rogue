@@ -1,8 +1,8 @@
 $include Collection/ByteList
 $include Collection/List
 $include Collection/ListRewriter
-$include Collection/Quicksort
 $include Collection/StringList
+$include Collection/Timsort
 
 # Included by RogueC as needed:
 # - Collection/Set
