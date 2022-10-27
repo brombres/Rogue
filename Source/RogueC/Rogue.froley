@@ -2762,8 +2762,8 @@ parser
   procedure_name
   access_args
   create ContextAccess(context,name:String,args)
-  on "=" expression -> Assign(target,new_value)
   access_inner
+  on "=" expression -> Assign(target,new_value)
 
 - term
   on STRING
