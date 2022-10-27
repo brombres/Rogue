@@ -2,25 +2,21 @@ module Entity
 
 class Drawable2D : Entity
   PROPERTIES
-    position         : XY
-    display_position : XY
-    size             : XY
-    anchor           = Anchor.CENTER : Anchor
-    rotation         : XYZ
-    z                : Int32
-    draw_order       : Int32
+    placement          : Placement2D
+    previous_placement : Placement2D  # for dirty rectangle tracking
 
   METHODS
-    method init( size )
+    method init( size:XY )
+      placement.size = size
 
     method after_draw
       noAction
 
     method bounds->Box
-      return Box( position, size )
+      return Box( placement.position, placement.size )
 
     method display_bounds->Box
-      return Box( display_position, size )
+      return Box( placement.display_position, placement.size )
 
     method draw
       draw( display_bounds )
@@ -29,74 +25,27 @@ class Drawable2D : Entity
       on_draw
       after_draw
 
-    method on_draw
-      noAction
-
-    method prepare_to_draw
-      local pos = position
-
+    method drawable_parent->Drawable2D
       localize parent
       while (parent)
-        if local parent_drawable = parent->(as Drawable2D)
-          pos += parent_drawable.display_position
-          escapeWhile
+        if local drawable_parent = parent->(as Drawable2D)
+          return drawable_parent
         endIf
         parent .= parent
       endWhile
+      return null
 
-      if (pos != display_position)
-        @display_position = pos
-        needs_redraw = true
+    method on_draw
+      noAction
+
+    method update_placement
+      previous_placement = placement
+
+      local pos = placement.position
+      if local parent = drawable_parent
+        pos += parent.placement.display_position
       endIf
 
-
-    method set_anchor( value:Anchor )
-      if (value != anchor)
-        @anchor = value
-        needs_redraw = true
-      endIf
-
-    method set_bounds( bounds:Box )
-      @position = bounds.position
-      if (bounds.size != size)
-        @size = bounds.size
-        needs_redraw = true
-      endIf
-
-    method set_display_position( value:XY )
-      if (value != display_position)
-        @display_position = value
-        needs_redraw = true
-      endIf
-
-    method set_draw_index( value:Int32 )
-      if (value != draw_order)
-        @draw_order = value
-        needs_redraw = true
-      endIf
-
-    method set_rotation( value:Radians )
-      if (value != rotation.z)
-        @rotation = XYZ( rotation.x, rotation.y, value )
-        needs_redraw = true
-      endIf
-
-    method set_rotation( value:XYZ )
-      if (value != rotation)
-        @rotation = value
-        needs_redraw = true
-      endIf
-
-    method set_size( value:XY )
-      if (value != size)
-        @size = value
-        needs_redraw = true
-      endIf
-
-    method set_z( value:Int32 )
-      if (value != z)
-        @z = value
-        needs_redraw = true
-      endIf
+      placement.display_position = pos
 
 endClass

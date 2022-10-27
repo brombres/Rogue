@@ -3,24 +3,27 @@ module Entity
 class UIView : UILayout
   METHODS
     method draw
-      prepare_to_draw
+      update_placement
       draw( display_bounds )
 
     method draw( clip_bounds:Box )
       on_draw
 
       use drawables = collect<<Drawable2D>>
-        drawables.sort( $1.draw_order < $2.draw_order )
+        drawables.sort( $1.placement.draw_order < $2.placement.draw_order )
         (forEach in drawables).draw
       endUse
 
       after_draw
 
-    method prepare_to_draw
-      prior.prepare_to_draw
+    method update_placement
+      prior.update_placement
 
       use drawables = collect<<Drawable2D>>
-        (forEach in drawables).prepare_to_draw
+        (forEach in drawables).update_placement
       endUse
+
+    method update( bounds:Box )
+      update
 
 endClass

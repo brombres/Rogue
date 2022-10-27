@@ -12,10 +12,10 @@ class UIConsoleView : UIView
 
     method draw( clip_bounds:Box )
       prior.draw( clip_bounds )
-      UIConsoleViewCanvas.display
+      UIConsoleViewCanvas.display(0,0)
 
     method update
-      UIConsoleViewCanvas.resize( size.x, size.y )
+      UIConsoleViewCanvas.resize( placement.size.x, placement.size.y )
       UIConsoleViewCanvas.fill( '.' )
 
 endClass
