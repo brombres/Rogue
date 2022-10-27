@@ -155,7 +155,7 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
 
     method set_immediate_mode( setting:Logical )
       # setting==true: turn off echo and line buffer, turn on mouse events.
-      #                Must call next_is_mouse_event/read_mouse_event
+      #                Must call has_another_event / read_event / peek_event
       if (@immediate_mode != setting)
         @immediate_mode = setting
         if (@immediate_mode)
