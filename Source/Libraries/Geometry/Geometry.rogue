@@ -13,3 +13,10 @@ $include Geometry/Triangle
 $include Geometry/XY
 $include Geometry/XYZ
 $include Geometry/XYZW
+
+augment Rogue::Console
+  METHODS
+    method size->XY
+      return XY(width,height)
+
+endAugment

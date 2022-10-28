@@ -267,9 +267,9 @@ class Timsort<<$DataType>>
         local cursor1 = base1 + len1 - 1
         local cursor2 = len2 - 1
         local dest = base2 + len2 - 1
+        list[dest] = list[cursor1]
         --dest
         --cursor1
-        list[dest] = list[cursor1]
 
         --len1
         if (len1 == 0)
@@ -312,6 +312,7 @@ class Timsort<<$DataType>>
               --len2
               if (len2 == 1) escapeLoop
             endIf
+
           endWhile
 
           first = true
