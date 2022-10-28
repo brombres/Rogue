@@ -5,13 +5,13 @@ $include Entity/UIConsoleViewCanvas
 class UIConsoleView : UIView
   METHODS
     method init
-      prior.init( XY(Console.width, Console.height) )
+      prior.init( Console.size )
 
     method init( size:XY )
       prior.init( size )
 
-    method draw( clip_bounds:Box )
-      prior.draw( clip_bounds )
+    method draw
+      prior.draw
       UIConsoleViewCanvas.display(0,0)
 
     method update

@@ -1,20 +1,50 @@
 module Entity
 
+uses Utility/Epilog
+
 class UIView : UILayout
+  PROPERTIES
+    dirty_region_tracker : DirtyRegionTracker
+
   METHODS
+    method init
+      prior.init
+      dirty_region_tracker = SimpleDirtyRegionTracker()
+
+    method init( dirty_region_tracker )
+
+    method init( size:XY )
+      prior.init( size )
+      dirty_region_tracker = SimpleDirtyRegionTracker()
+
     method draw
       update_placement
-      draw( display_bounds )
 
-    method draw( clip_bounds:Box )
+      use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw )
+        dirty_region_tracker.add( forEach in drawables )
+      endUse
+
       on_draw
 
-      use drawables = collect<<Drawable2D>>
-        drawables.sort( $1.placement.draw_order < $2.placement.draw_order )
-        (forEach in drawables).draw
+      use dirty_regions = dirty_region_tracker
+        if (dirty_regions.count)
+          #dirty_region_tracker.clear
+
+          use drawables = collect<<Drawable2D>>
+            drawables.sort( $1.placement.draw_order < $2.placement.draw_order )
+            forEach (dirty_region in dirty_regions)
+              clip = dirty_region
+              (forEach in drawables).draw
+            endForEach
+            clip = null
+          endUse
+        endIf
       endUse
 
       after_draw
+
+    method set_clip( clip:Box? )
+      noAction
 
     method update_placement
       prior.update_placement
@@ -24,6 +54,10 @@ class UIView : UILayout
       endUse
 
     method update( bounds:Box )
+      if (bounds != placement.bounds)
+        placement.bounds = bounds
+        dirty_region_tracker.add( bounds )
+      endIf
       update
 
 endClass

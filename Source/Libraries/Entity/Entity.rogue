@@ -3,6 +3,8 @@ module Entity
 # This $include must be first
 $include Entity/EntityMacros
 
+$include Entity/ConditionalEntityCollector
+$include Entity/DirtyRegionTracker
 $include Entity/Drawable2D
 $include Entity/EntityCollector
 $include Entity/Placement2D
@@ -27,10 +29,6 @@ class Entity : Node<<Entity>>
   METHODS
     method init
 
-    #method init( size )
-
-    #method init( position, size )
-
     method after_update
       noAction
 
@@ -48,8 +46,8 @@ class Entity : Node<<Entity>>
       #   endUse
       return EntityCollector<<$EntityType>>( this )
 
-    method collect<<$EntityType>>( condition:Function($EntityType)->Logical )->EntityCollector<<$EntityType>>
-      return ConditionalEntityCollector<<$EntityType>>( this, conditional_fn )
+    method collect<<$EntityType>>( condition:Function($EntityType)->Logical )->ConditionalEntityCollector<<$EntityType>>
+      return ConditionalEntityCollector<<$EntityType>>( this, condition )
 
     method collect_children<<$EntityType>>( list:$EntityType[], &all )
       forEach (child in children)

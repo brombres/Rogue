@@ -12,16 +12,8 @@ class Drawable2D : Entity
     method after_draw
       noAction
 
-    method bounds->Box
-      return Box( placement.position, placement.size )
-
-    method display_bounds->Box
-      return Box( placement.display_position, placement.size )
-
     method draw
-      draw( display_bounds )
-
-    method draw( clip_bounds:Box )
+      needs_redraw = false
       on_draw
       after_draw
 
@@ -34,6 +26,11 @@ class Drawable2D : Entity
         parent .= parent
       endWhile
       return null
+
+    method needs_redraw->Logical [override]
+      if (prior.needs_redraw) return true
+      if (placement != previous_placement) return true
+      return false
 
     method on_draw
       noAction
