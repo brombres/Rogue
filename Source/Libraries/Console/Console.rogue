@@ -165,9 +165,6 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
         endIf
       endIf
 
-    method size->(width:Int32,height:Int32)
-      return (width,height)
-
     method width->Int32
       local result : Int32
       native @|#ifdef ROGUE_PLATFORM_WINDOWS
