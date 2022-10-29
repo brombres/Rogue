@@ -1,5 +1,7 @@
 module Entity
 
+ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackAttribute >>
+
 class Drawable2D : Entity
   PROPERTIES
     position       : XY
@@ -81,28 +83,28 @@ class Drawable2D : Entity
       is_fixed_size = true
 
     method update
-      update( placement.bounds )
+      update( bounds )
 
     method update( bounds:Box )
       # Must update before layout so that new components created in update() can be
       # measured in update_layout()
-      if (not is_initialized)
-        is_initialized = true
+      if (not initialized)
+        initialized = true
         on_init
       endIf
 
       on_update
 
       if (actions) actions .= update
-      (forEach in children).update( bounds )
+      (forEach in children).update
 
-      forEach (layer in layers step -1)
-        if (layer.discard_dead is null) layers.remove( layer )
-      endForEach
+      #forEach (layer in layers step -1)
+      #if (layer.discard_dead is null) layers.remove( layer )
+      #endForEach
 
       after_update
 
-      update_layout( bounds )
+      #update_layout( bounds )
 
     method update_placement
       last_placement = placement

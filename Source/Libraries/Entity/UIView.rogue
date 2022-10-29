@@ -48,6 +48,8 @@ class UIView : UILayout
 
     method set_bounds( value:Box )
       localize bounds
+Epilog.println "value:$"(value)
+Epilog.println "bounds:$"(bounds)
       if (value == bounds) return
 
       dirty_region_tracker.add( bounds )
@@ -60,7 +62,8 @@ class UIView : UILayout
 
       use drawables = collect<<Drawable2D>>
         (forEach in drawables).on_resize
-        #UIDynamicProperties.on_resize( this )
+Epilog.println "hmm"
+        DynamicProperties.on_resize( forEach in drawables )
         (forEach in drawables).after_resize
       endUse
 

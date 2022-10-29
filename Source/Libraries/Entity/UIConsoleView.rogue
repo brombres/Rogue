@@ -19,5 +19,5 @@ class UIConsoleView : UIView
       UIConsoleViewCanvas.fill( '.' )
 
     method update( bounds:Box ) [override]
-
+      # FIXME
 endClass
