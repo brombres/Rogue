@@ -89,7 +89,8 @@ class File
               |#endif
 
       if (return_value is null)
-        throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
+        #throw IOError( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
+        return filepath
       endIf
 
       return fix_slashes( return_value )

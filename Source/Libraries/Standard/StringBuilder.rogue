@@ -338,7 +338,7 @@ class StringBuilder : PrintWriter [essential]
 
     method print_to_work_bytes( value:Real64, decimal_places:Int32 )->this
       work_bytes.clear
-      local whole = Math.floor( value )
+      local whole = value.floor
       value -= whole
       while (whole >= 10)
         work_bytes.add( ('0' + ((whole%10)->Int32))->Character )
