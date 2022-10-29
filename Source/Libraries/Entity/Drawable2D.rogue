@@ -14,6 +14,9 @@ class Drawable2D : Entity
     method after_draw
       noAction
 
+    method after_resize
+      noAction
+
     method bounds->Box
       return Box( position, placement.size )
 
@@ -28,20 +31,13 @@ class Drawable2D : Entity
       on_draw
       after_draw
 
-    method drawable_parent->Drawable2D
-      localize parent
-      while (parent)
-        if local drawable_parent = parent->(as Drawable2D)
-          return drawable_parent
-        endIf
-        parent .= parent
-      endWhile
-      return null
-
     method needs_redraw->Logical [override]
       if (prior.needs_redraw) return true
       if (placement != last_placement) return true
       return false
+
+    method on_resize
+      noAction
 
     method set_anchor( value:Anchor )
       placement.anchor = value
@@ -52,6 +48,21 @@ class Drawable2D : Entity
 
     method on_draw
       noAction
+
+    method parent_drawable->Drawable2D
+      localize parent
+      while (parent)
+        if local parent_drawable = parent->(as Drawable2D)
+          return parent_drawable
+        endIf
+        parent .= parent
+      endWhile
+      return null
+
+    method request_layout
+      localize parent_drawable
+      if (parent_drawable) parent_drawable.request_layout
+      else                 needs_layout = true
 
     method set_draw_order( new_draw_order:Int32 )
       if (new_draw_order != @draw_order)
@@ -64,6 +75,10 @@ class Drawable2D : Entity
 
     method set_rotation( value:XYZ )
       placement.rotation = value
+
+    method set_size( value:XY )
+      placement.size = value
+      is_fixed_size = true
 
     method update
       update( placement.bounds )
@@ -93,7 +108,7 @@ class Drawable2D : Entity
       last_placement = placement
 
       local pos = position
-      if local parent = drawable_parent
+      if local parent = parent_drawable
         pos += parent.placement.display_position
       endIf
 

@@ -46,6 +46,26 @@ class UIView : UILayout
     method request_redraw( bounds:Box )
       dirty_region_tracker.add( bounds )
 
+    method set_bounds( value:Box )
+      localize bounds
+      if (value == bounds) return
+
+      dirty_region_tracker.add( bounds )
+      prior.set_bounds( value )
+      dirty_region_tracker.add( value )
+
+      needs_layout = true
+
+      on_resize
+
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).on_resize
+        #UIDynamicProperties.on_resize( this )
+        (forEach in drawables).after_resize
+      endUse
+
+      after_resize
+
     method set_clip( clip:Box? )
       noAction
 
@@ -57,10 +77,7 @@ class UIView : UILayout
       endUse
 
     method update( bounds:Box )
-      if (bounds != this.bounds)
-        this.bounds = bounds
-        dirty_region_tracker.add( bounds )
-      endIf
+      this.bounds = bounds
       update
 
 endClass
