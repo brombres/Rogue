@@ -24,24 +24,27 @@ class UIView : UILayout
         dirty_region_tracker.add( forEach in drawables )
       endUse
 
-      on_draw
-
       use dirty_regions = dirty_region_tracker
         if (dirty_regions.count)
-          #dirty_region_tracker.clear
+          on_draw
+
+          dirty_region_tracker.clear
 
           use drawables = collect<<Drawable2D>>
-            drawables.sort( $1.placement.draw_order < $2.placement.draw_order )
+            drawables.sort( $1.draw_order < $2.draw_order )
             forEach (dirty_region in dirty_regions)
               clip = dirty_region
               (forEach in drawables).draw
             endForEach
             clip = null
           endUse
+
+          after_draw
         endIf
       endUse
 
-      after_draw
+    method request_redraw( bounds:Box )
+      dirty_region_tracker.add( bounds )
 
     method set_clip( clip:Box? )
       noAction
@@ -54,8 +57,8 @@ class UIView : UILayout
       endUse
 
     method update( bounds:Box )
-      if (bounds != placement.bounds)
-        placement.bounds = bounds
+      if (bounds != this.bounds)
+        this.bounds = bounds
         dirty_region_tracker.add( bounds )
       endIf
       update

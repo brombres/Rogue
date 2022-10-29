@@ -2,8 +2,10 @@ module Entity
 
 class Drawable2D : Entity
   PROPERTIES
-    placement          : Placement2D
-    previous_placement : Placement2D  # for dirty rectangle tracking
+    position       : XY
+    draw_order     : Int32
+    placement      : Placement2D
+    last_placement : Placement2D  # for dirty rectangle tracking
 
   METHODS
     method init( size:XY )
@@ -11,6 +13,15 @@ class Drawable2D : Entity
 
     method after_draw
       noAction
+
+    method bounds->Box
+      return Box( position, placement.size )
+
+    method display_bounds->Box
+      return Box( placement.display_position, placement.size )
+
+    method display_position->XY
+      return placement.display_position
 
     method draw
       needs_redraw = false
@@ -29,16 +40,59 @@ class Drawable2D : Entity
 
     method needs_redraw->Logical [override]
       if (prior.needs_redraw) return true
-      if (placement != previous_placement) return true
+      if (placement != last_placement) return true
       return false
+
+    method set_anchor( value:Anchor )
+      placement.anchor = value
+
+    method set_bounds( bounds:Box )
+      position = bounds.position
+      placement.size = bounds.size
 
     method on_draw
       noAction
 
-    method update_placement
-      previous_placement = placement
+    method set_draw_order( new_draw_order:Int32 )
+      if (new_draw_order != @draw_order)
+        @draw_order = new_draw_order
+        needs_redraw = true
+      endIf
 
-      local pos = placement.position
+    method set_rotation( value:Radians )
+      placement.rotation = XYZ( placement.rotation.x, placement.rotation.y, value )
+
+    method set_rotation( value:XYZ )
+      placement.rotation = value
+
+    method update
+      update( placement.bounds )
+
+    method update( bounds:Box )
+      # Must update before layout so that new components created in update() can be
+      # measured in update_layout()
+      if (not is_initialized)
+        is_initialized = true
+        on_init
+      endIf
+
+      on_update
+
+      if (actions) actions .= update
+      (forEach in children).update( bounds )
+
+      forEach (layer in layers step -1)
+        if (layer.discard_dead is null) layers.remove( layer )
+      endForEach
+
+      after_update
+
+      update_layout( bounds )
+
+    method update_placement
+      last_placement = placement
+
+      local pos = position
       if local parent = drawable_parent
         pos += parent.placement.display_position
       endIf

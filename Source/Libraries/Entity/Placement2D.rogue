@@ -2,39 +2,22 @@ module Entity
 
 class Placement2D [compound]
   PROPERTIES
-    position         : XY
     display_position : XY
     size             : XY
     anchor           = Anchor.CENTER : Anchor
     rotation         : XYZ
     z                : Int32
-    draw_order       : Int32
 
   METHODS
-    method bounds->Box
-      return Box( position, size )
-
     method display_bounds->Box
       return Box( display_position, size )
 
     method operator==( other:Placement2D )->Logical
-      # This is only ever called when display_position is already set, so no need to check 'position'.
       if (display_position != other.display_position) return false
       if (size != other.size)                         return false
       if (anchor.position != other.anchor.position)   return false
       if (rotation != other.rotation)                 return false
       if (z != other.z)                               return false
-      if (draw_order != other.draw_order)             return false
       return true
-
-    method set_bounds( bounds:Box ) [mutating]
-      position = bounds.position
-      size = bounds.size
-
-    method set_rotation( value:Radians ) [mutating]
-      @rotation = XYZ( rotation.x, rotation.y, value )
-
-    method set_rotation( value:XYZ ) [mutating]
-      @rotation = value
 
 endClass

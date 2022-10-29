@@ -14,8 +14,10 @@ class UIConsoleView : UIView
       prior.draw
       UIConsoleViewCanvas.display(0,0)
 
-    method update
+    method on_draw [override]
       UIConsoleViewCanvas.resize( placement.size.x, placement.size.y )
       UIConsoleViewCanvas.fill( '.' )
+
+    method update( bounds:Box ) [override]
 
 endClass

@@ -27,6 +27,7 @@ class SimpleDirtyRegionTracker : DirtyRegionTracker
 
   METHODS
     method add( drawable:Drawable2D )
+      add( drawable.last_placement.display_bounds )
       add( drawable.placement.display_bounds )
 
     method add( region:Box )
