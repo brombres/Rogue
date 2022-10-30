@@ -2,23 +2,22 @@ module Entity
 
 uses Utility/Epilog
 
-class UIView : UILayout
+class UIView : UILayout [singleton]
   PROPERTIES
-    dirty_region_tracker : DirtyRegionTracker
+    dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
+    clip : Box?
 
   METHODS
-    method init
-      prior.init
-      dirty_region_tracker = SimpleDirtyRegionTracker()
+    method clip->Box?
+      return @clip
 
-    method init( dirty_region_tracker )
-
-    method init( size:XY )
-      prior.init( size )
+    method dirty_region_tracker->DirtyRegionTracker
+      if (@dirty_region_tracker) return @dirty_region_tracker
       dirty_region_tracker = SimpleDirtyRegionTracker()
+      return @dirty_region_tracker
 
     method draw
-      update_placement
+      update_display_state
 
       use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw )
         dirty_region_tracker.add( forEach in drawables )
@@ -32,11 +31,14 @@ class UIView : UILayout
 
           use drawables = collect<<Drawable2D>>
             drawables.sort( $1.draw_order < $2.draw_order )
+
             forEach (dirty_region in dirty_regions)
-              clip = dirty_region
-              (forEach in drawables).draw
+              temporarily clip = dirty_region
+                (forEach in drawables).draw
+              endTemporarily
             endForEach
-            clip = null
+
+            (forEach in drawables).save_display_state
           endUse
 
           after_draw
@@ -48,8 +50,6 @@ class UIView : UILayout
 
     method set_bounds( value:Box )
       localize bounds
-Epilog.println "value:$"(value)
-Epilog.println "bounds:$"(bounds)
       if (value == bounds) return
 
       dirty_region_tracker.add( bounds )
@@ -62,25 +62,20 @@ Epilog.println "bounds:$"(bounds)
 
       use drawables = collect<<Drawable2D>>
         (forEach in drawables).on_resize
-Epilog.println "hmm"
         DynamicProperties.on_resize( forEach in drawables )
         (forEach in drawables).after_resize
       endUse
 
       after_resize
 
-    method set_clip( clip:Box? )
-      noAction
+    method set_clip( clip_bounds:Box? )
+      @clip = clip_bounds
 
-    method update_placement
-      prior.update_placement
+    method update_display_state
+      prior.update_display_state
 
       use drawables = collect<<Drawable2D>>
-        (forEach in drawables).update_placement
+        (forEach in drawables).update_display_state
       endUse
-
-    method update( bounds:Box )
-      this.bounds = bounds
-      update
 
 endClass

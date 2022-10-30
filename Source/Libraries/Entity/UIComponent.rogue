@@ -1,4 +1,7 @@
 module Entity
 
 class UIComponent : Drawable2D
+  METHODS
+    method init_object
+      clip_content = true
 endClass

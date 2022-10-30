@@ -22,6 +22,9 @@ class Drawable2D : Entity
     method bounds->Box
       return Box( position, placement.size )
 
+    method clip->Box?
+      return UIView.clip
+
     method display_bounds->Box
       return Box( placement.display_position, placement.size )
 
@@ -30,8 +33,24 @@ class Drawable2D : Entity
 
     method draw
       needs_redraw = false
-      on_draw
-      after_draw
+      if (clip_content)
+        temporarily clip = display_bounds
+          on_draw
+          draw_children
+          after_draw
+        endTemporarily
+      else
+        on_draw
+        draw_children
+        after_draw
+      endIf
+
+    method draw_children
+      # Overridden in UILayout.
+      #
+      # Each UILayout (including UIView) manages drawing all of its descenents including
+      # but not descending into other UILayout objects.
+      noAction
 
     method needs_redraw->Logical [override]
       if (prior.needs_redraw) return true
@@ -66,6 +85,15 @@ class Drawable2D : Entity
       if (parent_drawable) parent_drawable.request_layout
       else                 needs_layout = true
 
+    method request_redraw
+      needs_redraw = true
+
+    method save_display_state
+      last_placement = placement
+
+    method set_clip( clip_bounds:Box? )
+      UIView.clip = clip_bounds
+
     method set_draw_order( new_draw_order:Int32 )
       if (new_draw_order != @draw_order)
         @draw_order = new_draw_order
@@ -83,37 +111,27 @@ class Drawable2D : Entity
       is_fixed_size = true
 
     method update
-      update( bounds )
-
-    method update( bounds:Box )
       # Must update before layout so that new components created in update() can be
       # measured in update_layout()
-      if (not initialized)
-        initialized = true
-        on_init
+      prior.update
+      update_layout
+
+    method update( bounds:Box )
+      if (this.bounds != bounds)
+        this.bounds = bounds
+        request_layout
       endIf
 
-      on_update
+      update
 
-      if (actions) actions .= update
-      (forEach in children).update
-
-      #forEach (layer in layers step -1)
-      #if (layer.discard_dead is null) layers.remove( layer )
-      #endForEach
-
-      after_update
-
-      #update_layout( bounds )
-
-    method update_placement
-      last_placement = placement
-
+    method update_display_state
       local pos = position
       if local parent = parent_drawable
         pos += parent.placement.display_position
       endIf
-
       placement.display_position = pos
+
+    method update_layout
+      noAction
 
 endClass
