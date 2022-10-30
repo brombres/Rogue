@@ -16,7 +16,13 @@ class Drawable2D : Entity
     method after_draw
       noAction
 
+    method after_prepare_layout
+      noAction
+
     method after_resize
+      noAction
+
+    method after_update_layout
       noAction
 
     method bounds->Box
@@ -48,8 +54,8 @@ class Drawable2D : Entity
     method draw_children
       # Overridden in UILayout.
       #
-      # Each UILayout (including UIView) manages drawing all of its descenents including
-      # but not descending into other UILayout objects.
+      # Each UILayout (including UIView) manages drawing all of its descendents down to and including
+      # other UILayout objects but not descending into them.
       noAction
 
     method needs_redraw->Logical [override]
@@ -57,17 +63,16 @@ class Drawable2D : Entity
       if (placement != last_placement) return true
       return false
 
+    method on_prepare_layout
+      noAction
+
     method on_resize
       noAction
 
-    method set_anchor( value:Anchor )
-      placement.anchor = value
-
-    method set_bounds( bounds:Box )
-      position = bounds.position
-      placement.size = bounds.size
-
     method on_draw
+      noAction
+
+    method on_update_layout
       noAction
 
     method parent_drawable->Drawable2D
@@ -91,6 +96,13 @@ class Drawable2D : Entity
     method save_display_state
       last_placement = placement
 
+    method set_anchor( value:Anchor )
+      placement.anchor = value
+
+    method set_bounds( bounds:Box )
+      position = bounds.position
+      placement.size = bounds.size
+
     method set_clip( clip_bounds:Box? )
       UIView.clip = clip_bounds
 
@@ -99,6 +111,9 @@ class Drawable2D : Entity
         @draw_order = new_draw_order
         needs_redraw = true
       endIf
+
+    method set_height( value:Int32 )
+      placement.size = XY( placement.size.x, value )
 
     method set_rotation( value:Radians )
       placement.rotation = XYZ( placement.rotation.x, placement.rotation.y, value )
@@ -110,11 +125,8 @@ class Drawable2D : Entity
       placement.size = value
       is_fixed_size = true
 
-    method update
-      # Must update before layout so that new components created in update() can be
-      # measured in update_layout()
-      prior.update
-      update_layout
+    method set_width( value:Int32 )
+      placement.size = XY( value, placement.size.y )
 
     method update( bounds:Box )
       if (this.bounds != bounds)
@@ -130,8 +142,5 @@ class Drawable2D : Entity
         pos += parent.placement.display_position
       endIf
       placement.display_position = pos
-
-    method update_layout
-      noAction
 
 endClass

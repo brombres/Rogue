@@ -71,11 +71,44 @@ class UIView : UILayout [singleton]
     method set_clip( clip_bounds:Box? )
       @clip = clip_bounds
 
+    method update
+      # Must update before layout so that new components created in update() can be
+      # measured in update_layout()
+      prior.update
+      update_layout
+
     method update_display_state
       prior.update_display_state
 
       use drawables = collect<<Drawable2D>>
         (forEach in drawables).update_display_state
       endUse
+
+    method update_layout
+      needs_layout = false
+
+      local og_size = placement.size
+
+      use drawables = collect<<UIComponent>>( &all )
+        on_prepare_layout
+        (forEach in drawables).on_prepare_layout
+        (forEach in drawables).after_prepare_layout
+        after_prepare_layout
+
+        on_update_layout
+        (forEach in drawables).on_update_layout
+
+        update_layout_width( placement.size.x )
+        update_layout_height( placement.size.y )
+
+        (forEach in drawables).after_update_layout
+        after_update_layout
+      endUse
+
+      if (placement.size != og_size) request_redraw
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+      update_layout
 
 endClass

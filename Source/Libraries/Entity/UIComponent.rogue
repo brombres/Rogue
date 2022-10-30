@@ -4,4 +4,76 @@ class UIComponent : Drawable2D
   METHODS
     method init_object
       clip_content = true
+
+    method is_expand_to_fill_height->Logical
+      return ((attributes & Entity.HEIGHT_MASK) == 0)
+
+    method is_expand_to_fill_width->Logical
+      return ((attributes & Entity.WIDTH_MASK) == 0)
+
+    method measure_content_width( subcomponents:UIComponent[] )->Int32?
+      local result : Int32?
+      forEach (component in subcomponents)
+        local w = component.measure_width( null )
+        if (w)
+          if (not result or w.value > result.value) result = w
+        endIf
+      endForEach
+      return result
+
+    method measure_content_height( subcomponents:UIComponent[] )->Int32?
+      local result : Int32?
+      forEach (component in subcomponents)
+        local h = component.measure_height( null )
+        if (h)
+          if (not result or h.value > result.value) result = h
+        endIf
+      endForEach
+      return result
+
+    method measure_height( container_height:Int32? )->Int32?
+      if (is_fixed_height) return placement.size.y
+      if (is_expand_to_fill_height) return container_height
+
+      # Shrink to fit content height
+      local result : Int32?
+      use subcomponents = collect<<UIComponent>>
+        result = measure_content_height( subcomponents )
+      endUse
+
+      if (result) return result.value
+      return container_height
+
+    method measure_width( container_width:Int32? )->Int32?
+      if (is_fixed_width) return placement.size.x
+      if (is_expand_to_fill_width) return container_width
+
+      # Shrink to fit content width
+      local result : Int32?
+      use subcomponents = collect<<UIComponent>>
+        result = measure_content_width( subcomponents )
+      endUse
+
+      if (result) return result.value
+      return container_width
+
+    method update_layout_height( container_height:Int32 )
+      height = which{ measure_height(container_height) || container_height }
+
+      use subcomponents = collect<<UIComponent>>
+        update_subcomponent_heights( subcomponents, placement.size.y )
+      endUse
+
+    method update_layout_width( container_width:Int32 )
+      width = which{ measure_width(container_width) || container_width }
+
+      use subcomponents = collect<<UIComponent>>
+        update_subcomponent_widths( subcomponents, placement.size.x )
+      endUse
+
+    method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
+      (forEach in subcomponents).update_layout_height( container_height )
+
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
+      (forEach in subcomponents).update_layout_width( container_width )
 endClass
