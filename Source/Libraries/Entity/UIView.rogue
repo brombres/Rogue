@@ -100,6 +100,7 @@ class UIView : UILayout [singleton]
 
         update_layout_width( placement.size.x )
         update_layout_height( placement.size.y )
+        update_layout_placement( bounds )
 
         (forEach in drawables).after_update_layout
         after_update_layout

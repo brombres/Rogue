@@ -32,13 +32,9 @@ class Entity : Node<<Entity>>
   ENTITY_ATTRIBUTE<< SHRINK_TO_FIT_HEIGHT, is_shrink_to_fit_height, (1:<<:10) >>
 
   DEFINITIONS
-    WIDTH_MASK  = ((1:<<:7) | (1:<<:9))
-    HEIGHT_MASK = ((1:<<:8) | (1:<<:10))
+    WIDTH_MASK  = (FIXED_WIDTH  | SHRINK_TO_FIT_WIDTH)
+    HEIGHT_MASK = (FIXED_HEIGHT | SHRINK_TO_FIT_HEIGHT)
     SIZE_MASK   = (WIDTH_MASK   | HEIGHT_MASK)
-
-    #WIDTH_MASK  = (FIXED_WIDTH  | SHRINK_TO_FIT_WIDTH)
-    #HEIGHT_MASK = (FIXED_HEIGHT | SHRINK_TO_FIT_HEIGHT)
-    #SIZE_MASK   = (WIDTH_MASK   | HEIGHT_MASK)
 
   PROPERTIES
     name        : String

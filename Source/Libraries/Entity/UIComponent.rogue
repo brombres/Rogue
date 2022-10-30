@@ -64,6 +64,10 @@ class UIComponent : Drawable2D
         update_subcomponent_heights( subcomponents, placement.size.y )
       endUse
 
+    method update_layout_placement( container:Box )
+      position = Box(placement.size).positioned_within( container, placement.anchor ).position
+      update_subcomponent_placement( Box(placement.size) )
+
     method update_layout_width( container_width:Int32 )
       width = which{ measure_width(container_width) || container_width }
 
@@ -73,6 +77,16 @@ class UIComponent : Drawable2D
 
     method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
       (forEach in subcomponents).update_layout_height( container_height )
+
+    method update_subcomponent_placement( container:Box )
+      use list = collect<<UIComponent>>
+        update_subcomponent_placement( list, container )
+      endUse
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box )
+      forEach (component in subcomponents)
+        component.update_layout_placement( container )
+      endForEach
 
     method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
       (forEach in subcomponents).update_layout_width( container_width )

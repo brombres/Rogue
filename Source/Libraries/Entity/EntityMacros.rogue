@@ -1,6 +1,6 @@
 $macro ENTITY_ATTRIBUTE<<$NAME, $is_name, $value>>
   DEFINITIONS
-    $id(ATTRIBUTE_ $NAME) = $value
+    $NAME = $value
 
   METHODS
     method $is_name->Logical
