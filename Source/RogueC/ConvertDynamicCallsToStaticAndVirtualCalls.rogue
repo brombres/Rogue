@@ -8,15 +8,19 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
       endIf
 
       local info = cmd.info
+      local context_type = cmd.context.type
 
       contingent
-        if (cmd.context.type.is_aspect or info.attributes.is_abstract)
+        if (context_type.is_aspect or info.attributes.is_abstract)
           local group = Program.dynamic_methods[info.dynamic_signature].methods
           assert group
           necessary (group and group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
         else
-          necessary (not info.attributes.dynamic_dispatch or not info.attributes.is_overridden)
+          sufficient (not info.attributes.dynamic_dispatch)
+          sufficient (not info.attributes.is_overridden)
+          sufficient (context_type.extended_types.is_empty)
+          necessary (not any_extended_types_override(context_type,info))
         endIf
 
       satisfied
@@ -24,9 +28,9 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
         return visit( cmd_call )
 
       unsatisfied
-        if (VCALLS and not cmd.context.type.is_aspect)
+        if (VCALLS and not context_type.is_aspect)
           # V-table eligible
-          cmd.context.type.method_vtable[ info.signature ] = info->(as Method)
+          context_type.method_vtable[ info.signature ] = info->(as Method)
           return visit( CallVirtualMethod(cmd.t,cmd.context,info,cmd.args) )
         endIf
 
@@ -35,6 +39,15 @@ class ConvertDynamicCallsToStaticAndVirtualCalls : Visitor [singleton]
         return visit_content( cmd )
 
       endContingent
+
+    method any_extended_types_override( type:Type, m:Procedure )->Logical
+      forEach (extended_type in type.extended_types)
+        if local ext_m = extended_type.methods[m.signature]
+          if (ext_m is not m) return true
+        endIf
+        if (any_extended_types_override(extended_type, m)) return true
+      endForEach
+      return false
 
     method on( cmd:CallThisDynamicMethod )->Cmd
       local info = cmd.info

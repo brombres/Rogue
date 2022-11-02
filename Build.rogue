@@ -31,6 +31,10 @@ routine rogo_bootstrap
   execute @|cc -O3 -Wall -fno-strict-aliasing Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS -lm
 endRoutine
 
+routine rogo_bootstrap_debug
+  execute @|cc -O0 -Wall -fno-strict-aliasing Source/RogueC/Bootstrap/RogueC.c -o Build/RogueC-macOS -lm
+endRoutine
+
 routine rogo_update_bootstrap
   rogo_build
   copy_bootstrap_file( "h" )

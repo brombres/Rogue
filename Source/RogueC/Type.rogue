@@ -406,32 +406,48 @@ class Type : Cmd
       if (is_vtable_finalized) return
       is_vtable_finalized = true
 
-      if (base_class)
-        base_class.finalize_vtable
-        use vtable = WorkList<<Method>>
+      use vtable = WorkList<<Method>>
+        if (base_class)
+          base_class.finalize_vtable
+
           forEach (base_m in base_class.method_vtable)
             local overridden_m = method_vtable[base_m.signature]
             if (not overridden_m) overridden_m = methods[base_m.signature]
             vtable.add( which{overridden_m||base_m} )
           endForEach
+
           forEach (m in method_vtable)
+            # .method_vtable can have abstract methods that are no longer in .methods
             if (not base_class.method_vtable.contains(m.signature))
               vtable.add( m )
             endIf
           endForEach
 
-          method_vtable.clear
-          forEach (m at i in vtable)
-            m.vtable_index = i
-            method_vtable[m.signature] = m
+          forEach (m in methods)
+            # Some .methods are not yet in .method_vtable
+            if (not base_class.method_vtable.contains(m.signature) and not method_vtable.contains(m.signature))
+              vtable.add( m )
+            endIf
           endForEach
-        endUse
 
-      else
-        forEach (m at i in method_vtable.values)
+        else
+          vtable.add( forEach in method_vtable.values )
+          # .method_vtable can have abstract methods that are no longer in .methods
+
+          forEach (m in methods.values)
+            # Some .methods are not yet in .method_vtable
+            if (not method_vtable.contains(m.signature)) vtable.add( m )
+          endForEach
+        endIf
+
+        method_vtable.clear
+        forEach (m at i in vtable)
+          assert m.vtable_index == -1 or m.vtable_index == i
           m.vtable_index = i
+          method_vtable[m.signature] = m
         endForEach
-      endIf
+
+      endUse
 
     method has_global_method_named( name:String )->Logical
       forEach (m in global_methods.values)

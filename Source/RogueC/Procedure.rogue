@@ -34,7 +34,7 @@ class Procedure : Cmd
     method_template   : MethodTemplate # only for method template instances
     template_args     : TemplateArgs   # only for method template instances
 
-    vtable_index      : Int32 # only for vtable methods
+    vtable_index      = -1    # only for vtable methods
     vcall_count       : Int32 # number of virtual call temp variables required by the current statement
     vcall_max         : Int32 # total virtual call temp variables required by this procedure
     vcall_slot        = -1  # index of temp variable used during dispatch
