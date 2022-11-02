@@ -10,8 +10,14 @@ class Drawable2D : Entity
     last_placement : Placement2D  # for dirty rectangle tracking
 
   METHODS
+    method init
+      prior.init
+
     method init( size:XY )
       placement.size = size
+
+    method init( content:Entity )
+      prior.init( content )
 
     method after_draw
       noAction
@@ -54,8 +60,9 @@ class Drawable2D : Entity
     method draw_children
       # Overridden in UILayout.
       #
-      # Each UILayout (including UIView) manages drawing all of its descendents down to and including
-      # other UILayout objects but not descending into them.
+      # Each UILayout (including UIView) manages drawing all of its descendants down to and including
+      # other UILayout objects but not descending into them. In other words, each UILayout draws its
+      # own descendants.
       noAction
 
     method needs_redraw->Logical [override]
@@ -128,6 +135,9 @@ class Drawable2D : Entity
     method set_width( value:Int32 )
       placement.size = XY( value, placement.size.y )
 
+    method size->XY
+      return placement.size
+
     method update( bounds:Box )
       if (this.bounds != bounds)
         this.bounds = bounds
@@ -142,5 +152,6 @@ class Drawable2D : Entity
         pos += parent.placement.display_position
       endIf
       placement.display_position = pos
+      #Epilog.println "$ update display state pos:$"(type_name,pos)
 
 endClass

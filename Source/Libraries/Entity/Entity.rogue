@@ -10,7 +10,13 @@ $include Entity/Drawable2D
 $include Entity/EntityCollector
 $include Entity/Placement2D
 $include Entity/UIComponent
+$include Entity/UIFlowLayout
+$include Entity/UIHorizontalLayout
 $include Entity/UILayout
+$include Entity/UIList
+$include Entity/UIStackLayout
+$include Entity/UITableLayout
+$include Entity/UIVerticalLayout
 $include Entity/UIView
 
 uses Collection/Node
@@ -49,6 +55,14 @@ class Entity : Node<<Entity>>
         initialized = true
         on_init
       endIf
+
+    method init( content:Entity )
+      if (not initialized)
+        # An overridden init() could have already called on_init()
+        initialized = true
+        on_init
+      endIf
+      add( content )
 
     method after_update
       noAction

@@ -19,7 +19,7 @@ class UIView : UILayout [singleton]
     method draw
       update_display_state
 
-      use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw )
+      use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
         dirty_region_tracker.add( forEach in drawables )
       endUse
 
@@ -80,7 +80,7 @@ class UIView : UILayout [singleton]
     method update_display_state
       prior.update_display_state
 
-      use drawables = collect<<Drawable2D>>
+      use drawables = collect<<Drawable2D>>( &all )
         (forEach in drawables).update_display_state
       endUse
 
