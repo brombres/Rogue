@@ -1940,7 +1940,7 @@ augment
 
       block
         forEach (type in types)
-          # V-Table
+          # V-Table data
           if (type.method_vtable.count)
             c_writer.println
             c_writer.print "void* Type"
@@ -1981,7 +1981,7 @@ augment
             nextIteration
           endIf
 
-          # method_vtable
+          # pointer to method_vtable
           c_writer.print   ", "
           if (type.method_vtable.count)
             c_writer.print "Type"
