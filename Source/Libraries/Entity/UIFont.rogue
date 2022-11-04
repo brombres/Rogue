@@ -1,0 +1,65 @@
+module Entity
+
+class UIFont [abstract]
+  PROPERTIES
+    name   : String
+
+  METHODS
+    method init( name )
+
+    method init( existing:UIFont )
+      name = existing.name
+
+    method cloned->UIFont [abstract]
+
+    method draw( text:String, position:XY )           [abstract]
+
+    method draw( text:String, position:XY, anchor:Anchor )
+      if (anchor != Anchor.TOP_LEFT)
+        position = Box(position,measure(text)).relative_to( anchor ).position
+      endIf
+      draw( text, position )
+
+    method draw( text:String, bounds:Box, anchor=Anchor.CENTER:Anchor  )
+      local text_size = measure( text )
+      local position  = Box(text_size).positioned_within(
+        bounds, anchor ).position
+      draw( text, position )
+
+    method draw( text:String, container:UIComponent )
+      draw( text, container.display_bounds, container.alignment )
+
+    method height->Int32                              [abstract]
+
+    method measure( ch:Character )->RealXY            [abstract]
+
+    method measure( text:String, i1=0:Int32, count=-1:Int32 )->RealXY
+      if (count == -1) count = text.count - i1
+
+      local max_w = 0.0
+      local w     = 0.0
+      local h     = 0.0
+      local row_h = 0.0
+
+      forEach (i in i1..<i1+count)
+        local ch = text[i]
+        if (ch == '\n')
+          max_w .= or_larger( w )
+          w = 0
+          row_h .= or_larger( measure(ch).y )
+          h += row_h
+          row_h = 0
+        else
+          local ch_size = measure(ch)
+          w += ch_size.x
+          row_h .= or_larger( ch_size.y )
+        endIf
+      endForEach
+
+      max_w .= or_larger( w )
+      h += row_h
+
+      return RealXY( max_w, h )
+
+endClass
+

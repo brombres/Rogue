@@ -2,14 +2,30 @@ module Entity
 
 uses Utility/Epilog
 
-class UIView : UILayout [singleton]
+class UIView : UILayout
+  GLOBAL PROPERTIES
+    active : UIView
+
   PROPERTIES
+    default_font : UIFont
+
     dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
     clip : Box?
 
   METHODS
+    method init_object
+      active = this
+
+    method activate
+      active = this
+
     method clip->Box?
       return @clip
+
+    method default_font->UIFont
+      if (@default_font) return @default_font
+      Console.error.println "[UIView] No .default_font configured."
+      return null
 
     method dirty_region_tracker->DirtyRegionTracker
       if (@dirty_region_tracker) return @dirty_region_tracker
@@ -17,6 +33,7 @@ class UIView : UILayout [singleton]
       return @dirty_region_tracker
 
     method draw
+      activate
       update_display_state
 
       use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
@@ -74,6 +91,7 @@ class UIView : UILayout [singleton]
     method update
       # Must update before layout so that new components created in update() can be
       # measured in update_layout()
+      activate
       prior.update
       update_layout
 
@@ -85,6 +103,7 @@ class UIView : UILayout [singleton]
       endUse
 
     method update_layout
+      activate
       needs_layout = false
 
       local og_size = placement.size

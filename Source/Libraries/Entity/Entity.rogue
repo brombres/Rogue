@@ -10,10 +10,14 @@ $include Entity/Drawable2D
 $include Entity/EntityCollector
 $include Entity/Placement2D
 $include Entity/UIComponent
+$include Entity/UIFiller
 $include Entity/UIFlowLayout
+$include Entity/UIFont
 $include Entity/UIHorizontalLayout
+$include Entity/UILabel
 $include Entity/UILayout
 $include Entity/UIList
+$include Entity/UISpacer
 $include Entity/UIStackLayout
 $include Entity/UITableLayout
 $include Entity/UIVerticalLayout

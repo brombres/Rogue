@@ -1,5 +1,6 @@
 module Entity
 
+$include Entity/UIConsoleFont
 $include Entity/UIConsoleViewCanvas
 
 class UIConsoleView : UIView
@@ -9,6 +10,9 @@ class UIConsoleView : UIView
 
     method init( size:XY )
       prior.init( size )
+
+    method default_font->UIFont
+      return UIConsoleFont
 
     method draw
       prior.draw

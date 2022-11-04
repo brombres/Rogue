@@ -1,6 +1,6 @@
 module Entity
 
-$macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
+$macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$PropertyType>>
   augment
     METHODS
       method Entity.$name->$Type
@@ -22,7 +22,7 @@ $macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
 
       method DynamicProperties.$id(set_,$name)( entity:Entity, value:$Type )
         if (entity.properties) entity.properties.$id(set_,$name)( value )
-        else                   entity.properties = $ComponentType( value )
+        else                   entity.properties = $PropertyType( value )
 
       method DynamicProperty.$name->$Type
         if (next) return next.$name
@@ -34,10 +34,10 @@ $macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
 
       method DynamicProperty.$id(set_,$name)( value:$Type )
         if (next) next.$id(set_,$name)( value )
-        else      next = $ComponentType( value )
+        else      next = $PropertyType( value )
   endAugment
 
-  class $ComponentType( value:$Type ) : DynamicProperty
+  class $PropertyType( value:$Type ) : DynamicProperty
     METHODS
       method $name->$Type
         return value
@@ -49,7 +49,7 @@ $macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
   endClass
 $endMacro
 
-$macro PROPAGATED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$ComponentType>>
+$macro PROPAGATED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$PropertyType>>
   augment
     METHODS
       method Entity.$name->$Type
@@ -68,7 +68,7 @@ $macro PROPAGATED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$Component
 
       method DynamicProperties.$id(set_,$name)( entity:Entity, value:$Type )
         if (entity.properties) entity.properties.$id(set_,$name)( value )
-        else                   entity.properties = $ComponentType( value )
+        else                   entity.properties = $PropertyType( value )
 
       method DynamicProperty.$name->$Type?
         if (next) return next.$name
@@ -76,10 +76,10 @@ $macro PROPAGATED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$Component
 
       method DynamicProperty.$id(set_,$name)( value:$Type )
         if (next) next.$id(set_,$name)( value )
-        else      next = $ComponentType( value )
+        else      next = $PropertyType( value )
   endAugment
 
-  class $ComponentType( value:$Type ) : DynamicProperty
+  class $PropertyType( value:$Type ) : DynamicProperty
     METHODS
       method $name->$Type?
         return value
@@ -88,7 +88,7 @@ $macro PROPAGATED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$Component
   endClass
 $endMacro
 
-$macro ENTITY_CALLBACK_PROPERTY<<$EntityType,$name,$FnType,$ComponentType>>
+$macro ENTITY_CALLBACK_PROPERTY<<$EntityType,$name,$FnType,$PropertyType>>
   augment
     METHODS
       method $EntityType.$name( callback:$FnType )
@@ -99,17 +99,17 @@ $macro ENTITY_CALLBACK_PROPERTY<<$EntityType,$name,$FnType,$ComponentType>>
 
       method DynamicProperties.$id(set_,$name)( entity:$EntityType, fn:$FnType )
         if (entity.properties) entity.properties.$id(set_,$name)( fn )
-        else                   entity.properties = $ComponentType( fn )
+        else                   entity.properties = $PropertyType( fn )
 
       method DynamicProperty.$name( entity:$EntityType )
         if (next) next.$name( entity )
 
       method DynamicProperty.$id(set_,$name)( fn:$FnType )
         if (next) next.$id(set_,$name)( fn )
-        else      next = $ComponentType( fn )
+        else      next = $PropertyType( fn )
   endAugment
 
-  class $ComponentType( fn:$FnType ) : DynamicProperty
+  class $PropertyType( fn:$FnType ) : DynamicProperty
     METHODS
       method $name( entity:$EntityType )
         if (fn) fn( entity )

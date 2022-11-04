@@ -1,6 +1,6 @@
 module Entity
 
-ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackAttribute >>
+ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackProperty >>
 
 class Drawable2D : Entity
   PROPERTIES
@@ -14,7 +14,7 @@ class Drawable2D : Entity
       prior.init
 
     method init( size:XY )
-      placement.size = size
+      fixed_size = size
 
     method init( content:Entity )
       prior.init( content )
@@ -35,7 +35,7 @@ class Drawable2D : Entity
       return Box( position, placement.size )
 
     method clip->Box?
-      return UIView.clip
+      return UIView.active.clip
 
     method display_bounds->Box
       return Box( placement.display_position, placement.size )
@@ -111,13 +111,25 @@ class Drawable2D : Entity
       placement.size = bounds.size
 
     method set_clip( clip_bounds:Box? )
-      UIView.clip = clip_bounds
+      UIView.active.clip = clip_bounds
 
     method set_draw_order( new_draw_order:Int32 )
       if (new_draw_order != @draw_order)
         @draw_order = new_draw_order
         needs_redraw = true
       endIf
+
+    method set_fixed_height( h:Int32 )
+      attributes = (attributes & !HEIGHT_MASK) | FIXED_HEIGHT
+      placement.size = XY( placement.size.x, h )
+
+    method set_fixed_size( new_fixed_size:XY )
+      attributes = (attributes & !SIZE_MASK) | FIXED_WIDTH | FIXED_HEIGHT
+      placement.size = new_fixed_size
+
+    method set_fixed_width( w:Int32 )
+      attributes = (attributes & !WIDTH_MASK) | FIXED_WIDTH
+      placement.size = XY( w, placement.size.y )
 
     method set_height( value:Int32 )
       placement.size = XY( placement.size.x, value )
@@ -130,7 +142,6 @@ class Drawable2D : Entity
 
     method set_size( value:XY )
       placement.size = value
-      is_fixed_size = true
 
     method set_width( value:Int32 )
       placement.size = XY( value, placement.size.y )

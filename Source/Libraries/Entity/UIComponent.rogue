@@ -1,9 +1,21 @@
 module Entity
 
+PROPAGATED_DYNAMIC_ENTITY_PROPERTY<< alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty >>
+PROPAGATED_DYNAMIC_ENTITY_PROPERTY<< font,      UIFont, UIView.active.default_font, FontProperty >>
+
 class UIComponent : Drawable2D
   METHODS
     method init_object
       clip_content = true
+
+    method expand_to_fill
+      attributes &= !(WIDTH_MASK|HEIGHT_MASK)  # turn off fixed and shrink attributes
+
+    method expand_to_fill_height
+      attributes &= !HEIGHT_MASK  # turn off fixed and shrink attributes
+
+    method expand_to_fill_width
+      attributes &= !WIDTH_MASK   # turn off fixed and shrink attributes
 
     method is_expand_to_fill_height->Logical
       return ((attributes & Entity.HEIGHT_MASK) == 0)
@@ -65,6 +77,16 @@ class UIComponent : Drawable2D
 
     method operator|( rhs:UIComponent )->UIComponent
       return UIGeneratedStackLayout( this ).[ add(rhs) ]
+
+    method shrink_to_fit
+      shrink_to_fit_width
+      shrink_to_fit_height
+
+    method shrink_to_fit_height
+      attributes = (attributes & !HEIGHT_MASK) | SHRINK_TO_FIT_HEIGHT
+
+    method shrink_to_fit_width
+      attributes = (attributes & !WIDTH_MASK) | SHRINK_TO_FIT_WIDTH
 
     method update_layout_height( container_height:Int32 )
       height = which{ measure_height(container_height) || container_height }
