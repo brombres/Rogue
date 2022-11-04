@@ -72,7 +72,7 @@ class UITableLayout : UILayout
       assert (i >= 0 and i < columns.count)
       return columns[i]
 
-    method draw_subcomponents( draw_bounds:Box )
+    method draw_children( draw_bounds:Box )
       use subcomponents = collect<<Drawable2D>>
         local column_count = columns.count
         forEach (j of rows)

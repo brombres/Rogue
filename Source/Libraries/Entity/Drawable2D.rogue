@@ -163,6 +163,5 @@ class Drawable2D : Entity
         pos += parent.placement.display_position
       endIf
       placement.display_position = pos
-      #Epilog.println "$ update display state pos:$"(type_name,pos)
 
 endClass

@@ -97,7 +97,6 @@ class UIComponent : Drawable2D
 
     method update_layout_placement( container:Box )
       position = Box(placement.size).positioned_within( container, placement.anchor ).position
-      #Epilog.println "$ container:$ position:$"(type_name,container,position)
       update_subcomponent_placement( Box(placement.size) )
 
     method update_layout_width( container_width:Int32 )

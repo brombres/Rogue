@@ -1,5 +1,7 @@
 module Entity
 
+$include "../UI/Event"
+
 # These two macro $includes must come first
 $include Entity/EntityMacros
 $include Entity/DynamicProperty
@@ -22,6 +24,7 @@ $include Entity/UIStackLayout
 $include Entity/UITableLayout
 $include Entity/UIVerticalLayout
 $include Entity/UIView
+$include Entity/UIWidget
 
 uses Collection/Node
 uses Control/Action  [export]
