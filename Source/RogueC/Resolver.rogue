@@ -2453,7 +2453,13 @@ class Resolver : Poolable, Visitor
               local param_type = m.parameters[i].type
               if (param_type.is_reference) necessary (arg_type.is_reference)
               if (param_type.is_primitive) necessary (arg_type.is_primitive)
-              if (param_type.is_compound)  necessary (arg_type is param_type)
+              if (param_type.is_compound)
+                if (param_type.attributes.is_optional)
+                  necessary (arg_type is param_type or arg_type is Program.type_null)
+                else
+                  necessary (arg_type is param_type)
+                endIf
+              endIf
             endForEach
             Candidates.keep m
           endContingent
