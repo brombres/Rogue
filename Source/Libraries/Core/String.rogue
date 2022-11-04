@@ -546,6 +546,7 @@ class String : Poolable PrintWriter
       native @|memcpy( $result->data->as_utf8, $data->as_utf8+$byte_offset, $byte_count );
       result.data.count = byte_count
       result.count = (i2 - i1) + 1
+      result.is_ascii = this.is_ascii
       return result
 
     method from_first( ch:Character, &ignore_case )->String
