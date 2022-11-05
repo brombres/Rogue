@@ -5,14 +5,14 @@ class UILabel : UIComponent
     text : String
 
   METHODS
-    method init( text )
-      alignment = Anchor.CENTER
+    method init( text, alignment=Anchor.CENTER:Anchor )
       prior.init
+      this.alignment = alignment
 
-    method init( text, font:UIFont )
-      alignment = Anchor.CENTER
+    method init( text, font:UIFont, alignment=Anchor.CENTER:Anchor )
       #set_font( font ) #FIXME
       prior.init
+      this.alignment = alignment
 
       #{
     method _extended_description( table:Value )

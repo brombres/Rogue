@@ -33,6 +33,15 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method abs->XY
       return XY( x.abs, y.abs )
 
+    method clamped( low:XY, high:XY )->XY
+      return this.clamped_low(low).clamped_high(high)
+
+    method clamped_high( limit:XY )->XY
+      return XY( this.x.clamped_high(limit.x), this.y.clamped_high(limit.y) )
+
+    method clamped_low( limit:XY )->XY
+      return XY( this.x.clamped_low(limit.x), this.y.clamped_low(limit.y) )
+
     method cross( other:XY )->Int32
       return x * other.y - y * other.x
 

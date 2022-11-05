@@ -4,7 +4,7 @@ enum UIWidgetState
   IDLE, TARGETED, PRESSED, DISABLED
 endEnum
 
-class UIWidget : UILayout
+class UIWidget : UIComponent
   PROPERTIES
     widget_state       : UIWidgetState
     on_select_callback : Function

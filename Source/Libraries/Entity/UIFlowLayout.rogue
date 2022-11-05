@@ -44,7 +44,7 @@ class UIFlowLayout : UILayout
           # it later
           if (cursor.x == 0)
             local text = component.text_content
-            if (text and text.count > 1 and text.begins_with(' ') and component.can_split_x(component_w))
+            if (text and text.count > 1 and text.begins_with(' ') and component.can_split_h(component_w))
               subcomponents.insert( component.split_after(0), i+1 )
               sufficient (true)
             endIf
@@ -56,10 +56,10 @@ class UIFlowLayout : UILayout
           # Split component and fit part of it on the current line
           block
             local w = max_width - cursor.x
-            if (component.can_split_x(w))
-              # split_x() returns the new component that has been added to the UI tree.
+            if (component.can_split_h(w))
+              # split_h() returns the new component that has been added to the UI tree.
               # We need to add it to our work list. The original component is resized in place.
-              subcomponents.insert( component.split_x(w), i+1 )
+              subcomponents.insert( component.split_h(w), i+1 )
               sufficient (true)
             endIf
           endBlock
@@ -68,8 +68,8 @@ class UIFlowLayout : UILayout
           # line-splitting rules and the current component will fit on the current line.
           if (cursor.x > 0 and adj and total_w > component_w and cursor.x + component_w < max_width)
             local w = (max_width - (cursor.x + component_w))
-            if (adj.can_split_x(w))
-              subcomponents.insert( adj.split_x(w), i+2 )
+            if (adj.can_split_h(w))
+              subcomponents.insert( adj.split_h(w), i+2 )
               sufficient (true)
             endIf
           endIf
@@ -84,7 +84,7 @@ class UIFlowLayout : UILayout
 
           if (component_w > max_width)
             # Too big to fit on line. Split at the first possible spot.
-            local new_component = component.split_x
+            local new_component = component.split_h
             if (new_component) subcomponents.insert( new_component, i+1 )
           endIf
         endContingent
@@ -174,7 +174,7 @@ class UIFlowLayout : UILayout
       if (alignment.position.x == 0.0) return  # already left-justified
 
       max_width -= subcomponents[ forEach in i1..i2 ].size.x
-      local delta = (max_width * alignment.position.x) :>>>: 1
+      local delta = ((max_width * alignment.position.x) / 2).floor->Int32
       if (delta)
         forEach (i in i1..i2)
           subcomponents[i].position += XY(delta,0)

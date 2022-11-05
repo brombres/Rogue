@@ -1,12 +1,21 @@
 module Entity
 
-PROPAGATED_DYNAMIC_ENTITY_PROPERTY<< alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty >>
-PROPAGATED_DYNAMIC_ENTITY_PROPERTY<< font,      UIFont, UIView.active.default_font, FontProperty >>
-
 class UIComponent : Drawable2D
   METHODS
     method init_object
       clip_content = true
+
+    method can_split_h( max_width:Int32 )->Logical
+      return false
+
+    method draw_children
+      # Each UIComponent (including UIView) manages drawing all of its descendants down to and including
+      # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
+      # own descendants.
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).draw
+        (forEach in drawables).save_display_state
+      endUse
 
     method expand_to_fill
       attributes &= !(WIDTH_MASK|HEIGHT_MASK)  # turn off fixed and shrink attributes
@@ -16,6 +25,9 @@ class UIComponent : Drawable2D
 
     method expand_to_fill_width
       attributes &= !WIDTH_MASK   # turn off fixed and shrink attributes
+
+    method is_br->Logical
+      return false
 
     method is_expand_to_fill_height->Logical
       return ((attributes & Entity.HEIGHT_MASK) == 0)
@@ -78,6 +90,17 @@ class UIComponent : Drawable2D
     method operator|( rhs:UIComponent )->UIComponent
       return UIGeneratedStackLayout( this ).[ add(rhs) ]
 
+    method prepare_layout
+      local og_size = size
+
+      on_prepare_layout
+      use components = collect<<UIComponent>>
+        (forEach in components).prepare_layout
+      endUse
+      after_prepare_layout
+
+      if (size != og_size) is_modified = true
+
     method shrink_to_fit
       shrink_to_fit_width
       shrink_to_fit_height
@@ -87,6 +110,22 @@ class UIComponent : Drawable2D
 
     method shrink_to_fit_width
       attributes = (attributes & !WIDTH_MASK) | SHRINK_TO_FIT_WIDTH
+
+    method split_after( i:Int32 )->UIComponent
+      return null
+
+    method text_content->String
+      forEach (child in children)
+        if local component = child->(as UIComponent)
+          local text = component.text_content
+          if (text) return text
+        endIf
+      endForEach
+
+      return null
+
+    method split_h( max_width=null:Int32? )->UIComponent
+      return null
 
     method update_layout_height( container_height:Int32 )
       height = which{ measure_height(container_height) || container_height }

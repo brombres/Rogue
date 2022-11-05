@@ -108,20 +108,17 @@ class UIView : UILayout
 
       local og_size = placement.size
 
-      use drawables = collect<<UIComponent>>( &all )
-        on_prepare_layout
-        (forEach in drawables).on_prepare_layout
-        (forEach in drawables).after_prepare_layout
-        after_prepare_layout
+      prepare_layout
 
+      use components = collect<<UIComponent>>( &all )
         on_update_layout
-        (forEach in drawables).on_update_layout
+        (forEach in components).on_update_layout
 
         update_layout_width( placement.size.x )
         update_layout_height( placement.size.y )
         update_layout_placement( bounds )
 
-        (forEach in drawables).after_update_layout
+        (forEach in components).after_update_layout
         after_update_layout
       endUse
 

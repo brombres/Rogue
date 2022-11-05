@@ -27,14 +27,4 @@ class UILayout : UIComponent
 
     method table( size:XY )->UITableLayout
       return UITableLayout(size)
-
-  METHODS
-    method draw_children
-      # Each UILayout (including UIView) manages drawing all of its descendants down to and including
-      # other UILayout objects but not descending into them. In other words, each UILayout draws its
-      # own descendants.
-      use drawables = collect<<Drawable2D>>
-        (forEach in drawables).draw
-        (forEach in drawables).save_display_state
-      endUse
 endClass

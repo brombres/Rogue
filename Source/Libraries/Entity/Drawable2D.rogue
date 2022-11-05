@@ -1,6 +1,8 @@
 module Entity
 
 ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackProperty >>
+PROPAGATED_ENTITY_PROPERTY<< Drawable2D, alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty, parent_drawable >>
+PROPAGATED_ENTITY_PROPERTY<< Drawable2D, font,      UIFont, UIView.active.default_font, FontProperty, parent_drawable >>
 
 class Drawable2D : Entity
   PROPERTIES
@@ -58,10 +60,10 @@ class Drawable2D : Entity
       endIf
 
     method draw_children
-      # Overridden in UILayout.
+      # Overridden in UIComponent.
       #
-      # Each UILayout (including UIView) manages drawing all of its descendants down to and including
-      # other UILayout objects but not descending into them. In other words, each UILayout draws its
+      # Each UIComponent (including UIView) manages drawing all of its descendants down to and including
+      # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
       # own descendants.
       noAction
 

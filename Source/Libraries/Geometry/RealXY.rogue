@@ -36,6 +36,15 @@ class RealXY( x:Real, y:Real ) [compound]
     method ceiling->RealXY
       return RealXY( x.ceiling, y.ceiling )
 
+    method clamped( low:RealXY, high:RealXY )->RealXY
+      return this.clamped_low(low).clamped_high(high)
+
+    method clamped_high( limit:RealXY )->RealXY
+      return RealXY( this.x.clamped_high(limit.x), this.y.clamped_high(limit.y) )
+
+    method clamped_low( limit:RealXY )->RealXY
+      return RealXY( this.x.clamped_low(limit.x), this.y.clamped_low(limit.y) )
+
     method cross( other:XY )->Real
       return x * other.y - y * other.x
 

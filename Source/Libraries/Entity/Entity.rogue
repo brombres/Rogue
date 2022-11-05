@@ -11,7 +11,9 @@ $include Entity/DirtyRegionTracker
 $include Entity/Drawable2D
 $include Entity/EntityCollector
 $include Entity/Placement2D
+$include Entity/UIBorder
 $include Entity/UIComponent
+$include Entity/UIContent
 $include Entity/UIFiller
 $include Entity/UIFlowLayout
 $include Entity/UIFont
@@ -19,9 +21,12 @@ $include Entity/UIHorizontalLayout
 $include Entity/UILabel
 $include Entity/UILayout
 $include Entity/UIList
+$include Entity/UIScrollView
+$include Entity/UIScrollViewController
 $include Entity/UISpacer
 $include Entity/UIStackLayout
 $include Entity/UITableLayout
+$include Entity/UIText
 $include Entity/UIVerticalLayout
 $include Entity/UIView
 $include Entity/UIWidget
@@ -80,7 +85,7 @@ class Entity : Node<<Entity>>
       #
       # Parents will be placed in the list ahead of children.
       #
-      # Entities that are instanceOf UILayout are collected but are not recursed into
+      # Entities that are instanceOf UIComponent are collected but are not recursed into
       # unless the &all flag is used.
       #
       # USAGE e.g.
@@ -96,16 +101,20 @@ class Entity : Node<<Entity>>
       forEach (child in children)
         if local child = child->(as $EntityType)
           list.add( child )
+          if (all or child not instanceOf UIComponent) child.collect_children<<$EntityType>>( list, &=all )
+        else
+          child.collect_children<<$EntityType>>( list, &=all )
         endIf
-        if (all or child not instanceOf UILayout) child.collect_children<<$EntityType>>( list, &=all )
       endForEach
 
     method collect_children<<$EntityType>>( list:$EntityType[], condition:Function($EntityType)->Logical, &all )
       forEach (child in children)
         if local child = child->(as $EntityType)
           if (condition(child)) list.add( child )
+          if (all or child not instanceOf UIComponent) child.collect_children<<$EntityType>>( list, condition, &=all )
+        else
+          child.collect_children<<$EntityType>>( list, &=all )
         endIf
-        if (all or child not instanceOf UILayout) child.collect_children<<$EntityType>>( list, condition, &=all )
       endForEach
 
     method destroy

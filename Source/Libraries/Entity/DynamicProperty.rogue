@@ -1,26 +1,26 @@
 module Entity
 
-$macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$PropertyType>>
+$macro ENTITY_PROPERTY<<$EntityType,$name,$Type,$default_value,$PropertyType>>
   augment
     METHODS
-      method Entity.$name->$Type
+      method $EntityType.$name->$Type
         return DynamicProperties.$name( this )
 
-      method Entity.$id(has_,$name)->Logical
+      method $EntityType.$id(has_,$name)->Logical
         return DynamicProperties.$id(has_,$name)( this )
 
-      method Entity.$id(set_,$name)( value:$Type )
+      method $EntityType.$id(set_,$name)( value:$Type )
         DynamicProperties.$id(set_,$name)( this, value )
 
-      method DynamicProperties.$name( entity:Entity )->$Type
+      method DynamicProperties.$name( entity:$EntityType )->$Type
         if (entity.properties) return entity.properties.$name
         else                   return $default_value
 
-      method DynamicProperties.$id(has_,$name)( entity:Entity )->Logical
+      method DynamicProperties.$id(has_,$name)( entity:$EntityType )->Logical
         if (entity.properties) return entity.properties.$id(has_,$name)
         else                   return false
 
-      method DynamicProperties.$id(set_,$name)( entity:Entity, value:$Type )
+      method DynamicProperties.$id(set_,$name)( entity:$EntityType, value:$Type )
         if (entity.properties) entity.properties.$id(set_,$name)( value )
         else                   entity.properties = $PropertyType( value )
 
@@ -49,24 +49,28 @@ $macro DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$PropertyType>>
   endClass
 $endMacro
 
-$macro PROPAGATED_DYNAMIC_ENTITY_PROPERTY<<$name,$Type,$default_value,$PropertyType>>
+$macro PROPAGATED_ENTITY_PROPERTY<<$EntityType,$name,$Type,$default_value,$PropertyType,$m_parent>>
   augment
     METHODS
-      method Entity.$name->$Type
+      method $EntityType.$name->$Type
         return DynamicProperties.$name( this )
 
-      method Entity.$id(set_,$name)( value:$Type )
+      method $EntityType.$id(set_,$name)( value:$Type )
         DynamicProperties.$id(set_,$name)( this, value )
 
-      method DynamicProperties.$name( entity:Entity )->$Type
+      method DynamicProperties.$name( entity:$EntityType )->$Type
         if (entity.properties)
           local result = entity.properties.$name
           if (result) return result.value
         endIf
-        if (entity.parent) return entity.parent.$name
-        return $default_value
 
-      method DynamicProperties.$id(set_,$name)( entity:Entity, value:$Type )
+        if local parent = entity.$m_parent
+          return parent.$name
+        else
+          return $default_value
+        endIf
+
+      method DynamicProperties.$id(set_,$name)( entity:$EntityType, value:$Type )
         if (entity.properties) entity.properties.$id(set_,$name)( value )
         else                   entity.properties = $PropertyType( value )
 
