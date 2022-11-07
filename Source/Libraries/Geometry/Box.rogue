@@ -45,20 +45,6 @@ class Box( position:XY, size:XY ) [essential compound]
       local br = top_left.or_larger( bottom_right )
       return Box( tl, br - tl )
 
-    method operator&( lhs:Box?, rhs:Box? )->Box?
-      if (not lhs or not rhs) return null
-      return lhs.value.intersection( rhs.value )
-
-    method operator|( lhs:Box?, rhs:Box? )->Box?
-      # Returns the union of this box with another box.
-      if (not lhs or lhs.value.size.is_zero) return rhs
-      if (not rhs or rhs.value.size.is_zero) return lhs
-
-      local tl = lhs.value.position.min( rhs.value.position )
-      local br = lhs.value.bottom_right.max( rhs.value.bottom_right )
-
-      return Box( tl, br-tl )
-
   METHODS
     method at( anchor:Anchor )->XY
       return position + anchor * size
@@ -208,15 +194,15 @@ class Box( position:XY, size:XY ) [essential compound]
     method operator/( scale:XY )->Box
       return Box( position/scale, size/scale )
 
-    method operator&( rhs:Box? )->Box?
-      return intersection( rhs.value )
+    method operator&( rhs:Box )->Box?
+      return intersection( rhs )
 
-    method operator|( rhs:Box? )->Box?
+    method operator|( rhs:Box )->Box
       # Returns the union of this box with another box.
-      if (not rhs or rhs.value.size.is_zero) return this
+      if (rhs.size.is_zero) return this
 
-      local tl = position.min( rhs.value.position )
-      local br = bottom_right.max( rhs.value.bottom_right )
+      local tl = position.min( rhs.position )
+      local br = bottom_right.max( rhs.bottom_right )
 
       return Box( tl, br-tl )
 
@@ -329,12 +315,14 @@ endClass
 augment Box?
   GLOBAL METHODS
     method operator&( lhs:Box?, rhs:Box? )->Box?
-      if (not lhs or not rhs) return null
-      return lhs.value & rhs
+      if (not lhs) return rhs
+      if (not rhs) return lhs
+      return lhs.value & rhs.value
 
     method operator|( lhs:Box?, rhs:Box? )->Box?
       # Returns the union of this box with another box.
       if (not lhs or lhs.value.size.is_zero) return rhs
+      if (not rhs or rhs.value.size.is_zero) return lhs
       return lhs.value | rhs
 endAugment
 
