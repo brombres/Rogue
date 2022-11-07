@@ -22,4 +22,6 @@ class UIConsoleView : UIView
       UIConsoleViewCanvas.resize( placement.size.x, placement.size.y )
       UIConsoleViewCanvas.fill( '.' )
 
+    method set_clip( @clip )
+      UIConsoleViewCanvas.clip = @clip
 endClass

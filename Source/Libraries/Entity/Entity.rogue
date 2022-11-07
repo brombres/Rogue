@@ -122,6 +122,16 @@ class Entity : Node<<Entity>>
       detach
       on_destroy
 
+    method first_child<<$OfType>>->$OfType
+      forEach (child in children)
+        if local result = child->(as $OfType)
+          return result
+        elseIf local result = child.first_child<<$OfType>>
+          return result
+        endIf
+      endForEach
+      return null
+
     method get( name:String )->Entity
       forEach (child in children)
         if (child.name == name) return child

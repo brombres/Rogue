@@ -85,8 +85,7 @@ class UIView : UILayout
 
       after_resize
 
-    method set_clip( clip_bounds:Box? )
-      @clip = clip_bounds
+    method set_clip( @clip )
 
     method update
       # Must update before layout so that new components created in update() can be

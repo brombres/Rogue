@@ -48,11 +48,13 @@ class Drawable2D : Entity
     method draw
       needs_redraw = false
       if (clip_content)
-        temporarily clip = display_bounds
-          on_draw
-          draw_children
-          after_draw
-        endTemporarily
+        if local clip_bounds = clip & display_bounds
+          temporarily clip = clip_bounds
+            on_draw
+            draw_children
+            after_draw
+          endTemporarily
+        endIf
       else
         on_draw
         draw_children

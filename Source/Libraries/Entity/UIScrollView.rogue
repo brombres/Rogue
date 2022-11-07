@@ -26,7 +26,7 @@ class UIScrollView : UILayout
       return StandardUIScrollViewController( this )
 
     method bottom_offset->Int32
-      # Result will be positive or zero.
+      # Result will be negative or zero.
       return (size.y - content_height).clamped_high(0)
 
     method content_height->Int32
@@ -97,6 +97,11 @@ class UIScrollView : UILayout
 
     method top_offset->Int32
       return 0
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box )
+      forEach (component in subcomponents)
+        component.update_layout_placement( Box(component.position,container.size) )
+      endForEach
 
 endClass
 
