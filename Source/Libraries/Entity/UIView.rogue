@@ -38,12 +38,11 @@ class UIView : UILayout
 
       use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
         dirty_region_tracker.add( forEach in drawables )
+        (forEach in drawables).needs_redraw = false
       endUse
 
       use dirty_regions = dirty_region_tracker
         if (dirty_regions.count)
-          on_draw
-
           dirty_region_tracker.clear
 
           use drawables = collect<<Drawable2D>>
@@ -51,14 +50,14 @@ class UIView : UILayout
 
             forEach (dirty_region in dirty_regions)
               temporarily clip = dirty_region
+                on_draw
                 (forEach in drawables).draw
+                after_draw
               endTemporarily
             endForEach
 
             (forEach in drawables).save_display_state
           endUse
-
-          after_draw
         endIf
       endUse
 

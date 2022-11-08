@@ -30,10 +30,23 @@ class UIScrollView : UILayout
       return (size.y - content_height).clamped_high(0)
 
     method content_height->Int32
-      use components = collect<<UIComponent>>
-        if (components.is_empty) return 0
-        return components.first.size.y
-      endUse
+      if local component = first_child<<UIComponent>>
+        return component.size.y
+      else
+        return 0
+      endIf
+
+    method content_top->Int32
+      if local component = first_child<<UIComponent>>
+        return -component.position.y
+      else
+        return 0
+      endIf
+
+    method set_content_top( offset:Int32 )
+      if local component = first_child<<UIComponent>>
+        component.position = XY( component.position.x, -offset )
+      endIf
 
     method on_prepare_layout
       if (controller) controller.on_prepare_layout

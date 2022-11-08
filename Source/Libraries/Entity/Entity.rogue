@@ -110,10 +110,12 @@ class Entity : Node<<Entity>>
     method collect_children<<$EntityType>>( list:$EntityType[], condition:Function($EntityType)->Logical, &all )
       forEach (child in children)
         if local child = child->(as $EntityType)
-          if (condition(child)) list.add( child )
+          if (condition(child))
+            list.add( child )
+          endIf
           if (all or child not instanceOf UIComponent) child.collect_children<<$EntityType>>( list, condition, &=all )
         else
-          child.collect_children<<$EntityType>>( list, &=all )
+          child.collect_children<<$EntityType>>( list, condition, &=all )
         endIf
       endForEach
 
