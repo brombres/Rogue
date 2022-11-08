@@ -4,6 +4,9 @@ $include Entity/UIConsoleFont
 $include Entity/UIConsoleViewCanvas
 
 class UIConsoleView : UIView
+  PROPERTIES
+    last_update_ms : Int32
+
   METHODS
     method init
       prior.init( Console.size )
@@ -24,4 +27,11 @@ class UIConsoleView : UIView
 
     method set_clip( @clip )
       UIConsoleViewCanvas.clip = @clip
+
+    method update
+      local cur_ms = System.execution_time_ms
+      dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
+      last_update_ms = cur_ms
+
+      prior.update
 endClass

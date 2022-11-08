@@ -11,6 +11,7 @@ class UIView : UILayout
 
     dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
     clip : Box?
+    dt   = 1.0 / 60.0
 
   METHODS
     method init_object

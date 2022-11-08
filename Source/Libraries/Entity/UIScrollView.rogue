@@ -2,7 +2,9 @@ module Entity
 
 class UIScrollView : UILayout
   PROPERTIES
-    controller     : UIScrollViewController
+    controller          : UIScrollViewController
+    content_offset      : RealXY
+    last_content_offset : RealXY
 
   METHODS
     method init
@@ -36,26 +38,19 @@ class UIScrollView : UILayout
         return 0
       endIf
 
-    method content_top->Int32
-      if local component = first_child<<UIComponent>>
-        return -component.position.y
-      else
-        return 0
-      endIf
-
-    method set_content_top( offset:Int32 )
-      if local component = first_child<<UIComponent>>
-        component.position = XY( component.position.x, -offset )
-      endIf
-
-    method on_prepare_layout
-      if (controller) controller.on_prepare_layout
+    method needs_redraw->Logical [override]
+      if (prior.needs_redraw) return true
+      if (last_content_offset != @content_offset) return true
+      return false
 
     method handle( e:PointerEvent )
       if (controller) controller.on( e )
 
     method on( e:ScrollEvent )
       if (controller) controller.on( e )
+
+    method on_prepare_layout
+      if (controller) controller.on_prepare_layout
 
     method on_select( e_press:PointerEvent, e_release:PointerEvent )
       # UIScrollView consumes any original press event in preparation for dragging.
@@ -94,6 +89,9 @@ class UIScrollView : UILayout
     method on_update_layout
       if (controller) controller.on_update_layout
 
+    method save_display_state
+      last_content_offset = @content_offset
+
     method scroll_to( vertical_offset:Int32 )
       scroll_to( XY(0,vertical_offset) )
 
@@ -107,6 +105,14 @@ class UIScrollView : UILayout
     method scroll_to_top
       if (controller) controller.scroll_to_top
       else            position = top_offset
+
+    method set_content_offset( offset:Real )
+      set_content_offset( XY(@content_offset.x, offset) )
+
+    method set_content_offset( @content_offset )
+      if local component = first_child<<UIComponent>>
+        component.position = @content_offset.floor->XY
+      endIf
 
     method top_offset->Int32
       return 0
