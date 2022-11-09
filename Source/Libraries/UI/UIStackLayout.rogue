@@ -1,7 +1,8 @@
 module UI
 
 class UIStackLayout : UILayout
-  METHODS
+  # Base class UIComponent implements stack layout, so this class just formalizes
+  # that inherited functionality as a UILayout.
 endClass
 
 class UIGeneratedStackLayout : UIStackLayout

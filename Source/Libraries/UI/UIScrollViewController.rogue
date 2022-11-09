@@ -1,5 +1,7 @@
 module UI
 
+uses Utility/Timer
+
 class UIScrollViewController
   PROPERTIES
     view     : UIScrollView
@@ -17,7 +19,7 @@ class UIScrollViewController
     method after_update_layout
       noAction
 
-    method content_offset->XY
+    method content_offset->RealXY
       return view.content_offset
 
     method on( e:PointerEvent )
@@ -39,12 +41,12 @@ class UIScrollViewController
       content_offset = new_offset
 
     method scroll_to_bottom
-      content_offset = view.bottom_offset
+      view.content_offset = view.bottom_offset
 
     method scroll_to_top
-      content_offset = view.top_offset
+      view.content_offset = view.top_offset
 
-    method set_content_offset( new_offset:XY )
+    method set_content_offset( new_offset:RealXY )
       view.content_offset = new_offset
 
 endClass
@@ -52,11 +54,11 @@ endClass
 
 class StandardUIScrollViewController : UIScrollViewController
   PROPERTIES
-    velocity : XY
-    decay    : XY
+    velocity : RealXY
+    decay    : RealXY
 
     tracks_bottom          = true
-    scrolling_to           : XY?
+    scrolling_to           : RealXY?
     is_scrolling_to_bottom : Logical
     is_scrolling_to_top    : Logical
 
@@ -69,7 +71,7 @@ class StandardUIScrollViewController : UIScrollViewController
 
     is_pressed  = false
     is_dragging = false
-    drag_time   = Stopwatch()
+    drag_time   = Timer()
     drag_start  : XY
     drag_pos    : XY
     drag_deltas = XY[]
@@ -181,28 +183,32 @@ class StandardUIScrollViewController : UIScrollViewController
       endIf
 
     method on_update
+      local ticks = (UIView.active.dt * 60)->Int32.clamped_low(1)
+      loop (ticks) on_update_tick
+
+    method on_update_tick
       if (is_scrolling_to_bottom)
         local bottom_offset = view.bottom_offset
         local delta = bottom_offset - content_offset.y
-        content_offset = XY( content_offset.x, content_offset.y + delta*0.1 )
+        content_offset = RealXY( content_offset.x, content_offset.y + delta*0.1 )
         if ((bottom_offset - content_offset.y).abs < 1)
-          if (not view.is_modified)
-            content_offset = XY( content_offset.x, bottom_offset )
+          #if (not view.is_modified)
+            content_offset = RealXY( content_offset.x, bottom_offset )
             is_scrolling_to_bottom = false
             tracks_bottom = true
-          endIf
+          #endIf
         endIf
 
       elseIf (is_scrolling_to_top)
         local top_offset = view.top_offset
         local delta = top_offset - content_offset.y
-        content_offset = XY( content_offset.x, content_offset.y + delta*0.1 )
+        content_offset = RealXY( content_offset.x, content_offset.y + delta*0.1 )
         if ((top_offset - content_offset.y).abs < 1)
-          if (not view.is_modified)
-            content_offset = XY( content_offset.x, top_offset )
+          #if (not view.is_modified)
+            content_offset = RealXY( content_offset.x, top_offset )
             is_scrolling_to_top = false
             tracks_bottom = (content_offset.y <= view.bottom_offset)
-          endIf
+          #endIf
         endIf
 
       elseIf (scrolling_to)
@@ -210,11 +216,11 @@ class StandardUIScrollViewController : UIScrollViewController
         local delta = target - content_offset
         content_offset += delta * 0.1
         if ((target - content_offset).abs.max < 1)
-          if (not view.is_modified)
+          #if (not view.is_modified)
             content_offset = target
             scrolling_to = null
             tracks_bottom = (content_offset.y <= view.bottom_offset)
-          endIf
+          #endIf
         endIf
       endIf
 
@@ -238,16 +244,16 @@ class StandardUIScrollViewController : UIScrollViewController
             if (_offset.abs.y < 1)
               content_offset = _offset.xv
             else
-              content_offset = _offset * XY(1,0.8)
-              decay = XY(0,0.5)
+              content_offset = _offset * RealXY(1,0.8)
+              decay = RealXY(0,0.5)
             endIf
           elseIf (_offset.y < bottom_offset)
             local delta = (_offset.y - bottom_offset)
             if (delta.abs < 1)
-              content_offset = XY( _offset.x, bottom_offset )
+              content_offset = RealXY( _offset.x, bottom_offset )
             else
-              content_offset = XY( _offset.x, (bottom_offset + delta * 0.8) )
-              decay = XY(0,0.5)
+              content_offset = RealXY( _offset.x, (bottom_offset + delta * 0.8) )
+              decay = RealXY(0,0.5)
             endIf
           endIf
         endIf
@@ -282,17 +288,19 @@ class StandardUIScrollViewController : UIScrollViewController
 
     method scroll_to( content_offset:XY )
       scrolling_to = content_offset
+      is_scrolling_to_bottom = content_offset.y == view.bottom_offset
+      is_scrolling_to_top    = content_offset.y == view.top_offset
 
     method scroll_to_bottom
       is_scrolling_to_bottom = true
-      view.request_redraw
+      is_scrolling_to_top    = false
 
     method scroll_to_top
       is_scrolling_to_top = true
+      is_scrolling_to_bottom = false
       tracks_bottom = false
-      view.request_redraw
 
-    method set_content_offset( new_offset:XY, clamp:Logical )
+    method set_content_offset( new_offset:RealXY, clamp:Logical )
       if (new_offset == content_offset) return
       if (not allow_overscroll) clamp = true
       if (not clamp_to_bounds) clamp = false
@@ -302,7 +310,6 @@ class StandardUIScrollViewController : UIScrollViewController
       if (clamp) _offset = _offset.clamped_high( XY.zero ).clamped_low( XY(0,bottom_offset) )
       tracks_bottom = (_offset.y <= bottom_offset)
       view.content_offset = _offset
-      view.request_redraw
 
 endClass
 

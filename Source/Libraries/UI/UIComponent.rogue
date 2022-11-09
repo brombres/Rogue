@@ -1,415 +1,42 @@
 module UI
 
-uses Collection/Node
-
-# Make sure the UI_DYNAMIC_PROPERTY macro gets included first
-$include UI/UIDynamicProperties
-
-# The following attribute macros inject appropriate code into UIComponent and UIDynamicProperties.
-# For example, given UI_DYNAMIC_PROPERTY(anchor,...) we can set component.anchor = Anchor.XYZ and
-# fetch component.anchor->Anchor.
-UI_INHERITED_DYNAMIC_PROPERTY<< alignment, Anchor, Anchor.TOP_LEFT, UIAlignmentAttribute >>
-# 'alignment' affects text within this component and subcomponents. Unlike 'anchor',
-# 'alignment' is inherited by child components until a new alignment is set.
-UI_DYNAMIC_PROPERTY<< display_offset, XY, XY.zero, UIDisplayOffsetAttribute >>
-UI_INHERITED_DYNAMIC_PROPERTY<< font, UIFont, UI.current.default_font, UIFontAttribute >>
-UI_FN_DYNAMIC_PROPERTY<< on_resize, Function(UIComponent), UIResizeCallbackAttribute >>
-UI_DYNAMIC_PROPERTY<< weight, RealXY, RealXY(1,1), UIWeightAttribute >>
-
-class UIComponent : Node<<UIComponent>>
-  DEFINITIONS
-    ATTRIBUTE_FIXED_WIDTH           = 1
-    ATTRIBUTE_FIXED_HEIGHT          = 2
-    ATTRIBUTE_SHRINK_TO_FIT_WIDTH   = 4
-    ATTRIBUTE_SHRINK_TO_FIT_HEIGHT  = 8
-    ATTRIBUTE_WIDTH_MASK            = (ATTRIBUTE_FIXED_WIDTH  | ATTRIBUTE_SHRINK_TO_FIT_WIDTH)
-    ATTRIBUTE_HEIGHT_MASK           = (ATTRIBUTE_FIXED_HEIGHT | ATTRIBUTE_SHRINK_TO_FIT_HEIGHT)
-    ATTRIBUTE_SIZE_MASK             = (ATTRIBUTE_WIDTH_MASK   | ATTRIBUTE_HEIGHT_MASK)
-    ATTRIBUTE_DISABLE_INPUT         = (1:<<:4)
-    ATTRIBUTE_DISABLE_CLIP          = (1:<<:5)
-    ATTRIBUTE_HIDDEN                = (1:<<:6)  # not visible, not updated, no events sent
-
-    UI_ATTRIBUTE<< NEEDS_LAYOUT, needs_layout, (1:<<:7)  >>  # needs layout
-    UI_ATTRIBUTE<< IS_DIRTY,     is_dirty,     (1:<<:8)  >>  # needs redraw?
-    UI_ATTRIBUTE<< GHOST,        is_ghost,     (1:<<:9)  >>  # visible, updated & drawn, no events sent
-    UI_ATTRIBUTE<< DEAD,         is_dead,      (1:<<:10) >>  # will automatically be removed from the UI
-
-  PROPERTIES
-    position          : XY
-    size              : XY
-    display_position  : XY
-    z_index           : Int32
-    attributes        : Int32
-    anchor            = Anchor.TOP_LEFT : Anchor
-    properties        : UIDynamicProperty
-    actions           : Action
-
-    last_display_position : XY
-    last_size             : XY
-    last_z_index          : Int32
-
-    fixed_size : XY [faux]
-
+class UIComponent : Drawable2D
   METHODS
-    method init
-      on_init
+    method init_object
+      clip_content = true
 
-    method init( content:UIComponent )
-      add( content )
-      on_init
-
-    method init( size )
-      fixed_size = size
-      on_init
-
-    method on_init
-      noAction
-
-    method after( e:KeyEvent )
-      noAction
-
-    method after( e:PointerEvent )
-      noAction
-
-    method after( e:ScrollEvent )
-      noAction
-
-    method after( e:TextEvent )
-      noAction
-
-    method after_draw
-      noAction
-
-    method after_prepare_layout
-      noAction
-
-    method after_resize
-      noAction
-
-    method after_update
-      noAction
-
-    method after_update_layout
-      noAction
-
-    method bounds->Box
-      return Box( position, size )
-
-      #{
-    method broadcast_message( message:Value )
-      UI.current.broadcast_message( message )
-      }#
-
-    method capture_keyboard_focus->Logical
-      if (UI.current.keyboard_focus and UI.current.keyboard_focus is not this) return false
-      UI.current.keyboard_focus = this
-      return true
-
-    method capture_pointer_focus->Logical
-      if (UI.current.pointer_focus and UI.current.pointer_focus is not this) return false
-      UI.current.pointer_focus = this
-      return true
-
-    method can_split_x( max_width:Int32 )->Logical
+    method can_split_h( max_width:Int32 )->Logical
       return false
 
-    method clip->Box
-      return UI.current.clip.value
-
-    method collect_drawables( list:UIComponent[] )
-      # Collects drawable entities and regular components.
-      if (is_drawable)
-        list.add( this )
-      else
-        (forEach in children).collect_drawables( list )
-      endIf
-
-    method collect_drawable_entities( list:UIComponent[] )
-      # Collects drawable entities but not regular components.
-      if (is_drawable and is_entity)
-        list.add( this )
-      else
-        (forEach in children).collect_drawables( list )
-      endIf
-
-    method collect_drawable_components( list:UIComponent[] )
-      # Collects drawable regular components but not entities
-      if (is_drawable and not is_entity)
-        list.add( this )
-      else
-        (forEach in children).collect_drawable_components( list )
-      endIf
-
-    method contains( e:PointerEvent )->Logical
-      return contains( e.position )
-
-    method contains( pos:XY )->Logical
-      return display_bounds.contains( pos )
-
-    method contains( component:UIComponent )->Logical
-      while (component)
-        if (component is this) return true
-        component .= parent
-      endWhile
-      return false
-
-    method content_position->XY
-      if (parent) return position + parent.content_position + display_offset
-      else        return position + display_offset
-
-    method die
-      hide            # marks this node as dirty so the last display bounds can be repaired
-      is_dead = true  # marks this node as eligible for detaching once the display is repaired
-
-    method discard_dead->UIComponent
-      return discard( $.is_dead and not $.is_dirty )
-
-    method dispatch( e:KeyEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-    method dispatch( e:PointerEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-    method dispatch( e:ScrollEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-    method dispatch( e:TextEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-#{
-    method dispatch_message( message:Value )
-      on_message( message )
-      (forEach in children).dispatch_message( message )
-}#
-
-    method dispatch_on_update_layout
-      on_update_layout
-      (forEach in children).dispatch_on_update_layout
-
-    method dispatch_after_update_layout
-      after_update_layout
-      (forEach in children).dispatch_after_update_layout
-
-    method display_bounds->Box
-      return Box( display_position, size )
-
-    method draw( clip_bounds:Box )
-      if (is_hidden) return
-
-      localize display_bounds
-      local draw_bounds = clip_bounds & display_bounds
-      if (draw_bounds)
-        local draw_clip : Box?
-        if (not is_clip_disabled) draw_clip = draw_bounds
-        temporarily UI.current.clip = draw_clip
-          on_draw
-          local inner_bounds = clip_bounds & to_inner_bounds(display_bounds)
-          if (inner_bounds)
-            draw_subcomponents( inner_bounds.value )
-          endIf
-          after_draw
-        endTemporarily
-      endIf
-
-    method draw_subcomponents( draw_bounds:Box )
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawables( subcomponents )
-        subcomponents.sort( $1.z_index <= $2.z_index )
-        forEach (component in subcomponents)
-          component.draw( draw_bounds )
-        endForEach
+    method draw_children
+      # Each UIComponent (including UIView) manages drawing all of its descendants down to and including
+      # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
+      # own descendants.
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).draw
+        (forEach in drawables).save_display_state
       endUse
 
-    method enable_clip( setting:Logical )
-      if (setting) attributes &= !UIComponent.ATTRIBUTE_DISABLE_CLIP
-      else         attributes |=  UIComponent.ATTRIBUTE_DISABLE_CLIP
-
-    method enable_input( setting:Logical )
-      if (setting) attributes &= !UIComponent.ATTRIBUTE_DISABLE_INPUT
-      else         attributes |=  UIComponent.ATTRIBUTE_DISABLE_INPUT
-
     method expand_to_fill
-      attributes &= !(ATTRIBUTE_WIDTH_MASK|ATTRIBUTE_HEIGHT_MASK)  # turn off fixed and shrink attributes
+      attributes &= !(WIDTH_MASK|HEIGHT_MASK)  # turn off fixed and shrink attributes
 
     method expand_to_fill_height
-      attributes &= !ATTRIBUTE_HEIGHT_MASK  # turn off fixed and shrink attributes
+      attributes &= !HEIGHT_MASK  # turn off fixed and shrink attributes
 
     method expand_to_fill_width
-      attributes &= !ATTRIBUTE_WIDTH_MASK   # turn off fixed and shrink attributes
-
-    method find( pos:XY )->UIComponent
-      # The algorithm looks a little unusual because we want to find the
-      # LAST child that contains 'pos'.
-
-      if (next)
-        # Recursively find the last sibling that contains 'pos'
-        local result = next.find( pos )
-        if (result) return result
-      endIf
-
-      if (not is_modifier and not contains(pos)) return null # Don't bother checking children
-
-      if (first_child)
-        local result = first_child.find( pos )
-        if (result) return result
-      endIf
-
-      if (count == 0 and contains(pos)) return this
-      return null
-
-    method first_drawable_child->UIComponent
-      forEach (child in children)
-        if (child.is_drawable) return child
-        local result = child.first_drawable_child
-        if (result) return result
-      endForEach
-      return null
-
-    method handle( e:KeyEvent )
-      if (is_hidden or is_input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle( e:PointerEvent )
-      if (is_hidden or is_input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle( e:ScrollEvent )
-      if (is_hidden or is_input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle( e:TextEvent )
-      if (is_hidden or is_input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle_resize
-      on_resize
-      UIDynamicProperties.on_resize( this )
-      (forEach in children).handle_resize
-      after_resize
-
-    method has_keyboard_focus->Logical
-      return (UI.current.keyboard_focus is this)
-
-    method has_pointer_focus->Logical
-      return (UI.current.pointer_focus is this)
-
-    method height->Int32
-      return this.size.y
-
-    method hide
-      is_dirty = true
-      attributes |= ATTRIBUTE_HIDDEN
-
-    method inner_display_bounds->Box
-      return to_inner_bounds( display_bounds )
+      attributes &= !WIDTH_MASK   # turn off fixed and shrink attributes
 
     method is_br->Logical
       return false
 
-    method is_drawable->Logical
-      return true
-
-    method is_entity->Logical
-      return false
-
     method is_expand_to_fill_height->Logical
-      return not (@attributes & ATTRIBUTE_HEIGHT_MASK)
+      return ((attributes & Entity.HEIGHT_MASK) == 0)
 
     method is_expand_to_fill_width->Logical
-      return not (@attributes & ATTRIBUTE_WIDTH_MASK)
+      return ((attributes & Entity.WIDTH_MASK) == 0)
 
-    method is_fixed_height->Logical
-      return (attributes & ATTRIBUTE_FIXED_HEIGHT)
-
-    method is_fixed_width->Logical
-      return (attributes & ATTRIBUTE_FIXED_WIDTH)
-
-    method is_clip_disabled->Logical
-      if (this.attributes & UIComponent.ATTRIBUTE_DISABLE_CLIP) return true
-      if (parent) return parent.is_clip_disabled
-      return false
-
-    method is_hidden->Logical
-      return (@attributes & ATTRIBUTE_HIDDEN)?
-
-    method is_input_enabled->Logical
-      return not (this.attributes & UIComponent.ATTRIBUTE_DISABLE_INPUT)
-
-    method is_input_disabled->Logical
-      return (this.attributes & UIComponent.ATTRIBUTE_DISABLE_INPUT)
-
-    method is_modifier->Logical
+    method is_ui_component->Logical
       return true
-
-    method is_shrink_to_fit_height->Logical
-      return (@attributes & ATTRIBUTE_SHRINK_TO_FIT_HEIGHT)?
-
-    method is_shrink_to_fit_width->Logical
-      return (@attributes & ATTRIBUTE_SHRINK_TO_FIT_WIDTH)?
-
-    method is_visible->Logical
-      return not (@attributes & ATTRIBUTE_HIDDEN)?
-
-    method content_offset->XY
-      if (first_child) return first_child.display_offset
-      else             return XY.zero
-
-    method prepare_layout
-      local og_size = size
-
-      on_prepare_layout
-      (forEach in children).prepare_layout
-      after_prepare_layout
-
-      if (size != og_size) is_modified = true
 
     method measure_content_width( subcomponents:UIComponent[] )->Int32?
       local result : Int32?
@@ -431,68 +58,31 @@ class UIComponent : Node<<UIComponent>>
       endForEach
       return result
 
-    method needs_redraw->Logical
-      return (is_dirty or display_position != last_display_position or size != last_size or z_index != last_z_index)
+    method measure_height( container_height:Int32? )->Int32?
+      if (is_fixed_height) return placement.size.y
+      if (is_expand_to_fill_height) return container_height
 
-    method needs_redraw( origin:XY, callback:Function(Box) )->Logical
-      origin += position + display_offset
-      display_position = Box( origin, size ).relative_to( anchor ).position
-
-      local any_dirty = false
-
-      if (needs_redraw)
-        any_dirty = true
-        if (callback)
-          if (not last_size.is_zero) callback( Box(last_display_position,last_size) )
-          if (not size.is_zero and not is_hidden) callback( Box(display_position,size) )
-        endIf
-      endIf
-
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawables( subcomponents )
-        forEach (component in subcomponents)
-          if (component.needs_redraw(origin,callback))
-            any_dirty = true
-          endIf
-        endForEach
+      # Shrink to fit content height
+      local result : Int32?
+      use subcomponents = collect<<UIComponent>>
+        result = measure_content_height( subcomponents )
       endUse
-      return any_dirty
 
-    method on( e:KeyEvent )
-      noAction
+      if (result) return result.value
+      return container_height
 
-    method on( e:PointerEvent )
-      noAction
+    method measure_width( container_width:Int32? )->Int32?
+      if (is_fixed_width) return placement.size.x
+      if (is_expand_to_fill_width) return container_width
 
-    method on( e:ScrollEvent )
-      noAction
+      # Shrink to fit content width
+      local result : Int32?
+      use subcomponents = collect<<UIComponent>>
+        result = measure_content_width( subcomponents )
+      endUse
 
-    method on( e:TextEvent )
-      noAction
-
-    method on_message( message:Value )
-      noAction
-
-    method on_update
-      noAction
-
-    method on_update_layout
-      noAction
-
-    method on_draw
-      noAction
-
-    method on_prepare_layout
-      noAction
-
-    method on_release_keyboard_focus
-      noAction
-
-    method on_release_pointer_focus
-      noAction
-
-    method on_resize
-      noAction
+      if (result) return result.value
+      return container_width
 
     method operator+( rhs:UIComponent )->UIComponent
       return UIGeneratedHorizontalLayout( this ).[ add(rhs) ]
@@ -503,181 +93,66 @@ class UIComponent : Node<<UIComponent>>
     method operator|( rhs:UIComponent )->UIComponent
       return UIGeneratedStackLayout( this ).[ add(rhs) ]
 
-    method release_keyboard_focus
-      if (UI.current.keyboard_focus is this)
-        UI.current.keyboard_focus = null
-        on_release_keyboard_focus
-      endIf
+    method prepare_layout
+      local og_size = size
 
-    method release_pointer_focus
-      if (UI.current.pointer_focus is this)
-        UI.current.pointer_focus = null
-        on_release_pointer_focus
-      endIf
+      on_prepare_layout
+      use components = collect<<UIComponent>>
+        (forEach in components).prepare_layout
+      endUse
+      after_prepare_layout
 
-    method request_redraw
-      is_dirty = true
-
-    method request_layout
-      if (parent) parent.request_layout
-      else        needs_layout = true
-
-    method save_display_state
-      last_display_position = display_position
-      last_size = size
-      last_z_index = z_index
-      is_dirty = false
-
-    method set_content_offset( content_offset:XY )
-      if (first_child) first_child.display_offset = content_offset
-
-    method set_default_height( h:Int32 )
-      if (not is_fixed_height) height = h
-
-    method set_default_size( new_default_size:XY )
-      default_width  = new_default_size.x
-      default_height = new_default_size.y
-
-    method set_default_width( w:Int32 )
-      if (not is_fixed_width) width = w
-
-    method set_fixed_height( h:Int32 )
-      attributes = (attributes & !ATTRIBUTE_HEIGHT_MASK) | ATTRIBUTE_FIXED_HEIGHT
-      size = XY( size.x, h )
-
-    method set_fixed_size( new_fixed_size:XY )
-      attributes = (attributes & !ATTRIBUTE_SIZE_MASK) | ATTRIBUTE_FIXED_WIDTH | ATTRIBUTE_FIXED_HEIGHT
-      size = new_fixed_size
-
-    method set_fixed_width( w:Int32 )
-      attributes = (attributes & !ATTRIBUTE_WIDTH_MASK) | ATTRIBUTE_FIXED_WIDTH
-      size = XY( w, size.y )
-
-    method set_height( h:Int32 )
-      if (h == size.y) return
-      size = XY( size.x, h )
-
-    method set_weight( w:Real )
-      UIDynamicProperties.set_weight( this, RealXY(w) )
-
-    method set_width( w:Int32 )
-      if (w == size.x) return
-      size = XY( w, size.y )
-
-    method show
-      is_dirty = true
-      attributes &= !ATTRIBUTE_HIDDEN
+      if (size != og_size) is_modified = true
 
     method shrink_to_fit
       shrink_to_fit_width
       shrink_to_fit_height
 
     method shrink_to_fit_height
-      attributes = (attributes & !ATTRIBUTE_HEIGHT_MASK) | ATTRIBUTE_SHRINK_TO_FIT_HEIGHT
+      attributes = (attributes & !HEIGHT_MASK) | SHRINK_TO_FIT_HEIGHT
 
     method shrink_to_fit_width
-      attributes = (attributes & !ATTRIBUTE_WIDTH_MASK) | ATTRIBUTE_SHRINK_TO_FIT_WIDTH
+      attributes = (attributes & !WIDTH_MASK) | SHRINK_TO_FIT_WIDTH
 
     method split_after( i:Int32 )->UIComponent
       return null
 
-    method split_x( max_width=null:Int32? )->UIComponent
-      return null
-
     method text_content->String
+      forEach (child in children)
+        if local component = child->(as UIComponent)
+          local text = component.text_content
+          if (text) return text
+        endIf
+      endForEach
+
       return null
 
-    method to_inner_bounds( bounds:Box )->Box
-      # Transforms the given bounds (which may be local bounds or display bounds)
-      # into inner bounds. Usually there is no change but borders and frames usually
-      # crop the box.
-      return bounds
-
-    method to_outer_bounds( bounds:Box )->Box
-      # Transforms inner bounds into outer bounds. Default approach uses to_inner_bounds
-      # and calculates the inverse, so in most cases only to_inner_bounds() needs
-      # to be overridden.
-      local shrunk = to_inner_bounds(Box(10000,10000))
-      return Box( bounds.position-shrunk.position, bounds.size+(XY(10000,10000)-shrunk.size) )
-
-    method update
-      on_update
-      if (actions) actions .= update
-      update_subcomponents
-      after_update
-
-    method update_layout( new_bounds:Box )
-      # Only called on a top-level UIComponent
-      needs_layout = false
-      prepare_layout
-      dispatch_on_update_layout
-      update_layout_width( new_bounds.size.x )
-      update_layout_height( new_bounds.size.y )
-      update_layout_placement( new_bounds )
-      dispatch_after_update_layout
-
-    method update_layout_placement( container:Box )
-      local anchor = this.anchor
-      position = Box(size).positioned_within( container, anchor ).position
-      update_subcomponent_placement( to_inner_bounds(Box(size)) )
-
-    method update_layout_width( container_width:Int32 )
-      width = which{ measure_width(container_width) || container_width }
-
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable_components( subcomponents )
-        update_subcomponent_widths( subcomponents, to_inner_bounds(Box(size)).size.x )
-      endUse
-
-    method measure_width( container_width:Int32? )->Int32?
-      if (is_fixed_width) return size.x
-      if (is_expand_to_fill_width) return container_width
-
-      # Shrink to fit content width
-      local result : Int32?
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable_components( subcomponents )
-        result = measure_content_width( subcomponents )
-      endUse
-
-      if (result)
-        return to_outer_bounds( Box(0,0,result.value,0) ).size.x
-      endIf
-      return container_width
-
-    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
-      (forEach in subcomponents).update_layout_width( container_width )
+    method split_h( max_width=null:Int32? )->UIComponent
+      return null
 
     method update_layout_height( container_height:Int32 )
       height = which{ measure_height(container_height) || container_height }
 
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable_components( subcomponents )
-        update_subcomponent_heights( subcomponents, to_inner_bounds(Box(size)).size.y )
+      use subcomponents = collect<<UIComponent>>
+        update_subcomponent_heights( subcomponents, placement.size.y )
       endUse
 
-    method measure_height( container_height:Int32? )->Int32?
-      if (is_fixed_height) return size.y
-      if (is_expand_to_fill_height) return container_height
+    method update_layout_placement( container:Box )
+      position = Box(placement.size).positioned_within( container, placement.anchor ).position
+      update_subcomponent_placement( Box(placement.size) )
 
-      # Shrink to fit content height
-      local result : Int32?
-      use subcomponents = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable_components( subcomponents )
-        result = measure_content_height( subcomponents )
+    method update_layout_width( container_width:Int32 )
+      width = which{ measure_width(container_width) || container_width }
+
+      use subcomponents = collect<<UIComponent>>
+        update_subcomponent_widths( subcomponents, placement.size.x )
       endUse
-
-      if (result)
-        return to_outer_bounds( Box(0,0,0,result.value) ).size.y
-      endIf
-      return container_height
 
     method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
       (forEach in subcomponents).update_layout_height( container_height )
 
     method update_subcomponent_placement( container:Box )
-      use list = WorkList<<UIComponent>>
-        (forEach in children).collect_drawable_components( list )
+      use list = collect<<UIComponent>>
         update_subcomponent_placement( list, container )
       endUse
 
@@ -686,26 +161,9 @@ class UIComponent : Node<<UIComponent>>
         component.update_layout_placement( container )
       endForEach
 
-    method update_subcomponents
-      (forEach in children).update
+    method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
+      (forEach in subcomponents).update_layout_width( container_width )
 
-    method width->Int32
-      return this.size.x
-
-      #{
-    method _description->Value
-      local result = @{ name:type_name.after_any(':') }
-      _extended_description( result )
-      if (first_child)
-        local subcomponents = result.ensure_list( "children" )
-        forEach (child in children) subcomponents.add( child._description )
-      endIf
-      return result
-
-    method _extended_description( table:Value )
-      local bounds = display_bounds
-      table//bounds = @[ bounds.x, bounds.y, bounds.width, bounds.height ]
-      }#
-
+    method weight->RealXY
+      return XY(1.0,1.0) #FIXME
 endClass
-

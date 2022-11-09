@@ -1,4 +1,4 @@
-module Entity
+module UI
 
 class Placement2D [compound]
   PROPERTIES

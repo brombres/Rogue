@@ -2,7 +2,9 @@ module UI
 
 class UIScrollView : UILayout
   PROPERTIES
-    controller     : UIScrollViewController
+    controller          : UIScrollViewController
+    content_offset      : RealXY
+    last_content_offset : RealXY
 
   METHODS
     method init
@@ -26,22 +28,29 @@ class UIScrollView : UILayout
       return StandardUIScrollViewController( this )
 
     method bottom_offset->Int32
-      # Result will be positive or zero.
+      # Result will be negative or zero.
       return (size.y - content_height).clamped_high(0)
 
     method content_height->Int32
-      local first = first_drawable_child
-      if (not first) return 0
-      return first.size.y
+      if local component = first_child<<UIComponent>>
+        return component.size.y
+      else
+        return 0
+      endIf
 
-    method on_prepare_layout
-      if (controller) controller.on_prepare_layout
+    method needs_redraw->Logical [override]
+      if (prior.needs_redraw) return true
+      if (last_content_offset != @content_offset) return true
+      return false
 
     method handle( e:PointerEvent )
       if (controller) controller.on( e )
 
     method on( e:ScrollEvent )
       if (controller) controller.on( e )
+
+    method on_prepare_layout
+      if (controller) controller.on_prepare_layout
 
     method on_select( e_press:PointerEvent, e_release:PointerEvent )
       # UIScrollView consumes any original press event in preparation for dragging.
@@ -80,6 +89,9 @@ class UIScrollView : UILayout
     method on_update_layout
       if (controller) controller.on_update_layout
 
+    method save_display_state
+      last_content_offset = @content_offset
+
     method scroll_to( vertical_offset:Int32 )
       scroll_to( XY(0,vertical_offset) )
 
@@ -88,14 +100,27 @@ class UIScrollView : UILayout
 
     method scroll_to_bottom
       if (controller) controller.scroll_to_bottom
-      else            content_offset = bottom_offset
+      else            position = bottom_offset
 
     method scroll_to_top
       if (controller) controller.scroll_to_top
-      else            content_offset = top_offset
+      else            position = top_offset
+
+    method set_content_offset( offset:Real )
+      set_content_offset( XY(@content_offset.x, offset) )
+
+    method set_content_offset( @content_offset )
+      if local component = first_child<<UIComponent>>
+        component.position = @content_offset.floor->XY
+      endIf
 
     method top_offset->Int32
       return 0
+
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box )
+      forEach (component in subcomponents)
+        component.update_layout_placement( Box(component.position,container.size) )
+      endForEach
 
 endClass
 

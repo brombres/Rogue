@@ -1,36 +1,49 @@
 module UI
 
 uses UI [export]
-uses Console/TextCanvas
 
-class ConsoleUI : UI
+$include UI/UIConsoleFont
+$include UI/UIConsoleCanvas
+
+class UIConsoleView : UIView
   GLOBAL PROPERTIES
-    bold_font      : ConsoleUIFont
-    inverse_font   : ConsoleUIFont
-    underline_font : ConsoleUIFont
+    #{
+    bold_font      : UIConsoleFont
+    inverse_font   : UIConsoleFont
+    underline_font : UIConsoleFont
+    }#
 
   PROPERTIES
+    last_update_ms : Int32
     mouse_position : XY?
     button_pressed = Dim<<Logical>>(2)
     is_running     : Logical
 
   METHODS
     method init
-      prior.init
+      prior.init( Console.size )
+
+    method init( size:XY )
+      prior.init( size )
+
+      #{
+    method init_object
       if (not bold_font)
         bold_font = default_font.cloned.[ bold=true ]
         inverse_font = default_font.cloned.[ inverse=true ]
         underline_font = default_font.cloned.[ underline=true ]
       endIf
+      }#
 
-    method default_font->ConsoleUIFont
-      return ConsoleUIFont
+    method default_font->UIConsoleFont
+      return UIConsoleFont
 
     method draw
       prior.draw
-      ConsoleUICanvas.display( bounds.position )
-      Console.set_cursor( 0, bounds.y2 )
+      UIConsoleCanvas.display(0,0)
+      #Console.set_cursor( 0, bounds.y2 )
 
+      #{
     method handle( e:PointerEvent )
       if (mouse_position.exists) e.delta = e.position - mouse_position.value
       mouse_position = e.position
@@ -42,12 +55,20 @@ class ConsoleUI : UI
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
       handle( PointerEvent(type,pos,XY(0,0),index) )
+      }#
 
+    method on_draw [override]
+      UIConsoleCanvas.resize( placement.size.x, placement.size.y )
+      UIConsoleCanvas.fill( '.' )
+
+      #{
     method on_resize
       Console.clear
-      ConsoleUICanvas.resize( UI.size.x, UI.size.y )
+      UIConsoleCanvas.resize( placement.size.x, placement.size.y )
       prior.on_resize
+      }#
 
+      #{
     method on_update
       loop 512
         if (Console.immediate_mode and Console.has_another_event)
@@ -96,7 +117,9 @@ class ConsoleUI : UI
           escapeLoop
         endIf
       endLoop
+      }#
 
+      #{
     method run
       System.sleep(0.2)  # helps prevent initial screen corruption
       Console.immediate_mode = true
@@ -123,75 +146,22 @@ class ConsoleUI : UI
         Console.clear
         println error
       endTry
+      }#
 
+      #{
     method send_release_event( index:Int32, event:ConsoleEvent )
       if (not button_pressed[index]) return
       button_pressed[index] = false
       handle( PointerEvent.RELEASE, index, event )
+      }#
 
     method set_clip( @clip )
-      if (clip) ConsoleUICanvas.clip = clip.value
+      UIConsoleCanvas.clip = @clip
+
+    method update
+      local cur_ms = System.execution_time_ms
+      dt = ((cur_ms - last_update_ms) / 1000.0).clamped_high(1.0)
+      last_update_ms = cur_ms
+
+      prior.update
 endClass
-
-class ConsoleUICanvas : TextCanvas [singleton]
-  METHODS
-    method init
-      prior.init( Console.width, Console.height )
-endClass
-
-
-class ConsoleUIInverseFill : UIComponent
-  METHODS
-    method on_draw
-      ConsoleUICanvas.style.inverse
-      ConsoleUICanvas.fill( display_bounds, ' ' )
-      ConsoleUICanvas.style.inverse_off
-endClass
-
-
-class ConsoleUIFrame : UIBorder
-  PROPERTIES
-    color    : Int32?
-    bg_color : Int32?
-
-  METHODS
-    method init_object
-      padding = 1
-
-    method on_draw
-      if (color)    ConsoleUICanvas.style.fg( color.value )
-      if (bg_color) ConsoleUICanvas.style.bg( bg_color.value )
-      ConsoleUICanvas.fill( display_bounds, "\[250C]\[2500]\[2510]\[2502] \[2502]\[2514]\[2500]\[2518]" )
-      if (color)    ConsoleUICanvas.style.fg_default
-      if (bg_color) ConsoleUICanvas.style.bg_default
-endClass
-
-
-class ConsoleUITitleFrame : ConsoleUIFrame
-  PROPERTIES
-    title   : UIComponent
-    content : UIComponent
-
-  METHODS
-    method init( content )
-      on_init
-
-    method init( title, content )
-      on_init
-
-    method init( title:String, content=null:UIComponent )
-      init( UILabel(title).[anchor=Anchor.CENTER,font=ConsoleUI.inverse_font], content )
-
-    method on_prepare_layout
-      if (count) return
-
-      local header = ConsoleUIInverseFill().[ fixed_height=1 ]
-      if (title) header.add( title )
-
-      local vbox = UILayout.v
-      vbox.add( header )
-      if (content) vbox.add( content )
-      else         vbox.add( UIFiller() )
-      add( vbox )
-endClass
-

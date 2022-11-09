@@ -1,0 +1,54 @@
+module UI
+
+class UIConsoleFont : UIFont [singleton]
+  PROPERTIES
+    is_bold      : Logical
+    is_inverse   : Logical
+    is_underline : Logical
+    color        : Int32?
+    bg_color     : Int32?
+
+  METHODS
+    method init
+      prior.init( "UIConsoleFont" )
+
+    method cloned->UIConsoleFont
+      return UIConsoleFont().[
+        bold      = is_bold
+        inverse   = is_inverse
+        underline = is_underline
+        color     = color
+        bg_color  = bg_color
+      ]
+
+    method draw( text:String, position:XY ) [override]
+      UIConsoleCanvas.set_cursor( position )
+      if (is_bold)      UIConsoleCanvas.style.bold
+      if (is_inverse)   UIConsoleCanvas.style.inverse
+      if (is_underline) UIConsoleCanvas.style.underline
+      if (color)    UIConsoleCanvas.style.fg( color.value )
+      if (bg_color) UIConsoleCanvas.style.bg( bg_color.value )
+      UIConsoleCanvas.print text
+      if (color)    UIConsoleCanvas.style.fg_default
+      if (bg_color) UIConsoleCanvas.style.bg_default
+      if (is_bold)      UIConsoleCanvas.style.bold_off
+      if (is_inverse)   UIConsoleCanvas.style.inverse_off
+      if (is_underline) UIConsoleCanvas.style.underline_off
+
+    method height->Int32
+      return 1
+
+    method measure( ch:Character )->RealXY
+      which (ch)
+        case '\n': return XY(0,1)
+        case '\t': return XY(2,1)
+        others
+          if (ch < 32) return XY.zero
+          else         return XY(1,1)
+      endWhich
+
+    method set_bold( is_bold )
+    method set_inverse( is_inverse )
+    method set_underline( is_underline )
+endClass
+

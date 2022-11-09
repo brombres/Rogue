@@ -1,7 +1,0 @@
-module Entity
-
-uses Console/TextCanvas
-
-class UIConsoleViewCanvas : TextCanvas [singleton]
-endClass
-
