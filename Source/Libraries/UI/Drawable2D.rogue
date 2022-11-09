@@ -2,7 +2,7 @@ module UI
 
 ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackProperty >>
 PROPAGATED_ENTITY_PROPERTY<< Drawable2D, alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty, parent_drawable >>
-PROPAGATED_ENTITY_PROPERTY<< Drawable2D, font,      UIFont, UIView.active.default_font, FontProperty, parent_drawable >>
+PROPAGATED_ENTITY_PROPERTY<< Drawable2D, font,      UIFont, UI.active.default_font, FontProperty, parent_drawable >>
 
 class Drawable2D : Entity
   PROPERTIES
@@ -24,20 +24,14 @@ class Drawable2D : Entity
     method after_draw
       noAction
 
-    method after_prepare_layout
-      noAction
-
     method after_resize
-      noAction
-
-    method after_update_layout
       noAction
 
     method bounds->Box
       return Box( position, placement.size )
 
     method clip->Box?
-      return UIView.active.clip
+      return UI.active.clip
 
     method display_bounds->Box
       return Box( placement.display_position, placement.size )
@@ -64,7 +58,7 @@ class Drawable2D : Entity
     method draw_children
       # Overridden in UIComponent.
       #
-      # Each UIComponent (including UIView) manages drawing all of its descendants down to and including
+      # Each UIComponent (including UI) manages drawing all of its descendants down to and including
       # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
       # own descendants.
       noAction
@@ -115,7 +109,7 @@ class Drawable2D : Entity
       placement.size = bounds.size
 
     method set_clip( clip_bounds:Box? )
-      UIView.active.clip = clip_bounds
+      UI.active.clip = clip_bounds
 
     method set_draw_order( new_draw_order:Int32 )
       if (new_draw_order != @draw_order)

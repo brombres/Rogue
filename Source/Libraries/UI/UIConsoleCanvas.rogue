@@ -1,7 +1,0 @@
-module UI
-
-uses Console/TextCanvas
-
-class UIConsoleCanvas : TextCanvas [singleton]
-endClass
-

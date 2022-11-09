@@ -183,7 +183,7 @@ class StandardUIScrollViewController : UIScrollViewController
       endIf
 
     method on_update
-      local ticks = (UIView.active.dt * 60)->Int32.clamped_low(1)
+      local ticks = (UI.active.dt * 60)->Int32.clamped_low(1)
       loop (ticks) on_update_tick
 
     method on_update_tick

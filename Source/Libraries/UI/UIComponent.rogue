@@ -5,11 +5,29 @@ class UIComponent : Drawable2D
     method init_object
       clip_content = true
 
+    method after( e:KeyEvent )
+      noAction
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after( e:ScrollEvent )
+      noAction
+
+    method after( e:TextEvent )
+      noAction
+
+    method after_prepare_layout
+      noAction
+
+    method after_update_layout
+      noAction
+
     method can_split_h( max_width:Int32 )->Logical
       return false
 
     method draw_children
-      # Each UIComponent (including UIView) manages drawing all of its descendants down to and including
+      # Each UIComponent (including UI) manages drawing all of its descendants down to and including
       # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
       # own descendants.
       use drawables = collect<<Drawable2D>>

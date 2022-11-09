@@ -34,6 +34,131 @@ $include UI/UIStackLayout
 $include UI/UITableLayout
 $include UI/UIText
 $include UI/UIVerticalLayout
-$include UI/UIView
 $include UI/UIWidget
 
+class UI : UILayout
+  GLOBAL PROPERTIES
+    active : UI
+
+  PROPERTIES
+    default_font : UIFont
+
+    dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
+    clip                 : Box?
+    dt                   = 1.0 / 60.0
+
+  METHODS
+    method init_object
+      active = this
+
+    method activate
+      active = this
+
+    method clip->Box?
+      return @clip
+
+    method default_font->UIFont
+      if (@default_font) return @default_font
+      Console.error.println "[UI] No .default_font configured."
+      return null
+
+    method dirty_region_tracker->DirtyRegionTracker
+      if (@dirty_region_tracker) return @dirty_region_tracker
+      dirty_region_tracker = SimpleDirtyRegionTracker()
+      return @dirty_region_tracker
+
+    method draw
+      activate
+      update_display_state
+
+      use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
+        dirty_region_tracker.add( forEach in drawables )
+        (forEach in drawables).needs_redraw = false
+      endUse
+
+      use dirty_regions = dirty_region_tracker
+        if (dirty_regions.count)
+          dirty_region_tracker.clear
+
+          use drawables = collect<<Drawable2D>>
+            drawables.sort( $1.draw_order < $2.draw_order )
+
+            forEach (dirty_region in dirty_regions)
+              temporarily clip = dirty_region
+                on_draw
+                (forEach in drawables).draw
+                after_draw
+              endTemporarily
+            endForEach
+
+            (forEach in drawables).save_display_state
+          endUse
+        endIf
+      endUse
+
+    method request_redraw( bounds:Box )
+      dirty_region_tracker.add( bounds )
+
+    method set_bounds( value:Box )
+      localize bounds
+      if (value == bounds) return
+
+      dirty_region_tracker.add( bounds )
+      prior.set_bounds( value )
+      dirty_region_tracker.add( value )
+
+      needs_layout = true
+
+      on_resize
+
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).on_resize
+        DynamicProperties.on_resize( forEach in drawables )
+        (forEach in drawables).after_resize
+      endUse
+
+      after_resize
+
+    method set_clip( @clip )
+
+    method update
+      # Must update before layout so that new components created in update() can be
+      # measured in update_layout()
+      activate
+      prior.update
+      update_layout
+
+    method update_display_state
+      prior.update_display_state
+
+      use drawables = collect<<Drawable2D>>( &all )
+        (forEach in drawables).update_display_state
+      endUse
+
+    method update_layout
+      activate
+      needs_layout = false
+
+      local og_size = placement.size
+
+      prepare_layout
+
+      use components = collect<<UIComponent>>( &all )
+        on_update_layout
+        (forEach in components).on_update_layout
+
+        update_layout_width( placement.size.x )
+        update_layout_height( placement.size.y )
+        update_layout_placement( bounds )
+
+        (forEach in components).after_update_layout
+        after_update_layout
+      endUse
+
+      if (placement.size != og_size) request_redraw
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+      update_layout
+
+endClass
