@@ -3,6 +3,7 @@ module UI
 ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackProperty >>
 PROPAGATED_ENTITY_PROPERTY<< Drawable2D, alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty, parent_drawable >>
 PROPAGATED_ENTITY_PROPERTY<< Drawable2D, font,      UIFont, UI.active.default_font, FontProperty, parent_drawable >>
+ENTITY_PROPERTY<< Drawable2D, weight, RealXY, RealXY(1,1), WeightProperty >>
 
 class Drawable2D : Entity
   PROPERTIES

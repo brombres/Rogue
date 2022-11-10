@@ -197,6 +197,4 @@ class UIComponent : Drawable2D
     method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
       (forEach in subcomponents).update_layout_width( container_width )
 
-    method weight->RealXY
-      return XY(1.0,1.0) #FIXME
 endClass

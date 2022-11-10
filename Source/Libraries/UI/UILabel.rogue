@@ -10,7 +10,7 @@ class UILabel : UIComponent
       this.alignment = alignment
 
     method init( text, font:UIFont, alignment=Anchor.CENTER:Anchor )
-      #set_font( font ) #FIXME
+      set_font( font )
       prior.init
       this.alignment = alignment
 
