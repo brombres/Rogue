@@ -33,6 +33,16 @@ class Drawable2D : Entity
     method clip->Box?
       return UI.active.clip
 
+    method contains( drawable:Drawable2D )->Logical
+      while (drawable)
+        if (drawable is this) return true
+        drawable .= parent
+      endWhile
+      return false
+
+    method contains( pos:XY )->Logical
+      return display_bounds.contains( pos )
+
     method display_bounds->Box
       return Box( placement.display_position, placement.size )
 
@@ -62,6 +72,17 @@ class Drawable2D : Entity
       # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
       # own descendants.
       noAction
+
+    method find( pos:XY )->Drawable2D
+      # Find the last child that contains 'pos'.
+      use drawables = collect<<Drawable2D>>
+        forEach (drawable in drawables step -1)
+          if (drawable.contains(pos)) return drawable
+        endForEach
+      endUse
+
+      if (this.contains(pos)) return this
+      return null
 
     method needs_redraw->Logical [override]
       if (prior.needs_redraw) return true

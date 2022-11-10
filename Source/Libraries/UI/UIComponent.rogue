@@ -69,7 +69,7 @@ class UIComponent : Drawable2D
       attributes &= !WIDTH_MASK   # turn off fixed and shrink attributes
 
     method handle( e:KeyEvent )
-      if (is_hidden or input_disabled) return
+      if (hidden or input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -82,7 +82,7 @@ class UIComponent : Drawable2D
       after( e )
 
     method handle( e:PointerEvent )
-      if (is_hidden or input_disabled) return
+      if (hidden or input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -95,7 +95,7 @@ class UIComponent : Drawable2D
       after( e )
 
     method handle( e:ScrollEvent )
-      if (is_hidden or input_disabled) return
+      if (hidden or input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -108,7 +108,7 @@ class UIComponent : Drawable2D
       after( e )
 
     method handle( e:TextEvent )
-      if (is_hidden or input_disabled) return
+      if (hidden or input_disabled) return
 
       on( e )
       if (e.is_consumed) return
@@ -119,6 +119,7 @@ class UIComponent : Drawable2D
       endIf
 
       after( e )
+
     method is_br->Logical
       return false
 
@@ -246,6 +247,33 @@ class UIComponent : Drawable2D
 
     method split_h( max_width=null:Int32? )->UIComponent
       return null
+
+    method update_layout
+      # Normally called on the top-level UI but can also be called on a nested component
+      # such as a UIScrollView.
+      needs_layout = false
+
+      local og_size = placement.size
+
+      prepare_layout
+
+      use components = collect<<UIComponent>>( &all )
+        on_update_layout
+        (forEach in components).on_update_layout
+
+        update_layout_width( placement.size.x )
+        update_layout_height( placement.size.y )
+        update_layout_placement( bounds )
+
+        (forEach in components).after_update_layout
+        after_update_layout
+      endUse
+
+      if (placement.size != og_size) request_redraw
+
+    method update_layout( new_bounds:Box )
+      bounds = new_bounds
+      update_layout
 
     method update_layout_height( container_height:Int32 )
       height = which{ measure_height(container_height) || container_height }

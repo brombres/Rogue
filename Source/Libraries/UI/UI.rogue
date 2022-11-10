@@ -52,7 +52,7 @@ class UI : UILayout
 
   METHODS
     method init_object
-      active = this
+      activate
 
     method activate
       active = this
@@ -70,6 +70,9 @@ class UI : UILayout
     method clip->Box?
       return @clip
 
+    method contains( pos:XY )->Logical
+      return bounds.contains( pos )
+
     method default_font->UIFont
       if (@default_font) return @default_font
       Console.error.println "[UI] No .default_font configured."
@@ -82,6 +85,7 @@ class UI : UILayout
 
     method draw
       activate
+
       update_display_state
 
       use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
@@ -110,90 +114,81 @@ class UI : UILayout
       endUse
 
     method handle( e:KeyEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (keyboard_focus)
-        if (not keyboard_focus.is_hidden and not keyboard_focus.input_disabled)
+        if (not keyboard_focus.hidden and not keyboard_focus.input_disabled)
           keyboard_focus.handle( e )
         else
           keyboard_focus.release_keyboard_focus
-          (forEach in layers).handle( e )
+          first_child?.dispatch( e )
         endIf
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
-
-      #{
-      on( e )
-      if (e.is_consumed) return
-
-      if (keyboard_focus)
-        if (not keyboard_focus.is_hidden and not keyboard_focus.input_disabled)
-          keyboard_focus.handle( e )
-        else
-          keyboard_focus.release_keyboard_focus
-          (forEach in layers).handle( e )
-        endIf
-      else
-        (forEach in layers).handle( e )
-      endIf
-      if (e.is_consumed) return
-
-      after( e )
-      }#
 
     method handle( e:PointerEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (pointer_focus)
-        if (not pointer_focus.is_hidden and not pointer_focus.input_disabled)
+        if (not pointer_focus.hidden and not pointer_focus.input_disabled)
           pointer_focus.handle( e )
         else
           pointer_focus.release_pointer_focus
-          (forEach in layers).handle( e )
+          first_child?.dispatch( e )
         endIf
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
     method handle( e:ScrollEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (pointer_focus)
         pointer_focus.handle( e )
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
     method handle( e:TextEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (keyboard_focus)
         keyboard_focus.handle( e )
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
     method release_keyboard_focus
+      activate
       if (keyboard_focus) keyboard_focus.release_pointer_focus
 
     method release_pointer_focus
+      activate
       if (pointer_focus) pointer_focus.release_pointer_focus
 
     method request_redraw
@@ -240,28 +235,5 @@ class UI : UILayout
 
     method update_layout
       activate
-      needs_layout = false
-
-      local og_size = placement.size
-
-      prepare_layout
-
-      use components = collect<<UIComponent>>( &all )
-        on_update_layout
-        (forEach in components).on_update_layout
-
-        update_layout_width( placement.size.x )
-        update_layout_height( placement.size.y )
-        update_layout_placement( bounds )
-
-        (forEach in components).after_update_layout
-        after_update_layout
-      endUse
-
-      if (placement.size != og_size) request_redraw
-
-    method update_layout( new_bounds:Box )
-      bounds = new_bounds
-      update_layout
-
+      prior.update_layout
 endClass

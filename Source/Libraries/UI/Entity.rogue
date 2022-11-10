@@ -4,8 +4,8 @@ class Entity : Node<<Entity>>
   ENTITY_ATTRIBUTE<< NEEDS_LAYOUT,   needs_layout,   (1:<<:0) >>
   ENTITY_ATTRIBUTE<< NEEDS_REDRAW,   needs_redraw,   (1:<<:1) >>
   ENTITY_ATTRIBUTE<< INITIALIZED,    initialized,    (1:<<:2) >>  # on_init() has been called
-  ENTITY_ATTRIBUTE<< DEAD,           is_dead,        (1:<<:3) >>  # Will be removed from the entity graph and destroy()ed
-  ENTITY_ATTRIBUTE<< HIDDEN,         is_hidden,      (1:<<:4) >>  # not visible, not updated, no events sent
+  ENTITY_ATTRIBUTE<< DEAD,           dead,           (1:<<:3) >>  # Will be removed from the entity graph and destroy()ed
+  ENTITY_ATTRIBUTE<< HIDDEN,         hidden,         (1:<<:4) >>  # not visible, not updated, no events sent
   ENTITY_ATTRIBUTE<< INPUT_DISABLED, input_disabled, (1:<<:5) >>
   ENTITY_ATTRIBUTE<< CLIP_CONTENT,   clip_content,   (1:<<:6) >>
 
@@ -89,6 +89,10 @@ class Entity : Node<<Entity>>
       detach
       on_destroy
 
+    method die
+      hide            # marks this entity as dirty so the last display bounds can be repaired
+      is_dead = true  # marks this entity as eligible for detaching once the display is repaired
+
     method first_child<<$OfType>>->$OfType
       forEach (child in children)
         if local result = child->(as $OfType)
@@ -105,6 +109,10 @@ class Entity : Node<<Entity>>
       endForEach
       return null
 
+    method hide
+      hidden = true
+      needs_redraw = true
+
     method is_ui_component->Logical
       return false
 
@@ -120,13 +128,17 @@ class Entity : Node<<Entity>>
     method on_update
       noAction
 
+    method show
+      hidden = false
+      needs_redraw = true
+
     method update
       if (not initialized)
         initialized = true
         on_init
       endIf
 
-      if (is_dead)
+      if (dead)
         destroy
         return
       endIf
