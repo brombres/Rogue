@@ -31,9 +31,9 @@ class UIFont [abstract]
 
     method height->Int32                              [abstract]
 
-    method measure( ch:Character )->XY                [abstract]
+    method measure( ch:Character )->RealXY            [abstract]
 
-    method measure( text:String, i1=0:Int32, count=-1:Int32 )->XY
+    method measure( text:String, i1=0:Int32, count=-1:Int32 )->RealXY
       if (count == -1) count = text.count - i1
 
       local max_w = 0.0
@@ -59,7 +59,7 @@ class UIFont [abstract]
       max_w .= or_larger( w )
       h += row_h
 
-      return XY( max_w, h )
+      return RealXY( max_w, h )
 
 endClass
 

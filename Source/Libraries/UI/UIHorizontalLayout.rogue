@@ -3,7 +3,7 @@ module UI
 class UIHorizontalLayout : UILayout
   METHODS
     method measure_content_width( subcomponents:UIComponent[] )->Int32?
-      local total_w = 0.0
+      local total_w = 0
       forEach (component in subcomponents)
         local w = component.measure_width( null )
         if (not w) return null
@@ -12,7 +12,7 @@ class UIHorizontalLayout : UILayout
       return total_w
 
     method measure_content_height( subcomponents:UIComponent[] )->Int32?
-      local max_h = 0.0
+      local max_h = 0
       forEach (component in subcomponents)
         local h = component.measure_height( null )
         if (not h) return null
@@ -22,7 +22,7 @@ class UIHorizontalLayout : UILayout
 
     method update_subcomponent_widths( subcomponents:UIComponent[], container_width:Int32 )
       use subcomponent_widths = WorkList<<Int32?>>
-        local fixed_w     = 0.0
+        local fixed_w     = 0
         local flex_count  = 0
         local flex_weight = 0.0
         forEach (component in subcomponents)
@@ -56,6 +56,7 @@ class UIHorizontalLayout : UILayout
       local cursor = container.position
       local h = container.size.y
       forEach (component in subcomponents)
+        #Epilog.println "cursor:$"(cursor)
         component.update_layout_placement( Box(cursor, XY(component.size.x,h)) )
         cursor += component.size.xv
       endForEach
@@ -68,4 +69,3 @@ class UIGeneratedHorizontalLayout : UIHorizontalLayout
       add( rhs )
       return this
 endClass
-

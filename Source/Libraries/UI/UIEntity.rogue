@@ -1,9 +1,0 @@
-module UI
-
-class UIEntity : UIComponent
-  METHODS
-    method init( fixed_size, anchor=Anchor.CENTER )
-
-    method is_entity->Logical
-      return true
-endClass

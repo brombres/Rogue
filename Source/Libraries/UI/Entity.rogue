@@ -1,0 +1,297 @@
+module UI
+
+class Entity : Node<<Entity>>
+  ENTITY_ATTRIBUTE<< NEEDS_LAYOUT,   needs_layout,   (1:<<:0) >>
+  ENTITY_ATTRIBUTE<< NEEDS_REDRAW,   needs_redraw,   (1:<<:1) >>
+  ENTITY_ATTRIBUTE<< INITIALIZED,    initialized,    (1:<<:2) >>  # on_init() has been called
+  ENTITY_ATTRIBUTE<< DEAD,           dead,           (1:<<:3) >>  # Will be removed from the entity graph and destroy()ed
+  ENTITY_ATTRIBUTE<< HIDDEN,         hidden,         (1:<<:4) >>  # not visible, not updated, no events sent
+  ENTITY_ATTRIBUTE<< INPUT_DISABLED, input_disabled, (1:<<:5) >>
+  ENTITY_ATTRIBUTE<< CLIP_CONTENT,   clip_content,   (1:<<:6) >>
+
+  ENTITY_ATTRIBUTE<< FIXED_WIDTH,          is_fixed_width,           (1:<<:7) >>
+  ENTITY_ATTRIBUTE<< FIXED_HEIGHT,         is_fixed_height,          (1:<<:8) >>
+  ENTITY_ATTRIBUTE<< SHRINK_TO_FIT_WIDTH,  is_shrink_to_fit_width,   (1:<<:9) >>
+  ENTITY_ATTRIBUTE<< SHRINK_TO_FIT_HEIGHT, is_shrink_to_fit_height, (1:<<:10) >>
+
+  DEFINITIONS
+    WIDTH_MASK  = (FIXED_WIDTH  | SHRINK_TO_FIT_WIDTH)
+    HEIGHT_MASK = (FIXED_HEIGHT | SHRINK_TO_FIT_HEIGHT)
+    SIZE_MASK   = (WIDTH_MASK   | HEIGHT_MASK)
+
+  PROPERTIES
+    name        : String
+    attributes  : Int32
+    actions     : Action
+    properties  : DynamicProperty
+
+  METHODS
+    method init
+      if (not initialized)
+        # An overridden init() could have already called on_init()
+        initialized = true
+        on_init
+      endIf
+
+    method init( content:Entity )
+      if (not initialized)
+        # An overridden init() could have already called on_init()
+        initialized = true
+        on_init
+      endIf
+      add( content )
+
+    method after( e:KeyEvent )
+      noAction
+
+    method after( e:PointerEvent )
+      noAction
+
+    method after( e:ScrollEvent )
+      noAction
+
+    method after( e:TextEvent )
+      noAction
+
+    method after_update
+      noAction
+
+    method capture_keyboard_focus->Logical
+      if (UI.active.keyboard_focus and UI.active.keyboard_focus is not this) return false
+      UI.active.keyboard_focus = this
+      return true
+
+    method capture_pointer_focus->Logical
+      if (UI.active.pointer_focus and UI.active.pointer_focus is not this) return false
+      UI.active.pointer_focus = this
+      return true
+
+    method collect<<$EntityType>>( &all )->EntityCollector<<$EntityType>>
+      # Returns an EntityCollector that can be 'use'd to obtain a list
+      # of descendent entities that are instanceOf $EntityType.
+      #
+      # Parents will be placed in the list ahead of children.
+      #
+      # Entities that are instanceOf UIComponent are collected but are not recursed into
+      # unless the &all flag is used.
+      #
+      # USAGE e.g.
+      #   use drawables = view.collect<<Drawable2D>>
+      #     forEach (drawable in drawables) ...
+      #   endUse
+      return EntityCollector<<$EntityType>>( this, &=all )
+
+    method collect<<$EntityType>>( condition:Function($EntityType)->Logical, &all )->ConditionalEntityCollector<<$EntityType>>
+      return ConditionalEntityCollector<<$EntityType>>( this, condition, &=all )
+
+    method collect_children<<$EntityType>>( list:$EntityType[], &all )
+      forEach (child in children)
+        if local child = child->(as $EntityType)
+          list.add( child )
+          if (all or not child.is_ui_component) child.collect_children<<$EntityType>>( list, &=all )
+        else
+          child.collect_children<<$EntityType>>( list, &=all )
+        endIf
+      endForEach
+
+    method collect_children<<$EntityType>>( list:$EntityType[], condition:Function($EntityType)->Logical, &all )
+      forEach (child in children)
+        if local child = child->(as $EntityType)
+          if (condition(child))
+            list.add( child )
+          endIf
+          if (all or not child.is_ui_component) child.collect_children<<$EntityType>>( list, condition, &=all )
+        else
+          child.collect_children<<$EntityType>>( list, condition, &=all )
+        endIf
+      endForEach
+
+    method destroy
+      (forEach in children).destroy
+      detach
+      on_destroy
+
+    method dispatch( e:KeyEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:PointerEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:ScrollEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method dispatch( e:TextEvent )
+      # Send input events to children in reverse order because the top layer comes last
+      if (next) next.dispatch( e )
+      if (e.is_consumed) return
+      handle( e )
+
+    method die
+      hide            # marks this entity as dirty so the last display bounds can be repaired
+      is_dead = true  # marks this entity as eligible for detaching once the display is repaired
+
+    method first_child<<$OfType>>->$OfType
+      forEach (child in children)
+        if local result = child->(as $OfType)
+          return result
+        elseIf local result = child.first_child<<$OfType>>
+          return result
+        endIf
+      endForEach
+      return null
+
+    method get( name:String )->Entity
+      forEach (child in children)
+        if (child.name == name) return child
+      endForEach
+      return null
+
+    method handle( e:KeyEvent )
+      if (hidden or input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      after( e )
+
+    method handle( e:PointerEvent )
+      if (hidden or input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      after( e )
+
+    method handle( e:ScrollEvent )
+      if (hidden or input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      after( e )
+
+    method handle( e:TextEvent )
+      if (hidden or input_disabled) return
+
+      on( e )
+      if (e.is_consumed) return
+
+      if (first_child)
+        first_child.dispatch( e )
+        if (e.is_consumed) return
+      endIf
+
+      after( e )
+
+    method has_keyboard_focus->Logical
+      return UI.active.keyboard_focus is this
+
+    method has_pointer_focus->Logical
+      return UI.active.pointer_focus is this
+
+    method hide
+      if (hidden) return
+      hidden = true
+      needs_redraw = true
+
+    method is_ui_component->Logical
+      return false
+
+    method name->String
+      if (@name) return @name
+      return type_name
+
+    method on( e:KeyEvent )
+      noAction
+
+    method on( e:PointerEvent )
+      noAction
+
+    method on( e:ScrollEvent )
+      noAction
+
+    method on( e:TextEvent )
+      noAction
+
+    method on_destroy
+
+    method on_init
+      noAction
+
+    method on_release_keyboard_focus
+      noAction
+
+    method on_release_pointer_focus
+      noAction
+
+    method on_update
+      noAction
+
+    method release_keyboard_focus
+      if (UI.active.keyboard_focus is this)
+        UI.active.keyboard_focus = null
+        on_release_keyboard_focus
+      endIf
+
+    method release_pointer_focus
+      if (UI.active.pointer_focus is this)
+        UI.active.pointer_focus = null
+        on_release_pointer_focus
+      endIf
+
+    method set_visible( setting:Logical )
+      if (setting) show
+      else         hide
+
+    method show
+      if (not hidden) return
+      hidden = false
+      needs_redraw = true
+
+    method update
+      if (not initialized)
+        initialized = true
+        on_init
+      endIf
+
+      if (dead)
+        destroy
+        return
+      endIf
+
+      on_update
+
+      (forEach in children).update
+
+      after_update
+
+      if (actions) actions .= update
+
+    method visible->Logical
+      return not hidden
+
+endClass

@@ -1,31 +1,25 @@
 module UI
 
-$macro UI_ATTRIBUTE<<$NAME, $is_name, $value>>
-  DEFINITIONS
-    $id(ATTRIBUTE_ $NAME) = $value
+uses Collection/Node
+uses Control/Action  [export]
+uses Geometry        [export]
 
-  METHODS
-    method $is_name->Logical
-      return (attributes & ($value))
+# These two macro includes must come first
+$include UI/EntityMacros
+$include UI/DynamicProperty
 
-    method $id(set_ $is_name)( setting:Logical )
-      if (setting) attributes |= ($value)
-      else         attributes &= !($value)
-$endMacro
-
-uses Geometry       [export]
-uses Control/Action [export]
-
-$include "Event.rogue"
-$include "Keyboard.rogue"
-$include "Pointer.rogue"
-
-$include UI/UIAbsoluteLayout
-$include UI/UIDynamicProperties
+$include UI/ConditionalEntityCollector
+$include UI/DirtyRegionTracker
+$include UI/Drawable2D
+$include UI/Entity
+$include UI/EntityCollector
+$include UI/Event
+$include UI/Keyboard
+$include UI/Placement2D
+$include UI/Pointer
 $include UI/UIBorder
 $include UI/UIComponent
 $include UI/UIContent
-$include UI/UIEntity
 $include UI/UIFiller
 $include UI/UIFlowLayout
 $include UI/UIFont
@@ -33,8 +27,6 @@ $include UI/UIHorizontalLayout
 $include UI/UILabel
 $include UI/UILayout
 $include UI/UIList
-$include UI/UIModifier
-$include UI/UIPlacement
 $include UI/UIScrollView
 $include UI/UIScrollViewController
 $include UI/UISpacer
@@ -44,85 +36,29 @@ $include UI/UIText
 $include UI/UIVerticalLayout
 $include UI/UIWidget
 
-class UI [abstract]
+class UI : UILayout
   GLOBAL PROPERTIES
-    current : UI
+    active : UI
 
   PROPERTIES
-    actions        : Action
+    default_font         : UIFont
 
-    bounds         : Box
-    dirty_bounds   : Box?
-    clip           : Box?
-    last_update_ms : Int32
-    is_initialized : Logical
+    dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
+    clip                 : Box?
+    dt                   = 1.0 / 60.0
 
-    layers = UIComponent[]
-
-    pointer_focus  : UIComponent
-    keyboard_focus : UIComponent
+    pointer_focus        : UIComponent
+    keyboard_focus       : UIComponent
 
   METHODS
-    method init
+    method init_object
       activate
-
-      is_initialized = true
-      on_init
 
     method activate
-      UI.current = this
-
-    method add( layer:UIComponent )
-      layers.add( layer )
-      layer.request_layout
-
-
-    method after( e:KeyEvent )
-      noAction
-
-    method after( e:PointerEvent )
-      noAction
-
-    method after( e:ScrollEvent )
-      noAction
-
-    method after( e:TextEvent )
-      noAction
-
-    method after_draw
-      noAction
-
-    method after_resize
-      noAction
-
-    method after_update
-      noAction
-
-    method apply( fn:Function(UIComponent) )
-      (forEach in layers).apply( fn )
-
-    method at( xp:Real, yp:Real )->XY
-      return XY( size.x*xp, size.y*yp )
-
-      #{
-    method broadcast_message( message:Value )
-      dispatch_message( message )
-      }#
-
-    method needs_redraw( callback=null:Function(Box) )->Logical
-      activate
-      local any_dirty = false
-
-      local origin = bounds.position
-      forEach (layer in layers)
-        if (layer.needs_redraw(origin,callback))
-          any_dirty = true
-        endIf
-      endForEach
-      return any_dirty
+      active = this
 
     method clear
-      layers.clear
+      prior.clear
       clear_focus
       dirty_bounds = null
       clip = null
@@ -131,219 +67,180 @@ class UI [abstract]
       keyboard_focus = null
       pointer_focus = null
 
+    method clip->Box?
+      return @clip
+
     method contains( pos:XY )->Logical
       return bounds.contains( pos )
 
-    method default_font->UIFont [abstract]
+    method default_font->UIFont
+      if (@default_font) return @default_font
+      Console.error.println "[UI] No .default_font configured."
+      return null
 
-      #{
-    method description->String
-      return layers->String
-
-    method dispatch_message( message:Value )
-      on_message( message )
-      layers.dispatch_message( message )
-      }#
+    method dirty_region_tracker->DirtyRegionTracker
+      if (@dirty_region_tracker) return @dirty_region_tracker
+      dirty_region_tracker = SimpleDirtyRegionTracker()
+      return @dirty_region_tracker
 
     method drag_threshold->Int32
       return 16
 
     method draw
       activate
+      needs_redraw = false
 
-      if (needs_redraw) request_redraw
+      update_display_state
 
-      if (dirty_bounds)
-        temporarily clip = dirty_bounds
-          dirty_bounds = null
-          on_draw
-          (forEach in layers).draw( clip.value )
-          after_draw
-        endTemporarily
+      use drawables = collect<<Drawable2D>>( (drawable) => return drawable.needs_redraw, &all )
+        dirty_region_tracker.add( forEach in drawables )
+        (forEach in drawables).needs_redraw = false
+      endUse
 
-        (forEach in layers).apply( $.save_display_state )
-      endIf
+      use dirty_regions = dirty_region_tracker
+        if (dirty_regions.count)
+          dirty_region_tracker.clear
 
-    method find( pos:XY )->UIComponent
-      return layers.find( pos )
+          use drawables = collect<<Drawable2D>>
+            drawables.sort( $1.draw_order < $2.draw_order )
+
+            forEach (dirty_region in dirty_regions)
+              temporarily clip = dirty_region
+                on_draw
+                (forEach in drawables).draw
+                after_draw
+              endTemporarily
+            endForEach
+
+            (forEach in drawables).save_display_state
+          endUse
+        endIf
+      endUse
 
     method handle( e:KeyEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (keyboard_focus)
-        if (keyboard_focus.is_visible and keyboard_focus.is_input_enabled)
+        if (not keyboard_focus.hidden and not keyboard_focus.input_disabled)
           keyboard_focus.handle( e )
         else
           keyboard_focus.release_keyboard_focus
-          (forEach in layers).handle( e )
+          first_child?.dispatch( e )
         endIf
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
     method handle( e:PointerEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (pointer_focus)
-        if (pointer_focus.is_visible and pointer_focus.is_input_enabled)
+        if (not pointer_focus.hidden and not pointer_focus.input_disabled)
           pointer_focus.handle( e )
         else
           pointer_focus.release_pointer_focus
-          (forEach in layers).handle( e )
+          first_child?.dispatch( e )
         endIf
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
     method handle( e:ScrollEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (pointer_focus)
         pointer_focus.handle( e )
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
     method handle( e:TextEvent )
+      activate
+
       on( e )
       if (e.is_consumed) return
 
       if (keyboard_focus)
         keyboard_focus.handle( e )
       else
-        (forEach in layers).handle( e )
+        first_child?.dispatch( e )
       endIf
       if (e.is_consumed) return
 
       after( e )
 
-    method on( e:KeyEvent )
-      noAction
-
-    method on( e:PointerEvent )
-      noAction
-
-    method on( e:ScrollEvent )
-      noAction
-
-    method on( e:TextEvent )
-      noAction
-
-    method on_init
-      noAction
-
-    method on_draw
-      noAction
-
-      #{
-    method on_message( message:Value )
-      noAction
-      }#
-
-    method on_resize
-      noAction
-
-    method on_update
-      noAction
-
-    method on_update_layout
-      # Called after a 'bounds' change to build or rebuild the layout.
-      noAction
-
-    method perform_layout
-      (forEach in layers).update_layout( bounds )
-
-    method release_focus
-      release_keyboard_focus
-      release_pointer_focus
+    method needs_redraw->Logical
+      return prior.needs_redraw or dirty_region_tracker.count
 
     method release_keyboard_focus
+      activate
       if (keyboard_focus) keyboard_focus.release_pointer_focus
 
     method release_pointer_focus
+      activate
       if (pointer_focus) pointer_focus.release_pointer_focus
 
-    method remove( layer:UIComponent )
-      layers.remove( layer )
-
-    method request_layout
-      (forEach in layers).request_layout
-
     method request_redraw
-      dirty_bounds = bounds
+      request_redraw( bounds )
 
-    method request_redraw( bounds:Box? )
-      dirty_bounds |= bounds
+    method request_redraw( bounds:Box )
+      dirty_region_tracker.add( bounds )
 
-    method set_bounds( new_bounds:Box )
-      if (new_bounds == bounds) return
-      @bounds = new_bounds
-      request_layout
+    method set_bounds( value:Box )
+      localize bounds
+      if (value == bounds) return
+
+      dirty_region_tracker.add( bounds )
+      prior.set_bounds( value )
+      dirty_region_tracker.add( value )
+
+      needs_layout = true
+
       on_resize
-      (forEach in layers).handle_resize
+
+      use drawables = collect<<Drawable2D>>
+        (forEach in drawables).on_resize
+        DynamicProperties.on_resize( forEach in drawables )
+        (forEach in drawables).after_resize
+      endUse
+
       after_resize
 
     method set_clip( @clip )
-      noAction # Override in specialized UI to have clip take effect
-
-    method size->XY
-      return bounds.size
 
     method update
-      activate
-
-      update( bounds )
-
-    method update( bounds:Box )
       # Must update before layout so that new components created in update() can be
       # measured in update_layout()
       activate
+      prior.update
+      update_layout
 
-      if (not is_initialized)
-        is_initialized = true
-        on_init
-      endIf
-      on_update
-      if (actions) actions .= update
-      (forEach in layers).update
+    method update_display_state
+      prior.update_display_state
 
-      forEach (layer in layers step -1)
-        if (layer.discard_dead is null) layers.remove( layer )
-      endForEach
+      use drawables = collect<<Drawable2D>>( &all )
+        (forEach in drawables).update_display_state
+      endUse
 
-      after_update
-
-      update_layout( bounds )
-
-    method update_layout( new_bounds:Box )
+    method update_layout
       activate
-
-      local bounds_changed = (bounds != new_bounds)
-      if (bounds_changed)
-        bounds = new_bounds
-        if (bounds_changed) dirty_bounds = new_bounds  # Redraw the entire UI
-        on_update_layout
-      endIf
-
-      contingent
-        sufficient ((forEach in layers).is_modified)
-        sufficient (bounds_changed)
-        escapeContingent
-      satisfied
-        perform_layout
-      endContingent
-
+      prior.update_layout
 endClass
-

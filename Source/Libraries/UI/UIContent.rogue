@@ -2,7 +2,7 @@ module UI
 
 class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
   PROPERTIES
-    cur_group = UIModifier()
+    cur_group = Entity()
 
   METHODS
     method init
@@ -16,13 +16,13 @@ class UIContent : UIFlowLayout, BufferedPrintWriter<<text_buffer>>
     method init( text:String )
       init( create_text(text) )
 
-    method add( component:UIComponent ) [override]
+    method add( component:Entity ) [override]
       flush
       cur_group.add( component )
 
     method begin_new_group
       if (cur_group.count)
-        cur_group = UIModifier()
+        cur_group = Entity()
         prior.add( cur_group )
       endIf
 

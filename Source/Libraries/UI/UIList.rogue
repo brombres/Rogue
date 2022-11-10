@@ -6,7 +6,7 @@ class UIList : UILayout
       shrink_to_fit_height
 
     method measure_content_height( subcomponents:UIComponent[] )->Int32?
-      local total_w = 0.0
+      local total_w = 0
       forEach (component in subcomponents)
         local h = component.measure_height( null )
         if (not h) return null

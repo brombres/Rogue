@@ -1,0 +1,12 @@
+$macro ENTITY_ATTRIBUTE<<$NAME, $is_name, $value>>
+  DEFINITIONS
+    $NAME = $value
+
+  METHODS
+    method $is_name->Logical
+      return (attributes & ($value))
+
+    method $id(set_ $is_name)( setting:Logical )
+      if (setting) attributes |= ($value)
+      else         attributes &= !($value)
+$endMacro

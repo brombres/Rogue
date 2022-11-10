@@ -1,0 +1,192 @@
+module UI
+
+ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackProperty >>
+PROPAGATED_ENTITY_PROPERTY<< Drawable2D, alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty, parent_drawable >>
+PROPAGATED_ENTITY_PROPERTY<< Drawable2D, font,      UIFont, UI.active.default_font, FontProperty, parent_drawable >>
+
+class Drawable2D : Entity
+  PROPERTIES
+    position       : XY
+    draw_order     : Int32
+    placement      : Placement2D
+    last_placement : Placement2D  # for dirty rectangle tracking
+
+  METHODS
+    method init
+      prior.init
+
+    method init( size:XY )
+      bounds = Box(size)
+
+    method init( bounds:Box )
+      set_bounds( bounds )
+
+    method init( content:Entity )
+      prior.init( content )
+
+    method after_draw
+      noAction
+
+    method after_resize
+      noAction
+
+    method bounds->Box
+      return Box( position, placement.size )
+
+    method clip->Box?
+      return UI.active.clip
+
+    method contains( drawable:Drawable2D )->Logical
+      while (drawable)
+        if (drawable is this) return true
+        drawable .= parent
+      endWhile
+      return false
+
+    method contains( e:PointerEvent )->Logical
+      return contains( e.position )
+
+    method contains( pos:XY )->Logical
+      return display_bounds.contains( pos )
+
+    method display_bounds->Box
+      return Box( placement.display_position, placement.size )
+
+    method display_position->XY
+      return placement.display_position
+
+    method draw
+      needs_redraw = false
+      if (clip_content)
+        if local clip_bounds = clip & display_bounds
+          temporarily clip = clip_bounds
+            on_draw
+            draw_children
+            after_draw
+          endTemporarily
+        endIf
+      else
+        on_draw
+        draw_children
+        after_draw
+      endIf
+
+    method draw_children
+      # Overridden in UIComponent.
+      #
+      # Each UIComponent (including UI) manages drawing all of its descendants down to and including
+      # other UIComponent objects but not descending into them. In other words, each UIComponent draws its
+      # own descendants.
+      noAction
+
+    method find( pos:XY )->Drawable2D
+      # Find the last child that contains 'pos'.
+      use drawables = collect<<Drawable2D>>
+        forEach (drawable in drawables step -1)
+          if (drawable.contains(pos)) return drawable
+        endForEach
+      endUse
+
+      if (this.contains(pos)) return this
+      return null
+
+    method needs_redraw->Logical [override]
+      if (prior.needs_redraw) return true
+      if (placement != last_placement) return true
+      return false
+
+    method on_prepare_layout
+      noAction
+
+    method on_resize
+      noAction
+
+    method on_draw
+      noAction
+
+    method on_update_layout
+      noAction
+
+    method parent_drawable->Drawable2D
+      localize parent
+      while (parent)
+        if local parent_drawable = parent->(as Drawable2D)
+          return parent_drawable
+        endIf
+        parent .= parent
+      endWhile
+      return null
+
+    method request_layout
+      localize parent_drawable
+      if (parent_drawable) parent_drawable.request_layout
+      else                 needs_layout = true
+
+    method request_redraw
+      needs_redraw = true
+
+    method save_display_state
+      last_placement = placement
+
+    method set_anchor( value:Anchor )
+      placement.anchor = value
+
+    method set_bounds( bounds:Box )
+      position = bounds.position
+      fixed_size = bounds.size
+
+    method set_clip( clip_bounds:Box? )
+      UI.active.clip = clip_bounds
+
+    method set_draw_order( new_draw_order:Int32 )
+      if (new_draw_order != @draw_order)
+        @draw_order = new_draw_order
+        needs_redraw = true
+      endIf
+
+    method set_fixed_height( h:Int32 )
+      attributes = (attributes & !HEIGHT_MASK) | FIXED_HEIGHT
+      placement.size = XY( placement.size.x, h )
+
+    method set_fixed_size( new_fixed_size:XY )
+      attributes = (attributes & !SIZE_MASK) | FIXED_WIDTH | FIXED_HEIGHT
+      placement.size = new_fixed_size
+
+    method set_fixed_width( w:Int32 )
+      attributes = (attributes & !WIDTH_MASK) | FIXED_WIDTH
+      placement.size = XY( w, placement.size.y )
+
+    method set_height( value:Int32 )
+      placement.size = XY( placement.size.x, value )
+
+    method set_rotation( value:Radians )
+      placement.rotation = XYZ( placement.rotation.x, placement.rotation.y, value )
+
+    method set_rotation( value:XYZ )
+      placement.rotation = value
+
+    method set_size( value:XY )
+      placement.size = value
+
+    method set_width( value:Int32 )
+      placement.size = XY( value, placement.size.y )
+
+    method size->XY
+      return placement.size
+
+    method update( bounds:Box )
+      if (this.bounds != bounds)
+        this.bounds = bounds
+        request_layout
+      endIf
+
+      update
+
+    method update_display_state
+      local pos = position
+      if local parent = parent_drawable
+        pos += parent.placement.display_position
+      endIf
+      placement.display_position = pos
+
+endClass

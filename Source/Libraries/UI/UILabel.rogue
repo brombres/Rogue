@@ -5,14 +5,14 @@ class UILabel : UIComponent
     text : String
 
   METHODS
-    method init( text )
-      alignment = Anchor.CENTER
+    method init( text, alignment=Anchor.CENTER:Anchor )
       prior.init
+      this.alignment = alignment
 
-    method init( text, font:UIFont )
-      alignment = Anchor.CENTER
-      set_font( font )
+    method init( text, font:UIFont, alignment=Anchor.CENTER:Anchor )
+      #set_font( font ) #FIXME
       prior.init
+      this.alignment = alignment
 
       #{
     method _extended_description( table:Value )
@@ -20,7 +20,24 @@ class UILabel : UIComponent
       table//text = text
       }#
 
+    method measure_height( container_height:Int32? )->Int32?
+      if (is_shrink_to_fit_height)
+        if local font = font
+          return font.measure( text ).y->Int32
+        endIf
+      endIf
+      return prior.measure_height( container_height )
+
+    method measure_width( container_width:Int32? )->Int32?
+      if (is_shrink_to_fit_width)
+        if local font = font
+          return font.measure( text ).x->Int32
+        endIf
+      endIf
+      return prior.measure_width( container_width )
+
     method on_draw
+      localize font
       if (font) font.draw( text, this )
 
 endClass

@@ -1,0 +1,12 @@
+module UI
+
+class ConditionalEntityCollector<<$EntityType>>( ancestor:Entity, condition:Function($EntityType)->Logical, all=false:Logical ) [compound]
+  METHODS
+    method on_use->$EntityType[]
+      local list = WorkList<<$EntityType>>.on_use
+      ancestor.collect_children<<$EntityType>>( list, condition, &=all )
+      return list
+
+    method on_end_use( list:$EntityType[] )
+      WorkList<<$EntityType>>.on_end_use( list )
+endClass
