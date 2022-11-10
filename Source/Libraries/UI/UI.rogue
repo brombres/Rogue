@@ -88,6 +88,7 @@ class UI : UILayout
 
     method draw
       activate
+      needs_redraw = false
 
       update_display_state
 
@@ -185,6 +186,9 @@ class UI : UILayout
       if (e.is_consumed) return
 
       after( e )
+
+    method needs_redraw->Logical
+      return prior.needs_redraw or dirty_region_tracker.count
 
     method release_keyboard_focus
       activate

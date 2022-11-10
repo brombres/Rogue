@@ -14,10 +14,13 @@ class ConsoleUI : UI
     underline_font : ConsoleUIFont
 
   PROPERTIES
-    last_update_ms : Int32
-    mouse_position : XY?
-    button_pressed = Dim<<Logical>>(2)
-    is_running     : Logical
+    fast_updates      : Logical  # set to true to always update at 1/60th second
+
+    last_update_ms    : Int32
+    mouse_position    : XY?
+    button_pressed    = Dim<<Logical>>(2)
+    is_running        : Logical
+    fast_update_ticks = 0
 
   METHODS
     method init
@@ -47,9 +50,22 @@ class ConsoleUI : UI
       ConsoleUICanvas.display(0,0)
       Console.set_cursor( 0, bounds.y2 )
 
+    method handle( e:KeyEvent )
+      fast_update_ticks = 10
+      prior.handle( e )
+
     method handle( e:PointerEvent )
       if (mouse_position.exists) e.delta = e.position - mouse_position.value
       mouse_position = e.position
+      fast_update_ticks = 10
+      prior.handle( e )
+
+    method handle( e:ScrollEvent )
+      fast_update_ticks = 10
+      prior.handle( e )
+
+    method handle( e:TextEvent )
+      fast_update_ticks = 10
       prior.handle( e )
 
     method handle( type:Int32, index:Int32, e:ConsoleEvent )
@@ -130,8 +146,14 @@ class ConsoleUI : UI
           draw
 
           # If it needs a redraw right after drawing then we're animating
-          if (dirty_bounds) System.sleep( 1.0/60.0 )
-          else              System.sleep( 0.1 )
+          local needs_fast_update = fast_updates or needs_redraw
+          if (fast_update_ticks > 0)
+            needs_fast_update = true
+            --fast_update_ticks
+          endIf
+
+          if (needs_fast_update) System.sleep( 1.0/60.0 )
+          else                   System.sleep( 0.1 )
         endWhile
 
         Console.immediate_mode = false
