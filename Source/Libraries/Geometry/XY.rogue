@@ -17,6 +17,18 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator*( a:RealXY, b:XY )->RealXY
       return RealXY( a.x*b.x, a.x*b.y )
 
+    method operator*( a:XY, b:XY )->XY
+      return XY( a.x*b.x, a.y*b.y )
+
+    method operator*( a:XY, b:Int32 )->XY
+      return XY( a.x*b, a.y*b )
+
+    method operator*( a:XY, b:Real )->RealXY
+      return RealXY( a.x*b, a.y*b )
+
+    method operator*( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x*b.x, a.y*b.y )
+
     method operator/( a:Int32, b:XY )->XY
       return XY( a/b.x, a/b.y )
 
@@ -28,6 +40,48 @@ class XY( x:Int32, y:Int32 ) [essential compound]
 
     method operator%( a:RealXY, b:XY )->RealXY
       return RealXY( a.x%b.x, a.x%b.y )
+
+    method operator+( a:XY, b:XY )->XY
+      return XY( a.x+b.x, a.y+b.y )
+
+    method operator+( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x+b.x, a.y+b.y )
+
+    method operator-( a:XY, b:XY )->XY
+      return XY( a.x-b.x, a.y-b.y )
+
+    method operator-( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x-b.x, a.y-b.y )
+
+    method operator/( a:XY, b:XY )->XY
+      return XY( which{b.x:a.x/b.x || 0}, which{b.y:a.y/b.y || 0} )
+
+    method operator/( a:XY, b:Int32 )->XY
+      if (b == 0) return XY.zero
+      return XY( a.x/b, a.y/b )
+
+    method operator/( a:XY, b:Real )->RealXY
+      return RealXY( a.x/b, a.y/b )
+
+    method operator/( a:XY, b:RealXY )->RealXY
+      return a->RealXY / b
+
+    method operator%( a:XY, b:XY )->XY
+      return XY( a.x%b.x, a.y%b.y )
+
+    method operator%( a:XY, b:Int32 )->XY
+      if (b == 0) return a
+      return XY( a.x%b, a.y%b )
+
+    method operator%( a:XY, b:RealXY )->RealXY
+      return RealXY( a.x%b.x, a.y%b.y )
+
+    method operator^( a:XY, b:XY )->XY
+      return XY( a.x^b.x, a.y^b.y )
+
+    method operator^( a:XY, b:Int32 )->XY
+      return XY( a.x^b, a.y^b )
+
 
   METHODS
     method abs->XY
@@ -44,6 +98,9 @@ class XY( x:Int32, y:Int32 ) [essential compound]
 
     method cross( other:XY )->Int32
       return x * other.y - y * other.x
+
+    method distance_to( other:XY )->Int32
+      return (other - this).magnitude
 
     method dot( other:XY )->Int32
       return x * other.x + y * other.y
@@ -93,61 +150,8 @@ class XY( x:Int32, y:Int32 ) [essential compound]
       if (x == other.x) return y <> other.y
       else              return x <> other.x
 
-    method operator+( other:XY )->XY
-      return XY( x+other.x, y+other.y )
-
-    method operator+( other:RealXY )->RealXY
-      return RealXY( x+other.x, y+other.y )
-
     method operator-()->XY
       return XY( -x, -y )
-
-    method operator-( other:XY )->XY
-      return XY( x-other.x, y-other.y )
-
-    method operator-( other:RealXY )->RealXY
-      return RealXY( x-other.x, y-other.y )
-
-    method operator*( other:XY )->XY
-      return XY( x*other.x, y*other.y )
-
-    method operator*( value:Int32 )->XY
-      return XY( x*value, y*value )
-
-    method operator*( value:Real )->RealXY
-      return RealXY( x*value, y*value )
-
-    method operator*( other:RealXY )->RealXY
-      return RealXY( x*other.x, y*other.y )
-
-    method operator/( other:XY )->XY
-      return XY( which{other.x:x/other.x || 0}, which{other.y:y/other.y || 0} )
-
-    method operator/( value:Int32 )->XY
-      if (value == 0) return XY.zero
-      return XY( x/value, y/value )
-
-    method operator/( value:Real )->RealXY
-      return RealXY( x/value, y/value )
-
-    method operator/( other:RealXY )->RealXY
-      return this->RealXY / other
-
-    method operator%( other:XY )->XY
-      return XY( x%other.x, y%other.y )
-
-    method operator%( value:Int32 )->XY
-      if (value == 0) return this
-      return XY( x%value, y%value )
-
-    method operator%( other:RealXY )->RealXY
-      return RealXY( x%other.x, y%other.y )
-
-    method operator^( other:XY )->XY
-      return XY( x^other.x, y^other.y )
-
-    method operator^( value:Int32 )->XY
-      return XY( x^value, y^value )
 
     method or_larger( other:XY )->XY
       # Returns the largest X and the largest Y between this value and the other value.

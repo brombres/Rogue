@@ -48,6 +48,9 @@ class RealXY( x:Real, y:Real ) [compound]
     method cross( other:XY )->Real
       return x * other.y - y * other.x
 
+    method distance_to( other:RealXY )->Int32
+      return (other - this).magnitude
+
     method dot( other:XY )->Real
       return x * other.x + y * other.y
 
