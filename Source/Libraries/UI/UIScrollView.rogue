@@ -64,11 +64,11 @@ class UIScrollView : UILayout
         first_child.dispatch( e_press )
         # This may capture pointer focus
 
-        if (UI.pointer_focus)
-          if (UI.pointer_focus.is_visible and UI.pointer_focus.is_input_enabled)
-            UI.pointer_focus.handle( e_release )
+        if (UI.active.pointer_focus)
+          if (UI.active.pointer_focus.visible and not UI.active.pointer_focus.input_disabled)
+            UI.active.pointer_focus.handle( e_release )
           else
-            UI.pointer_focus.release_pointer_focus
+            UI.active.pointer_focus.release_pointer_focus
             first_child.dispatch( e_release )
           endIf
         else

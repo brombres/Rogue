@@ -2,18 +2,16 @@ module UI
 
 uses UI [export]
 
-$include UI/ConsoleUIFont
-$include UI/ConsoleUICanvas
+$include Console/ConsoleUIFont
+$include Console/ConsoleUICanvas
 
 uses Utility/Epilog
 
 class ConsoleUI : UI
   GLOBAL PROPERTIES
-    #{
     bold_font      : ConsoleUIFont
     inverse_font   : ConsoleUIFont
     underline_font : ConsoleUIFont
-    }#
 
   PROPERTIES
     last_update_ms : Int32
@@ -28,24 +26,27 @@ class ConsoleUI : UI
     method init( size:XY )
       prior.init( size )
 
-      #{
+    method init( bounds:Box )
+      prior.init( bounds )
+
     method init_object
       if (not bold_font)
         bold_font = default_font.cloned.[ bold=true ]
         inverse_font = default_font.cloned.[ inverse=true ]
         underline_font = default_font.cloned.[ underline=true ]
       endIf
-      }#
 
     method default_font->ConsoleUIFont
       return ConsoleUIFont
 
+    method drag_threshold->Int32
+      return 1
+
     method draw
       prior.draw
       ConsoleUICanvas.display(0,0)
-      #Console.set_cursor( 0, bounds.y2 )
+      Console.set_cursor( 0, bounds.y2 )
 
-      #{
     method handle( e:PointerEvent )
       if (mouse_position.exists) e.delta = e.position - mouse_position.value
       mouse_position = e.position
@@ -57,20 +58,16 @@ class ConsoleUI : UI
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
       handle( PointerEvent(type,pos,XY(0,0),index) )
-      }#
 
     method on_draw [override]
       ConsoleUICanvas.resize( placement.size.x, placement.size.y )
       ConsoleUICanvas.fill( '.' )
 
-      #{
     method on_resize
       Console.clear
       ConsoleUICanvas.resize( placement.size.x, placement.size.y )
       prior.on_resize
-      }#
 
-      #{
     method on_update
       loop 512
         if (Console.immediate_mode and Console.has_another_event)
@@ -119,9 +116,7 @@ class ConsoleUI : UI
           escapeLoop
         endIf
       endLoop
-      }#
 
-      #{
     method run
       System.sleep(0.2)  # helps prevent initial screen corruption
       Console.immediate_mode = true
@@ -148,14 +143,11 @@ class ConsoleUI : UI
         Console.clear
         println error
       endTry
-      }#
 
-      #{
     method send_release_event( index:Int32, event:ConsoleEvent )
       if (not button_pressed[index]) return
       button_pressed[index] = false
       handle( PointerEvent.RELEASE, index, event )
-      }#
 
     method set_clip( @clip )
       ConsoleUICanvas.clip = @clip

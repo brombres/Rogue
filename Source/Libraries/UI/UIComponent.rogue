@@ -5,18 +5,6 @@ class UIComponent : Drawable2D
     method init_object
       clip_content = true
 
-    method after( e:KeyEvent )
-      noAction
-
-    method after( e:PointerEvent )
-      noAction
-
-    method after( e:ScrollEvent )
-      noAction
-
-    method after( e:TextEvent )
-      noAction
-
     method after_prepare_layout
       noAction
 
@@ -25,30 +13,6 @@ class UIComponent : Drawable2D
 
     method can_split_h( max_width:Int32 )->Logical
       return false
-
-    method dispatch( e:KeyEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-    method dispatch( e:PointerEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-    method dispatch( e:ScrollEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
-
-    method dispatch( e:TextEvent )
-      # Send input events to children in reverse order because the top layer comes last
-      if (next) next.dispatch( e )
-      if (e.is_consumed) return
-      handle( e )
 
     method draw_children
       # Each UIComponent (including UI) manages drawing all of its descendants down to and including
@@ -67,58 +31,6 @@ class UIComponent : Drawable2D
 
     method expand_to_fill_width
       attributes &= !WIDTH_MASK   # turn off fixed and shrink attributes
-
-    method handle( e:KeyEvent )
-      if (hidden or input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle( e:PointerEvent )
-      if (hidden or input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle( e:ScrollEvent )
-      if (hidden or input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
-
-    method handle( e:TextEvent )
-      if (hidden or input_disabled) return
-
-      on( e )
-      if (e.is_consumed) return
-
-      if (first_child)
-        first_child.dispatch( e )
-        if (e.is_consumed) return
-      endIf
-
-      after( e )
 
     method is_br->Logical
       return false
@@ -178,18 +90,6 @@ class UIComponent : Drawable2D
       if (result) return result.value
       return container_width
 
-    method on( e:KeyEvent )
-      noAction
-
-    method on( e:PointerEvent )
-      noAction
-
-    method on( e:ScrollEvent )
-      noAction
-
-    method on( e:TextEvent )
-      noAction
-
     method operator+( rhs:UIComponent )->UIComponent
       return UIGeneratedHorizontalLayout( this ).[ add(rhs) ]
 
@@ -209,18 +109,6 @@ class UIComponent : Drawable2D
       after_prepare_layout
 
       if (size != og_size) is_modified = true
-
-    method release_keyboard_focus
-      if (UI.active.keyboard_focus is this)
-        UI.active.keyboard_focus = null
-        on_release_keyboard_focus
-      endIf
-
-    method release_pointer_focus
-      if (UI.active.pointer_focus is this)
-        UI.active.pointer_focus = null
-        on_release_pointer_focus
-      endIf
 
     method shrink_to_fit
       shrink_to_fit_width

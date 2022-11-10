@@ -105,7 +105,7 @@ class StandardUIScrollViewController : UIScrollViewController
           e.consume
           return
         elseIf (is_pressed)
-          if (e.position.distance_to(drag_pos) >= UI.drag_threshold)
+          if (e.position.distance_to(drag_pos) >= UI.active.drag_threshold)
             is_dragging = true
             drag_deltas.clear
             drag_pos = e.position
@@ -158,7 +158,7 @@ class StandardUIScrollViewController : UIScrollViewController
       endIf
 
       if (Pointer.position and view.display_bounds.contains(Pointer.position.value))
-        scroll( scroll_rate.add(e).yv, &clamp=not e.is_precise )
+        scroll( scroll_rate.add(e).yv, &clamp=not e.precise )
         if (e.in_progress)
           if (e.is_momentum)
             if (view.content_offset.y > view.top_offset or view.content_offset.y < view.bottom_offset)

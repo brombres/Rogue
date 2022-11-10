@@ -83,6 +83,9 @@ class UI : UILayout
       dirty_region_tracker = SimpleDirtyRegionTracker()
       return @dirty_region_tracker
 
+    method drag_threshold->Int32
+      return 16
+
     method draw
       activate
 
