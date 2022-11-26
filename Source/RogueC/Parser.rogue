@@ -522,7 +522,7 @@ class Parser : ParserCore, Poolable
     method include_filepath
       Program.include( marked_token, buffer.cloned, &is_optional=include_attribute_optional )
 
-    method join
+    method join_identifiers
       if (not disable_output and _cmd_stack.count >= 2)
         local b = _cmd_stack.remove_last
         local a = _cmd_stack.remove_last
@@ -536,7 +536,7 @@ class Parser : ParserCore, Poolable
         _cmd_stack.add( Identifier(b.t, b->(as TemplateArgs)->String(a->String)) )
       endIf
 
-    method join_adjacent_literal_strings
+    method join_strings
       if (not disable_output and _cmd_stack.count >= 2)
         local a = _cmd_stack[_cmd_stack.count-2]->(as LiteralString)
         local b = _cmd_stack.remove_last->(as LiteralString)  # we already know b is a literal string

@@ -1108,7 +1108,7 @@ parser
     while (nextIs(STRING))
       on STRING
         create LiteralString(value=content):Literal
-        call join_adjacent_literal_strings
+        call join_strings
       endOn
     endWhile
     return
@@ -1815,7 +1815,7 @@ parser
       else
         # Global method template instance, e.g. method name<<Int32>>(...)
         template_args
-        call join  # name + <<type-args>>
+        call join_identifiers  # name + <<type-args>>
       endIf
     endIf
 
@@ -2771,7 +2771,7 @@ parser
     while (nextIs(STRING))
       on STRING
         create LiteralString(value=content):Literal
-        call join_adjacent_literal_strings
+        call join_strings
       endOn
     endWhile
     if (nextIs('('))
