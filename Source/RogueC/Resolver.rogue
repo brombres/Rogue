@@ -3345,6 +3345,7 @@ augment
       # a = tuple.x
       # b = tuple.y
       local tuple_type = new_value.require_type
+      tuple_type.resolve
       if (not tuple_type.is_compound)
         throw t.error( "Destructuring assignments can only be used with tuples." )
       endIf

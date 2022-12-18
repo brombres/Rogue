@@ -899,7 +899,7 @@ parser
           endWhile
           mustConsume ')'
         createList NamedTupleTypeElements
-        create Type(elements:NamedTupleTypeElements)
+        create Type(named_elements:NamedTupleTypeElements)
         list_or_optional_type
         return
       else
@@ -915,7 +915,7 @@ parser
           endWhile
           mustConsume ')'
         createList AnonymousTupleTypeElements
-        create Type(elements:AnonymousTupleTypeElements)
+        create Type(anonymous_elements:AnonymousTupleTypeElements)
         list_or_optional_type
         return
       endIf
