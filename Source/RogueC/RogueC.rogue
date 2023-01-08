@@ -160,6 +160,7 @@ class RogueC
         if (Scanner.uses_File)     Program.include( t, "FileIO" ); Scanner.uses_File = false
         if (Scanner.uses_Introspection) Program.include( t, "Introspection" ); Scanner.uses_Introspection = false
         if (Scanner.uses_Process)  Program.include( t, "Core/Process" ); Scanner.uses_Process = false
+        if (Scanner.uses_Promise)  Program.include( t, "Core/Promise" ); Scanner.uses_Promise = false
         if (Scanner.uses_Scanner)  Program.include( t, "IO/Scanner" ); Scanner.uses_Scanner = false
         if (Scanner.uses_Set)      Program.include( t, "Collection/Set" ); Scanner.uses_Set = false
         if (Scanner.uses_Table)    Program.include( t, "Collection/Table" ); Scanner.uses_Table = false

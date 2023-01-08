@@ -10,6 +10,7 @@ class Scanner : ScannerCore, Poolable
     uses_File          : Logical
     uses_Introspection : Logical
     uses_Process       : Logical
+    uses_Promise       : Logical
     uses_Scanner       : Logical
     uses_Set           : Logical
     uses_Table         : Logical
@@ -98,6 +99,10 @@ class Scanner : ScannerCore, Poolable
 
     method use_Process
       uses_Process = true
+      uses_autoinclude = true
+
+    method use_Promise
+      uses_Promise = true
       uses_autoinclude = true
 
     method use_Set

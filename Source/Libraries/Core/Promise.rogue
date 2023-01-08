@@ -1,0 +1,169 @@
+#===============================================================================
+# USAGE
+#
+#   local promise = Promise(
+#     (resolve,reject) =>
+#     {
+#       ...
+#       resolve( result )
+#       # OR
+#       reject( Error("Reason") )
+#     }
+#   ).then(
+#     (value) => println "Promise resolved to $"(value); return modify(value)
+#
+#   ).then(
+#     ((modified_value) => println "Modified value is $"(modified_value)),
+#     (error) => println "ERROR: $"(error)
+#   ).on_catch(
+#     (error) => println "Won't happen in this example because previous 'then' caught error"
+#   ).finally(
+#     () => println "This code executes regardless of original value resolved or rejected."
+#   )
+#
+# CREDITS
+#   Based on code by Maciej Cieślar:
+#   https://medium.com/free-code-camp/how-to-implement-promises-in-javascript-1ce2680a7f51
+#===============================================================================
+
+enum PromiseState
+  PENDING
+  RESOLVED
+  REJECTED
+endEnum
+
+class PromiseHandler( on_success:Function(Value)->Value, on_failure:Function(Exception)->Value ) [compound]
+endClass
+
+class Promise
+  GLOBAL METHODS
+    method handler( on_success:Function(Value)->Value, on_failure:Function(Exception)->Value )->PromiseHandler
+      return PromiseHandler( on_success, on_failure )
+
+  PROPERTIES
+    state    = PromiseState.PENDING : PromiseState
+    handlers = PromiseHandler[]
+    result   = undefined
+    error    : Exception
+
+  METHODS
+    method init( callback:Function(Function(Value)->Value) )
+      try
+        callback( resolver )
+      catch (e:Exception)
+        reject( e )
+      endTry
+
+    method init( callback:Function(Function(Value)->Value,Function(Exception)->Value) )
+      try
+        callback( resolver, rejector )
+      catch (e:Exception)
+        reject( e )
+      endTry
+
+    method execute_handlers
+      which (state)
+        case PromiseState.RESOLVED
+          (forEach in handlers).on_success( result )
+        case PromiseState.REJECTED
+          (forEach in handlers).on_failure( error )
+        others
+          return
+      endWhich
+
+      handlers.clear
+
+    method finally( callback:Function()->Value )->Promise
+      return Promise(
+        (resolve,reject) with (original_promise=this,result=undefined,error=null->(as Exception),callback) =>
+        {
+          original_promise.then(
+            (value)  with (context=this,callback) => context.result=value; return callback(),
+            (reason) with (context=this,callback) => context.error=reason; return callback()
+          ).then(
+            (value) with (context=this,resolve,reject) => return which{ context.error:reject(context.error) || resolve(context.result) }
+          )
+        }
+      )
+
+    method is_pending->Logical
+      return state == PromiseState.PENDING
+
+    method is_rejected->Logical
+      return state == PromiseState.REJECTED
+
+    method is_resolved->Logical
+      return state == PromiseState.RESOLVED
+
+    method on_catch( on_failure:Function(Exception)->Value )->Promise
+      return this.then( (value)=>value, on_failure )
+
+    method rejector->(Function(Exception)->Value)
+      return (reason) with (promise=this) => promise.reject( reason )
+
+    method reject( error:Exception )
+      if (state != PromiseState.PENDING) return
+
+      if (result.is_object)
+        if local thenable = result.object->(as Promise)
+          thenable.then( resolver, rejector )
+          return
+        endIf
+      endIf
+
+      this.error = error
+      state = PromiseState.REJECTED
+
+      execute_handlers
+
+    method resolver->(Function(Value)->Value)
+      return (result) with (promise=this) => promise.resolve( result )
+
+    method resolve( result:Value )
+      if (state != PromiseState.PENDING) return
+
+      if (result.is_object)
+        if local thenable = result.object->(as Promise)
+          thenable.then( resolver, rejector )
+          return
+        endIf
+      endIf
+
+      this.result = result
+      state = PromiseState.RESOLVED
+
+      execute_handlers
+
+    method then( on_success:Function(Value)->Value, on_failure=null:Function(Exception)->Value )->Promise
+      return Promise(
+        function( resolve:Function(Value)->Value, reject:Function(Exception)->Value ) with (promise=this,on_success,on_failure)
+          promise.handlers.add(
+            PromiseHandler(
+              function (result:Value)->Value with (resolve,reject,on_success)
+                if (on_success)
+                  try
+                    resolve( on_success(result) )
+                  catch (e:Exception)
+                    reject( e )
+                  endTry
+                else
+                  resolve( result )
+                endIf
+              endFunction,
+              function (reason:Exception)->Value with (resolve,reject,on_failure)
+                if (on_failure)
+                  try
+                    resolve( on_failure(reason) )
+                  catch (e:Exception)
+                    reject( e )
+                  endTry
+                else
+                  reject( reason )
+                endIf
+              endFunction,
+            )
+          )
+          promise.execute_handlers
+        endFunction
+      )
+endClass
