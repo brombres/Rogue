@@ -39,7 +39,7 @@ syn keyword rogueBranch       escapeTry escapeUse escapeTemporarily
 syn keyword rogueBranch       escapeWhich escapeWhichIs escapeIf escapeContingent escapeBlock
 syn keyword rogueBranch       nextIteration
 syn keyword rogueBoolean      true false pi
-syn keyword rogueConstant     null infinity NaN
+syn keyword rogueConstant     null infinity NaN undefined
 syn keyword rogueTypedef      this prior
 syn keyword rogueStatement    return necessary sufficient noAction
 syn match   rogueType         "\$\?\<\u\w*\>\(<<.*>>\)\?\(\[]\)*"
