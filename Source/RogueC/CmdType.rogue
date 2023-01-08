@@ -715,6 +715,9 @@ augment
     method LiteralNullOptional.type->Type
       return optional_type
 
+    method LiteralUndefined.type->Type
+      return Program.type_Value
+
     method PreDecrementLocal.type->Type
       return info.type
 
