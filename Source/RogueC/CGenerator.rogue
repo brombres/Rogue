@@ -716,9 +716,9 @@ class CGenerator : Visitor
           writer.print   "RogueObject* _auto_virtual_context_"
           writer.print   n
           writer.println ';'
-          #writer.print   "(void) _auto_virtual_context_"
-          #writer.print   n
-          #writer.println ';'
+          writer.print   "(void) _auto_virtual_context_"
+          writer.print   n
+          writer.println ';'
         endForEach
       endIf
 
