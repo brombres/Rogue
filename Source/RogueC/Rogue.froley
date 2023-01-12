@@ -1908,6 +1908,20 @@ parser
   produceList Statements
 
 - single_line_statements
+  on EOL
+    consume_eols
+    if (not nextIs('{'))
+      beginList
+      produceList Statements
+    endIf
+  endOn
+
+  on '{'
+    multi_line_statements
+    mustConsume '}'
+    return
+  endOn
+
   beginList
 
   if (consume(EOL) or (nextHasAttribute(structural) and not nextIs(';'))) produceList Statements
