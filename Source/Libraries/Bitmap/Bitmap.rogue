@@ -734,9 +734,9 @@ class Bitmap
       local new_width   = other.width
       local new_height  = other.height
 
-      # Each ARGB component needs a separate int + divisor
+      # Each ARGB component needs a separate Int32 + divisor + number of 0 value pixels
       use resize_row_buffer = WorkList<<Real>>
-        resize_row_buffer.expand_to_count( new_width * 5 )
+        resize_row_buffer.expand_to_count( new_width * 6 )
 
         local src_i = 0
         local dest_i = 0
@@ -777,14 +777,20 @@ class Bitmap
         local g = 0.0
         local r = 0.0
         local a = 0.0
+        local z = 0.0
         local need = this_width
         while (need >= available)
-          if (native("(RogueReal)src[3]")->Int32)
+          if (native("*((RogueInt32*)src)")->Int32)
             b += native("(RogueReal)src[0]")->Real * available
             g += native("(RogueReal)src[1]")->Real * available
             r += native("(RogueReal)src[2]")->Real * available
             a += native("(RogueReal)src[3]")->Real * available
             n += available
+          else
+            # Transparent black (0x00000000) can't be averaged in as usual or else it will
+            # tint translucent edges (many programs save all zero-alpha colors as transparent
+            # black). Keep a separate count and reconcile later.
+            z += available
           endIf
           native @|src += 4;
 
@@ -793,12 +799,17 @@ class Bitmap
         endWhile
 
         if (need)
-          if (native("(RogueReal)src[3]")->Int32)
+          if (native("*((RogueInt32*)src)")->Int32)
             b += native("(RogueReal)src[0]")->Real * need
             g += native("(RogueReal)src[1]")->Real * need
             r += native("(RogueReal)src[2]")->Real * need
             a += native("(RogueReal)src[3]")->Real * need
             n += need
+          else
+            # Transparent black (0x00000000) can't be averaged in as usual or else it will
+            # tint translucent edges (many programs save all zero-alpha colors as transparent
+            # black). Keep a separate count and reconcile later.
+            z += need
           endIf
 
           available -= need
@@ -813,19 +824,31 @@ class Bitmap
         buffer[buffer_i+2] += r * multiplier
         buffer[buffer_i+3] += a * multiplier
         buffer[buffer_i+4] += n * multiplier
+        buffer[buffer_i+5] += z * multiplier
 
-        buffer_i += 5
+        buffer_i += 6
       endForEach
 
     method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32, resize_row_buffer:Real[] )
       local row_buffer = resize_row_buffer
       native @|RogueByte*   dest = (RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
               |RogueReal*   buffer = $row_buffer->as_real64s;
-              |RogueReal    divisor = 0.0;
+              |RogueReal    divisor;
 
       forEach (1..new_width)
         native @|if ((divisor = buffer[4]))
                 |{
+                |  RogueReal z;
+                |  if ((z = buffer[5]))
+                |  {
+                |    // Incorporate zero values (transparent black). Increase each R,G,B component by
+                |    // the average value times the zero count.
+                |    buffer[0] += (buffer[0] / divisor) * z;  // B
+                |    buffer[1] += (buffer[1] / divisor) * z;  // G
+                |    buffer[2] += (buffer[2] / divisor) * z;  // R
+                |    divisor += z;
+                |  }
+                |
                 |  dest[0] = (RogueByte)(buffer[0] / divisor);
                 |  dest[1] = (RogueByte)(buffer[1] / divisor);
                 |  dest[2] = (RogueByte)(buffer[2] / divisor);
@@ -843,8 +866,9 @@ class Bitmap
                 |buffer[2] = 0;
                 |buffer[3] = 0;
                 |buffer[4] = 0;
+                |buffer[5] = 0;
                 |dest   += 4;
-                |buffer += 5;
+                |buffer += 6;
       endForEach
 
     method resize_to_fill( min_width:Int32, min_height:Int32, crop=null:Anchor? )
