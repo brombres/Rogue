@@ -1302,7 +1302,6 @@ class Resolver : Poolable, Visitor
     method on_visit( cmd:Procedure )
       cmd.is_resolved = true
       autoname_index = 0
-
       visible_locals_fp.add( visible_locals.count )
       forEach (p in cmd.parameters)
         block p = p->(as Local)
@@ -1314,6 +1313,11 @@ class Resolver : Poolable, Visitor
       visit_children( cmd )
 
       visible_locals.discard_from( visible_locals_fp.remove_last )
+
+      if (cmd.attributes.is_generator)
+        ConvertToGenerator( this_module, this_type ).visit( this_procedure )
+        visit_children( cmd )
+      endIf
 
     method on_visit_children( cmd:Property )
       # skip initial_value since it will be out of context

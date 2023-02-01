@@ -23,6 +23,7 @@ $include ClearLocalInfo
 $include CollectVirtualCallInfo
 $include Collector
 $include ConvertDynamicCallsToStaticAndVirtualCalls
+$include ConvertToGenerator
 $include CullUnusedElements
 $include TypeOrganizer
 $include ContextBlockPatcher

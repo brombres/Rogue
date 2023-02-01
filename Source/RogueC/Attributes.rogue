@@ -45,6 +45,7 @@ class Attribute
     FAUX               = (Int64(1):<<:40)
     PREFERRED          = (Int64(1):<<:41)
     NATIVE_TYPE        = (Int64(1):<<:42)
+    GENERATOR          = (Int64(1):<<:43)
 endClass
 
 class Attributes : CmdList
@@ -91,6 +92,7 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< is_faux,              Attribute.FAUX >>
   ROGUE_ATTRIBUTE<< is_preferred,         Attribute.PREFERRED >>
   ROGUE_ATTRIBUTE<< is_native_type,       Attribute.NATIVE_TYPE >>
+  ROGUE_ATTRIBUTE<< is_generator,         Attribute.GENERATOR >>
 
   PROPERTIES
     flags : Int64
@@ -153,8 +155,16 @@ augment
     method AttributeExport.attribute_flags->Int64
       return Attribute.EXPORT
 
+    # TODO: FIX ME - Reader.position [fallback] not working correctly with
+    # fallback flag defined.
+    #method AttributeFallback.attribute_flags->Int64
+      #return Attribute.FALLBACK
+
     method AttributeFaux.attribute_flags->Int64
       return Attribute.FAUX
+
+    method AttributeGenerator.attribute_flags->Int64
+      return Attribute.GENERATOR
 
     method AttributeInsert.attribute_flags->Int64
       return Attribute.INSERT

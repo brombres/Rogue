@@ -3409,6 +3409,9 @@ class Which : Conditional
       prior.init( existing )
       if (existing.cases) cases = existing.cases.cloned
 
+    method add_case( t:Token, args:Cmd, statements:Statements )
+      cases.add( WhichCase(t,args,statements) )
+
     method description->String
       return "Which($,$,$)" (%condition,%cases,%statements)
 
@@ -4997,5 +5000,27 @@ class CallVirtualMethod : CallProcedure
 
     method description->String
       return "CallVirtualMethod($,$)" (%context,%args)
+
+endClass
+
+class AttributeGenerator : Cmd
+  METHODS
+    method description->String
+      return "AttributeGenerator"
+endClass
+
+class Yield : Cmd
+  PROPERTIES
+    result : Cmd
+
+  METHODS
+    method init( t, result )
+
+    method init( existing:Yield )
+      prior.init( existing )
+      if (existing.result) result = existing.result.cloned
+
+    method description->String
+      return "Yield($)" (%result)
 
 endClass

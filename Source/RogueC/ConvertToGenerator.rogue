@@ -1,0 +1,47 @@
+module RogueC
+
+class ConvertToGenerator : Visitor
+  PROPERTIES
+    control_loop   : Loop
+    control_which  : Which
+    cur_ip         : Int32
+    labels         = [String:Int32]
+    backpatch_list = [String:Assign]
+
+  METHODS
+    method init( this_module, this_type )
+
+    method on_visit( cmd:Statements )
+      forEach (statement in cmd)
+        statement = visit( statement )
+        if (statement)
+          if (statement.type) statement = statement.discarding_result
+          write_statement( statement )
+        endIf
+      endForEach
+
+    method on( cmd:Yield )->Cmd
+      return Return( cmd.t, cmd.result )
+
+    method visit( cmd:Procedure )->Cmd
+      local t = cmd.t
+
+      local statements = Statements( t )
+      control_loop = Loop( t, null, statements )
+      control_which = Which( t, Subtract(t,Access(t,"__ip"),LiteralInt32(t,1)), WhichCases(t), Return(t,LiteralNull(t)) )
+      statements.add( Increment(t,Access(t,"__ip")) )
+      statements.add( control_which )
+
+      local result = prior.visit( cmd )
+
+      statements = Statements( t, control_loop, Return(t,LiteralNull(t)) )
+      cmd.statements = statements
+      cmd.body.statements = statements
+
+      return result
+
+    method write_statement( cmd:Cmd )
+      local n = control_which.cases.count
+      control_which.add_case( cmd.t, Args(cmd.t,LiteralInt32(cmd.t,n)), cmd )
+
+endClass

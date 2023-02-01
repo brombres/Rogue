@@ -116,6 +116,7 @@ KEYWORD_WHICH             which
 KEYWORD_WHILE             while
 KEYWORD_WITH              with
 KEYWORD_XOR               xor
+KEYWORD_YIELD             yield
 
 ----------------------------------------------------------------------
 tokens Symbols
@@ -741,6 +742,7 @@ parser
   on @"append"     -> AttributeAppend
   on @"essential"  -> AttributeEssential
   on @"fallback"   -> AttributeFallback
+  on @"generator"  -> AttributeGenerator
   on @"insert"     -> AttributeInsert
   on @"mutating"   -> AttributeMutating
   on @"override"   -> AttributeOverride
@@ -2150,7 +2152,9 @@ parser
     brief_trace
     return
   endOn
-  on "throw" expression           -> Throw(exception)
+  on "throw" expression          -> Throw(exception)
+
+  on "yield" optional_expression -> Yield(result)
 
   onPeek "nativeHeader"
     native_code_block
