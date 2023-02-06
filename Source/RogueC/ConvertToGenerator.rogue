@@ -1,16 +1,99 @@
 module RogueC
 
-class ConvertToGenerator : Visitor
+class ConvertToGenerator : InspectionVisitor
   PROPERTIES
     control_loop   : Loop
     control_which  : Which
     cur_ip         : Int32
-    labels         = [String:Int32]
-    backpatch_list = [String:Assign]
+    next_label     : Int32
+    label_defs     = [String:Int32]
+    backpatch_list = [String:LiteralInt32[]]
+    current_block  : Statements
 
   METHODS
     method init( this_module, this_type )
 
+    method create_label( name:String )->String
+      name += "_$"(next_label)
+      ++next_label
+      return name
+
+    method begin_block( t:Token )
+      local ip = control_which.cases.count
+      current_block = Statements( t )
+      control_which.add_case( t, Args(t,LiteralInt32(t,ip)), current_block )
+
+    method begin_block( t:Token, label:String )
+      local ip = control_which.cases.count
+      label_defs[label] = ip
+      if local commands = backpatch_list[label]
+        (forEach in commands).value = ip
+        commands.clear
+      endIf
+      current_block = Statements( t )
+      control_which.add_case( t, Args(t,LiteralInt32(t,ip)), current_block )
+
+    method end_block
+      current_block = null
+
+    method label_reference( t:Token, label:String )->LiteralInt32
+      local def = label_defs.find( label )
+      local ip = which{ def:def.value || 0 }
+
+      local cmd = LiteralInt32( t, ip )
+      local entries = backpatch_list[label]
+      if (not entries)
+        entries = LiteralInt32[]
+        backpatch_list[label] = entries
+      endIf
+      entries.add( cmd )
+
+      return cmd
+
+    method set_ip( t:Token, value:Int32 )->Cmd
+      return set_ip( t, LiteralInt32(t,value) )
+
+    method set_ip( t:Token, value:LiteralInt32 )->Cmd
+      return Assign( t, Access(t,"__ip"), value )
+
+    method set_ip( t:Token, label:String )->Cmd
+      return set_ip( t, label_reference(t,label) )
+
+    method on( cmd:If )->Logical
+      local t = cmd.t
+      local label_true  = create_label( "true" )
+      local label_false = create_label( "false" )
+      local label_done  = create_label( "done" )
+
+      begin_block( t )
+      write(
+        If( t, cmd.condition,
+          Statements( t, set_ip(t,label_true) ),
+          Statements( t, set_ip(t,label_false) )
+        )
+      )
+
+      begin_block( t, label_true )
+      visit( cmd.statements )
+      write( set_ip(t,label_done) )
+
+      begin_block( t, label_false )
+      if (cmd.cmd_else)
+        visit( cmd.cmd_else )
+      endIf
+      write( set_ip(t,label_done) )
+
+      begin_block( t, label_done )
+
+      return false
+
+    method on_visit( cmd:Return )
+      local t = cmd.t
+      write( Assign(t, Access(t,"__ip"), LiteralInt32(t,-1)) )
+      write( Return(t, cmd.result) )
+      end_block
+
+      #{
     method on_visit( cmd:Statements )
       forEach (statement in cmd)
         statement = visit( statement )
@@ -19,29 +102,46 @@ class ConvertToGenerator : Visitor
           write_statement( statement )
         endIf
       endForEach
+      }#
 
-    method on( cmd:Yield )->Cmd
-      return Return( cmd.t, cmd.result )
+    method on_visit( cmd:Yield )
+      write( Return(cmd.t,cmd.result) )
+      end_block
 
-    method visit( cmd:Procedure )->Cmd
+    method on( cmd:Procedure )->Logical
       local t = cmd.t
 
       local statements = Statements( t )
       control_loop = Loop( t, null, statements )
-      control_which = Which( t, Subtract(t,Access(t,"__ip"),LiteralInt32(t,1)), WhichCases(t), Return(t,LiteralNull(t)) )
+      local default = Statements(t)
+      default.add( set_ip(t, -1) )
+      default.add( Return(t,LiteralNull(t)) )
+      control_which = Which( t, Subtract(t,Access(t,"__ip"),LiteralInt32(t,1)), WhichCases(t), default )
       statements.add( Increment(t,Access(t,"__ip")) )
       statements.add( control_which )
 
-      local result = prior.visit( cmd )
+      visit_children( cmd )
 
       statements = Statements( t, control_loop, Return(t,LiteralNull(t)) )
       cmd.statements = statements
       cmd.body.statements = statements
 
-      return result
+      return false
 
-    method write_statement( cmd:Cmd )
+    method write( cmd:Cmd )
+      if (not current_block) begin_block( cmd.t )
+      current_block.add( cmd )
+
+    method write( label:String, cmd:Cmd )
+      begin_block( cmd.t, label )
+      write( cmd )
+
+      #{
+    method write_statements( label:String, a:Cmd, b:Cmd )
+      define_label( label )
       local n = control_which.cases.count
-      control_which.add_case( cmd.t, Args(cmd.t,LiteralInt32(cmd.t,n)), cmd )
+      local statements = Statements( a.t, a, b )
+      control_which.add_case( cmd.t, Args(cmd.t,LiteralInt32(cmd.t,n)), statements )
+      }#
 
 endClass
