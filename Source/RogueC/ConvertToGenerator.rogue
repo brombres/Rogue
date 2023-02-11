@@ -60,6 +60,12 @@ class ConvertToGenerator : InspectionVisitor
       return set_ip( t, label_reference(t,label) )
 
     method on( cmd:If )->Logical
+      if (not cmd.condition)
+        # An 'else' block is an 'if' with no condition
+        visit( cmd.statements )
+        return false
+      endIf
+
       local t = cmd.t
       local label_true  = create_label( "true" )
       local label_false = create_label( "false" )
