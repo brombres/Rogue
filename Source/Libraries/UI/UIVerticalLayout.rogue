@@ -3,13 +3,13 @@ module UI
 class UIVerticalLayout : UILayout
   METHODS
     method measure_content_height( subcomponents:UIComponent[] )->Real64?
-      local total_w = 0.0
+      local total_h = 0.0
       forEach (component in subcomponents)
         local h = component.measure_height( null )
         if (not h) return null
-        total_w += h.value
+        total_h += h.value
       endForEach
-      return total_w
+      return total_h
 
     method measure_content_width( subcomponents:UIComponent[] )->Real64?
       local max_w = 0.0

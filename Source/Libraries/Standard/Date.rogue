@@ -47,7 +47,7 @@
 #   today.days_in_year:366
 #
 # HISTORY
-#   2020.03.15 - Created by Abe Pralle
+#   2020.03.15 - Created by Brom Bresenham
 #==============================================================================
 
 class Date( year:Int32, month:Int32, day:Int32 ) [compound]

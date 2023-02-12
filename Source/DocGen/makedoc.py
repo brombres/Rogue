@@ -78,7 +78,7 @@ def reader (source):
 
 
 
-# e.g., --url=https://github.com/AbePralle/Rogue/blob/master/Source/Libraries/Standard/
+# e.g., --url=https://github.com/brombres/Rogue/blob/master/Source/Libraries/Standard/
 url_prefix = None
 if sys.argv[1].startswith("--url="):
   url_prefix = sys.argv[1][6:]

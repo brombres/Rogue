@@ -391,7 +391,7 @@ class WindowsProcess : Process
       # I forget if there's a specific reason I chose 'cmd.exe /c' - perhaps just to do a path search.
       # If there are any troubles with this approach, might be worth doing path searching manually
       # (calling the Windows API function to do a path search) and requiring a caller that wants to
-      # run a cmd.exe built-in to specify cmd.exe themselves. --Abe
+      # run a cmd.exe built-in to specify cmd.exe themselves. --Brom
 
       init( ["cmd.exe","/c",cmd], &=readable, &=writable, &=is_blocking, &=inherit_environment, &=env )
 

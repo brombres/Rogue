@@ -7,13 +7,13 @@ An ergonomic object-oriented high-level language that compiles to C++.
 - v1.14 - July 6, 2022
 - macOS, Linux, Windows
 - [MIT License](LICENSE)
-- By Abe Pralle
+- By Brom Bresenham
 
 # Installation
 
 Install [Morlock](https://morlock.sh).
 
-Installing Morlock will also install Rogue and [Rogo](https://github.com/AbePralle/Rogo).
+Installing Morlock will also install Rogue and [Rogo](https://github.com/brombres/Rogo).
 
 # Syntax Highlighting
 
@@ -39,5 +39,5 @@ Rogue comes with syntax and indent modules for Vim; they are located in the Synt
 Rogue is released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 # About
-Rogue was created by Abe Pralle in 2015. Abe Pralle and Murphy McCauley lead Rogue's design and development.
+Rogue was created by Brom Bresenham in 2015. Brom Bresenham and Murphy McCauley lead Rogue's design and development.
 

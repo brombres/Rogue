@@ -5,7 +5,7 @@
 # Can be used as both an absolute time and a relative interval.
 #
 # HISTORY
-#   2020.03.16 - Created by Abe Pralle
+#   2020.03.16 - Created by Brom Bresenham
 #==============================================================================
 
 class Time( total_seconds:Real64 ) [compound]

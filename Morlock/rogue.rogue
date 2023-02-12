@@ -1,8 +1,8 @@
 class RoguePackage : Package
   # Base class Package is defined here:
-  # https://github.com/AbePralle/Morlock/blob/main/Source/Package.rogue
+  # https://github.com/brombres/Morlock/blob/main/Source/Package.rogue
   PROPERTIES
-    name = "abepralle/rogue"
+    name = "brombres/rogue"
 
   METHODS
     method init

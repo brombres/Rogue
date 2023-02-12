@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:     Rogue
-" Maintainer:   Abe Pralle <abe.pralle@gmail.com>
+" Maintainer:   Brom Bresenham
 " URL:
 " Last Change:  2016.12.08
 

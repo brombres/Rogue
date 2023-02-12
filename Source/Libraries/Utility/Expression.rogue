@@ -42,7 +42,7 @@
 #   endClass
 #
 # HISTORY
-#   2021-04-27 - Created by Abe Pralle
+#   2021-04-27 - Created by Brom Bresenham
 #===============================================================================
 module Expression
 
