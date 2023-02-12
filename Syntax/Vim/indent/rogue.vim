@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:    Rogue
-" Author:      Ty Heath <ty.heath@gmail.com>
-" Maintainer:  Abe Pralle <abe.pralle@gmail.com>
+" Author:      Ty Heath
+" Maintainer:  Brom Bresenham
 " Created:     August 5, 2009
 " Last Change: April 13, 2016
 

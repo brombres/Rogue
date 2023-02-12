@@ -17,7 +17,7 @@ Note: Rogue v1.x is available in the `v1` branch.
 ## Morlock Install (Simplest)
 Install [Morlock](https://morlock.sh).
 
-Installing Morlock will also install Rogue and [Rogo](https://github.com/AbePralle/Rogo).
+Installing Morlock will also install Rogue and [Rogo](https://github.com/brombres/Rogo).
 
 ## Manual Install
 1. Clone this repository locally.
@@ -54,5 +54,5 @@ Rogue comes with syntax and indent modules for Vim; they are located in the Synt
 Rogue is released under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 # About
-Abe Pralle created Rogue in 2015 and leads Rogue's design and development.
+Brom Bresenham created Rogue in 2015 and leads Rogue's design and development.
 

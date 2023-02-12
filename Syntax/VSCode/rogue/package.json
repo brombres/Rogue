@@ -3,7 +3,7 @@
     "displayName": "Rogue",
     "description": "Rogue Language",
     "version": "0.1.0",
-    "publisher": "AbePralle",
+    "publisher": "BromBresenham",
     "engines": {
         "vscode": "^1.22.0"
     },
