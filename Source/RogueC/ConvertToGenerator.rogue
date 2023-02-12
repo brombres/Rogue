@@ -93,6 +93,36 @@ class ConvertToGenerator : InspectionVisitor
 
       return false
 
+    method on( cmd:Iterator )->Logical
+      local t = cmd.t
+
+      local label_condition  = create_label( "condition" )
+      write( set_ip(t,label_condition) )
+
+      local label_loop_top  = create_label( "loop_top" )
+      begin_block( t, label_loop_top )
+
+      visit( cmd.statements )
+
+      local label_upkeep : String
+      if (cmd.upkeep_label_used)
+        label_upkeep = create_label( "upkeep" )
+        begin_block( t, label_upkeep )
+      endIf
+
+      visit( cmd.upkeep )
+
+      begin_block( t, label_condition )
+
+      write(
+        If( t, cmd.condition,
+          Statements( t, set_ip(t,label_loop_top) ),
+          null
+        )
+      )
+
+      return false
+
     method on_visit( cmd:Return )
       local t = cmd.t
       write( Assign(t, Access(t,"__ip"), LiteralInt32(t,-1)) )
