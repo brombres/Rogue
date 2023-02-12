@@ -88,7 +88,7 @@ class RogueC
       if (command//options//version)
         print   "v"
         println VERSION
-        println "$ by Abe Pralle" (DATE)
+        println "$ by Brom Bresenham" (DATE)
         System.exit 0
       endIf
 
@@ -274,7 +274,7 @@ class RogueC
     method print_usage
       print   "RogueC v"
       println VERSION
-      println "$ by Abe Pralle" (DATE)
+      println "$ by Brom Bresenham" (DATE)
       println
       println @|USAGE
                |  rogue [OPTIONS] <filepath>
