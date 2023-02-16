@@ -1315,7 +1315,11 @@ class Resolver : Poolable, Visitor
       visible_locals.discard_from( visible_locals_fp.remove_last )
 
       if (cmd.attributes.is_generator)
-        ConvertToGenerator( this_module, this_type ).visit( this_procedure )
+        if (this_type.attributes.is_generator)
+          ConvertToGenerator( this_module, this_type ).create_generator_object( this_procedure )
+        else
+          ConvertToGenerator( this_module, this_type ).visit( this_procedure )
+        endIf
         visit_children( cmd )
       endIf
 

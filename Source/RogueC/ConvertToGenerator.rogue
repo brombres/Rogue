@@ -13,6 +13,8 @@ class ConvertToGenerator : InspectionVisitor
   METHODS
     method init( this_module, this_type )
 
+    method create_generator_object( this_procedure )
+
     method create_label( name:String )->String
       name += "_$"(next_label)
       ++next_label

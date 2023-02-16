@@ -1,6 +1,7 @@
 $include Core/Boxed
 $include Core/Dim
 $include Core/Exception
+$include Core/Generator
 $include Core/Global
 $include Core/Object
 $include Core/ObjectPool

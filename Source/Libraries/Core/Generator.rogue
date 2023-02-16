@@ -1,0 +1,8 @@
+class Generator;
+
+class Generator<<$ValueType>> : Generator [abstract]
+  METHODS
+    method init
+
+    method read_another->$ValueType? [abstract]
+endClass

@@ -1150,6 +1150,7 @@ parser
   on @"api"       -> AttributeAPI
   on @"aspect"    -> AttributeAspect
   on @"compound"  -> AttributeCompound
+  on @"generator" -> AttributeGenerator
   on @"primitive" -> AttributePrimitive
   on @"singleton" -> AttributeSingleton
   if (consume @"essential")
