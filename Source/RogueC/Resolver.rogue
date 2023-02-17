@@ -873,6 +873,14 @@ class Resolver : Poolable, Visitor
 
       return cmd_if
 
+    method on( cmd:InvokeContext )->Cmd
+      local context = visit( cmd.context )
+      if (context instanceOf TypeContext)
+        return visit( cmd_create_object(cmd.t, context.type, cmd.args) )
+      else
+        return visit( ContextAccess(cmd.t, context, "call", cmd.args) )
+      endIf
+
     method on( cmd:Is )->Cmd
       cmd.left = visit( cmd.left )
       cmd.right = visit( cmd.right )

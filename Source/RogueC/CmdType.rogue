@@ -630,6 +630,12 @@ augment
     method InstanceOf.type->Type
       return Program.type_Logical
 
+    method InvokeContext.type->Type
+      local context_type = context.type
+      if (not context_type) return null
+      if (context instanceOf TypeContext) return context_type
+      return null
+
     method IsCompound.type->Type
       return Program.type_Logical
 

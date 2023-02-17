@@ -729,5 +729,9 @@ class Visitor
     method on_visit_children( cmd:Yield )
       cmd.result = visit(cmd.result)
 
+    method on_visit_children( cmd:InvokeContext )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
 endClass
 
