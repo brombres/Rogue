@@ -4999,3 +4999,21 @@ class CallVirtualMethod : CallProcedure
       return "CallVirtualMethod($,$)" (%context,%args)
 
 endClass
+
+class InvokeContext : Cmd
+  PROPERTIES
+    context : Cmd
+    args    : Cmd
+
+  METHODS
+    method init( t, context, args )
+
+    method init( existing:InvokeContext )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "InvokeContext($,$)" (%context,%args)
+
+endClass

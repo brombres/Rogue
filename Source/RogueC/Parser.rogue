@@ -753,7 +753,10 @@ class Parser : ParserCore, Poolable
             tokens.insert( class_t.cloned(TokenType.IDENTIFIER,access.name) )
             tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
             access.name = name
+            _cmd_stack.remove_last
+            _cmd_stack.add( TypeAccess(access.t, Type(access.t,name), access.args) )
           endBlock
+
         elseIf (access instanceOf TemplatedAccess)
           block access = access->(as TemplatedAccess)
             local type_template_name = "$<<$>>"(access.name,access.type_args.count)
@@ -769,8 +772,9 @@ class Parser : ParserCore, Poolable
             endForEach
             tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
             _cmd_stack.remove_last
-            _cmd_stack.add( TypeAccess(access.t, Type(access.t,type_template,access.type_args), access.args) )
+            _cmd_stack.add( TypeAccess(access.t, Type(access.t,name), access.args) )
           endBlock
+
         elseIf (access instanceOf TypeAccess)
           block access = access->(as TypeAccess)
             forEach (t in access.of_type.name_tokens step -1)
@@ -778,9 +782,13 @@ class Parser : ParserCore, Poolable
             endForEach
             tokens.insert( class_t.cloned(TokenType.SYMBOL_COLON) )
             access.of_type = Type( class_t, name )
+            _cmd_stack.remove_last
+            _cmd_stack.add( TypeAccess(access.t, Type(access.t,name), access.args) )
           endBlock
+
         else
           throw class_t.error( "[INTERNAL] Unhandled context node for subclass: $."(access.type_name) )
+
         endIf
 
       endIf

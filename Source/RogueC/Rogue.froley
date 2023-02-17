@@ -2660,7 +2660,9 @@ parser
   on '?'   -> Logicalize
   if (nextIs('('))
     args
-    produce ContextAccess(context,name="call",args)
+    create_InvokeContext
+    access_inner
+    return
   endIf
 
 - access
@@ -3079,6 +3081,9 @@ parser
   endOn
 
   syntaxError
+
+- create_InvokeContext
+  produce InvokeContext( context, args )
 
 - value_expression
   on '{' value_table: return
