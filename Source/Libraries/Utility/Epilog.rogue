@@ -13,6 +13,7 @@ class Epilog : BufferedPrintWriter<<buffer>> [singleton]
   #   ...
   PROPERTIES
     echo        : Logical
+    file        : File?
     writer      : PrintWriter
     history     = String()
     is_finished : Logical
@@ -21,11 +22,13 @@ class Epilog : BufferedPrintWriter<<buffer>> [singleton]
     method init
       on_exit( this=>on_finish )
 
-    method configure( file=null:File?, echo=false )
+    method configure( file=null, echo=false )
       if (writer) writer.close; writer = null
-      if local file = file
-        if (file.exists) file.delete
-        writer = PrintWriter( file.writer )
+      if (file)
+        if local file = file
+          if (file.exists) file.delete
+          writer = PrintWriter( file.writer )
+        endIf
       endIf
 
     method on_finish
@@ -40,8 +43,13 @@ class Epilog : BufferedPrintWriter<<buffer>> [singleton]
       endIf
 
     method flush( buffer:String )
-      if (writer) writer.[ print(buffer), flush ]
-      else        history.print buffer
+      if (writer)
+        writer.[ print(buffer), flush ]
+        writer.close
+        writer = PrintWriter( file.value.writer(&append) )
+      else
+        history.print buffer
+      endIf
 
       if (echo) Global.[ print(buffer), flush ]
 
