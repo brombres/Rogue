@@ -231,7 +231,7 @@ class UI : UILayout
       # measured in update_layout()
       activate
       prior.update
-      update_layout
+      if (needs_layout) update_layout
 
     method update_display_state
       prior.update_display_state
