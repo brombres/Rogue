@@ -683,11 +683,6 @@ class Resolver : Poolable, Visitor
       local context_type = context.require_type
       local index_type   = index.require_type
 
-      if (index_type is Program.type_Int32)
-        local cmd_call = resolve_access( cmd.t, context, "at", Args(cmd.t,index), &suppress_error )
-        if (cmd_call) return cmd_call
-      endIf
-
       local cmd_call = resolve_access( cmd.t, context, "get", Args(cmd.t,index), &suppress_error )
       if (cmd_call) return cmd_call
 
