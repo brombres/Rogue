@@ -422,6 +422,9 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
 
       return result
 
+    method resize( new_size:XY )
+      resize( new_size.x, new_size.y )
+
     method resize( new_width:Int32, new_height:Int32 )
       if (width == new_width and height == new_height) return
       expand( 0, 0, new_width-width, new_height-height )
