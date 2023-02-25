@@ -305,10 +305,19 @@ class Node<<$ExtendedNodeType>>
       endIf
 
     method to->String
-      local result = "$"(type_name)
-      if (first_child) result += "($)"(first_child)
-      if (next)        result += "," + next
-      return result
+      if (first_child)
+        local result = String()
+        result.print type_name
+        result.print '('
+        forEach (child at i in children)
+          if (i > 0) result.print ','
+          result.print child
+        endForEach
+        result.print ')'
+        return result
+      else
+        return type_name
+      endIf
 
 endClass
 
