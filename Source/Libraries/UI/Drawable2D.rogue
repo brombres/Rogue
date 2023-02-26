@@ -169,6 +169,10 @@ class Drawable2D : Entity
     method set_size( value:XY )
       placement.size = value
 
+    method set_structure_modified( setting:Logical ) [override]
+      prior.set_structure_modified( setting )
+      if (setting) request_layout
+
     method set_width( value:Int32 )
       placement.size = XY( value, placement.size.y )
 

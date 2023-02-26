@@ -108,7 +108,7 @@ class UIComponent : Drawable2D
       endUse
       after_prepare_layout
 
-      if (size != og_size) is_modified = true
+      if (size != og_size) needs_layout = true
 
     method shrink_to_fit
       shrink_to_fit_width
