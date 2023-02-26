@@ -17,7 +17,7 @@ class Node<<$ExtendedNodeType>>
     last_child  : $ExtendedNodeType
     next        : $ExtendedNodeType
     count       : Int32
-    is_modified : Logical
+    structure_modified : Logical
 
   METHODS
     method add( new_child:$ExtendedNodeType )
@@ -44,7 +44,7 @@ class Node<<$ExtendedNodeType>>
       remove_children
 
     method clear_structure_modified
-      is_modified = false
+      structure_modified = false
       if (first_child) first_child.clear_structure_modified
       if (next)  next.clear_structure_modified
 
@@ -92,12 +92,12 @@ class Node<<$ExtendedNodeType>>
           endWhile
         endIf
         parent.count -= n
-        parent.is_modified = true
+        parent.structure_modified = true
         @parent = null
       endIf
       if (not preserve_next)
         @next = null
-        is_modified = true
+        structure_modified = true
       endIf
       return this->(as $ExtendedNodeType)
 
@@ -166,13 +166,13 @@ class Node<<$ExtendedNodeType>>
         cur.@parent = this->(as $ExtendedNodeType)
       endWhile
 
-      this.is_modified = true
+      this.structure_modified = true
 
       cur = new_child
-      cur.is_modified = true
+      cur.structure_modified = true
       while (cur is not last_new_child)
         cur = cur.next
-        cur.is_modified = true
+        cur.structure_modified = true
       endWhile
 
     method insert_next( new_sibling:$ExtendedNodeType )
@@ -196,7 +196,7 @@ class Node<<$ExtendedNodeType>>
 
       cur = this.next
       loop (mod_count)
-        cur.is_modified = true
+        cur.structure_modified = true
         cur = cur.next
       endLoop
 
@@ -248,11 +248,11 @@ class Node<<$ExtendedNodeType>>
       @first_child = null
       @last_child = null
       count = 0
-      is_modified = true
+      structure_modified = true
 
       cur = result
       while (cur)
-        cur.is_modified = true
+        cur.structure_modified = true
         cur = cur.next
       endWhile
 
@@ -262,10 +262,10 @@ class Node<<$ExtendedNodeType>>
       if (first_child) remove_first
       insert( node )
 
-    method set_is_modified( setting:Logical )
-      if (@is_modified == setting) return
-      @is_modified = setting
-      if (setting and parent) parent.is_modified = true
+    method set_structure_modified( setting:Logical )
+      if (@structure_modified == setting) return
+      @structure_modified = setting
+      if (setting and parent) parent.structure_modified = true
 
     method set_last( node:$ExtendedNodeType )
       if (last_child) remove_last
