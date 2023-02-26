@@ -90,6 +90,7 @@ class UIScrollView : UILayout
       if (controller) controller.on_update_layout
 
     method save_display_state
+      prior.save_display_state
       last_content_offset = @content_offset
 
     method scroll_to( vertical_offset:Int32 )

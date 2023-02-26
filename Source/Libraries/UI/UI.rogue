@@ -113,6 +113,7 @@ class UI : UILayout
             endForEach
 
             (forEach in drawables).save_display_state
+            save_display_state
           endUse
         endIf
       endUse
