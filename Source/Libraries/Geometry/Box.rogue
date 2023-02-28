@@ -91,15 +91,24 @@ class Box( position:XY, size:XY ) [essential compound]
     method center->XY
       return this.at(0.5,0.5)
 
-    method clamped( enclosing:Box )->Box
-      # Clamps this box to the enclosing box, first by positioning and then
-      # by resizing if it's still too large.
+    method clamped( enclosing:Box, &shrink_to_fit )->Box
+      # Clamps this box to the enclosing box
       local inner = this
-      local pos = inner.position - enclosing.position
-      local br = pos + inner.size
-      if (br.x > enclosing.size.x) pos += XY(enclosing.size.x-br.x,0)
-      if (br.y > enclosing.size.y) pos += XY(0,enclosing.size.y-br.y)
-      return Box( pos.max(XY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
+
+      if (shrink_to_fit)
+        local pos = inner.position - enclosing.position
+        local br = pos + inner.size
+        if (br.x > enclosing.size.x) pos += XY(enclosing.size.x-br.x,0)
+        if (br.y > enclosing.size.y) pos += XY(0,enclosing.size.y-br.y)
+        return Box( pos.max(XY(0,0)) + enclosing.position, inner.size.min(enclosing.size) )
+      else
+        inner -= XY( (inner.x2-enclosing.x2).clamped(0,(inner.x1-enclosing.x1).clamped_low(0)), 0 )
+        inner += XY( (enclosing.x1-inner.x1).clamped(0,(enclosing.x2-inner.x2).clamped_low(0)), 0 )
+        inner -= XY( 0, (inner.y2-enclosing.y2).clamped(0,(inner.y1-enclosing.y1).clamped_low(0)) )
+        inner += XY( 0, (enclosing.y1-inner.y1).clamped(0,(enclosing.y2-inner.y2).clamped_low(0)) )
+      endIf
+
+      return inner
 
     method contains( other:Box )->Logical
       local other_pos = other.position
