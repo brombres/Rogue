@@ -133,15 +133,20 @@ class TextCanvas  : BufferedPrintWriter<<builder>>
       local x2 = x + i2
       local y2 = y + j2
 
-      if (x < 0) i1 += -x; x = 0
-      if (y < 0) j1 += -y; y = 0
-      if (x2 >= width)
-        local excess = (x2 - width) + 1
+      local min_x = which{ clip:clip.value.position.x || 0 }
+      local min_y = which{ clip:clip.value.position.y || 0 }
+      local max_x = which{ clip:clip.value.x2-1 || width-1 }
+      local max_y = which{ clip:clip.value.y2-1 || height-1 }
+
+      if (x < min_x) i1 += min_x - x; x = min_x
+      if (y < min_y) j1 += min_y - y; y = min_y
+      if (x2 > max_x)
+        local excess = (x2 - max_x)
         x2 -= excess
         i2 -= excess
       endIf
-      if (y2 >= height)
-        local excess = (y2 - height) + 1
+      if (y2 > max_y)
+        local excess = (y2 - max_y)
         y2 -= excess
         j2 -= excess
       endIf
