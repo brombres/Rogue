@@ -2385,37 +2385,6 @@ class Resolver : Poolable, Visitor
 
       endIf
 
-      if (not exact_arg_types)
-        # Filter by compatible and convertible args
-        local allow_conversions = false
-        loop 2
-          if (arg_count)
-            forEach (m in Candidates)
-              if (has_named_arg) m.arrange_args( args, this )
-              contingent
-                forEach (arg at i in args)
-                  necessary (arg_type_is_compatible(arg,m.parameters[i].type,&=allow_conversions))
-                endForEach
-                Candidates.keep m
-              endContingent
-            endForEach
-            if (Candidates.found_match) return Candidates.match
-            if (not Candidates.refine and allow_conversions) return null
-          else
-            if (Candidates.found_match) return Candidates.match
-          endIf
-          allow_conversions = true
-        endLoop
-
-        # Filter out candidates that don't have the same module context as the first candidate
-        local priority_module_context = Candidates[0].module_context
-        forEach (m in Candidates)
-          if (m.module_context is priority_module_context) Candidates.keep m
-        endForEach
-        if (Candidates.found_match) return Candidates.match
-        Candidates.refine
-      endIf
-
       # Filter by exact arg types
       if (arg_count)
         forEach (m in Candidates)
@@ -2434,6 +2403,35 @@ class Resolver : Poolable, Visitor
       endIf
 
       if (exact_arg_types) return null
+
+      # Filter by compatible and convertible args
+      local allow_conversions = false
+      loop 2
+        if (arg_count)
+          forEach (m in Candidates)
+            if (has_named_arg) m.arrange_args( args, this )
+            contingent
+              forEach (arg at i in args)
+                necessary (arg_type_is_compatible(arg,m.parameters[i].type,&=allow_conversions))
+              endForEach
+              Candidates.keep m
+            endContingent
+          endForEach
+          if (Candidates.found_match) return Candidates.match
+          if (not Candidates.refine and allow_conversions) return null
+        else
+          if (Candidates.found_match) return Candidates.match
+        endIf
+        allow_conversions = true
+      endLoop
+
+      # Filter out candidates that don't have the same module context as the first candidate
+      local priority_module_context = Candidates[0].module_context
+      forEach (m in Candidates)
+        if (m.module_context is priority_module_context) Candidates.keep m
+      endForEach
+      if (Candidates.found_match) return Candidates.match
+      Candidates.refine
 
       # Filter by fewest parameters (omitting calls with excess default args)
       if (arg_count)
