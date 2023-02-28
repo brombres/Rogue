@@ -917,7 +917,7 @@ class Bitmap
       if (not cw and not ccw) cw = true
       elseIf (cw and ccw)     return
 
-      local rotated_pixels = Color[]( pixels.count )
+      local rotated_pixels = Dim<<Color>>( pixels.count )
       block width, height, pixels, dest=0
         if (cw)
           local src_start = (height-1) * width
