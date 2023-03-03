@@ -106,6 +106,14 @@ class File( filepath:String ) [compound]
       error.println( "Unable to obtain absolute path of '$' - may not have read permission for all intermediate folders." (filepath) )
       return this
 
+    method appending( suffix:String )->File
+      # "filename.png".appending("@2x") -> "filename@2x.png"
+      # "filename.png".appending(null) -> "filename.png"
+      if (not suffix) return this
+      local (filepath,ext) = split_filepath_and_extension
+      if (ext == "") return filepath + suffix
+      return File("$$.$"(filepath,suffix,ext))
+
     method character_writer->CharacterToUTF8ByteWriter
       return CharacterToUTF8ByteWriter( File.writer(resolved.filepath) )
 
