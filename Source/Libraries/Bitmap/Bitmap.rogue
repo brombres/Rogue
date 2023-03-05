@@ -688,14 +688,18 @@ class Bitmap
       is_premultiplied_alpha = true
       forEach (i of pixels)
         local argb = pixels[i].argb
-        local a = argb :>>>: 24 & 255
-        local r = argb :>>>: 16 & 255
-        local g = argb :>>>: 8 & 255
-        local b = argb & 255
-        r = (r * a) / 255
-        g = (g * a) / 255
-        b = (b * a) / 255
-        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
+        if (argb)
+          local a = argb :>>>: 24 & 255
+          local r = argb :>>>: 16 & 255
+          local g = argb :>>>: 8 & 255
+          local b = argb & 255
+          r = (r * a) / 255
+          g = (g * a) / 255
+          b = (b * a) / 255
+          local premultiplied_argb = (a:<<:24) | (r:<<:16) | (g:<<:8) | b
+          if (not premultiplied_argb) premultiplied_argb = 0x01010101
+          pixels[i] = Color( premultiplied_argb )
+        endIf
       endForEach
 
     method reframe( new_width:Int32, new_height:Int32, anchor=Anchor.TOP_LEFT:Anchor, pad_color=Color(0):Color )
@@ -1007,16 +1011,13 @@ class Bitmap
       is_premultiplied_alpha = false
       forEach (i of pixels)
         local argb = pixels[i].argb
-        local a = argb :>>>: 24 & 255
-        local r = argb :>>>: 16 & 255
-        local g = argb :>>>: 8 & 255
-        local b = argb & 255
+        local a = (argb:>>>:24) & 255
         if (a)
-          r = (r * 255) / a
-          g = (g * 255) / a
-          b = (b * 255) / a
+          local r = ((argb:>>>:16) & 255) * 255 / a
+          local g = ((argb:>>>:8) & 255) * 255 / a
+          local b = (argb & 255) * 255 / a
+          pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
         endIf
-        pixels[i] = Color( (a:<<:24) | (r:<<:16) | (g:<<:8) | b )
       endForEach
 
 endClass
@@ -1051,13 +1052,14 @@ endClass
 class AlphaBitmapBlitFn : BitmapBlitFn
   METHODS
     method call( src:Bitmap, src_x1:Int32, src_y1:Int32, dest:Bitmap, dest_x1:Int32, dest_y1:Int32, blit_width:Int32, blit_height:Int32 )
+      src.unmultiply_alpha
+      dest.unmultiply_alpha
+
       local src_width = src.width
       local dest_width = dest.width
-      local is_premultiplied = src.is_premultiplied_alpha
       native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
               |RogueInt32* src_limit  = src_start + $blit_width;
               |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
-              |
               |while (--$blit_height >= 0)
               |{
               |  RogueInt32* src  = src_start - 1;
@@ -1065,23 +1067,30 @@ class AlphaBitmapBlitFn : BitmapBlitFn
               |  while (++src < src_limit)
               |  {
               |    int src_c  = *src;
-              |    int a      = (src_c >> 24) & 255;
-              |    int inv_a  = 255 - a;
-              |    int src_r  = (src_c >> 16) & 255;
-              |    int src_g  = (src_c >> 8) & 255;
-              |    int src_b  = src_c & 255;
               |    int dest_c = *dest;
-              |    int dest_a = (dest_c >> 24) & 255;
-              |    int dest_r = (dest_c >> 16) & 255;
-              |    int dest_g = (dest_c >> 8) & 255;
-              |    int dest_b = dest_c & 255;
-              |    if ($is_premultiplied)
+              |    if (src_c)
               |    {
-              |      *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | ((src_r+(dest_r*inv_a)/255)<<16) | ((src_g+(dest_g*inv_a)/255)<<8) | (src_b+(dest_b*inv_a)/255);
+              |      if (dest_c)
+              |      {
+              |        int a      = (src_c >> 24) & 255;
+              |        int inv_a  = 255 - a;
+              |        int src_r  = (src_c >> 16) & 255;
+              |        int src_g  = (src_c >> 8) & 255;
+              |        int src_b  = src_c & 255;
+              |        int dest_a = (dest_c >> 24) & 255;
+              |        int dest_r = (dest_c >> 16) & 255;
+              |        int dest_g = (dest_c >> 8) & 255;
+              |        int dest_b = dest_c & 255;
+              |        *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | (((src_r*a+dest_r*inv_a)/255)<<16) | (((src_g*a+dest_g*inv_a)/255)<<8) | ((src_b*a+dest_b*inv_a)/255);
+              |      }
+              |      else
+              |      {
+              |        *(dest++) = src_c;
+              |      }
               |    }
               |    else
               |    {
-              |      *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | (((src_r*a+dest_r*inv_a)/255)<<16) | (((src_g*a+dest_g*inv_a)/255)<<8) | ((src_b*a+dest_b*inv_a)/255);
+              |      ++dest;
               |    }
               |  }
               |  src_start  += $src_width;
@@ -1093,6 +1102,10 @@ endClass
 class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
   METHODS
     method call( src:Bitmap, src_x1:Int32, src_y1:Int32, dest:Bitmap, dest_x1:Int32, dest_y1:Int32, blit_width:Int32, blit_height:Int32 )
+      if (color.argb == 0) return
+      src.unmultiply_alpha
+      dest.unmultiply_alpha
+
       local fill_r = color.red_byte
       local fill_g = color.green_byte
       local fill_b = color.blue_byte
@@ -1108,14 +1121,21 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
               |  RogueInt32* dest = dest_start;
               |  while (++src < src_limit)
               |  {
-              |    int a      = (*src >> 24) & 255;
-              |    int inv_a  = 255 - a;
               |    int dest_c = *dest;
-              |    int dest_a = (dest_c >> 24) & 255;
-              |    int dest_r = (dest_c >> 16) & 255;
-              |    int dest_g = (dest_c >> 8) & 255;
-              |    int dest_b = dest_c & 255;
-              |    *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | ((($fill_r*a+dest_r*inv_a)/255)<<16) | ((($fill_g*a+dest_g*inv_a)/255)<<8) | (($fill_b*a+dest_b*inv_a)/255);
+              |    if (dest_c)
+              |    {
+              |      int a      = (*src >> 24) & 255;
+              |      int inv_a  = 255 - a;
+              |      int dest_a = (dest_c >> 24) & 255;
+              |      int dest_r = (dest_c >> 16) & 255;
+              |      int dest_g = (dest_c >> 8) & 255;
+              |      int dest_b = dest_c & 255;
+              |      *(dest++) = ((a+(dest_a*inv_a)/255)<<24) | ((($fill_r*a+dest_r*inv_a)/255)<<16) | ((($fill_g*a+dest_g*inv_a)/255)<<8) | (($fill_b*a+dest_b*inv_a)/255);
+              |    }
+              |    else
+              |    {
+              |      *(dest++) = $color.argb;
+              |    }
               |  }
               |  src_start  += $src_width;
               |  src_limit  += $src_width;
