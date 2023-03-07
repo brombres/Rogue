@@ -2264,20 +2264,26 @@ parser
 - localize
   on "localize"
     beginList
-      identifier
-
-      call clone
-      createNull
-      create Access(name:String,args)
-      subclass
-
-      createNull
-      create Local(name:String,initial_value,type:Type)
+      localize_declaration
+      while (consume(','))
+        localize_declaration
+      endWhile
     createList
 
     createNull
     produce LocalDeclarations( declarations, type:Type )
   endOn
+
+- localize_declaration
+  identifier
+
+  call clone
+  createNull
+  create Access(name:String,args)
+  subclass
+
+  createNull
+  create Local(name:String,initial_value,type:Type)
 
 - destructuring_local_declarations
   on '('
