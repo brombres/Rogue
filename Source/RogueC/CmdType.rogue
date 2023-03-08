@@ -88,6 +88,10 @@ augment
           return resolver.visit(
             TemplatedAccess( t, type_Routine, "recast_tuple", template_args, Args(t,this) )
           )
+        elseIf (this instanceOf CreateCompound and this_type.properties.count == target_type.properties.count)
+          local cmd = this->(as CreateCompound)
+          return resolver.visit( TypeAccess(cmd.t, target_type, cmd.args) )
+
         elseIf (suppress_error)
           return null
         else
@@ -124,7 +128,11 @@ augment
 
         if (this_type is Program.@type_Value)
           if (target_type is Program.@type_Value) return cmd
-          return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
+          if (target_type.attributes.is_optional)
+            return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to_optional",target_type.core_type,null) )
+          else
+            return resolver.visit( TemplatedMethodContextAccess(t,cmd,"to",target_type,null) )
+          endIf
         endIf
 
         # See if this_type has a to->TargetType method ( to<<Type>>->Type )

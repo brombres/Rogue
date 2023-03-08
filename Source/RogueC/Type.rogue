@@ -612,6 +612,9 @@ class Type : Cmd
     method is_object->Logical
       return attributes.is_object
 
+    method is_optional->Logical
+      return attributes.is_optional
+
     method is_primitive->Logical
       return attributes.is_primitive
 
@@ -632,6 +635,10 @@ class Type : Cmd
         @name_tokens.remove_last  # EOL
         return @name_tokens
       endUse
+
+    method core_type->Type
+      # For use with .is_optional types only
+      return this.properties//value.type
 
     method organize
       ensure_definition

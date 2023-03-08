@@ -276,8 +276,10 @@ class Procedure : Cmd
         throw t.error( "Only compound methods can have the [mutating] attribute." )
       endIf
 
+      local is_template = false
       if (name == "to" and return_type)
         # to->String -> to<<String>>()->String etc.
+        is_template = true
         local type_arg = TemplateArgs( t, return_type )
         name = type_arg->String("to")
       endIf
@@ -334,6 +336,11 @@ class Procedure : Cmd
           endBlock
         endForEach
 
+      endIf
+
+      if (is_template)
+        if (is_global) type_context.global_method_template_instances.add( name )
+        else           type_context.method_template_instances.add( name )
       endIf
 
       use organizer = ObjectPool<<MethodOrganizer>>

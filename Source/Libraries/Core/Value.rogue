@@ -822,6 +822,7 @@ class Value [compound]
         if (st) return $Type(st)
         else    return $Type(0)
       elseIf ($Type instanceOf OptionalType)
+        if (type == TYPE_NULL or type == TYPE_UNDEFINED) return null
         if ($exists<<$Type(this)>>)
           return $Type(this)
         elseIf (type == TYPE_OBJECT)
@@ -836,6 +837,10 @@ class Value [compound]
         if (box) return box->$Type
         return $defaultValue<<$Type>>
       endIf
+
+    method to_optional<<$Type>>->$Type?
+      if (type == TYPE_NULL or type == TYPE_UNDEFINED) return null
+      return to<<$Type>>
 
     method to_compatible_values( other:Value )->(Value,Value)
       if (type == other.type) return (this,other)
