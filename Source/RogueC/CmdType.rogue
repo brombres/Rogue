@@ -48,8 +48,6 @@ augment Cmd
     method require_type->Type
       local result = type
       if (result) return result
-      #println StackTrace()
-      #throw t.error( "Value expected ($ / $)."(this,this.type_name) )
       throw t.error( "Value expected." )
 
     method require_value->Cmd

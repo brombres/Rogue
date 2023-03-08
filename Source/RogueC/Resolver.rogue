@@ -137,7 +137,9 @@ class Resolver : Poolable, Visitor
       local type = cmd.operand.require_type
       type.organize
       cmd.as_type.organize
-      if (not type.is_reference or not cmd.as_type.is_reference)
+      if (type is Program.type_null and cmd.as_type.attributes.is_optional)
+        return visit( ConvertToType(cmd.t, cmd.operand, cmd.as_type) )
+      elseIf (not type.is_reference or not cmd.as_type.is_reference)
         throw cmd.t.error( "'as' can only be used with reference types." )
       endIf
       return cmd

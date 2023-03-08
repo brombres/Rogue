@@ -321,13 +321,8 @@ routine compile_rogue
   local cmd = "roguec $ $ --target=Console,C,$ --output=$"...
               (File(src_filepath).esc,flags,System.os,File(c_filepath).esc)
   println "> " + cmd
-  local status = Process.run( cmd, &env )
-  local result = status->String
-  println result
-  if (not status.success) throw Error( "Build failed." )
-  if (result.contains("ROGO:"))
-    System.exit( execute("rogo".appending(System.command_line_arguments.join(' '))) )
-  endIf
+  local error = System.run( cmd )
+  if (error) throw Error( "Build failed." )
 endRoutine
 
 routine compile_c
