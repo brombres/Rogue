@@ -1216,8 +1216,21 @@ class Resolver : Poolable, Visitor
       visit_children( cmd )
       local type_elements = NamedTupleTypeElements( cmd.t )
       local args = Args(cmd.t)
-      forEach (element in cmd)
-        type_elements.add( NamedTupleTypeElement(element.t, element.name, element.value.require_type) )
+      forEach (element at i in cmd)
+        local element_type = element.value.require_type
+        if (element_type is Program.type_null)
+          local t = element.value.t
+trace
+          element.value = visit( TypeAccess(t, Program.type_Value, Args(t,LiteralNull(t))) )
+trace
+          element_type = Program.type_Value
+          element_type.resolve
+trace
+          #throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )
+        endIf
+trace
+        type_elements.add( NamedTupleTypeElement(element.t, element.name, element_type) )
+trace
         args.add( element.value )
       endForEach
       local tuple_type = Type( cmd.t, type_elements )
@@ -1332,6 +1345,14 @@ class Resolver : Poolable, Visitor
       visible_locals_fp.add( visible_locals.count )
       control_stack.add( cmd )
       visible_locals.add( forEach in cmd.locals )
+
+      #{
+    method on_visit_children( cmd:Return )->Cmd
+      if (cmd.result)
+        return on_visit_return_value(
+      on_return(
+      cmd.result = visit(cmd.result)
+      }#
 
     method on_validate( cmd:Return )->Cmd
       this_procedure.attributes.has_return = true
