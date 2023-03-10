@@ -3002,7 +3002,10 @@ parser
     return
   endOn
 
-  on "undefined" -> LiteralUndefined
+  on "undefined"
+    call use_Value
+    produce LiteralUndefined
+  endOn
 
   onPeek "function" function_definition: return
 
