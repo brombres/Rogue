@@ -126,7 +126,11 @@ class Resolver : Poolable, Visitor
       local type_elements = NamedTupleTypeElements( cmd.t )
       local args = Args(cmd.t)
       forEach (element at i in cmd)
-        type_elements.add( NamedTupleTypeElement(element.t, "_"+(i+1), element.require_type) )
+        local element_type = element.require_type
+        if (element_type is Program.type_null)
+          throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )
+        endIf
+        type_elements.add( NamedTupleTypeElement(element.t, "_"+(i+1), element_type) )
         args.add( element )
       endForEach
       local tuple_type = Type( cmd.t, type_elements )
@@ -1219,18 +1223,9 @@ class Resolver : Poolable, Visitor
       forEach (element at i in cmd)
         local element_type = element.value.require_type
         if (element_type is Program.type_null)
-          local t = element.value.t
-trace
-          element.value = visit( TypeAccess(t, Program.type_Value, Args(t,LiteralNull(t))) )
-trace
-          element_type = Program.type_Value
-          element_type.resolve
-trace
-          #throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )
+          throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )
         endIf
-trace
         type_elements.add( NamedTupleTypeElement(element.t, element.name, element_type) )
-trace
         args.add( element.value )
       endForEach
       local tuple_type = Type( cmd.t, type_elements )
@@ -1346,13 +1341,10 @@ trace
       control_stack.add( cmd )
       visible_locals.add( forEach in cmd.locals )
 
-      #{
-    method on_visit_children( cmd:Return )->Cmd
+    method on_visit_children( cmd:Return )
       if (cmd.result)
-        return on_visit_return_value(
-      on_return(
-      cmd.result = visit(cmd.result)
-      }#
+        cmd.result .= on_visit_return_value( this )
+      endIf
 
     method on_validate( cmd:Return )->Cmd
       this_procedure.attributes.has_return = true
@@ -4319,3 +4311,63 @@ augment
 
 endAugment
 
+augment
+  METHODS
+    method Cmd.on_visit_return_value( resolver:Resolver )->Cmd
+      return resolver.visit( this )
+
+    method AnonymousTuple.on_visit_return_value( resolver:Resolver )->Cmd
+      resolver.visit_children( this )
+      local type_elements = NamedTupleTypeElements( this.t )
+      local args = Args(this.t)
+      forEach (element at i in this)
+        local element_type = element.require_type
+        if (element_type is Program.type_null)
+          contingent
+            local this_procedure = resolver.this_procedure
+            necessary (this_procedure)
+            local return_type = this_procedure.return_type
+            necessary (return_type)
+            necessary (return_type.attributes.is_tuple)
+            necessary (return_type.properties.count > i)
+            element = element.resolve_conversion_to( return_type.properties.at(i).type, resolver )
+            element_type = element.require_type
+            this[i] = element
+          unsatisfied
+            throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )
+          endContingent
+        endIf
+        type_elements.add( NamedTupleTypeElement(element.t, "_"+(i+1), element_type) )
+        args.add( element )
+      endForEach
+      local tuple_type = Type( this.t, type_elements )
+      return resolver.validate( CreateCompound(this.t, tuple_type, args) )
+
+    method NamedTuple.on_visit_return_value( resolver:Resolver )->Cmd
+      resolver.visit_children( this )
+      local type_elements = NamedTupleTypeElements( this.t )
+      local args = Args(this.t)
+      forEach (element at i in this)
+        local element_type = element.value.require_type
+        if (element_type is Program.type_null)
+          contingent
+            local this_procedure = resolver.this_procedure
+            necessary (this_procedure)
+            local return_type = this_procedure.return_type
+            necessary (return_type)
+            necessary (return_type.attributes.is_tuple)
+            necessary (return_type.properties.count > i)
+            element.value = element.value.resolve_conversion_to( return_type.properties.at(i).type, resolver )
+            element_type = element.value.require_type
+          unsatisfied
+            throw element.t.error( "'null' is type-ambiguous. Cast it as a specific type, e.g. 'null->(as String)'." )
+          endContingent
+        endIf
+        type_elements.add( NamedTupleTypeElement(element.t, element.name, element_type) )
+        args.add( element.value )
+      endForEach
+      local tuple_type = Type( this.t, type_elements )
+      tuple_type.organize
+      return resolver.validate( CreateCompound(this.t, tuple_type, args) )
+
+endAugment

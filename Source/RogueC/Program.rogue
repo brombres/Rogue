@@ -333,7 +333,6 @@ class Program [singleton]
 
     method type_Value->Type
       if (@type_Value) return @type_Value
-      Program.include( t, "Core/Value" )
       type_Value = default_module.must_find_type( t, "Value" )
       return @type_Value
 
