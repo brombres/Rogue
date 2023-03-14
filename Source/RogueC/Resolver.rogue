@@ -1747,6 +1747,8 @@ class Resolver : Poolable, Visitor
       pop_scope
 
       contingent
+        necessary (cmd.condition.type is Program.type_Int32)
+
         forEach (cmd_case in cmd.cases)
           necessary ((forEach in cmd_case.args) instanceOf LiteralPrimitive)
         endForEach
