@@ -60,7 +60,7 @@ class UI : UILayout
     method clear
       prior.clear
       clear_focus
-      dirty_bounds = null
+      dirty_region_tracker.clear
       clip = null
 
     method clear_focus
