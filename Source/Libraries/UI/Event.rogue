@@ -1,3 +1,6 @@
+$include UI/Keyboard
+uses UI
+
 class Event
   PROPERTIES
     is_consumed  : Logical
