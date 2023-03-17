@@ -91,16 +91,34 @@ class ConsoleUI : UI
           which (event.type)
             case ConsoleEventType.CHARACTER
               local unicode = event.unicode
+              local is_control = false
+              if (unicode <= 31)
+                # 0 (CTRL @) through 31 (CTRL -)
+                which (unicode)
+                  case '\n', '\t', 8, 27
+                    noAction
+                  others
+                    is_control = true
+                    unicode += 64
+                endWhich
+              endIf
               local (keycode,is_shifted) = Keycode.unicode_to_keycode( unicode )
-              local syscode            = which{ keycode==Keycode.UNICODE:unicode->Int32 || 0 }
-              local modifier_key_state = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
+              local syscode              = which{ keycode==Keycode.UNICODE:unicode->Int32 || 0 }
+              local modifier_key_state   = which{ is_shifted:Keyboard.SHIFT_MODIFIER_FLAG || 0 }
               Keyboard.key_pressed[ keycode ] = true
               Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = is_shifted
               Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = is_shifted
+              if (is_control)
+                modifier_key_state |= Keyboard.CONTROL_MODIFIER_FLAG
+                Keyboard.key_pressed[ Keycode.LEFT_CONTROL ] = true
+                Keyboard.key_pressed[ Keycode.RIGHT_CONTROL ] = true
+              endIf
               handle( KeyEvent(keycode,syscode,&is_press,&!is_repeat,&=modifier_key_state) )
               Keyboard.key_pressed[ keycode ] = false
               Keyboard.key_pressed[ Keycode.LEFT_SHIFT ]  = false
               Keyboard.key_pressed[ Keycode.RIGHT_SHIFT ] = false
+              Keyboard.key_pressed[ Keycode.LEFT_CONTROL ] = false
+              Keyboard.key_pressed[ Keycode.RIGHT_CONTROL ] = false
               handle( KeyEvent(keycode,syscode,&!is_press,&!is_repeat,&=modifier_key_state) )
               handle( TextEvent(unicode,null) )
 

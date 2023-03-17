@@ -4,6 +4,9 @@ uses Console/ANSIColor
 uses Console/ANSIRGB
 uses Console/TextCanvas
 
+# TODO: Add 24-bit color support
+# https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
+
 class ANSIBitmap
   PROPERTIES
     width       : Int32
