@@ -116,7 +116,7 @@ class Files
       return filepath_set.values
 
     method get( index:Int32 )->String
-      return filepath_set[ index ]
+      return filepath_set.at( index )
 
     method newest_timestamp_ms->Int64?
       local result : Int64?
