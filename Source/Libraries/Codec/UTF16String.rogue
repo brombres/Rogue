@@ -57,7 +57,13 @@ class UTF16String : Poolable
     method to->String
       local n = data.count
       if (n <= 2) return ""
-      if (data[n-2] or data[n-1]) data.[ add(0), add(0) ]
+      while (n >= 2 and data[n-2]==0 and data[n-1]==0)
+        # Latest version of Windows adds on multiple null terminators in GetFullPathNameW(); strip them all out
+        data.remove_last
+        data.remove_last
+        n = data.count
+      endWhile
+      data.[ add(0), add(0) ]  # add single null terminator back on for processing
 
       use builder = StringPool
         local reader = DataReader( data )

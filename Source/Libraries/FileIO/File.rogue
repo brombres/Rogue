@@ -36,10 +36,10 @@ class File( filepath:String ) [compound]
                  use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
                    filepath_utf16.init( filepath )
 
-                   local utf16_count = native( "GetFullPathName($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int32
+                   local utf16_count = native( "GetFullPathNameW($filepath_utf16->data->as_wchars, 0, 0, 0)" )->Int32
                    abs_filepath_utf16.data.expand_to_count( utf16_count*2 )
 
-      native @|    if (GetFullPathName($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
+      native @|    if (GetFullPathNameW($filepath_utf16->data->as_wchars, $utf16_count, $abs_filepath_utf16->data->as_wchars, 0) != 0)
               |    {
                      return_value = abs_filepath_utf16->String
                      return_value .= replacing( '\\', '/' )
