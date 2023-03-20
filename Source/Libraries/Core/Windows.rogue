@@ -1,0 +1,39 @@
+class Windows [singleton]
+  NATIVE
+  nativeHeader @|RogueLogical Rogue_is_windows_10_or_greater();
+    nativeCode...
+      @|#if defined(ROGUE_PLATFORM_WINDOWS)
+       |RogueLogical Rogue_is_windows_10_or_greater()
+       |{
+       |  // Adapted from https://stackoverflow.com/a/74705829/135791
+       |  NTSTATUS (NTAPI * RtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation) = 0;
+       |  HMODULE ntdll = GetModuleHandle(L"ntdll.dll");
+       |  if (ntdll == NULL) return 0;
+       |  *((FARPROC*)(&RtlGetVersion)) = GetProcAddress(ntdll, "RtlGetVersion");
+       |  if (RtlGetVersion == 0) return 0;
+       |
+       |  OSVERSIONINFOEX versionInfo = { sizeof(OSVERSIONINFOEX) };
+       |  if (RtlGetVersion((LPOSVERSIONINFO)(&versionInfo)) < 0) return 0;
+       |
+       |  if (versionInfo.dwMajorVersion > HIBYTE(_WIN32_WINNT_WIN10)) return 1;
+       |
+       |  if (versionInfo.dwMajorVersion == HIBYTE(_WIN32_WINNT_WIN10))
+       |  {
+       |    if (versionInfo.dwMinorVersion > LOBYTE(_WIN32_WINNT_WIN10)) return 1;
+       |
+       |    if (versionInfo.dwMinorVersion == LOBYTE(_WIN32_WINNT_WIN10) && versionInfo.dwBuildNumber >= 22000)
+       |    {
+       |      return 1;
+       |    }
+       |  }
+       |
+       |  return 0;
+       |}
+       |#else
+       |  RogueLogical Rogue_is_windows_10_or_greater() { return 0; }
+       |#endif
+
+  METHODS
+    method is_windows_10_or_greater->Logical
+      return native( "Rogue_is_windows_10_or_greater()" )->Logical
+endClass
