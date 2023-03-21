@@ -508,6 +508,9 @@ class Resolver : Poolable, Visitor
         local statements = which{ cmd.satisfied_statements || cmd.statements }
         if (not BranchAnalyzer.all_paths_return(statements))
           statements.add( EscapeContingent(cmd.t) )
+          if (not cmd.satisfied_statements)
+            cmd.satisfied_statements = Statements( EscapeContingent(cmd.t) )
+          endIf
         endIf
       endIf
 
