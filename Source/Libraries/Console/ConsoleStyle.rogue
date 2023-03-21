@@ -60,6 +60,64 @@ class ConsoleStyle [singleton]
     BG_WHITE         = 107
 
   METHODS
+    method bg_color( bg:Color, output=Global:PrintWriter )
+      # 24-bit truecolor mode
+      output.flush
+      output.print "\e[48;2;"
+      output.print ((bg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((bg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (bg.argb & 0xFF)
+      output.print 'm'
+      output.flush
+
+    method bg_color( index:Int32, output=Global:PrintWriter )
+      # 256 color mode; index is 0..255
+      output.flush
+      output.print( "\e[48;5;" )
+      output.print( index )
+      output.print( "m" )
+      output.flush
+
+    method colors( fg:Color, bg:Color, output=Global:PrintWriter )
+      output.flush
+      output.print "\e[38;2;"
+      output.print ((fg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((fg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (fg.argb & 0xFF)
+      output.print ";48;2;"
+      output.print ((bg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((bg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (bg.argb & 0xFF)
+      output.print 'm'
+      output.flush
+
+    method fg_color( fg:Color, output=Global:PrintWriter )
+      # 24-bit truecolor mode
+      output.flush
+      output.print "\e[38;2;"
+      output.print ((fg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((fg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (fg.argb & 0xFF)
+      output.print 'm'
+      output.flush
+
+    method fg_color( index:Int32, output=Global:PrintWriter )
+      # 256 color mode; index is 0..255
+      output.flush
+      output.print( "\e[38;5;" )
+      output.print( index )
+      output.print( "m" )
+      output.flush
+
+
     method reset( output=Global:PrintWriter )
       set( RESET, output )
 
@@ -72,22 +130,6 @@ class ConsoleStyle [singleton]
 
     method set<<$CODE>>( output=Global:PrintWriter )
       set( $CODE, output )
-
-    method bg_color( index:Int32, output=Global:PrintWriter )
-      # 256 color mode; index is 0..255
-      output.flush
-      output.print( "\e[48;5;" )
-      output.print( index )
-      output.print( "m" )
-      output.flush
-
-    method fg_color( index:Int32, output=Global:PrintWriter )
-      # 256 color mode; index is 0..255
-      output.flush
-      output.print( "\e[38;5;" )
-      output.print( index )
-      output.print( "m" )
-      output.flush
 
     method flush
       Global.flush
