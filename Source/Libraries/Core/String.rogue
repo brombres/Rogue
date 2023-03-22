@@ -2301,7 +2301,7 @@ class String : Poolable PrintWriter
                   |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
                   |RogueString* RogueString_create_permanent( const char* cstring );
                   |RogueString* RogueString_create_string_table_entry( const char* cstring );
-                  |RogueInt32   RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash );
+                  |RogueInt32   RogueString_compute_hash_code( RogueString* THISOBJ, RogueInt32 starting_hash );
                   |const char*  RogueString_to_c_string( RogueString* st );
                   |RogueInt32   RogueString_utf8_character_count( const char* cstring, int byte_count );
                   |
@@ -2438,11 +2438,11 @@ class String : Poolable PrintWriter
                  |  return result;
                  |}
                  |
-                 |RogueInt32 RogueString_compute_hash_code( RogueString* THIS, RogueInt32 starting_hash )
+                 |RogueInt32 RogueString_compute_hash_code( RogueString* THISOBJ, RogueInt32 starting_hash )
                  |{
                  |  RogueInt32 hash = starting_hash;
-                 |  int n = THIS->data->count;
-                 |  char* src = THIS->data->as_utf8 - 1;
+                 |  int n = THISOBJ->data->count;
+                 |  char* src = THISOBJ->data->as_utf8 - 1;
                  |  while (--n >= 0)
                  |  {
                  |    hash = ((hash<<3) - hash) + *(++src);

@@ -5,31 +5,31 @@ class TypeInfo
        |struct RogueTypeInfo;
        |typedef struct RogueRuntimeType RogueRuntimeType;
        |typedef struct RogueTypeInfo RogueTypeInfo;
-       |RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THIS );
+       |RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THISOBJ );
 
     nativeCode
-      @|RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THIS )
+      @|RogueTypeInfo* RogueRuntimeType_type_info( RogueRuntimeType* THISOBJ )
        |{
-       |  if ( !THIS->type_info )
+       |  if ( !THISOBJ->type_info )
        |  {
        |    RogueTypeInfo* type_info = ROGUE_CREATE_OBJECT(RogueTypeInfo);
        |    ++type_info->__refcount;
        |
-       |    type_info->module_name = Rogue_string_table[ THIS->module_name_index ];
-       |    type_info->name        = RogueObject____type_name__RogueInt32( THIS->index );
-       |    type_info->index       = THIS->index;
-       |    type_info->id          = THIS->id;
-       |    type_info->attributes  = THIS->attributes;
-       |    type_info->class_data_index = THIS->class_data_index;
+       |    type_info->module_name = Rogue_string_table[ THISOBJ->module_name_index ];
+       |    type_info->name        = RogueObject____type_name__RogueInt32( THISOBJ->index );
+       |    type_info->index       = THISOBJ->index;
+       |    type_info->id          = THISOBJ->id;
+       |    type_info->attributes  = THISOBJ->attributes;
+       |    type_info->class_data_index = THISOBJ->class_data_index;
        |
-       |    THIS->type_info = (RogueObject*) type_info;
+       |    THISOBJ->type_info = (RogueObject*) type_info;
        |    RogueTypeInfo__init( type_info );
        |    --type_info->__refcount;
 
     nativeCode
       @|  }
        |
-       |  return (RogueTypeInfo*) THIS->type_info;
+       |  return (RogueTypeInfo*) THISOBJ->type_info;
        |}
 
   GLOBAL METHODS

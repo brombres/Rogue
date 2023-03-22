@@ -186,7 +186,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:AddAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -227,7 +227,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:BitwiseAndAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -255,7 +255,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:BitwiseOrAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -283,7 +283,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:BitwiseXorAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -311,7 +311,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:BitShiftLeftAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -339,7 +339,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:BitShiftRightXAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -508,11 +508,11 @@ class CGenerator : Visitor
 
       if (cmd.args.count == 0)
         writer.print '('
-        print_with_cast( "THIS", this_type, info.type_context )
+        print_with_cast( "THISOBJ", this_type, info.type_context )
         writer.print ')'
       else
         writer.print "( "
-        print_with_cast( "THIS", this_type, info.type_context )
+        print_with_cast( "THISOBJ", this_type, info.type_context )
         if (cmd.args.count)
           forEach (arg at i in cmd.args)
             writer.print ", "
@@ -530,11 +530,11 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
       if (cmd.args.count == 0)
         writer.print '('
-        print_with_cast( "THIS", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
+        print_with_cast( "THISOBJ", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
         writer.print ')'
       else
         writer.print "( "
-        print_with_cast( "THIS", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
+        print_with_cast( "THISOBJ", this_type, cmd.info.type_context, &=context_is_mutating, &=call_is_mutating )
         if (cmd.args.count)
           forEach (arg at i in cmd.args)
             writer.print ", "
@@ -556,9 +556,9 @@ class CGenerator : Visitor
         writer.print ','
         writer.print param.type.c_ref_name
       endForEach
-      writer.print "))(THIS->__type->vtable["
+      writer.print "))(THISOBJ->__type->vtable["
       writer.print info.vtable_index
-      writer.print "]))(THIS"
+      writer.print "]))(THISOBJ"
       forEach (arg at i in cmd.args)
         writer.print ", "
         local p = info.parameters[i]
@@ -859,7 +859,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:DecrementThisProperty )
       writer.print "--"
-      writer.print "THIS"
+      writer.print "THISOBJ"
       assert this_type
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -893,7 +893,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:DivideAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -927,7 +927,7 @@ class CGenerator : Visitor
       writer.print ")"
 
     method on_visit( cmd:GetThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       assert this_type
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -987,7 +987,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:IncrementThisProperty )
       writer.print "++"
-      writer.print "THIS"
+      writer.print "THISOBJ"
       assert this_type
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
@@ -1247,7 +1247,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:MultiplyAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -1372,7 +1372,7 @@ class CGenerator : Visitor
       writer.print ")"
 
     method on_visit( cmd:SetThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -1419,7 +1419,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:SubtractAndAssignThisProperty )
-      writer.print "THIS"
+      writer.print "THISOBJ"
       if (this_type.is_reference or this_procedure.attributes.is_mutating) writer.print "->"
       else                        writer.print "."
       writer.print( cmd.info.c_name )
@@ -1470,7 +1470,7 @@ class CGenerator : Visitor
 
     method on_visit( cmd:This )
       if (this_procedure.attributes.is_mutating) writer.print '*'
-      writer.print "THIS"
+      writer.print "THISOBJ"
 
     method on_visit( cmd:Throw )
       writer.print   "Rogue_exception = (RogueObject*)"
@@ -1549,7 +1549,7 @@ class CGenerator : Visitor
       endBlock
 
       block
-        # Replace $varname with e.g. localname_0 or THIS->property_name
+        # Replace $varname with e.g. localname_0 or THISOBJ->property_name
         local i1 = code.locate('$')
         while (i1)
           local i2 = i1.value
@@ -1587,14 +1587,14 @@ class CGenerator : Visitor
         if (this_procedure.is_method)
           if (name == "this")
             if (type) return this_type.c_ref_name
-            else      return "THIS"
+            else      return "THISOBJ"
           endIf
 
           forEach (p in this_type.properties)
             if (name == p.name)
               if (type)                       return p.type.c_ref_name
-              elseIf (this_type.is_reference or this_procedure.attributes.is_mutating) return "THIS->" + p.c_name
-              else                            return "THIS." + p.c_name
+              elseIf (this_type.is_reference or this_procedure.attributes.is_mutating) return "THISOBJ->" + p.c_name
+              else                            return "THISOBJ." + p.c_name
             endIf
           endForEach
         endIf
@@ -1681,7 +1681,7 @@ augment
       endIf
 
       if ((this.is_reference or this.contains_reference or this is Program.type_Object) and not is_aspect)
-        writer.[ print("void "), print(this.c_name), println("_gc_trace( void* THIS );") ]
+        writer.[ print("void "), print(this.c_name), println("_gc_trace( void* THISOBJ );") ]
         writer.println
       endIf
 
@@ -2148,7 +2148,7 @@ augment
         endIf
 
         c_writer.indent += 2
-        c_writer.println "switch (((RogueObject*)THIS)->__type->id)"
+        c_writer.println "switch (((RogueObject*)THISOBJ)->__type->id)"
         c_writer.println '{'
         c_writer.indent += 2
 
@@ -2185,7 +2185,7 @@ augment
           c_writer.print m.c_name
           c_writer.print "(("
           c_writer.print m.type_context.c_ref_name
-          c_writer.print ")THIS"
+          c_writer.print ")THISOBJ"
           forEach (i of m.parameters)
             c_writer.print ",p"
             c_writer.print i
@@ -2427,7 +2427,7 @@ augment
       endIf
       writer.print " Rogue_dispatch_"
       writer.print( m.c_dynamic_signature )
-      writer.print( "( void* THIS" )
+      writer.print( "( void* THISOBJ" )
       forEach (p at i in m.parameters)
         writer.print ", "
         writer.print( p.type.c_ref_name )
@@ -2477,14 +2477,14 @@ augment
 
     method Type.generate_c_code( writer:CWriter )
       if ((is_reference or contains_reference or this is Program.type_Object) and not is_aspect)
-        writer.[ print("void "), print(c_name), println("_gc_trace( void* THIS )") ]
+        writer.[ print("void "), print(c_name), println("_gc_trace( void* THISOBJ )") ]
         writer.println '{'
         writer.indent += 2
 
         #writer.println ''printf("Tracing $\\n");''(name)
 
         if (is_reference)
-          writer.println "((RogueObject*)THIS)->__refcount = ~((RogueObject*)THIS)->__refcount;"
+          writer.println "((RogueObject*)THISOBJ)->__refcount = ~((RogueObject*)THISOBJ)->__refcount;"
         endIf
 
         contingent
@@ -2500,14 +2500,14 @@ augment
             if (p.type.is_reference)
               writer.print   "if ((ref = (RogueObject*)(("
               writer.print   c_name
-              writer.print   "*)THIS)->"
+              writer.print   "*)THISOBJ)->"
               writer.print   p.c_name
               writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
                 path.add( "if ((ref = (RogueObject*)(((" )
                 path.add( c_name )
-                path.add( "*)THIS)->" )
+                path.add( "*)THISOBJ)->" )
                 path.add( p.c_name )
                 writer.print_gc_checks( path, p.type )
               endUse
@@ -2518,10 +2518,10 @@ augment
             writer.println
             writer.print   "RogueObject** cursor = ((RogueObject**)(("
             writer.print   c_name
-            writer.println "*)THIS)->data) - 1;"
+            writer.println "*)THISOBJ)->data) - 1;"
             writer.print   "int n = ((int)(("
             writer.print   c_name
-            writer.println "*)THIS)->capacity);"
+            writer.println "*)THISOBJ)->capacity);"
             writer.println @|while (--n >=0)
                             |{
                             |  if ((ref = *(++cursor)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
@@ -2529,16 +2529,16 @@ augment
 
           elseIf (element_type and element_type.contains_reference)
             writer.println
-            # RogueValue* cursor = ((RogueValue*)(((RogueValueList*)THIS)->data)) - 1;
+            # RogueValue* cursor = ((RogueValue*)(((RogueValueList*)THISOBJ)->data)) - 1;
             writer.print   element_type.c_name
             writer.print   "* cursor = ("
             writer.print   element_type.c_name
             writer.print   "*)((("
             writer.print   c_name
-            writer.println "*)THIS)->data);"
+            writer.println "*)THISOBJ)->data);"
             writer.print   "int n = ((int)(("
             writer.print   c_name
-            writer.println "*)THIS)->capacity);"
+            writer.println "*)THISOBJ)->capacity);"
 
             # while (--n >=0)
             # {
@@ -2604,7 +2604,7 @@ augment
       writer.print( "( " )
       writer.print m.type_context.c_name
       if (m.type_context.is_reference or m.attributes.is_mutating) writer.print '*'
-      writer.print " THIS"
+      writer.print " THISOBJ"
       forEach (p at i in m.parameters)
         block p = p->(as Local)
           writer.print ", "

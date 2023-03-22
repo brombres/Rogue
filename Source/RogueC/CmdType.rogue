@@ -806,7 +806,7 @@ class TypeConversionStack [singleton]
     method on_use->this
       return this
 
-    method on_end_use( THIS:TypeConversionStack )
+    method on_end_use( THISOBJ:TypeConversionStack )
       if (stack.count) stack.remove_last
 
     method push( conversion:(Type,Type) )

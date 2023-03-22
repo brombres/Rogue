@@ -65,7 +65,6 @@ class CWriter : BufferedPrintWriter
            |#endif
            |
            |#if defined(ROGUE_PLATFORM_WINDOWS)
-           |  #define NOGDI
            |  #pragma warning(disable: 4297) /* unexpected throw warnings */
            |  #if !defined(UNICODE)
            |    #define UNICODE
