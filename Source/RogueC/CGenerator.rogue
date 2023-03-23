@@ -1647,7 +1647,9 @@ augment
       return false
 
     method Type.generate_c_native_headers( writer:CWriter )
-      writer.println( forEach in this.native_header )
+      if (this.attributes.is_used)
+        writer.println( forEach in this.native_header )
+      endIf
 
     method Type.generate_c_class_structs( writer:CWriter )
       if (this.is_object or this.is_compound)
@@ -2079,8 +2081,10 @@ augment
 
         forEach (type in types)
           forEach (code in type.native_code)
-            c_writer.println code->String
-            c_writer.println
+            if (type.attributes.is_used)
+              c_writer.println code->String
+              c_writer.println
+            endIf
           endForEach
         endForEach
         c_writer.println
