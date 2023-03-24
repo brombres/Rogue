@@ -1617,7 +1617,18 @@ class String : Poolable PrintWriter
           return builder->Int32
         endUse
       endIf
-      return native( "(RogueInt32)strtol( (char*)$this->data->as_utf8, 0, $base )" )->Int32
+
+      # Windows strtol() handles base 16 (and base 2?) slightly different than Unix. On Unix
+      # a 'signed' number such as "FFFFFFFF" will be converted to '-1' (which is desired) but
+      # on Windows it will be clamped to 7FFFFFFF. If the maximum number of digits is used,
+      # handle the most significant one separately and combine with the result.
+      if (base == 2 and count == 32)
+        return (this[0].to_number:<<:31) | native( "(RogueInt32)strtol( (char*)$this->data->as_utf8+1, 0, 2 )" )->Int32
+      elseIf (base == 16 and count == 8)
+        return (this[0].to_number(16):<<:28) | native( "(RogueInt32)strtol( (char*)$this->data->as_utf8+1, 0, 16 )" )->Int32
+      else
+          return native( "(RogueInt32)strtol( (char*)$this->data->as_utf8, 0, $base )" )->Int32
+      endIf
 
     method to->Int64( base=10:Int32 )
       if (count == 0) return 0
@@ -1630,6 +1641,15 @@ class String : Poolable PrintWriter
         endUse
       endIf
       return native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
+
+      # See note in to->Int32, above.
+      if (base == 2 and count == 64)
+        return (this[0].to_number->Int64:<<:63) | native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8+1, 0, 2 )" )->Int64
+      elseIf (base == 16 and count == 16)
+        return (this[0].to_number(16)->Int64:<<:60) | native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8+1, 0, 16 )" )->Int64
+      else
+        return native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
+      endIf
 
     method to->Object
       return this
