@@ -3255,6 +3255,7 @@ parser
     string
     mustConsume ")"
   else
+    consume_eols
     string
   endIf
   if consume("->")
