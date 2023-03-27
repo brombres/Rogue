@@ -5,7 +5,7 @@ class CWriter : BufferedPrintWriter
     is_header : Logical
 
   METHODS
-    method init( file:File, &header )
+    method init( file:File, &header, &objc )
       prior.init( file.writer )
       is_header = header
 
@@ -13,7 +13,7 @@ class CWriter : BufferedPrintWriter
         println @|#ifndef TEST_H
                  |#define TEST_H
                  |
-        println "// $.h"(File(Program.output_filepath).filename)
+        println "// $"(file.filename)
         println
 
         if (Program.gc_auto)
@@ -263,8 +263,8 @@ class CWriter : BufferedPrintWriter
         println
 
       else
-        # Writing .c file
-        println  "// $.c"(File(Program.output_filepath).filename)
+        # Writing .c/.m file
+        println  "// $"(file.filename)
         println
         println ''#include "$.h"''(File(Program.output_filepath).filename)
         println  "#include <stdio.h>"

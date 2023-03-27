@@ -1747,7 +1747,9 @@ augment
 
       local types = Program.all_types
 
-      local h_writer = CWriter( File(Program.output_filepath+".h"), &header )
+      local objc = Program.targets.contains("ObjC")
+
+      local h_writer = CWriter( File(Program.output_filepath+".h"), &header, &=objc )
 
       h_writer.println ...
         @|//------------------------------------------------------------------------------
@@ -1830,7 +1832,8 @@ augment
 
       #-------------------------------------------------------------------------
 
-      local c_writer = CWriter( File(Program.output_filepath+".c") )
+
+      local c_writer = CWriter( File(Program.output_filepath+which{objc:".m"||".c"}), &=objc )
 
       local method_info : Int32[]
       local type_data : Int32[]
