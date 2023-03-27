@@ -5,7 +5,7 @@ $include Codec/PNG
 augment Bitmap::Bitmap
   GLOBAL METHODS
     method decode_bmp( bytes:Byte[] )->Bitmap
-      return BMPDecoder().decode( bytes )
+      return BMPDecoder.decode( bytes )
 
     method decode_jpeg( bytes:Byte[] )->Bitmap
       return JPEGDecoder().decode( bytes )

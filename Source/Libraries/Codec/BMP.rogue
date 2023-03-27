@@ -95,7 +95,7 @@ class BMPBitField( bitmask:Int32, left_shift_for_argb:Int32 ) [compound]
 endClass
 
 class BMPDecoder
-  METHODS
+  GLOBAL METHODS
     method decode( encoded_bytes:Byte[], bitmap=null:Bitmap )->Bitmap
       local reader = BMPReader( encoded_bytes )
       reader.skip( 10 )
