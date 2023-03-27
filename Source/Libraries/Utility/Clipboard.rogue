@@ -1,3 +1,12 @@
+================================================================================
+# Clipboard.rogue
+#
+# MACOS
+#  -I /System/Libraries/Frameworks -framework Foundation -framework AppKit
+#
+# WINDOWS
+# - Link with user32.lib and gdi32.lib
+================================================================================
 uses Bitmap
 uses Codec/BMP
 
@@ -5,40 +14,43 @@ class Clipboard [singleton]
   METHODS
     method bitmap->Bitmap
       if (System.is_windows)
-        return LoadBitmapFromWindowsClipboard()->Bitmap
+        return WindowsClipboard.bitmap
+      elseIf (System.is_macos)
+        return MacOSClipboard.bitmap
       else
         return null
       endIf
 
     method set_bitmap( bitmap:Bitmap )
       if (System.is_windows)
-        SaveBitmapToWindowsClipboard( bitmap )
+        WindowsClipboard.bitmap = bitmap
       endIf
 
 endClass
 
-class WindowsClipboard [singleton]
+class MacOSClipboard [singleton]
   METHODS
-    method open->Logical
+    method bitmap->Bitmap
       native...
-        @|#if defined(ROGUE_PLATFORM_WINDOWS)
-          loop 20
-            if (native("OpenClipboard(NULL)")->Logical) return true
-            native @|Sleep( 10 );  // 10ms
-          endLoop
-      native...
-        @|#endif
-        return false
+        @|#if defined(ROGUE_PLATFORM_MACOS)
+         |NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |#endif
+      return null
+
+  NATIVE
+    nativeHeader
+      @|#if defined(ROGUE_PLATFORM_MACOS)
+       |  #import <Cocoa/Cocoa.h>
+       |  #import <Foundation/Foundation.h>
+       |#endif
 endClass
 
-
-class LoadBitmapFromWindowsClipboard
-  PROPERTIES
-    bmp_bytes = Byte[]
-
+class WindowsClipboard [singleton]
   METHODS
-    method init
-      if (not WindowsClipboard.open) return
+    method bitmap( existing_bitmap=null:Bitmap )->Bitmap
+      if (not open) return null
+
+      local bmp_bytes = Byte[]
 
       native...
         @|#if defined(ROGUE_PLATFORM_WINDOWS)
@@ -47,7 +59,7 @@ class LoadBitmapFromWindowsClipboard
          |{
          |    // Clipboard object is not a DIB, and is not auto-convertible to DIB
          |    CloseClipboard();
-              return
+              return null
       native...
         @|}
          |
@@ -56,7 +68,7 @@ class LoadBitmapFromWindowsClipboard
          |{
          |  // This can theoretically fail if mapping the HGLOBAL into local address space fails.
          |  CloseClipboard();
-            return
+            return null
       native...
         @|}
          |
@@ -68,7 +80,7 @@ class LoadBitmapFromWindowsClipboard
          |  // If this fails, just act as if it wasn't a bitmap in the clipboard.
          |  GlobalUnlock( clipboard_data_handle );
          |  CloseClipboard();
-            return
+            return null
       native...
         @|}
          |
@@ -82,6 +94,7 @@ class LoadBitmapFromWindowsClipboard
          |file_header.bfOffBits = sizeof(BITMAPFILEHEADER) + pixel_data_offset;
 
          bmp_bytes.dim( native("total_bitmap_file_size")->Int32 )
+
       native...
         @|memcpy( $bmp_bytes->as_bytes, &file_header, sizeof(BITMAPFILEHEADER) );
          |memcpy( $bmp_bytes->as_bytes+sizeof(BITMAPFILEHEADER), info_header, (DWORD)clipboard_data_size );
@@ -90,67 +103,23 @@ class LoadBitmapFromWindowsClipboard
          |CloseClipboard();
          |#endif
 
-    method to->Bitmap( bitmap=null:Bitmap )
-      if (bmp_bytes.count) return BMPDecoder().decode( bmp_bytes, bitmap )
+      if (bmp_bytes.count) return BMPDecoder().decode( bmp_bytes, existing_bitmap )
       return null
 
-  NATIVE
-   # Adapted from https://stackoverflow.com/a/66401824/135791
-   nativeCode...
-     @|#if defined(ROGUE_PLATFORM_WINDOWS)
-      |static INT  RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header );
-      |
-      |// Returns the offset, in bytes, from the start of the BITMAPINFO, to the start of the pixel data array, for a packed DIB.
-      |static INT RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header )
-      |{
-      |    INT offset_extra = 0;
-      |
-      |    if (info_header->biSize == sizeof(BITMAPINFOHEADER) /* 40 */)
-      |    {
-      |        // This is the common BITMAPINFOHEADER type. In this case, there may be bit masks following the BITMAPINFOHEADER
-      |        // and before the actual pixel bits (does not apply if bitmap has <= 8 bpp)
-      |        if (info_header->biBitCount > 8)
-      |        {
-      |            if (info_header->biCompression == BI_BITFIELDS)
-      |            {
-      |                offset_extra += 3 * sizeof(RGBQUAD);
-      |            }
-      |            else if (info_header->biCompression == 6 /* BI_ALPHABITFIELDS */)
-      |            {
-      |                // Not widely supported, but valid.
-      |                offset_extra += 4 * sizeof(RGBQUAD);
-      |            }
-      |        }
-      |    }
-      |
-      |    if (info_header->biClrUsed > 0)
-      |    {
-      |        // We have no choice but to trust this value.
-      |        offset_extra += info_header->biClrUsed * sizeof(RGBQUAD);
-      |    }
-      |    else
-      |    {
-      |        // In this case, the color table contains the maximum number for the current bit count (0 if > 8bpp)
-      |        if (info_header->biBitCount <= 8)
-      |        {
-      |            // 1bpp: 2
-      |            // 4bpp: 16
-      |            // 8bpp: 256
-      |            offset_extra += sizeof(RGBQUAD) << info_header->biBitCount;
-      |        }
-      |    }
-      |
-      |    return info_header->biSize + offset_extra;
-      |}
-      |#endif
+    method open->Logical
+      native...
+        @|#if defined(ROGUE_PLATFORM_WINDOWS)
+          loop 20
+            if (native("OpenClipboard(NULL)")->Logical) return true
+            native @|Sleep( 10 );  // 10ms
+          endLoop
+      native...
+        @|#endif
+        return false
 
-endClass
-
-class SaveBitmapToWindowsClipboard
-  METHODS
-    method init( bitmap:Bitmap )
+    method set_bitmap( bitmap:Bitmap )
      # Adapted from https://stackoverflow.com/a/66401824/135791
-      if (not WindowsClipboard.open) return
+     if (not bitmap or not open) return
 
      local width = bitmap.width
      local height = bitmap.height
@@ -203,4 +172,53 @@ class SaveBitmapToWindowsClipboard
         |
         |#endif
 
+  NATIVE
+   # Adapted from https://stackoverflow.com/a/66401824/135791
+   nativeCode...
+     @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      |static INT  RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header );
+      |
+      |// Returns the offset, in bytes, from the start of the BITMAPINFO, to the start of the pixel data array, for a packed DIB.
+      |static INT RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header )
+      |{
+      |    INT offset_extra = 0;
+      |
+      |    if (info_header->biSize == sizeof(BITMAPINFOHEADER) /* 40 */)
+      |    {
+      |        // This is the common BITMAPINFOHEADER type. In this case, there may be bit masks following the BITMAPINFOHEADER
+      |        // and before the actual pixel bits (does not apply if bitmap has <= 8 bpp)
+      |        if (info_header->biBitCount > 8)
+      |        {
+      |            if (info_header->biCompression == BI_BITFIELDS)
+      |            {
+      |                offset_extra += 3 * sizeof(RGBQUAD);
+      |            }
+      |            else if (info_header->biCompression == 6 /* BI_ALPHABITFIELDS */)
+      |            {
+      |                // Not widely supported, but valid.
+      |                offset_extra += 4 * sizeof(RGBQUAD);
+      |            }
+      |        }
+      |    }
+      |
+      |    if (info_header->biClrUsed > 0)
+      |    {
+      |        // We have no choice but to trust this value.
+      |        offset_extra += info_header->biClrUsed * sizeof(RGBQUAD);
+      |    }
+      |    else
+      |    {
+      |        // In this case, the color table contains the maximum number for the current bit count (0 if > 8bpp)
+      |        if (info_header->biBitCount <= 8)
+      |        {
+      |            // 1bpp: 2
+      |            // 4bpp: 16
+      |            // 8bpp: 256
+      |            offset_extra += sizeof(RGBQUAD) << info_header->biBitCount;
+      |        }
+      |    }
+      |
+      |    return info_header->biSize + offset_extra;
+      |}
+      |#endif
 endClass
