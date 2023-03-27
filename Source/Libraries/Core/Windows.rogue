@@ -1,9 +1,14 @@
 class Windows [singleton]
+  METHODS
+    method is_windows_10_or_greater->Logical
+      return native( "RogueWindows_is_windows_10_or_greater()" )->Logical
+
   NATIVE
-  nativeHeader @|RogueLogical Rogue_is_windows_10_or_greater();
+    nativeHeader @|RogueLogical RogueWindows_is_windows_10_or_greater();
+
     nativeCode...
       @|#if defined(ROGUE_PLATFORM_WINDOWS)
-       |RogueLogical Rogue_is_windows_10_or_greater()
+       |RogueLogical RogueWindows_is_windows_10_or_greater()
        |{
        |  // Adapted from https://stackoverflow.com/a/74705829/135791
        |  NTSTATUS (NTAPI * RtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation) = 0;
@@ -30,10 +35,8 @@ class Windows [singleton]
        |  return 0;
        |}
        |#else
-       |  RogueLogical Rogue_is_windows_10_or_greater() { return 0; }
+       |  RogueLogical RogueWindows_is_windows_10_or_greater() { return 0; }
        |#endif
 
-  METHODS
-    method is_windows_10_or_greater->Logical
-      return native( "Rogue_is_windows_10_or_greater()" )->Logical
 endClass
+
