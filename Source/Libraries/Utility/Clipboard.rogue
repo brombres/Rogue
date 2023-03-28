@@ -24,6 +24,8 @@ class Clipboard [singleton]
     method set_bitmap( bitmap:Bitmap )
       if (System.is_windows)
         WindowsClipboard.bitmap = bitmap
+      elseIf (System.is_macos)
+        MacOSClipboard.bitmap = bitmap
       endIf
 
 endClass
@@ -31,11 +33,41 @@ endClass
 class MacOSClipboard [singleton]
   METHODS
     method bitmap->Bitmap
+      local bytes = Byte[]
+      local byte_count : Int32
+
       native...
         @|#if defined(ROGUE_PLATFORM_MACOS)
          |NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |NSData* data = [pb dataForType:NSPasteboardTypePNG];
+         |if (data)
+         |{
+         |  $byte_count = (RogueInt32) data.length;
+            bytes.dim( byte_count )
+      native...
+        @|  [data getBytes:$bytes->as_bytes length:$byte_count];
+         |}
          |#endif
-      return null
+
+      if (byte_count)
+        return Bitmap( bytes )
+      else
+        return null
+      endIf
+
+    method set_bitmap( bitmap:Bitmap )
+      native...
+        @|#if defined(ROGUE_PLATFORM_MACOS)
+
+      local png_bytes = bitmap.to_png_bytes
+      local count = png_bytes.count
+
+      native...
+        @|NSData* data = [NSData dataWithBytesNoCopy:$png_bytes->as_bytes length:$count freeWhenDone:NO];
+         |NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |[pb clearContents];
+         |[pb setData:data forType:NSPasteboardTypePNG];
+         |#endif
 
   NATIVE
     nativeHeader
@@ -57,9 +89,9 @@ class WindowsClipboard [singleton]
          |HGLOBAL clipboard_data_handle = (HGLOBAL)GetClipboardData(CF_DIB);
          |if ( !clipboard_data_handle )
          |{
-         |    // Clipboard object is not a DIB, and is not auto-convertible to DIB
-         |    CloseClipboard();
-              return null
+         |  // Clipboard object is not a DIB, and is not auto-convertible to DIB
+         |  CloseClipboard();
+            return null
       native...
         @|}
          |
