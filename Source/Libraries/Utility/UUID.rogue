@@ -1,11 +1,17 @@
+================================================================================
 # EXAMPLE
 #   uses Utility/UUID
 #   @trace UUID()
 #   # C9D68B12-1630-4E34-B0AB-EB611441878F  # newly-generated UUID
 #
-# NOTES
-#   Windows
+#
+# LINUX
+#   - Use Rogo directives to ensure that uuid-dev is installed:
+#     #$ LIBRARIES(Linux) = uuid(uuid-dev)
+#
+# WINDOWS
 #   - Must link with Rpcrt4.lib
+================================================================================
 class UUID
   PROPERTIES
     bytes     = Byte[](16)
