@@ -10,8 +10,8 @@ class PNGDecoder
     nativeCode...
      @|void Rogue_png_decoder_error_callback( png_structp png_ptr, png_const_charp msg )
       |{
-      |  fprintf(stderr, "libpng error: %s\n", msg);
-      |  fflush(stderr);
+      |  //fprintf(stderr, "libpng error: %s\n", msg);
+      |  //fflush(stderr);
       |
       |  longjmp( ((RoguePNGDecoder*)png_get_io_ptr(png_ptr))->on_error, 1 );
       |}
@@ -156,8 +156,8 @@ class PNGEncoder
     nativeCode...
      @|void Rogue_png_encoder_error_callback( png_structp png_ptr, png_const_charp msg )
       |{
-      |  fprintf(stderr, "libpng error: %s\n", msg);
-      |  fflush(stderr);
+      |  //fprintf(stderr, "libpng error: %s\n", msg);
+      |  //fflush(stderr);
       |
       |  longjmp( ((RoguePNGEncoder*)png_get_io_ptr(png_ptr))->on_error, 1 );
       |}
