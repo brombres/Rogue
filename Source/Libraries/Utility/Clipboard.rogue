@@ -1,20 +1,31 @@
 ================================================================================
 # Clipboard.rogue
 #
+# LINUX
+#   - Ensure the 'xclip' and 'uuid' are installed with the following Rogo
+#     buildfile directives:
+#     #$ LIBRARIES(Linux) = xclip
+#     #$ LIBRARIES(Linux) = uuid(uuid-dev)
+#
 # MACOS
-#  -I /System/Libraries/Frameworks -framework Foundation -framework AppKit
+#  - Add the following C compile args (CC_ARGS_MACOS in Rogo buildfile):
+#    -I /System/Libraries/Frameworks -framework Foundation -framework AppKit
 #
 # WINDOWS
-# - Link with user32.lib and gdi32.lib
+#   - Link with user32.lib, gdi32.lib, and Rpcrt4.lib
+#   - Use CC_ARGS_WINDOWS in Rogo buildfile.
 ================================================================================
 uses Bitmap
 uses Codec/BMP
+uses Utility/UUID
 
 class Clipboard [singleton]
   METHODS
     method bitmap->Bitmap
       if (System.is_windows)
         return WindowsClipboard.bitmap
+      elseIf (System.is_linux)
+        return LinuxClipboard.bitmap
       elseIf (System.is_macos)
         return MacOSClipboard.bitmap
       else
@@ -24,9 +35,61 @@ class Clipboard [singleton]
     method set_bitmap( bitmap:Bitmap )
       if (System.is_windows)
         WindowsClipboard.bitmap = bitmap
+      elseIf (System.is_linux)
+        LinuxClipboard.bitmap = bitmap
       elseIf (System.is_macos)
         MacOSClipboard.bitmap = bitmap
       endIf
+
+endClass
+
+class LinuxClipboard [singleton]
+  # Implemented with assistance from:
+  # - https://stackoverflow.com/a/27995840/135791
+  # - https://stackoverflow.com/questions/18695934/error-cant-open-display-null-when-using-xclip-to-copy-ssh-public-key
+  # - https://emacs.stackexchange.com/questions/39019/xclip-hangs-shell-command
+  METHODS
+    method bitmap->Bitmap
+      if (not System.is_linux) return null
+
+      local png_file = temp_file( "png" )
+      local cmd = "timeout 1.0 xclip -display :0 -select clipboard -target image/png -out > $ 2> /dev/null\n"(png_file.esc)
+
+      local script_file = temp_file( "sh" )
+      script_file.save( cmd )
+
+      cmd = "sh $"(script_file.esc)
+      Process( cmd ).finish
+
+      if (png_file.exists and png_file.size)
+        local result = Bitmap( png_file )
+        png_file.delete
+        script_file.delete
+        return result
+      else
+        png_file.delete
+        script_file.delete
+        return null
+      endIf
+
+    method set_bitmap( bitmap:Bitmap )
+      if (not bitmap) return
+
+      local png_file = temp_file( "png" )
+      png_file.save( bitmap.to_png_bytes )
+
+      local cmd = "timeout 1.0 xclip -d :0 -selection clipboard -in $ &> /dev/null\n"(png_file.esc)
+      local script_file = temp_file( "sh" )
+      script_file.save( cmd )
+      cmd = "sh $"(script_file.esc)
+      Process( cmd ).finish
+
+      System.sleep( 0.1 )
+      png_file.delete
+      script_file.delete
+
+    method temp_file( extension="png":String )->File
+      return File( "/tmp/$.$"(UUID(),extension) )
 
 endClass
 
