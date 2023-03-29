@@ -38,13 +38,12 @@ class Bitmap
       return Bitmap( width, height, Color(0) )
 
     method create( file:File )->Bitmap
-      return Bitmap( Byte[](file) ).[ filepath=file.filepath ]
+      local result = Bitmap( Byte[](file) )
+      if (result) result.filepath = file.filepath
+      return result
 
     method create( bytes:Byte[] )->Bitmap
       local result = decode( bytes )
-      if (result) return result
-      result = Bitmap(1,1)
-      result.error = true
       return result
 
     method encode_data( bytes:Byte[], width=0:Int32 )->Bitmap
@@ -108,7 +107,6 @@ class Bitmap
     width                  : Int32
     height                 : Int32
     pixels                 : Color[]
-    error                  : Logical
     is_premultiplied_alpha : Logical
     filepath               : String
 
@@ -129,7 +127,6 @@ class Bitmap
       existing.blit( this, -bounds.position )
 
     method reset( width, height, color=Color(0):Color? )
-      error                  = false
       is_premultiplied_alpha = false
       pixels.expand_to_count( width*height )
       pixels.discard_from( width*height )
@@ -141,7 +138,6 @@ class Bitmap
 
     method cloned->Bitmap
       local result = Bitmap( size, pixels.cloned )
-      result.error = this.error
       return result
 
     method add_rows( rows:Int32, color=0:Color )
@@ -322,7 +318,6 @@ class Bitmap
       width = result.width
       height = result.height
       pixels = result.pixels
-      error = result.error
 
     method extend_edges( bounds:Box )
       local x1 = bounds.position.x
@@ -714,7 +709,6 @@ class Bitmap
       width = result.width
       height = result.height
       pixels = result.pixels
-      error = result.error
 
     method resize_to( other:Bitmap )
       # Uses a custom algorithm inspired by Bresenham's line drawing algorithm.
