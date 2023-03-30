@@ -931,23 +931,39 @@ augment Bitmap::Bitmap
       local canvas = TextCanvas( width, height/2+(height&1) )
       local canvas_data = canvas.buffer
 
+      local evens = Bitmap.transparent_checkerboard_evens
+      local odds = Bitmap.transparent_checkerboard_odds
+
       local src_index = 0
       local dest_index = 0
 
       if (height & 1)
         # First line contains default BG color on the top and the first row of color data on the bottom.
-        loop (width)
+        forEach (i in 0..<width)
           local fg = pixels[src_index]
+          if (fg.alpha_byte < 255)
+            if (i & 2) fg = odds  * fg
+            else       fg = evens * fg
+          endIf
           canvas_data[ dest_index ] = StyledCharacter( '\[2584]', fg, bg24 )
           ++src_index
           ++dest_index
-        endLoop
+        endForEach
       endIf
 
       forEach (j in 0..<height/2)
         forEach (i in 0..<width)
           local bg = pixels[src_index]
           local fg = pixels[src_index+width]
+          if (bg.alpha_byte < 255 or fg.alpha_byte < 255)
+            if ((i & 2) xor (j & 1))
+              bg = evens * bg
+              fg = odds  * fg
+            else
+              bg = odds  * bg
+              fg = evens * fg
+            endIf
+          endIf
           canvas_data[ dest_index ] = StyledCharacter( '\[2584]', fg, bg )
           ++src_index
           ++dest_index
