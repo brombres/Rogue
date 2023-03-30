@@ -17,6 +17,9 @@ class ANSIBitmap
     method init( source:Bitmap, &dither )
       source = source.cloned
 
+      local evens = Bitmap.transparent_checkerboard_evens
+      local odds = Bitmap.transparent_checkerboard_odds
+
       block
         local index = 0
         local pixels = source.pixels
@@ -26,9 +29,9 @@ class ANSIBitmap
             if (color.alpha_byte < 255)
               local pattern : Color
               if ((i & 2) xor (j & 2))
-                pattern = Color(0xFF555555)
+                pattern = evens
               else
-                pattern = Color(0xFFAAAAAA)
+                pattern = odds
               endIf
               pixels[index] = pattern * color
             endIf

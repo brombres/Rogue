@@ -33,6 +33,10 @@ $include Bitmap/Color
 $include Bitmap/HSB
 
 class Bitmap
+  GLOBAL PROPERTIES
+    transparent_checkerboard_evens = Color(0xFF555555)
+    transparent_checkerboard_odds  = Color(0xFFAAAAAA)
+
   GLOBAL METHODS
     method create( width:Int32, height:Int32 )->Bitmap
       return Bitmap( width, height, Color(0) )
