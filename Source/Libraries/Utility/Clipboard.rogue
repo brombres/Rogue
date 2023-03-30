@@ -25,7 +25,14 @@ class Clipboard [singleton]
       if (System.is_windows)
         return WindowsClipboard.bitmap
       elseIf (System.is_linux)
-        return LinuxClipboard.bitmap
+        if local result = LinuxClipboard.bitmap( "png" )
+          # Handles JPG too
+          return result
+        elseIf local result = LinuxClipboard.bitmap( "bmp" )
+          return result
+        else
+          return null
+        endIf
       elseIf (System.is_macos)
         return MacOSClipboard.bitmap
       else
@@ -49,11 +56,11 @@ class LinuxClipboard [singleton]
   # - https://stackoverflow.com/questions/18695934/error-cant-open-display-null-when-using-xclip-to-copy-ssh-public-key
   # - https://emacs.stackexchange.com/questions/39019/xclip-hangs-shell-command
   METHODS
-    method bitmap->Bitmap
+    method bitmap( type="png":String )->Bitmap
       if (not System.is_linux) return null
 
-      local png_file = temp_file( "png" )
-      local cmd = "timeout 1.0 xclip -display :0 -select clipboard -target image/png -out > $ 2> /dev/null\n"(png_file.esc)
+      local png_file = temp_file( type )
+      local cmd = "timeout 1.0 xclip -display :0 -select clipboard -target image/$ -out > $ 2> /dev/null\n"(type,png_file.esc)
 
       local script_file = temp_file( "sh" )
       script_file.save( cmd )
@@ -96,27 +103,40 @@ endClass
 class MacOSClipboard [singleton]
   METHODS
     method bitmap->Bitmap
-      local bytes = Byte[]
-      local byte_count : Int32
+      local result : Bitmap
+      local width  : Int32
+      local height : Int32
 
       native...
         @|#if defined(ROGUE_PLATFORM_MACOS)
-         |NSPasteboard* pb = NSPasteboard.generalPasteboard;
-         |NSData* data = [pb dataForType:NSPasteboardTypePNG];
-         |if (data)
          |{
-         |  $byte_count = (RogueInt32) data.length;
-            bytes.dim( byte_count )
-      native...
-        @|  [data getBytes:$bytes->as_bytes length:$byte_count];
+         |  NSPasteboard* pb = NSPasteboard.generalPasteboard;
+         |
+         |  NSData* data = [pb dataForType:NSPasteboardTypePNG];
+         |  if ( !data ) data = [pb dataForType:NSPasteboardTypeTIFF];
+         |
+         |  if (data)
+         |  {
+         |    CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
+         |    if (image)
+         |    {
+         |      $width = (RogueInt32)CGImageGetWidth( image );
+         |      $height = (RogueInt32)CGImageGetHeight( image );
+                result = Bitmap( width, height )
+      native ...
+        @|      CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
+         |                                            CGColorSpaceCreateDeviceRGB(), kCGImageAlphaPremultipliedLast );
+         |      CGContextDrawImage( gc, CGRectMake(0.0, 0.0, (CGFloat)$width, (CGFloat)$height), image );
+         |      CGContextRelease( gc );
+
+      native ...
+        @|    }
+         |  }
          |}
          |#endif
 
-      if (byte_count)
-        return Bitmap( bytes )
-      else
-        return null
-      endIf
+         if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
+       return result
 
     method set_bitmap( bitmap:Bitmap )
       native...
