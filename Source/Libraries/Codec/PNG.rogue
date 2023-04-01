@@ -42,7 +42,27 @@ class PNGDecoder
     native "jmp_buf      on_error;"
 
   METHODS
-    method decode( encoded_bytes:Byte[], dest_bitmap=null:Bitmap, &make_power_of_two )->Bitmap
+    method decode( encoded_bytes:Byte[], &make_power_of_two )->Bitmap
+      if (System.is_macos)
+        local result = MacOS.decode_bitmap( encoded_bytes )
+        if (result and make_power_of_two)
+          local w = result.width
+          local wp2 = w.to_power_of_2
+          local h = result.height
+          local hp2 = h.to_power_of_2
+          if (w != wp2 or h != hp2)
+            local p2 = Bitmap( wp2, hp2 )
+            result.blit( p2, 0, 0 )
+            return p2
+          endIf
+        endIf
+        return result
+      else
+        return decode_libpng( encoded_bytes, &=make_power_of_two )
+      endIf
+
+    method decode_libpng( encoded_bytes:Byte[], &make_power_of_two )->Bitmap
+      local dest_bitmap : Bitmap
       reader = encoded_bytes.reader
 
       native...
@@ -181,9 +201,57 @@ class PNGEncoder
     native "png_infop    png_info_ptr;"
     native "jmp_buf      on_error;"
 
-
   METHODS
     method encode( bitmap:Bitmap, encoded_bytes=null )->Byte[]
+      if (System.is_macos or System.is_ios)
+        bitmap.swap_red_and_blue
+        bitmap.unmultiply_alpha
+        ensure<<encoded_bytes>>
+        local w = bitmap.width
+        local h = bitmap.height
+        local png_data_count : Int32
+
+        # Adapted from:
+        #   https://stackoverflow.com/a/12257793/135791
+        #   https://stackoverflow.com/a/30958731/135791
+        #   https://stackoverflow.com/a/17510651/135791
+        native...
+          @|#if defined(ROGUE_PLATFORM_MACOS) || defined(ROGUE_PLATFORM_IOS)
+           |CGDataProviderRef provider = CGDataProviderCreateWithData( 0, $bitmap->pixels->data, $w*$h*4, 0 );
+           |
+           |CGImageRef cg_image = CGImageCreate(
+           |  $w, $h,
+           |  8,
+           |  32,
+           |  $w*4,
+           |  CGColorSpaceCreateDeviceRGB(),
+           |  kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
+           |  provider,
+           |  0,
+           |  0,
+           |  kCGRenderingIntentDefault
+           |);
+           |#if defined(ROGUE_PLATFORM_MACOS)
+           |  NSBitmapImageRep *image_rep = [[NSBitmapImageRep alloc] initWithCGImage:cg_image];
+           |  NSData *png_data = [image_rep representationUsingType:NSBitmapImageFileTypePNG properties:[NSDictionary dictionary]];
+           |#else
+           |  NSImage*   image = [[NSImage alloc] initWithCGImage:cg_image size:NSZeroSize];
+           |  NSData* png_data = NSImagePNGRepresentation( image );
+           |#endif
+           |$png_data_count = png_data.length;
+            encoded_bytes.dim( png_data_count )
+        native ...
+          @|[png_data getBytes:$encoded_bytes->as_bytes length:$png_data_count];
+           |
+           |#endif
+        bitmap.swap_red_and_blue
+      else
+        encode_with_libpng( bitmap )
+      endIf
+
+      return encoded_bytes
+
+    method encode_with_libpng( bitmap:Bitmap, encoded_bytes=null )->Byte[]
       ensure<<encoded_bytes>>
 
       local is_opaque = bitmap.is_opaque
@@ -283,4 +351,11 @@ class PNGEncoder
               |}
 
       return encoded_bytes
+
+  NATIVE
+    nativeHeader
+      @|#if defined(ROGUE_PLATFORM_MACOS)
+       |  #import <Cocoa/Cocoa.h>
+       |  #import <Foundation/Foundation.h>
+       |#endif
 endClass

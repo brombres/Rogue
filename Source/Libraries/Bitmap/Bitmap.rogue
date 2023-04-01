@@ -1140,3 +1140,42 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
               |  dest_start += $dest_width;
               |}
 endClass
+
+augment Rogue::MacOS
+  METHODS
+    method decode_bitmap( encoded_bytes:Byte[] )->Bitmap
+      local result : Bitmap
+      local width  : Int32
+      local height : Int32
+
+      native...
+        @|#if defined(ROGUE_PLATFORM_MACOS)
+         |{
+         |  NSData *data = [NSData dataWithBytes:$encoded_bytes->as_bytes length:$encoded_bytes->count];
+         |  CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
+         |  if (image)
+         |  {
+         |    $width = (RogueInt32)CGImageGetWidth( image );
+         |    $height = (RogueInt32)CGImageGetHeight( image );
+              result = Bitmap( width, height )
+      native ...
+        @|    CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
+         |                                          CGColorSpaceCreateDeviceRGB(), kCGImageAlphaPremultipliedLast );
+         |    CGContextDrawImage( gc, CGRectMake(0.0, 0.0, (CGFloat)$width, (CGFloat)$height), image );
+         |    CGContextRelease( gc );
+
+      native ...
+        @|  }
+         |}
+         |#endif
+
+      if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
+      return result
+
+  NATIVE
+    nativeHeader
+      @|#if defined(ROGUE_PLATFORM_MACOS)
+       |  #import <Cocoa/Cocoa.h>
+       |  #import <Foundation/Foundation.h>
+       |#endif
+endAugment

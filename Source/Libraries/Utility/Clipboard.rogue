@@ -143,6 +143,7 @@ class MacOSClipboard [singleton]
         @|#if defined(ROGUE_PLATFORM_MACOS)
 
       local png_bytes = bitmap.to_png_bytes
+      if (not png_bytes or not png_bytes.count) return
       local count = png_bytes.count
 
       native...
