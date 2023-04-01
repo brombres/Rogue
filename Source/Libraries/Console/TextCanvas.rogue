@@ -942,8 +942,8 @@ augment Bitmap::Bitmap
         forEach (i in 0..<width)
           local fg = pixels[src_index]
           if (fg.alpha_byte < 255)
-            if (i & 2) fg = odds  * fg
-            else       fg = evens * fg
+            if (i & 2) fg = evens * fg
+            else       fg = odds  * fg
           endIf
           canvas_data[ dest_index ] = StyledCharacter( '\[2584]', fg, bg24 )
           ++src_index
