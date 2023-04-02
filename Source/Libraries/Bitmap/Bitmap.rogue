@@ -96,14 +96,17 @@ class Bitmap
       endIf
 
     method decode_bmp( bytes:Byte[] )->Bitmap
+      if (System.is_macos) return MacOS.decode_bitmap( bytes )
       error.println "ERROR: No BMP decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_jpeg( bytes:Byte[] )->Bitmap
+      if (System.is_macos) return MacOS.decode_bitmap( encoded_bytes )
       error.println "ERROR: No JPEG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_png( bytes:Byte[] )->Bitmap
+      if (System.is_macos) return MacOS.decode_bitmap( bytes )
       error.println "ERROR: No PNG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_png(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
@@ -655,7 +658,7 @@ class Bitmap
       fill( Triangle(quad.a,quad.b,quad.c), color )
       fill( Triangle(quad.a,quad.c,quad.d), color )
 
-    method make_power_of_two
+    method make_power_of_2
       local w = result.width
       local wp2 = w.to_power_of_2
       local h = result.height
@@ -1004,11 +1007,18 @@ class Bitmap
 
     method to_png_bytes->Byte[]
       #return PNGEncoder().encode( this )
+      if (System.is_macos) return MacOS.to_png_bytes( this )
       Global.error.println "ERROR: No JPEG encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_png_bytes->Byte[] to utilize an alternate decoder."
       return null
 
     method to_jpeg_bytes( quality=75:Int32 )->Byte[]
+      if (System.is_macos) return MacOS.to_jpeg_bytes( this )
       Global.error.println "ERROR: No JPEG encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_jpeg_bytes(quality:Int32)->Byte[] to utilize an alternate decoder."
+      return null
+
+    method to_tiff_bytes->Byte[]
+      if (System.is_macos) return MacOS.to_tiff_bytes( this )
+      Global.error.println "ERROR: No TIFF encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_tiff_bytes->Byte[] to utilize an alternate decoder."
       return null
 
 
@@ -1155,6 +1165,15 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
               |}
 endClass
 
+enum BitmapEncodingType
+  TYPE_TIFF
+  TYPE_BMP
+  TYPE_GIF
+  TYPE_JPEG
+  TYPE_PNG
+  TYPE_JPEG2000
+endEnum
+
 augment Rogue::MacOS
   METHODS
     method decode_bitmap( encoded_bytes:Byte[] )->Bitmap
@@ -1185,6 +1204,80 @@ augment Rogue::MacOS
 
       if (result) result.[ swap_red_and_blue, is_premultiplied_alpha=true, unmultiply_alpha ]
       return result
+
+    method encode_bitmap( bitmap:Bitmap, type:BitmapEncodingType )->Byte[]
+      bitmap.swap_red_and_blue
+      bitmap.unmultiply_alpha
+
+      local w = bitmap.width
+      local h = bitmap.height
+      local png_data_count : Int32
+      local encoded_bytes = Byte[]
+
+      # Adapted from:
+      #   https://stackoverflow.com/a/12257793/135791
+      #   https://stackoverflow.com/a/30958731/135791
+      #   https://stackoverflow.com/a/17510651/135791
+      native...
+        @|#if defined(ROGUE_PLATFORM_MACOS) || defined(ROGUE_PLATFORM_IOS)
+         |CGDataProviderRef provider = CGDataProviderCreateWithData( 0, $bitmap->pixels->data, $w*$h*4, 0 );
+         |
+         |CGImageRef cg_image = CGImageCreate(
+         |  $w, $h,
+         |  8,
+         |  32,
+         |  $w*4,
+         |  CGColorSpaceCreateDeviceRGB(),
+         |  kCGBitmapByteOrderDefault | kCGImageAlphaPremultipliedLast,
+         |  provider,
+         |  0,
+         |  0,
+         |  kCGRenderingIntentDefault
+         |);
+         |#if defined(ROGUE_PLATFORM_MACOS)
+         |  NSBitmapImageRep *image_rep = [[NSBitmapImageRep alloc] initWithCGImage:cg_image];
+         |  NSBitmapImageFileType encoding_type = NSBitmapImageFileTypeTIFF;
+         |  switch ($type.value)
+         |  {
+         |    case 0: encoding_type = NSBitmapImageFileTypeTIFF;
+         |    case 1: encoding_type = NSBitmapImageFileTypeBMP;
+         |    case 2: encoding_type = NSBitmapImageFileTypeGIF;
+         |    case 3: encoding_type = NSBitmapImageFileTypeJPEG;
+         |    case 4: encoding_type = NSBitmapImageFileTypePNG;
+         |    case 5: encoding_type = NSBitmapImageFileTypeJPEG2000;
+         |  }
+         |  NSData *png_data = [image_rep representationUsingType:encoding_type properties:[NSDictionary dictionary]];
+         |#else
+         |  NSImage*   image = [[NSImage alloc] initWithCGImage:cg_image size:NSZeroSize];
+         |  NSData* png_data = NSImagePNGRepresentation( image );
+         |#endif
+         |$png_data_count = png_data.length;
+          encoded_bytes.dim( png_data_count )
+      native ...
+        @|[png_data getBytes:$encoded_bytes->as_bytes length:$png_data_count];
+         |
+         |#endif
+      bitmap.swap_red_and_blue
+      return encoded_bytes
+
+    method to_bmp_bytes( bitmap:Bitmap )->Byte[]
+      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_BMP )
+
+    method to_gif_bytes( bitmap:Bitmap )->Byte[]
+      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_GIF )
+
+    method to_jpeg_bytes( bitmap:Bitmap )->Byte[]
+      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_JPEG )
+
+    method to_jpeg2000_bytes( bitmap:Bitmap )->Byte[]
+      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_JPEG2000 )
+
+    method to_png_bytes( bitmap:Bitmap )->Byte[]
+      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_PNG )
+
+    method to_tiff_bytes( bitmap:Bitmap )->Byte[]
+      return encode_bitmap( bitmap, BitmapEncodingType.TYPE_TIFF )
+
 
   NATIVE
     nativeHeader
