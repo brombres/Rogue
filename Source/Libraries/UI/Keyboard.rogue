@@ -71,6 +71,7 @@ class Keycode
     SPACE            = 32
 
     APOSTROPHE       = 39
+    QUOTE            = 39
     COMMA            = 44
     MINUS            = 45
     PERIOD           = 46
