@@ -140,10 +140,10 @@ class ConsoleUI : UI
               handle( PointerEvent.MOVE, 0, event )
 
             case ConsoleEventType.SCROLL_UP
-              handle( ScrollEvent(XY(0,-1)) )
+              handle( ScrollEvent(XY(0, 1)) )
 
             case ConsoleEventType.SCROLL_DOWN
-              handle( ScrollEvent(XY(0, 1)) )
+              handle( ScrollEvent(XY(0,-1)) )
 
           endWhich
         else
