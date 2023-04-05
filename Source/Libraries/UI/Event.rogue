@@ -247,7 +247,7 @@ endClass
 class ScrollEvent : Event
   PROPERTIES
     delta         : XY
-    precise    : Logical
+    precise       : Logical
       # True for Apple Magic Mouse and Trackpad, AKA supports gestures and momentum.
       # If this is true then is_progress and is_momentum are valid (and vice versa).
     in_progress   : Logical

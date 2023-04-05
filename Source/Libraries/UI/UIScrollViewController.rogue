@@ -67,7 +67,7 @@ class StandardUIScrollViewController : UIScrollViewController
     allow_overscroll       = true
     clamp_to_bounds        = true
 
-    scroll_rate = ScrollRate(5)
+    scroll_rate = ScrollRate( default_scroll_rate )
 
     is_pressed  = false
     is_dragging = false
@@ -82,6 +82,10 @@ class StandardUIScrollViewController : UIScrollViewController
       if (tracks_bottom)
         content_offset = XY( 0, view.bottom_offset )
       endIf
+
+    method default_scroll_rate->Int32
+      if (UI.active instanceOf ConsoleUI) return 3
+      else                                return 5
 
     method on( e:PointerEvent )
       if (e.is_press)
