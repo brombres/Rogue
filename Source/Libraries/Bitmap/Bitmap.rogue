@@ -1239,12 +1239,12 @@ augment Rogue::MacOS
          |  NSBitmapImageFileType encoding_type = NSBitmapImageFileTypeTIFF;
          |  switch ($type.value)
          |  {
-         |    case 0: encoding_type = NSBitmapImageFileTypeTIFF;
-         |    case 1: encoding_type = NSBitmapImageFileTypeBMP;
-         |    case 2: encoding_type = NSBitmapImageFileTypeGIF;
-         |    case 3: encoding_type = NSBitmapImageFileTypeJPEG;
-         |    case 4: encoding_type = NSBitmapImageFileTypePNG;
-         |    case 5: encoding_type = NSBitmapImageFileTypeJPEG2000;
+         |    case 0: encoding_type = NSBitmapImageFileTypeTIFF; break;
+         |    case 1: encoding_type = NSBitmapImageFileTypeBMP; break;
+         |    case 2: encoding_type = NSBitmapImageFileTypeGIF; break;
+         |    case 3: encoding_type = NSBitmapImageFileTypeJPEG; break;
+         |    case 4: encoding_type = NSBitmapImageFileTypePNG; break;
+         |    case 5: encoding_type = NSBitmapImageFileTypeJPEG2000; break;
          |  }
          |  NSData *png_data = [image_rep representationUsingType:encoding_type properties:[NSDictionary dictionary]];
          |#else
