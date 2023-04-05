@@ -14,13 +14,15 @@ class ConsoleUI : UI
     underline_font : ConsoleUIFont
 
   PROPERTIES
-    fast_updates      : Logical  # set to true to always update at 1/60th second
+    rapid_updates      : Int32
+    # -1: Always update 60 times per second (or as fast as possible)
+    #  0: Update 10 times per second
+    # >0: Update this many ticks at 60hz, then revert to 10hz
 
-    last_update_ms    : Int32
-    mouse_position    : XY?
-    button_pressed    = Dim<<Logical>>(2)
-    is_running        : Logical
-    fast_update_ticks = 0
+    last_update_ms     : Int32
+    mouse_position     : XY?
+    button_pressed     = Dim<<Logical>>(2)
+    is_running         : Logical
 
   METHODS
     method init
@@ -50,22 +52,25 @@ class ConsoleUI : UI
       ConsoleUICanvas.display(0,0)
       Console.set_cursor( 0, bounds.y2 )
 
+    method ensure_rapid_updates( ticks:Int32 )
+      if (rapid_updates >= 0 and rapid_updates < ticks) rapid_updates = ticks
+
     method handle( e:KeyEvent )
-      fast_update_ticks = 10
+      ensure_rapid_updates( 30 )
       prior.handle( e )
 
     method handle( e:PointerEvent )
       if (mouse_position.exists) e.delta = e.position - mouse_position.value
       mouse_position = e.position
-      fast_update_ticks = 10
+      ensure_rapid_updates( 30 )
       prior.handle( e )
 
     method handle( e:ScrollEvent )
-      fast_update_ticks = 10
+      ensure_rapid_updates( 30 )
       prior.handle( e )
 
     method handle( e:TextEvent )
-      fast_update_ticks = 10
+      ensure_rapid_updates( 30 )
       prior.handle( e )
 
     method handle( type:Int32, index:Int32, e:ConsoleEvent )
@@ -164,14 +169,14 @@ class ConsoleUI : UI
           draw
 
           # If it needs a redraw right after drawing then we're animating
-          local needs_fast_update = fast_updates or needs_redraw
-          if (fast_update_ticks > 0)
-            needs_fast_update = true
-            --fast_update_ticks
+          local needs_rapid_update = (rapid_updates != 0) or needs_redraw
+          if (rapid_updates > 0)
+            needs_rapid_update = true
+            --rapid_updates
           endIf
 
-          if (needs_fast_update) System.sleep( 1.0/60.0 )
-          else                   System.sleep( 0.1 )
+          if (needs_rapid_update) System.sleep( 1.0/60.0 )
+          else                    System.sleep( 0.1 )
         endWhile
 
         Console.immediate_mode = false
