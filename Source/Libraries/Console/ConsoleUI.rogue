@@ -19,10 +19,14 @@ class ConsoleUI : UI
     #  0: Update 10 times per second
     # >0: Update this many ticks at 60hz, then revert to 10hz
 
-    last_update_ms     : Int32
-    mouse_position     : XY?
-    button_pressed     = Dim<<Logical>>(2)
-    is_running         : Logical
+    last_update_ms       : Int32
+    mouse_position       : XY?
+    button_pressed       = Dim<<Logical>>(2)
+    is_running           : Logical
+
+    max_events_processed = 512
+    max_event_window_ms  = 8
+    update_timer         = Timer()
 
   METHODS
     method init
@@ -90,7 +94,11 @@ class ConsoleUI : UI
       prior.on_resize
 
     method on_update
-      loop 512
+      update_timer.init( max_event_window_ms / 1000.0 )
+
+      loop max_events_processed
+        if (update_timer.is_expired) escapeLoop
+
         if (Console.immediate_mode and Console.has_another_event)
           local event = Console.read_event
           which (event.type)
