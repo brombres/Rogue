@@ -549,6 +549,7 @@ class List<<$DataType>> : Poolable ListType
       required_capacity = required_capacity.or_larger( count*2 ).or_larger( 10 )
 
       native @|int total_size = $required_capacity * $element_size;
+              |RogueMM_bytes_allocated_since_gc += total_size;
               |RogueByte* new_data = (RogueByte*) ROGUE_MALLOC( total_size );
               |
               |if ($this->as_bytes)
