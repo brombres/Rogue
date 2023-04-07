@@ -228,6 +228,24 @@ class Scanner : Reader<<Character>>
       count = data.count
       seek( 0 )
 
+    method scan_args->String[]
+      local args = String[]
+      consume_whitespace
+      while (has_another)
+        local st = scan_string
+        if (st)
+          args.add( st )
+        else
+          st = String()
+          while (has_another and not consume_whitespace)
+            st.print( read )
+          endWhile
+          args.add( st )
+        endIf
+        consume_whitespace
+      endWhile
+      return args
+
     method scan_hex_sequence( buffer:String )
       local first = true
       while (first or consume(','))
