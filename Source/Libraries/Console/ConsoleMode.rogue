@@ -229,7 +229,7 @@ class ImmediateConsoleMode : ConsoleMode
     method _fill_event_queue_windows_process_next
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
 
-      # If Windows and in immediate mode use Peek/ReadConsoleInput.
+      # If Windows is in immediate mode use Peek/ReadConsoleInput.
       local unicode, event_flags, new_button_state, x, y : Int32
 
       native @|HANDLE       h_stdin = GetStdHandle( STD_INPUT_HANDLE );
