@@ -15,6 +15,18 @@ class ConsoleMode [abstract]
     method peek_event->ConsoleEvent    [abstract]
     method read->Character             [abstract]
     method read_event->ConsoleEvent    [abstract]
+
+  NATIVE
+    nativeHeader...
+      @|#if defined(ROGUE_PLATFORM_WINDOWS)
+       |  #ifndef CONSOLE_READ_NOREMOVE
+       |    #define CONSOLE_READ_NOREMOVE 0x0001
+       |  #endif
+       |
+       |  #ifndef CONSOLE_READ_NOWAIT
+       |    #define CONSOLE_READ_NOWAIT   0x0002
+       |  #endif
+       |#endif
 endClass
 
 class StandardConsoleMode : ConsoleMode
@@ -152,12 +164,12 @@ class ImmediateConsoleMode : ConsoleMode
               |  GetConsoleMode( h_stdin, &mode );
               |  SetConsoleMode( h_stdin, (mode & ~(ENABLE_QUICK_EDIT_MODE)) | ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT );
               |#elif !defined(ROGUE_PLATFORM_EMBEDDED)
-              |  struct termios new_settings;
-              |  tcgetattr( STDIN_FILENO, &new_settings );
-              |  new_settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
-              |  new_settings.c_cc[VMIN] = 0;
-              |  new_settings.c_cc[VTIME] = 0;
-              |  tcsetattr( STDIN_FILENO, TCSANOW, &new_settings );
+              |  struct termios settings;
+              |  tcgetattr( STDIN_FILENO, &settings );
+              |  settings.c_lflag &= ~(ECHO | ECHOE | ICANON);
+              |  settings.c_cc[VMIN] = 0;
+              |  settings.c_cc[VTIME] = 0;
+              |  tcsetattr( STDIN_FILENO, TCSANOW, &settings );
               |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK );
 
                  # Enable mouse events
@@ -214,34 +226,67 @@ class ImmediateConsoleMode : ConsoleMode
 
     method _fill_event_queue_windows
       # Used only for Windows and only in immediate mode
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
-              |HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
-              |DWORD  event_count = 0;
-              |
-              |GetNumberOfConsoleInputEvents( h_stdin, &event_count );
-               while (native("(RogueInt32)event_count")->Int32)
-                 _fill_event_queue_windows_process_next
-                native @|GetNumberOfConsoleInputEvents( h_stdin, &event_count );
-               endWhile
-
-      native @|#endif // ROGUE_PLATFORM_WINDOWS
+      local force_input_blocking = Console.force_input_blocking
+      native...
+        @|#if defined(ROGUE_PLATFORM_WINDOWS)
+         |HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+         |DWORD  event_count = 0;
+         |INPUT_RECORD buffer[100];
+         |
+         |if ($force_input_blocking)
+         |{
+         |  ReadConsoleInput( h_stdin, buffer, 100, &event_count );
+            while (native("(RogueInt32)event_count")->Int32)
+              forEach (i in 0..<native("(RogueInt32)event_count")->Int32)
+                local record : WindowsInputRecord
+                native @|memcpy( &$record.value, buffer+$i, sizeof(INPUT_RECORD) );
+                _fill_event_queue_windows_process_next( record )
+              endForEach
+              native @|GetNumberOfConsoleInputEvents( h_stdin, &event_count );
+              if (native("(RogueInt32)event_count")->Int32)
+                native...
+                  @|ReadConsoleInput( h_stdin, buffer, 100, &event_count );
+              endIf
+            endWhile
+      native...
+        @|}
+         |else
+         |{
+         |  GetNumberOfConsoleInputEvents( h_stdin, &event_count );
+            while (native("(RogueInt32)event_count")->Int32)
+              loop (native("(RogueInt32)event_count")->Int32) _fill_event_queue_windows_process_next
+               native @|GetNumberOfConsoleInputEvents( h_stdin, &event_count );
+            endWhile
+      native...
+        @|}
+         |#endif // ROGUE_PLATFORM_WINDOWS
 
     method _fill_event_queue_windows_process_next
       native @|#if defined(ROGUE_PLATFORM_WINDOWS)
 
       # If Windows is in immediate mode use Peek/ReadConsoleInput.
-      local unicode, event_flags, new_button_state, x, y : Int32
+      local record : WindowsInputRecord
 
       native @|HANDLE       h_stdin = GetStdHandle( STD_INPUT_HANDLE );
               |DWORD        event_count = 0;
-              |INPUT_RECORD record;
-              |ReadConsoleInput( h_stdin, &record, 1, &event_count );
-              |if (record.EventType == MOUSE_EVENT)
+              |ReadConsoleInput( h_stdin, &$record.value, 1, &event_count );
+
+               _fill_event_queue_windows_process_next( record )
+
+      native @|#endif // ROGUE_PLATFORM_WINDOWS
+
+    method _fill_event_queue_windows_process_next( record:WindowsInputRecord )
+      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+
+      # If Windows is in immediate mode use Peek/ReadConsoleInput.
+      local unicode, event_flags, new_button_state, x, y : Int32
+
+      native @|if ($record.value.EventType == MOUSE_EVENT)
               |{
-              |  $event_flags = (RogueInt32) record.Event.MouseEvent.dwEventFlags;
-              |  $new_button_state = (RogueInt32) record.Event.MouseEvent.dwButtonState;
-              |  $x = (RogueInt32) record.Event.MouseEvent.dwMousePosition.X;
-              |  $y = (RogueInt32) record.Event.MouseEvent.dwMousePosition.Y;
+              |  $event_flags = (RogueInt32) $record.value.Event.MouseEvent.dwEventFlags;
+              |  $new_button_state = (RogueInt32) $record.value.Event.MouseEvent.dwButtonState;
+              |  $x = (RogueInt32) $record.value.Event.MouseEvent.dwMousePosition.X;
+              |  $y = (RogueInt32) $record.value.Event.MouseEvent.dwMousePosition.Y;
               |
               |  // Adjust Y coordinate to be relative to visible top-left corner of console
               |  CONSOLE_SCREEN_BUFFER_INFO info;
@@ -291,17 +336,15 @@ class ImmediateConsoleMode : ConsoleMode
 
       native @|} // if MOUSE_EVENT
               |
-              |if (record.EventType == KEY_EVENT && record.Event.KeyEvent.bKeyDown &&
-              |    record.Event.KeyEvent.uChar.UnicodeChar)
+              |if ($record.value.EventType == KEY_EVENT && $record.value.Event.KeyEvent.bKeyDown &&
+              |    $record.value.Event.KeyEvent.uChar.UnicodeChar)
               |{
-              |  $unicode = (RogueInt32) record.Event.KeyEvent.uChar.UnicodeChar;
+              |  $unicode = (RogueInt32) $record.value.Event.KeyEvent.uChar.UnicodeChar;
                  if (unicode == 13) unicode = 10
                  events.add ConsoleEvent( ConsoleEventType.CHARACTER, unicode, 0 )
       native @|}
               |
               |#endif // ROGUE_PLATFORM_WINDOWS
-
-              return
 
     method _fill_event_queue_unix
       _fill_event_queue_unix_process_next
@@ -408,3 +451,11 @@ class ImmediateConsoleMode : ConsoleMode
 
 endClass
 
+class WindowsInputRecord [compound]
+  PROPERTIES
+    native "#if defined(ROGUE_PLATFORM_WINDOWS)"
+    native "INPUT_RECORD value;"
+    native "#else"
+    native "int dummy;"
+    native "#endif"
+endClass

@@ -33,6 +33,10 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     next_input_character : Int32?
     _input_bytes         = Byte[]
 
+    force_input_blocking = false
+    # Set to true to force input blocking in Immediate Mode (can set to false after input).
+    # In Standard Mode input blocking is always used.
+
     native @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
             |  struct termios original_terminal_settings;
             |  int            original_stdin_flags;
@@ -190,14 +194,47 @@ class Console : Reader<<Character>>, BufferedPrintWriter<<output_buffer>> [singl
     method _fill_input_buffer( minimum=1:Int32 )->Logical
       if (_input_bytes.count >= minimum) return true
 
+      local needs_unblock : Logical
+
+      if (force_input_blocking and @immediate_mode)
+        needs_unblock = true
+        native...
+          @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+           |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL) & ~O_NONBLOCK );
+           |
+           |  struct termios settings;
+           |  tcgetattr( STDIN_FILENO, &settings );
+           |  settings.c_cc[VMIN] = 1;
+           |  settings.c_cc[VTIME] = 0;
+           |  tcsetattr( STDIN_FILENO, TCSANOW, &settings );
+           |#endif
+      endIf
+
       local n = 1024  # just to get us into the loop
       while (n == 1024)
         native @|char bytes[1024];
                 |$n = (RogueInt32) ROGUE_READ_CALL( STDIN_FILENO, &bytes, 1024 );
-        if (n == 0 and not @immediate_mode)
+
+        if (needs_unblock)
+          native...
+            @|#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+             |  fcntl( STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO,F_GETFL)|O_NONBLOCK );
+             |
+             |  struct termios settings;
+             |  tcgetattr( STDIN_FILENO, &settings );
+             |  settings.c_cc[VMIN] = 0;
+             |  settings.c_cc[VTIME] = 0;
+             |  tcsetattr( STDIN_FILENO, TCSANOW, &settings );
+             |#endif
+        endIf
+
+        if (n == 0 and (needs_unblock or not @immediate_mode))
           is_end_of_input = true
           escapeWhile
         endIf
+
+        needs_unblock = false
+
         if (n > 0)
           forEach (i in 0..<n)
             _input_bytes.add( native("((RogueByte)bytes[$i])")->Byte )
