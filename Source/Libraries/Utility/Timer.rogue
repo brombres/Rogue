@@ -45,6 +45,9 @@ class Timer
       if (stopped) stop_time_ms = start_time_ms
       else         stop_time_ms = null
 
+    method duration->Real
+      return duration_ms / 1000.0
+
     method elapsed->Real
       return elapsed_ms / 1000.0
 
