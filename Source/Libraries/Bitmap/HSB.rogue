@@ -73,7 +73,7 @@ class HSB( hue:Real, saturation:Real, brightness:Real ) [compound]
       endIf
 
     method to->String
-      return "($,$,$)" (hue.format("3.0"),saturation.format(".2"),brightness.format(".2"))
+      return "($,$,$)" (hue.format("1.3"),saturation.format(".2"),brightness.format(".2"))
 endClass
 
 augment Real32
