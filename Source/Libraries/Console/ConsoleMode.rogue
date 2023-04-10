@@ -226,10 +226,13 @@ class ImmediateConsoleMode : ConsoleMode
 
     method _fill_event_queue_windows
       # Used only for Windows and only in immediate mode
-      local force_input_blocking = Console.force_input_blocking
       native...
         @|#if defined(ROGUE_PLATFORM_WINDOWS)
-         |HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
+
+      local force_input_blocking = Console.force_input_blocking
+
+      native...
+        @|HANDLE h_stdin = GetStdHandle( STD_INPUT_HANDLE );
          |DWORD  event_count = 0;
          |INPUT_RECORD buffer[100];
          |
