@@ -1207,7 +1207,7 @@ augment Rogue::MacOS
 
     method encode_bitmap( bitmap:Bitmap, type:BitmapEncodingType )->Byte[]
       bitmap.swap_red_and_blue
-      bitmap.unmultiply_alpha
+      bitmap.premultiply_alpha
 
       local w = bitmap.width
       local h = bitmap.height
@@ -1258,6 +1258,7 @@ augment Rogue::MacOS
          |
          |#endif
       bitmap.swap_red_and_blue
+      bitmap.unmultiply_alpha
       return encoded_bytes
 
     method to_bmp_bytes( bitmap:Bitmap )->Byte[]
