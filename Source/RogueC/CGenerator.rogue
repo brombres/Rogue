@@ -570,11 +570,11 @@ class CGenerator : Visitor
       local info = cmd.info
       local n = cmd.vcall_index
       assert cmd.vcall_index >= 0
-      writer.print "(_auto_virtual_context_"
+      writer.print "((void)(_auto_virtual_context_"
       writer.print n
       writer.print "=(RogueObject*)("
       visit( cmd.context )
-      writer.print '),'
+      writer.print ")),"
       writer.print "(("
       if (info.return_type) writer.print info.return_type.c_ref_name
       else                  writer.print "void"
@@ -1385,7 +1385,9 @@ class CGenerator : Visitor
           if (Program.stack_trace)
             if (statement.t.line != cur_line)
               cur_line = statement.t.line
-              writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
+              if (statement.add_debug_line_number)
+                writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
+              endIf
             endIf
           endIf
           visit( statement )

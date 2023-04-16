@@ -227,6 +227,7 @@ class CWriter : BufferedPrintWriter
            |int   Rogue_launch(void);
            |void  Rogue_check_gc(void);
            |void  Rogue_collect_garbage(void);
+           |void  Rogue_exit( int exit_code );
            |void  Rogue_request_gc(void);
            |int   Rogue_quit(void);
            |void* Rogue_release( void* obj );
@@ -389,6 +390,13 @@ class CWriter : BufferedPrintWriter
         endIf
         println ...
           @|  return status;
+           |}
+           |
+           |void Rogue_exit( int exit_code )
+           |{
+           |  // Just calls exit(), but if we call exit() directly from Rogue code then the C compiler
+           |  // may give an unreachable code warning for the call stack cleanup that follows.
+           |  exit( exit_code );
            |}
            |
            |void Rogue_print_exception(void)

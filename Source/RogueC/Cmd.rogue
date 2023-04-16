@@ -17,6 +17,9 @@ class Cmd( t:Token )
     method add( cmd:Cmd )
       throw UnsupportedOperationError()
 
+    method add_debug_line_number->Logical
+      return true
+
     method catches_escape( cmd:Cmd )->Logical
       return catches_escape( cmd.control_type )
 
@@ -1434,6 +1437,9 @@ class NativeStatement : Cmd
     method init( existing:NativeStatement )
       prior.init( existing )
       content = existing.content
+
+    method add_debug_line_number->Logical
+      return false
 
     method description->String
       return "NativeStatement($)" (%content)

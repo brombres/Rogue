@@ -76,7 +76,7 @@ class System [essential]
 
     method exit( result_code=0:Int32 )
       native @|Rogue_quit();
-              |exit( $result_code );
+              |Rogue_exit( $result_code );
 
     method find_executable( name:String )->File?
       # Returns the executable filepath of the given program or else null.

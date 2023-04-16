@@ -508,9 +508,6 @@ class Resolver : Poolable, Visitor
         local statements = which{ cmd.satisfied_statements || cmd.statements }
         if (not BranchAnalyzer.all_paths_return(statements))
           statements.add( EscapeContingent(cmd.t) )
-          if (not cmd.satisfied_statements)
-            cmd.satisfied_statements = Statements( EscapeContingent(cmd.t) )
-          endIf
         endIf
       endIf
 
@@ -519,6 +516,14 @@ class Resolver : Poolable, Visitor
       push_scope( cmd )
       cmd.statements = visit( cmd.statements )
       pop_scope
+
+      if (cmd.catches_sufficient and not cmd.satisfied_statements)
+        cmd.satisfied_statements = Statements( EscapeContingent(cmd.t) )
+      endIf
+
+      if (not cmd.catches_necessary)
+        cmd.unsatisfied_statements = null
+      endIf
 
       cmd.satisfied_statements = visit( cmd.satisfied_statements )
       cmd.unsatisfied_statements = visit( cmd.unsatisfied_statements )
@@ -1658,7 +1663,9 @@ class Resolver : Poolable, Visitor
       cmd_call = resolve_call( resource.t, resource_type, GetLocal(v_resource), "on_end_use", Args(v.t,GetLocal(v)) )
 
       cmd_block.statements.add( forEach in cmd.statements )
-      cmd_block.cleanup.add( cmd_call.cloned )
+      if (not BranchAnalyzer.all_paths_return(cmd_block.statements))
+        cmd_block.cleanup.add( cmd_call.cloned )
+      endIf
       local result = visit( cmd_block ) : Cmd
       result = EndScopePatcher.patch( this, cmd_call, result )
 
