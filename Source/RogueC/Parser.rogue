@@ -100,7 +100,7 @@ class Parser : ParserCore, Poolable
 
       local builder = String()
       local depth = 0
-      forEach (t at i in _tokens.from(i1,i2))
+      forEach (t in _tokens.from(i1,i2))
         which (t.type)
           case TokenType.EOL
             if (depth > 0) throw t.error( "Expected '>>', found end of line." )
