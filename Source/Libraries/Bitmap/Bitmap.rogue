@@ -81,7 +81,7 @@ class Bitmap
     method decode( bytes:Byte[] )->Bitmap
       if (bytes.count < 4) return null
 
-      if (bytes[0] == 0x89 and bytes[1] == 'P' and bytes[2] == 'N' and bytes[3] == 'G')
+      if (bytes[0] == 0x89 and detect_string(bytes,1,"PNG"))
         return decode_png( bytes )
 
       elseIf (bytes[0] == 0xFF and bytes[1] == 0xD8)
@@ -89,6 +89,12 @@ class Bitmap
 
       elseIf (bytes[0] == 'B' and bytes[1] == 'M')
         return decode_bmp( bytes )
+
+      elseIf (detect_string(bytes,4,"ftypheic"))
+        return decode_heic( bytes )
+
+      elseIf (detect_string(bytes,0,"RIFF") and detect_string(bytes,8,"WEBPVP8"))
+        return decode_webp( bytes )
 
       else
         return null
@@ -100,8 +106,13 @@ class Bitmap
       error.println "ERROR: No BMP decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
+    method decode_heic( bytes:Byte[] )->Bitmap
+      if (System.is_macos) return MacOS.decode_bitmap( bytes )
+      error.println "ERROR: No HEIC decoder available. Augment global method Bitmap::Bitmap.decode_heic(Byte[])->Bitmap to utilize an alternate decoder."
+      return null
+
     method decode_jpeg( bytes:Byte[] )->Bitmap
-      if (System.is_macos) return MacOS.decode_bitmap( encoded_bytes )
+      if (System.is_macos) return MacOS.decode_bitmap( bytes )
       error.println "ERROR: No JPEG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
@@ -109,6 +120,18 @@ class Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
       error.println "ERROR: No PNG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_png(Byte[])->Bitmap to utilize an alternate decoder."
       return null
+
+    method decode_webp( bytes:Byte[] )->Bitmap
+      if (System.is_macos) return MacOS.decode_bitmap( bytes )
+      error.println "ERROR: No WEBP decoder available. Augment global method Bitmap::Bitmap.decode_webp(Byte[])->Bitmap to utilize an alternate decoder."
+      return null
+
+    method detect_string( bytes:Byte[], index:Int32, string:String )->Logical
+      if (bytes.count < index + string.count) return false
+      forEach (ch at i in string)
+        if (bytes[index+i] != ch) return false
+      endForEach
+      return true
 
   PROPERTIES
     width                  : Int32
