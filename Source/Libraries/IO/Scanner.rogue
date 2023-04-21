@@ -238,7 +238,9 @@ class Scanner : Reader<<Character>>
         else
           st = String()
           while (has_another and not consume_whitespace)
-            st.print( read )
+            local ch = read
+            if (ch == '\\' and has_another) st.print( read )
+            else                            st.print( ch )
           endWhile
           args.add( st )
         endIf
