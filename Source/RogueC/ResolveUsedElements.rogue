@@ -196,6 +196,8 @@ class ResolveUsedElements : InspectionVisitor
       endForEach
 
     method on_visit_type( type:Type ) [override]
+      type.resolve
+
       if (type.attributes.is_visiting) return
       type.attributes.is_visiting = true
 
