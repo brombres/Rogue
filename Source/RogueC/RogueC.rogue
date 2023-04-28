@@ -35,6 +35,7 @@ $include DynamicMethodGroup
 $include ExceptionAnalyzer
 $include Finalizer
 $include ImplicitFunctionGenerator
+$include ImplicitWithVarCollector
 $include InspectionVisitor
 $include Macro
 $include Meta
@@ -48,6 +49,7 @@ $include PropertyOrganizer
 $include Resolver
 $include ResolveUsedElements
 $include Scanner
+$include ScopeVisitor
 $include Template
 $include Transformer
 $include Type

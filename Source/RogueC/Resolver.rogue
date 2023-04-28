@@ -656,6 +656,32 @@ class Resolver : Poolable, Visitor
     method on( cmd:FunctionDefinition )->Cmd
       local type = cmd.resolve_type
 
+      local var_collector = ImplicitWithVarCollector()
+      forEach (param in cmd.parameters)
+        var_collector.visible_locals.add( param.name )
+      endForEach
+      var_collector.visit( cmd.statements )
+
+      forEach (unknown_id in rewriter=var_collector.unknown_identifiers)
+        contingent
+          if (cmd.with_values)
+            forEach (with_value in cmd.with_values)
+              necessary (with_value.name != unknown_id)
+            endForEach
+          endIf
+
+          local access = resolve_access( cmd.t, null, unknown_id, null, &suppress_error )
+          necessary (access)   # The ID has to exist in this outer scope
+          necessary (not access.is_type_context)          # Don't 'with' type names
+          necessary (access not instanceOf GetSingleton)  # Don't 'with' singleton names
+
+        satisfied
+          ensure <<cmd.with_values>>( cmd.t )
+          cmd.with_values.add( WithValue(cmd.t,unknown_id,null) )
+
+        endContingent
+      endForEach
+
       local args : Args
       if (cmd.with_values)
         args = Args( cmd.with_values.t )

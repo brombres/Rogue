@@ -1,0 +1,126 @@
+module RogueC
+
+class ScopeVisitor : Visitor
+  PROPERTIES
+    visible_locals     = String[]
+    visible_locals_fp  = Int32[]
+
+  METHODS
+    method find_local( name:String )->String
+      forEach (v in visible_locals step -1)
+        if (v == name) return v
+      endForEach
+      return null
+
+    method on( cmd:Block )->Cmd
+      on_enter( cmd )
+
+      if (cmd.assignments)
+        forEach (cmd in cmd.assignments)
+          if local assignment = cmd->(as Assign)
+            if (assignment.target)
+              if local id = assignment.target->(as Identifier)
+                visible_locals.add( id.name )
+              endIf
+            endIf
+          endIf
+        endForEach
+      endIf
+
+      visit_content( cmd )
+
+      on_leave( cmd )
+
+      return cmd
+
+    method on( cmd:Procedure )->Cmd
+      this_procedure = cmd
+
+      visible_locals_fp.add( visible_locals.count )
+      forEach (p in cmd.parameters)
+        visible_locals.add( p->(as Local) )
+      endForEach
+
+      visit_content( cmd )
+
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+      return cmd
+
+    method on_visit( cmd:Contingent )
+      on_enter( cmd )
+      visit( cmd.statements )
+      visit( cmd.satisfied_statements )
+      visit( cmd.unsatisfied_statements )
+      on_leave( cmd )
+
+    method on_enter( cmd:ControlStructure )
+      push_scope( cmd )
+
+    method on_enter_procedure( cmd:ControlStructure )
+      push_scope( cmd )
+
+    method on_leave( cmd:ControlStructure )
+      pop_scope
+
+    method on_leave_procedure( body:ControlStructure )
+      pop_scope
+
+    method on_visit( cmd:ControlStructure )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
+    method on_visit( cmd:GlobalMethod )
+      if (cmd.type_context is not this_type) return
+      on_enter_procedure( cmd.body )
+      visit( cmd.statements )
+      on_leave_procedure( cmd.body )
+
+    method on_visit( cmd:If )
+      on_enter( cmd )
+      if (cmd.condition) visit( cmd.condition )
+      visit( cmd.statements )
+      if (cmd.cmd_else) visit( cmd.cmd_else )
+      on_leave( cmd )
+
+    method on_visit( cmd:Iterator )
+      on_enter( cmd )
+      visit( cmd.statements )
+      visit( cmd.upkeep )
+      visit( cmd.control )
+      visit( cmd.condition )
+      on_leave( cmd )
+
+    method on_visit( cmd:Local )
+      visible_locals.add( cmd.name )
+
+    method on_visit( cmd:Method )
+      if (cmd.type_context is not this_type or cmd.attributes.is_abstract) return
+      on_enter_procedure( cmd.body )
+      visit( cmd.statements )
+      on_leave_procedure( cmd.body )
+
+    method on_visit( cmd:Switch )
+      on_enter( cmd )
+      visit( cmd.condition )
+      forEach (cmd_case in cmd.cases)
+        forEach (arg in cmd_case.args)
+          visit( arg )
+        endForEach
+        visit( cmd_case.statements )
+      endForEach
+      if (cmd.statements) visit( cmd.statements )
+      on_leave( cmd )
+
+    method on_visit( cmd:Try )
+      on_enter( cmd )
+      visit( cmd.statements )
+      on_leave( cmd )
+
+    method pop_scope
+      visible_locals.discard_from( visible_locals_fp.remove_last )
+
+    method push_scope( cmd:ControlStructure )
+      visible_locals_fp.add( visible_locals.count )
+      visible_locals.add( forEach in cmd.locals )
+endClass
