@@ -115,3 +115,48 @@ augment Rogue::Random
       # alpha of 1.0.
       return Bitmap::Color.create(real64,real64,real64)
 endAugment
+
+augment Rogue::ConsoleStyle
+  METHODS
+    method bg_color( bg:Color, output=Global:PrintWriter )
+      # 24-bit truecolor mode
+      output.flush
+      output.print "\e[48;2;"
+      output.print ((bg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((bg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (bg.argb & 0xFF)
+      output.print 'm'
+      output.flush
+
+    method colors( fg:Color, bg:Color, output=Global:PrintWriter )
+      output.flush
+      output.print "\e[38;2;"
+      output.print ((fg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((fg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (fg.argb & 0xFF)
+      output.print ";48;2;"
+      output.print ((bg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((bg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (bg.argb & 0xFF)
+      output.print 'm'
+      output.flush
+
+    method fg_color( fg:Color, output=Global:PrintWriter )
+      # 24-bit truecolor mode
+      output.flush
+      output.print "\e[38;2;"
+      output.print ((fg.argb:>>>:16) & 0xFF)
+      output.print ';'
+      output.print ((fg.argb:>>>:8) & 0xFF)
+      output.print ';'
+      output.print (fg.argb & 0xFF)
+      output.print 'm'
+      output.flush
+
+endAugment

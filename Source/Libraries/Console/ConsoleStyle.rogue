@@ -60,17 +60,10 @@ class ConsoleStyle [singleton]
     BG_WHITE         = 107
 
   METHODS
-    method bg_color( bg:Color, output=Global:PrintWriter )
-      # 24-bit truecolor mode
-      output.flush
-      output.print "\e[48;2;"
-      output.print ((bg.argb:>>>:16) & 0xFF)
-      output.print ';'
-      output.print ((bg.argb:>>>:8) & 0xFF)
-      output.print ';'
-      output.print (bg.argb & 0xFF)
-      output.print 'm'
-      output.flush
+    # $include Bitmap/Color to augment in the following methods:
+    #   method bg_color( bg:Color, output=Global:PrintWriter )
+    #   method colors( fg:Color, bg:Color, output=Global:PrintWriter )
+    #   method fg_color( fg:Color, output=Global:PrintWriter )
 
     method bg_color( index:Int32, output=Global:PrintWriter )
       # 256 color mode; index is 0..255
@@ -80,35 +73,6 @@ class ConsoleStyle [singleton]
       output.print( "m" )
       output.flush
 
-    method colors( fg:Color, bg:Color, output=Global:PrintWriter )
-      output.flush
-      output.print "\e[38;2;"
-      output.print ((fg.argb:>>>:16) & 0xFF)
-      output.print ';'
-      output.print ((fg.argb:>>>:8) & 0xFF)
-      output.print ';'
-      output.print (fg.argb & 0xFF)
-      output.print ";48;2;"
-      output.print ((bg.argb:>>>:16) & 0xFF)
-      output.print ';'
-      output.print ((bg.argb:>>>:8) & 0xFF)
-      output.print ';'
-      output.print (bg.argb & 0xFF)
-      output.print 'm'
-      output.flush
-
-    method fg_color( fg:Color, output=Global:PrintWriter )
-      # 24-bit truecolor mode
-      output.flush
-      output.print "\e[38;2;"
-      output.print ((fg.argb:>>>:16) & 0xFF)
-      output.print ';'
-      output.print ((fg.argb:>>>:8) & 0xFF)
-      output.print ';'
-      output.print (fg.argb & 0xFF)
-      output.print 'm'
-      output.flush
-
     method fg_color( index:Int32, output=Global:PrintWriter )
       # 256 color mode; index is 0..255
       output.flush
@@ -116,7 +80,6 @@ class ConsoleStyle [singleton]
       output.print( index )
       output.print( "m" )
       output.flush
-
 
     method reset( output=Global:PrintWriter )
       set( RESET, output )
