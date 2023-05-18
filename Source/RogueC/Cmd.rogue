@@ -5023,3 +5023,21 @@ class InvokeContext : Cmd
       return "InvokeContext($,$)" (%context,%args)
 
 endClass
+
+class ListIndexedAccess : Cmd
+  PROPERTIES
+    context : Cmd
+    args    : Cmd
+
+  METHODS
+    method init( t, context, args )
+
+    method init( existing:ListIndexedAccess )
+      prior.init( existing )
+      if (existing.context) context = existing.context.cloned
+      if (existing.args) args = existing.args.cloned
+
+    method description->String
+      return "ListIndexedAccess($,$)" (%context,%args)
+
+endClass

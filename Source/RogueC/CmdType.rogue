@@ -720,6 +720,11 @@ augment
     method Negate.type->Type
       return operand.type
 
+    method ListIndexedAccess.type->Type
+      local context_type = context.type
+      if (context_type and context_type.is_enum) return context_type
+      return null
+
     method LiteralNull.type->Type
       if (of_type) return of_type
       return Program.type_null

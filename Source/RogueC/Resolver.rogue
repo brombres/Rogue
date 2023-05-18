@@ -719,14 +719,19 @@ class Resolver : Poolable, Visitor
 
     method on( cmd:IndexedAccess )->Cmd
       local context = visit( cmd.context )
-      local index   = visit( cmd.index )
       local context_type = context.require_type
-      local index_type   = index.require_type
+
+      if (context.is_type_context and context_type.is_enum)
+        return visit( ContextAccess(cmd.t,TypeContext(cmd.t,context_type),access_name(cmd.index)) )
+      endIf
+
+      local index      = visit( cmd.index )
+      local index_type = index.require_type
 
       local cmd_call = resolve_access( cmd.t, context, "get", Args(cmd.t,index), &suppress_error )
       if (cmd_call) return cmd_call
 
-      throw cmd.t.error( "Type $ has no indexed access method at(Int32) or get($|Int32)."...
+      throw cmd.t.error( "Type $ has no indexed access method get($|Int32)."...
         (context_type,index_type) )
 
     method on( cmd:If )->Cmd
@@ -993,6 +998,31 @@ class Resolver : Poolable, Visitor
       cmd.control = visit( cmd.control )
       pop_scope
       return cmd
+
+    method on( cmd:ListIndexedAccess )->Cmd
+      local context = visit( cmd.context )
+      local context_type = context.require_type
+      if (context.is_type_context and context_type.is_enum)
+        if (context_type.attributes.bitflags)
+          local op = ContextAccess( cmd.t, TypeContext(cmd.t,context_type), access_name(cmd.args.first) ) : Cmd
+          forEach (arg in cmd.args from 1)
+            op = BitwiseOr( cmd.t, op, ContextAccess(cmd.t,TypeContext(cmd.t,context_type),access_name(arg)) )
+          endForEach
+          return visit( op )
+        else
+          throw cmd.t.error( "Enum $ must be declared with the [bitflags] attribute to be used with this syntax."(context_type) )
+        endIf
+      else
+        # obj[a,b] -> obj.get(a,b)
+        return resolve_access( cmd.t, context, "get", cmd.args )
+      endIf
+
+    method access_name( cmd:Cmd )->String
+      if local access = cmd->(as Access)
+        return access.name
+      else
+        throw cmd.t.error( "Identifier expected." )
+      endIf
 
     method on( cmd:LiteralList )->Cmd
       if (cmd.count == 0)
@@ -3465,6 +3495,10 @@ augment
 
     method IndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
       local result = resolver.visit( ContextAccess(t, context, "set", Args(t,index,new_value)) )
+      return result
+
+    method ListIndexedAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd
+      local result = resolver.visit( ContextAccess(t, context, "set", args.cloned.[add(new_value)]) )
       return result
 
     method TypeAccess.resolve_assignment( t:Token, new_value:Cmd, resolver:Resolver )->Cmd

@@ -2713,10 +2713,26 @@ parser
     access_inner
   elseOn '['
     consume_eols
+    savePosition
     expression
     consume_eols
-    mustConsume(']')
-    create IndexedAccess(context,index)
+    if (consume(']'))
+      discardPosition
+      create IndexedAccess(context,index)
+    else
+      restorePosition
+      beginList
+      expression
+      consume_eols
+      while (not consume(']'))
+        consume(',')
+        consume_eols
+        expression
+        consume_eols
+      endWhile
+      createList
+      create ListIndexedAccess(context,args)
+    endIf
     access_inner
   elseOn "//"
     consume_eols

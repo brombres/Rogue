@@ -730,5 +730,9 @@ class Visitor
       cmd.context = visit(cmd.context)
       cmd.args = visit(cmd.args)
 
+    method on_visit_children( cmd:ListIndexedAccess )
+      cmd.context = visit(cmd.context)
+      cmd.args = visit(cmd.args)
+
 endClass
 
