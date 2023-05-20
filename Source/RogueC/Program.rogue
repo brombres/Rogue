@@ -15,9 +15,14 @@ class Program [singleton]
     generate_main     = false
     output_filepath   : String
     stack_trace       = false
-    real_bits         : Int32 # Set with --real=32 compile option
+    real_bits         : Int32 # Set with --real=[32|64] compile option
     api_patterns      = String[]
     api_filepaths     = Set<<String>>()
+
+    # Set with --namespace=<TypePrefix>
+    namespace_lc          = ""
+    namespace_capitalized = ""
+    namespace_uc          = ""
 
     modules           = [String:Module]
     default_module    : Module

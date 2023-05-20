@@ -108,7 +108,7 @@ class MacOSClipboard [singleton]
       local height : Int32
 
       native...
-        @|#if defined(ROGUE_PLATFORM_MACOS)
+        @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
          |{
          |  NSPasteboard* pb = NSPasteboard.generalPasteboard;
          |
@@ -120,8 +120,8 @@ class MacOSClipboard [singleton]
          |    CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
          |    if (image)
          |    {
-         |      $width = (RogueInt32)CGImageGetWidth( image );
-         |      $height = (RogueInt32)CGImageGetHeight( image );
+         |      $width = (%Ns%RogueInt32)CGImageGetWidth( image );
+         |      $height = (%Ns%RogueInt32)CGImageGetHeight( image );
                 result = Bitmap( width, height )
       native ...
         @|      CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
@@ -140,7 +140,7 @@ class MacOSClipboard [singleton]
 
     method set_bitmap( bitmap:Bitmap )
       native...
-        @|#if defined(ROGUE_PLATFORM_MACOS)
+        @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
 
       local png_bytes = bitmap.to_png_bytes
       if (not png_bytes or not png_bytes.count) return
@@ -155,7 +155,7 @@ class MacOSClipboard [singleton]
 
   NATIVE
     nativeHeader
-      @|#if defined(ROGUE_PLATFORM_MACOS)
+      @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
        |  #import <Cocoa/Cocoa.h>
        |  #import <Foundation/Foundation.h>
        |#endif
@@ -169,7 +169,7 @@ class WindowsClipboard [singleton]
       local bmp_bytes = Byte[]
 
       native...
-        @|#if defined(ROGUE_PLATFORM_WINDOWS)
+        @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
          |HGLOBAL clipboard_data_handle = (HGLOBAL)GetClipboardData(CF_DIB);
          |if ( !clipboard_data_handle )
          |{
@@ -200,7 +200,7 @@ class WindowsClipboard [singleton]
       native...
         @|}
          |
-         |int pixel_data_offset = RogueWindows_get_pixel_data_offset_for_packed_dib( info_header );
+         |int pixel_data_offset = %Ns%RogueWindows_get_pixel_data_offset_for_packed_dib( info_header );
          |
          |size_t total_bitmap_file_size = sizeof(BITMAPFILEHEADER) + clipboard_data_size;
          |
@@ -224,7 +224,7 @@ class WindowsClipboard [singleton]
 
     method open->Logical
       native...
-        @|#if defined(ROGUE_PLATFORM_WINDOWS)
+        @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
           loop 20
             if (native("OpenClipboard(NULL)")->Logical) return true
             native @|Sleep( 10 );  // 10ms
@@ -240,7 +240,7 @@ class WindowsClipboard [singleton]
      local width = bitmap.width
      local height = bitmap.height
      native...
-       @|#if defined(ROGUE_PLATFORM_WINDOWS)
+       @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
         |const void* data = $bitmap->pixels->data;
         |
         |// Nomenclature: Data at offset 0 is R top left corner, offset 1 is G top left corner, etc.
@@ -291,11 +291,11 @@ class WindowsClipboard [singleton]
   NATIVE
    # Adapted from https://stackoverflow.com/a/66401824/135791
    nativeCode...
-     @|#if defined(ROGUE_PLATFORM_WINDOWS)
-      |static INT  RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header );
+     @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+      |static INT  %Ns%RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header );
       |
       |// Returns the offset, in bytes, from the start of the BITMAPINFO, to the start of the pixel data array, for a packed DIB.
-      |static INT RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header )
+      |static INT %Ns%RogueWindows_get_pixel_data_offset_for_packed_dib( const BITMAPINFOHEADER *info_header )
       |{
       |    INT offset_extra = 0;
       |

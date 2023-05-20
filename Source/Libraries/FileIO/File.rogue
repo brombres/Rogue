@@ -3,7 +3,7 @@ class File( filepath:String ) [compound]
     nativeHeader @|#include <stdio.h>
                   |#include <sys/stat.h>
                   |
-                  |#if !defined(ROGUE_PLATFORM_WINDOWS) && !defined(ROGUE_PLATFORM_EMBEDDED)
+                  |#if !defined(%NS%ROGUE_PLATFORM_WINDOWS) && !defined(%NS%ROGUE_PLATFORM_EMBEDDED)
                   |  #include <dirent.h>
                   |#endif
 
@@ -31,7 +31,7 @@ class File( filepath:String ) [compound]
       local filepath = resolved.filepath
       local return_value : String
 
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |{
                  use filepath_utf16=ObjectPool<<UTF16String>>, abs_filepath_utf16=ObjectPool<<UTF16String>>
                    filepath_utf16.init( filepath )
@@ -94,7 +94,7 @@ class File( filepath:String ) [compound]
               |    r = fchdir( original_dir_fd );
               |    if ( r != 0 ) break;
               |
-              |    $return_value = RogueString_create( c_filepath );
+              |    $return_value = %Ns%RogueString_create( c_filepath );
               |  } while (0);
               |
               |  if (original_dir_fd >= 0) close( original_dir_fd );
@@ -199,10 +199,10 @@ class File( filepath:String ) [compound]
       else                   return filepath
 
     method crc32->Int32
-      nativeHeader @|extern const RogueUInt32 Rogue_crc32_table[256];
+      nativeHeader @|extern const %Ns%RogueUInt32 %Ns%Rogue_crc32_table[256];
 
       nativeCode...
-        @|const RogueUInt32 Rogue_crc32_table[256] =
+        @|const %Ns%RogueUInt32 %Ns%Rogue_crc32_table[256] =
          |{
          |  0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
          |  0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -252,19 +252,19 @@ class File( filepath:String ) [compound]
       local file = resolved
       if (not file.exists) return 0
 
-      native @|RogueUInt32 result = ~0U;
+      native @|%Ns%RogueUInt32 result = ~0U;
       local reader = file.reader
       local file_buffer = Byte[]( 1024 )
       while (reader.has_another)
         reader.read( file_buffer.[clear], 1024 )
-        native @|RogueByte* byte_ptr = $file_buffer->as_bytes - 1;
+        native @|%Ns%RogueByte* byte_ptr = $file_buffer->as_bytes - 1;
                 |for (int i=$file_buffer->count+1; --i; )
                 |{
-                |  result = Rogue_crc32_table[ (result ^ *(++byte_ptr)) & 0xFF ] ^ (result >> 8);
+                |  result = %Ns%Rogue_crc32_table[ (result ^ *(++byte_ptr)) & 0xFF ] ^ (result >> 8);
                 |}
       endWhile
 
-      return native( "(RogueInt32)~result" )->Int32
+      return native( "(%Ns%RogueInt32)~result" )->Int32
 
     method create_folder->Logical
       # Creates the specified folder along with intermediate folders
@@ -282,7 +282,7 @@ class File( filepath:String ) [compound]
 
       # Note: 0777 is a permission mask rather than the actual permission setting.
       local status : Logical
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |  $status = (0 == mkdir((char*)$filepath->data->as_utf8));
               |#else
               |  $status = (0 == mkdir((char*)$filepath->data->as_utf8, 0777));
@@ -402,7 +402,7 @@ class File( filepath:String ) [compound]
 
       local filepath = resolved.filepath
 
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |  struct stat s;
                  if (native("stat((char*)$filepath->data->as_utf8, &s) != 0")->Logical) return false
                  return native("((s.st_mode & S_IFMT) == S_IFDIR)")->Logical
@@ -660,7 +660,7 @@ class File( filepath:String ) [compound]
       return not outfile.error
 
     method separator->Character
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
               |  return '\\';
               |#else
               |  return '/';
@@ -678,7 +678,7 @@ class File( filepath:String ) [compound]
                if (native("!fp")->Logical) return 0
       native @|
               |fseek( fp, 0, SEEK_END );
-              |$size = (RogueInt64) ftell( fp );
+              |$size = (%Ns%RogueInt64) ftell( fp );
               |fclose( fp );
       return size;
 
@@ -706,7 +706,7 @@ class File( filepath:String ) [compound]
       local ms : Int64
       local filepath = resolved.filepath
 
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
                use filepath_utf16 = ObjectPool<<UTF16String>>
                  filepath_utf16.init( filepath )
       native @|  HANDLE handle = CreateFile( $filepath_utf16->data->as_wchars, 0, 0, NULL, OPEN_EXISTING,
@@ -716,7 +716,7 @@ class File( filepath:String ) [compound]
               |    BY_HANDLE_FILE_INFORMATION info;
               |    if (GetFileInformationByHandle( handle, &info ))
               |    {
-              |      RogueInt64 result = info.ftLastWriteTime.dwHighDateTime;
+              |      %Ns%RogueInt64 result = info.ftLastWriteTime.dwHighDateTime;
               |      result <<= 32;
               |      result |= info.ftLastWriteTime.dwLowDateTime;
               |      result /= 10000; // convert from Crazyseconds to Milliseconds
@@ -727,7 +727,7 @@ class File( filepath:String ) [compound]
               |    CloseHandle(handle);
               |  }
                endUse
-      native @|#elif defined(ROGUE_PLATFORM_UNIX_COMPATIBLE)
+      native @|#elif defined(%NS%ROGUE_PLATFORM_UNIX_COMPATIBLE)
               |  int file_id = open( (const char*)$filepath->data->as_utf8, O_RDONLY );
               |  if (file_id >= 0)
               |  {
@@ -735,12 +735,12 @@ class File( filepath:String ) [compound]
               |    if (0 == fstat(file_id, &info))
               |    {
               |#if defined(__APPLE__)
-              |      RogueInt64 result = info.st_mtimespec.tv_sec;
+              |      %Ns%RogueInt64 result = info.st_mtimespec.tv_sec;
               |      result *= 1000000000;
               |      result += info.st_mtimespec.tv_nsec;
               |      result /= 1000000;  // convert to milliseconds
               |#else
-              |      RogueInt64 result = (RogueInt64) info.st_mtime;
+              |      %Ns%RogueInt64 result = (%Ns%RogueInt64) info.st_mtime;
               |      result *= 1000;  // convert to ms
               |#endif
               |      close(file_id);

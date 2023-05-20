@@ -94,13 +94,13 @@ class ANSIBitmap
 
       else
         local lookup = ANSIColorLookup
-        native @|RogueInt32* src = $source->pixels->as_int32s - 1;
-                |RogueByte* dest = $pixels->as_bytes - 1;
-                |RogueByte* lookup = $lookup->as_bytes;
+        native @|%Ns%RogueInt32* src = $source->pixels->as_int32s - 1;
+                |%Ns%RogueByte* dest = $pixels->as_bytes - 1;
+                |%Ns%RogueByte* lookup = $lookup->as_bytes;
                 |
                 |for (int i=$width*$height; --i>=0; )
                 |{
-                |  RogueInt32 argb = *(++src);
+                |  %Ns%RogueInt32 argb = *(++src);
                 |  *(++dest) = lookup[ ((argb & 0xF00000)>>12) | ((argb & 0xF000)>>8) | ((argb & 0xF0)>>4) ];
                 |}
       endIf

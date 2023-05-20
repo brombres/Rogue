@@ -26,7 +26,7 @@ class FreeTypeFace
       |#include FT_FREETYPE_H
       |#include FT_GLYPH_H
 
-    nativeCode @|FT_Library Rogue_freetype_library;
+    nativeCode @|FT_Library %Ns%Rogue_freetype_library;
 
   GLOBAL METHODS
     method create( name:String, height:Int32, search_folders=null:String[] )->FreeTypeFace
@@ -81,16 +81,16 @@ class FreeTypeFace
     method init( filepath, data, height )
       ft_height = height
 
-      if (not native("Rogue_freetype_library")->Logical)
+      if (not native("%Ns%Rogue_freetype_library")->Logical)
         # Initialize FreeType library
-        if (native("FT_Init_FreeType(&Rogue_freetype_library)")->Int32)
+        if (native("FT_Init_FreeType(&%Ns%Rogue_freetype_library)")->Int32)
           error = "FreeType library failed to initialize."
           return
         endIf
-        on_exit( () => native "FT_Done_FreeType( Rogue_freetype_library );" )
+        on_exit( () => native "FT_Done_FreeType( %Ns%Rogue_freetype_library );" )
       endIf
 
-      if (native("FT_New_Memory_Face( Rogue_freetype_library, (const FT_Byte*)$data->as_bytes, $data->count, 0, &$this->ft_face )")->Int32)
+      if (native("FT_New_Memory_Face( %Ns%Rogue_freetype_library, (const FT_Byte*)$data->as_bytes, $data->count, 0, &$this->ft_face )")->Int32)
         error = "Error loading $." (filepath)
       endIf
 
@@ -126,11 +126,11 @@ class FreeTypeFace
             # Error / glyph does not exist
             ch.init( Bitmap(1,height,Color(0x00FFffFF)), 0, 1 )
           else
-            local w         = native( "(RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
-            local h         = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
-            local offset_x  = native( "(RogueInt32)$this->ft_face->glyph->bitmap_left" )->Int32
-            local offset_y  = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
-            local advance_x = native( "(RogueInt32)$this->ft_face->glyph->advance.x" )->Int32 :>>>: 6
+            local w         = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.width" )->Int32
+            local h         = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+            local offset_x  = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap_left" )->Int32
+            local offset_y  = native( "(%Ns%RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+            local advance_x = native( "(%Ns%RogueInt32)$this->ft_face->glyph->advance.x" )->Int32 :>>>: 6
 
             if ((offset_y - max_offset) + h > height)
               trace "ERROR: font character exceeds max height."
@@ -138,15 +138,15 @@ class FreeTypeFace
             endIf
 
             if (w > 0)
-              local pitch = native( "(RogueInt32)$this->ft_face->glyph->bitmap.pitch" )->Int32
-              native "RogueByte* src = (RogueByte*) $this->ft_face->glyph->bitmap.buffer;"
+              local pitch = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.pitch" )->Int32
+              native "%Ns%RogueByte* src = (%Ns%RogueByte*) $this->ft_face->glyph->bitmap.buffer;"
               local bmp = Bitmap( w, height, Color(0x00FFffFF) )
               local src_i = 0
               local dest_i = (offset_y - max_offset) * w
               local column_skip = pitch - w
               forEach (j in 1..h)
                 forEach (i in 1..w)
-                  local a = native( "(RogueInt32)(src[$src_i++])" )->Int32
+                  local a = native( "(%Ns%RogueInt32)(src[$src_i++])" )->Int32
                   bmp.pixels[dest_i] = Color(255,255,255,a)
                   ++dest_i
                 endForEach
@@ -224,8 +224,8 @@ class FreeTypeFace
           forEach (ch in characters)
             block ch = ch.character
               if (0 == native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
-                local h      = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
-                local offset = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+                local h      = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+                local offset = native( "(%Ns%RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
                 max_height = max_height.or_larger( h )
                 max_offset = max_offset.or_smaller( offset )
               endIf
@@ -240,8 +240,8 @@ class FreeTypeFace
           forEach (ch in characters)
             block ch = ch.character
               if (0 == native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
-                local h      = native( "(RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
-                local offset = native( "(RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
+                local h      = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
+                local offset = native( "(%Ns%RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
                 necessary (h + offset <= height + max_offset)
               endIf
             endBlock

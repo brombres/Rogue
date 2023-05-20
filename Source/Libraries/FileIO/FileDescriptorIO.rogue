@@ -28,7 +28,7 @@ class FDReader : Reader<<Byte>>
       local cur_count = buffer.count
 
       local n : Int32
-      native @|$n = (RogueInt32) read( $fd, $buffer->as_bytes+$cur_count, 1024 );
+      native @|$n = (%Ns%RogueInt32) read( $fd, $buffer->as_bytes+$cur_count, 1024 );
       if (n <= 0)
         if (auto_close) close
         fd = -1

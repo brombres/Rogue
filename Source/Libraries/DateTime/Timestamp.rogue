@@ -1,8 +1,8 @@
 class Timestamp( value=System.time_ms:Int64 ) [compound]
   NATIVE
-    nativeHeader @|#if defined(ROGUE_PLATFORM_LINUX)
+    nativeHeader @|#if defined(%NS%ROGUE_PLATFORM_LINUX)
                   |  #include <time.h>
-                  |#elif defined(ROGUE_PLATFORM_WINDOWS)
+                  |#elif defined(%NS%ROGUE_PLATFORM_WINDOWS)
                   |  #include <time.h>
                   |  #include <sys/timeb.h>
                   |#endif
@@ -52,7 +52,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
               |cur_date.tm_sec  = $second;
               |cur_date.tm_isdst = -1;
               |
-      return Timestamp( native( "((RogueInt64)mktime(&cur_date))" )->Int64 * 1000 + millisecond )
+      return Timestamp( native( "((%Ns%RogueInt64)mktime(&cur_date))" )->Int64 * 1000 + millisecond )
 
     method create( date:String )->Timestamp
       local parts = String[]
@@ -224,14 +224,14 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_year + 1900;
+              |$result = (%Ns%RogueInt32) date->tm_year + 1900;
       return result
 
     method day->Int32
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_mday;
+              |$result = (%Ns%RogueInt32) date->tm_mday;
       return result
 
     method hash_code->Int32
@@ -241,7 +241,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_hour;
+              |$result = (%Ns%RogueInt32) date->tm_hour;
       return result
 
     method millisecond->Int32
@@ -251,14 +251,14 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_min;
+              |$result = (%Ns%RogueInt32) date->tm_min;
       return result
 
     method month->Int32
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_mon + 1;
+              |$result = (%Ns%RogueInt32) date->tm_mon + 1;
       return result
 
     method month_name->String
@@ -268,7 +268,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_sec;
+              |$result = (%Ns%RogueInt32) date->tm_sec;
       return result
 
     method hour12->Int32
@@ -350,7 +350,7 @@ class Timestamp( value=System.time_ms:Int64 ) [compound]
       local result : Int32
       native @|time_t cur_seconds = (time_t) ($value / 1000);
               |struct tm* date = localtime( &cur_seconds );
-              |$result = (RogueInt32) date->tm_wday;
+              |$result = (%Ns%RogueInt32) date->tm_wday;
       return result
 
     method weekday_name->String

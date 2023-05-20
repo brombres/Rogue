@@ -118,6 +118,14 @@ class RogueC
         Program.real_bits = real_bits
       endIf
 
+      if (command//options//namespace)
+        local ns = command//options//namespace->String
+        Program.namespace_lc = ns
+        Program.namespace_capitalized = ns.capitalized
+        Program.namespace_uc = ns.to_uppercase
+        if (Program.namespace_uc.count) Program.namespace_uc .= with_suffix( '_' )
+      endIf
+
       local api_includes = command//options//api.contains(true)
 
       local rogue_folder = File( File( System.executable_filepath ).folder )
@@ -189,6 +197,7 @@ class RogueC
         option( "--help",       &aliases=["-h","-?"] )
         option( "--libraries=", &alias="-L", &multi )
         option( "--main" )
+        option( "--namespace=", &alias="-n" )
         option( "--output=" )
         option( "--real=", &alias="-r" )
         option( "--target=", &alias="-t", &multi )
@@ -329,6 +338,10 @@ class RogueC
                |
                |  --main
                |    Generates a main() function with the C output.
+               |
+               |  --namespace=<TypePrefix>, -n <TypePrefix>
+               |    Generates C type names with the specified prefix, allowing multiple,
+               |    independent Rogue-generated C source files to be compiled together.
                |
                |  --output=<filepath>
                |   Specify the destination folder and/or the base filename for generated C

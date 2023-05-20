@@ -20,12 +20,12 @@ class UUID
   METHODS
     method init
       bytes.clear
-      native @|#if defined(ROGUE_PLATFORM_WINDOWS)
+      native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
         native @|UUID uuid;
                 |UuidCreate( &uuid );
         local d1 = native( "uuid.Data1" )->Int32
-        local d2 = native( "(RogueInt32) uuid.Data2" )->Int32
-        local d3 = native( "(RogueInt32) uuid.Data2" )->Int32
+        local d2 = native( "(%Ns%RogueInt32) uuid.Data2" )->Int32
+        local d3 = native( "(%Ns%RogueInt32) uuid.Data2" )->Int32
         bytes.add( d1 :>>: 24 )
         bytes.add( d1 :>>: 16 )
         bytes.add( d1 :>>: 8 )
@@ -58,7 +58,7 @@ class UUID
 
   NATIVE
     nativeHeader...
-     @|#if defined(ROGUE_PLATFORM_WINDOWS)
+     @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
       |  #include <Rpc.h>
       |#else
       |  #include <uuid/uuid.h>

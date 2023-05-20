@@ -31,7 +31,7 @@ class FileReader : Reader<<Byte>>
       count = 0
 
     method fp->Int64
-      return native("(RogueInt64)$this->fp")->Int64
+      return native("(%Ns%RogueInt64)$this->fp")->Int64
 
     method has_another->Logical
       return (position < count)
@@ -53,7 +53,7 @@ class FileReader : Reader<<Byte>>
                endIf
       native @|
               |fseek( $this->fp, 0, SEEK_END );
-              |$count = (RogueInt32) ftell( $this->fp );
+              |$count = (%Ns%RogueInt32) ftell( $this->fp );
               |fseek( $this->fp, 0, SEEK_SET );
 
       # Always close after the last byte is read, so if there are no
@@ -66,7 +66,7 @@ class FileReader : Reader<<Byte>>
       if (position == count) return 0
 
       if (buffer_position == buffer.count)
-        native @|$buffer->count = (RogueInt32) fread( $buffer->as_bytes, 1, 1024, $this->fp );
+        native @|$buffer->count = (%Ns%RogueInt32) fread( $buffer->as_bytes, 1, 1024, $this->fp );
         buffer_position = 0
       endIf
 
@@ -101,7 +101,7 @@ class FileReader : Reader<<Byte>>
 
       if (limit > 0)
         # fread directly from file
-        native @|$n = (RogueInt32) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
+        native @|$n = (%Ns%RogueInt32) fread( $result->as_bytes+$result->count, 1, $limit, $this->fp );
         result.count += n
         total_read += n
         position += n
@@ -116,7 +116,7 @@ class FileReader : Reader<<Byte>>
 
     method reset
       if (not fp) return
-      count = native( "(RogueInt32)ftell($this->fp)" )->Int32
+      count = native( "(%Ns%RogueInt32)ftell($this->fp)" )->Int32
       seek( 0 )
 
     method seek( pos:Int32 )

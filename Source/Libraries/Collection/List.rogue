@@ -13,19 +13,19 @@ class List<<$DataType>> : Poolable ListType
             |{
             |  void*           data;
             |  void*           as_void;
-            |  RogueObject**   as_objects;
-            |  RogueString**   as_strings;
-            |  RogueReal64*    as_real64s;
-            |  RogueReal32*    as_real32s;
-            |  RogueInt64*     as_int64s;
-            |  RogueInt32*     as_int32s;
-            |  RogueCharacter* as_characters;
-            |  RogueWord*      as_words;
-            |  RogueByte*      as_bytes;
-            |  char*           as_utf8; // only valid for String data; includes null terminator
-            |  RogueByte*      as_logicals;
-            |  #if defined(ROGUE_PLATFORM_WINDOWS)
-            |    wchar_t*      as_wchars;
+            |  %Ns%RogueObject**   as_objects;
+            |  %Ns%RogueString**   as_strings;
+            |  %Ns%RogueReal64*    as_real64s;
+            |  %Ns%RogueReal32*    as_real32s;
+            |  %Ns%RogueInt64*     as_int64s;
+            |  %Ns%RogueInt32*     as_int32s;
+            |  %Ns%RogueCharacter* as_characters;
+            |  %Ns%RogueWord*      as_words;
+            |  %Ns%RogueByte*      as_bytes;
+            |  char*               as_utf8; // only valid for String data; includes null terminator
+            |  %Ns%RogueByte*      as_logicals;
+            |  #if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+            |    wchar_t*          as_wchars;
             |  #endif
             |};
 
@@ -50,7 +50,7 @@ class List<<$DataType>> : Poolable ListType
       native @|if ($this->as_bytes)
               |{
               |  if ($is_borrowed) $is_borrowed = 0;
-              |  else              ROGUE_FREE( $this->as_bytes );
+              |  else              %NS%ROGUE_FREE( $this->as_bytes );
               |  $this->as_bytes = 0;
               |  $capacity = 0;
               |  $count = 0;
@@ -59,7 +59,7 @@ class List<<$DataType>> : Poolable ListType
     method add( value:$DataType ) [preferred]
       reserve( 1 )
       if ($DataType isType Logical)
-        native @|$this->as_logicals[$count++] = (RogueByte)$value;
+        native @|$this->as_logicals[$count++] = (%Ns%RogueByte)$value;
       else
         native @|(($<<value>>*)($this->data))[$count++] = $value;
       endIf
@@ -178,7 +178,7 @@ class List<<$DataType>> : Poolable ListType
       if ($DataType isType Logical or $DataType isType Byte) native @|//C
 
       if ($DataType isType Logical or $DataType isType Byte)
-        native @|memset( $this->as_logicals + $i1, (RogueByte)$value, $n );
+        native @|memset( $this->as_logicals + $i1, (%Ns%RogueByte)$value, $n );
         return
       elseIf ($isPrimitive<<$DataType>> or $isReference<<$DataType>>)
         if (not value)
@@ -187,7 +187,7 @@ class List<<$DataType>> : Poolable ListType
         endIf
       endIf
 
-      native @|RogueInt32 n = $n;
+      native @|%Ns%RogueInt32 n = $n;
               |$<<element_type>>* ptr = (($<<element_type>>*)$this->data) + ($i1 - 1);
               |while (--n >= 0) *(++ptr) = $value;
 
@@ -520,7 +520,7 @@ class List<<$DataType>> : Poolable ListType
     method remove_last->$DataType
       --count
       if ($DataType isType Logical)
-        native @|RogueLogical result = $this->as_logicals[$count];
+        native @|%Ns%RogueLogical result = $this->as_logicals[$count];
                 |$this->as_logicals[$count] = 0;
                  return native("result")->$DataType
       elseIf ($isCompound<<$DataType>>)
@@ -549,17 +549,17 @@ class List<<$DataType>> : Poolable ListType
       required_capacity = required_capacity.or_larger( count*2 ).or_larger( 10 )
 
       native @|int total_size = $required_capacity * $element_size;
-              |RogueMM_bytes_allocated_since_gc += total_size;
-              |RogueByte* new_data = (RogueByte*) ROGUE_MALLOC( total_size );
+              |%Ns%RogueMM_bytes_allocated_since_gc += total_size;
+              |%Ns%RogueByte* new_data = (%Ns%RogueByte*) %NS%ROGUE_MALLOC( total_size );
               |
               |if ($this->as_bytes)
               |{
               |  int old_size = $capacity * $element_size;
-              |  RogueByte* old_data = $this->as_bytes;
+              |  %Ns%RogueByte* old_data = $this->as_bytes;
               |  memcpy( new_data, old_data, old_size );
               |  memset( new_data+old_size, 0, total_size-old_size );
               |  if ($is_borrowed) $is_borrowed = 0;
-              |  else              ROGUE_FREE( old_data );
+              |  else              %NS%ROGUE_FREE( old_data );
               |}
               |else
               |{
@@ -635,7 +635,7 @@ class List<<$DataType>> : Poolable ListType
 
     method set( index:Int32, value:$DataType )
       if ($DataType isType Logical)
-        native @|$this->as_logicals[$index] = (RogueByte) $value;
+        native @|$this->as_logicals[$index] = (%Ns%RogueByte) $value;
       else
         native @|(($<<element_type>>*)($this->data))[$index] = $value;
       endIf

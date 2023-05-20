@@ -1,10 +1,10 @@
 class Object
   GLOBAL METHODS
     method __type_name( type_index:Int32 )->String [essential]
-      if (native("!Rogue_types[$type_index]->name_object")->Logical)
-        native @|Rogue_types[$type_index]->name_object = RogueString_create_permanent( Rogue_types[$type_index]->name );
+      if (native("!%Ns%Rogue_types[$type_index]->name_object")->Logical)
+        native @|%Ns%Rogue_types[$type_index]->name_object = %Ns%RogueString_create_permanent( %Ns%Rogue_types[$type_index]->name );
       endIf
-      return native("Rogue_types[$type_index]->name_object")->String
+      return native("%Ns%Rogue_types[$type_index]->name_object")->String
 
   METHODS
     method description->String
@@ -15,7 +15,7 @@ class Object
 
     method object_id->Int64
       local addr : Int64
-      native "$addr = (RogueInt64)(void*)$this;"
+      native "$addr = (%Ns%RogueInt64)(void*)$this;"
       return addr
 
     method operator==( other:Object )->Logical

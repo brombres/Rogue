@@ -51,7 +51,7 @@ class CGenerator : Visitor
     method dispatch_exception( t:Token, &indeterminate )
       forEach (control in control_stack step -1)
         if (control.catches_exception or control.requires_cleanup)
-          if (indeterminate) writer.print( "if (Rogue_exception)" )
+          if (indeterminate) writer.print( "if (%Ns%Rogue_exception)" )
           writer.print " goto "
           writer.print control.c_escape_label(this)
           writer.println ';'
@@ -60,7 +60,7 @@ class CGenerator : Visitor
       endForEach
 
       if (indeterminate and control_stack.count > 0)
-        writer.print( "if (Rogue_exception)" )
+        writer.print( "if (%Ns%Rogue_exception)" )
       endIf
 
       if (Program.stack_trace or this_procedure.requires_cleanup)
@@ -200,7 +200,7 @@ class CGenerator : Visitor
         writer.print "(("
         writer.print cmd.as_type.c_ref_name
         writer.print ")"
-        writer.print( "Rogue_as(" )
+        writer.print( "%Ns%Rogue_as(" )
         visit( cmd.operand )
         writer.[ print(", "), print(cmd.as_type.id), print(')') ]
         writer.print ")"
@@ -416,12 +416,12 @@ class CGenerator : Visitor
           if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
           writer.print( info.c_name )
         else
-          writer.print "Rogue_dispatch_"
+          writer.print "%Ns%Rogue_dispatch_"
           writer.print( info.c_dynamic_signature )
         endIf
       else
         if (cmd.info.attributes.dynamic_dispatch and cmd.info.attributes.is_overridden)
-          writer.print "Rogue_dispatch_"
+          writer.print "%Ns%Rogue_dispatch_"
           writer.print( info.c_dynamic_signature )
         else
           writer.print( info.c_name )
@@ -454,7 +454,7 @@ class CGenerator : Visitor
         if (i > 0) writer.print ','
         local param_type = cmd.param_types[i]
         if (param_type.is_reference)
-          writer.print "((RogueObject*)"
+          writer.print "((%Ns%RogueObject*)"
           visit( arg )
           writer.print ')'
         else
@@ -494,12 +494,12 @@ class CGenerator : Visitor
           if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
           writer.print( info.c_name )
         else
-          writer.print "Rogue_dispatch_"
+          writer.print "%Ns%Rogue_dispatch_"
           writer.print( info.c_dynamic_signature )
         endIf
       else
         if (info.attributes.dynamic_dispatch and info.attributes.is_overridden)
-          writer.print "Rogue_dispatch_"
+          writer.print "%Ns%Rogue_dispatch_"
           writer.print( info.c_dynamic_signature )
         else
           writer.print( info.c_name )
@@ -572,7 +572,7 @@ class CGenerator : Visitor
       assert cmd.vcall_index >= 0
       writer.print "((void)(_auto_virtual_context_"
       writer.print n
-      writer.print "=(RogueObject*)("
+      writer.print "=(%Ns%RogueObject*)("
       visit( cmd.context )
       writer.print ")),"
       writer.print "(("
@@ -600,22 +600,22 @@ class CGenerator : Visitor
       writer.print "))"
 
     method on_visit( cmd:ConvertToByte )
-      writer.print "((RogueByte)"
+      writer.print "((%Ns%RogueByte)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
     method on_visit( cmd:ConvertToCharacter )
-      writer.print "((RogueCharacter)"
+      writer.print "((%Ns%RogueCharacter)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
     method on_visit( cmd:ConvertToInt32 )
-      writer.print "((RogueInt32)"
+      writer.print "((%Ns%RogueInt32)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
     method on_visit( cmd:ConvertToInt64 )
-      writer.print "((RogueInt64)"
+      writer.print "((%Ns%RogueInt64)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
@@ -624,12 +624,12 @@ class CGenerator : Visitor
       print_parenthesized( cmd.operand )
 
     method on_visit( cmd:ConvertToReal32 )
-      writer.print "((RogueReal32)"
+      writer.print "((%Ns%RogueReal32)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
     method on_visit( cmd:ConvertToReal64 )
-      writer.print "((RogueReal64)"
+      writer.print "((%Ns%RogueReal64)"
       print_parenthesized( cmd.operand )
       writer.print ')'
 
@@ -690,7 +690,7 @@ class CGenerator : Visitor
 
       if (Program.stack_trace)
         cur_line = this_procedure.t.line
-        writer.print ''Rogue_call_stack_push( "''
+        writer.print ''%Ns%Rogue_call_stack_push( "''
         writer.print this_procedure.dev_signature
         writer.print ''", "''
         writer.print File(this_procedure.t.filepath).filename
@@ -713,7 +713,7 @@ class CGenerator : Visitor
       if (VCALLS)
         # Declare temporary variables for implementing virtual calls
         forEach (n in 0..<this_procedure.vcall_max)
-          writer.print   "RogueObject* _auto_virtual_context_"
+          writer.print   "%Ns%RogueObject* _auto_virtual_context_"
           writer.print   n
           writer.println ';'
           writer.print   "(void) _auto_virtual_context_"
@@ -747,8 +747,8 @@ class CGenerator : Visitor
         use tracked_local_types = WorkList<<Type>>
           collect_tracked_local_types( tracked_local_types )
           forEach (type at i in tracked_local_types)
-            writer.[ print("RogueInt32 _auto_local_pointer_fp_"), print(i), print(" = Type") ]
-            if (type.is_reference) writer.print "RogueObject"
+            writer.[ print("%Ns%RogueInt32 _auto_local_pointer_fp_"), print(i), print(" = Type") ]
+            if (type.is_reference) writer.print "%Ns%RogueObject"
             else                   writer.print type.c_name
             writer.println ".local_pointer_count;"
           endForEach
@@ -766,11 +766,11 @@ class CGenerator : Visitor
           forEach (p in this_procedure.parameters)
             if (not p.is_anchored)
               if (p.type.is_reference)
-                writer.print   "RogueRuntimeType_local_pointer_stack_add( &TypeRogueObject, &"
+                writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type%Ns%RogueObject, &"
                 writer.print   p.c_name
                 writer.println " );"
               elseIf (p.type.contains_reference)
-                writer.print   "RogueRuntimeType_local_pointer_stack_add( &Type"
+                writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type"
                 writer.print   p.type.c_name
                 writer.print   ", &"
                 writer.print   p.c_name
@@ -831,14 +831,14 @@ class CGenerator : Visitor
       writer.print "}"
 
     method on_visit( cmd:CreateObject )
-      writer.print "ROGUE_CREATE_OBJECT( "
+      writer.print "%NS%ROGUE_CREATE_OBJECT( "
       writer.print cmd.of_type.c_name
       writer.print " )"
 
     method on_visit( cmd:CreateObjectAndSetLocal )
       writer.print cmd.info.c_name
       writer.print " = "
-      writer.print "ROGUE_CREATE_OBJECT( "
+      writer.print "%NS%ROGUE_CREATE_OBJECT( "
       writer.print cmd.of_type.c_name
       writer.print " )"
 
@@ -922,7 +922,7 @@ class CGenerator : Visitor
       writer.print( cmd.info.c_name )
 
     method on_visit( cmd:GetSingleton )
-      writer.print "ROGUE_SINGLETON("
+      writer.print "%NS%ROGUE_SINGLETON("
       writer.print cmd.type.c_name
       writer.print ")"
 
@@ -1028,7 +1028,7 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:InstanceOf )
-      writer.print( "Rogue_instance_of(" )
+      writer.print( "%Ns%Rogue_instance_of(" )
       visit( cmd.operand )
       writer.[ print(", "), print(cmd.compare_type.id), print(')') ]
 
@@ -1059,7 +1059,7 @@ class CGenerator : Visitor
       endIf
 
     method on_visit( cmd:IsType )
-      writer.print "Rogue_is_type("
+      writer.print "%Ns%Rogue_is_type("
       visit( cmd.operand )
       writer.print ", &"
       writer.[ print(cmd.compare_type.c_name), print(')') ]
@@ -1096,7 +1096,7 @@ class CGenerator : Visitor
         writer.print( cmd.value )
         writer.print '\''
       else
-        writer.print "((RogueCharacter)"
+        writer.print "((%Ns%RogueCharacter)"
         writer.print cmd.value->Int32
         writer.print ")"
       endIf
@@ -1169,13 +1169,13 @@ class CGenerator : Visitor
       if (Program.gc_auto)
         if (v.type.is_reference)
           if (needs_semicolon) writer.println ';'
-          writer.print   "RogueRuntimeType_local_pointer_stack_add( &TypeRogueObject, &"
+          writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type%Ns%RogueObject, &"
           writer.print   v.c_name
           writer.print   " )"
           writer.println ";"
         elseIf (v.type.contains_reference)
           if (needs_semicolon) writer.println ';'
-          writer.print   "RogueRuntimeType_local_pointer_stack_add( &Type"
+          writer.print   "%Ns%RogueRuntimeType_local_pointer_stack_add( &Type"
           writer.print   v.type.c_name
           writer.print   ", &"
           writer.print   v.c_name
@@ -1315,7 +1315,7 @@ class CGenerator : Visitor
       return cmd
 
     method on_visit( cmd:PushStackTraceCutoff )
-      writer.println ''Rogue_call_stack_push( "", "", -1 );''   # create dummy frame for stack trace cutoff
+      writer.println ''%Ns%Rogue_call_stack_push( "", "", -1 );''   # create dummy frame for stack trace cutoff
 
     method on_visit( cmd:Return )
       if (cmd.result and cmd.result.can_trigger_gc)
@@ -1365,7 +1365,7 @@ class CGenerator : Visitor
       visit( cmd.new_value )
 
     method on_visit( cmd:SetSingleton )
-      writer.print "ROGUE_SET_SINGLETON("
+      writer.print "%NS%ROGUE_SET_SINGLETON("
       writer.print cmd.of_type.c_name
       writer.print ','
       visit( cmd.new_value )
@@ -1386,7 +1386,7 @@ class CGenerator : Visitor
             if (statement.t.line != cur_line)
               cur_line = statement.t.line
               if (statement.add_debug_line_number)
-                writer.[ print("Rogue_call_stack_line = "), print(cur_line), println(";") ]
+                writer.[ print("%Ns%Rogue_call_stack_line = "), print(cur_line), println(";") ]
               endIf
             endIf
           endIf
@@ -1475,10 +1475,10 @@ class CGenerator : Visitor
       writer.print "THISOBJ"
 
     method on_visit( cmd:Throw )
-      writer.print   "Rogue_exception = (RogueObject*)"
+      writer.print   "%Ns%Rogue_exception = (%Ns%RogueObject*)"
       visit( cmd.exception )
       writer.println ';'
-      writer.println "Rogue_call_stack_pop();"  # remove the call stack cutoff marker added with PushStackTraceCutoff
+      writer.println "%Ns%Rogue_call_stack_pop();"  # remove the call stack cutoff marker added with PushStackTraceCutoff
       dispatch_exception( cmd.t )
 
     method on_visit( cmd:Try )
@@ -1504,7 +1504,7 @@ class CGenerator : Visitor
 
     method print_procedure_cleanup
       if (Program.stack_trace)
-        writer.println "Rogue_call_stack_pop();"
+        writer.println "%Ns%Rogue_call_stack_pop();"
       endIf
 
       if (this_procedure.requires_cleanup)
@@ -1514,7 +1514,7 @@ class CGenerator : Visitor
             collect_tracked_local_types( tracked_local_types )
             forEach (type at i in tracked_local_types)
               writer.print "Type"
-              if (type.is_reference) writer.print "RogueObject"
+              if (type.is_reference) writer.print "%Ns%RogueObject"
               else                   writer.print type.c_sig_name
               writer.[ print(".local_pointer_count = _auto_local_pointer_fp_"), print(i), println(';') ]
             endForEach
@@ -1533,7 +1533,7 @@ class CGenerator : Visitor
           local i1 = i.value - 1
           local i2 = i1 + 7
           if (not ((i1 >= 0 and code[i1].is_identifier_start) or (i2 < code.count and code[i2].is_identifier)))
-            throw t.error( "Illegal 'return' in native code. Returns must be executed in Rogue code." )
+            throw t.error( "Illegal 'return' in native code. Returns must be executed in %Ns%Rogue code." )
           endIf
           i = code.locate( "return", i.value+1 )
         endWhile
@@ -1682,8 +1682,8 @@ augment
         writer.println '{'
         writer.indent  += 2
         if (this.is_object)
-          writer.println "RogueRuntimeType* __type;"
-          writer.println "RogueInt32 __refcount;"
+          writer.println "%Ns%RogueRuntimeType* __type;"
+          writer.println "%Ns%RogueInt32 __refcount;"
         elseIf (this.properties.is_empty)
           writer.println "int dummy;"
         endIf
@@ -1725,7 +1725,7 @@ augment
       endIf
 
       if (not this.is_aspect)
-        writer.print "extern RogueRuntimeType Type"
+        writer.print "extern %Ns%RogueRuntimeType Type"
         writer.print this.c_name
         writer.println ";"
         any_output = true
@@ -1752,7 +1752,7 @@ augment
         local m = type.global_methods["init_class()"]
         if (not m or m.statements.count == 0) nextIteration
         writer.[ print(m.c_name), println("();") ]
-        writer.println "if (Rogue_exception) return 0;"
+        writer.println "if (%Ns%Rogue_exception) return 0;"
       endForEach
 
     method Module.generate_c_launch_commands( writer:CWriter )
@@ -1761,7 +1761,7 @@ augment
       local r = type_Routine.global_methods[ "on_launch()" ]
       if (r and r.statements.count)
         writer.[ print(r.c_name), println("();") ]
-        writer.println "if (Rogue_exception) return 0;"
+        writer.println "if (%Ns%Rogue_exception) return 0;"
       endIf
 
     method NativeStatement.needs_semicolon->Logical
@@ -1781,7 +1781,7 @@ augment
          |// Generated
          |//------------------------------------------------------------------------------
       (forEach in modules).generate_c_header( h_writer )
-      h_writer.println "typedef struct RogueRuntimeType RogueRuntimeType;"
+      h_writer.println "typedef struct %Ns%RogueRuntimeType %Ns%RogueRuntimeType;"
       (forEach in types).generate_c_class_typedefs( h_writer )
       (forEach in types).generate_c_native_headers( h_writer )
       (forEach in types).generate_c_class_structs( h_writer )
@@ -1798,16 +1798,16 @@ augment
       endForEach
       if (wrote_any) h_writer.println
 
-      h_writer.println "extern RogueInt32 Rogue_type_count;"
-      h_writer.println "extern RogueRuntimeType* Rogue_types[$];"(types.count)
+      h_writer.println "extern %Ns%RogueInt32 %Ns%Rogue_type_count;"
+      h_writer.println "extern %Ns%RogueRuntimeType* %Ns%Rogue_types[$];"(types.count)
 
-      h_writer.println "extern RogueInt32 Rogue_base_types[$];" (Program.base_type_lookup.count)
+      h_writer.println "extern %Ns%RogueInt32 %Ns%Rogue_base_types[$];" (Program.base_type_lookup.count)
 
       if (Program.default_module.types.contains("MethodInfo"))
-        h_writer.println "extern RogueInt32 Rogue_method_count;"
-        h_writer.println "extern RogueInt32 Rogue_method_info[];"
-        h_writer.println "extern RogueInt32 Rogue_type_data[];"
-        h_writer.println "extern void* Rogue_method_pointers[];"
+        h_writer.println "extern %Ns%RogueInt32 %Ns%Rogue_method_count;"
+        h_writer.println "extern %Ns%RogueInt32 %Ns%Rogue_method_info[];"
+        h_writer.println "extern %Ns%RogueInt32 %Ns%Rogue_type_data[];"
+        h_writer.println "extern void* %Ns%Rogue_method_pointers[];"
         h_writer.println
         forEach (group in Program.call_signatures.values)
           if (group.is_empty) nextIteration  # all methods were unused and culled out
@@ -1827,7 +1827,7 @@ augment
           local i = 0
           if (not m.is_global)
             if (m.type_context.is_reference)
-              h_writer.print "RogueObject"
+              h_writer.print "%Ns%RogueObject"
             else
               h_writer.print m.type_context.c_name
             endIf
@@ -1836,7 +1836,7 @@ augment
           endIf
           forEach (param in m.parameters)
             if (i > 0) h_writer.print ','
-            if (param.type.is_reference) h_writer.print "RogueObject*"
+            if (param.type.is_reference) h_writer.print "%Ns%RogueObject*"
             else                         h_writer.print param.type.c_ref_name
             ++i
           endForEach
@@ -1845,10 +1845,10 @@ augment
         h_writer.println
       endIf
 
-      h_writer.println "extern RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
+      h_writer.println "extern %Ns%RogueString* %Ns%Rogue_string_table[$];"(Program.unique_strings.count)
 
       forEach (str in Program.unique_strings)
-        h_writer.print   "extern RogueString* "
+        h_writer.print   "extern %Ns%RogueString* "
         h_writer.print   str
         h_writer.println ';'
       endForEach
@@ -1864,7 +1864,7 @@ augment
       local type_data : Int32[]
       if (Program.default_module.types.contains("MethodInfo"))
         c_writer.println
-        c_writer.println "RogueInt32 Rogue_method_count = $;"(Program.all_methods.count)
+        c_writer.println "%Ns%RogueInt32 %Ns%Rogue_method_count = $;"(Program.all_methods.count)
 
         local string_indices = Program.string_table_indices
         method_info = Int32[]
@@ -1910,7 +1910,7 @@ augment
 
         block
           local column = 0;
-          c_writer.println "RogueInt32 Rogue_method_info[$] ="(method_info.count)
+          c_writer.println "%Ns%RogueInt32 %Ns%Rogue_method_info[$] ="(method_info.count)
           c_writer.println "{"
           c_writer.indent += 2
           forEach (value at index in method_info)
@@ -1930,7 +1930,7 @@ augment
 
         block
           local column = 0;
-          c_writer.println "RogueInt32 Rogue_type_data[$] ="(type_data.count)
+          c_writer.println "%Ns%RogueInt32 %Ns%Rogue_type_data[$] ="(type_data.count)
           c_writer.println "{"
           c_writer.indent += 2
           forEach (value at index in type_data)
@@ -1949,7 +1949,7 @@ augment
         endBlock
 
         block
-          c_writer.println "void* Rogue_method_pointers[$] ="(Program.all_methods.count)
+          c_writer.println "void* %Ns%Rogue_method_pointers[$] ="(Program.all_methods.count)
           c_writer.println "{"
           c_writer.indent += 2
           forEach (m at index in Program.all_methods)
@@ -1964,7 +1964,7 @@ augment
 
       endIf
 
-      c_writer.println "RogueInt32 Rogue_type_count = $;" (types.count)
+      c_writer.println "%Ns%RogueInt32 %Ns%Rogue_type_count = $;" (types.count)
 
       local including_type_info = Program.default_module.types.contains("TypeInfo")
 
@@ -1988,7 +1988,7 @@ augment
           endIf
 
           # Type Metadata
-          c_writer.print   "RogueRuntimeType Type"
+          c_writer.print   "%Ns%RogueRuntimeType Type"
           c_writer.print   type.c_sig_name
           c_writer.print   '' = { "''
           c_writer.print   type.name
@@ -2026,7 +2026,7 @@ augment
           c_writer.print   "0, "   # local_pointer_count
           c_writer.print   ''sizeof(''
           c_writer.print   type.c_name
-          c_writer.print   ''), Rogue_base_types+''
+          c_writer.print   ''), %Ns%Rogue_base_types+''
           c_writer.print   type.base_type_lookup_index
           c_writer.print   ", "
           c_writer.print   type.base_type_ids.count
@@ -2035,7 +2035,7 @@ augment
 
           local m_init_object = type.methods["init_object()"]
           if (m_init_object)
-            c_writer.print   ''(RogueFn_Object)''
+            c_writer.print   ''(%Ns%RogueFn_Object)''
             c_writer.print   m_init_object.c_name
           else
             c_writer.print   "0"
@@ -2044,7 +2044,7 @@ augment
 
           local default_constructor = type.methods["init()"]
           if (default_constructor)
-            c_writer.print   ''(RogueFn_Object)''
+            c_writer.print   ''(%Ns%RogueFn_Object)''
             c_writer.print   default_constructor.c_name
           else
             c_writer.print   "0"
@@ -2053,9 +2053,9 @@ augment
           # fn_gc_trace
           c_writer.print ", "
           if (type.is_object)
-            c_writer.print "(RogueFn_Object)"
+            c_writer.print "(%Ns%RogueFn_Object)"
             if (type.contains_reference) c_writer.print type.c_name
-            else                         c_writer.print "RogueObject"
+            else                         c_writer.print "%Ns%RogueObject"
             c_writer.print "_gc_trace"
           else
             c_writer.print '0'
@@ -2066,7 +2066,7 @@ augment
           if (type.is_object)
             local m = type.methods["on_cleanup()"]
             if (m)
-              c_writer.print "(RogueFn_Object)"
+              c_writer.print "(%Ns%RogueFn_Object)"
               c_writer.print m.c_name
             else
               c_writer.print '0'
@@ -2078,7 +2078,7 @@ augment
           # fn_on_singleton_change
           c_writer.print ", "
           if (type.m_on_singleton_change)
-            c_writer.print "(RogueFn_Object_Object)"
+            c_writer.print "(%Ns%RogueFn_Object_Object)"
             c_writer.print type.m_on_singleton_change.c_name
           else
             c_writer.print '0'
@@ -2121,7 +2121,7 @@ augment
       endBlock
 
       block
-        c_writer.println "RogueRuntimeType* Rogue_types[$] ="(types.count)
+        c_writer.println "%Ns%RogueRuntimeType* %Ns%Rogue_types[$] ="(types.count)
         c_writer.println "{"
         c_writer.indent += 2
         local row_count = 0
@@ -2138,7 +2138,7 @@ augment
         c_writer.println
       endBlock
 
-      c_writer.println "RogueInt32 Rogue_base_types[$] =" (Program.base_type_lookup.count)
+      c_writer.println "%Ns%RogueInt32 %Ns%Rogue_base_types[$] =" (Program.base_type_lookup.count)
       c_writer.println "{"
       c_writer.indent += 2
       forEach (id at index in Program.base_type_lookup)
@@ -2180,7 +2180,7 @@ augment
         endIf
 
         c_writer.indent += 2
-        c_writer.println "switch (((RogueObject*)THISOBJ)->__type->id)"
+        c_writer.println "switch (((%Ns%RogueObject*)THISOBJ)->__type->id)"
         c_writer.println '{'
         c_writer.indent += 2
 
@@ -2233,37 +2233,37 @@ augment
         c_writer.println
       endForEach
 
-      c_writer.println "RogueString* Rogue_string_table[$];"(Program.unique_strings.count)
+      c_writer.println "%Ns%RogueString* %Ns%Rogue_string_table[$];"(Program.unique_strings.count)
 
       forEach (str in Program.unique_strings)
-        c_writer.print   "RogueString* "
+        c_writer.print   "%Ns%RogueString* "
         c_writer.print   str
         c_writer.println ';'
       endForEach
 
       c_writer.println @|
-                        |void  Rogue_collect_garbage( void )
+                        |void  %Ns%Rogue_collect_garbage( void )
                         |{
       c_writer.indent += 2
-      c_writer.println   @|RogueMM_bytes_allocated_since_gc = 0;
-                          |RogueMM_gc_request = 0;
+      c_writer.println   @|%Ns%RogueMM_bytes_allocated_since_gc = 0;
+                          |%Ns%RogueMM_gc_request = 0;
                           |
-                          |RogueObject*  ref;
-                          |RogueObject** refptr;
+                          |%Ns%RogueObject*  ref;
+                          |%Ns%RogueObject** refptr;
                           |int i;
                           |int write_i;
                           |
                           |// Trace all retained objects (positive refcount)
-                          |for (i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
+                          |for (i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
                           |{
-                          |  if ((ref=(RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
+                          |  if ((ref=(%Ns%RogueObject*)*(++refptr)) && ref->__refcount > 0) ref->__type->fn_gc_trace(ref);
                           |}
                           |
                           |// Trace singletons
       forEach (m in Program.modules)
         forEach (type in m.types)
           if (type.attributes.is_singleton)
-            c_writer.print   "if ((ref = (RogueObject*)"
+            c_writer.print   "if ((ref = (%Ns%RogueObject*)"
             c_writer.print   type.c_name
             c_writer.println "_singleton) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
           endIf
@@ -2276,12 +2276,12 @@ augment
         forEach (type in m.types)
           forEach (p in type.global_properties)
             if (p.type.is_reference)
-              c_writer.print   "if ((ref = (RogueObject*)"
+              c_writer.print   "if ((ref = (%Ns%RogueObject*)"
               c_writer.print   p.c_name
               c_writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
-                path.add( "if ((ref=(RogueObject*)(" )
+                path.add( "if ((ref=(%Ns%RogueObject*)(" )
                 path.add( p.c_name )
                 c_writer.print_gc_checks( path, p.type )
               endUse
@@ -2295,9 +2295,9 @@ augment
         c_writer.println @|// Trace stack
                           |void** v;
                           |
-                          |for (i=TypeRogueObject.local_pointer_count, v=TypeRogueObject.local_pointer_stack-1; --i>=0; )
+                          |for (i=Type%Ns%RogueObject.local_pointer_count, v=Type%Ns%RogueObject.local_pointer_stack-1; --i>=0; )
                           |{
-                          |  if ((ref=(RogueObject*)(*(RogueObject**)*(++v))) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
+                          |  if ((ref=(%Ns%RogueObject*)(*(%Ns%RogueObject**)*(++v))) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
                           |}
         forEach (type in (forEach in Program.modules).types)
           if (type.is_compound and type.contains_reference)
@@ -2308,7 +2308,7 @@ augment
             c_writer.println ".local_pointer_stack; --i>=0; ++v )"
             c_writer.println '{'
             use path = WorkList<<String>>
-              path.add( "  if ((ref=(RogueObject*)((*((" )
+              path.add( "  if ((ref=(%Ns%RogueObject*)((*((" )
               path.add( type.c_ref_name )
               path.add( "*)(*v)))" )
               c_writer.print_gc_checks( path, type )
@@ -2326,66 +2326,66 @@ augment
                         |// graph during cleanup. They'll be deleted from the regular list the next time
                         |// they're unreferenced with no chance to clean up again.
                         |int cleanup_count = 0;
-                        |int end_i = RogueMM_objects_requiring_cleanup.count;
-                        |refptr = RogueMM_objects_requiring_cleanup.data + end_i;
+                        |int end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
+                        |refptr = %Ns%RogueMM_objects_requiring_cleanup.data + end_i;
                         |for (i=end_i; --i>=0; )
                         |{
-                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  if (ref->__refcount >= 0)
                         |  {
                         |    ++cleanup_count;
                         |    ref->__type->fn_gc_trace( ref );
                         |
-                        |    RogueObjectList_add( &RogueMM_objects, ref );
-                        |    *refptr = RogueMM_objects_requiring_cleanup.data[--end_i];
+                        |    %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, ref );
+                        |    *refptr = %Ns%RogueMM_objects_requiring_cleanup.data[--end_i];
                         |  }
                         |}
-                        |RogueMM_objects_requiring_cleanup.count -= cleanup_count;
+                        |%Ns%RogueMM_objects_requiring_cleanup.count -= cleanup_count;
                         |
                         |// Free unreferenced objects and reset the traced flag on referenced objects.
-                        |for (write_i=-1,i=RogueMM_objects.count, refptr=RogueMM_objects.data-1; --i>=0; )
+                        |for (write_i=-1,i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
                         |{
-                        |  ref = (RogueObject*) *(++refptr);
+                        |  ref = (%Ns%RogueObject*) *(++refptr);
                         |  if (ref->__refcount >= 0)
                         |  {
                         |    // Untraced == unreferenced
-                        |    Rogue_destroy_object( ref );
+                        |    %Ns%Rogue_destroy_object( ref );
                         |  }
                         |  else
                         |  {
                         |    // Still referenced. Reset flag.
                         |    ref->__refcount = ~ref->__refcount;
-                        |    RogueMM_objects.data[++write_i] = ref;
+                        |    %Ns%RogueMM_objects.data[++write_i] = ref;
                         |  }
                         |}
-                        |RogueMM_objects.count = write_i + 1;
+                        |%Ns%RogueMM_objects.count = write_i + 1;
                         |
-                        |end_i = RogueMM_objects_requiring_cleanup.count;
-                        |refptr = RogueMM_objects_requiring_cleanup.data + end_i;
+                        |end_i = %Ns%RogueMM_objects_requiring_cleanup.count;
+                        |refptr = %Ns%RogueMM_objects_requiring_cleanup.data + end_i;
                         |for (i=end_i; --i>=0; )
                         |{
-                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  ref->__refcount = ~ref->__refcount;
                         |}
                         |
                         |// Call on_cleanup() on formerly-unreferenced objects at the end of the
                         |// regular list.
-                        |end_i  = RogueMM_objects.count;
-                        |refptr = RogueMM_objects.data + end_i;
+                        |end_i  = %Ns%RogueMM_objects.count;
+                        |refptr = %Ns%RogueMM_objects.data + end_i;
                         |for (i=cleanup_count; --i>=0; )
                         |{
-                        |  ref = (RogueObject*) *(--refptr);
+                        |  ref = (%Ns%RogueObject*) *(--refptr);
                         |  ref->__type->fn_on_cleanup( ref );
                         |}
                         |
-                        |//printf("New object count:%d\n",RogueMM_objects.count);
+                        |//printf("New object count:%d\n",%Ns%RogueMM_objects.count);
                         |
 
       c_writer.indent -= 2
       c_writer.println @|}
 
       c_writer.println @|
-                        |int Rogue_launch( void )
+                        |int %Ns%Rogue_launch( void )
                         |{
       c_writer.indent += 2
       Program.generate_c_string_literals( c_writer )
@@ -2394,10 +2394,10 @@ augment
       c_writer.println
 
       c_writer.println @|int i;
-                        |for (i=1; i<Rogue_argc; ++i)
+                        |for (i=1; i<%Ns%Rogue_argc; ++i)
                         |{
-                        |  RogueSystem___add_command_line_argument__RogueString(
-                        |    RogueString_create_from_utf8(Rogue_argv[i],-1,ROGUE_STRING_PERMANENT)
+                        |  %Ns%RogueSystem___add_command_line_argument__%Ns%RogueString(
+                        |    %Ns%RogueString_create_from_utf8(%Ns%Rogue_argv[i],-1,%NS%ROGUE_STRING_PERMANENT)
                         |  );
                         |}
                         |
@@ -2408,7 +2408,7 @@ augment
         forEach (type in mod.types)
           if (type.attributes.is_singleton and type.attributes.is_essential)
             any_essential_singletons = true
-            c_writer.print "ROGUE_SINGLETON("
+            c_writer.print "%NS%ROGUE_SINGLETON("
             c_writer.print type.c_name
             c_writer.println ");"
           endIf
@@ -2427,9 +2427,9 @@ augment
         c_writer.println
         c_writer.println @|int main( int argc, char* argv[] )
                           |{
-                          |  Rogue_configure( argc, argv );
-                          |  Rogue_launch();
-                          |  return Rogue_quit();
+                          |  %Ns%Rogue_configure( argc, argv );
+                          |  %Ns%Rogue_launch();
+                          |  return %Ns%Rogue_quit();
         c_writer.println @|}
       endIf
 
@@ -2439,7 +2439,7 @@ augment
       if (Program.unique_strings.count)
         forEach (entry in Program.unique_strings.entries)
           writer.print   entry.value
-          writer.print   " = RogueString_create_string_table_entry( "
+          writer.print   " = %Ns%RogueString_create_string_table_entry( "
           writer.print_literal_c_string( entry.key )
           writer.println ");"
         endForEach
@@ -2457,7 +2457,7 @@ augment
       else
         writer.print "void"
       endIf
-      writer.print " Rogue_dispatch_"
+      writer.print " %Ns%Rogue_dispatch_"
       writer.print( m.c_dynamic_signature )
       writer.print( "( void* THISOBJ" )
       forEach (p at i in m.parameters)
@@ -2516,7 +2516,7 @@ augment
         #writer.println ''printf("Tracing $\\n");''(name)
 
         if (is_reference)
-          writer.println "((RogueObject*)THISOBJ)->__refcount = ~((RogueObject*)THISOBJ)->__refcount;"
+          writer.println "((%Ns%RogueObject*)THISOBJ)->__refcount = ~((%Ns%RogueObject*)THISOBJ)->__refcount;"
         endIf
 
         contingent
@@ -2527,17 +2527,17 @@ augment
 
         satisfied
           writer.println
-          if (contains_reference) writer.println "RogueObject* ref;"
+          if (contains_reference) writer.println "%Ns%RogueObject* ref;"
           forEach (p in properties)
             if (p.type.is_reference)
-              writer.print   "if ((ref = (RogueObject*)(("
+              writer.print   "if ((ref = (%Ns%RogueObject*)(("
               writer.print   c_name
               writer.print   "*)THISOBJ)->"
               writer.print   p.c_name
               writer.println ") && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);"
             elseIf (p.type.contains_reference)
               use path = WorkList<<String>>
-                path.add( "if ((ref = (RogueObject*)(((" )
+                path.add( "if ((ref = (%Ns%RogueObject*)(((" )
                 path.add( c_name )
                 path.add( "*)THISOBJ)->" )
                 path.add( p.c_name )
@@ -2548,7 +2548,7 @@ augment
 
           if (attributes.is_reference_list)
             writer.println
-            writer.print   "RogueObject** cursor = ((RogueObject**)(("
+            writer.print   "%Ns%RogueObject** cursor = ((%Ns%RogueObject**)(("
             writer.print   c_name
             writer.println "*)THISOBJ)->data) - 1;"
             writer.print   "int n = ((int)(("
@@ -2561,7 +2561,7 @@ augment
 
           elseIf (element_type and element_type.contains_reference)
             writer.println
-            # RogueValue* cursor = ((RogueValue*)(((RogueValueList*)THISOBJ)->data)) - 1;
+            # %Ns%RogueValue* cursor = ((%Ns%RogueValue*)(((%Ns%RogueValueList*)THISOBJ)->data)) - 1;
             writer.print   element_type.c_name
             writer.print   "* cursor = ("
             writer.print   element_type.c_name
@@ -2574,12 +2574,12 @@ augment
 
             # while (--n >=0)
             # {
-            #   if ((ref = (RogueObject*)((*(++cursor)).object)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
+            #   if ((ref = (%Ns%RogueObject*)((*(++cursor)).object)) && ref->__refcount >= 0) ref->__type->fn_gc_trace(ref);
             # }
             writer.println "while (--n >=0)"
             writer.println "{"
             use path = WorkList<<String>>
-              path.add( "  if ((ref = (RogueObject*)((*cursor)" )
+              path.add( "  if ((ref = (%Ns%RogueObject*)((*cursor)" )
               writer.print_gc_checks( path, element_type )
             endUse
             writer.println "  ++cursor;"
@@ -2685,13 +2685,13 @@ augment
         writer.print   c_escape_label(cgen)
         writer.println ":;"
         if (catches_exception)
-          writer.println "if (Rogue_exception)"
+          writer.println "if (%Ns%Rogue_exception)"
           writer.println '{'
           writer.indent += 2
 
           forEach (catch_block at i in catches)
             if (i > 0) writer.print "else "
-            writer.print   "if (Rogue_instance_of(Rogue_exception, "
+            writer.print   "if (%Ns%Rogue_instance_of(%Ns%Rogue_exception, "
             writer.print   catch_block.exception_type.id
             writer.println "))"
             writer.println '{'
@@ -2701,9 +2701,9 @@ augment
               writer.print   catch_block.v_catch.c_name
               writer.print   " = ("
               writer.print   catch_block.v_catch.type.c_ref_name
-              writer.println ") Rogue_exception;"
+              writer.println ") %Ns%Rogue_exception;"
             endIf
-            writer.println "Rogue_exception = 0;"
+            writer.println "%Ns%Rogue_exception = 0;"
 
             cgen.push_scope( catch_block )
             cgen.visit( catch_block.statements )

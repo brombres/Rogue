@@ -63,7 +63,7 @@ class Real64 : CommonPrimitiveMethods<<Real64>> [primitive]
       return integer_bits.hash_code
 
     method integer_bits->Int64
-      return native("*((RogueInt64*)&$this)")->Int64
+      return native("*((%Ns%RogueInt64*)&$this)")->Int64
 
     method is_infinite->Logical
       # Returns true for positive OR negative infinity
@@ -190,7 +190,7 @@ class Real32 : CommonPrimitiveMethods<<Real32>> [primitive]
       return integer_bits.hash_code
 
     method integer_bits->Int32
-      return native("*((RogueInt32*)&$this)")->Int32
+      return native("*((%Ns%RogueInt32*)&$this)")->Int32
 
     method is_infinite->Logical
       # Returns true for positive OR negative infinity
@@ -405,7 +405,7 @@ class Int64 : CommonPrimitiveMethods<<Int64>> [primitive]
       return Real(this-a) / Real(b-a)
 
     method real_bits->Real64
-      return native("*((RogueReal64*)&$this)")->Real64
+      return native("*((%Ns%RogueReal64*)&$this)")->Real64
 
     method rol( nbits:Int32 )->Int64
       if (nbits <= 0) return this
@@ -438,7 +438,7 @@ class Int32 : CommonPrimitiveMethods<<Int32>> [primitive]
 
   METHODS
     method real_bits->Real32
-      return native("*((RogueReal32*)&$this)")->Real32
+      return native("*((%Ns%RogueReal32*)&$this)")->Real32
 
     method format( fmt:String )->String
       return Int64( this ).format( fmt, 32 )

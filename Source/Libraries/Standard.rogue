@@ -9,20 +9,20 @@ $include Math
 
 # This
 #
-#   NATIVE_POINTER_TYPE<<RogueInt32Pointer,"RogueInt32*">>
+#   NATIVE_POINTER_TYPE<<RogueInt32Pointer,"%Ns%RogueInt32*">>
 #
 # creates
 #
-#   nativeType<<"RogueInt32*">> RogueInt32Pointer
+#   nativeType<<"%Ns%RogueInt32*">> RogueInt32Pointer
 #
 # with a Rogue-side .exists method.
-NATIVE_POINTER_TYPE<< RogueRealPointer,      "RogueReal*"      >>
-NATIVE_POINTER_TYPE<< RogueReal64Pointer,    "RogueReal64*"    >>
-NATIVE_POINTER_TYPE<< RogueReal32Pointer,    "RogueReal32*"    >>
-NATIVE_POINTER_TYPE<< RogueInt64Pointer,     "RogueInt64*"     >>
-NATIVE_POINTER_TYPE<< RogueInt32Pointer,     "RogueInt32*"     >>
-NATIVE_POINTER_TYPE<< RogueCharacterPointer, "RogueCharacter*" >>
-NATIVE_POINTER_TYPE<< RogueWordPointer,      "RogueWord*"      >>
+NATIVE_POINTER_TYPE<< RogueRealPointer,      "%Ns%RogueReal*"      >>
+NATIVE_POINTER_TYPE<< RogueReal64Pointer,    "%Ns%RogueReal64*"    >>
+NATIVE_POINTER_TYPE<< RogueReal32Pointer,    "%Ns%RogueReal32*"    >>
+NATIVE_POINTER_TYPE<< RogueInt64Pointer,     "%Ns%RogueInt64*"     >>
+NATIVE_POINTER_TYPE<< RogueInt32Pointer,     "%Ns%RogueInt32*"     >>
+NATIVE_POINTER_TYPE<< RogueCharacterPointer, "%Ns%RogueCharacter*" >>
+NATIVE_POINTER_TYPE<< RogueWordPointer,      "%Ns%RogueWord*"      >>
 NATIVE_POINTER_TYPE<< RogueVoidPointer,      "void*"           >>
 
 routine recast_tuple<<$OldType,$NewType>>( tuple:$OldType )->$NewType

@@ -13,16 +13,16 @@ class String : Poolable PrintWriter
   GLOBAL METHODS
     method create( data:Byte[], encoding=StringEncoding.AUTODETECT:StringEncoding )->String
       if (encoding != StringEncoding.ASCII_256)
-        local count = native("RogueString_utf8_character_count($data->as_utf8,$data->count)")->Int32
+        local count = native("%Ns%RogueString_utf8_character_count($data->as_utf8,$data->count)")->Int32
         if (count != -1) return String( data, count )
       endIf
-      return native("RogueString_create_from_ascii256( $data->as_utf8, $data->count, 1 )")->String
+      return native("%Ns%RogueString_create_from_ascii256( $data->as_utf8, $data->count, 1 )")->String
 
     method create( data:Character[] )->String
       local utf8_count : Int32
       native @|for (int i=$data->count; --i>=0; )
               |{
-              |  RogueCharacter ch = $data->as_characters[i];
+              |  %Ns%RogueCharacter ch = $data->as_characters[i];
               |  if (ch <= 0x7F)         ++$utf8_count;
               |  else if (ch <= 0x7FF)   $utf8_count += 2;
               |  else if (ch <= 0xFFFF)  $utf8_count += 3;
@@ -49,8 +49,8 @@ class String : Poolable PrintWriter
       if (a is null)     return -1
       elseIf (b is null) return  1
 
-      native @|RogueInt32 a_count = $a->data->count;
-              |RogueInt32 b_count = $b->data->count;
+      native @|%Ns%RogueInt32 a_count = $a->data->count;
+              |%Ns%RogueInt32 b_count = $b->data->count;
               |
               |int result;
               |if (a_count == b_count)
@@ -328,14 +328,14 @@ class String : Poolable PrintWriter
       if (this is other) return 0
 
       if (ignore_case)
-        native @|RogueInt32 other_count = $other->data->count;
-                |RogueInt32 limit = $this->data->count;
+        native @|%Ns%RogueInt32 other_count = $other->data->count;
+                |%Ns%RogueInt32 limit = $this->data->count;
                 |
-                |RogueInt32 result;
+                |%Ns%RogueInt32 result;
                 |if (limit == other_count)
                 |{
                 |  // Strings are same length
-                |  #ifdef ROGUE_PLATFORM_WINDOWS
+                |  #ifdef %NS%ROGUE_PLATFORM_WINDOWS
                 |    result = strnicmp( $this->data->as_utf8, $other->data->as_utf8, limit );
                 |  #else
                 |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );
@@ -346,7 +346,7 @@ class String : Poolable PrintWriter
                 |{
                 |  // Strings differ in length.  Compare the part that matches first.
                 |  if (limit > other_count) limit = other_count;
-                |  #ifdef ROGUE_PLATFORM_WINDOWS
+                |  #ifdef %NS%ROGUE_PLATFORM_WINDOWS
                 |    result = strnicmp( $this->data->as_utf8, $other->data->as_utf8, limit );
                 |  #else
                 |    result = strncasecmp( $this->data->as_utf8, $other->data->as_utf8, limit );
@@ -578,8 +578,8 @@ class String : Poolable PrintWriter
         @|
          |char* utf8 = $data->as_utf8;
          |
-         |RogueInt32 offset = $cursor_offset;
-         |RogueCharacter ch = utf8[ offset ];
+         |%Ns%RogueInt32 offset = $cursor_offset;
+         |%Ns%RogueCharacter ch = utf8[ offset ];
          |if (ch & 0x80)
          |{
          |  if (ch & 0x20)
@@ -612,7 +612,7 @@ class String : Poolable PrintWriter
 
     method hash_code->Int32
       if (@hash_code == -1)
-        native @|$hash_code = RogueString_compute_hash_code( $this, 0 );
+        native @|$hash_code = %Ns%RogueString_compute_hash_code( $this, 0 );
       endIf
       return @hash_code
 
@@ -1453,8 +1453,8 @@ class String : Poolable PrintWriter
       native ...
         @|char* utf8 = $data->as_utf8;
          |
-         |RogueInt32 c_offset;
-         |RogueInt32 c_index;
+         |%Ns%RogueInt32 c_offset;
+         |%Ns%RogueInt32 c_index;
          |
          |if ($character_index == 0)
          |{
@@ -1623,11 +1623,11 @@ class String : Poolable PrintWriter
       # on Windows it will be clamped to 7FFFFFFF. If the maximum number of digits is used,
       # handle the most significant one separately and combine with the result.
       if (base == 2 and count == 32)
-        return (this[0].to_number:<<:31) | native( "(RogueInt32)strtol( (char*)$this->data->as_utf8+1, 0, 2 )" )->Int32
+        return (this[0].to_number:<<:31) | native( "(%Ns%RogueInt32)strtol( (char*)$this->data->as_utf8+1, 0, 2 )" )->Int32
       elseIf (base == 16 and count == 8)
-        return (this[0].to_number(16):<<:28) | native( "(RogueInt32)strtol( (char*)$this->data->as_utf8+1, 0, 16 )" )->Int32
+        return (this[0].to_number(16):<<:28) | native( "(%Ns%RogueInt32)strtol( (char*)$this->data->as_utf8+1, 0, 16 )" )->Int32
       else
-          return native( "(RogueInt32)strtol( (char*)$this->data->as_utf8, 0, $base )" )->Int32
+          return native( "(%Ns%RogueInt32)strtol( (char*)$this->data->as_utf8, 0, $base )" )->Int32
       endIf
 
     method to->Int64( base=10:Int32 )
@@ -1640,15 +1640,15 @@ class String : Poolable PrintWriter
           return builder->Int64
         endUse
       endIf
-      return native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
+      return native( "(%Ns%RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
 
       # See note in to->Int32, above.
       if (base == 2 and count == 64)
-        return (this[0].to_number->Int64:<<:63) | native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8+1, 0, 2 )" )->Int64
+        return (this[0].to_number->Int64:<<:63) | native( "(%Ns%RogueInt64)strtoll( (char*)$this->data->as_utf8+1, 0, 2 )" )->Int64
       elseIf (base == 16 and count == 16)
-        return (this[0].to_number(16)->Int64:<<:60) | native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8+1, 0, 16 )" )->Int64
+        return (this[0].to_number(16)->Int64:<<:60) | native( "(%Ns%RogueInt64)strtoll( (char*)$this->data->as_utf8+1, 0, 16 )" )->Int64
       else
-        return native( "(RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
+        return native( "(%Ns%RogueInt64)strtoll( (char*)$this->data->as_utf8, 0, $base )" )->Int64
       endIf
 
     method to->Object
@@ -2310,31 +2310,31 @@ class String : Poolable PrintWriter
       return -1
 
   NATIVE
-    nativeHeader @|#define ROGUE_STRING_COPY           0
-                  |#define ROGUE_STRING_BORROW         1
-                  |#define ROGUE_STRING_ADOPT          2
-                  |#define ROGUE_STRING_PERMANENT      3
-                  |#define ROGUE_STRING_PERMANENT_COPY 4
+    nativeHeader @|#define %NS%ROGUE_STRING_COPY           0
+                  |#define %NS%ROGUE_STRING_BORROW         1
+                  |#define %NS%ROGUE_STRING_ADOPT          2
+                  |#define %NS%ROGUE_STRING_PERMANENT      3
+                  |#define %NS%ROGUE_STRING_PERMANENT_COPY 4
                   |
-                  |RogueString* RogueString_create( const char* cstring );
-                  |RogueString* RogueString_create_from_utf8( const char* cstring, int byte_count, int usage );
-                  |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
-                  |RogueString* RogueString_create_permanent( const char* cstring );
-                  |RogueString* RogueString_create_string_table_entry( const char* cstring );
-                  |RogueInt32   RogueString_compute_hash_code( RogueString* THISOBJ, RogueInt32 starting_hash );
-                  |const char*  RogueString_to_c_string( RogueString* st );
-                  |RogueInt32   RogueString_utf8_character_count( const char* cstring, int byte_count );
+                  |%Ns%RogueString* %Ns%RogueString_create( const char* cstring );
+                  |%Ns%RogueString* %Ns%RogueString_create_from_utf8( const char* cstring, int byte_count, int usage );
+                  |%Ns%RogueString* %Ns%RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage );
+                  |%Ns%RogueString* %Ns%RogueString_create_permanent( const char* cstring );
+                  |%Ns%RogueString* %Ns%RogueString_create_string_table_entry( const char* cstring );
+                  |%Ns%RogueInt32   %Ns%RogueString_compute_hash_code( %Ns%RogueString* THISOBJ, %Ns%RogueInt32 starting_hash );
+                  |const char*  %Ns%RogueString_to_c_string( %Ns%RogueString* st );
+                  |%Ns%RogueInt32   %Ns%RogueString_utf8_character_count( const char* cstring, int byte_count );
                   |
-                  |extern RogueInt32 Rogue_string_table_count;
+                  |extern %Ns%RogueInt32 %Ns%Rogue_string_table_count;
 
-    nativeCode  @|RogueInt32 Rogue_string_table_count = 0;
+    nativeCode  @|%Ns%RogueInt32 %Ns%Rogue_string_table_count = 0;
                  |
-                 |RogueString* RogueString_create( const char* cstring )
+                 |%Ns%RogueString* %Ns%RogueString_create( const char* cstring )
                  |{
-                 |  return RogueString_create_from_utf8( cstring, -1, ROGUE_STRING_COPY );
+                 |  return %Ns%RogueString_create_from_utf8( cstring, -1, %NS%ROGUE_STRING_COPY );
                  |}
                  |
-                 |RogueString* RogueString_create_from_utf8( const char* cstring, int byte_count, int usage )
+                 |%Ns%RogueString* %Ns%RogueString_create_from_utf8( const char* cstring, int byte_count, int usage )
                  |{
                  |  // Creates an immutable String object.
                  |  //
@@ -2345,24 +2345,24 @@ class String : Poolable PrintWriter
                  |  //   PERMANENT      - Like BORROW but new String is not tracked by the GC.
                  |  //   PERMANENT_COPY - Like COPY but new String is not tracked by the GC.
                  |  if (byte_count == -1) byte_count = (int) strlen(cstring);
-                 |  RogueInt32 character_count = RogueString_utf8_character_count( cstring, byte_count );
-                 |  if (character_count == -1) return RogueString_create_from_ascii256( cstring, byte_count, usage );
+                 |  %Ns%RogueInt32 character_count = %Ns%RogueString_utf8_character_count( cstring, byte_count );
+                 |  if (character_count == -1) return %Ns%RogueString_create_from_ascii256( cstring, byte_count, usage );
                  |
-                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT) || (usage == ROGUE_STRING_PERMANENT_COPY);
-                 |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString)   : ROGUE_CREATE_OBJECT(RogueString);
-                 |  RogueByteList* data;
-                 |  #ifdef ROGUE_GC_AUTO
+                 |  int is_permanent = (usage == %NS%ROGUE_STRING_PERMANENT) || (usage == %NS%ROGUE_STRING_PERMANENT_COPY);
+                 |  %Ns%RogueString* result = is_permanent ? %NS%ROGUE_NEW_OBJECT(%Ns%RogueString)   : %NS%ROGUE_CREATE_OBJECT(%Ns%RogueString);
+                 |  %Ns%RogueByteList* data;
+                 |  #ifdef %NS%ROGUE_GC_AUTO
                  |    ++result->__refcount;
-                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    data = is_permanent ? %NS%ROGUE_NEW_OBJECT(%Ns%RogueByteList) : %NS%ROGUE_CREATE_OBJECT(%Ns%RogueByteList);
                  |    --result->__refcount;
                  |  #else
-                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    data = is_permanent ? %NS%ROGUE_NEW_OBJECT(%Ns%RogueByteList) : %NS%ROGUE_CREATE_OBJECT(%Ns%RogueByteList);
                  |  #endif
                  |  result->data = data;
                  |
-                 |  if (usage == ROGUE_STRING_COPY || usage == ROGUE_STRING_PERMANENT_COPY)
+                 |  if (usage == %NS%ROGUE_STRING_COPY || usage == %NS%ROGUE_STRING_PERMANENT_COPY)
                  |  {
-                 |    char* string_data = ROGUE_MALLOC( byte_count + 1 );
+                 |    char* string_data = %NS%ROGUE_MALLOC( byte_count + 1 );
                  |    memcpy( string_data, cstring, byte_count );
                  |    string_data[byte_count] = 0;
                  |    cstring = string_data;
@@ -2371,7 +2371,7 @@ class String : Poolable PrintWriter
                  |  data->as_utf8        = (char*) cstring;
                  |  data->count          = byte_count;
                  |  data->capacity       = byte_count + 1;
-                 |  data->is_borrowed    = (usage == ROGUE_STRING_BORROW || is_permanent);
+                 |  data->is_borrowed    = (usage == %NS%ROGUE_STRING_BORROW || is_permanent);
                  |  data->element_size   = 1;
                  |
                  |  result->count        = character_count;
@@ -2381,7 +2381,7 @@ class String : Poolable PrintWriter
                  |  return result;
                  |}
                  |
-                 |RogueString* RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage )
+                 |%Ns%RogueString* %Ns%RogueString_create_from_ascii256( const char* cstring, int byte_count, int usage )
                  |{
                  |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                  |
@@ -2395,22 +2395,22 @@ class String : Poolable PrintWriter
                  |
                  |  if (utf8_byte_count == byte_count)
                  |  {
-                 |    return RogueString_create_from_utf8( cstring, byte_count, usage );
+                 |    return %Ns%RogueString_create_from_utf8( cstring, byte_count, usage );
                  |  }
                  |
-                 |  int is_permanent = (usage == ROGUE_STRING_PERMANENT) || (usage == ROGUE_STRING_PERMANENT_COPY);
-                 |  RogueString* result = is_permanent ? ROGUE_NEW_OBJECT(RogueString) : ROGUE_CREATE_OBJECT(RogueString);
-                 |  RogueByteList* data;
-                 |  #ifdef ROGUE_GC_AUTO
+                 |  int is_permanent = (usage == %NS%ROGUE_STRING_PERMANENT) || (usage == %NS%ROGUE_STRING_PERMANENT_COPY);
+                 |  %Ns%RogueString* result = is_permanent ? %NS%ROGUE_NEW_OBJECT(%Ns%RogueString) : %NS%ROGUE_CREATE_OBJECT(%Ns%RogueString);
+                 |  %Ns%RogueByteList* data;
+                 |  #ifdef %NS%ROGUE_GC_AUTO
                  |    ++result->__refcount;
-                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    data = is_permanent ? %NS%ROGUE_NEW_OBJECT(%Ns%RogueByteList) : %NS%ROGUE_CREATE_OBJECT(%Ns%RogueByteList);
                  |    --result->__refcount;
                  |  #else
-                 |    data = is_permanent ? ROGUE_NEW_OBJECT(RogueByteList) : ROGUE_CREATE_OBJECT(RogueByteList);
+                 |    data = is_permanent ? %NS%ROGUE_NEW_OBJECT(%Ns%RogueByteList) : %NS%ROGUE_CREATE_OBJECT(%Ns%RogueByteList);
                  |  #endif
                  |  result->data = data;
                  |
-                 |  data->as_utf8        = (char*) ROGUE_MALLOC( utf8_byte_count+1 );
+                 |  data->as_utf8        = (char*) %NS%ROGUE_MALLOC( utf8_byte_count+1 );
                  |  data->count          = utf8_byte_count;
                  |  data->capacity       = utf8_byte_count + 1;
                  |  data->is_borrowed    = 0;
@@ -2441,26 +2441,26 @@ class String : Poolable PrintWriter
                  |  utf8[ utf8_byte_count ] = 0;
                  |
                  |  // We've had to allocate a new buffer so free the original if it needs it.
-                 |  if (usage == ROGUE_STRING_ADOPT) ROGUE_FREE( (void*)cstring );
+                 |  if (usage == %NS%ROGUE_STRING_ADOPT) %NS%ROGUE_FREE( (void*)cstring );
                  |
                  |  return result;
                  |}
                  |
-                 |RogueString* RogueString_create_permanent( const char* cstring )
+                 |%Ns%RogueString* %Ns%RogueString_create_permanent( const char* cstring )
                  |{
-                 |  return RogueString_create_from_utf8( cstring, -1, ROGUE_STRING_PERMANENT );
+                 |  return %Ns%RogueString_create_from_utf8( cstring, -1, %NS%ROGUE_STRING_PERMANENT );
                  |}
                  |
-                 |RogueString* RogueString_create_string_table_entry( const char* cstring )
+                 |%Ns%RogueString* %Ns%RogueString_create_string_table_entry( const char* cstring )
                  |{
-                 |  RogueString* result = RogueString_create_permanent( cstring );
-                 |  Rogue_string_table[ Rogue_string_table_count++ ] = result;
+                 |  %Ns%RogueString* result = %Ns%RogueString_create_permanent( cstring );
+                 |  %Ns%Rogue_string_table[ %Ns%Rogue_string_table_count++ ] = result;
                  |  return result;
                  |}
                  |
-                 |RogueInt32 RogueString_compute_hash_code( RogueString* THISOBJ, RogueInt32 starting_hash )
+                 |%Ns%RogueInt32 %Ns%RogueString_compute_hash_code( %Ns%RogueString* THISOBJ, %Ns%RogueInt32 starting_hash )
                  |{
-                 |  RogueInt32 hash = starting_hash;
+                 |  %Ns%RogueInt32 hash = starting_hash;
                  |  int n = THISOBJ->data->count;
                  |  char* src = THISOBJ->data->as_utf8 - 1;
                  |  while (--n >= 0)
@@ -2470,18 +2470,18 @@ class String : Poolable PrintWriter
                  |  return hash;
                  |}
                  |
-                 |const char* RogueString_to_c_string( RogueString* st )
+                 |const char* %Ns%RogueString_to_c_string( %Ns%RogueString* st )
                  |{
                  |  if ( !st ) { return "null"; }
                  |  return st->data->as_utf8;
                  |}
                  |
-                 |RogueInt32 RogueString_utf8_character_count( const char* cstring, int byte_count )
+                 |%Ns%RogueInt32 %Ns%RogueString_utf8_character_count( const char* cstring, int byte_count )
                  |{
                  |  // Returns -1 if 'cstring' is not a valid UTF-8 string.
                  |  if (byte_count == -1) byte_count = (int) strlen(cstring);
                  |
-                 |  RogueInt32 character_count = 0;
+                 |  %Ns%RogueInt32 character_count = 0;
                  |  int i;
                  |  for (i=0; i<byte_count; ++character_count)
                  |  {

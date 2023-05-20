@@ -23,10 +23,10 @@ class Scanner : Reader<<Character>>
       data = Character[]( new_count )
 
       native @|char* src = $source->data->as_utf8 - 1;
-              |RogueCharacter* dest = $data->as_characters - 1;
+              |%Ns%RogueCharacter* dest = $data->as_characters - 1;
               |for (int i=$source->count; --i>=0; )
               |{
-              |  RogueCharacter ch = (RogueCharacter) *(++src);
+              |  %Ns%RogueCharacter ch = (%Ns%RogueCharacter) *(++src);
               |  if (ch == '\t')
               |  {
               |    if ($spaces_per_tab)

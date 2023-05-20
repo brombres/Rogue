@@ -96,7 +96,7 @@ class PosixProcess : Process
   # https://stackoverflow.com/questions/13893085/posix-spawnp-and-piping-child-output-to-a-string/27328610
   NATIVE
     nativeHeader
-      @|#ifdef ROGUE_PLATFORM_WINDOWS
+      @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
        |#else
        |  #include <spawn.h>
        |  #include <poll.h>
@@ -106,7 +106,7 @@ class PosixProcess : Process
        |#endif
 
   PROPERTIES
-    native @|#ifndef ROGUE_PLATFORM_WINDOWS
+    native @|#ifndef %NS%ROGUE_PLATFORM_WINDOWS
             |pid_t pid;
             |int cin_pipe[2];
             |int cout_pipe[2];
@@ -120,7 +120,7 @@ class PosixProcess : Process
       init( ["sh","-c",cmd], &=readable, &=writable, &=is_blocking, &=env )
 
     method init( args, &readable, &writable, is_blocking=false, &env )
-      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+      native @|#ifndef %NS%ROGUE_PLATFORM_WINDOWS
 
       if (not launch(&=readable,&=writable,&=env))
         native @|if ($this->cout_pipe[0] != -1) close( $this->cout_pipe[0] );
@@ -145,7 +145,7 @@ class PosixProcess : Process
       native @|#endif
 
     method launch( &readable, &writable, &env )->Logical
-      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+      native @|#ifndef %NS%ROGUE_PLATFORM_WINDOWS
               |$this->cin_pipe[0]  = $this->cin_pipe[1]  = -1;
               |$this->cout_pipe[0] = $this->cout_pipe[1] = -1;
               |$this->cerr_pipe[0] = $this->cerr_pipe[1] = -1;
@@ -173,7 +173,7 @@ class PosixProcess : Process
       local n = args.count
       native @|char*  args_buffer[17];
               |char** args = (char**)args_buffer;
-              |if ($n > 16) args = ROGUE_MALLOC( sizeof(char*) * ($n+1) );
+              |if ($n > 16) args = %NS%ROGUE_MALLOC( sizeof(char*) * ($n+1) );
               |args[ $n ] = 0;
       forEach (arg at index in args)
         native @|args[ $index ] = (char*) $arg->data->as_utf8;
@@ -207,7 +207,7 @@ class PosixProcess : Process
       local result : Int32
       native @|$result = posix_spawnp( &$this->pid, args[0], &$this->actions, NULL, &args[0],
               |    ($env ? environ : NULL) );
-              |if ($n > 16) ROGUE_FREE( args );
+              |if ($n > 16) %NS%ROGUE_FREE( args );
               |if ($this->cout_pipe[1] != -1) close( $this->cout_pipe[1] );
               |if ($this->cerr_pipe[1] != -1) close( $this->cerr_pipe[1] );
               |if ($this->cin_pipe[0] != -1)  close( $this->cin_pipe[0] );
@@ -232,7 +232,7 @@ class PosixProcess : Process
     method is_finished->Logical
       if (@is_finished) return true
 
-      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+      native @|#ifndef %NS%ROGUE_PLATFORM_WINDOWS
               |int status;
               |if ($this->pid)
               |{
@@ -252,7 +252,7 @@ class PosixProcess : Process
 
 
     method finish->ProcessResult
-      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+      native @|#ifndef %NS%ROGUE_PLATFORM_WINDOWS
 
       if (not @is_finished)
         is_finished = true
@@ -290,7 +290,7 @@ class PosixProcess : Process
               |$this->cerr_pipe[0] = -1;
               |$this->cin_pipe[1] = -1;
 
-      native @|#endif // not ROGUE_PLATFORM_WINDOWS
+      native @|#endif // not %NS%ROGUE_PLATFORM_WINDOWS
 
       if (not result) result = ProcessResult( @exit_code, output_bytes, error_bytes )
       return result
@@ -299,7 +299,7 @@ class PosixProcess : Process
     method update_io( &poll_blocks )->Logical
       # Returns true if we should keep updating
 
-      native @|#ifndef ROGUE_PLATFORM_WINDOWS
+      native @|#ifndef %NS%ROGUE_PLATFORM_WINDOWS
 
       # Get the FDs to poll.  We do this because they might have
       # changed (specifically, might have gone to -1).
@@ -341,7 +341,7 @@ class PosixProcess : Process
         return true
       endIf
 
-      native @|#endif // ROGUE_PLATFORM_WINDOWS
+      native @|#endif // %NS%ROGUE_PLATFORM_WINDOWS
 
       return false
 
@@ -386,7 +386,7 @@ class WindowsProcess : Process
       # arg_string_utf16 must be kept for the duration of the process; allowing it
       # to be GC'd can crash the process
 
-    native @|#ifdef ROGUE_PLATFORM_WINDOWS
+    native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
             |STARTUPINFO         startup_info;
             |PROCESS_INFORMATION process_info;
             |#endif
@@ -412,7 +412,7 @@ class WindowsProcess : Process
       endIf
 
     method launch( &readable, &writable, &env )->Logical
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
 
       output_reader = WindowsProcessReader()
       error_reader  = WindowsProcessReader()
@@ -463,7 +463,7 @@ class WindowsProcess : Process
         return true
       endIf
 
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |DWORD exit_code;
               |if (GetExitCodeProcess( $this->process_info.hProcess, &exit_code ))
               |{
@@ -481,7 +481,7 @@ class WindowsProcess : Process
 
 
     method finish->ProcessResult
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
 
       while (not is_finished)
         input_writer->(as WindowsProcessWriter).close_pipe  # in case process doesn't terminate until we close the input
@@ -502,7 +502,7 @@ class WindowsProcess : Process
       input_writer.close
 
       if (process_created)
-        native @|#ifdef ROGUE_PLATFORM_WINDOWS
+        native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
                 |CloseHandle( $this->process_info.hProcess );
                 |CloseHandle( $this->process_info.hThread );
                 |#endif
@@ -528,7 +528,7 @@ class WindowsProcessReader : Reader<<Byte>>
   PROPERTIES
     buffer = Byte[]( 1024 )
 
-    native @|#ifdef ROGUE_PLATFORM_WINDOWS
+    native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
             |HANDLE output_writer;
             |HANDLE output_reader;
             |#endif
@@ -536,7 +536,7 @@ class WindowsProcessReader : Reader<<Byte>>
   METHODS
     method init
       local success = false
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |SECURITY_ATTRIBUTES security_attributes;
               |security_attributes.nLength = sizeof( SECURITY_ATTRIBUTES );
               |security_attributes.bInheritHandle = TRUE;
@@ -549,7 +549,7 @@ class WindowsProcessReader : Reader<<Byte>>
       if (not success) error.println("Process reader could not be initialized.")
 
     method close
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |if ($this->output_reader)
               |{
               |  CloseHandle( $this->output_reader );
@@ -564,7 +564,7 @@ class WindowsProcessReader : Reader<<Byte>>
 
     method fill_buffer->Logical
       buffer.reserve( 1024 );
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |if ($this->output_reader)
               |{
               |  DWORD available_count;
@@ -616,7 +616,7 @@ class WindowsProcessWriter : Writer<<Byte>>
   PROPERTIES
     buffer = Byte[]( 1024 )
 
-    native @|#ifdef ROGUE_PLATFORM_WINDOWS
+    native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
             |HANDLE input_writer;
             |HANDLE input_reader;
             |#endif
@@ -624,7 +624,7 @@ class WindowsProcessWriter : Writer<<Byte>>
   METHODS
     method init
       local success = false
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |SECURITY_ATTRIBUTES security_attributes;
               |security_attributes.nLength = sizeof( SECURITY_ATTRIBUTES );
               |security_attributes.bInheritHandle = TRUE;
@@ -637,7 +637,7 @@ class WindowsProcessWriter : Writer<<Byte>>
       if (not success) error.println("Process reader could not be initialized.")
 
     method close
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |if ($this->input_reader)
               |{
               |  CloseHandle( $this->input_reader );
@@ -647,7 +647,7 @@ class WindowsProcessWriter : Writer<<Byte>>
       close_pipe
 
     method close_pipe
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |if ($this->input_writer)
               |{
               |  CloseHandle( $this->input_writer );
@@ -659,7 +659,7 @@ class WindowsProcessWriter : Writer<<Byte>>
       if (not buffer.count) return
 
       local write_count = 0
-      native @|#ifdef ROGUE_PLATFORM_WINDOWS
+      native @|#ifdef %NS%ROGUE_PLATFORM_WINDOWS
               |if ($this->input_writer)
               |{
               |  DWORD write_count;

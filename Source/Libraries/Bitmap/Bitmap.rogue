@@ -256,10 +256,10 @@ class Bitmap
     method convert_gray_to_alpha
       local count = width * height
 
-      native @|RogueInt32* cur = $pixels->as_int32s - 1;
+      native @|%Ns%RogueInt32* cur = $pixels->as_int32s - 1;
               |while (--$count >= 0)
               |{
-              |  RogueInt32 gray = *(++cur) & 255;
+              |  %Ns%RogueInt32 gray = *(++cur) & 255;
               |  *cur = (gray << 24) | 0xFFffFF;
               |}
 
@@ -382,7 +382,7 @@ class Bitmap
       local row_skip = width - row_width
       local rows = y_limit - y1
 
-      native @|RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1) - 1;
+      native @|%Ns%RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1) - 1;
               |while (--$rows >= 0)
               |{
               |  for (int i=$row_width; --i>=0; )
@@ -413,8 +413,8 @@ class Bitmap
       local row_skip = width - row_width
       local rows = y_limit - y1
 
-      native @|RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1);
-              |RogueInt32  inverse_mask = ~$channel_mask;
+      native @|%Ns%RogueInt32* dest = ($pixels->as_int32s + $y1*$w + $x1);
+              |%Ns%RogueInt32  inverse_mask = ~$channel_mask;
               |while (--$rows >= 0)
               |{
               |  for (int i=$row_width; --i>=0; )
@@ -619,7 +619,7 @@ class Bitmap
     method is_opaque->Logical
       local pixel_count = width * height
       native...
-       @|RogueInt32* data = (RogueInt32*) $pixels->as_int32s;
+       @|%Ns%RogueInt32* data = (%Ns%RogueInt32*) $pixels->as_int32s;
         |for (int i=$pixel_count; --i>=0; )
         |{
         |  if ((data[i] & 0xFF000000) != 0xFF000000)
@@ -811,7 +811,7 @@ class Bitmap
       local available = new_width
       local buffer = resize_row_buffer
       local buffer_i = 0
-      native @|RogueByte* src = (RogueByte*)($pixels->as_int32s + $src_i);
+      native @|%Ns%RogueByte* src = (%Ns%RogueByte*)($pixels->as_int32s + $src_i);
 
       forEach (1..new_width)
         local n = 0.0
@@ -822,11 +822,11 @@ class Bitmap
         local z = 0.0
         local need = this_width
         while (need >= available)
-          if (native("*((RogueInt32*)src)")->Int32)
-            b += native("(RogueReal)src[0]")->Real * available
-            g += native("(RogueReal)src[1]")->Real * available
-            r += native("(RogueReal)src[2]")->Real * available
-            a += native("(RogueReal)src[3]")->Real * available
+          if (native("*((%Ns%RogueInt32*)src)")->Int32)
+            b += native("(%Ns%RogueReal)src[0]")->Real * available
+            g += native("(%Ns%RogueReal)src[1]")->Real * available
+            r += native("(%Ns%RogueReal)src[2]")->Real * available
+            a += native("(%Ns%RogueReal)src[3]")->Real * available
             n += available
           else
             # Transparent black (0x00000000) can't be averaged in as usual or else it will
@@ -841,11 +841,11 @@ class Bitmap
         endWhile
 
         if (need)
-          if (native("*((RogueInt32*)src)")->Int32)
-            b += native("(RogueReal)src[0]")->Real * need
-            g += native("(RogueReal)src[1]")->Real * need
-            r += native("(RogueReal)src[2]")->Real * need
-            a += native("(RogueReal)src[3]")->Real * need
+          if (native("*((%Ns%RogueInt32*)src)")->Int32)
+            b += native("(%Ns%RogueReal)src[0]")->Real * need
+            g += native("(%Ns%RogueReal)src[1]")->Real * need
+            r += native("(%Ns%RogueReal)src[2]")->Real * need
+            a += native("(%Ns%RogueReal)src[3]")->Real * need
             n += need
           else
             # Transparent black (0x00000000) can't be averaged in as usual or else it will
@@ -873,14 +873,14 @@ class Bitmap
 
     method resize_write_row( dest_bitmap:Bitmap, dest_i:Int32, new_width:Int32, resize_row_buffer:Real[] )
       local row_buffer = resize_row_buffer
-      native @|RogueByte*   dest = (RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
-              |RogueReal*   buffer = $row_buffer->as_real64s;
-              |RogueReal    divisor;
+      native @|%Ns%RogueByte*   dest = (%Ns%RogueByte*)($dest_bitmap->pixels->as_int32s + $dest_i);
+              |%Ns%RogueReal*   buffer = $row_buffer->as_real64s;
+              |%Ns%RogueReal    divisor;
 
       forEach (1..new_width)
         native @|if ((divisor = buffer[4]))
                 |{
-                |  RogueReal z;
+                |  %Ns%RogueReal z;
                 |  if ((z = buffer[5]))
                 |  {
                 |    // Incorporate zero values (transparent black). Increase each R,G,B component by
@@ -891,10 +891,10 @@ class Bitmap
                 |    divisor += z;
                 |  }
                 |
-                |  dest[0] = (RogueByte)(buffer[0] / divisor);
-                |  dest[1] = (RogueByte)(buffer[1] / divisor);
-                |  dest[2] = (RogueByte)(buffer[2] / divisor);
-                |  dest[3] = (RogueByte)(buffer[3] / divisor);
+                |  dest[0] = (%Ns%RogueByte)(buffer[0] / divisor);
+                |  dest[1] = (%Ns%RogueByte)(buffer[1] / divisor);
+                |  dest[2] = (%Ns%RogueByte)(buffer[2] / divisor);
+                |  dest[3] = (%Ns%RogueByte)(buffer[3] / divisor);
                 |}
                 |else
                 |{
@@ -1021,10 +1021,10 @@ class Bitmap
 
     method swap_red_and_blue
       native @|int n = $width * $height;
-              |RogueInt32* src = $pixels->as_int32s + n;
+              |%Ns%RogueInt32* src = $pixels->as_int32s + n;
               |while (--n >= 0)
               |{
-              |  RogueInt32 pixel = *(--src);
+              |  %Ns%RogueInt32 pixel = *(--src);
               |  *src = (pixel & 0xFF00FF00) | ((pixel << 16) & 0xFF0000) | ((pixel >> 16) & 0xFF);
               |}
 
@@ -1076,14 +1076,14 @@ class BitmapBlitFn : Function(Bitmap,Int32,Int32,Bitmap,Int32,Int32,Int32,Int32)
     method call( src:Bitmap, src_x1:Int32, src_y1:Int32, dest:Bitmap, dest_x1:Int32, dest_y1:Int32, blit_width:Int32, blit_height:Int32 )
       local src_width = src.width
       local dest_width = dest.width
-      native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
-              |RogueInt32* src_limit  = src_start + $blit_width;
-              |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
+      native @|%Ns%RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
+              |%Ns%RogueInt32* src_limit  = src_start + $blit_width;
+              |%Ns%RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
               |
               |while (--$blit_height >= 0)
               |{
-              |  RogueInt32* src  = src_start - 1;
-              |  RogueInt32* dest = dest_start;
+              |  %Ns%RogueInt32* src  = src_start - 1;
+              |  %Ns%RogueInt32* dest = dest_start;
               |  while (++src < src_limit)
               |  {
               |    *(dest++) = *src;
@@ -1102,13 +1102,13 @@ class AlphaBitmapBlitFn : BitmapBlitFn
 
       local src_width = src.width
       local dest_width = dest.width
-      native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
-              |RogueInt32* src_limit  = src_start + $blit_width;
-              |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
+      native @|%Ns%RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
+              |%Ns%RogueInt32* src_limit  = src_start + $blit_width;
+              |%Ns%RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
               |while (--$blit_height >= 0)
               |{
-              |  RogueInt32* src  = src_start - 1;
-              |  RogueInt32* dest = dest_start;
+              |  %Ns%RogueInt32* src  = src_start - 1;
+              |  %Ns%RogueInt32* dest = dest_start;
               |  while (++src < src_limit)
               |  {
               |    int src_c  = *src;
@@ -1156,14 +1156,14 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
       local fill_b = color.blue_byte
       local src_width = src.width
       local dest_width = dest.width
-      native @|RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
-              |RogueInt32* src_limit  = src_start + $blit_width;
-              |RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
+      native @|%Ns%RogueInt32* src_start  = $src->pixels->as_int32s + ($src_y1 * $src_width + $src_x1);
+              |%Ns%RogueInt32* src_limit  = src_start + $blit_width;
+              |%Ns%RogueInt32* dest_start = $dest->pixels->as_int32s + ($dest_y1 * $dest_width + $dest_x1);
               |
               |while (--$blit_height >= 0)
               |{
-              |  RogueInt32* src  = src_start - 1;
-              |  RogueInt32* dest = dest_start;
+              |  %Ns%RogueInt32* src  = src_start - 1;
+              |  %Ns%RogueInt32* dest = dest_start;
               |  while (++src < src_limit)
               |  {
               |    int dest_c = *dest;
@@ -1205,14 +1205,14 @@ augment Rogue::MacOS
       local height : Int32
 
       native...
-        @|#if defined(ROGUE_PLATFORM_MACOS)
+        @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
          |{
          |  NSData *data = [NSData dataWithBytes:$encoded_bytes->as_bytes length:$encoded_bytes->count];
          |  CGImageRef image = [[[NSImage alloc] initWithData:data] CGImageForProposedRect:NULL context:NULL hints:NULL];
          |  if (image)
          |  {
-         |    $width = (RogueInt32)CGImageGetWidth( image );
-         |    $height = (RogueInt32)CGImageGetHeight( image );
+         |    $width = (%Ns%RogueInt32)CGImageGetWidth( image );
+         |    $height = (%Ns%RogueInt32)CGImageGetHeight( image );
               result = Bitmap( width, height )
       native ...
         @|    CGContextRef gc = CGBitmapContextCreate( (GLubyte*)$result->pixels->as_int32s, $width, $height, 8, $width*4,
@@ -1242,7 +1242,7 @@ augment Rogue::MacOS
       #   https://stackoverflow.com/a/30958731/135791
       #   https://stackoverflow.com/a/17510651/135791
       native...
-        @|#if defined(ROGUE_PLATFORM_MACOS) || defined(ROGUE_PLATFORM_IOS)
+        @|#if defined(%NS%ROGUE_PLATFORM_MACOS) || defined(%NS%ROGUE_PLATFORM_IOS)
          |CGDataProviderRef provider = CGDataProviderCreateWithData( 0, $bitmap->pixels->data, $w*$h*4, 0 );
          |
          |CGImageRef cg_image = CGImageCreate(
@@ -1257,7 +1257,7 @@ augment Rogue::MacOS
          |  0,
          |  kCGRenderingIntentDefault
          |);
-         |#if defined(ROGUE_PLATFORM_MACOS)
+         |#if defined(%NS%ROGUE_PLATFORM_MACOS)
          |  NSBitmapImageRep *image_rep = [[NSBitmapImageRep alloc] initWithCGImage:cg_image];
          |  NSBitmapImageFileType encoding_type = NSBitmapImageFileTypeTIFF;
          |  switch ($type.value)
@@ -1305,7 +1305,7 @@ augment Rogue::MacOS
 
   NATIVE
     nativeHeader
-      @|#if defined(ROGUE_PLATFORM_MACOS)
+      @|#if defined(%NS%ROGUE_PLATFORM_MACOS)
        |  #import <Cocoa/Cocoa.h>
        |  #import <Foundation/Foundation.h>
        |#endif

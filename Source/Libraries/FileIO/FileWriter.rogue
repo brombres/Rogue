@@ -35,7 +35,7 @@ class FileWriter : Writer<<Byte>>
       buffer.clear
 
     method fp->Int64
-      return native( "(RogueInt64)$this->fp" )->Int64
+      return native( "(%Ns%RogueInt64)$this->fp" )->Int64
 
     method on_use->this
       return this
@@ -75,7 +75,7 @@ class FileWriter : Writer<<Byte>>
       flush
 
       native "fseek( $this->fp, 0, SEEK_END );"
-      position = native( "(RogueInt32)ftell( $this->fp )" )->Int32
+      position = native( "(%Ns%RogueInt32)ftell( $this->fp )" )->Int32
 
     method write( ch:Byte )
       if (not fp) return

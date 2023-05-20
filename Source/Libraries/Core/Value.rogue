@@ -26,21 +26,21 @@ class Value [compound]
 
   NATIVE
     nativeHeader
-      @|#define ROGUE_VALUE_TYPE_UNDEFINED 0
-       |#define ROGUE_VALUE_TYPE_BYTE      1
-       |#define ROGUE_VALUE_TYPE_CHARACTER 2
-       |#define ROGUE_VALUE_TYPE_INT32     3
-       |#define ROGUE_VALUE_TYPE_INT64     4
-       |#define ROGUE_VALUE_TYPE_REAL32    5
-       |#define ROGUE_VALUE_TYPE_REAL64    6
-       |#define ROGUE_VALUE_TYPE_LOGICAL   7
-       |#define ROGUE_VALUE_TYPE_NULL      8
-       |#define ROGUE_VALUE_TYPE_XY        9
-       |#define ROGUE_VALUE_TYPE_BOX       10
-       |#define ROGUE_VALUE_TYPE_OBJECT    11
-       |#define ROGUE_VALUE_TYPE_STRING    12
-       |#define ROGUE_VALUE_TYPE_LIST      13
-       |#define ROGUE_VALUE_TYPE_TABLE     14
+      @|#define %NS%ROGUE_VALUE_TYPE_UNDEFINED 0
+       |#define %NS%ROGUE_VALUE_TYPE_BYTE      1
+       |#define %NS%ROGUE_VALUE_TYPE_CHARACTER 2
+       |#define %NS%ROGUE_VALUE_TYPE_INT32     3
+       |#define %NS%ROGUE_VALUE_TYPE_INT64     4
+       |#define %NS%ROGUE_VALUE_TYPE_REAL32    5
+       |#define %NS%ROGUE_VALUE_TYPE_REAL64    6
+       |#define %NS%ROGUE_VALUE_TYPE_LOGICAL   7
+       |#define %NS%ROGUE_VALUE_TYPE_NULL      8
+       |#define %NS%ROGUE_VALUE_TYPE_XY        9
+       |#define %NS%ROGUE_VALUE_TYPE_BOX       10
+       |#define %NS%ROGUE_VALUE_TYPE_OBJECT    11
+       |#define %NS%ROGUE_VALUE_TYPE_STRING    12
+       |#define %NS%ROGUE_VALUE_TYPE_LIST      13
+       |#define %NS%ROGUE_VALUE_TYPE_TABLE     14
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -62,73 +62,73 @@ class Value [compound]
     native @|union
             |{
             |  GeometryBox    box;
-            |  RogueByte      byte;
-            |  RogueCharacter character;
-            |  RogueInt32     int32;
-            |  RogueInt64     int64;
-            |  RogueLogical   logical;
-            |  RogueReal      real;
-            |  RogueReal32    real32;
-            |  RogueReal64    real64;
+            |  %Ns%RogueByte      byte;
+            |  %Ns%RogueCharacter character;
+            |  %Ns%RogueInt32     int32;
+            |  %Ns%RogueInt64     int64;
+            |  %Ns%RogueLogical   logical;
+            |  %Ns%RogueReal      real;
+            |  %Ns%RogueReal32    real32;
+            |  %Ns%RogueReal64    real64;
             |  GeometryXY     xy;
             |};
 
   GLOBAL METHODS
     method create->Value
-      return native( "(RogueValue) { ROGUE_VALUE_TYPE_UNDEFINED }" )->Value  # undefined
+      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_UNDEFINED }" )->Value  # undefined
 
     method create( value:Logical )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_LOGICAL, 0, {.logical=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_LOGICAL, 0, {.logical=$value} }" )->Value
 
     method create( value:Byte )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_BYTE, 0, {.byte=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_BYTE, 0, {.byte=$value} }" )->Value
 
     method create( value:Character )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_CHARACTER, 0, {.character=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_CHARACTER, 0, {.character=$value} }" )->Value
 
     method create( value:Int32 )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT32, 0, {.int32=$value} }" )->Value
 
     method create( value:Int64 )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_INT64, 0, {.int64=$value} }" )->Value
 
     method create( value:Real32 )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL32, 0, {.real32=$value} }" )->Value
 
     method create( value:Real64 )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REAL64, 0, {.real64=$value} }" )->Value
 
     method create( value:XY )->Value
-      return native( "(RogueValue) {  ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Value
 
     method create( value:Box )->Value
-      return native( "(RogueValue) { ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Value
+      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Value
 
     method create( value:Object )->Value [preferred]
-      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_OBJECT, $value }" )->Value
-      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_OBJECT, $value }" )->Value
+      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create( value:String )->Value
-      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_STRING, (RogueObject*)$value }" )->Value
-      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_STRING, (%Ns%RogueObject*)$value }" )->Value
+      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create( value:Value[] )->Value
-      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_LIST, (RogueObject*)$value }" )->Value
-      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$value }" )->Value
+      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create( value:[String:Value] )->Value
-      if (value) return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$value }" )->Value
-      else       return native( "(RogueValue) { ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
+      if (value) return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$value }" )->Value
+      else       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_NULL }" )->Value  # null value
 
     method create_list->Value
       # Convenience syntax: @[] is equivalent to Value.create_list()
       local data = Value[]
-      return native( "(RogueValue) { ROGUE_VALUE_TYPE_LIST, (RogueObject*)$data }" )->Value
+      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_LIST, (%Ns%RogueObject*)$data }" )->Value
 
     method create_table->Value
       # Convenience syntax: @{} is equivalent to Value.create_table()
       local data = [String:Value]
-      return native( "(RogueValue) { ROGUE_VALUE_TYPE_TABLE, (RogueObject*)$data }" )->Value
+      return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_TABLE, (%Ns%RogueObject*)$data }" )->Value
 
   METHODS
     method add( value:Value )

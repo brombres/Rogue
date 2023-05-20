@@ -92,9 +92,9 @@ routine rogo_build
   if (source_files.any_newer_than(exe_file))
     local c_filepath = "Build/$-$.c" (Build.PROJECT,System.os)
     if (source_files.any_newer_than(c_filepath))
-      compile_rogue
+      rogo_compile_rogue
     endIf
-    compile_c
+    rogo_compile_c
   endIf
 endRoutine
 
@@ -120,8 +120,8 @@ endRoutine
 routine rogo_rebuild
   # Force-rebuilds project.
   rogo_froley
-  compile_rogue
-  compile_c
+  rogo_compile_rogue
+  rogo_compile_c
 endRoutine
 
 routine rogo_rebuild_debug
@@ -312,7 +312,7 @@ routine rogo_publish( new_version:String )
   execute ''gh release create v$ --title "v$" --notes ""''(new_version,new_version)
 endRoutine
 
-routine compile_rogue
+routine rogo_compile_rogue
   rogo_libs
   local src_filepath = "Source/RogueC/$.rogue" (Build.PROJECT)
   local c_filepath = "Build/$-$" (Build.PROJECT,System.os)
@@ -325,7 +325,7 @@ routine compile_rogue
   if (error) throw Error( "Build failed." )
 endRoutine
 
-routine compile_c
+routine rogo_compile_c
   local c_filepath = File( "Build/$-$" (Build.PROJECT,System.os) ).esc
   local exe_filepath = exe_file.esc
   if (System.is_windows)
