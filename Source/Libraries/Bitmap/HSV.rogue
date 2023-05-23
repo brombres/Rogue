@@ -1,0 +1,90 @@
+module Bitmap
+
+class HSV( hue:Real, saturation:Real, value:Real ) [compound]
+  GLOBAL METHODS
+    method create( color:Color )->HSV
+      # Creates a HSV compound from the given Color compound.
+      local r = color.red_byte / 255.0
+      local g = color.green_byte / 255.0
+      local b = color.blue_byte / 255.0
+
+      local maxrgb = r.or_larger( g ).or_larger( b )
+      local minrgb = r.or_smaller( g ).or_smaller( b )
+      local delta  = maxrgb - minrgb
+
+      local value = maxrgb
+      local hue, saturation : Real
+
+      if (maxrgb) saturation = delta / maxrgb
+
+      if (delta)
+        if (r == maxrgb)     hue = (g - b) / delta
+        elseIf (g == maxrgb) hue = 2 + ((b - r) / delta)
+        else                 hue = 4 + ((r - g) / delta)
+
+        hue = ((hue * 60) % 360) / 360.0
+      endIf
+
+      return HSV( hue, saturation, value )
+
+  METHODS
+    method hash_code->Int32
+      return hue.hash_code ~ saturation.hash_code ~ value.hash_code
+
+    method to->Color
+      local r, g, b : Real
+      if (saturation)
+        local hue = (hue * 6) % 6
+        local i = Int32( hue )
+        local f = hue - i
+        local p = value * (1 - saturation)
+        local q = value * (1 - saturation * f)
+        local t = value * (1 - saturation * (1 - f))
+        which (i)
+          case 0
+            r = value
+            g = t
+            b = p
+          case 1
+            r = q
+            g = value
+            b = p
+          case 2
+            r = p
+            g = value
+            b = t
+          case 3
+            r = p
+            g = q
+            b = value
+          case 4
+            r = t
+            g = p
+            b = value
+          others
+            r = value
+            g = p
+            b = q
+        endWhich
+        return Color( Int32(r*255+0.5), Int32(g*255+0.5), Int32(b*255+0.5) )
+      else
+        local v = Int32( value * 255 + 0.5 )
+        return Color( v, v, v )
+      endIf
+
+    method to->String
+      return "($,$,$)" (hue.format("1.3"),saturation.format(".2"),value.format(".2"))
+endClass
+
+augment Real32
+  METHODS
+    method lerp( a:HSV, b:HSV )->Color
+      return HSV( this.lerp(a.hue,b.hue), this.lerp(a.saturation,b.saturation), this.lerp(a.value,b.value) )
+endAugment
+
+augment Real64
+  METHODS
+    method lerp( a:HSV, b:HSV )->Color
+      return HSV( this.lerp(a.hue,b.hue), this.lerp(a.saturation,b.saturation), this.lerp(a.value,b.value) )
+endAugment
+

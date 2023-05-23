@@ -30,7 +30,7 @@ module Bitmap
 uses Geometry [export]
 
 $include Bitmap/Color
-$include Bitmap/HSB
+$include Bitmap/HSV
 
 class Bitmap
   GLOBAL PROPERTIES
