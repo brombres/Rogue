@@ -1782,6 +1782,96 @@ class String : Poolable PrintWriter
       if (i1 == 0 and i2 == count-1) return this
       return from( i1, i2 )
 
+    method unescaped( result=null:String )->String
+      # Replaces Rogue escape sequences with the characters they represent.
+      #
+      # \ch       -> ch
+      # \b        -> BACKSPACE (Character 8)
+      # \e        -> ESCAPE    (Character 27)
+      # \f        -> FORM FEED (Character 12)
+      # \n        -> NEWLINE   (Character 10)
+      # \r        -> RETURN    (Character 13)
+      # \t        -> TAB       (Character 9)
+      # \v        -> V-TAB     (Character 11)
+      # \0        -> NULL      (Character 0)
+      # \xHH      -> Character(0xHH)
+      # \uHHHH    -> Character(0xHHHH)
+      # \[HHHHHH] -> Character(0xHHHHHH)  (H can be 1-6 hex digits)
+      if (this.count('\\') == 0)
+        if (result)
+          result.print( this )
+          return result
+        else
+          return this
+        endIf
+      endIf
+
+      ensure<<result>>( data.count )
+
+      localize iterator
+      local ch = iterator.read_another
+      while (ch)
+        if (ch == '\\')
+          if local next_ch = iterator.read_another
+            which (next_ch)
+              case 'b': ch = '\b'
+              case 'e': ch = '\e'
+              case 'f': ch = '\f'
+              case 'n': ch = '\n'
+              case 'r': ch = '\r'
+              case 't': ch = '\t'
+              case 'v': ch = '\v'
+              case '0': ch = '\0'
+
+              case 'x'
+                local value = 0
+                loop 2
+                  if local hex_ch = iterator.read_another
+                    if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
+                  endIf
+                endLoop
+                ch = Character( value )
+
+              case 'u'
+                local value = 0
+                loop 4
+                  if local hex_ch = iterator.read_another
+                    if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
+                  endIf
+                endLoop
+                ch = Character( value )
+
+              case '['
+                local value = 0
+                block
+                  loop 8
+                    if local hex_ch = iterator.read_another
+                      if (hex_ch.is_number(16)) value = (value * 16) + hex_ch.to_number(16)
+                      elseIf (hex_ch == ']')    escapeBlock
+                    endIf
+                  endLoop
+                  local close_square = iterator.read_another
+                  while (close_square)
+                    if (close_square.value == ']') escapeBlock
+                    value = (value * 16) + close_square.value.to_number(16)
+                    close_square = iterator.read_another
+                  endWhile
+                endBlock
+                ch = Character( value )
+
+              others
+                ch = next_ch
+
+            endWhich
+          endIf
+        endIf
+        result.print ch.value
+        ch = iterator.read_another
+      endWhile
+
+      return result
+
+
     method unleft( n:Int32 )->String
       # "abc".unleft(1) -> bc
       if (n <= 0) return this
