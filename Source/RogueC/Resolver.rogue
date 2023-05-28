@@ -1951,21 +1951,23 @@ class Resolver : Poolable, Visitor
           endIf
         endIf
 
-        if (not is_fallback and not context)
-          # Check for a matching method in implicit context types (Global, Routine, ...)
-          assert this_module
-          forEach (implicit_type in this_module.implicit_context)
-            local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
-            if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
+        if (not context)
+          if (not is_fallback)
+            # Check for a matching method in implicit context types (Global, Routine, ...)
+            assert this_module
+            forEach (implicit_type in this_module.implicit_context)
+              local implicit_match = find_procedure( t, implicit_type, null, name, args, &suppress_error )
+              if (implicit_match) return resolve_call( t, GetSingleton(t,implicit_type), implicit_match, args )
 
-            if (implicit_type is not this_type)
-              if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
-                  implicit_type.definitions.contains(name))
-                local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
-                if (result) return result
+              if (implicit_type is not this_type)
+                if (implicit_type.properties.contains(name) or implicit_type.global_properties.contains(name) or
+                    implicit_type.definitions.contains(name))
+                  local result = resolve_access( t, TypeContext(t,implicit_type), name, args, &suppress_error )
+                  if (result) return result
+                endIf
               endIf
-            endIf
-          endForEach
+            endForEach
+          endIf
         endIf
 
         block
@@ -1984,22 +1986,24 @@ class Resolver : Poolable, Visitor
           endWhile
         endBlock
 
-        block
-          assert this_module
-          forEach (implicit_type in this_module.implicit_context)
-            local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
-            if (result) return result
-          endForEach
-        endBlock
+        if (not context)
+          block
+            assert this_module
+            forEach (implicit_type in this_module.implicit_context)
+              local result = resolve_global_access( t, implicit_type, name, args, &=suppress_error )
+              if (result) return result
+            endForEach
+          endBlock
 
-        # Global singleton property
-        local p = Program.type_Global.properties[ name ]
-        if (p)
-          local cmd_get_p = GetProperty( t, GetSingleton(t,Program.type_Global), p )
-          if (args)
-            return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
-          else
-            return validate( cmd_get_p )
+          # Global singleton property
+          local p = Program.type_Global.properties[ name ]
+          if (p)
+            local cmd_get_p = GetProperty( t, GetSingleton(t,Program.type_Global), p )
+            if (args)
+              return resolve_access( t, cmd_get_p, "call", args, &=suppress_error )
+            else
+              return validate( cmd_get_p )
+            endIf
           endIf
         endIf
 
