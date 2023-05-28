@@ -1,4 +1,4 @@
-uses Bitmap
+uses Graphics
 
 # 256 color RGB value info:
 # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit

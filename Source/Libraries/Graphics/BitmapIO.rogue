@@ -2,7 +2,7 @@ $include Codec/BMP
 $include Codec/JPEG
 $include Codec/PNG
 
-augment Bitmap::Bitmap
+augment Graphics::Bitmap
   GLOBAL METHODS
     method decode_bmp( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )

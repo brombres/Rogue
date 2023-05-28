@@ -15,7 +15,7 @@
 #   - Link with user32.lib, gdi32.lib, and Rpcrt4.lib
 #   - Use CC_ARGS_WINDOWS in Rogo buildfile.
 ================================================================================
-uses Bitmap
+uses Graphics
 uses Codec/BMP
 uses Utility/UUID
 

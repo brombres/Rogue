@@ -1,4 +1,4 @@
-module Bitmap
+module Graphics
 
 class BitmapFont
   PROPERTIES

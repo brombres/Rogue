@@ -1,5 +1,5 @@
 # An RGB color compound specialized for use with ANSIBitmap
-uses Bitmap
+uses Graphics
 
 class ANSIRGB( red:Real, green:Real, blue:Real ) [compound]
   GLOBAL METHODS

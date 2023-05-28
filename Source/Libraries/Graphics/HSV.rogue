@@ -1,4 +1,4 @@
-module Bitmap
+module Graphics
 
 class HSV( hue:Real, saturation:Real, value:Real ) [compound]
   GLOBAL METHODS

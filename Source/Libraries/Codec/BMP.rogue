@@ -1,5 +1,5 @@
 uses IO/BitIO
-uses Bitmap
+uses Graphics
 
 class BMP [singleton]
   DEFINITIONS

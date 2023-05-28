@@ -1,28 +1,28 @@
-module Bitmap
+module Graphics
 
 class Color( argb:Int32 ) [compound]
   DEFINITIONS
-    BLACK       = Bitmap::Color( 0xff000000 )
-    BLUE        = Bitmap::Color( 0xff0000FF )
-    BROWN       = Bitmap::Color( 0xff882222 )
-    CYAN        = Bitmap::Color( 0xff00FFFF )
-    DARK_GRAY   = Bitmap::Color( 0xff444444 )
-    DARK_GREEN  = Bitmap::Color( 0xff008800 )
-    GRAY        = Bitmap::Color( 0xff888888 )
-    GREEN       = Bitmap::Color( 0xff00FF00 )
-    LIGHT_GRAY  = Bitmap::Color( 0xffCCCCCC )
-    LIGHT_GREEN = Bitmap::Color( 0xff88FF88 )
-    MAGENTA     = Bitmap::Color( 0xffFF00FF )
-    ORANGE      = Bitmap::Color( 0xffFF8800 )
-    PINK        = Bitmap::Color( 0xffFFCCCC )
-    PURPLE      = Bitmap::Color( 0xff880088 )
-    RED         = Bitmap::Color( 0xffFF0000 )
-    ROGUE_BLUE  = Bitmap::Color( 0xff3333FF )
-    ROYAL_BLUE  = Bitmap::Color( 0xff4169E1 )
-    SKY_BLUE    = Bitmap::Color( 0xff87CEEB )
-    TRANSPARENT = Bitmap::Color( 0 )
-    YELLOW      = Bitmap::Color( 0xffFFFF00 )
-    WHITE       = Bitmap::Color( 0xffFFFFFF )
+    BLACK       = Graphics::Color( 0xff000000 )
+    BLUE        = Graphics::Color( 0xff0000FF )
+    BROWN       = Graphics::Color( 0xff882222 )
+    CYAN        = Graphics::Color( 0xff00FFFF )
+    DARK_GRAY   = Graphics::Color( 0xff444444 )
+    DARK_GREEN  = Graphics::Color( 0xff008800 )
+    GRAY        = Graphics::Color( 0xff888888 )
+    GREEN       = Graphics::Color( 0xff00FF00 )
+    LIGHT_GRAY  = Graphics::Color( 0xffCCCCCC )
+    LIGHT_GREEN = Graphics::Color( 0xff88FF88 )
+    MAGENTA     = Graphics::Color( 0xffFF00FF )
+    ORANGE      = Graphics::Color( 0xffFF8800 )
+    PINK        = Graphics::Color( 0xffFFCCCC )
+    PURPLE      = Graphics::Color( 0xff880088 )
+    RED         = Graphics::Color( 0xffFF0000 )
+    ROGUE_BLUE  = Graphics::Color( 0xff3333FF )
+    ROYAL_BLUE  = Graphics::Color( 0xff4169E1 )
+    SKY_BLUE    = Graphics::Color( 0xff87CEEB )
+    TRANSPARENT = Graphics::Color( 0 )
+    YELLOW      = Graphics::Color( 0xffFFFF00 )
+    WHITE       = Graphics::Color( 0xffFFFFFF )
 
   GLOBAL METHODS
     method create( r:Int32, g:Int32, b:Int32, a=255:Int32 )->Color
@@ -104,16 +104,16 @@ endClass
 
 augment Rogue::Real64
   METHODS
-    method lerp( a:Bitmap::Color, b:Bitmap::Color )->Bitmap::Color
-      return Bitmap::Color( this.lerp(a.red,b.red), this.lerp(a.green,b.green), this.lerp(a.blue,b.blue), this.lerp(a.alpha,b.alpha) )
+    method lerp( a:Graphics::Color, b:Graphics::Color )->Graphics::Color
+      return Graphics::Color( this.lerp(a.red,b.red), this.lerp(a.green,b.green), this.lerp(a.blue,b.blue), this.lerp(a.alpha,b.alpha) )
 endAugment
 
 augment Rogue::Random
   METHODS
-    method color->Bitmap::Color
+    method color->Graphics::Color
       # Returns a color with randomized (r,g,b) values and an
       # alpha of 1.0.
-      return Bitmap::Color.create(real64,real64,real64)
+      return Graphics::Color.create(real64,real64,real64)
 endAugment
 
 augment Rogue::ConsoleStyle

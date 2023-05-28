@@ -916,7 +916,7 @@ class CharacterStyle( flags:Int32, fg=Color(0):Color, bg=Color(0):Color ) [compo
       ConsoleStyle.reset
 endClass
 
-augment Bitmap::Bitmap
+augment Graphics::Bitmap
   METHODS
     method to->TextCanvas( &dither, bg8=CharacterStyle.BG_BLACK:Int32, bg24=Color.BLACK:Color )
       contingent

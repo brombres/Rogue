@@ -12,7 +12,7 @@
 #       #$ LIBRARIES(macOS)     = libpng libjpeg(header:jpeglib.h) zlib
 #       #$ LIBRARIES(Linux-apt) = libpng-dev libjpeg-dev
 #
-#   Using Rogo to compile another .rogue program which uses Bitmap:
+#   Using Rogo to compile another .rogue program which uses Graphics:
 #     In Build.rogue:
 #
 #       #$ LIBRARIES(macOS)     = libpng libjpeg(header:jpeglib.h) zlib
@@ -25,12 +25,7 @@
 #   If you are not using Rogo then you will need to install libpng and libjpeg
 #   manually and pass the appropriate flags to roguec or the C++ compiler.
 #==============================================================================
-module Bitmap
-
-uses Geometry [export]
-
-$include Bitmap/Color
-$include Bitmap/HSV
+module Graphics
 
 class Bitmap
   GLOBAL PROPERTIES
@@ -103,27 +98,27 @@ class Bitmap
 
     method decode_bmp( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No BMP decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
+      error.println "ERROR: No BMP decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_bmp(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_heic( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No HEIC decoder available. Augment global method Bitmap::Bitmap.decode_heic(Byte[])->Bitmap to utilize an alternate decoder."
+      error.println "ERROR: No HEIC decoder available. Augment global method Graphics::Bitmap.decode_heic(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_jpeg( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No JPEG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
+      error.println "ERROR: No JPEG decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_jpeg(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_png( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No PNG decoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment global method Bitmap::Bitmap.decode_png(Byte[])->Bitmap to utilize an alternate decoder."
+      error.println "ERROR: No PNG decoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment global method Graphics::Bitmap.decode_png(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method decode_webp( bytes:Byte[] )->Bitmap
       if (System.is_macos) return MacOS.decode_bitmap( bytes )
-      error.println "ERROR: No WEBP decoder available. Augment global method Bitmap::Bitmap.decode_webp(Byte[])->Bitmap to utilize an alternate decoder."
+      error.println "ERROR: No WEBP decoder available. Augment global method Graphics::Bitmap.decode_webp(Byte[])->Bitmap to utilize an alternate decoder."
       return null
 
     method detect_string( bytes:Byte[], index:Int32, string:String )->Logical
@@ -145,7 +140,7 @@ class Bitmap
       init( size.x, size.y, color )
 
     method init( width, height, color:Color ) [essential]
-      init( width, height, Dim<<Bitmap::Color>>( width*height ).[fill(color)] )
+      init( width, height, Dim<<Graphics::Color>>( width*height ).[fill(color)] )
 
     method init( size:XY, pixels )
       init( size.x, size.y, pixels )
@@ -1031,17 +1026,17 @@ class Bitmap
     method to_png_bytes->Byte[]
       #return PNGEncoder().encode( this )
       if (System.is_macos) return MacOS.to_png_bytes( this )
-      Global.error.println "ERROR: No JPEG encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_png_bytes->Byte[] to utilize an alternate decoder."
+      Global.error.println "ERROR: No JPEG encoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment method Graphics::Bitmap.to_png_bytes->Byte[] to utilize an alternate decoder."
       return null
 
     method to_jpeg_bytes( quality=75:Int32 )->Byte[]
       if (System.is_macos) return MacOS.to_jpeg_bytes( this )
-      Global.error.println "ERROR: No JPEG encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_jpeg_bytes(quality:Int32)->Byte[] to utilize an alternate decoder."
+      Global.error.println "ERROR: No JPEG encoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment method Graphics::Bitmap.to_jpeg_bytes(quality:Int32)->Byte[] to utilize an alternate decoder."
       return null
 
     method to_tiff_bytes->Byte[]
       if (System.is_macos) return MacOS.to_tiff_bytes( this )
-      Global.error.println "ERROR: No TIFF encoder available. Add 'uses Bitmap/IO' to the project source code to use a software decoder or augment method Bitmap::Bitmap.to_tiff_bytes->Byte[] to utilize an alternate decoder."
+      Global.error.println "ERROR: No TIFF encoder available. Add 'uses Graphics/BitmapIO' to the project source code to use a software decoder or augment method Graphics::Bitmap.to_tiff_bytes->Byte[] to utilize an alternate decoder."
       return null
 
 

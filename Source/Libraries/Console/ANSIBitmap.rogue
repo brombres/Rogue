@@ -1,4 +1,4 @@
-uses Bitmap
+uses Graphics
 uses Geometry
 uses Console/ANSIColor
 uses Console/ANSIRGB

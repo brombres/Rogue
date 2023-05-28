@@ -1,9 +1,9 @@
-uses Bitmap
+uses Graphics
 
 class FreeTypeFace
   # Example
   #
-  # uses Bitmap
+  # uses Graphics
   # uses Utility/FreeType
   #
   # local face = FreeTypeFace("Arial",16)
@@ -21,7 +21,7 @@ class FreeTypeFace
   # endForEach
   # atlas.save_as_png( File("Font.png") )
   NATIVE
-    nativeHeader(1)...  # Specifying (1) to ensure that Bitmap/IO includes png.h first to resolve a Linux png/setjmp issue
+    nativeHeader(1)...  # Specifying (1) to ensure that Graphics/BitmapIO includes png.h first to resolve a Linux png/setjmp issue
      @|#include <ft2build.h>
       |#include FT_FREETYPE_H
       |#include FT_GLYPH_H
