@@ -1,19 +1,25 @@
-uses Graphics
+#===============================================================================
+# ROGO COMMENT DIRECTIVES
+#   #$ LIBRARIES(macOS) = freetype(freetype2) bzip2(ignore-exe-only:true)
+#   #$ LIBRARIES(Linux) = freetype2(libfreetype6-dev)
+#   #$ CC_LINK(macOS)   = -lbz2
+#===============================================================================
+module Graphics
 
 class FreeTypeFace
   # Example
   #
   # uses Graphics
-  # uses Utility/FreeType
   #
-  # local face = FreeTypeFace("Arial",16)
+  # local face_name = which{ System.is_linux:"Garuda" || "Arial" }
+  # local face = FreeTypeFace( face_name, 64 )
   # assert face
   # local characters = Character[]
   # characters.add( forEach in 32..126 )
   # local info = face.render( characters )
   # local total_w = 0
   # total_w += (forEach in info).bitmap.width
-  # local atlas = Bitmap(total_w,face.height,0)
+  # local atlas = Bitmap(total_w,face.height)
   # local x = 0
   # forEach (ch in info)
   #   ch.bitmap.blit( atlas, x, 0 )
@@ -31,6 +37,7 @@ class FreeTypeFace
   GLOBAL METHODS
     method create( name:String, height:Int32, search_folders=null:String[] )->FreeTypeFace
       ensure<<search_folders>>
+
       if (System.is_macos)
         local folder = "/Library/Fonts"
         if (not search_folders.contains(folder)) search_folders.add(folder)
@@ -38,6 +45,16 @@ class FreeTypeFace
         if (not search_folders.contains(folder)) search_folders.add(folder)
         folder = "/System/Library/Fonts/Supplemental"
         if (not search_folders.contains(folder)) search_folders.add(folder)
+      endIf
+
+      if (System.is_linux)
+        forEach (filepath in Files("/usr/share/fonts","**",&include_folders))
+          if (File(filepath).is_folder)
+            if (not search_folders.contains(filepath))
+              search_folders.add( filepath )
+            endIf
+          endIf
+        endForEach
       endIf
 
       forEach (ext in ["",".ttf",".ttc",".otf",".TTF",".TTC",".OTF"])
@@ -223,7 +240,7 @@ class FreeTypeFace
           max_offset = 0
           forEach (ch in characters)
             block ch = ch.character
-              if (0 == native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
+              if (0 == native("FT_Load_Char( $this->ft_face, $ch, FT_LOAD_RENDER )")->Int32)
                 local h      = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
                 local offset = native( "(%Ns%RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
                 max_height = max_height.or_larger( h )
@@ -239,7 +256,7 @@ class FreeTypeFace
           # exceed our max height.
           forEach (ch in characters)
             block ch = ch.character
-              if (0 == native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
+              if (0 == native("FT_Load_Char( $this->ft_face, $ch, FT_LOAD_RENDER )")->Int32)
                 local h      = native( "(%Ns%RogueInt32)$this->ft_face->glyph->bitmap.rows" )->Int32
                 local offset = native( "(%Ns%RogueInt32)-$this->ft_face->glyph->bitmap_top" )->Int32
                 necessary (h + offset <= height + max_offset)
