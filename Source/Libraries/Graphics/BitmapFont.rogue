@@ -35,6 +35,33 @@ class BitmapFont
       #
 
   METHODS
+    method init
+      # Used by FreeTypeFace.to->BitmapFont
+
+    method init( font_name:String, pixel_height:Int32, characters=null:String, &ascii )
+      if (not characters and not ascii) ascii = true
+
+      if (characters)
+        use character_list = WorkList<<Character>>
+          character_list.add( forEach in characters )
+          init( font_name, pixel_height, character_list, &=ascii )
+        endUse
+      else
+        init( font_name, pixel_height, null->(as Character[]), &=ascii )
+      endIf
+
+    method init( font_name:String, pixel_height:Int32, characters:Character[], &ascii )
+      local face = FreeTypeFace( font_name, pixel_height )
+      if (not face)
+        throw Error( ''Unable to load font "$".''(font_name) )
+      endIf
+
+      if (characters) face.render( characters )
+
+      if (ascii) face.render_ascii
+
+      face->BitmapFont( this )
+
     method init( atlas, height )
       # Caller should next populate font info with calls to add(BitmapFontCharacterInfo) and modifications
       # to .kerning
@@ -58,7 +85,7 @@ class BitmapFont
     method draw( text:String, dest_bitmap:Bitmap, x:Int32, y:Int32, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
       if (text.contains('\n'))
         y = Box( x, y, measure(text) ).relative_to( anchor ).position.y
-        anchor = Anchor( XY(anchor.position.x,0) )  # anchor vertical alignment to TOP
+        anchor = Anchor( RealXY(anchor.position.x,0) )  # anchor vertical alignment to TOP
         use buffer = StringPool
           forEach (ch in text)
             if (ch == '\n')

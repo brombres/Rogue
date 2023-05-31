@@ -81,7 +81,7 @@ class FreeTypeFace
     height     : Int32  # requested pixel height
     ft_height  : Int32  # height we send FT to get height
     max_offset : Int32  # zero or negative
-    characters : FreeTypeCharacter[]
+    characters = FreeTypeCharacter[]
     kerning    : [Character:[Character:Int32]]
       # if (kerning and kerning.contains(prev_ch) and kerning[prev_ch].contains(cur_ch))
       #   cursor += kerning[prev_ch][cur_ch]
@@ -112,8 +112,6 @@ class FreeTypeFace
       endIf
 
     method atlas->Bitmap
-      assert characters
-
       local total_w = 0
       total_w += (forEach in characters).bitmap.width
       local atlas = Bitmap( total_w, height )
@@ -133,11 +131,11 @@ class FreeTypeFace
       render( result )
       return result
 
-    method render( characters )
+    method render( new_characters:FreeTypeCharacter[] )
       if (error) return
-      _ensure_strict_height_limit( characters )
+      _ensure_strict_height_limit( new_characters )
 
-      forEach (ch in characters)
+      forEach (ch in new_characters)
         if (not ch.bitmap)
           if (0 != native("FT_Load_Char( $this->ft_face, $ch->character, FT_LOAD_RENDER )")->Int32)
             # Error / glyph does not exist
@@ -178,10 +176,12 @@ class FreeTypeFace
         endIf
       endForEach
 
+      characters.add( forEach in new_characters )
+
       if (native("FT_HAS_KERNING($this->ft_face)")->Logical)
-        forEach (info_1 in characters)
+        forEach (info_1 in new_characters)
           native @|FT_UInt glyph_index_1 = FT_Get_Char_Index( $this->ft_face, $info_1->character );
-          forEach (info_2 in characters)
+          forEach (info_2 in new_characters)
             local kern_x : Int32
             native @|FT_UInt glyph_index_2 = FT_Get_Char_Index( $this->ft_face, $info_2->character );
                     |FT_Vector  delta;
@@ -204,7 +204,11 @@ class FreeTypeFace
       endUse
 
     method to->BitmapFont
-      local font = BitmapFont( atlas, height )
+      return this->BitmapFont( BitmapFont() )
+
+    method to->BitmapFont( font:BitmapFont )
+      font.atlas = this.atlas
+      font.height = this.height
 
       local cursor_x = 0
       local kerning_list = font.kerning
