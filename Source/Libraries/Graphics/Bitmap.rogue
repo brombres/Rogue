@@ -722,8 +722,8 @@ class Bitmap
       is_premultiplied_alpha = true
       forEach (i of pixels)
         local argb = pixels[i].argb
-        if (argb)
-          local a = argb :>>>: 24 & 255
+        local a = argb :>>>: 24 & 255
+        if (a)
           local r = argb :>>>: 16 & 255
           local g = argb :>>>: 8 & 255
           local b = argb & 255
@@ -731,8 +731,9 @@ class Bitmap
           g = (g * a) / 255
           b = (b * a) / 255
           local premultiplied_argb = (a:<<:24) | (r:<<:16) | (g:<<:8) | b
-          if (not premultiplied_argb) premultiplied_argb = 0x01010101
           pixels[i] = Color( premultiplied_argb )
+        else
+          pixels[i] = Color( 0 )
         endIf
       endForEach
 

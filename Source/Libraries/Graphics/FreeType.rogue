@@ -27,10 +27,10 @@ class FreeTypeFace
   # endForEach
   # atlas.save_as_png( File("Font.png") )
   NATIVE
-    nativeHeader(1)...  # Specifying (1) to ensure that Graphics/BitmapIO includes png.h first to resolve a Linux png/setjmp issue
-     @|#include <ft2build.h>
-      |#include FT_FREETYPE_H
-      |#include FT_GLYPH_H
+    nativeHeader(1)...  # Specifying (1) to ensure that Graphics/BitmapIO includes png.h first to avoid a Linux png/setjmp issue
+      @|#include <ft2build.h>
+       |#include FT_FREETYPE_H
+       |#include FT_GLYPH_H
 
     nativeCode @|FT_Library %Ns%Rogue_freetype_library;
 
@@ -195,6 +195,13 @@ class FreeTypeFace
           endForEach
         endForEach
       endIf
+
+    method render_ascii->FreeTypeCharacter[]
+      use characters = WorkList<<Character>>
+        characters.add( forEach in 32..126 )
+        local info = render( characters )
+        return info
+      endUse
 
     method to->BitmapFont
       local font = BitmapFont( atlas, height )
