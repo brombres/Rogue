@@ -1175,7 +1175,8 @@ class AlphaFillBitmapBlitFn( color:Color ) : BitmapBlitFn
               |    }
               |    else
               |    {
-              |      *(dest++) = $color.argb;
+              |      int a     = (*src >> 24) & 255;
+              |      *(dest++) = (a<<24) | ((($fill_r*a)/255)<<16) | ((($fill_g*a)/255)<<8) | (($fill_b*a)/255);
               |    }
               |  }
               |  src_start  += $src_width;
