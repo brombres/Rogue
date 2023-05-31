@@ -756,6 +756,7 @@ class SetLocal : Cmd
 
     method init( t, info, new_value, &initial_assignment )
       is_initial_assignment = initial_assignment
+      if (not initial_assignment) info.attributes.is_anchored = false
 
     method init( existing:SetLocal )
       prior.init( existing )
