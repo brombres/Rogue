@@ -819,7 +819,10 @@ class Type : Cmd
       # Add init_class() for global property initialization
       if (not attributes.is_augment)
         local m = global_methods["init_class()"]
-        if (not m)
+        if (m)
+          if (this.attributes.is_essential) m.attributes.is_essential = true
+          if (this.attributes.is_api) m.attributes.is_api = true
+        else
           m = GlobalMethod( t, this, "init_class" )
           m.attributes.is_global = true
           m.organize
