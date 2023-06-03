@@ -190,12 +190,17 @@ class Program [singleton]
       modules[ name ] = m
       return m
 
-    method find_include( t:Token, filepath:String )->String
+    method find_include( t:Token, filepath:String, &api )->String
       if (File(filepath).exists)
         if (File(filepath).is_folder)
           local fpath = "$/$.rogue" (filepath,File(filepath).filename)
           if (File(fpath).exists) return File(fpath).abs
-          throw t.error( "Use $includeFolder to include all Rogue files in '$'."('$',filepath) )
+
+          forEach (rogue_filepath in Files(filepath,"**/*.rogue"))
+            include( t, rogue_filepath, &=api )
+          endForEach
+
+          return ""
         else
           return File(filepath).abs
         endIf
@@ -210,13 +215,15 @@ class Program [singleton]
       include( t, filepath, &=api )
 
     method include( t:Token, filepath:String, &api, &is_optional )
-      local found = find_include( t, filepath )
+      local found = find_include( t, filepath, &=api )
       if (not found)
         forEach (path in include_search_paths)
           found = find_include( t, path/filepath )
           if (found) escapeForEach
         endForEach
       endIf
+
+      if (found and found == "") return  # recursive folder include already performed
 
       if (found)
         local folder = File( found ).folder
