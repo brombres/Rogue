@@ -46,10 +46,10 @@
 uses Geometry [export]
 
 class Matrix( ...
-    r1c1:Real, r2c1:Real, r3c1:Real, r4c1:Real,
-    r1c2:Real, r2c2:Real, r3c2:Real, r4c2:Real,
-    r1c3:Real, r2c3:Real, r3c3:Real, r4c3:Real,
-    r1c4:Real, r2c4:Real, r3c4:Real, r4c4:Real
+    r0c0:Real, r1c0:Real, r2c0:Real, r3c0:Real,
+    r0c1:Real, r1c1:Real, r2c1:Real, r3c1:Real,
+    r0c2:Real, r1c2:Real, r2c2:Real, r3c2:Real,
+    r0c3:Real, r1c3:Real, r2c3:Real, r3c3:Real
     ) [compound]
 
   DEFINITIONS
@@ -61,39 +61,65 @@ class Matrix( ...
 
     method identity->Matrix
       local m = Matrix()
+      m.r0c0 = 1
       m.r1c1 = 1
       m.r2c2 = 1
       m.r3c3 = 1
-      m.r4c4 = 1
       return m
+
+    method look_at( origin:XYZ, target:XYZ, up:XYZ )->Matrix
+      local f = (target - origin).normalized
+      local s = f.cross( up ).normalized
+      local t = s.cross( f )
+
+      local result = Matrix(
+         s.x,
+         t.x,
+        -f.x,
+         0,
+
+         s.y,
+         t.y,
+        -f.y,
+         0,
+
+         s.z,
+         t.z,
+        -f.z,
+         0,
+
+         0,
+         0,
+         0,
+         1
+      )
+
+      return result * Matrix.translate( -origin )
 
     method perspective( fov_y:Radians, aspect_ratio:Real, z_near:Real, z_far:Real )->Matrix
       # Returns a right-handed projection matrix (OpenGL is also right-hand).
-      # Adapted from Xcode "Game" template project.
-      local ys = 1.0 / (fov_y * 0.5).tan
-      local xs = ys / aspect_ratio
-      local zs = z_far / (z_near - z_far)
+      local f = 1.0 / (fov_y * 0.5).tan
       local m = Matrix()
-      m.r1c1 = xs
-      m.r2c2 = ys
-      m.r3c3 = zs
-      m.r3c4 = zs * z_near
-      m.r4c3 = -1
+      m.r0c0 = f / aspect_ratio
+      m.r1c1 = f
+      m.r2c2 = (z_near + z_far) / (z_near - z_far)
+      m.r2c3 = (2 * z_near * z_far) / (z_near - z_far)
+      m.r3c2 = -1
       return m
 
     method perspective( left:Real, top:Real, right:Real, bottom:Real, near:Real, far:Real )->Matrix
       # Based on https://www.opengl.org/sdk/docs/man2/xhtml/glFrustum.xml
       local m = identity
 
-      m.r1c1 = 2 * near / (right - left)
-      m.r2c2 = 2 * near / (top - bottom)
+      m.r0c0 = 2 * near / (right - left)
+      m.r1c1 = 2 * near / (top - bottom)
 
-      m.r1c3 = (right + left) / (right - left)
-      m.r2c3 = (top + bottom) / (top - bottom)
-      m.r3c3 = - (far + near) / (far - near)
-      m.r4c3 = -1
+      m.r0c2 = (right + left) / (right - left)
+      m.r1c2 = (top + bottom) / (top - bottom)
+      m.r2c2 = - (far + near) / (far - near)
+      m.r3c2 = -1
 
-      m.r3c4 = - (2 * far * near) / (far - near)
+      m.r2c3 = - (2 * far * near) / (far - near)
 
       return m
 
@@ -135,30 +161,30 @@ class Matrix( ...
       local m = identity
       local sin0 = theta.sin
       local cos0 = theta.cos
+      m.r1c1 =  cos0
+      m.r1c2 = -sin0
+      m.r2c1 =  sin0
       m.r2c2 =  cos0
-      m.r2c3 = -sin0
-      m.r3c2 =  sin0
-      m.r3c3 =  cos0
       return m
 
     method rotate_y( theta:Radians )->Matrix
       local m = identity
       local sin0 = theta.sin
       local cos0 = theta.cos
-      m.r1c1 =  cos0
-      m.r1c3 =  sin0
-      m.r3c1 = -sin0
-      m.r3c3 =  cos0
+      m.r0c0 =  cos0
+      m.r0c2 =  sin0
+      m.r2c0 = -sin0
+      m.r2c2 =  cos0
       return m
 
     method rotate_z( theta:Radians )->Matrix
       local m = identity
       local sin0 = theta.sin
       local cos0 = theta.cos
+      m.r0c0 =  cos0
+      m.r0c1 = -sin0
+      m.r1c0 =  sin0
       m.r1c1 =  cos0
-      m.r1c2 = -sin0
-      m.r2c1 =  sin0
-      m.r2c2 =  cos0
       return m
 
     method transform( size:XY, anchor:Anchor )->Matrix
@@ -207,15 +233,15 @@ class Matrix( ...
 
     method translate( delta:XY )->Matrix
       local m = identity
-      m.r1c4 = delta.x
-      m.r2c4 = delta.y
+      m.r0c3 = delta.x
+      m.r1c3 = delta.y
       return m
 
     method translate( delta:XYZ )->Matrix
       local m = identity
-      m.r1c4 = delta.x
-      m.r2c4 = delta.y
-      m.r3c4 = delta.z
+      m.r0c3 = delta.x
+      m.r1c3 = delta.y
+      m.r2c3 = delta.z
       return m
 
     method scale( k:Real )->Matrix
@@ -226,10 +252,10 @@ class Matrix( ...
 
     method scale( k:XYZ )->Matrix
       local m = Matrix()
-      m.r1c1 = k.x
-      m.r2c2 = k.y
-      m.r3c3 = k.z
-      m.r4c4 = 1
+      m.r0c0 = k.x
+      m.r1c1 = k.y
+      m.r2c2 = k.z
+      m.r3c3 = 1
       return m
 
     method scale( k:Real, origin:XY )->Matrix
@@ -260,7 +286,7 @@ class Matrix( ...
       return 16
 
     method get( index:Int32 )->Real
-      return native( "(&$this.r1c1)[ $index ]" )->Real
+      return native( "(&$this.r0c0)[ $index ]" )->Real
 
     method operator*( other:Matrix )->Matrix
       local result = Matrix()
@@ -405,7 +431,15 @@ class Matrix( ...
       )
 
     method set( index:Int32, value:Real ) [mutating]
-      native( "(&$this->r1c1)[ $index ] = $value;" )
+      native( "(&$this->r0c0)[ $index ] = $value;" )
+
+    method to->Matrix32
+      return Matrix32(
+        r0c0, r1c0, r2c0, r3c0,
+        r0c1, r1c1, r2c1, r3c1,
+        r0c2, r1c2, r2c2, r3c2,
+        r0c3, r1c3, r2c3, r3c3
+      )
 
     method to->String
       local min_whole_digits = 0
@@ -450,3 +484,19 @@ class Matrix( ...
 
 endClass
 
+class Matrix32( ...
+    r0c0:Real32, r1c0:Real32, r2c0:Real32, r3c0:Real32,
+    r0c1:Real32, r1c1:Real32, r2c1:Real32, r3c1:Real32,
+    r0c2:Real32, r1c2:Real32, r2c2:Real32, r3c2:Real32,
+    r0c3:Real32, r1c3:Real32, r2c3:Real32, r3c3:Real32
+    ) [compound]
+
+  METHODS
+    method to->Matrix
+      return Matrix(
+        r0c0, r1c0, r2c0, r3c0,
+        r0c1, r1c1, r2c1, r3c1,
+        r0c2, r1c2, r2c2, r3c2,
+        r0c3, r1c3, r2c3, r3c3
+      )
+endClass
