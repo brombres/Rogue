@@ -15,6 +15,11 @@ class CWriter : BufferedPrintWriter
         println "#ifndef $\n#define $\n\n"(underscore_filename,underscore_filename)
         println "// $"(file.filename)
         println
+        println @|#ifdef __cplusplus
+                 |extern "C"
+                 |{
+                 |#endif
+                 |
 
         if (Program.gc_auto)
           println "#define %NS%ROGUE_GC_AUTO"
@@ -262,6 +267,11 @@ class CWriter : BufferedPrintWriter
            |void*        %Ns%Rogue_as( void* obj, %Ns%RogueInt32 recast_type_id );
            |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt32 ancestor_id );
         println
+
+        println @|#ifdef __cplusplus
+                 |} // extern "C"
+                 |#endif
+                 |
 
       else
         # Writing .c/.m file
