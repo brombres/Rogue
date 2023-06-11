@@ -131,6 +131,7 @@ META_FILE_BYTES       $fileBytes      [meta]
 META_FILE_STRING      $fileString     [meta]
 META_IF               $if             [meta]
 META_INCLUDE          $include        [meta]
+META_INCLUDE_FOLDER   $includeFolder  [meta]
 META_IS_COMPOUND      $isCompound     [meta]
 META_IS_DEFINED       $isDefined      [meta]
 META_IS_ENUM          $isEnum         [meta]
@@ -3371,6 +3372,15 @@ parser
   elseOn "$include"
     collect_meta_filepath
     include_attribute_optional = false
+    include_attribute_folder   = false
+    include_attributes
+    call include_filepath
+    return
+
+  elseOn "$includeFolder"
+    collect_meta_filepath
+    include_attribute_optional = false
+    include_attribute_folder   = true
     include_attributes
     call include_filepath
     return
@@ -3568,7 +3578,11 @@ parser
     include_attribute_optional = true
     return
   endOn
-  syntaxError "Illegal $include attribute. Expected [optional]."
+  on @"folder"
+    include_attribute_folder = true
+    return
+  endOn
+  syntaxError "Illegal $include attribute. Expected one or more of [folder optional]."
 
 #{
 - meta_if

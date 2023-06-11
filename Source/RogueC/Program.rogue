@@ -190,17 +190,21 @@ class Program [singleton]
       modules[ name ] = m
       return m
 
-    method find_include( t:Token, filepath:String, &api )->String
+    method find_include( t:Token, filepath:String, &api, &include_folder )->String
       if (File(filepath).exists)
         if (File(filepath).is_folder)
           local fpath = "$/$.rogue" (filepath,File(filepath).filename)
           if (File(fpath).exists) return File(fpath).abs
 
-          forEach (rogue_filepath in Files(filepath,"**/*.rogue"))
-            include( t, rogue_filepath, &=api )
-          endForEach
+          if (include_folder)
+            forEach (rogue_filepath in Files(filepath,"**/*.rogue"))
+              include( t, rogue_filepath, &=api )
+            endForEach
 
-          return ""
+            return ""
+          else
+            return null
+          endIf
         else
           return File(filepath).abs
         endIf
@@ -214,11 +218,11 @@ class Program [singleton]
     method include( filepath:String, &api )
       include( t, filepath, &=api )
 
-    method include( t:Token, filepath:String, &api, &is_optional )
-      local found = find_include( t, filepath, &=api )
+    method include( t:Token, filepath:String, &api, &is_optional, &include_folder )
+      local found = find_include( t, filepath, &=api, &=include_folder )
       if (not found)
         forEach (path in include_search_paths)
-          found = find_include( t, path/filepath )
+          found = find_include( t, path/filepath, &=include_folder )
           if (found) escapeForEach
         endForEach
       endIf
