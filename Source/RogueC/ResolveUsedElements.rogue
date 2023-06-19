@@ -460,15 +460,16 @@ class ResolveUsedElements : InspectionVisitor
         local param_types = TypeList(t)
         local args = Args(t)
         if (not m.is_global)
-          param_types.add( m.type_context )
+          param_types.add( m.type_context.generic_type )
           args.add( GetLocal(t,dispatch_params[2]) )
         endIf
         forEach (p at i in m.parameters)
           local cmd = IndexedAccess( t, GetLocal(t,value_args_info), LiteralInt32(t,i) ) : Cmd # args[i]
+          local generic_type = p.type.generic_type
           if (p.type is not Program.@type_Value)
-            cmd = TemplatedMethodContextAccess( t, cmd, "to", p.type, Args(t) )  # args[i].to<<ArgType>>
+            cmd = TemplatedMethodContextAccess( t, cmd, "to", generic_type, Args(t) )  # args[i].to<<ArgType>>
           endIf
-          param_types.add( p.type )
+          param_types.add( generic_type )
           args.add( cmd )
         endForEach
 

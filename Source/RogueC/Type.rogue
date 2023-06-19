@@ -644,6 +644,10 @@ class Type : Cmd
       # For use with .is_optional types only
       return this.properties//value.type
 
+    method generic_type->Type
+      if (this.is_reference) return Program.type_Object
+      return this
+
     method organize
       ensure_definition
       organize_type
