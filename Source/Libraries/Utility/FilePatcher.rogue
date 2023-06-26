@@ -6,15 +6,73 @@ class FilePatcher
 
   METHODS
     method init( file )
-      lines = String( file ).split( '\n' )
+      if (file.exists)
+        if (file.is_folder) throw Error( "[FilePatcher] '$' is a folder."(file) )
+        lines = String( file ).split( '\n' )
+      else
+        lines = String[]
+        is_modified = true
+      endIf
+
+    method add( text:String )
+      if (text.contains('\n'))
+        lines.add( text.split('\n') )
+      else
+        lines.add( text )
+      endIf
+      is_modified = true
 
     method apply( diff:FileDiff )
       diff.apply( lines )
       is_modified = true
 
+    method contains( text:String )->Logical
+      if ((forEach in lines).contains(text)) return true
+      return false
+
+    method insert( text:String, before_index=0:Int32 )
+      if (text.contains('\n'))
+        lines.insert( text.split('\n'), before_index )
+      else
+        lines.insert( text, before_index )
+      endIf
+      is_modified = true
+
+    method is_empty->Logical
+      return lines.is_empty
+
+    method locate( text:String )->Int32?
+      forEach (line at i in lines)
+        if (line.contains(text)) return i
+      endForEach
+      return null
+
+    method locate_last( text:String )->Int32?
+      forEach (line at i in lines step -1)
+        if (line.contains(text)) return i
+      endForEach
+      return null
+
+    method locate_last_pattern( pattern:String )->Int32?
+      forEach (line at i in lines step -1)
+        if (line.contains_pattern(pattern)) return i
+      endForEach
+      return null
+
+    method locate_pattern( pattern:String )->Int32?
+      forEach (line at i in lines)
+        if (line.contains_pattern(pattern)) return i
+      endForEach
+      return null
+
+    method replace( index:Int32, new_text:String )
+      lines.remove_at( index )
+      insert( new_text, index )
+
     method save( new_file=null:File? )
       if (new_file) file = new_file.value
       file.save( lines.join('\n') )
+      is_modified = false
 endClass
 
 class FileDiff
