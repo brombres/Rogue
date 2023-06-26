@@ -517,6 +517,14 @@ class List<<$DataType>> : Poolable ListType
       shift( -1 )
       return result
 
+    method remove_first( query:(Function($DataType)->Logical) )->$DataType?
+      # Removes and returns the first item that satisfies the query function.
+      if local i = locate( query )
+        return remove_at( i )
+      else
+        return null
+      endIf
+
     method remove_last->$DataType
       --count
       if ($DataType isType Logical)
@@ -531,6 +539,14 @@ class List<<$DataType>> : Poolable ListType
         native @|$<<element_type>> result = (($<<element_type>>*)($this->data))[$count];
                 |(($<<element_type>>*)($this->data))[$count] = 0;
                  return native("result")->$DataType
+      endIf
+
+    method remove_last( query:(Function($DataType)->Logical) )->$DataType?
+      # Removes and returns the first item that satisfies the query function.
+      if local i = locate_last( query )
+        return remove_at( i )
+      else
+        return null
       endIf
 
     method remove_random( generator=Random:Random )->$DataType
