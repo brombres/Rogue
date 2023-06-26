@@ -593,6 +593,9 @@ class List<<$DataType>> : Poolable ListType
     method rewriter->ListRewriter<<$DataType>>
       return ListRewriter<<$DataType>>( this )
 
+    method rewriter_object->ListRewriterObject<<$DataType>>
+      return ListRewriterObject<<$DataType>>( this )
+
     method rotate_left( w:Int32, h:Int32 )
       # Treats this list as a 2D WxH set of data and rotates it 90º counter-clockwise.
       # The data must then be accessed using HxW.

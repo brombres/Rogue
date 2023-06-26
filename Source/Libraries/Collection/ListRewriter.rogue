@@ -52,3 +52,58 @@ class ListRewriter<<$DataType>>( list:$DataType[], read_index=0:Int32, write_ind
       ++write_index
 
 endClass
+
+class ListRewriterObject<<$DataType>>( list:$DataType[], read_index=0:Int32, write_index=0:Int32 )
+  METHODS
+    method finish
+      list.discard_from( write_index )
+
+    method has_another->Logical
+      if (read_index < list.count)
+        return true
+      else
+        # automatically finish up
+        finish
+        return false
+      endIf
+
+    method peek( lookahead=0:Int32 )->$DataType
+      return list[ read_index + lookahead ]
+
+    method read->$DataType
+      ++read_index
+      return list[ read_index - 1 ]
+
+    method read_another->$DataType?
+      if (read_index < list.count)
+        ++read_index
+        return list[ read_index - 1 ]
+      else
+        finish
+        return null
+      endIf
+
+    method write( value:$DataType )
+      if (write_index == read_index)
+        # We're adding more items to the list then it originally had.
+
+        # Make sure there's capacity for at least one more item
+        list.reserve( 1 )
+
+        local unread_count = list.count - read_index
+
+        # Shift all the unread elements over to the end of the available
+        # capacity, effectively inserting 1 or more empty spots for us to write
+        # additional data to.
+        list.copy( read_index, unread_count, list, read_index+1 )
+        ++read_index
+      endIf
+
+      if (write_index == list.count)
+        list.add( value )
+      else
+        list[ write_index ] = value
+      endIf
+      ++write_index
+
+endClass
