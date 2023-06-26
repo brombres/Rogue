@@ -1874,13 +1874,15 @@ class String : Poolable PrintWriter
 
     method unleft( n:Int32 )->String
       # "abc".unleft(1) -> bc
-      if (n <= 0) return this
-      else        return from( n )
+      if (n <= 0)         return this
+      elseIf (n >= count) return ""
+      else                return from( n )
 
     method unright( n:Int32 )->String
       # "abc".unright(1) -> ab
-      if (n <= 0) return this
-      else        return from( 0, (count - n) - 1 )
+      if (n <= 0)         return this
+      elseIf (n >= count) return ""
+      else                return from( 0, (count - n) - 1 )
 
     method up_to_first( ch:Character, &ignore_case )->String
       local i = locate( ch, &=ignore_case )
