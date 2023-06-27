@@ -281,6 +281,15 @@ class List<<$DataType>> : Poolable ListType
       endForEach
       return output
 
+    method join( separator='\n':Character, output=String():String )->String
+      local first = true
+      forEach (item in this)
+        if (first) first = false
+        else       output.print( separator )
+        output.print( item )
+      endForEach
+      return output
+
     method keep( keep_if:(Function($DataType)->Logical) )
       forEach (value in rewriter=this.rewriter)
         if (keep_if(value)) rewriter.write( value )
