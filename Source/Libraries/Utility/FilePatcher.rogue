@@ -65,7 +65,36 @@ class FilePatcher
       endForEach
       return null
 
-    method replace( index:Int32, new_text:String )
+    method replace( old_string:String, new_string:String, &first, &last )->Logical
+      local replaced_any = false
+
+      if (first or not last)
+        forEach (line at i in lines)
+          if (line.contains(old_string))
+            replaced_any = true
+            line .= replacing( old_string, new_string )
+            lines[i] = line
+            is_modified = true
+            if (first) escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      if (last)
+        forEach (line at i in lines step -1)
+          if (line.contains(old_string))
+            replaced_any = true
+            line .= replacing( old_string, new_string )
+            lines[i] = line
+            is_modified = true
+            escapeForEach
+          endIf
+        endForEach
+      endIf
+
+      return replaced_any
+
+    method replace_line( index:Int32, new_text:String )->Logical
       local old_line = lines[ index ]
 
       local n = 0
@@ -75,15 +104,24 @@ class FilePatcher
       endForEach
       new_text = old_line.substring(0,n) + new_text
 
-      if (old_line == new_text) return
+      if (old_line == new_text) return false
 
       lines.remove_at( index )
       insert( new_text, index )
+      return true
 
-    method replace( old_line_pattern:String, new_line:String )
-      if local line = locate_pattern( old_line_pattern )
-        replace( line, new_line )
-      endIf
+    method replace_line( old_line_pattern:String, new_line:String, &all )->Logical
+      local replaced_any = false
+      loop
+        if local line = locate_pattern( old_line_pattern )
+          replaced_any = true
+          replace_line( line, new_line )
+          if (not all) escapeLoop
+        else
+          escapeLoop
+        endIf
+      endLoop
+      return replaced_any
 
     method save( new_file=null:File? )->Logical
       if (new_file)            file = new_file.value
