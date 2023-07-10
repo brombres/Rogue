@@ -283,9 +283,9 @@ class File( filepath:String ) [compound]
       # Note: 0777 is a permission mask rather than the actual permission setting.
       local status : Logical
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-              |  $status = (0 == mkdir((char*)$filepath->data->as_utf8));
+              |  $status = (0 == mkdir((char*)$file.filepath->data->as_utf8));
               |#else
-              |  $status = (0 == mkdir((char*)$filepath->data->as_utf8, 0777));
+              |  $status = (0 == mkdir((char*)$file.filepath->data->as_utf8, 0777));
               |#endif
       return status
 
@@ -293,9 +293,9 @@ class File( filepath:String ) [compound]
       local file = resolved
       if (file.is_folder)
         File(forEach in file.listing(FilePattern("*"))).delete  # Recursively delete nested content
-        return (0 == native( "rmdir( (const char*) $filepath->data->as_utf8 )")->Int32)
+        return (0 == native( "rmdir( (const char*) $file.filepath->data->as_utf8 )")->Int32)
       endIf
-      return (0 == native( "unlink( (const char*) $filepath->data->as_utf8 )")->Int32)
+      return (0 == native( "unlink( (const char*) $file.filepath->data->as_utf8 )")->Int32)
 
     method esc->String
       local acceptable : String
