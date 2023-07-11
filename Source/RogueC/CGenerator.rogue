@@ -77,7 +77,7 @@ class CGenerator : Visitor
       if (return_type)
         writer.print ' '
         if (return_type.is_compound)
-          writer.[ print('('), print(return_type.c_name), print("){0}") ]
+          writer.write_default_value( return_type )
         else
           visit( return_type.cmd_default_value(t) )
         endIf
@@ -106,9 +106,16 @@ class CGenerator : Visitor
     method is_end_of_procedure( cmd:Cmd )->Logical
       return control_stack.count == 1 and current_statements.count and current_statements.last is cmd
 
+    method print_cast( to_type:Type )
+      if (to_type and to_type.is_reference)
+        writer.print '('
+        writer.print to_type.c_ref_name
+        writer.print ')'
+      endIf
+
     method print_with_cast( cmd:Cmd, to_type:Type, &context_is_mutating, &call_is_mutating )
       local cmd_type = cmd.type
-      if (cmd_type is to_type)
+      if (cmd_type is to_type and not cmd.is_dynamic_call)
         if (call_is_mutating)
           if (not context_is_mutating)
             if (cmd instanceOf InlineAssignment)
@@ -408,12 +415,14 @@ class CGenerator : Visitor
 
     method on_visit( cmd:CallDynamicMethod )
       local info = cmd.info
+
+      #print_cast( info.return_type )
+
       if (cmd.context.type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.dynamic_signature].methods
         assert group
         if (group and group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
-          if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
           writer.print( info.c_name )
         else
           writer.print "%Ns%Rogue_dispatch_"
@@ -486,12 +495,16 @@ class CGenerator : Visitor
     method on_visit( cmd:CallThisDynamicMethod )
       local info = cmd.info
 
+      #print_cast( info.return_type )
+
+      #if (info.c_dynamic_signature == "type_name___RogueObject")
+      #println StackTrace()
+      #endIf
       if (this_type.is_aspect or info.attributes.is_abstract)
         local group = Program.dynamic_methods[info.dynamic_signature].methods
         assert group
         if (group.count == 1 and not group.first.attributes.is_placeholder)
           info = group.first
-          if (cmd.info.return_type is not info.return_type) writer.print "(void*)"
           writer.print( info.c_name )
         else
           writer.print "%Ns%Rogue_dispatch_"
@@ -706,8 +719,8 @@ class CGenerator : Visitor
         writer.print   ' '
         writer.print   this_procedure.c_result_name
         writer.print " = "
-        if (this_procedure.return_type.is_compound) writer.println "{0};"
-        else                                        writer.println "0;"
+        writer.write_default_value( this_procedure.return_type )
+        writer.println ";"
       endIf
 
       if (VCALLS)
@@ -729,8 +742,7 @@ class CGenerator : Visitor
             writer.[ print(v.type.c_ref_name), print(' ') ]
             writer.print( v.c_name )
             writer.print( " = " )
-            if (v.type.is_compound) writer.print "{0}"
-            else                    writer.print "0"
+            writer.write_default_value( v.type )
             writer.println( ';' )
 
             # Add a '(void)varname;' to prevent unused variable warnings due to Rogue variables
@@ -793,13 +805,9 @@ class CGenerator : Visitor
       if (not BranchAnalyzer.all_paths_return(body))
         print_procedure_cleanup
         if (this_procedure.return_type)
-          if (this_procedure.return_type.is_compound)
-            writer.print   "return ("
-            writer.print   this_procedure.return_type.c_name
-            writer.println "){0};"
-          else
-            writer.println "return 0;"
-          endIf
+          writer.print   "return "
+          writer.write_default_value( this_procedure.return_type )
+          writer.println ';'
         endIf
       endIf
 
@@ -901,9 +909,7 @@ class CGenerator : Visitor
       visit( cmd.operand )
 
     method on_visit( cmd:EmptyCompound )
-      writer.print '('
-      writer.print cmd.of_type.c_name
-      writer.print "){0}"
+      writer.write_default_value( cmd.of_type )
 
     method on_visit( cmd:Escape )
       writer.print "goto "
@@ -1071,16 +1077,14 @@ class CGenerator : Visitor
       writer.print   control_label
       writer.println ";"
       writer.println "do"
-      writer.println "{"
-      writer.indent += 2
+      writer.println_indent( '{', 2 )
       visit( cmd.statements )
       if (cmd.upkeep_label_used) writer.[ print(cmd.upkeep_label), print(":;") ]
       visit( cmd.upkeep )
       writer.print   control_label
       writer.println ":;"
       visit( cmd.control )
-      writer.indent -= 2
-      writer.println "}"
+      writer.println_indent( '}', -2 )
       writer.print   "while ("
       visit( cmd.condition )
       writer.println ");"
@@ -1115,7 +1119,7 @@ class CGenerator : Visitor
       writer.print 0
 
     method on_visit( cmd:LiteralNullOptional )
-      writer.[ print("("), print(cmd.optional_type.c_name), print(") {0}") ]
+      writer.write_default_value( cmd.optional_type )
 
     method on_visit( cmd:LiteralPi )
       writer.print pi
@@ -1145,14 +1149,7 @@ class CGenerator : Visitor
         if (not v.initial_value)
           writer.print( v.c_name )
           writer.print( " = " )
-          if (v.type.is_compound)
-            writer.print '('
-            writer.print( v.type.c_ref_name )
-            writer.print ')'
-            writer.print "{0}"
-          else
-            writer.print "0"
-          endIf
+          writer.write_default_value( v.type )
           needs_semicolon = true
         endIf
       else
@@ -1160,8 +1157,7 @@ class CGenerator : Visitor
         writer.print( v.c_name )
         if (not v.initial_value or v.type.is_reference or v.type.contains_reference)
           writer.print( " = " )
-          if (v.type.is_compound) writer.print "{0}"
-          else                    writer.print "0"
+          writer.write_default_value( v.type )
         endIf
         writer.println ";"
       endIf
@@ -1324,6 +1320,7 @@ class CGenerator : Visitor
         writer.print ' '
         writer.print result_name
         writer.print " = "
+        print_cast( cmd.result.type )
         visit( cmd.result )
         writer.println ';'
 
@@ -1338,7 +1335,7 @@ class CGenerator : Visitor
         writer.print "return"
         if (cmd.result)
           writer.print ' '
-          visit( cmd.result )
+          print_with_cast( cmd.result, this_procedure.return_type )
         endIf
         writer.println ';'
       endIf
@@ -1349,12 +1346,12 @@ class CGenerator : Visitor
     method on_visit( cmd:SetGlobalProperty )
       writer.print( cmd.info.c_name )
       writer.print( " = " )
-      visit( cmd.new_value )
+      print_with_cast( cmd.new_value, cmd.info.type )
 
     method on_visit( cmd:SetLocal )
       writer.print( cmd.info.c_name )
       writer.print( " = " )
-      visit( cmd.new_value )
+      print_with_cast( cmd.new_value, cmd.info.type )
 
     method on_visit( cmd:SetProperty )
       visit( cmd.context )
@@ -1362,7 +1359,7 @@ class CGenerator : Visitor
       else                               writer.print "."
       writer.print( cmd.info.c_name )
       writer.print( " = " )
-      visit( cmd.new_value )
+      print_with_cast( cmd.new_value, cmd.info.type )
 
     method on_visit( cmd:SetSingleton )
       writer.print "%NS%ROGUE_SET_SINGLETON("
@@ -1377,10 +1374,11 @@ class CGenerator : Visitor
       else                        writer.print "."
       writer.print( cmd.info.c_name )
       writer.print( " = " )
-      visit( cmd.new_value )
+      print_with_cast( cmd.new_value, cmd.info.type )
 
     method on_visit( cmd:Statements )
       temporarily current_statements = cmd
+        if (cmd.count) writer.println_indent( '{', 2 )
         forEach (statement in cmd)
           if (Program.stack_trace)
             if (statement.t.line != cur_line)
@@ -1393,6 +1391,7 @@ class CGenerator : Visitor
           visit( statement )
           if (statement.needs_semicolon) writer.println( ';' )
         endForEach
+        if (cmd.count) writer.println_indent( '}', -2 )
       endTemporarily
 
     method on_visit( cmd:Subtract )
@@ -1772,9 +1771,7 @@ augment
 
       local types = Program.all_types
 
-      local objc = Program.targets.contains("ObjC")
-
-      local h_writer = CWriter( File(Program.output_filepath+".h"), &header, &=objc )
+      local h_writer = CWriter( File(Program.output_filepath+".h"), &header )
 
       h_writer.println ...
         @|//------------------------------------------------------------------------------
@@ -1853,12 +1850,17 @@ augment
         h_writer.println ';'
       endForEach
 
+      local source_type = Program.source_type
+      which (source_type)
+        case "c", "m"
+          h_writer.println @|END_EXTERN_C
+      endWhich
+
       h_writer.close
 
       #-------------------------------------------------------------------------
 
-
-      local c_writer = CWriter( File(Program.output_filepath+which{objc:".m"||".c"}), &=objc )
+      local c_writer = CWriter( File("$.$"(Program.output_filepath,source_type)) )
 
       local method_info : Int32[]
       local type_data : Int32[]
@@ -1981,7 +1983,7 @@ augment
             forEach (m at i in type.method_vtable.values)
               if (i > 0) c_writer.print ','
               if (m.attributes.is_abstract) c_writer.print '0'
-              else                          c_writer.print m.c_name
+              else                          c_writer.[ print("(void*)"), print(m.c_name) ]
             endForEach
             c_writer.println "};"
             c_writer.println
@@ -2091,8 +2093,9 @@ augment
               c_writer.print p.type.c_ref_name
               c_writer.print ' '
               c_writer.print p.c_name
-              if (p.type.is_compound) c_writer.println " = {0};"
-              else                    c_writer.println " = 0;"
+              c_writer.print " = "
+              c_writer.write_default_value( p.type )
+              c_writer.println ';'
             endIf
           endForEach
 

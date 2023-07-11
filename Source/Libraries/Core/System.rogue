@@ -1,24 +1,31 @@
 class System [essential]
   NATIVE
-    nativeHeader @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-                  |  #include <time.h>
-                  |  #include <sys/timeb.h>
-                  |#else
-                  |  #include <sys/time.h>
-                  |  #include <spawn.h>
-                  |#endif
-                  |
-                  |extern int    %Ns%Rogue_argc;
-                  |extern char** %Ns%Rogue_argv;
-                  |
-                  |#ifndef PATH_MAX
-                  |  #define PATH_MAX 4096
-                  |#endif
-                  |
-                  |extern char **environ;
+    nativeHeader
+      @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+       |  #include <time.h>
+       |  #include <sys/timeb.h>
+       |#else
+       |  #include <sys/time.h>
+       |  #include <spawn.h>
+       |#endif
+       |
+       |extern int    %Ns%Rogue_argc;
+       |extern char** %Ns%Rogue_argv;
+       |
+       |#ifndef PATH_MAX
+       |  #define PATH_MAX 4096
+       |#endif
+       |
+       |extern char **environ;
 
-    nativeCode   @|int    %Ns%Rogue_argc = 0;
-                  |char** %Ns%Rogue_argv = 0;
+    nativeHeader
+      @|#if defined(__APPLE__)
+       |  EXTERN_C int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
+       |#endif
+
+    nativeCode
+      @|int    %Ns%Rogue_argc = 0;
+       |char** %Ns%Rogue_argv = 0;
 
   DEFINITIONS
     env = SystemEnvironment
