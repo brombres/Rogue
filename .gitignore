@@ -16,6 +16,8 @@ BuildLocal.rogue
 /Test.c
 /Test.m
 /Test.h
+/Test.cpp
+/Test.mm
 /Source/RogueC/Old
 
 /Xcode
