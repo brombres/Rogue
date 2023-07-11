@@ -132,9 +132,9 @@ class PropertyOrganizer : Visitor
             p.attributes.flags |= cmd.attributes.flags
             collect_global( p.t, p )
           else
-            local c_property = decl->(as NativeCProperty)
-            if (c_property)
-              throw c_property.t.error( "Global properties cannot be native." )
+            local native_property = decl->(as NativeProperty)
+            if (native_property)
+              throw native_property.t.error( "Global properties cannot be native." )
             endIf
           endIf
         endForEach
@@ -161,10 +161,10 @@ class PropertyOrganizer : Visitor
             p.attributes.flags |= cmd.attributes.flags
             collect( p.t, p )
           else
-            local c_property = decl->(as NativeCProperty)
-            if (c_property)
+            local native_property = decl->(as NativeProperty)
+            if (native_property)
               ++Program.native_property_count
-              p = Property( c_property.t, ".native"+Program.native_property_count, c_property.expression )
+              p = Property( native_property.t, ".native"+Program.native_property_count, native_property.expression )
               p.attributes.flags |= cmd.attributes.flags
               collect( p.t, p )
             endIf

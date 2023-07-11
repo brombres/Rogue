@@ -1866,8 +1866,15 @@ parser
     createNull
     produce Property( name=content, initial_value, type:Type )
   elseOn "native"
-    string
-    produce NativeCProperty( expression:String ):NativeProperty
+    on "<<"
+      identifier
+      mustConsume ">>"
+      string
+      produce NativeProperty( target:String, expression:String )
+    elseOnOthers
+      string
+      produce NativeProperty( target="C":String, expression:String )
+    endOn
   endOn
   mustConsume IDENTIFIER  # throws error
 
@@ -3715,7 +3722,6 @@ parser
   create LiteralReal64(value:Real):LiteralPrimitive
   create LocalDeclaration(info:Local)
   create Logicalized(operand):Unary
-  create NativeProperty( expression:String )
   create OpAndAssign(target,operand)
   create PreDecrementLocal(info:Local)  # Internal use
   create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
