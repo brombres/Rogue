@@ -6,7 +6,7 @@ class CWriter : BufferedPrintWriter
     is_header : Logical
 
   METHODS
-    method init( file, &header, &objc )
+    method init( file, &header )
       prior.init( file.writer )
       is_header = header
 
@@ -15,9 +15,14 @@ class CWriter : BufferedPrintWriter
         println "#ifndef $\n#define $\n\n"(underscore_filename,underscore_filename)
         println "// $"(file.filename)
         println
-        println @|#ifdef __cplusplus
-                 |extern "C"
-                 |{
+        println @|#if defined(__cplusplus)
+                 |  #define EXTERN_C extern "C"
+                 |  #define BEGIN_EXTERN_C extern "C" {
+                 |  #define END_EXTERN_C }
+                 |#else
+                 |  #define EXTERN_C
+                 |  #define BEGIN_EXTERN_C
+                 |  #define END_EXTERN_C
                  |#endif
                  |
 
@@ -180,6 +185,15 @@ class CWriter : BufferedPrintWriter
            |  #define %NS%ROGUE_RETAIN( obj )   %Ns%Rogue_retain( obj )
            |#endif
            |
+
+        local source_type =  Program.source_type
+        which (source_type)
+          case "c", "m"
+            println @|BEGIN_EXTERN_C
+        endWhich
+
+        println ...
+          @|
            |typedef struct %Ns%RogueRuntimeType %Ns%RogueRuntimeType;
            |typedef void (*%Ns%RogueFn_Object)(void*);
            |typedef void (*%Ns%RogueFn_Object_Object)(void*,void*);
@@ -268,11 +282,6 @@ class CWriter : BufferedPrintWriter
            |%Ns%RogueLogical %Ns%Rogue_instance_of( void* obj, %Ns%RogueInt32 ancestor_id );
         println
 
-        println @|#ifdef __cplusplus
-                 |} // extern "C"
-                 |#endif
-                 |
-
       else
         # Writing .c/.m file
         println  "// $"(file.filename)
@@ -344,7 +353,7 @@ class CWriter : BufferedPrintWriter
            |{
            |  if (*((%Ns%RogueObject**)singleton_ref)) return *((%Ns%RogueObject**)singleton_ref);
            |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
-           |  %Ns%RogueObject* obj = %Ns%Rogue_create_object( type );
+           |  %Ns%RogueObject* obj = (%Ns%RogueObject*)%Ns%Rogue_create_object( type );
            |  (*((%Ns%RogueObject**)singleton_ref)) = obj;
            |  if (type->fn_init) type->fn_init(obj);  // call init() if it exists
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( 0, obj );
@@ -356,7 +365,7 @@ class CWriter : BufferedPrintWriter
            |  %Ns%RogueObject** ref = (%Ns%RogueObject**)singleton_ref;
            |  %Ns%RogueRuntimeType* type = (%Ns%RogueRuntimeType*) _type;
            |  if (type->fn_on_singleton_change) type->fn_on_singleton_change( *ref, new_singleton );
-           |  *ref = new_singleton;
+           |  *ref = (%Ns%RogueObject*)new_singleton;
            |}
            |
            |void* %Ns%Rogue_release( void* obj )
@@ -572,6 +581,15 @@ class CWriter : BufferedPrintWriter
       print ((value :>>>: 4).to_digit)
       print ((value & 15).to_digit)
 
+    method println_indent( ch:Character, add_indent:Int32 )
+      if (indent >= 0)
+        println ch
+        indent += add_indent
+      else
+        indent -= add_indent
+        println ch
+      endIf
+
     method print_literal_c_character( ch:Character, in_string:Logical )
       if (ch >= 32 and ch <= 126)
         which (ch)
@@ -652,6 +670,24 @@ class CWriter : BufferedPrintWriter
 
         if (not omit_quotes) print '"'
       endTemporarily
+
+    method write_default_value( type:Type, &omit_cast )
+      if (type.is_compound)
+        if (not omit_cast)
+          print '('
+          print type.c_name
+          print ')'
+        endIf
+        print '{'
+        if (type.properties.count and type.properties.first.type.is_compound)
+          write_default_value( type.properties.first.type, &omit_cast )
+        else
+          print '0'
+        endIf
+        print '}'
+      else
+        print "0"
+      endIf
 
     method underscore_filename->String
       local result = String()

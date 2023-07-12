@@ -887,26 +887,21 @@ class Property : Cmd
 
 endClass
 
-class NativeCProperty : NativeProperty
-  METHODS
-    method description->String
-      return "NativeCProperty($)" (%expression)
-
-endClass
-
 class NativeProperty : Cmd
   PROPERTIES
+    target     : String
     expression : String
 
   METHODS
-    method init( t, expression )
+    method init( t, target, expression )
 
     method init( existing:NativeProperty )
       prior.init( existing )
+      target     = existing.target
       expression = existing.expression
 
     method description->String
-      return "NativeProperty($)" (%expression)
+      return "NativeProperty<<$>>($)" (%target,%expression)
 
     method to->Character
       return Cmd.to_character(expression)

@@ -817,3 +817,16 @@ class TypeConversionStack [singleton]
     method push( conversion:(Type,Type) )
       stack.add( conversion )
 endClass
+
+# is_dynamic_call
+augment
+  METHODS
+    method Cmd.is_dynamic_call->Logical
+      return false
+
+    method CallDynamicMethod.is_dynamic_call->Logical
+      return true
+
+    method CallThisDynamicMethod.is_dynamic_call->Logical
+      return true
+endAugment

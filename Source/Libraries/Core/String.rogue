@@ -2454,7 +2454,7 @@ class String : Poolable PrintWriter
                  |
                  |  if (usage == %NS%ROGUE_STRING_COPY || usage == %NS%ROGUE_STRING_PERMANENT_COPY)
                  |  {
-                 |    char* string_data = %NS%ROGUE_MALLOC( byte_count + 1 );
+                 |    char* string_data = (char*)%NS%ROGUE_MALLOC( byte_count + 1 );
                  |    memcpy( string_data, cstring, byte_count );
                  |    string_data[byte_count] = 0;
                  |    cstring = string_data;

@@ -341,6 +341,15 @@ class Program [singleton]
       if (real_bits == 64) type_Real = type_Real64
       else                 type_Real = type_Real32
 
+    method source_type->String
+      if (targets.contains("CPP"))
+        if (targets.contains("ObjC")) return "mm"
+        else                          return "cpp"
+      else
+        if (targets.contains("ObjC")) return "m"
+        else                          return "c"
+      endIf
+
     method type_TypeInfo->Type
       if (@type_TypeInfo) return @type_TypeInfo
       Program.include( t, "Introspection" )
