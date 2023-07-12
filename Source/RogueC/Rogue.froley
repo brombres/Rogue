@@ -535,7 +535,7 @@ scanner
     scan [^\n]*
     savePosition
       consume '\n'
-      consume [ ]*
+      consume [ \t]*
       if (not consume('|'))
         restorePosition
         return
