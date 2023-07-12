@@ -63,6 +63,20 @@ class GitIgnorePatcher
         return false
       endIf
 
+    method print_new_entries( prefix="":String )
+      local need_newline = false
+      forEach (section in sections)
+        if (need_newline)
+          println
+          need_newline = false
+        endIf
+
+        if (section.is_modified)
+          section.print_new_entries( prefix )
+          need_newline = true
+        endIf
+      endForEach
+
     method remove( pattern:String )->Logical
       # Returns false if the .gitfile did not contain the pattern.
       local success = false
@@ -79,20 +93,7 @@ class GitIgnorePatcher
         if (file.exists) println "Updating $"(file)
         else             println "Creating $"(file)
 
-        if (is_modified)
-          local need_newline = false
-          forEach (section in sections)
-            if (need_newline)
-              println
-              need_newline = false
-            endIf
-
-            if (section.is_modified)
-              section.print_new_entries
-              need_newline = true
-            endIf
-          endForEach
-        endIf
+        if (is_modified) print_new_entries( "  " )
       endIf
 
       local success = file.save( this->String )
@@ -141,11 +142,11 @@ class GitIgnoreSection( name:String, is_new=false:Logical )
       if (name != "") builder.println( "# $"(name) )
       builder.println( (forEach in lines).pattern )
 
-    method print_new_entries
+    method print_new_entries( prefix:String )
       local status = which{ lines.count:"" || " [REMOVED]" }
-      println "  # $$"(name,status)
+      println "$# $$"(prefix,name,status)
       forEach (line in lines)
-        if (line.is_new) println "  $"(line.pattern)
+        if (line.is_new) println "$$"(prefix,line.pattern)
       endForEach
 
       println "  $ [REMOVED]"(forEach in removals)
