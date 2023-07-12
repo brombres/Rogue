@@ -520,7 +520,8 @@ class Parser : ParserCore, Poolable
       return _position < _limit or inserted_tokens.count
 
     method include_filepath
-      Program.include( marked_token, buffer.cloned, &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
+      Program.include( marked_token, buffer.cloned, &api=include_attribute_api,
+                       &is_optional=include_attribute_optional, &include_folder=include_attribute_folder )
 
     method join_identifiers
       if (not disable_output and _cmd_stack.count >= 2)
