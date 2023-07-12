@@ -260,6 +260,10 @@ class RogueC
               target = target.leftmost(-1).rightmost(-1)
             endIf
             Program.targets[target] = target
+            which (target)
+              case "C++": Program.targets["CPP"] = "CPP"
+              case "CPP": Program.targets["C++"] = "C++"
+            endWhich
           endForEach
         endForEach
       endIf
