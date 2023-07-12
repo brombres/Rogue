@@ -184,7 +184,6 @@ class Files
       endForEach
 
     method sync_to( dest_folder:File, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
-      if (dry_run) verbose = true
       dest_folder .= resolved
 
       if (not dest_folder.exists and not dry_run)
