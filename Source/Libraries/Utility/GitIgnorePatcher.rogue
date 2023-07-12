@@ -1,0 +1,166 @@
+class GitIgnorePatcher
+  # EXAMPLE
+  #   local patcher = GitIgnorePatcher( File(".gitignore") )
+  #   println patcher  # Original contents
+  #
+  #   patcher.add( "# macOS", ".DS_Store" )
+  #   patcher.add( "Vim",     "*.swp" )     # Can omit '#' from section name
+  #   patcher.add( "Vim",     "*~" )
+  #
+  #   patcher.remove( "remove/this/from/gitignore" )
+  #
+  #   patcher.save( &verbose )
+  PROPERTIES
+    file     : File
+    sections = [String:GitIgnoreSection]
+    is_modified = false
+
+  METHODS
+    method init( file )
+      if (file.exists)
+        local section : GitIgnoreSection
+        forEach (line in LineReader(file))
+          line .= trimmed
+          if (line.begins_with('#'))
+            local name = line.unleft(1).trimmed
+            local key  = name.to_lowercase
+            if (sections.contains(key))
+              section = sections[key]
+            else
+              section = GitIgnoreSection( name )
+              sections[key] = section
+            endIf
+          elseIf (line.count)
+            if (not section)
+              section = GitIgnoreSection( "" )
+              sections[""] = section
+            endIf
+            section.add( line )
+          endIf
+        endForEach
+      endIf
+
+    method add( section_name:String, pattern:String )->Logical
+      # Returns false if all lines in 'pattern' are already in the .gitignore
+      if (section_name.begins_with('#')) section_name = section_name.unleft(1).trimmed
+
+      if (pattern.contains('\n'))
+        local result = false
+        if (add( section_name, forEach in pattern.split('\n') )) result = true
+        return result
+      endIf
+
+      if ((forEach in sections).contains(pattern)) return false
+
+      local key = section_name.to_lowercase
+      if (not sections.contains(key))
+        sections[key] = GitIgnoreSection( section_name, &is_new )
+      endIf
+      if (sections[key].add(pattern, &is_new))
+        is_modified = true
+        return true
+      else
+        return false
+      endIf
+
+    method remove( pattern:String )->Logical
+      # Returns false if the .gitfile did not contain the pattern.
+      local success = false
+      if ((forEach in sections).remove( pattern )) success = true
+      if (success) is_modified = true
+      return success
+
+    method save( save_as=null:File?, &verbose )->Logical
+      # Returns false on error.
+      if (save_as)             file = save_as.value
+      elseIf (not is_modified) return true
+
+      if (verbose)
+        if (file.exists) println "Updating $"(file)
+        else             println "Creating $"(file)
+
+        if (is_modified)
+          local need_newline = false
+          forEach (section in sections)
+            if (need_newline)
+              println
+              need_newline = false
+            endIf
+
+            if (section.is_modified)
+              section.print_new_entries
+              need_newline = true
+            endIf
+          endForEach
+        endIf
+      endIf
+
+      local success = file.save( this->String )
+      is_modified = not success
+      return success
+
+    method to->String
+      local result = String()
+      local need_newline = false
+      forEach (section in sections)
+        if (section.lines.count)
+          if (need_newline)
+            result.println
+            need_newline = false
+          endIf
+          section.print( result )
+          need_newline = true
+        endIf
+      endForEach
+      return result
+endClass
+
+class GitIgnoreSection( name:String, is_new=false:Logical )
+  PROPERTIES
+    lines    = GitIgnoreLine[]
+    removals = String[]
+
+  METHODS
+    method add( pattern:String, &is_new )->Logical
+      # Returns false if pattern is already present.
+      if ((forEach in lines).pattern == pattern) return false
+      lines.add( GitIgnoreLine(pattern, &=is_new) )
+      return true
+
+    method contains( pattern:String )->Logical
+      if ((forEach in lines).pattern == pattern) return true
+      return false
+
+    method is_modified->Logical
+      if (is_new or removals.count) return true
+      if ((forEach in lines).is_new) return true
+      return false
+
+    method print( builder:String )
+      if (not lines.count) return
+      if (name != "") builder.println( "# $"(name) )
+      builder.println( (forEach in lines).pattern )
+
+    method print_new_entries
+      local status = which{ lines.count:"" || " [REMOVED]" }
+      println "  # $$"(name,status)
+      forEach (line in lines)
+        if (line.is_new) println "  $"(line.pattern)
+      endForEach
+
+      println "  $ [REMOVED]"(forEach in removals)
+
+    method remove( pattern:String )->Logical
+      local success = false
+      forEach (line in rewriter=lines.rewriter)
+        if (line.pattern == pattern)
+          success = true
+          removals.add( pattern )
+        else
+          rewriter.write( line )
+        endIf
+      endForEach
+      return success
+endClass
+
+class GitIgnoreLine( pattern:String, is_new=false:Logical );
