@@ -582,11 +582,11 @@ class CWriter : BufferedPrintWriter
       print ((value & 15).to_digit)
 
     method println_indent( ch:Character, add_indent:Int32 )
-      if (indent >= 0)
+      if (add_indent >= 0)
         println ch
         indent += add_indent
       else
-        indent -= add_indent
+        indent += add_indent
         println ch
       endIf
 
