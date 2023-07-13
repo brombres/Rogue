@@ -83,6 +83,9 @@ class System [essential]
 
     method exit( result_code=0:Int32 )
       native @|%Ns%Rogue_quit();
+              |#if defined(%NS%ROGUE_GC_AUTO)
+              |  Rogue_clean_up();
+              |#endif
               |%Ns%Rogue_exit( $result_code );
 
     method find_executable( name:String )->File?
