@@ -203,15 +203,15 @@ class CWriter : BufferedPrintWriter
            |
            |struct %Ns%RogueRuntimeType
            |{
-           |  const char*    name;
+           |  const char*        name;
            |  %Ns%RogueString*   name_object;
            |  %Ns%RogueInt32     index;
            |  %Ns%RogueInt32     id;
            |  %Ns%RogueInt32     module_name_index;
            |  %Ns%RogueInt32     class_data_index;
            |  %Ns%RogueInt64     attributes;
-           |  void**         vtable;
-           |  void**         local_pointer_stack; // Objects + compounds with embedded refs
+           |  void**             vtable;
+           |  void**             local_pointer_stack; // Objects + compounds with embedded refs
            |  %Ns%RogueInt32     local_pointer_capacity;
            |  %Ns%RogueInt32     local_pointer_count;
            |  %Ns%RogueInt32     size;
@@ -242,15 +242,17 @@ class CWriter : BufferedPrintWriter
            |//------------------------------------------------------------------------------
            |// Runtime
            |//------------------------------------------------------------------------------
-           |void  %Ns%Rogue_configure( int argc, char** argv );
-           |int   %Ns%Rogue_launch(void);
-           |void  %Ns%Rogue_check_gc(void);
-           |void  %Ns%Rogue_collect_garbage(void);
-           |void  %Ns%Rogue_exit( int exit_code );
-           |void  %Ns%Rogue_request_gc(void);
-           |int   %Ns%Rogue_quit(void);
-           |void* %Ns%Rogue_release( void* obj );
-           |void* %Ns%Rogue_retain( void* obj );
+           |void  %Ns%Rogue_configure( int argc, char** argv );  // Call this first
+           |int   %Ns%Rogue_launch(void);                        // Call this second
+           |void  %Ns%Rogue_check_gc(void);        // Call this every frame or whenever (unless --gc=auto) to maybe GC
+           |void  %Ns%Rogue_collect_garbage(void); // Call this to force a GC
+           |void  %Ns%Rogue_exit( int exit_code ); // Internal use - call exit() directly instead
+           |void  %Ns%Rogue_request_gc(void);      // Ensures next call to Rogue_check_gc() will result in a GC
+           |int   %Ns%Rogue_quit(void);            // Call to shut down; prints any pending exception & calls Rogue on_exit functions
+           |void  %Ns%Rogue_clean_up(void);        // Calls clean_up() on every living object w/on_cleanup() then deletes all objects
+           |
+           |void* %Ns%Rogue_release( void* obj );  // Increase the refcount of the given Rogue object, preventing it from being GC'd
+           |void* %Ns%Rogue_retain( void* obj );   // Decrease the refcount of the given object
            |
            |void* %Ns%Rogue_create_object( void* type );
            |void  %Ns%Rogue_destroy_object( void* obj );
@@ -301,7 +303,7 @@ class CWriter : BufferedPrintWriter
            |
            |void* %Ns%Rogue_create_object( void* _type )
            |{
-           |  #ifdef %NS%ROGUE_GC_AUTO
+           |  #if defined(%NS%ROGUE_GC_AUTO)
            |    if (%Ns%RogueMM_bytes_allocated_since_gc >= %NS%ROGUE_MM_GC_THRESHOLD) %Ns%Rogue_collect_garbage();
            |  #endif
            |  %Ns%RogueRuntimeType*  type = (%Ns%RogueRuntimeType*) _type;
@@ -399,16 +401,7 @@ class CWriter : BufferedPrintWriter
            |
            |  %Ns%RogueGlobal__call_exit_functions();
            |
-        if (Program.gc_auto)
-          println ...
-            @|  // Issue a few GC's to allow objects requiring clean-up to do so.
-             |  %Ns%Rogue_collect_garbage();
-             |  %Ns%Rogue_collect_garbage();
-             |  %Ns%Rogue_collect_garbage();
-             |
-        endIf
-        println ...
-          @|  return status;
+           |  return status;
            |}
            |
            |void %Ns%Rogue_exit( int exit_code )

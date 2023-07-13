@@ -2104,9 +2104,11 @@ augment
           if (type.attributes.is_singleton)
             c_writer.print   type.c_name
             if (type.is_reference) c_writer.print '*'
-            c_writer.print   ' '
-            c_writer.print   type.c_name
-            c_writer.println "_singleton = 0;"
+            c_writer.print ' '
+            c_writer.print type.c_name
+            c_writer.print "_singleton = "
+            c_writer.write_default_value( type )
+            c_writer.println ';'
           endIf
         endForEach
 
@@ -2241,8 +2243,80 @@ augment
       forEach (str in Program.unique_strings)
         c_writer.print   "%Ns%RogueString* "
         c_writer.print   str
-        c_writer.println ';'
+        c_writer.println " = 0;"
       endForEach
+      c_writer.println
+
+      # Rogue_clean_up()
+      c_writer.println ...
+        @|void %Ns%Rogue_clean_up(void)
+         |{
+         |  // Issue a few GC's to allow objects pending clean-up to do so.
+         |  %Ns%Rogue_collect_garbage();
+         |  %Ns%Rogue_collect_garbage();
+         |  %Ns%Rogue_collect_garbage();
+         |
+         |  // Move all objects still requiring cleanup to the regular object list.
+         |  // We cannot call on_cleanup() on them because e.g. lists could clean up
+         |  // before objects that rely on those lists clean up.
+         |  int n = %Ns%RogueMM_objects_requiring_cleanup.count;
+         |  %Ns%RogueObject** refptr = %Ns%RogueMM_objects_requiring_cleanup.data + n;
+         |  int i;
+         |  for (i=n; --i>=0; )
+         |  {
+         |    %Ns%RogueObjectList_add( &%Ns%RogueMM_objects, (%Ns%RogueObject*) *(--refptr) );
+         |  }
+         |  %Ns%RogueMM_objects_requiring_cleanup.count = 0;
+         |
+         |  // Free every object on the main list
+         |  for (i=%Ns%RogueMM_objects.count, refptr=%Ns%RogueMM_objects.data-1; --i>=0; )
+         |  {
+         |    %Ns%Rogue_destroy_object( (%Ns%RogueObject*) *(++refptr) );
+         |  }
+         |  %Ns%RogueMM_objects.count = 0;
+         |
+         |  // Reset runtime globals
+         |  %Ns%Rogue_exception = 0;
+         |  %Ns%Rogue_call_stack = 0;
+         |  %Ns%Rogue_call_stack_count = 0;
+         |  %Ns%Rogue_call_stack_capacity = 0;
+         |  %Ns%Rogue_call_stack_line = 0;
+         |
+         |  %Ns%RogueMM_bytes_allocated_since_gc = 0;
+         |  %Ns%RogueMM_gc_request = 0;
+         |  %Ns%RogueMM_objects.count = 0;
+         |  %Ns%RogueMM_objects_requiring_cleanup.count = 0;
+
+      # Reset each RogueRuntimeType
+      c_writer.println ...
+      @|  {
+       |    int i;
+       |    for (i=%Ns%Rogue_type_count; --i>=0; )
+       |    {
+       |      %Ns%RogueRuntimeType* type = %Ns%Rogue_types[i];
+       |      type->name_object = 0;
+       |      type->local_pointer_count = 0;
+       |      type->type_info = 0;
+       |    }
+       |  }
+
+      # Zero out every singleton
+      c_writer.indent += 2
+      forEach (m in Program.modules)
+        forEach (type in m.types)
+          if (type.attributes.is_singleton)
+            c_writer.print type.c_name
+            c_writer.print "_singleton = "
+            c_writer.write_default_value( type )
+            c_writer.println ';'
+          endIf
+        endForEach
+      endForEach
+      c_writer.indent -= 2
+
+      c_writer.println ...
+        @|}
+         |
 
       c_writer.println @|
                         |void  %Ns%Rogue_collect_garbage( void )
@@ -2325,7 +2399,7 @@ augment
       c_writer.println @|// Find unreferenced objects requiring cleanup, trace them, and move them to
                         |// the end of the regular list.
                         |
-                        |// We can't delete them yet because they could added themselves back to the object
+                        |// We can't delete them yet because they could add themselves back to the object
                         |// graph during cleanup. They'll be deleted from the regular list the next time
                         |// they're unreferenced with no chance to clean up again.
                         |int cleanup_count = 0;
@@ -2371,8 +2445,9 @@ augment
                         |  ref->__refcount = ~ref->__refcount;
                         |}
                         |
-                        |// Call on_cleanup() on formerly-unreferenced objects at the end of the
-                        |// regular list.
+                        |// Call on_cleanup() the (formerly, perhaps currently) unreferenced objects
+                        |// requiring cleanup. These are all at the end of the regular object list:
+                        |// the last 'cleanup_count' objects on that list.
                         |end_i  = %Ns%RogueMM_objects.count;
                         |refptr = %Ns%RogueMM_objects.data + end_i;
                         |for (i=cleanup_count; --i>=0; )
@@ -2400,7 +2475,7 @@ augment
                         |for (i=1; i<%Ns%Rogue_argc; ++i)
                         |{
                         |  %Ns%RogueSystem___add_command_line_argument__%Ns%RogueString(
-                        |    %Ns%RogueString_create_from_utf8(%Ns%Rogue_argv[i],-1,%NS%ROGUE_STRING_PERMANENT)
+                        |    %Ns%RogueString_create(%Ns%Rogue_argv[i])
                         |  );
                         |}
                         |
@@ -2428,24 +2503,34 @@ augment
 
       if (Program.generate_main)
         c_writer.println
-        c_writer.println @|int main( int argc, char* argv[] )
-                          |{
-                          |  %Ns%Rogue_configure( argc, argv );
-                          |  %Ns%Rogue_launch();
-                          |  return %Ns%Rogue_quit();
-        c_writer.println @|}
+        c_writer.println...
+          @|int main( int argc, char* argv[] )
+           |{
+           |  %Ns%Rogue_configure( argc, argv );
+           |  %Ns%Rogue_launch();
+           |  int result = %Ns%Rogue_quit();
+           |  #if defined(%NS%ROGUE_GC_AUTO)
+           |    Rogue_clean_up();
+           |  #endif
+           |  return result;
+           |}
       endIf
 
       c_writer.close
 
     method Program.generate_c_string_literals( writer:CWriter )
       if (Program.unique_strings.count)
+        # Strings are permanent objects (not in the GC list), are not freed on Rogue_clean_up(),
+        # and do not need to be reallocated on a subsequent Rogue_launch().
+        writer.println "if ( !Rogue_string_table_count )"
+        writer.println_indent( '{', 2 )
         forEach (entry in Program.unique_strings.entries)
           writer.print   entry.value
           writer.print   " = %Ns%RogueString_create_string_table_entry( "
           writer.print_literal_c_string( entry.key )
           writer.println ");"
         endForEach
+        writer.println_indent( '}', -2 )
         writer.println
       endIf
 
