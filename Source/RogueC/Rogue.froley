@@ -3704,6 +3704,7 @@ parser
   create CreateCompound(of_type:Type,args:Args)
   create DefaultArg(operand):Unary
   create DummyInitialValue
+  create ExplicitCast(operand,to_type:Type)
   create EnumValue(of_type:Type,name:String)
   create EnumValueDef(value)
   create EmptyCompound(of_type:Type)
