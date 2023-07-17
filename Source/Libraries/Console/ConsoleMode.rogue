@@ -16,6 +16,9 @@ class ConsoleMode [abstract]
     method read->Character             [abstract]
     method read_event->ConsoleEvent    [abstract]
 
+    method _on_enter
+    method _on_exit
+
   NATIVE
     nativeHeader...
       @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
@@ -46,9 +49,6 @@ class StandardConsoleMode : ConsoleMode
               |#else
               |  tcsetattr( STDIN_FILENO, TCSANOW, &$console->original_terminal_settings );
               |  fcntl( STDIN_FILENO, F_SETFL, $console->original_stdin_flags );
-
-                 # Disable mouse events
-                 Global.[ flush, print("\e[?1003l"), flush ]
       native @|#endif
 
     method has_another->Logical
@@ -175,6 +175,10 @@ class ImmediateConsoleMode : ConsoleMode
                  # Enable mouse events
                  Global.[ flush, print("\e[?1003h"), flush ]
       native @|#endif
+
+    method _on_exit
+      # Disable mouse events
+      Global.[ flush, print("\e[?1003l"), flush ]
 
     method has_another->Logical
       # Only reports on character input events, ignoring pointer events.
