@@ -322,15 +322,17 @@ class RogueC
                |
                |  --gc=[auto|manual]
                |    Sets garbage collection mode:
-               |      --gc=auto   - Collects after every [--gc-threshold] number of bytes have
-               |                    been allocated (default 1 MB). This is slower than 'manual'
-               |                    due to the extra overhead of tracking local variables.
-               |      --gc=manual - Rogue_collect_garbage() should be called by the C framework
-               |                    at a regular interval (such as after every frame) outside of
-               |                    any calls into Rogue code. Or: never call GC for programs
-               |                    that complete a task and then halt; this will allow them to
-               |                    execute as fast as possible. Calling Rogue_collect_garbage()
-               |                    only results in a GC if the --gc-threshold has been reached.
+               |      --gc=auto
+               |        Collects after every [--gc-threshold] number of bytes have been
+               |        allocated (default 1 MB). This is slower than 'manual' due to the extra
+               |        overhead of tracking local variables.
+               |      --gc=manual
+               |        Rogue_check_gc() should be called by the C framework at a regular
+               |        interval (such as after every frame) outside of any calls into Rogue
+               |        code; this will call Rogue_collect_garbage() if the --gc-threshold has
+               |        been reached. Or: never call GC for programs that complete a task and
+               |        then exit; this will allow them to execute as fast as possible.
+               |
                |  --gc-threshold={number}[MB|K]
                |    Sets the GC threshold in bytes (default), megabytes, or kilobytes.
                |    '1048576', '1024K', and '1MB' are all equivalent. The default is 1MB.
