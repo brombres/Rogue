@@ -908,12 +908,11 @@ class Type : Cmd
         methods[ m.signature ] = m
 
         # type_info_index()->Int32
-        local gm = GlobalMethod( t, this, "type_info_index" )
-        gm.return_type = Program.type_Int32
-        gm.statements.add( Return(t,TypeIndex(t,this)) )
-        gm.attributes.is_global = true
-        gm.organize
-        global_methods[ gm.signature ] = gm
+        m = Method( t, this, "type_info_index" )
+        m.return_type = Program.type_Int32
+        m.statements.add( Return(t,TypeIndex(t,this)) )
+        m.organize
+        methods[ m.signature ] = m
 
       endIf
 
