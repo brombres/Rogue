@@ -241,13 +241,13 @@ class JPEGEncoder
           |
           |jpeg_finish_compress( &$this->jpeg_info );
           |$encoded_size = (%Ns%RogueInt32) encoded_size;
+
+          ensure<<encoded_bytes>>( encoded_size )
+          encoded_bytes.reserve( encoded_size )
+
+          native @|memcpy( $encoded_bytes->as_bytes+$encoded_bytes->count, encoded_buffer, $encoded_size );
+          encoded_bytes.count += encoded_size
       endUse
-
-      ensure<<encoded_bytes>>( encoded_size )
-      encoded_bytes.reserve( encoded_size )
-
-      native @|memcpy( $encoded_bytes->as_bytes+$encoded_bytes->count, encoded_buffer, $encoded_size );
-      encoded_bytes.count += encoded_size
 
       return encoded_bytes
 endClass
