@@ -1127,4 +1127,11 @@ class InspectionVisitor<<$ReturnType>>
       result = visit(cmd.args)
       return result
 
+    method on_visit_children( cmd:ExplicitCast )->$ReturnType
+      local result : $ReturnType
+      result = visit(cmd.operand)
+      if (result?) return result
+      result = visit(cmd.to_type)
+      return result
+
 endClass

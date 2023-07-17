@@ -915,6 +915,12 @@ class CGenerator : Visitor
       writer.print "goto "
       writer.print escape_label(cmd.control_type)
 
+    method on_visit( cmd:ExplicitCast )
+      writer.print '('
+      writer.print cmd.to_type.c_ref_name
+      writer.print ')'
+      visit( cmd.operand )
+
     method on_visit( cmd:GetLocal )
       writer.print( cmd.info.c_name )
 
@@ -1956,6 +1962,7 @@ augment
           c_writer.indent += 2
           forEach (m at index in Program.all_methods)
             if (index > 0) c_writer.println ','
+            c_writer.print "(void*)"
             c_writer.print m.c_name
           endForEach
           c_writer.println

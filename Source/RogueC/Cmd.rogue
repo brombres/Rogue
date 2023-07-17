@@ -5044,3 +5044,21 @@ class ListIndexedAccess : Cmd
       return "ListIndexedAccess($,$)" (%context,%args)
 
 endClass
+
+class ExplicitCast : Cmd
+  PROPERTIES
+    operand : Cmd
+    to_type : Type
+
+  METHODS
+    method init( t, operand, to_type )
+
+    method init( existing:ExplicitCast )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.to_type) to_type = existing.to_type.cloned
+
+    method description->String
+      return "ExplicitCast($,$)" (%operand,%to_type)
+
+endClass

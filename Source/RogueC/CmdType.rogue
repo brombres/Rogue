@@ -600,6 +600,9 @@ augment
     method EmptyValueTable.type->Type
       return Program.type_Value
 
+    method ExplicitCast.type->Type
+      return to_type
+
     method FunctionDefinition.type->Type
       return resolve_type
 
