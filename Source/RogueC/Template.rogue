@@ -85,6 +85,7 @@ class Template
     method make_replacements( type:Type, tokens:Token[], replacements:[String:Token[]] )->Token[]
       use processed_tokens = WorkList<<Token>>
         local any_changes = false
+        local check_next_strings = false
         forEach (t in tokens)
           which (t.type)
             case TokenType.PLACEHOLDER
@@ -97,7 +98,57 @@ class Template
               unsatisfied
                 processed_tokens.add( t )
               endContingent
+              check_next_strings = false
+
+            case TokenType.KEYWORD_NATIVE
+              check_next_strings = true
+              processed_tokens.add( t )
+
+            case TokenType.STRING
+              if (check_next_strings)
+                contingent
+                  necessary (replacements)
+                  necessary (t.content.contains('$'))
+
+                  local content = t.content
+                  local n = content.count
+                  use new_content = StringPool
+                    new_content.reserve( n*1.1 )
+                    local i = 0
+                    while (i < n)
+                      block
+                        local ch = content[i]
+                        if (ch == '$')
+                          forEach (entry in replacements.entries)
+                            if (content.contains_at(entry.key,i))
+                              forEach (rt in entry.value)
+                                new_content.print( rt->String )
+                              endForEach
+                              i += entry.key.count
+                              escapeBlock
+                            endIf
+                          endForEach
+                          new_content.print( '$' )
+                        else
+                          new_content.print( ch )
+                        endIf
+                        ++i
+                      endBlock
+                    endWhile
+
+                    if (new_content != content)
+                      t = t.cloned( TokenType.STRING, new_content.cloned )
+                      any_changes = true
+                    endIf
+                  endUse
+
+                endContingent
+              endIf
+
+              processed_tokens.add( t )
+
             others
+              check_next_strings = false
               processed_tokens.add( t )
           endWhich
         endForEach
