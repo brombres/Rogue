@@ -5,6 +5,12 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method create->XYZ
       return XYZ( 0, 0, 0 )
 
+		method create( xy:RealXY )->XYZ
+      return XYZ( xy.x, xy.y, 0 )
+
+		method create( xy:RealXY, z:Real )->XYZ
+      return XYZ( xy.x, xy.y, z )
+
     method create( xy:XY )->XYZ
       return XYZ( xy.x, xy.y, 0 )
 
