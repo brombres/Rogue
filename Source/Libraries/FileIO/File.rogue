@@ -807,6 +807,32 @@ class File( filepath:String ) [compound]
 
       endIf
 
+    method with_extension( ext:String )->File
+      # if ext is null or "":
+      #   Removes any current ".extension".
+      # else
+      #   Removes any current ".extension" and adds ".$"(ext).
+      local filepath = resolved.filepath
+      if (String.exists(ext))
+        if (filepath.ends_with(ext))
+          if (ext.begins_with('.') or filepath.count == ext.count or filepath[filepath.count-(ext.count+1)] == '.')
+            # Extension is already correct
+            return File( filepath )
+            # else ends with 'ext' but not '.ext'
+          endIf
+        endIf
+
+        local base = split_filepath_and_extension.filepath
+        if (ext.begins_with('.')) return File( "$$"(base,ext) )
+        return File( "$.$"(base,ext) )
+
+      else
+        # just remove extension
+        local base = split_filepath_and_extension.filepath
+        return File( base )
+
+      endIf
+
     method without_trailing_separator->File
       # Removes trailing slash on anything except "/"
       local filepath = resolved.filepath
