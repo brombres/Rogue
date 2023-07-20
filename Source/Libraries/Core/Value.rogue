@@ -18,11 +18,13 @@ class Value [compound]
     TYPE_LOGICAL   =  7
     TYPE_NULL      =  8
     TYPE_XY        =  9
-    TYPE_BOX       = 10
-    TYPE_OBJECT    = 11
-    TYPE_STRING    = 12
-    TYPE_LIST      = 13
-    TYPE_TABLE     = 14
+    TYPE_REALXY    = 10
+    TYPE_XYZ       = 11
+    TYPE_BOX       = 12
+    TYPE_OBJECT    = 13
+    TYPE_STRING    = 14
+    TYPE_LIST      = 15
+    TYPE_TABLE     = 16
 
   NATIVE
     nativeHeader
@@ -36,11 +38,13 @@ class Value [compound]
        |#define %NS%ROGUE_VALUE_TYPE_LOGICAL   7
        |#define %NS%ROGUE_VALUE_TYPE_NULL      8
        |#define %NS%ROGUE_VALUE_TYPE_XY        9
-       |#define %NS%ROGUE_VALUE_TYPE_BOX       10
-       |#define %NS%ROGUE_VALUE_TYPE_OBJECT    11
-       |#define %NS%ROGUE_VALUE_TYPE_STRING    12
-       |#define %NS%ROGUE_VALUE_TYPE_LIST      13
-       |#define %NS%ROGUE_VALUE_TYPE_TABLE     14
+       |#define %NS%ROGUE_VALUE_TYPE_REALXY    10
+       |#define %NS%ROGUE_VALUE_TYPE_XYZ       11
+       |#define %NS%ROGUE_VALUE_TYPE_BOX       12
+       |#define %NS%ROGUE_VALUE_TYPE_OBJECT    13
+       |#define %NS%ROGUE_VALUE_TYPE_STRING    14
+       |#define %NS%ROGUE_VALUE_TYPE_LIST      15
+       |#define %NS%ROGUE_VALUE_TYPE_TABLE     16
 
   PROPERTIES
     # All properties should be considered INTERNAL USE ONLY because they are
@@ -58,10 +62,12 @@ class Value [compound]
     real32    : Real32    [faux]
     real64    : Real32    [faux]
     xy        : XY        [faux]
+    realxy    : RealXY    [faux]
+    xyz       : XYZ       [faux]
 
     native @|union
             |{
-            |  GeometryBox    box;
+            |  %Ns%GeometryBox    box;
             |  %Ns%RogueByte      byte;
             |  %Ns%RogueCharacter character;
             |  %Ns%RogueInt32     int32;
@@ -70,7 +76,9 @@ class Value [compound]
             |  %Ns%RogueReal      real;
             |  %Ns%RogueReal32    real32;
             |  %Ns%RogueReal64    real64;
-            |  GeometryXY     xy;
+            |  %Ns%GeometryXY     xy;
+            |  %Ns%GeometryRealXY realxy;
+            |  %Ns%GeometryXYZ    xyz;
             |};
 
   GLOBAL METHODS
@@ -100,6 +108,12 @@ class Value [compound]
 
     method create( value:XY )->Value
       return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_XY, 0, {.xy=$value} }" )->Value
+
+    method create( value:RealXY )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_REALXY, 0, {.realxy=$value} }" )->Value
+
+    method create( value:XYZ )->Value
+      return native( "(%Ns%RogueValue) {  %NS%ROGUE_VALUE_TYPE_XYZ, 0, {.xyz=$value} }" )->Value
 
     method create( value:Box )->Value
       return native( "(%Ns%RogueValue) { %NS%ROGUE_VALUE_TYPE_BOX, 0, {.box=$value} }" )->Value
@@ -437,6 +451,10 @@ class Value [compound]
           return 0  # equal
         case TYPE_XY
           return xy <> other.xy
+        case TYPE_REALXY
+          return realxy <> other.realxy
+        case TYPE_XYZ
+          return xyz <> other.xyz
         case TYPE_BOX
           if (box.size == other.box.size) return box.position <> other.box.position
           else                            return box.size <> other.box.size
@@ -464,6 +482,8 @@ class Value [compound]
         case TYPE_REAL64:    return Value( -real64 )
         case TYPE_LOGICAL:   return Value( -logical )
         case TYPE_XY:        return Value( -xy )
+        case TYPE_REALXY:    return Value( -realxy )
+        case TYPE_XYZ:       return Value( -xyz )
         others
           return undefined
       endWhich
@@ -487,6 +507,8 @@ class Value [compound]
         case TYPE_REAL64:    return Value( a.real64    + b.real64 )
         case TYPE_LOGICAL:   return Value( a.logical or b.logical )
         case TYPE_XY:        return Value( a.xy        + b.xy )
+        case TYPE_REALXY:    return Value( a.realxy    + b.realxy )
+        case TYPE_XYZ:       return Value( a.xyz       + b.xyz )
         case TYPE_STRING:    return Value( a->String   + b->String )
         others
           return undefined
@@ -502,6 +524,8 @@ class Value [compound]
         case TYPE_REAL32:    return Value( a.real32    - b.real32 )
         case TYPE_REAL64:    return Value( a.real64    - b.real64 )
         case TYPE_XY:        return Value( a.xy        - b.xy )
+        case TYPE_REALXY:    return Value( a.realxy    - b.realxy )
+        case TYPE_XYZ:       return Value( a.xyz       - b.xyz )
         others
           return undefined
       endWhich
@@ -520,6 +544,8 @@ class Value [compound]
         case TYPE_REAL64:    return Value( a.real64    * b.real64 )
         case TYPE_LOGICAL:   return Value( a.logical and b.logical )
         case TYPE_XY:        return Value( a.xy        * b.xy )
+        case TYPE_REALXY:    return Value( a.realxy    * b.realxy )
+        case TYPE_XYZ:       return Value( a.xyz       * b.xyz )
         others
           return undefined
       endWhich
@@ -536,6 +562,8 @@ class Value [compound]
         case TYPE_REAL32:    return Value( a.real32    / b.real32 )
         case TYPE_REAL64:    return Value( a.real64    / b.real64 )
         case TYPE_XY:        return Value( a.xy        / b.xy )
+        case TYPE_REALXY:    return Value( a.realxy    / b.realxy )
+        case TYPE_XYZ:       return Value( a.xyz       / b.xyz )
         others
           return undefined
       endWhich
@@ -550,6 +578,8 @@ class Value [compound]
         case TYPE_REAL32:    return Value( a.real32    % b.real32 )
         case TYPE_REAL64:    return Value( a.real64    % b.real64 )
         case TYPE_XY:        return Value( a.xy        % b.xy )
+        case TYPE_REALXY:    return Value( a.realxy    % b.realxy )
+        case TYPE_XYZ:       return Value( a.xyz       % b.xyz )
         others
           return undefined
       endWhich
@@ -564,6 +594,8 @@ class Value [compound]
         case TYPE_REAL32:    return Value( a.real32    ^ b.real32 )
         case TYPE_REAL64:    return Value( a.real64    ^ b.real64 )
         case TYPE_XY:        return Value( a.xy        ^ b.xy )
+        case TYPE_REALXY:    return Value( a.realxy    ^ b.realxy )
+        case TYPE_XYZ:       return Value( a.xyz       ^ b.xyz )
         others
           return undefined
       endWhich
@@ -748,6 +780,8 @@ class Value [compound]
         case TYPE_REAL32:    return real32?
         case TYPE_REAL64:    return real64?
         case TYPE_XY:        return xy.x? or xy.y?
+        case TYPE_REALXY:    return realxy.x? or realxy.y?
+        case TYPE_XYZ:       return xyz.x? or xyz.y? or xyz.z?
         case TYPE_BOX:       return box.size.x? or box.size.y?
         case TYPE_OBJECT:    return true
         case TYPE_STRING:    return true
@@ -800,6 +834,8 @@ class Value [compound]
         case TYPE_REAL32:    return real32->String
         case TYPE_REAL64:    return real64->String
         case TYPE_XY:        return xy->String
+        case TYPE_REALXY:    return realxy->String
+        case TYPE_XYZ:       return xyz->String
         case TYPE_BOX:       return box->String
         case TYPE_OBJECT:    return object->String
         case TYPE_STRING:    return object->(as String)
@@ -811,7 +847,25 @@ class Value [compound]
     method to->XY
       which (type)
         case TYPE_XY:        return xy
+        case TYPE_REALXY:    return realxy->XY
+        case TYPE_XYZ:       return xyz->XY
         others:              return $defaultValue<<XY>>
+      endWhich
+
+    method to->RealXY
+      which (type)
+        case TYPE_XY:        return xy->RealXY
+        case TYPE_REALXY:    return realxy
+        case TYPE_XYZ:       return xyz->RealXY
+        others:              return $defaultValue<<RealXY>>
+      endWhich
+
+    method to->XYZ
+      which (type)
+        case TYPE_XY:        return XYZ(xy)
+        case TYPE_REALXY:    return XYZ(realxy)
+        case TYPE_XYZ:       return xyz
+        others:              return $defaultValue<<XYZ>>
       endWhich
 
     method to<<$Type>>->$Type
@@ -899,6 +953,10 @@ class Value [compound]
           builder.print( "null" )
         case TYPE_XY
           builder.[ print('['), print(xy.x), print(','), print(xy.y), print(']') ]
+        case TYPE_REALXY
+          builder.[ print('['), print(realxy.x), print(','), print(realxy.y), print(']') ]
+        case TYPE_XYZ
+          builder.[ print('['), print(xyz.x), print(','), print(xyz.y), print(','), print(xyz.z), print(']') ]
         case TYPE_BOX
           builder.[ print('['), print(box.position.x), print(','), print(box.position.y) ]
           builder.[ print(','), print(box.size.x),     print(','), print(box.size.y), print(']') ]
