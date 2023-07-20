@@ -82,6 +82,9 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method operator^( value:Real )->XYZ
       return XYZ( x^value, y^value, z^value )
 
+    method to->RealXY [essential]
+      return RealXY(x,y)
+
     method to->String
       return "[$,$,$]" (x,y,z)
 
