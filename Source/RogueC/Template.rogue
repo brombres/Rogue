@@ -104,6 +104,10 @@ class Template
               check_next_strings = true
               processed_tokens.add( t )
 
+            case TokenType.SYMBOL_OPEN_PAREN
+              # don't set check_next_strings to false because we might be starting a native("expression")
+              processed_tokens.add( t )
+
             case TokenType.STRING
               if (check_next_strings)
                 contingent
