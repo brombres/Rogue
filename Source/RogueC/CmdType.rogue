@@ -316,6 +316,20 @@ augment
 
 endAugment
 
+# is_literal_primitive
+augment
+  METHODS
+    method Cmd.is_literal_primitive->Logical
+      return false
+
+    method LiteralPrimitive.is_literal_primitive->Logical
+      return true
+
+    method NativeLiteralInt32.is_literal_primitive->Logical
+      return true
+
+endAugment
+
 # is_simple
 augment
   METHODS

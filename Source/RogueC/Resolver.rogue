@@ -1816,7 +1816,7 @@ class Resolver : Poolable, Visitor
         necessary (cmd.condition.type is Program.type_Int32)
 
         forEach (cmd_case in cmd.cases)
-          necessary ((forEach in cmd_case.args) instanceOf LiteralPrimitive)
+          necessary ((forEach in cmd_case.args).is_literal_primitive)
         endForEach
 
         if (is_enum)

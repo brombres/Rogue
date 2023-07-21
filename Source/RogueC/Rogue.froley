@@ -3283,8 +3283,12 @@ parser
     string
   endIf
   if consume("->")
-    type
-    produce NativeExpression(content:String,result_type:Type)
+    if consume @"LiteralInt32"
+      produce NativeLiteralInt32(content:String):NativeExpression
+    else
+      type
+      produce NativeExpression(content:String,result_type:Type)
+    endIf
   else
     produce NativeStatement(content:String)
   endIf

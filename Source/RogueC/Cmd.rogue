@@ -5062,3 +5062,16 @@ class ExplicitCast : Cmd
       return "ExplicitCast($,$)" (%operand,%to_type)
 
 endClass
+
+class NativeLiteralInt32 : NativeExpression
+  METHODS
+    method init( t:Token, content:String )
+      prior.init( t, content, Program.type_Int32 )
+
+    method init( other:NativeLiteralInt32 )
+      prior.init( other )
+
+    method description->String
+      return "NativeLiteralInt32($)" (%content)
+
+endClass
