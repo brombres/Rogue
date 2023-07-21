@@ -476,7 +476,10 @@ class ResolveUsedElements : InspectionVisitor
         cmd_call = CallMethodPointer( t, m, GetLocal(t,dispatch_params[1]), param_types, args, m.return_type )
 
         if (m.return_type and m.return_type is not Program.@type_Value)
-          cmd_call = Return( t, TypeAccess(t, Program.@type_Value,Args(t,ExplicitCast(t,cmd_call,m.return_type))) )
+          local arg : Cmd
+          if (m.return_type.is_reference) arg = ExplicitCast( t, cmd_call, m.return_type )
+          else                            arg = cmd_call
+          cmd_call = Return( t, TypeAccess(t, Program.@type_Value,Args(t,arg)) )
         endIf
 
         cmd_call = Statements( t, cmd_call )

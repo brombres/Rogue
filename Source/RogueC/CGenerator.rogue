@@ -134,12 +134,14 @@ class CGenerator : Visitor
           if (context_is_mutating) writer.print '*'
         endIf
         visit( cmd )
-      else
+      elseIf (to_type.is_reference)
         writer.print "(("
         writer.print to_type.c_ref_name
         writer.print ")"
         visit( cmd )
         writer.print ")"
+      else
+        visit( cmd )
       endIf
 
     method print_with_cast( cmd:String, from_type:Type, to_type:Type, &context_is_mutating, &call_is_mutating )
@@ -820,7 +822,11 @@ class CGenerator : Visitor
       on_leave( cmd )
 
     method on_visit( cmd:CreateCompound )
-      writer.[ print("("), print(cmd.of_type.c_name), print(") ") ]
+      if (Program.targets_cpp and Program.targets_windows)
+        writer.print(cmd.of_type.c_name)
+      else
+        writer.[ print("("), print(cmd.of_type.c_name), print(") ") ]
+      endIf
       writer.print '{'
       if (cmd.args and cmd.args.count)
         forEach (arg at i in cmd.args)
@@ -833,7 +839,7 @@ class CGenerator : Visitor
           if (i > 0) writer.print ','
           writer.[ print(param.c_name) ]
         endForEach
-      else
+      elseIf (not Program.targets_cpp)
         writer.print '0'  # No elements in literal struct; pass in 0 to keep MSVC happy.
       endIf
       writer.print "}"
@@ -1150,8 +1156,8 @@ class CGenerator : Visitor
 
       local v = cmd.info
       if (Program.gc_auto)
-        # In auto-gc variables have already been declared but we need to reinitialize locals without
-        # an explicit initial value at this point of original declaration to prevent logic bugs.
+        # In auto-gc variables have already been declared but we need to reinitialize locals (that
+        # don't have an explicit initial value) at this point of original declaration to prevent logic bugs.
         if (not v.initial_value)
           writer.print( v.c_name )
           writer.print( " = " )
@@ -1859,7 +1865,7 @@ augment
       local source_type = Program.source_type
       which (source_type)
         case "c", "m"
-          h_writer.println @|END_EXTERN_C
+          h_writer.println @|END_ROGUE_EXTERN_C
       endWhich
 
       h_writer.close
