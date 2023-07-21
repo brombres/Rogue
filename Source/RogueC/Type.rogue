@@ -1516,7 +1516,7 @@ class Type : Cmd
 
       local this_is_abstract = this.attributes.is_abstract
 
-      # Incorporate augment global methods
+      # Incorporate aspect/augment global methods
       if (aspects)
         # Merge method templates
         forEach (incorporated_aspect in aspects)

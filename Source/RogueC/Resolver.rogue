@@ -1503,7 +1503,8 @@ class Resolver : Poolable, Visitor
         endTemporarily
       endIf
 
-      return resolve_templated_call( cmd.t, cmd.module_context, cmd.type_context, cmd.name, cmd.type_args, cmd.args )
+      local type_context = which{ this_type || cmd.type_context }
+      return resolve_templated_call( cmd.t, cmd.module_context, type_context, cmd.name, cmd.type_args, cmd.args )
 
     method resolve_templated_call( t:Token, module_context:Module, type_context:Type,
                                    name:String, template_args:TemplateArgs, args:Cmd )->Cmd
