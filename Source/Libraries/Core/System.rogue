@@ -20,7 +20,7 @@ class System [essential]
 
     nativeHeader
       @|#if defined(__APPLE__)
-       |  EXTERN_C int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
+       |  ROGUE_EXTERN_C int _NSGetExecutablePath(char* buf, uint32_t* bufsize);
        |#endif
 
     nativeCode

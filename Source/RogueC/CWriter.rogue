@@ -16,13 +16,19 @@ class CWriter : BufferedPrintWriter
         println "// $"(file.filename)
         println
         println @|#if defined(__cplusplus)
-                 |  #define EXTERN_C extern "C"
-                 |  #define BEGIN_EXTERN_C extern "C" {
-                 |  #define END_EXTERN_C }
+                 |  #define ROGUE_EXTERN_C extern "C"
+                 |  #define BEGIN_ROGUE_EXTERN_C extern "C" {
+                 |  #define END_ROGUE_EXTERN_C }
                  |#else
-                 |  #define EXTERN_C
-                 |  #define BEGIN_EXTERN_C
-                 |  #define END_EXTERN_C
+                 |  #define ROGUE_EXTERN_C
+                 |  #define BEGIN_ROGUE_EXTERN_C
+                 |  #define END_ROGUE_EXTERN_C
+                 |#endif
+                 |
+                 |#if defined(__cplusplus) && defined(_WIN32)
+                 |  #define ROGUE_COMPOUND(name) name
+                 |#else
+                 |  #define ROGUE_COMPOUND(name) (name)
                  |#endif
                  |
 
@@ -189,7 +195,7 @@ class CWriter : BufferedPrintWriter
         local source_type =  Program.source_type
         which (source_type)
           case "c", "m"
-            println @|BEGIN_EXTERN_C
+            println @|BEGIN_ROGUE_EXTERN_C
         endWhich
 
         println ...
@@ -436,7 +442,7 @@ class CWriter : BufferedPrintWriter
            |    %Ns%Rogue_call_stack_capacity = required_capacity;
            |  }
            |
-           |  %Ns%Rogue_call_stack[ %Ns%Rogue_call_stack_count++ ] = (%Ns%RogueCallFrame){ procedure, filename, line };
+           |  %Ns%Rogue_call_stack[ %Ns%Rogue_call_stack_count++ ] = ROGUE_COMPOUND(%Ns%RogueCallFrame){ procedure, filename, line };
            |}
            |
            |void %Ns%Rogue_call_stack_pop(void)
@@ -667,14 +673,18 @@ class CWriter : BufferedPrintWriter
     method write_default_value( type:Type, &omit_cast )
       if (type.is_compound)
         if (not omit_cast)
-          print '('
-          print type.c_name
-          print ')'
+          if (Program.targets_cpp and Program.targets_windows)
+            print type.c_name
+          else
+            print '('
+            print type.c_name
+            print ')'
+          endIf
         endIf
         print '{'
         if (type.properties.count and type.properties.first.type.is_compound)
           write_default_value( type.properties.first.type, &omit_cast )
-        else
+        elseIf (not Program.targets_cpp)
           print '0'
         endIf
         print '}'

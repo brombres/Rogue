@@ -8,6 +8,8 @@ class Program [singleton]
     definitions          = [String:Token[]]
     macros               = [String:Macro[]]
     targets              = [String:String]
+    targets_cpp          : Logical
+    targets_windows      : Logical
 
     debug_mode        = false
     gc_auto           = true

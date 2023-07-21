@@ -261,12 +261,14 @@ class RogueC
             endIf
             Program.targets[target] = target
             which (target)
-              case "C++": Program.targets["CPP"] = "CPP"
-              case "CPP": Program.targets["C++"] = "C++"
+              case "C++": Program.targets["CPP"] = "CPP"; Program.targets_cpp = true
+              case "CPP": Program.targets["C++"] = "C++"; Program.targets_cpp = true
+              case "Windows": Program.targets_windows = true
             endWhich
           endForEach
         endForEach
       endIf
+
       if (not Program.targets.count) Program.targets//C = "C"
 
       if (command//args.count > 0)
