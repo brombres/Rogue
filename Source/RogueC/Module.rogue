@@ -116,7 +116,9 @@ class Module
       throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
     method find_type( t:Token, type_name:String, &extended_search )->Type
-      local (mod,isolated_type_name) = split_module_and_type( t, type_name )
+      local (mod,isolated_type_name) = split_module_and_type( t, type_name, &suppress_error )
+
+      if (isolated_type_name is null) return null
 
       if (mod) extended_search = false
       else     mod = this
@@ -172,7 +174,7 @@ class Module
         (forEach in types).attributes.is_api = true
       endIf
 
-    method split_module_and_type( t:Token, type_name:String, &allow_unknown_module )->(Module,String)
+    method split_module_and_type( t:Token, type_name:String, &allow_unknown_module, &suppress_error )->(Module,String)
       if (type_name.begins_with('(') or type_name.begins_with('[') or not type_name.contains("::"))
         # Type names beginning with ( are (tuples) or (Functions)
         # Type names beginning with [ are [KeyType:ValueType] tables
@@ -209,10 +211,14 @@ class Module
           return (mod,type_name)
         endIf
 
+        if (suppress_error)
+          return (null->(as Module), null->(as String))  # null Type indicates suppresssed error
+        endIf
+
         throw t.error( "No such module '$'. Is there a missing 'uses $' directive?" (mod_name,mod_name) )
       endUse
 
-      return (null->(as Module),type_name) # never executed
+      return (null->(as Module),type_name)
 
     method organize_methods
       if (is_organized) return
