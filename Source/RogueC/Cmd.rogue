@@ -2039,6 +2039,8 @@ class TemplateArgs : CmdList
     method type( index:Int32 )->Type
       use token_string = StringPool
         local token_list = this[index]
+        if (token_list.tokens.contains($.type == RogueC::TokenType.STRING)) return null
+
         token_string.print((forEach in token_list.tokens)->String)
         local type_entry = Program.current_module.type_arg_lookup.find( token_string )
         if (type_entry)
