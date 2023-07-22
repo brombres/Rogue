@@ -2493,24 +2493,37 @@ class Resolver : Poolable, Visitor
       if (exact_arg_types) return null
 
       # Filter by compatible and convertible args
+      # Three iterations:
+      #   1. Very strict:  don't allow conversions and require exact logical type matches
+      #   2. Easing:       allow conversions but still require exact logical types
+      #   3. Least strict: allow conversions, including conversions to/from logical types
+      # If any methods are left after any iteration then the remaining iterations are skipped.
       local allow_conversions = false
-      loop 2
+      local exact_logical = true
+      loop 3
         if (arg_count)
           forEach (m in Candidates)
             if (has_named_arg) m.arrange_args( args, this )
             contingent
               forEach (arg at i in args)
-                necessary (arg_type_is_compatible(arg,m.parameters[i].type,&=allow_conversions))
+                necessary (arg_type_is_compatible(arg,m.parameters[i].type,&=allow_conversions,&=exact_logical))
               endForEach
               Candidates.keep m
             endContingent
           endForEach
           if (Candidates.found_match) return Candidates.match
-          if (not Candidates.refine and allow_conversions) return null
+
+          if (Candidates.refine) escapeLoop
+
+          if (allow_conversions and not exact_logical) return null
         else
           if (Candidates.found_match) return Candidates.match
         endIf
-        allow_conversions = true
+        if (allow_conversions)
+          exact_logical = false
+        else
+          allow_conversions = true
+        endIf
       endLoop
 
       # Filter out candidates that don't have the same module context as the first candidate
@@ -2524,7 +2537,7 @@ class Resolver : Poolable, Visitor
       # Filter by fewest parameters (omitting calls with excess default args)
       if (arg_count)
         local min_params = Candidates[0].parameters.count
-        min_params .= or_smaller( (forEach in Candidates from 1).parameters.count )
+        min_params .= or_smaller( (forEach in Candidates from 1).parameters.count ).clamped_low( arg_count )
         forEach (m in Candidates)
           if (m.parameters.count == min_params) Candidates.keep m
         endForEach
@@ -2716,7 +2729,7 @@ class Resolver : Poolable, Visitor
 
       return false
 
-    method arg_type_is_compatible( arg:Cmd, param_type:Type, &allow_conversions )->Logical
+    method arg_type_is_compatible( arg:Cmd, param_type:Type, &allow_conversions, &exact_logical )->Logical
       local arg_type = arg.require_type
 
       if (arg_type is param_type) return true
@@ -2735,13 +2748,16 @@ class Resolver : Poolable, Visitor
       if (arg_type is Program.type_null and (param_type.is_reference or param_type.attributes.is_optional)) return true
       if (arg_type is Program.@type_Value) return true
       if (arg_type.instance_of(param_type)) return true
-      if (arg_type.is_primitive and param_type.is_primitive) return true
+      if (arg_type.is_primitive and param_type.is_primitive)
+        if (exact_logical and (arg_type is Program.type_Logical xor param_type is Program.type_Logical)) return false
+        return true
+      endIf
       if (param_type is Program.type_String or param_type is Program.type_Object or param_type is Program.@type_Value) return true
       if (param_type.attributes.is_optional and not arg_type.attributes.is_optional)
         if (arg_type is Program.type_null)
           return true
         endIf
-        return arg_type_is_compatible( arg, param_type.properties//value.type, &=allow_conversions )
+        return arg_type_is_compatible( arg, param_type.properties//value.type, &=allow_conversions, &=exact_logical )
       endIf
 
       if (allow_conversions)

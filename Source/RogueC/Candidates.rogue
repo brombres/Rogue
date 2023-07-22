@@ -15,9 +15,6 @@ class Candidates [singleton]
     method count->Int32
       return list.count
 
-    method description->String
-      return %list
-
     method found_match->Logical
       return matches.count == 1
 
@@ -51,5 +48,9 @@ class Candidates [singleton]
       list.[ clear ].add( matches )
       matches.clear
       return true
+
+    method to->String
+      return %list
+
 endClass
 
