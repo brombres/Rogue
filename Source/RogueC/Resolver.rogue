@@ -675,6 +675,10 @@ class Resolver : Poolable, Visitor
           necessary (not access.is_type_context)          # Don't 'with' type names
           necessary (access not instanceOf GetSingleton)  # Don't 'with' singleton names
 
+          if local call = access->(as CallProcedure)
+            necessary (call.info.return_type)
+          endIf
+
         satisfied
           ensure <<cmd.with_values>>( cmd.t )
           cmd.with_values.add( WithValue(cmd.t,unknown_id,null) )
