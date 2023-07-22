@@ -2421,6 +2421,9 @@ class Resolver : Poolable, Visitor
     method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types )->Procedure
       local arg_count = which{ args:args.count || 0 }
 
+      #local debug = type_context and type_context.name=="StateCall<<Rogue::ScreenState>>" and Candidates.count==3 and Candidates.list.contains($.name=="create")
+      #if (debug) trace Candidates
+
       local has_named_arg = false
       if (args)
         # Remove any DefaultArgs and check for named args with duplicate names.
@@ -2533,6 +2536,15 @@ class Resolver : Poolable, Visitor
       endForEach
       if (Candidates.found_match) return Candidates.match
       Candidates.refine
+
+      # Prefer 'init' over 'create'
+      if (Candidates.list.contains($.name == "init"))
+        forEach (m in Candidates)
+          if (m.name == "init") Candidates.keep m
+        endForEach
+        if (Candidates.found_match) return Candidates.match
+        Candidates.refine
+      endIf
 
       # Filter by fewest parameters (omitting calls with excess default args)
       if (arg_count)
