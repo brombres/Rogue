@@ -569,7 +569,7 @@ parser
   if (not hasAnother) return
 
   if (nextIs("class"))
-    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    savePosition     # Pass 1: save position to scan template tokens from (node output already disabled)
     ++disable_output # Pass 2: also disable output; just parse to get past
 
     consume("class")
@@ -585,7 +585,7 @@ parser
   endIf
 
   if (nextIs("enum"))
-    savePosition     # Pass 1: position to scan template tokens from (node output already disabled)
+    savePosition     # Pass 1: save position to scan template tokens from (node output already disabled)
     ++disable_output # Pass 2: also disable output; just parse to get past
 
     consume("enum")
@@ -619,6 +619,7 @@ parser
       discardPosition
 
       savePosition  # collect tokens
+      if (nextIs(':')) base_types
       must_consume_eols
       class_sections
       mustConsume "endAugment"
