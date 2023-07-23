@@ -29,11 +29,15 @@ class Process
         return PosixProcess( args, &=readable, &=writable, &=is_blocking, &=env )
       endIf
 
-    method run( cmd:String, &env, &writable )->ProcessResult
-      return run( Process(cmd,&readable,&=writable,&is_blocking,&=env) )
+    method run( cmd:String, &env, &writable, &echo )->ProcessResult
+      local process = Process( cmd, &readable, &=writable, &is_blocking, &=env )
+      if (echo) return ProcessEchoer( process ).run
+      else      return process.finish
 
     method run( args:String[], &env, &writable )->ProcessResult
-      return run( Process(args, &readable, &=writable, &is_blocking, &=env) )
+      local process = Process( args, &readable, &=writable, &is_blocking, &=env )
+      if (echo) return ProcessEchoer( process ).run
+      else      return process.finish
 
     method run( process:Process )->ProcessResult
       return process.finish
@@ -720,4 +724,48 @@ class ProcessResult
       if (not error_string.count)  return output_string
       if (not output_string.count) return error_string
       return output_string + error_string
+endClass
+
+class ProcessEchoer
+  PROPERTIES
+    process       : Process
+    output_reader : Reader<<Byte>>
+    error_reader  : Reader<<Byte>>
+    output_buffer = Byte[]
+    error_buffer  = Byte[]
+    output_bytes  = Byte[]
+    error_bytes   = Byte[]
+
+  METHODS
+    method init( process )
+      output_reader = process.output_reader
+      error_reader = process.error_reader
+
+    method run->ProcessResult
+      while (not process.is_finished)
+        update_io
+        System.sleep( 0.05 )
+      endWhile
+      update_io
+      return ProcessResult( process.@exit_code, output_bytes, error_bytes )
+
+    method update_io
+      while (output_reader.has_another)
+        local b = output_reader.read
+        output_buffer.add( b )
+        output_bytes.add( b )
+        if (b == '\n')
+          print( String(output_buffer) ); flush
+          output_buffer.clear
+        endIf
+      endWhile
+      while (error_reader.has_another)
+        local b = error_reader.read
+        error_buffer.add( b )
+        error_bytes.add( b )
+        if (b == '\n')
+          error.print( String(error_buffer) ); error.flush
+          error_buffer.clear
+        endIf
+      endWhile
 endClass
