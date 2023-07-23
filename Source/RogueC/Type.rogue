@@ -1518,19 +1518,21 @@ class Type : Cmd
 
       # Incorporate aspect/augment global methods
       if (aspects)
-        # Merge method templates
-        forEach (incorporated_aspect in aspects)
-          forEach (entry in incorporated_aspect.global_method_templates.entries)
-            forEach (template in entry.value)
-              global_method_templates.add( entry.key, template )
+        # Merge method templates.
+        if (not this.attributes.is_augment)
+          forEach (incorporated_aspect in aspects)
+            forEach (entry in incorporated_aspect.global_method_templates.entries)
+              forEach (template in entry.value)
+                global_method_templates.add( entry.key, template )
+              endForEach
+            endForEach
+            forEach (entry in incorporated_aspect.method_templates.entries)
+              forEach (template in entry.value)
+                method_templates.add( entry.key, template.cloned.[type_context=this] )
+              endForEach
             endForEach
           endForEach
-          forEach (entry in incorporated_aspect.method_templates.entries)
-            forEach (template in entry.value)
-              method_templates.add( entry.key, template.cloned.[type_context=this] )
-            endForEach
-          endForEach
-        endForEach
+        endIf
 
         # Incorporate non-insert, non-append methods first
         forEach (incorporated_aspect in aspects)
@@ -1688,7 +1690,7 @@ class Type : Cmd
       endIf
 
     method instantiate_object_method_templates( t_name:String, template_args:TemplateArgs )
-      # Drill down to start at most general ancestor class with a compatible method template
+      # Drill down to start at the oldest ancestor class with a compatible method template
       local root_type : Type
       if (this.method_templates.contains(t_name)) root_type = this
 
