@@ -1189,6 +1189,44 @@ class String : Poolable PrintWriter
 
       hash_code = -1;
 
+    method print( value:RogueConstCharPointer )
+      if (is_immutable) return
+
+      if (not value)
+        print( "null" )
+        return
+      endIf
+
+      local byte_count = native("(RogueInt32)strlen($value.value)")->Int32
+      if (not byte_count) return
+
+      if (indent)
+        use temp = StringPool
+          temp.print( value )
+          print( forEach in temp )
+        endUse
+        return
+      endIf
+
+      local utf8_character_count = native("%Ns%RogueString_utf8_character_count($value.value,$byte_count)")->Int32
+
+      if (byte_count != utf8_character_count) is_ascii = false
+      hash_code = -1
+
+      reserve( byte_count )
+      if (utf8_character_count == -1)
+        # Not a valid UTF-8 string. Treat as ASCII-256; e.g. ASCII 130 (1 byte) becomes Unicode 130 (2 bytes).
+        forEach (i in 0..<byte_count)
+          print( native("$value.value[$i]")->Character )
+        endForEach
+      else
+        # Copy the entire block of UTF-8 to the end of this string
+        native @|memcpy( $data->as_utf8+$data->count, $value.value, $byte_count );
+                |$count += $utf8_character_count;
+                |$data->count += $byte_count;
+                |$data->as_utf8[$data->count] = 0;
+      endIf
+
     method println
       print '\n'
 
@@ -2414,7 +2452,7 @@ class String : Poolable PrintWriter
                   |%Ns%RogueString* %Ns%RogueString_create_permanent( const char* cstring );
                   |%Ns%RogueString* %Ns%RogueString_create_string_table_entry( const char* cstring );
                   |%Ns%RogueInt32   %Ns%RogueString_compute_hash_code( %Ns%RogueString* THISOBJ, %Ns%RogueInt32 starting_hash );
-                  |const char*  %Ns%RogueString_to_c_string( %Ns%RogueString* st );
+                  |const char*      %Ns%RogueString_to_c_string( %Ns%RogueString* st );
                   |%Ns%RogueInt32   %Ns%RogueString_utf8_character_count( const char* cstring, int byte_count );
                   |
                   |extern %Ns%RogueInt32 %Ns%Rogue_string_table_count;
