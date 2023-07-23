@@ -36,9 +36,9 @@ class State<<$ExtendedType>>
     next_state       : $ExtendedType
     concurrent_state : $ExtendedType
 
-    t         : Real
-    dt        : Real
-    prev_time : Real  # 0 = not started
+    t          : Real
+    delta_time : Real
+    prev_time  : Real  # 0 = not started
 
     exited : Logical # flag that assists when states finish outside of updated()
 
@@ -89,6 +89,12 @@ class State<<$ExtendedType>>
     method describe->String
       return type_name
 
+    method description->String
+      local result = describe
+      if (next_state) result = "$ + $" (result,next_state->String)
+      if (concurrent_state) result = "($) | ($)" (result,concurrent_state)
+      return result
+
     method exit_state
       exited = true
       finish
@@ -96,12 +102,6 @@ class State<<$ExtendedType>>
     method finish
       if (duration < 0) duration = 0
       t = duration
-
-    method make_indefinite
-      duration = $ExtendedType.INDEFINITE
-
-    method make_instant
-      duration = $ExtendedType.INSTANT
 
     method insert_next( state:$ExtendedType )
       if (state) next_state = state.and_then( next_state )
@@ -114,6 +114,12 @@ class State<<$ExtendedType>>
       local cur = this
       while (cur.next_state ) cur = cur.next_state
       return cur
+
+    method make_indefinite
+      duration = $ExtendedType.INDEFINITE
+
+    method make_instant
+      duration = $ExtendedType.INSTANT
 
     method on_start
 
@@ -142,12 +148,6 @@ class State<<$ExtendedType>>
         return null
       endIf
 
-    method description->String
-      local result = describe
-      if (next_state) result = "$ + $" (result,next_state->String)
-      if (concurrent_state) result = "($) | ($)" (result,concurrent_state)
-      return result
-
     method to->String
       return description
 
@@ -162,9 +162,9 @@ class State<<$ExtendedType>>
         if (not prev_time)
           on_start
         else
-          dt = (cur_time - prev_time)
-          if (dt > 1.0/10.0) dt = 1.0/60.0
-          t += dt
+          delta_time = (cur_time - prev_time)
+          if (delta_time > 1.0/10.0) delta_time = 1.0/60.0
+          t += delta_time
           if (duration >= 0 and t > duration) t = duration
         endIf
 
@@ -179,8 +179,13 @@ class State<<$ExtendedType>>
         if (not is_finished) return this->(as $ExtendedType)
       endIf
 
-      on_finish
+      _handle_finish
+
       return start_next
+
+    method _handle_finish
+      on_finish
+
 endClass
 
 class StateWait<<$ExtendedType>>( duration ) : $ExtendedType;
