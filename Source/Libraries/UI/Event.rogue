@@ -158,8 +158,8 @@ class PointerEvent : Event
 
   PROPERTIES
     type      : Int32
-    position  : XY
-    delta     : XY
+    position  : IntXY
+    delta     : IntXY
     index     : Int32
     cancelled : Logical
     # When a touch event in progress is interrupted then a RELEASE event is sent
@@ -220,10 +220,10 @@ class PointerEvent : Event
     method is_release_middle->Logical
       return is_release( 2 )
 
-    method operator+( offset:XY )->PointerEvent
+    method operator+( offset:IntXY )->PointerEvent
       return PointerEvent( type, position+offset, delta, index, cancelled )
 
-    method operator-( offset:XY )->PointerEvent
+    method operator-( offset:IntXY )->PointerEvent
       return this + (-offset)
 
     method to->String
@@ -246,7 +246,7 @@ endClass
 
 class ScrollEvent : Event
   PROPERTIES
-    delta         : XY
+    delta         : IntXY
     precise       : Logical
       # True for Apple Magic Mouse and Trackpad, AKA supports gestures and momentum.
       # If this is true then is_progress and is_momentum are valid (and vice versa).
@@ -281,7 +281,7 @@ class ScrollRate
   # - Scales each scroll delta by 'base_scale' with no acceleration.
   PROPERTIES
     base_scale     : Int32
-    delta          : XY
+    delta          : IntXY
     history_x      = ScrollEvent[]
     history_y      = ScrollEvent[]
     acceleration_x = 1.0
@@ -290,13 +290,13 @@ class ScrollRate
   METHODS
     method init( base_scale=5 )
 
-    method add( e:ScrollEvent )->XY
+    method add( e:ScrollEvent )->IntXY
       # Returns the scaled or accelerated scroll-delta.
       contingent
         necessary (e.precise)
         necessary (not e.is_momentum)
 
-        delta = XY(
+        delta = IntXY(
           _process<<history_x,x,acceleration_x>>(e),
           _process<<history_y,y,acceleration_y>>(e)
         )
@@ -317,13 +317,13 @@ class ScrollRate
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
-    method _process<<$HISTORY,$XY,$ACCELERATION>>( e:ScrollEvent )->Real
+    method _process<<$HISTORY,$IntXY,$ACCELERATION>>( e:ScrollEvent )->Real
       while ($HISTORY.count and $HISTORY.first.timestamp < e.timestamp - 250) $HISTORY.remove_first
 
       local result = 0.0
-      if ($HISTORY.count and _same_direction($HISTORY.first.delta.$XY,e.delta.$XY))
+      if ($HISTORY.count and _same_direction($HISTORY.first.delta.$IntXY,e.delta.$IntXY))
         $HISTORY.add( e )
-        result += (forEach in $HISTORY).delta.$XY
+        result += (forEach in $HISTORY).delta.$IntXY
         result /= $HISTORY.count
         if ($HISTORY.count == 1)
           $ACCELERATION = 1.0
@@ -332,7 +332,7 @@ class ScrollRate
         endIf
       else
         $HISTORY.[ clear, add(e) ]
-        result = e.delta.$XY
+        result = e.delta.$IntXY
         $ACCELERATION = 1.0
       endIf
 

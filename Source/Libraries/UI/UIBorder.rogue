@@ -48,9 +48,9 @@ class UIBorder : UIComponent
         update_subcomponent_heights( subcomponents, (placement.size.y - (top + bottom)).clamped_low(0) )
       endUse
 
-    method update_layout_placement( container:Box ) [override]
-      position = Box(placement.size).positioned_within( container, placement.anchor ).position
-      update_subcomponent_placement( Box(left,top,(placement.size-XY(left+right,top+bottom)).clamped_low(XY(0,0))) )
+    method update_layout_placement( container:IntBox ) [override]
+      position = IntBox(placement.size).positioned_within( container, placement.anchor ).position
+      update_subcomponent_placement( IntBox(left,top,(placement.size-IntXY(left+right,top+bottom)).clamped_low(IntXY(0,0))) )
 
     method update_layout_width( container_width:Int32 ) [override]
       width = which{ measure_width(container_width) || container_width }

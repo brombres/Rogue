@@ -79,13 +79,13 @@ class BitmapFont
     method bitmap( ch:BitmapFontCharacterInfo )->Bitmap
       return Bitmap( atlas, ch.bounds )
 
-    method draw( text:String, dest_bitmap:Bitmap, position:XY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
+    method draw( text:String, dest_bitmap:Bitmap, position:IntXY, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
       draw( text, dest_bitmap, position.x, position.y, anchor, blit_fn )
 
     method draw( text:String, dest_bitmap:Bitmap, x:Int32, y:Int32, anchor=Anchor.TOP_LEFT:Anchor, blit_fn=BitmapBlitFn.ALPHA:BitmapBlitFn )
       if (text.contains('\n'))
         y = Box( x, y, measure(text) ).relative_to( anchor ).position.y
-        anchor = Anchor( RealXY(anchor.position.x,0) )  # anchor vertical alignment to TOP
+        anchor = Anchor( XY(anchor.position.x,0) )  # anchor vertical alignment to TOP
         use buffer = StringPool
           forEach (ch in text)
             if (ch == '\n')
@@ -134,7 +134,7 @@ class BitmapFont
         return characters[ ch ]
       endIf
 
-    method measure( text:String )->XY
+    method measure( text:String )->IntXY
       local w = 0
       local max_w = 0
       local h = 0
@@ -171,7 +171,7 @@ class BitmapFont
       max_w .= or_larger( w )
       h += height
 
-      return XY( max_w, h )
+      return IntXY( max_w, h )
 
 endClass
 

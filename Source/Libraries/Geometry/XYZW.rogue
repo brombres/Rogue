@@ -5,13 +5,13 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
     method create->XYZW
       return XYZW( 0, 0, 0, 1 )
 
-    method create( xy:XY )->XYZW
+    method create( xy:IntXY )->XYZW
       return XYZW( xy.x, xy.y, 0, 1 )
 
-    method create( xy:XY, z:Real )->XYZW
+    method create( xy:IntXY, z:Real )->XYZW
       return XYZW( xy.x, xy.y, z, 1 )
 
-    method create( xy:XY, z:Real, w:Real )->XYZW
+    method create( xy:IntXY, z:Real, w:Real )->XYZW
       return XYZW( xy.x, xy.y, z, w )
 
     method create( xyz:XYZ )->XYZW
@@ -27,8 +27,8 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
     method to->String
       return "[$,$,$,$]" (x,y,z,w)
 
-    method to->XY
-      return XY(x.floor,y.floor)
+    method to->IntXY
+      return IntXY(x.floor,y.floor)
 
     method to->XYZ
       return XYZ(x,y,z)

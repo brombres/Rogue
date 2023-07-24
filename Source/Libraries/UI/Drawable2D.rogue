@@ -3,11 +3,11 @@ module UI
 ENTITY_CALLBACK_PROPERTY<< Drawable2D, on_resize, Function(Drawable2D), ResizeCallbackProperty >>
 PROPAGATED_ENTITY_PROPERTY<< Drawable2D, alignment, Anchor, Anchor.TOP_LEFT,            AlignmentProperty, parent_drawable >>
 PROPAGATED_ENTITY_PROPERTY<< Drawable2D, font,      UIFont, UI.active.default_font, FontProperty, parent_drawable >>
-ENTITY_PROPERTY<< Drawable2D, weight, RealXY, RealXY(1,1), WeightProperty >>
+ENTITY_PROPERTY<< Drawable2D, weight, XY, XY(1,1), WeightProperty >>
 
 class Drawable2D : Entity
   PROPERTIES
-    position       : XY
+    position       : IntXY
     draw_order     : Int32
     placement      : Placement2D
     last_placement : Placement2D  # for dirty rectangle tracking
@@ -16,10 +16,10 @@ class Drawable2D : Entity
     method init
       prior.init
 
-    method init( size:XY )
-      bounds = Box(size)
+    method init( size:IntXY )
+      bounds = IntBox(size)
 
-    method init( bounds:Box )
+    method init( bounds:IntBox )
       set_bounds( bounds )
 
     method init( content:Entity )
@@ -31,10 +31,10 @@ class Drawable2D : Entity
     method after_resize
       noAction
 
-    method bounds->Box
-      return Box( position, placement.size )
+    method bounds->IntBox
+      return IntBox( position, placement.size )
 
-    method clip->Box?
+    method clip->IntBox?
       return UI.active.clip
 
     method contains( drawable:Drawable2D )->Logical
@@ -47,13 +47,13 @@ class Drawable2D : Entity
     method contains( e:PointerEvent )->Logical
       return contains( e.position )
 
-    method contains( pos:XY )->Logical
+    method contains( pos:IntXY )->Logical
       return display_bounds.contains( pos )
 
-    method display_bounds->Box
-      return Box( placement.display_position, placement.size )
+    method display_bounds->IntBox
+      return IntBox( placement.display_position, placement.size )
 
-    method display_position->XY
+    method display_position->IntXY
       return placement.display_position
 
     method draw
@@ -80,7 +80,7 @@ class Drawable2D : Entity
       # own descendants.
       noAction
 
-    method find( pos:XY )->Drawable2D
+    method find( pos:IntXY )->Drawable2D
       # Find the last child that contains 'pos'.
       use drawables = collect<<Drawable2D>>
         forEach (drawable in drawables step -1)
@@ -132,11 +132,11 @@ class Drawable2D : Entity
     method set_anchor( value:Anchor )
       placement.anchor = value
 
-    method set_bounds( bounds:Box )
+    method set_bounds( bounds:IntBox )
       position = bounds.position
       fixed_size = bounds.size
 
-    method set_clip( clip_bounds:Box? )
+    method set_clip( clip_bounds:IntBox? )
       UI.active.clip = clip_bounds
 
     method set_draw_order( new_draw_order:Int32 )
@@ -147,18 +147,18 @@ class Drawable2D : Entity
 
     method set_fixed_height( h:Int32 )
       attributes = (attributes & !HEIGHT_MASK) | FIXED_HEIGHT
-      placement.size = XY( placement.size.x, h )
+      placement.size = IntXY( placement.size.x, h )
 
-    method set_fixed_size( new_fixed_size:XY )
+    method set_fixed_size( new_fixed_size:IntXY )
       attributes = (attributes & !SIZE_MASK) | FIXED_WIDTH | FIXED_HEIGHT
       placement.size = new_fixed_size
 
     method set_fixed_width( w:Int32 )
       attributes = (attributes & !WIDTH_MASK) | FIXED_WIDTH
-      placement.size = XY( w, placement.size.y )
+      placement.size = IntXY( w, placement.size.y )
 
     method set_height( value:Int32 )
-      placement.size = XY( placement.size.x, value )
+      placement.size = IntXY( placement.size.x, value )
 
     method set_rotation( value:Radians )
       placement.rotation = XYZ( placement.rotation.x, placement.rotation.y, value )
@@ -166,7 +166,7 @@ class Drawable2D : Entity
     method set_rotation( value:XYZ )
       placement.rotation = value
 
-    method set_size( value:XY )
+    method set_size( value:IntXY )
       placement.size = value
 
     method set_structure_modified( setting:Logical ) [override]
@@ -174,12 +174,12 @@ class Drawable2D : Entity
       if (setting) request_layout
 
     method set_width( value:Int32 )
-      placement.size = XY( value, placement.size.y )
+      placement.size = IntXY( value, placement.size.y )
 
-    method size->XY
+    method size->IntXY
       return placement.size
 
-    method update( bounds:Box )
+    method update( bounds:IntBox )
       if (this.bounds != bounds)
         this.bounds = bounds
         request_layout

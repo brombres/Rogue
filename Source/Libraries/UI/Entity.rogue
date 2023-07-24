@@ -289,7 +289,7 @@ class Entity : Node<<Entity>>
 
       after_update
 
-      if (actions) actions .= update
+      if (actions) actions .= updated
 
     method visible->Logical
       return not hidden

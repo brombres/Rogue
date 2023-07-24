@@ -1,6 +1,6 @@
 module Geometry
 
-class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
+class Quad( a:IntXY, b:IntXY, c:IntXY, d:IntXY ) [compound]
   GLOBAL METHODS
     method create( bounds:Box )->Quad
       return Quad( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
@@ -10,10 +10,10 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
       return this->Box
 
       #{
-    method centroid->XY
+    method centroid->IntXY
       return (a + b + c + d) / 4
 
-    method contains( point:XY )->Logical
+    method contains( point:IntXY )->Logical
       local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
       if (point.x < top_left.x or point.y < top_left.y) return false
 
@@ -84,10 +84,10 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method intersects( triangle:Triangle )->Logical
       return (Triangle(a,b,c).intersects(triangle) or Triangle(a,c,d).intersects(triangle))
 
-    method operator+( position:XY )->Quad
+    method operator+( position:IntXY )->Quad
       return Quad( a+position, b+position, c+position, d+position )
 
-    method operator-( position:XY )->Quad
+    method operator-( position:IntXY )->Quad
       return Quad( a-position, b-position, c-position, d-position )
 
     method operator*( scale:Real64 )->Quad
@@ -96,10 +96,10 @@ class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
     method operator/( scale:Real64 )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
-    method operator*( scale:XY )->Quad
+    method operator*( scale:IntXY )->Quad
       return Quad( a*scale, b*scale, c*scale, d*scale )
 
-    method operator/( scale:XY )->Quad
+    method operator/( scale:IntXY )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
     method rotated( angle:Degrees )->Quad [macro]

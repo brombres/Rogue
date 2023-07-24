@@ -1,91 +1,77 @@
 module Geometry
 
-class XY( x:Int32, y:Int32 ) [essential compound]
+class XY( x:Real, y:Real ) [compound]
   DEFINITIONS
     zero = XY(0,0)
 
   GLOBAL METHODS
-    method create( n:Int32 )->XY
+    method create( n:Real )->XY
       return XY(n,n)
 
-    method create( real_xy:RealXY )->XY
-      return XY( real_xy.x.floor, real_xy.y.floor )
-
-    method operator*( a:Int32, b:XY )->XY
-      return XY( a*b.x, a*b.y )
-
-    method operator*( a:RealXY, b:XY )->RealXY
-      return RealXY( a.x*b.x, a.x*b.y )
-
-    method operator*( a:XY, b:XY )->XY
-      return XY( a.x*b.x, a.y*b.y )
-
-    method operator*( a:XY, b:Int32 )->XY
-      return XY( a.x*b, a.y*b )
-
-    method operator*( a:XY, b:Real )->RealXY
-      return RealXY( a.x*b, a.y*b )
-
-    method operator*( a:XY, b:RealXY )->RealXY
-      return RealXY( a.x*b.x, a.y*b.y )
-
-    method operator/( a:Int32, b:XY )->XY
-      return XY( a/b.x, a/b.y )
-
-    method operator/( a:RealXY, b:XY )->RealXY
-      return RealXY( a.x/b.x, a.x/b.y )
-
-    method operator%( a:Int32, b:XY )->XY
-      return XY( a%b.x, a%b.y )
-
-    method operator%( a:RealXY, b:XY )->RealXY
-      return RealXY( a.x%b.x, a.x%b.y )
+    method create( xy:IntXY )->XY
+      return XY(xy.x,xy.y)
 
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
 
-    method operator+( a:XY, b:RealXY )->RealXY
-      return RealXY( a.x+b.x, a.y+b.y )
-
     method operator-( a:XY, b:XY )->XY
       return XY( a.x-b.x, a.y-b.y )
 
-    method operator-( a:XY, b:RealXY )->RealXY
-      return RealXY( a.x-b.x, a.y-b.y )
+    method operator*( a:XY, b:XY )->XY
+      return XY( a.x*b.x, a.y*b.y )
+
+    method operator*( a:XY, b:Real )->XY
+      return XY( a.x*b, a.y*b )
+
+    method operator*( a:XY, b:IntXY )->XY
+      return XY( a.x*b.x, a.y*b.y )
+
+    method operator*( a:IntXY, b:XY )->XY
+      return XY( a.x*b.x, a.x*b.y )
 
     method operator/( a:XY, b:XY )->XY
-      return XY( which{b.x:a.x/b.x || 0}, which{b.y:a.y/b.y || 0} )
+      return XY( a.x/b.x, a.y/b.y )
 
-    method operator/( a:XY, b:Int32 )->XY
-      if (b == 0) return XY.zero
+    method operator/( a:XY, b:Real )->XY
       return XY( a.x/b, a.y/b )
 
-    method operator/( a:XY, b:Real )->RealXY
-      return RealXY( a.x/b, a.y/b )
+    method operator/( a:XY, b:IntXY )->XY
+      return XY( a.x/b.x, a.y/b.y )
 
-    method operator/( a:XY, b:RealXY )->RealXY
-      return a->RealXY / b
+    method operator/( a:Real, b:XY )->XY
+      return XY( a/b.x, a/b.y )
+
+    method operator/( a:IntXY, b:XY )->XY
+      return XY( a.x/b.x, a.x/b.y )
 
     method operator%( a:XY, b:XY )->XY
       return XY( a.x%b.x, a.y%b.y )
 
-    method operator%( a:XY, b:Int32 )->XY
+    method operator%( a:XY, b:Real )->XY
       if (b == 0) return a
       return XY( a.x%b, a.y%b )
 
-    method operator%( a:XY, b:RealXY )->RealXY
-      return RealXY( a.x%b.x, a.y%b.y )
+    method operator%( a:Real, b:XY )->XY
+      return XY( a%b.x, a%b.y )
+
+    method operator%( a:IntXY, b:XY )->XY
+      return XY( a.x%b.x, a.x%b.y )
 
     method operator^( a:XY, b:XY )->XY
       return XY( a.x^b.x, a.y^b.y )
 
-    method operator^( a:XY, b:Int32 )->XY
+    method operator^( a:XY, b:Real )->XY
       return XY( a.x^b, a.y^b )
 
+    method operator*( a:Real, b:XY )->XY
+      return XY( a*b.x, a*b.y )
 
   METHODS
     method abs->XY
       return XY( x.abs, y.abs )
+
+    method ceiling->XY
+      return XY( x.ceiling, y.ceiling )
 
     method clamped( low:XY, high:XY )->XY
       return this.clamped_low(low).clamped_high(high)
@@ -96,28 +82,31 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method clamped_low( limit:XY )->XY
       return XY( this.x.clamped_low(limit.x), this.y.clamped_low(limit.y) )
 
-    method cross( other:XY )->Int32
+    method cross( other:IntXY )->Real
       return x * other.y - y * other.x
 
     method distance_to( other:XY )->Int32
       return (other - this).magnitude
 
-    method dot( other:XY )->Int32
+    method dot( other:IntXY )->Real
       return x * other.x + y * other.y
+
+    method floor->XY
+      return XY( x.floor, y.floor )
 
     method is_zero->Logical
       return x == 0 and y == 0
 
-    method magnitude->Int32
+    method magnitude->Real
       return (x*x + y*y).sqrt
 
-    method magnitude2->Int32
+    method magnitude2->Real
       return x*x + y*y
 
-    method max->Int32
+    method max->Real
       return which{ x>=y:x || y }
 
-    method min->Int32
+    method min->Real
       return which{ x<=y:x || y }
 
     method max( other:XY )->XY
@@ -146,12 +135,12 @@ class XY( x:Int32, y:Int32 ) [essential compound]
     method operator==( other:XY )->Logical
       return x == other.x and y == other.y
 
+    method operator-()->XY
+      return XY( -x, -y )
+
     method operator<>( other:XY )->Int32
       if (x == other.x) return y <> other.y
       else              return x <> other.x
-
-    method operator-()->XY
-      return XY( -x, -y )
 
     method or_larger( other:XY )->XY
       # Returns the largest X and the largest Y between this value and the other value.
@@ -161,7 +150,7 @@ class XY( x:Int32, y:Int32 ) [essential compound]
       # Returns the smaller X and the smaller Y between this value and the other value.
       return XY( this.x.or_smaller(other.x), this.y.or_smaller(other.y) )
 
-    method product->Int32
+    method product->Real
       return x * y
 
     method sign->XY
@@ -169,9 +158,6 @@ class XY( x:Int32, y:Int32 ) [essential compound]
 
     method to->String
       return "($,$)"(x,y)
-
-    method to->RealXY
-      return RealXY(x,y)
 
     method xv->XY
       return XY(x,0)
@@ -185,10 +171,10 @@ endClass
 
 augment Math::Random
   METHODS
-    method xy( limit:Int32 )->Geometry::XY
-      return Geometry::XY( int32(limit), int32(limit) )
+    method real_xy( limit:Real )->Geometry::XY
+      return Geometry::XY( real(limit), real(limit) )
 
-    method xy( limit:Geometry::XY )->Geometry::XY
-      return Geometry::XY( int32(limit.x), int32(limit.y) )
+    method real_xy( limit:Geometry::XY )->Geometry::XY
+      return Geometry::XY( real(limit.x), real(limit.y) )
 endAugment
 

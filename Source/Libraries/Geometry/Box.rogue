@@ -25,21 +25,6 @@ class Box( position:XY, size:XY ) [essential compound]
       # box, but provided to ensure that Box(B) == B.
       return existing
 
-      #{
-    method create( value:Value )->Box
-      if (value.is_list)
-        if (value.count == 2)
-          return Box( XY(value) )
-        else
-          return Box( value[0]->Real, value[1]->Real, value[2]->Real, value[3]->Real )
-        endIf
-      elseIf (value.contains("position"))
-        return Box( XY(value//position), XY(value//size) )
-      else
-        return Box( value//x->Real, value//y->Real, value//width->Real, value//height->Real )
-      endIf
-      }#
-
     method from_corners( top_left:XY, bottom_right:XY )->Box
       local tl = top_left.or_smaller( bottom_right )
       local br = top_left.or_larger( bottom_right )
@@ -49,16 +34,14 @@ class Box( position:XY, size:XY ) [essential compound]
     method at( anchor:Anchor )->XY
       return position + anchor * size
 
-    method at( proportional_position:RealXY )->XY
-      return position + XY( proportional_position * RealXY(size) )
+    method at( proportional_position:XY )->XY
+      return position + XY( proportional_position * XY(size) )
 
     method at( u:Real, v:Real )->XY
       return position + XY(u*size.x,v*size.y)
 
-      #{
-    method at_random->XY
-      return XY(Random.real64(position.x,size.x+position.x),Random.real64(position.y,size.y+position.y))
-      }#
+    method at_random( gen=Random:Random )->XY
+      return XY(gen.real64(position.x,size.x+position.x),gen.real64(position.y,size.y+position.y))
 
     method bottom->Int32
       return this.position.y + this.size.y
@@ -236,17 +219,6 @@ class Box( position:XY, size:XY ) [essential compound]
       local w = width.or_smaller(size.x)
       return Box( position+XY(size.x-w,0), w, size.y )
 
-      #{
-    method rotated( angle:Degrees )->Quad
-      return this.rotated( angle->Radians )
-
-    method rotated( angle:Radians )->Quad
-      return this->Quad.rotated( angle )
-      }#
-
-      #method round->Box
-      #return Box( position.round, size.round )
-
     method subset( subset_size:XY, anchor=Anchor.CENTER:Anchor )->Box
       return Box( position + anchor * (size-subset_size), subset_size )
 
@@ -256,22 +228,11 @@ class Box( position:XY, size:XY ) [essential compound]
     method subset_y( new_height:Int32, anchor=Anchor.CENTER:Anchor )->Box
       return subset( XY(width,new_height), anchor )
 
-      #{
-    method to->Quad
-      return Quad( this )
-      }#
+    method to->IntBox
+      return IntBox( position, size )
 
     method to->String
       return "[$,$ $x$]" (position.x,position.y,size.x,size.y)
-
-      #{
-    method to->Value( &integer )
-      if (integer)
-        return @{ x:x->Int32, y:y->Int32, width:width->Int32, height:height->Int32 }
-      else
-        return @{ x:x, y:y, width:width, height:height }
-      endIf
-      }#
 
     method top->Int32
       return this.position.y

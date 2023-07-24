@@ -2,15 +2,15 @@ module UI
 
 class Placement2D [compound]
   PROPERTIES
-    display_position : XY
-    size             : XY
+    display_position : IntXY
+    size             : IntXY
     anchor           = Anchor.CENTER : Anchor
     rotation         : XYZ
     z                : Int32
 
   METHODS
-    method display_bounds->Box
-      return Box( display_position, size )
+    method display_bounds->IntBox
+      return IntBox( display_position, size )
 
     method operator==( other:Placement2D )->Logical
       if (display_position != other.display_position) return false

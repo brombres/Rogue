@@ -1,13 +1,13 @@
 module Geometry
 
-class Triangle( a:XY, b:XY, c:XY ) [compound]
+class Triangle( a:IntXY, b:IntXY, c:IntXY ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility
   METHODS
       #{
-    method centroid->XY
+    method centroid->IntXY
       return (a + b + c) / 3
 
-    method contains( point:XY )->Logical
+    method contains( point:IntXY )->Logical
       # Using Barycentric technique as described here:
       #   http://www.blackpawn.com/texts/pointinpoly/default.html
 
@@ -50,10 +50,10 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
       if (Line(b,c).intersects(other)) return true
       return (Line(a,c).intersects(other))
 
-    method operator+( position:XY )->Triangle
+    method operator+( position:IntXY )->Triangle
       return Triangle( a+position, b+position, c+position )
 
-    method operator-( position:XY )->Triangle
+    method operator-( position:IntXY )->Triangle
       return Triangle( a-position, b-position, c-position )
 
     method operator*( scale:Real64 )->Triangle
@@ -62,10 +62,10 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
     method operator/( scale:Real64 )->Triangle
       return Triangle( a/scale, b/scale, c/scale )
 
-    method operator*( scale:XY )->Triangle
+    method operator*( scale:IntXY )->Triangle
       return Triangle( a*scale, b*scale, c*scale )
 
-    method operator/( scale:XY )->Triangle
+    method operator/( scale:IntXY )->Triangle
       return Triangle( a/scale, b/scale, c/scale )
 
     method rotated( angle:Degrees )->Triangle [macro]

@@ -6,14 +6,14 @@ class UITableLayout : UILayout
     next_empty : Int32
     columns    = UITableColumnInfo[]
     rows       = UITableRowInfo[]
-    cell_span  = XY[]
+    cell_span  = IntXY[]
 
   METHODS
     method init
       prior.init
       resize( 1, 1 )
 
-    method init( size:XY )
+    method init( size:IntXY )
       prior.init( size )
       resize( 1, 1 )
 
@@ -46,8 +46,8 @@ class UITableLayout : UILayout
         is_adding = false
       endIf
 
-    method add( component:Entity, span:XY )
-      if (span == XY(1,1))
+    method add( component:Entity, span:IntXY )
+      if (span == IntXY(1,1))
         add( component )  # regular add
         return
 
@@ -153,12 +153,12 @@ class UITableLayout : UILayout
             prior.add( forEach in new_cells )
           endUse
 
-          use new_span = WorkList<<XY>>
+          use new_span = WorkList<<IntXY>>
             forEach (j in 0..<new_rows)
               forEach (i in 0..<new_columns)
                 local index = index_of( i, j )
                 if (index?) new_span.add( cell_span[index.value] )
-                else        new_span.add( XY(1,1) )
+                else        new_span.add( IntXY(1,1) )
               endForEach
             endForEach
             cell_span.clear
@@ -175,7 +175,7 @@ class UITableLayout : UILayout
       while (rows.count < new_rows) rows.add( UITableRowInfo() )
       columns.discard_from( new_columns )
       rows.discard_from( new_rows )
-      loop (columns.count*rows.count - cell_span.count) cell_span.add( XY(1,1) )
+      loop (columns.count*rows.count - cell_span.count) cell_span.add( IntXY(1,1) )
 
       _advance_next_empty
 
@@ -195,8 +195,8 @@ class UITableLayout : UILayout
       endTemporarily
       if (index == next_empty) _advance_next_empty
 
-    method set( i:Int32, j:Int32, component:UIComponent, span:XY )
-      if (span == XY(1,1))
+    method set( i:Int32, j:Int32, component:UIComponent, span:IntXY )
+      if (span == IntXY(1,1))
         set( i, j, component )
         return
       else
@@ -205,7 +205,7 @@ class UITableLayout : UILayout
         set_span( i, j, span )
       endIf
 
-    method set_span( i:Int32, j:Int32, new_span:XY )
+    method set_span( i:Int32, j:Int32, new_span:IntXY )
       local index = index_of(i,j)
       assert index.exists
       local old_span = cell_span[index.value]
@@ -216,10 +216,10 @@ class UITableLayout : UILayout
       local w = new_span.x.clamped_high( columns.count - i )
       local h = new_span.y.clamped_high( rows.count - j )
       _set_span_shadow( i, j, w, h, 0 )
-      cell_span[index.value] = XY(w,h)
+      cell_span[index.value] = IntXY(w,h)
       _advance_next_empty
 
-    method span( i:Int32, j:Int32 )->XY
+    method span( i:Int32, j:Int32 )->IntXY
       local index = index_of(i,j)
       assert index
       return cell_span[index.value]
@@ -326,7 +326,7 @@ class UITableLayout : UILayout
         endForEach
       endUse
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local column_count = columns.count
       local cursor_start = container.position
       forEach (row at j in rows)
@@ -335,11 +335,11 @@ class UITableLayout : UILayout
           local index = j*column_count + i
           if (cell_span[index].x)
             local cell = subcomponents[ index ]
-            cell.update_layout_placement( Box(cursor,cell.size) )
+            cell.update_layout_placement( IntBox(cursor,cell.size) )
           endIf
-          cursor += XY(column.width,0)
+          cursor += IntXY(column.width,0)
         endForEach
-        cursor_start += XY(0,row.height)
+        cursor_start += IntXY(0,row.height)
       endForEach
 
     method _advance_next_empty
@@ -392,7 +392,7 @@ class UITableLayout : UILayout
 
     method _set_span_shadow( x:Int32, y:Int32, w:Int32, h:Int32, value:Int32 )
       local cols = columns.count
-      local new_span = XY(value,value)
+      local new_span = IntXY(value,value)
       forEach (j in y..<y+h)
         forEach (i in x..<x+w)
           cell_span[ j*cols+i ] = new_span

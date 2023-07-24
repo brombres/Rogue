@@ -21,7 +21,7 @@ class ConsoleUIFont : UIFont [singleton]
         bg_color  = bg_color
       ]
 
-    method draw( text:String, position:XY ) [override]
+    method draw( text:String, position:IntXY ) [override]
       ConsoleUICanvas.set_cursor( position )
       if (is_bold)      ConsoleUICanvas.style.bold
       if (is_inverse)   ConsoleUICanvas.style.inverse
@@ -38,13 +38,13 @@ class ConsoleUIFont : UIFont [singleton]
     method height->Int32
       return 1
 
-    method measure( ch:Character )->RealXY
+    method measure( ch:Character )->XY
       which (ch)
-        case '\n': return XY(0,1)
-        case '\t': return XY(2,1)
+        case '\n': return IntXY(0,1)
+        case '\t': return IntXY(2,1)
         others
-          if (ch < 32) return XY.zero
-          else         return XY(1,1)
+          if (ch < 32) return IntXY.zero
+          else         return IntXY(1,1)
       endWhich
 
     method set_bold( is_bold )
