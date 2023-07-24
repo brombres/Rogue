@@ -1,6 +1,6 @@
 module Geometry
 
-class Ellipse( position:XY, size:XY ) [compound]
+class Ellipse( position:IntXY, size:IntXY ) [compound]
   METHODS
     method to->String
       return "(@$, $x$)" (position,size.x,size.y)

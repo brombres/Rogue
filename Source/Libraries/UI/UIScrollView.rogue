@@ -3,8 +3,8 @@ module UI
 class UIScrollView : UILayout
   PROPERTIES
     controller          : UIScrollViewController
-    content_offset      : RealXY
-    last_content_offset : RealXY
+    content_offset      : XY
+    last_content_offset : XY
 
   METHODS
     method init
@@ -80,7 +80,7 @@ class UIScrollView : UILayout
 
       endIf
 
-    method on_select_background( position:XY )
+    method on_select_background( position:IntXY )
       noAction
 
     method on_update
@@ -94,9 +94,9 @@ class UIScrollView : UILayout
       last_content_offset = @content_offset
 
     method scroll_to( vertical_offset:Int32 )
-      scroll_to( XY(0,vertical_offset) )
+      scroll_to( IntXY(0,vertical_offset) )
 
-    method scroll_to( content_offset:XY )
+    method scroll_to( content_offset:IntXY )
       if (controller) controller.scroll_to( content_offset )
 
     method scroll_to_bottom
@@ -108,19 +108,19 @@ class UIScrollView : UILayout
       else            position = top_offset
 
     method set_content_offset( offset:Real )
-      set_content_offset( XY(@content_offset.x, offset) )
+      set_content_offset( IntXY(@content_offset.x, offset) )
 
     method set_content_offset( @content_offset )
       if local component = first_child<<UIComponent>>
-        component.position = @content_offset.floor->XY
+        component.position = @content_offset.floor->IntXY
       endIf
 
     method top_offset->Int32
       return 0
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box )
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox )
       forEach (component in subcomponents)
-        component.update_layout_placement( Box(component.position,container.size) )
+        component.update_layout_placement( IntBox(component.position,container.size) )
       endForEach
 
 endClass

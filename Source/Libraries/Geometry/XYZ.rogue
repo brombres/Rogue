@@ -5,16 +5,16 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method create->XYZ
       return XYZ( 0, 0, 0 )
 
-		method create( xy:RealXY )->XYZ
+		method create( xy:XY )->XYZ
       return XYZ( xy.x, xy.y, 0 )
 
-		method create( xy:RealXY, z:Real )->XYZ
+		method create( xy:XY, z:Real )->XYZ
       return XYZ( xy.x, xy.y, z )
 
-    method create( xy:XY )->XYZ
+    method create( xy:IntXY )->XYZ
       return XYZ( xy.x, xy.y, 0 )
 
-    method create( xy:XY, z:Real )->XYZ
+    method create( xy:IntXY, z:Real )->XYZ
       return XYZ( xy.x, xy.y, z )
 
   METHODS
@@ -42,6 +42,14 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
 
     method operator==( other:XYZ )->Logical
       return (x == other.x) and (y == other.y) and (z == other.z)
+
+    method operator<>( other:XYZ )->Int32
+      if (x == other.x)
+        if (y == other.y) return z <> other.z
+        else              return y <> other.y
+      else
+        return x <> other.x
+      endIf
 
     method operator+( other:XYZ )->XYZ
       return XYZ( x+other.x, y+other.y, z+other.z )
@@ -82,14 +90,14 @@ class XYZ( x:Real, y:Real, z=0:Real ) [compound]
     method operator^( value:Real )->XYZ
       return XYZ( x^value, y^value, z^value )
 
-    method to->RealXY [essential]
-      return RealXY(x,y)
+    method to->XY [essential]
+      return XY(x,y)
 
     method to->String
       return "[$,$,$]" (x,y,z)
 
-    method to->XY [essential]
-      return XY(x.floor,y.floor)
+    method to->IntXY [essential]
+      return IntXY(x.floor,y.floor)
 endClass
 
 class DegreesXYZ( value:XYZ ) [compound]

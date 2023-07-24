@@ -19,11 +19,11 @@ class UIList : UILayout
         component.update_layout_height( component.measure_height(container_height).value )
       endForEach
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local cursor = container.position
       local w      = size.x
       forEach (component in subcomponents)
-        component.update_layout_placement( Box(cursor,w,component.size.y) )
-        cursor += XY(0,component.size.y)
+        component.update_layout_placement( IntBox(cursor,w,component.size.y) )
+        cursor += IntXY(0,component.size.y)
       endForEach
 endClass

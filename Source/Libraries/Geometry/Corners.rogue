@@ -1,6 +1,6 @@
 module Geometry
 
-class Corners( top_left:XY, bottom_right:XY ) [compound]
+class Corners( top_left:IntXY, bottom_right:IntXY ) [compound]
   GLOBAL METHODS
     method create( bounds:Box )->Corners
       return Corners( bounds.position, bounds.position+bounds.size )

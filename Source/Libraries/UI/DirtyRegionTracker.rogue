@@ -5,7 +5,7 @@ class DirtyRegionTracker : Poolable
     method add( drawable:Drawable2D )
       noAction
 
-    method add( region:Box )
+    method add( region:IntBox )
       noAction
 
     method clear
@@ -14,26 +14,26 @@ class DirtyRegionTracker : Poolable
     method count->Int32
       return 0
 
-    method on_end_use( list:Box[] )
-      WorkList<<Box>>.on_end_use( list )
+    method on_end_use( list:IntBox[] )
+      WorkList<<IntBox>>.on_end_use( list )
 
     method on_return_to_pool
       clear
 
-    method on_use->Box[]
-      return WorkList<<Box>>.on_use
+    method on_use->IntBox[]
+      return WorkList<<IntBox>>.on_use
 endClass
 
 class SimpleDirtyRegionTracker : DirtyRegionTracker
   PROPERTIES
-    dirty_bounds : Box?
+    dirty_bounds : IntBox?
 
   METHODS
     method add( drawable:Drawable2D )
       add( drawable.last_placement.display_bounds )
       add( drawable.placement.display_bounds )
 
-    method add( region:Box )
+    method add( region:IntBox )
       if (dirty_bounds.exists)
         dirty_bounds = dirty_bounds.value | region
       else
@@ -46,7 +46,7 @@ class SimpleDirtyRegionTracker : DirtyRegionTracker
     method count->Int32
       return which { dirty_bounds.exists:1 || 0 }
 
-    method on_use->Box[]
+    method on_use->IntBox[]
       local list = prior.on_use
       if (dirty_bounds) list.add( dirty_bounds.value )
       return list

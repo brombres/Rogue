@@ -52,12 +52,12 @@ class UIHorizontalLayout : UILayout
         endForEach
       endUse
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local cursor = container.position
       local h = container.size.y
       forEach (component in subcomponents)
         #Epilog.println "cursor:$"(cursor)
-        component.update_layout_placement( Box(cursor, XY(component.size.x,h)) )
+        component.update_layout_placement( IntBox(cursor, IntXY(component.size.x,h)) )
         cursor += component.size.xv
       endForEach
 endClass

@@ -52,11 +52,11 @@ class UIVerticalLayout : UILayout
         endForEach
       endUse
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local cursor = container.position
       local w = container.size.x
       forEach (component in subcomponents)
-        component.update_layout_placement( Box(cursor, XY(w,component.size.y)) )
+        component.update_layout_placement( IntBox(cursor, IntXY(w,component.size.y)) )
         cursor += component.size.yv
       endForEach
 endClass

@@ -44,7 +44,7 @@ class UI : UILayout
     default_font         : UIFont
 
     dirty_region_tracker = SimpleDirtyRegionTracker() : DirtyRegionTracker
-    clip                 : Box?
+    clip                 : IntBox?
     dt                   = 1.0 / 60.0
 
     pointer_focus        : Entity
@@ -67,10 +67,10 @@ class UI : UILayout
       keyboard_focus = null
       pointer_focus = null
 
-    method clip->Box?
+    method clip->IntBox?
       return @clip
 
-    method contains( pos:XY )->Logical
+    method contains( pos:IntXY )->Logical
       return bounds.contains( pos )
 
     method default_font->UIFont
@@ -202,10 +202,10 @@ class UI : UILayout
     method request_redraw
       request_redraw( bounds )
 
-    method request_redraw( bounds:Box )
+    method request_redraw( bounds:IntBox )
       dirty_region_tracker.add( bounds )
 
-    method set_bounds( value:Box )
+    method set_bounds( value:IntBox )
       localize bounds
       if (value == bounds) return
 

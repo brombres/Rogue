@@ -4,7 +4,7 @@ $localMacro UI_FACTORY_METHODS<<$name,$TypeName>>
     method $name->$TypeName
       return $TypeName()
 
-    method $name( size:XY )->$TypeName
+    method $name( size:IntXY )->$TypeName
       return $TypeName( size )
 
     method $name( content:UIComponent )->$TypeName
@@ -25,6 +25,6 @@ class UILayout : UIComponent
     method table( columns:Int32, rows:Int32 )->UITableLayout
       return UITableLayout(columns,rows)
 
-    method table( size:XY )->UITableLayout
+    method table( size:IntXY )->UITableLayout
       return UITableLayout(size)
 endClass

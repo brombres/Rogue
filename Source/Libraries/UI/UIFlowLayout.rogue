@@ -14,7 +14,7 @@ class UIFlowLayout : UILayout
         component.update_layout_height( component.measure_height(0).value )
       endForEach
 
-      local cursor = XY.zero
+      local cursor = IntXY.zero
       local max_width = container_width
       local line_height = 0
       local i = 0
@@ -77,7 +77,7 @@ class UIFlowLayout : UILayout
           # Can't fit any part of this component on the current line
           if (cursor.x > 0)
             # Retry all this on the next line
-            cursor = XY( 0, cursor.y+line_height+line_spacing )
+            cursor = IntXY( 0, cursor.y+line_height+line_spacing )
             line_height = 0
             nextIteration
           endIf
@@ -95,7 +95,7 @@ class UIFlowLayout : UILayout
         line_height .= or_larger( component.size.y )
 
         if (component.is_br)
-          cursor = XY( 0, cursor.y+line_height+line_spacing )
+          cursor = IntXY( 0, cursor.y+line_height+line_spacing )
           line_height = 0
         endIf
 
@@ -103,7 +103,7 @@ class UIFlowLayout : UILayout
       endWhile
 
       # Increase the height of this layout to contain all items
-      cursor += XY(0,line_height+line_spacing)
+      cursor += IntXY(0,line_height+line_spacing)
       content_height = cursor.y
 
     method measure_height( container_height:Int32? )->Int32?
@@ -117,7 +117,7 @@ class UIFlowLayout : UILayout
     method update_subcomponent_heights( subcomponents:UIComponent[], container_height:Int32 )
       noAction  # already done as part of update_subcomponent_widths()
 
-    method update_subcomponent_placement( subcomponents:UIComponent[], container:Box ) [override]
+    method update_subcomponent_placement( subcomponents:UIComponent[], container:IntBox ) [override]
       local x1 = container.position.x
       local cursor = container.position
       local max_width = container.size.x
@@ -144,7 +144,7 @@ class UIFlowLayout : UILayout
 
         if (not (cursor.x + total_w <= max_width) and cursor.x)
           # Advance to next line
-          cursor = XY( x1, cursor.y+line_height+line_spacing )
+          cursor = IntXY( x1, cursor.y+line_height+line_spacing )
           line_height = 0
           justify( subcomponents, i1, i-1, max_width )
           i1 = i
@@ -152,13 +152,13 @@ class UIFlowLayout : UILayout
         endIf
 
         # Ready to place component
-        component.update_layout_placement( Box(cursor,component.size) )
+        component.update_layout_placement( IntBox(cursor,component.size) )
         local text = component.text_content
         if (cursor.x > x1 or not text or text != " ") cursor += component.size.xv
         line_height .= or_larger( component.size.y )
 
         if (component.is_br)
-          cursor = XY( x1, cursor.y+line_height+line_spacing )
+          cursor = IntXY( x1, cursor.y+line_height+line_spacing )
           line_height = 0
           justify( subcomponents, i1, i-1, max_width )
           i1 = i
@@ -177,7 +177,7 @@ class UIFlowLayout : UILayout
       local delta = ((max_width * alignment.position.x) / 2).floor->Int32
       if (delta)
         forEach (i in i1..i2)
-          subcomponents[i].position += XY(delta,0)
+          subcomponents[i].position += IntXY(delta,0)
         endForEach
       endIf
 

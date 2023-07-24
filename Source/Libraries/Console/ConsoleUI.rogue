@@ -15,7 +15,7 @@ class ConsoleUI : UI
 
   PROPERTIES
     last_update_ms       : Int32
-    mouse_position       : XY?
+    mouse_position       : IntXY?
     button_pressed       = Dim<<Logical>>(2)
     is_running           : Logical
 
@@ -28,10 +28,10 @@ class ConsoleUI : UI
     method init
       prior.init( Console.size )
 
-    method init( size:XY )
+    method init( size:IntXY )
       prior.init( size )
 
-    method init( bounds:Box )
+    method init( bounds:IntBox )
       prior.init( bounds )
 
     method init_object
@@ -72,10 +72,10 @@ class ConsoleUI : UI
 
     method handle( type:Int32, index:Int32, e:ConsoleEvent )
       # Only called when e is a pointer or scroll event
-      local pos = XY( e.x, e.y )
+      local pos = IntXY( e.x, e.y )
       Pointer.position = pos
       Pointer.positions.[clear].add( pos )
-      handle( PointerEvent(type,pos,XY(0,0),index) )
+      handle( PointerEvent(type,pos,IntXY(0,0),index) )
 
     method keep_active( seconds:Real )
       keep_active_timer.init( seconds.or_larger(keep_active_timer.duration) )
@@ -161,10 +161,10 @@ class ConsoleUI : UI
             handle( PointerEvent.MOVE, 0, event )
 
           case ConsoleEventType.SCROLL_UP
-            handle( ScrollEvent(XY(0, 1)) )
+            handle( ScrollEvent(IntXY(0, 1)) )
 
           case ConsoleEventType.SCROLL_DOWN
-            handle( ScrollEvent(XY(0,-1)) )
+            handle( ScrollEvent(IntXY(0,-1)) )
 
         endWhich
       endLoop
@@ -178,7 +178,7 @@ class ConsoleUI : UI
       try
         is_running = true
         while (is_running)
-          update( Box(Console.width,Console.height) )
+          update( IntBox(Console.width,Console.height) )
           draw
 
           if (needs_redraw) keep_active( 1.0 )

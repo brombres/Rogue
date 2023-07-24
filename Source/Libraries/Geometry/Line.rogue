@@ -1,15 +1,15 @@
 module Geometry
 
-class Line( a:XY, b:XY ) [compound]
+class Line( a:IntXY, b:IntXY ) [compound]
   GLOBAL METHODS
     method create( ax:Int32, ay:Int32, bx:Int32, by:Int32 )->Line
-      return Line( XY(ax,ay), XY(bx,by) )
+      return Line( IntXY(ax,ay), IntXY(bx,by) )
 
   METHODS
-    method at( p:Real )->XY
+    method at( p:Real )->IntXY
       return a + (b - a) * p
 
-    method direction->XY
+    method direction->IntXY
       return (b - a)
 
       #{
@@ -44,7 +44,7 @@ class Line( a:XY, b:XY ) [compound]
       }#
 
       #{
-    method intersection( other:Line, &clamp=true )->XY?
+    method intersection( other:Line, &clamp=true )->IntXY?
       # Returns the point of intersection between this line and another line.
       local P1 = this.a
       local P2 = this.b
@@ -94,17 +94,17 @@ class Line( a:XY, b:XY ) [compound]
       return triangle.contains( a )
       }#
 
-    method normal->XY
+    method normal->IntXY
       local v = (b - a)
-      return XY( -v.y, v.x ).normalized
+      return IntXY( -v.y, v.x ).normalized
 
     method reversed->Line
       return Line( b, a )
 
-    method operator+( position:XY )->Line
+    method operator+( position:IntXY )->Line
       return Line( a+position, b+position )
 
-    method operator-( position:XY )->Line
+    method operator-( position:IntXY )->Line
       return Line( a-position, b-position )
 
     method operator*( scale:Real )->Line
@@ -114,14 +114,14 @@ class Line( a:XY, b:XY ) [compound]
       if (scale) return Line( a/scale, b/scale )
       else       return this
 
-    method operator*( scale:XY )->Line
+    method operator*( scale:IntXY )->Line
       return Line( a*scale.x, b*scale.y )
 
-    method operator/( scale:XY )->Line
+    method operator/( scale:IntXY )->Line
       return Line( a/scale, b/scale )
 
       #{
-    method operator&( other:Line )->XY?
+    method operator&( other:Line )->IntXY?
       return intersection( other )
       }#
 
