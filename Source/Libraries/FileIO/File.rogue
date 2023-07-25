@@ -833,6 +833,9 @@ class File( filepath:String ) [compound]
 
       endIf
 
+    method without_extension->File
+      return split_filepath_and_extension.filepath
+
     method without_trailing_separator->File
       # Removes trailing slash on anything except "/"
       local filepath = resolved.filepath
