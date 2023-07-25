@@ -139,6 +139,10 @@ class File( filepath:String ) [compound]
       if (not is_folder) return false
       return listing( pattern ).count > 0
 
+    method contains_wildcards->Logical
+      local filepath = resolved.filepath
+      return filepath.contains('*') or filepath.contains('?')
+
     method copy_to( destination:File, &if_different, &if_newer, &dry_run, &verbose, &ignore_hidden )->Int32?
       # Copies a file or the contents of a folder to a specified file or folder.
       # Returns the count of files copied or null on an error.
@@ -354,13 +358,10 @@ class File( filepath:String ) [compound]
       if (not i?) return this
       return filepath.from( i.value+1 )
 
-    method filepath_before_pattern->String
+    method filepath_before_wildcards->String
       # Example: alpha/beta/image*.png -> alpha/beta
       local filepath = resolved.filepath
-      while (filepath.contains('?') or filepath.contains('*'))
-        filepath = File(filepath).folder
-      endWhile
-      return filepath
+      return filepath.before_first('*').before_first('?')
 
     method folder->String
       local filepath = resolved.filepath
@@ -385,6 +386,14 @@ class File( filepath:String ) [compound]
       if (i1.value == 0) return File(filepath.leftmost(1))  # /abc -> /
 
       return filepath.from(0, i1.value-1)
+
+    method folder_before_wildcards->String
+      # Example: alpha/beta/image*.png -> alpha/beta
+      local filepath = resolved.filepath
+      while (filepath.contains('?') or filepath.contains('*'))
+        filepath = File(filepath).folder
+      endWhile
+      return filepath
 
     method has_parent->Logical
       return resolved.folder.count > 0
@@ -544,6 +553,15 @@ class File( filepath:String ) [compound]
 
     method reader->FileReader
       return FileReader( resolved.filepath )
+
+    method relative_to( base_folder:File )->File
+      local filepath = resolved.abs.filepath
+      local base_filepath = base_folder.resolved.abs.filepath + "/"
+      if (filepath.begins_with(base_filepath))
+        return File( filepath.after_first(base_filepath) )
+      else
+        return this
+      endIf
 
     method rename( destination:File )->Logical
       if (not this.exists) return false
