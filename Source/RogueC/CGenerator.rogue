@@ -685,7 +685,7 @@ class CGenerator : Visitor
         writer.print escape_label(ControlType.SUFFICIENT)
         writer.println ":;"
       endIf
-      visit( cmd.satisfied_statements )
+      visit( cmd.satisfied_scope )
       if (cmd.catches_necessary)
         writer.print escape_label(ControlType.NECESSARY)
         writer.println ":;"

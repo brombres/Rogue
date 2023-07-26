@@ -49,7 +49,7 @@ class ScopeVisitor : Visitor
     method on_visit( cmd:Contingent )
       on_enter( cmd )
       visit( cmd.statements )
-      visit( cmd.satisfied_statements )
+      visit( cmd.satisfied_scope )
       visit( cmd.unsatisfied_statements )
       on_leave( cmd )
 

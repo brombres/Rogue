@@ -703,7 +703,7 @@ class InspectionVisitor<<$ReturnType>>
       local result : $ReturnType
       result = visit(cmd.statements)
       if (result?) return result
-      result = visit(cmd.satisfied_statements)
+      result = visit(cmd.satisfied_scope)
       if (result?) return result
       result = visit(cmd.unsatisfied_statements)
       return result
