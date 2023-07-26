@@ -3472,20 +3472,22 @@ endClass
 
 class Contingent : ControlStructure
   PROPERTIES
-    satisfied_statements   : Cmd
-    unsatisfied_statements : Cmd
-    catches_necessary      : Logical
-    catches_sufficient     : Logical
-    is_resolved            : Logical
+    satisfied_scope : Cmd
+    satisfied_statements       : Cmd
+    unsatisfied_statements     : Cmd
+    catches_necessary          : Logical
+    catches_sufficient         : Logical
+    is_resolved                : Logical
 
   METHODS
     method init( t, statements, satisfied_statements, unsatisfied_statements )
       control_type = ControlType.CONTINGENT
+      if (satisfied_statements) satisfied_scope = LocalScope( satisfied_statements.t, satisfied_statements )
 
     method init( existing:Contingent )
       prior.init( existing )
       is_resolved = existing.is_resolved
-      if (existing.satisfied_statements) satisfied_statements = existing.satisfied_statements.cloned
+      if (existing.satisfied_scope) satisfied_scope = existing.satisfied_scope.cloned
       if (existing.unsatisfied_statements) unsatisfied_statements = existing.unsatisfied_statements.cloned
 
     method catches_escape( escape_type:ControlType )->Logical

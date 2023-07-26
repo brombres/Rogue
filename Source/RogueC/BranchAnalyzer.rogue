@@ -13,13 +13,13 @@ class BranchAnalyzer : InspectionVisitor<<Logical>> [singleton]
 
       if (cmd.catches_sufficient)
         if (cmd.catches_necessary and not visit(cmd.unsatisfied_statements)) return false
-        return visit(cmd.satisfied_statements)
+        return visit(cmd.satisfied_scope)
       elseIf (cmd.catches_necessary)
         if (not visit(cmd.unsatisfied_statements)) return false
-        if (cmd.satisfied_statements) return visit(cmd.satisfied_statements)
+        if (cmd.satisfied_scope) return visit(cmd.satisfied_scope)
         return visit( cmd.statements )
       else
-        if (cmd.satisfied_statements) return visit(cmd.satisfied_statements)
+        if (cmd.satisfied_scope) return visit(cmd.satisfied_scope)
         return visit( cmd.statements )
       endIf
 

@@ -525,7 +525,7 @@ class Resolver : Poolable, Visitor
         cmd.unsatisfied_statements = null
       endIf
 
-      cmd.satisfied_statements = visit( cmd.satisfied_statements )
+      cmd.satisfied_scope = visit( cmd.satisfied_scope )
       cmd.unsatisfied_statements = visit( cmd.unsatisfied_statements )
 
       pop_scope

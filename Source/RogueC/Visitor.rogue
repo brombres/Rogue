@@ -498,7 +498,7 @@ class Visitor
 
     method on_visit_children( cmd:Contingent )
       cmd.statements = visit(cmd.statements)
-      cmd.satisfied_statements = visit(cmd.satisfied_statements)
+      cmd.satisfied_scope = visit(cmd.satisfied_scope)
       cmd.unsatisfied_statements = visit(cmd.unsatisfied_statements)
 
     method on_visit_children( cmd:Necessary )
