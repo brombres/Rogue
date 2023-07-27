@@ -59,7 +59,7 @@ endAugment
 # resolve_conversion_to
 augment
   METHODS
-    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd
+    method Cmd.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd
       local this_type = require_type
       this_type.organize
       target_type.organize
@@ -99,9 +99,9 @@ augment
         endIf
       endIf
 
-      return resolve_via_conversion_methods( this, this_type, target_type, resolver, &=suppress_error )
+      return resolve_via_conversion_methods( this, this_type, target_type, resolver, &=suppress_error, &=limit_conversions )
 
-    method Cmd.resolve_via_conversion_methods( cmd:Cmd, this_type:Type, target_type:Type, resolver:Resolver, &suppress_error )->Cmd
+    method Cmd.resolve_via_conversion_methods( cmd:Cmd, this_type:Type, target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd
       if (TypeConversionStack.count > 20)
         if (suppress_error) return null
 
@@ -140,10 +140,12 @@ augment
         local result = resolver.resolve_call( t, this_type, cmd, type_arg->String("to"), null, &suppress_error )
         if (result) return result
 
-        # Look for a TargetType(cmd) constructor.
-        local exact_arg_types = not (this_type.is_reference and (target_type.is_reference or target_type is Program.@type_Value))
-        result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types )
-        if (result) return result
+        if (not limit_conversions)
+          # Look for a TargetType(cmd) constructor.
+          local exact_arg_types = not (this_type.is_reference and (target_type.is_reference or target_type is Program.@type_Value))
+          result = resolver.resolve_type_access( t, target_type, Args(t,cmd), &suppress_error, &=exact_arg_types, &limit_conversions )
+          if (result) return result
+        endIf
 
         # 'ref -> Logical' becomes 'ref?'
         if (this_type.is_reference and target_type is Program.type_Logical)
@@ -159,7 +161,7 @@ augment
 
       throw t.error( "No $.to->$ conversion or $($) constructor exists."(this_type,target_type,target_type,this_type) )
 
-    method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
+    method GenericFunctionDefinition.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd [override]
       local fn_type = target_type->(as FunctionType)
 
       if (not fn_type)
@@ -192,7 +194,7 @@ augment
       local fn_def = resolver.visit( FunctionDefinition(t,params,fn_type.return_type,with_values,statements) )
       return fn_def.resolve_conversion_to( target_type, resolver, &=suppress_error )
 
-    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error )->Cmd [override]
+    method LiteralNull.resolve_conversion_to( target_type:Type, resolver:Resolver, &suppress_error, &limit_conversions )->Cmd [override]
       target_type.organize
       if (target_type.attributes.is_optional)
         return resolver.validate( LiteralNullOptional(t,target_type) )
