@@ -948,6 +948,8 @@ class Resolver : Poolable, Visitor
     method on( cmd:InstanceOf )->Cmd
       cmd.operand = visit( cmd.operand )
       local operand_type = cmd.operand.require_type
+      operand_type.resolve
+      cmd.compare_type.resolve
       if (cmd.operand.is_type_context)
         if (operand_type.attributes.is_singleton)
           return cmd  # leave as a runtime check - singleton ref could hold an extended class
