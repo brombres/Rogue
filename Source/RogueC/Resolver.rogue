@@ -2119,12 +2119,12 @@ class Resolver : Poolable, Visitor
 
       throw t.error( "No such property '$' in type $."(name,type_context) )
 
-    method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error, &exact_arg_types )->Cmd
+    method resolve_type_access( t:Token, type:Type, args:Cmd, &suppress_error, &exact_arg_types, &limit_conversions )->Cmd
       type.organize
       temporarily this_module = type.module_context
 
         if (args)
-          local result = cmd_create_object( t, type, args, &=suppress_error, &=exact_arg_types )
+          local result = cmd_create_object( t, type, args, &=suppress_error, &=exact_arg_types, &=limit_conversions )
           if (not result) return null->(as Cmd)
           return validate( result )
         else
@@ -2143,13 +2143,14 @@ class Resolver : Poolable, Visitor
 
       endTemporarily
 
-    method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error, &exact_arg_types )->Cmd
+    method cmd_create_object( t:Token, type_context:Type, args:Cmd, &suppress_error, &exact_arg_types, &limit_conversions )->Cmd
       assert args
       if (type_context.is_primitive and args.count == 1 and args.first.require_type.is_primitive)
         return args.first.resolve_conversion_to( type_context, this )
       endIf
 
-      local m_constructor = find_procedure( t, type_context, null, "constructor", args, &constructor, &suppress_error, &=exact_arg_types )
+      local m_constructor = find_procedure( t, type_context, null, "constructor", args,
+        &constructor, &suppress_error, &=exact_arg_types, &=limit_conversions )
       if (m_constructor)
         if (m_constructor instanceOf GlobalMethod)
           if (m_constructor.attributes.is_primary)
@@ -2265,7 +2266,7 @@ class Resolver : Poolable, Visitor
                                &=require_global, &=suppress_error )
 
     method find_procedure( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types )->Procedure
+        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types, &limit_conversions )->Procedure
       # 'context' is only passed for error description purposes.
       visit( args )  # resolve args to determine types
       use Candidates
@@ -2294,7 +2295,7 @@ class Resolver : Poolable, Visitor
         Candidates.organize
 
         return select_candidate( t, type_context, context, name, args, &=constructor, &=require_global,
-          &=suppress_error, &=exact_arg_types, &=relaxed_arg_types )
+            &=suppress_error, &=exact_arg_types, &=relaxed_arg_types, &=limit_conversions )
       endUse
 
     method confirm_candidate( t:Token, context:Cmd, m:Procedure, args:Cmd )
@@ -2304,7 +2305,7 @@ class Resolver : Poolable, Visitor
       endUse
 
     method select_candidate( t:Token, type_context:Type, context:Cmd, name:String, args:Cmd,
-        &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types )->Procedure
+      &constructor, &require_global, &suppress_error, &exact_arg_types, &relaxed_arg_types, &limit_conversions )->Procedure
 
       # The terminology has gotten a little confusing. Will change names at some point, but until then:
       #   suppress_error
@@ -2325,7 +2326,7 @@ class Resolver : Poolable, Visitor
       #     3. Check one more time while allowing errors to be thrown.
 
       if (Candidates.count)
-        local result = refine_candidates( type_context, args, &=exact_arg_types )
+        local result = refine_candidates( type_context, args, &=exact_arg_types, &=limit_conversions )
         if (result)
           return result.[resolve]
         elseIf (suppress_error)
@@ -2424,7 +2425,7 @@ class Resolver : Poolable, Visitor
       local error_message = mesg.replacing( "Routine.", "" )
       throw t.error( error_message )
 
-    method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types )->Procedure
+    method refine_candidates( type_context:Type, args:Cmd, &exact_arg_types, &limit_conversions )->Procedure
       local arg_count = which{ args:args.count || 0 }
 
       #local debug = type_context and type_context.name=="StateCall<<Rogue::ScreenState>>" and Candidates.count==3 and Candidates.list.contains($.name=="create")
@@ -2515,7 +2516,11 @@ class Resolver : Poolable, Visitor
             if (has_named_arg) m.arrange_args( args, this )
             contingent
               forEach (arg at i in args)
-                necessary (arg_type_is_compatible(arg,m.parameters[i].type,&=allow_conversions,&=exact_logical))
+                necessary (
+                  arg_type_is_compatible(
+                    arg, m.parameters[i].type, &=allow_conversions, &=exact_logical, &=limit_conversions
+                  )
+                )
               endForEach
               Candidates.keep m
             endContingent
@@ -2747,7 +2752,7 @@ class Resolver : Poolable, Visitor
 
       return false
 
-    method arg_type_is_compatible( arg:Cmd, param_type:Type, &allow_conversions, &exact_logical )->Logical
+    method arg_type_is_compatible( arg:Cmd, param_type:Type, &allow_conversions, &exact_logical, &limit_conversions )->Logical
       local arg_type = arg.require_type
 
       if (arg_type is param_type) return true
@@ -2775,11 +2780,11 @@ class Resolver : Poolable, Visitor
         if (arg_type is Program.type_null)
           return true
         endIf
-        return arg_type_is_compatible( arg, param_type.properties//value.type, &=allow_conversions, &=exact_logical )
+        return arg_type_is_compatible( arg, param_type.properties//value.type, &=allow_conversions, &=exact_logical, &=limit_conversions )
       endIf
 
       if (allow_conversions)
-        local resolved_arg = arg.resolve_conversion_to( param_type, this, &suppress_error )
+        local resolved_arg = arg.resolve_conversion_to( param_type, this, &suppress_error, &=limit_conversions )
         if (resolved_arg) return true
       endIf
 
@@ -3003,12 +3008,16 @@ augment
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( operand, resolver )  # generate error
 
       contingent
-        local get_name = name + "()"
-        sufficient resolver.this_type.methods[ get_name ]
-        sufficient resolver.this_type.global_methods[ get_name ]
-        local set_name = "set_" + name
-        sufficient resolver.this_type.has_method_named( set_name )
-        sufficient resolver.this_type.has_global_method_named( set_name )
+        use get_name = StringPool
+          get_name.[ print(name), print("()") ]
+          sufficient resolver.this_type.methods[ get_name ]
+          sufficient resolver.this_type.global_methods[ get_name ]
+        endUse
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          sufficient resolver.this_type.has_method_named( set_name )
+          sufficient resolver.this_type.has_global_method_named( set_name )
+        endUse
         escapeContingent
       satisfied
         return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
@@ -3089,12 +3098,16 @@ augment
       if (args) prior.resolve_op_and_assign<<$OpSymbol,$OpName>>( operand, resolver )  # generate error
 
       contingent
-        local get_name = name + "()"
-        sufficient resolver.this_type.methods[ get_name ]
-        sufficient resolver.this_type.global_methods[ get_name ]
-        local set_name = "set_" + name
-        sufficient resolver.this_type.has_method_named( set_name )
-        sufficient resolver.this_type.has_global_method_named( set_name )
+        use get_name = StringPool
+          get_name.[ print(name), print("()") ]
+          sufficient resolver.this_type.methods[ get_name ]
+          sufficient resolver.this_type.global_methods[ get_name ]
+        endUse
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          sufficient resolver.this_type.has_method_named( set_name )
+          sufficient resolver.this_type.has_global_method_named( set_name )
+        endUse
         escapeContingent
       satisfied
         return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
@@ -3179,12 +3192,17 @@ augment
       local op_method_name = "operator" + $OpSymbol
 
       contingent
-        local get_name = name + "()"
-        sufficient context_type.methods[ get_name ]
-        sufficient context_type.global_methods[ get_name ]
-        local set_name = "set_" + name
-        sufficient context_type.has_method_named( set_name )
-        sufficient context_type.has_global_method_named( set_name )
+        use get_name = StringPool
+          get_name.[ print(name), print("()") ]
+          sufficient context_type.methods[ get_name ]
+          sufficient context_type.global_methods[ get_name ]
+        endUse
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          sufficient context_type.has_method_named( set_name )
+          sufficient context_type.has_global_method_named( set_name )
+        endUse
+
         escapeContingent
       satisfied
         return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
@@ -3233,12 +3251,16 @@ augment
       local op_method_name = "operator" + $OpSymbol
 
       contingent
-        local get_name = name + "()"
-        sufficient context_type.methods[ get_name ]
-        sufficient context_type.global_methods[ get_name ]
-        local set_name = "set_" + name
-        sufficient context_type.has_method_named( set_name )
-        sufficient context_type.has_global_method_named( set_name )
+        use get_name = StringPool
+          get_name.[ print(name), print("()") ]
+          sufficient context_type.methods[ get_name ]
+          sufficient context_type.global_methods[ get_name ]
+        endUse
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          sufficient context_type.has_method_named( set_name )
+          sufficient context_type.has_global_method_named( set_name )
+        endUse
         escapeContingent
       satisfied
         return resolver.visit( Assign(t, this, $OpName(t,this.cloned,operand)) )
@@ -3422,31 +3444,34 @@ augment
 
         if (resolver.this_type)
           local args = Args( t, new_value )
-          local m = resolver.find_procedure( t, resolver.this_type, null, "set_"+name, args, &suppress_error )
-          if (m)
-            if (not m.attributes.is_fallback)
-              if (m is resolver.this_procedure)
-                throw t.error( "Recursive call to setter. Either write '@$ = value' instead or explicitly call 'set_$(value)' if the recursion was intentional."(name,name) )
+          use set_name = StringPool
+            set_name.[ print("set_"), print(name) ]
+            local m = resolver.find_procedure( t, resolver.this_type, null, set_name, args, &suppress_error )
+            if (m)
+              if (not m.attributes.is_fallback)
+                if (m is resolver.this_procedure)
+                  throw t.error( "Recursive call to setter. Either write '@$ = value' instead or explicitly call 'set_$(value)' if the recursion was intentional."(name,name) )
+                endIf
+                return resolver.resolve_access( t, null, m.name, args )
               endIf
+            endIf
+
+            if (resolver.this_procedure.is_method)
+              local p = resolver.this_type.properties[ name ]
+              if (p)
+                return resolver.validate( SetThisProperty(t,p,new_value) )
+              endIf
+            endIf
+
+            if (m)
               return resolver.resolve_access( t, null, m.name, args )
             endIf
-          endIf
 
-          if (resolver.this_procedure.is_method)
-            local p = resolver.this_type.properties[ name ]
+            local p = resolver.this_type.global_properties[ name ]
             if (p)
-              return resolver.validate( SetThisProperty(t,p,new_value) )
+              return resolver.validate( SetGlobalProperty(t,p,new_value) )
             endIf
-          endIf
-
-          if (m)
-            return resolver.resolve_access( t, null, m.name, args )
-          endIf
-
-          local p = resolver.this_type.global_properties[ name ]
-          if (p)
-            return resolver.validate( SetGlobalProperty(t,p,new_value) )
-          endIf
+          endUse
         endIf
 
         if (resolver.this_procedure.is_method)
@@ -3502,24 +3527,27 @@ augment
         local context_type = context.require_type
 
         local args = Args( t, new_value )
-        local m = resolver.find_procedure( t, context_type, context, "set_"+name, args, &suppress_error )
-        if (m)
-          if (not m.attributes.is_fallback)
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          local m = resolver.find_procedure( t, context_type, context, set_name, args, &suppress_error )
+          if (m)
+            if (not m.attributes.is_fallback)
+              return resolver.resolve_access( t, context, m.name, args )
+            endIf
+          endIf
+
+          local p = context_type.properties[ name ]
+          if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
+
+          if (m)
             return resolver.resolve_access( t, context, m.name, args )
           endIf
-        endIf
 
-        local p = context_type.properties[ name ]
-        if (p) return resolver.validate( SetProperty(t,context,p,new_value) )
-
-        if (m)
-          return resolver.resolve_access( t, context, m.name, args )
-        endIf
-
-        p = context_type.global_properties[ name ]
-        if (p)
-          return resolver.validate( SetGlobalProperty(t,p,new_value) )
-        endIf
+          p = context_type.global_properties[ name ]
+          if (p)
+            return resolver.validate( SetGlobalProperty(t,p,new_value) )
+          endIf
+        endUse
 
         throw t.error( "No such property '$' or setter set_$() in type $."(name,name,context_type) )
       endIf
@@ -4279,12 +4307,16 @@ augment
       if (args) prior.resolve_stepper<<$Step,$OpLocal,$OpGlobal,$OpProperty,$OpThisProperty>>( resolver )  # generate error
 
       contingent
-        local get_name = name + "()"
-        sufficient resolver.this_type.methods[ get_name ]
-        sufficient resolver.this_type.global_methods[ get_name ]
-        local set_name = "set_" + name
-        sufficient resolver.this_type.has_method_named( set_name )
-        sufficient resolver.this_type.has_global_method_named( set_name )
+        use get_name = StringPool
+          get_name.[ print(name), print("()") ]
+          sufficient resolver.this_type.methods[ get_name ]
+          sufficient resolver.this_type.global_methods[ get_name ]
+        endUse
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          sufficient resolver.this_type.has_method_named( set_name )
+          sufficient resolver.this_type.has_global_method_named( set_name )
+        endUse
         escapeContingent
       satisfied
         if ($Step == 1)
@@ -4326,12 +4358,16 @@ augment
       local context_type = context.require_type.[ organize ]
 
       contingent
-        local get_name = name + "()"
-        sufficient context_type.methods[ get_name ]
-        sufficient context_type.global_methods[ get_name ]
-        local set_name = "set_" + name
-        sufficient context_type.has_method_named( set_name )
-        sufficient context_type.has_global_method_named( set_name )
+        use get_name = StringPool
+          get_name.[ print(name), print("()") ]
+          sufficient context_type.methods[ get_name ]
+          sufficient context_type.global_methods[ get_name ]
+        endUse
+        use set_name = StringPool
+          set_name.[ print("set_"), print(name) ]
+          sufficient context_type.has_method_named( set_name )
+          sufficient context_type.has_global_method_named( set_name )
+        endUse
         escapeContingent
       satisfied
         if ($Step == 1)
