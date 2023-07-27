@@ -52,7 +52,7 @@ class Random [singleton]
 
     method real->Real
       # Returns a random number 0 < n < 1.0
-      return ((_advance_state & 0x7fff_ffff)->Real + 1.0) / 2147483649.0
+      return real64->Real
 
     method real( limit:Real )->Real
       # Returns a random number 0 < n < limit
@@ -64,7 +64,7 @@ class Random [singleton]
 
     method real32->Real32
       # Returns a random number 0 < n < 1.0
-      return ((_advance_state & 0x7fff_ffff)->Real32 + 1.0) / 2147483649.0
+      return real64->Real32
 
     method real32( limit:Real32 )->Real32
       # Returns a random number 0 < n < limit
@@ -76,7 +76,7 @@ class Random [singleton]
 
     method real64->Real64
       # Returns a random number 0 < n < 1.0
-      return ((_advance_state & 0x7fff_ffff)->Real64 + 1.0) / 2147483649.0
+      return (int32 + 1.0) / 2147483649.0
 
     method real64( limit:Real64 )->Real64
       # Returns a random number 0 < n < limit
@@ -89,13 +89,13 @@ class Random [singleton]
     method int64->Int64
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^63-1] inclusive.
-      local result = _advance_state->Int64 :<<: 32
-      return (result | (_advance_state->Int64 & 0x0FFFFffff))
+      local result = (_advance_state :<<: 16) & 0x7FFFffff00000000
+      return (result | ((_advance_state:>>>:16) & 0x0FFFFffff))
 
     method int32->Int32
       # Returns a normalized, evenly distributed random integer in
       # the range [0,2^31-1] inclusive.
-      return _advance_state & 0x7fff_ffff
+      return ((_advance_state:>>:16) & 0x7fff_ffff)
 
     method int32( limit:Int32 )->Int32
       # Returns an evenly distributed random integer in
@@ -112,13 +112,13 @@ class Random [singleton]
 
     method byte->Byte
       # Returns a random byte between 0 and 255.
-      return ((_advance_state:>>>:8) & 0xff)->Byte
+      return int32->Byte
 
     method logical->Logical
       # Returns either "true" or "false" with equal likelihood.
-      return (_advance_state & 8)?
+      return (int32 & 1)
 
-    method _advance_state->Int32
+    method _advance_state->Int64
       # Calculates the next raw random integer.
       state = ((state * 0x5DEECe66d + 11) & 0xFFFFffffFFFF)
       return state
