@@ -52,7 +52,7 @@ class Random [singleton]
 
     method real->Real
       # Returns a random number 0 < n < 1.0
-      return (int32 + 1.0) / 2147483649.0
+      return real64->Real
 
     method real( limit:Real )->Real
       # Returns a random number 0 < n < limit
@@ -64,7 +64,7 @@ class Random [singleton]
 
     method real32->Real32
       # Returns a random number 0 < n < 1.0
-      return real->Real32
+      return real64->Real32
 
     method real32( limit:Real32 )->Real32
       # Returns a random number 0 < n < limit
@@ -76,7 +76,7 @@ class Random [singleton]
 
     method real64->Real64
       # Returns a random number 0 < n < 1.0
-      return real->Real64
+      return (int32 + 1.0) / 2147483649.0
 
     method real64( limit:Real64 )->Real64
       # Returns a random number 0 < n < limit
