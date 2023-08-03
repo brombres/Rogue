@@ -673,11 +673,8 @@ class Resolver : Poolable, Visitor
           local access = resolve_access( cmd.t, null, unknown_id, null, &suppress_error )
           necessary (access)   # The ID has to exist in this outer scope
           necessary (not access.is_type_context)          # Don't 'with' type names
-          necessary (access not instanceOf GetSingleton)  # Don't 'with' singleton names
-
-          if local call = access->(as CallProcedure)
-            necessary (call.info.return_type)
-          endIf
+          necessary (access not instanceOf GetSingleton)  # No singleton names
+          necessary (access not instanceOf CallProcedure) # No calls
 
         satisfied
           ensure <<cmd.with_values>>( cmd.t )
@@ -1265,7 +1262,7 @@ class Resolver : Poolable, Visitor
 
         else
           with_values = WithValues(cmd.t)
-          with_values.add( WithValue(cmd.t,"_THIS",This(cmd.t,this_type)) )
+          with_values.add( WithValue(cmd.t,"_THIS",context) )
           cmd_call = ContextAccess( cmd.t, Access(cmd.t,"_THIS"), cmd.name, args )
         endIf
 
