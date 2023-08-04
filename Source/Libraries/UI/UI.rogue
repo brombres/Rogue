@@ -217,7 +217,7 @@ class UI : UILayout
 
       on_resize
 
-      use drawables = collect<<Drawable2D>>
+      use drawables = collect<<Drawable2D>>( &all )
         (forEach in drawables).on_resize
         DynamicProperties.on_resize( forEach in drawables )
         (forEach in drawables).after_resize
