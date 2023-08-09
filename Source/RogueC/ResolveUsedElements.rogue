@@ -217,13 +217,15 @@ class ResolveUsedElements : InspectionVisitor
       endForEach
 
       temporarily this_type = type
-        forEach (m in type.global_methods)
-          if ((m.attributes.is_essential or m.attributes.is_api))
-            temporarily this_module=m.module_context, this_procedure=m
-              visit( m )
-            endTemporarily
-          endIf
-        endForEach
+        if (not type.attributes.is_augment)
+          forEach (m in type.global_methods)
+            if ((m.attributes.is_essential or m.attributes.is_api))
+              temporarily this_module=m.module_context, this_procedure=m
+                visit( m )
+              endTemporarily
+            endIf
+          endForEach
+        endIf
       endTemporarily
 
       if (type.attributes.is_aspect) return
