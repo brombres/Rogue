@@ -183,7 +183,8 @@ class Files
         filepath_set.remove( filepath )
       endForEach
 
-    method sync_to( dest_folder:File, &verbose, &keep_unused, &dry_run, &missing_only )->Int32
+    method sync_to( dest_folder:File, &verbose, &keep_unused, &dry_run, &missing_only, &if_newer )->Int32
+      # If 'if_newer' is not specified then files are copied if they are different.
       dest_folder .= resolved
 
       if (not dest_folder.exists and not dry_run)
@@ -225,8 +226,12 @@ class Files
         contingent
           sufficient (not File(dest_filepath).exists)
           necessary  (not missing_only)
-          sufficient (File(src_filepath).size != File(dest_filepath).size)
-          necessary  (File(src_filepath).crc32 != File(dest_filepath).crc32)
+          if (if_newer)
+            necessary (File(src_filepath).is_newer_than(File(dest_filepath)))
+          else
+            sufficient (File(src_filepath).size != File(dest_filepath).size)
+            necessary  (File(src_filepath).crc32 != File(dest_filepath).crc32)
+          endIf
 
         satisfied
           ++change_count
