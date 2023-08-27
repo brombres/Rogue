@@ -9,6 +9,7 @@ class FilePatcher
       if (file.exists)
         if (file.is_folder) throw Error( "[FilePatcher] '$' is a folder."(file) )
         lines = String( file ).split( '\n' )
+        if (lines.last == "") lines.remove_last
       else
         lines = String[]
         is_modified = true
@@ -30,6 +31,10 @@ class FilePatcher
       if ((forEach in lines).contains(text)) return true
       return false
 
+    method delete( line_index:Int32 ):
+      lines.remove_at( line_index )
+      is_modified = true
+
     method insert( text:String, before_index=0:Int32 )
       if (text.contains('\n'))
         lines.insert( text.split('\n'), before_index )
@@ -41,14 +46,15 @@ class FilePatcher
     method is_empty->Logical
       return lines.is_empty
 
-    method locate( text:String )->Int32?
-      forEach (line at i in lines)
+    method locate( text:String, i1=0:Int32 )->Int32?
+      forEach (line at i in lines from i1)
         if (line.contains(text)) return i
       endForEach
       return null
 
-    method locate_last( text:String )->Int32?
-      forEach (line at i in lines step -1)
+    method locate_last( text:String, i1=null:Int32? )->Int32?
+      if (not i1) i1 = lines.count - 1
+      forEach (line at i in lines from i1.value step -1)
         if (line.contains(text)) return i
       endForEach
       return null
@@ -126,7 +132,7 @@ class FilePatcher
     method save( new_file=null:File? )->Logical
       if (new_file)            file = new_file.value
       elseIf (not is_modified) return false
-      file.save( lines.join('\n') )
+      file.save( lines.join('\n')+"\n" )
       is_modified = false
       return true
 endClass
