@@ -1325,7 +1325,7 @@ class String : Poolable PrintWriter
       # ''look_for'' are replaced with ''replace_with''.
       if (not contains(look_for,&=ignore_case)) return this
 
-      local result = String(count*1.1)
+      local result = String(Int32(count*1.1))
       if (ignore_case)
         look_for .= to_lowercase
         forEach (ch in this)

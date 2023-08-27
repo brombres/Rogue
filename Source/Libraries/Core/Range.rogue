@@ -22,7 +22,7 @@ class RangeUpToIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$Data
       endIf
 
     method to->$DataType[]
-      return iterator.to_list
+      return to_list
 
     method to_list->$DataType[]
       local list = $DataType[]
@@ -55,7 +55,7 @@ class RangeUpToLessThanIterator<<$DataType>>( cur:$DataType, limit:$DataType, st
       endIf
 
     method to->$DataType[]
-      return iterator.to_list
+      return to_list
 
     method to_list->$DataType[]
       local list = $DataType[]
@@ -88,7 +88,7 @@ class RangeDownToIterator<<$DataType>>( cur:$DataType, limit:$DataType, step:$Da
       endIf
 
     method to->$DataType[]
-      return iterator.to_list
+      return to_list
 
     method to_list->$DataType[]
       local list = $DataType[]
@@ -121,7 +121,7 @@ class RangeDownToGreaterThanIterator<<$DataType>>( cur:$DataType, limit:$DataTyp
       endIf
 
     method to->$DataType[]
-      return iterator.to_list
+      return to_list
 
     method to_list->$DataType[]
       local list = $DataType[]
