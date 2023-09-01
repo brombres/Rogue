@@ -73,7 +73,7 @@ class CWriter : BufferedPrintWriter
            |  #  define %NS%ROGUE_PLATFORM_LINUX  1
            |  #  define %NS%ROGUE_PLATFORM_CYGWIN 1
            |  #  define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #elif defined(EMSCRIPTEN)
+           |  #elif defined(__EMSCRIPTEN__)
            |  #  define %NS%ROGUE_PLATFORM_WEB 1
            |  #else
            |  #  define %NS%ROGUE_PLATFORM_GENERIC 1
