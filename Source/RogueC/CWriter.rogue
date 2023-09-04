@@ -38,101 +38,110 @@ class CWriter : BufferedPrintWriter
         endIf
 
         println ...
-          @|// Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
-           |// are now only defined if the platform is active.
-           |#if defined(__APPLE__)
-           |  #if defined(TARGET_IPHONE_SIMULATOR)
-           |    #if TARGET_IPHONE_SIMULATOR
-           |      #define %NS%ROGUE_PLATFORM_IOS 1
-           |    #endif
-           |  #endif
-           |
-           |  #if !defined(%NS%ROGUE_PLATFORM_IOS)
-           |    #if defined(TARGET_OS_IPHONE)
-           |      #if TARGET_OS_IPHONE
-           |        #define %NS%ROGUE_PLATFORM_IOS 1
-           |      #endif
-           |    #endif
-           |  #endif
-           |
-           |  #if !defined(%NS%ROGUE_PLATFORM_IOS)
-           |    #define %NS%ROGUE_PLATFORM_MACOS 1
-           |    #define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #endif
-           |#endif
-           |
-           |#if !defined(%NS%ROGUE_PLATFORM_IOS) && !defined(%NS%ROGUE_PLATFORM_MACOS) && !defined(%NS%ROGUE_PLATFORM_PLAYDATE)
-           |  #if defined(_WIN32)
-           |  #  define %NS%ROGUE_PLATFORM_WINDOWS 1
-           |  #elif defined(__ANDROID__)
-           |  #  define %NS%ROGUE_PLATFORM_ANDROID 1
-           |  #elif defined(__linux__)
-           |  #  define %NS%ROGUE_PLATFORM_LINUX 1
-           |  #  define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #elif defined(__CYGWIN__)
-           |  #  define %NS%ROGUE_PLATFORM_LINUX  1
-           |  #  define %NS%ROGUE_PLATFORM_CYGWIN 1
-           |  #  define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
-           |  #elif defined(__EMSCRIPTEN__)
-           |  #  define %NS%ROGUE_PLATFORM_WEB 1
-           |  #else
-           |  #  define %NS%ROGUE_PLATFORM_GENERIC 1
-           |  #endif
-           |#endif
-           |
-           |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-           |  #pragma warning(disable: 4297) /* unexpected throw warnings */
-           |  #if !defined(UNICODE)
-           |    #define UNICODE
-           |  #endif
-           |  #include <windows.h>
-           |  #include <signal.h>
-           |#else
-           |  #include <stdint.h>
-           |#endif
-           |
-           |#include <math.h>
-           |#include <stdlib.h>
-           |#include <string.h>
-           |
-           |//------------------------------------------------------------------------------
-           |// Logging
-           |//------------------------------------------------------------------------------
-           |#ifdef __ANDROID__
-           |  #include <android/log.h>
-           |  #define %NS%ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "%Ns%Rogue", __VA_ARGS__ )
-           |  #define %NS%ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", __VA_ARGS__ )
-           |#else
-           |  #define %NS%ROGUE_LOG(...)       printf( __VA_ARGS__ )
-           |  #define %NS%ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
-           |#endif
-           |
-           |//------------------------------------------------------------------------------
-           |// Primitive Types
-           |//------------------------------------------------------------------------------
-           |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-           |  typedef double           %Ns%RogueReal64;
-           |  typedef float            %Ns%RogueReal32;
-           |  typedef __int64          %Ns%RogueInt64;
-           |  typedef __int32          %Ns%RogueInt32;
-           |  typedef __int32          %Ns%RogueCharacter;
-           |  typedef unsigned __int16 %Ns%RogueWord;
-           |  typedef unsigned char    %Ns%RogueByte;
-           |  typedef int              %Ns%RogueLogical;
-           |  typedef unsigned __int64 %Ns%RogueUInt64;
-           |  typedef unsigned __int32 %Ns%RogueUInt32;
-           |#else
-           |  typedef double           %Ns%RogueReal64;
-           |  typedef float            %Ns%RogueReal32;
-           |  typedef int64_t          %Ns%RogueInt64;
-           |  typedef int32_t          %Ns%RogueInt32;
-           |  typedef int32_t          %Ns%RogueCharacter;
-           |  typedef uint16_t         %Ns%RogueWord;
-           |  typedef uint8_t          %Ns%RogueByte;
-           |  typedef int              %Ns%RogueLogical;
-           |  typedef uint64_t         %Ns%RogueUInt64;
-           |  typedef uint32_t         %Ns%RogueUInt32;
-           |#endif
+        @|// Set up C conditional compilation defines
+         |#if defined(__EMSCRIPTEN__)
+         |  #define %NS%ROGUE_PLATFORM_WEB 1
+         |  #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |#elif defined(%NS%ROGUE_PLATFORM_PLAYDATE)
+         |  #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |#endif
+         |
+         |#if !defined(%NS%ROGUE_PLATFORM_DETERMINED)
+         |  // Handle Apple's wonky defines which used to ALWAYS be defined as 0 or 1 and
+         |  // are now only defined if the platform is active.
+         |
+         |  #if defined(__APPLE__)
+         |    #if defined(TARGET_IPHONE_SIMULATOR)
+         |      #if TARGET_IPHONE_SIMULATOR
+         |        #define %NS%ROGUE_PLATFORM_IOS 1
+         |      #endif
+         |    #endif
+         |
+         |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
+         |      #if defined(TARGET_OS_IPHONE)
+         |        #if TARGET_OS_IPHONE
+         |          #define %NS%ROGUE_PLATFORM_IOS 1
+         |        #endif
+         |      #endif
+         |    #endif
+         |
+         |    #if !defined(%NS%ROGUE_PLATFORM_IOS)
+         |      #define %NS%ROGUE_PLATFORM_MACOS 1
+         |    #endif
+         |
+         |    #define %NS%ROGUE_PLATFORM_DETERMINED 1
+         |  #endif
+         |#endif
+         |
+         |#if !defined(%NS%ROGUE_PLATFORM_DETERMINED)
+         |  #if defined(_WIN32)
+         |  #  define %NS%ROGUE_PLATFORM_WINDOWS 1
+         |  #elif defined(__ANDROID__)
+         |  #  define %NS%ROGUE_PLATFORM_ANDROID 1
+         |  #elif defined(__linux__)
+         |  #  define %NS%ROGUE_PLATFORM_LINUX 1
+         |  #elif defined(__CYGWIN__)
+         |  #  define %NS%ROGUE_PLATFORM_LINUX  1
+         |  #  define %NS%ROGUE_PLATFORM_CYGWIN 1
+         |  #else
+         |  #  define %NS%ROGUE_PLATFORM_GENERIC 1
+         |  #endif
+         |#endif
+         |
+         |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |  #pragma warning(disable: 4297) /* unexpected throw warnings */
+         |  #if !defined(UNICODE)
+         |    #define UNICODE
+         |  #endif
+         |  #include <windows.h>
+         |  #include <signal.h>
+         |#else
+         |  #define %NS%ROGUE_PLATFORM_UNIX_COMPATIBLE 1
+         |  #include <stdint.h>
+         |#endif
+         |
+         |#include <math.h>
+         |#include <stdlib.h>
+         |#include <string.h>
+         |
+         |//------------------------------------------------------------------------------
+         |// Logging
+         |//------------------------------------------------------------------------------
+         |#ifdef __ANDROID__
+         |  #include <android/log.h>
+         |  #define %NS%ROGUE_LOG(...)       __android_log_print( ANDROID_LOG_INFO,  "%Ns%Rogue", __VA_ARGS__ )
+         |  #define %NS%ROGUE_LOG_ERROR(...) __android_log_print( ANDROID_LOG_ERROR, "%Ns%Rogue", __VA_ARGS__ )
+         |#else
+         |  #define %NS%ROGUE_LOG(...)       printf( __VA_ARGS__ )
+         |  #define %NS%ROGUE_LOG_ERROR(...) printf( __VA_ARGS__ )
+         |#endif
+         |
+         |//------------------------------------------------------------------------------
+         |// Primitive Types
+         |//------------------------------------------------------------------------------
+         |#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
+         |  typedef double           %Ns%RogueReal64;
+         |  typedef float            %Ns%RogueReal32;
+         |  typedef __int64          %Ns%RogueInt64;
+         |  typedef __int32          %Ns%RogueInt32;
+         |  typedef __int32          %Ns%RogueCharacter;
+         |  typedef unsigned __int16 %Ns%RogueWord;
+         |  typedef unsigned char    %Ns%RogueByte;
+         |  typedef int              %Ns%RogueLogical;
+         |  typedef unsigned __int64 %Ns%RogueUInt64;
+         |  typedef unsigned __int32 %Ns%RogueUInt32;
+         |#else
+         |  typedef double           %Ns%RogueReal64;
+         |  typedef float            %Ns%RogueReal32;
+         |  typedef int64_t          %Ns%RogueInt64;
+         |  typedef int32_t          %Ns%RogueInt32;
+         |  typedef int32_t          %Ns%RogueCharacter;
+         |  typedef uint16_t         %Ns%RogueWord;
+         |  typedef uint8_t          %Ns%RogueByte;
+         |  typedef int              %Ns%RogueLogical;
+         |  typedef uint64_t         %Ns%RogueUInt64;
+         |  typedef uint32_t         %Ns%RogueUInt32;
+         |#endif
         if (Program.real_bits == 32) println "typedef %Ns%RogueReal32 %Ns%RogueReal;"
         else                         println "typedef %Ns%RogueReal64 %Ns%RogueReal;"
 
