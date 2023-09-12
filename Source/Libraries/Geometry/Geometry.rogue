@@ -17,7 +17,7 @@ $include Geometry/XYZW
 
 augment Rogue::Console
   METHODS
-    method size->IntXY
-      return IntXY(width,height)
+    method size->Geometry::IntXY
+      return Geometry::IntXY(width,height)
 
 endAugment

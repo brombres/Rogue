@@ -1,15 +1,15 @@
 module Geometry
 
-class Line( a:IntXY, b:IntXY ) [compound]
+class Line( a:XY, b:XY ) [compound]
   GLOBAL METHODS
     method create( ax:Int32, ay:Int32, bx:Int32, by:Int32 )->Line
-      return Line( IntXY(ax,ay), IntXY(bx,by) )
+      return Line( XY(ax,ay), XY(bx,by) )
 
   METHODS
-    method at( p:Real )->IntXY
+    method at( p:Real )->XY
       return a + (b - a) * p
 
-    method direction->IntXY
+    method direction->XY
       return (b - a)
 
       #{
@@ -44,7 +44,7 @@ class Line( a:IntXY, b:IntXY ) [compound]
       }#
 
       #{
-    method intersection( other:Line, &clamp=true )->IntXY?
+    method intersection( other:Line, &clamp=true )->XY?
       # Returns the point of intersection between this line and another line.
       local P1 = this.a
       local P2 = this.b
@@ -94,17 +94,17 @@ class Line( a:IntXY, b:IntXY ) [compound]
       return triangle.contains( a )
       }#
 
-    method normal->IntXY
+    method normal->XY
       local v = (b - a)
-      return IntXY( -v.y, v.x ).normalized
+      return XY( -v.y, v.x ).normalized
 
     method reversed->Line
       return Line( b, a )
 
-    method operator+( position:IntXY )->Line
+    method operator+( position:XY )->Line
       return Line( a+position, b+position )
 
-    method operator-( position:IntXY )->Line
+    method operator-( position:XY )->Line
       return Line( a-position, b-position )
 
     method operator*( scale:Real )->Line
@@ -114,14 +114,14 @@ class Line( a:IntXY, b:IntXY ) [compound]
       if (scale) return Line( a/scale, b/scale )
       else       return this
 
-    method operator*( scale:IntXY )->Line
+    method operator*( scale:XY )->Line
       return Line( a*scale.x, b*scale.y )
 
-    method operator/( scale:IntXY )->Line
+    method operator/( scale:XY )->Line
       return Line( a/scale, b/scale )
 
       #{
-    method operator&( other:Line )->IntXY?
+    method operator&( other:Line )->XY?
       return intersection( other )
       }#
 
@@ -139,4 +139,7 @@ class Line( a:IntXY, b:IntXY ) [compound]
     method to->String
       return "[$->$]"(a,b)
 
+endClass
+
+class Line<<$DataType>>( a:$DataType, b:$DataType ) [compound]
 endClass
