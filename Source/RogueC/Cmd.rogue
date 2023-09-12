@@ -3487,7 +3487,10 @@ class Contingent : ControlStructure
     method init( existing:Contingent )
       prior.init( existing )
       is_resolved = existing.is_resolved
-      if (existing.satisfied_scope) satisfied_scope = existing.satisfied_scope.cloned
+      if (existing.satisfied_scope)
+        satisfied_scope = existing.satisfied_scope.cloned
+        satisfied_statements = satisfied_scope->(as LocalScope).statements
+      endIf
       if (existing.unsatisfied_statements) unsatisfied_statements = existing.unsatisfied_statements.cloned
 
     method catches_escape( escape_type:ControlType )->Logical
