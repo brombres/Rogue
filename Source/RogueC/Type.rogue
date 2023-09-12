@@ -823,6 +823,11 @@ class Type : Cmd
         endIf
       endIf
 
+      # Wait until the end to organize globals. If they reference extended classes then
+      # we need this class's regular properties fully organized before extended classes
+      # are property-organized.
+      GlobalPropertyOrganizer( module_context ).visit( this, class_def )
+
     method organize_methods
       if (methods_organizing) return
       methods_organizing = true

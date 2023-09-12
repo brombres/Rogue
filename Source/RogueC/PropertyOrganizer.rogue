@@ -113,33 +113,7 @@ class PropertyOrganizer : Visitor
       endIf
 
     method on( cmd:GlobalPropertyDeclarations )->Cmd
-      local type = cmd.type
-      if (type)
-        forEach (decl in cmd.declarations)
-          local p = decl->(as Property)
-          if (p)
-            p.type = type
-            p.attributes.flags |= cmd.attributes.flags
-            collect_global( decl.t, p )
-          else
-            throw decl.t.error( "Global properties cannot be native." )
-          endIf
-        endForEach
-      else
-        forEach (decl in cmd.declarations)
-          local p = decl->(as Property)
-          if (p)
-            p.attributes.flags |= cmd.attributes.flags
-            collect_global( p.t, p )
-          else
-            local native_property = decl->(as NativeProperty)
-            if (native_property)
-              throw native_property.t.error( "Global properties cannot be native." )
-            endIf
-          endIf
-        endForEach
-      endIf
-      return null
+      return cmd
 
     method on( cmd:PropertyDeclarations )->Cmd
       local type = cmd.type
@@ -222,5 +196,4 @@ class PropertyOrganizer : Visitor
         throw t.error( ''Type $ already defines a property called "$".''(this_type,p.name) )
       endIf
       this_type.global_properties[ p.name ] = p
-
 endClass
