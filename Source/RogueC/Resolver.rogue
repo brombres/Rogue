@@ -519,6 +519,7 @@ class Resolver : Poolable, Visitor
 
       if (cmd.catches_sufficient and not cmd.satisfied_statements)
         cmd.satisfied_statements = Statements( EscapeContingent(cmd.t) )
+        cmd.satisfied_scope = LocalScope( cmd.satisfied_statements.t, cmd.satisfied_statements )
       endIf
 
       if (not cmd.catches_necessary)
