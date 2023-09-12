@@ -664,9 +664,26 @@ class Type : Cmd
       if (module_context.attributes.is_api) attributes.is_api = true
 
       if (is_enum)
-        if (base_class or aspects)
-          throw t.error( "Rogue does not currently support enums with base types." )
-        endIf
+        local extended : Type
+        contingent
+          sufficient (not (base_class or aspects))
+
+          extended = base_class
+          if (extended) necessary (not extended.categories)
+
+          if (aspects)
+            forEach (a in aspects)
+              extended = a
+              necessary (not extended.categories)
+            endForEach
+          endIf
+
+        satisfied
+          escapeContingent
+
+        unsatisfied
+          throw extended.t.error( "Cannot extend enums with additional categories." )
+        endContingent
       endIf
 
       # Categorize base types
