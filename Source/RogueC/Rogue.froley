@@ -1517,6 +1517,8 @@ parser
     endIf
 
     expression
+    consume @"then"  # optional aesthetic syntax
+
     if (consume(EOL))
       # Multi-line 'if'
       scoped_multi_line_statements
@@ -1577,6 +1579,7 @@ parser
   savePosition
   on "elseIf"
     expression
+    consume @"then"  # optional aesthetic syntax
     if (consume(EOL))
       # This elseIf is multi-line; good to keep going
       discardPosition
@@ -1612,6 +1615,7 @@ parser
   savePosition
   on "elseIf"
     expression
+    consume @"then"  # optional aesthetic syntax
     if (consume(EOL))
       # This elseIf is multi-line and outside our scope
       restorePosition

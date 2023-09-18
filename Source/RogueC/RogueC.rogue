@@ -1,5 +1,5 @@
-$define VERSION "2.29"
-$define DATE    "August 27, 2023"
+$define VERSION "2.30"
+$define DATE    "September 18, 2023"
 
 module RogueC
 
@@ -34,6 +34,7 @@ $include CWriter
 $include DynamicMethodGroup
 $include ExceptionAnalyzer
 $include Finalizer
+$include GlobalPropertyOrganizer
 $include ImplicitFunctionGenerator
 $include ImplicitWithVarCollector
 $include InspectionVisitor

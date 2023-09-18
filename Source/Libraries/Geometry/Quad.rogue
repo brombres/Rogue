@@ -1,7 +1,10 @@
 module Geometry
 
-class Quad( a:IntXY, b:IntXY, c:IntXY, d:IntXY ) [compound]
+class Quad( a:XY, b:XY, c:XY, d:XY ) [compound]
   GLOBAL METHODS
+    method create->Quad
+      return Quad( XY(0,0), XY(0,0), XY(0,0), XY(0,0) )
+
     method create( bounds:Box )->Quad
       return Quad( bounds.top_left, bounds.top_right, bounds.bottom_right, bounds.bottom_left )
 
@@ -10,10 +13,10 @@ class Quad( a:IntXY, b:IntXY, c:IntXY, d:IntXY ) [compound]
       return this->Box
 
       #{
-    method centroid->IntXY
+    method centroid->XY
       return (a + b + c + d) / 4
 
-    method contains( point:IntXY )->Logical
+    method contains( point:XY )->Logical
       local top_left  = a.or_smaller(b).or_smaller(c).or_smaller(d)
       if (point.x < top_left.x or point.y < top_left.y) return false
 
@@ -84,10 +87,10 @@ class Quad( a:IntXY, b:IntXY, c:IntXY, d:IntXY ) [compound]
     method intersects( triangle:Triangle )->Logical
       return (Triangle(a,b,c).intersects(triangle) or Triangle(a,c,d).intersects(triangle))
 
-    method operator+( position:IntXY )->Quad
+    method operator+( position:XY )->Quad
       return Quad( a+position, b+position, c+position, d+position )
 
-    method operator-( position:IntXY )->Quad
+    method operator-( position:XY )->Quad
       return Quad( a-position, b-position, c-position, d-position )
 
     method operator*( scale:Real64 )->Quad
@@ -96,10 +99,10 @@ class Quad( a:IntXY, b:IntXY, c:IntXY, d:IntXY ) [compound]
     method operator/( scale:Real64 )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
-    method operator*( scale:IntXY )->Quad
+    method operator*( scale:XY )->Quad
       return Quad( a*scale, b*scale, c*scale, d*scale )
 
-    method operator/( scale:IntXY )->Quad
+    method operator/( scale:XY )->Quad
       return Quad( a/scale, b/scale, c/scale, d/scale )
 
     method rotated( angle:Degrees )->Quad [macro]
@@ -120,7 +123,7 @@ endClass
 
 class Quad<<$DataType>>( a:$DataType, b:$DataType, c:$DataType, d:$DataType ) [compound]
   METHODS
-    method description->String
+    method to->String
       return "[$ $ $ $]" (a,b,c,d)
 endClass
 

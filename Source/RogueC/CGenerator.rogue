@@ -721,7 +721,7 @@ class CGenerator : Visitor
         writer.print   ' '
         writer.print   this_procedure.c_result_name
         writer.print " = "
-        writer.write_default_value( this_procedure.return_type )
+        writer.write_default_value( this_procedure.return_type, &omit_cast )
         writer.println ";"
       endIf
 
@@ -744,7 +744,7 @@ class CGenerator : Visitor
             writer.[ print(v.type.c_ref_name), print(' ') ]
             writer.print( v.c_name )
             writer.print( " = " )
-            writer.write_default_value( v.type )
+            writer.write_default_value( v.type, &omit_cast )
             writer.println( ';' )
 
             # Add a '(void)varname;' to prevent unused variable warnings due to Rogue variables
@@ -2107,7 +2107,7 @@ augment
               c_writer.print ' '
               c_writer.print p.c_name
               c_writer.print " = "
-              c_writer.write_default_value( p.type )
+              c_writer.write_default_value( p.type, &omit_cast )
               c_writer.println ';'
             endIf
           endForEach
@@ -2120,7 +2120,7 @@ augment
             c_writer.print ' '
             c_writer.print type.c_name
             c_writer.print "_singleton = "
-            c_writer.write_default_value( type )
+            c_writer.write_default_value( type, &omit_cast )
             c_writer.println ';'
           endIf
         endForEach
