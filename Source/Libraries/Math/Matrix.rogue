@@ -10,7 +10,7 @@
 #   #   0 0 1 0
 #   #   0 0 0 1
 #
-#   local translate = Matrix.translate(IntXY(320,240))
+#   local translate = Matrix.translate(XY(320,240))
 #   println translate
 #   println
 #   #     1   0   0 320
@@ -187,7 +187,7 @@ class Matrix( ...
       m.r1c1 =  cos0
       return m
 
-    method transform( size:IntXY, anchor:Anchor )->Matrix
+    method transform( size:XY, anchor:Anchor )->Matrix
       # Performs a partial 2D transform for size and anchor. The typical full
       # tranform set for a [0,0 1x1] box in the order they'd be pushed on
       # a transform stack:
@@ -200,7 +200,7 @@ class Matrix( ...
       # Use transform(position,size,anchor,rotation) to perform all transforms at once
       # in 2DX space. Use this method combined with other transforms if other transformations
       # are needed, such as rotation around the x or y axis.
-      local a = -(anchor.position/2.0)
+      local a = -anchor.position
       return Matrix(
         size.x, 0, 0, 0,
         0, size.y, 0, 0,
@@ -208,30 +208,24 @@ class Matrix( ...
         (size.x * a.x), (size.y * a.y), 0, 1
       )
 
-    method transform( position:XYZ, size:IntXY, anchor:Anchor, rotation:Radians )->Matrix
+    method transform( position:XYZ, size:XY, anchor:Anchor, rotation:Radians )->Matrix
       # Returns a transformation matrix that will position a [0,0 1x1] coordinate box
       # in 2DX space - everything is in 2D except for the Z coordinate that is applied
       # at the end to move the image closer to (z > 0) or farther away from (z < 0) the camera.
-
-      #local m = translate( position )
-      #m *= rotate_z( rotation )
-      #m *= scale( XYZ(size,1) )
-      #m *= translate( XYZ(-anchor.position,0) )
-      #return m
       local cos0 = rotation.cos
       local sin0 = rotation.sin
-      local a    = -(anchor.position/2.0)
+      local a    = -anchor.position
       return Matrix(
         (cos0*size.x),  (sin0*size.x), 0, 0,  # column 1
         (-sin0*size.y), (cos0*size.y), 0, 0,  # column 2
         0,              0,             1, 0,  # column 3
         ((((cos0*size.x)*a.x) + ((-sin0*size.y)*a.y)) + position.x),
-          ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
-          position.z,
-          1
+        ((((sin0*size.x)*a.x) + ((cos0*size.y)*a.y)) + position.y),
+        position.z,
+        1
       )
 
-    method translate( delta:IntXY )->Matrix
+    method translate( delta:XY )->Matrix
       local m = identity
       m.r0c3 = delta.x
       m.r1c3 = delta.y
@@ -247,7 +241,7 @@ class Matrix( ...
     method scale( k:Real )->Matrix
       return scale( XYZ(k,k,1) )
 
-    method scale( k:IntXY )->Matrix
+    method scale( k:XY )->Matrix
       return scale( XYZ(k,1) )
 
     method scale( k:XYZ )->Matrix
@@ -258,19 +252,19 @@ class Matrix( ...
       m.r3c3 = 1
       return m
 
-    method scale( k:Real, origin:IntXY )->Matrix
+    method scale( k:Real, origin:XY )->Matrix
       return scale( XYZ(k,k,1), XYZ(origin,0) )
 
-    method scale( k:IntXY, origin:IntXY )->Matrix
+    method scale( k:XY, origin:XY )->Matrix
       return scale( XYZ(k,1), XYZ(origin,0) )
 
     method scale( k:XYZ, origin:XYZ )->Matrix
       return Matrix.translate(origin) * Matrix.scale(k) * Matrix.translate(-origin)
 
-    method shear( xy:IntXY )->Matrix
-      return shear( xy.xv, IntXY(xy.y,0), IntXY.zero )
+    method shear( xy:XY )->Matrix
+      return shear( xy.xv, XY(xy.y,0), XY.zero )
 
-    method shear( x_yz:IntXY, y_xz:IntXY, z_xy:IntXY )->Matrix
+    method shear( x_yz:XY, y_xz:XY, z_xy:XY )->Matrix
       # x_yz: amount that x is sheared proportional to changes in y and z
       # y_xz: amount that y is sheared proportional to changes in x and z
       # z_xy: amount that z is sheared proportional to changes in x and y
@@ -373,8 +367,8 @@ class Matrix( ...
 
       return result
 
-    method operator*( v:IntXY )->IntXY
-      return IntXY(
+    method operator*( v:XY )->XY
+      return XY(
         this[0]   * v.x +
         this[4]   * v.y +
         this[12],
