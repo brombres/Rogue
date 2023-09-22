@@ -186,12 +186,12 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
       return IntXY(y,x)
 endClass
 
-augment Math::Random
+augment Rogue::Random
   METHODS
-    method xy( limit:Int32 )->Geometry::IntXY
+    method int_xy( limit:Int32 )->Geometry::IntXY
       return Geometry::IntXY( int32(limit), int32(limit) )
 
-    method xy( limit:Geometry::IntXY )->Geometry::IntXY
+    method int_xy( limit:Geometry::IntXY )->Geometry::IntXY
       return Geometry::IntXY( int32(limit.x), int32(limit.y) )
 endAugment
 

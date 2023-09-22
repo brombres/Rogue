@@ -132,7 +132,7 @@ class RadiansXYZ( value:XYZ ) [compound]
       return value
 endClass
 
-augment Math::Random
+augment Rogue::Random
   METHODS
     method xyz->XYZ:
       # Creates a XYZ compound with randomized (x,y,z) values,
