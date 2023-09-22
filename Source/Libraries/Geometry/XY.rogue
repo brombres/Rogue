@@ -11,6 +11,9 @@ class XY( x:Real, y:Real ) [compound]
     method create( xy:IntXY )->XY
       return XY(xy.x,xy.y)
 
+    method operator?->Logical
+      return x or y
+
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
 

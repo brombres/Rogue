@@ -11,6 +11,9 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method create( real_xy:XY )->IntXY
       return IntXY( real_xy.x.floor, real_xy.y.floor )
 
+    method operator?->Logical
+      return x or y
+
     method operator*( a:Int32, b:IntXY )->IntXY
       return IntXY( a*b.x, a*b.y )
 
