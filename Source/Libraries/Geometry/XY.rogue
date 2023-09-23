@@ -11,6 +11,9 @@ class XY( x:Real, y:Real ) [compound]
     method create( xy:IntXY )->XY
       return XY(xy.x,xy.y)
 
+    method operator?->Logical
+      return x or y
+
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
 
@@ -169,12 +172,12 @@ class XY( x:Real, y:Real ) [compound]
       return XY(y,x)
 endClass
 
-augment Math::Random
+augment Rogue::Random
   METHODS
-    method real_xy( limit:Real )->Geometry::XY
+    method xy( limit:Real )->Geometry::XY
       return Geometry::XY( real(limit), real(limit) )
 
-    method real_xy( limit:Geometry::XY )->Geometry::XY
+    method xy( limit:Geometry::XY )->Geometry::XY
       return Geometry::XY( real(limit.x), real(limit.y) )
 endAugment
 

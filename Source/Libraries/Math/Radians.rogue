@@ -22,7 +22,7 @@ class Radians( value:Real ) [compound]
       endIf
 
     method cos->Real
-      value.cos
+      return value.cos
 
     method delta_to( other:Radians )->Radians
       # Returns the smallest number of radians necessary to get from this

@@ -34,7 +34,7 @@ class XYZW( x:Real, y:Real, z:Real, w=1:Real ) [compound]
       return XYZ(x,y,z)
 endClass
 
-augment Math::Random
+augment Rogue::Random
   METHODS
     method xyzw->XYZW:
       # Creates a XYZW compound with randomized (x,y,z,w) values,
