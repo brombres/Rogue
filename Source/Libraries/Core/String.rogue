@@ -469,6 +469,23 @@ class String : Poolable PrintWriter
         return this == other
       endIf
 
+    method extract_indentation->String
+      # Returns a string consisting of this string's leading spaces and tabs.
+      local n = 0
+      forEach (ch in this)
+        if (ch == ' ' or ch == '\t') ++n
+        else                         escapeForEach
+      endForEach
+
+      which (n)
+        case 0
+          return ""
+        case count
+          return this
+        others
+          return leftmost(n)
+      endWhich
+
     method extract_string( format:String, &ignore_case )->String
       # Extracts the string corresponding to the first '$' marker in the given format pattern.
       #
