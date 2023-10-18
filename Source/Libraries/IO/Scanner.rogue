@@ -77,6 +77,9 @@ class Scanner : Reader<<Character>>
 
       source = String( data )
 
+    method init( value:Value, spaces_per_tab=0, &preserve_crlf )
+      init( value->String, &=spaces_per_tab, &=preserve_crlf )
+
     method init( file:File, spaces_per_tab=0 )
       init( String(file), spaces_per_tab )
 
