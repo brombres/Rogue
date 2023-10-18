@@ -92,10 +92,7 @@ class Scanner : Reader<<Character>>
       return true
 
     method consume( text:String )->Logical
-      if (position + text.count > count) return false
-      forEach (ch at index in text)
-        if (ch != data[position+index]) return false
-      endForEach
+      if (not next_is(text)) return false
 
       # Found a match; discard the characters
       # Must read() each one to track line & column correctly
@@ -162,6 +159,13 @@ class Scanner : Reader<<Character>>
 
     method next_is( pattern:ScanPattern )->Logical
       return pattern.is_next( this )
+
+    method next_is( text:String )->Logical
+      if (position + text.count > count) return false
+      forEach (ch at index in text)
+        if (ch != data[position+index]) return false
+      endForEach
+      return true
 
     method next_is_hex_digit->Logical
       local ch = peek
@@ -231,25 +235,35 @@ class Scanner : Reader<<Character>>
       count = data.count
       seek( 0 )
 
-    method scan_args->String[]
+    method scan_args( separator="":String )->String[]
       local args = String[]
       consume_whitespace
-      while (has_another)
+      if (not has_another) return args
+
+      local first = true
+      while (first or has_another)
+        first = false
+        if (String.exists(separator) and not consume(separator)) escapeWhile
         local st = scan_string
         if (st)
           args.add( st )
         else
-          st = String()
-          while (has_another and not consume_whitespace)
-            local ch = read
-            if (ch == '\\' and has_another) st.print( read )
-            else                            st.print( ch )
-          endWhile
-          args.add( st )
+          args.add( scan_escaped_string(separator) )
         endIf
         consume_whitespace
       endWhile
+
       return args
+
+    method scan_escaped_string( separator="":String )->String
+      local result = String()
+      while (has_another and
+          ((String.exists(separator) and not next_is(separator)) or not consume_whitespace))
+        local ch = read
+        if (ch == '\\' and has_another) result.print( read )
+        else                            result.print( ch )
+      endWhile
+      return result
 
     method scan_hex_sequence( buffer:String )
       local first = true
