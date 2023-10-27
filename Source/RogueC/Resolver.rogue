@@ -1357,6 +1357,9 @@ class Resolver : Poolable, Visitor
     method on( cmd:NotInstanceOf )->Cmd
       return visit( LogicalNot(cmd.t, InstanceOf(cmd.t,cmd.operand,cmd.compare_type)) )
 
+    method on( cmd:NotIsType )->Cmd
+      return visit( LogicalNot(cmd.t, IsType(cmd.t,cmd.operand,cmd.compare_type)) )
+
     method on( cmd:OpAndAssign )->Cmd
       local target = visit( cmd.target )  # don't alter cmd.target
       cmd.operand = visit( cmd.operand )

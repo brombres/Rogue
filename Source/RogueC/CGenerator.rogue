@@ -1079,7 +1079,7 @@ class CGenerator : Visitor
     method on_visit( cmd:IsType )
       writer.print "%Ns%Rogue_is_type("
       visit( cmd.operand )
-      writer.print ", &"
+      writer.print ", &Type"
       writer.[ print(cmd.compare_type.c_name), print(')') ]
 
     method on_visit( cmd:Iterator )

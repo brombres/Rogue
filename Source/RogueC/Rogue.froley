@@ -2610,13 +2610,19 @@ parser
   on "instanceOf"
     type
     produce InstanceOf(operand,compare_type:Type)
-  elseOn "not"
-    mustConsume "instanceOf"
-    type
-    produce NotInstanceOf(operand,compare_type:Type)
   elseOn "isType"
     type
     produce IsType(operand,compare_type:Type)
+  elseOn "not"
+    if (consume("instanceOf"))
+      type
+      produce NotInstanceOf(operand,compare_type:Type)
+    elseIf (consume("isType"))
+      type
+      produce NotIsType(operand,compare_type:Type)
+    else
+      syntaxError "'instanceOf' or 'isType' expected."
+    endIf
   endOn
 
 - range

@@ -5082,3 +5082,21 @@ class NativeLiteralInt32 : NativeExpression
       return "NativeLiteralInt32($)" (%content)
 
 endClass
+
+class NotIsType : Cmd
+  PROPERTIES
+    operand      : Cmd
+    compare_type : Type
+
+  METHODS
+    method init( t, operand, compare_type )
+
+    method init( existing:NotIsType )
+      prior.init( existing )
+      if (existing.operand) operand = existing.operand.cloned
+      if (existing.compare_type) compare_type = existing.compare_type.cloned
+
+    method description->String
+      return "NotIsType($,$)" (%operand,%compare_type)
+
+endClass
