@@ -115,7 +115,7 @@ class File( filepath:String ) [compound]
       return File("$$.$"(filepath,suffix,ext))
 
     method character_writer->CharacterToUTF8ByteWriter
-      return CharacterToUTF8ByteWriter( File.writer(resolved.filepath) )
+      return CharacterToUTF8ByteWriter( File(resolved.filepath).writer )
 
     method common_folder( other:File )->File
       local a = resolved.filepath
@@ -678,11 +678,11 @@ class File( filepath:String ) [compound]
       return not outfile.error
 
     method separator->Character
+      local result = '/'
       native @|#if defined(%NS%ROGUE_PLATFORM_WINDOWS)
-              |  return '\\';
-              |#else
-              |  return '/';
+              |  $result = '\\';
               |#endif
+      return result
 
     method is_valid_filename_character( ch:Character, &any_os )->Logical
       if (ch < 32 or ch == 127) return false

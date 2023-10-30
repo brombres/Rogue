@@ -11,9 +11,6 @@ class XY( x:Real, y:Real ) [compound]
     method create( xy:IntXY )->XY
       return XY(xy.x,xy.y)
 
-    method operator?->Logical
-      return x or y
-
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
 
@@ -134,6 +131,9 @@ class XY( x:Real, y:Real ) [compound]
       local m = msq.sqrt
       if (m) return XY( x/m, y/m )
       else   return XY.zero
+
+    method operator?->Logical
+      return x or y
 
     method operator==( other:XY )->Logical
       return x == other.x and y == other.y

@@ -34,7 +34,7 @@ class Process
       if (echo) return ProcessEchoer( process ).run
       else      return process.finish
 
-    method run( args:String[], &env, &writable )->ProcessResult
+    method run( args:String[], &env, &writable, &echo )->ProcessResult
       local process = Process( args, &readable, &=writable, &is_blocking, &=env )
       if (echo) return ProcessEchoer( process ).run
       else      return process.finish
