@@ -219,6 +219,12 @@ class IntBox( position:IntXY, size:IntXY ) [essential compound]
       local w = width.or_smaller(size.x)
       return IntBox( position+IntXY(size.x-w,0), w, size.y )
 
+    method rotated( angle:Degrees )->Quad
+      return this.rotated( angle->Radians )
+
+    method rotated( angle:Radians )->Quad
+      return this->Quad.rotated( angle )
+
     method subset( subset_size:IntXY, anchor=Anchor.CENTER:Anchor )->IntBox
       return IntBox( position + anchor * (size-subset_size), subset_size )
 
@@ -230,6 +236,9 @@ class IntBox( position:IntXY, size:IntXY ) [essential compound]
 
     method to->Box
       return Box( position, size )
+
+    method to->Quad
+      return Quad( this->Box )
 
     method to->String
       return "[$,$ $x$]" (position.x,position.y,size.x,size.y)

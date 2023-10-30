@@ -177,13 +177,6 @@ class FileDiff
         hunks.add( hunk )
       endWhile
 
-    method add( line_index:Int32 )->String
-      forEach (hunk in hunks)
-        local result = hunk.add( line_index )
-        if (result) return result
-      endForEach
-      return null
-
     method apply( lines:String[] )
       local rewriter = lines.rewriter_object
       local n = 1
@@ -194,20 +187,6 @@ class FileDiff
         endWhile
       endForEach
       while (rewriter.has_another) rewriter.write( rewriter.read )
-
-    method check_context( line_index:Int32, line:String )->Logical
-      forEach (hunk in hunks)
-        local result = hunk.check_context( line_index, line )
-        if (result) return true
-      endForEach
-      return false
-
-    method remove( line_index:Int32 )->Logical
-      forEach (hunk in hunks)
-        local result = hunk.remove( line_index )
-        if (result) return true
-      endForEach
-      return false
 
 endClass
 

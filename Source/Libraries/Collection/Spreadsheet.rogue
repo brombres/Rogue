@@ -125,9 +125,6 @@ class Spreadsheet
     method save( file:File )
       file.save( to_csv )
 
-    method save( filepath:String )
-      File.save( filepath, to_csv )
-
     method set( column:Int32, row:Int32, value:Value )
       while (column >= columns.count) add_column
       while (row    >= rows.count)    add_row
@@ -419,7 +416,7 @@ endClass
 class CSVParser : CSVScanner
   PROPERTIES
     table       : Spreadsheet
-    row_builder = Value.list : Value
+    row_builder = @[]
 
   METHODS
     method init( table:Spreadsheet, file:File )

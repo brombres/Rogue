@@ -55,10 +55,10 @@ class Bitmap
       # routines will fuss with alpha values in one way or another. Examples include
       # premultiplying RGBxA upon loading and using 7-bit alpha instead of 8-bit alpha.
       local byte_count = bytes.count
-      if (width == 0) width = Math.sqrt( byte_count/3 ).or_larger(16)
+      if (width == 0) width = ( byte_count/3 ).sqrt.or_larger(16)
       local height = (byte_count + ((width*3)-1)) / (width*3)
 
-      local bitmap = Bitmap( width, height, 0 )
+      local bitmap = Bitmap( width, height )
       bitmap.pixels.clear
       forEach (i of bytes step 3)
         local b1 = bytes[i]->Int32
@@ -677,9 +677,9 @@ class Bitmap
       fill( Triangle(quad.a,quad.c,quad.d), color )
 
     method make_power_of_2
-      local w = result.width
+      local w = width
       local wp2 = w.to_power_of_2
-      local h = result.height
+      local h = height
       local hp2 = h.to_power_of_2
       if (w == wp2 and h == hp2) return
 
@@ -998,8 +998,8 @@ class Bitmap
         pixels[ y*width + x ] = color
       endIf
 
-    method set( xy:IntXY, color:Color )->this
-      return set( xy.x, xy.y, color )
+    method set( xy:IntXY, color:Color )
+      set( xy.x, xy.y, color )
 
     method size->IntXY
       return IntXY( width, height )

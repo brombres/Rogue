@@ -5,14 +5,18 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     zero = IntXY(0,0)
 
   GLOBAL METHODS
+    method create( r:Real, angle:Radians )->IntXY
+      return IntXY( r*angle.cos.floor, r*angle.sin.floor )
+
+    method create( r:Real, angle:Degrees )->IntXY
+      local radians = angle->Radians
+      return IntXY( r*angle.cos.floor, r*angle.sin.floor )
+
     method create( n:Int32 )->IntXY
       return IntXY(n,n)
 
     method create( real_xy:XY )->IntXY
       return IntXY( real_xy.x.floor, real_xy.y.floor )
-
-    method operator?->Logical
-      return x or y
 
     method operator*( a:Int32, b:IntXY )->IntXY
       return IntXY( a*b.x, a*b.y )
@@ -102,6 +106,9 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method cross( other:IntXY )->Int32
       return x * other.y - y * other.x
 
+    method degrees->Degrees
+      return Radians( y->Real.atan2(x) )->Degrees
+
     method distance_to( other:IntXY )->Int32
       return (other - this).magnitude
 
@@ -146,6 +153,9 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
       if (m) return IntXY( x/m, y/m )
       else   return IntXY.zero
 
+    method operator?->Logical
+      return x or y
+
     method operator==( other:IntXY )->Logical
       return x == other.x and y == other.y
 
@@ -166,6 +176,15 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
 
     method product->Int32
       return x * y
+
+    method radians->Radians
+      return Radians( y->Real.atan2(x) )
+
+    method rotated( angle:Degrees )->IntXY
+      return IntXY( this.magnitude, radians + angle->Radians )
+
+    method rotated( angle:Radians )->IntXY
+      return IntXY( magnitude, radians + angle )
 
     method sign->IntXY
       return IntXY( x.sign, y.sign )

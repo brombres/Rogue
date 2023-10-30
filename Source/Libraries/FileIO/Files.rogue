@@ -155,7 +155,7 @@ class Files
 
     method remove( pattern:FilePattern )
       # Removes files from this listing but not from the filesystem - use delete() for that.
-      return remove( pattern.pattern )
+      remove( pattern.pattern )
 
     method remove( pattern:String )
       # Removes files from this listing but not from the filesystem - use delete() for that.

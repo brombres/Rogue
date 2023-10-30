@@ -5,14 +5,18 @@ class XY( x:Real, y:Real ) [compound]
     zero = XY(0,0)
 
   GLOBAL METHODS
+    method create( r:Real, angle:Radians )->XY
+      return XY( r*angle.cos, r*angle.sin )
+
+    method create( r:Real, angle:Degrees )->XY
+      local radians = angle->Radians
+      return XY( r*angle.cos, r*angle.sin )
+
     method create( n:Real )->XY
       return XY(n,n)
 
     method create( xy:IntXY )->XY
       return XY(xy.x,xy.y)
-
-    method operator?->Logical
-      return x or y
 
     method operator+( a:XY, b:XY )->XY
       return XY( a.x+b.x, a.y+b.y )
@@ -88,6 +92,9 @@ class XY( x:Real, y:Real ) [compound]
     method cross( other:IntXY )->Real
       return x * other.y - y * other.x
 
+    method degrees->Degrees
+      return Radians( y.atan2(x) )->Degrees
+
     method distance_to( other:XY )->Int32
       return (other - this).magnitude
 
@@ -135,6 +142,9 @@ class XY( x:Real, y:Real ) [compound]
       if (m) return XY( x/m, y/m )
       else   return XY.zero
 
+    method operator?->Logical
+      return x or y
+
     method operator==( other:XY )->Logical
       return x == other.x and y == other.y
 
@@ -155,6 +165,15 @@ class XY( x:Real, y:Real ) [compound]
 
     method product->Real
       return x * y
+
+    method radians->Radians
+      return Radians( y.atan2(x) )
+
+    method rotated( angle:Degrees )->XY
+      return XY( this.magnitude, radians + angle->Radians )
+
+    method rotated( angle:Radians )->XY
+      return XY( magnitude, radians + angle )
 
     method sign->XY
       return XY( x.sign, y.sign )
