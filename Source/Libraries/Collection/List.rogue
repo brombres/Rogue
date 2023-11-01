@@ -40,8 +40,8 @@ class List<<$DataType>> : Poolable ListType
       else                          element_size = native("sizeof($element_type)")->Int32
       if ($DataType instanceOf Object) is_ref_array = true
 
-    method cloned->$DataType[]
-      local result = $DataType[]( count )
+    method cloned( minimum_capacity=0:Int32 )->$DataType[]
+      local result = $DataType[]( count.or_larger(minimum_capacity) )
       result.count = count
       copy( 0, count, result, 0 )
       return result
