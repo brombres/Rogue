@@ -154,7 +154,7 @@ class String : Poolable PrintWriter
       count = existing.count
       hash_code = existing.hash_code
       is_ascii = existing.is_ascii
-      data = existing.data.cloned.[reserve(1)]
+      data = existing.data.cloned( existing.data.count + 1 )
       data[data.count] = 0
 
     method init( byte_capacity:Int32 )
