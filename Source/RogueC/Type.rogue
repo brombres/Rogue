@@ -219,9 +219,9 @@ class Type : Cmd
         tokens.add( t.cloned(TokenType.SYMBOL_OPEN_SQUARE) )           # [
         tokens.add( t.cloned(TokenType.IDENTIFIER,"compound") )        # compound
         tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_SQUARE) )          # ]
-        tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+        tokens.add( t.cloned(TokenType.EOL,"") )                       # EOL
         tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )            # endClass
-        tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+        tokens.add( t.cloned(TokenType.EOL,"") )                       # EOL
 
         template = Template( t, Program.default_module, "Tuple", placeholders, tokens, Attribute.COMPOUND )
         Program.default_module.templates[ template_key ] = template

@@ -35,7 +35,7 @@ class Module
 
       # Each module gets a Routine class to store routines as GLOBAL METHODS.
       local tokens = Token[]
-      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.EOL,"") )
       tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
       local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, Attribute.OBJECT )
       templates["Routine<<0>>"] = new_template

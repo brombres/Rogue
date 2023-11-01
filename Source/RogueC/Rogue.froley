@@ -1162,13 +1162,14 @@ parser
   constructor_properties
   base_types
   class_attributes
+  call parse_doc_comment
   if (consume(';'))
     createNull
   else
     class_sections
     mustConsume "endClass"
   endIf
-  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, doc:String, sections )
 
 - enum_attributes
   beginList
@@ -1189,13 +1190,14 @@ parser
   constructor_properties
   base_types
   enum_attributes
+  call parse_doc_comment
   if (consume(';'))
     createNull
   else
     enum_sections
     mustConsume "endEnum"
   endIf
-  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, doc:String, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
@@ -1348,7 +1350,8 @@ parser
     elseOnOthers
       createNull
     endOn
-    produce Category(name:String,args,value)
+    call parse_doc_comment
+    produce Category(name:String,args,value,doc:String)
   endOn
   identifier  # syntax error
 
@@ -1845,7 +1848,8 @@ parser
   createList
   optional_type
   global_property_attributes
-  produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes )
+  call parse_doc_comment
+  produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
 - properties
   beginList
@@ -1858,7 +1862,8 @@ parser
   createList
   optional_type
   property_attributes
-  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes )
+  call parse_doc_comment
+  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
 - property_declaration
   on IDENTIFIER
