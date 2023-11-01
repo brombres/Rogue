@@ -246,19 +246,19 @@ augment
   METHODS
     method Type.cmd_default_value( cmd_t:Token )->Cmd
       if (is_compound) return EmptyCompound( cmd_t, this )
-      return LiteralNull( cmd_t, this )
+      return LiteralNull( cmd_t.cloned(TokenType.KEYWORD_NULL,null), this )
 
     method TypeCharacter.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralCharacter( cmd_t, 0 )
+      return LiteralCharacter( cmd_t.cloned(TokenType.CHARACTER,"0"), 0 )
 
     method TypeInt32.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralInt32( cmd_t, 0 )
+      return LiteralInt32( cmd_t.cloned(TokenType.INTEGER,"0"), 0 )
 
     method TypeLogical.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralLogical( cmd_t, false )
+      return LiteralLogical( cmd_t.cloned(TokenType.KEYWORD_FALSE,null), false )
 
     method TypeReal64.cmd_default_value( cmd_t:Token )->Cmd
-      return LiteralReal( cmd_t, 0 )
+      return LiteralReal( cmd_t.cloned(TokenType.REAL_NUMBER,"0.0"), 0 )
 
 endAugment
 

@@ -59,7 +59,8 @@ class Box( position:XY, size:XY ) [essential compound]
 
     method cell( grid_index:XY, grid_size:XY )->Box
       # Example:
-      #   at( XY(i,j), XY(3,3) ) returns the bounds of one of the following grid cells:
+      #   cell( XY(i,j), XY(3,3) ) returns the bounds of one of the following grid cells
+      #   depending on the values of (i,j):
       #
       #   (0,0) | (1,0) | (2,0)
       #   ------+-------+------

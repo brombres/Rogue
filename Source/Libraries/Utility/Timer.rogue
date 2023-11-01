@@ -1,30 +1,29 @@
-# EXAMPLES
-#
-# uses Utility/Timer
-#
-# # Stopwatch mode
-# block
-#   local timer = Timer()
-#   println timer          # 0.00 seconds
-#   System.sleep(1.5)
-#   println timer          # 1.50 seconds
-#   println
-# endBlock
-#
-# # Countdown mode
-# block
-#   local timer = Timer(2.5)
-#   println timer.is_expired  # false
-#   System.sleep(1)
-#   println timer.is_expired  # false
-#   System.sleep(1)
-#   println timer.is_expired  # false
-#   System.sleep(1)
-#   println timer.is_expired  # true
-#   println
-# endBlock
-
 class Timer
+  # EXAMPLES
+  #
+  # uses Utility/Timer
+  #
+  #   # Stopwatch mode
+  #   block
+  #     local timer = Timer()
+  #     println timer          # 0.00 seconds
+  #     System.sleep(1.5)
+  #     println timer          # 1.50 seconds
+  #     println
+  #   endBlock
+  #
+  #   # Countdown mode
+  #   block
+  #     local timer = Timer(2.5)
+  #     println timer.is_expired  # false
+  #     System.sleep(1)
+  #     println timer.is_expired  # false
+  #     System.sleep(1)
+  #     println timer.is_expired  # false
+  #     System.sleep(1)
+  #     println timer.is_expired  # true
+  #     println
+  #   endBlock
   PROPERTIES
     duration   : Real
     start_time : Real

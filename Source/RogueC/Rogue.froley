@@ -804,25 +804,36 @@ parser
 
 - procedure_parameter
   consume_eols
-  on '&' identifier optional_initial_value optional_type -> Local(name:String,initial_value,type:Type,attribute="default":String)
+  on '&' identifier optional_parameter_initial_value optional_type -> Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="default":String)
   on '@'
     identifier
-    optional_initial_value
+    optional_parameter_initial_value
     if (nextIs(':')) syntaxError "Direct @property-set parameter cannot specify a type."
     createNull # type
-    produce Local(name:String,initial_value,type:Type,attribute="direct-auto-store":String)
+    produce Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type,attribute="direct-auto-store":String)
   endOn
   onPeek IDENTIFIER
     identifier
-    optional_initial_value
+    optional_parameter_initial_value
     optional_type
-    produce Local(name:String,initial_value,type:Type)
+    produce Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type)
   endOn
   identifier  # error
 
 - optional_initial_value
   if (consume('=')) consume_eols; expression
   else              createNull
+
+- optional_parameter_initial_value
+  if (consume('='))
+    consume_eols
+    savePosition
+    expression
+    createTokenListPreservingStack
+  else
+    createNull  # Cmd
+    createNull  # TokenList
+  endIf
 
 - procedure_return_type
   if (not consume('->')) produceNull
@@ -1162,13 +1173,14 @@ parser
   constructor_properties
   base_types
   class_attributes
+  call parse_doc_comment
   if (consume(';'))
     createNull
   else
     class_sections
     mustConsume "endClass"
   endIf
-  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, doc:String, sections )
 
 - enum_attributes
   beginList
@@ -1189,13 +1201,14 @@ parser
   constructor_properties
   base_types
   enum_attributes
+  call parse_doc_comment
   if (consume(';'))
     createNull
   else
     enum_sections
     mustConsume "endEnum"
   endIf
-  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, sections )
+  produce Class( constructor_properties:Parameters, base_types:TypeList, attributes:Attributes, doc:String, sections )
 
 - placeholder
   on PLACEHOLDER -> Placeholder(name=content)
@@ -1348,7 +1361,8 @@ parser
     elseOnOthers
       createNull
     endOn
-    produce Category(name:String,args,value)
+    call parse_doc_comment
+    produce Category(name:String,args,value,doc:String)
   endOn
   identifier  # syntax error
 
@@ -1727,6 +1741,7 @@ parser
 
     procedure_attributes
     consume(':')
+    call parse_doc_comment
 
     if (is_batch_augment)
       multi_line_statements
@@ -1753,7 +1768,7 @@ parser
 
       createNull
       create LocalScope(statements):ControlStructure
-      create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
+      create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,source_tokens:TokenList,body:LocalScope):Procedure
       return
     endIf
   endOn
@@ -1771,11 +1786,13 @@ parser
   procedure_return_type
   procedure_attributes
   consume(':')
+  call parse_doc_comment
+
   savePosition
 
   scoped_multi_line_statements
 
-  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,body:LocalScope):Procedure
   return
 
 - method_template_instance
@@ -1783,6 +1800,8 @@ parser
   procedure_return_type
   procedure_attributes
   consume(':')
+  call parse_doc_comment
+
   savePosition
 
   ++disable_output
@@ -1792,7 +1811,7 @@ parser
 
   createNull
   create LocalScope(statements):ControlStructure
-  create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
+  create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,source_tokens:TokenList,body:LocalScope):Procedure
   return
 
 - global_method
@@ -1830,8 +1849,9 @@ parser
     procedure_return_type
     procedure_attributes
     consume(':')
+    call parse_doc_comment
     scoped_multi_line_statements
-    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,body:LocalScope):Procedure
   endOn
 
 - global_properties
@@ -1845,7 +1865,8 @@ parser
   createList
   optional_type
   global_property_attributes
-  produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes )
+  call parse_doc_comment
+  produce GlobalPropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
 - properties
   beginList
@@ -1858,7 +1879,8 @@ parser
   createList
   optional_type
   property_attributes
-  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes )
+  call parse_doc_comment
+  produce PropertyDeclarations( declarations, type:Type, attributes:Attributes, doc:String )
 
 - property_declaration
   on IDENTIFIER
@@ -2136,7 +2158,7 @@ parser
   on "assert"
     savePosition
     expression
-    createTokenList
+    createTokenListPreservingStack
     produce Assert(expression,token_list:TokenList)
   endOn
   on "ensure" "<<" expression ">>" args -> Ensure(expression,args:Args)
@@ -2230,7 +2252,7 @@ parser
     while (not nextIs(EOL))
       savePosition
       expression
-      createTokenList
+      createTokenListPreservingStack
       create TracedExpression(expression,token_list:TokenList)
       consume ','
     endWhile
@@ -2244,7 +2266,7 @@ parser
     while (not nextIs(EOL))
       savePosition
       expression
-      createTokenList
+      createTokenListPreservingStack
       create TracedExpression(expression,token_list:TokenList)
       consume ','
     endWhile
@@ -2268,9 +2290,9 @@ parser
 
 - local_declaration
   on IDENTIFIER
-    optional_initial_value
+    optional_parameter_initial_value
     createNull
-    produce Local( name=content, initial_value, type:Type )
+    produce Local( name=content, initial_value, initial_value_tokens:TokenList, type:Type )
   endOn
   mustConsume IDENTIFIER  # throws error
 
@@ -2288,15 +2310,20 @@ parser
   endOn
 
 - localize_declaration
+  savePosition
   identifier
+  createTokenListPreservingStack
+  pop initial_value_tokens
 
   call clone
   createNull
   create Access(name:String,args)
   subclass
 
+  push initial_value_tokens
+
   createNull
-  create Local(name:String,initial_value,type:Type)
+  create Local(name:String,initial_value,initial_value_tokens:TokenList,type:Type)
 
 - destructuring_local_declarations
   on '('
@@ -3746,7 +3773,7 @@ parser
   create Logicalized(operand):Unary
   create OpAndAssign(target,operand)
   create PreDecrementLocal(info:Local)  # Internal use
-  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
+  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc=`null`,body:LocalScope)
   create PushStackTraceCutoff
   create CreateRange(start,limit,step_size)
   create ReturnOnException

@@ -11,10 +11,15 @@ class Program [singleton]
     targets_cpp          : Logical
     targets_windows      : Logical
 
+    command           : Value  # RogueC launch command with //options and //args
+
     debug_mode        = false
     gc_auto           = true
     gc_threshold      = 1024*1024 : Int32
     generate_main     = false
+    generate_doc      = false
+    no_stdlib         = false
+    doc_root          : String
     output_filepath   : String
     stack_trace       = false
     real_bits         : Int32 # Set with --real=[32|64] compile option
@@ -184,6 +189,20 @@ class Program [singleton]
     method description->String
       return "Program"
 
+    method find_type( name:String )->Type
+      block
+        local (mod,type_name) = default_module.split_module_and_type( t, name, &suppress_error )
+        if (not type_name) return null
+        if (mod) return mod.find_type( t, type_name )
+      endBlock
+
+      forEach (mod in modules)
+        local type = mod.find_type( t, name )
+        if (type) return type
+      endForEach
+
+      return null
+
     method get_module( t:Token, name:String )->Module
       local m = modules[ name ]
       if (m) return m
@@ -244,6 +263,12 @@ class Program [singleton]
       if (api) api_filepaths.add( filepath )
 
       if (included_files.contains(filepath)) return
+
+      if (File(filepath).filename == "Standard.rogue")
+        # Program.t starts out with a placeholder filepath; update it if possible
+        this.t.filepath = filepath
+      endIf
+
       included_files[ filepath ] = IncludedFile(null,null,false) # placeholder
 
       temporarily current_module = Program.default_module
@@ -294,12 +319,16 @@ class Program [singleton]
       unorganized_types.clear
       is_organizing = false
 
-    method resolve
+    method organize
       (forEach in modules.values).collect_used_modules
 
       # We've collected all class templates.
       Analytics.ensure_definitions.start
-      (forEach in (forEach in modules.values).types).ensure_definition
+      forEach (mod in modules.values)
+        forEach (type in mod.types)
+          type.ensure_definition
+        endForEach
+      endForEach
       Analytics.ensure_definitions.stop
 
       # Reparse the tokens for each file.
@@ -319,7 +348,7 @@ class Program [singleton]
       Analytics.main_parse.stop
 
       Analytics.instantiate_essential.start
-      (forEach in modules).instantiate_essential_and_api_types
+      instantiate_essential_api_and_doc_types
       Analytics.instantiate_essential.stop
 
       Analytics.organize_methods.start
@@ -330,6 +359,11 @@ class Program [singleton]
       apply( Transformer() )
       Analytics.tranform.stop
 
+      if local type_Routine = find_type( "Rogue::Routine" )
+        type_Routine.t = this.t
+      endIf
+
+    method resolve
       Analytics.resolve_used_elements.start
       ResolveUsedElements().apply
       Analytics.resolve_used_elements.stop
@@ -337,6 +371,257 @@ class Program [singleton]
       Analytics.finalize.start
       Finalizer().apply
       Analytics.finalize.stop
+
+    method instantiate_doc_method_templates
+      forEach (mod in modules)
+        forEach (type in mod.types)
+          type.instantiate_doc_method_templates
+        endForEach
+      endForEach
+
+    method instantiate_essential_api_and_doc_types
+      block any_changes = true
+        while (any_changes)
+          any_changes = false
+          forEach (mod in modules)
+            if (mod.instantiate_essential_and_api_types) any_changes = true
+          endForEach
+        endWhile
+      endBlock
+
+    method doc_name( name:String )->String
+      name = name.replacing( "Rogue::_Doc_Gen_", "$" )
+      name = name.replacing( "_Doc_Gen_", "$" )
+      which (name)
+        case "$DataType[]": return "List<<$DataType>>"
+        case "$DataType?":  return "Optional<<$DataType>>"
+        case "[$KeyType:$ValueType]": return "Table<<$KeyType,$ValueType>>"
+      endWhich
+      return name
+
+    method doc_name( type:Type )->String
+      if (type is null) return null
+      return doc_name( type.name )
+
+    method generate_doc_json
+      output_filepath = command//options//output->String
+      if (not String.exists(output_filepath))
+        if (command//options//doc.is_logical)
+          output_filepath = "API.json"
+        else
+          output_filepath = File( command//options//doc->String ).filename
+        endIf
+      endIf
+
+      local (filepath,ext) = File(output_filepath).split_filepath_and_extension
+      if (not String.exists(ext) or ext != "json") output_filepath = filepath + ".json"
+
+      local doc = @{ modules:[] }
+
+      forEach (mod in Program.modules)
+        local module_info = @{ name:mod.name, types:[] }
+
+        forEach (type in mod.types)
+          if (not type.documentable) nextIteration
+
+          local type_info =
+          @{
+            "scoped_name": doc_name(type.scoped_name)
+            "module":      doc_name(type.module_context.name)
+            "name":        doc_name(type.name)
+            "attributes":  []
+          }
+
+          if (type.t.filepath.begins_with(Program.doc_root))
+            type_info//filepath = type.t.filepath.after_first( Program.doc_root )
+          else
+            type_info//filepath = File(filepath).filename
+          endIf
+
+          if (type.is_object)        type_info//attributes.add( "class" )
+          elseIf (type.is_enum)      type_info//attributes.add( "enum" )
+          elseIf (type.is_compound)  type_info//attributes.add( "compound" )
+          elseIf (type.is_aspect)    type_info//attributes.add( "aspect" )
+          elseIf (type.is_primitive) type_info//attributes.add( "primitive" )
+          else throw Error( "Unhandled type classification:" + type )
+
+          if (type.attributes.is_singleton) type_info//attributes.add( "singleton" )
+          if (type.attributes.bitflags)     type_info//attributes.add( "bitflags" )
+
+          if local def = type.class_def->(as Class)
+            if (def.doc) type_info//description = def.doc
+          endIf
+
+          if (type.base_class)
+            type_info//base_class = doc_name( type.base_class.scoped_name )
+            type_info//doc_base_class = doc_name( type.base_class.doc_type.scoped_name )
+          endIf
+
+          if (type.aspects)
+            local aspects = @[]
+            forEach (a in type.aspects)
+              if (not a.attributes.is_augment)
+                aspects.add( doc_name(a.doc_type.scoped_name) )
+              endIf
+              if (aspects.count) type_info//aspects = aspects
+            endForEach
+          endIf
+
+          local augmented_type : Type
+          if (type.attributes.augmented and type.type_template and type.type_template.doc_type)
+            augmented_type = type.type_template.doc_type
+            type_info//augmented_type = doc_name( augmented_type.scoped_name )
+            type_info//doc_augmented_type = doc_name( augmented_type.doc_type.scoped_name )
+          endIf
+
+          if (type.categories)
+            use resolver = ObjectPool<<Resolver>>
+              resolver.resolve_definitions( type )
+            endUse
+
+            local categories = @[]
+            type_info//categories = categories
+            forEach (category in type.categories)
+              local category_info =
+              @{
+                name:  doc_name(category.name)
+                value: category.ordinal
+              }
+              if (category.doc) category_info//description = category.doc
+              categories.add( category_info )
+            endForEach
+          endIf
+
+          if (type.global_properties.count)
+            local properties = @[]
+            forEach (p in type.global_properties)
+              if (p.attributes.omit_doc) nextIteration
+              if (p.name.begins_with('.')) nextIteration  # native property
+              local property =
+              @{
+                name: doc_name(p.name)
+                type: doc_name(p.type.scoped_name)
+                doc_type: doc_name(p.type.doc_type.scoped_name)
+              }
+              if (p.doc) property//description = p.doc
+              properties.add( property )
+            endForEach
+            if (properties.count) type_info//global_properties = properties
+          endIf
+
+          if (type.global_methods.count)
+            local is_routine = (type.name == "Routine")
+            local methods = @[]
+            forEach (m in type.global_methods)
+              if (m.attributes.omit_doc) nextIteration
+              if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
+              if (is_routine and not m.t.filepath.begins_with(Program.doc_root)) nextIteration
+
+              local m_info =
+              @{
+                signature: doc_name(m.signature)
+                name: doc_name(m.name)
+                parameters: []
+                return_type: null
+                doc_return_type: null
+              }
+              if (m.return_type)
+                m_info//return_type = doc_name(m.return_type.scoped_name)
+                m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
+              endIf
+
+              if (is_routine) m_info//filepath = m.t.filepath.after_first( Program.doc_root )
+
+              local params = m_info//parameters
+              forEach (p in m.parameters)
+                local p_info =
+                @{
+                  name: doc_name(p.original_name)
+                  type: doc_name(p.type.scoped_name)
+                  doc_type: doc_name(p.type.doc_type.scoped_name)
+                }
+                if (p.initial_value)
+                  p_info//default_value = p.initial_value_tokens->String
+                endIf
+                params.add( p_info )
+              endForEach
+
+              if (m.doc) m_info//description = m.doc
+
+              methods.add( m_info )
+            endForEach
+
+            if (methods.count) type_info//global_methods = methods
+          endIf
+
+          if (type.properties.count)
+            local properties = @[]
+            forEach (p in type.properties)
+              if (p.attributes.omit_doc) nextIteration
+              if (p.name.begins_with('.')) nextIteration  # native property
+              local property =
+              @{
+                name: doc_name(p.name)
+                type: doc_name(p.type.scoped_name)
+                doc_type: doc_name(p.type.doc_type.scoped_name)
+              }
+              if (p.doc) property//description = p.doc
+              properties.add( property )
+            endForEach
+            if (properties.count) type_info//properties = properties
+          endIf
+
+          if (type.methods.count)
+            local methods = @[]
+            forEach (m in type.methods)
+              if (m.type_context is not type or m.attributes.omit_doc) nextIteration
+              if (augmented_type and type.base_class is Program.type_Object and not m.attributes.augmented) nextIteration
+
+              local m_info =
+              @{
+                signature: doc_name(m.signature)
+                name: doc_name(m.name)
+                parameters: []
+                return_type: null
+                doc_return_type: null
+              }
+              if (m.return_type)
+                m_info//return_type = doc_name(m.return_type.scoped_name)
+                m_info//doc_return_type = doc_name(m.return_type.doc_type.scoped_name)
+              endIf
+
+              local params = m_info//parameters
+              forEach (p in m.parameters)
+                local p_info =
+                @{
+                  name: doc_name(p.original_name)
+                  type: doc_name(p.type.scoped_name)
+                  doc_type: doc_name(p.type.doc_type.scoped_name)
+                }
+                if (p.initial_value)
+                  if (p.initial_value_tokens) p_info//default_value = p.initial_value_tokens->String
+                  if (p.attributes.is_default_parameter) p_info//default_parameter = true
+                endIf
+                params.add( p_info )
+              endForEach
+
+              if (m.doc) m_info//description = m.doc
+
+              methods.add( m_info )
+            endForEach
+
+            if (methods.count) type_info//methods = methods
+          endIf
+
+          if (type.name != "Routine" or type_info//global_methods.count) module_info//types.add( type_info )
+
+        endForEach
+
+        if (module_info//types.count) doc//modules.add( module_info )
+      endForEach
+
+      println "Writing documentation metadata to " + output_filepath
+      File( output_filepath ).save( doc.to_json(&formatted) )
 
     method set_real_bits( @real_bits )
       definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]

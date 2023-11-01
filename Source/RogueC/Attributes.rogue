@@ -45,6 +45,9 @@ class Attribute
     FAUX               = (Int64(1):<<:40)
     PREFERRED          = (Int64(1):<<:41)
     NATIVE_TYPE        = (Int64(1):<<:42)
+    DOC_GENERATED      = (Int64(1):<<:43)
+    OMIT_DOC           = (Int64(1):<<:44)
+    AUGMENTED          = (Int64(1):<<:45)
 endClass
 
 class Attributes : CmdList
@@ -91,6 +94,9 @@ class Attributes : CmdList
   ROGUE_ATTRIBUTE<< is_faux,              Attribute.FAUX >>
   ROGUE_ATTRIBUTE<< is_preferred,         Attribute.PREFERRED >>
   ROGUE_ATTRIBUTE<< is_native_type,       Attribute.NATIVE_TYPE >>
+  ROGUE_ATTRIBUTE<< doc_generated,        Attribute.DOC_GENERATED >>
+  ROGUE_ATTRIBUTE<< omit_doc,             Attribute.OMIT_DOC >>
+  ROGUE_ATTRIBUTE<< augmented,            Attribute.AUGMENTED >>
 
   PROPERTIES
     flags : Int64

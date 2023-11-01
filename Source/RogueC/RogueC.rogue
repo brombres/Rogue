@@ -80,6 +80,7 @@ class RogueC
 
       try
         command = parse_args( args )
+        Program.command = command
       catch (err:Error)
         Console.error.println "=" * 80.or_smaller(Console.width)
         Console.error.println err
@@ -95,7 +96,7 @@ class RogueC
         System.exit 0
       endIf
 
-      if (command//options//help or command//args.count == 0)
+      if (command//options//help or (command//args.is_empty and not command//options//doc))
         print_usage
         System.exit 0
       endIf
@@ -129,31 +130,50 @@ class RogueC
 
       local api_includes = command//options//api.contains(true)
 
-      local rogue_folder = File( File( System.executable_filepath ).folder )
-      if ((rogue_folder/"Libraries").exists)
-        rogue_folder /= "Libraries"
+      local libraries_folder = File( File( System.executable_filepath ).folder )
+      if ((libraries_folder/"Libraries").exists)
+        libraries_folder /= "Libraries"
       else
-        if ((rogue_folder/"Source/Libraries").exists)
-          rogue_folder /= "Source/Libraries"
+        if ((libraries_folder/"Source/Libraries").exists)
+          libraries_folder /= "Source/Libraries"
         else
-          rogue_folder .= parent
-          if ((rogue_folder/"Source/Libraries").exists)
-            rogue_folder /= "Source/Libraries"
-          elseIf ((rogue_folder/"Libraries").exists)
-            rogue_folder /= "Libraries"
+          libraries_folder .= parent
+          if ((libraries_folder/"Source/Libraries").exists)
+            libraries_folder /= "Source/Libraries"
+          elseIf ((libraries_folder/"Libraries").exists)
+            libraries_folder /= "Libraries"
           else
-            rogue_folder = File(".")
+            libraries_folder = File(".")
           endIf
         endIf
       endIf
 
-      Program.add_include_search_path( rogue_folder )
+      if (Program.no_stdlib)
+        Program.include( forEach in command//args, &api=api_includes )
+      else
+        Program.add_include_search_path( libraries_folder )
+        Program.include( "StandardMacros" )
+        Program.include( forEach in command//args, &api=api_includes )
+        Program.include( "Standard" )
+      endIf
 
-      Program.include( "StandardMacros" )
-
-      Program.include( forEach in command//args, &api=api_includes )
-
-      Program.include( "Standard" )
+      if (Program.generate_doc)
+        if (command//options//doc == Value(true))
+          # Include all Standard Library files to generate the docs from.
+          Program.doc_root = libraries_folder.abs.filepath + '/'
+          Program.include( "Standard" )
+          Program.include( forEach in Files(libraries_folder,"**/*.rogue"), &api=api_includes )
+        else
+          local doc_path = File( command//options//doc->String )
+          Program.doc_root = doc_path.abs.filepath
+          if (doc_path.is_folder)
+            Program.doc_root += '/'
+            Program.include( forEach in Files(doc_path,"**/*.rogue"), &api=api_includes )
+          else
+            Program.include( doc_path.filepath, &api=api_includes )
+          endIf
+        endIf
+      endIf
 
       forEach (option in command//options//api)
         if (option == Value(true)) nextIteration
@@ -164,6 +184,26 @@ class RogueC
         endIf
       endForEach
 
+      check_autoincludes
+
+      Program.organize
+
+      if (Program.generate_doc)
+        Program.instantiate_doc_method_templates
+        Program.generate_doc_json
+        return
+      endIf
+
+      Program.resolve
+
+      Analytics.generate_c.start
+      Program.generate_c
+      Analytics.generate_c.stop
+      Analytics.total_time.stop
+
+      #if ($defined(DEBUG)) Analytics.display
+
+    method check_autoincludes
       while (Scanner.uses_autoinclude)
         local t = Program.t
         Scanner.uses_autoinclude = false
@@ -178,26 +218,19 @@ class RogueC
         if (Scanner.uses_Value)    Program.include( t, "Core/Value" ); Scanner.uses_Value = false
       endWhile
 
-      Program.resolve
-
-      Analytics.generate_c.start
-      Program.generate_c
-      Analytics.generate_c.stop
-      Analytics.total_time.stop
-
-      #if ($defined(DEBUG)) Analytics.display
-
     method parse_args( args:String[] )->Value
       local command = CommandLineParser().
       [
         option( "--api=", &optional, &multi )
         option( "--debug" )
         option( "--define=", &alias="-D", &multi )
+        option( "--doc=", &optional )
         option( "--gc=" )
         option( "--gc-threshold=" )
         option( "--help",       &aliases=["-h","-?"] )
         option( "--libraries=", &alias="-L", &multi )
         option( "--main" )
+        option( "--no-stdlib" )
         option( "--namespace=", &alias="-n" )
         option( "--output=" )
         option( "--real=", &alias="-r" )
@@ -250,6 +283,14 @@ class RogueC
 
       if (command//options//main)
         Program.generate_main = true
+      endIf
+
+      if (command//options//doc)
+        Program.generate_doc = true
+      endIf
+
+      if (command//options.contains("no-stdlib"))
+        Program.no_stdlib = true
       endIf
 
       if (command//options//target)
@@ -320,6 +361,14 @@ class RogueC
                |    Defining "name:value" is equivalent to: $define name value
                |    Defining "name" is equivalent to:       $define name true
                |
+               |  --doc
+               |  --doc=<folder-path>
+               |    RogueC generates documentation metadata instead of generating code.
+               |    '--doc' generates documentation for the standard library.
+               |    '--doc=<folder-path>' recursively includes and generates documentation for
+               |    all .rogue files nested in the specified folder. The generated metadata is
+               |    saved as a '.json' file.
+               |
                |  --help, -h, -?
                |    Show this help text.
                |
@@ -352,9 +401,13 @@ class RogueC
                |    Generates C type names with the specified prefix, allowing multiple,
                |    independent Rogue-generated C source files to be compiled together.
                |
+               |  --no-stdlib
+               |    Prevents the Standard Library from automatically being included. The usual
+               |    include order is: StandardMacros, <command-line-files>, Standard.
+               |
                |  --output=<filepath>
-               |   Specify the destination folder and/or the base filename for generated C
-               |   output.
+               |    Specify the destination folder and/or the base filename for generated C
+               |    output.
                |
                |  --real=32, -r 32
                |    Specifies that the 'Real' datatype should be Real32 instead of Real64.

@@ -194,6 +194,11 @@ class TokenList : Cmd
 
     method to->Token[]
       return tokens
+
+    method to->String
+      local result = String()
+      result.print( (forEach in tokens).to_source_string )
+      return result
 endClass
 
 class Unary( t, operand:Cmd ) : Cmd
@@ -653,6 +658,7 @@ class Local : Cmd
   PROPERTIES
     name          : String
     original_name : String   # for auto-store parameters
+    initial_value_tokens : TokenList
     initial_value : Cmd
     type          : Type
     attributes    : Attributes
@@ -669,17 +675,23 @@ class Local : Cmd
       ensure<<attributes>>(t)
       if (attribute)
         which (attribute)
-          case "default":           attributes.is_default_parameter = true
-          case "direct-auto-store": attributes.is_direct_auto_store = true
+          case "default"
+            attributes.is_default_parameter = true
+          case "direct-auto-store"
+            attributes.is_direct_auto_store = true
         endWhich
       endIf
       attributes.is_anchored = true  # always true
+
+    method init( t:Token, name:String, initial_value:Cmd, initial_value_tokens, type:Type, attribute=null:String )
+      init( t, name, initial_value, type, attribute )
 
     method init( existing:Local )
       prior.init( existing )
       name = existing.name
       index = existing.index
       original_name = existing.original_name
+      if (existing.initial_value_tokens) initial_value_tokens = existing.initial_value_tokens.cloned
       if (existing.initial_value) initial_value = existing.initial_value.cloned
       if (existing.type) type = existing.type.cloned
       attributes = existing.attributes.cloned
@@ -793,9 +805,10 @@ class Class : Cmd
     base_types             : TypeList
     attributes             : Attributes
     sections               : Cmd
+    doc                    : String
 
   METHODS
-    method init( t, constructor_properties, base_types, attributes, sections )
+    method init( t, constructor_properties, base_types, attributes, doc, sections )
 
     method init( existing:Class )
       prior.init( existing )
@@ -803,9 +816,15 @@ class Class : Cmd
       if (existing.base_types) base_types = existing.base_types.cloned
       if (existing.attributes) attributes = existing.attributes.cloned
       if (existing.sections) sections = existing.sections.cloned
+      doc = existing.doc
 
     method description->String
-      return "Class($,$,$,$)" (%constructor_properties,%base_types,%attributes,%sections)
+      local doc_comment = ""
+      if (doc)
+        if (doc.count > 20) doc_comment = ",$..."(doc.leftmost(17))
+        else                doc_comment = ",$"(doc.leftmost(20))
+      endIf
+      return "Class($,$,$,$,$)" (%constructor_properties,%base_types,%attributes,%sections,doc_comment)
 
 endClass
 
@@ -837,14 +856,16 @@ class PropertyDeclarations : Cmd
     declarations : Cmd
     type         : Type
     attributes   : Attributes
+    doc          : String
 
   METHODS
-    method init( t, declarations, type, attributes )
+    method init( t, declarations, type, attributes, doc )
 
     method init( existing:PropertyDeclarations )
       prior.init( existing )
       if (existing.declarations) declarations = existing.declarations.cloned
       if (existing.type) type = existing.type.cloned
+      doc = existing.doc
 
     method description->String
       return "PropertyDeclarations($,$)" (%declarations,%type)
@@ -860,6 +881,7 @@ class Property : Cmd
     attributes        : Attributes
     native_expression : String
     id = -1           : Int32
+    doc               : String
 
   METHODS
     method init( t, name, initial_value, type )
@@ -877,6 +899,7 @@ class Property : Cmd
       if (existing.type) type = existing.type.cloned
       if (existing.attributes) attributes = existing.attributes.cloned
       native_expression = existing.native_expression
+      doc = existing.doc
 
     method description->String
       if (native_expression) return "Property($,$)" (%name,%native_expression)
@@ -891,6 +914,7 @@ class NativeProperty : Cmd
   PROPERTIES
     target     : String
     expression : String
+    doc        : String
 
   METHODS
     method init( t, target, expression )
@@ -899,6 +923,7 @@ class NativeProperty : Cmd
       prior.init( existing )
       target     = existing.target
       expression = existing.expression
+      doc = existing.doc
 
     method description->String
       return "NativeProperty<<$>>($)" (%target,%expression)
@@ -1549,15 +1574,16 @@ endClass
 class GlobalMethod : Procedure
   METHODS
     method init( t:Token, type_context, name:String )
-      prior.init( t, type_context.module_context, name, null, null, null, null )
+      prior.init( t, type_context.module_context, name, null, null, null, null, null )
 
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
-                 attributes=null:Attributes, body=null:LocalScope )
-      prior.init( t, name, parameters, return_type, attributes, body )
+        attributes=null:Attributes, doc=null:String, body=null:LocalScope )
+      prior.init( t, name, parameters, return_type, attributes, doc, body )
 
     method init( existing:GlobalMethod )
       prior.init( existing )
       type_context = existing.@type_context
+      doc = existing.doc
 
     method context_signature->String
       return "$.$"(type_context.scoped_name,signature)
@@ -1582,22 +1608,23 @@ class Method : Procedure
 
   METHODS
     method init( t:Token, name:String )
-      init( t, null, name, null, null, null, null )
+      init( t, null, name, null, null, null, null, null )
 
     method init( t:Token, name:String, parameters:Parameters, return_type:Type,
-        attributes:Attributes, source_tokens, body:LocalScope )
-      init( t, null, name, parameters, return_type, attributes, body )
+        attributes:Attributes, doc:String, source_tokens, body:LocalScope )
+      init( t, null, name, parameters, return_type, attributes, doc, body )
 
     method init( t:Token, module_context:Module, name:String, parameters=null:Parameters, return_type=null:Type,
-        attributes=null:Attributes, body=null:LocalScope )
-      prior.init( t, module_context, name, parameters, return_type, attributes, body )
+        attributes=null:Attributes, doc=null:String, body=null:LocalScope )
+      prior.init( t, module_context, name, parameters, return_type, attributes, doc, body )
 
     method init( t:Token, type_context, name:String )
-      prior.init( t, type_context.module_context, name, null, null, null, null )
+      prior.init( t, type_context.module_context, name, null, null, null, null, null )
 
     method init( existing:Method )
       prior.init( existing )
       type_context = existing.@type_context
+      doc = existing.doc
       if (existing.source_tokens) source_tokens = existing.source_tokens.cloned
 
     method context_signature->String
@@ -2383,15 +2410,17 @@ class GlobalPropertyDeclarations : Cmd
     declarations : Cmd
     type         : Type
     attributes   : Attributes
+    doc          : String
 
   METHODS
-    method init( t, declarations, type, attributes )
+    method init( t, declarations, type, attributes, doc )
 
     method init( existing:GlobalPropertyDeclarations )
       prior.init( existing )
       if (existing.declarations) declarations = existing.declarations.cloned
       if (existing.type) type = existing.type.cloned
       if (existing.attributes) attributes = existing.attributes.cloned
+      doc = existing.doc
 
     method description->String
       return "GlobalPropertyDeclarations($,$,$)" (%declarations,%type,%attributes)
@@ -3595,6 +3624,7 @@ class GlobalMethodTemplate : Cmd
     name         : String
     placeholders : Cmd
     token_list   : TokenList
+    omit_doc     : Logical
 
   METHODS
     method init( t, name, placeholders, token_list )
@@ -3623,6 +3653,7 @@ class GlobalMethodTemplate : Cmd
         local m = parser.parse( Parser.ip_global_method_template_instance )->(as GlobalMethod)
         m.module_context = type_context.module_context
         m.type_context   = type_context
+        m.attributes.omit_doc = omit_doc
         m.organize
         Transformer().visit( m )
 
@@ -3637,6 +3668,7 @@ class MethodTemplate : Cmd
     name         : String
     placeholders : Cmd
     token_list   : TokenList
+    omit_doc     : Logical
 
   METHODS
     method init( t, name, placeholders, token_list )
@@ -3668,6 +3700,7 @@ class MethodTemplate : Cmd
         local m = parser.parse( Parser.ip_method_template_instance )->(as Method)
         m.module_context = type_context.module_context
         m.type_context   = type_context
+        m.attributes.omit_doc = omit_doc
         m.method_template = this
         m.template_args = template_args
         m.generate_body
@@ -3954,9 +3987,10 @@ class Category : Cmd
     args    : Cmd
     value   : Cmd
     ordinal : Int32  # final resolved 'value'
+    doc     : String
 
   METHODS
-    method init( t, name, args, value, ordinal=0 )
+    method init( t, name, args, value, doc, ordinal=0 )
 
     method init( existing:Category )
       prior.init( existing )
@@ -3964,6 +3998,7 @@ class Category : Cmd
       if (existing.args) args = existing.args.cloned
       if (existing.value) value = existing.value.cloned
       ordinal = existing.ordinal
+      doc = existing.doc
 
     method description->String
       return "Category($,$,$,$)" (%name,%args,%value,ordinal)
@@ -5100,3 +5135,4 @@ class NotIsType : Cmd
       return "NotIsType($,$)" (%operand,%compare_type)
 
 endClass
+

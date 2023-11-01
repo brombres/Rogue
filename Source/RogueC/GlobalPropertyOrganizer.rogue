@@ -9,6 +9,14 @@ class GlobalPropertyOrganizer : Visitor
       visit( class_def )
 
     method on( cmd:GlobalPropertyDeclarations )->Cmd
+      forEach (decl in cmd.declarations)
+        if local p = decl->(as Property)
+          p.doc = cmd.doc
+        elseIf local p = decl->(as NativeProperty)
+          p.doc = cmd.doc
+        endIf
+      endForEach
+
       local type = cmd.type
       if (type)
         forEach (decl in cmd.declarations)

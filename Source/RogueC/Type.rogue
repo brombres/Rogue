@@ -112,7 +112,7 @@ class Type : Cmd
       if (is_tuple) type.attributes.is_tuple = true
       type.type_template = template
       type.type_args     = type_args
-      if (template.attributes.is_essential) type.ensure_definition
+      if (template.attributes.is_essential or Program.generate_doc) type.ensure_definition
       return type
 
     method create( t:Token, element_type:Type )->Type
@@ -219,9 +219,9 @@ class Type : Cmd
         tokens.add( t.cloned(TokenType.SYMBOL_OPEN_SQUARE) )           # [
         tokens.add( t.cloned(TokenType.IDENTIFIER,"compound") )        # compound
         tokens.add( t.cloned(TokenType.SYMBOL_CLOSE_SQUARE) )          # ]
-        tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+        tokens.add( t.cloned(TokenType.EOL,"") )                       # EOL
         tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )            # endClass
-        tokens.add( t.cloned(TokenType.EOL) )                          # EOL
+        tokens.add( t.cloned(TokenType.EOL,"") )                       # EOL
 
         template = Template( t, Program.default_module, "Tuple", placeholders, tokens, Attribute.COMPOUND )
         Program.default_module.templates[ template_key ] = template
@@ -314,9 +314,34 @@ class Type : Cmd
         throw p.t.error( "A global property named '$' already exists."(p.name) )
       endIf
       global_properties[p.name] = p
+      p.attributes.augmented = true
 
     method add_extended_property( p:Property )
       properties[p.name] = p
+
+    method all_template_parameters_are_dummy_values->Logical
+      if (not type_template) return false
+
+      forEach (placeholder_t at i in type_template.placeholders)
+        local placeholder_name = placeholder_t.content
+        local placeholder_type = type_args.type( i )
+        if (placeholder_type)
+          use necessary_name = StringPool
+            necessary_name.print( "_Doc_Gen_" )
+            necessary_name.print( forEach in placeholder_name from 1 )  # skip '$'
+            if (placeholder_type.name != necessary_name) return false
+          endUse
+
+        else
+          if (type_args[i].tokens.count != 1) return false
+          local t = type_args[i].tokens[0]
+          if (not t.content) return false
+          if (not t.content.begins_with("_Doc_Gen_")) return false
+        endIf
+
+      endForEach
+
+      return true
 
     method cloned->this
       return this
@@ -394,13 +419,60 @@ class Type : Cmd
     method contains_reference->Logical
       return attributes.contains_reference
 
+    method description->String
+      return "$" (%name)
+
+    method documentable->Logical
+      if (attributes.omit_doc) return false
+      if (attributes.is_augment) return false
+      if (not class_def) return false
+
+      if (name.begins_with('(')) return false  # (Function...) or (Tuple,...)
+
+      if (name == "Routine")
+        forEach (m in global_methods)
+          if (not m.attributes.omit_doc and m.t.filepath.begins_with(Program.doc_root)) return true
+        endForEach
+      endIf
+
+      if (not t.filepath.begins_with(Program.doc_root)) return false
+
+      if (name.begins_with("_Doc_Gen_"))
+        if (not type_template) return false  # this was a dummy type used to generate another type template
+        if (name.contains("[][]")) return false
+        if (name.contains("[]?")) return false
+        if (name.contains("?[]")) return false
+        if (not all_template_parameters_are_dummy_values) return false
+        return true
+      endIf
+
+      if (name.ends_with(']'))
+        if (name == "[Rogue::_Doc_Gen_KeyType:Rogue::_Doc_Gen_ValueType]") return true
+        return attributes.augmented   # List[]
+      endIf
+      if (name.ends_with('?')) return false                  # Optional?
+
+      if (name.begins_with("Function_"))
+        forEach (ch in name from 9)
+          if (not ch.is_number) return true
+        endForEach
+        return false
+      endIf
+
+      if (not type_template) return true
+      return all_template_parameters_are_dummy_values
+
+    method doc_type->Type
+      if (name.begins_with("Function_") and base_class is not Program.type_Object) return base_class
+      if (documentable) return this
+      if (name.ends_with(']') and attributes.augmented) return this # augmented List[]
+      if (type_template and type_template.doc_type) return type_template.doc_type
+      return this
+
     method ensure_definition
       if (attributes.is_defined) return
       if (not type_template) type_template = module_context.must_find_template( t, name+"<<0>>", name )
       type_template.instantiate( this, type_args )
-
-    method description->String
-      return "$" (%name)
 
     method finalize_vtable
       if (is_vtable_finalized) return
@@ -495,7 +567,14 @@ class Type : Cmd
 
       endIf
 
+      if (is_augment)
+        this.attributes.augmented = true
+        aspect_m.attributes.augmented = true
+      endIf
+
       if (existing_m)
+        if (is_augment) existing_m.attributes.augmented = true
+
         existing_m.attributes.flags |= aspect_m.attributes.flags
         if (aspect_m.attributes.is_insert)
           aspect_m.statements.add( forEach in existing_m.statements )
@@ -507,9 +586,11 @@ class Type : Cmd
           global_methods[ aspect_m.signature ] = aspect_m
           aspect_m.attributes.is_global = true
         endIf
+
       else
         global_methods[ aspect_m.signature ] = aspect_m
         aspect_m.attributes.is_global = true
+
       endIf
 
     method incorporate( aspect_m:Method, &is_augment )
@@ -546,7 +627,14 @@ class Type : Cmd
 
       endIf
 
+      if (is_augment)
+        this.attributes.augmented = true
+        aspect_m.attributes.augmented = true
+      endIf
+
       if (existing_m)
+        if (is_augment) existing_m.attributes.augmented = true
+
         if (aspect_m.attributes.is_insert and existing_m.type_context is this)
           aspect_m.statements.add( forEach in existing_m.statements )
           existing_m.body = aspect_m.body
@@ -560,8 +648,10 @@ class Type : Cmd
           methods[ aspect_m.signature ] = aspect_m
           aspect_m.overridden_method = existing_m.overridden_method
         endIf
+
       else
         methods[ aspect_m.signature ] = aspect_m
+
       endIf
 
     method instance_of( ancestor_type:Type )->Logical
@@ -751,10 +841,12 @@ class Type : Cmd
 
           if (aspects)
             forEach (incorporated_aspect in aspects)
+              local is_augment = incorporated_aspect.attributes.is_augment
+
               incorporated_aspect.[ ensure_definition, organize_properties ]
               if (incorporated_aspect.contains_reference) attributes.contains_reference = true
 
-              if (incorporated_aspect.attributes.is_augment)
+              if (is_augment)
                 forEach (p in incorporated_aspect.global_properties)
                   add_global_property_augment( p.cloned.[type_context=this] )
                 endForEach
@@ -762,6 +854,8 @@ class Type : Cmd
               endIf
 
               forEach (p in incorporated_aspect.properties)
+                p = p.cloned.[type_context=this]
+                if (is_augment) p.attributes.is_augment = true
                 add_extended_property( p.cloned.[type_context=this] )
               endForEach
             endForEach
@@ -855,6 +949,7 @@ class Type : Cmd
         else
           m = GlobalMethod( t, this, "init_class" )
           m.attributes.is_global = true
+          m.attributes.omit_doc = true
           m.organize
           global_methods[ m.signature ] = m
         endIf
@@ -884,6 +979,7 @@ class Type : Cmd
         local m = methods["init_object()"]
         if (not m)
           m = Method( t, this, "init_object" )
+          m.attributes.omit_doc = true
           m.organize
           methods[ m.signature ] = m
         endIf
@@ -913,14 +1009,15 @@ class Type : Cmd
       if (not is_aspect)
         # module_name()->String
         local m = Method( t, this, "module_name" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
         m.return_type = Program.type_String
         m.statements.add( Return(t,LiteralString(t,"$"(module_context))) )
         m.organize
         methods[ m.signature ] = m
 
         # type_name()->String
-        m = methods["type_name()"]
         m = Method( t, this, "type_name" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
         m.return_type = Program.type_String
         m.statements.add( Return(t,
           ContextAccess( t, TypeContext(t,Program.type_Object),
@@ -931,6 +1028,7 @@ class Type : Cmd
 
         # type_info_index()->Int32
         m = Method( t, this, "type_info_index" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
         m.return_type = Program.type_Int32
         m.statements.add( Return(t,TypeIndex(t,this)) )
         m.organize
@@ -1710,6 +1808,35 @@ class Type : Cmd
           endIf
         endIf
       endIf
+
+    method instantiate_doc_method_templates
+      if (this.attributes.is_augment) return
+
+      forEach (template_set in global_method_templates)
+        forEach (m_template in template_set)
+          local args = TemplateArgs( m_template.t )
+          forEach (placeholder in m_template.placeholders)
+            local placeholder_t = module_context.create_placeholder_data_type( placeholder->(as Placeholder).t ).t
+            args.add( TokenList( m_template.t, [placeholder_t] ) )
+          endForEach
+          if (not global_method_template_instances.contains(args->String(m_template.name)))
+            m_template.instantiate( args, this )
+          endIf
+        endForEach
+      endForEach
+
+      forEach (t_name in method_templates.keys)
+        local template_set = method_templates[t_name]
+        local m_template = template_set.first
+        local args = TemplateArgs( m_template.t )
+        forEach (placeholder in m_template.placeholders)
+          local placeholder_t = module_context.create_placeholder_data_type( placeholder->(as Placeholder).t ).t
+          args.add( TokenList( m_template.t, [placeholder_t] ) )
+        endForEach
+        if (not method_template_instances.contains(args->String(m_template.name)))
+          instantiate_object_method_templates( t_name, args )
+        endIf
+      endForEach
 
     method instantiate_object_method_templates( t_name:String, template_args:TemplateArgs )
       # Drill down to start at the oldest ancestor class with a compatible method template

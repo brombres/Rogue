@@ -39,13 +39,15 @@ class Procedure : Cmd
     vcall_max         : Int32 # total virtual call temp variables required by this procedure
     vcall_slot        = -1  # index of temp variable used during dispatch
 
+    doc               : String
+
   METHODS
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
-        attributes=null:Attributes, body=null:LocalScope )
-      init( t, null, name, parameters, return_type, attributes, body )
+        attributes=null:Attributes, doc=null:String, body=null:LocalScope )
+      init( t, null, name, parameters, return_type, attributes, doc, body )
 
     method init( t, module_context, name, parameters=null, return_type=null,
-        attributes=null, body=null )
+      attributes=null, doc=null, body=null )
       if (not parameters) parameters = Parameters(t)
       if (not attributes) attributes = Attributes( t )
       if (not body)       body = LocalScope(t)
@@ -296,7 +298,10 @@ class Procedure : Cmd
               if (p.attributes.is_default_parameter)
                 if (p.initial_value) p.type = p.initial_value.type
                 if (not p.type) p.type = Program.type_Logical
-                if (not p.initial_value) p.initial_value = p.type.cmd_default_value(p.t)
+                if (not p.initial_value)
+                  p.initial_value = p.type.cmd_default_value(p.t)
+                  p.initial_value_tokens = TokenList( p.initial_value.t, [p.initial_value.t] )
+                endIf
               elseIf (this.is_method)
                 local prop = type_context.properties[p.name]
                 if (prop)

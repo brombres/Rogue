@@ -35,7 +35,7 @@ class Module
 
       # Each module gets a Routine class to store routines as GLOBAL METHODS.
       local tokens = Token[]
-      tokens.add( t.cloned(TokenType.EOL) )
+      tokens.add( t.cloned(TokenType.EOL,"") )
       tokens.add( t.cloned(TokenType.KEYWORD_END_CLASS) )
       local new_template = Template( t, this, "Routine", &placeholders=Token[], tokens, Attribute.OBJECT )
       templates["Routine<<0>>"] = new_template
@@ -76,6 +76,21 @@ class Module
           endIf
         endForEach
       endTemporarily
+
+    method create_placeholder_data_type( placeholder_t:Token )->(t:Token,type:Type)
+      if (placeholder_t.content[1].is_uppercase)
+        # Type parameter
+        local type_name = placeholder_t.content.replacing( "$", "_Doc_Gen_" )
+        placeholder_t = placeholder_t.cloned( TokenType.IDENTIFIER, type_name )
+        local type = types[ type_name ]
+        if (not type) type = Type( placeholder_t, Program.default_module, type_name, Attribute.OBJECT|Attribute.DEFINED )
+        return (t:placeholder_t,type:type)
+      else
+        # Unknown token parameter
+        local placeholder_name = placeholder_t.content.replacing( "$", "_Doc_Gen_" )
+        placeholder_t = placeholder_t.cloned( TokenType.IDENTIFIER, placeholder_name )
+        return (t:placeholder_t,type:null)
+      endIf
 
     method description->String
       return name
@@ -153,17 +168,50 @@ class Module
       Program.check_include_hints( t, mod, type_name )
       throw t.error( "Reference to undefined type '$::$'."(mod,type) )
 
-    method instantiate_essential_and_api_types
-      if (attributes.is_essential)
+    method instantiate_essential_and_api_types->Logical
+      local any_new = false
+      if (attributes.is_essential or Program.generate_doc)
         # Instantiate one of each template with 0 type parameters
         temporarily Program.current_module = this
-          forEach (templ in templates)
-            if (templ.placeholders.count == 0)
-              if (not types.contains(templ.name))
-                  Type( templ.t, templ.name )
+          local i = 0
+          while (i < templates.count)
+            local template = templates.at(i)
+            if (not template.attributes.is_augment)
+              local placeholders = template.placeholders
+              if (placeholders.count == 0)
+                if (not types.contains(template.name))
+                  Type( template.t, this, template.name )
+                  any_new = true
+                endIf
+              elseIf (Program.generate_doc and not template.doc_type)
+                if (template.name == "Tuple")
+                  noAction
+                elseIf (template.name == "List" and placeholders.count == 1)
+                  local element_type = Program.default_module.create_placeholder_data_type( placeholders.first ).type
+                  template.doc_type = Type( template.t, element_type )
+                  any_new = true
+                elseIf (template.name == "Table" and placeholders.count == 2)
+                  local key_type = Program.default_module.create_placeholder_data_type( placeholders[0] ).type
+                  local value_type = Program.default_module.create_placeholder_data_type( placeholders[1] ).type
+                  template.doc_type = Type( template.t, key_type, value_type )
+                  any_new = true
+                elseIf (template.name == "Optional" and placeholders.count == 1)
+                  local data_type = Program.default_module.create_placeholder_data_type( placeholders[0] ).type
+                  template.doc_type = Type( template.t, data_type, &optional )
+                  any_new = true
+                else
+                  local args = TemplateArgs( template.t )
+                  forEach (placeholder_t in placeholders)
+                    placeholder_t = Program.default_module.create_placeholder_data_type( placeholder_t ).t
+                    args.add( TokenList(template.t,[placeholder_t]) )
+                  endForEach
+                  template.doc_type = Type( t, template, this, args )
+                  any_new = true
+                endIf
               endIf
             endIf
-          endForEach
+            ++i
+          endWhile
         endTemporarily
       endIf
 
@@ -251,9 +299,11 @@ class Module
             endIf
           endIf
 
-          if (template.attributes.is_essential)
+          if (template.attributes.is_essential or Program.generate_doc)
             temporarily Program.current_module = this
-              Type( template.tokens.first, template.name )
+              if (not template.attributes.is_augment and not types.contains(template.name))
+                Type( template.tokens.first, template.name )
+              endIf
             endTemporarily
           endIf
         endIf
@@ -269,6 +319,7 @@ class Module
         r.statements.add( forEach in global_statements )
         r.attributes.is_global = true
         r.organize
+        r.attributes.omit_doc = true
         type_Routine.global_methods[ r.signature ] = r
         if (r.statements.count)
           r.attributes.is_essential = true
