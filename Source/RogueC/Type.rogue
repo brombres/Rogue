@@ -144,8 +144,8 @@ class Type : Cmd
     method create( t:Token, core_type:Type, optional:Logical )->Type
       # 'optional' is always true when this method is called.
       # CoreType -> CoreType? -> Optional<<CoreType>>
-      local name = core_type.name + "?"
-      local type = Program.current_module.find_type( t, name, &extended_search )
+      local name = core_type.name + '?'
+      local type = Program.current_module.find_type( t, core_type.scoped_name+'?', &extended_search )
       if (type) return type
 
       local template = Program.default_module.must_find_template( t, "Optional<<1>>", name )

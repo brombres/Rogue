@@ -2870,7 +2870,7 @@ parser
           createNull
           create Type(name:String,type_args:TemplateArgs)
           create Type(core_type:Type,optional="true":Logical)
-          remaining_type
+          list_or_optional_type
           type_access_or_typed_literal_list
           return
         else

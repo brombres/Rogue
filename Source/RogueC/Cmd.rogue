@@ -2067,7 +2067,7 @@ class TemplateArgs : CmdList
             token_string.clear
             token_string.print((forEach in token_list.tokens)->String)
           endIf
-          Program.current_module.type_arg_lookup[token_string] = type
+          Program.current_module.type_arg_lookup[token_string.cloned] = type
           return type
         endIf
       endUse
