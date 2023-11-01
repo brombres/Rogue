@@ -784,6 +784,9 @@ augment
     method This.type->Type
       return this_type
 
+    method Type.type->this
+      return this
+
     method TypeAccess.type->Type
       return of_type
 

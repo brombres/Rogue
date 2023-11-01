@@ -174,10 +174,17 @@ class Module
         (forEach in types).attributes.is_api = true
       endIf
 
+      return any_new
+
     method split_module_and_type( t:Token, type_name:String, &allow_unknown_module, &suppress_error )->(Module,String)
-      if (type_name.begins_with('(') or type_name.begins_with('[') or not type_name.contains("::"))
+      if (type_name.begins_with('(') or type_name.begins_with('['))
         # Type names beginning with ( are (tuples) or (Functions)
         # Type names beginning with [ are [KeyType:ValueType] tables
+        #return (Program.default_module,type_name)
+        return (null->(as Module),type_name)
+      endIf
+
+      if (not type_name.contains("::"))
         return (null->(as Module),type_name)
       endIf
 

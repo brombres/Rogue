@@ -389,6 +389,7 @@ class ResolveUsedElements : InspectionVisitor
         endIf
 
       else
+        # Object property
         block
           # return context.to<<Type>>.property->Value
           local params = m_get_property.parameters
