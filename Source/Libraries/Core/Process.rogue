@@ -1,5 +1,6 @@
 # This library is included by RogueC as needed.
 
+$include Codec/UTF16String
 $include FileIO/FileDescriptorIO
 
 class Process

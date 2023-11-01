@@ -3,7 +3,6 @@ module Geometry
 class Triangle( a:XY, b:XY, c:XY ) [compound]
   # [a,b,c] should be defined in clockwise order to ensure visibility
   METHODS
-      #{
     method centroid->XY
       return (a + b + c) / 3
 
@@ -56,10 +55,10 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
     method operator-( position:XY )->Triangle
       return Triangle( a-position, b-position, c-position )
 
-    method operator*( scale:Real64 )->Triangle
+    method operator*( scale:Real )->Triangle
       return Triangle( a*scale, b*scale, c*scale )
 
-    method operator/( scale:Real64 )->Triangle
+    method operator/( scale:Real )->Triangle
       return Triangle( a/scale, b/scale, c/scale )
 
     method operator*( scale:XY )->Triangle
@@ -68,12 +67,11 @@ class Triangle( a:XY, b:XY, c:XY ) [compound]
     method operator/( scale:XY )->Triangle
       return Triangle( a/scale, b/scale, c/scale )
 
-    method rotated( angle:Degrees )->Triangle [macro]
+    method rotated( angle:Degrees )->Triangle
       return this.rotated( angle->Radians )
 
     method rotated( angle:Radians )->Triangle
       return Triangle( a.rotated(angle), b.rotated(angle), c.rotated(angle) )
-      }#
 
     method to->String
       return "($,$,$)" (a,b,c)

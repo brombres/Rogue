@@ -1,3 +1,4 @@
+$include StandardMacros
 $include Codec/UTF16String
 $include Core
 $include Collection

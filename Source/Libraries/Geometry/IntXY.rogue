@@ -5,6 +5,13 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     zero = IntXY(0,0)
 
   GLOBAL METHODS
+    method create( r:Real, angle:Radians )->IntXY
+      return IntXY( r*angle.cos.floor, r*angle.sin.floor )
+
+    method create( r:Real, angle:Degrees )->IntXY
+      local radians = angle->Radians
+      return IntXY( r*angle.cos.floor, r*angle.sin.floor )
+
     method create( n:Int32 )->IntXY
       return IntXY(n,n)
 
@@ -99,6 +106,9 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
     method cross( other:IntXY )->Int32
       return x * other.y - y * other.x
 
+    method degrees->Degrees
+      return Radians( y->Real.atan2(x) )->Degrees
+
     method distance_to( other:IntXY )->Int32
       return (other - this).magnitude
 
@@ -166,6 +176,15 @@ class IntXY( x:Int32, y:Int32 ) [essential compound]
 
     method product->Int32
       return x * y
+
+    method radians->Radians
+      return Radians( y->Real.atan2(x) )
+
+    method rotated( angle:Degrees )->IntXY
+      return IntXY( this.magnitude, radians + angle->Radians )
+
+    method rotated( angle:Radians )->IntXY
+      return IntXY( magnitude, radians + angle )
 
     method sign->IntXY
       return IntXY( x.sign, y.sign )
