@@ -112,7 +112,7 @@ class Type : Cmd
       if (is_tuple) type.attributes.is_tuple = true
       type.type_template = template
       type.type_args     = type_args
-      if (template.attributes.is_essential) type.ensure_definition
+      if (template.attributes.is_essential or Program.generate_doc) type.ensure_definition
       return type
 
     method create( t:Token, element_type:Type )->Type

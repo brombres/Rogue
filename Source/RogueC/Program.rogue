@@ -11,10 +11,14 @@ class Program [singleton]
     targets_cpp          : Logical
     targets_windows      : Logical
 
+    command           : Value  # RogueC launch command with //options and //args
+
     debug_mode        = false
     gc_auto           = true
     gc_threshold      = 1024*1024 : Int32
     generate_main     = false
+    generate_doc      = false
+    no_stdlib         = false
     output_filepath   : String
     stack_trace       = false
     real_bits         : Int32 # Set with --real=[32|64] compile option
@@ -318,8 +322,40 @@ class Program [singleton]
       endForEach
       Analytics.main_parse.stop
 
+      organize_types_and_methods
+
+      if (generate_doc)
+        if (command//args.count > 0)
+          mark_existing_types_as_doc_generated  # exclude from doc
+
+          forEach (arg in command//args)
+            local file = File( arg->String )
+            if (file.is_folder)
+              add_include_search_path( file )
+              include( forEach in Files(file,"**/*.rogue") )
+            else
+              include( file )
+            endIf
+          endForEach
+
+          organize_types_and_methods
+        endIf
+
+        generate_doc_json
+        return
+      endIf
+
+      Analytics.resolve_used_elements.start
+      ResolveUsedElements().apply
+      Analytics.resolve_used_elements.stop
+
+      Analytics.finalize.start
+      Finalizer().apply
+      Analytics.finalize.stop
+
+    method organize_types_and_methods
       Analytics.instantiate_essential.start
-      (forEach in modules).instantiate_essential_and_api_types
+      instantiate_essential_api_and_doc_types
       Analytics.instantiate_essential.stop
 
       Analytics.organize_methods.start
@@ -330,13 +366,39 @@ class Program [singleton]
       apply( Transformer() )
       Analytics.tranform.stop
 
-      Analytics.resolve_used_elements.start
-      ResolveUsedElements().apply
-      Analytics.resolve_used_elements.stop
+    method instantiate_essential_api_and_doc_types
+      block any_changes = true
+        while (any_changes)
+          any_changes = false
+          forEach (mod in modules)
+            if (mod.instantiate_essential_and_api_types) any_changes = true
+          endForEach
+        endWhile
+      endBlock
 
-      Analytics.finalize.start
-      Finalizer().apply
-      Analytics.finalize.stop
+    method generate_doc_json
+      trace "TODO"
+      #{
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+          if (not type.attributes.doc_generated) # and type.name.contains("_Doc_Gen_"))
+            println type
+            if local def = type.class_def->(as Class)
+              if (def.doc)
+                println def.doc
+              endIf
+            endIf
+          endIf
+        endForEach
+      endForEach
+      }#
+
+    method mark_existing_types_as_doc_generated
+      forEach (mod in Program.modules)
+        forEach (type in mod.types)
+          type.attributes.doc_generated = true
+        endForEach
+      endForEach
 
     method set_real_bits( @real_bits )
       definitions["Real"] = [t.cloned( TokenType.IDENTIFIER, "Real"+real_bits )]

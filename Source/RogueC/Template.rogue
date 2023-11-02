@@ -8,6 +8,7 @@ class Template
     placeholders   : Token[]
     tokens         = Token[]
     attributes     : Attributes
+    doc_generated  : Logical
 
   METHODS
     method init( t, module_context, name, placeholders, tokens, attributes:Int64 )
