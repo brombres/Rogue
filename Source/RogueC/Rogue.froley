@@ -1730,6 +1730,7 @@ parser
 
     procedure_attributes
     consume(':')
+    call parse_doc_comment
 
     if (is_batch_augment)
       multi_line_statements
@@ -1756,7 +1757,7 @@ parser
 
       createNull
       create LocalScope(statements):ControlStructure
-      create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
+      create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,source_tokens:TokenList,body:LocalScope):Procedure
       return
     endIf
   endOn
@@ -1774,11 +1775,13 @@ parser
   procedure_return_type
   procedure_attributes
   consume(':')
+  call parse_doc_comment
+
   savePosition
 
   scoped_multi_line_statements
 
-  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+  create GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,body:LocalScope):Procedure
   return
 
 - method_template_instance
@@ -1786,6 +1789,8 @@ parser
   procedure_return_type
   procedure_attributes
   consume(':')
+  call parse_doc_comment
+
   savePosition
 
   ++disable_output
@@ -1795,7 +1800,7 @@ parser
 
   createNull
   create LocalScope(statements):ControlStructure
-  create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,source_tokens:TokenList,body:LocalScope):Procedure
+  create Method(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,source_tokens:TokenList,body:LocalScope):Procedure
   return
 
 - global_method
@@ -1833,8 +1838,9 @@ parser
     procedure_return_type
     procedure_attributes
     consume(':')
+    call parse_doc_comment
     scoped_multi_line_statements
-    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope):Procedure
+    produce GlobalMethod(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc:String,body:LocalScope):Procedure
   endOn
 
 - global_properties
@@ -2141,8 +2147,10 @@ parser
   on "assert"
     savePosition
     expression
+    pop expr
     createTokenList
-    produce Assert(expression,token_list:TokenList)
+    push expr
+    produce Assert(token_list:TokenList,expression)
   endOn
   on "ensure" "<<" expression ">>" args -> Ensure(expression,args:Args)
   on "escapeBlock"                -> EscapeBlock:Escape
@@ -2235,8 +2243,10 @@ parser
     while (not nextIs(EOL))
       savePosition
       expression
+      pop expr
       createTokenList
-      create TracedExpression(expression,token_list:TokenList)
+      push expr
+      create TracedExpression(token_list:TokenList,expression)
       consume ','
     endWhile
     createList TracedExpressions
@@ -2249,8 +2259,10 @@ parser
     while (not nextIs(EOL))
       savePosition
       expression
+      pop expr
       createTokenList
-      create TracedExpression(expression,token_list:TokenList)
+      push expr
+      create TracedExpression(token_list:TokenList,expression)
       consume ','
     endWhile
     createList TracedExpressions
@@ -3751,7 +3763,7 @@ parser
   create Logicalized(operand):Unary
   create OpAndAssign(target,operand)
   create PreDecrementLocal(info:Local)  # Internal use
-  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,body:LocalScope)
+  create Procedure(name:String,parameters:Parameters,return_type:Type,attributes:Attributes,doc=`null`,body:LocalScope)
   create PushStackTraceCutoff
   create CreateRange(start,limit,step_size)
   create ReturnOnException

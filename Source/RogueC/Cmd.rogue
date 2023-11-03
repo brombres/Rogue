@@ -1562,15 +1562,16 @@ endClass
 class GlobalMethod : Procedure
   METHODS
     method init( t:Token, type_context, name:String )
-      prior.init( t, type_context.module_context, name, null, null, null, null )
+      prior.init( t, type_context.module_context, name, null, null, null, null, null )
 
     method init( t:Token, name:String, parameters=null:Parameters, return_type=null:Type,
-                 attributes=null:Attributes, body=null:LocalScope )
-      prior.init( t, name, parameters, return_type, attributes, body )
+        attributes=null:Attributes, doc=null:String, body=null:LocalScope )
+      prior.init( t, name, parameters, return_type, attributes, doc, body )
 
     method init( existing:GlobalMethod )
       prior.init( existing )
       type_context = existing.@type_context
+      doc = existing.doc
 
     method context_signature->String
       return "$.$"(type_context.scoped_name,signature)
@@ -1595,22 +1596,23 @@ class Method : Procedure
 
   METHODS
     method init( t:Token, name:String )
-      init( t, null, name, null, null, null, null )
+      init( t, null, name, null, null, null, null, null )
 
     method init( t:Token, name:String, parameters:Parameters, return_type:Type,
-        attributes:Attributes, source_tokens, body:LocalScope )
-      init( t, null, name, parameters, return_type, attributes, body )
+        attributes:Attributes, doc:String, source_tokens, body:LocalScope )
+      init( t, null, name, parameters, return_type, attributes, doc, body )
 
     method init( t:Token, module_context:Module, name:String, parameters=null:Parameters, return_type=null:Type,
-        attributes=null:Attributes, body=null:LocalScope )
-      prior.init( t, module_context, name, parameters, return_type, attributes, body )
+        attributes=null:Attributes, doc=null:String, body=null:LocalScope )
+      prior.init( t, module_context, name, parameters, return_type, attributes, doc, body )
 
     method init( t:Token, type_context, name:String )
-      prior.init( t, type_context.module_context, name, null, null, null, null )
+      prior.init( t, type_context.module_context, name, null, null, null, null, null )
 
     method init( existing:Method )
       prior.init( existing )
       type_context = existing.@type_context
+      doc = existing.doc
       if (existing.source_tokens) source_tokens = existing.source_tokens.cloned
 
     method context_signature->String
@@ -4465,7 +4467,7 @@ class Assert : Cmd
     token_list : TokenList
 
   METHODS
-    method init( t, expression, token_list )
+    method init( t, token_list, expression )
 
     method init( existing:Assert )
       prior.init( existing )
@@ -4568,7 +4570,7 @@ class TracedExpression : Cmd
     token_list : TokenList
 
   METHODS
-    method init( t, expression, token_list )
+    method init( t, token_list, expression )
 
     method init( existing:TracedExpression )
       prior.init( existing )

@@ -377,8 +377,6 @@ class Program [singleton]
       endBlock
 
     method generate_doc_json
-      trace "TODO"
-      #{
       forEach (mod in Program.modules)
         forEach (type in mod.types)
           if (not type.attributes.doc_generated) # and type.name.contains("_Doc_Gen_"))
@@ -388,10 +386,55 @@ class Program [singleton]
                 println def.doc
               endIf
             endIf
+
+            if (type.categories)
+              println "CATEGORIES"
+              forEach (category in type.categories)
+                print "  " + category.name
+                if (category.doc) print "  $"(category.doc)
+                else              println
+              endForEach
+              println
+            endIf
+
+            println "GLOBAL PROPERTIES"
+            forEach (p in type.global_properties)
+              print "  $ : $"(p.name,p.type)
+              if (p.doc) print "  $"(p.doc)
+              else       println
+            endForEach
+            println
+
+            println "GLOBAL METHODS"
+            forEach (m in type.global_methods)
+              print "  "
+              print m.signature
+              if (m.return_type) print "->"; print m.return_type
+              if (m.doc) print "  $"(m.doc)
+              else       println
+            endForEach
+            println
+
+            println "PROPERTIES"
+            forEach (p in type.properties)
+              print "  $ : $"(p.name,p.type)
+              if (p.doc) print "  $"(p.doc)
+              else       println
+            endForEach
+            println
+
+            println "METHODS"
+            forEach (m in type.methods)
+              print "  "
+              print m.signature
+              if (m.return_type) print "->"; print m.return_type
+              if (m.doc) print "  $"(m.doc)
+              else       println
+            endForEach
+            println
           endIf
         endForEach
       endForEach
-      }#
 
     method mark_existing_types_as_doc_generated
       forEach (mod in Program.modules)

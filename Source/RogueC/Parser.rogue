@@ -834,12 +834,22 @@ class Parser : ParserCore, Poolable
       m.templates[aspect_name] = Template( augment_t, m, aspect_name, Token[], tokens, attributes )
 
     method parse_doc_comment
-      if (disable_output or not has_another or _peek.type != TokenType.EOL)
+      if (disable_output or not has_another)
         _push( null, 0 )
         return
       endIf
 
       _save_position
+
+      block
+        while (has_another and _peek.type != TokenType.EOL) _read
+
+        if (not has_another or _peek.type != TokenType.EOL)
+          _restore_position
+          _push( null, 0 )
+          return
+        endIf
+      endBlock
 
       local t = _read
       local doc_t = t
