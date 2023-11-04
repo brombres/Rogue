@@ -316,6 +316,7 @@ class Module
         r.statements.add( forEach in global_statements )
         r.attributes.is_global = true
         r.organize
+        r.attributes.omit_doc = true
         type_Routine.global_methods[ r.signature ] = r
         if (r.statements.count)
           r.attributes.is_essential = true

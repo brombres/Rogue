@@ -5123,3 +5123,9 @@ class NotIsType : Cmd
       return "NotIsType($,$)" (%operand,%compare_type)
 
 endClass
+
+class AttributeOmitDoc : Cmd
+  METHODS
+    method description->String
+      return "AttributeOmitDoc"
+endClass

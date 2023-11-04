@@ -401,6 +401,13 @@ class Type : Cmd
       if (not class_def) return false
       if (name.begins_with('(')) return false  # (Function...) or (Tuple,...)
 
+      if (name == "Routine")
+        forEach (m in global_methods)
+          if (not m.attributes.omit_doc) return true
+        endForEach
+        return false
+      endIf
+
       if (name.begins_with("_Doc_Gen_"))
         if (not type_template) return false  # this was a dummy type used to generate another type template
         if (name.contains("[][]")) return false
@@ -931,6 +938,7 @@ class Type : Cmd
         else
           m = GlobalMethod( t, this, "init_class" )
           m.attributes.is_global = true
+          m.attributes.omit_doc = true
           m.organize
           global_methods[ m.signature ] = m
         endIf
@@ -960,6 +968,7 @@ class Type : Cmd
         local m = methods["init_object()"]
         if (not m)
           m = Method( t, this, "init_object" )
+          m.attributes.omit_doc = true
           m.organize
           methods[ m.signature ] = m
         endIf
@@ -989,14 +998,15 @@ class Type : Cmd
       if (not is_aspect)
         # module_name()->String
         local m = Method( t, this, "module_name" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
         m.return_type = Program.type_String
         m.statements.add( Return(t,LiteralString(t,"$"(module_context))) )
         m.organize
         methods[ m.signature ] = m
 
         # type_name()->String
-        m = methods["type_name()"]
         m = Method( t, this, "type_name" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
         m.return_type = Program.type_String
         m.statements.add( Return(t,
           ContextAccess( t, TypeContext(t,Program.type_Object),
@@ -1007,6 +1017,7 @@ class Type : Cmd
 
         # type_info_index()->Int32
         m = Method( t, this, "type_info_index" )
+        m.attributes.omit_doc = (this is not Program.type_Object)
         m.return_type = Program.type_Int32
         m.statements.add( Return(t,TypeIndex(t,this)) )
         m.organize
@@ -1797,7 +1808,9 @@ class Type : Cmd
             local placeholder_t = module_context.create_placeholder_data_type( placeholder->(as Placeholder).t ).t
             args.add( TokenList( m_template.t, [placeholder_t] ) )
           endForEach
-          m_template.instantiate( args, this )
+          if (not global_method_template_instances.contains(args->String(m_template.name)))
+            m_template.instantiate( args, this )
+          endIf
         endForEach
       endForEach
 
@@ -1809,7 +1822,9 @@ class Type : Cmd
           local placeholder_t = module_context.create_placeholder_data_type( placeholder->(as Placeholder).t ).t
           args.add( TokenList( m_template.t, [placeholder_t] ) )
         endForEach
-        instantiate_object_method_templates( t_name, args )
+        if (not method_template_instances.contains(args->String(m_template.name)))
+          instantiate_object_method_templates( t_name, args )
+        endIf
       endForEach
 
     method instantiate_object_method_templates( t_name:String, template_args:TemplateArgs )

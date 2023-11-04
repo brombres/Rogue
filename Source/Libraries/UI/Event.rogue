@@ -317,25 +317,25 @@ class ScrollRate
       if (v1 == 0 or v2 == 0) return true  # 0 matches either sign
       return not ((v1 > 0) xor (v2 > 0))
 
-    method _process<<$HISTORY,$IntXY,$ACCELERATION>>( e:ScrollEvent )->Real
-      while ($HISTORY.count and $HISTORY.first.timestamp < e.timestamp - 250) $HISTORY.remove_first
+    method _process<<$history,$xy,$acceleration>>( e:ScrollEvent )->Real
+      while ($history.count and $history.first.timestamp < e.timestamp - 250) $history.remove_first
 
       local result = 0.0
-      if ($HISTORY.count and _same_direction($HISTORY.first.delta.$IntXY,e.delta.$IntXY))
-        $HISTORY.add( e )
-        result += (forEach in $HISTORY).delta.$IntXY
-        result /= $HISTORY.count
-        if ($HISTORY.count == 1)
-          $ACCELERATION = 1.0
+      if ($history.count and _same_direction($history.first.delta.$xy,e.delta.$xy))
+        $history.add( e )
+        result += (forEach in $history).delta.$xy
+        result /= $history.count
+        if ($history.count == 1)
+          $acceleration = 1.0
         else
-          result *= $ACCELERATION
+          result *= $acceleration
         endIf
       else
-        $HISTORY.[ clear, add(e) ]
-        result = e.delta.$IntXY
-        $ACCELERATION = 1.0
+        $history.[ clear, add(e) ]
+        result = e.delta.$xy
+        $acceleration = 1.0
       endIf
 
-      $ACCELERATION = ($ACCELERATION * 1.25).clamped_high( base_scale*2 )
+      $acceleration = ($acceleration * 1.25).clamped_high( base_scale*2 )
       return result
 endClass

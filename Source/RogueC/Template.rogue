@@ -76,7 +76,7 @@ class Template
           augment_type.attributes.is_defined = true
           Program.unorganized_types.add( augment_type )
 
-          temporarily Program.current_module = type.module_context
+          temporarily Program.current_module=type.module_context, Program.omit_doc = augment_type.attributes.omit_doc
             augment_type.class_def = Parser( augment_tokens ).parse( Parser.ip_class )
           endTemporarily
 

@@ -671,6 +671,9 @@ class Parser : ParserCore, Poolable
         _template.attributes.is_compound = true
       endIf
 
+    method check_omit_doc
+      omit_doc = Program.omit_doc
+
     method create_type_template->Template
       local attributes : Int64
       if (_attribute_essential) attributes |= Attribute.ESSENTIAL

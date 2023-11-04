@@ -369,12 +369,8 @@ class Program [singleton]
       forEach (mod in Program.modules)
         println "[$]"(mod)
         forEach (type in mod.types)
-          if (type.documentable)
-            println "  $"(type)
-            if (type.name == "Routine") println "  $"(type.global_methods.keys)
-          endIf
+          if (not type.documentable) nextIteration
 
-#{
           if (type.name == "Routine")
             contingent
               forEach (m in type.global_methods)
@@ -384,7 +380,7 @@ class Program [singleton]
             satisfied
               println "ROUTINES"
               forEach (m in type.global_methods)
-                if (not m.attributes.doc_generated)
+                if (not m.attributes.omit_doc)
                   print "  " + m.signature
                   if (m.doc) print "  " + m.doc
                   else       println
@@ -393,64 +389,63 @@ class Program [singleton]
             endContingent
 
           else
-            contingent
-              necessary (not type.attributes.doc_generated) # and type.name.contains("_Doc_Gen_"))
-            satisfied
-              println "TYPE " + type
-              if local def = type.class_def->(as Class)
-                if (def.doc)
-                  println def.doc
-                endIf
+            println type
+            if local def = type.class_def->(as Class)
+              if (def.doc)
+                println def.doc
               endIf
+            endIf
 
-              if (type.categories)
-                println "CATEGORIES"
-                forEach (category in type.categories)
-                  print "  " + category.name
-                  if (category.doc) print "  $"(category.doc)
-                  else              println
-                endForEach
-                println
-              endIf
-
-              println "GLOBAL PROPERTIES"
-              forEach (p in type.global_properties)
-                print "  $ : $"(p.name,p.type)
-                if (p.doc) print "  $"(p.doc)
-                else       println
+            if (type.categories)
+              println "CATEGORIES"
+              forEach (category in type.categories)
+                print "  " + category.name
+                if (category.doc) print "  $"(category.doc)
+                else              println
               endForEach
               println
+            endIf
 
-              println "GLOBAL METHODS"
-              forEach (m in type.global_methods)
-                print "  "
-                print m.signature
-                if (m.return_type) print "->"; print m.return_type
-                if (m.doc) print "  $"(m.doc)
-                else       println
-              endForEach
-              println
+            println "GLOBAL PROPERTIES"
+            forEach (p in type.global_properties)
+              if (p.type_context is not type or p.attributes.omit_doc) nextIteration
+              print "  $ : $"(p.name,p.type)
+              if (p.doc) print "  $"(p.doc)
+              else       println
+            endForEach
+            println
 
-              println "PROPERTIES"
-              forEach (p in type.properties)
-                print "  $ : $"(p.name,p.type)
-                if (p.doc) print "  $"(p.doc)
-                else       println
-              endForEach
-              println
+            println "GLOBAL METHODS"
+            forEach (m in type.global_methods)
+              if (m.type_context is not type or m.attributes.omit_doc) nextIteration
+              print "  "
+              print m.signature
+              if (m.return_type) print "->"; print m.return_type
+              if (m.doc) print "  $"(m.doc)
+              else       println
+            endForEach
+            println
 
-              println "METHODS"
-              forEach (m in type.methods)
-                print "  "
-                print m.signature
-                if (m.return_type) print "->"; print m.return_type
-                if (m.doc) print "  $"(m.doc)
-                else       println
-              endForEach
-              println
-            endContingent
+            println "PROPERTIES"
+            forEach (p in type.properties)
+              if (p.type_context is not type or p.attributes.omit_doc) nextIteration
+              print "  $ : $"(p.name,p.type)
+              if (p.doc) print "  $"(p.doc)
+              else       println
+            endForEach
+            println
+
+            println "METHODS"
+            forEach (m in type.methods)
+              if (m.type_context is not type or m.attributes.omit_doc) nextIteration
+              print "  "
+              print m.signature
+              if (m.return_type) print "->"; print m.return_type
+              if (m.doc) print "  $"(m.doc)
+              else       println
+            endForEach
+            println
           endIf
-}#
         endForEach
       endForEach
 
